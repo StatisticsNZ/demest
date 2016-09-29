@@ -1,0 +1,933 @@
+
+context("AllClasses-Skeleton")
+
+n.test <- 5
+test.identity <- FALSE
+test.extended <- FALSE
+
+
+test_that("can create valid object of class SkeletonOneCounts", {
+    x <- new("SkeletonOneCounts",
+             first = 2L)
+    expect_true(validObject(x))
+})
+
+test_that("validity tests for SkeletonOneCounts inherited from SkeletonFirst work", {
+    x <- new("SkeletonOneCounts",
+             first = 2L)
+    ## 'first' has length 1
+    x.wrong <- x
+    x.wrong@first <- 1:2
+    expect_error(validObject(x.wrong),
+                 "'first' does not have length 1")
+    ## 'first' is not missing
+    x.wrong <- x
+    x.wrong@first <- as.integer(NA)
+    expect_error(validObject(x.wrong),
+                 "'first' is missing")
+    ## 'first' is positive
+    x.wrong <- x
+    x.wrong@first <- 0L
+    expect_error(validObject(x.wrong),
+                 "'first' is less than 1")
+})
+
+test_that("can create valid object of class SkeletonOneValues", {
+    x <- new("SkeletonOneValues",
+             first = 2L)
+    expect_true(validObject(x))
+})
+
+test_that("can create valid object of class SkeletonManyCounts", {
+    x <- new("SkeletonManyCounts",
+             first = 2L,
+             last = 5L,
+             metadata = new("MetaData", nms = "region", dimtypes = "state",
+             DimScales = list(new("Categories", dimvalues = c("a", "b", "c", "d")))))
+    expect_true(validObject(x))
+})
+
+test_that("validity tests for SkeletonManyCounts inherited from SkeletonMany work", {
+    x <- new("SkeletonManyCounts",
+             first = 2L,
+             last = 5L,
+             metadata = new("MetaData", nms = "region", dimtypes = "state",
+             DimScales = list(new("Categories", dimvalues = c("a", "b", "c", "d")))))
+    ## 'last' has length 1
+    x.wrong <- x
+    x.wrong@last <- 5:6
+    expect_error(validObject(x.wrong),
+                 "'last' does not have length 1")
+    ## 'last' is not missing
+    x.wrong <- x
+    x.wrong@last <- as.integer(NA)
+    expect_error(validObject(x.wrong),
+                 "'last' is missing")
+    ## can't test because test in SkeletonMetadata has precedence
+    ## ## 'last' >= 'first'
+    ## x.wrong <- x
+    ## x.wrong@first <- 8L
+    ## expect_error(validObject(x.wrong),
+    ##              "'last' is less than 'first'")
+})
+
+test_that("validity tests for SkeletonManyCounts inherited from SkeletonMetadata work", {
+    x <- new("SkeletonManyCounts",
+             first = 2L,
+             last = 5L,
+             metadata = new("MetaData", nms = "region", dimtypes = "state",
+             DimScales = list(new("Categories", dimvalues = c("a", "b", "c", "d")))))
+    ## 'metadata' does not have iteration dimensions
+    x.wrong <- x
+    x.wrong@metadata <- new("MetaData",
+                            nms = "iteration",
+                            dimtypes = "iteration",
+                            DimScales = list(new("Iterations", dimvalues = 1:4)))
+    expect_error(validObject(x.wrong),
+                 "'metadata' has dimension with dimtype \"iteration\"")
+    ## 'metadata' does not have quantile dimensions
+    x.wrong <- x
+    x.wrong@metadata <- new("MetaData",
+                            nms = "quantile",
+                            dimtypes = "quantile",
+                            DimScales = list(new("Quantiles", dimvalues = c(0, 0.1, 0.8, 1))))
+    expect_error(validObject(x.wrong),
+                 "'metadata' has dimension with dimtype \"quantile\"")
+    ## dim(metadata) consistent with 'first', 'last'
+    x.wrong <- x
+    x.wrong@last <- 10L
+    expect_error(validObject(x.wrong),
+                 "'metadata', 'first', and 'last' inconsistent")
+})
+
+test_that("validity tests for SkeletonManyCounts inherited from SkeletonManyCounts work", {
+    x <- new("SkeletonManyCounts",
+             first = 2L,
+             last = 5L,
+             metadata = new("MetaData", nms = "region", dimtypes = "state",
+             DimScales = list(new("Categories", dimvalues = c("a", "b", "c", "d")))))
+    ## dim(metadata) consistent with 'first', 'last'
+    x.wrong <- x
+    x.wrong@last <- 10L
+    expect_error(validObject(x.wrong),
+                 "'metadata', 'first', and 'last' inconsistent")
+})
+
+test_that("can create valid object of class SkeletonManyValues", {
+    x <- new("SkeletonManyValues",
+             first = 2L,
+             last = 5L,
+             metadata = new("MetaData", nms = "region", dimtypes = "state",
+             DimScales = list(new("Categories", dimvalues = c("a", "b", "c", "d")))))
+    expect_true(validObject(x))
+})
+
+test_that("validity tests for SkeletonManyValues inherited from SkeletonManyValues work", {
+    x <- new("SkeletonManyValues",
+             first = 2L,
+             last = 5L,
+             metadata = new("MetaData", nms = "region", dimtypes = "state",
+             DimScales = list(new("Categories", dimvalues = c("a", "b", "c", "d")))))
+    ## dim(metadata) consistent with 'first', 'last'
+    x.wrong <- x
+    x.wrong@last <- 10L
+    expect_error(validObject(x.wrong),
+                 "'metadata', 'first', and 'last' inconsistent")
+})
+
+test_that("can create valid object of class SkeletonBetaIntercept", {
+    ## One higher term
+    x <- new("SkeletonBetaIntercept",
+             first = 2L,
+             offsetsHigher = list(new("Offsets", c(6L, 13L))))
+    ## No higher terms
+    x <- new("SkeletonBetaIntercept",
+             first = 2L,
+             offsetsHigher = list())
+    ## Two higher terms
+    x <- new("SkeletonBetaIntercept",
+             first = 2L,
+             offsetsHigher = list(new("Offsets", c(6L, 13L)),
+                 new("Offsets", c(14L, 33L))))
+})
+
+test_that("validity tests for SkeletonBetaIntercept inherited from SkeletonOffsetsHigher work", {
+    x <- new("SkeletonBetaIntercept",
+             first = 2L,
+             offsetsHigher = list(new("Offsets", c(6L, 13L))))
+    ## all elements of 'offsetsHigher' have class "Offsets"
+    x.wrong <- x
+    x.wrong@offsetsHigher[[1]] <- "wrong"
+    expect_error(validObject(x.wrong),
+                 "'offsetsHigher' has elements not of class \"Offsets\"")
+})
+
+test_that("can create valid object of class SkeletonBetaTerm", {
+    ## One higher term
+    x <- new("SkeletonBetaTerm",
+             first = 2L,
+             last = 5L,
+             metadata = new("MetaData", nms = "region", dimtypes = "state",
+                 DimScales = list(new("Categories",
+                     dimvalues = c("a", "b", "c", "d")))),
+             offsetsHigher = list(new("Offsets", c(6L, 13L))),
+             transformsHigher = list(new("CollapseTransform",
+                 indices = list(c(1L, 1L), 1:4),
+                 dims = c(0L, 1L),
+                 dimBefore = c(2L, 4L),
+                 dimAfter = 4L)))
+    ## No higher terms
+    x <- new("SkeletonBetaTerm",
+             first = 2L,
+             last = 5L,
+             metadata = new("MetaData", nms = "region", dimtypes = "state",
+                 DimScales = list(new("Categories",
+                     dimvalues = c("a", "b", "c", "d")))),
+             offsetsHigher = list(),
+             transformsHigher = list())
+    ## Two higher terms
+    x <- new("SkeletonBetaTerm",
+             first = 2L,
+             last = 5L,
+             metadata = new("MetaData", nms = "region", dimtypes = "state",
+                 DimScales = list(new("Categories",
+                     dimvalues = c("a", "b", "c", "d")))),
+             offsetsHigher = list(new("Offsets", c(6L, 13L)),
+                 new("Offsets", c(14L, 33L))),
+             transformsHigher = list(new("CollapseTransform",
+                 indices = list(c(1L, 1L), 1:4),
+                 dims = c(0L, 1L),
+                 dimBefore = c(2L, 4L),
+                 dimAfter = 4L),
+                 new("CollapseTransform",
+                     indices = list(1:4, rep(1L, 5)),
+                     dims = c(1L, 0L),
+                     dimBefore = c(4L, 5L),
+                     dimAfter = 4L)))
+})
+
+test_that("validity tests for SkeletonBetaTerm inherited from SkeletonTransformsHigher work", {
+    x <- new("SkeletonBetaTerm",
+             first = 2L,
+             last = 5L,
+             metadata = new("MetaData", nms = "region", dimtypes = "state",
+                 DimScales = list(new("Categories",
+                     dimvalues = c("a", "b", "c", "d")))),
+             offsetsHigher = list(new("Offsets", c(6L, 13L))),
+             transformsHigher = list(new("CollapseTransform",
+                 indices = list(c(1L, 1L), 1:4),
+                 dims = c(0L, 1L),
+                 dimBefore = c(2L, 4L),
+                 dimAfter = 4L)))
+    ## all elements of 'transformsHigher' have class "CollapseTransform"
+    x.wrong <- x
+    x.wrong@transformsHigher[[1]] <- "wrong"
+    expect_error(validObject(x.wrong),
+                 "'transformsHigher' has elements not of class \"CollapseTransform\"")
+})
+
+
+test_that("validity tests for SkeletonBetaTerm inherited from SkeletonBetaTerm work", {
+    x <- new("SkeletonBetaTerm",
+             first = 2L,
+             last = 5L,
+             metadata = new("MetaData", nms = "region", dimtypes = "state",
+                 DimScales = list(new("Categories",
+                     dimvalues = c("a", "b", "c", "d")))),
+             offsetsHigher = list(new("Offsets", c(6L, 13L))),
+             transformsHigher = list(new("CollapseTransform",
+                 indices = list(c(1L, 1L), 1:4),
+                 dims = c(0L, 1L),
+                 dimBefore = c(2L, 4L),
+                 dimAfter = 4L)))
+    ## 'offsetsHigher' and 'transformsHigher' have same length
+    x.wrong <- x
+    x.wrong@transformsHigher <- list()
+    expect_error(validObject(x.wrong),
+                 "'offsetsHigher' and 'transformsHigher' have different lengths")
+})
+
+test_that("can create valid object of class SkeletonMu", {
+    ## dim = 4
+    x <- new("SkeletonMu",
+             metadata = new("MetaData", nms = "region", dimtypes = "state",
+                 DimScales = list(new("Categories",
+                     dimvalues = c("a", "b", "c", "d")))),
+             margins = list(0L, 1L),
+             offsets = list(new("Offsets", c(29L, 29L)),
+                 new("Offsets", c(30L, 33L))))
+    expect_true(validObject(x))
+    ## dim = c(3, 5, 2)
+    x <- new("SkeletonMu",
+             metadata = new("MetaData",
+                 nms = c("region", "age", "sex"),
+                 dimtypes = c("state", "age", "state"),
+                 DimScales = list(new("Categories",
+                     dimvalues = c("a", "b", "c", "d")),
+                     new("Intervals", dimvalues = 0:5),
+                     new("Categories", dimvalues = c("f", "m")))),
+             margins = list(0L, 1L, 2L, 3L, 1:2, 2:3),
+             offsets = list(new("Offsets", c(30L, 30L)),
+                 new("Offsets", c(31L, 34L)),
+                 new("Offsets", c(35L, 39L)),
+                 new("Offsets", c(40L, 41L)),
+                 new("Offsets", c(42, 61L)),
+                 new("Offsets", c(62L, 71L))))
+    expect_true(validObject(x))
+})
+
+test_that("validity tests for SkeletonMu inherited from SkeletonMu work", {
+    x <- new("SkeletonMu",
+             metadata = new("MetaData",
+                 nms = c("region", "age", "sex"),
+                 dimtypes = c("state", "age", "state"),
+                 DimScales = list(new("Categories",
+                     dimvalues = c("a", "b", "c", "d")),
+                     new("Intervals", dimvalues = 0:5),
+                     new("Categories", dimvalues = c("f", "m")))),
+             margins = list(0L, 1L, 2L, 3L, 1:2, 2:3),
+             offsets = list(new("Offsets", c(30L, 30L)),
+                 new("Offsets", c(31L, 34L)),
+                 new("Offsets", c(35L, 39L)),
+                 new("Offsets", c(40L, 41L)),
+                 new("Offsets", c(42, 61L)),
+                 new("Offsets", c(62L, 71L))))
+    expect_true(validObject(x))
+    ## all elements of 'offsets' have class "Offsets"
+    x.wrong <- x
+    x.wrong@offsets[[1]] <- "wrong"
+    expect_error(validObject(x.wrong),
+                 "'offsets' has elements not of class \"Offsets\"")
+    ## 'offsets' and 'margins' have same length
+    x.wrong <- x
+    x.wrong@offsets <- x.wrong@offsets[1:5]
+    expect_error(validObject(x.wrong),
+                 "'margins' and 'offsets' have different lengths")
+})
+
+test_that("can create valid object of class SkeletonCovariates", {
+    x <- new("SkeletonCovariates",
+             first = 3L,
+             last = 5L,
+             metadata = new("MetaData", nms = "covariate", dimtypes = "state",
+             DimScales = list(new("Categories", dimvalues = c("income", "education")))))
+    expect_true(validObject(x))
+})
+
+test_that("validity tests for SkeletonCovariates inherited from SkeletonCovariates work", {
+    x <- new("SkeletonCovariates",
+             first = 3L,
+             last = 5L,
+             metadata = new("MetaData", nms = "covariate", dimtypes = "state",
+             DimScales = list(new("Categories", dimvalues = c("income", "education")))))
+    ## 'metadata' has only one dimension
+    x.wrong <- x
+    x.wrong@metadata <- new("MetaData",
+                            nms = c("covariate", "wrong"),
+                            dimtypes = c("state", "state"),
+                            DimScales = list(new("Categories", dimvalues = c("income", "education")),
+                            new("Categories", dimvalues = "wrong")))
+    expect_error(validObject(x.wrong),
+                 "'metadata' has more than one dimension")
+    ## dimension has dimtype "state"
+    x.wrong <- x
+    x.wrong@metadata <- new("MetaData",
+                            nms = "age",
+                            dimtypes = "age",
+                            DimScales = list(new("Intervals", dimvalues = 3:5)))
+    expect_error(validObject(x.wrong),
+                 "dimension does not have dimtype \"state\"")
+    ## dim(metadata) consistent with 'first', 'last', allowing for fact
+    ## that not using intercept.
+    x.wrong <- x
+    x.wrong@first <- 1L
+    expect_error(validObject(x.wrong),
+                 "'metadata', 'first', and 'last' inconsistent")
+})
+
+test_that("can create valid object of class SkeletonTrendDLM", {
+    x <- new("SkeletonTrendDLM",
+             first = 40L,
+             last = 50L,
+             metadata = new("MetaData",
+                 nms = "time",
+                 dimtypes = "time",
+                 DimScales = list(new("Points", dimvalues = 1:10))),
+             indicesShow = 2:11)
+    expect_true(validObject(x))
+    x <- new("SkeletonTrendDLM",
+             first = 40L,
+             last = 61L,
+             metadata = new("MetaData",
+                 nms = c("sex", "time"),
+                 dimtypes = c("state", "time"),
+                 DimScales = list(new("Categories", dimvalues = c("f", "m")),
+                     new("Points", dimvalues = 1:10))),
+             indicesShow = c(2:11, 13:22))
+    expect_true(validObject(x))
+})
+
+test_that("validity tests for SkeletonTrendDLM inherited from SkeletonIndicesShow work", {
+    x <- new("SkeletonTrendDLM",
+             first = 40L,
+             last = 50L,
+             metadata = new("MetaData",
+                 nms = "time",
+                 dimtypes = "time",
+                 DimScales = list(new("Points", dimvalues = 1:10))),
+             indicesShow = 2:11)
+    expect_true(validObject(x))
+    ## 'indicesShow' has no missing values
+    x.wrong <- x
+    x.wrong@indicesShow[1] <- NA
+    expect_error(validObject(x.wrong),
+                 "'indicesShow' has missing values")
+    ## 'indicesShow' has no duplicates
+    x.wrong <- x
+    x.wrong@indicesShow[2] <- x.wrong@indicesShow[1]
+    expect_error(validObject(x.wrong),
+                 "'indicesShow' has duplicates")
+    ## 'indicesShow' within valid range
+    x.wrong <- x
+    x.wrong@indicesShow[1] <- -1L
+    expect_error(validObject(x.wrong),
+                 "'indicesShow' has elements outside valid range")
+})
+
+test_that("validity tests for SkeletonTrendDLM inherited from SkeletonStateDLM work", {
+    x <- new("SkeletonTrendDLM",
+             first = 40L,
+             last = 50L,
+             metadata = new("MetaData",
+                 nms = "time",
+                 dimtypes = "time",
+                 DimScales = list(new("Points", dimvalues = 1:10))),
+             indicesShow = 2:11)
+    expect_true(validObject(x))
+    ## dim(metadata) consistent with 'indicesShow'
+    x.wrong <- x
+    x.wrong@indicesShow <- x.wrong@indicesShow[1:9]
+    expect_error(validObject(x.wrong),
+                 "'metadata' and 'indicesShow' inconsistent")
+})
+
+test_that("can create valid object of class SkeletonLevelDLM", {
+    ## does not have season term - main effect
+    x <- new("SkeletonLevelDLM",
+             first = 40L,
+             last = 50L,
+             firstSeason = 0L,
+             lastSeason = 0L,
+             iAlong = 1L,
+             nSeason = 1L,
+             metadata = new("MetaData",
+                 nms = "time",
+                 dimtypes = "time",
+                 DimScales = list(new("Points", dimvalues = 1:10))),
+             indicesShow = 2:11)
+    ## does not have season term - interaction
+    expect_true(validObject(x))
+    x <- new("SkeletonLevelDLM",
+             first = 40L,
+             last = 61L,
+             iAlong = 2L,
+             nSeason = 1L,
+             firstSeason = 0L,
+             lastSeason = 0L,
+             metadata = new("MetaData",
+                 nms = c("sex", "time"),
+                 dimtypes = c("state", "time"),
+                 DimScales = list(new("Categories", dimvalues = c("f", "m")),
+                     new("Points", dimvalues = 1:10))),
+             indicesShow = 3:22)
+    expect_true(validObject(x))
+    ## has season term - main effect
+    x <- new("SkeletonLevelDLM",
+             first = 40L,
+             last = 50L,
+             firstSeason = 80L,
+             lastSeason = 123L,
+             iAlong = 1L,
+             nSeason = 4L,
+             metadata = new("MetaData",
+                 nms = "time",
+                 dimtypes = "time",
+                 DimScales = list(new("Points", dimvalues = 1:10))),
+             indicesShow = 2:11)
+    ## has season term - interaction
+    expect_true(validObject(x))
+    x <- new("SkeletonLevelDLM",
+             first = 40L,
+             last = 61L,
+             iAlong = 2L,
+             nSeason = 12L,
+             firstSeason = 100L,
+             lastSeason = 100L + as.integer(12L * 2L * 11L) - 1L,
+             metadata = new("MetaData",
+                 nms = c("sex", "time"),
+                 dimtypes = c("state", "time"),
+                 DimScales = list(new("Categories", dimvalues = c("f", "m")),
+                     new("Points", dimvalues = 1:10))),
+             indicesShow = 3:22)
+    expect_true(validObject(x))
+})
+
+test_that("validity tests for SkeletonLevelDLM inherited from SkeletonLevelDLM work", {
+    x <- new("SkeletonLevelDLM",
+             first = 40L,
+             last = 61L,
+             iAlong = 2L,
+             nSeason = new("Length", 12L),
+             firstSeason = 100L,
+             lastSeason = 100L + as.integer(12L * 2L * 11L) - 1L,
+             metadata = new("MetaData",
+                 nms = c("sex", "time"),
+                 dimtypes = c("state", "time"),
+                 DimScales = list(new("Categories", dimvalues = c("f", "m")),
+                     new("Points", dimvalues = 1:10))),
+             indicesShow = 3:22)
+    ## if nSeason is 1L, firstSeason and lastSeason are both 0L...
+    x.wrong <- x
+    x.wrong@nSeason <- 1L
+    expect_error(validObject(x.wrong),
+                 "'nSeason' equals 1 but 'firstSeason' does not equal 0")
+    ## ... otherwise 'firstSeason', 'lastSeason', 'iAlong', 'metadata', 'nSeason' consistent
+    x.wrong <- x
+    x.wrong@lastSeason <- x.wrong@lastSeason + 1L
+    expect_error(validObject(x.wrong),
+                 "'firstSeason', 'lastSeason', 'iAlong', 'metadata', and 'nSeason' inconsistent")
+})
+
+test_that("can create valid object of class SkeletonSeasonDLM", {
+    x <- new("SkeletonSeasonDLM",
+             first = 40L,
+             last = 83L,
+             iAlong = 1L,
+             nSeason = new("Length", 4L),
+             metadata = new("MetaData",
+                 nms = "time",
+                 dimtypes = "time",
+                 DimScales = list(new("Points", dimvalues = 1:10))),
+             indicesShow = 2:11)
+    expect_true(validObject(x))
+    x <- new("SkeletonSeasonDLM",
+             first = 40L,
+             last = 303L,
+             iAlong = 2L,
+             nSeason = new("Length", 12L),
+             metadata = new("MetaData",
+                 nms = c("sex", "time"),
+                 dimtypes = c("state", "time"),
+                 DimScales = list(new("Categories", dimvalues = c("f", "m")),
+                     new("Points", dimvalues = 1:10))),
+             indicesShow = seq.int(25L, 253L, 12L))
+    expect_true(validObject(x))
+})
+
+test_that("tests for SkeletonSeasonDLM inherited from SkeletonSeasonDLM work", {
+    x <- new("SkeletonSeasonDLM",
+             first = 40L,
+             last = 303L,
+             iAlong = 2L,
+             nSeason = new("Length", 12L),
+             metadata = new("MetaData",
+                 nms = c("sex", "time"),
+                 dimtypes = c("state", "time"),
+                 DimScales = list(new("Categories", dimvalues = c("f", "m")),
+                     new("Points", dimvalues = 1:10))),
+             indicesShow = seq.int(25L, 253L, 12L))
+    ## 'firstSeason', 'lastSeason', 'iAlong', 'metadata', 'nSeason' consistent
+    x.wrong <- x
+    x.wrong@last <- x.wrong@last + 1L
+    expect_error(validObject(x.wrong),
+                 "'first', 'last', 'iAlong', 'metadata', and 'nSeason' inconsistent")
+})
+
+test_that("can create valid object of class SkeletonAccept", {
+    x <- new("SkeletonAccept",
+             first = 2L,
+             iFirstInChain = c(1L, 11L))
+    expect_true(validObject(x))
+})
+
+test_that("validity tests for SkeletonAccept inherited from SkeletonAccept work", {
+    x <- new("SkeletonAccept",
+             first = 2L,
+             iFirstInChain = c(1L, 11L))
+    ## 'iFirstInChain' has positive length
+    x.wrong <- x
+    x.wrong@iFirstInChain <- integer()
+    expect_error(validObject(x.wrong),
+                 "'iFirstInChain' has length 0")
+    ## 'iFirstInChain' has no missing values
+    x.wrong <- x
+    x.wrong@iFirstInChain[1] <- NA
+    expect_error(validObject(x.wrong),
+                 "'iFirstInChain' has missing values")
+    ## 'iFirstInChain' has not non-positive values
+    x.wrong <- x
+    x.wrong@iFirstInChain[1] <- -1L
+    expect_error(validObject(x.wrong),
+                 "'iFirstInChain' has values less than 1")
+    ## 'iFirstInChain' has no duplicates
+    x.wrong <- x
+    x.wrong@iFirstInChain[2] <- 1L
+    expect_error(validObject(x.wrong),
+                 "'iFirstInChain' has duplicates")
+})
+
+test_that("can create valid object of class SkeletonNAccept", {
+    x <- new("SkeletonNAccept",
+             first = 2L,
+             iFirstInChain = c(1L, 11L),
+             nAttempt = 4L)
+    expect_true(validObject(x))
+})
+
+test_that("validity tests for SkeletonNAccept inherited from SkeletonNAccept work", {
+    x <- new("SkeletonNAccept",
+             first = 2L,
+             iFirstInChain = c(1L, 11L),
+             nAttempt = 4L)
+    ## 'nAttempt' has length 1
+    x.wrong <- x
+    x.wrong@nAttempt <- 1:2
+    expect_error(validObject(x.wrong),
+                 "'nAttempt' does not have length 1")
+    ## 'nAttempt' is not missing
+    x.wrong <- x
+    x.wrong@nAttempt <- as.integer(NA)
+    expect_error(validObject(x.wrong),
+                 "'nAttempt' is missing")
+    ## 'nAttempt' is positive
+    x.wrong <- x
+    x.wrong@nAttempt <- -1L
+    expect_error(validObject(x.wrong),
+                 "'nAttempt' is less than 1")
+})
+
+
+## Missing values
+
+test_that("can create valid object of class SkeletonMissingDataNormalVarsigmaKnown", {
+    data <- Counts(array(c(1:5, NA),
+                         dim = 2:3,
+                         dimnames = list(sex = c("f", "m"),
+                             age = 0:2)))
+    w <- rep(0.3, 6)
+    x <- new("SkeletonMissingDataNormalVarsigmaKnown",
+             data = data,
+             w = w,
+             offsetsTheta = new("Offsets", c(11L, 16L)),
+             varsigma = new("Scale", 0.5))
+    expect_true(validObject(x))
+})
+
+test_that("validity tests for SkeletonMissingDataNormalVarsigmaKnown inherited from SkeletonMissingData work", {
+    data <- Counts(array(c(1:5, NA),
+                         dim = 2:3,
+                         dimnames = list(sex = c("f", "m"),
+                             age = 0:2)))
+    w <- rep(0.3, 6)
+    x <- new("SkeletonMissingDataNormalVarsigmaKnown",
+             data = data,
+             w = w,
+             offsetsTheta = new("Offsets", c(11L, 16L)),
+             varsigma = new("Scale", 0.5))
+    ## 'data' has missing values
+    x.wrong <- x
+    x.wrong@data[6] <- 1L
+    expect_error(validObject(x.wrong),
+                 "'data' has no missing value")
+})
+
+test_that("validity tests for SkeletonMissingDataNormalVarsigmaKnown inherited from SkeletonOffsetsTheta work", {
+    data <- Counts(array(c(1:5, NA),
+                         dim = 2:3,
+                         dimnames = list(sex = c("f", "m"),
+                             age = 0:2)))
+    w <- rep(0.3, 6)
+    x <- new("SkeletonMissingDataNormalVarsigmaKnown",
+             data = data,
+             w = w,
+             offsetsTheta = new("Offsets", c(11L, 16L)),
+             varsigma = new("Scale", 0.5))
+    ## 'data' and 'offsetsTheta' consistent
+    x.wrong <- x
+    x.wrong@offsetsTheta <- new("Offsets", c(11L, 17L))
+    expect_error(validObject(x.wrong),
+                 "'data' and 'offsetsTheta' inconsistent")
+})
+
+test_that("validity tests for SkeletonMissingDataNormalVarsigmaKnown inherited from SkeletonW work", {
+    data <- Counts(array(c(1:5, NA),
+                         dim = 2:3,
+                         dimnames = list(sex = c("f", "m"),
+                             age = 0:2)))
+    w <- rep(0.3, 7)
+    expect_error(new("SkeletonMissingDataNormalVarsigmaKnown",
+                     data = data,
+                     w = w,
+                     offsetsTheta = new("Offsets", c(11L, 16L)),
+                     varsigma = new("Scale", 0.5)),
+                 "'data' and 'w' have different lengths")
+})
+
+test_that("can create valid object of class SkeletonMissingDataNormalVarsigmaUnknown", {
+    data <- Counts(array(c(1:5, NA),
+                         dim = 2:3,
+                         dimnames = list(sex = c("f", "m"),
+                             age = 0:2)))
+    w <- rep(0.3, 6)
+    x <- new("SkeletonMissingDataNormalVarsigmaUnknown",
+             data = data,
+             w = w,
+             offsetsTheta = new("Offsets", c(11L, 16L)),
+             offsetsVarsigma = new("Offsets", c(18L, 18L)))
+    expect_true(validObject(x))
+})
+
+test_that("validity tests for SkeletonMissingDataNormalVarsigmaUnknown inherited from SkeletonMissingDataNormalVarsigmaUnknown work", {
+    data <- Counts(array(c(1:5, NA),
+                         dim = 2:3,
+                         dimnames = list(sex = c("f", "m"),
+                             age = 0:2)))
+    w <- rep(0.3, 6)
+    expect_error(new("SkeletonMissingDataNormalVarsigmaUnknown",
+                     data = data,
+                     w = w,
+                     offsetsTheta = new("Offsets", c(11L, 16L)),
+                     offsetsVarsigma = new("Offsets", c(18L, 19L))),
+                 "'offsetsVarsigma' implies 'varsigma' does not have length 1")
+})
+
+test_that("can create valid object of class SkeletonMissingDataPoissonNotUseExp", {
+    data <- Counts(array(c(1:5, NA),
+                         dim = 2:3,
+                         dimnames = list(sex = c("f", "m"),
+                             age = 0:2)))
+    x <- new("SkeletonMissingDataPoissonNotUseExp",
+             data = data,
+             offsetsTheta = new("Offsets", c(11L, 16L)))
+    expect_true(validObject(x))
+})
+
+test_that("can create valid object of class SkeletonMissingDataPoissonNotUseExpSubtotals", {
+    data <- Counts(array(c(1:4, c(NA, NA)),
+                         dim = 2:3,
+                         dimnames = list(sex = c("f", "m"),
+                             age = 0:2)))
+    subtotals <- CountsOne(values = 10L, labels = "2", name = "age")
+    data <- attachSubtotals(data, subtotals = subtotals)
+    x <- new("SkeletonMissingDataPoissonNotUseExpSubtotals",
+             data = data,
+             offsetsTheta = new("Offsets", c(11L, 16L)))
+    expect_true(validObject(x))
+})
+
+
+test_that("validity tests for SkeletonMissingDataPoissonNotUseExpSubtotals inherited from SkeletonHasSubtotals work", {
+    data <- Counts(array(c(1:4, c(NA, NA)),
+                         dim = 2:3,
+                         dimnames = list(sex = c("f", "m"),
+                             age = 0:2)))
+    expect_error(new("SkeletonMissingDataPoissonNotUseExpSubtotals",
+                     data = data,
+                     offsetsTheta = new("Offsets", c(11L, 16L))),
+                 "'data' does not have class \"HasSubtotals\"")
+})
+
+test_that("can create valid object of class SkeletonMissingDataPoissonUseExp", {
+    data <- Counts(array(c(1:5, NA),
+                         dim = 2:3,
+                         dimnames = list(sex = c("f", "m"),
+                             age = 0:2)))
+    exposure <- Counts(array(1:6,
+                             dim = 2:3,
+                             dimnames = list(sex = c("f", "m"),
+                                 age = 0:2)))
+    x <- new("SkeletonMissingDataPoissonUseExp",
+             data = data,
+             exposure = exposure,
+             offsetsTheta = new("Offsets", c(11L, 16L)))
+    expect_true(validObject(x))
+})
+
+test_that("can create valid object of class SkeletonMissingDataPoissonUseExpSubtotals", {
+    data <- Counts(array(c(1:4, c(NA, NA)),
+                         dim = 2:3,
+                         dimnames = list(sex = c("f", "m"),
+                             age = 0:2)))
+    subtotals <- CountsOne(values = 10L, labels = "2", name = "age")
+    data <- attachSubtotals(data, subtotals = subtotals)
+    exposure <- Counts(array(1:6,
+                             dim = 2:3,
+                             dimnames = list(sex = c("f", "m"),
+                                 age = 0:2)))
+    x <- new("SkeletonMissingDataPoissonUseExpSubtotals",
+             data = data,
+             exposure = exposure,
+             offsetsTheta = new("Offsets", c(11L, 16L)))
+    expect_true(validObject(x))
+})
+
+test_that("can create valid object of class SkeletonMissingDataBinomial", {
+    data <- Counts(array(c(1:5, NA),
+                         dim = 2:3,
+                         dimnames = list(sex = c("f", "m"),
+                             age = 0:2)))
+    exposure <- Counts(array(2:7,
+                             dim = 2:3,
+                             dimnames = list(sex = c("f", "m"),
+                                 age = 0:2)))
+    x <- new("SkeletonMissingDataBinomial",
+             data = data,
+             exposure = exposure,
+             offsetsTheta = new("Offsets", c(11L, 16L)))
+    expect_true(validObject(x))
+})
+
+test_that("can create valid object of class SkeletonMissingDatasetPoisson", {
+    data <- Counts(array(c(1:5, NA),
+                         dim = 2:3,
+                         dimnames = list(sex = c("f", "m"),
+                             age = 0:2)))
+    x <- new("SkeletonMissingDatasetPoisson",
+             data = data,
+             offsetsTheta = new("Offsets", c(21L, 26L)),
+             offsetsComponent = new("Offsets", c(1L, 12L)),
+             transformComponent = new("CollapseTransform",
+                 indices = list(c(1L, 1L), 1:2, 1:3),
+                 dims = c(0L, 1L, 2L),
+                 dimBefore = c(2L, 2L, 3L),
+                 dimAfter = c(2L, 3L)))                 
+    expect_true(validObject(x))
+})
+
+test_that("validity tests for SkeletonMissingDatasetPoisson inherited from SkeletonMissingDataset work", {
+    data <- Counts(array(c(1:5, NA),
+                         dim = 2:3,
+                         dimnames = list(sex = c("f", "m"),
+                             age = 0:2)))
+    x <- new("SkeletonMissingDatasetPoisson",
+             data = data,
+             offsetsTheta = new("Offsets", c(21L, 26L)),
+             offsetsComponent = new("Offsets", c(1L, 12L)),
+             transformComponent = new("CollapseTransform",
+                 indices = list(c(1L, 1L), 1:2, 1:3),
+                 dims = c(0L, 1L, 2L),
+                 dimBefore = c(2L, 2L, 3L),
+                 dimAfter = c(2L, 3L)))                 
+    ## 'offsetsComponent' consistent with 'transformComponent'
+    x.wrong <- x
+    x.wrong@offsetsComponent[2] <- 13L
+    expect_error(validObject(x.wrong),
+                 "'offsetsComponent' and 'transformComponent' inconsistent")
+})
+
+test_that("validity tests for SkeletonMissingDatasetPoisson inherited from SkeletonMissingDatasetPoisson work", {
+    data <- Counts(array(c(1:5, NA),
+                         dim = 2:3,
+                         dimnames = list(sex = c("f", "m"),
+                             age = 0:2)))
+    x <- new("SkeletonMissingDatasetPoisson",
+             data = data,
+             offsetsTheta = new("Offsets", c(21L, 26L)),
+             offsetsComponent = new("Offsets", c(1L, 12L)),
+             transformComponent = new("CollapseTransform",
+                 indices = list(c(1L, 1L), 1:2, 1:3),
+                 dims = c(0L, 1L, 2L),
+                 dimBefore = c(2L, 2L, 3L),
+                 dimAfter = c(2L, 3L)))                 
+    ## 'data' consistent with 'transformComponent'
+    x.wrong <- x
+    transform.wrong <- new("CollapseTransform",
+                           indices = list(c(1L, 1L), 1:2, c(1:2, 0L)),
+                           dims = c(0L, 1L, 2L),
+                           dimBefore = c(2L, 2L, 3L),
+                           dimAfter = c(2L, 2L))
+    x.wrong@transformComponent <- transform.wrong
+    expect_error(validObject(x.wrong),
+                 "'data' and 'transformComponent' inconsistent")
+})
+
+test_that("can create valid object of class SkeletonMissingDatasetPoissonSubtotals", {
+    data <- Counts(array(c(1:4, NA, NA),
+                         dim = 2:3,
+                         dimnames = list(sex = c("f", "m"),
+                             age = 0:2)))
+    subtotals <- CountsOne(values = 10L, labels = "2", name = "age")
+    data <- attachSubtotals(data, subtotals = subtotals)
+    x <- new("SkeletonMissingDatasetPoissonSubtotals",
+             data = data,
+             offsetsTheta = new("Offsets", c(21L, 26L)),
+             offsetsComponent = new("Offsets", c(1L, 12L)),
+             transformComponent = new("CollapseTransform",
+                 indices = list(c(1L, 1L), 1:2, 1:3),
+                 dims = c(0L, 1L, 2L),
+                 dimBefore = c(2L, 2L, 3L),
+                 dimAfter = c(2L, 3L)))                 
+    expect_true(validObject(x))
+})
+
+test_that("can create valid object of class SkeletonMissingDatasetBinomial", {
+    data <- Counts(array(c(1:5, NA),
+                         dim = 2:3,
+                         dimnames = list(sex = c("f", "m"),
+                             age = 0:2)))
+    x <- new("SkeletonMissingDatasetBinomial",
+             data = data,
+             offsetsTheta = new("Offsets", c(21L, 26L)),
+             offsetsComponent = new("Offsets", c(1L, 12L)),
+             transformComponent = new("CollapseTransform",
+                 indices = list(c(1L, 1L), 1:2, 1:3),
+                 dims = c(0L, 1L, 2L),
+                 dimBefore = c(2L, 2L, 3L),
+                 dimAfter = c(2L, 3L)))                 
+    expect_true(validObject(x))
+})
+
+test_that("validity tests for SkeletonMissingDatasetBinomial inherited from SkeletonMissingDatasetBinomial work", {
+    data <- Counts(array(c(1:5, NA),
+                         dim = 2:3,
+                         dimnames = list(sex = c("f", "m"),
+                             age = 0:2)))
+    x <- new("SkeletonMissingDatasetBinomial",
+             data = data,
+             offsetsTheta = new("Offsets", c(21L, 26L)),
+             offsetsComponent = new("Offsets", c(1L, 12L)),
+             transformComponent = new("CollapseTransform",
+                 indices = list(c(1L, 1L), 1:2, 1:3),
+                 dims = c(0L, 1L, 2L),
+                 dimBefore = c(2L, 2L, 3L),
+                 dimAfter = c(2L, 3L)))                 
+    ## 'data' consistent with 'transformComponent'
+    x.wrong <- x
+    transform.wrong <- new("CollapseTransform",
+                           indices = list(c(1L, 1L), 1:2, c(1:2, 0L)),
+                           dims = c(0L, 1L, 2L),
+                           dimBefore = c(2L, 2L, 3L),
+                           dimAfter = c(2L, 2L))
+    x.wrong@transformComponent <- transform.wrong
+    expect_error(validObject(x.wrong),
+                 "'data' and 'transformComponent' inconsistent")
+})
+
+test_that("can create valid object of class SkeletonMissingDatasetPoissonBinomial", {
+    x <- new("SkeletonMissingDatasetPoissonBinomial",
+             data = Counts(array(c(1:5, NA),
+                 dim = 2:3,
+                 dimnames = list(sex = c("f", "m"),
+                     age = 0:2))),
+             prob = 0.98,
+             offsetsComponent = new("Offsets", c(1L, 12L)),
+             transformComponent = new("CollapseTransform",
+                 indices = list(c(1L, 1L), 1:2, 1:3),
+                 dims = c(0L, 1L, 2L),
+                 dimBefore = c(2L, 2L, 3L),
+                 dimAfter = c(2L, 3L)))                 
+    expect_true(validObject(x))
+})
+
+
+ 

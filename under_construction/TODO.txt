@@ -1,0 +1,72 @@
+
+continueEstimation version of estimateCounts
+
+fix aggregate versions of PoissonVaryingNotUseExp to use sum rather than mean
+
+in updateTheta functions for aggregate versions of Normal use scaleTheta rather than sigma to generate proposals
+
+
+add half-t distribution functions, and link back to function HalfT.
+
+new betaHat function: add tests for ICAR and Cross when classes finished
+
+'archive' function to convert contents of 'results' object to plain text
+
+behaviour of predictModel when historical or future time points unevenly spaced
+
+finish SkeletonMu and associated methods
+
+priors method for SpecModel
+
+initialCombinedModelPredict for remaining model classes
+
+change name of vbar
+
+change name of varsigma
+
+'predict*' and 'continueEstimation' functions modify 'call' element of result
+
+print method for FiniteSD objects that includes 'df', omits metadata, and uses appropriate number of digits
+
+Tests for makeOutputModel for PoissonVaryingUseExpPredict
+
+Tests for makeResultsModel for CombinedModelNotHasY
+
+A 'Zero' prior, which sets all values equal to zero
+
+allow 'mean' or 'sd' to be a single number in Known
+
+check which functions in 'helper-functions' are still needed
+
+user-visible noProposal and autocorr functions
+
+
+
+*** Unfinished *******************************************************************
+
+extend PoissonBinomialMixture class to include overcoverage
+
+rewrite PoissonNotUseExp version of updateCounts
+
+PoissonUseExp, Binomial versions of updateCounts
+
+fakeData methods for Fixed, NormalVarying, and PoissonBinomialMixture
+
+iLikelihood
+
+rewrite estimateOnechain
+
+
+
+
+*** Bugs **************************************************************************
+
+getDataFromFile not working when nSim = 1, nBurnin = 1, nChain = 1??
+
+
+
+*** Tests needed ******************************************************************
+
+tests for nFailedPropTheta
+
+

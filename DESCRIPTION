@@ -1,0 +1,47 @@
+Package: demest
+Title: Bayesian Demographic Estimation and Forecasting
+Version: 0.0.0.9100
+Date: 2016-09-26
+Authors@R: c(
+    person(given = "John",
+           family = "Bryant",
+	         email = "john.bryant@stats.govt.nz",
+	         role = c("cre", "aut")),
+    person(given = "Jenny",
+           family = "Harlow",
+	         role = "aut"),
+    person(given = "Junni L.",
+	         family = "Zhang",
+           role = "aut"),
+    person(given = "Brendon",
+           family = "Bycroft",
+	         role = "ctb"))
+Description: Demographic estimation and forecasting, using Bayesian 
+    hierarchical models and demographic accounts.   The package contains
+    general-purpose functions estimating and forecasting rates, counts, or 
+    means, cross-classified by dimensions such as age, sex, region, and time.
+    The methods can be applied to classic demographic problems, such as 
+    forecasting mortality, but also to related problems as forecasting labour
+    force participation, or estimating disease prevalence.  The methods work 
+    with multiple datasets, noisy data, and missing data.
+Depends:
+    dembase
+License: MIT + file LICENSE
+LazyLoad: yes
+LazyData: yes
+LinkingTo:
+    dembase
+Imports:
+    MASS,
+    coda,
+    graphics,
+    methods,
+    parallel,
+    stats
+Suggests:
+    datasets,
+    demdata,
+    testthat,
+    knitr
+VignetteBuilder: knitr
+RoxygenNote: 5.0.1

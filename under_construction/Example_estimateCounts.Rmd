@@ -1,0 +1,201 @@
+---
+title: "An Example of Using Function `estimateCounts`: Estimating the New Zealand Population"
+author: "John Bryant"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Example estimateCounts}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+# Introduction
+
+In this vignette, we use  function `estimateCounts` from package `demest` to estimate the population of New Zealand, by age, sex, and region, over the period 2008-2014, using simulated administrative data. The example is deliberately simplified--a real example would have more complicated data and models.
+
+# Preparing and inspecting data
+
+For the purposes of this example, we treat the official estimates of population, in array `nz.popn`, as the truth.  We use the various simulated datasets generated from `nz.popn` as data to try to recover the true population.  The datasets are as follows.
+
+| Object in `demdata` | Description |
+|--------------------:|:------------|
+| nz.admin.nat | Population by age, sex, and year, 2008-2014 at the national level. Highly accurate. |
+| nz.admin.health | Enrolments by age, sex, region, and year, 2008-2014.  Coverage varies by age.  |
+| nz.admin.school | School enrolments by age, sex, region, and year, ages 5-14. Excellent proxy for population at these ages .|
+| nz.admin.survey | Survey covering 5\% of the national population in 2010. |
+
+
+The data are in package `demdata`.  The first step is to turn the data into counts arrays. 
+```{r}
+library(demest)
+popn.true <- Counts(demdata::nz.popn.reg)
+nat <- Counts(demdata::nz.admin.nat)
+health <- Counts(demdata::nz.admin.health)
+school <- Counts(demdata::nz.admin.school)
+survey <- Counts(demdata::nz.admin.survey)
+```
+
+# Setting up the model
+
+We begin by specifying a model for the underlying population.  The model is parsimonious, with the only interactions being between age and sex and between age and region, to help with convergence.
+
+```{r}
+popn.mod <- Model(y ~ Poisson(mean ~ age * sex + age * region + year),
+                  region ~ Exch(error = Error(robust = TRUE)))
+```
+
+Next we specify data models and put them in a list.  The list does not need names, since `estimateCounts` will use the names of the responses to match data models to datasets.
+```{r}
+nat.mod <- Model(nat ~ PoissonBinomial(prob = 0.98))
+health.mod <- Model(health ~ Poisson(mean ~ age))
+school.mod <- Model(school ~ PoissonBinomial(prob = 0.98))
+survey.mod <- Model(survey ~ Binomial(prob ~ 1))
+observation <- list(nat.mod, health.mod, school.mod, survey.mod)
+```
+
+We generate some starting values for the population estimates,
+```{r}
+y <- Counts(array(as.integer(health * 1.2),
+                  dim = dim(health),
+                  dimnames = dimnames(health)))
+```
+put the datasest in a named list,
+```{r}
+datasets <- list(nat = nat, health = health, school = school, survey = survey)
+```
+and generate a filename
+```{r}
+filename <- tempfile()
+```
+
+
+# Running the model
+
+We can now run the model. We will only do a few iterations, to see what happens.
+
+```{r}
+set.seed(1)  ## for replicability
+estimateCounts(popn.mod,
+               y = y ,
+               observation = observation,
+               datasets = datasets,
+               filename = filename,
+               nBurnin = 10,
+               nSim = 10)
+fetchSummary(filename)
+```
+
+Nothing has converged, which is to be expected, but the model did run.  After some experimentation, we change the jump lengths for the Metropolis-Hastings updates slightly,
+to bring the acceptance rates closer to 40%.
+```{r}
+popn.mod <- Model(y ~ Poisson(mean ~ age * sex + age * region + year),
+                  region ~ Exch(error = Error(robust = TRUE)),
+		  jump = 0.08)
+health.mod <- Model(health ~ Poisson(mean ~ age),
+                    jump = 0.05)
+survey.mod <- Model(survey ~ Binomial(prob ~ 1),
+                    jump = 0.05)
+observation <- list(nat.mod, health.mod, school.mod, survey.mod)
+```
+and rerun the model to convergence.  Warning: the next step can take a long time.
+```{r, cache = TRUE}
+set.seed(1)  ## for replicability
+estimateCounts(popn.mod,
+               y = y ,
+               observation = observation,
+               datasets = datasets,
+               filename = filename,
+               nBurnin = 5000,
+               nSim = 5000,
+               nThin = 20)
+fetchSummary(filename)
+```
+
+# Examining the population estimates
+
+To see what has been estimated, we use function `listContents`,
+```{r}
+listContents(filename)
+```
+
+
+To extract the population estimates, we use
+```{r}
+popn.est <- fetch(filename, where = "y")
+```
+
+We take a look at the results for the first year, 2008. The light blue bands show 95\% credible intervals and the dark blue bands show 50\% credible intervals.  Since we have the true values, we show them as well, in red.
+```{r, fig.width = 7, fig.height = 7}
+dplot(~ age | region,
+      data = popn.est,
+      subarray = year == "2008",
+      prob = c(0.025, 0.25, 0.5, 0.75, 0.975),
+      scales = list(y = "free"),
+      main = "Population, by age and region, in 2008",
+      overlay = list(values = subarray(popn.true, year == "2008"),
+                     col = "red",
+                     lwd = 2))
+```
+
+The same, for 2014,
+
+```{r, fig.width = 7, fig.height = 7}
+dplot(~ age | region,
+      data = popn.est,
+      subarray = year == "2014",
+      prob = c(0.025, 0.25, 0.5, 0.75, 0.975),
+      scales = list(y = "free"),
+      main = "Population, by age and region, in 2014",
+      overlay = list(values = subarray(popn.true, year == "2014"),
+                     col = "red",
+                     lwd = 2))
+```
+
+Changes in the Auckland population (which was relatively poorly estimated) over time, females only,
+```{r, fig.width = 7, fig.height = 7}
+dplot(~ year | age,
+      data = popn.est,
+      subarray = region == "Auckland" & sex == "Female",
+      prob = c(0.025, 0.25, 0.5, 0.75, 0.975),
+      main = "Auckland female population, by age and time",
+      overlay = list(values = subarray(popn.true, region == "Auckland" & sex == "Female"),
+                     col = "red",
+                     lwd = 2))
+```
+
+Some numeric estimates
+```{r}
+nelson <- subarray(popn.est, region == "Nelson")
+nelson <- collapseDimension(nelson, margin = "year")
+nelson <- collapseIterations(nelson, prob = c(0.025, 0.5, 0.975))
+round(nelson, -2)
+```
+
+Converted to a data.frame
+```{r}
+as.data.frame(nelson, direction = "long")
+```
+
+# Examining coverage levels
+
+Among other things, the model generates 'coverage ratios', that is, the number of people in the dataset divided by estimates of the true population.  We take a look at coverage ratios for the health dataset in 2014.  Since we in fact have the true population, we show that too, in red.
+
+```{r, fig.width = 7, fig.height = 7}
+coverage.health.est <- fetch(filename, 
+                         where = c("observation", "health", "likelihood", "mean"))
+coverage.health.true <- health / popn.true
+dplot(~ age | region,
+      data = coverage.health.est,
+      subarray = year == "2014",
+      weights = popn.true,
+      prob = c(0.025, 0.25, 0.5, 0.75, 0.975),
+      main = "Coverage ratios, health data, by age and region, in 2014",
+      overlay = list(values = subarray(coverage.health.true, year == "2014"),
+                     col = "red",
+                     lwd = 2))
+```
+

@@ -1,0 +1,10 @@
+
+^.*\.DS_Store$
+^.*\.Rhistory$
+^.*\.gitignore$
+^.*\.hgignore$
+^.*\.hg$
+under_construction/
+
+^.*\.Rproj$
+^\.Rproj\.user$
