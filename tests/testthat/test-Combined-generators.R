@@ -488,18 +488,11 @@ test_that("initialCombinedCounts throws appropriate errors with CombinedCountsBi
     transforms <- lapply(transforms, makeCollapseTransformExtra)
     observation <- list(Model(tax ~ Poisson(mean ~ age + sex)),
                         Model(census ~ PoissonBinomial(prob = 0.9)))
-    x <- initialCombinedCounts(object = object,
-                               y = y,
-                               exposure = exposure,
-                               observation = observation,
-                               datasets = datasets,
-                               namesDatasets = namesDatasets,
-                               transforms = transforms)
     ## y > exposure
     y.wrong <- y
     y.wrong[1] <- exposure[1] + 1
     expect_error(initialCombinedCounts(object = object,
-                                       y = y,
+                                       y = y.wrong,
                                        exposure = exposure,
                                        observation = observation,
                                        datasets = datasets,
