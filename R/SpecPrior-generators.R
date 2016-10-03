@@ -76,7 +76,7 @@
 #'
 #' @references
 #' Gelman, A., Carlin, J.B., Stern, H.S. and Rubin, D.B., 2014.
-#' \emph{Bayesian Ddata Analysis. Third Edition.} Boca Raton, FL, USA:
+#' \emph{Bayesian Data Analysis. Third Edition.} Boca Raton, FL, USA:
 #' Chapman & Hall/CRC.
 #'
 #' @seealso Priors constructed with \code{\link{Exch}} and
