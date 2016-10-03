@@ -1,0 +1,335 @@
+---
+title: "An Example of Using Function `estimateModel': Modelling Age-Specific Birth Rates"
+author: "John Bryant"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Example estimateModel}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+# Introduction
+
+This vignette walks through the steps of estimating a Bayesian hierarchical model, using function `estimateModel` in package `demest`.  We estimate and forecasts birth rates by age and region in New Zealand.
+
+Package `demest` uses functions and data structures from package `dembase`. This vignette will probably make more sense if read after the introductory vignette for `dembase`.
+
+The paper [http://www.tandfonline.com/doi/full/10.1080/00324728.2015.1122826](Bayesian demography 250 years after Bayes) provides a short introduction to Bayesian demographic modelling.
+
+# Preparing and inspecting data
+
+The data are in package `demdata`.  The first step is to turn the data into counts arrays, using function `Counts` from package `dembase`. Because `dembase` is a dependency for `demest`, `demest` is automatically loaded when `demest` is. 
+```{r}
+library(demest)
+births <- demdata::nz.births
+popn <- demdata::nz.popn.reg
+births <- Counts(births,
+                 dimscales = c(year = "Intervals"))
+popn <- Counts(popn,
+               dimscales = c(year = "Intervals"))
+births <- subarray(births, year > 1995)
+females <- subarray(popn, sex == "Female")
+```
+
+Function `plot` allows a quick look at the data,
+```{r, fig.width = 6, fig.height = 5}
+plot(births)
+plot(females)
+```
+
+Function `dplot` to quickly obtained 'direct' estimates of birth rates.  (A direct estimate is one where we simply divide the births for a given age-region-year cell by the corresponding population, ignoring all other cells.) We can use the direct estimates to get a sense of how rates vary by age and region, and over time. 
+```{r, fig.width = 6.5, fig.height = 7}
+dplot(~ year | region,
+      data = births / females,
+      groups = age,
+      weights = females,
+      midpoints = "year",
+      auto.key = list(lines = TRUE, points = FALSE))
+```
+
+There is a substantial variation in the age-pattern of fertility: compare Northland and Auckland, for instance.  There is also some evidence of changing age patterns, with rates for women over 30 drifting upwards in most regions, and rates for women under 30 drifting downwards.
+
+# Specify a model
+
+To specify a model we call function `Model`. We start with a very simple model, with an age effect, a region effect, a year effect, and no interactions.
+```{r}
+model.main <- Model(y ~ Poisson(mean ~ age + region + year))
+```
+
+Printing the model yields an informal mathematical description of the model--or at least as much of the model as we have specified at this point.
+```{r}
+model.main
+```
+The `y[i]`, that is, births in age-region-year cell `i`, are assumed to follow a Poisson distribution.  However, we have not yet specified whether our model will include an exposure term, so `model.fert` allows for both possibilities.  
+
+The log rates (in a with-exposure model) or log counts (in a without-exposure model) are assumed to follow a normal distribution.  The expression `age[j[i]]` means "the element `j` of the age effect that is associated with cell `i`".  For instance, if cell `i` referred to females aged 20-24 in Taranaki, then `age[j[i]]` would be the second element in the age effect.  
+
+The standard deviation term `sd` follows a truncated half-t distribution with 7 degrees of freedom, but with scale and maximum value still to be determined.  The black line in the plot below shows the density for a half-t distribution with 7 degrees of freedom and scale 1.  The red line shows a half-t distribution with 7 degrees of freedom and scale 0.5.
+```{r, fig.width = 4, fig.height = 3}
+plotHalfT(df = 7, scale = 1, ylim = c(0, 1.6))
+plotHalfT(df = 7, scale = 0.5, add = TRUE, col = "red")
+```
+
+The prior for `sd` is informative, in that it gives low weight to standard deviations about about 2 when the scale is 1, and above 1 when the scale is 0.5.
+
+The age, region, and year terms do not have any priors at this stage.
+
+
+The specification below allows for the interactions between age and region and between and age and time. 
+```{r}
+model.inter <- Model(y ~ Poisson(mean ~ age * region + age * year))
+model.inter
+```
+
+# Specify a filename for the results
+
+Numerical output from a Bayesian hierarchical model can easily take several gigabytes.  Unlike most `R` functions, `estimateModel` does not return a value in working memory.  Instead, it writes all results to disk in a simple database.  The filename is specified using argument `filename`.  Here we get `R` to generate a temporary file.  
+```{r}
+filename.main.est <- tempfile()
+```
+If we wanted to save the results to examine later, we would specify a normal filename a directory of our choice.
+
+# Run the model
+
+We are now ready to run the model,
+```{r}
+set.seed(1) ## for reproducibility
+estimateModel(model = model.main,
+              y = births,
+              exposure = females,
+              filename = filename.main.est,
+              nBurnin = 100,
+              nSim = 100,
+              nChain = 4,
+              nThin = 2)
+```
+
+The `nBurnin` argument determines the number of iterations that `estimateModel` runs before it starts collecting results.  The `nSim` argument determins the number of iterations that are used for collecting results; however only one out of every `nThin` results is actually collected.  The calculations are run independently `nChain` times, using parallel processing where possible.
+
+Function `estimateModel` uses information about the `y` and `exposure` arguments to fill in the details that were missing from the initial specification.  The model fitted by `estimateModel` can be obtained by calling function `showModel` on the filename where the results are stored.
+```{r}
+showModel(filename.main.est)
+```
+
+The `age` term has an exchangeable prior.  The standard deviation for the standard deviation term has a truncated half-t distribution with 7 degrees of freedom, scale 1, and maximum 5.408. These are all default values, which depend on the choice of model and, in some cases, the variation in `y`.  For details see the documentation for function `Exch`.
+
+The `region` term has the same prior as `age`.  The year term, however, has a more complicated 'dynamic linear model' (DLM) prior.  For details of this prior, see the documentation for function `DLM`.
+
+A summary of the results of fitting the model can be obtained by by calling `fetchSummary` on the filename,
+```{r}
+fetchSummary(filename.main.est)
+```
+
+The `Metropolis-Hasting update` statistics describe the updating of the `rate` parameter, which is done using the Metropolis Hastings algorithm.  In this algorithm, a proposed new value for a parameter is constructed by adding some random noise to the current value.  The chance that the proposal will be accepted depends on how likely the parameter value is, given current values for other parameters in the model.
+
+The `jump` value controls the amount of random noise added. The `acceptance` statistic describes the proportion of proposals that are accepted. As the value of `jump` gets larger, the proportion of proposals that are accepted tends to decline.  However, if `jump` is too small, the simulation does a poor job of exploring possible parameter values.  The standard rule of thumb is to aim for a value of `jump` that gives an acceptance rate of around 0.4. 
+
+The `autocorr` statistic measures the amount of correlation between successive estimates of the same parameter, after thinning. The smaller `autocorr` is, the more real information there is in a given set of iterations.
+
+The `parameters` table shows summary results for each parameter or batch of parameters.  For instance, the first row shows describes results for the rate parameter in the likelihood.  
+
+The `Rhat` statistic describes the extent to which estimates from the various independent chains (4 in our case) resemble each other.  Values closer to 1 imply greater resemblence.  If the chains have separately arrived at the same answer, then model is assumed to have converged on the desired distribution.  A standard rule of thumb is that a batch of parameters has converged if the Rhat parameter is less than 1.1.  The summary function prints a dot next to Rhat values greater than 1.1.
+
+The `length` column shows the number of parameters in a batch.  For instance, there are `r length(births)` rate parameters but only one intercept parameter.  The 2.5%, 50% and 97.5% columns summarise variation in parameter values, including variation across parameters (in a batch consisting of more than one parameter) and variation across iterations.
+
+We would like to improve the Rhat values before extracting parameters.  We can improve the efficiency of the Metropolis Hastings update by increasing the value for `jump` beyond its default value of 0.1.
+```{r}
+model.main <- Model(y ~ Poisson(mean ~ age + region + year),
+                    jump = 0.15)
+```
+
+And we can run the model for longer.  Model runs of thousands or even tens of thousands of iterations are typically necessary in non-trivial models.
+
+```{r}
+set.seed(1)
+estimateModel(model = model.main,
+              y = births,
+              exposure = females,
+              filename = filename.main.est,
+              nBurnin = 1000,
+              nSim = 1000,
+              nChain = 4,
+              nThin = 5)
+fetchSummary(filename.main.est)
+```
+Some of the upper-level parameters have still not converged properly, and the model needs further refinement.  However, we examine some parameter values.
+
+# Extracting results
+
+To see what parameters are available to be extract, use function `listContents`.
+```{r}
+listContents(filename.main.est)
+```
+
+To extract the contents, use function `fetch`.  
+```{r}
+rates <- fetch(filename.main.est, 
+               where = c("model", "likelihood", "rate"))
+## we can abbreviate when there is no ambiguity
+age.effect <- fetch(filename.main.est,
+                    where = c("mod", "pr", "age"))
+```
+
+The extracted parameters typically have class `Values`.
+```{r}
+class(rates)
+summary(rates)
+summary(age.effect)
+```
+
+The best way to understand the parameter estimates is to graph them,
+```{r, fig.width = 6.5, fig.height = 7}
+dplot(~ year | age * region,
+      data = rates,
+      subarray = region %in% c("Auckland", "Taranaki", "Southland"))
+```
+
+If desired, summary statistics can be obtained using function `collapseIterations`
+```{r}
+age.effect.quant <- collapseIterations(age.effect,
+                                       prob = c(0.025, 0.5, 0.975))
+round(age.effect.quant, 2)
+```
+
+Function `fetchMCMC` can be used to construct `mcmc.list` object, which can then be examined using functions from package `coda`.
+
+```{r, fig.width = 6, fig.height = 4.5}
+region.scale.error.mcmc <- fetchMCMC(filename.main.est,
+                                     where = c("model", "hyper", "region", "scaleError"))
+plot(region.scale.error.mcmc,
+     smooth = FALSE)
+```
+
+# Prediction
+
+Forecasts can be carried out using function `predictModel`.  In typical use, all that is required is the filename where the estimation results were stored, a filename to put the prediction results, and the number of periods to be forecasted.
+```{r}
+filename.main.pred <- tempfile()
+predictModel(filenameEst = filename.main.est,
+             filenamePred = filename.main.pred,
+             n = 10)
+```
+
+To see how the prediction was generated, use function `showModel` again
+```{r}
+showModel(filename.main.pred)
+```
+
+Function `fetch` can be used to extract results from `filename.main.pred`.  However, it is typically more illuminating to combine results from the estimation and prediction.  This can be done easily using function `fetchBoth`.
+```{r, fig.width = 6.5, fig.height = 7}
+rates.both <- fetchBoth(filenameEst = filename.main.est,
+                        filenamePred = filename.main.pred,
+                        where = c("model", "likelihood", "rate"))
+dplot(~ year | age * region,
+      data = rates.both,
+      subarray = region %in% c("Auckland", "Taranaki", "Southland"))
+```
+
+The software works, but the results are not terribly good!
+
+
+# Extending and refining the model
+
+In practice, the main-effects model, with nothing but default priors, gives reasonable results for estimation, but bad results for forecasting.  Success when estimating and failure when forecasting is a common experience.  When estimating, if a hierarchical model fits the data badly, the data can pull the posterior distribution towards something sensible. However, when forecasting, there are no data to rescue the model.
+
+We are still gaining experience in constructing models that perform well when forecasting as well as estimating.  We will extend the documentation and software in the light of this experience.  For the moment, we describe how we extended the simple model above to arrive at a specification that performed satisfactorily.  For the details of the modelling functions, please consult the help for the relevant functions in `demest`.
+
+We remove the trend component from the model for year effects.  With the trend component gone, the damping parameter is no longer appropriate, so we remove that too. We also make the prior for the standard deviation terms more informative.
+```{r}
+prior.year <- DLM(level = HalfT(scale = 0.1),
+                  trend = NULL,
+                  damp = NULL,
+                  error = Error(scale = HalfT(scale = 0.1)))
+prior.year
+```
+
+We use a similar prior for the age effect, though we don't bother departing from the priors for the standard deviation terms,
+```{r}
+prior.age <- DLM(trend = NULL, damp = NULL)
+prior.age
+```
+
+It turns out that we were over-shrinking the regional term, so we use a less informative prior.  We also add some regional covariates.
+```{r}
+data.reg <- demdata::nz.census.reg
+covariates.reg <- Covariates(mean ~ pr.maori + pr.inc.50,
+                             data = data.reg)
+error.reg <- Error(robust = TRUE, scale = HalfT(mult = 2))
+prior.reg <- Exch(covariates = covariates.reg,
+                  error = error.reg)
+prior.reg
+```
+
+We include a region-age interaction, without too much shrinkage,
+```{r}
+error.age.reg <- Error(robust = TRUE, scale = HalfT(mult = 2))
+prior.age.reg<- Exch(error = error.reg)
+prior.age.reg
+```
+
+Finally, we add an age-year interaction, with no trend, a fixed damping parameter, and highly informative priors on the amount of annual variation,
+```{r}
+level.age.year <- HalfT(scale = 0.05)
+damp.age.year <- Damp(coef = 0.9)
+error.age.year <- Error(scale = HalfT(scale = 0.05))
+prior.age.year <- DLM(level = level.age.year,
+                      trend = NULL,
+                      damp = damp.age.year,
+                      error = error.age.year)
+prior.age.year
+```
+
+Putting it all together,
+```{r}
+model.fancy <- Model(y ~ Poisson(mean ~ age * region + age * year),
+                     age ~ prior.age,
+                     region ~ prior.reg,
+                     year ~ prior.year,
+                     age:region ~ prior.age.reg,
+                     age:year ~ prior.age.year,
+                     jump = 0.08)
+model.fancy
+```
+
+Running the code below
+
+```{r, eval = FALSE}
+filename.fancy.est <- tempfile()
+filename.fancy.pred <- tempfile()
+set.seed(1) 
+estimateModel(model.fancy,
+              y = births,
+              exposure = females,
+              filename = filename.fancy.est,
+              nBurnin = 20000,
+              nSim = 20000,
+              nThin = 40,
+              nChain = 4)
+predictModel(filename.fancy.est, 
+             filename.fancy.pred, 
+             n = 10)
+rates.fancy <- fetchBoth(filenameEst = filename.fancy.est,
+                         filenamePred = filename.fancy.pred,
+                         where = c("model", "likelihood", "rate"))
+dplot(~ year | age * region,
+      data = rates.fancy,
+      subarray = region %in% c("Auckland", "Taranaki", "Southland"))
+```
+
+yields
+
+![](fancy.png)
+
+which, while not perfect, is an improvement.
+
+
+# Other models implemented in `demest`
+
+Function `estimateModel` can also be used to estimate binomial and normal models.  Function `estimateCounts` can be used to model sets of counts where the counts are not directly observed, but instead have to be inferred from multiple noisy datasets.  We are working on a function called `estimateAccount` that will estimate entire demographic accounts.
+
+
