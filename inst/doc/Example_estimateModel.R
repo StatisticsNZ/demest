@@ -20,7 +20,6 @@ plot(females)
 dplot(~ year | region,
       data = births / females,
       groups = age,
-      weights = females,
       midpoints = "year",
       auto.key = list(lines = TRUE, points = FALSE))
 

@@ -5669,7 +5669,7 @@ printPoissonLikEqns <- function(object) {
     terms <- expandTermsSpec(formulaMu)
     cat("            y[i] ~ Poisson(rate[i] * exposure[i])\n")
     cat("    log(rate[i]) ~ N(", terms, ", sd^2)\n", sep = "")
-    cat("                     or\n")
+    cat("                 -------- or --------\n")
     cat("            y[i] ~ Poisson(count[i])\n")
     cat("   log(count[i]) ~ N(", terms, ", sd^2)\n", sep = "")
 }
@@ -5727,7 +5727,7 @@ printPoissonSpecEqns <- function(object) {
     cat("\n")
     cat("    log(rate[i]) ~ N(", terms, ", sd^2)\n", sep = "")
     if (!has.series) {
-        cat("                     or\n")
+        cat("                 -------- or --------\n")
         cat("            y[i] ~ Poisson(count[i])")
         if (lower > 0 || is.finite(upper))
             cat(",  ", format(lower, digits = 4), "< count[i] <", format(upper, digits = 4))
@@ -5822,8 +5822,7 @@ printSpecsPriorsEqns <- function(object) {
             printPriorEqns(object = specs[[i.spec]],
                            name = name,
                            order = order)
-            if (i.name < n.name)
-                cat("\n")
+            cat("\n")
         }
     }
 }

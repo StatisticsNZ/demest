@@ -12,7 +12,7 @@
 
 <meta name="author" content="John Bryant" />
 
-<meta name="date" content="2016-10-03" />
+<meta name="date" content="2016-10-05" />
 
 <title>An Example of Using Function `estimateModel’: Modelling Age-Specific Birth Rates</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">An Example of Using Function `estimateModel’: Modelling Age-Specific Birth Rates</h1>
 <h4 class="author"><em>John Bryant</em></h4>
-<h4 class="date"><em>2016-10-03</em></h4>
+<h4 class="date"><em>2016-10-05</em></h4>
 
 
 
@@ -102,7 +102,6 @@ females &lt;-<span class="st"> </span><span class="kw">subarray</span>(popn, sex
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">dplot</span>(~<span class="st"> </span>year |<span class="st"> </span>region,
       <span class="dt">data =</span> births /<span class="st"> </span>females,
       <span class="dt">groups =</span> age,
-      <span class="dt">weights =</span> females,
       <span class="dt">midpoints =</span> <span class="st">&quot;year&quot;</span>,
       <span class="dt">auto.key =</span> <span class="kw">list</span>(<span class="dt">lines =</span> <span class="ot">TRUE</span>, <span class="dt">points =</span> <span class="ot">FALSE</span>))
 <span class="co">#&gt; omitted some elements of second object</span></code></pre></div>
@@ -119,10 +118,9 @@ females &lt;-<span class="st"> </span><span class="kw">subarray</span>(popn, sex
 <span class="co">#&gt; </span>
 <span class="co">#&gt;             y[i] ~ Poisson(rate[i] * exposure[i])</span>
 <span class="co">#&gt;     log(rate[i]) ~ N(age[j[i]] + region[j[i]] + year[j[i]], sd^2)</span>
-<span class="co">#&gt;                      or</span>
+<span class="co">#&gt;                  -------- or --------</span>
 <span class="co">#&gt;             y[i] ~ Poisson(count[i])</span>
 <span class="co">#&gt;    log(count[i]) ~ N(age[j[i]] + region[j[i]] + year[j[i]], sd^2)  </span>
-<span class="co">#&gt; </span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;               sd ~ trunc-half-t(7, NA, NA)</span>
 <span class="co">#&gt; </span>
@@ -143,10 +141,9 @@ model.inter
 <span class="co">#&gt; </span>
 <span class="co">#&gt;             y[i] ~ Poisson(rate[i] * exposure[i])</span>
 <span class="co">#&gt;     log(rate[i]) ~ N(age[j[i]] + region[j[i]] + year[j[i]] + age:region[j[i]] + age:year[j[i]], sd^2)</span>
-<span class="co">#&gt;                      or</span>
+<span class="co">#&gt;                  -------- or --------</span>
 <span class="co">#&gt;             y[i] ~ Poisson(count[i])</span>
 <span class="co">#&gt;    log(count[i]) ~ N(age[j[i]] + region[j[i]] + year[j[i]] + age:region[j[i]] + age:year[j[i]], sd^2)  </span>
-<span class="co">#&gt; </span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;               sd ~ trunc-half-t(7, NA, NA)</span>
 <span class="co">#&gt; </span>
@@ -522,7 +519,7 @@ model.fancy
 <span class="co">#&gt; </span>
 <span class="co">#&gt;             y[i] ~ Poisson(rate[i] * exposure[i])</span>
 <span class="co">#&gt;     log(rate[i]) ~ N(age[j[i]] + region[j[i]] + year[j[i]] + age:region[j[i]] + age:year[j[i]], sd^2)</span>
-<span class="co">#&gt;                      or</span>
+<span class="co">#&gt;                  -------- or --------</span>
 <span class="co">#&gt;             y[i] ~ Poisson(count[i])</span>
 <span class="co">#&gt;    log(count[i]) ~ N(age[j[i]] + region[j[i]] + year[j[i]] + age:region[j[i]] + age:year[j[i]], sd^2)  </span>
 <span class="co">#&gt; </span>
