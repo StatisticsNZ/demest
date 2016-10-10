@@ -1,4 +1,53 @@
 
+
+
+Classes <- function(cl, scale = NULL, mult = 1) {
+    if (!methods::is(cl, "Values"))
+        stop(gettextf("'%s' has class \"%s\"",
+                      "cl", class(cl)))
+    dimtypes <- dimtypes(cl, use.names = FALSE)
+    if (!("origin" %in% dimtypes))
+        stop(gettextf("'%s' does not have dimension with dimtype \"%s\"",
+                      "cl", "origin"))
+    .Data <- cl@.Data
+    if (length(.Data) == 0L)
+        stop(gettextf("'%s' has length %d",
+                      "cl", 0L))
+    if (any(is.na(.Data)))
+        stop(gettextf("'%s' has missing values",
+                      "cl"))
+    if (any(round(.Data) != .Data))
+        stop(gettextf("'%s' has non-integer values",
+                      "cl"))
+    .Data <- as.integer(.Data)
+    if (any(.Data) < 0L)
+        stop(gettextf("'%s' has negative values",
+                      "cl"))
+    unique.cl <- unique(as.integer(.Data))
+    n.cl <- length(unique.cl)
+    if (n.cl == 1L)
+        stop(gettextf("'%s' contains only one distinct value",
+                      "cl"))
+    min.val <- min(unique.cl)
+    if (!(min.val %in% 0:1))
+        stop(gettextf("minimum value for '%s' must be %d or %d",
+                      "cl", 0L, 1L))
+    if (any(diff(sort(unique.cl)) != 1L))
+        stop(gettextf("distinct values from '%s' must be consecutive integers",
+                      "cl"))
+    cl <- toInteger(cl)
+    A <- checkAndTidySpecScale(x = scale,
+                               name = "scale")
+    mult <- checkAndTidyMult(mult = mult,
+                             scale = A,
+                             nameScale = "scale")
+    methods::new("Classes",
+                 classes = cl,
+                 A = A,
+                 mult = mult)                 
+}
+
+
 ## NO_TESTS
 #' Specify covariates in a prior for a main effect or interaction.
 #'
@@ -154,17 +203,18 @@ Covariates <- function(formula, data, contrastsArg = list(),
 #'
 #' \code{level[j] ~ damp * level[j-1] + errorLevel[j]},
 #'
-#' and in a linear trend model the trend term has the form
+#' and in a linear trend model, the trend term has the form
 #'
-#' \code{level[j] ~ damp * level[j-1] + errorLevel[j]}.
+#' \code{trend[j] ~ damp * trend[j-1] + errorTrend[j]}.
 #'
-#' With a prior for an interaction, the level term has the form
-#'
-#' \code{level[k,l] ~ damp * level[k-1,l] + errorLevel[k,l]}
-#'
-#' and
+#' With a prior for an interaction, in a local level model, the level term
+#' has the form
 #'
 #' \code{level[k,l] ~ damp * level[k-1,l] + errorLevel[k,l]}.
+#'
+#' and in linear trend model, the trend term has the form
+#'
+#' \code{trend[k,l] ~ damp * trend[k-1,l] + errorTrend[k,l]}
 #'
 #' (See the documentation for function \code{\link{DLM}} for
 #' an explanation of the \code{k,l} subscripts.)
@@ -393,26 +443,29 @@ Damp <- function(coef = NULL, min = 0.8, max = 0.98) {
 #' ## robustified damped linear trend model
 #' DLM(error = Error(robust = TRUE))
 #' @export
-DLM <- function(along = NULL, level = HalfT(), trend = HalfT(),
+DLM <- function(along = NULL, level = Level(), trend = Trend(),
                 damp = Damp(), season = NULL, covariates = NULL,
                 error = Error()) {
     ## along
     along <- checkAndTidyAlongDLM(along)
     ## level
-    if (!methods::is(level, "HalfT"))
+    if (!methods::is(level, "Level"))
         stop(gettextf("'%s' has class \"%s\"",
                       "level", class(level)))
-    AAlpha <- level@A
-    multAlpha <- level@mult
-    nuAlpha <- level@nu
-    omegaAlphaMax <- level@scaleMax
+    AAlpha <- level@AAlpha
+    multAlpha <- level@multAlpha
+    nuAlpha <- level@nuAlpha
+    omegaAlphaMax <- level@omegaAlphaMax
     ## trend
-    if (methods::is(trend, "HalfT")) {
+    if (methods::is(trend, "Trend")) {
         has.trend <- TRUE
-        ADelta <- trend@A
-        multDelta <- trend@mult
-        nuDelta <- trend@nu
-        omegaDeltaMax <- trend@scaleMax
+        ADelta <- trend@ADelta
+        ADelta0 <- trend@ADelta0
+        meanDelta0 <- trend@meanDelta0
+        multDelta <- trend@multDelta
+        multDelta0 <- trend@multDelta0
+        nuDelta <- trend@nuDelta
+        omegaDeltaMax <- trend@omegaDeltaMax
     }
     else {
         if (is.null(trend))
@@ -508,12 +561,15 @@ DLM <- function(along = NULL, level = HalfT(), trend = HalfT(),
         methods::new("SpecDLMWithTrendNormZeroNoSeason",
                      AAlpha = AAlpha,
                      ADelta = ADelta,
+                     ADelta0 = ADelta0,
                      ATau = ATau,
                      along = along,
                      minPhi = minPhi,
                      maxPhi = maxPhi,
+                     meanDelta0 = meanDelta0,
                      multAlpha = multAlpha,
                      multDelta = multDelta,
+                     multDelta0 = multDelta0,
                      multTau = multTau,
                      nuAlpha = nuAlpha,
                      nuDelta = nuDelta,
@@ -549,13 +605,16 @@ DLM <- function(along = NULL, level = HalfT(), trend = HalfT(),
         methods::new("SpecDLMWithTrendNormZeroWithSeason",
                      AAlpha = AAlpha,
                      ADelta = ADelta,
+                     ADelta0 = ADelta0,
                      ASeason = ASeason,
                      ATau = ATau,
                      along = along,
                      minPhi = minPhi,
                      maxPhi = maxPhi,
+                     meanDelta0 = meanDelta0,
                      multAlpha = multAlpha,
                      multDelta = multDelta,
+                     multDelta0 = multDelta0,
                      multSeason = multSeason,
                      multTau = multTau,
                      nSeason = nSeason,
@@ -597,6 +656,7 @@ DLM <- function(along = NULL, level = HalfT(), trend = HalfT(),
         methods::new("SpecDLMWithTrendNormCovNoSeason",
                      AAlpha = AAlpha,
                      ADelta = ADelta,
+                     ADelta0 = ADelta0,
                      AEtaCoef = AEtaCoef,
                      AEtaIntercept = AEtaIntercept,
                      ATau = ATau,
@@ -606,8 +666,10 @@ DLM <- function(along = NULL, level = HalfT(), trend = HalfT(),
                      formula = formula,
                      minPhi = minPhi,
                      maxPhi = maxPhi,
+                     meanDelta0 = meanDelta0,
                      multAlpha = multAlpha,
                      multDelta = multDelta,
+                     multDelta0 = multDelta0,
                      multEtaCoef = multEtaCoef,
                      multTau = multTau,
                      nuAlpha = nuAlpha,
@@ -652,6 +714,7 @@ DLM <- function(along = NULL, level = HalfT(), trend = HalfT(),
         methods::new("SpecDLMWithTrendNormCovWithSeason",
                      AAlpha = AAlpha,
                      ADelta = ADelta,
+                     ADelta0 = ADelta0,
                      AEtaCoef = AEtaCoef,
                      AEtaIntercept = AEtaIntercept,
                      ASeason = ASeason,
@@ -662,8 +725,10 @@ DLM <- function(along = NULL, level = HalfT(), trend = HalfT(),
                      formula = formula,
                      minPhi = minPhi,
                      maxPhi = maxPhi,
+                     meanDelta0 = meanDelta0,
                      multAlpha = multAlpha,
                      multDelta = multDelta,
+                     multDelta0 = multDelta0,
                      multEtaCoef = multEtaCoef,
                      multSeason = multSeason,
                      multTau = multTau,
@@ -701,12 +766,15 @@ DLM <- function(along = NULL, level = HalfT(), trend = HalfT(),
         methods::new("SpecDLMWithTrendRobustZeroNoSeason",
                      AAlpha = AAlpha,
                      ADelta = ADelta,
+                     ADelta0 = ADelta0,
                      ATau = ATau,
                      along = along,
                      minPhi = minPhi,
                      maxPhi = maxPhi,
+                     meanDelta0 = meanDelta0,
                      multAlpha = multAlpha,
                      multDelta = multDelta,
+                     multDelta0 = multDelta0,
                      multTau = multTau,
                      nuAlpha = nuAlpha,
                      nuBeta = nuBeta,
@@ -744,13 +812,16 @@ DLM <- function(along = NULL, level = HalfT(), trend = HalfT(),
         methods::new("SpecDLMWithTrendRobustZeroWithSeason",
                      AAlpha = AAlpha,
                      ADelta = ADelta,
+                     ADelta0 = ADelta0,
                      ASeason = ASeason,
                      ATau = ATau,
                      along = along,
                      minPhi = minPhi,
                      maxPhi = maxPhi,
+                     meanDelta0 = meanDelta0,
                      multAlpha = multAlpha,
                      multDelta = multDelta,
+                     multDelta0 = multDelta0,
                      multSeason = multSeason,
                      multTau = multTau,
                      nSeason = nSeason,
@@ -794,6 +865,7 @@ DLM <- function(along = NULL, level = HalfT(), trend = HalfT(),
         methods::new("SpecDLMWithTrendRobustCovNoSeason",
                      AAlpha = AAlpha,
                      ADelta = ADelta,
+                     ADelta0 = ADelta0,
                      AEtaCoef = AEtaCoef,
                      AEtaIntercept = AEtaIntercept,
                      ATau = ATau,
@@ -803,8 +875,10 @@ DLM <- function(along = NULL, level = HalfT(), trend = HalfT(),
                      formula = formula,
                      minPhi = minPhi,
                      maxPhi = maxPhi,
+                     meanDelta0 = meanDelta0,
                      multAlpha = multAlpha,
                      multDelta = multDelta,
+                     multDelta0 = multDelta0,
                      multEtaCoef = multEtaCoef,
                      multTau = multTau,
                      nuAlpha = nuAlpha,
@@ -851,6 +925,7 @@ DLM <- function(along = NULL, level = HalfT(), trend = HalfT(),
         methods::new("SpecDLMWithTrendRobustCovWithSeason",
                      AAlpha = AAlpha,
                      ADelta = ADelta,
+                     ADelta0 = ADelta0,
                      AEtaCoef = AEtaCoef,
                      AEtaIntercept = AEtaIntercept,
                      ASeason = ASeason,
@@ -861,8 +936,10 @@ DLM <- function(along = NULL, level = HalfT(), trend = HalfT(),
                      formula = formula,
                      minPhi = minPhi,
                      maxPhi = maxPhi,
+                     meanDelta0 = meanDelta0,
                      multAlpha = multAlpha,
                      multDelta = multDelta,
+                     multDelta0 = multDelta0,
                      multEtaCoef = multEtaCoef,
                      multSeason = multSeason,
                      multTau = multTau,
@@ -1220,51 +1297,81 @@ HalfT <- function(df = 7, scale = NULL, max = NULL, mult = 1) {
                  scaleMax = scaleMax)
 }
 
-Classes <- function(cl, scale = NULL, mult = 1) {
-    if (!methods::is(cl, "Values"))
-        stop(gettextf("'%s' has class \"%s\"",
-                      "cl", class(cl)))
-    dimtypes <- dimtypes(cl, use.names = FALSE)
-    if (!("origin" %in% dimtypes))
-        stop(gettextf("'%s' does not have dimension with dimtype \"%s\"",
-                      "cl", "origin"))
-    .Data <- cl@.Data
-    if (length(.Data) == 0L)
-        stop(gettextf("'%s' has length %d",
-                      "cl", 0L))
-    if (any(is.na(.Data)))
-        stop(gettextf("'%s' has missing values",
-                      "cl"))
-    if (any(round(.Data) != .Data))
-        stop(gettextf("'%s' has non-integer values",
-                      "cl"))
-    .Data <- as.integer(.Data)
-    if (any(.Data) < 0L)
-        stop(gettextf("'%s' has negative values",
-                      "cl"))
-    unique.cl <- unique(as.integer(.Data))
-    n.cl <- length(unique.cl)
-    if (n.cl == 1L)
-        stop(gettextf("'%s' contains only one distinct value",
-                      "cl"))
-    min.val <- min(unique.cl)
-    if (!(min.val %in% 0:1))
-        stop(gettextf("minimum value for '%s' must be %d or %d",
-                      "cl", 0L, 1L))
-    if (any(diff(sort(unique.cl)) != 1L))
-        stop(gettextf("distinct values from '%s' must be consecutive integers",
-                      "cl"))
-    cl <- toInteger(cl)
-    A <- checkAndTidySpecScale(x = scale,
-                               name = "scale")
+#' Specify the prior for the initial value of the trend term in a DLM prior.
+#'
+#' Specify the prior for the initial value of the trend term, typically as
+#' part of a call to function \code{\link{Trend}}.
+#'
+#' In the linear trend version of a DLM prior, the trend term has the form
+#'
+#' \code{trend[0] ~ N(mean, sd^2)}
+#' \code{trend[j] ~ damp * trend[j-1] + errorLevel[j], j = 1,...,J}.
+#'
+#' By default, the mean in the prior for \code{trend[0]} defaults to 0.
+#' The default for the \code{sd} is set using the same rules as the
+#' default for the scale term in a \code{\link{HalfT}} prior.
+#'
+#' @inheritParams HalfT
+#' @param mean The mean of the prior distribution.  Defaults to 0.
+#' @param sd The standard deviation of the prior distribution.
+#'
+#' @return An object of class \code{\linkS4class{Initial}}.
+#'
+#' @seealso \code{Initial} is usually called as part of a call to function
+#' \code{\link{Trend}}.
+#'
+#' @examples
+#' Initial()
+#' Initial(mean = 0.1, sd = 0.3)
+#' Initial(mean = 0.02, mult = 0.1)
+#' @export
+Initial <- function(mean = 0, sd = NULL, mult = 1) {
+    mean <- checkAndTidyMeanOrProb(object = mean,
+                                   name = "mean")
+    mean <- new("Parameter", mean)
+    A <- checkAndTidySpecScale(x = sd,
+                               name = "sd")
     mult <- checkAndTidyMult(mult = mult,
                              scale = A,
-                             nameScale = "scale")
-    methods::new("Classes",
-                 classes = cl,
+                             nameScale = "sd")
+    methods::new("Initial",
                  A = A,
-                 mult = mult)                 
+                 mean = mean,
+                 mult = mult)
 }
+
+#' Specify the level term in a DLM prior.
+#'
+#' Specify the level term in a \code{\link{DLM}} prior.  Currently the only
+#' part of the level term that can be specified is the prior for the
+#' standard deviation of the innovations.
+#'
+#' @param scale An object of class \code{\linkS4class{HalfT}}.
+#'
+#' @return An object of class \code{\linkS4class{Level}}
+#'
+#' @seealso \code{Level} is usually called as part of a call to
+#' function \code{\link{DLM}}.
+#'
+#' @examples
+#' Level()
+#' Level(scale = HalfT(scale = 0.5))
+#' @export
+Level <- function(scale = HalfT()) {
+    if (!methods::is(scale, "HalfT"))
+        stop(gettextf("'%s' has class \"%s\"",
+                      scale, class(scale)))
+    AAlpha <- scale@A
+    multAlpha <- scale@mult
+    nuAlpha <- scale@nu
+    omegaAlphaMax <- scale@scaleMax
+    methods::new("Level",
+                 AAlpha = AAlpha,
+                 multAlpha = multAlpha,
+                 nuAlpha = nuAlpha,
+                 omegaAlphaMax = omegaAlphaMax)
+}
+
 
 Move <- function(classes, covariates = NULL, error = Error()) {
     ## classes
@@ -1460,6 +1567,50 @@ Season <- function(n, scale = HalfT()) {
                  nuSeason = nuSeason,
                  omegaSeasonMax = omegaSeasonMax)
 }
+
+
+#' Specify the trend term in a DLM prior.
+#'
+#' Specify the prior for the initial values, and the prior for the standard
+#' deviation of the innovations in a \code{\link{DLM}} prior.
+#'
+#' @param initial An object of class \code{\linkS4class{Initial}}.
+#' @param scale An object of class \code{\linkS4class{HalfT}}.
+#'
+#' @return An object of class \code{\linkS4class{Trend}}
+#'
+#' @seealso \code{Trend} is usually called as part of a call to
+#' function \code{\link{DLM}}.
+#'
+#' @examples
+#' Trend()
+#' Trend(initial = Initial(mean = 0.05, sd = 0.1),
+#'       scale = HalfT(scale = 0.5))
+#' @export
+Trend <- function(initial = Initial(), scale = HalfT()) {
+    if (!methods::is(initial, "Initial"))
+        stop(gettextf("'%s' has class \"%s\"",
+                      initial, class(initial)))
+    ADelta0 <- initial@A
+    meanDelta0 <- initial@mean
+    multDelta0 <- initial@mult
+    if (!methods::is(scale, "HalfT"))
+        stop(gettextf("'%s' has class \"%s\"",
+                      scale, class(scale)))
+    ADelta <- scale@A
+    multDelta <- scale@mult
+    nuDelta <- scale@nu
+    omegaDeltaMax <- scale@scaleMax
+    methods::new("Trend",
+                 ADelta = ADelta,
+                 ADelta0 = ADelta0,
+                 meanDelta0 = meanDelta0,
+                 multDelta = multDelta,
+                 multDelta0 = multDelta0,
+                 nuDelta = nuDelta,
+                 omegaDeltaMax = omegaDeltaMax)
+}
+
 
 
 

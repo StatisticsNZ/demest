@@ -456,6 +456,49 @@ setMethod("show",
 #' @rdname show-methods
 #' @export
 setMethod("show",
+          signature(object = "Initial"),
+          function(object) {
+              mean <- object@mean@.Data
+              sd <- object@A@.Data
+              cat("An object of class \"", class(object), "\"\n", sep = "")
+              cat("N(", mean, ", ", squaredOrNA(sd), ")\n", sep = "")
+          })
+
+#' @rdname show-methods
+#' @export
+setMethod("show",
+          signature(object = "Level"),
+          function(object) {
+              nu <- object@nuAlpha
+              A <- object@AAlpha
+              max <- object@omegaAlphaMax
+              cat("An object of class \"", class(object), "\"\n", sep = "")
+              cat("  level[0] ~ N(0, NA)\n")
+              cat("scaleLevel ~ trunc-half-t(", nu, ", ", sep = "")
+              cat(squaredOrNA(A), ", ", max, ")\n", sep = "")
+          })
+
+
+#' @rdname show-methods
+#' @export
+setMethod("show",
+          signature(object = "Trend"),
+          function(object) {
+              mean <- object@meanDelta0
+              sd <- object@ADelta0
+              nu <- object@nuDelta
+              A <- object@ADelta
+              max <- object@omegaDeltaMax
+              cat("An object of class \"", class(object), "\"\n", sep = "")
+              cat("  trend[0] ~ N(", mean, ", ", squaredOrNA(sd), ")\n", sep = "")
+              cat("scaleTrend ~ trunc-half-t(", nu, ", ", sep = "")
+              cat(squaredOrNA(A), ", ", max, ")\n", sep = "")
+          })
+
+
+#' @rdname show-methods
+#' @export
+setMethod("show",
           signature(object = "Season"),
           function(object) {
               cat("An object of class \"", class(object), "\"\n", sep = "")

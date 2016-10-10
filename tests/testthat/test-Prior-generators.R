@@ -256,6 +256,14 @@ test_that("generator function and initialPrior work with DLMWithTrendNormZeroNoS
                           sY = NULL,
                           multScale = 1)
     expect_is(prior, "DLMWithTrendNormZeroNoSeason")
+    spec <- DLM(trend = Trend(initial = Initial(mean = 0.02, sd = 0.05)))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          multScale = 1)
+    expect_identical(prior@m0WithTrend[[1]], c(0, 0.02))
+    expect_identical(prior@CWithTrend[[1]], diag(c(100, 0.05^2)))
 })
 
 test_that("generator function and initialPrior work with DLMNoTrendNormZeroWithSeason", {
@@ -775,6 +783,7 @@ test_that("initialPriorPredict works with ExchRobustCov", {
     expect_identical(prior.new@eta, prior@eta)
     expect_identical(prior.new@nuBeta, prior@nuBeta)
 })
+
 
 ## DLM - Norm, Zero
 

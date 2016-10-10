@@ -66,10 +66,6 @@ setClass("ADeltaMixin",
          slots = c(ADelta = "Scale"),
          contains = "VIRTUAL")
 
-setClass("ADelta0Mixin",
-         slots = c(ADelta0 = "Scale"),
-         contains = "VIRTUAL")
-
 setClass("AEtaCoefMixin",
          slots = c(AEtaCoef = "Scale"),
          contains = "VIRTUAL")
@@ -598,6 +594,15 @@ setClass("M0SeasonMixin",
              TRUE
          })
 
+setClass("MeanMixin",
+         slots = c(mean = "Parameter"),
+         contains = "VIRTUAL")
+
+setClass("MeanDelta0Mixin",
+         slots = c(meanDelta0 = "Parameter"),
+         prototype = prototype(meanDelta0 = new("Parameter", 0)),
+         contains = "VIRTUAL")
+
 setClass("MultMixin",
          slots = c(mult = "Scale"),
          contains = "VIRTUAL")
@@ -608,6 +613,10 @@ setClass("MultAlphaMixin",
 
 setClass("MultDeltaMixin",
          slots = c(multDelta = "Scale"),
+         contains = "VIRTUAL")
+
+setClass("MultDelta0Mixin",
+         slots = c(multDelta0 = "Scale"),
          contains = "VIRTUAL")
 
 setClass("MultEtaCoefMixin",
@@ -903,6 +912,10 @@ setClass("SpecAAlphaMixin",
 
 setClass("SpecADeltaMixin",
          slots = c(ADelta = "SpecScale"),
+         contains = "VIRTUAL")
+
+setClass("SpecADelta0Mixin",
+         slots = c(ADelta0 = "SpecScale"),
          contains = "VIRTUAL")
 
 setClass("SpecAEtaCoefMixin",

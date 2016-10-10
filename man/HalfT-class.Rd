@@ -21,6 +21,6 @@ for standard deviations or scale parameters.
 }}
 \seealso{
 Objects of class \code{HalfT} are created
-    by calls to function \code{\link{HalfT}}.
+by calls to function \code{\link{HalfT}}.
 }
 

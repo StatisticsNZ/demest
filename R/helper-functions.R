@@ -794,8 +794,11 @@ initialDLMNoTrendPredict <- function(prior, metadata) {
 ## HAS_TESTS
 initialDLMWithTrend <- function(object, beta, metadata, sY, lAll) {
     ADelta <- object@ADelta
+    ADelta0 <- object@ADelta0
+    meanDelta0 <- object@meanDelta0
     along <- object@along
     multDelta <- object@multDelta
+    multDelta0 <- object@multDelta0
     nuDelta <- object@nuDelta
     omegaDeltaMax <- object@omegaDeltaMax
     dim <- dim(metadata)
@@ -804,6 +807,10 @@ initialDLMWithTrend <- function(object, beta, metadata, sY, lAll) {
                          metadata = metadata,
                          sY = sY,
                          mult = multDelta)
+    ADelta0 <- makeAHalfT(A = ADelta0,
+                          metadata = metadata,
+                          sY = sY,
+                          mult = multDelta0)
     omegaDeltaMax <- makeScaleMax(scaleMax = omegaDeltaMax,
                                   A = ADelta,
                                   nu = nuDelta)        
@@ -815,12 +822,17 @@ initialDLMWithTrend <- function(object, beta, metadata, sY, lAll) {
     iAlong <- dembase::checkAndTidyAlong(along = along,
                                          metadata = metadata,
                                          numericDimScales = TRUE)
-    K <- makeK(dim = dim, iAlong = iAlong)
-    L <- makeL(dim = dim, iAlong = iAlong)
+    K <- makeK(dim = dim,
+               iAlong = iAlong)
+    L <- makeL(dim = dim,
+               iAlong = iAlong)
     deltaDLM <- makeStateDLM(K = K, L = L)
     mWithTrend <- makeMWithTrend(K = K)
-    m0WithTrend <- makeM0WithTrend(L = L)
-    CWithTrend <- makeCWithTrend(K = K, ADelta = ADelta)
+    m0WithTrend <- makeM0WithTrend(L = L,
+                                   meanDelta0 = meanDelta0)
+    CWithTrend <- makeCWithTrend(K = K,
+                                 sY = sY,
+                                 ADelta0 = ADelta0)
     aWithTrend <- makeAWithTrend(K = K)
     RWithTrend <- makeRWithTrend(K = K)
     UC <- makeUC(K)
@@ -1253,9 +1265,9 @@ makeMWithTrend <- function(K, m0 = NULL) {
 }
 
 ## NO_TESTS
-makeM0WithTrend <- function(L) {
+makeM0WithTrend <- function(L, meanDelta0 = 0) {
     ans <- replicate(n = L,
-                     c(0, 0),
+                     c(0, meanDelta0),
                      simplify = FALSE)
     methods::new("FFBSList", ans)
 }
@@ -1288,14 +1300,20 @@ makeCSeason <- function(K, nSeason, ASeason, C0 = NULL) {
 }
 
 ## NO_TESTS
-makeCWithTrend <- function(K, ADelta, C0 = NULL) {
+makeCWithTrend <- function(K, C0 = NULL, sY, ADelta0) {
     if (is.null(C0)) {
-        A <- ADelta@.Data
-        C0 <- diag(rep(A^2, times = 2L), nrow = 2L, ncol = 2L)
+        AAlpha <- makeAIntercept(A = NA, sY = sY)
+        ADelta <- ADelta0@.Data
+        C0 <- c(AAlpha^2, ADelta^2)
+        C0 <- diag(C0,
+                   nrow = 2L,
+                   ncol = 2L)
     }
-    ans <- replicate(n = K + 1L,
-                     C0,
-                     simplify = FALSE)
+    head <- list(C0)
+    tail <- replicate(n = K,
+                      diag(2L),
+                      simplify = FALSE)
+    ans <- c(head, tail)
     methods::new("FFBSList", ans)
 }
 
@@ -1329,7 +1347,7 @@ makeDC <- function(CWithTrend) {
     ans <- replicate(n = K.plus.1,
                      diag(2L),
                      simplify = FALSE)
-    ans[[1L]] <- CWithTrend[[1L]]
+    ans[[1L]] <- sqrt(CWithTrend[[1L]])
     methods::new("FFBSList", ans)
 }
 
@@ -5457,7 +5475,6 @@ printJumpAg <- function(object) {
     cat("jump:", jump, "\n")
 }
 
-
 printLevelTrendEqns <- function(object, isMain, hasTrend) {
     AAlpha <- object@AAlpha
     omegaAlphaMax <- object@omegaAlphaMax
@@ -5467,9 +5484,11 @@ printLevelTrendEqns <- function(object, isMain, hasTrend) {
     min.phi <- object@minPhi
     max.phi <- object@maxPhi
     if (hasTrend) {
-        ADelta <- object@ADelta
-        omegaDeltaMax <- object@omegaDeltaMax
-        nuDelta <- object@nuDelta
+        ADelta0 <- object@ADelta0@.Data
+        ADelta <- object@ADelta@.Data
+        meanDelta0 <- object@meanDelta0@.Data
+        nuDelta <- object@nuDelta@.Data
+        omegaDeltaMax <- object@omegaDeltaMax@.Data
     }
     show.damp <- !phi.known || (phi < 1)
     if (hasTrend) {
@@ -5480,7 +5499,7 @@ printLevelTrendEqns <- function(object, isMain, hasTrend) {
         else {
             cat("      level[k,l] ~ level[k-1,l] + trend[k-1,l] + errorLevel[k,l]\n")
             cat("      trend[k,l] ~ ")
-        }            
+        }
         if (show.damp)
             cat("damp * ")
         if (isMain)
@@ -5499,6 +5518,20 @@ printLevelTrendEqns <- function(object, isMain, hasTrend) {
             cat("level[j-1] + errorLevel[j]\n")
         else
             cat("level[k-1,l] + errorLevel[k,l]\n")
+    }
+    if (isMain) {
+        cat("        level[0] ~ N(0, NA)\n")
+        if (hasTrend) {
+            cat("        trend[0] ~ N(", meanDelta0, ", ", sep = "")
+            cat(squaredOrNA(ADelta0), ")\n", sep = "")
+        }
+    }
+    else {
+        cat("      level[0,l] ~ N(0, NA)\n")
+        if (hasTrend) {
+            cat("      trend[0,l] ~ N(", meanDelta0, ", ", sep = "")
+            cat(squaredOrNA(ADelta0), ")\n", sep = "")
+        }
     }
     if (show.damp) {
         if (phi.known)
@@ -5855,7 +5888,7 @@ squaredOrNA <- function(x) {
     if (is.na(x))
         x
     else
-        format(x, digits = 4)
+        paste0(format(x, digits = 4), "^2")
 }
 
 

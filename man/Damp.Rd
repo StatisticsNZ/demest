@@ -28,17 +28,18 @@ the form
 
 \code{level[j] ~ damp * level[j-1] + errorLevel[j]},
 
-and in a linear trend model the trend term has the form
+and in a linear trend model, the trend term has the form
 
-\code{level[j] ~ damp * level[j-1] + errorLevel[j]}.
+\code{trend[j] ~ damp * trend[j-1] + errorTrend[j]}.
 
-With a prior for an interaction, the level term has the form
-
-\code{level[k,l] ~ damp * level[k-1,l] + errorLevel[k,l]}
-
-and
+With a prior for an interaction, in a local level model, the level term
+has the form
 
 \code{level[k,l] ~ damp * level[k-1,l] + errorLevel[k,l]}.
+
+and in linear trend model, the trend term has the form
+
+\code{trend[k,l] ~ damp * trend[k-1,l] + errorTrend[k,l]}
 
 (See the documentation for function \code{\link{DLM}} for
 an explanation of the \code{k,l} subscripts.)

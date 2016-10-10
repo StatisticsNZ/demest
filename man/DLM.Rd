@@ -4,7 +4,7 @@
 \alias{DLM}
 \title{Specify a Dynamic Linear Model (DLM) prior.}
 \usage{
-DLM(along = NULL, level = HalfT(), trend = HalfT(), damp = Damp(),
+DLM(along = NULL, level = Level(), trend = Trend(), damp = Damp(),
   season = NULL, covariates = NULL, error = Error())
 }
 \arguments{

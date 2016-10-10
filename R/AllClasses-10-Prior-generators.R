@@ -114,13 +114,53 @@ setClass("ErrorRobust",
 #' @slot mult Multiplier applied to default value for \code{A}.
 #'
 #' @seealso Objects of class \code{HalfT} are created
-#'     by calls to function \code{\link{HalfT}}.  
+#' by calls to function \code{\link{HalfT}}.  
 #' @export
 setClass("HalfT",
          contains = c("MultMixin",
              "NuMixin",
              "SpecAMixin",
              "SpecScaleMaxMixin"))
+
+#' An S4 class to specify a normal prior for a scalar parameter.
+#'
+#' An object of class \code{Initial} is used to specify the
+#' prior for the initial trend term in a \code{\linkS4class{DLM}}
+#' prior.
+#'
+#' @slot mean The mean of the normal distribution.  Defaults to 0.
+#' @slot A Scale.
+#' @slot scaleMax Maximum value for standard deviation.
+#' @slot mult Multiplier applied to default value for \code{A}.
+#'
+#' @seealso Objects of class \code{Initial} are created
+#' by calls to function \code{\link{Initial}}.  
+#' @export
+setClass("Initial",
+         contains = c("MeanMixin",
+                      "MultMixin",
+                      "SpecAMixin"))
+
+
+#' An S4 class to specify the level term in a DLM prior.
+#'
+#' An object of class \code{Level} is used to specify the
+#' level term in a \code{\linkS4class{DLM}} prior.
+#'
+#' @slot nuAlpha Degrees of freedom.
+#' @slot AAlpha Scale.
+#' @slot omegaAlphaMax Maximum value for standard deviation of
+#' innovations.
+#' @slot multAlpha Multiplier applied to default value for \code{AAlpha}.
+#'
+#' @seealso Objects of class \code{Level} are created
+#' by calls to function \code{\link{Level}}.  
+#' @export
+setClass("Level",
+         contains = c("MultAlphaMixin",
+                      "NuAlphaMixin",
+                      "SpecAAlphaMixin",
+                      "SpecOmegaAlphaMaxMixin"))
 
 
 #' An S4 class to specify a normal distribution.
@@ -161,3 +201,35 @@ setClass("Norm",
 #' @export
 setClass("Season",
          contains = "SpecSeasonMixin")
+
+
+#' An S4 class to specify the trend term in a DLM prior.
+#'
+#' An object of class \code{Trend} is used to specify the
+#' trend term in a \code{\linkS4class{DLM}} prior.
+#'
+#' @slot meanDelta0 Mean of the normal prior for the first
+#' trend term. Defaults to 0.
+#' @slot ADelta0 Standard deviation of the normal prior
+#' for the first trend term.
+#' @slot multDelta0 Multiplier applied to code{ADelta0}.
+#' @slot nuAlpha Degrees of freedom for half-t prior for
+#' standard deviation of innovations.
+#' @slot AAlpha Scale for half-t prior for standard deviation
+#' of innovations.
+#' @slot omegaAlphaMax Maximum value for standard deviation
+#' of innovations.
+#' @slot multAAlpha Multiplier applied to default value for \code{AAlpha}.
+#'
+#' @seealso Objects of class \code{Trend} are created
+#' by calls to function \code{\link{Trend}}.  
+#' @export
+setClass("Trend",
+         contains = c("MeanDelta0Mixin",
+                      "MultDeltaMixin",
+                      "MultDelta0Mixin",
+                      "NuDeltaMixin",
+                      "SpecADeltaMixin",
+                      "SpecADelta0Mixin",
+                      "SpecOmegaDeltaMaxMixin"))
+

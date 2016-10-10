@@ -362,7 +362,9 @@ test_that("initialDLMAll works", {
     expect_identical(l$omegaAlphaMax, new("Scale", qhalft(0.999, 7, 100)))
     expect_identical(l$tauMax, new("Scale", qhalft(0.999, 7, 100)))
     ## mult is 0.5
-    spec <- DLM(level = HalfT(mult = 0.5), trend = NULL, error = Error(scale = HalfT(mult = 0.5)))
+    spec <- DLM(level = Level(scale = HalfT(mult = 0.5)),
+                trend = NULL,
+                error = Error(scale = HalfT(mult = 0.5)))
     beta <- rnorm(10, mean = 100)
     metadata <- new("MetaData",
                     nms = "time",
@@ -567,7 +569,7 @@ test_that("initialDLMWithTrend works", {
     expect_true(all(sapply(l$UC, length) == 4L))
     expect_true(all(sapply(l$UR, length) == 4L))
     ## mult = 0.5
-    spec <- DLM(trend = HalfT(mult = 0.5))
+    spec <- DLM(trend = Trend(scale = HalfT(mult = 0.5)))
     l <- initialDLMWithTrend(spec,
                              beta = beta,
                              metadata = metadata,
@@ -575,6 +577,18 @@ test_that("initialDLMWithTrend works", {
                              lAll = lAll)
     expect_identical(l$ADelta, new("Scale", 0.5))
     expect_identical(l$omegaDeltaMax, new("Scale", qhalft(0.999, 7, 0.5)))
+    ## informative delta0
+    spec <- DLM(trend = Trend(initial = Initial(mean = 0.05, sd = 0.1)))
+    l <- initialDLMWithTrend(spec,
+                             beta = beta,
+                             metadata = metadata,
+                             sY = NULL,
+                             lAll = lAll)
+    expect_equal(l$CWithTrend[[1]], diag(c(100, 0.01)))
+    expect_identical(l$UC[[1]], diag(2))
+    expect_identical(l$DC[[1]], diag(c(10, 0.1)))
+    expect_identical(l$DCInv[[1]], diag(c(0.1, 10)))
+    expect_identical(l$m0WithTrend[[1]], c(0, 0.05))
 })
 
 test_that("initialDLMWithTrendPredict works", {

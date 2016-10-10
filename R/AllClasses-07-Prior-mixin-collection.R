@@ -119,10 +119,13 @@ setClass("SpecSeasonMixin",
 
 setClass("SpecWithTrendMixin",
          contains = c("VIRTUAL",
-             "MultDeltaMixin",
-             "NuDeltaMixin",
-             "SpecADeltaMixin",
-             "SpecOmegaDeltaMaxMixin"))
+                      "MeanDelta0Mixin",
+                      "MultDeltaMixin",
+                      "MultDelta0Mixin",
+                      "NuDeltaMixin",
+                      "SpecADeltaMixin",
+                      "SpecADelta0Mixin",
+                      "SpecOmegaDeltaMaxMixin"))
 
 setClass("WithTrendMixin",
          contains = c("VIRTUAL",
