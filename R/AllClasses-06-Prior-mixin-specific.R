@@ -66,6 +66,10 @@ setClass("ADeltaMixin",
          slots = c(ADelta = "Scale"),
          contains = "VIRTUAL")
 
+setClass("ADelta0Mixin",
+         slots = c(ADelta0 = "Scale"),
+         contains = "VIRTUAL")
+
 setClass("AEtaCoefMixin",
          slots = c(AEtaCoef = "Scale"),
          contains = "VIRTUAL")
