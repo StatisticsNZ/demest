@@ -125,12 +125,11 @@ setClass("HalfT",
 #' An S4 class to specify a normal prior for a scalar parameter.
 #'
 #' An object of class \code{Initial} is used to specify the
-#' prior for the initial trend term in a \code{\linkS4class{DLM}}
-#' prior.
+#' prior for the initial trend term, typically as part of a
+#' call to function \code{\link{DLM}}.
 #'
-#' @slot mean The mean of the normal distribution.  Defaults to 0.
 #' @slot A Scale.
-#' @slot scaleMax Maximum value for standard deviation.
+#' @slot mean The mean of the normal distribution.  Defaults to 0.
 #' @slot mult Multiplier applied to default value for \code{A}.
 #'
 #' @seealso Objects of class \code{Initial} are created
@@ -145,7 +144,7 @@ setClass("Initial",
 #' An S4 class to specify the level term in a DLM prior.
 #'
 #' An object of class \code{Level} is used to specify the
-#' level term in a \code{\linkS4class{DLM}} prior.
+#' level term in a \code{\link{DLM}} prior.
 #'
 #' @slot nuAlpha Degrees of freedom.
 #' @slot AAlpha Scale.
@@ -206,20 +205,20 @@ setClass("Season",
 #' An S4 class to specify the trend term in a DLM prior.
 #'
 #' An object of class \code{Trend} is used to specify the
-#' trend term in a \code{\linkS4class{DLM}} prior.
+#' trend term in a \code{\link{DLM}} prior.
 #'
-#' @slot meanDelta0 Mean of the normal prior for the first
-#' trend term. Defaults to 0.
+#' @slot ADelta Scale for half-t prior for standard deviation
+#' of innovations.
 #' @slot ADelta0 Standard deviation of the normal prior
 #' for the first trend term.
+#' @slot meanDelta0 Mean of the normal prior for the first
+#' trend term. Defaults to 0.
+#' @slot multDelta Multiplier applied to code{ADelta}.
 #' @slot multDelta0 Multiplier applied to code{ADelta0}.
-#' @slot nuAlpha Degrees of freedom for half-t prior for
+#' @slot nuDelta Degrees of freedom for half-t prior for
 #' standard deviation of innovations.
-#' @slot AAlpha Scale for half-t prior for standard deviation
+#' @slot omegaDeltaMax Maximum value for standard deviation
 #' of innovations.
-#' @slot omegaAlphaMax Maximum value for standard deviation
-#' of innovations.
-#' @slot multAAlpha Multiplier applied to default value for \code{AAlpha}.
 #'
 #' @seealso Objects of class \code{Trend} are created
 #' by calls to function \code{\link{Trend}}.  

@@ -10,10 +10,10 @@ DLM(along = NULL, level = Level(), trend = Trend(), damp = Damp(),
 \arguments{
 \item{along}{Name of a dimension.}
 
-\item{level}{An object of class \code{\linkS4class{HalfT}}
+\item{level}{An object of class \code{\linkS4class{Level}}
 specifying the prior for \code{errorLevel}.}
 
-\item{trend}{An object of class \code{\linkS4class{HalfT}}
+\item{trend}{An object of class \code{\linkS4class{Trend}}
 (the default) or \code{NULL}.  If \code{trend} is \code{NULL},
 then \code{DLM} produces local level model; otherwise
 \code{DLM} produces a linear trend model.}

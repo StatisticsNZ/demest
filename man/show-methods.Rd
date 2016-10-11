@@ -7,6 +7,8 @@
 \alias{show,DampUnknown-method}
 \alias{show,Error-method}
 \alias{show,HalfT-method}
+\alias{show,Initial-method}
+\alias{show,Level-method}
 \alias{show,Season-method}
 \alias{show,SpecAgCertain-method}
 \alias{show,SpecAgNormal-method}
@@ -25,6 +27,7 @@
 \alias{show,SpecNormalVaryingVarsigmaUnknown-method}
 \alias{show,SpecPoissonBinomialMixture-method}
 \alias{show,SpecPoissonVarying-method}
+\alias{show,Trend-method}
 \alias{show-methods}
 \title{Print description of model or prior.}
 \usage{
@@ -65,6 +68,12 @@
 \S4method{show}{Error}(object)
 
 \S4method{show}{HalfT}(object)
+
+\S4method{show}{Initial}(object)
+
+\S4method{show}{Level}(object)
+
+\S4method{show}{Trend}(object)
 
 \S4method{show}{Season}(object)
 

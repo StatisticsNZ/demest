@@ -849,6 +849,7 @@ initialDLMWithTrend <- function(object, beta, metadata, sY, lAll) {
                                phi = phi)
     GWithTrend <- makeGWithTrend(phi = phi)
     list(ADelta = ADelta,
+         ADelta0 = ADelta0,
          aWithTrend = aWithTrend,
          CWithTrend = CWithTrend,
          DC = DC,
@@ -858,6 +859,7 @@ initialDLMWithTrend <- function(object, beta, metadata, sY, lAll) {
          GWithTrend = GWithTrend,
          mWithTrend = mWithTrend,
          m0WithTrend = m0WithTrend,
+         meanDelta0 = meanDelta0,
          nuDelta = nuDelta,
          omegaDelta = omegaDelta,
          omegaDeltaMax = omegaDeltaMax,
@@ -1090,7 +1092,7 @@ makeIndexClassAlpha <- function(classes, metadata) {
                                                 subset = TRUE,
                                                 check = TRUE),
                         error = function(e) e)
-    if (is(classes, "error"))
+    if (methods::is(classes, "error"))
         stop(gettextf("problem aligning '%s' with interaction term '%s' : %s",
                       "cl", name.term, classes$message))
     as.integer(classes@.Data)
@@ -1265,7 +1267,11 @@ makeMWithTrend <- function(K, m0 = NULL) {
 }
 
 ## NO_TESTS
-makeM0WithTrend <- function(L, meanDelta0 = 0) {
+makeM0WithTrend <- function(L, meanDelta0 = NULL) {
+    if (is.null(meanDelta0))
+        meanDelta0 <- 0
+    else
+        meanDelta0 <- meanDelta0@.Data
     ans <- replicate(n = L,
                      c(0, meanDelta0),
                      simplify = FALSE)
@@ -5483,12 +5489,27 @@ printLevelTrendEqns <- function(object, isMain, hasTrend) {
     phi.known <- object@phiKnown
     min.phi <- object@minPhi
     max.phi <- object@maxPhi
+    is.spec <- methods::is(object, "SpecPrior")
     if (hasTrend) {
         ADelta0 <- object@ADelta0@.Data
         ADelta <- object@ADelta@.Data
         meanDelta0 <- object@meanDelta0@.Data
         nuDelta <- object@nuDelta@.Data
         omegaDeltaMax <- object@omegaDeltaMax@.Data
+        if (is.spec)
+            AAlpha0 <- NA
+        else {
+            DC <- object@DC@.Data
+            AAlpha0 <- DC[[1L]][1L]
+        }
+    }
+    else {
+        if (is.spec)
+            AAlpha0 <- NA
+        else {
+            C <- object@CNoTrend@.Data
+            AAlpha0 <- sqrt(C[[1L]])
+        }
     }
     show.damp <- !phi.known || (phi < 1)
     if (hasTrend) {
@@ -5520,14 +5541,14 @@ printLevelTrendEqns <- function(object, isMain, hasTrend) {
             cat("level[k-1,l] + errorLevel[k,l]\n")
     }
     if (isMain) {
-        cat("        level[0] ~ N(0, NA)\n")
+        cat("        level[0] ~ N(0, ", squaredOrNA(AAlpha0), ")\n", sep = "")
         if (hasTrend) {
             cat("        trend[0] ~ N(", meanDelta0, ", ", sep = "")
             cat(squaredOrNA(ADelta0), ")\n", sep = "")
         }
     }
     else {
-        cat("      level[0,l] ~ N(0, NA)\n")
+        cat("      level[0,l] ~ N(0, ", squaredOrNA(AAlpha0), ")\n", sep = "")
         if (hasTrend) {
             cat("      trend[0,l] ~ N(", meanDelta0, ", ", sep = "")
             cat(squaredOrNA(ADelta0), ")\n", sep = "")
@@ -5887,8 +5908,12 @@ printValueAg <- function(object) {
 squaredOrNA <- function(x) {
     if (is.na(x))
         x
-    else
-        paste0(format(x, digits = 4), "^2")
+    else {
+        if (isTRUE(all.equal(x, 1.0)))
+            format(x, digits = 4)
+        else
+            paste0(format(x, digits = 4), "^2")
+    }
 }
 
 

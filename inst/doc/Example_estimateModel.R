@@ -122,7 +122,7 @@ dplot(~ year | age * region,
       subarray = region %in% c("Auckland", "Taranaki", "Southland"))
 
 ## ------------------------------------------------------------------------
-prior.year <- DLM(level = HalfT(scale = 0.1),
+prior.year <- DLM(level = Level(scale = HalfT(scale = 0.1)),
                   trend = NULL,
                   damp = NULL,
                   error = Error(scale = HalfT(scale = 0.1)))
@@ -143,11 +143,11 @@ prior.reg
 
 ## ------------------------------------------------------------------------
 error.age.reg <- Error(robust = TRUE, scale = HalfT(mult = 2))
-prior.age.reg<- Exch(error = error.reg)
+prior.age.reg <- Exch(error = error.reg)
 prior.age.reg
 
 ## ------------------------------------------------------------------------
-level.age.year <- HalfT(scale = 0.05)
+level.age.year <- Level(scale = HalfT(scale = 0.05))
 damp.age.year <- Damp(coef = 0.9)
 error.age.year <- Error(scale = HalfT(scale = 0.05))
 prior.age.year <- DLM(level = level.age.year,

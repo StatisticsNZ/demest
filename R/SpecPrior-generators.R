@@ -383,9 +383,9 @@ Damp <- function(coef = NULL, min = 0.8, max = 0.98) {
 #' \code{\link{HalfT}}.
 #'
 #' @param along Name of a dimension.  
-#' @param level An object of class \code{\linkS4class{HalfT}}
+#' @param level An object of class \code{\linkS4class{Level}}
 #' specifying the prior for \code{errorLevel}.
-#' @param trend An object of class \code{\linkS4class{HalfT}}
+#' @param trend An object of class \code{\linkS4class{Trend}}
 #' (the default) or \code{NULL}.  If \code{trend} is \code{NULL},
 #' then \code{DLM} produces local level model; otherwise
 #' \code{DLM} produces a linear trend model.
@@ -1328,7 +1328,7 @@ HalfT <- function(df = 7, scale = NULL, max = NULL, mult = 1) {
 Initial <- function(mean = 0, sd = NULL, mult = 1) {
     mean <- checkAndTidyMeanOrProb(object = mean,
                                    name = "mean")
-    mean <- new("Parameter", mean)
+    mean <- methods::new("Parameter", mean)
     A <- checkAndTidySpecScale(x = sd,
                                name = "sd")
     mult <- checkAndTidyMult(mult = mult,

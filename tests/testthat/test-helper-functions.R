@@ -568,6 +568,8 @@ test_that("initialDLMWithTrend works", {
     expect_true(all(sapply(l$RWithTrend, length) == 4L))
     expect_true(all(sapply(l$UC, length) == 4L))
     expect_true(all(sapply(l$UR, length) == 4L))
+    expect_identical(l$ADelta0, new("Scale", 1))
+    expect_identical(l$meanDelta0, new("Parameter", 0))
     ## mult = 0.5
     spec <- DLM(trend = Trend(scale = HalfT(mult = 0.5)))
     l <- initialDLMWithTrend(spec,
@@ -589,6 +591,8 @@ test_that("initialDLMWithTrend works", {
     expect_identical(l$DC[[1]], diag(c(10, 0.1)))
     expect_identical(l$DCInv[[1]], diag(c(0.1, 10)))
     expect_identical(l$m0WithTrend[[1]], c(0, 0.05))
+    expect_identical(l$ADelta0, new("Scale", 0.1))
+    expect_identical(l$meanDelta0, new("Parameter", 0.05))
 })
 
 test_that("initialDLMWithTrendPredict works", {
