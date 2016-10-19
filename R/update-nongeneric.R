@@ -1536,7 +1536,7 @@ updateThetaAndValueAgNormal_Binomial <- function(object, y, exposure, useC = FAL
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 updateThetaAndValueAgFun_Binomial <- function(object, y, exposure, useC = FALSE) {
     ## object
