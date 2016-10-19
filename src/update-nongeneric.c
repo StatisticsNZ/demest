@@ -2371,6 +2371,460 @@ updateThetaAndValueAgNormal_Binomial(SEXP object, SEXP y_R, SEXP exposure_R)
     SET_INTSCALE_SLOT(object, nFailedPropValueAg_sym, n_failed_prop_value_ag);
 }
 
+/*
+ ## READY_TO_TRANSLATE
+## HAS_TESTS
+updateThetaAndValueAgFun_Binomial <- function(object, y, exposure, useC = FALSE) {
+    ## object
+    stopifnot(methods::is(object, "BinomialVarying"))
+    stopifnot(methods::is(object, "AgFun"))
+    stopifnot(methods::validObject(object))
+    ## y
+    stopifnot(methods::is(y, "Counts"))
+    stopifnot(is.integer(y))
+    stopifnot(identical(length(y), length(object@theta)))
+    stopifnot(all(y[!is.na(y)] >= 0))
+    ## exposure
+    stopifnot(methods::is(exposure, "Counts"))
+    stopifnot(is.integer(exposure))
+    stopifnot(all(exposure[!is.na(exposure)] >= 0))
+    ## y and exposure
+    stopifnot(identical(length(exposure), length(y)))
+    stopifnot(all(is.na(exposure) <= is.na(y)))
+    stopifnot(all(y[!is.na(y)] <= exposure[!is.na(y)]))
+    if (useC) {
+        .Call(updateThetaAndValueAgFun_Binomial_R, object, y, exposure)
+    }
+    else {
+        theta <- object@theta
+        scale <- object@scaleTheta
+        scale.multiplier <- object@scaleThetaMultiplier
+        lower <- object@lower
+        upper <- object@upper
+        tolerance <- object@tolerance
+        sigma <- object@sigma@.Data
+        betas <- object@betas
+        iterator <- object@iteratorBetas
+        value.ag <- object@valueAg@.Data
+        mean.ag <- object@meanAg@.Data
+        sd.ag <- object@sdAg@.Data
+        transform.ag <- object@transformAg
+        fun.ag <- object@funAg
+        x.args.ag <- object@xArgsAg # list of "Values" objects
+        weights.args.ag <- object@weightsArgsAg # list of "Counts" objects
+        max.attempt <- object@maxAttempt
+        n.failed.prop.theta <- 0L
+        n.accept.theta <- 0L
+        iterator <- resetB(iterator)
+        scale <- scale * scale.multiplier
+        n.shared <- length(x.args.ag[[1L]]@.Data)
+        for (i in seq_along(theta)) {
+            indices <- iterator@indices
+            mu <- 0
+            for (b in seq_along(betas))
+                mu <- mu + betas[[b]][indices[b]]
+            i.ag <- getIAfter(i = i,
+                              transform = transform.ag,
+                              check = FALSE,
+                              useC = TRUE)
+            contributes.to.ag <- i.ag > 0L
+            y.is.missing <- is.na(y[i])
+            th.curr <- theta[i]
+            logit.th.curr <- log(th.curr / (1 - th.curr))
+            if (y.is.missing) {
+                mean <- mu
+                sd <- sigma
+            }
+            else {
+                mean <- logit.th.curr
+                sd <- scale / sqrt(1 + log(1 + exposure[i]))
+            }
+            found.prop <- FALSE
+            attempt <- 0L
+            while (!found.prop && (attempt < max.attempt)) {
+                attempt <- attempt + 1L
+                logit.th.prop <- stats::rnorm(n = 1L, mean = mean, sd = sd)
+                found.prop <- ((logit.th.prop > lower + tolerance)
+                               && (logit.th.prop < upper - tolerance))
+            }
+            if (found.prop) {
+                if (logit.th.prop > 0)
+                    th.prop <- 1 / (1 + exp(-logit.th.prop))
+                else
+                    th.prop <- exp(logit.th.prop) / (1 + exp(logit.th.prop))
+                draw.straight.from.prior <- y.is.missing && !contributes.to.ag
+                if (draw.straight.from.prior)
+                    theta[i] <- th.prop
+                else {
+                    if (y.is.missing)
+                        log.diff <- 0
+                    else {
+                        log.lik.prop <- stats::dbinom(y[i], prob = th.prop, size = exposure[i], log = TRUE)
+                        log.lik.curr <- stats::dbinom(y[i], prob = th.curr, size = exposure[i], log = TRUE)
+                        log.diff <- log.lik.prop - log.lik.curr
+                    }
+                    log.dens.prop <- stats::dnorm(x = logit.th.prop, mean = mu, sd = sigma, log = TRUE)
+                    log.dens.curr <- stats::dnorm(x = logit.th.curr, mean = mu, sd = sigma, log = TRUE)
+                    log.diff <- log.diff + log.dens.prop - log.dens.curr
+                    if (contributes.to.ag) {
+                        ag.curr <- value.ag[i.ag]
+                        mean <- mean.ag[i.ag]
+                        sd <- sd.ag[i.ag]
+                        weights <- weights.args.ag[[i.ag]]
+                        x <- x.args.ag[[i.ag]]
+                        i.shared <- dembase::getIShared(i = i,
+                                                        transform = transform.ag,
+                                                        useC = TRUE)
+                        x@.Data[i.shared == i] <- th.prop
+                        ag.prop <- fun.ag(x = x, weights = weights)
+                        log.dens.ag.prop <- stats::dnorm(x = mean, mean = ag.prop, sd = sd, log = TRUE)
+                        log.dens.ag.curr <- stats::dnorm(x = mean, mean = ag.curr, sd = sd, log = TRUE)
+                        log.diff <- log.diff + log.dens.ag.prop - log.dens.ag.curr
+                    }
+                    accept <- (log.diff >= 0) || (stats::runif(n = 1L) < exp(log.diff))
+                    if (accept) {
+                        n.accept.theta <- n.accept.theta + 1L
+                        theta[i] <- th.prop
+                        if (contributes.to.ag) {
+                            x.args.ag[[i.ag]] <- x
+                            value.ag[i.ag] <- ag.prop
+                        }
+                    }
+                }
+            }
+            else
+                n.failed.prop.theta <- n.failed.prop.theta + 1L
+            iterator <- advanceB(iterator)
+        }
+        object@theta <- theta
+        object@valueAg@.Data <- value.ag
+        object@xArgsAg <- x.args.ag
+        object@nFailedPropTheta@.Data <- n.failed.prop.theta
+        object@nAcceptTheta@.Data <- n.accept.theta
+        object
+    }
+}
+
+ * */
+
+void
+updateThetaAndValueAgFun_Binomial(SEXP object, SEXP y_R, SEXP exposure_R)
+{
+    /*theta <- object@theta
+        scale <- object@scaleTheta
+        scale.multiplier <- object@scaleThetaMultiplier
+        lower <- object@lower
+        upper <- object@upper
+        tolerance <- object@tolerance
+        sigma <- object@sigma@.Data
+        betas <- object@betas
+        iterator <- object@iteratorBetas
+        value.ag <- object@valueAg@.Data
+        mean.ag <- object@meanAg@.Data
+        sd.ag <- object@sdAg@.Data
+        transform.ag <- object@transformAg
+        fun.ag <- object@funAg
+        x.args.ag <- object@xArgsAg # list of "Values" objects
+        weights.args.ag <- object@weightsArgsAg # list of "Counts" objects
+        max.attempt <- object@maxAttempt
+        n.failed.prop.theta <- 0L
+        n.accept.theta <- 0L
+        iterator <- resetB(iterator)
+        scale <- scale * scale.multiplier
+        n.shared <- length(x.args.ag[[1L]]@.Data)*/
+    int *y = INTEGER(y_R);
+    int *exposure = INTEGER(exposure_R);
+
+    SEXP theta_R = GET_SLOT(object, theta_sym);
+    double *theta = REAL(theta_R);
+    int n_theta = LENGTH(theta_R);
+    /* n_theta and length of y_R are all identical */
+
+    double lower = *REAL(GET_SLOT(object, lower_sym));
+    double upper = *REAL(GET_SLOT(object, upper_sym));
+    double tolerance = *REAL(GET_SLOT(object, tolerance_sym));
+
+    double scale = *REAL(GET_SLOT(object, scaleTheta_sym));
+    double scale_multiplier = *REAL(GET_SLOT(object, scaleThetaMultiplier_sym));
+    double sigma = *REAL(GET_SLOT(object, sigma_sym));
+    scale *= scale_multiplier;
+
+    SEXP betas_R = GET_SLOT(object, betas_sym);
+    int n_beta =  LENGTH(betas_R);
+
+    double *valueAg = REAL(GET_SLOT(object, valueAg_sym));
+    
+    double *meanAg = REAL(GET_SLOT(object, meanAg_sym));
+    double *sdAg = REAL(GET_SLOT(object, sdAg_sym));
+
+    SEXP transformAg_R = GET_SLOT(object, transformAg_sym);
+
+    SEXP iteratorBetas_R = GET_SLOT(object, iteratorBetas_sym);
+    resetB(iteratorBetas_R);
+
+    double* betas[n_beta]; /* array of pointers */
+    for (int b = 0; b < n_beta; ++b) {
+        betas[b] = REAL(VECTOR_ELT(betas_R, b));
+    }
+    
+	SEXP funAg_R = GET_SLOT(object, funAg_sym);
+    
+    /* set up to be able to call the R function from C */     
+    SEXP call_R = NULL;
+    /* call_R will be the final called object */ 
+    PROTECT(call_R = allocList(3));
+    SET_TYPEOF(call_R, LANGSXP);
+    SETCAR(call_R, funAg_R); /* sets first value in list to this function*/
+    
+    SEXP xArgsAg_R = GET_SLOT(object, xArgsAg_sym);
+    SEXP weightsArgsAg_R = GET_SLOT(object, weightsArgsAg_sym);
+    double *tmp_x = NULL;
+    int length_x_args_list = LENGTH(xArgsAg_R);
+    int n_xs = 0;
+    if (length_x_args_list > 0) {
+		SEXP first_R = VECTOR_ELT(xArgsAg_R, 0);
+		n_xs = length(first_R);
+		tmp_x = (double *)R_alloc(n_xs, sizeof(double));
+    }
+    
+    int maxAttempt = *INTEGER(GET_SLOT(object, maxAttempt_sym));
+
+    int n_accept_theta = 0;
+    int n_failed_prop_theta = 0;
+
+    int *indices = INTEGER(GET_SLOT(iteratorBetas_R, indices_sym));
+
+/*        for (i in seq_along(theta)) {
+            indices <- iterator@indices
+            mu <- 0
+            for (b in seq_along(betas))
+                mu <- mu + betas[[b]][indices[b]]
+            i.ag <- getIAfter(i = i,
+                              transform = transform.ag,
+                              check = FALSE,
+                              useC = TRUE)
+            contributes.to.ag <- i.ag > 0L
+            y.is.missing <- is.na(y[i])
+            th.curr <- theta[i]
+            logit.th.curr <- log(th.curr / (1 - th.curr))
+            if (y.is.missing) {
+                mean <- mu
+                sd <- sigma
+            }
+*/
+
+	for (int i = 0; i < n_theta; ++i) {
+
+        int ir = i+1; /* R style index */
+        
+        double mu = 0.0;
+        for (int b = 0; b < n_beta; ++b) {
+            double *this_beta = betas[b];
+            mu += this_beta[indices[b]-1];
+        }
+
+        int i_ag_r = dembase_getIAfter(ir, transformAg_R);
+        int i_ag = i_ag_r - 1;
+        
+        int contributes_to_ag = (i_ag_r > 0);
+    
+		int this_y = y[i];
+        int y_is_missing = ( this_y == NA_INTEGER || ISNA(this_y) );
+        
+        int draw_straight_from_prior = (y_is_missing && !contributes_to_ag);
+        
+        int this_exposure = exposure[i];
+        
+        double theta_curr = theta[i];
+        double logit_th_curr = log( theta_curr/(1-theta_curr) );
+        
+        double mean = mu;
+        double sd = sigma;
+        
+        if (!y_is_missing) {
+            
+            mean = logit_th_curr;
+            sd = scale / sqrt( 1 + log(1 + this_exposure) );
+        }
+        
+        /*else {
+                mean <- logit.th.curr
+                sd <- scale / sqrt(1 + log(1 + exposure[i]))
+            }
+            found.prop <- FALSE
+            attempt <- 0L
+            while (!found.prop && (attempt < max.attempt)) {
+                attempt <- attempt + 1L
+                logit.th.prop <- stats::rnorm(n = 1L, mean = mean, sd = sd)
+                found.prop <- ((logit.th.prop > lower + tolerance)
+                               && (logit.th.prop < upper - tolerance))
+            }*/
+        
+        int attempt = 0;
+        int found_prop = 0;
+        
+        double logit_th_prop = 0.0;
+        
+        while( (!found_prop) && (attempt < maxAttempt) ) {
+
+            ++attempt;
+            
+            logit_th_prop = rnorm(mean, sd);
+            found_prop = ( (logit_th_prop > lower + tolerance) &&
+                            (logit_th_prop < upper - tolerance));
+ 
+        }
+        /*if (found.prop) {
+                if (logit.th.prop > 0)
+                    th.prop <- 1 / (1 + exp(-logit.th.prop))
+                else
+                    th.prop <- exp(logit.th.prop) / (1 + exp(logit.th.prop))
+                draw.straight.from.prior <- y.is.missing && !contributes.to.ag
+                if (draw.straight.from.prior)
+                    theta[i] <- th.prop
+                else {
+                    
+*/
+        if (found_prop) {
+			
+            double exp_logit_theta_prop = exp(logit_th_prop);
+            
+            double theta_prop = exp_logit_theta_prop / ( 1 + exp_logit_theta_prop);
+			if (logit_th_prop > 0) {
+                theta_prop = 1 / ( 1 + 1/exp_logit_theta_prop );
+            }
+            
+            if (draw_straight_from_prior) {
+                theta[i] = theta_prop;
+            }
+            else {
+				
+                SEXP x_R = NULL;
+				SEXP weight_R = NULL;
+				double *x = NULL;
+				
+				if (contributes_to_ag) {
+							
+					x_R = VECTOR_ELT(xArgsAg_R, i_ag);
+					weight_R = VECTOR_ELT(weightsArgsAg_R, i_ag);
+					x = REAL(x_R);
+					/* store these xs in case we need to restore them*/
+					memcpy(tmp_x, x, n_xs*sizeof(double));
+				}
+                
+                /*if (y.is.missing)
+                        log.diff <- 0
+                    else {
+                        log.lik.prop <- stats::dbinom(y[i], prob = th.prop, size = exposure[i], log = TRUE)
+                        log.lik.curr <- stats::dbinom(y[i], prob = th.curr, size = exposure[i], log = TRUE)
+                        log.diff <- log.lik.prop - log.lik.curr
+                    }
+                    log.dens.prop <- stats::dnorm(x = logit.th.prop, mean = mu, sd = sigma, log = TRUE)
+                    log.dens.curr <- stats::dnorm(x = logit.th.curr, mean = mu, sd = sigma, log = TRUE)
+                    log.diff <- log.diff + log.dens.prop - log.dens.curr*/
+                
+                double log_diff = 0;
+                
+                if (!y_is_missing) {
+                    
+                    double log_lik_prop = dbinom(this_y, theta_prop, this_exposure, USE_LOG);
+                    double log_lik_curr = dbinom(this_y, theta_curr, this_exposure, USE_LOG);
+                    log_diff = log_lik_prop - log_lik_curr;    
+                }
+                
+                double log_dens_prop = dnorm(logit_th_prop, mu, sigma, USE_LOG);
+                double log_dens_curr = dnorm(logit_th_curr, mu, sigma, USE_LOG);
+                log_diff += (log_dens_prop - log_dens_curr);
+
+                double ag_prop = 0;
+                
+                /*if (contributes.to.ag) {
+                        ag.curr <- value.ag[i.ag]
+                        mean <- mean.ag[i.ag]
+                        sd <- sd.ag[i.ag]
+                        weights <- weights.args.ag[[i.ag]]
+                        x <- x.args.ag[[i.ag]]
+                        i.shared <- dembase::getIShared(i = i,
+                                                        transform = transform.ag,
+                                                        useC = TRUE)
+                        x@.Data[i.shared == i] <- th.prop
+                        ag.prop <- fun.ag(x = x, weights = weights)
+                        log.dens.ag.prop <- stats::dnorm(x = mean, mean = ag.prop, sd = sd, log = TRUE)
+                        log.dens.ag.curr <- stats::dnorm(x = mean, mean = ag.curr, sd = sd, log = TRUE)
+                        log.diff <- log.diff + log.dens.ag.prop - log.dens.ag.curr
+                    }*/
+                
+                if (contributes_to_ag) {
+					
+				    double ag_curr = valueAg[i_ag];
+                    double mean_ag = meanAg[i_ag];
+                    double sd_ag = sdAg[i_ag];
+                    
+                    SEXP ir_shared_R;
+					PROTECT( ir_shared_R 
+						 = dembase_getIShared(ir, transformAg_R) ); 
+					int n_ir_shared = LENGTH(ir_shared_R);
+					int *ir_shared = INTEGER(ir_shared_R);
+					
+					for (int j = 0; j < n_ir_shared; ++j) {
+                        if ( i == (ir_shared[j] - 1) ) {
+                            x[j] = theta_prop;
+                            /* alters this x in the original R SEXP object */
+                        }
+                    }
+       
+                    /* set 2nd and 3rd values in the function call object */
+                    SETCADR(call_R, x_R);
+                    SETCADDR(call_R, weight_R);
+					
+					/* call the supplied function */
+                    SEXP prop_R = PROTECT(eval(call_R, R_GlobalEnv));
+                    ag_prop = *REAL(prop_R);
+                    
+                    UNPROTECT(2); /* ir_shared_r, current prop_R */
+                    
+                    double log_dens_ag_prop = dnorm(mean_ag, ag_prop, sd_ag, USE_LOG);
+					double log_dens_ag_curr = dnorm(mean_ag, ag_curr, sd_ag, USE_LOG);
+					log_diff += log_dens_ag_prop - log_dens_ag_curr;
+				}
+				
+                /*accept <- (log.diff >= 0) || (stats::runif(n = 1L) < exp(log.diff))
+                    if (accept) {
+                        n.accept.theta <- n.accept.theta + 1L
+                        theta[i] <- th.prop
+                        if (contributes.to.ag) {
+                            x.args.ag[[i.ag]] <- x
+                            value.ag[i.ag] <- ag.prop
+                        }
+                    }*/
+                    
+				int accept = (!(log_diff < 0) || (runif(0, 1) < exp(log_diff)));
+				if (accept) {
+					++n_accept_theta;
+					theta[i] = theta_prop;
+					if (contributes_to_ag) {
+						/* x will have been updated in place already*/
+						valueAg[i_ag] = ag_prop;
+					}
+				}
+				else if (contributes_to_ag) {
+					/* unmodify the x_ags */
+					memcpy(x, tmp_x, n_xs*sizeof(double));
+				}
+			}
+        }
+        else { /* not found prop */
+            ++n_failed_prop_theta;
+        }
+        
+        advanceB(iteratorBetas_R);
+    } /* end i-loop through thetas */
+    
+    SET_INTSCALE_SLOT(object, nAcceptTheta_sym, n_accept_theta);
+    SET_INTSCALE_SLOT(object, nFailedPropTheta_sym, n_failed_prop_theta);
+    UNPROTECT(1); /* call_R */
+}
+
 
 /* y_R is a demographic array, g'teed to be doubles,
  * betas is a list, length same as length of the iteratorBetas' indices */

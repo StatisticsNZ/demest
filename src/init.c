@@ -1063,6 +1063,7 @@ UPDATEOBJECT_WRAPPER_R(updateSigma_Varying);
 UPDATEOBJECT_NOEXP_WRAPPER_R(updateVarsigma);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateTheta_BinomialVarying);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateTheta_BinomialVaryingAgCertain);
+UPDATEOBJECT_WITHEXP_WRAPPER_R(updateThetaAndValueAgFun_Binomial);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateThetaAndValueAgNormal_Binomial);
 UPDATEOBJECT_NOEXP_WRAPPER_R(updateTheta_PoissonVaryingNotUseExp);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateTheta_PoissonVaryingUseExp);
@@ -1334,6 +1335,7 @@ R_CallMethodDef callMethods[] = {
   
   CALLDEF(updateTheta_BinomialVarying_R, 3),
   CALLDEF(updateTheta_BinomialVaryingAgCertain_R, 3),
+  CALLDEF(updateThetaAndValueAgFun_Binomial_R, 3),
   CALLDEF(updateThetaAndValueAgNormal_Binomial_R, 3),
   CALLDEF(updateTheta_PoissonVaryingNotUseExp_R, 2),
   CALLDEF(updateTheta_PoissonVaryingUseExp_R, 3),
