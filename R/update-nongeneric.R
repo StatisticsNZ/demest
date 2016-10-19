@@ -2016,7 +2016,7 @@ updateThetaAndValueAgNormal_Normal <- function(object, y, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 updateThetaAndValueAgFun_Normal <- function(object, y, useC = FALSE) {
     ## object

@@ -1076,6 +1076,7 @@ UPDATEOBJECT_WITHEXP_WRAPPER_R(updateThetaAndValueAgPoisson_PoissonUseExp);
 UPDATEOBJECT_NOEXP_WRAPPER_R(updateTheta_NormalVarying);
 UPDATEOBJECT_NOEXP_WRAPPER_R(updateTheta_NormalVaryingAgCertain);
 UPDATEOBJECT_NOEXP_WRAPPER_R(updateThetaAndValueAgNormal_Normal);
+UPDATEOBJECT_NOEXP_WRAPPER_R(updateThetaAndValueAgFun_Normal);
 UPDATEOBJECT_NOEXP_WRAPPER_R(updateThetaAndValueAgFun_PoissonNotUseExp);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateThetaAndValueAgFun_PoissonUseExp);
 
@@ -1348,6 +1349,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateTheta_NormalVarying_R, 2),
   CALLDEF(updateTheta_NormalVaryingAgCertain_R, 2),
   CALLDEF(updateThetaAndValueAgNormal_Normal_R, 2),
+  CALLDEF(updateThetaAndValueAgFun_Normal_R, 2),
   CALLDEF(updateThetaAndValueAgFun_PoissonNotUseExp_R, 2),
   CALLDEF(updateThetaAndValueAgFun_PoissonUseExp_R, 3),
   

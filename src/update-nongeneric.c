@@ -86,53 +86,54 @@ updateSDNorm(double sigma, double A, double nu, double V, int n, double max)
     return ans;
 }
 
-/* double  */
-/* updateSDNorm(double sigma, double A, double nu, double V, int n, double max) */
-/* { */
-/*     double sigmaSq = sigma * sigma; */
-/*     double nuPlusOne = nu + 1; */
-/*     double nPlusNuPlusOne = n + nuPlusOne; */
-/*     double nuASq = nu * A * A; */
-/*     double n_nuASq = n*nuASq; */
-    
-/*     double f = -n*log(sigma) - V/(2*sigmaSq) - nuPlusOne/2 * log(sigmaSq + nuASq); */
-/*     double e = rexp(1.0); */
-/*     double z = f - e; */
-/*     double numerator = V - n_nuASq  */
-/*             + sqrt((V - n_nuASq)*(V - n_nuASq) + 4*nPlusNuPlusOne*V*nuASq); */
-/*     double denominator = 2*nPlusNuPlusOne; */
-    
-/*     double sigma_f_max = sqrt(numerator/denominator); */
-/*     double sigma0_left = 0.5*sigma_f_max; */
-/*     double sigma0_right = 1.5*sigma_f_max; */
-    
-/*     double ans = -99; /\* default answer *\/ */
+#if(0) /* I think this was commented out and replaced at some stage by John?? - JAH */
+double  
+updateSDNorm(double sigma, double A, double nu, double V, int n, double max) 
+{ 
+    double sigmaSq = sigma * sigma; 
+    double nuPlusOne = nu + 1; 
+    double nPlusNuPlusOne = n + nuPlusOne; 
+    double nuASq = nu * A * A; 
+    double n_nuASq = n*nuASq; 
 
-/*     double rootLeft = findOneRootLogPostSigmaNorm(sigma0_left, */
-/*                                         z, A, nu, V, n, 0, sigma_f_max); */
-/*     int foundRootLeft = (rootLeft > 0); */
-    
-/*     if (foundRootLeft) { */
-/*         double rootRight = findOneRootLogPostSigmaNorm(sigma0_right, */
-/*                                         z, A, nu, V, n, sigma_f_max, max); */
-/*         int foundRootRight = (rootRight > 0); */
-        
-/*         if (foundRootRight) { */
-/*             ans = runif(rootLeft, rootRight); */
-/*         } */
-    
-/*     } */
-/*     else { */
-/*         double near_sigma_f_max = (rootLeft > -2); */
-/*         if (near_sigma_f_max) { */
-/*             ans = sigma_f_max; */
-/*         } */
-/*     }     */
-    
-/*     return ans; */
+    double f = -n*log(sigma) - V/(2*sigmaSq) - nuPlusOne/2 * log(sigmaSq + nuASq); 
+    double e = rexp(1.0); 
+    double z = f - e; 
+    double numerator = V - n_nuASq  
+         + sqrt((V - n_nuASq)*(V - n_nuASq) + 4*nPlusNuPlusOne*V*nuASq); 
+    double denominator = 2*nPlusNuPlusOne; 
 
-/* } */
+    double sigma_f_max = sqrt(numerator/denominator); 
+    double sigma0_left = 0.5*sigma_f_max; 
+    double sigma0_right = 1.5*sigma_f_max; 
 
+    double ans = -99; /* default answer */ 
+
+    double rootLeft = findOneRootLogPostSigmaNorm(sigma0_left, 
+                                     z, A, nu, V, n, 0, sigma_f_max); 
+    int foundRootLeft = (rootLeft > 0); 
+
+    if (foundRootLeft) { 
+        double rootRight = findOneRootLogPostSigmaNorm(sigma0_right, 
+                                     z, A, nu, V, n, sigma_f_max, max); 
+        int foundRootRight = (rootRight > 0); 
+
+        if (foundRootRight) { 
+            ans = runif(rootLeft, rootRight); 
+        } 
+
+    } 
+    else { 
+        double near_sigma_f_max = (rootLeft > -2); 
+        if (near_sigma_f_max) { 
+            ans = sigma_f_max; 
+        } 
+    }     
+
+    return ans; 
+
+} 
+#endif
 
 double 
 updateSDRobust(double sigma, double A, double nuBeta, double nuTau, double V, int n, double max)
@@ -204,51 +205,52 @@ updateSDRobust(double sigma, double A, double nuBeta, double nuTau, double V, in
 
 
 
-/* double  */
-/* updateSDRobust(double sigma, double A, double nuBeta, double nuTau, double V, int n, double max) */
-/* { */
-/*     double sigmaSq = sigma * sigma; */
-/*     double nuTauPlusOne = nuTau + 1; */
-/*     double nuTauASq = nuTau * A * A; */
-/*     double n_nuBeta = n*nuBeta; */
+#if(0) /* I think this was commented out and replaced at some stage by John?? - JAH */
+double 
+updateSDRobust(double sigma, double A, double nuBeta, double nuTau, double V, int n, double max)
+{
+    double sigmaSq = sigma * sigma;
+    double nuTauPlusOne = nuTau + 1;
+    double nuTauASq = nuTau * A * A;
+    double n_nuBeta = n*nuBeta;
     
-/*     double f = n_nuBeta*log(sigma) - nuBeta/2 *sigmaSq* V - nuTauPlusOne/2 * log(sigmaSq + nuTauASq); */
-/*     double e = rexp(1.0); */
-/*     double z = f - e; */
-/*     double H1 = nuBeta*V; */
-/*     double H2 = H1 * nuTauASq + nuTauPlusOne - n_nuBeta; */
-/*     double H3 = -n_nuBeta*nuTauASq; */
+    double f = n_nuBeta*log(sigma) - nuBeta/2 *sigmaSq* V - nuTauPlusOne/2 * log(sigmaSq + nuTauASq);
+    double e = rexp(1.0);
+    double z = f - e;
+    double H1 = nuBeta*V;
+    double H2 = H1 * nuTauASq + nuTauPlusOne - n_nuBeta;
+    double H3 = -n_nuBeta*nuTauASq;
     
-/*     double sigma_f_max = sqrt((-H2 +sqrt(H2*H2 - 4*H1*H3))/(2*H1)); */
-/*     double sigma0_left = 0.5*sigma_f_max; */
-/*     double sigma0_right = 1.5*sigma_f_max; */
+    double sigma_f_max = sqrt((-H2 +sqrt(H2*H2 - 4*H1*H3))/(2*H1));
+    double sigma0_left = 0.5*sigma_f_max;
+    double sigma0_right = 1.5*sigma_f_max;
     
-/*     double ans = -99; /\* default answer *\/ */
+    double ans = -99; /* default answer */
     
-/*     double rootLeft = findOneRootLogPostSigmaRobust(sigma0_left, */
-/*                         z, A, nuBeta, nuTau, V, n, 0, sigma_f_max); */
-/*     int foundRootLeft = (rootLeft > 0); */
+    double rootLeft = findOneRootLogPostSigmaRobust(sigma0_left,
+                        z, A, nuBeta, nuTau, V, n, 0, sigma_f_max);
+    int foundRootLeft = (rootLeft > 0);
     
-/*     if (foundRootLeft) { */
-/*         double rootRight = findOneRootLogPostSigmaRobust(sigma0_right, */
-/*                         z, A, nuBeta, nuTau, V, n, sigma_f_max, max); */
-/*         int foundRootRight = (rootRight > 0); */
+    if (foundRootLeft) {
+        double rootRight = findOneRootLogPostSigmaRobust(sigma0_right,
+                        z, A, nuBeta, nuTau, V, n, sigma_f_max, max);
+        int foundRootRight = (rootRight > 0);
         
-/*         if (foundRootRight) { */
-/*             ans = runif(rootLeft, rootRight); */
-/*         } */
+        if (foundRootRight) {
+            ans = runif(rootLeft, rootRight);
+        }
     
-/*     } */
-/*     else { */
-/*         double near_sigma_f_max = (rootLeft > -2); */
-/*         if (near_sigma_f_max) { */
-/*             ans = sigma_f_max; */
-/*         } */
-/*     }     */
+    }
+    else {
+        double near_sigma_f_max = (rootLeft > -2);
+        if (near_sigma_f_max) {
+            ans = sigma_f_max;
+        }
+    }    
     
-/*     return ans; */
-/* } */
-
+    return ans;
+}
+#endif
 
 
 
@@ -3239,6 +3241,217 @@ updateThetaAndValueAgNormal_Normal(SEXP object, SEXP y_R)
     SET_INTSCALE_SLOT(object, nFailedPropValueAg_sym, n_failed_prop_value_ag);
 }
 
+void
+updateThetaAndValueAgFun_Normal(SEXP object, SEXP y_R)
+{
+    double *y = REAL(y_R);
+
+    SEXP theta_R = GET_SLOT(object, theta_sym);
+    double *theta = REAL(theta_R);
+    int n_theta = LENGTH(theta_R);
+    double *w = REAL(GET_SLOT(object, w_sym));
+    /* n_theta and length of w and y_R are all identical */
+
+    double varsigma = *REAL(GET_SLOT(object, varsigma_sym));
+
+    double lower = *REAL(GET_SLOT(object, lower_sym));
+    double upper = *REAL(GET_SLOT(object, upper_sym));
+    double tolerance = *REAL(GET_SLOT(object, tolerance_sym));
+
+    double scale = *REAL(GET_SLOT(object, scaleTheta_sym));
+    double sigma = *REAL(GET_SLOT(object, sigma_sym));
+
+    SEXP betas_R = GET_SLOT(object, betas_sym);
+    int n_beta =  LENGTH(betas_R);
+
+    double *valueAg = REAL(GET_SLOT(object, valueAg_sym));
+    
+    double *meanAg = REAL(GET_SLOT(object, meanAg_sym));
+    double *sdAg = REAL(GET_SLOT(object, sdAg_sym));
+
+    SEXP transformAg_R = GET_SLOT(object, transformAg_sym);
+
+    SEXP iteratorBetas_R = GET_SLOT(object, iteratorBetas_sym);
+    resetB(iteratorBetas_R);
+
+    double* betas[n_beta]; /* array of pointers */
+    for (int b = 0; b < n_beta; ++b) {
+        betas[b] = REAL(VECTOR_ELT(betas_R, b));
+    }
+    
+	SEXP funAg_R = GET_SLOT(object, funAg_sym);
+    
+    /* set up to be able to call the R function from C */     
+    SEXP call_R = NULL;
+    /* call_R will be the final called object */ 
+    PROTECT(call_R = allocList(3));
+    SET_TYPEOF(call_R, LANGSXP);
+    SETCAR(call_R, funAg_R); /* sets first value in list to this function*/
+    
+    SEXP xArgsAg_R = GET_SLOT(object, xArgsAg_sym);
+    SEXP weightsArgsAg_R = GET_SLOT(object, weightsArgsAg_sym);
+    double *tmp_x = NULL;
+    int length_x_args_list = LENGTH(xArgsAg_R);
+    int n_xs = 0;
+    if (length_x_args_list > 0) {
+		SEXP first_R = VECTOR_ELT(xArgsAg_R, 0);
+		n_xs = length(first_R);
+		tmp_x = (double *)R_alloc(n_xs, sizeof(double));
+    }
+    
+    int maxAttempt = *INTEGER(GET_SLOT(object, maxAttempt_sym));
+
+    int n_accept_theta = 0;
+    int n_failed_prop_theta = 0;
+
+    int *indices = INTEGER(GET_SLOT(iteratorBetas_R, indices_sym));
+
+	for (int i = 0; i < n_theta; ++i) {
+
+        int ir = i+1; /* R style index */
+        
+        double mu = 0.0;
+        for (int b = 0; b < n_beta; ++b) {
+            double *this_beta = betas[b];
+            mu += this_beta[indices[b]-1];
+        }
+
+        int i_ag_r = dembase_getIAfter(ir, transformAg_R);
+        int i_ag = i_ag_r - 1;
+        
+        int contributes_to_ag = (i_ag_r > 0);
+    
+		double this_y = y[i];
+        int y_is_missing = ( this_y == NA_REAL || ISNA(this_y) );
+        
+        int draw_straight_from_prior = (y_is_missing && !contributes_to_ag);
+        
+        double th_curr = theta[i];
+        
+        double mean = mu;
+        double sd = sigma;
+        
+        double this_w = w[i];
+        double this_varsigma_over_sqrtw = varsigma/sqrt(this_w);
+        
+        if (!y_is_missing) {
+            
+            mean = th_curr;
+            sd = scale/sqrt(this_w);
+        }
+        
+        int attempt = 0;
+        int found_prop = 0;
+        
+        double th_prop = 0.0;
+        
+        while( (!found_prop) && (attempt < maxAttempt) ) {
+
+            ++attempt;
+            
+            th_prop = rnorm(mean, sd);
+            found_prop = ( (th_prop > lower + tolerance) &&
+                            (th_prop < upper - tolerance));
+ 
+        }
+        
+        if (found_prop) {
+			
+			if (draw_straight_from_prior) {
+                theta[i] = th_prop;
+            }
+            else {
+				
+				SEXP x_R = NULL;
+				SEXP weight_R = NULL;
+				double *x = NULL;
+				
+				if (contributes_to_ag) {
+							
+					x_R = VECTOR_ELT(xArgsAg_R, i_ag);
+					weight_R = VECTOR_ELT(weightsArgsAg_R, i_ag);
+					x = REAL(x_R);
+					/* store these xs in case we need to restore them*/
+					memcpy(tmp_x, x, n_xs*sizeof(double));
+				}
+                
+                double log_diff = 0;
+                
+                if (!y_is_missing) {
+                
+                    double log_lik_prop = dnorm(this_y, th_prop, 
+                                    this_varsigma_over_sqrtw, USE_LOG);
+                    double log_lik_curr = dnorm(this_y, th_curr, 
+                                    this_varsigma_over_sqrtw, USE_LOG);
+                    log_diff = log_lik_prop - log_lik_curr;    
+                }
+                
+                double log_dens_prop = dnorm(th_prop, mu, sigma, USE_LOG);
+                double log_dens_curr = dnorm(th_curr, mu, sigma, USE_LOG);
+                log_diff += (log_dens_prop - log_dens_curr);
+
+                double ag_prop = 0;
+                
+                if (contributes_to_ag) {
+					
+				    double ag_curr = valueAg[i_ag];
+                    double mean_ag = meanAg[i_ag];
+                    double sd_ag = sdAg[i_ag];
+                    
+                    SEXP ir_shared_R;
+					PROTECT( ir_shared_R 
+						 = dembase_getIShared(ir, transformAg_R) ); 
+					int n_ir_shared = LENGTH(ir_shared_R);
+					int *ir_shared = INTEGER(ir_shared_R);
+					
+					for (int j = 0; j < n_ir_shared; ++j) {
+                        if ( i == (ir_shared[j] - 1) ) {
+                            x[j] = th_prop;
+                            /* alters this x in the original R SEXP object */
+                        }
+                    }
+       
+                    /* set 2nd and 3rd values in the function call object */
+                    SETCADR(call_R, x_R);
+                    SETCADDR(call_R, weight_R);
+					
+					/* call the supplied function */
+                    SEXP prop_R = PROTECT(eval(call_R, R_GlobalEnv));
+                    ag_prop = *REAL(prop_R);
+                    
+                    UNPROTECT(2); /* ir_shared_r, current prop_R */
+                    
+                    double log_dens_ag_prop = dnorm(mean_ag, ag_prop, sd_ag, USE_LOG);
+					double log_dens_ag_curr = dnorm(mean_ag, ag_curr, sd_ag, USE_LOG);
+					log_diff += log_dens_ag_prop - log_dens_ag_curr;
+				}
+				
+				int accept = (!(log_diff < 0) || (runif(0, 1) < exp(log_diff)));
+				if (accept) {
+					++n_accept_theta;
+					theta[i] = th_prop;
+					if (contributes_to_ag) {
+						/* x will have been updated in place already*/
+						valueAg[i_ag] = ag_prop;
+					}
+				}
+				else if (contributes_to_ag) {
+					/* unmodify the x_ags */
+					memcpy(x, tmp_x, n_xs*sizeof(double));
+				}
+			}
+        }
+        else { /* not found prop */
+            ++n_failed_prop_theta;
+        }
+        
+        advanceB(iteratorBetas_R);
+    } /* end i-loop through thetas */
+    
+    SET_INTSCALE_SLOT(object, nAcceptTheta_sym, n_accept_theta);
+    SET_INTSCALE_SLOT(object, nFailedPropTheta_sym, n_failed_prop_theta);
+    UNPROTECT(1); /* call_R */
+}
 
 /* y_R is a  Counts object, g'teed to be integer,
  * betas is a list, length same as length of the iteratorBetas' indices*/
