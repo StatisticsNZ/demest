@@ -1349,6 +1349,59 @@ setMethod("updateModelNotUseExp",
               }
           })
 
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("updateModelNotUseExp",
+          signature(object = "NormalVaryingVarsigmaKnownAgFun",
+                    y = "DemographicArray"),
+          function(object, y, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(is.double(y))
+              stopifnot(identical(length(y), length(object@theta)))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(updateModelNotUseExp_NormalVaryingVarsigmaKnownAgFun_R, object, y)
+                  else
+                      .Call(updateModelNotUseExp_R, object, y)
+              }
+              else {
+                  identity <- function(x) x
+                  object <- updateThetaAndValueAgFun_Normal(object, y = y)
+                  object <- updateSigma_Varying(object, g = identity)
+                  object <- updateBetasAndPriorsBetas(object, g = identity)
+                  object
+              }
+          })
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("updateModelNotUseExp",
+          signature(object = "NormalVaryingVarsigmaUnknownAgFun",
+                    y = "DemographicArray"),
+          function(object, y, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(is.double(y))
+              stopifnot(identical(length(y), length(object@theta)))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(updateModelNotUseExp_NormalVaryingVarsigmaUnknownAgFun_R, object, y)
+                  else
+                      .Call(updateModelNotUseExp_R, object, y)
+              }
+              else {
+                  identity <- function(x) x
+                  object <- updateThetaAndValueAgFun_Normal(object, y = y)
+                  object <- updateVarsigma(object, y = y)
+                  object <- updateSigma_Varying(object, g = identity)
+                  object <- updateBetasAndPriorsBetas(object, g = identity)
+                  object
+              }
+          })
+
 ## TRANSLATED
 ## HAS_TESTS
 setMethod("updateModelNotUseExp",
@@ -1370,6 +1423,32 @@ setMethod("updateModelNotUseExp",
               else {
                   object <- updateTheta_PoissonVaryingNotUseExpAgCertain(object, y = y)
                   object <- updateThetaAndValueAgNormal_PoissonNotUseExp(object, y = y)
+                  object <- updateSigma_Varying(object, g = log)
+                  object <- updateBetasAndPriorsBetas(object, g = log)
+                  object
+              }
+          })
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("updateModelNotUseExp",
+          signature(object = "PoissonVaryingNotUseExpAgFun",
+                    y = "Counts"),
+          function(object, y, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(is.integer(y))
+              stopifnot(identical(length(y), length(object@theta)))
+              stopifnot(all(y[!is.na(y)] >= 0))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(updateModelNotUseExp_PoissonVaryingNotUseExpAgFun_R, object, y)
+                  else
+                      .Call(updateModelNotUseExp_R, object, y)
+              }
+              else {
+                  object <- updateThetaAndValueAgFun_PoissonNotUseExp(object, y = y)
                   object <- updateSigma_Varying(object, g = log)
                   object <- updateBetasAndPriorsBetas(object, g = log)
                   object
@@ -1615,6 +1694,42 @@ setMethod("updateModelUseExp",
               }
           })
 
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("updateModelUseExp",
+          signature(object = "BinomialVaryingAgFun",
+                    y = "Counts",
+                    exposure = "Counts"),
+          function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(identical(length(y), length(object@theta)))
+              stopifnot(is.integer(y))
+              stopifnot(all(y[!is.na(y)] >= 0L))
+              ## exposure
+              stopifnot(is.integer(exposure))
+              stopifnot(!any(is.na(exposure)))
+              stopifnot(all(exposure[!is.na(exposure)] >= 0L))
+              ## y and exposure
+              stopifnot(identical(length(exposure), length(y)))
+              stopifnot(all(is.na(exposure) <= is.na(y)))
+              stopifnot(all(y[!is.na(y)] <= exposure[!is.na(y)]))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(updateModelUseExp_BinomialVaryingAgFun_R, object, y, exposure)
+                  else
+                      .Call(updateModelUseExp_R, object, y, exposure)
+              }
+              else {
+                  logit <- function(x) log(x / (1 - x))
+                  object <- updateThetaAndValueAgFun_Binomial(object, y = y, exposure = exposure)
+                  object <- updateSigma_Varying(object, g = logit)
+                  object <- updateBetasAndPriorsBetas(object, g = logit)
+                  object
+              }
+          })
+
 ## TRANSLATED
 ## HAS_TESTS
 setMethod("updateModelUseExp",
@@ -1644,6 +1759,40 @@ setMethod("updateModelUseExp",
               else {
                   object <- updateTheta_PoissonVaryingUseExpAgCertain(object, y = y, exposure = exposure)
                   object <- updateThetaAndValueAgNormal_PoissonUseExp(object, y = y, exposure = exposure)
+                  object <- updateSigma_Varying(object, g = log)
+                  object <- updateBetasAndPriorsBetas(object, g = log)
+                  object
+              }
+          })
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("updateModelUseExp",
+          signature(object = "PoissonVaryingUseExpAgFun",
+                    y = "Counts",
+                    exposure = "Counts"),
+          function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(identical(length(y), length(object@theta)))
+              stopifnot(is.integer(y))
+              stopifnot(all(y[!is.na(y)] >= 0L))
+              ## exposure
+              stopifnot(is.double(exposure))
+              stopifnot(!any(is.na(exposure)))
+              stopifnot(all(exposure[!is.na(exposure)] >= 0))
+              ## y and exposure
+              stopifnot(identical(length(exposure), length(y)))
+              stopifnot(all(is.na(exposure) <= is.na(y)))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(updateModelUseExp_PoissonVaryingUseExpAgFun_R, object, y, exposure)
+                  else
+                      .Call(updateModelUseExp_R, object, y, exposure)
+              }
+              else {
+                  object <- updateThetaAndValueAgFun_PoissonUseExp(object, y = y, exposure = exposure)
                   object <- updateSigma_Varying(object, g = log)
                   object <- updateBetasAndPriorsBetas(object, g = log)
                   object

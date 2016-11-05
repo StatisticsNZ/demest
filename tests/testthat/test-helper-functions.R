@@ -1628,6 +1628,32 @@ test_that("checkAndTidyY works", {
                  "'y' has fewer than 2 non-missing values")
 })
 
+test_that("checkConcordances works", {
+    checkConcordances <- demest:::checkConcordances
+    Concordance <- classconc::Concordance
+    x <- Values(array(1:4,
+                      dim = c(2, 2),
+                      dimnames = list(age = c(0, "1+"),
+                                      region = c("a", "b"))))
+    concordances <- list()
+    expect_identical(checkConcordances(concordances = concordances),
+                     NULL)
+    conc <- Concordance(data.frame(from = c("a", "b"), to = "A"))
+    concordances <- list(region = conc)
+    expect_identical(checkConcordances(concordances = concordances),
+                     NULL)
+    expect_error(checkConcordances(concordances = NULL),
+                 "'concordances' has class \"NULL\"")
+    expect_error(checkConcordances(concordances = list(eth = conc),
+                                   "'concordances' has elements not of class \"ManyToOne\""))
+    conc <- Concordance(data.frame(from = c("a", "b"), to = "A"))
+    expect_error(checkConcordances(concordances = list(conc),
+                                   "'concordances' does not have names"))
+    conc <- Concordance(data.frame(from = c("a", "b"), to = "A"))
+    expect_error(checkConcordances(concordances = list(eth = conc, eth = conc)),
+                 "'concordances' has duplicate names")
+})
+
 test_that("checkForMarginalTerms works", {
     checkForMarginalTerms <- demest:::checkForMarginalTerms
     expect_identical(checkForMarginalTerms(~ age * sex),

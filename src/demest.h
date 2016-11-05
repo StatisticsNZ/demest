@@ -538,6 +538,7 @@ void updateSigma_Varying(SEXP object);
 
 void updateTheta_BinomialVarying(SEXP object, SEXP y_R, SEXP exposure_R);
 void updateTheta_BinomialVaryingAgCertain(SEXP object, SEXP y_R, SEXP exposure_R);
+void updateThetaAndValueAgFun_Binomial(SEXP object, SEXP y_R, SEXP exposure_R);
 void updateThetaAndValueAgNormal_Binomial(SEXP object, SEXP y_R, SEXP exposure_R);
 void updateTheta_PoissonVaryingNotUseExp(SEXP object, SEXP y_R);
 void updateTheta_PoissonVaryingUseExp(SEXP object, SEXP y_R, SEXP exposure_R);
@@ -550,6 +551,7 @@ void updateThetaAndValueAgPoisson_PoissonUseExp(SEXP object, SEXP y_R, SEXP expo
 void updateTheta_NormalVarying(SEXP object, SEXP y_R);
 void updateTheta_NormalVaryingAgCertain(SEXP object, SEXP y_R);
 void updateThetaAndValueAgNormal_Normal(SEXP object, SEXP y_R);
+void updateThetaAndValueAgFun_Normal(SEXP object, SEXP y_R);
 void updateThetaAndValueAgFun_PoissonNotUseExp(SEXP object, SEXP y_R);
 void updateThetaAndValueAgFun_PoissonUseExp(SEXP object, SEXP y_R, SEXP exposure_R);
 

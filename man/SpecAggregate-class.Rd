@@ -25,7 +25,13 @@ for Metropolis-Hastings updates.}
 
 \item{\code{valueAg}}{Parameter(s) estimated by the aggregate values.}
 
+\item{\code{funAg}}{Function to calculate elements of \code{valueAg} from
+disaggregated rates, counts, probabilities, or means.}
+
 \item{\code{weightAg}}{Weights used to calculate \code{valueAg} from
 disaggregated rates, counts, probabilities, or means.}
+
+\item{\code{concordancesAg}}{List of \code{\link[classconc]{ManyToOne}}
+concordances.}
 }}
 

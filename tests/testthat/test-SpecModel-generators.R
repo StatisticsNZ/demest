@@ -603,6 +603,7 @@ test_that("SpecModel works with SpecPoissonBinomialMixture", {
 ## Aggregate ###################################################################
 
 test_that("AgCertain works", {
+    Concordance <- classconc::Concordance
     ans.obtained <- AgCertain(value = 4, weights = NULL)
     ans.expected <- new("SpecAgCertain",
                         metadataAg = NULL,
@@ -615,16 +616,19 @@ test_that("AgCertain works", {
     weights <- Counts(array(1,
                             dim = c(4, 3),
                             dimnames = list(region = 1:4,
-                                time = c(2000, 2005, 2010))))
-    ans.obtained <- AgCertain(value = value, weights = weights)
+                                            time = c(2000, 2005, 2010))))
+    concordances <- list(region = Concordance(data.frame(old = 1:12, new = rep(1:4, each = 3))))
+    ans.obtained <- AgCertain(value = value, weights = weights, concordance = concordances)
     ans.expected <- new("SpecAgCertain",
                         metadataAg = value@metadata,
                         valueAg = new("ParameterVector", as.double(value)),
-                        weightAg = weights)
+                        weightAg = weights,
+                        concordancesAg = concordances)
     expect_identical(ans.obtained, ans.expected)
 })
 
 test_that("AgNormal works", {
+    Concordance <- classconc::Concordance
     ans.obtained <- AgNormal(value = 4, sd = 3, weights = NULL)
     ans.expected <- new("SpecAgNormal",
                         metadataAg = NULL,
@@ -643,17 +647,21 @@ test_that("AgNormal works", {
                             dim = c(4, 3),
                             dimnames = list(region = 1:4,
                                 time = c(2000, 2005, 2010))))
-    ans.obtained <- AgNormal(value = value, sd = sd, weights = weights, jump = 0.3)
+    concordances <- list(region = Concordance(data.frame(old = 1:12, new = rep(1:4, each = 3))))
+    ans.obtained <- AgNormal(value = value, sd = sd, weights = weights,
+                             concordances = concordances, jump = 0.3)
     ans.expected <- new("SpecAgNormal",
                         metadataAg = value@metadata,
                         scaleAg = new("Scale", 0.3),
                         sdAg = new("ScaleVec", as.double(3:1)),
                         valueAg = new("ParameterVector", as.double(1:3)),
-                        weightAg = weights)
+                        weightAg = weights,
+                        concordancesAg = concordances)
     expect_identical(ans.obtained, ans.expected)
 })
 
 test_that("AgFun works", {
+    Concordance <- classconc::Concordance
     FUN <- function(x, weights) sum(x)
     ans.obtained <- AgFun(value = 4, sd = 3, FUN = FUN)
     ans.expected <- new("SpecAgFun",
@@ -673,18 +681,22 @@ test_that("AgFun works", {
                             dim = c(4, 3),
                             dimnames = list(region = 1:4,
                                 time = c(2000, 2005, 2010))))
-    ans.obtained <- AgFun(value = value, sd = sd, weights = weights, FUN = FUN)
+    concordances <- list(region = Concordance(data.frame(old = 1:12, new = rep(1:4, each = 3))))
+    ans.obtained <- AgFun(value = value, sd = sd, weights = weights,
+                          concordances = concordances, FUN = FUN)
     ans.expected <- new("SpecAgFun",
                         funAg = FUN,
                         metadataAg = value@metadata,
                         sdAg = new("ScaleVec", as.double(3:1)),
                         valueAg = new("ParameterVector", as.double(1:3)),
-                        weightAg = weights)
+                        weightAg = weights,
+                        concordancesAg = concordances)
     expect_identical(ans.obtained, ans.expected)
 })
 
 
 test_that("AgPoisson works", {
+    Concordance <- classconc::Concordance
     ans.obtained <- AgPoisson(value = 4, weights = NULL)
     ans.expected <- new("SpecAgPoisson",
                         metadataAg = NULL,
@@ -699,12 +711,15 @@ test_that("AgPoisson works", {
                             dim = c(4, 3),
                             dimnames = list(region = 1:4,
                                 time = c(2000, 2005, 2010))))
-    ans.obtained <- AgPoisson(value = value, weights = weights, jump = 0.3)
+    concordances <- list(region = Concordance(data.frame(old = 1:12, new = rep(1:4, each = 3))))
+    ans.obtained <- AgPoisson(value = value, weights = weights,
+                              concordances = concordances, jump = 0.3)
     ans.expected <- new("SpecAgPoisson",
                         metadataAg = value@metadata,
                         scaleAg = new("Scale", 0.3),
                         valueAg = new("ParameterVector", as.double(1:3)),
-                        weightAg = weights)
+                        weightAg = weights,
+                        concordancesAg = concordances)
     expect_identical(ans.obtained, ans.expected)
 })
 

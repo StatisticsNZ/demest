@@ -54,6 +54,7 @@ setClass("Poisson",
 ## Basic Models ##################################################################
 
 ## HAS_TESTS
+## HAS_UPDATE
 setClass("BinomialVarying",
          contains = c("Model",
              "Binomial",
@@ -90,6 +91,7 @@ setClass("NormalVarying",
              "WNormalMixin"))
          
 ## HAS_TESTS
+## HAS_UPDATE
 setClass("NormalVaryingVarsigmaKnown",
          contains = c("NormalVarying",
              "VarsigmaKnown"),
@@ -102,6 +104,7 @@ setClass("NormalVaryingVarsigmaKnown",
              nuSigma = methods::new("DegreesFreedom", 7)))
 
 ## HAS_TESTS
+## HAS_UPDATE
 setClass("NormalVaryingVarsigmaUnknown",
          contains = c("NormalVarying",
              "VarsigmaUnknown"),
@@ -137,6 +140,7 @@ setClass("PoissonVarying",
          })
 
 ## HAS_TESTS
+## HAS_UPDATE
 setClass("PoissonVaryingNotUseExp",
          prototype = prototype(slotsToExtract = c("theta",
                                    "nFailedPropTheta",
@@ -150,6 +154,7 @@ setClass("PoissonVaryingNotUseExp",
              "NotUseExposure"))
 
 ## HAS_TESTS
+## HAS_UPDATE
 setClass("PoissonVaryingUseExp",
          prototype = prototype(slotsToExtract = c("theta",
                                    "nFailedPropTheta", "nAcceptTheta",
@@ -160,6 +165,7 @@ setClass("PoissonVaryingUseExp",
              "UseExposure"))
 
 ## HAS_TESTS
+## HAS_UPDATE
 setClass("PoissonBinomialMixture",
          slots = c(prob = "numeric"),
          contains = c("Model", "Prob", "UseExposure"),
@@ -170,6 +176,7 @@ setClass("PoissonBinomialMixture",
 ## Models With Aggregate ##################################################################
 
 ## HAS_TESTS
+## HAS_UPDATE
 setClass("NormalVaryingVarsigmaKnownAgCertain",
          contains = c("NormalVaryingVarsigmaKnown",
              "AgCertain"),
@@ -180,6 +187,7 @@ setClass("NormalVaryingVarsigmaKnownAgCertain",
              nuSigma = methods::new("DegreesFreedom", 7)))
 
 ## HAS_TESTS
+## HAS_UPDATE
 setClass("NormalVaryingVarsigmaUnknownAgCertain",
          contains = c("NormalVaryingVarsigmaUnknown",
              "AgCertain"),
@@ -191,6 +199,7 @@ setClass("NormalVaryingVarsigmaUnknownAgCertain",
              nuSigma = methods::new("DegreesFreedom", 7)))
 
 ## HAS_TESTS
+## HAS_UPDATE
 setClass("NormalVaryingVarsigmaKnownAgNormal",
          contains = c("NormalVaryingVarsigmaKnown",
              "AgNormal"),
@@ -202,6 +211,7 @@ setClass("NormalVaryingVarsigmaKnownAgNormal",
              nuSigma = methods::new("DegreesFreedom", 7)))
 
 ## HAS_TESTS
+## HAS_UPDATE
 setClass("NormalVaryingVarsigmaUnknownAgNormal",
          contains = c("NormalVaryingVarsigmaUnknown",
              "AgNormal"),
@@ -213,6 +223,7 @@ setClass("NormalVaryingVarsigmaUnknownAgNormal",
              nuSigma = methods::new("DegreesFreedom", 7)))
 
 ## HAS_TESTS
+## HAS_UPDATE
 setClass("PoissonVaryingNotUseExpAgCertain",
          contains = c("PoissonVaryingNotUseExp",
              "AgCertain"),
@@ -223,6 +234,7 @@ setClass("PoissonVaryingNotUseExpAgCertain",
              nuSigma = methods::new("DegreesFreedom", 7)))
 
 ## HAS_TESTS
+## HAS_UPDATE
 setClass("PoissonVaryingNotUseExpAgNormal",
          contains = c("PoissonVaryingNotUseExp",
              "AgNormal"),
@@ -234,6 +246,7 @@ setClass("PoissonVaryingNotUseExpAgNormal",
              nuSigma = methods::new("DegreesFreedom", 7)))
 
 ## HAS_TESTS
+## HAS_UPDATE
 setClass("BinomialVaryingAgCertain",
          contains = c("BinomialVarying",
              "AgCertain"),
@@ -244,6 +257,7 @@ setClass("BinomialVaryingAgCertain",
              nuSigma = methods::new("DegreesFreedom", 7)))
 
 ## HAS_TESTS
+## HAS_UPDATE
 setClass("BinomialVaryingAgNormal",
          contains = c("BinomialVarying",
              "AgNormal"),
@@ -255,6 +269,7 @@ setClass("BinomialVaryingAgNormal",
              nuSigma = methods::new("DegreesFreedom", 7)))
 
 ## HAS_TESTS
+## HAS_UPDATE
 setClass("PoissonVaryingUseExpAgCertain",
          contains = c("PoissonVaryingUseExp",
              "AgCertain"),
@@ -265,6 +280,7 @@ setClass("PoissonVaryingUseExpAgCertain",
              nuSigma = methods::new("DegreesFreedom", 7)))
 
 ## HAS_TESTS
+## HAS_UPDATE
 setClass("PoissonVaryingUseExpAgNormal",
          contains = c("PoissonVaryingUseExp",
              "AgNormal"),
@@ -276,6 +292,7 @@ setClass("PoissonVaryingUseExpAgNormal",
              nuSigma = methods::new("DegreesFreedom", 7)))
 
 ## HAS_TESTS
+## HAS_UPDATE
 setClass("PoissonVaryingNotUseExpAgPoisson",
          contains = c("PoissonVaryingNotUseExp",
              "AgPoisson"),
@@ -287,6 +304,7 @@ setClass("PoissonVaryingNotUseExpAgPoisson",
              nuSigma = methods::new("DegreesFreedom", 7)))
 
 ## HAS_TESTS
+## HAS_UPDATE
 setClass("PoissonVaryingUseExpAgPoisson",
          contains = c("PoissonVaryingUseExp",
              "AgPoisson"),
@@ -298,6 +316,7 @@ setClass("PoissonVaryingUseExpAgPoisson",
              nuSigma = methods::new("DegreesFreedom", 7)))
 
 ## HAS_TESTS
+## HAS_UPDATE
 setClass("NormalVaryingVarsigmaKnownAgFun",
          contains = c("NormalVaryingVarsigmaKnown",
              "AgFun"),
@@ -309,6 +328,7 @@ setClass("NormalVaryingVarsigmaKnownAgFun",
              nuSigma = methods::new("DegreesFreedom", 7)))
 
 ## HAS_TESTS
+## HAS_UPDATE
 setClass("NormalVaryingVarsigmaUnknownAgFun",
          contains = c("NormalVaryingVarsigmaUnknown",
              "AgFun"),

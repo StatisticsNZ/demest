@@ -8,13 +8,13 @@
 \alias{Aggregate}
 \title{Specify aggregate values.}
 \usage{
-AgCertain(value, weights = NULL)
+AgCertain(value, weights = NULL, concordances = list())
 
-AgNormal(value, sd, weights = NULL, jump = NULL)
+AgNormal(value, sd, weights = NULL, concordances = list(), jump = NULL)
 
-AgPoisson(value, weights = NULL, jump = NULL)
+AgPoisson(value, weights = NULL, concordances = list(), jump = NULL)
 
-AgFun(value, sd, FUN, weights = NULL)
+AgFun(value, sd, FUN, weights = NULL, concordances = list())
 }
 \arguments{
 \item{value}{The aggregate value or values.  A single number, or, if there
@@ -23,6 +23,9 @@ are multiple values, an object of class
 
 \item{weights}{An object of class \code{\linkS4class{Counts}} holding
 weights to be used when aggregating. Optional.}
+
+\item{concordances}{A named list of objects of class
+\code{\link[classconc]{ManyToOne}}.}
 
 \item{sd}{Standard deviation(s) for errors. If \code{value} is a single
 number, then \code{sd} must be a single number; otherwise \code{sd} must be
@@ -109,6 +112,13 @@ Default values for the \eqn{b_{ij}} vary according to the model being used:
 \eqn{j}. \cr
    Normal \tab \code{weights} argument (which defaults to 1).
 }
+
+The \code{concordances} argument is needed when \code{values} has categories
+that are collapsed versions of categories of \code{weights}, or the
+underlying rates, probabilities, or means.  For instance, \code{values}
+might be specified at the state level, while the rates are estimated at
+the county level.  The mapping between the original and collapsed
+categories is known as a \code{\link[classconc]{Concordance}}.
 }
 \section{\code{AgCertain}}{
 
@@ -144,7 +154,7 @@ However, in contrast to \code{AgCertain}, the aggregate parameters are
 assumed to be observed with error.  The errors have normal distributions,
 with mean 0 and standard deviation \eqn{s_j}, so that
 
-    \deqn{m_j \sim N(\psi_j, s_j^2).}
+    \deqn{m_j ~ N(\psi_j, s_j^2).}
 
 One possible application for \code{AgNormal} is 'inexact' benchmarking,
 where the disaggregated parameters are pulled towards the benchmarks, but
@@ -183,7 +193,7 @@ with \eqn{\psi_j}.  Then
 \code{AgFun} uses the same model as \code{AgNormal} for the accuracy of the
 accuracy of the \eqn{m_j},
 
-    \deqn{m_j \sim N(\psi_j, s_j^2).}
+    \deqn{m_j ~ N(\psi_j, s_j^2).}
 
 User-supplied function \code{FUN} must take two arguments, called \code{x}
 and \code{weights}, and return a numeric vector of length 1.  The \code{x}

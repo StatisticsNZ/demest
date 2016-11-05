@@ -668,6 +668,13 @@ setMethod("SpecModel",
 #'    Normal \tab \code{weights} argument (which defaults to 1).
 #' }
 #'
+#' The \code{concordances} argument is needed when \code{values} has categories
+#' that are collapsed versions of categories of \code{weights}, or the
+#' underlying rates, probabilities, or means.  For instance, \code{values}
+#' might be specified at the state level, while the rates are estimated at
+#' the county level.  The mapping between the original and collapsed
+#' categories is known as a \code{\link[classconc]{Concordance}}.
+#' 
 #' @section \code{AgCertain}:
 #'
 #' The aggregate parameters are weighted sums or means of the disaggregated
@@ -699,7 +706,7 @@ setMethod("SpecModel",
 #' assumed to be observed with error.  The errors have normal distributions,
 #' with mean 0 and standard deviation \eqn{s_j}, so that
 #'
-#'     \deqn{m_j \sim N(\psi_j, s_j^2).}
+#'     \deqn{m_j ~ N(\psi_j, s_j^2).}
 #'
 #' One possible application for \code{AgNormal} is 'inexact' benchmarking,
 #' where the disaggregated parameters are pulled towards the benchmarks, but
@@ -734,7 +741,7 @@ setMethod("SpecModel",
 #' \code{AgFun} uses the same model as \code{AgNormal} for the accuracy of the
 #' accuracy of the \eqn{m_j},
 #'
-#'     \deqn{m_j \sim N(\psi_j, s_j^2).}
+#'     \deqn{m_j ~ N(\psi_j, s_j^2).}
 #'
 #' User-supplied function \code{FUN} must take two arguments, called \code{x}
 #' and \code{weights}, and return a numeric vector of length 1.  The \code{x}
@@ -754,6 +761,8 @@ setMethod("SpecModel",
 #' an object of class \code{\linkS4class{DemographicArray}}.
 #' @param weights An object of class \code{\linkS4class{Counts}} holding
 #' weights to be used when aggregating. Optional.
+#' @param concordances A named list of objects of class
+#' \code{\link[classconc]{ManyToOne}}.
 #' @param FUN A function taking arguments called \code{x} and \code{weights}
 #' and returning a single number.  See below for details.
 #' @param jump The standard deviation of the proposal density used in
@@ -805,22 +814,24 @@ NULL
 ## HAS_TESTS
 #' @rdname Aggregate
 #' @export
-AgCertain <- function(value, weights = NULL) {
+AgCertain <- function(value, weights = NULL, concordances = list()) {
     l <- makeValueAndMetaDataAg(value)
     valueAg <- l$value
     metadataAg <- l$metadata
     checkSpecWeightAg(weights = weights,
                       metadata = metadataAg)
+    checkConcordances(concordances)
     methods::new("SpecAgCertain",
                  metadataAg = metadataAg,
                  valueAg = valueAg,
-                 weightAg = weights)
+                 weightAg = weights,
+                 concordancesAg = concordances)
 }
 
 ## HAS_TESTS
 #' @rdname Aggregate
 #' @export
-AgNormal <- function(value, sd, weights = NULL, jump = NULL) {
+AgNormal <- function(value, sd, weights = NULL, concordances = list(), jump = NULL) {
     l <- makeValueAndMetaDataAg(value)
     valueAg <- l$value
     metadataAg <- l$metadata
@@ -829,36 +840,40 @@ AgNormal <- function(value, sd, weights = NULL, jump = NULL) {
     sdAg <- checkAndTidySDAg(sd = sd,
                              value = value,
                              metadata = metadataAg)
+    checkConcordances(concordances)
     scaleAg <- checkAndTidyJump(jump)
     methods::new("SpecAgNormal",
                  metadataAg = metadataAg,
                  scaleAg = scaleAg,
                  sdAg = sdAg,
                  valueAg = valueAg,
-                 weightAg = weights)
+                 weightAg = weights,
+                 concordancesAg = concordances)
 }
 
 ## HAS_TESTS
 #' @rdname Aggregate
 #' @export
-AgPoisson <- function(value, weights = NULL, jump = NULL) {
+AgPoisson <- function(value, weights = NULL, concordances = list(), jump = NULL) {
     l <- makeValueAndMetaDataAg(value)
     valueAg <- l$value
     metadataAg <- l$metadata
     checkSpecWeightAg(weights = weights,
                       metadata = metadataAg)
+    checkConcordances(concordances)
     scaleAg <- checkAndTidyJump(jump)
     methods::new("SpecAgPoisson",
                  metadataAg = metadataAg,
                  scaleAg = scaleAg,
                  valueAg = valueAg,
-                 weightAg = weights)
+                 weightAg = weights,
+                 concordancesAg = concordances)
 }
 
 ## NO_TESTS
 #' @rdname Aggregate
 #' @export
-AgFun <- function(value, sd, FUN, weights = NULL) {
+AgFun <- function(value, sd, FUN, weights = NULL, concordances = list()) {
     l <- makeValueAndMetaDataAg(value)
     valueAg <- l$value
     metadataAg <- l$metadata
@@ -868,11 +883,13 @@ AgFun <- function(value, sd, FUN, weights = NULL) {
     checkFunAg(FUN)
     checkSpecWeightAg(weights = weights,
                       metadata = metadataAg)
+    checkConcordances(concordances)
     methods::new("SpecAgFun",
                  funAg = FUN,
                  metadataAg = metadataAg,
                  sdAg = sdAg,
                  valueAg = valueAg,
-                 weightAg = weights)
+                 weightAg = weights,
+                 concordancesAg = concordances)
 }
 

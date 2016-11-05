@@ -2867,6 +2867,130 @@ test_that("R, generic C, and specific C versions updateModelNotUseExp method for
 
 
 
+
+
+
+
+
+
+## updateModelNotUseExp for NormalVaryingVarsigmaKnownAgFun
+
+test_that("updateModelNotUseExp for NormalVaryingVarsigmaKnownAgFun updates the correct slots", {
+    updateModelNotUseExp <- demest:::updateModelNotUseExp
+    initialModel <- demest:::initialModel
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        value <- Values(array(rnorm(n = 3), dim = 3, dimnames = list(age = 0:2)))
+        aggregate <- AgFun(value = value, sd = sqrt(abs(value)),
+                           FUN = function(x, weights) sum(x * weights) / sum(weights))
+        y <- Values(array(rnorm(n = 20), dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
+        weights <- Counts(array(1, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
+        spec <- Model(y ~ Normal(mean ~ age + sex, sd = 0.5), aggregate = aggregate)
+        x0 <- initialModel(spec, y = y, weights = weights)
+        expect_is(x0, "NormalVaryingVarsigmaKnownAgFun")
+        x1 <- updateModelNotUseExp(x1, y = y, useC = FALSE)
+        expect_is(x0, "NormalVaryingVarsigmaKnownAgFun")
+        if (x1@nAcceptTheta > 0L)
+            expect_false(identical(x1@theta, x0@theta))
+        else
+            stop("'theta' not updated")
+        for (b in seq_along(x1@betas)) {
+            expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
+            if (!is(x1@priorsBetas[[b]], "ExchFixed"))
+                expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
+        }
+        for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
+                       "iteratorBetas", "dims"))
+            expect_identical(slot(x1, name), slot(x0, name))
+    }
+})
+
+test_that("R, generic C, and specific C versions updateModelNotUseExp method for NormalVaryingVarsigmaKnownAgFun give same answer", {
+    updateModelNotUseExp <- demest:::updateModelNotUseExp
+    initialModel <- demest:::initialModel
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        value <- Values(array(rbeta(n = 3, shape1 = 20, shape2 = 5), dim = 3, dimnames = list(age = 0:2)))
+        aggregate <- AgFun(value = value, sd = sqrt(abs(value)),
+                           FUN = function(x, weights) sum(x * weights) / sum(weights))
+        y <- Values(array(rnorm(n = 20), dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
+        weights <- Counts(array(1, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
+        spec <- Model(y ~ Normal(mean ~ age + sex, sd = 0.5), aggregate = aggregate)
+        x0 <- initialModel(spec, y = y, weights = weights)
+        expect_is(x0, "NormalVaryingVarsigmaKnownAgFun")
+        set.seed(seed + 1)
+        x.R <- updateModelNotUseExp(x0, y = y, useC = FALSE)
+        set.seed(seed + 1)
+        x.C.generic <- updateModelNotUseExp(x0, y = y, useC = TRUE, useSpecific = FALSE)
+        set.seed(seed + 1)
+        x.C.specific <- updateModelNotUseExp(x0, y = y, useC = TRUE, useSpecific = TRUE)
+        if (test.identity)
+            expect_identical(x.R, x.C.generic)
+        else
+            expect_equal(x.R, x.C.generic)
+        expect_identical(x.C.generic, x.C.specific)
+    }
+})
+
+## updateModelNotUseExp for NormalVaryingVarsigmaUnknownAgFun
+
+test_that("updateModelNotUseExp for NormalVaryingVarsigmaUnknownAgFun updates the correct slots", {
+    updateModelNotUseExp <- demest:::updateModelNotUseExp
+    initialModel <- demest:::initialModel
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        value <- Values(array(rbeta(n = 3, shape1 = 20, shape2 = 5), dim = 3, dimnames = list(age = 0:2)))
+        aggregate <- AgFun(value = value, sd = sqrt(abs(value)),
+                           FUN = function(x, weights) sum(x * weights) / sum(weights))
+        y <- Values(array(rnorm(n = 20), dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
+        weights <- Counts(array(1, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
+        spec <- Model(y ~ Normal(mean ~ age + sex), aggregate = aggregate)
+        x0 <- initialModel(spec, y = y, weights = weights)
+        expect_is(x0, "NormalVaryingVarsigmaUnknownAgFun")
+        x1 <- updateModelNotUseExp(x0, y = y, useC = FALSE)
+        expect_is(x1, "NormalVaryingVarsigmaUnknownAgFun")
+        if (x1@nAcceptTheta > 0L)
+            expect_false(identical(x1@theta, x0@theta))
+        else
+            stop("'theta' not updated")
+        for (b in seq_along(x1@betas)) {
+            expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
+            if (!is(x1@priorsBetas[[b]], "ExchFixed"))
+                expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
+        }
+        for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
+                       "iteratorBetas", "dims"))
+            expect_identical(slot(x1, name), slot(x0, name))
+    }
+})
+
+test_that("R, generic C, and specific C versions updateModelNotUseExp method for NormalVaryingVarsigmaUnknownAgFun give same answer", {
+    updateModelNotUseExp <- demest:::updateModelNotUseExp
+    initialModel <- demest:::initialModel
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        value <- Values(array(rbeta(n = 3, shape1 = 20, shape2 = 5), dim = 3, dimnames = list(age = 0:2)))
+        aggregate <- AgFun(value = value, sd = sqrt(abs(value)),
+                           FUN = function(x, weights) sum(x * weights) / sum(weights))
+        y <- Values(array(rnorm(n = 20), dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
+        weights <- Counts(array(1, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
+        spec <- Model(y ~ Normal(mean ~ age + sex), aggregate = aggregate)
+        x0 <- initialModel(spec, y = y, weights = weights)
+        expect_is(x0, "NormalVaryingVarsigmaUnknownAgFun")
+        set.seed(seed + 1)
+        x.R <- updateModelNotUseExp(x0, y = y, useC = FALSE)
+        set.seed(seed + 1)
+        x.C.generic <- updateModelNotUseExp(x0, y = y, useC = TRUE, useSpecific = FALSE)
+        set.seed(seed + 1)
+        x.C.specific <- updateModelNotUseExp(x0, y = y, useC = TRUE, useSpecific = TRUE)
+        if (test.identity)
+            expect_identical(x.R, x.C.generic)
+        else
+            expect_equal(x.R, x.C.generic)
+        expect_identical(x.C.generic, x.C.specific)
+    }
+})
+
 ## updateModelUseExp for PoissonVaryingNotUseExpAgNormal
 
 test_that("updateModelNotUseExp for PoissonVaryingNotUseExpAgNormal updates the correct slots", {
@@ -2921,6 +3045,64 @@ test_that("R, generic C, and specific C versions updateModelNotUseExp method for
     }
 })
 
+## updateModelUseExp for PoissonVaryingNotUseExpAgFun
+
+test_that("updateModelNotUseExp for PoissonVaryingNotUseExpAgFun updates the correct slots", {
+    updateModelNotUseExp <- demest:::updateModelNotUseExp
+    initialModel <- demest:::initialModel
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        value <- Values(array(10, dim = 3, dimnames = list(age = 0:2)))
+        aggregate <- AgFun(value = value, sd = sqrt(abs(value)),
+                           FUN = function(x, weights) sum(x * weights) / sum(weights))
+        y <- as.integer(rpois(n = 20, lambda = 5))
+        y <- Counts(array(y, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
+        spec <- Model(y ~ Poisson(mean ~ age + sex), aggregate = aggregate)
+        x0 <- initialModel(spec, y = y, exposure = NULL)
+        expect_is(x0, "PoissonVaryingNotUseExpAgFun")
+        x1 <- updateModelNotUseExp(x0, y = y, useC = FALSE)
+        expect_is(x1, "PoissonVaryingNotUseExpAgFun")
+        if (x1@nAcceptTheta > 0L)
+            expect_false(identical(x1@theta, x0@theta))
+        else
+            expect_identical(x1@theta, x0@theta)
+        for (b in seq_along(x1@betas)) {
+            expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
+            if (!is(x1@priorsBetas[[b]], "ExchFixed"))
+                expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
+        }
+        for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
+                       "scaleTheta", "iteratorBetas", "dims"))
+            expect_identical(slot(x1, name), slot(x0, name))
+    }
+})
+
+test_that("R, generic C, and specific C versions updateModelNotUseExp method for PoissonVaryingNotUseExpAgFun give same answer", {
+    updateModelNotUseExp <- demest:::updateModelNotUseExp
+    initialModel <- demest:::initialModel
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        value <- Values(array(rpois(n = 3, lambda = 5), dim = 3, dimnames = list(age = 0:2)))
+        aggregate <- AgFun(value = value, sd = sqrt(abs(value)),
+                           FUN = function(x, weights) sum(x * weights) / sum(weights))
+        y <- as.integer(rpois(n = 20, lambda = 10))
+        y <- Counts(array(y, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
+        spec <- Model(y ~ Poisson(mean ~ age + sex), aggregate = aggregate)
+        x0 <- initialModel(spec, y = y, exposure = NULL)
+        expect_is(x0, "PoissonVaryingNotUseExpAgFun")
+        set.seed(seed + 1)
+        x.R <- updateModelNotUseExp(x0, y = y, useC = FALSE)
+        set.seed(seed + 1)
+        x.C.generic <- updateModelNotUseExp(x0, y = y, useC = TRUE, useSpecific = FALSE)
+        set.seed(seed + 1)
+        x.C.specific <- updateModelNotUseExp(x0, y = y, useC = TRUE, useSpecific = TRUE)
+        if (test.identity)
+            expect_identical(x.R, x.C.generic)
+        else
+            expect_equal(x.R, x.C.generic)
+        expect_identical(x.C.generic, x.C.specific)
+    }
+})
 
 ## updateModelNotUseExp for PoissonVaryingNotUseExpAgPoisson
 
@@ -3296,6 +3478,71 @@ test_that("R, generic C, and specific C versions updateModelUseExp method for Bi
     }
 })
 
+## updateModelUseExp for BinomialVaryingAgFun
+
+test_that("updateModelUseExp for BinomialVaryingAgFun updates the correct slots", {
+    updateModelUseExp <- demest:::updateModelUseExp
+    initialModel <- demest:::initialModel
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        value <- Values(array(rbeta(n = 3, shape1 = 20, shape2 = 5), dim = 3, dimnames = list(age = 0:2)))
+        aggregate <- AgFun(value = value, sd = sqrt(abs(value)),
+                           FUN = function(x, weights) sum(x * weights) / sum(weights))
+        theta <- rbeta(n = 20, shape1 = 20, shape2 = 5)
+        exposure <- as.integer(rpois(n = 20, lambda = 20))
+        exposure <- Counts(array(exposure, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
+        y <- as.integer(rbinom(n = 20, size = exposure, prob = theta))
+        y <- Counts(array(y, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
+        spec <- Model(y ~ Binomial(mean ~ age + sex), aggregate = aggregate)
+        x0 <- initialModel(spec, y = y, exposure = exposure)
+        expect_is(x0, "BinomialVaryingAgFun")
+        x1 <- updateModelUseExp(x0, y = y, exposure = exposure, useC = FALSE)
+        expect_is(x0, "BinomialVaryingAgFun")
+        if (x1@nAcceptTheta > 0L)
+            expect_false(identical(x1@theta, x0@theta))
+        else
+            expect_identical(x1@theta, x0@theta)
+        for (b in seq_along(x1@betas)) {
+            expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
+            if (!is(x1@priorsBetas[[b]], "ExchFixed"))
+                expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
+        }
+        for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
+                       "scaleTheta", "iteratorBetas", "dims"))
+            expect_identical(slot(x1, name), slot(x0, name))
+    }
+})
+
+test_that("R, generic C, and specific C versions updateModelUseExp method for BinomialVaryingAgFun give same answer", {
+    updateModelUseExp <- demest:::updateModelUseExp
+    initialModel <- demest:::initialModel
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        value <- Values(array(rbeta(n = 3, shape1 = 20, shape2 = 5), dim = 3, dimnames = list(age = 0:2)))
+        aggregate <- AgFun(value = value, sd = sqrt(abs(value)),
+                           FUN = function(x, weights) sum(x * weights) / sum(weights))
+        theta <- rbeta(n = 20, shape1 = 20, shape2 = 5)
+        exposure <- as.integer(rpois(n = 20, lambda = 20))
+        exposure <- Counts(array(exposure, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
+        y <- as.integer(rbinom(n = 20, size = exposure, prob = theta))
+        y <- Counts(array(y, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
+        spec <- Model(y ~ Binomial(mean ~ age + sex), aggregate = aggregate)
+        x0 <- initialModel(spec, y = y, exposure = exposure)
+        set.seed(seed + 1)
+        x.R <- updateModelUseExp(x0, y = y, exposure = exposure, useC = FALSE)
+        set.seed(seed + 1)
+        x.C.generic <- updateModelUseExp(x0, y = y, exposure = exposure, useC = TRUE, useSpecific = FALSE)
+        set.seed(seed + 1)
+        x.C.specific <- updateModelUseExp(x0, y = y, exposure = exposure, useC = TRUE, useSpecific = TRUE)
+        if (test.identity)
+            expect_identical(x.R, x.C.generic)
+        else
+            expect_equal(x.R, x.C.generic)
+        expect_identical(x.C.generic, x.C.specific)
+    }
+})
+
+
 ## updateModelUseExp for PoissonVaryingUseExpAgNormal
 
 test_that("updateModelUseExp for PoissonVaryingUseExpAgNormal updates the correct slots", {
@@ -3356,6 +3603,75 @@ test_that("R, generic C, and specific C versions updateModelUseExp method for Po
         expect_identical(x.C.generic, x.C.specific)
     }
 })
+
+## updateModelUseExp for PoissonVaryingUseExpAgFun
+
+test_that("updateModelUseExp for PoissonVaryingUseExpAgFun updates the correct slots", {
+    updateModelUseExp <- demest:::updateModelUseExp
+    initialModel <- demest:::initialModel
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        value <- Values(array(10, dim = 3, dimnames = list(age = 0:2)))
+        aggregate <- AgFun(value = value, sd = sqrt(abs(value)),
+                           FUN = function(x, weights) sum(x * weights) / sum(weights))
+        theta <- rbeta(n = 20, shape1 = 20, shape2 = 5)
+        exposure <- as.double(rpois(n = 20, lambda = 20))
+        exposure <- Counts(array(exposure, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
+        y <- as.integer(rpois(n = 20, lambda = exposure * theta))
+        y <- Counts(array(y, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
+        spec <- Model(y ~ Poisson(mean ~ age + sex), aggregate = aggregate)
+        x0 <- initialModel(spec, y = y, exposure = exposure)
+        expect_is(x0, "PoissonVaryingUseExpAgFun")
+        x1 <- updateModelUseExp(x0, y = y, exposure = exposure, useC = FALSE)
+        expect_is(x1, "PoissonVaryingUseExpAgFun")
+        if (x1@nAcceptTheta > 0L)
+            expect_false(identical(x1@theta, x0@theta))
+        else
+            expect_identical(x1@theta, x0@theta)
+        for (b in seq_along(x1@betas)) {
+            expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
+            if (!is(x1@priorsBetas[[b]], "ExchFixed"))
+                expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
+        }
+        for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
+                       "scaleTheta", "iteratorBetas", "dims"))
+            expect_identical(slot(x1, name), slot(x0, name))
+    }
+})
+
+test_that("R, generic C, and specific C versions updateModelUseExp method for PoissonVaryingUseExpAgFun give same answer", {
+    updateModelUseExp <- demest:::updateModelUseExp
+    initialModel <- demest:::initialModel
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        value <- Values(array(rpois(n = 3, lambda = 5), dim = 3, dimnames = list(age = 0:2)))
+        aggregate <- AgFun(value = value, sd = sqrt(abs(value)),
+                           FUN = function(x, weights) sum(x * weights) / sum(weights))
+        theta <- rbeta(n = 20, shape1 = 20, shape2 = 5)
+        exposure <- as.double(rpois(n = 20, lambda = 20))
+        exposure <- Counts(array(exposure, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
+        y <- as.integer(rpois(n = 20, lambda = exposure * theta))
+        y <- Counts(array(y, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
+        spec <- Model(y ~ Poisson(mean ~ age + sex), aggregate = aggregate)
+        x0 <- initialModel(spec, y = y, exposure = exposure)
+        expect_is(x0, "PoissonVaryingUseExpAgFun")
+        set.seed(seed + 1)
+        x.R <- updateModelUseExp(x0, y = y, exposure = exposure, useC = FALSE)
+        set.seed(seed + 1)
+        x.C.generic <- updateModelUseExp(x0, y = y, exposure = exposure,
+                                         useC = TRUE, useSpecific = FALSE)
+        set.seed(seed + 1)
+        x.C.specific <- updateModelUseExp(x0, y = y, exposure = exposure,
+                                          useC = TRUE, useSpecific = TRUE)
+        if (test.identity)
+            expect_identical(x.R, x.C.generic)
+        else
+            expect_equal(x.R, x.C.generic)
+        expect_identical(x.C.generic, x.C.specific)
+    }
+})
+
+## updateModelUseExp for PoissonVaryingUseExpAgPoisson
 
 test_that("updateModelUseExp for PoissonVaryingUseExpAgPoisson updates the correct slots", {
     updateModelUseExp <- demest:::updateModelUseExp

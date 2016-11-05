@@ -13,24 +13,26 @@ setClass("ArgsAgMixin",
              if (!all(sapply(xArgsAg, methods::is, "Values")))
                  return(gettextf("'%s' has elements not of class \"%s\"",
                                  "xArgsAg", "Values"))
-             ## all elements of 'xArgsAg' have same dimensions
+             ## all elements of 'xArgsAg' have same number of dimensions
              n.x <- length(xArgsAg)
              if (n.x > 1L) {
                  dim <- lapply(xArgsAg, dim)
-                 if (!all(mapply(identical, dim[1L], dim[-1L])))
-                     return(gettextf("elements of '%s' do not all have same dimensions",
+                 n.dim <- lapply(dim, length)
+                 if (!all(mapply(identical, n.dim[1L], n.dim[-1L])))
+                     return(gettextf("elements of '%s' do not all have same number of dimensions",
                                      "xArgsAg"))
              }
              ## all elements of 'weightsArgsAg' have class "Counts"
              if (!all(sapply(weightsArgsAg, methods::is, "Counts")))
                  return(gettextf("'%s' has elements not of class \"%s\"",
                                  "weightsArgsAg", "Counts"))
-             ## all elements of 'weightsArgsAg' have same dimensions
+             ## all elements of 'weightsArgsAg' have same number of dimensions
              n.w <- length(weightsArgsAg)
              if (n.w > 1L) {
                  dim <- lapply(weightsArgsAg, dim)
-                 if (!all(mapply(identical, dim[1L], dim[-1L])))
-                     return(gettextf("elements of '%s' do not all have same dimensions",
+                 n.dim <- lapply(dim, length)
+                 if (!all(mapply(identical, n.dim[1L], n.dim[-1L])))
+                     return(gettextf("elements of '%s' do not all have same number of dimensions",
                                      "weightsArgsAg"))
              }
              ## 'xArgsAg' and 'weightsArgsAg' have same length
@@ -38,9 +40,35 @@ setClass("ArgsAgMixin",
                  return(gettextf("'%s' and '%s' have different lengths",
                                  "xArgsAg", "weightsArgsAg"))
              ## elements of 'xArgsAg' and 'weightsArgsAg' have same dimensions
-             if (!identical(dim(xArgsAg[[1L]]), dim(weightsArgsAg[[1L]])))
-                 return(gettextf("elements of '%s' and '%s' have different dimensions",
-                                 "xArgsAg", "weightsArgsAg"))
+             for (i in seq_along(xArgsAg)) {
+                 if (!identical(dim(xArgsAg[[i]]), dim(weightsArgsAg[[i]])))
+                     return(gettextf("elements of '%s' and '%s' have different dimensions",
+                                     "xArgsAg", "weightsArgsAg"))
+             }
+             TRUE
+         })
+
+## HAS_TESTS
+setClass("ConcordancesAgMixin",
+         slots = c(concordancesAg = "list"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             concordancesAg <- object@concordancesAg
+             ## all elements of 'concordancesAg' have class "ManyToOne"
+             if (!all(sapply(concordancesAg, methods::is, "ManyToOne")))
+                 return(gettextf("'%s' has elements not of class \"%s\"",
+                                 "concordancesAg", "ManyToOne"))
+             if (length(concordancesAg) > 0L) {
+                 names.conc <- names(concordancesAg)
+                 ## 'concordancesAg' has names
+                 if (is.null(names.conc))
+                     stop(gettextf("'%s' does not have names",
+                                   "concordancesAg"))
+                 ## no duplicated names for 'concordancesAg'
+                 if (any(duplicated(names.conc)))
+                     stop(gettextf("'%s' has duplicate names",
+                                   "concordancesAg"))
+             }
              TRUE
          })
 
@@ -287,8 +315,12 @@ setClass("WeightAgMixin",
 #' @slot scaleAg Standard deviation of proposal density
 #'     for Metropolis-Hastings updates.
 #' @slot valueAg Parameter(s) estimated by the aggregate values.
+#' @slot funAg Function to calculate elements of \code{valueAg} from
+#'     disaggregated rates, counts, probabilities, or means.
 #' @slot weightAg Weights used to calculate \code{valueAg} from
 #'     disaggregated rates, counts, probabilities, or means.
+#' @slot concordancesAg List of \code{\link[classconc]{ManyToOne}}
+#' concordances.
 #' @name SpecAggregate-class
 #' @export
 setClass("SpecAggregate",
@@ -298,25 +330,27 @@ setClass("SpecAggregate",
 #' @export
 setClass("SpecAgCertain",
          contains = c("SpecAggregate",
-             "MetaDataAgMixin",             
-             "SpecValueAgMixin",
-             "SpecWeightAgMixin"))
+                      "ConcordancesAgMixin",
+                      "MetaDataAgMixin",             
+                      "SpecValueAgMixin",                      
+                      "SpecWeightAgMixin"))
 
 #' @rdname SpecAggregate-class
 #' @export
 setClass("SpecAgUncertain",
          contains = c("VIRTUAL",
              "SpecAggregate",
-             "MetaDataAgMixin",
-             "ScaleAgMixin",
-             "SpecValueAgMixin",
+             "ConcordancesAgMixin",
+             "MetaDataAgMixin",             
+             "SpecValueAgMixin",                      
              "SpecWeightAgMixin"))
 
 #' @rdname SpecAggregate-class
 #' @export
 setClass("SpecAgNormal",
          contains = c("SpecAgUncertain",
-             "SDAgMixin"))
+                      "ScaleAgMixin",
+                      "SDAgMixin"))
 
 setClass("SpecAgLife",
          contains = "SpecAgNormal")
@@ -331,7 +365,8 @@ setClass("SpecAgFun",
 #' @rdname SpecAggregate-class
 #' @export
 setClass("SpecAgPoisson",
-         contains = "SpecAgUncertain")
+         contains = c("SpecAgUncertain",
+                      "ScaleAgMixin"))
 
 setClass("SpecAgPlaceholder",
          contains = "SpecAggregate")

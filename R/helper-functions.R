@@ -1529,6 +1529,7 @@ addAgCertain <- function(object, aggregate, defaultWeights) {
     value <- aggregate@valueAg
     weight <- aggregate@weightAg
     metadata.ag <- aggregate@metadataAg
+    concordances.ag <- aggregate@concordancesAg
     .Data.theta.obj <- array(0,
                              dim = dim(metadata.y),
                              dimnames = dimnames(metadata.y))
@@ -1547,7 +1548,8 @@ addAgCertain <- function(object, aggregate, defaultWeights) {
     }
     transform <- dembase::makeTransform(x = theta.obj,
                                         y = ag.obj,
-                                        subset = TRUE)
+                                        subset = TRUE,
+                                        concordances = concordances.ag)
     transform <- dembase::makeCollapseTransformExtra(transform)
     weight <- makeWeightAg(weight = weight,
                            default = defaultWeights,
@@ -1586,6 +1588,7 @@ addAgNormal <- function(object, aggregate, defaultWeights) {
     sd <- aggregate@sdAg
     weight <- aggregate@weightAg
     metadata.ag <- aggregate@metadataAg
+    concordances.ag <- aggregate@concordancesAg
     .Data.theta.obj <- array(0,
                              dim = dim(metadata.y),
                              dimnames = dimnames(metadata.y))
@@ -1598,7 +1601,10 @@ addAgNormal <- function(object, aggregate, defaultWeights) {
                               dimnames = dimnames(metadata.ag))
         ag.obj <- methods::new("Counts", .Data = .Data.ag.obj, metadata = metadata.ag)
     }
-    transform <- dembase::makeTransform(x = theta.obj, y = ag.obj, subset = TRUE)
+    transform <- dembase::makeTransform(x = theta.obj,
+                                        y = ag.obj,
+                                        subset = TRUE,
+                                        concordances = concordances.ag)
     transform <- dembase::makeCollapseTransformExtra(transform)
     weight <- makeWeightAg(weight = weight,
                            default = defaultWeights,
@@ -1638,6 +1644,7 @@ addAgPoisson <- function(object, aggregate, defaultWeights) {
     scale <- aggregate@scaleAg
     weight <- aggregate@weightAg
     metadata.ag <- aggregate@metadataAg
+    concordances.ag <- aggregate@concordancesAg
     .Data.theta.obj <- array(0,
                              dim = dim(metadata.y),
                              dimnames = dimnames(metadata.y))
@@ -1650,7 +1657,10 @@ addAgPoisson <- function(object, aggregate, defaultWeights) {
                               dimnames = dimnames(metadata.ag))
         ag.obj <- methods::new("Counts", .Data = .Data.ag.obj, metadata = metadata.ag)
     }
-    transform <- dembase::makeTransform(x = theta.obj, y = ag.obj, subset = TRUE)
+    transform <- dembase::makeTransform(x = theta.obj,
+                                        y = ag.obj,
+                                        subset = TRUE,
+                                        concordances = concordances.ag)
     transform <- dembase::makeCollapseTransformExtra(transform)
     weight <- makeWeightAg(weight = weight,
                            default = defaultWeights,
@@ -1694,6 +1704,7 @@ addAgFun <- function(object, aggregate, defaultWeights) {
     weight <- aggregate@weightAg
     metadata.ag <- aggregate@metadataAg
     fun.ag <- aggregate@funAg
+    concordances.ag <- aggregate@concordancesAg
     .Data.theta.obj <- array(0,
                              dim = dim(metadata.y),
                              dimnames = dimnames(metadata.y))
@@ -1712,7 +1723,8 @@ addAgFun <- function(object, aggregate, defaultWeights) {
     }
     transform <- dembase::makeTransform(x = theta.obj,
                                         y = ag.obj,
-                                        subset = TRUE)
+                                        subset = TRUE,
+                                        concordances = concordances.ag)
     transform <- dembase::makeCollapseTransformExtra(transform)
     weight <- makeWeightAg(weight = weight,
                            default = defaultWeights,
@@ -1939,6 +1951,30 @@ checkAndTidyY <- function(y, impute = FALSE) {
                       "y", 2L))
     ## return 'y'
     y
+}
+
+## NO_TESTS
+checkConcordances <- function(concordances) {
+    ## 'concordances' is a list
+    if (!is.list(concordances))
+        stop(gettextf("'%s' has class \"%s\"",
+                      "concordances", class(concordances)))
+    if (identical(length(concordances), 0L))
+        return(NULL)
+    names <- names(concordances)
+    ## all elements of 'concordances' have class "ManyToOne"
+    if (!all(sapply(concordances, methods::is, "ManyToOne")))
+        return(gettextf("'%s' has elements not of class \"%s\"",
+                        "concordances"))
+    ## 'concordances' has names
+    if (is.null(names))
+        stop(gettextf("'%s' does not have names",
+                      "concordances"))
+    ## no duplicated names for 'concordances'
+    if (any(duplicated(names)))
+        stop(gettextf("'%s' has duplicate names",
+                      "concordances"))
+    NULL
 }
 
 ## HAS_TESTS
