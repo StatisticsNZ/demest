@@ -2888,7 +2888,7 @@ test_that("updateModelNotUseExp for NormalVaryingVarsigmaKnownAgFun updates the 
         spec <- Model(y ~ Normal(mean ~ age + sex, sd = 0.5), aggregate = aggregate)
         x0 <- initialModel(spec, y = y, weights = weights)
         expect_is(x0, "NormalVaryingVarsigmaKnownAgFun")
-        x1 <- updateModelNotUseExp(x1, y = y, useC = FALSE)
+        x1 <- updateModelNotUseExp(x0, y = y, useC = FALSE)
         expect_is(x0, "NormalVaryingVarsigmaKnownAgFun")
         if (x1@nAcceptTheta > 0L)
             expect_false(identical(x1@theta, x0@theta))

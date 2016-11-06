@@ -131,7 +131,7 @@ SEXP name##_R(SEXP prior_R, SEXP vbar_R, SEXP n_R, SEXP sigma_R) {    \
     double zeta = *REAL(zeta_R);              \
     GetRNGstate();              \
     double ans = name(prior_R, zeta);    \
-	PutRNGstate();              \
+    PutRNGstate();              \
     return ScalarReal(ans);    \
     }
 
@@ -454,7 +454,7 @@ SEXP name##_R(SEXP prior_R, SEXP vbar_R, SEXP n_R, SEXP sigma_R) {    \
     SEXP name##_R(SEXP i_R, SEXP mapping_R)  {       \
     int i = *INTEGER(i_R);         \
     int ans = name(i, mapping_R);         \
-	return ScalarInteger(ans);         \
+    return ScalarInteger(ans);         \
     }
 
 /* one-off wrapper for makeMu */
@@ -578,22 +578,22 @@ SEXP safeLogProp_Binomial_R(SEXP logit_th_new_R, SEXP logit_th_other_new_R,
               SEXP logit_th_old_R, SEXP logit_th_other_old_R, SEXP scale_R,
               SEXP weight_R, SEXP weight_other_R)
 {
-	double logit_th_new = *REAL(logit_th_new_R);
-	double logit_th_other_new = *REAL(logit_th_other_new_R);
-	double logit_th_old = *REAL(logit_th_old_R);
-	double logit_th_other_old = *REAL(logit_th_other_old_R);
-	double scale = *REAL(scale_R);
+    double logit_th_new = *REAL(logit_th_new_R);
+    double logit_th_other_new = *REAL(logit_th_other_new_R);
+    double logit_th_old = *REAL(logit_th_old_R);
+    double logit_th_other_old = *REAL(logit_th_other_old_R);
+    double scale = *REAL(scale_R);
     double weight = *REAL(weight_R);
     double weight_other = *REAL(weight_other_R);
-	
-	double ans = safeLogProp_Binomial(logit_th_new, 
-							logit_th_other_new,
-							logit_th_old, 
-							logit_th_other_old, 
-							scale,
+    
+    double ans = safeLogProp_Binomial(logit_th_new, 
+                            logit_th_other_new,
+                            logit_th_old, 
+                            logit_th_other_old, 
+                            scale,
                             weight,
                             weight_other);
-	return ScalarReal(ans);
+    return ScalarReal(ans);
 }
 
 /* one-off wrapper for safeLogProp_Poisson */
@@ -601,22 +601,22 @@ SEXP safeLogProp_Poisson_R(SEXP log_th_new_R, SEXP log_th_other_new_R,
               SEXP log_th_old_R, SEXP log_th_other_old_R, SEXP scale_R,
               SEXP weight_R, SEXP weight_other_R)
 {
-	double log_th_new = *REAL(log_th_new_R);
-	double log_th_other_new = *REAL(log_th_other_new_R);
-	double log_th_old = *REAL(log_th_old_R);
-	double log_th_other_old = *REAL(log_th_other_old_R);
-	double scale = *REAL(scale_R);
+    double log_th_new = *REAL(log_th_new_R);
+    double log_th_other_new = *REAL(log_th_other_new_R);
+    double log_th_old = *REAL(log_th_old_R);
+    double log_th_other_old = *REAL(log_th_other_old_R);
+    double scale = *REAL(scale_R);
     double weight = *REAL(weight_R);
     double weight_other = *REAL(weight_other_R);
-	
-	double ans = safeLogProp_Poisson(log_th_new, 
-							log_th_other_new,
-							log_th_old, 
-							log_th_other_old, 
-							scale,
+    
+    double ans = safeLogProp_Poisson(log_th_new, 
+                            log_th_other_new,
+                            log_th_old, 
+                            log_th_other_old, 
+                            scale,
                             weight,
                             weight_other);
-	return ScalarReal(ans);
+    return ScalarReal(ans);
 }
 
 
@@ -753,8 +753,8 @@ SEXP estimateOneChain_R(SEXP object_R, SEXP filename_R,
 SEXP chooseICellComp_R(SEXP description_R)
 {
     GetRNGstate();
-	int ans = chooseICellComp(description_R);
-	PutRNGstate();
+    int ans = chooseICellComp(description_R);
+    PutRNGstate();
     return ScalarInteger(ans);
 }
 
@@ -764,7 +764,7 @@ SEXP chooseICellOutInPool_R(SEXP description_R)
     SEXP ans_R;
     GetRNGstate();
     PROTECT(ans_R = chooseICellOutInPool(description_R));
-	PutRNGstate();
+    PutRNGstate();
     UNPROTECT(1);
     return ans_R;
 }
@@ -773,8 +773,8 @@ SEXP chooseICellOutInPool_R(SEXP description_R)
 SEXP chooseICellPopn_R(SEXP description_R)
 {
     GetRNGstate();
-	int ans = chooseICellPopn(description_R);
-	PutRNGstate();
+    int ans = chooseICellPopn(description_R);
+    PutRNGstate();
     return ScalarInteger(ans);
 }
 
@@ -789,7 +789,7 @@ SEXP getIPopnNextFromOrigDest_R(SEXP i_R, SEXP mapping_R)
     int i = *INTEGER(i_R);
     SEXP ans_R;
     PROTECT(ans_R = getIPopnNextFromOrigDest(i, mapping_R));
-	UNPROTECT(1);
+    UNPROTECT(1);
     return ans_R;
 }
 
@@ -803,7 +803,7 @@ SEXP getMinValCohort_R(SEXP i_R, SEXP series_R, SEXP iterator_R)
     PROTECT(dup_R = duplicate(iterator_R));
     
     int ans = getMinValCohort(i, series_R, dup_R);
-	UNPROTECT(1);     
+    UNPROTECT(1);     
     return ScalarInteger(ans);
 }
 
@@ -917,7 +917,7 @@ PREDICTOBJECT_WRAPPER_R(predictUBetaScaled);
 SEXP
 dpoibin1_R(SEXP x_R, SEXP size_R, SEXP prob_R, SEXP use_log_R)
 {
-	GetRNGstate();
+    GetRNGstate();
     double ans = dpoibin1(*INTEGER(x_R), *INTEGER(size_R), 
                 *REAL(prob_R), *INTEGER(use_log_R));
     PutRNGstate();
@@ -1029,7 +1029,7 @@ SEXP updateSDNorm_R(SEXP sigma_R,
 }
 
 SEXP updateSDRobust_R(SEXP sigma_R, 
-		      SEXP A_R, SEXP nuBeta_R, SEXP nuTau_R, SEXP V_R, SEXP n_R, SEXP max_R)
+              SEXP A_R, SEXP nuBeta_R, SEXP nuTau_R, SEXP V_R, SEXP n_R, SEXP max_R)
 {
        
     double sigma = *REAL(sigma_R);
@@ -1114,7 +1114,10 @@ UPDATEOBJECT_NOEXP_WRAPPER_R(updateModelNotUseExp_NormalVaryingVarsigmaUnknownAg
 UPDATEOBJECT_NOEXP_WRAPPER_R(updateModelNotUseExp_PoissonVaryingNotUseExpAgCertain);
 UPDATEOBJECT_NOEXP_WRAPPER_R(updateModelNotUseExp_NormalVaryingVarsigmaKnownAgNormal);
 UPDATEOBJECT_NOEXP_WRAPPER_R(updateModelNotUseExp_NormalVaryingVarsigmaUnknownAgNormal);
+UPDATEOBJECT_NOEXP_WRAPPER_R(updateModelNotUseExp_NormalVaryingVarsigmaKnownAgFun);
+UPDATEOBJECT_NOEXP_WRAPPER_R(updateModelNotUseExp_NormalVaryingVarsigmaUnknownAgFun);
 UPDATEOBJECT_NOEXP_WRAPPER_R(updateModelNotUseExp_PoissonVaryingNotUseExpAgNormal);
+UPDATEOBJECT_NOEXP_WRAPPER_R(updateModelNotUseExp_PoissonVaryingNotUseExpAgFun);
 UPDATEOBJECT_NOEXP_WRAPPER_R(updateModelNotUseExp_PoissonVaryingNotUseExpAgPoisson);
 UPDATEOBJECT_NOEXP_WRAPPER_R(updateModelNotUseExp);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_BinomialVarying);
@@ -1122,8 +1125,10 @@ UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_PoissonVarying);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_PoissonBinomialMixture);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_BinomialVaryingAgCertain);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_BinomialVaryingAgNormal);
+UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_BinomialVaryingAgFun);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_PoissonVaryingUseExpAgCertain);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_PoissonVaryingUseExpAgNormal);
+UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_PoissonVaryingUseExpAgFun);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_PoissonVaryingUseExpAgPoisson);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp);
 
@@ -1391,7 +1396,10 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateModelNotUseExp_PoissonVaryingNotUseExpAgCertain_R, 2),
   CALLDEF(updateModelNotUseExp_NormalVaryingVarsigmaKnownAgNormal_R, 2),
   CALLDEF(updateModelNotUseExp_NormalVaryingVarsigmaUnknownAgNormal_R, 2),
+  CALLDEF(updateModelNotUseExp_NormalVaryingVarsigmaKnownAgFun_R, 2),
+  CALLDEF(updateModelNotUseExp_NormalVaryingVarsigmaUnknownAgFun_R, 2),
   CALLDEF(updateModelNotUseExp_PoissonVaryingNotUseExpAgNormal_R, 2),
+  CALLDEF(updateModelNotUseExp_PoissonVaryingNotUseExpAgFun_R, 2),
   CALLDEF(updateModelNotUseExp_PoissonVaryingNotUseExpAgPoisson_R, 2),
   CALLDEF(updateModelNotUseExp_R, 2),
   
@@ -1400,8 +1408,10 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateModelUseExp_PoissonBinomialMixture_R, 3),
   CALLDEF(updateModelUseExp_BinomialVaryingAgCertain_R, 3),
   CALLDEF(updateModelUseExp_BinomialVaryingAgNormal_R, 3),
+  CALLDEF(updateModelUseExp_BinomialVaryingAgFun_R, 3),
   CALLDEF(updateModelUseExp_PoissonVaryingUseExpAgCertain_R, 3),
   CALLDEF(updateModelUseExp_PoissonVaryingUseExpAgNormal_R, 3),
+  CALLDEF(updateModelUseExp_PoissonVaryingUseExpAgFun_R, 3),
   CALLDEF(updateModelUseExp_PoissonVaryingUseExpAgPoisson_R, 3),
   CALLDEF(updateModelUseExp_R, 3),
   

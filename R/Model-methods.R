@@ -1349,7 +1349,7 @@ setMethod("updateModelNotUseExp",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("updateModelNotUseExp",
           signature(object = "NormalVaryingVarsigmaKnownAgFun",
@@ -1375,7 +1375,7 @@ setMethod("updateModelNotUseExp",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("updateModelNotUseExp",
           signature(object = "NormalVaryingVarsigmaUnknownAgFun",
@@ -1694,7 +1694,7 @@ setMethod("updateModelUseExp",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("updateModelUseExp",
           signature(object = "BinomialVaryingAgFun",

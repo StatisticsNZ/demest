@@ -256,10 +256,10 @@ predictModelNotUseExp_Internal(SEXP object, SEXP y_R, int i_method_model)
         case 104:
             predictModelNotUseExp_NormalVaryingVarsigmaKnownPredict_i(object, y_R);
             break;
-		case 105:
+        case 105:
             predictModelNotUseExp_NormalVaryingVarsigmaUnknownPredict_i(object, y_R);
             break;
-		case 106:
+        case 106:
             predictModelNotUseExp_PoissonVaryingNotUseExpPredict_i(object, y_R);
             break;
         default:
@@ -360,7 +360,7 @@ predictModelUseExp_PoissonBinomialMixturePredict(SEXP object, SEXP y_R, SEXP exp
 static __inline__ void
 updateModelNotUseExp_NormalVaryingVarsigmaKnown_i(SEXP object, SEXP y_R)
 {
-	updateTheta_NormalVarying(object, y_R);
+    updateTheta_NormalVarying(object, y_R);
     updateSigma_Varying_General(object, identity);
     updateBetasAndPriorsBetas_General(object, identity);
 }
@@ -427,10 +427,36 @@ updateModelNotUseExp_NormalVaryingVarsigmaUnknownAgNormal_i(SEXP object, SEXP y_
 }
 
 static __inline__ void
+updateModelNotUseExp_NormalVaryingVarsigmaKnownAgFun_i(SEXP object, SEXP y_R)
+{
+    updateThetaAndValueAgFun_Normal(object, y_R);
+    updateSigma_Varying_General(object, identity);
+    updateBetasAndPriorsBetas_General(object, identity);
+}
+
+static __inline__ void
+updateModelNotUseExp_NormalVaryingVarsigmaUnknownAgFun_i(SEXP object, SEXP y_R)
+{
+    updateThetaAndValueAgFun_Normal(object, y_R);
+    updateVarsigma(object, y_R);
+    updateSigma_Varying_General(object, identity);
+    updateBetasAndPriorsBetas_General(object, identity);
+}
+
+static __inline__ void
 updateModelNotUseExp_PoissonVaryingNotUseExpAgNormal_i(SEXP object, SEXP y_R)
 {
     updateTheta_PoissonVaryingNotUseExpAgCertain(object, y_R);
     updateThetaAndValueAgNormal_PoissonNotUseExp(object, y_R);
+    updateSigma_Varying_General(object, log);
+    updateBetasAndPriorsBetas_General(object, log);
+}
+
+/* problem ScaleVec non positive on tests with n.test <- 20 */
+static __inline__ void
+updateModelNotUseExp_PoissonVaryingNotUseExpAgFun_i(SEXP object, SEXP y_R)
+{
+    updateThetaAndValueAgFun_PoissonNotUseExp(object, y_R);
     updateSigma_Varying_General(object, log);
     updateBetasAndPriorsBetas_General(object, log);
 }
@@ -476,7 +502,7 @@ updateModelUseExp_PoissonBinomialMixture_i
 static __inline__ void
 updateModelUseExp_BinomialVaryingAgCertain_i(SEXP object, SEXP y_R, SEXP exposure_R)
 {
-	updateTheta_BinomialVaryingAgCertain(object, y_R, exposure_R);
+    updateTheta_BinomialVaryingAgCertain(object, y_R, exposure_R);
     updateSigma_Varying_General(object, logit);
     updateBetasAndPriorsBetas_General(object, logit);
 }
@@ -486,6 +512,14 @@ updateModelUseExp_BinomialVaryingAgNormal_i(SEXP object, SEXP y_R, SEXP exposure
 {
     updateTheta_BinomialVaryingAgCertain(object, y_R, exposure_R);
     updateThetaAndValueAgNormal_Binomial(object, y_R, exposure_R);
+    updateSigma_Varying_General(object, logit);
+    updateBetasAndPriorsBetas_General(object, logit);
+}
+
+static __inline__ void
+updateModelUseExp_BinomialVaryingAgFun_i(SEXP object, SEXP y_R, SEXP exposure_R)
+{
+    updateThetaAndValueAgFun_Binomial(object, y_R, exposure_R);
     updateSigma_Varying_General(object, logit);
     updateBetasAndPriorsBetas_General(object, logit);
 }
@@ -506,6 +540,16 @@ updateModelUseExp_PoissonVaryingUseExpAgNormal_i(SEXP object, SEXP y_R, SEXP exp
     updateSigma_Varying_General(object, log);
     updateBetasAndPriorsBetas_General(object, log);
 }
+
+/* problem ScaleVec non positive on tests with n.test <- 20 */
+static __inline__ void
+updateModelUseExp_PoissonVaryingUseExpAgFun_i(SEXP object, SEXP y_R, SEXP exposure_R)
+{
+    updateThetaAndValueAgFun_PoissonUseExp(object, y_R, exposure_R);
+    updateSigma_Varying_General(object, log);
+    updateBetasAndPriorsBetas_General(object, log);
+}
+
 
 static __inline__ void
 updateModelUseExp_PoissonVaryingUseExpAgPoisson_i(SEXP object, SEXP y_R, SEXP exposure_R)
@@ -546,20 +590,29 @@ updateModelNotUseExp_Internal(SEXP object, SEXP y_R, int i_method_model)
             break;
         case 14:    
             updateModelNotUseExp_NormalVaryingVarsigmaKnownAgNormal_i(object, y_R);
-			break;  
+            break;  
         case 15:    
             updateModelNotUseExp_NormalVaryingVarsigmaUnknownAgNormal_i(object, y_R);
-			break;
+            break;
         case 16:    
             updateModelNotUseExp_PoissonVaryingNotUseExpAgCertain_i(object, y_R);
-			break;    
+            break;    
         case 17:    
             updateModelNotUseExp_PoissonVaryingNotUseExpAgNormal_i(object, y_R);
-			break;    
+            break;    
         case 22:    
             updateModelNotUseExp_PoissonVaryingNotUseExpAgPoisson_i(object, y_R);
-			break; 
-		default:
+            break; 
+        case 24:    
+            updateModelNotUseExp_NormalVaryingVarsigmaKnownAgFun_i(object, y_R);
+            break; 
+        case 25:    
+            updateModelNotUseExp_NormalVaryingVarsigmaUnknownAgFun_i(object, y_R);
+            break; 
+        case 26:    
+            updateModelNotUseExp_PoissonVaryingNotUseExpAgFun_i(object, y_R);
+            break; 
+        default:
             error("unknown i_method_model: %d", i_method_model);
             break;
     }
@@ -578,7 +631,7 @@ void
 updateModelUseExp_Internal(SEXP object, SEXP y_R, SEXP exposure_R,
                             int i_method_model) 
 {
-	switch(i_method_model)
+    switch(i_method_model)
     {
         case 9:
             updateModelUseExp_BinomialVarying_i(object, y_R, exposure_R);
@@ -590,7 +643,7 @@ updateModelUseExp_Internal(SEXP object, SEXP y_R, SEXP exposure_R,
             updateModelUseExp_PoissonBinomialMixture_i(object, y_R, exposure_R);
             break;
         case 18: 
-	    updateModelUseExp_BinomialVaryingAgCertain_i(object, y_R, exposure_R);
+        updateModelUseExp_BinomialVaryingAgCertain_i(object, y_R, exposure_R);
             break;
         case 19:    
             updateModelUseExp_BinomialVaryingAgNormal_i(object, y_R, exposure_R);
@@ -603,6 +656,12 @@ updateModelUseExp_Internal(SEXP object, SEXP y_R, SEXP exposure_R,
             break;
         case 23:    
             updateModelUseExp_PoissonVaryingUseExpAgPoisson_i(object, y_R, exposure_R);
+            break;
+        case 27:    
+            updateModelUseExp_BinomialVaryingAgFun_i(object, y_R, exposure_R);
+            break;
+        case 28:    
+            updateModelUseExp_PoissonVaryingUseExpAgFun_i(object, y_R, exposure_R);
             break;
         default:
             error("unknown i_method_model: %d", i_method_model);
@@ -662,10 +721,29 @@ updateModelNotUseExp_NormalVaryingVarsigmaUnknownAgNormal(SEXP object, SEXP y_R)
 }
 
 void
+updateModelNotUseExp_NormalVaryingVarsigmaKnownAgFun(SEXP object, SEXP y_R)
+{
+    updateModelNotUseExp_NormalVaryingVarsigmaKnownAgFun_i(object, y_R);
+}
+
+void
+updateModelNotUseExp_NormalVaryingVarsigmaUnknownAgFun(SEXP object, SEXP y_R)
+{
+    updateModelNotUseExp_NormalVaryingVarsigmaUnknownAgFun_i(object, y_R);
+}
+
+void
 updateModelNotUseExp_PoissonVaryingNotUseExpAgNormal(SEXP object, SEXP y_R)
 {
     updateModelNotUseExp_PoissonVaryingNotUseExpAgNormal_i(object, y_R);
 }
+
+void
+updateModelNotUseExp_PoissonVaryingNotUseExpAgFun(SEXP object, SEXP y_R)
+{
+    updateModelNotUseExp_PoissonVaryingNotUseExpAgFun_i(object, y_R);
+}
+
 
 void
 updateModelNotUseExp_PoissonVaryingNotUseExpAgPoisson(SEXP object, SEXP y_R)
@@ -710,6 +788,13 @@ updateModelUseExp_BinomialVaryingAgNormal
 }
 
 void
+updateModelUseExp_BinomialVaryingAgFun
+                                (SEXP object, SEXP y_R, SEXP exposure_R)
+{
+    updateModelUseExp_BinomialVaryingAgFun_i(object, y_R, exposure_R);
+}
+
+void
 updateModelUseExp_PoissonVaryingUseExpAgCertain
                                 (SEXP object, SEXP y_R, SEXP exposure_R)
 {
@@ -721,6 +806,13 @@ updateModelUseExp_PoissonVaryingUseExpAgNormal
                                 (SEXP object, SEXP y_R, SEXP exposure_R)
 {
     updateModelUseExp_PoissonVaryingUseExpAgNormal_i(object, y_R, exposure_R);
+}
+
+void
+updateModelUseExp_PoissonVaryingUseExpAgFun
+                                (SEXP object, SEXP y_R, SEXP exposure_R)
+{
+    updateModelUseExp_PoissonVaryingUseExpAgFun_i(object, y_R, exposure_R);
 }
 
 void

@@ -261,7 +261,7 @@ void updateBetaScaled(double *betaScaled, int J, SEXP prior, double *vbar,
                 int n, double sigma);
 
 void updateZetaAndTau(SEXP prior_R, int J, double *betaScaled, 
-		      double *vbar, int n, double sigma);
+              double *vbar, int n, double sigma);
 
 void updateGWithTrend(SEXP prior_R);
 void updateOmegaAlpha(SEXP prior_R, int isWithTrend);
@@ -299,10 +299,10 @@ updateBetaAndPriorBeta_ExchRobustCov(double *beta, int J, SEXP prior_R,
                         double *vbar, int n, double sigma);
 void
 updateBetaAndPriorBeta_DLMNoTrendNormZeroNoSeason(double *beta, int J, 
-					SEXP prior_R, double *vbar, int n, double sigma);
+                    SEXP prior_R, double *vbar, int n, double sigma);
 void
 updateBetaAndPriorBeta_DLMWithTrendNormZeroNoSeason(double *beta, int J, 
-					SEXP prior_R, double *vbar, int n, double sigma);
+                    SEXP prior_R, double *vbar, int n, double sigma);
 void
 updateBetaAndPriorBeta_DLMNoTrendNormZeroWithSeason(double *beta, int J, SEXP prior_R, 
                         double *vbar, int n, double sigma);
@@ -323,29 +323,29 @@ updateBetaAndPriorBeta_DLMWithTrendNormCovWithSeason(double *beta, int J, SEXP p
                         double *vbar, int n, double sigma);
 void
 updateBetaAndPriorBeta_DLMNoTrendRobustZeroNoSeason(double *beta, int J, 
-					SEXP prior_R, double *vbar, int n, double sigma);					
+                    SEXP prior_R, double *vbar, int n, double sigma);                   
 void
 updateBetaAndPriorBeta_DLMWithTrendRobustZeroNoSeason(double *beta, int J, 
-					SEXP prior_R, double *vbar, int n, double sigma);		
+                    SEXP prior_R, double *vbar, int n, double sigma);       
 void
 updateBetaAndPriorBeta_DLMNoTrendRobustZeroWithSeason(double *beta, int J, 
-					SEXP prior_R, double *vbar, int n, double sigma);					
+                    SEXP prior_R, double *vbar, int n, double sigma);                   
 void
 updateBetaAndPriorBeta_DLMWithTrendRobustZeroWithSeason(double *beta, int J,
                     SEXP prior_R, double *vbar, int n, double sigma);
 void
 updateBetaAndPriorBeta_DLMNoTrendRobustCovNoSeason(double *beta, int J, 
-					SEXP prior_R, double *vbar, int n, double sigma);					
+                    SEXP prior_R, double *vbar, int n, double sigma);                   
 void
 updateBetaAndPriorBeta_DLMWithTrendRobustCovNoSeason(double *beta, int J, 
-					SEXP prior_R, double *vbar, int n, double sigma);		
+                    SEXP prior_R, double *vbar, int n, double sigma);       
 void
 updateBetaAndPriorBeta_DLMNoTrendRobustCovWithSeason(double *beta, int J, 
-					SEXP prior_R, double *vbar, int n, double sigma);					
+                    SEXP prior_R, double *vbar, int n, double sigma);                   
 void
 updateBetaAndPriorBeta_DLMWithTrendRobustCovWithSeason(double *beta, int J,
                     SEXP prior_R, double *vbar, int n, double sigma);
-					
+                    
 /* helper-functions */
 SEXP makeMu(int n, SEXP betas_R, SEXP iterator_R);
 double dpoibin1(int x, int size, double prob, int use_log);
@@ -379,17 +379,17 @@ SEXP getV_R(SEXP prior_R);
 
 SEXP makeVBar_R(SEXP object, SEXP iBeta);
 double safeLogProp_Binomial(double logit_th_new, 
-							double logit_th_other_new,
-							double logit_th_old, 
-							double logit_th_other_old, 
-							double scale,
+                            double logit_th_other_new,
+                            double logit_th_old, 
+                            double logit_th_other_old, 
+                            double scale,
                             double weight,
                             double weight_other);
 double safeLogProp_Poisson(double log_th_new, 
-							double log_th_other_new,
-							double log_th_old, 
-							double log_th_other_old, 
-							double scale,
+                            double log_th_other_new,
+                            double log_th_old, 
+                            double log_th_other_old, 
+                            double scale,
                             double weight,
                             double weight_other);
 
@@ -422,7 +422,7 @@ void transferParamSigma(SEXP model_R, const char *filename,
                                         int lengthIter, int iteration);
 void transferParamVarsigma(SEXP model_R, const char *filename, 
                                         int lengthIter, int iteration);
-														
+                                                        
 SEXP centerA(SEXP vec_R, SEXP iterator_R);
 SEXP diff_R(SEXP vec_R, SEXP order_R);
 int makeIOther(int i, SEXP transform_R);
@@ -480,7 +480,7 @@ void predictPrior_DLMWithTrendRobustCovWithSeasonPredict(SEXP prior_R);
 
 void transferParamPrior(SEXP prior_R, double *values, int nValues);
 void transferParamPrior_ExchNormZero(SEXP prior_R, double *values, 
-					  int nValues);
+                      int nValues);
 void transferParamPrior_ExchNormCov(SEXP prior_R, double *values, 
                                             int nValues);
 void transferParamPrior_ExchRobustZero(SEXP prior_R, double *values, 
@@ -523,7 +523,7 @@ void transferParamPrior_DLMWithTrendRobustCovWithSeasonPredict(SEXP prior_R,
 /* update-nongeneric */
 double updateSDNorm(double sigma, double A, double nu, double V, int n, double max);
 double updateSDRobust(double sigma, double A, double nuBeta, 
-		      double nuTau, double V, int n, double max);
+              double nuTau, double V, int n, double max);
 
 void updateEta(SEXP prior_R, double* beta, int J);
 
@@ -606,7 +606,10 @@ void updateModelNotUseExp_PoissonVaryingNotUseExpAgCertain(SEXP object, SEXP y_R
 void updateModelNotUseExp_NormalVaryingVarsigmaUnknownAgCertain(SEXP object, SEXP y_R);
 void updateModelNotUseExp_NormalVaryingVarsigmaKnownAgNormal(SEXP object, SEXP y_R);
 void updateModelNotUseExp_NormalVaryingVarsigmaUnknownAgNormal(SEXP object, SEXP y_R);
+void updateModelNotUseExp_NormalVaryingVarsigmaKnownAgFun(SEXP object, SEXP y_R);
+void updateModelNotUseExp_NormalVaryingVarsigmaUnknownAgFun(SEXP object, SEXP y_R);
 void updateModelNotUseExp_PoissonVaryingNotUseExpAgNormal(SEXP object, SEXP y_R);
+void updateModelNotUseExp_PoissonVaryingNotUseExpAgFun(SEXP object, SEXP y_R);
 void updateModelNotUseExp_PoissonVaryingNotUseExpAgPoisson(SEXP object, SEXP y_R);
 void updateModelNotUseExp(SEXP object, SEXP y_R);
 /* update models using exposure*/
@@ -618,9 +621,13 @@ void updateModelUseExp_BinomialVaryingAgCertain
                             (SEXP object, SEXP y_R, SEXP exposure_R);
 void updateModelUseExp_BinomialVaryingAgNormal
                             (SEXP object, SEXP y_R, SEXP exposure_R);
+void updateModelUseExp_BinomialVaryingAgFun
+                            (SEXP object, SEXP y_R, SEXP exposure_R);
 void updateModelUseExp_PoissonVaryingUseExpAgCertain
                             (SEXP object, SEXP y_R, SEXP exposure_R);
 void updateModelUseExp_PoissonVaryingUseExpAgNormal
+                            (SEXP object, SEXP y_R, SEXP exposure_R);
+void updateModelUseExp_PoissonVaryingUseExpAgFun
                             (SEXP object, SEXP y_R, SEXP exposure_R);
 void updateModelUseExp_PoissonVaryingUseExpAgPoisson
                             (SEXP object, SEXP y_R, SEXP exposure_R);
