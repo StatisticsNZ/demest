@@ -3082,7 +3082,7 @@ test_that("R, generic C, and specific C versions updateModelNotUseExp method for
     initialModel <- demest:::initialModel
     for (seed in seq_len(n.test)) {
         set.seed(seed)
-        value <- Values(array(rpois(n = 3, lambda = 5), dim = 3, dimnames = list(age = 0:2)))
+        value <- Values(array(rpois(n = 3, lambda = 5), dim = 3, dimnames = list(age = 0:2))) + 1
         aggregate <- AgFun(value = value, sd = sqrt(abs(value)),
                            FUN = function(x, weights) sum(x * weights) / sum(weights))
         y <- as.integer(rpois(n = 20, lambda = 10))

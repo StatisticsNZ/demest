@@ -1429,7 +1429,7 @@ setMethod("updateModelNotUseExp",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("updateModelNotUseExp",
           signature(object = "PoissonVaryingNotUseExpAgFun",
