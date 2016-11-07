@@ -3644,11 +3644,11 @@ test_that("R, generic C, and specific C versions updateModelUseExp method for Po
     initialModel <- demest:::initialModel
     for (seed in seq_len(n.test)) {
         set.seed(seed)
-        value <- Values(array(rpois(n = 3, lambda = 5), dim = 3, dimnames = list(age = 0:2)))
+        value <- Values(array(rpois(n = 3, lambda = 5), dim = 3, dimnames = list(age = 0:2))) + 1
         aggregate <- AgFun(value = value, sd = sqrt(abs(value)),
                            FUN = function(x, weights) sum(x * weights) / sum(weights))
         theta <- rbeta(n = 20, shape1 = 20, shape2 = 5)
-        exposure <- as.double(rpois(n = 20, lambda = 20))
+        exposure <- as.double(rpois(n = 20, lambda = 20)) + 1
         exposure <- Counts(array(exposure, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
         y <- as.integer(rpois(n = 20, lambda = exposure * theta))
         y <- Counts(array(y, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
