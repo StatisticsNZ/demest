@@ -448,6 +448,60 @@ test_that("makeOutputAggregate works with AgNormal", {
     expect_identical(ans.obtained, ans.expected)
 })
 
+test_that("makeOutputAggregate works with AgFun", {
+    makeOutputAggregate <- demest:::makeOutputAggregate
+    initialModel <- demest:::initialModel
+    Skeleton <- demest:::Skeleton
+    SkeletonAccept <- demest:::SkeletonAccept
+    exposure <- Counts(array(rpois(20, lambda  = 10),
+                             dim = c(2, 10),
+                             dimnames = list(sex = c("f", "m"), age = 0:9)))
+    y <- Counts(array(rbinom(20, size = exposure, prob = 0.7),
+                      dim = c(2, 10),
+                      dimnames = list(sex = c("f", "m"), age = 0:9)))
+    ## mean is Values
+    value <- collapseDimension(y, dimension = "age") / collapseDimension(exposure, dimension = "age")
+    sd <- sqrt(value)
+    aggregate <- AgFun(value = value, sd = sqrt(abs(value)),
+                       FUN = function(x, weights) sum(x * weights) / sum(weights))
+    spec <- Model(y ~ Binomial(mean ~ sex + age),
+                  age ~ Exch(),
+                  aggregate = aggregate)
+    model <- initialModel(spec, y = y, exposure = exposure)
+    weights <- new("Counts", .Data = prop.table(exposure, margin = 1), metadata = exposure@metadata)
+    ans.obtained <- makeOutputAggregate(model = model, pos = 20L,
+                                        nChain = 2L, nIteration = 50L)
+    ans.expected <- list(value = Skeleton(metadata = model@metadataAg,
+                             first = 20L),
+                         noProposal = SkeletonAccept(nAttempt = 100L, first = 22L,
+                             nChain = 2L, nIteration = 50L),
+                         accept = SkeletonAccept(nAttempt = 2L, first = 23L,
+                             nChain = 2L, nIteration = 50L),
+                         mean = value,
+                         sd = sd)
+    expect_identical(ans.obtained, ans.expected)
+    ## mean is scalar
+    value <- sum(y)/sum(exposure)
+    sd <- 1
+    aggregate <- AgFun(value = value, sd = sd,
+                       FUN = function(x, weights) sum(x * weights) / sum(weights))
+    spec <- Model(y ~ Binomial(mean ~ sex + age),
+                  age ~ Exch(),
+                  aggregate = aggregate)
+    model <- initialModel(spec, y = y, exposure = exposure)
+    ans.obtained <- makeOutputAggregate(model = model, pos = 10L,
+                                        nChain = 2L, nIteration = 50L)
+    weights <- new("Counts", .Data = prop.table(exposure), metadata = exposure@metadata)
+    ans.expected <- list(value = Skeleton(first = 10L),
+                         noProposal = SkeletonAccept(nAttempt = 100L, first = 11L,
+                             nChain = 2L, nIteration = 50L),
+                         accept = SkeletonAccept(nAttempt = 1L, first = 12L,
+                             nChain = 2L, nIteration = 50L),
+                         mean = value,
+                         sd = sd)
+    expect_identical(ans.obtained, ans.expected)
+})
+
 test_that("makeOutputAggregate works with AgPoisson", {
     makeOutputAggregate <- demest:::makeOutputAggregate
     initialModel <- demest:::initialModel
@@ -1253,6 +1307,74 @@ test_that("makeOutputModel works with PoissonVaryingUseExp - AgNormal", {
     value <- collapseDimension(y, dimension = "age") / collapseDimension(exposure, dimension = "age")
     sd <- sqrt(value) + 0.1
     aggregate <- AgNormal(value, sd = sd)
+    spec <- Model(y ~ Poisson(mean ~ sex + age),
+                  aggregate = aggregate)
+    model <- initialModel(spec, y = y, exposure = exposure)
+    metadata <- y@metadata
+    pos <- 21L
+    ans.obtained <- makeOutputModel(model = model, pos = pos,
+                                    mcmc = c(nChain = 2L, nIteration = 20L))
+    likelihood <- list(rate = new("SkeletonManyValues",
+                       first = 21L,
+                       last = 40L,
+                       metadata = metadata),
+                       jumpRate = model@scaleTheta@.Data,
+                       noProposal = new("SkeletonNAccept", nAttempt = 20L, first = 41L,
+                       iFirstInChain = c(1L, 11L)),
+                       acceptRate = new("SkeletonNAccept", nAttempt = 20L, first = 42L,
+                       iFirstInChain = c(1L, 11L)))
+    mu <- SkeletonMu(betas = model@betas,
+                     margins = model@margins,
+                     first = 43L,
+                     metadata = model@metadataY)
+    betas <- list("(Intercept)" = new("SkeletonBetaIntercept",
+                      first = 43L,
+                      offsetsHigher = list(new("Offsets", c(44L, 45L)),
+                          new("Offsets", c(46L, 55L)))),
+                  sex = new("SkeletonBetaTerm",
+                      first = 44L,
+                      last = 45L,
+                      metadata = metadata[1],
+                      offsetsHigher = list(),
+                      transformsHigher = list()),
+                  age = new("SkeletonBetaTerm",
+                      first = 46L,
+                      last = 55L,
+                      metadata = metadata[2],
+                      offsetsHigher = list(),
+                      transformsHigher = list()))
+    sigma <- new("SkeletonOneValues", first = 56L)
+    prior <- c(betas, list(mean = mu), list(sd = sigma))
+    hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
+                  sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
+                  age = makeOutputPrior(prior = model@priorsBetas[[3]],
+                      metadata = model@metadataY[2],
+                      pos = 57L))
+    aggregate <- makeOutputAggregate(model, pos = hyper$age$scaleError@first + 1L,
+                                     nChain = 2L, nIteration = 20L)
+    ans.expected <- list(likelihood = likelihood,
+                         prior = prior,
+                         hyper = hyper,
+                         aggregate = aggregate)
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("makeOutputModel works with PoissonVaryingUseExp - AgFun", {
+    makeOutputModel <- demest:::makeOutputModel
+    makeOutputPrior <- demest:::makeOutputPrior
+    makeOutputAggregate <- demest:::makeOutputAggregate
+    initialModel <- demest:::initialModel
+    lengthValues <- demest:::lengthValues
+    SkeletonMu <- demest:::SkeletonMu
+    exposure <- Counts(array(as.double(rpois(20, lambda  = 10)),
+                             dim = c(2, 10),
+                             dimnames = list(sex = c("f", "m"), age = 0:9)))
+    y <- Counts(array(rbinom(20, size = exposure, prob = 0.7),
+                      dim = c(2, 10),
+                      dimnames = list(sex = c("f", "m"), age = 0:9)))
+    value <- collapseDimension(y, dimension = "age") / collapseDimension(exposure, dimension = "age")
+    aggregate <- AgFun(value = value, sd = sqrt(abs(value)) + 0.1,
+                       FUN = function(x, weights) sum(x * weights) / sum(weights))
     spec <- Model(y ~ Poisson(mean ~ sex + age),
                   aggregate = aggregate)
     model <- initialModel(spec, y = y, exposure = exposure)

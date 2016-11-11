@@ -1,11 +1,11 @@
 
-## printSpecAggregateEqns ################################################################
+## printSpecAgAccuracyEqns ################################################################
 
-setMethod("printSpecAggregateEqns",
+setMethod("printSpecAgAccuracyEqns",
           signature(object = "SpecAgPlaceholder"),
           function(object) invisible())
 
-setMethod("printSpecAggregateEqns",
+setMethod("printSpecAgAccuracyEqns",
           signature(object = "SpecAgCertain"),
           function(object) {
               value <- object@valueAg
@@ -17,7 +17,7 @@ setMethod("printSpecAggregateEqns",
                   cat("           value = aggregate\n")
           })
 
-setMethod("printSpecAggregateEqns",
+setMethod("printSpecAgAccuracyEqns",
           signature(object = "SpecAgNormal"),
           function(object) {
               value <- object@valueAg
@@ -29,7 +29,19 @@ setMethod("printSpecAggregateEqns",
                   cat("           value ~ N(aggregate, sd^2)\n")
           })
 
-setMethod("printSpecAggregateEqns",
+setMethod("printSpecAgAccuracyEqns",
+          signature(object = "SpecAgFun"),
+          function(object) {
+              value <- object@valueAg
+              n.value <- length(value)
+              cat("\n")
+              if (n.value > 1L)
+                  cat("        value[a] ~ N(aggregate[a], sd[a]^2)\n")
+              else
+                  cat("           value ~ N(aggregate, sd^2)\n")
+          })
+
+setMethod("printSpecAgAccuracyEqns",
           signature(object = "SpecAgPoisson"),
           function(object) {
               value <- object@valueAg
@@ -39,6 +51,76 @@ setMethod("printSpecAggregateEqns",
                   cat("exposure[a] * value[a] ~ Poisson(exposure[a] * aggregate[a])\n")
               else
                   cat("exposure * value ~ Poisson(aggregate * value)\n")
+          })
+
+
+## printSpecAgValEqns ##############################################################
+
+setMethod("printSpecAgValEqns",
+          signature(object = "SpecNormalVarying",
+                    aggregate = "SpecAgPlaceholder"),
+          function(object, aggregate) invisible())
+
+setMethod("printSpecAgValEqns",
+          signature(object = "SpecNormalVarying",
+                    aggregate = "SpecAggregate"),
+          function(object, aggregate) {
+              cat("\n")
+              cat("       aggregate = sum(mean * weight)")
+          })
+
+setMethod("printSpecAgValEqns",
+          signature(object = "SpecNormalVarying",
+                    aggregate = "SpecAgFun"),
+          function(object, aggregate) {
+              cat("\n")
+              cat("       aggregate = f(mean, weight)")
+          })
+
+setMethod("printSpecAgValEqns",
+          signature(object = "SpecBinomialVarying",
+                    aggregate = "SpecAgPlaceholder"),
+          function(object, aggregate) invisible())
+
+setMethod("printSpecAgValEqns",
+          signature(object = "SpecBinomialVarying",
+                    aggregate = "SpecAggregate"),
+          function(object, aggregate) {
+              cat("\n")
+              cat("       aggregate = sum(prob * weight)")
+          })
+
+setMethod("printSpecAgValEqns",
+          signature(object = "SpecBinomialVarying",
+                    aggregate = "SpecAgFun"),
+          function(object, aggregate) {
+              cat("\n")
+              cat("       aggregate = f(prob, weight)")
+          })
+
+setMethod("printSpecAgValEqns",
+          signature(object = "SpecPoissonVarying",
+                    aggregate = "SpecAgPlaceholder"),
+          function(object, aggregate) invisible())
+
+setMethod("printSpecAgValEqns",
+          signature(object = "SpecPoissonVarying",
+                    aggregate = "SpecAggregate"),
+          function(object, aggregate) {
+              cat("\n")
+              cat("       aggregate = sum(rate * weight)\n")
+              cat("           -------- or --------\n")
+              cat("       aggregate = sum(count * weight)")
+          })
+
+setMethod("printSpecAgValEqns",
+          signature(object = "SpecPoissonVarying",
+                    aggregate = "SpecAgFun"),
+          function(object, aggregate) {
+              cat("\n")
+              cat("       aggregate = f(rate, weight)\n")
+              cat("          -------- or --------\n")
+              cat("       aggregate = f(count * weight)")
           })
 
 
@@ -79,7 +161,7 @@ setMethod("show",
           signature(object = "SpecAgCertain"),
           function(object) {
               cat("An object of class \"", class(object), "\"\n", sep = "")
-              printSpecAggregateEqns(object)
+              printSpecAgAccuracyEqns(object)
               printValueAg(object)
               printWeightAg(object)
           })
@@ -90,7 +172,7 @@ setMethod("show",
           signature(object = "SpecAgNormal"),
           function(object) {
               cat("An object of class \"", class(object), "\"\n", sep = "")
-              printSpecAggregateEqns(object)
+              printSpecAgAccuracyEqns(object)
               printValueAg(object)
               printSDAg(object)
               printWeightAg(object)
@@ -100,10 +182,22 @@ setMethod("show",
 #' @rdname show-methods
 #' @export
 setMethod("show",
+          signature(object = "SpecAgFun"),
+          function(object) {
+              cat("An object of class \"", class(object), "\"\n", sep = "")
+              printSpecAgAccuracyEqns(object)
+              printValueAg(object)
+              printSDAg(object)
+              printWeightAg(object)
+          })
+
+#' @rdname show-methods
+#' @export
+setMethod("show",
           signature(object = "SpecAgPoisson"),
           function(object) {
               cat("An object of class \"", class(object), "\"\n", sep = "")
-              printSpecAggregateEqns(object)
+              printSpecAgAccuracyEqns(object)
               printValueAg(object)
               printWeightAg(object)
               printJumpAg(object)
@@ -164,7 +258,7 @@ setMethod("show",
               cat("\n")
               printSpecsPriorsEqns(object)
               printSDEqns(object)
-              printAggregateSpecEqns(object)
+              printSpecAggregateEqns(object)
               printJump(object)
           })
 
@@ -178,7 +272,7 @@ setMethod("show",
               cat("\n")
               printSpecsPriorsEqns(object)
               printSDEqns(object)
-              printAggregateSpecEqns(object)
+              printSpecAggregateEqns(object)
               printJump(object)
           })
 
@@ -192,7 +286,7 @@ setMethod("show",
               cat("\n")
               printSpecsPriorsEqns(object)
               printSDEqns(object)
-              printAggregateSpecEqns(object)
+              printSpecAggregateEqns(object)
               printJump(object)
           })
 
@@ -206,7 +300,7 @@ setMethod("show",
               cat("\n")
               printSpecsPriorsEqns(object)
               printSDEqns(object)
-              printAggregateSpecEqns(object)
+              printSpecAggregateEqns(object)
               printJump(object)
           })
 

@@ -307,7 +307,10 @@ setGeneric("predictVarDLM",
            function(prior, zeta, useC = FALSE, useSpecific = FALSE)
            standardGeneric("predictVarDLM"))
 
-setGeneric("printAggregateModEqns",
+setGeneric("printAgValEqns",
+           function(object) invisible())
+
+setGeneric("printAgAccuracyEqns",
            function(object) invisible())
 
 setGeneric("printPriorEqns",
@@ -318,9 +321,13 @@ setGeneric("printPriorIntercept",
            function(object)
                standardGeneric("printPriorIntercept"))
 
-setGeneric("printSpecAggregateEqns",
+setGeneric("printSpecAgAccuracyEqns",
            function(object)
-               standardGeneric("printSpecAggregateEqns"))
+               standardGeneric("printSpecAgAccuracyEqns"))
+
+setGeneric("printSpecAgValEqns",
+           function(object, aggregate)
+               standardGeneric("printSpecAgValEqns"))
 
 setGeneric("showModelHelper",
            function(object)

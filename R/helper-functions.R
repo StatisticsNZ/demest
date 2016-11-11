@@ -5312,6 +5312,11 @@ expandTermsSpec <- function(f) {
     ans
 }
 
+printAggregateEqns <- function(object) {
+    printAgValEqns(object)
+    printAgAccuracyEqns(object)
+}
+
 printAggregateSpecEqns <- function(object) {
     aggregate <- object@aggregate
     printSpecAggregateEqns(aggregate)
@@ -5859,10 +5864,10 @@ printSDAg <- function(object) {
         cat("sd:", format(sd, digits = 4), "\n")
     else {
         sd <- array(sd,
-                       dim = dim(metadata),
-                       dimnames = dimnames(metadata))
+                    dim = dim(metadata),
+                    dimnames = dimnames(metadata))
         cat("\nsd:\n")
-        print(format(sd, digits = 4))
+        print(sd, digits = 4)
     }
 }
 
@@ -5889,6 +5894,13 @@ printSeasonEqns <- function(object, isMain) {
     }
     cat("     scaleSeason ~ trunc-half-t(", nu, ", ", sep = "")
     cat(squaredOrNA(A), ", ", format(max, digits = 4), ")\n", sep = "")
+}
+
+printSpecAggregateEqns <- function(object) {
+    aggregate <- object@aggregate
+    printSpecAgValEqns(object = object,
+                       aggregate = aggregate)
+    printSpecAgAccuracyEqns(aggregate)
 }
 
 printSpecsPriorsEqns <- function(object) {
@@ -5937,7 +5949,7 @@ printValueAg <- function(object) {
                        dim = dim(metadata),
                        dimnames = dimnames(metadata))
         cat("value:\n")
-        print(value)
+        print(value, digits = 4)
     }
 }
 

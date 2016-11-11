@@ -297,6 +297,50 @@ setMethod("makeOutputAggregate",
                    weights = weights)
           })
 
+setMethod("makeOutputAggregate",
+          signature(model = "AgFun"),
+          function(model, pos, nChain, nIteration) {
+              metadata.y <- model@metadataY
+              metadata.ag <- model@metadataAg
+              mean.ag <- model@meanAg@.Data
+              sd.ag <- model@sdAg@.Data
+              max.attempt <- model@maxAttempt@.Data
+              if (is.null(metadata.ag)) {
+                  first <- pos
+                  pos <- first + 1L
+                  value <- Skeleton(first = first)
+                  mean <- mean.ag
+                  sd <- sd.ag
+              }
+              else {
+                  dim.ag <- dim(metadata.ag)
+                  dimnames.ag <- dimnames(metadata.ag)
+                  first <- pos
+                  pos <- first + as.integer(prod(dim.ag))
+                  value <- Skeleton(metadata = metadata.ag, first = first)
+                  .Data.mean <- array(mean.ag, dim = dim.ag, dimnames = dimnames.ag)
+                  mean <- methods::new("Values", .Data = .Data.mean, metadata = metadata.ag)
+                  .Data.sd <- array(sd.ag, dim = dim.ag, dimnames = dimnames.ag)
+                  sd <- methods::new("Values", .Data = .Data.sd, metadata = metadata.ag)
+              }
+              first <- pos
+              pos <- first + 1L
+              no.proposal <- SkeletonAccept(nAttempt = max.attempt,
+                                            first = first,
+                                            nChain = nChain,
+                                            nIteration = nIteration)
+              first <- pos
+              accept.ag <- SkeletonAccept(nAttempt = length(mean.ag),
+                                          first = first,
+                                          nChain = nChain,
+                                          nIteration = nIteration)
+              list(value = value,
+                   noProposal = no.proposal,
+                   accept = accept.ag,
+                   mean = mean,
+                   sd = sd)
+          })
+
 ## HAS_TESTS
 setMethod("makeOutputAggregate",
           signature(model = "AgPoisson"),
@@ -873,9 +917,9 @@ setMethod("predictModelUseExp",
           })
 
 
-## printAggregateModEqns ##########################################################
+## printAgAccuracyEqns #####################################################
 
-setMethod("printAggregateModEqns",
+setMethod("printAgAccuracyEqns",
           signature(object = "AgCertain"),
           function(object) {
               value <- object@valueAg
@@ -886,8 +930,8 @@ setMethod("printAggregateModEqns",
               else
                   cat("           value = aggregate\n")
           })
-
-setMethod("printAggregateModEqns",
+          
+setMethod("printAgAccuracyEqns",
           signature(object = "AgNormal"),
           function(object) {
               value <- object@valueAg
@@ -899,7 +943,19 @@ setMethod("printAggregateModEqns",
                   cat("           value ~ N(aggregate, sd^2)\n")
           })
 
-setMethod("printAggregateModEqns",
+setMethod("printAgAccuracyEqns",
+          signature(object = "AgFun"),
+          function(object) {
+              value <- object@valueAg
+              n.value <- length(value)
+              cat("\n")
+              if (n.value > 1L)
+                  cat("        value[a] ~ N(aggregate[a], sd[a]^2)\n")
+              else
+                  cat("           value ~ N(aggregate, sd^2)\n")
+          })
+
+setMethod("printAgAccuracyEqns",
           signature(object = "AgPoisson"),
           function(object) {
               value <- object@valueAg
@@ -909,6 +965,87 @@ setMethod("printAggregateModEqns",
                   cat("exposure[a] * value[a] ~ Poisson(exposure[a] * aggregate[a])\n")
               else
                   cat("exposure * value ~ Poisson(aggregate * value)\n")
+          })
+
+
+## printAgValEqns ##############################################################
+
+setMethod("printAgValEqns",
+          signature(object = "NormalVaryingVarsigmaKnown"),
+          function(object) {
+              cat("\n")
+              cat("       aggregate = sum(mean * weight)")
+          })
+
+setMethod("printAgValEqns",
+          signature(object = "NormalVaryingVarsigmaKnown"),
+          function(object) {
+              cat("\n")
+              cat("       aggregate = sum(mean * weight)")
+          })
+
+setMethod("printAgValEqns",
+          signature(object = "NormalVaryingVarsigmaKnownAgFun"),
+          function(object) {
+              cat("\n")
+              cat("       aggregate = f(mean, weight)")
+          })
+
+
+setMethod("printAgValEqns",
+          signature(object = "NormalVaryingVarsigmaUnknown"),
+          function(object) {
+              cat("\n")
+              cat("       aggregate = sum(mean * weight)")
+          })
+
+setMethod("printAgValEqns",
+          signature(object = "NormalVaryingVarsigmaUnknownAgFun"),
+          function(object) {
+              cat("\n")
+              cat("       aggregate = f(mean, weight)")
+          })
+
+setMethod("printAgValEqns",
+          signature(object = "BinomialVarying"),
+          function(object) {
+              cat("\n")
+              cat("       aggregate = sum(prob * weight)")
+          })
+
+setMethod("printAgValEqns",
+          signature(object = "BinomialVaryingAgFun"),
+          function(object) {
+              cat("\n")
+              cat("       aggregate = f(prob, weight)")
+          })
+
+setMethod("printAgValEqns",
+          signature(object = "PoissonVaryingNotUseExp"),
+          function(object) {
+              cat("\n")
+              cat("      aggregate = sum(count * weight)")
+          })
+
+setMethod("printAgValEqns",
+          signature(object = "PoissonVaryingNotUseExpAgFun"),
+          function(object) {
+              cat("\n")
+              cat("      aggregate = f(count, weight)")
+          })
+
+setMethod("printAgValEqns",
+          signature(object = "PoissonVaryingUseExp"),
+          function(object) {
+              cat("\n")
+              cat("       aggregate = sum(rate * weight)")
+          })
+
+setMethod("printAgValEqns",
+          signature(object = "PoissonVaryingUseExpAgFun"),
+          function(object) {
+              cat("\n")
+              cat("       aggregate = f(rate, weight)")
           })
 
 
@@ -923,7 +1060,7 @@ setMethod("showModelHelper",
               printPriorsEqns(object)
               cat("\n")
               printSDEqns(object)
-              printAggregateModEqns(object)
+              printAggregateEqns(object)
           })
 
 setMethod("showModelHelper",
@@ -934,7 +1071,7 @@ setMethod("showModelHelper",
               printPriorsEqns(object)
               cat("\n")
               printSDEqns(object)
-              printAggregateModEqns(object)
+              printAggregateEqns(object)
           })
 
 setMethod("showModelHelper",
@@ -945,7 +1082,7 @@ setMethod("showModelHelper",
               printPriorsEqns(object)
               cat("\n")
               printSDEqns(object)
-              printAggregateModEqns(object)
+              printAggregateEqns(object)
           })
 
 setMethod("showModelHelper",
@@ -956,7 +1093,7 @@ setMethod("showModelHelper",
               printPriorsEqns(object)
               cat("\n")
               printSDEqns(object)
-              printAggregateModEqns(object)
+              printAggregateEqns(object)
           })
 
 setMethod("show",
