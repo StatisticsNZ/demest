@@ -3,6 +3,7 @@
 \name{Aggregate}
 \alias{AgCertain}
 \alias{AgFun}
+\alias{AgLife}
 \alias{AgNormal}
 \alias{AgPoisson}
 \alias{Aggregate}
@@ -12,9 +13,11 @@ AgCertain(value, weights = NULL, concordances = list())
 
 AgNormal(value, sd, weights = NULL, concordances = list(), jump = NULL)
 
-AgPoisson(value, weights = NULL, concordances = list(), jump = NULL)
+AgPoisson(value, concordances = list(), jump = NULL)
 
 AgFun(value, sd, FUN, weights = NULL, concordances = list())
+
+AgLife(value, sd, ax = NULL, concordances = list())
 }
 \arguments{
 \item{value}{The aggregate value or values.  A single number, or, if there

@@ -42,6 +42,18 @@ setMethod("printSpecAgAccuracyEqns",
           })
 
 setMethod("printSpecAgAccuracyEqns",
+          signature(object = "SpecAgLife"),
+          function(object) {
+              value <- object@valueAg
+              n.value <- length(value)
+              cat("\n")
+              if (n.value > 1L)
+                  cat("        value[a] ~ N(aggregate[a], sd[a]^2)\n")
+              else
+                  cat("           value ~ N(aggregate, sd^2)\n")
+          })
+
+setMethod("printSpecAgAccuracyEqns",
           signature(object = "SpecAgPoisson"),
           function(object) {
               value <- object@valueAg
@@ -122,6 +134,16 @@ setMethod("printSpecAgValEqns",
               cat("          -------- or --------\n")
               cat("       aggregate = f(count * weight)")
           })
+
+setMethod("printSpecAgValEqns",
+          signature(object = "SpecPoissonVarying",
+                    aggregate = "SpecAgLife"),
+          function(object, aggregate) {
+              cat("\n")
+              cat("         rate.ag = sum(rate * weight)\n")
+              cat("       aggregate = LifeExp(rate.ag)\n")
+          })
+
 
 
 ## show ##########################################################################

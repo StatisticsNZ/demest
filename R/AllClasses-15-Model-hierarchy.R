@@ -372,6 +372,18 @@ setClass("PoissonVaryingUseExpAgFun",
              iMethodModel = 28L,
              nuSigma = methods::new("DegreesFreedom", 7)))
 
+## NO_TESTS
+setClass("PoissonVaryingUseExpAgLife",
+         contains = c("PoissonVaryingUseExp",
+             "AgLife"),
+         prototype = prototype(slotsToExtract = c("theta",
+                                   "nFailedPropTheta", "nAcceptTheta",
+                                   "betas", "sigma", "priorsBetas",
+                                   "valueAg", "mxAg"),
+             iMethodModel = 29L,
+             nuSigma = methods::new("DegreesFreedom", 7)))
+
+
 
 
 ## Predicted Models - Basic #############################################################

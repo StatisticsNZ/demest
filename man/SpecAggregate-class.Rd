@@ -4,6 +4,7 @@
 \name{SpecAggregate-class}
 \alias{SpecAgCertain-class}
 \alias{SpecAgFun-class}
+\alias{SpecAgLife-class}
 \alias{SpecAgNormal-class}
 \alias{SpecAgPoisson-class}
 \alias{SpecAgUncertain-class}

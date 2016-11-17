@@ -694,31 +694,71 @@ test_that("AgFun works", {
     expect_identical(ans.obtained, ans.expected)
 })
 
+test_that("AgLife works", {
+    Concordance <- classconc::Concordance
+    ## value is scalar
+    ans.obtained <- AgLife(value = 80, sd = 3)
+    ans.expected <- new("SpecAgLife",
+                        metadataAg = NULL,
+                        sdAg = new("ScaleVec", 3),
+                        valueAg = new("ParameterVector", 80),
+                        axAg = NULL)
+    expect_identical(ans.obtained, ans.expected)
+    ## value is demographic array
+    value <- Counts(array(80:82,
+                          dim = 3,
+                          dimnames = list(time = c(2000, 2005, 2010))))
+    sd <- Counts(array(3:1,
+                       dim = 3,
+                       dimnames = list(time = c(2000, 2005, 2010))))
+    concordances <- list(region = Concordance(data.frame(old = 1:12, new = rep(1:4, each = 3))))
+    ax <- Values(array(c(0.1, 0.2, 0.1),
+                       dim = c(1, 3),
+                       dimnames = list(age = "0",
+                                       time = c(2000, 2005, 2010))),
+                 dimscales = c(age = "Intervals"))
+    ans.obtained <- AgLife(value = value, sd = sd, ax = ax,
+                           concordances = concordances)
+    ans.expected <- new("SpecAgLife",
+                        metadataAg = value@metadata,
+                        sdAg = new("ScaleVec", as.double(3:1)),
+                        valueAg = new("ParameterVector", as.double(80:82)),
+                        axAg = ax,
+                        concordancesAg = concordances)
+    expect_identical(ans.obtained, ans.expected)
+    ## value has age dimension
+    value <- Counts(array(80:82,
+                          dim = 3,
+                          dimnames = list(age = c("0", "1-4", "5-9"))))
+    sd <- Counts(array(3:1,
+                       dim = 3,
+                       dimnames = list(age = c("0", "1-4", "5-9"))))
+    ax <- Values(array(0.1,
+                       dim = 1,
+                       dimnames = list(age = "0")),
+                 dimscales = c(age = "Intervals"))
+    expect_error(AgLife(value = value, sd = sd, ax = ax),
+                 "'values' has a dimension with dimtype \"age\"")
+})
 
 test_that("AgPoisson works", {
     Concordance <- classconc::Concordance
-    ans.obtained <- AgPoisson(value = 4, weights = NULL)
+    ans.obtained <- AgPoisson(value = 4)
     ans.expected <- new("SpecAgPoisson",
                         metadataAg = NULL,
                         scaleAg = new("Scale", 0.1),
-                        valueAg = new("ParameterVector", 4),
-                        weightAg = NULL)
+                        valueAg = new("ParameterVector", 4))
     expect_identical(ans.obtained, ans.expected)
     value <- Counts(array(1:3,
                           dim = 3,
                           dimnames = list(time = c(2000, 2005, 2010))))
-    weights <- Counts(array(1,
-                            dim = c(4, 3),
-                            dimnames = list(region = 1:4,
-                                time = c(2000, 2005, 2010))))
     concordances <- list(region = Concordance(data.frame(old = 1:12, new = rep(1:4, each = 3))))
-    ans.obtained <- AgPoisson(value = value, weights = weights,
+    ans.obtained <- AgPoisson(value = value, 
                               concordances = concordances, jump = 0.3)
     ans.expected <- new("SpecAgPoisson",
                         metadataAg = value@metadata,
                         scaleAg = new("Scale", 0.3),
                         valueAg = new("ParameterVector", as.double(1:3)),
-                        weightAg = weights,
                         concordancesAg = concordances)
     expect_identical(ans.obtained, ans.expected)
 })

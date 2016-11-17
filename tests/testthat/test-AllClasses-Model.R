@@ -1148,63 +1148,6 @@ test_that("validity tests for BinomialVaryingAgCertain inherited from MuMixin wo
                  "'mu' and 'theta' have different lengths")
 })
 
-test_that("validity tests for BinomialVaryingAgCertain inherited from TransformAgMixin work", {
-    BetaIterator <- demest:::BetaIterator
-    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
-    theta <- rbeta(n = 20, shape1 = 5, shape2 = 5)
-    weightAg <- matrix(c(1:15, rep(NA, 5)), nrow = 5)
-    weightAg <- prop.table(weightAg, margin = 2)
-    valueAg <- colSums(weightAg * theta)[1:3]
-    valueAg <- new("ParameterVector", valueAg)
-    weightAg <- as.double(weightAg)
-    transformAg <- new("CollapseTransform",
-                          indices = list(rep(1L, 5), c(1:3, 0L)),
-                          dims = c(0L, 1L),
-                          dimBefore = 5:4,
-                          dimAfter = 3L)
-    transformAg <- makeCollapseTransformExtra(transformAg)
-    metadataAg <- new("MetaData",
-                         nms = "region",
-                         dimtypes = "state",
-                         DimScales = list(new("Categories", dimvalues = c("a", "b", "c"))))
-    set.seed(100)
-    x <- new("BinomialVaryingAgCertain",
-             theta = theta,
-             metadataY = new("MetaData",
-             nms = c("age", "region"),
-             dimtypes = c("age", "state"),
-             DimScales = list(new("Intervals", dimvalues = 0:5),
-             new("Categories", dimvalues = c("a", "b", "c", "d")))),
-             scaleTheta = new("Scale", 0.1),
-             scaleThetaMultiplier = new("Scale", 1),
-             nAcceptTheta = new("Counter", 0L),
-             lower = -Inf,
-             upper = Inf,
-             maxAttempt = 100L,
-             nFailedPropTheta = new("Counter", 0L),
-             sigma = new("Scale", 1),
-             sigmaMax = new("Scale", 5),
-             ASigma = new("Scale", 1),
-             betas = list(5, rnorm(5), rnorm(4)),
-             namesBetas = c("(Intercept)", "age", "region"),
-             margins = list(0L, 1L, 2L),
-             priorsBetas = list(new("ExchFixed"),
-                 new("ExchNormZero", J = new("Length", 5L), tauMax = new("Scale", 5)),
-                 new("ExchNormZero", J = new("Length", 4L), tauMax = new("Scale", 5))),
-             iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
-             dims = list(0L, 5L, 4L),
-             valueAg = valueAg,
-             weightAg = weightAg,
-             transformAg = transformAg,
-             metadataAg = metadataAg,
-             mu = rnorm(20))
-    ## 'valueAg' has length implied by 'metadataAg'
-    x.wrong <- x
-    x.wrong@valueAg <- new("ParameterVector", x.wrong@valueAg[1:2])
-    expect_error(validObject(x.wrong),
-                 "'valueAg' does not have length implied by 'transformAg'")
-})
-
 test_that("validity tests for BinomialVaryingAgCertain inherited from BinomialVaryingAgCertain work", {
     BetaIterator <- demest:::BetaIterator
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
@@ -3271,6 +3214,602 @@ test_that("validity tests for PoissonVaryingUseExpAgFun inherited from AgFun wor
                  "element 3 of 'valueAg' not equal to funAg\\(x, weights\\)")
 })
 
+test_that("can create a valid object of class PoissonVaryingUseExpAgLife", {
+    BetaIterator <- demest:::BetaIterator
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    ## dim = 3L
+    theta <- rbeta(n = 4 * 20 * 3, shape1 = 5, shape2 = 5)
+    metadataY <- new("MetaData",
+                     nms = c("region", "age", "education"),
+                     dimtypes = c("state", "age", "state"),
+                     DimScales = list(new("Categories", dimvalues = c("a", "b", "c", "d")),
+                                      new("Intervals", dimvalues = c(0, 1, seq(5, 90, 5), Inf)),
+                                      new("Categories", dimvalues = as.character(1:3))))
+    valueAg <- c(4, 3, 5)
+    valueAg <- new("ParameterVector", valueAg)
+    meanAg <- new("ParameterVector", rbeta(n = 3, shape1 = 0.5, shape2 = 1))
+    sdAg <- new("ScaleVec", rbeta(n = 3, shape1 = 1, shape2 = 2))
+    mxAg <- rbeta(n = 3 * 20, shape1 = 5, shape2 = 5)
+    transformAg <- new("CollapseTransform",
+                       indices = list(c(1:3, 0L), 1:20, c(1L, 1L, 1L)),
+                       dims = c(2L, 1L, 0L),
+                       dimBefore = c(4L, 20L, 3L),
+                       dimAfter = c(20L, 3L))
+    transformAg <- makeCollapseTransformExtra(transformAg)
+    metadataAg <- new("MetaData",
+                      nms = "region",
+                      dimtypes = "state",
+                      DimScales = list(new("Categories", dimvalues = c("a", "b", "c"))))
+    metadataMxAg <- new("MetaData",
+                      nms = c("age", "region"),
+                      dimtypes = c("age", "state"),
+                      DimScales = list(new("Intervals", dimvalues = c(0, 1, seq(5, 90, 5), Inf)),
+                                       new("Categories", dimvalues = c("a", "b", "c"))))
+    axAg <- rep(c(0.1, 1.5, rep(2.5, times = 18)), times = 3)
+    nxAg <- c(1, 4, rep(5, 17), Inf)
+    x <- new("PoissonVaryingUseExpAgLife",
+             theta = theta,
+             metadataY = metadataY,
+             scaleTheta = new("Scale", 0.1),
+             scaleThetaMultiplier = new("Scale", 1),
+             nAcceptTheta = new("Counter", 0L),
+             lower = -Inf,
+             upper = Inf,
+             maxAttempt = 100L,
+             nFailedPropTheta = new("Counter", 0L),
+             sigma = new("Scale", 1),
+             sigmaMax = new("Scale", 5),
+             ASigma = new("Scale", 1),
+             betas = list(5, rnorm(5), rnorm(4)),
+             namesBetas = c("(Intercept)", "age", "region"),
+             margins = list(0L, 1L, 2L),
+             priorsBetas = list(new("ExchFixed"),
+                 new("ExchNormZero", J = new("Length", 5L), tauMax = new("Scale", 5)),
+                 new("ExchNormZero", J = new("Length", 4L), tauMax = new("Scale", 5))),
+             iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
+             dims = list(0L, 5L, 4L),
+             valueAg = valueAg,
+             meanAg = meanAg,
+             sdAg = sdAg,
+             mxAg = mxAg,
+             transformThetaToMxAg = transformAg,
+             metadataAg = metadataAg,
+             metadataMxAg = metadataMxAg,
+             axAg = axAg,
+             nxAg = nxAg,
+             nAgeAg = new("Length", 20L))
+    expect_true(validObject(x))
+    ## scalar
+    theta <- rbeta(n = 20, shape1 = 5, shape2 = 5)
+    valueAg <- 30
+    valueAg <- new("ParameterVector", valueAg)
+    transformAg <- new("CollapseTransform",
+                          indices = list(rep(1L, 5), rep(1L, 4)),
+                          dims = c(1L, 0L),
+                          dimBefore = 5:4,
+                          dimAfter = 1L)
+    transformAg <- makeCollapseTransformExtra(transformAg)
+    mxAg <- rbeta(n = 10, shape1 = 5, shape2 = 5)
+    transformThetaToMxAg <- new("CollapseTransform",
+                       indices = list(1:10, c(1L, 1L)),
+                       dims = c(1L, 0L),
+                       dimBefore = c(10L, 2L),
+                       dimAfter = 10L)
+    transformThetaToMxAg <- makeCollapseTransformExtra(transformThetaToMxAg)
+    metadataAg <- new("MetaData",
+                      nms = c("age", "region"),
+                      dimtypes = c("age", "state"),
+                      DimScales = list(new("Intervals", dimvalues = c(0, 1, seq(5, 40, 5), Inf)),
+                                       new("Categories", dimvalues = c("a", "b"))))
+    metadataMxAg <- new("MetaData",
+                        nms = "age", 
+                        dimtypes = "age", 
+                        DimScales = list(new("Intervals", dimvalues = c(0, 1, seq(5, 40, 5), Inf))))
+    axAg <- c(0.1, 1.5, rep(2.5, times = 8))
+    nxAg <- c(1, 4, rep(5, 7), Inf)
+    x <- new("PoissonVaryingUseExpAgLife",
+             theta = theta,
+             metadataY = new("MetaData",
+             nms = c("age", "region"),
+             dimtypes = c("age", "state"),
+             DimScales = list(new("Intervals", dimvalues = c(0, 1, seq(5, 40, 5), Inf)),
+             new("Categories", dimvalues = c("a", "b")))),
+             scaleTheta = new("Scale", 0.1),
+             scaleThetaMultiplier = new("Scale", 1),
+             nAcceptTheta = new("Counter", 0L),
+             lower = -Inf,
+             upper = Inf,
+             maxAttempt = 100L,
+             nFailedPropTheta = new("Counter", 0L),
+             sigma = new("Scale", 1),
+             sigmaMax = new("Scale", 5),
+             ASigma = new("Scale", 1),
+             betas = list(5, rnorm(5), rnorm(4)),
+             namesBetas = c("(Intercept)", "age", "region"),
+             margins = list(0L, 1L, 2L),
+             priorsBetas = list(new("ExchFixed"),
+                 new("ExchNormZero", J = new("Length", 5L), tauMax = new("Scale", 5)),
+                 new("ExchNormZero", J = new("Length", 4L), tauMax = new("Scale", 5))),
+             iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
+             dims = list(0L, 5L, 4L),
+             valueAg = valueAg,
+             meanAg = new("ParameterVector", 0.5),
+             sdAg = new("ScaleVec", 0.2),
+             transformThetaToMxAg = transformThetaToMxAg,
+             metadataAg = NULL,
+             mxAg = mxAg,
+             metadataMxAg = metadataMxAg,
+             axAg = axAg,
+             nxAg = nxAg,
+             nAgeAg = new("Length", 10L))
+    expect_true(validObject(x))
+})
+
+test_that("tests for PoissonVaryingUseExpAgLife inherited from AxAgMixin work", {
+    BetaIterator <- demest:::BetaIterator
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    theta <- rbeta(n = 4 * 20 * 3, shape1 = 5, shape2 = 5)
+    metadataY <- new("MetaData",
+                     nms = c("region", "age", "education"),
+                     dimtypes = c("state", "age", "state"),
+                     DimScales = list(new("Categories", dimvalues = c("a", "b", "c", "d")),
+                                      new("Intervals", dimvalues = c(0, 1, seq(5, 90, 5), Inf)),
+                                      new("Categories", dimvalues = as.character(1:3))))
+    valueAg <- c(4, 3, 5)
+    valueAg <- new("ParameterVector", valueAg)
+    meanAg <- new("ParameterVector", rbeta(n = 3, shape1 = 0.5, shape2 = 1))
+    sdAg <- new("ScaleVec", rbeta(n = 3, shape1 = 1, shape2 = 2))
+    mxAg <- rbeta(n = 3 * 20, shape1 = 5, shape2 = 5)
+    transformAg <- new("CollapseTransform",
+                       indices = list(c(1:3, 0L), 1:20, c(1L, 1L, 1L)),
+                       dims = c(2L, 1L, 0L),
+                       dimBefore = c(4L, 20L, 3L),
+                       dimAfter = c(20L, 3L))
+    transformAg <- makeCollapseTransformExtra(transformAg)
+    metadataAg <- new("MetaData",
+                      nms = "region",
+                      dimtypes = "state",
+                      DimScales = list(new("Categories", dimvalues = c("a", "b", "c"))))
+    metadataMxAg <- new("MetaData",
+                        nms = c("age", "region"),
+                        dimtypes = c("age", "state"),
+                        DimScales = list(new("Intervals", dimvalues = c(0, 1, seq(5, 90, 5), Inf)),
+                                         new("Categories", dimvalues = c("a", "b", "c"))))
+    axAg <- rep(c(0.1, 1.5, rep(2.5, times = 18)), times = 3)
+    nxAg <- c(1, 4, rep(5, 17), Inf)
+    x <- new("PoissonVaryingUseExpAgLife",
+             theta = theta,
+             metadataY = metadataY,
+             scaleTheta = new("Scale", 0.1),
+             scaleThetaMultiplier = new("Scale", 1),
+             nAcceptTheta = new("Counter", 0L),
+             lower = -Inf,
+             upper = Inf,
+             maxAttempt = 100L,
+             nFailedPropTheta = new("Counter", 0L),
+             sigma = new("Scale", 1),
+             sigmaMax = new("Scale", 5),
+             ASigma = new("Scale", 1),
+             betas = list(5, rnorm(5), rnorm(4)),
+             namesBetas = c("(Intercept)", "age", "region"),
+             margins = list(0L, 1L, 2L),
+             priorsBetas = list(new("ExchFixed"),
+                                new("ExchNormZero", J = new("Length", 5L), tauMax = new("Scale", 5)),
+                                new("ExchNormZero", J = new("Length", 4L), tauMax = new("Scale", 5))),
+             iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
+             dims = list(0L, 5L, 4L),
+             valueAg = valueAg,
+             meanAg = meanAg,
+             sdAg = sdAg,
+             mxAg = mxAg,
+             transformThetaToMxAg = transformAg,
+             metadataAg = metadataAg,
+             metadataMxAg = metadataMxAg,
+             axAg = axAg,
+             nxAg = nxAg,
+             nAgeAg = new("Length", 20L))
+    ## 'axAg' has no missing values
+    x.wrong <- x
+    x.wrong@axAg[1] <- NA
+    expect_error(validObject(x.wrong),
+                 "'axAg' has missing values")
+    ## 'axAg' has no negative values
+    x.wrong <- x
+    x.wrong@axAg[1] <- -1
+    expect_error(validObject(x.wrong),
+                 "'axAg' has negative values")
+})
+
+
+test_that("tests for PoissonVaryingUseExpAgLife inherited from MetadataMxAgMixin work", {
+    BetaIterator <- demest:::BetaIterator
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    theta <- rbeta(n = 4 * 20 * 3, shape1 = 5, shape2 = 5)
+    metadataY <- new("MetaData",
+                     nms = c("region", "age", "education"),
+                     dimtypes = c("state", "age", "state"),
+                     DimScales = list(new("Categories", dimvalues = c("a", "b", "c", "d")),
+                                      new("Intervals", dimvalues = c(0, 1, seq(5, 90, 5), Inf)),
+                                      new("Categories", dimvalues = as.character(1:3))))
+    valueAg <- c(4, 3, 5)
+    valueAg <- new("ParameterVector", valueAg)
+    meanAg <- new("ParameterVector", rbeta(n = 3, shape1 = 0.5, shape2 = 1))
+    sdAg <- new("ScaleVec", rbeta(n = 3, shape1 = 1, shape2 = 2))
+    mxAg <- rbeta(n = 3 * 20, shape1 = 5, shape2 = 5)
+    transformAg <- new("CollapseTransform",
+                       indices = list(c(1:3, 0L), 1:20, c(1L, 1L, 1L)),
+                       dims = c(2L, 1L, 0L),
+                       dimBefore = c(4L, 20L, 3L),
+                       dimAfter = c(20L, 3L))
+    transformAg <- makeCollapseTransformExtra(transformAg)
+    metadataAg <- new("MetaData",
+                      nms = "region",
+                      dimtypes = "state",
+                      DimScales = list(new("Categories", dimvalues = c("a", "b", "c"))))
+    metadataMxAg <- new("MetaData",
+                        nms = c("age", "region"),
+                        dimtypes = c("age", "state"),
+                        DimScales = list(new("Intervals", dimvalues = c(0, 1, seq(5, 90, 5), Inf)),
+                                         new("Categories", dimvalues = c("a", "b", "c"))))
+    axAg <- rep(c(0.1, 1.5, rep(2.5, times = 18)), times = 3)
+    nxAg <- c(1, 4, rep(5, 17), Inf)
+    x <- new("PoissonVaryingUseExpAgLife",
+             theta = theta,
+             metadataY = metadataY,
+             scaleTheta = new("Scale", 0.1),
+             scaleThetaMultiplier = new("Scale", 1),
+             nAcceptTheta = new("Counter", 0L),
+             lower = -Inf,
+             upper = Inf,
+             maxAttempt = 100L,
+             nFailedPropTheta = new("Counter", 0L),
+             sigma = new("Scale", 1),
+             sigmaMax = new("Scale", 5),
+             ASigma = new("Scale", 1),
+             betas = list(5, rnorm(5), rnorm(4)),
+             namesBetas = c("(Intercept)", "age", "region"),
+             margins = list(0L, 1L, 2L),
+             priorsBetas = list(new("ExchFixed"),
+                                new("ExchNormZero", J = new("Length", 5L), tauMax = new("Scale", 5)),
+                                new("ExchNormZero", J = new("Length", 4L), tauMax = new("Scale", 5))),
+             iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
+             dims = list(0L, 5L, 4L),
+             valueAg = valueAg,
+             meanAg = meanAg,
+             sdAg = sdAg,
+             mxAg = mxAg,
+             transformThetaToMxAg = transformAg,
+             metadataAg = metadataAg,
+             metadataMxAg = metadataMxAg,
+             axAg = axAg,
+             nxAg = nxAg,
+             nAgeAg = new("Length", 20L))
+    ## 'metadataMxAg' has dimension with dimtype "age"
+    x.wrong <- x
+    x.wrong@metadataMxAg <- new("MetaData",
+                        nms = c("age", "region"),
+                        dimtypes = c("state", "state"),
+                        DimScales = list(new("Categories", dimvalues = as.character(1:20)),
+                                         new("Categories", dimvalues = c("a", "b", "c"))))
+    expect_error(validObject(x.wrong),
+                 "'metadataMxAg' does not have a dimension with dimtype \"age\"")
+    ## age dimension of 'metadataMxAg' has dimscale "Intervals"
+    x.wrong <- x
+    x.wrong@metadataMxAg <- new("MetaData",
+                        nms = c("age", "region"),
+                        dimtypes = c("age", "state"),
+                        DimScales = list(new("Points", dimvalues = 0:19),
+                                         new("Categories", dimvalues = c("a", "b", "c"))))
+    expect_error(validObject(x.wrong),
+                 "dimension of 'metadataMxAg' with dimtype \"age\" does not have dimscale \"Intervals\"")
+})
+
+
+test_that("tests for PoissonVaryingUseExpAgLife inherited from MxAgMixin work", {
+    BetaIterator <- demest:::BetaIterator
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    theta <- rbeta(n = 4 * 20 * 3, shape1 = 5, shape2 = 5)
+    metadataY <- new("MetaData",
+                     nms = c("region", "age", "education"),
+                     dimtypes = c("state", "age", "state"),
+                     DimScales = list(new("Categories", dimvalues = c("a", "b", "c", "d")),
+                                      new("Intervals", dimvalues = c(0, 1, seq(5, 90, 5), Inf)),
+                                      new("Categories", dimvalues = as.character(1:3))))
+    valueAg <- c(4, 3, 5)
+    valueAg <- new("ParameterVector", valueAg)
+    meanAg <- new("ParameterVector", rbeta(n = 3, shape1 = 0.5, shape2 = 1))
+    sdAg <- new("ScaleVec", rbeta(n = 3, shape1 = 1, shape2 = 2))
+    mxAg <- rbeta(n = 3 * 20, shape1 = 5, shape2 = 5)
+    transformAg <- new("CollapseTransform",
+                       indices = list(c(1:3, 0L), 1:20, c(1L, 1L, 1L)),
+                       dims = c(2L, 1L, 0L),
+                       dimBefore = c(4L, 20L, 3L),
+                       dimAfter = c(20L, 3L))
+    transformAg <- makeCollapseTransformExtra(transformAg)
+    metadataAg <- new("MetaData",
+                      nms = "region",
+                      dimtypes = "state",
+                      DimScales = list(new("Categories", dimvalues = c("a", "b", "c"))))
+    metadataMxAg <- new("MetaData",
+                        nms = c("age", "region"),
+                        dimtypes = c("age", "state"),
+                        DimScales = list(new("Intervals", dimvalues = c(0, 1, seq(5, 90, 5), Inf)),
+                                         new("Categories", dimvalues = c("a", "b", "c"))))
+    axAg <- rep(c(0.1, 1.5, rep(2.5, times = 18)), times = 3)
+    nxAg <- c(1, 4, rep(5, 17), Inf)
+    x <- new("PoissonVaryingUseExpAgLife",
+             theta = theta,
+             metadataY = metadataY,
+             scaleTheta = new("Scale", 0.1),
+             scaleThetaMultiplier = new("Scale", 1),
+             nAcceptTheta = new("Counter", 0L),
+             lower = -Inf,
+             upper = Inf,
+             maxAttempt = 100L,
+             nFailedPropTheta = new("Counter", 0L),
+             sigma = new("Scale", 1),
+             sigmaMax = new("Scale", 5),
+             ASigma = new("Scale", 1),
+             betas = list(5, rnorm(5), rnorm(4)),
+             namesBetas = c("(Intercept)", "age", "region"),
+             margins = list(0L, 1L, 2L),
+             priorsBetas = list(new("ExchFixed"),
+                                new("ExchNormZero", J = new("Length", 5L), tauMax = new("Scale", 5)),
+                                new("ExchNormZero", J = new("Length", 4L), tauMax = new("Scale", 5))),
+             iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
+             dims = list(0L, 5L, 4L),
+             valueAg = valueAg,
+             meanAg = meanAg,
+             sdAg = sdAg,
+             mxAg = mxAg,
+             transformThetaToMxAg = transformAg,
+             metadataAg = metadataAg,
+             metadataMxAg = metadataMxAg,
+             axAg = axAg,
+             nxAg = nxAg,
+             nAgeAg = new("Length", 20L))
+    ## 'mxAg' has no missing values
+    x.wrong <- x
+    x.wrong@mxAg[1] <- NA
+    expect_error(validObject(x.wrong),
+                 "'mxAg' has missing values")
+    ## 'mxAg' is non-negative
+    x.wrong <- x
+    x.wrong@mxAg[1] <- -1
+    expect_error(validObject(x.wrong),
+                 "'mxAg' has negative values")
+})
+
+
+test_that("tests for PoissonVaryingUseExpAgLife inherited from NxAgMixin work", {
+    BetaIterator <- demest:::BetaIterator
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    theta <- rbeta(n = 4 * 20 * 3, shape1 = 5, shape2 = 5)
+    metadataY <- new("MetaData",
+                     nms = c("region", "age", "education"),
+                     dimtypes = c("state", "age", "state"),
+                     DimScales = list(new("Categories", dimvalues = c("a", "b", "c", "d")),
+                                      new("Intervals", dimvalues = c(0, 1, seq(5, 90, 5), Inf)),
+                                      new("Categories", dimvalues = as.character(1:3))))
+    valueAg <- c(4, 3, 5)
+    valueAg <- new("ParameterVector", valueAg)
+    meanAg <- new("ParameterVector", rbeta(n = 3, shape1 = 0.5, shape2 = 1))
+    sdAg <- new("ScaleVec", rbeta(n = 3, shape1 = 1, shape2 = 2))
+    mxAg <- rbeta(n = 3 * 20, shape1 = 5, shape2 = 5)
+    transformAg <- new("CollapseTransform",
+                       indices = list(c(1:3, 0L), 1:20, c(1L, 1L, 1L)),
+                       dims = c(2L, 1L, 0L),
+                       dimBefore = c(4L, 20L, 3L),
+                       dimAfter = c(20L, 3L))
+    transformAg <- makeCollapseTransformExtra(transformAg)
+    metadataAg <- new("MetaData",
+                      nms = "region",
+                      dimtypes = "state",
+                      DimScales = list(new("Categories", dimvalues = c("a", "b", "c"))))
+    metadataMxAg <- new("MetaData",
+                        nms = c("age", "region"),
+                        dimtypes = c("age", "state"),
+                        DimScales = list(new("Intervals", dimvalues = c(0, 1, seq(5, 90, 5), Inf)),
+                                         new("Categories", dimvalues = c("a", "b", "c"))))
+    axAg <- rep(c(0.1, 1.5, rep(2.5, times = 18)), times = 3)
+    nxAg <- c(1, 4, rep(5, 17), Inf)
+    x <- new("PoissonVaryingUseExpAgLife",
+             theta = theta,
+             metadataY = metadataY,
+             scaleTheta = new("Scale", 0.1),
+             scaleThetaMultiplier = new("Scale", 1),
+             nAcceptTheta = new("Counter", 0L),
+             lower = -Inf,
+             upper = Inf,
+             maxAttempt = 100L,
+             nFailedPropTheta = new("Counter", 0L),
+             sigma = new("Scale", 1),
+             sigmaMax = new("Scale", 5),
+             ASigma = new("Scale", 1),
+             betas = list(5, rnorm(5), rnorm(4)),
+             namesBetas = c("(Intercept)", "age", "region"),
+             margins = list(0L, 1L, 2L),
+             priorsBetas = list(new("ExchFixed"),
+                                new("ExchNormZero", J = new("Length", 5L), tauMax = new("Scale", 5)),
+                                new("ExchNormZero", J = new("Length", 4L), tauMax = new("Scale", 5))),
+             iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
+             dims = list(0L, 5L, 4L),
+             valueAg = valueAg,
+             meanAg = meanAg,
+             sdAg = sdAg,
+             mxAg = mxAg,
+             transformThetaToMxAg = transformAg,
+             metadataAg = metadataAg,
+             metadataMxAg = metadataMxAg,
+             axAg = axAg,
+             nxAg = nxAg,
+             nAgeAg = new("Length", 20L))
+    ## 'nxAg' has no missing values
+    x.wrong <- x
+    x.wrong@nxAg[1] <- NA
+    expect_error(validObject(x.wrong),
+                 "'nxAg' has missing values")
+    ## 'nxAg' is non-negative
+    x.wrong <- x
+    x.wrong@nxAg[1] <- 0
+    expect_error(validObject(x.wrong),
+                 "'nxAg' has non-positive values")
+})
+
+test_that("tests for PoissonVaryingUseExpAgLife inherited from AgLife work", {
+    BetaIterator <- demest:::BetaIterator
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    theta <- rbeta(n = 4 * 20 * 3, shape1 = 5, shape2 = 5)
+    metadataY <- new("MetaData",
+                     nms = c("region", "age", "education"),
+                     dimtypes = c("state", "age", "state"),
+                     DimScales = list(new("Categories", dimvalues = c("a", "b", "c", "d")),
+                                      new("Intervals", dimvalues = c(0, 1, seq(5, 90, 5), Inf)),
+                                      new("Categories", dimvalues = as.character(1:3))))
+    valueAg <- c(4, 3, 5)
+    valueAg <- new("ParameterVector", valueAg)
+    meanAg <- new("ParameterVector", rbeta(n = 3, shape1 = 0.5, shape2 = 1))
+    sdAg <- new("ScaleVec", rbeta(n = 3, shape1 = 1, shape2 = 2))
+    mxAg <- rbeta(n = 3 * 20, shape1 = 5, shape2 = 5)
+    transformAg <- new("CollapseTransform",
+                       indices = list(c(1:3, 0L), 1:20, c(1L, 1L, 1L)),
+                       dims = c(2L, 1L, 0L),
+                       dimBefore = c(4L, 20L, 3L),
+                       dimAfter = c(20L, 3L))
+    transformAg <- makeCollapseTransformExtra(transformAg)
+    metadataAg <- new("MetaData",
+                      nms = "region",
+                      dimtypes = "state",
+                      DimScales = list(new("Categories", dimvalues = c("a", "b", "c"))))
+    metadataMxAg <- new("MetaData",
+                        nms = c("age", "region"),
+                        dimtypes = c("age", "state"),
+                        DimScales = list(new("Intervals", dimvalues = c(0, 1, seq(5, 90, 5), Inf)),
+                                         new("Categories", dimvalues = c("a", "b", "c"))))
+    axAg <- rep(c(0.1, 1.5, rep(2.5, times = 18)), times = 3)
+    nxAg <- c(1, 4, rep(5, 17), Inf)
+    x <- new("PoissonVaryingUseExpAgLife",
+             theta = theta,
+             metadataY = metadataY,
+             scaleTheta = new("Scale", 0.1),
+             scaleThetaMultiplier = new("Scale", 1),
+             nAcceptTheta = new("Counter", 0L),
+             lower = -Inf,
+             upper = Inf,
+             maxAttempt = 100L,
+             nFailedPropTheta = new("Counter", 0L),
+             sigma = new("Scale", 1),
+             sigmaMax = new("Scale", 5),
+             ASigma = new("Scale", 1),
+             betas = list(5, rnorm(5), rnorm(4)),
+             namesBetas = c("(Intercept)", "age", "region"),
+             margins = list(0L, 1L, 2L),
+             priorsBetas = list(new("ExchFixed"),
+                                new("ExchNormZero", J = new("Length", 5L), tauMax = new("Scale", 5)),
+                                new("ExchNormZero", J = new("Length", 4L), tauMax = new("Scale", 5))),
+             iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
+             dims = list(0L, 5L, 4L),
+             valueAg = valueAg,
+             meanAg = meanAg,
+             sdAg = sdAg,
+             mxAg = mxAg,
+             transformThetaToMxAg = transformAg,
+             metadataAg = metadataAg,
+             metadataMxAg = metadataMxAg,
+             axAg = axAg,
+             nxAg = nxAg,
+             nAgeAg = new("Length", 20L))
+    ## 'y' has dimension with dimtype "age"
+    x.wrong <- x
+    x.wrong@metadataY <- new("MetaData",
+                             nms = c("region", "age", "education"),
+                             dimtypes = c("state", "state", "state"),
+                             DimScales = list(new("Categories", dimvalues = c("a", "b", "c", "d")),
+                                              new("Categories", dimvalues = as.character(1:20)),
+                                                  new("Categories", dimvalues = as.character(1:3))))
+    expect_error(validObject(x.wrong),
+                 "'y' does not have a dimension with dimtype \"age\"")
+    ## age dimension of 'y' has dimscale "Intervals"
+    x.wrong <- x
+    x.wrong@metadataY <- new("MetaData",
+                             nms = c("region", "age", "education"),
+                             dimtypes = c("state", "age", "state"),
+                             DimScales = list(new("Categories", dimvalues = c("a", "b", "c", "d")),
+                                              new("Points", dimvalues = 0:19),
+                                              new("Categories", dimvalues = as.character(1:3))))
+    expect_error(validObject(x.wrong),
+                 "dimension of 'y' with dimtype \"age\" does not have dimscale \"Intervals\"")
+    ## last interval of age dimension of 'y' is open
+    x.wrong <- x
+    x.wrong@metadataY <- new("MetaData",
+                     nms = c("region", "age", "education"),
+                     dimtypes = c("state", "age", "state"),
+                     DimScales = list(new("Categories", dimvalues = c("a", "b", "c", "d")),
+                                      new("Intervals", dimvalues = c(0, 1, seq(5, 95, 5))),
+                                      new("Categories", dimvalues = as.character(1:3))))
+    expect_error(validObject(x.wrong),
+                 "last interval of dimension of 'y' with dimtype \"age\" is closed")
+    ## 'metadataAg' does not have dimension with dimtype "age"
+    x.wrong <- x
+    x.wrong@metadataAg <- new("MetaData",
+                      nms = "region",
+                      dimtypes = "age",
+                      DimScales = list(new("Intervals", dimvalues = 0:3)))
+    expect_error(validObject(x.wrong),
+                 "'metadataAg' has a dimension with dimtype \"age\"")
+    ## 'mxAg' and 'axAg' have same length
+    x.wrong <- x
+    x.wrong@mxAg <- rbeta(n = 3 * 20 + 1, shape1 = 5, shape2 = 5)
+    expect_error(validObject(x.wrong),
+                 "'mxAg' and 'axAg' have different lengths")
+    ## dimensions of 'metadataAg' consistent with length of 'mx'
+    x.wrong <- x
+    x.wrong@metadataMxAg <- new("MetaData",
+                                nms = c("age", "region"),
+                                dimtypes = c("age", "state"),
+                                DimScales = list(new("Intervals", dimvalues = c(0, 1, seq(5, 9, 5), Inf)),
+                                    new("Categories", dimvalues = c("a", "b", "c", "d"))))
+    expect_error(validObject(x.wrong),
+                 "dimensions of 'metadataMxAg' inconsistent with length of 'mxAg'")
+    ## 'dimBefore' for 'transformThetaToMxAg' consistent with 'theta'
+    transform.wrong <- new("CollapseTransform",
+                       indices = list(c(1:2, 0L), 1:20, c(1L, 1L, 1L)),
+                       dims = c(2L, 1L, 0L),
+                       dimBefore = c(3L, 20L, 3L),
+                       dimAfter = c(20L, 2L))
+    transform.wrong <- makeCollapseTransformExtra(transform.wrong)
+    x.wrong <- x
+    x.wrong@transformThetaToMxAg <- transform.wrong
+    expect_error(validObject(x.wrong),
+                 "'dimBefore' from 'transformThetaToMxAg' inconsistent with length of 'theta'")
+    ## 'dimAfter' for 'transformThetaToMxAg' consistent with 'axAg'
+    transform.wrong <- new("CollapseTransform",
+                       indices = list(c(1:2, 0L, 0L), 1:20, c(1L, 1L, 1L)),
+                       dims = c(2L, 1L, 0L),
+                       dimBefore = c(4L, 20L, 3L),
+                       dimAfter = c(20L, 2L))
+    transform.wrong <- makeCollapseTransformExtra(transform.wrong)
+    x.wrong <- x
+    x.wrong@transformThetaToMxAg <- transform.wrong
+    expect_error(validObject(x.wrong),
+                 "'dimAfter' from 'transformThetaToMxAg' inconsistent with length of 'axAg'")
+    ## length of 'mxAg' equal to 'nAge' times length of 'valueAg'
+    x.wrong <- x
+    x.wrong@nAgeAg@.Data <- 19L
+    expect_error(validObject(x.wrong),
+                 "'mxAg', 'nAgeAg', and 'valueAg' inconsistent")
+    ## length of 'nxAg' equal to 'nAge'
+    x.wrong <- x
+    x.wrong@nxAg <- x.wrong@nxAg[-1]
+    expect_error(validObject(x.wrong),
+                 "'nxAg' and 'nAgeAg' inconsistent")
+    ## 'axAg' consistent with 'nxAg'
+    x.wrong <- x
+    x.wrong@axAg[1] <- 100
+    expect_error(validObject(x.wrong),
+                 "'nxAg' and 'axAg' inconsistent")
+})
+
 
 ## Prediction ################################################################
 
@@ -4375,6 +4914,8 @@ test_that("Model classes have correct value for iMethodModel", {
     expect_identical(x@iMethodModel, 27L)
     x <- new("PoissonVaryingUseExpAgFun")
     expect_identical(x@iMethodModel, 28L)
+    x <- new("PoissonVaryingUseExpAgLife")
+    expect_identical(x@iMethodModel, 29L)
     ## Predict
     x <- new("NormalVaryingVarsigmaKnownPredict")
     expect_identical(x@iMethodModel, 104L)

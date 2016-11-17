@@ -60,6 +60,9 @@ setClassUnion("numericOrCharacterOrNULL",
 setClassUnion("matrixOrNULL",
               members = c("matrix", "NULL"))
 
+setClassUnion("ValuesOrNULL",
+              members = c("Values", "NULL"))
+
 setClassUnion("ValuesOrNumeric",
               members = c("Values", "numeric"))
 

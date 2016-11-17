@@ -1428,8 +1428,30 @@ test_that("initialModel works with PoissonVaryingUseExp and AgPoisson", {
     expect_is(x, "PoissonVaryingUseExpAgPoisson")
 })
 
-
-
+test_that("initialModel works with PoissonVaryingUseExp and AgLife", {
+    initialModel <- demest:::initialModel
+    expose <- Counts(array(rpois(n = 20, lambda = 20),
+                           dim = c(5, 4),
+                           dimnames = list(age = c(0:3, "4+"), region = letters[1:4])))
+    y <- Counts(array(rpois(n = 20, lambda = 0.5 * expose),
+                      dim = c(5, 4),
+                      dimnames = list(age = c(0:3, "4+"), region = letters[1:4])))
+    ## scalar
+    aggregate <- AgLife(value = 20, sd = 0.1)
+    spec <- Model(y ~ Poisson(mean ~ age + region),
+                  aggregate = aggregate)
+    x <- initialModel(spec, y = y, exposure = expose)
+    expect_true(validObject(x))
+    expect_is(x, "PoissonVaryingUseExpAgLife")
+    ## Values
+    value <- Values(array(c(0.2, 0.3, 0.4), dim = 3, dimnames = list(region = c("a", "b", "c"))))
+    aggregate <- AgNormal(value = value, sd = sqrt(value))
+    spec <- Model(y ~ Poisson(mean ~ age + region),
+                  aggregate = aggregate)
+    x <- initialModel(spec, y = y, exposure = expose)
+    expect_true(validObject(x))
+    expect_is(x, "PoissonVaryingUseExpAgNormal")
+})
 
 
 ## initialModelPredict ###############################################################

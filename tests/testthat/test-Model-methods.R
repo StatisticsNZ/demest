@@ -448,6 +448,50 @@ test_that("makeOutputAggregate works with AgNormal", {
     expect_identical(ans.obtained, ans.expected)
 })
 
+test_that("makeOutputAggregate works with AgLife", {
+    makeOutputAggregate <- demest:::makeOutputAggregate
+    initialModel <- demest:::initialModel
+    Skeleton <- demest:::Skeleton
+    SkeletonAccept <- demest:::SkeletonAccept
+    exposure <- Counts(array(rpois(20, lambda  = 10),
+                             dim = c(2, 10),
+                             dimnames = list(sex = c("f", "m"), age = c(0:8, "9+"))))
+    y <- Counts(array(rbinom(20, size = exposure, prob = 0.7),
+                      dim = c(2, 10),
+                      dimnames = list(sex = c("f", "m"), age = c(0:8, "9+"))))
+    ## mean is Values
+    value <- ValuesOne(c(4, 5), labels = c("f", "m"), name = "sex")
+    sd <- sqrt(value)
+    aggregate <- AgLife(value = value, sd = sd)
+    spec <- Model(y ~ Poisson(mean ~ sex + age),
+                  age ~ Exch(),
+                  aggregate = aggregate)
+    model <- initialModel(spec, y = y, exposure = exposure)
+    ans.obtained <- makeOutputAggregate(model = model, pos = 20L)
+    ans.expected <- list(value = Skeleton(metadata = model@metadataAg,
+                             first = 20L),
+                         mean = value,
+                         sd = sd,
+                         mx = Skeleton(metadata = model@metadataMxAg,
+                                       first = 22L))
+    expect_identical(ans.obtained, ans.expected)
+    ## mean is scalar
+    value <- 5
+    sd <- 1
+    aggregate <- AgLife(value, sd = sd)
+    spec <- Model(y ~ Poisson(mean ~ sex + age),
+                  age ~ Exch(),
+                  aggregate = aggregate)
+    model <- initialModel(spec, y = y, exposure = exposure)
+    ans.obtained <- makeOutputAggregate(model = model, pos = 10L)
+    ans.expected <- list(value = Skeleton(first = 10L),
+                         mean = value,
+                         sd = sd,
+                         mx = Skeleton(metadata = model@metadataMxAg,
+                                       first = 11L))
+    expect_identical(ans.obtained, ans.expected)
+})
+
 test_that("makeOutputAggregate works with AgFun", {
     makeOutputAggregate <- demest:::makeOutputAggregate
     initialModel <- demest:::initialModel
@@ -3792,6 +3836,76 @@ test_that("R, generic C, and specific C versions updateModelUseExp method for Po
         expect_identical(x.C.generic, x.C.specific)
     }
 })
+
+
+## updateModelUseExp for PoissonVaryingUseExpAgLife
+
+test_that("updateModelUseExp for PoissonVaryingUseExpAgLife updates the correct slots", {
+    updateModelUseExp <- demest:::updateModelUseExp
+    initialModel <- demest:::initialModel
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        theta <- rgamma(n = 20, shape = 2, rate = 0.5) / 10
+        exposure <- as.double(rpois(n = 20, lambda = 20)) + 1
+        exposure <- Counts(array(exposure, dim = c(2, 10),
+                                 dimnames = list(sex = c("f", "m"), age = c(0:8, "9+"))))
+        value <- Values(array(c(3, 4), dim = 2, dimnames = list(sex = c("f", "m"))))
+        aggregate <- AgLife(value = value, sd = 0.3)
+        y <- as.integer(rpois(n = 20, lambda = exposure * theta))
+        y <- Counts(array(y, dim = c(2, 10),
+                          dimnames = list(sex = c("f", "m"), age = c(0:8, "9+"))))
+        spec <- Model(y ~ Poisson(mean ~ age + sex), aggregate = aggregate)
+        x0 <- initialModel(spec, y = y, exposure = exposure)
+        expect_is(x0, "PoissonVaryingUseExpAgLife")
+        x1 <- updateModelUseExp(x0, y = y, exposure = exposure, useC = FALSE)
+        expect_is(x1, "PoissonVaryingUseExpAgLife")
+        if (x1@nAcceptTheta > 0L || x1@nAcceptBench > 0L)
+            expect_false(identical(x1@theta, x0@theta))
+        else
+            expect_identical(x1@theta, x0@theta)
+        expect_false(identical(x1@sigma, x0@sigma))
+        for (b in seq_along(x1@betas)) {
+            expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
+            if (!is(x1@priorsBetas[[b]], "ExchFixed"))
+                expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
+        }
+        for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
+                       "scaleTheta", "iteratorBetas", "dims"))
+            expect_identical(slot(x1, name), slot(x0, name))
+    }
+})
+
+test_that("R, generic C, and specific C versions updateModelUseExp method for PoissonVaryingUseExpAgLife give same answer", {
+    updateModelUseExp <- demest:::updateModelUseExp
+    initialModel <- demest:::initialModel
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        theta <- rgamma(n = 20, shape = 2, rate = 0.5) / 10
+        exposure <- as.double(rpois(n = 20, lambda = 20)) + 1
+        exposure <- Counts(array(exposure, dim = c(2, 10),
+                                 dimnames = list(sex = c("f", "m"), age = c(0:8, "9+"))))
+        value <- Values(array(c(3, 4), dim = 2, dimnames = list(sex = c("f", "m"))))
+        aggregate <- AgLife(value = value, sd = 0.3)
+        y <- as.integer(rpois(n = 20, lambda = exposure * theta))
+        y <- Counts(array(y, dim = c(2, 10),
+                          dimnames = list(sex = c("f", "m"), age = c(0:8, "9+"))))
+        spec <- Model(y ~ Poisson(mean ~ age + sex), aggregate = aggregate)
+        x0 <- initialModel(spec, y = y, exposure = exposure)
+        set.seed(seed + 1)
+        x.R <- updateModelUseExp(x0, y = y, exposure = exposure, useC = FALSE)
+        set.seed(seed + 1)
+        x.C.generic <- updateModelUseExp(x0, y = y, exposure = exposure, useC = TRUE, useSpecific = FALSE)
+        set.seed(seed + 1)
+        x.C.specific <- updateModelUseExp(x0, y = y, exposure = exposure, useC = TRUE, useSpecific = TRUE)
+        if (test.identity)
+            expect_identical(x.R, x.C.generic)
+        else
+            expect_equal(x.R, x.C.generic)
+        expect_identical(x.C.generic, x.C.specific)
+    }
+})
+
+
 
 ## updateModelUseExp for PoissonVaryingUseExpAgPoisson
 

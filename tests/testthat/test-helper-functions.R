@@ -1378,6 +1378,106 @@ test_that("addAgFun throws appropriate errors", {
                  "return value from 'FUN' has length 2")
 })
 
+test_that("addAgLife works", {
+    addAgLife <- demest:::addAgLife
+    makeLifeExpBirth <- demest:::makeLifeExpBirth
+    initialModel <- demest:::initialModel
+    expose <- Counts(array(rpois(n = 20, lambda = 20),
+                             dim = c(5, 4),
+                             dimnames = list(age = 0:4, region = letters[1:4])),
+                       dimscales = c(age= "Intervals"))
+    y <- Counts(array(rbinom(n = 20, size = expose, prob = 0.1),
+                      dim = c(5, 4),
+                      dimnames = list(age = 0:4, region = letters[1:4])),
+                dimscales = c(age= "Intervals"))
+    ## scalar
+    aggregate <- AgLife(value = 30, sd = 0.3)
+    spec <- Model(y ~ Poisson(mean ~ age + region))
+    x <- initialModel(spec, y = y, exposure = expose)
+    ans.obtained <- addAgLife(object = x,
+                              aggregate = aggregate,
+                              defaultWeights = expose)
+    mx <- (collapseDimension(x@theta*expose, dim = "region")
+        / collapseDimension(expose, dim = "region"))
+    transform <- makeTransform(x = y,
+                               y = mx)
+    transform <- makeCollapseTransformExtra(transform)
+    metadataAg <- NULL
+    metadataMx <- mx@metadata
+    ax <- makeAxStart(mx)
+    ax <- expandAx(ax = ax, object = mx)
+    nx <- rep(1, 5)
+    nAge <- new("Length", 5L)
+    mx <- as.double(mx)
+    value <- makeLifeExpBirth(mx = mx,
+                              nx = nx,
+                              ax = ax,
+                              iAge0 = 1L,
+                              nAge = nAge@.Data)
+    value <- as.double(value)
+    ans.expected <- list(value = new("ParameterVector", value),
+                         mean = new("ParameterVector", 30),
+                         sd = new("ScaleVec", 0.3),
+                         metadataAg = metadataAg,
+                         transform = transform,
+                         metadataMx = metadataMx,
+                         mx = mx,
+                         ax = as.numeric(ax),
+                         nx = nx,
+                         nAge = nAge,
+                         slotsToExtract = c(new("PoissonVaryingUseExp")@slotsToExtract,
+                                            "valueAg", "mxAg"),
+                         iMethodModel = 29L)
+    expect_equal(ans.obtained, ans.expected)
+    ## Values
+    value <- Counts(array(c(0.1, 0.2, 0.3),
+                          dim = 3,
+                          dimnames = list(region = letters[1:3])))
+    aggregate <- AgLife(value = value, sd = sqrt(value))
+    spec <- Model(y ~ Poisson(mean ~ age + region))
+    x <- initialModel(spec, y = y, exposure = expose)
+    ans.obtained <- addAgLife(object = x,
+                              aggregate = aggregate,
+                              defaultWeights = expose)
+    mx <- matrix(x@theta,nr=5)[,-4]*expose[,-4] / expose[,-4]
+    transform <- makeTransform(x = y,
+                               y = mx,
+                               subset = TRUE)
+    transform <- makeCollapseTransformExtra(transform)
+    metadataAg <- value@metadata
+    metadataMx <- mx@metadata
+    ax <- makeAxStart(mx)
+    ax <- expandAx(ax = ax, object = mx)
+    nx <- rep(1, 5)
+    nAge <- new("Length", 5L)
+    mean <- as.numeric(value)
+    value <- numeric(3)
+    for (i in 1:3) {
+        value[i] <- makeLifeExpBirth(mx = mx,
+                                     nx = nx,
+                                     ax = ax,
+                                     iAge0 = 5L * (i-1L) + 1L,
+                                     nAge = nAge@.Data)
+    }
+    value <- as.double(value)
+    mx <- as.double(mx)
+    ans.expected <- list(value = new("ParameterVector", value),
+                         mean = new("ParameterVector", mean),
+                         sd = new("ScaleVec", sqrt(mean)),
+                         metadataAg = metadataAg,
+                         transform = transform,
+                         metadataMx = metadataMx,
+                         mx = mx,
+                         ax = as.numeric(ax),
+                         nx = nx,
+                         nAge = nAge,
+                         slotsToExtract = c(new("PoissonVaryingUseExp")@slotsToExtract,
+                                            "valueAg", "mxAg"),
+                         iMethodModel = 29L)
+    expect_equal(ans.obtained, ans.expected)
+})
+
+
 
 
 test_that("alignDatasetsToObservation works", {
@@ -1627,6 +1727,49 @@ test_that("checkAndTidyY works", {
     expect_error(checkAndTidyY(y.wrong),
                  "'y' has fewer than 2 non-missing values")
 })
+
+test_that("checkAxAg works", {
+    checkAxAg <- demest:::checkAxAg
+    expect_identical(checkAxAg(ax = NULL, value = 1),
+                     NULL)
+    expect_identical(checkAxAg(ax = Values(array(0.5,
+                                                 dim = 2,
+                                                 dimnames = list(age = c("0", "1-4")))),
+                               value = 1),
+                     NULL)
+    expect_identical(checkAxAg(ax = Values(array(0.5,
+                                                 dim = c(2, 2),
+                                                 dimnames = list(age = c("0", "1-4"),
+                                                                 sex = c("female", "male")))),
+                               value = ValuesOne(1:2, labels = c("female", "male"), name = "sex")),
+                     NULL)
+    expect_error(checkAxAg(ax = ValuesOne(integer(), labels = character(), name = "age",
+                                          dimscale = "Intervals"),
+                           value = 1),
+                 "'ax' has length 0")
+    expect_error(checkAxAg(ax = "wrong",
+                           value = 1),
+                 "'ax' has class \"character\"")
+    expect_error(checkAxAg(ax = ValuesOne(1:2, labels = c("female", "male"), name = "sex"),
+                           value = 1),
+                 "'ax' does not have a dimension with dimtype \"age\"")
+    expect_error(checkAxAg(ax = ValuesOne(1:2, labels = c(0, 5), name = "age"),
+                           value = 1),
+                 "dimension of 'ax' with dimtype \"age\" does not have dimscale \"Intervals\"")
+    expect_error(checkAxAg(ax = Values(array(0.5,
+                                             dim = c(2, 2),
+                                             dimnames = list(age = c("0", "1-4"),
+                                                             sex = c("female", "male")))),
+                           value = 1),
+                 "'value' is not a demographic array, but 'ax' has more than one dimension")
+    expect_error(checkAxAg(ax = Values(array(0.5,
+                                             dim = c(2, 2, 2),
+                                             dimnames = list(age = c("0", "1-4"),
+                                                             region = c("a", "b"),
+                                                             sex = c("female", "male")))),
+                           value = ValuesOne(1:2, labels = c("female", "male"), name = "sex")),
+                 "'ax' and 'value' not compatible")
+})    
 
 test_that("checkConcordances works", {
     checkConcordances <- demest:::checkConcordances
@@ -4156,6 +4299,82 @@ test_that("R and C versions of getV give same answer with prior of class RobustM
                           sY = NULL)
     ans.R <- getV(prior, useC = FALSE)
     ans.C <- getV(prior, useC = TRUE)
+    if (test.identity)
+        expect_identical(ans.R, ans.C)
+    else
+        expect_equal(ans.R, ans.C)
+})
+
+test_that("R version of makeLifeExpBirth works", {
+    makeLifeExpBirth <- demest:::makeLifeExpBirth
+    makeLifeExp1 <- function(mx1, ax1, nx) {
+        n.age <- length(nx)
+        qx <- (nx * mx1) / (1 + (nx - ax1) * mx1)
+        lx <- rep(1.0, times = n.age)
+        for (i in seq.int(from = 2L, to = n.age))
+            lx[i] <- lx[i - 1L] * (1 - qx[i - 1L])
+        Lx <- numeric(length = n.age)
+        for (i in seq.int(from = 1L, to = n.age - 1L))
+            Lx[i] <- lx[i + 1] * nx[i] + (lx[i] - lx[i + 1L]) * ax1[i]
+        Lx[n.age] <- lx[n.age] / mx1[n.age]
+        sum(Lx)
+    }
+    mx <- rgamma(n = 100, shape = 3, rate = 0.01)/10000
+    nx <- c(1, 4, rep(5, 7), Inf)
+    ax <- rep_len(x = c(0.1, 1.5, rep(2.5, 8)), 100)
+    ans.obtained <- makeLifeExpBirth(mx = mx,
+                                     nx = nx,
+                                     ax = ax,
+                                     iAge0 = 21L,
+                                     nAge = 10L)
+    ans.expected <- makeLifeExp1(mx1 = mx[21:30],
+                                 ax1 = ax[21:30],
+                                 nx = nx)
+    expect_equal(ans.obtained, ans.expected)
+    ans.obtained <- makeLifeExpBirth(mx = mx,
+                                     nx = nx,
+                                     ax = ax,
+                                     iAge0 = 91L,
+                                     nAge = 10L)
+    ans.expected <- makeLifeExp1(mx1 = mx[91:100],
+                                 ax1 = ax[91:100],
+                                 nx = nx)
+    expect_equal(ans.obtained, ans.expected)
+})
+
+test_that("R and C versions of makeLifeExpBirth give same answer", {
+    makeLifeExpBirth <- demest:::makeLifeExpBirth
+    mx <- rgamma(n = 100, shape = 3, rate = 0.01)/10000
+    nx <- c(1, 4, rep(5, 7), Inf)
+    ax <- rep_len(x = c(0.1, 1.5, rep(2.5, 8)), 100)
+    ans.R <- makeLifeExpBirth(mx = mx,
+                              nx = nx,
+                              ax = ax,
+                              iAge0 = 21L,
+                              nAge = 10L,
+                              useC = FALSE)
+    ans.C <- makeLifeExpBirth(mx = mx,
+                              nx = nx,
+                              ax = ax,
+                              iAge0 = 21L,
+                              nAge = 10L,
+                              useC = TRUE)
+    if (test.identity)
+        expect_identical(ans.R, ans.C)
+    else
+        expect_equal(ans.R, ans.C)
+    ans.R <- makeLifeExpBirth(mx = mx,
+                              nx = nx,
+                              ax = ax,
+                              iAge0 = 81L,
+                              nAge = 20L,
+                              useC = FALSE)
+    ans.C <- makeLifeExpBirth(mx = mx,
+                              nx = nx,
+                              ax = ax,
+                              iAge0 = 81L,
+                              nAge = 20L,
+                              useC = TRUE)
     if (test.identity)
         expect_identical(ans.R, ans.C)
     else
@@ -8842,7 +9061,7 @@ test_that("checkAndTidyTotalOrSampled works", {
                                             name = "total"),
                  "'total' has negative values")
     ## incompatible
-    x.wrong <- Counts(array(1:3, dim = 3, dimnames = list(sex = c("f", "m", "wrong"))))
+    x.wrong <- Counts(array(1:2, dim = 2, dimnames = list(sex = c("female", "male"))))
     expect_error(checkAndTidyTotalOrSampled(x.wrong, model = model, ySampled = ySampled,
                                             name = "total"),
                  "'total' and 'y' incompatible : ")

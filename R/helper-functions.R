@@ -1642,7 +1642,6 @@ addAgPoisson <- function(object, aggregate, defaultWeights) {
     metadata.y <- object@metadataY
     mean <- aggregate@valueAg # 'value' from Spec becomes 'mean' in object
     scale <- aggregate@scaleAg
-    weight <- aggregate@weightAg
     metadata.ag <- aggregate@metadataAg
     concordances.ag <- aggregate@concordancesAg
     .Data.theta.obj <- array(0,
@@ -1662,7 +1661,7 @@ addAgPoisson <- function(object, aggregate, defaultWeights) {
                                         subset = TRUE,
                                         concordances = concordances.ag)
     transform <- dembase::makeCollapseTransformExtra(transform)
-    weight <- makeWeightAg(weight = weight,
+    weight <- makeWeightAg(weight = NULL,
                            default = defaultWeights,
                            model = object,
                            thetaObj = theta.obj,
@@ -1787,6 +1786,115 @@ addAgFun <- function(object, aggregate, defaultWeights) {
          funAg = fun.ag,
          xArgs = x.args,
          weightsArgs = weights.args,
+         slotsToExtract = slotsToExtract,
+         iMethodModel = iMethodModel)
+}
+
+## HAS_TESTS
+addAgLife <- function(object, aggregate, defaultWeights) {
+    theta <- object@theta
+    metadata.y <- object@metadataY
+    mean <- aggregate@valueAg # 'value' from Spec becomes 'mean' in object
+    sd <- aggregate@sdAg
+    ax <- aggregate@axAg
+    metadata.ag <- aggregate@metadataAg
+    concordances.ag <- aggregate@concordancesAg
+    names.y <- names(metadata.y)
+    dimtypes.y <- dimtypes(metadata.y, use.names = FALSE)
+    DimScales.y <- DimScales(metadata.y, use.names = FALSE)
+    i.age.y <- match("age", dimtypes.y, nomatch = 0L)
+    has.age.y <- i.age.y > 0L
+    if (!has.age.y)
+        stop(gettextf("'%s' does not have a dimension with %s \"%s\"",
+                      "y", "dimtype", "age"))
+    name.age <- names.y[i.age.y]
+    DimScale.age <- DimScales.y[[i.age.y]]
+    .Data.theta.obj <- array(0,
+                             dim = dim(metadata.y),
+                             dimnames = dimnames(metadata.y))
+    theta.obj <- methods::new("Counts",
+                              .Data = .Data.theta.obj,
+                              metadata = metadata.y)
+    if (is.null(metadata.ag)) {
+        names.ag <- NULL
+        dimtypes.ag <- NULL
+        DimScales.ag <- NULL
+    }
+    else {
+        names.ag <- names(metadata.ag)
+        dimtypes.ag <- dimtypes(metadata.ag, use.names = FALSE)
+        DimScales.ag <- DimScales(metadata.ag, use.names = FALSE)
+    }    
+    names.mx <- c(name.age, names.ag)
+    dimtypes.mx <- c("age", dimtypes.ag)
+    DimScales.mx <- c(list(DimScale.age), DimScales.ag)
+    metadata.mx <- new("MetaData",
+                       nms = names.mx,
+                       dimtypes = dimtypes.mx,
+                       DimScales = DimScales.mx)
+    .Data.mx.obj <- array(0,
+                          dim = dim(metadata.mx),
+                          dimnames = dimnames(metadata.mx))
+    mx.obj <- new("Values",
+                  .Data = .Data.mx.obj,
+                  metadata = metadata.mx)
+    transform <- tryCatch(dembase::makeTransform(x = theta.obj,
+                                                 y = mx.obj,
+                                                 subset = TRUE,
+                                                 concordances = concordances.ag,
+                                                 check = TRUE),
+                          error = function(e) e)
+    if (methods::is(transform, "error"))
+        stop(gettextf("'%s' not compatible with '%s' from '%s' : %s",
+                      "y", "value", "AgLife", transform$message))
+    numerator.mx <- theta * defaultWeights
+    denominator.mx <- defaultWeights
+    numerator.mx <- collapse(numerator.mx,
+                             transform = transform)
+    denominator.mx <- collapse(denominator.mx,
+                               transform = transform)
+    mx <- numerator.mx / denominator.mx
+    if (is.null(ax))
+        ax <- makeAxStart(mx)
+    ax <- expandAx(ax = ax,
+                   object = mx)
+    dv.age <- DimScale.age@dimvalues
+    nx <- diff(dv.age)
+    mx <- as.double(mx)
+    ax <- as.double(ax)
+    transform <- dembase::makeCollapseTransformExtra(transform)
+    value <- double(length = length(mean))
+    nAge <- length(nx)
+    seq.iAge0 <- seq.int(from = 1L,
+                         by = nAge,
+                         to = length(mx))
+    for (i in seq_along(seq.iAge0)) {
+        iAge0 <- seq.iAge0[i]
+        value[i] <- makeLifeExpBirth(mx = mx,
+                                     nx = nx,
+                                     ax = ax,
+                                     iAge0 = iAge0,
+                                     nAge= nAge)
+    }
+    value <- methods::new("ParameterVector", value)
+    mean <- as.double(mean)
+    mean <- methods::new("ParameterVector", mean)
+    sd <- as.double(sd)
+    sd <- methods::new("ScaleVec", sd)
+    nAge <- new("Length", nAge)
+    class <- paste0(class(object), "AgLife")
+    slotsToExtract <- methods::new(class)@slotsToExtract
+    iMethodModel <- methods::new(class)@iMethodModel
+    list(value = value,
+         mean = mean,
+         sd = sd,
+         metadataAg = metadata.ag,
+         transform = transform,
+         metadataMx = metadata.mx,
+         mx = mx,
+         ax = ax,
+         nx = nx,
+         nAge = nAge,
          slotsToExtract = slotsToExtract,
          iMethodModel = iMethodModel)
 }
@@ -1953,7 +2061,56 @@ checkAndTidyY <- function(y, impute = FALSE) {
     y
 }
 
-## NO_TESTS
+## HAS_TESTS
+checkAxAg <- function(ax, value) {
+    if (is.null(ax))
+        return(ax)
+    if (length(ax) == 0L)
+        stop(gettextf("'%s' has length %d",
+                      "ax", 0L))
+    if (!methods::is(ax, "Values"))
+        stop(gettextf("'%s' has class \"%s\"",
+                      "ax", class(ax)))
+    names <- names(ax)
+    dim <- dim(ax)
+    dimtypes <- dimtypes(ax, use.names = FALSE)
+    DimScales <- DimScales(ax, use.names = FALSE)
+    i.age <- match("age", dimtypes, nomatch = 0L)
+    has.age <- i.age > 0L
+    if (!has.age)
+        stop(gettextf("'%s' does not have a dimension with %s \"%s\"",
+                      "ax", "dimtype", "age"))
+    DimScale.age <- DimScales[[i.age]]
+    if (!methods::is(DimScale.age, "Intervals"))
+        stop(gettextf("dimension of '%s' with %s \"%s\" does not have %s \"%s\"",
+                      "ax", "dimtype", "age", "dimscale", "Intervals"))
+    n.dim <- length(dim)
+    if (n.dim > 1L) {
+        if (!methods::is(value, "DemographicArray"))
+            stop(gettextf("'%s' is not a demographic array, but '%s' has more than one dimension",
+                          "value", "ax"))
+        metadata.ax.no.age <- new("MetaData",
+                                  nms = names[-i.age],
+                                  dimtypes = dimtypes[-i.age],
+                                  DimScales = DimScales[-i.age])
+        .Data.ax.no.age <- array(0,
+                                 dim = dim(metadata.ax.no.age),
+                                 dimnames = dimnames(metadata.ax.no.age))
+        ax.no.age <- methods::new("Values",
+                                  .Data = .Data.ax.no.age,
+                                  metadata = metadata.ax.no.age)
+        return.value <- tryCatch(dembase::canMakeCompatible(x = ax.no.age,
+                                                            y = value,
+                                                            subset = TRUE),
+                                 error = function(e) e)
+        if (methods::is(return.value, "error"))
+            stop(gettextf("'%s' and '%s' not compatible : %s",
+                          "ax", "value", return.value$message))
+    }
+    NULL
+}
+
+## HAS_TESTS
 checkConcordances <- function(concordances) {
     ## 'concordances' is a list
     if (!is.list(concordances))
@@ -3521,6 +3678,61 @@ getV <- function(prior, useC = FALSE) {
             rep(tau^2, times = J)
         }
     }
+}
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+## assume first dimension of array that
+## mx is obtained from is age
+makeLifeExpBirth <- function(mx, nx, ax, iAge0, nAge,
+                             useC = FALSE) {
+    ## mx
+    stopifnot(is.double(mx))
+    stopifnot(!any(is.na(mx)))
+    stopifnot(all(mx >= 0))
+    ## nx
+    stopifnot(is.double(nx))
+    stopifnot(!any(is.na(nx)))
+    stopifnot(all(nx > 0))
+    ## ax
+    stopifnot(is.double(ax))
+    stopifnot(!any(is.na(ax)))
+    stopifnot(all(ax >= 0))
+    ## iAge0
+    stopifnot(is.integer(iAge0))
+    stopifnot(length(iAge0) == 1L)
+    stopifnot(iAge0 >= 1L)
+    ## nAge
+    stopifnot(is.integer(nAge))
+    stopifnot(length(nAge) == 1L)
+    stopifnot(nAge >= 1L)
+    ## mx and ax
+    stopifnot(length(ax) == length(mx))
+    ## ax and nx
+    stopifnot(all(ax <= rep(nx, length.out = length(ax))))
+    ## mx and iAge0
+    stopifnot(iAge0 <= length(mx))
+    ## mx and nAge
+    stopifnot(nAge <= length(mx))    
+    if (useC) {
+        .Call(makeLifeExpBirth_R, mx, nx, ax, iAge0, nAge)
+    }
+    ans <- 0
+    lx.i <- 1
+    for (i in seq_len(nAge - 1L)) {
+        mx.i <- mx[iAge0 + i - 1L]
+        nx.i <- nx[i]
+        ax.i <- ax[iAge0 + i - 1L]
+        qx.i <- nx.i * mx.i / (1 + (nx.i - ax.i) * mx.i)
+        lx.iplus1 <- lx.i * (1 - qx.i)
+        Lx.i <- lx.iplus1 * nx.i + (lx.i - lx.iplus1) * ax.i
+        ans <- ans + Lx.i
+        lx.i <- lx.iplus1
+    }
+    mx.i <- mx[iAge0 + nAge - 1L]
+    Lx.i <- lx.i / mx.i
+    ans <- ans + Lx.i
+    ans
 }
 
 ## TRANSLATED

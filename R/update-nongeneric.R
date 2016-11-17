@@ -3460,6 +3460,140 @@ updateThetaAndValueAgFun_PoissonUseExp <- function(object, y, exposure, useC = F
     }
 }
 
+## READY_TO_TRANSLATE
+## HAS_TESTS
+updateThetaAndValueAgLife_PoissonUseExp <- function(object, y, exposure, useC = FALSE) {
+    ## object
+    stopifnot(methods::is(object, "PoissonVaryingUseExp"))
+    stopifnot(methods::is(object, "AgLife"))
+    stopifnot(methods::validObject(object))
+    ## y
+    stopifnot(methods::is(y, "Counts"))
+    stopifnot(is.integer(y))
+    stopifnot(identical(length(y), length(object@theta)))
+    stopifnot(all(y[!is.na(y)] >= 0))
+    ## exposure
+    stopifnot(methods::is(exposure, "Counts"))
+    stopifnot(is.double(exposure))
+    stopifnot(all(exposure[!is.na(exposure)] >= 0))
+    ## y and exposure
+    stopifnot(identical(length(exposure), length(y)))
+    stopifnot(all(is.na(exposure) <= is.na(y)))
+    if (useC) {
+        .Call(updateThetaAndValueAgLife_PoissonUseExp_R, object, y, exposure)
+    }
+    else {
+        theta <- object@theta
+        scale <- object@scaleTheta
+        scale.multiplier <- object@scaleThetaMultiplier
+        lower <- object@lower
+        upper <- object@upper
+        tolerance <- object@tolerance
+        sigma <- object@sigma@.Data
+        betas <- object@betas
+        iterator <- object@iteratorBetas
+        mx <- object@mxAg
+        ax <- object@axAg
+        nx <- object@nxAg
+        nAge <- object@nAgeAg@.Data
+        value.ag <- object@valueAg@.Data
+        mean.ag <- object@meanAg@.Data
+        sd.ag <- object@sdAg@.Data
+        transform <- object@transformThetaToMxAg
+        max.attempt <- object@maxAttempt
+        n.failed.prop.theta <- 0L
+        n.accept.theta <- 0L
+        iterator <- resetB(iterator)
+        scale <- scale * scale.multiplier
+        exposureMx <- dembase::collapse(object = exposure,
+                                        transform = transform)
+        for (i in seq_along(theta)) {
+            indices <- iterator@indices
+            mu <- 0
+            for (b in seq_along(betas))
+                mu <- mu + betas[[b]][indices[b]]
+            i.mx <- getIAfter(i = i,
+                              transform = transform,
+                              check = FALSE,
+                              useC = TRUE)
+            contributes.to.ag <- i.mx > 0L
+            y.is.missing <- is.na(y[i])
+            th.curr <- theta[i]
+            log.th.curr <- log(th.curr)
+            if (y.is.missing) {
+                mean <- mu
+                sd <- sigma
+            }
+            else {
+                mean <- log.th.curr
+                sd <- scale / sqrt(1 + log(1 + exposure[i]))
+            }
+            found.prop <- FALSE
+            attempt <- 0L
+            while (!found.prop && (attempt < max.attempt)) {
+                attempt <- attempt + 1L
+                log.th.prop <- stats::rnorm(n = 1L, mean = mean, sd = sd)
+                found.prop <- ((log.th.prop > lower + tolerance)
+                    && (log.th.prop < upper - tolerance))
+            }
+            if (found.prop) {
+                th.prop <- exp(log.th.prop)
+                draw.straight.from.prior <- y.is.missing && !contributes.to.ag
+                if (draw.straight.from.prior)
+                    theta[i] <- th.prop
+                else {
+                    if (y.is.missing)
+                        log.diff <- 0
+                    else {
+                        log.lik.prop <- stats::dpois(y[i], lambda = th.prop * exposure[i], log = TRUE)
+                        log.lik.curr <- stats::dpois(y[i], lambda = th.curr * exposure[i], log = TRUE)
+                        log.diff <- log.lik.prop - log.lik.curr
+                    }
+                    log.dens.prop <- stats::dnorm(x = log.th.prop, mean = mu, sd = sigma, log = TRUE)
+                    log.dens.curr <- stats::dnorm(x = log.th.curr, mean = mu, sd = sigma, log = TRUE)
+                    log.diff <- log.diff + log.dens.prop - log.dens.curr
+                    if (contributes.to.ag) {
+                        increment.mx <- (th.prop - th.curr) * exposure[i] / exposureMx[i.mx]
+                        mx[i.mx] <- mx[i.mx] + increment.mx
+                        iAge0 <- ((i.mx - 1L) %/% nAge) * nAge + 1L
+                        ag.prop <- makeLifeExpBirth(mx = mx,
+                                                    nx = nx,
+                                                    ax = ax,
+                                                    iAge0 = iAge0,
+                                                    nAge = nAge)
+                        i.ag <- (i.mx - 1L) %/% nAge + 1L
+                        ag.curr <- value.ag[i.ag]
+                        mean <- mean.ag[i.ag]
+                        sd <- sd.ag[i.ag]
+                        log.dens.ag.prop <- stats::dnorm(x = mean, mean = ag.prop, sd = sd, log = TRUE)
+                        log.dens.ag.curr <- stats::dnorm(x = mean, mean = ag.curr, sd = sd, log = TRUE)
+                        log.diff <- log.diff + log.dens.ag.prop - log.dens.ag.curr
+                    }
+                    accept <- (log.diff >= 0) || (stats::runif(n = 1L) < exp(log.diff))
+                    if (accept) {
+                        n.accept.theta <- n.accept.theta + 1L
+                        theta[i] <- th.prop
+                    }
+                    else {
+                        if (contributes.to.ag) {
+                            mx[i.mx] <- mx[i.mx] - increment.mx
+                        }
+                    }
+                }
+            }
+            else
+                n.failed.prop.theta <- n.failed.prop.theta + 1L
+            iterator <- advanceB(iterator)
+        }
+        object@theta <- theta
+        object@mxAg <- mx
+        object@nFailedPropTheta@.Data <- n.failed.prop.theta
+        object@nAcceptTheta@.Data <- n.accept.theta
+        object
+    }
+}
+
+
 ## TRANSLATED
 ## HAS_TESTS
 updateVarsigma <- function(object, y, useC = FALSE) {

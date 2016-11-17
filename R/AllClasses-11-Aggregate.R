@@ -49,6 +49,23 @@ setClass("ArgsAgMixin",
          })
 
 ## HAS_TESTS
+setClass("AxAgMixin",
+         slots = c(axAg = "numeric"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             axAg <- object@axAg
+             ## 'axAg' has no missing values
+             if (any(is.na(axAg)))
+                 return(gettextf("'%s' has missing values",
+                                 "axAg"))
+             ## 'axAg' is non-negative
+             if (any(axAg < 0))
+                 return(gettextf("'%s' has negative values",
+                                 "axAg"))
+             TRUE
+         })
+
+## HAS_TESTS
 setClass("ConcordancesAgMixin",
          slots = c(concordancesAg = "list"),
          contains = "VIRTUAL",
@@ -84,7 +101,7 @@ setClass("ExposureAgMixin",
                  return(gettextf("'%s' and '%s' have different lengths",
                                  "exposureAg", "valueAg"))
              TRUE
-         })         
+         })
 
 ## HAS_TESTS
 setClass("FunAgMixin",
@@ -158,6 +175,28 @@ setClass("MetaDataAgMixin",
          })
 
 ## HAS_TESTS
+setClass("MetaDataMxAgMixin",
+         slots = c(metadataMxAg = "MetaData"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             metadataMxAg <- object@metadataMxAg
+             dimtypes <- dimtypes(metadataMxAg, use.names = FALSE)
+             DimScales <- DimScales(metadataMxAg, use.names = FALSE)
+             i.age <- match("age", dimtypes, nomatch = 0L)
+             has.age <- i.age > 0L
+             ## 'metadataMxAg' has dimension with dimtype "age"
+             if (!has.age)
+                 return(gettextf("'%s' does not have a dimension with %s \"%s\"",
+                                 "metadataMxAg", "dimtype", "age"))
+             ## age dimension of 'metadataMxAg' has dimscale "Intervals"
+             DimScale.age <- DimScales[[i.age]]
+             if (!methods::is(DimScale.age, "Intervals"))
+                 return(gettextf("dimension of '%s' with %s \"%s\" does not have %s \"%s\"",
+                                 "metadataMxAg", "dimtype", "age", "dimscale", "Intervals"))
+             TRUE
+         })
+
+## HAS_TESTS
 setClass("MuMixin",
          slots = c(mu = "numeric"),
          contains = "VIRTUAL",
@@ -179,13 +218,51 @@ setClass("MuMixin",
              TRUE
          })
 
+## HAS_TESTS
+setClass("MxAgMixin",
+         slots = c(mxAg = "numeric"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             mxAg <- object@mxAg
+             ## 'mxAg' has no missing values
+             if (any(is.na(mxAg)))
+                 return(gettextf("'%s' has missing values",
+                                 "mxAg"))
+             ## 'mxAg' is non-negative
+             if (any(mxAg < 0))
+                 return(gettextf("'%s' has negative values",
+                                 "mxAg"))
+             TRUE
+         })
+
 setClass("NAcceptAgMixin",
          slots = c(nAcceptAg = "Counter"),
+         contains = "VIRTUAL")
+
+setClass("NAgeAgMixin",
+         slots = c(nAgeAg = "Length"),
          contains = "VIRTUAL")
 
 setClass("NFailedPropValueAgMixin",
          slots = c(nFailedPropValueAg = "Counter"),
          contains = "VIRTUAL")
+
+## HAS_TESTS
+setClass("NxAgMixin",
+         slots = c(nxAg = "numeric"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             nxAg <- object@nxAg
+             ## 'nxAg' has no missing values
+             if (any(is.na(nxAg)))
+                 return(gettextf("'%s' has missing values",
+                                 "nxAg"))
+             ## 'nxAg' all positive
+             if (any(nxAg <= 0))
+                 return(gettextf("'%s' has non-positive values",
+                                 "nxAg"))
+             TRUE
+         })
 
 setClass("ScaleAgMixin",
          slots = c(scaleAg = "Scale"),
@@ -231,7 +308,6 @@ setClass("TransformAgMixin",
          validity = function(object) {
              valueAg <- object@valueAg@.Data
              transformAg <- object@transformAg
-             theta <- object@theta
              ## 'valueAg' has the length implied by 'transformAg'
              if (!identical(length(valueAg), as.integer(prod(transformAg@dimAfter))))
                  return(gettextf("'%s' does not have length implied by '%s'",
@@ -239,7 +315,10 @@ setClass("TransformAgMixin",
              TRUE
          })
 
-## HAS_TESTS 
+setClass("TransformThetaToMxAgMixin",
+         slots = c(transformThetaToMxAg = "CollapseTransformExtra"),
+         contains = "VIRTUAL")
+
 setClass("ValueAgMixin",
          slots = c(valueAg = "ParameterVector"),
          contains = "VIRTUAL")
@@ -301,6 +380,39 @@ setClass("WeightAgMixin",
              TRUE
          })
 
+## HAS_TESTS
+setClass("SpecAxAgMixin",
+         slots = c(axAg = "ValuesOrNULL"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             axAg <- object@axAg
+             if (!is.null(axAg)) {
+                 .Data <- axAg@.Data
+                 dimtypes <- dimtypes(axAg, use.names = FALSE)
+                 DimScales <- DimScales(axAg, use.names = FALSE)
+                 i.age <- match("age", dimtypes, nomatch = 0L)
+                 has.age <- i.age > 0L
+                 ## 'axAg' has dimension with dimtype "age"
+                 if (!has.age)
+                     return(gettextf("'%s' does not have a dimension with %s \"%s\"",
+                                     "axAg", "dimtype", "age"))
+                 ## age dimension of 'axAg' has dimscale "Intervals"
+                 DimScale.age <- DimScales[[i.age]]
+                 if (!methods::is(DimScale.age, "Intervals"))
+                     return(gettextf("dimension of '%s' with %s \"%s\" does not have %s \"%s\"",
+                                     "axAg", "dimtype", "age", "dimscale", "Intervals"))
+                 ## 'axAg' has no missing values
+                 if (any(is.na(.Data)))
+                     return(gettextf("'%s' has missing values",
+                                     "axAg"))
+                 ## 'axAg' is non-negative
+                 if (any(.Data < 0))
+                     return(gettextf("'%s' has negative values",
+                                     "axAg"))
+             }
+             TRUE
+         })
+
 
 ## CLASS HIERARCHY - SpecAggregate ##########################################################
 
@@ -342,31 +454,36 @@ setClass("SpecAgUncertain",
              "SpecAggregate",
              "ConcordancesAgMixin",
              "MetaDataAgMixin",             
-             "SpecValueAgMixin",                      
-             "SpecWeightAgMixin"))
+             "SpecValueAgMixin"))
 
 #' @rdname SpecAggregate-class
 #' @export
 setClass("SpecAgNormal",
          contains = c("SpecAgUncertain",
                       "ScaleAgMixin",
-                      "SDAgMixin"))
-
-setClass("SpecAgLife",
-         contains = "SpecAgNormal")
+                      "SDAgMixin",
+                      "SpecWeightAgMixin"))
 
 #' @rdname SpecAggregate-class
 #' @export
 setClass("SpecAgFun",
          contains = c("SpecAgUncertain",
              "FunAgMixin",
-             "SDAgMixin"))
+             "SDAgMixin",
+             "SpecWeightAgMixin"))
 
 #' @rdname SpecAggregate-class
 #' @export
 setClass("SpecAgPoisson",
          contains = c("SpecAgUncertain",
                       "ScaleAgMixin"))
+
+#' @rdname SpecAggregate-class
+#' @export
+setClass("SpecAgLife",
+         contains = c("SpecAgUncertain",
+                      "SDAgMixin",
+                      "SpecAxAgMixin"))
 
 setClass("SpecAgPlaceholder",
          contains = "SpecAggregate")
@@ -377,13 +494,13 @@ setClass("SpecAgPlaceholder",
 setClass("Aggregate",
          contains = c("VIRTUAL",
              "MetaDataAgMixin",
-             "TransformAgMixin",
              "ValueAgMixin"))
 
 setClass("AgCertain",
          contains = c("VIRTUAL",
              "Aggregate",
              "MuMixin",
+             "TransformAgMixin",
              "WeightAgMixin"))
 
 setClass("AgUncertain",
@@ -399,6 +516,7 @@ setClass("AgNormal",
              "NFailedPropValueAgMixin",
              "ScaleAgMixin",
              "SDAgMixin",
+             "TransformAgMixin",
              "WeightAgMixin"))
 
 setClass("AgPoisson",
@@ -409,15 +527,17 @@ setClass("AgPoisson",
              "NAcceptAgMixin",
              "NFailedPropValueAgMixin",
              "ScaleAgMixin",
+             "TransformAgMixin",
              "WeightAgMixin"))
 
-## NO_TESTS
+## HAS_TESTS
 setClass("AgFun",
          contains = c("VIRTUAL",
              "AgUncertain",
              "ArgsAgMixin",
              "FunAgMixin",
-             "SDAgMixin"),
+             "SDAgMixin",
+             "TransformAgMixin"),
          validity = function(object) {
              valueAg <- object@valueAg
              funAg <- object@funAg
@@ -441,3 +561,83 @@ setClass("AgFun",
              TRUE
          })
 
+## HAS_TESTS
+setClass("AgLife",
+         contains = c("VIRTUAL",
+                      "AgUncertain",
+                      "AxAgMixin",
+                      "MetaDataMxAgMixin",
+                      "MxAgMixin",
+                      "NAgeAgMixin",
+                      "NxAgMixin",
+                      "SDAgMixin",
+                      "TransformThetaToMxAgMixin"),
+         validity = function(object) {
+             theta <- object@theta
+             metadataY <- object@metadataY
+             valueAg <- object@valueAg@.Data
+             metadataAg <- object@metadataAg
+             mxAg <- object@mxAg
+             metadataMxAg <- object@metadataMxAg
+             transformThetaToMxAg <- object@transformThetaToMxAg
+             axAg <- object@axAg
+             nxAg <- object@nxAg
+             nAgeAg <- object@nAgeAg@.Data
+             dimtypes.y <- dimtypes(metadataY, use.names = FALSE)
+             DimScales.y <- DimScales(metadataY, use.names = FALSE)
+             i.age.y <- match("age", dimtypes.y, nomatch = 0L)
+             has.age.y <- i.age.y > 0L
+             ## 'y' has dimension with dimtype "age"
+             if (!has.age.y)
+                 return(gettextf("'%s' does not have a dimension with %s \"%s\"",
+                                 "y", "dimtype", "age"))
+             ## age dimension of 'y' has dimscale "Intervals"
+             DimScale.age.y <- DimScales.y[[i.age.y]]
+             if (!methods::is(DimScale.age.y, "Intervals"))
+                 return(gettextf("dimension of '%s' with %s \"%s\" does not have %s \"%s\"",
+                                 "y", "dimtype", "age", "dimscale", "Intervals"))
+             ## last interval of age dimension of 'y' is open
+             dv.age.y <- DimScale.age.y@dimvalues
+             if (!is.infinite(dv.age.y[length(dv.age.y)]))
+                 return(gettextf("last interval of dimension of '%s' with %s \"%s\" is closed",
+                                 "y", "dimtype", "age"))
+             ## 'metadataAg' does not have dimension with dimtype "age"
+             if (!is.null(metadataAg)) {
+                 dimtypes.ag <- dimtypes(metadataAg, use.names = FALSE)
+                 if ("age" %in% dimtypes.ag)
+                     return(gettextf("'%s' has a dimension with %s \"%s\"",
+                                     "metadataAg", "dimtype", "age"))
+             }
+             ## 'mxAg' and 'axAg' have same length
+             if (!identical(length(mxAg), length(axAg)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "mxAg", "axAg"))
+             ## dimensions of 'metadataMxAg' consistent with length of 'mx'
+             if (!identical(as.integer(prod(dim(metadataMxAg))), length(mxAg)))
+                 return(gettextf("dimensions of '%s' inconsistent with length of '%s'",
+                                 "metadataMxAg", "mxAg"))             
+             ## 'dimBefore' for 'transformThetaToMxAg' consistent with 'theta'
+             if (!identical(as.integer(prod(transformThetaToMxAg@dimBefore)),
+                            length(theta)))
+                 return(gettextf("'%s' from '%s' inconsistent with length of '%s'",
+                                 "dimBefore", "transformThetaToMxAg", "theta"))
+             ## 'dimAfter' for 'transformThetaToMxAg' consistent with 'axAg'
+             if (!identical(as.integer(prod(transformThetaToMxAg@dimAfter)),
+                            length(mxAg)))
+                 return(gettextf("'%s' from '%s' inconsistent with length of '%s'",
+                                 "dimAfter", "transformThetaToMxAg", "axAg"))
+             ## length of 'mxAg' equal to 'nAge' times length of 'valueAg'
+             if (!identical(length(mxAg), as.integer(nAgeAg * length(valueAg))))
+                 return(gettextf("'%s', '%s', and '%s' inconsistent",
+                                 "mxAg", "nAgeAg", "valueAg"))
+             ## length of 'nxAg' equal to 'nAge'
+             if (!identical(length(nxAg), nAgeAg))
+                 return(gettextf("'%s' and '%s' inconsistent",
+                                 "nxAg", "nAgeAg"))
+             ## 'axAg' consistent with 'nxAg'
+             nx.rep <- rep_len(nxAg, length.out = length(axAg))
+             if (any(axAg > nx.rep))
+                 return(gettextf("'%s' and '%s' inconsistent",
+                                 "nxAg", "axAg"))
+             TRUE
+         })

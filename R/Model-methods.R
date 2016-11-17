@@ -297,6 +297,46 @@ setMethod("makeOutputAggregate",
                    weights = weights)
           })
 
+## HAS_TESTS
+setMethod("makeOutputAggregate",
+          signature(model = "AgLife"),
+          function(model, pos) {
+              metadata.y <- model@metadataY
+              metadata.ag <- model@metadataAg
+              metadata.mx <- model@metadataMxAg
+              mean.ag <- model@meanAg@.Data
+              sd.ag <- model@sdAg@.Data
+              max.attempt <- model@maxAttempt@.Data
+              if (is.null(metadata.ag)) {
+                  first <- pos
+                  pos <- first + 1L
+                  value <- Skeleton(first = first)
+                  mean <- mean.ag
+                  sd <- sd.ag
+              }
+              else {
+                  dim.ag <- dim(metadata.ag)
+                  dimnames.ag <- dimnames(metadata.ag)
+                  first <- pos
+                  pos <- first + as.integer(prod(dim.ag))
+                  value <- Skeleton(metadata = metadata.ag, first = first)
+                  .Data.mean <- array(mean.ag, dim = dim.ag, dimnames = dimnames.ag)
+                  mean <- methods::new("Values", .Data = .Data.mean, metadata = metadata.ag)
+                  .Data.sd <- array(sd.ag, dim = dim.ag, dimnames = dimnames.ag)
+                  sd <- methods::new("Values", .Data = .Data.sd, metadata = metadata.ag)
+              }
+              dim.mx <- dim(metadata.mx)
+              dimnames.mx <- dimnames(metadata.mx)
+              first <- pos
+              pos <- first + as.integer(prod(dim.mx))
+              mx <- Skeleton(metadata = metadata.mx, first = first)
+              list(value = value,
+                   mean = mean,
+                   sd = sd,
+                   mx = mx)
+          })
+
+## HAS_TESTS
 setMethod("makeOutputAggregate",
           signature(model = "AgFun"),
           function(model, pos, nChain, nIteration) {
@@ -956,6 +996,18 @@ setMethod("printAgAccuracyEqns",
           })
 
 setMethod("printAgAccuracyEqns",
+          signature(object = "AgLife"),
+          function(object) {
+              value <- object@valueAg
+              n.value <- length(value)
+              cat("\n")
+              if (n.value > 1L)
+                  cat("        value[a] ~ N(aggregate[a], sd[a]^2)\n")
+              else
+                  cat("           value ~ N(aggregate, sd^2)\n")
+          })
+
+setMethod("printAgAccuracyEqns",
           signature(object = "AgPoisson"),
           function(object) {
               value <- object@valueAg
@@ -1047,6 +1099,15 @@ setMethod("printAgValEqns",
               cat("\n")
               cat("       aggregate = f(rate, weight)")
           })
+
+setMethod("printAgValEqns",
+          signature(object = "PoissonVaryingUseExpAgLife"),
+          function(object) {
+              cat("\n")
+              cat("         rate.ag = sum(rate * weight)\n")
+              cat("       aggregate = LifeExp(rate.ag)\n")
+          })
+
 
 
 ## showModelHelper #############################################################################
@@ -1935,6 +1996,41 @@ setMethod("updateModelUseExp",
                   object
               }
           })
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("updateModelUseExp",
+          signature(object = "PoissonVaryingUseExpAgLife",
+                    y = "Counts",
+                    exposure = "Counts"),
+          function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(identical(length(y), length(object@theta)))
+              stopifnot(is.integer(y))
+              stopifnot(all(y[!is.na(y)] >= 0L))
+              ## exposure
+              stopifnot(is.double(exposure))
+              stopifnot(!any(is.na(exposure)))
+              stopifnot(all(exposure[!is.na(exposure)] >= 0))
+              ## y and exposure
+              stopifnot(identical(length(exposure), length(y)))
+              stopifnot(all(is.na(exposure) <= is.na(y)))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(updateModelUseExp_PoissonVaryingUseExpAgLife_R, object, y, exposure)
+                  else
+                      .Call(updateModelUseExp_R, object, y, exposure)
+              }
+              else {
+                  object <- updateThetaAndValueAgLife_PoissonUseExp(object, y = y, exposure = exposure)
+                  object <- updateSigma_Varying(object, g = log)
+                  object <- updateBetasAndPriorsBetas(object, g = log)
+                  object
+              }
+          })
+
 
 ## TRANSLATED
 ## HAS_TESTS

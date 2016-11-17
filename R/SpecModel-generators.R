@@ -854,23 +854,20 @@ AgNormal <- function(value, sd, weights = NULL, concordances = list(), jump = NU
 ## HAS_TESTS
 #' @rdname Aggregate
 #' @export
-AgPoisson <- function(value, weights = NULL, concordances = list(), jump = NULL) {
+AgPoisson <- function(value, concordances = list(), jump = NULL) {
     l <- makeValueAndMetaDataAg(value)
     valueAg <- l$value
     metadataAg <- l$metadata
-    checkSpecWeightAg(weights = weights,
-                      metadata = metadataAg)
     checkConcordances(concordances)
     scaleAg <- checkAndTidyJump(jump)
     methods::new("SpecAgPoisson",
                  metadataAg = metadataAg,
                  scaleAg = scaleAg,
                  valueAg = valueAg,
-                 weightAg = weights,
                  concordancesAg = concordances)
 }
 
-## NO_TESTS
+## HAS_TESTS
 #' @rdname Aggregate
 #' @export
 AgFun <- function(value, sd, FUN, weights = NULL, concordances = list()) {
@@ -890,6 +887,34 @@ AgFun <- function(value, sd, FUN, weights = NULL, concordances = list()) {
                  sdAg = sdAg,
                  valueAg = valueAg,
                  weightAg = weights,
+                 concordancesAg = concordances)
+}
+
+## HAS_TESTS
+#' @rdname Aggregate
+#' @export
+AgLife <- function(value, sd, ax = NULL,
+                   concordances = list()) {
+    checkAxAg(ax = ax,
+              value = value)
+    if (methods::is(value, "DemographicArray")) {
+        dimtypes <- dimtypes(value, use.names = FALSE)
+        if ("age" %in% dimtypes)
+            stop(gettextf("'%s' has a dimension with %s \"%s\"",
+                          "values", "dimtype", "age"))
+    }
+    l <- makeValueAndMetaDataAg(value)
+    valueAg <- l$value
+    metadataAg <- l$metadata
+    sdAg <- checkAndTidySDAg(sd = sd,
+                             value = value,
+                             metadata = metadataAg)
+    checkConcordances(concordances)
+    methods::new("SpecAgLife",
+                 metadataAg = metadataAg,
+                 sdAg = sdAg,
+                 axAg = ax,
+                 valueAg = valueAg,
                  concordancesAg = concordances)
 }
 

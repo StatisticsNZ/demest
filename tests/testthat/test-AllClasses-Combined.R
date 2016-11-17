@@ -92,7 +92,7 @@ test_that("validity tests for CombinedModelBinomial inherited from HasExposure w
     x.wrong <- x
     x.wrong@exposure <- Counts(array(as.integer(rpois(24, lambda = 10)),
                                      dim = 2:4,
-                                     dimnames = list(sex = c("f", "wrong"), region = letters[1:3],
+                                     dimnames = list(sex = c("female", "male"), region = letters[1:3],
                                      age = 0:3)))
     expect_error(validObject(x.wrong),
                  "'exposure' and 'y' have different metadata")
@@ -356,11 +356,11 @@ test_that("validity tests for CombinedModelBinomial inherited from CombinedModel
     ## 'y' and 'theta' have same length
     x.wrong <- x
     x.wrong@y <- Counts(array(0L,
-                              dim = c(3L, 3:4),
-                              dimnames = list(sex = c("f", "m", "o"), region = letters[1:3], age = 0:3)))
+                              dim = c(2L, 4, 4),
+                              dimnames = list(sex = c("f", "m"), region = letters[1:4], age = 0:3)))
     x.wrong@exposure <- Counts(array(1L,
-                                     dim = c(3L, 3:4),
-                                     dimnames = list(sex = c("f", "m", "o"), region = letters[1:3], age = 0:3)))
+                                     dim = c(2L, 4, 4),
+                                     dimnames = list(sex = c("f", "m"), region = letters[1:4], age = 0:3)))
     expect_error(validObject(x.wrong),
                  "'y' and 'theta' have different lengths")
     ## 'y' <= 'exposure'
@@ -521,8 +521,8 @@ test_that("validity tests for CombinedModelNormal inherited from CombinedModelNo
     ## 'y' and 'theta' have same length
     x.wrong <- x
     x.wrong@y <- Counts(array(rnorm(36, mean = 1, sd = 3),
-                              dim = c(3L, 3:4),
-                              dimnames = list(sex = c("f", "m", "o"), region = letters[1:3], age = 0:3)))
+                              dim = c(2L, 4, 4),
+                              dimnames = list(sex = c("f", "m"), region = letters[1:4], age = 0:3)))
     expect_error(validObject(x.wrong),
                  "'y' and 'theta' have different lengths")
     ## 'w' is missing only if 'y' is
@@ -715,8 +715,8 @@ test_that("validity tests for CombinedModelPoissonNotHasExp inherited from Combi
     ## 'y' and 'theta' have same length
     x.wrong <- x
     x.wrong@y <- Counts(array(as.integer(rpois(36, lambda = 10)),
-                      dim = c(3L, 3:4),
-                      dimnames = list(sex = c("f", "m", "o"), region = letters[1:3], age = 0:3)))
+                      dim = c(2L, 4, 4),
+                      dimnames = list(sex = c("f", "m"), region = letters[1:4], age = 0:3)))
     expect_error(validObject(x.wrong),
                  "'y' and 'theta' have different lengths")
 })
@@ -856,11 +856,11 @@ test_that("validity tests for CombinedModelPoissonHasExp inherited from Combined
     ## 'y' and 'theta' have same length
     x.wrong <- x
     exposure <- Counts(array(as.double(rpois(36, lambda = 10)),
-                             dim = c(3L, 3:4),
-                             dimnames = list(sex = c("f", "m", "o"), region = letters[1:3], age = 0:3)))
+                             dim = c(2L, 4, 4),
+                             dimnames = list(sex = c("f", "m"), region = letters[1:4], age = 0:3)))
     y <- Counts(array(as.integer(rpois(36, lambda = exposure * 0.3)),
-                      dim = c(3L, 3:4),
-                      dimnames = list(sex = c("f", "m", "o"), region = letters[1:3], age = 0:3)))
+                      dim = c(2, 4, 4),
+                      dimnames = list(sex = c("f", "m"), region = letters[1:4], age = 0:3)))
     x.wrong@exposure <- exposure
     x.wrong@y <- y
     expect_error(validObject(x.wrong),

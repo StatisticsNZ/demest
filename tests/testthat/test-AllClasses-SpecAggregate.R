@@ -149,10 +149,70 @@ test_that("validity tests inherited from FunAgMixin work", {
                  "'funAg' does not have formal arguments 'x' and 'weights'")
 })
 
+test_that("can create object of class SpecAgLife", {
+    Concordance <- classconc::Concordance
+    x <- new("SpecAgLife",
+             axAg = NULL,
+             valueAg = new("ParameterVector", as.double(1:4)),
+             sdAg = new("ScaleVec", rep(1.3, 4)),
+             concordancesAg = list(),
+             metadataAg = new("MetaData",
+                              nms = "region",
+                              dimtypes = "state",
+                              DimScales = list(new("Categories", dimvalues = as.character(1:4)))))
+    expect_true(validObject(x))
+    x <- new("SpecAgLife",
+             axAg = ValuesOne(0.1, labels = "0", name = "age", dimscale = "Intervals"),
+             valueAg = new("ParameterVector", as.double(1:4)),
+             sdAg = new("ScaleVec", rep(1.3, 4)),
+             concordancesAg = list(region = Concordance(data.frame(from = 11:18,
+                                                          to = rep(1:4, each = 2)))),
+             metadataAg = new("MetaData",
+                              nms = "region",
+                              dimtypes = "state",
+                              DimScales = list(new("Categories", dimvalues = as.character(1:4)))))
+    expect_true(validObject(x))
+})
+
+test_that("validity tests for SpecAgLife inherited from SpecAxAgMixin work", {
+    Concordance <- classconc::Concordance
+    x <- new("SpecAgLife",
+             axAg = ValuesOne(0.1, labels = "0", name = "age", dimscale = "Intervals"),
+             valueAg = new("ParameterVector", as.double(1:4)),
+             sdAg = new("ScaleVec", rep(1.3, 4)),
+             concordancesAg = list(region = Concordance(data.frame(from = 11:18,
+                                                                   to = rep(1:4, each = 2)))),
+             metadataAg = new("MetaData",
+                              nms = "region",
+                              dimtypes = "state",
+                              DimScales = list(new("Categories", dimvalues = as.character(1:4)))))
+    ## 'axAg' has dimension with dimtype "age"
+    x.wrong <- x
+    x.wrong@axAg <- ValuesOne(0.1, labels = "0", name = "wrong") 
+    expect_error(validObject(x.wrong),
+                 "'axAg' does not have a dimension with dimtype \"age\"")
+    ## age dimension of 'axAg' has dimscale "Intervals"
+    x.wrong <- x
+    x.wrong@axAg <- ValuesOne(0.1, labels = "0", name = "age", dimscale = "Points")
+    expect_error(validObject(x.wrong),
+                 "dimension of 'axAg' with dimtype \"age\" does not have dimscale \"Intervals\"")
+    ## 'axAg' has no missing values
+    x.wrong <- x
+    x.wrong@axAg[1] <- NA
+    expect_error(validObject(x.wrong),
+                 "'axAg' has missing values")
+    ## 'axAg' is non-negative
+    x.wrong <- x
+    x.wrong@axAg[1] <- -1
+    expect_error(validObject(x.wrong),
+                 "'axAg' has negative values")
+})
+
+
+
 test_that("can create object of class SpecAgPoisson", {
     x <- new("SpecAgPoisson",
              valueAg = new("ParameterVector", as.double(1:4)),
-             weightAg = NULL,
              metadataAg = new("MetaData",
                  nms = "region",
                  dimtypes = "state",
@@ -161,7 +221,6 @@ test_that("can create object of class SpecAgPoisson", {
     x <- new("SpecAgPoisson",
              scaleAg = new("Scale", 0.1),
              valueAg = new("ParameterVector", 1),
-             weightAg = NULL,
              metadataAg = NULL)
     expect_true(validObject(x))
 })

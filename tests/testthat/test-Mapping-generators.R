@@ -353,7 +353,7 @@ test_that("Mapping creates object of class MappingCompToPopn from object of clas
                                  eth_dest = 1:2,
                                  occ_orig = 1:3,
                                  occ_dest = 1:3,
-                                 sex = 1:2,
+                                 sex = c("f", "m"),
                                  age = c("0-4", "5-9", "10-14", "15+"),
                                  time = c("2001-2005", "2006-2010", "2011-2015"),
                                  triangle = c("TL", "TU"))))
@@ -362,7 +362,7 @@ test_that("Mapping creates object of class MappingCompToPopn from object of clas
                                dimnames = list(reg = 1:3,
                                    eth = 1:2,
                                    occ = 1:3,
-                                   sex = 1:2,
+                                   sex = c("f", "m"),
                                    age = c("0-4", "5-9", "10-14", "15+"),
                                    time = c(2000, 2005, 2010, 2015))))
     template <- makeTemplateComponent(population)
@@ -471,7 +471,7 @@ test_that("Mapping creates object of class MappingCompToPopn from object of clas
                                  eth_dest = 1:2,
                                  occ_orig = 1:3,
                                  occ_dest = 1:3,
-                                 sex = 1:2,
+                                 sex = c("f", "m"),
                                  age = c("0-4", "5-9", "10-14", "15+"),
                                  time = c("2001-2005", "2006-2010", "2011-2015"),
                                  triangle = c("TL", "TU"))))
@@ -481,7 +481,7 @@ test_that("Mapping creates object of class MappingCompToPopn from object of clas
                                dimnames = list(reg = 1:3,
                                    eth = 1:2,
                                    occ = 1:3,
-                                   sex = 1:2,
+                                   sex = c("f", "m"),
                                    age = c("0-4", "5-9", "10-14", "15+"),
                                    time = c(2000, 2005, 2010, 2015))))
     template <- makeTemplateComponent(population)
@@ -583,7 +583,7 @@ test_that("Mapping creates object of class MappingCompToPopn from object of clas
                                  eth_dest = 1:2,
                                  occ_orig = 1:3,
                                  occ_dest = 1:3,
-                                 sex = 1:2,
+                                 sex = c("f", "m"),
                                  age = c("0-4", "5-9", "10-14", "15+"),
                                  time = c("2001-2005", "2006-2010", "2011-2015"),
                                  triangle = c("TL", "TU"))))
@@ -593,7 +593,7 @@ test_that("Mapping creates object of class MappingCompToPopn from object of clas
                                dimnames = list(reg = 1:3,
                                    eth = 1:2,
                                    occ = 1:3,
-                                   sex = 1:2,
+                                   sex = c("f", "m"),
                                    age = c("0-4", "5-9", "10-14", "15+"),
                                    time = c(2000, 2005, 2010, 2015))))
     template <- makeTemplateComponent(population)

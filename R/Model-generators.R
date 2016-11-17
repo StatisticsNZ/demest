@@ -474,7 +474,33 @@ setMethod("addAg",
           })
 
 
+## SpecAgLife
 
+## HAS_TESTS
+setMethod("addAg",
+          signature(model = "PoissonVaryingUseExp",
+                    aggregate = "SpecAgLife",
+                    defaultWeights = "Counts"),
+          function(model, aggregate, defaultWeights) {
+              l <- addAgLife(object = model,
+                             aggregate = aggregate,
+                             defaultWeights = defaultWeights)
+              class <- paste0(class(model), "AgLife")
+              methods::new(class,
+                           model,
+                           axAg = l$ax,
+                           meanAg = l$mean,
+                           metadataAg = l$metadataAg,
+                           metadataMxAg = l$metadataMx,
+                           mxAg = l$mx,
+                           nAgeAg = l$nAge,
+                           nxAg = l$nx,
+                           sdAg = l$sd,
+                           transformThetaToMxAg = l$transform,
+                           valueAg = l$value,
+                           slotsToExtract = l$slotsToExtract,
+                           iMethodModel = l$iMethodModel)
+          })
 
 
 ## initialModel ############################################################################
@@ -871,27 +897,27 @@ setMethod("initialModel",
               dims <- makeDims(dim = dim, margins = margins)
               class <- if (has.exposure) "PoissonVaryingUseExp" else "PoissonVaryingNotUseExp"
               model <- methods::new(class,
-                           call = call,
-                           theta = theta,
-                           metadataY = metadataY,
-                           scaleTheta = scale.theta,
-                           scaleThetaMultiplier = scale.theta.multiplier,
-                           lower = lower,
-                           upper = upper,
-                           tolerance = tolerance,
-                           nAcceptTheta = methods::new("Counter", 0L),
-                           nFailedPropTheta = methods::new("Counter", 0L),
-                           maxAttempt = max.attempt,
-                           sigma = methods::new("Scale", sigma),
-                           sigmaMax = sigma.max,
-                           ASigma = A.sigma,
-                           nuSigma = nu.sigma,
-                           betas = betas,
-                           priorsBetas = priors.betas,
-                           namesBetas = names.betas,
-                           margins = margins,
-                           iteratorBetas = iterator.betas,
-                           dims = dims)
+                                    call = call,
+                                    theta = theta,
+                                    metadataY = metadataY,
+                                    scaleTheta = scale.theta,
+                                    scaleThetaMultiplier = scale.theta.multiplier,
+                                    lower = lower,
+                                    upper = upper,
+                                    tolerance = tolerance,
+                                    nAcceptTheta = methods::new("Counter", 0L),
+                                    nFailedPropTheta = methods::new("Counter", 0L),
+                                    maxAttempt = max.attempt,
+                                    sigma = methods::new("Scale", sigma),
+                                    sigmaMax = sigma.max,
+                                    ASigma = A.sigma,
+                                    nuSigma = nu.sigma,
+                                    betas = betas,
+                                    priorsBetas = priors.betas,
+                                    namesBetas = names.betas,
+                                    margins = margins,
+                                    iteratorBetas = iterator.betas,
+                                    dims = dims)
               if (has.exposure)
                   default.weights <- exposure
               else {
@@ -899,8 +925,8 @@ setMethod("initialModel",
                                  dim = dim(metadataY),
                                  dimnames = dimnames(metadataY))
                   default.weights <- methods::new("Counts",
-                                         .Data = .Data,
-                                         metadata = metadataY)
+                                                  .Data = .Data,
+                                                  metadata = metadataY)
               }
               addAg(model = model,
                     aggregate = aggregate,

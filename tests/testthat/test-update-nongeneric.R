@@ -4472,7 +4472,7 @@ test_that("updateTheta_PoissonVaryingUseExp gives valid answer", {
         ## no missing values
         exposure <- Counts(array(10 * rbeta(n = 20, shape1 = 20, shape2 = 5),
                                  dim = c(5, 4),
-                                 dimnames = list(age = 0:4, sex = c("a", "b", "c", "d"))))
+                                 dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
         y <- Counts(array(as.integer(rpois(n = 20, lambda = 0.5 * exposure)),
                           dim = c(5, 4),
                           dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
@@ -4511,7 +4511,7 @@ test_that("updateTheta_PoissonVaryingUseExp gives valid answer", {
         ## has missing values
         exposure <- Counts(array(10 * rbeta(n = 20, shape1 = 20, shape2 = 5),
                                  dim = c(5, 4),
-                                 dimnames = list(age = 0:4, sex = c("a", "b", "c", "d"))))
+                                 dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
         y <- Counts(array(as.integer(rpois(n = 20, lambda = 0.5 * exposure)),
                           dim = c(5, 4),
                           dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
@@ -4552,7 +4552,7 @@ test_that("updateTheta_PoissonVaryingUseExp gives valid answer", {
         ## has subtotals - whole array missing
         exposure <- Counts(array(10 * rbeta(n = 20, shape1 = 20, shape2 = 5),
                                  dim = c(5, 4),
-                                 dimnames = list(age = 0:4, sex = c("a", "b", "c", "d"))))
+                                 dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
         y <- Counts(array(as.integer(rpois(n = 20, lambda = 0.5 * exposure)),
                           dim = c(5, 4),
                           dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
@@ -4612,7 +4612,7 @@ test_that("updateTheta_PoissonVaryingUseExp gives valid answer", {
         ## has subtotals - part subarray missing
         exposure <- Counts(array(10 * rbeta(n = 20, shape1 = 20, shape2 = 5),
                                  dim = c(5, 4),
-                                 dimnames = list(age = 0:4, sex = c("a", "b", "c", "d"))))
+                                 dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
         y <- Counts(array(as.integer(rpois(n = 20, lambda = 0.5 * exposure)),
                           dim = c(5, 4),
                           dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
@@ -4691,7 +4691,7 @@ test_that("updateTheta_PoissonVaryingUseExp gives valid answer", {
         ## has lower, upper
         exposure <- Counts(array(10 * rbeta(n = 20, shape1 = 20, shape2 = 5),
                                  dim = c(5, 4),
-                                 dimnames = list(age = 0:4, sex = c("a", "b", "c", "d"))))
+                                 dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
         y <- Counts(array(as.integer(rpois(n = 20, lambda = 0.5 * exposure)),
                           dim = c(5, 4),
                           dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
@@ -4713,7 +4713,7 @@ test_that("R and C versions of updateTheta_PoissonVaryingUseExp give same answer
         ## no missing values
         exposure <- Counts(array(10 * rbeta(n = 20, shape1 = 20, shape2 = 5),
                                  dim = c(5, 4),
-                                 dimnames = list(age = 0:4, sex = c("a", "b", "c", "d"))))
+                                 dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
         y <- Counts(array(as.integer(rpois(n = 20, lambda = 0.5 * exposure)),
                           dim = c(5, 4),
                           dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
@@ -4732,7 +4732,7 @@ test_that("R and C versions of updateTheta_PoissonVaryingUseExp give same answer
         ## has missing values
         exposure <- Counts(array(10 * rbeta(n = 20, shape1 = 20, shape2 = 5),
                                  dim = c(5, 4),
-                                 dimnames = list(age = 0:4, sex = c("a", "b", "c", "d"))))
+                                 dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
         y <- Counts(array(as.integer(rpois(n = 20, lambda = 0.5 * exposure)),
                           dim = c(5, 4),
                           dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
@@ -4752,7 +4752,7 @@ test_that("R and C versions of updateTheta_PoissonVaryingUseExp give same answer
         ## has subtotals - whole subarray missing
         exposure <- Counts(array(10 * rbeta(n = 20, shape1 = 20, shape2 = 5),
                                  dim = c(5, 4),
-                                 dimnames = list(age = 0:4, sex = c("a", "b", "c", "d"))))
+                                 dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
         y <- Counts(array(as.integer(rpois(n = 20, lambda = 0.5 * exposure)),
                           dim = c(5, 4),
                           dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
@@ -4774,7 +4774,7 @@ test_that("R and C versions of updateTheta_PoissonVaryingUseExp give same answer
         ## has subtotals - part subarray missing
         exposure <- Counts(array(10 * rbeta(n = 20, shape1 = 20, shape2 = 5),
                                  dim = c(5, 4),
-                                 dimnames = list(age = 0:4, sex = c("a", "b", "c", "d"))))
+                                 dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
         y <- Counts(array(as.integer(rpois(n = 20, lambda = 0.5 * exposure)),
                           dim = c(5, 4),
                           dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
@@ -4796,7 +4796,7 @@ test_that("R and C versions of updateTheta_PoissonVaryingUseExp give same answer
         ## has lower, upper
         exposure <- Counts(array(10 * rbeta(n = 20, shape1 = 20, shape2 = 5),
                                  dim = c(5, 4),
-                                 dimnames = list(age = 0:4, sex = c("a", "b", "c", "d"))))
+                                 dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
         y <- Counts(array(as.integer(rpois(n = 20, lambda = 0.5 * exposure)),
                           dim = c(5, 4),
                           dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
@@ -6101,6 +6101,247 @@ test_that("R and C versions of updateThetaAndValueAgNormal_PoissonUseExp same an
             warning("aggregate value was not updated")
     }
 })
+
+
+## updateThetaAndValueAgLife_PoissonUseExp
+
+test_that("updateThetaAndValueAgLife_PoissonUseExp gives valid answer - single aggregate value", {
+    updateThetaAndValueAgLife_PoissonUseExp <- demest:::updateThetaAndValueAgLife_PoissonUseExp
+    initialModel <- demest:::initialModel
+    ## no missing values
+    was.updated <- FALSE ## only test if was ever updated, since only one update done per iteration
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        theta <- rgamma(n = 20, shape = 2, rate = 0.5) / 10
+        expose <- as.double(rpois(n = 20, lambda = 20)) + 1
+        expose <- Counts(array(expose, dim = c(2, 10),
+                                 dimnames = list(sex = c("f", "m"), age = c(0:8, "9+"))))
+        aggregate <- AgLife(value = 3, sd = 0.3)
+        y <- as.integer(rpois(n = 20, lambda = expose * theta))
+        y <- Counts(array(y, dim = c(2, 10),
+                          dimnames = list(sex = c("f", "m"), age = c(0:8, "9+"))))
+        spec <- Model(y ~ Poisson(mean ~ age + sex), aggregate = aggregate)
+        x0 <- initialModel(spec, y = y, exposure = expose)
+        expect_is(x0, "PoissonVaryingUseExpAgLife")
+        x1 <- updateThetaAndValueAgLife_PoissonUseExp(x0, y = y, exposure = expose)
+        expect_true(validObject(x1))
+        if (x1@nAcceptTheta@.Data > 0L) {
+            expect_false(identical(x0@theta, x1@theta))
+            was.updated <- TRUE
+        }
+        else
+            expect_identical(x0@theta, x1@theta)
+    }
+    if (!was.updated)
+        warning("theta and bench not updated")
+    ## has missing values
+    was.updated <- FALSE ## only test if was ever updated, since only one update done per iteration
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        theta <- rgamma(n = 20, shape = 2, rate = 0.5) / 10
+        expose <- as.double(rpois(n = 20, lambda = 20)) + 1
+        expose <- Counts(array(expose, dim = c(2, 10),
+                                 dimnames = list(sex = c("f", "m"), age = c(0:8, "9+"))))
+        aggregate <- AgLife(value = 3, sd = 0.3)
+        y <- as.integer(rpois(n = 20, lambda = expose * theta))
+        y <- Counts(array(y, dim = c(2, 10),
+                          dimnames = list(sex = c("f", "m"), age = c(0:8, "9+"))))
+        y[1:5] <- NA
+        spec <- Model(y ~ Poisson(mean ~ age + sex), aggregate = aggregate)
+        x0 <- initialModel(spec, y = y, exposure = expose)
+        expect_is(x0, "PoissonVaryingUseExpAgLife")
+        x1 <- updateThetaAndValueAgLife_PoissonUseExp(x0, y = y, exposure = expose)
+        expect_true(validObject(x1))
+        if (x1@nAcceptTheta@.Data > 0L) {
+            expect_false(identical(x0@theta, x1@theta))
+            was.updated <- TRUE
+        }
+        else
+            expect_identical(x0@theta, x1@theta)
+    }
+    if (!was.updated)
+        warning("theta and bench not updated")
+})
+
+test_that("R and C versions of updateThetaAndValueAgLife_PoissonUseExp same answer - single aggregate value", {
+    updateThetaAndValueAgLife_PoissonUseExp <- demest:::updateThetaAndValueAgLife_PoissonUseExp
+    initialModel <- demest:::initialModel
+    ## no missing values
+    was.updated <- FALSE  ## only test if was ever updated, since only one update done per iteration
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        theta <- rgamma(n = 20, shape = 2, rate = 0.5) / 10
+        expose <- as.double(rpois(n = 20, lambda = 20)) + 1
+        expose <- Counts(array(expose, dim = c(2, 10),
+                                 dimnames = list(sex = c("f", "m"), age = c(0:8, "9+"))))
+        aggregate <- AgLife(value = 3, sd = 0.3)
+        y <- as.integer(rpois(n = 20, lambda = expose * theta))
+        y <- Counts(array(y, dim = c(2, 10),
+                          dimnames = list(sex = c("f", "m"), age = c(0:8, "9+"))))
+        spec <- Model(y ~ Poisson(mean ~ age + sex), aggregate = aggregate)
+        x0 <- initialModel(spec, y = y, exposure = expose)
+        expect_is(x0, "PoissonVaryingUseExpAgLife")
+        set.seed(seed + 1)
+        x.R <- updateThetaAndValueAgLife_PoissonUseExp(x0, y = y, exposure = expose, useC = FALSE)
+        set.seed(seed + 1)
+        x.C <- updateThetaAndValueAgLife_PoissonUseExp(x0, y = y, exposure = expose, useC = TRUE)
+        if (test.identity)
+            expect_identical(x.R, x.C)
+        else
+            expect_equal(x.R, x.C)
+        if (x.R@nAcceptTheta@.Data > 0L)
+            was.updated <- TRUE
+    }
+    if (!was.updated)
+        warning("theta was not updated")
+    ## has missing values
+    was.updated <- FALSE  ## only test if was ever updated, since only one update done per iteration
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        theta <- rgamma(n = 20, shape = 2, rate = 0.5) / 10
+        expose <- as.double(rpois(n = 20, lambda = 20)) + 1
+        expose <- Counts(array(expose, dim = c(2, 10),
+                                 dimnames = list(sex = c("f", "m"), age = c(0:8, "9+"))))
+        aggregate <- AgLife(value = 3, sd = 0.3)
+        y <- as.integer(rpois(n = 20, lambda = expose * theta))
+        y <- Counts(array(y, dim = c(2, 10),
+                          dimnames = list(sex = c("f", "m"), age = c(0:8, "9+"))))
+        y[1:5] <- NA
+        spec <- Model(y ~ Poisson(mean ~ age + sex), aggregate = aggregate)
+        x0 <- initialModel(spec, y = y, exposure = expose)
+        set.seed(seed + 1)
+        x.R <- updateThetaAndValueAgLife_PoissonUseExp(x0, y = y, exposure = expose, useC = FALSE)
+        set.seed(seed + 1)
+        x.C <- updateThetaAndValueAgLife_PoissonUseExp(x0, y = y, exposure = expose, useC = TRUE)
+        if (test.identity)
+            expect_identical(x.R, x.C)
+        else
+            expect_equal(x.R, x.C)
+        if (x.R@nAcceptTheta@.Data > 0L)
+            was.updated <- TRUE
+    }
+    if (!was.updated)
+        warning("theta was not updated")
+})
+
+test_that("updateThetaAndValueAgLife_PoissonUseExp gives valid answer - multiple aggregate values", {
+    updateThetaAndValueAgLife_PoissonUseExp <- demest:::updateThetaAndValueAgLife_PoissonUseExp
+    initialModel <- demest:::initialModel
+    ## no missing values
+    for (seed in seq_len(n.test)) {
+        was.updated <- FALSE
+        set.seed(seed)
+        theta <- rgamma(n = 20, shape = 2, rate = 0.5) / 10
+        expose <- as.double(rpois(n = 20, lambda = 20)) + 1
+        expose <- Counts(array(expose, dim = c(2, 10),
+                                 dimnames = list(sex = c("f", "m"), age = c(0:8, "9+"))))
+        value <- Values(array(c(3, 4), dim = 2, dimnames = list(sex = c("f", "m"))))
+        aggregate <- AgLife(value = value, sd = 0.3)
+        y <- as.integer(rpois(n = 20, lambda = expose * theta))
+        y <- Counts(array(y, dim = c(2, 10),
+                          dimnames = list(sex = c("f", "m"), age = c(0:8, "9+"))))
+        spec <- Model(y ~ Poisson(mean ~ age + sex), aggregate = aggregate)
+        x0 <- initialModel(spec, y = y, exposure = expose)
+        expect_is(x0, "PoissonVaryingUseExpAgLife")
+        x1 <- updateThetaAndValueAgLife_PoissonUseExp(x0, y = y, exposure = expose)
+        expect_true(validObject(x1))
+        if (x1@nAcceptTheta@.Data > 0L) {
+            expect_false(identical(x0@theta, x1@theta))
+            was.updated <- TRUE
+        }
+        else
+            expect_identical(x0@theta, x1@theta)
+        if (!was.updated)
+            warning("theta was not updated")
+    }
+    ## has missing values
+    for (seed in seq_len(n.test)) {
+        was.updated <- FALSE
+        set.seed(seed)
+        theta <- rgamma(n = 20, shape = 2, rate = 0.5) / 10
+        expose <- as.double(rpois(n = 20, lambda = 20)) + 1
+        expose <- Counts(array(expose, dim = c(2, 10),
+                                 dimnames = list(sex = c("f", "m"), age = c(0:8, "9+"))))
+        value <- Values(array(c(3, 4), dim = 2, dimnames = list(sex = c("f", "m"))))
+        aggregate <- AgLife(value = value, sd = 0.3)
+        y <- as.integer(rpois(n = 20, lambda = expose * theta))
+        y <- Counts(array(y, dim = c(2, 10),
+                          dimnames = list(sex = c("f", "m"), age = c(0:8, "9+"))))
+        y[1:5] <- NA
+        spec <- Model(y ~ Poisson(mean ~ age + sex), jump = 0.001, aggregate = aggregate)
+        x0 <- initialModel(spec, y = y, exposure = expose)
+        x1 <- updateThetaAndValueAgLife_PoissonUseExp(x0, y = y, exposure = expose)
+        expect_true(validObject(x1))
+        if (x1@nAcceptTheta@.Data > 0L) {
+            expect_false(identical(x0@theta, x1@theta))
+            was.updated <- TRUE
+        }
+        else
+            expect_identical(x0@theta, x1@theta)
+        if (!was.updated)
+            warning("theta was not updated")
+    }
+})
+
+test_that("R and C versions of updateThetaAndValueAgLife_PoissonUseExp same answer - multiple aggregate values", {
+    updateThetaAndValueAgLife_PoissonUseExp <- demest:::updateThetaAndValueAgLife_PoissonUseExp
+    initialModel <- demest:::initialModel
+    for (seed in seq_len(n.test)) {
+        ## no missing values
+        was.updated <- FALSE
+        set.seed(seed)
+        theta <- rgamma(n = 20, shape = 2, rate = 0.5) / 10
+        expose <- as.double(rpois(n = 20, lambda = 20)) + 1
+        expose <- Counts(array(expose, dim = c(2, 10),
+                                 dimnames = list(sex = c("f", "m"), age = c(0:8, "9+"))))
+        value <- Values(array(c(3, 4), dim = 2, dimnames = list(sex = c("f", "m"))))
+        aggregate <- AgLife(value = value, sd = 0.3)
+        y <- as.integer(rpois(n = 20, lambda = expose * theta))
+        y <- Counts(array(y, dim = c(2, 10),
+                          dimnames = list(sex = c("f", "m"), age = c(0:8, "9+"))))
+        spec <- Model(y ~ Poisson(mean ~ age + sex), jump = 0.1, aggregate = aggregate)
+        x0 <- initialModel(spec, y = y, exposure = expose)
+        set.seed(seed + 1)
+        x.R <- updateThetaAndValueAgLife_PoissonUseExp(x0, y = y, exposure = expose, useC = FALSE)
+        set.seed(seed + 1)
+        x.C <- updateThetaAndValueAgLife_PoissonUseExp(x0, y = y, exposure = expose, useC = TRUE)
+        if (test.identity)
+            expect_identical(x.R, x.C)
+        else
+            expect_equal(x.R, x.C)
+        if (x.R@nAcceptTheta@.Data > 0L)
+            was.updated <- TRUE
+        if (!was.updated)
+            warning("aggregate value was not updated")
+        ## has missing values
+        was.updated <- FALSE
+        set.seed(seed)
+        theta <- rgamma(n = 20, shape = 2, rate = 0.5) / 10
+        expose <- as.double(rpois(n = 20, lambda = 20)) + 1
+        expose <- Counts(array(expose, dim = c(2, 10),
+                                 dimnames = list(sex = c("f", "m"), age = c(0:8, "9+"))))
+        value <- Values(array(c(3, 4), dim = 2, dimnames = list(sex = c("f", "m"))))
+        aggregate <- AgLife(value = value, sd = 0.3)
+        y <- as.integer(rpois(n = 20, lambda = expose * theta))
+        y <- Counts(array(y, dim = c(2, 10),
+                          dimnames = list(sex = c("f", "m"), age = c(0:8, "9+"))))
+        spec <- Model(y ~ Poisson(mean ~ age + sex), jump = 0.1, aggregate = aggregate)
+        x0 <- initialModel(spec, y = y, exposure = expose)
+        set.seed(seed + 1)
+        x.R <- updateThetaAndValueAgLife_PoissonUseExp(x0, y = y, exposure = expose, useC = FALSE)
+        set.seed(seed + 1)
+        x.C <- updateThetaAndValueAgLife_PoissonUseExp(x0, y = y, exposure = expose, useC = TRUE)
+        if (test.identity)
+            expect_identical(x.R, x.C)
+        else
+            expect_equal(x.R, x.C)
+        if (x.R@nAcceptTheta@.Data > 0L)
+            was.updated <- TRUE
+        if (!was.updated)
+            warning("aggregate value was not updated")
+    }
+})
+
 
 ## updateThetaAndValueAgPoisson_PoissonUseExp
 

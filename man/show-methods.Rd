@@ -11,6 +11,7 @@
 \alias{show,Level-method}
 \alias{show,Season-method}
 \alias{show,SpecAgCertain-method}
+\alias{show,SpecAgFun-method}
 \alias{show,SpecAgNormal-method}
 \alias{show,SpecAgPlaceholder-method}
 \alias{show,SpecAgPoisson-method}
@@ -40,6 +41,8 @@
 \S4method{show}{SpecAgCertain}(object)
 
 \S4method{show}{SpecAgNormal}(object)
+
+\S4method{show}{SpecAgFun}(object)
 
 \S4method{show}{SpecAgPoisson}(object)
 

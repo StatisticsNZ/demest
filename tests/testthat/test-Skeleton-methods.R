@@ -286,10 +286,10 @@ test_that("fetchResults works with object of class SkeletonMu", {
     sweepAllMargins <- demest:::sweepAllMargins
     metadata <- new("MetaData",
                     nms = c("region", "age", "sex"),
-                    dimtypes = c("state", "age", "state"),
+                    dimtypes = c("state", "age", "sex"),
                     DimScales = list(new("Categories", dimvalues = c("a", "b", "c")),
                         new("Intervals", dimvalues = c(0, 5, 10, Inf)),
-                        new("Categories", dimvalues = c("f", "m"))))
+                        new("Sexes", dimvalues = c("f", "m"))))
     ## term for every dimension
     betas <- list("(Intercept)" = 0,
                   region = rnorm(3),
