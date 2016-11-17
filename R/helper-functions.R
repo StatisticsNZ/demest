@@ -3336,7 +3336,7 @@ betaHat <- function(prior, useC = FALSE) {
             iterator.alpha <- resetA(iterator.alpha)
             iterator.v <- resetA(iterator.v)
             for (l in seq_len(L)) {
-				indices.alpha <- iterator.alpha@indices
+                indices.alpha <- iterator.alpha@indices
                 indices.v <- iterator.v@indices
                 for (k in seq_len(K)) {
                     i.alpha <- indices.alpha[k + 1L]
@@ -3717,22 +3717,24 @@ makeLifeExpBirth <- function(mx, nx, ax, iAge0, nAge,
     if (useC) {
         .Call(makeLifeExpBirth_R, mx, nx, ax, iAge0, nAge)
     }
-    ans <- 0
-    lx.i <- 1
-    for (i in seq_len(nAge - 1L)) {
-        mx.i <- mx[iAge0 + i - 1L]
-        nx.i <- nx[i]
-        ax.i <- ax[iAge0 + i - 1L]
-        qx.i <- nx.i * mx.i / (1 + (nx.i - ax.i) * mx.i)
-        lx.iplus1 <- lx.i * (1 - qx.i)
-        Lx.i <- lx.iplus1 * nx.i + (lx.i - lx.iplus1) * ax.i
+    else { ## added else JAH
+        ans <- 0
+        lx.i <- 1
+        for (i in seq_len(nAge - 1L)) {
+            mx.i <- mx[iAge0 + i - 1L]
+            nx.i <- nx[i]
+            ax.i <- ax[iAge0 + i - 1L]
+            qx.i <- nx.i * mx.i / (1 + (nx.i - ax.i) * mx.i)
+            lx.iplus1 <- lx.i * (1 - qx.i)
+            Lx.i <- lx.iplus1 * nx.i + (lx.i - lx.iplus1) * ax.i
+            ans <- ans + Lx.i
+            lx.i <- lx.iplus1
+        }
+        mx.i <- mx[iAge0 + nAge - 1L]
+        Lx.i <- lx.i / mx.i
         ans <- ans + Lx.i
-        lx.i <- lx.iplus1
+        ans
     }
-    mx.i <- mx[iAge0 + nAge - 1L]
-    Lx.i <- lx.i / mx.i
-    ans <- ans + Lx.i
-    ans
 }
 
 ## TRANSLATED

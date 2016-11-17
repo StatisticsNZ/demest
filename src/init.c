@@ -481,6 +481,22 @@ SEXP updateTauRobust_R(SEXP prior_R)
     return ans_R;             
 }
 
+/* one off wrapper for makeLifeExpBirth */
+SEXP makeLifeExpBirth_R(SEXP mx_R, SEXP nx_R, SEXP ax_R, 
+                        SEXP iAge0_R, SEXP nAge_R)
+                
+{
+    double *mx = REAL(mx_R);
+    double *nx = REAL(nx_R);
+    double *ax = REAL(ax_R);
+    int iAge0_r = *INTEGER(iAge0_R);
+    int nAge = *INTEGER(nAge_R);
+    
+    double ans = makeLifeExpBirth(mx, nx, ax, iAge0_r, nAge);
+    
+    return ScalarReal(ans);
+}
+
 
 /* one-off wrapper for rnormTruncated */
 SEXP rnormTruncated_R(SEXP n_R, SEXP mean_R, SEXP sd_R, 
@@ -1279,6 +1295,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(getV_R, 1),
   
   CALLDEF(makeVBar_R, 2),
+  CALLDEF(makeLifeExpBirth_R, 5),
   CALLDEF(safeLogProp_Binomial_R, 7),
   CALLDEF(safeLogProp_Poisson_R, 7),
   

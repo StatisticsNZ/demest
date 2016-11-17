@@ -152,7 +152,7 @@ rinvchisq1(double df, double scale)
 SEXP
 rmvnorm1(SEXP mean_R, SEXP var_R)
 {
-	int n = LENGTH(mean_R);
+    int n = LENGTH(mean_R);
     double *mean = REAL(mean_R);
     double *var = REAL(var_R);
     
@@ -214,7 +214,7 @@ rmvnorm2(SEXP mean_R, SEXP var_R)
 {
     int n = 2; 
     
-	double *mean = REAL(mean_R);
+    double *mean = REAL(mean_R);
     double *var = REAL(var_R);
     
     SEXP ans_R;
@@ -297,7 +297,7 @@ getRnormTruncated(double* ans, int n, double* mean, double* sd,
     
     for (int i = 0; i < n; ++i) {
         
-		ans[i] = getRnormTruncatedSingle(mean[i], sd[i], 
+        ans[i] = getRnormTruncatedSingle(mean[i], sd[i], 
                 lowerPlusTol, upperMinusTol,
                 maxAttempt, uniform);
     }
@@ -309,51 +309,51 @@ getRnormTruncatedSingle(double mean, double sd,
                 int maxAttempt,
                 int uniform)
 {
-	int found = 0;
-	int nAttempt = 0;
-	
-	double prop_value = 0.0;
-	double ans= 0.0;
-	
-	while (!found && nAttempt < maxAttempt) {
-		
-	  ++ nAttempt;
-	  prop_value = rnorm( mean, sd );
-	  found = ( (prop_value > lowerPlusTol) 
-		    && (prop_value < upperMinusTol) ) ;
-	}
-	if (found) {
-	  ans = prop_value;
-	}
-	else {
-	  if (uniform) {
-	    double lower_unif;
-	    double upper_unif;
-	    if (lowerPlusTol > mean) {
-	      lower_unif = lowerPlusTol;
-	      if (lowerPlusTol + sd < upperMinusTol) {
-		upper_unif = lowerPlusTol + sd;
-	      }
-	      else {
-		upper_unif = upperMinusTol;
-	      }
-	    }
-	    else {
-	      upper_unif = upperMinusTol;
-	      if (upperMinusTol - sd > lowerPlusTol) {
-		lower_unif = upperMinusTol - sd;
-	      }
-	      else {
-		lower_unif = lowerPlusTol;
-	      }
-	    }
-	    ans = runif(lower_unif, upper_unif);
-	  }
-	  else {
-	    error("failed to generate value within specified range");
-	  }
-	}
-	return ans;
+    int found = 0;
+    int nAttempt = 0;
+    
+    double prop_value = 0.0;
+    double ans= 0.0;
+    
+    while (!found && nAttempt < maxAttempt) {
+        
+      ++ nAttempt;
+      prop_value = rnorm( mean, sd );
+      found = ( (prop_value > lowerPlusTol) 
+            && (prop_value < upperMinusTol) ) ;
+    }
+    if (found) {
+      ans = prop_value;
+    }
+    else {
+      if (uniform) {
+        double lower_unif;
+        double upper_unif;
+        if (lowerPlusTol > mean) {
+          lower_unif = lowerPlusTol;
+          if (lowerPlusTol + sd < upperMinusTol) {
+        upper_unif = lowerPlusTol + sd;
+          }
+          else {
+        upper_unif = upperMinusTol;
+          }
+        }
+        else {
+          upper_unif = upperMinusTol;
+          if (upperMinusTol - sd > lowerPlusTol) {
+        lower_unif = upperMinusTol - sd;
+          }
+          else {
+        lower_unif = lowerPlusTol;
+          }
+        }
+        ans = runif(lower_unif, upper_unif);
+      }
+      else {
+        error("failed to generate value within specified range");
+      }
+    }
+    return ans;
 }
     
 /* new (R >= 3.0.0) R rpois just seems to use a cast from
@@ -411,9 +411,9 @@ getTwoMultinomialProposalsNoExp (int *yProp,
     size += (int) y[ir_other-1];
     
     #ifdef DEBUGGING
-	PrintValue(ScalarInteger(400));
-	PrintValue(ScalarInteger(size));
-	#endif
+    PrintValue(ScalarInteger(400));
+    PrintValue(ScalarInteger(size));
+    #endif
     
     /* version of rmultinom in C gives rubbish 
      * if probabilities not normalised */
@@ -427,13 +427,13 @@ getTwoMultinomialProposalsNoExp (int *yProp,
     /* after call, yProp contains nInd proposals */
         
     #ifdef DEBUGGING
-	PrintValue(ScalarInteger(500));
-	PrintValue(ScalarInteger(size));
-	#endif
+    PrintValue(ScalarInteger(500));
+    PrintValue(ScalarInteger(size));
+    #endif
     
     #ifdef DEBUGGING
     for (int i = 0; i < nInd; ++i) {
-		PrintValue(ScalarInteger(yProp[i]));
+        PrintValue(ScalarInteger(yProp[i]));
     } 
     #endif
 }
@@ -597,11 +597,11 @@ betaHat_AlphaDLMInternal(double *beta_hat, SEXP prior_R, int J)
     resetA(iteratorV);
     
     int *indicesAlpha = INTEGER(GET_SLOT(iteratorAlpha, indices_sym));
-	int *indicesV = INTEGER(GET_SLOT(iteratorV, indices_sym));
+    int *indicesV = INTEGER(GET_SLOT(iteratorV, indices_sym));
     
     for (int l = 0; l < L; ++l) {
-	
-		    for (int k = 0; k < K; ++k) {
+    
+            for (int k = 0; k < K; ++k) {
             int iAlpha = indicesAlpha[k+1];
             int iBetaHat = indicesV[k];
             beta_hat[iBetaHat - 1] += alphaDLM[iAlpha - 1]; 
@@ -684,7 +684,7 @@ betaHat_SeasonInternal(double *beta_hat, SEXP prior_R, int J)
 void
 betaHatAlphaDLM(double *beta_hat, SEXP prior_R, int J)
 {
-	memset(beta_hat, 0, J * sizeof(double));
+    memset(beta_hat, 0, J * sizeof(double));
     
     double *alphaDLM = REAL(GET_SLOT(prior_R, alphaDLM_sym));
     int K = *INTEGER(GET_SLOT(prior_R, K_sym));
@@ -697,11 +697,11 @@ betaHatAlphaDLM(double *beta_hat, SEXP prior_R, int J)
     resetA(iteratorV);
 
     int *indicesAlpha = INTEGER(GET_SLOT(iteratorAlpha, indices_sym));
-	int *indicesV = INTEGER(GET_SLOT(iteratorV, indices_sym));
+    int *indicesV = INTEGER(GET_SLOT(iteratorV, indices_sym));
     
-	for (int l = 0; l < L; ++l) {
-	
-		for (int k = 0; k < K; ++k) {
+    for (int l = 0; l < L; ++l) {
+    
+        for (int k = 0; k < K; ++k) {
             int iAlpha = indicesAlpha[k+1];
             int iBetaHat = indicesV[k];
             beta_hat[iBetaHat - 1] += alphaDLM[iAlpha - 1]; 
@@ -716,7 +716,7 @@ betaHatAlphaDLM(double *beta_hat, SEXP prior_R, int J)
 void
 betaHatCovariates(double *beta_hat, SEXP prior_R, int J)
 {
-	memset(beta_hat, 0, J * sizeof(double));
+    memset(beta_hat, 0, J * sizeof(double));
     
     /*Z <- unname(prior@Z)
         eta <- prior@eta@.Data
@@ -746,7 +746,7 @@ betaHatCovariates(double *beta_hat, SEXP prior_R, int J)
 void
 betaHatSeason(double *beta_hat, SEXP prior_R, int J)
 {
-	memset(beta_hat, 0, J * sizeof(double));
+    memset(beta_hat, 0, J * sizeof(double));
     
     /* s is FFBS list */
     SEXP s_R = GET_SLOT(prior_R, s_sym);
@@ -816,9 +816,9 @@ findOneRootLogPostSigmaNorm(double sigma0, double z, double A, double nu,
                 sigma1 = maxMinusBoundaries;
             }
             else if (sigma1 - sigma0 > 1) { /* a temporary hack added by John */
-              sigma1 = sigma0 + 1;	    /* 30 April 2016 */
+              sigma1 = sigma0 + 1;      /* 30 April 2016 */
             }
-	    
+        
             int sigma1_equals_sigma0
                 = (fabs(sigma1 - sigma0) < K_TOLERANCE * fabs(sigma1));
 
@@ -883,7 +883,7 @@ findOneRootLogPostSigmaRobust(double sigma0, double z, double A,
                 sigma1 = maxMinusBoundaries;
             }
             else if (sigma1 - sigma0 > 1) { /* a temporary hack added by John */
-              sigma1 = sigma0 + 1;	    /* 30 April 2016 */
+              sigma1 = sigma0 + 1;      /* 30 April 2016 */
             }
             
             int sigma1_equals_sigma0 
@@ -1066,6 +1066,106 @@ double identity(double x)
 }
 
 
+/*## READY_TO_TRANSLATE
+## HAS_TESTS
+## assume first dimension of array that
+## mx is obtained from is age
+makeLifeExpBirth <- function(mx, nx, ax, iAge0, nAge,
+                             useC = FALSE) {
+    ## mx
+    stopifnot(is.double(mx))
+    stopifnot(!any(is.na(mx)))
+    stopifnot(all(mx >= 0))
+    ## nx
+    stopifnot(is.double(nx))
+    stopifnot(!any(is.na(nx)))
+    stopifnot(all(nx > 0))
+    ## ax
+    stopifnot(is.double(ax))
+    stopifnot(!any(is.na(ax)))
+    stopifnot(all(ax >= 0))
+    ## iAge0
+    stopifnot(is.integer(iAge0))
+    stopifnot(length(iAge0) == 1L)
+    stopifnot(iAge0 >= 1L)
+    ## nAge
+    stopifnot(is.integer(nAge))
+    stopifnot(length(nAge) == 1L)
+    stopifnot(nAge >= 1L)
+    ## mx and ax
+    stopifnot(length(ax) == length(mx))
+    ## ax and nx
+    stopifnot(all(ax <= rep(nx, length.out = length(ax))))
+    ## mx and iAge0
+    stopifnot(iAge0 <= length(mx))
+    ## mx and nAge
+    stopifnot(nAge <= length(mx))    
+    if (useC) {
+        .Call(makeLifeExpBirth_R, mx, nx, ax, iAge0, nAge)
+    }
+    ans <- 0
+    lx.i <- 1
+    for (i in seq_len(nAge - 1L)) {
+        mx.i <- mx[iAge0 + i - 1L]
+        nx.i <- nx[i]
+        ax.i <- ax[iAge0 + i - 1L]
+        qx.i <- nx.i * mx.i / (1 + (nx.i - ax.i) * mx.i)
+        lx.iplus1 <- lx.i * (1 - qx.i)
+        Lx.i <- lx.iplus1 * nx.i + (lx.i - lx.iplus1) * ax.i
+        ans <- ans + Lx.i
+        lx.i <- lx.iplus1
+    }
+    mx.i <- mx[iAge0 + nAge - 1L]
+    Lx.i <- lx.i / mx.i
+    ans <- ans + Lx.i
+    ans
+}
+*/
+double
+makeLifeExpBirth(double *mx, double *nx, double *ax, int iAge0_r, int nAge)
+{
+    double ans = 0;
+    int iAge0 = iAge0_r - 1; /* adjust R indexing for C */
+    double lx_i = 1;
+    
+    /*lx.i <- 1
+    for (i in seq_len(nAge - 1L)) {
+        mx.i <- mx[iAge0 + i - 1L]
+        nx.i <- nx[i]
+        ax.i <- ax[iAge0 + i - 1L]
+        qx.i <- nx.i * mx.i / (1 + (nx.i - ax.i) * mx.i)
+        lx.iplus1 <- lx.i * (1 - qx.i)
+        Lx.i <- lx.iplus1 * nx.i + (lx.i - lx.iplus1) * ax.i
+        ans <- ans + Lx.i
+        lx.i <- lx.iplus1
+    }
+    mx.i <- mx[iAge0 + nAge - 1L]
+    Lx.i <- lx.i / mx.i
+    ans <- ans + Lx.i*/
+    
+    for (int i = 0; i < nAge - 1; ++i) {
+        
+        double mx_i = mx[iAge0 + i];
+        double nx_i = nx[i];
+        double ax_i = ax[iAge0 + i];
+        
+        double qx_i = nx_i * mx_i / (1 + (nx_i - ax_i) * mx_i);
+        double lx_iplus1 = lx_i * (1 - qx_i);
+        double Lx_i = lx_iplus1 * nx_i + (lx_i - lx_iplus1) * ax_i;
+        ans += Lx_i;
+        lx_i = lx_iplus1;
+        
+    }
+    
+    double newMx_i = mx[iAge0 + nAge - 1];
+    double newLx_i = lx_i / newMx_i;
+    
+    ans += newLx_i;
+    
+    return ans;
+    
+}
+
 /* only here for testing makeVBar_General: 
  * the uber update model function effectively duplicates this */
 SEXP
@@ -1167,80 +1267,80 @@ getVBar(double *vbar, int len_vbar,
 }
 
 double safeLogProp_Binomial(double logit_th_new, 
-							double logit_th_other_new,
-							double logit_th_old, 
-							double logit_th_other_old, 
-							double scale,
+                            double logit_th_other_new,
+                            double logit_th_old, 
+                            double logit_th_other_old, 
+                            double scale,
                             double weight,
                             double weight_other)
 {
-	double outside = 0.0;
-	double coef_first = 0.0;
-	double coef_second = 0.0;
+    double outside = 0.0;
+    double coef_first = 0.0;
+    double coef_second = 0.0;
 
-	if (fabs(logit_th_new) > fabs(logit_th_other_new)) {
-		double ltn = (logit_th_new > 0) ? -logit_th_new : logit_th_new;
-		outside = (logit_th_new > 0) ? logit_th_new : -logit_th_new;
-		double exp_ltn = exp(ltn);
-		coef_first = exp(2*ltn) 
-				+ 2 * exp_ltn + 1;
-		coef_second = exp(-logit_th_other_new + ltn)
-			+ 2 * exp_ltn
-			+ exp(logit_th_other_new + ltn);
-	}
-	else {
-		double lton = (logit_th_other_new > 0) 
-						? -logit_th_other_new : logit_th_other_new;
-		outside = (logit_th_other_new > 0) 
-						? logit_th_other_new : -logit_th_other_new;
-		double exp_lton = exp(lton);
-		coef_first = exp(-logit_th_new + lton)
-			+ 2 * exp_lton
-			+ exp(logit_th_new + lton);
-		coef_second = exp(2*lton) 
-				+ 2 * exp_lton + 1;
-		
-	}
-	double dens_first = dnorm(logit_th_new, logit_th_old, scale, NOT_USE_LOG);
-	double dens_second = dnorm(logit_th_other_new, 
-									logit_th_other_old, scale, NOT_USE_LOG);
+    if (fabs(logit_th_new) > fabs(logit_th_other_new)) {
+        double ltn = (logit_th_new > 0) ? -logit_th_new : logit_th_new;
+        outside = (logit_th_new > 0) ? logit_th_new : -logit_th_new;
+        double exp_ltn = exp(ltn);
+        coef_first = exp(2*ltn) 
+                + 2 * exp_ltn + 1;
+        coef_second = exp(-logit_th_other_new + ltn)
+            + 2 * exp_ltn
+            + exp(logit_th_other_new + ltn);
+    }
+    else {
+        double lton = (logit_th_other_new > 0) 
+                        ? -logit_th_other_new : logit_th_other_new;
+        outside = (logit_th_other_new > 0) 
+                        ? logit_th_other_new : -logit_th_other_new;
+        double exp_lton = exp(lton);
+        coef_first = exp(-logit_th_new + lton)
+            + 2 * exp_lton
+            + exp(logit_th_new + lton);
+        coef_second = exp(2*lton) 
+                + 2 * exp_lton + 1;
+        
+    }
+    double dens_first = dnorm(logit_th_new, logit_th_old, scale, NOT_USE_LOG);
+    double dens_second = dnorm(logit_th_other_new, 
+                                    logit_th_other_old, scale, NOT_USE_LOG);
     double weight_ratio = fabs(weight/weight_other);
     double retValue = outside + log(coef_first * dens_first 
-							+ weight_ratio * coef_second * dens_second);
+                            + weight_ratio * coef_second * dens_second);
     return retValue;
-		
+        
 }
 
 double safeLogProp_Poisson(double log_th_new, 
-							double log_th_other_new,
-							double log_th_old, 
-							double log_th_other_old, 
-							double scale,
+                            double log_th_other_new,
+                            double log_th_old, 
+                            double log_th_other_old, 
+                            double scale,
                             double weight,
                             double weight_other)
 {
-	double outside = 0.0;
-	double coef_first = 0.0;
-	double coef_second = 0.0;
-	
-	if ( (log_th_new < log_th_other_new) && (log_th_new < 0) ) {
-		outside = -log_th_new;
-		coef_first = 1.0;
-		coef_second = exp(-log_th_other_new + log_th_new);
-	}
-	else {
-		outside = 0;
-		coef_first = exp(-log_th_new);
-		coef_second = exp(-log_th_other_new);
-	}
-	double dens_first = dnorm(log_th_new, log_th_old, scale, NOT_USE_LOG);
-	double dens_second = dnorm(log_th_other_new, 
-									log_th_other_old, scale, NOT_USE_LOG);
-	double weight_ratio = fabs(weight/weight_other);
+    double outside = 0.0;
+    double coef_first = 0.0;
+    double coef_second = 0.0;
+    
+    if ( (log_th_new < log_th_other_new) && (log_th_new < 0) ) {
+        outside = -log_th_new;
+        coef_first = 1.0;
+        coef_second = exp(-log_th_other_new + log_th_new);
+    }
+    else {
+        outside = 0;
+        coef_first = exp(-log_th_new);
+        coef_second = exp(-log_th_other_new);
+    }
+    double dens_first = dnorm(log_th_new, log_th_old, scale, NOT_USE_LOG);
+    double dens_second = dnorm(log_th_other_new, 
+                                    log_th_other_old, scale, NOT_USE_LOG);
+    double weight_ratio = fabs(weight/weight_other);
     double retValue = outside + log(coef_first * dens_first 
-							+ weight_ratio * coef_second * dens_second);
+                            + weight_ratio * coef_second * dens_second);
     return retValue;
-		
+        
 }
 
 void
@@ -1261,8 +1361,8 @@ predictAlphaDLMNoTrend(SEXP prior_R)
     int *indices = INTEGER(GET_SLOT(iterator_R, indices_sym)); 
     
     for (int l = 0; l < L; ++l) {
-		
-		for (int i = 0; i < K; ++i) {
+        
+        for (int i = 0; i < K; ++i) {
             
             int k_curr = indices[i+1] - 1;
             int k_prev = indices[i] - 1;
@@ -1298,8 +1398,8 @@ predictAlphaDeltaDLMWithTrend(SEXP prior_R)
     int *indices = INTEGER(GET_SLOT(iterator_R, indices_sym)); 
 
     for (int l = 0; l < L; ++l) {
-		
-		for (int i = 0; i < K; ++i) {
+        
+        for (int i = 0; i < K; ++i) {
             
             int k_curr = indices[i+1] - 1;
             int k_prev = indices[i] - 1;
@@ -1365,7 +1465,7 @@ void
 predictBetas(SEXP object_R)
 {
     /* betas and priors both lists */
-	SEXP betas_R = GET_SLOT(object_R, betas_sym);
+    SEXP betas_R = GET_SLOT(object_R, betas_sym);
     int nBetas = LENGTH(betas_R);
     
     SEXP priors_R = GET_SLOT(object_R, priorsBetas_sym);
@@ -1399,7 +1499,7 @@ predictPriorsBetas(SEXP object_R)
     
     for (int i = 0; i < nPriors; ++i) {
         if ( betaIsPredicteds[i] ) {
-			predictPrior(VECTOR_ELT(priors_R, i));
+            predictPrior(VECTOR_ELT(priors_R, i));
         }
     }
     
@@ -1498,7 +1598,7 @@ transferAlphaDelta0(double *state, double *values, int offset,
     SEXP indicesValues_R = GET_SLOT(iteratorValues_R, indices_sym); 
     int *indicesValues = INTEGER(indicesValues_R); 
     int *indicesState = INTEGER(GET_SLOT(iteratorState_R, indices_sym)); 
-	
+    
     int n = *INTEGER(GET_SLOT(iteratorValues_R, nWithin_sym)) *
             *INTEGER(GET_SLOT(iteratorValues_R, nBetween_sym));
     
@@ -1508,14 +1608,14 @@ transferAlphaDelta0(double *state, double *values, int offset,
     
     
     for (int i = 0; i < n; ++i) {
-		int i_first_state = indicesState[0] - 1;
+        int i_first_state = indicesState[0] - 1;
         int i_last_values = indicesValues[KPlusOne_Values] + offset_adj;
         
         state[i_first_state] = values[i_last_values];
         
-		advanceA(iteratorValues_R);
-		advanceA(iteratorState_R);
-	}
+        advanceA(iteratorValues_R);
+        advanceA(iteratorState_R);
+    }
 
 }
 
@@ -1529,14 +1629,14 @@ transferSeason0(SEXP s_R, int nSeason, double *values, int offset,
     SEXP indicesValues_R = GET_SLOT(iteratorValues_R, indices_sym);
     int *indicesValues = INTEGER(indicesValues_R); 
     int *indicesState = INTEGER(GET_SLOT(iteratorState_R, indices_sym)); 
-	
+    
     int n = *INTEGER(GET_SLOT(iteratorValues_R, nWithin_sym)) *
             *INTEGER(GET_SLOT(iteratorValues_R, nBetween_sym));
     
     int KPlusOne_Values = LENGTH(indicesValues_R); 
     
     for (int i = 0; i < n; ++i) {
-		int i_first_state = indicesState[0] - 1; /* C style */
+        int i_first_state = indicesState[0] - 1; /* C style */
         int i_last_values = (indicesValues[KPlusOne_Values-1] - 1)*nSeason + offset;
         
         double *this_s = REAL(VECTOR_ELT(s_R, i_first_state));
@@ -1548,8 +1648,8 @@ transferSeason0(SEXP s_R, int nSeason, double *values, int offset,
        }
         
         advanceA(iteratorValues_R);
-		advanceA(iteratorState_R);
-	}
+        advanceA(iteratorState_R);
+    }
 
 }
 
@@ -1558,7 +1658,7 @@ transferSeason0(SEXP s_R, int nSeason, double *values, int offset,
 void
 predictPolyComponent(SEXP component_R, int forward, double zeta)
 {
-	/* J integer, q an integer
+    /* J integer, q an integer
     gamma a list of length J+1 of doubles length q 
     G and inverseG both qxq matrices of doubles */
     int J = *(INTEGER(GET_SLOT(component_R, J_sym)));
@@ -1696,7 +1796,7 @@ transferParamPriorsBetas(SEXP model_R, const char *filename,
     SEXP betas_R = GET_SLOT(model_R, betas_sym);
     
     SEXP priors_R = GET_SLOT(model_R, priorsBetas_sym);
-	
+    
     /* list of OffsetsOrNull */
     SEXP offsetsPriorsBetas_R = GET_SLOT(model_R, offsetsPriorsBetas_sym);
     /* a vector of logicals */
@@ -1847,52 +1947,52 @@ diffLogLik(int *yProp, SEXP y_R,
         
         /* only do something if yProp value not same as current value */
         if ( yProp[i_element_indices_y] != y[ir_cell_y-1] ) {
-			      
-			int i_dataset = 0;
-			
-			while (i_dataset < n_dataset ) {
-				
-				SEXP this_transform_R = VECTOR_ELT(transforms_R, i_dataset);
-				int ir_cell_dataset = dembase_getIAfter(ir_cell_y, this_transform_R);
-				
-				#ifdef DEBUGGING
-				PrintValue(ScalarInteger(100001));
-				PrintValue(ScalarInteger(i_element_indices_y));
-				PrintValue(ScalarInteger(ir_cell_y-1));
-				PrintValue(ScalarInteger(i_dataset));
-				PrintValue(ScalarInteger(ir_cell_dataset));
-				#endif    
+                  
+            int i_dataset = 0;
+            
+            while (i_dataset < n_dataset ) {
+                
+                SEXP this_transform_R = VECTOR_ELT(transforms_R, i_dataset);
+                int ir_cell_dataset = dembase_getIAfter(ir_cell_y, this_transform_R);
+                
+                #ifdef DEBUGGING
+                PrintValue(ScalarInteger(100001));
+                PrintValue(ScalarInteger(i_element_indices_y));
+                PrintValue(ScalarInteger(ir_cell_y-1));
+                PrintValue(ScalarInteger(i_dataset));
+                PrintValue(ScalarInteger(ir_cell_dataset));
+                #endif    
 
-				if (ir_cell_dataset > 0) {
-					
-					#ifdef DEBUGGING
-					PrintValue(ScalarInteger(100010));
-					PrintValue(ScalarInteger(100011));
-					PrintValue(ScalarInteger(yProp[i_element_indices_y]));
-					PrintValue(ScalarInteger(100012));
-					PrintValue(ScalarInteger(y[ir_cell_y-1]));
-					PrintValue(ScalarInteger(100013));
-					int checkid = R_compute_identical(ScalarReal(yProp[i_element_indices_y]),
+                if (ir_cell_dataset > 0) {
+                    
+                    #ifdef DEBUGGING
+                    PrintValue(ScalarInteger(100010));
+                    PrintValue(ScalarInteger(100011));
+                    PrintValue(ScalarInteger(yProp[i_element_indices_y]));
+                    PrintValue(ScalarInteger(100012));
+                    PrintValue(ScalarInteger(y[ir_cell_y-1]));
+                    PrintValue(ScalarInteger(100013));
+                    int checkid = R_compute_identical(ScalarReal(yProp[i_element_indices_y]),
                                                     ScalarReal(y[ir_cell_y-1]),0);
-					PrintValue(ScalarInteger(checkid));
-					checkid = (yProp[i_element_indices_y]< y[ir_cell_y-1]);
-					PrintValue(ScalarInteger(checkid));
-					checkid = (yProp[i_element_indices_y]> y[ir_cell_y-1]);
-					PrintValue(ScalarInteger(checkid));
-					
-					#endif
+                    PrintValue(ScalarInteger(checkid));
+                    checkid = (yProp[i_element_indices_y]< y[ir_cell_y-1]);
+                    PrintValue(ScalarInteger(checkid));
+                    checkid = (yProp[i_element_indices_y]> y[ir_cell_y-1]);
+                    PrintValue(ScalarInteger(checkid));
+                    
+                    #endif
                     
                     SEXP this_dataset_R = VECTOR_ELT(datasets_R, i_dataset);
                     int *this_dataset = INTEGER(this_dataset_R);
                     int i_cell_dataset = ir_cell_dataset - 1; /* C style index */
-					int cellObserved = !( this_dataset[i_cell_dataset] == NA_INTEGER
+                    int cellObserved = !( this_dataset[i_cell_dataset] == NA_INTEGER
                             || ISNA(this_dataset[i_cell_dataset]) ); 
                                                 /* testing for an R NA seems 
                                                 to be very illogical!
                                                 What works here is the NA_INTEGER
                                                 test but I wanted to add belt & braces*/
                     
-					if (cellObserved) {
+                    if (cellObserved) {
                         
                         SEXP this_model_R = VECTOR_ELT(observation_R, i_dataset);
                         
@@ -1937,14 +2037,14 @@ diffLogLik(int *yProp, SEXP y_R,
                             
                             break;
                         }
-					
+                    
                         double log_lik_curr = logLikelihood(this_model_R, 
-														collapsed_y_curr,
-														this_dataset_R,
-														ir_cell_dataset);    
+                                                        collapsed_y_curr,
+                                                        this_dataset_R,
+                                                        ir_cell_dataset);    
 
                         ans += ( log_lik_prop - log_lik_curr);
-					
+                    
                         #ifdef DEBUGGING
                         PrintValue(ScalarInteger(100020));
                         PrintValue(ScalarReal(log_lik_prop));
@@ -1952,28 +2052,28 @@ diffLogLik(int *yProp, SEXP y_R,
                         PrintValue(ScalarReal(ans));
                         #endif
                     }
-				}
-				
-				++i_dataset;
-			} /* end dataset loop */
-		} /* end if we need to do dataset loop */
-		else {
-			#ifdef DEBUGGING
+                }
+                
+                ++i_dataset;
+            } /* end dataset loop */
+        } /* end if we need to do dataset loop */
+        else {
+            #ifdef DEBUGGING
             PrintValue(ScalarReal(yProp[i_element_indices_y]));
             PrintValue(ScalarReal(y[ir_cell_y - 1]));
             PrintValue(ScalarReal(yProp[i_element_indices_y] - y[ir_cell_y -1 ]));
            
             PrintValue(ScalarInteger(100000));
             #endif    
-		}
+        }
     
         ++i_element_indices_y;
     } /* end i_element_indices_y loop */
     
     #ifdef DEBUGGING
     PrintValue(ScalarInteger(100050));
-	PrintValue(ScalarReal(ans));
-	#endif
+    PrintValue(ScalarReal(ans));
+    #endif
                 
     return ans;
 }
@@ -2284,13 +2384,13 @@ writeValuesToFileBin(FILE *fp, SEXP object_R)
                 {
                     int n = LENGTH(object_R);
                     double *tmpArray = (double *)R_alloc(n, sizeof(double));  
-					int *object = INTEGER(object_R);
+                    int *object = INTEGER(object_R);
                     for (int i = 0; i < n; ++i) {
                         tmpArray[i] = (double)object[i];
                     }
                     fwrite(tmpArray, sizeof(double), n, fp);
                     fflush(fp); /* flush buffer - forces output to file */
-					
+                    
                }
                 break;
                 

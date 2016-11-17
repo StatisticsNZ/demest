@@ -378,6 +378,10 @@ double findOneRootLogPostSigmaRobust(double sigma0, double z, double A,
 SEXP getV_R(SEXP prior_R);
 
 SEXP makeVBar_R(SEXP object, SEXP iBeta);
+
+double makeLifeExpBirth(double *mx, double *nx, double *ax, 
+                        int iAge0_r, int nAge);
+
 double safeLogProp_Binomial(double logit_th_new, 
                             double logit_th_other_new,
                             double logit_th_old, 
