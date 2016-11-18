@@ -4363,6 +4363,9 @@ test_that("R and C versions of makeLifeExpBirth give same answer", {
         expect_identical(ans.R, ans.C)
     else
         expect_equal(ans.R, ans.C)
+    mx <- rgamma(n = 100, shape = 3, rate = 0.01)/10000
+    nx <- c(1, 4, rep(5, 17), Inf)
+    ax <- rep_len(x = c(0.1, 1.5, rep(2.5, 18)), 100)
     ans.R <- makeLifeExpBirth(mx = mx,
                               nx = nx,
                               ax = ax,
