@@ -3573,6 +3573,8 @@ updateThetaAndValueAgLife_PoissonUseExp <- function(object, y, exposure, useC = 
                     if (accept) {
                         n.accept.theta <- n.accept.theta + 1L
                         theta[i] <- th.prop
+                        if (contributes.to.ag)
+                            value.ag[i.ag] <- ag.prop
                     }
                     else {
                         if (contributes.to.ag) {
@@ -3586,6 +3588,7 @@ updateThetaAndValueAgLife_PoissonUseExp <- function(object, y, exposure, useC = 
             iterator <- advanceB(iterator)
         }
         object@theta <- theta
+        object@valueAg@.Data <- value.ag
         object@mxAg <- mx
         object@nFailedPropTheta@.Data <- n.failed.prop.theta
         object@nAcceptTheta@.Data <- n.accept.theta

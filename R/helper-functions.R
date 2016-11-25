@@ -1848,16 +1848,23 @@ addAgLife <- function(object, aggregate, defaultWeights) {
         stop(gettextf("'%s' not compatible with '%s' from '%s' : %s",
                       "y", "value", "AgLife", transform$message))
     numerator.mx <- theta * defaultWeights
-    denominator.mx <- defaultWeights
+    numerator.mx <- numerator.mx@.Data
+    denominator.mx <- defaultWeights@.Data
     numerator.mx <- collapse(numerator.mx,
                              transform = transform)
     denominator.mx <- collapse(denominator.mx,
                                transform = transform)
     mx <- numerator.mx / denominator.mx
+    mx <- array(mx,
+                dim = dim(metadata.mx),
+                dimnames = dimnames(metadata.mx))
+    mx <- new("Values",
+              .Data = mx,
+              metadata = metadata.mx)
     if (is.null(ax))
-        ax <- makeAxStart(mx)
+        ax <- makeAxStart(mx) # mx must have metadata
     ax <- expandAx(ax = ax,
-                   object = mx)
+                   object = mx) # mx must have metadata
     dv.age <- DimScale.age@dimvalues
     nx <- diff(dv.age)
     mx <- as.double(mx)

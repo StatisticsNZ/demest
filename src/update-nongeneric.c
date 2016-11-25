@@ -5645,7 +5645,10 @@ updateThetaAndValueAgLife_PoissonUseExp(SEXP object, SEXP y_R, SEXP exposure_R)
                 if (accept) {
                     ++n_accept_theta;
                     theta[i] = theta_prop;
-                    
+                    if (contributes_to_ag) {
+			int i_ag = i_mx / nAge; /* 1 less than the r style index */
+                        valueAg[i_ag] = ag_prop;
+                    }
                 }
                 else if (contributes_to_ag) {
                     /* unmodify the mx */
