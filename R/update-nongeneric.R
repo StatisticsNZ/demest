@@ -3460,7 +3460,7 @@ updateThetaAndValueAgFun_PoissonUseExp <- function(object, y, exposure, useC = F
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 updateThetaAndValueAgLife_PoissonUseExp <- function(object, y, exposure, useC = FALSE) {
     ## object

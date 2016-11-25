@@ -3680,7 +3680,7 @@ getV <- function(prior, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 ## assume first dimension of array that
 ## mx is obtained from is age
@@ -3717,7 +3717,7 @@ makeLifeExpBirth <- function(mx, nx, ax, iAge0, nAge,
     if (useC) {
         .Call(makeLifeExpBirth_R, mx, nx, ax, iAge0, nAge)
     }
-    else { ## added else JAH
+    else {
         ans <- 0
         lx.i <- 1
         for (i in seq_len(nAge - 1L)) {

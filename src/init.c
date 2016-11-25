@@ -1095,6 +1095,7 @@ UPDATEOBJECT_NOEXP_WRAPPER_R(updateThetaAndValueAgNormal_Normal);
 UPDATEOBJECT_NOEXP_WRAPPER_R(updateThetaAndValueAgFun_Normal);
 UPDATEOBJECT_NOEXP_WRAPPER_R(updateThetaAndValueAgFun_PoissonNotUseExp);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateThetaAndValueAgFun_PoissonUseExp);
+UPDATEOBJECT_WITHEXP_WRAPPER_R(updateThetaAndValueAgLife_PoissonUseExp);
 
 /* wrap update Counts functions */
 UPDATECOUNTS_NOEXP_WRAPPER_R(updateCountsPoissonNotUseExp);
@@ -1146,6 +1147,7 @@ UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_PoissonVaryingUseExpAgCertain);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_PoissonVaryingUseExpAgNormal);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_PoissonVaryingUseExpAgFun);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_PoissonVaryingUseExpAgPoisson);
+UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_PoissonVaryingUseExpAgLife);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp);
 
 /* wrap predict combined model functions */
@@ -1374,6 +1376,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateThetaAndValueAgFun_Normal_R, 2),
   CALLDEF(updateThetaAndValueAgFun_PoissonNotUseExp_R, 2),
   CALLDEF(updateThetaAndValueAgFun_PoissonUseExp_R, 3),
+  CALLDEF(updateThetaAndValueAgLife_PoissonUseExp_R, 3),
   
   CALLDEF(updateVarsigma_R, 2),
   
@@ -1430,6 +1433,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateModelUseExp_PoissonVaryingUseExpAgNormal_R, 3),
   CALLDEF(updateModelUseExp_PoissonVaryingUseExpAgFun_R, 3),
   CALLDEF(updateModelUseExp_PoissonVaryingUseExpAgPoisson_R, 3),
+  CALLDEF(updateModelUseExp_PoissonVaryingUseExpAgLife_R, 3),
   CALLDEF(updateModelUseExp_R, 3),
   
   CALLDEF(updateBetasAndPriorsBetas_R, 1),
@@ -1606,7 +1610,7 @@ R_init_demest(DllInfo *info)
   ADD_SYM(nuVarsigma);
   ADD_SYM(w);
   ADD_SYM(scaleTheta);
-  ADD_SYM(scaleThetaMultiplier); /* added by John 22 May 2016 */
+  ADD_SYM(scaleThetaMultiplier); 
   ADD_SYM(nAcceptTheta);
   ADD_SYM(betas);
   ADD_SYM(zetas);
@@ -1630,6 +1634,11 @@ R_init_demest(DllInfo *info)
   ADD_SYM(funAg);
   ADD_SYM(xArgsAg);
   ADD_SYM(weightsArgsAg);
+  ADD_SYM(mxAg);
+  ADD_SYM(axAg);
+  ADD_SYM(nxAg);
+  ADD_SYM(nAgeAg);
+  ADD_SYM(transformThetaToMxAg);
   
   /* y */
   ADD_SYM(iMissing);
