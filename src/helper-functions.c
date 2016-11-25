@@ -1066,61 +1066,6 @@ double identity(double x)
 }
 
 
-/*## READY_TO_TRANSLATE
-## HAS_TESTS
-## assume first dimension of array that
-## mx is obtained from is age
-makeLifeExpBirth <- function(mx, nx, ax, iAge0, nAge,
-                             useC = FALSE) {
-    ## mx
-    stopifnot(is.double(mx))
-    stopifnot(!any(is.na(mx)))
-    stopifnot(all(mx >= 0))
-    ## nx
-    stopifnot(is.double(nx))
-    stopifnot(!any(is.na(nx)))
-    stopifnot(all(nx > 0))
-    ## ax
-    stopifnot(is.double(ax))
-    stopifnot(!any(is.na(ax)))
-    stopifnot(all(ax >= 0))
-    ## iAge0
-    stopifnot(is.integer(iAge0))
-    stopifnot(length(iAge0) == 1L)
-    stopifnot(iAge0 >= 1L)
-    ## nAge
-    stopifnot(is.integer(nAge))
-    stopifnot(length(nAge) == 1L)
-    stopifnot(nAge >= 1L)
-    ## mx and ax
-    stopifnot(length(ax) == length(mx))
-    ## ax and nx
-    stopifnot(all(ax <= rep(nx, length.out = length(ax))))
-    ## mx and iAge0
-    stopifnot(iAge0 <= length(mx))
-    ## mx and nAge
-    stopifnot(nAge <= length(mx))    
-    if (useC) {
-        .Call(makeLifeExpBirth_R, mx, nx, ax, iAge0, nAge)
-    }
-    ans <- 0
-    lx.i <- 1
-    for (i in seq_len(nAge - 1L)) {
-        mx.i <- mx[iAge0 + i - 1L]
-        nx.i <- nx[i]
-        ax.i <- ax[iAge0 + i - 1L]
-        qx.i <- nx.i * mx.i / (1 + (nx.i - ax.i) * mx.i)
-        lx.iplus1 <- lx.i * (1 - qx.i)
-        Lx.i <- lx.iplus1 * nx.i + (lx.i - lx.iplus1) * ax.i
-        ans <- ans + Lx.i
-        lx.i <- lx.iplus1
-    }
-    mx.i <- mx[iAge0 + nAge - 1L]
-    Lx.i <- lx.i / mx.i
-    ans <- ans + Lx.i
-    ans
-}
-*/
 double
 makeLifeExpBirth(double *mx, double *nx, double *ax, int iAge0_r, int nAge)
 {

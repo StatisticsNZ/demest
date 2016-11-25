@@ -560,6 +560,16 @@ updateModelUseExp_PoissonVaryingUseExpAgPoisson_i(SEXP object, SEXP y_R, SEXP ex
     updateBetasAndPriorsBetas_General(object, log);
 }
 
+
+static __inline__ void
+updateModelUseExp_PoissonVaryingUseExpAgLife_i(SEXP object, SEXP y_R, SEXP exposure_R)
+{
+    updateThetaAndValueAgLife_PoissonUseExp(object, y_R, exposure_R);
+    updateSigma_Varying_General(object, log);
+    updateBetasAndPriorsBetas_General(object, log);
+}
+
+
 void
 updateModelNotUseExp(SEXP object, SEXP y_R) 
 {
@@ -662,6 +672,9 @@ updateModelUseExp_Internal(SEXP object, SEXP y_R, SEXP exposure_R,
             break;
         case 28:    
             updateModelUseExp_PoissonVaryingUseExpAgFun_i(object, y_R, exposure_R);
+            break;
+        case 29:    
+            updateModelUseExp_PoissonVaryingUseExpAgLife_i(object, y_R, exposure_R);
             break;
         default:
             error("unknown i_method_model: %d", i_method_model);
@@ -820,4 +833,11 @@ updateModelUseExp_PoissonVaryingUseExpAgPoisson
                                 (SEXP object, SEXP y_R, SEXP exposure_R)
 {
     updateModelUseExp_PoissonVaryingUseExpAgPoisson_i(object, y_R, exposure_R);
+}
+
+void
+updateModelUseExp_PoissonVaryingUseExpAgLife
+                                (SEXP object, SEXP y_R, SEXP exposure_R)
+{
+    updateModelUseExp_PoissonVaryingUseExpAgLife_i(object, y_R, exposure_R);
 }

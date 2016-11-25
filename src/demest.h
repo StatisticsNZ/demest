@@ -106,6 +106,11 @@ SEXP
   funAg_sym,
   xArgsAg_sym,
   weightsArgsAg_sym,
+  mxAg_sym,
+  axAg_sym,
+  nxAg_sym,
+  nAgeAg_sym,
+  transformThetaToMxAg_sym,
   iMissing_sym,
   subtotals_sym,
   transformSubtotals_sym,
@@ -558,6 +563,7 @@ void updateThetaAndValueAgNormal_Normal(SEXP object, SEXP y_R);
 void updateThetaAndValueAgFun_Normal(SEXP object, SEXP y_R);
 void updateThetaAndValueAgFun_PoissonNotUseExp(SEXP object, SEXP y_R);
 void updateThetaAndValueAgFun_PoissonUseExp(SEXP object, SEXP y_R, SEXP exposure_R);
+void updateThetaAndValueAgLife_PoissonUseExp(SEXP object, SEXP y_R, SEXP exposure_R);
 
 void updateVarsigma(SEXP object, SEXP y_R);
 
@@ -634,6 +640,8 @@ void updateModelUseExp_PoissonVaryingUseExpAgNormal
 void updateModelUseExp_PoissonVaryingUseExpAgFun
                             (SEXP object, SEXP y_R, SEXP exposure_R);
 void updateModelUseExp_PoissonVaryingUseExpAgPoisson
+                            (SEXP object, SEXP y_R, SEXP exposure_R);
+void updateModelUseExp_PoissonVaryingUseExpAgLife
                             (SEXP object, SEXP y_R, SEXP exposure_R);
 void updateModelUseExp(SEXP object, SEXP y_R, SEXP exposure_R);
 
