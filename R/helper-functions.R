@@ -3654,7 +3654,7 @@ findOneRootLogPostSigmaRobust <- function(sigma0, z, A, nuBeta, nuTau, V, n, min
             sigma1 <- sigma0 - f / fprime
             sigma1 <- max(sigma1, min + kEpsilonBoundaries)
             sigma1 <- min(sigma1, max - kEpsilonBoundaries)
-            if (sigma1 - sigma0 > 1) ## temporary hack
+            if (sigma1 - sigma0 > 1)
                 sigma1 <- sigma0 + 1
             sigma1.equals.sigma0 <- abs(sigma1 - sigma0) < kTolerance * abs(sigma1)
             if (sigma1.equals.sigma0)
