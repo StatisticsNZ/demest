@@ -2177,6 +2177,23 @@ checkFormulaMu <- function(formula) {
 }
 
 ## HAS_TESTS
+checkFilename <- function(filename, name = "filename") {
+    ## filename is character
+    if (!is.character(filename))
+        stop(gettextf("'%s' does not have type \"%s\"",
+                      name, "character"))
+    ## 'filename' has length 1
+    if (!identical(length(filename), 1L))
+        stop(gettextf("'%s' does not have length %d",
+                      name, 1L))
+    ## 'filename' is not missing
+    if (is.na(filename))
+        stop(gettextf("'%s' is missing",
+                      name))
+    NULL
+}
+
+## HAS_TESTS
 checkFunAg <- function(FUN) {
     if (!is.function(FUN))
         stop(gettextf("'%s' has class \"%s\"",

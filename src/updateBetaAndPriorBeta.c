@@ -126,16 +126,27 @@ updateBetaAndPriorBeta_ExchFixed(double *beta, int J, SEXP prior_R,
     }
 }
 
+/* void */
+/* updateBetaAndPriorBeta_ExchNormZero(double *beta, int J, SEXP prior_R,  */
+/*                         double *vbar, int n, double sigma) */
+/* { */
+/* 	updateBetaScaled(beta, J, prior_R, vbar, n, sigma); */
+	
+/* 	updateZetaAndTau(prior_R, J, beta, vbar, n, sigma); */
+	
+/* 	betaExchZero(beta, J, prior_R); */
+/* } */
+
+
 void
 updateBetaAndPriorBeta_ExchNormZero(double *beta, int J, SEXP prior_R, 
                         double *vbar, int n, double sigma)
 {
-	updateBetaScaled(beta, J, prior_R, vbar, n, sigma);
+	updateBeta(beta, J, prior_R, vbar, n, sigma);
 	
-	updateZetaAndTau(prior_R, J, beta, vbar, n, sigma);
-	
-	betaExchZero(beta, J, prior_R);
+	updateTauNorm(prior_R, beta, J);
 }
+
 
 void
 updateBetaAndPriorBeta_ExchRobustZero(double *beta, int J, SEXP prior_R, 
