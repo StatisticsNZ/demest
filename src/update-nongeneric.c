@@ -1071,7 +1071,7 @@ void updateBetasAndPriorsBetas_General(SEXP object_R, double (*g)(double))
 
     /* one malloc */
     double * vbar = (double *)R_alloc(max_len_beta, sizeof(double));
-
+    
 /*       vbar <- makeVBar(object, iBeta = b, g = g)  ## uses updated object
             n <- I %/% length(vbar)
             l <- updateBetaAndPriorBeta(prior = object@priorsBetas[[b]],
@@ -5646,7 +5646,7 @@ updateThetaAndValueAgLife_PoissonUseExp(SEXP object, SEXP y_R, SEXP exposure_R)
                     ++n_accept_theta;
                     theta[i] = theta_prop;
                     if (contributes_to_ag) {
-			int i_ag = i_mx / nAge; /* 1 less than the r style index */
+            int i_ag = i_mx / nAge; /* 1 less than the r style index */
                         valueAg[i_ag] = ag_prop;
                     }
                 }

@@ -5059,6 +5059,42 @@ estimateOneChain <- function(combined, seed, tempfile, nBurnin, nSim, nThin,
     combined
 }
 
+## estimate one Chain with a max number of updates in any one .Call
+estimateOneChainNew <- function(combined, seed, tempfile, nBurnin, nSim, nThin,
+                             continuing, ...) {
+    nUpdatesMax <- 200L ## this should really be something like a parameter to the function
+    ## set seed if continuing
+    if (!is.null(seed))
+        assign(".Random.seed", seed, envir = .GlobalEnv)
+    ## burnin
+    ##combined <- updateCombined(combined, nUpdate = nBurnin, useC = TRUE)
+    nLoops <- nBurnin %/% nUpdatesMax
+    for (i in seq_len(nLoops)) {
+        combined <- updateCombined(combined, nUpdate = nUpdatesMax, useC = TRUE)
+    }
+    ## and any final ones
+    nLeftOver <- nBurnin - nLoops * nUpdatesMax
+    combined <- updateCombined(combined, nUpdate = nLeftOver, useC = TRUE)
+    ## production
+    con <- file(tempfile, open = "wb")
+    n.prod <- nSim %/% nThin
+    for (i in seq_len(n.prod)) {
+        nLoops <- nThin %/% nUpdatesMax
+        for (i in seq_len(nLoops)) {
+           combined <- updateCombined(combined, nUpdate = nUpdatesMax, useC = TRUE)
+        }
+        ## and any final ones
+        nLeftOver <- nThin - nLoops * nUpdatesMax
+        combined <- updateCombined(combined, nUpdate = nLeftOver, useC = TRUE)
+        #combined <- updateCombined(combined, nUpdate = nThin, useC = TRUE)
+        values <- extractValues(combined)
+        writeBin(values, con = con)
+    }
+    close(con)
+    ## return final state
+    combined
+}
+
 
 ## estimateOneChainInC <- function(combined, tempfile, nBurnin, nSim, nThin,
 ##                              continuing = FALSE) {
