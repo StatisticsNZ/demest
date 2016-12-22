@@ -110,14 +110,6 @@ test_that("updateBetaAndPriorBeta works with ExchNormZero", {
         expect_identical(prior1@J, prior0@J)
         expect_identical(prior1@ATau, prior0@ATau)
         expect_identical(prior1@nuTau, prior0@nuTau)
-        if (prior1@tau@.Data != prior0@tau@.Data) {
-            expect_true(prior1@tauScaled@.Data != prior0@tauScaled@.Data)
-            expect_true(prior1@zeta != prior0@zeta)
-        }
-        else {
-            expect_true(prior1@tauScaled@.Data == prior0@tauScaled@.Data)
-            expect_true(prior1@zeta == prior0@zeta)
-        }            
         ## with max
         set.seed(seed)
         spec <- Exch(error = Error(scale = HalfT(max = 0.5)))
@@ -146,14 +138,6 @@ test_that("updateBetaAndPriorBeta works with ExchNormZero", {
         expect_identical(prior1@J, prior0@J)
         expect_identical(prior1@ATau, prior0@ATau)
         expect_identical(prior1@nuTau, prior0@nuTau)
-        if (prior1@tau@.Data != prior0@tau@.Data) {
-            expect_true(prior1@tauScaled@.Data != prior0@tauScaled@.Data)
-            expect_true(prior1@zeta != prior0@zeta)
-        }
-        else {
-            expect_true(prior1@tauScaled@.Data == prior0@tauScaled@.Data)
-            expect_true(prior1@zeta == prior0@zeta)
-        }            
     }
 })
 
@@ -227,6 +211,7 @@ test_that("R and C versions of updateBetaAndPriorBeta give same ansewr with Exch
             expect_equal(ans.R, ans.C)
     }
 })
+
 
 test_that("updateBetaAndPriorBeta works with ExchRobustZero", {
     updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta

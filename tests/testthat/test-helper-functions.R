@@ -1824,6 +1824,21 @@ test_that("checkFormulaMu works", {
                  "formula 'prob ~ age \\+ sex' does not have response 'mean'")
 })
 
+
+test_that("checkFilename works", {
+    checkFilename <- demest:::checkFilename
+    ## filename is character
+    expect_error(checkFilename(filename = 1),
+                 "'filename' does not have type \"character\"")
+    ## filename has length 1
+    expect_error(checkFilename(filename = c("myfile", "myotherfile")),
+                 "'filename' does not have length 1")
+    ## filename is not missing
+    expect_error(checkFilename(filename = as.character(NA)),
+                 "'filename' is missing")
+})
+
+
 test_that("checkFunAg works", {
     checkFunAg <- demest:::checkFunAg
     FUN <- function(x, weights) 1
@@ -8065,19 +8080,19 @@ test_that("makeControlArgs works", {
                          lengthIter = NULL)
     expect_identical(ans.obtained, ans.expected)
     ## call is call
-    expect_error(makeControlArgs(call = "wrong", 
+    expect_error(makeControlArgs(call = "wrong",
                                  parallel = TRUE),
                  "'call' does not have class \"call\"")
     ## parallel is logical
-    expect_error(makeControlArgs(call = call, 
+    expect_error(makeControlArgs(call = call,
                                  parallel = "TRUE"),
                  "'parallel' does not have type \"logical\"")
     ## parallel has length 1
-    expect_error(makeControlArgs(call = call, 
+    expect_error(makeControlArgs(call = call,
                                  parallel = c(TRUE, FALSE)),
                  "'parallel' does not have length 1")
     ## parallel is not missing
-    expect_error(makeControlArgs(call = call, 
+    expect_error(makeControlArgs(call = call,
                                  parallel = NA),
                  "'parallel' is missing")
 })

@@ -866,7 +866,6 @@ updateTauNorm <- function(prior, beta, useC = FALSE) {
     ## prior
     stopifnot(methods::is(prior, "Prior"))
     stopifnot(methods::is(prior, "NormMixin"))
-    stopifnot(!methods::is(prior, "ExchNormZero"))
     ## beta
     stopifnot(is.double(beta))
     stopifnot(!any(is.na(beta)))

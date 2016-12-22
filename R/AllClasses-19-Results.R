@@ -2,8 +2,8 @@
 ## HAS_TESTS
 setClass("Results",
          slots = c(control = "list",
-                        final = "list",
-                        seed = "list"),
+                   final = "list",
+                   seed = "list"),
          contains = "VIRTUAL",
          validity = function(object) {
              kNamesControl <- c("call", "parallel", "lengthIter")

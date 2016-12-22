@@ -145,6 +145,8 @@ estimateModel <- function(model, y, exposure = NULL, weights = NULL,
                               nThin = nThin)
     if (is.null(filename))
         filename <- tempfile()
+    else
+        checkFilename(filename)
     control.args <- makeControlArgs(call = call,
                                     parallel = parallel)
     y <- checkAndTidyY(y)
@@ -165,8 +167,7 @@ estimateModel <- function(model, y, exposure = NULL, weights = NULL,
                                                 exposure = exposure,
                                                 weights = weights))
     parallel <- control.args$parallel
-    tempfiles <- sapply(seq_len(mcmc.args$nChain),
-                        function(x) paste(control.args$filename, x, sep = "_"))
+    tempfiles <- paste(filename, seq_len(mcmc.args$nChain), sep = "_")
     MoreArgs <- c(list(seed = NULL),
                   mcmc.args,
                   control.args,
@@ -202,7 +203,8 @@ estimateModel <- function(model, y, exposure = NULL, weights = NULL,
     makeResultsFile(filename = filename,
                     results = results,
                     tempfiles = tempfiles)
-    finalMessage(filename = filename, verbose = verbose)
+    finalMessage(filename = filename,
+                 verbose = verbose)
 }
 
 
@@ -256,8 +258,13 @@ predictModel <- function(filenameEst, filenamePred, along = NULL, labels = NULL,
     along <- dembase::checkAndTidyAlong(along = along,
                                         metadata = metadata.first,
                                         numericDimScales = FALSE)
+    checkFilename(filename = filenameEst,
+                  name = "filenameEst")
     if(is.null(filenamePred))
         filenamePred <- tempfile()
+    else
+        checkFilename(filename = filenamePred,
+                      name = "filenamePred")
     checkDataPredict(data)
     if (!(is.null(aggregate) || methods::is(aggregate, "SpecAggregate")))
         stop(gettextf("'%s' has class \"%s\"",
@@ -283,8 +290,7 @@ predictModel <- function(filenameEst, filenamePred, along = NULL, labels = NULL,
                                  nChain = mcmc.args.first[["nChain"]],
                                  nIteration = mcmc.args.first[["nIteration"]],
                                  lengthIter = control.args.first[["lengthIter"]])
-    tempfiles.pred <- sapply(seq_len(mcmc.args.pred[["nChain"]]),
-                             function(x) paste(filenamePred, x, sep = "_"))
+    tempfiles.pred <- paste(filenamePred, seq_len(mcmc.args.pred[["nChain"]]), sep = "_")
     n.iter.chain <- mcmc.args.first[["nIteration"]] / mcmc.args.first[["nChain"]]
     if (parallel) {
         cl <- parallel::makeCluster(getOption("cl.cores", default = mcmc.args.pred$nChain))
@@ -392,7 +398,10 @@ estimateCounts <- function(model, y, exposure = NULL, observation,
                               nThin = nThin)
     if (is.null(filename))
         filename <- tempfile()
-    control.args <- makeControlArgs(call = call, parallel = parallel)
+    else
+        checkFilename(filename)
+    control.args <- makeControlArgs(call = call,
+                                    parallel = parallel)
     y <- checkAndTidyY(y)
     y <- dembase::toInteger(y)
     checkForSubtotals(object = y, model = model, name = "y")
@@ -417,8 +426,7 @@ estimateCounts <- function(model, y, exposure = NULL, observation,
                                                  namesDatasets = namesDatasets,
                                                  transforms = transforms))
     parallel <- control.args$parallel
-    tempfiles <- sapply(seq_len(mcmc.args$nChain),
-                        function(x) paste(control.args$filename, x, sep = "_"))
+    tempfiles <- paste(filename, seq_len(mcmc.args$nChain), sep = "_")
     MoreArgs <- c(list(seed = NULL),
                   mcmc.args,
                   control.args,
@@ -530,10 +538,11 @@ predictAccount <- function(filenameEst, filenamePred, along = NULL, labels = NUL
 ##                               nSim = nSim,
 ##                               nChain = nChain,
 ##                               nThin = nThin)
-##     if (is.null(filename))
-##         filename <- tempfile()
+    ## if (is.null(filename))
+    ##     filename <- tempfile()
+    ## else
+    ##     checkFilename(filename)
 ##     control.args <- makeControlArgs(call = call,
-##                                     filename = filename,
 ##                                     parallel = parallel)
 ##     combineds <- replicate(n = mcmc.args$nChain,
 ##                            initialCombinedAccount(account = account,
@@ -543,8 +552,7 @@ predictAccount <- function(filenameEst, filenamePred, along = NULL, labels = NUL
 ##                                                   namesDatasets = namesDatasets,
 ##                                                   transforms = transforms))
 ##     parallel <- control.args$parallel
-##     tempfiles <- sapply(seq_len(mcmc.args$nChain),
-##                         function(x) paste(control.args$filename, x, sep = "_"))
+##     tempfile <- paste(filename, seq_len(mcmc.args$nChain), sep = "_")
 ##     MoreArgs <- c(list(seed = NULL),
 ##                   mcmc.args,
 ##                   control.args,
@@ -738,20 +746,20 @@ continueEstimation <- function(filename, nBurnin = 0, nSim = 1000, verbose = FAL
                                   nThin = mcmc.args.old[["nThin"]])
     append <- identical(mcmc.args.new$nBurnin, 0L)
     combineds <- object@final
-    tempfiles.new <- sapply(seq_len(mcmc.args.new$nChain),
-                            function(i) paste(filename, "cont", i, sep = "_"))
+    tempfiles.new <- paste(filename, "cont", seq_len(mcmc.args$nChain), sep = "_")
     MoreArgs <- c(mcmc.args.new, control.args, list(continuing = TRUE))
     if (control.args$parallel) {
-        cl <- parallel::makeCluster(getOption("cl.cores", default = mcmc.args.new$nChain))
+        cl <- parallel::makeCluster(getOption("cl.cores",
+                                              default = mcmc.args.new$nChain))
         parallel::clusterSetRNGStream(cl)
         final.combineds <- parallel::clusterMap(cl = cl,
-                                      fun = estimateOneChain,
-                                      seed = seed.old,
-                                      tempfile = tempfiles.new,
-                                      combined = combineds,
-                                      MoreArgs = MoreArgs,
-                                      SIMPLIFY = FALSE,
-                                      USE.NAMES = FALSE)
+                                                fun = estimateOneChain,
+                                                seed = seed.old,
+                                                tempfile = tempfiles.new,
+                                                combined = combineds,
+                                                MoreArgs = MoreArgs,
+                                                SIMPLIFY = FALSE,
+                                                USE.NAMES = FALSE)
         seed <- parallel::clusterCall(cl, function() .Random.seed)
         parallel::stopCluster(cl)
     }
@@ -772,8 +780,8 @@ continueEstimation <- function(filename, nBurnin = 0, nSim = 1000, verbose = FAL
     }
     else {
         mcmc.args.new[["nBurnin"]] <- (mcmc.args.old[["nBurnin"]]
-                                       + mcmc.args.old[["nSim"]]
-                                       + mcmc.args.new[["nBurnin"]])
+            + mcmc.args.old[["nSim"]]
+            + mcmc.args.new[["nBurnin"]])
     }
     results <- makeResultsModelEst(finalCombineds = final.combineds,
                                    mcmcArgs = mcmc.args.new,
@@ -818,7 +826,6 @@ continueEstimation <- function(filename, nBurnin = 0, nSim = 1000, verbose = FAL
 ##                               nThin = nThin)
 ##     filename <- checkAndTidyFilename(filename = filename, prefix = "project")
 ##     control.args <- makeControlArgs(call = call,
-##                                     filename = filename,
 ##                                     parallel = parallel)
 ##     combineds <- replicate(n = mcmc.args$nChain,
 ##                            initialCombinedProject(account = account,

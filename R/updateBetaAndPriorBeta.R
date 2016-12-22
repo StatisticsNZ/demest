@@ -32,6 +32,38 @@ setMethod("updateBetaAndPriorBeta",
 
 ## Exch
 
+## ## TRANSLATED
+## ## HAS_TESTS
+## setMethod("updateBetaAndPriorBeta",
+##           signature(prior = "ExchNormZero"),
+##           function(prior, vbar, n, sigma, useC = FALSE, useSpecific = FALSE) {
+##               checkUpdateBetaAndPriorBeta(prior = prior,
+##                                           vbar = vbar,
+##                                           n = n,
+##                                           sigma = sigma)
+##               if (useC) {
+##                   if (useSpecific)
+##                       .Call(updateBetaAndPriorBeta_ExchNormZero_R, prior, vbar, n, sigma)
+##                   else
+##                       .Call(updateBetaAndPriorBeta_R, prior, vbar, n, sigma)
+##               }
+##               else {
+##                   beta.scaled <- updateBetaScaled(prior = prior,
+##                                                   vbar = vbar,
+##                                                   n = n,
+##                                                   sigma = sigma)
+##                   prior <- updateZetaAndTau(prior = prior,
+##                                             betaScaled = beta.scaled,
+##                                             vbar = vbar,
+##                                             n = n,
+##                                             sigma = sigma)
+##                   beta <- betaExchZero(betaScaled = beta.scaled,
+##                                        prior = prior)
+##                   list(beta, prior)
+##               }
+##           })
+
+
 ## TRANSLATED
 ## HAS_TESTS
 setMethod("updateBetaAndPriorBeta",
@@ -48,20 +80,16 @@ setMethod("updateBetaAndPriorBeta",
                       .Call(updateBetaAndPriorBeta_R, prior, vbar, n, sigma)
               }
               else {
-                  beta.scaled <- updateBetaScaled(prior = prior,
-                                                  vbar = vbar,
-                                                  n = n,
-                                                  sigma = sigma)
-                  prior <- updateZetaAndTau(prior = prior,
-                                            betaScaled = beta.scaled,
-                                            vbar = vbar,
-                                            n = n,
-                                            sigma = sigma)
-                  beta <- betaExchZero(betaScaled = beta.scaled,
-                                       prior = prior)
+                  beta <- updateBeta(prior = prior,
+                                     vbar = vbar,
+                                     n  = n,
+                                     sigma = sigma)
+                  prior <- updateTauNorm(prior = prior,
+                                         beta = beta)
                   list(beta, prior)
               }
           })
+
 
 
 ## TRANSLATED
