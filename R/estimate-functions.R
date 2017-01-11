@@ -176,6 +176,7 @@ estimateModel <- function(model, y, exposure = NULL, weights = NULL,
         cl <- parallel::makeCluster(getOption("cl.cores",
                                               default = mcmc.args$nChain))
         parallel::clusterSetRNGStream(cl)
+        ##parallel::clusterSetRNGStream(cl, iseed=1)  ## note setting the seed here for testing
         final.combineds <- parallel::clusterMap(cl = cl,
                                                 fun = estimateOneChain,
                                                 tempfile = tempfiles,
@@ -206,6 +207,81 @@ estimateModel <- function(model, y, exposure = NULL, weights = NULL,
     finalMessage(filename = filename,
                  verbose = verbose)
 }
+
+# testing new estimate model using EstimateOneChainNew
+estimateModelNew <- function(model, y, exposure = NULL, weights = NULL,
+                          filename = NULL, nBurnin = 1000, nSim = 1000,
+                          nChain = 4, nThin = 1, parallel = TRUE,
+                          verbose = FALSE) {
+    call <- match.call()
+    methods::validObject(model)
+    mcmc.args <- makeMCMCArgs(nBurnin = nBurnin,
+                              nSim = nSim,
+                              nChain = nChain,
+                              nThin = nThin)
+    if (is.null(filename))
+        filename <- tempfile()
+    control.args <- makeControlArgs(call = call,
+                                    parallel = parallel)
+    y <- checkAndTidyY(y)
+    y <- castY(y = y,
+               spec = model)
+    checkForSubtotals(object = y,
+                      model = model,
+                      name = "y")
+    exposure <- checkAndTidyExposure(exposure = exposure,
+                                     y = y)
+    exposure <- castExposure(exposure = exposure,
+                             model = model)
+    weights <- checkAndTidyWeights(weights = weights,
+                                   y = y)
+    combineds <- replicate(n = mcmc.args$nChain,
+                           initialCombinedModel(model,
+                                                y = y,
+                                                exposure = exposure,
+                                                weights = weights))
+    parallel <- control.args$parallel
+    tempfiles <- sapply(seq_len(mcmc.args$nChain),
+                        function(x) paste(control.args$filename, x, sep = "_"))
+    MoreArgs <- c(list(seed = NULL),
+                  mcmc.args,
+                  control.args,
+                  list(continuing = FALSE))
+    if (parallel) {
+        cl <- parallel::makeCluster(getOption("cl.cores",
+                                              default = mcmc.args$nChain))
+        parallel::clusterSetRNGStream(cl)
+        ## parallel::clusterSetRNGStream(cl, iseed=1)  ## note setting the seed here for testing
+        final.combineds <- parallel::clusterMap(cl = cl,
+                                                fun = estimateOneChainNew,
+                                                tempfile = tempfiles,
+                                                combined = combineds,
+                                                MoreArgs = MoreArgs,
+                                                SIMPLIFY = FALSE,
+                                                USE.NAMES = FALSE)
+        seed <- parallel::clusterCall(cl, function() .Random.seed)
+        parallel::stopCluster(cl)
+    }
+    else {
+        final.combineds <- mapply(estimateOneChainNew,
+                                  tempfile = tempfiles,
+                                  combined = combineds,
+                                  MoreArgs = MoreArgs,
+                                  SIMPLIFY = FALSE,
+                                  USE.NAMES = FALSE)
+        seed <- list(.Random.seed)
+    }
+    control.args$lengthIter <- length(extractValues(final.combineds[[1L]]))
+    results <- makeResultsModelEst(finalCombineds = final.combineds,
+                                   mcmcArgs = mcmc.args,
+                                   controlArgs = control.args,
+                                   seed = seed)
+    makeResultsFile(filename = filename,
+                    results = results,
+                    tempfiles = tempfiles)
+    finalMessage(filename = filename, verbose = verbose)
+}
+
 
 
 #' Use results from function estimateModel to make predictions.
