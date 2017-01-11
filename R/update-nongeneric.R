@@ -469,33 +469,6 @@ updateBeta <- function(prior, vbar, n, sigma, useC = FALSE) {
 
 ## TRANSLATED
 ## HAS_TESTS
-updateBetaScaled <- function(prior, vbar, n, sigma, useC = FALSE) {
-    checkUpdateBetaAndPriorBeta(prior = prior,
-                                vbar = vbar,
-                                n = n,
-                                sigma = sigma)
-    stopifnot(methods::is(prior, "Exch"))
-    stopifnot(methods::is(prior, "ZeroMixin"))
-    if (useC) {
-        .Call(updateBetaScaled_R, prior, vbar, n, sigma)
-    }
-    else {
-        J <- prior@J@.Data
-        A <- prior@ATau@.Data
-        zeta <- prior@zeta
-        K <- vbar / (A * zeta)
-        v <- getV(prior)
-        prec.data <- (n * A^2 * zeta^2) / sigma^2
-        prec.prior <- 1 / v
-        var <- 1 / (prec.data + prec.prior)
-        mean <- prec.data * K * var
-        sd <- sqrt(var)
-        stats::rnorm(n = J, mean = mean, sd = sd)
-    }
-}
-
-## TRANSLATED
-## HAS_TESTS
 updateBetasAndPriorsBetas <- function(object, g, useC = FALSE) {
     ## object
     stopifnot(methods::is(object, "Varying"))
@@ -1016,55 +989,6 @@ updateWSqrtInvG <- function(prior, useC = FALSE) {
         WSqrtInvG[3L] <- 1 / omegaAlpha
         WSqrtInvG[4L] <- phi / omegaDelta
         prior@WSqrtInvG@.Data <- WSqrtInvG
-        prior
-    }
-}
-
-## TRANSLATED
-## HAS_TESTS
-updateZetaAndTau <- function(prior, betaScaled, vbar, n, sigma, useC = FALSE) {
-    ## prior
-    stopifnot(methods::is(prior, "Exch"))
-    stopifnot(methods::is(prior, "ZeroMixin"))
-    stopifnot(methods::validObject(prior))
-    ## vbar
-    stopifnot(is.double(vbar))
-    stopifnot(identical(length(vbar), as.integer(prior@J)))
-    stopifnot(!any(is.na(vbar)))
-    ## n
-    stopifnot(is.integer(n))
-    stopifnot(identical(length(n), 1L))
-    stopifnot(!is.na(n))
-    stopifnot(n > 0L)
-    ## sigma
-    stopifnot(is.double(sigma))
-    stopifnot(identical(length(sigma), 1L))
-    stopifnot(!is.na(sigma))
-    stopifnot(sigma > 0)
-    if (useC) {
-        .Call(updateZetaAndTau_R, prior, betaScaled, vbar, n, sigma)
-    }
-    else {
-        J <- prior@J@.Data
-        A <- prior@ATau@.Data
-        nu <- prior@nuTau@.Data
-        tau.max <- prior@tauMax@.Data
-        L <- sum(vbar / betaScaled) / (J * A)
-        prec.data <- (n * J^2 * A^2)  / (sigma^2 * sum(1/betaScaled^2))
-        var <- 1 / (prec.data + 1)
-        mean <- prec.data * L * var
-        sd <- sqrt(var)
-        zeta <- stats::rnorm(n = 1L, mean = mean, sd = sd)
-        df <- nu + J
-        scale <- (nu + sum(betaScaled^2)) / df
-        tau.sq.scaled <- rinvchisq1(df = df, scale = scale)
-        tau.scaled <- sqrt(tau.sq.scaled)
-        tau <- A * abs(zeta) * tau.scaled
-        if (tau < tau.max) {
-            prior@zeta <- zeta
-            prior@tauScaled@.Data <- tau.scaled
-            prior@tau@.Data <- tau
-        }
         prior
     }
 }

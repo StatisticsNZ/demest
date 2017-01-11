@@ -3642,53 +3642,6 @@ test_that("R and C versions of centerA give same answer", {
 
 ## UPDATING ###########################################################################
 
-test_that("betaExchZero gives valid answer", {
-    betaExchZero <- demest:::betaExchZero
-    initialPrior <- demest:::initialPrior
-    spec <- Exch()
-    beta <- rnorm(10)
-    metadata <- new("MetaData",
-                    nms = "region",
-                    dimtypes = "state",
-                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
-    prior <- initialPrior(spec,
-                          beta = beta,
-                          metadata = metadata,
-                          sY = NULL)
-    beta.scaled <- rnorm(10)
-    ans.obtained <- betaExchZero(betaScaled = beta.scaled,
-                                 prior = prior)
-    ans.expected <- prior@ATau@.Data * prior@zeta * beta.scaled
-    expect_identical(ans.obtained, ans.expected)
-})
-
-test_that("R and C versions of betaExchZero give same answer", {
-    betaExchZero <- demest:::betaExchZero
-    initialPrior <- demest:::initialPrior
-    spec <- Exch()
-    beta <- rnorm(10)
-    metadata <- new("MetaData",
-                    nms = "region",
-                    dimtypes = "state",
-                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
-    prior <- initialPrior(spec,
-                          beta = beta,
-                          metadata = metadata,
-                          sY = NULL)
-    beta.scaled <- rnorm(10)
-    ans.R <- betaExchZero(betaScaled = beta.scaled,
-                          prior = prior,
-                          useC = FALSE)
-    ans.C <- betaExchZero(betaScaled = beta.scaled,
-                          prior = prior,
-                          useC = TRUE)
-    if (test.identity)
-        expect_identical(ans.R, ans.C)
-    else
-        expect_equal(ans.R, ans.C)
-})
-
-
 test_that("betaHat gives valid answer with prior of class Exch - no covariates", {
     betaHat <- demest:::betaHat
     initialPrior <- demest:::initialPrior

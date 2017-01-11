@@ -3301,28 +3301,6 @@ checkUpdateBetaAndPriorBeta <- function(prior, vbar, n, sigma) {
     NULL
 }
 
-## TRANSLATED
-## HAS_TESTS
-betaExchZero <- function(betaScaled, prior, useC = FALSE) {
-    ## betaScaled
-    stopifnot(is.double(betaScaled))
-    stopifnot(!any(is.na(betaScaled)))
-    ## prior
-    stopifnot(methods::is(prior, "Exch"))
-    stopifnot(methods::is(prior, "ZeroMixin"))
-    stopifnot(methods::validObject(prior))
-    ## betaScaled and prior
-    stopifnot(identical(length(betaScaled), as.integer(prior@J)))
-    if (useC) {
-        .Call(betaExchZero_R, betaScaled, prior)
-    }
-    else {
-        A <- prior@ATau@.Data
-        zeta <- prior@zeta
-        A * zeta * betaScaled
-    }
-}
-
 ## TRANSLATED but C code for ICAR and Cross not tested
 ## HAS_TESTS
 ## ADD TESTS FOR ICAR AND Cross WHEN CLASSES FINISHED

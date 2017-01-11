@@ -80,14 +80,10 @@ setClass("ExchNormZero",
              isRobust = methods::new("LogicalFlag", FALSE),
              tau = methods::new("Scale", 1),
              ATau = methods::new("Scale", 1),
-             nuTau = methods::new("DegreesFreedom", 7),
-             tauScaled = methods::new("Scale", 1),
-             zeta = 1),
+             nuTau = methods::new("DegreesFreedom", 7)),
          contains = c("Exch",
              "NormMixin",
-             "TauScaledMixin",
-             "ZeroMixin",
-             "ZetaMixin"))
+             "ZeroMixin"))
 
 setClass("ExchNormCov",
          prototype = prototype(iMethodPrior = 2L,

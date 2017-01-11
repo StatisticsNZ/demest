@@ -815,81 +815,6 @@ test_that("R and C versions of updateBeta give same answer", {
     }
 })
 
-test_that("updateBetaScaled gives valid answer", {
-    updateBetaScaled <- demest:::updateBetaScaled
-    getV <- demest:::getV
-    initialPrior <- demest:::initialPrior
-    for (seed in seq_len(n.test)) {
-        set.seed(seed)
-        spec <- Exch()
-        beta <- rnorm(10)
-        metadata <- new("MetaData",
-                        nms = "region",
-                        dimtypes = "state",
-                        DimScales = list(new("Categories", dimvalues = letters[1:10])))
-        prior <- initialPrior(spec,
-                              beta = beta,
-                              metadata = metadata,
-                              sY = NULL, multScale = 1)
-        vbar <- rnorm(10)
-        n <- 5L
-        sigma <- runif(1)
-        set.seed(seed)
-        ans.obtained <- updateBetaScaled(prior,
-                                         vbar = vbar,
-                                         n = n,
-                                         sigma = sigma)
-        set.seed(seed)
-        K <- vbar / (prior@ATau@.Data * prior@zeta)
-        V <- sigma^2 / (n * prior@ATau@.Data^2 * prior@zeta^2)
-        mean <- (K/V)/((1/V)+(1/prior@tau^2))
-        sd <- 1/sqrt((1/V)+(1/prior@tau^2))
-        ans.expected <- rnorm(n = 10, mean = mean, sd = sd)
-        if (test.identity)
-            expect_identical(ans.obtained, ans.expected)
-        else
-            expect_equal(ans.obtained, ans.expected)
-    }
-})
-
-test_that("R and C versions of updateBetaScaled give same answer", {
-    updateBetaScaled <- demest:::updateBetaScaled
-    getV <- demest:::getV
-    initialPrior <- demest:::initialPrior
-    for (seed in seq_len(n.test)) {
-        set.seed(seed)
-        spec <- Exch()
-        beta <- rnorm(10)
-        metadata <- new("MetaData",
-                        nms = "region",
-                        dimtypes = "state",
-                        DimScales = list(new("Categories", dimvalues = letters[1:10])))
-        prior <- initialPrior(spec,
-                              beta = beta,
-                              metadata = metadata,
-                              sY = NULL, multScale = 1)
-        vbar <- rnorm(10)
-        n <- 5L
-        sigma <- runif(1)
-        set.seed(seed)
-        ans.R <- updateBetaScaled(prior,
-                                  vbar = vbar,
-                                  n = n,
-                                  sigma = sigma,
-                                  useC = FALSE)
-        set.seed(seed)
-        ans.C <- updateBetaScaled(prior,
-                                  vbar = vbar,
-                                  n = n,
-                                  sigma = sigma,
-                                  useC = TRUE)
-        if (test.identity)
-            expect_identical(ans.R, ans.C)
-        else
-            expect_equal(ans.R, ans.C)
-    }
-})
-
 test_that("updateBetasAndPriorsBetas works", {
     initialModel <- demest:::initialModel
     updateBetasAndPriorsBetas <- demest:::updateBetasAndPriorsBetas
@@ -2140,178 +2065,6 @@ test_that("R and C versions of updateWSqrtInvG give same answer", {
             expect_equal(ans.R, ans.C)        
     }
 })
-
-test_that("updateZetaAndTau gives valid answer", {
-    updateZetaAndTau <- demest:::updateZetaAndTau
-    initialPrior <- demest:::initialPrior
-    rinvchisq1 <- demest:::rinvchisq1
-    for (seed in seq_len(n.test)) {
-        ## do not set max
-        set.seed(seed)
-        spec <- Exch()
-        beta <- rnorm(10)
-        metadata <- new("MetaData",
-                        nms = "region",
-                        dimtypes = "state",
-                        DimScales = list(new("Categories", dimvalues = letters[1:10])))
-        prior0 <- initialPrior(spec,
-                               beta = beta,
-                               metadata = metadata,
-                               sY = NULL, multScale = 1)
-        expect_is(prior0, "ExchNormZero")
-        vbar <- rnorm(10)
-        n <- 5L
-        sigma <- runif(1)
-        betaScaled <- rnorm(10)
-        set.seed(seed)
-        ans.obtained <- updateZetaAndTau(prior = prior0,
-                                         betaScaled = betaScaled,
-                                         vbar = vbar,
-                                         n = n,
-                                         sigma = sigma)
-        set.seed(seed)
-        ans.expected <- prior0
-        W <- (sigma^2 / (n * 10^2 * prior0@ATau^2)) * sum(1/betaScaled^2)
-        L <- (1/(10*prior0@ATau)) * sum(vbar / betaScaled)
-        zeta <- rnorm(n = 1, 
-                      mean = (L/W)/(1+(1/W)),
-                      sd = sqrt(1/(1+(1/W))))
-        tau.scaled <- sqrt(rinvchisq1(df = prior0@nuTau + 10,
-                                      scale = ((prior0@nuTau + sum(betaScaled^2))
-                                               / (prior0@nuTau + 10))))
-        tau <- prior0@ATau@.Data * abs(zeta) * tau.scaled
-        if (tau < prior0@tauMax@.Data) {
-            ans.expected@zeta <- zeta
-            ans.expected@tauScaled@.Data <- tau.scaled
-            ans.expected@tau@.Data <- tau
-        }
-        if (test.identity)
-            expect_identical(ans.obtained, ans.expected)
-        else
-            expect_equal(ans.obtained, ans.expected)
-        ## set max
-        set.seed(seed)
-        spec <- Exch(error = Error(scale = HalfT(max = 1)))
-        beta <- rnorm(10)
-        metadata <- new("MetaData",
-                        nms = "region",
-                        dimtypes = "state",
-                        DimScales = list(new("Categories", dimvalues = letters[1:10])))
-        prior0 <- initialPrior(spec,
-                               beta = beta,
-                               metadata = metadata,
-                               sY = NULL, multScale = 1)
-        expect_is(prior0, "ExchNormZero")
-        vbar <- rnorm(10)
-        n <- 5L
-        sigma <- runif(1)
-        betaScaled <- rnorm(10)
-        set.seed(seed)
-        ans.obtained <- updateZetaAndTau(prior = prior0,
-                                         betaScaled = betaScaled,
-                                         vbar = vbar,
-                                         n = n,
-                                         sigma = sigma)
-        set.seed(seed)
-        ans.expected <- prior0
-        W <- (sigma^2 / (n * 10^2 * prior0@ATau^2)) * sum(1/betaScaled^2)
-        L <- (1/(10*prior0@ATau)) * sum(vbar / betaScaled)
-        zeta <- rnorm(n = 1, 
-                      mean = (L/W)/(1+(1/W)),
-                      sd = sqrt(1/(1+(1/W))))
-        tau.scaled <- sqrt(rinvchisq1(df = prior0@nuTau + 10,
-                                      scale = ((prior0@nuTau + sum(betaScaled^2))
-                                               / (prior0@nuTau + 10))))
-        tau <- prior0@ATau@.Data * abs(zeta) * tau.scaled
-        if (tau < prior0@tauMax@.Data) {
-            ans.expected@zeta <- zeta
-            ans.expected@tauScaled@.Data <- tau.scaled
-            ans.expected@tau@.Data <- tau
-        }
-        if (test.identity)
-            expect_identical(ans.obtained, ans.expected)
-        else
-            expect_equal(ans.obtained, ans.expected)
-    }
-})
-
-test_that("R and C versions of updateZetaAndTau give same answer", {
-    updateZetaAndTau <- demest:::updateZetaAndTau
-    initialPrior <- demest:::initialPrior
-    for (seed in seq_len(n.test)) {
-        ## do not set max
-        set.seed(seed)
-        spec <- Exch()
-        beta <- rnorm(10)
-        metadata <- new("MetaData",
-                        nms = "region",
-                        dimtypes = "state",
-                        DimScales = list(new("Categories", dimvalues = letters[1:10])))
-        prior0 <- initialPrior(spec,
-                               beta = beta,
-                               metadata = metadata,
-                               sY = NULL, multScale = 1)
-        expect_is(prior0, "ExchNormZero")
-        vbar <- rnorm(10)
-        n <- 5L
-        sigma <- runif(1)
-        betaScaled <- rnorm(10)
-        set.seed(seed)
-        ans.R <- updateZetaAndTau(prior = prior0,
-                                  betaScaled = betaScaled,
-                                  vbar = vbar,
-                                  n = n,
-                                  sigma = sigma,
-                                  useC = FALSE)
-        set.seed(seed)
-        ans.C <- updateZetaAndTau(prior = prior0,
-                                  betaScaled = betaScaled,
-                                  vbar = vbar,
-                                  n = n,
-                                  sigma = sigma,
-                                  useC = TRUE)
-        if (test.identity)
-            expect_identical(ans.R, ans.C)
-        else
-            expect_equal(ans.R, ans.C)
-        ## set max
-        set.seed(seed)
-        spec <- Exch(error = Error(scale = HalfT(max = 1)))
-        beta <- rnorm(10)
-        metadata <- new("MetaData",
-                        nms = "region",
-                        dimtypes = "state",
-                        DimScales = list(new("Categories", dimvalues = letters[1:10])))
-        prior0 <- initialPrior(spec,
-                               beta = beta,
-                               metadata = metadata,
-                               sY = NULL, multScale = 1)
-        expect_is(prior0, "ExchNormZero")
-        vbar <- rnorm(10)
-        n <- 5L
-        sigma <- runif(1)
-        betaScaled <- rnorm(10)
-        set.seed(seed)
-        ans.R <- updateZetaAndTau(prior = prior0,
-                                  betaScaled = betaScaled,
-                                  vbar = vbar,
-                                  n = n,
-                                  sigma = sigma,
-                                  useC = FALSE)
-        set.seed(seed)
-        ans.C <- updateZetaAndTau(prior = prior0,
-                                  betaScaled = betaScaled,
-                                  vbar = vbar,
-                                  n = n,
-                                  sigma = sigma,
-                                  useC = TRUE)
-        if (test.identity)
-            expect_identical(ans.R, ans.C)
-        else
-            expect_equal(ans.R, ans.C)
-    }
-})
-
 
 
 ## UPDATING MODELS ################################################################
@@ -4241,10 +3994,10 @@ test_that("updateTheta_PoissonVaryingNotUseExp gives valid answer", {
                + model@betas[[2]]
                + rep(model@betas[[3]], each = 2))
         for (i in 1:10) {
-            theta.curr <- model@theta[i]
+            theta.curr <- ans.expected@theta[i]
             theta.prop <- exp(rnorm(1, mean = log(theta.curr), sd = model@scaleTheta))
-            log.diff <- dpois(subtotals, lambda = sum(model@theta[1:10]) + theta.prop - theta.curr, log = TRUE) -
-                dpois(subtotals, lambda = sum(model@theta[1:10]), log = TRUE) +
+            log.diff <- dpois(subtotals, lambda = sum(ans.expected@theta[1:10]) + theta.prop - theta.curr, log = TRUE) -
+                dpois(subtotals, lambda = sum(ans.expected@theta[1:10]), log = TRUE) +
                     dnorm(x = log(theta.prop), mean = mu[i], sd = model@sigma, log = TRUE) -
                         dnorm(x = log(theta.curr), mean = mu[i], sd = model@sigma, log = TRUE)
             if ((log.diff >= 0) || (runif(1) < exp(log.diff))) {
@@ -4254,7 +4007,7 @@ test_that("updateTheta_PoissonVaryingNotUseExp gives valid answer", {
         }
         ans.expected@theta[11:12] <- exp(rnorm(n = 2, mean = mu[11:12], sd = model@sigma))
         for (i in 13:20) {
-            theta.curr <- model@theta[i]
+            theta.curr <- ans.expected@theta[i]
             theta.prop <- exp(rnorm(1, mean = log(theta.curr), sd = model@scaleTheta))
             log.diff <- dpois(y[i], lambda = theta.prop, log = TRUE) -
                 dpois(y[i], lambda = theta.curr, log = TRUE) +
@@ -4298,10 +4051,10 @@ test_that("updateTheta_PoissonVaryingNotUseExp gives valid answer", {
                + model@betas[[2]]
                + rep(model@betas[[3]], each = 2))
         for (i in 1:8) {
-            theta.curr <- model@theta[i]
+            theta.curr <- ans.expected@theta[i]
             theta.prop <- exp(rnorm(1, mean = log(theta.curr), sd = model@scaleTheta))
-            log.diff <- dpois(y@subtotalsNet, lambda = sum(model@theta[1:8]) + theta.prop - theta.curr, log = TRUE) -
-                dpois(y@subtotalsNet, lambda = sum(model@theta[1:8]), log = TRUE) +
+            log.diff <- dpois(y@subtotalsNet, lambda = sum(ans.expected@theta[1:8]) + theta.prop - theta.curr, log = TRUE) -
+                dpois(y@subtotalsNet, lambda = sum(ans.expected@theta[1:8]), log = TRUE) +
                     dnorm(x = log(theta.prop), mean = mu[i], sd = model@sigma, log = TRUE) -
                         dnorm(x = log(theta.curr), mean = mu[i], sd = model@sigma, log = TRUE)
             if ((log.diff >= 0) || (runif(1) < exp(log.diff))) {
@@ -4310,7 +4063,7 @@ test_that("updateTheta_PoissonVaryingNotUseExp gives valid answer", {
             }
         }
         for (i in 9:10) {
-            theta.curr <- model@theta[i]
+            theta.curr <- ans.expected@theta[i]
             theta.prop <- exp(rnorm(1, mean = log(theta.curr), sd = model@scaleTheta))
             log.diff <- dpois(y[i], lambda = theta.prop, log = TRUE) -
                 dpois(y[i], lambda = theta.curr, log = TRUE) +
@@ -4323,7 +4076,7 @@ test_that("updateTheta_PoissonVaryingNotUseExp gives valid answer", {
         }
         ans.expected@theta[11:12] <- exp(rnorm(n = 2, mean = mu[11:12], sd = model@sigma))
         for (i in 13:20) {
-            theta.curr <- model@theta[i]
+            theta.curr <- ans.expected@theta[i]
             theta.prop <- exp(rnorm(1, mean = log(theta.curr), sd = model@scaleTheta))
             log.diff <- dpois(y[i], lambda = theta.prop, log = TRUE) -
                 dpois(y[i], lambda = theta.curr, log = TRUE) +
@@ -4485,8 +4238,8 @@ test_that("updateTheta_PoissonVaryingUseExp gives valid answer", {
         mu <- (model@betas[[1]]
                + model@betas[[2]]
                + rep(model@betas[[3]], each = 5))
-        for (i in seq_along(model@theta)) {
-            theta.curr <- model@theta[i]
+        for (i in seq_along(ans.expected@theta)) {
+            theta.curr <- ans.expected@theta[i]
             theta.prop <- exp(rnorm(1, mean = log(theta.curr),
                                     sd = model@scaleTheta*model@scaleThetaMultiplier/sqrt(1+log(1+exposure[i]))))
             log.diff <- dpois(y[i], lambda = theta.prop * exposure[i], log = TRUE) -
@@ -4527,7 +4280,7 @@ test_that("updateTheta_PoissonVaryingUseExp gives valid answer", {
                + rep(model@betas[[3]], each = 5))
         ans.expected@theta[1:5] <- exp(rnorm(n = 5, mean = mu[1:5], sd = model@sigma))
         for (i in 6:20) {
-            theta.curr <- model@theta[i]
+            theta.curr <- ans.expected@theta[i]
             theta.prop <- exp(rnorm(1, mean = log(theta.curr),
                                     sd = model@scaleTheta*model@scaleThetaMultiplier/sqrt(1+log(1+exposure[i]))))
             log.diff <- dpois(y[i], lambda = theta.prop * exposure[i], log = TRUE) -
@@ -4569,7 +4322,7 @@ test_that("updateTheta_PoissonVaryingUseExp gives valid answer", {
                + model@betas[[2]]
                + rep(model@betas[[3]], each = 5))
         for (i in 1:10) {
-            theta.curr <- model@theta[i]
+            theta.curr <- ans.expected@theta[i]
             theta.prop <- exp(rnorm(1, mean = log(theta.curr),
                                     sd = model@scaleTheta*model@scaleThetaMultiplier/sqrt(1+log(1+exposure[i]))))
             j <- if (i <= 5) 1 else 2
@@ -4629,7 +4382,7 @@ test_that("updateTheta_PoissonVaryingUseExp gives valid answer", {
                + model@betas[[2]]
                + rep(model@betas[[3]], each = 5))
         for (i in 1:8) {
-            theta.curr <- model@theta[i]
+            theta.curr <- ans.expected@theta[i]
             theta.prop <- exp(rnorm(1, mean = log(theta.curr),
                                     sd = model@scaleTheta*model@scaleThetaMultiplier/sqrt(1+log(1+exposure[i]))))
             if (i <= 5) {

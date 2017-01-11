@@ -1007,10 +1007,6 @@ setClass("TauMixin",
          slots = c(tau = "Scale"),
          contains = "VIRTUAL")
 
-setClass("TauScaledMixin",
-         slots = c(tauScaled = "Scale"),
-         contains = "VIRTUAL")
-
 setClass("UBetaMixin",
          slots = c(UBeta = "VarTDist"),
          contains = "VIRTUAL",
@@ -1134,26 +1130,6 @@ setClass("ZMixin",
              if (!isTRUE(all.equal(first, rep(1, times = J))))
                  return(gettextf("first column of '%s' is not a vector of 1s",
                                  "Z"))
-             TRUE
-         })
-
-setClass("ZetaMixin",
-         slots = c(zeta = "numeric"),
-         contains = "VIRTUAL",
-         validity = function(object) {
-             zeta <- object@zeta
-             ## 'zeta' has type "double"
-             if (!is.double(zeta))
-                 return(gettextf("'%s' does not have type \"%s\"",
-                                 "zeta", "double"))
-             ## 'zeta' is length 1
-             if (!identical(length(zeta), 1L))
-                 return(gettextf("'%s' does not have length %d",
-                                 "zeta", 1L))
-             ## 'zeta' is not missing
-             if (is.na(zeta))
-                 return(gettextf("'%s' is missing",
-                                 "zeta"))
              TRUE
          })
 

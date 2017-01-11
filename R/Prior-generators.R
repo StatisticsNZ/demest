@@ -58,16 +58,12 @@ setMethod("initialPrior",
               tau <- makeScale(A = ATau,
                                nu = nuTau,
                                scaleMax = tauMax)
-              zeta <- stats::rnorm(n = 1L)
-              tauScaled <- tau / (ATau * abs(zeta))
               methods::new("ExchNormZero",
                            ATau = ATau,
                            J = J,
                            nuTau = nuTau,
                            tau = tau,
-                           tauMax = tauMax,
-                           tauScaled = tauScaled,
-                           zeta = zeta)
+                           tauMax = tauMax)
           })
 
 setMethod("initialPrior",
@@ -1313,9 +1309,7 @@ setMethod("initialPriorPredict",
                   J = J,
                   nuTau = prior@nuTau,
                   tau = prior@tau,
-                  tauMax = prior@tauMax,
-                  tauScaled = prior@tauScaled,
-                  zeta = prior@zeta)
+                  tauMax = prior@tauMax)
           })
 
 ## HAS_TESTS

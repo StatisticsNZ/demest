@@ -641,8 +641,6 @@ test_that("initialPriorPredict workw with ExchNormZero", {
                                  sY = NULL,
                                  multScale = 1)
     ans.expected@tau <- prior@tau
-    ans.expected@tauScaled <- prior@tauScaled
-    ans.expected@zeta <- prior@zeta
     expect_identical(ans.obtained, ans.expected)
 })
 
