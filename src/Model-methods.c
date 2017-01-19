@@ -19,10 +19,10 @@ logLikelihood(SEXP model_R, int count, SEXP dataset_R, int i)
     
     switch(iMethodModel)
     {
-        case 9: case 18: case 19: case 118: case 119:/* Binomial */
+        case 9: case 18: case 19: case 118: case 119:/* BinomialVarying */
             ans = logLikelihood_Binomial(model_R, count, dataset_R, i);
             break;
-        case 10: case 20: case 21: case 120: case 121:/* Poisson */
+        case 10: case 20: case 21: case 120: case 121:/* PoissonVaryingUseExp */
             ans = logLikelihood_Poisson(model_R, count, dataset_R, i);
             break;
         case 11: /* PoissonBinomialMixture */

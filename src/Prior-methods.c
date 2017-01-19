@@ -36,7 +36,6 @@ static __inline__ void
 predictPrior_ExchRobustZero_i(SEXP prior_R) 
 {
     predictUBeta(prior_R);
-    /* predictUBetaScaled(prior_R); changed by John 27 May 2016 */
 }
 
 static __inline__ void
@@ -358,7 +357,7 @@ predictPrior_DLMWithTrendRobustCovWithSeasonPredict(SEXP prior_R)
 
 void
 transferParamPrior_ExchNormZero(SEXP prior_R,  double *values, 
-				     int nValues) 
+                     int nValues) 
 {
     double val = values[0]; /* should have just one value in it */
 
@@ -367,7 +366,7 @@ transferParamPrior_ExchNormZero(SEXP prior_R,  double *values,
 
 void
 transferParamPrior_ExchNormCov(SEXP prior_R,  double *values, 
-				     int nValues) 
+                     int nValues) 
 {
     int P = *INTEGER(GET_SLOT(prior_R, P_sym));
     double *eta = REAL(GET_SLOT(prior_R, eta_sym));
@@ -383,9 +382,9 @@ transferParamPrior_ExchNormCov(SEXP prior_R,  double *values,
 
 void
 transferParamPrior_ExchRobustZero(SEXP prior_R,  double *values, 
-				     int nValues) 
+                     int nValues) 
 {
-    double val = values[0];  	/* should have just one value in it */
+    double val = values[0];     /* should have just one value in it */
 
     SET_DOUBLESCALE_SLOT(prior_R, tau_sym, val);
 }
@@ -393,7 +392,7 @@ transferParamPrior_ExchRobustZero(SEXP prior_R,  double *values,
 
 void
 transferParamPrior_ExchRobustCov(SEXP prior_R,  double *values, 
-				     int nValues) 
+                     int nValues) 
 {
     int P = *INTEGER(GET_SLOT(prior_R, P_sym));
 
@@ -410,7 +409,7 @@ transferParamPrior_ExchRobustCov(SEXP prior_R,  double *values,
 
 void
 transferParamPrior_DLMNoTrendNormZeroNoSeasonPredict(SEXP prior_R,  double *values, 
-				     int nValues) 
+                     int nValues) 
 {
     int J_old = *INTEGER(GET_SLOT(prior_R, JOld_sym));
     int L = *INTEGER(GET_SLOT(prior_R, L_sym));
@@ -446,7 +445,7 @@ transferParamPrior_DLMNoTrendNormZeroNoSeasonPredict(SEXP prior_R,  double *valu
 
 void
 transferParamPrior_DLMWithTrendNormZeroNoSeasonPredict(SEXP prior_R,  double *values, 
-				     int nValues) 
+                     int nValues) 
 {
     int J_old = *INTEGER(GET_SLOT(prior_R, JOld_sym));
     int L = *INTEGER(GET_SLOT(prior_R, L_sym));
@@ -596,7 +595,7 @@ transferParamPrior_DLMWithTrendNormZeroWithSeasonPredict(SEXP prior_R,
 
 void
 transferParamPrior_DLMNoTrendNormCovNoSeasonPredict(SEXP prior_R,  double *values, 
-				     int nValues) 
+                     int nValues) 
 {
     int J_old = *INTEGER(GET_SLOT(prior_R, JOld_sym));
     int L = *INTEGER(GET_SLOT(prior_R, L_sym));
@@ -641,7 +640,7 @@ transferParamPrior_DLMNoTrendNormCovNoSeasonPredict(SEXP prior_R,  double *value
 
 void
 transferParamPrior_DLMWithTrendNormCovNoSeasonPredict(SEXP prior_R,  double *values, 
-				     int nValues) 
+                     int nValues) 
 {
     int J_old = *INTEGER(GET_SLOT(prior_R, JOld_sym));
     int L = *INTEGER(GET_SLOT(prior_R, L_sym));
@@ -821,7 +820,7 @@ transferParamPrior_DLMWithTrendNormCovWithSeasonPredict(SEXP prior_R,
 
 void
 transferParamPrior_DLMNoTrendRobustZeroNoSeasonPredict(SEXP prior_R,  double *values, 
-				     int nValues) 
+                     int nValues) 
 {
     int J_old = *INTEGER(GET_SLOT(prior_R, JOld_sym));
     int L = *INTEGER(GET_SLOT(prior_R, L_sym));
@@ -857,7 +856,7 @@ transferParamPrior_DLMNoTrendRobustZeroNoSeasonPredict(SEXP prior_R,  double *va
 
 void
 transferParamPrior_DLMWithTrendRobustZeroNoSeasonPredict(SEXP prior_R,  double *values, 
-				     int nValues) 
+                     int nValues) 
 {
     int J_old = *INTEGER(GET_SLOT(prior_R, JOld_sym));
     int L = *INTEGER(GET_SLOT(prior_R, L_sym));
@@ -1009,7 +1008,7 @@ transferParamPrior_DLMWithTrendRobustZeroWithSeasonPredict(SEXP prior_R,
 
 void
 transferParamPrior_DLMNoTrendRobustCovNoSeasonPredict(SEXP prior_R,  double *values, 
-				     int nValues) 
+                     int nValues) 
 {
     int J_old = *INTEGER(GET_SLOT(prior_R, JOld_sym));
     int L = *INTEGER(GET_SLOT(prior_R, L_sym));
@@ -1054,7 +1053,7 @@ transferParamPrior_DLMNoTrendRobustCovNoSeasonPredict(SEXP prior_R,  double *val
 
 void
 transferParamPrior_DLMWithTrendRobustCovNoSeasonPredict(SEXP prior_R,  double *values, 
-				     int nValues) 
+                     int nValues) 
 {
     int J_old = *INTEGER(GET_SLOT(prior_R, JOld_sym));
     int L = *INTEGER(GET_SLOT(prior_R, L_sym));

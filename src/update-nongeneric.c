@@ -86,55 +86,6 @@ updateSDNorm(double sigma, double A, double nu, double V, int n, double max)
     return ans;
 }
 
-#if(0) /* I think this was commented out and replaced at some stage by John?? - JAH */
-double  
-updateSDNorm(double sigma, double A, double nu, double V, int n, double max) 
-{ 
-    double sigmaSq = sigma * sigma; 
-    double nuPlusOne = nu + 1; 
-    double nPlusNuPlusOne = n + nuPlusOne; 
-    double nuASq = nu * A * A; 
-    double n_nuASq = n*nuASq; 
-
-    double f = -n*log(sigma) - V/(2*sigmaSq) - nuPlusOne/2 * log(sigmaSq + nuASq); 
-    double e = rexp(1.0); 
-    double z = f - e; 
-    double numerator = V - n_nuASq  
-         + sqrt((V - n_nuASq)*(V - n_nuASq) + 4*nPlusNuPlusOne*V*nuASq); 
-    double denominator = 2*nPlusNuPlusOne; 
-
-    double sigma_f_max = sqrt(numerator/denominator); 
-    double sigma0_left = 0.5*sigma_f_max; 
-    double sigma0_right = 1.5*sigma_f_max; 
-
-    double ans = -99; /* default answer */ 
-
-    double rootLeft = findOneRootLogPostSigmaNorm(sigma0_left, 
-                                     z, A, nu, V, n, 0, sigma_f_max); 
-    int foundRootLeft = (rootLeft > 0); 
-
-    if (foundRootLeft) { 
-        double rootRight = findOneRootLogPostSigmaNorm(sigma0_right, 
-                                     z, A, nu, V, n, sigma_f_max, max); 
-        int foundRootRight = (rootRight > 0); 
-
-        if (foundRootRight) { 
-            ans = runif(rootLeft, rootRight); 
-        } 
-
-    } 
-    else { 
-        double near_sigma_f_max = (rootLeft > -2); 
-        if (near_sigma_f_max) { 
-            ans = sigma_f_max; 
-        } 
-    }     
-
-    return ans; 
-
-} 
-#endif
-
 double 
 updateSDRobust(double sigma, double A, double nuBeta, double nuTau, double V, int n, double max)
 {
@@ -202,56 +153,6 @@ updateSDRobust(double sigma, double A, double nuBeta, double nuTau, double V, in
     }    
     return ans;
 }
-
-
-
-#if(0) /* I think this was commented out and replaced at some stage by John?? - JAH */
-double 
-updateSDRobust(double sigma, double A, double nuBeta, double nuTau, double V, int n, double max)
-{
-    double sigmaSq = sigma * sigma;
-    double nuTauPlusOne = nuTau + 1;
-    double nuTauASq = nuTau * A * A;
-    double n_nuBeta = n*nuBeta;
-    
-    double f = n_nuBeta*log(sigma) - nuBeta/2 *sigmaSq* V - nuTauPlusOne/2 * log(sigmaSq + nuTauASq);
-    double e = rexp(1.0);
-    double z = f - e;
-    double H1 = nuBeta*V;
-    double H2 = H1 * nuTauASq + nuTauPlusOne - n_nuBeta;
-    double H3 = -n_nuBeta*nuTauASq;
-    
-    double sigma_f_max = sqrt((-H2 +sqrt(H2*H2 - 4*H1*H3))/(2*H1));
-    double sigma0_left = 0.5*sigma_f_max;
-    double sigma0_right = 1.5*sigma_f_max;
-    
-    double ans = -99; /* default answer */
-    
-    double rootLeft = findOneRootLogPostSigmaRobust(sigma0_left,
-                        z, A, nuBeta, nuTau, V, n, 0, sigma_f_max);
-    int foundRootLeft = (rootLeft > 0);
-    
-    if (foundRootLeft) {
-        double rootRight = findOneRootLogPostSigmaRobust(sigma0_right,
-                        z, A, nuBeta, nuTau, V, n, sigma_f_max, max);
-        int foundRootRight = (rootRight > 0);
-        
-        if (foundRootRight) {
-            ans = runif(rootLeft, rootRight);
-        }
-    
-    }
-    else {
-        double near_sigma_f_max = (rootLeft > -2);
-        if (near_sigma_f_max) {
-            ans = sigma_f_max;
-        }
-    }    
-    
-    return ans;
-}
-#endif
-
 
 
 /* *************************************************************************** */
@@ -815,34 +716,6 @@ updateBeta(double *beta, int J, SEXP prior_R,
     PrintValue(mkString(""));
     #endif
     
-}
-
-void
-updateBetaScaled(double *betaScaled, int J, SEXP prior_R, 
-                        double *vbar, int n, double sigma)
-{
-    double A = *REAL(GET_SLOT(prior_R, ATau_sym));
-    double zeta = *REAL(GET_SLOT(prior_R, zeta_sym));
-    
-    double *v = (double*)R_alloc(J, sizeof(double));
-    
-    getV_Internal(v, prior_R, J);
-    
-    double ATimesZeta = A*zeta;
-    
-    double precData = (n*ATimesZeta*ATimesZeta)/(sigma*sigma);
-    
-    for (int i = 0; i < J; ++i) {
-        
-        double thisK = vbar[i]/(ATimesZeta);
-        double thisPrecPrior =1/v[i];
-        double thisVar = 1/(precData + thisPrecPrior);
-        
-        double thisMean = precData * thisK * thisVar;
-        double thisSD = sqrt(thisVar);
-        
-        betaScaled[i] = rnorm(thisMean, thisSD);
-    }
 }
 
 void
@@ -1601,28 +1474,6 @@ updateTauRobust(SEXP prior_R, int J)
 }
 
 void
-updateTauScaledRobust(SEXP prior_R)
-{
-    int J = *INTEGER(GET_SLOT(prior_R, J_sym));   
-     
-    double *U = REAL(GET_SLOT(prior_R, UBetaScaled_sym));
-    double nu = *REAL(GET_SLOT(prior_R, nuTau_sym));
-    
-    double shape = J*nu/2;
-     
-    double rate = 0;
-    for (int i = 0; i < J; ++i) {
-        rate += 1/U[i];
-    }
-    rate *= nu/2;
-    
-    double tauSqScaled = rgamma(shape, 1/rate);
-    
-    double tauScaled = sqrt(tauSqScaled);
-    SET_DOUBLESCALE_SLOT(prior_R, tauScaled_sym, tauScaled);
-}
-
-void
 updateUBeta(SEXP prior_R, double *beta, int J)
 {
     double *U = REAL(GET_SLOT(prior_R, UBeta_sym));
@@ -1641,93 +1492,6 @@ updateUBeta(SEXP prior_R, double *beta, int J)
         double thisScale = (nuTimesTauSq + diff*diff)/df;
         
         U[j] = rinvchisq1(df, thisScale);
-    }
-}
-
-void
-updateUBetaExchRobustZero(SEXP prior_R)
-{
-    int J = *INTEGER(GET_SLOT(prior_R, J_sym));   
-     
-    double *UBetaScaled = REAL(GET_SLOT(prior_R, UBetaScaled_sym));
-    double A = *REAL(GET_SLOT(prior_R, ATau_sym));
-    double zeta = *REAL(GET_SLOT(prior_R, zeta_sym));
-    
-    double *UBeta = REAL(GET_SLOT(prior_R, UBeta_sym));
-    
-    double ASqTimesZetaSq = A * A * zeta * zeta;
-    
-    for (int j = 0; j < J; ++j) {
-    
-        UBeta[j] = ASqTimesZetaSq * UBetaScaled[j];
-    }
-}
-
-void
-updateUBetaScaled(SEXP prior_R, double *betaScaled, int J)
-{
-    double *U = REAL(GET_SLOT(prior_R, UBetaScaled_sym));
-    double nu = *REAL(GET_SLOT(prior_R, nuBeta_sym));
-    double tau = *REAL(GET_SLOT(prior_R, tauScaled_sym));
-    
-    double df = nu + 1;
-    
-    double nuTimesTauSq = nu * tau * tau;
-    
-    for (int j = 0; j < J; ++j) {
-        double bs = betaScaled[j];
-        double thisScale = (nuTimesTauSq + bs*bs)/df;
-        
-        U[j] = rinvchisq1(df, thisScale);
-    }
-}
-
-void
-updateZetaAndTau(SEXP prior_R, int J, double *betaScaled, 
-         double *vbar, int n, double sigma)
-{
-    double A = *REAL(GET_SLOT(prior_R, ATau_sym));
-    double nu = *REAL(GET_SLOT(prior_R, nuTau_sym));
-    double tauMax = *REAL(GET_SLOT(prior_R, tauMax_sym));
-
-    double JTimesA = J*A;
-    
-    double L = 0;
-    double sumOneOverBetaScaledSq = 0;
-    
-    for (int i = 0; i < J; ++i) {
-        
-        double bs = betaScaled[i];
-        
-        L += vbar[i]/bs;
-        sumOneOverBetaScaledSq += 1/(bs*bs);
-        
-    }
-    
-    L /= JTimesA; 
-    
-    double precData = (n*JTimesA*JTimesA)/(sigma*sigma*sumOneOverBetaScaledSq);
-    double var = 1/(precData+1);
-    double mean = precData * L * var;
-    double sd = sqrt(var);
-    
-    double zeta = rnorm(mean, sd);
-
-    double df = nu + J;
-    double sumBetaScaledSq = 0;
-    for (int i = 0; i < J; ++i) {
-        double bs = betaScaled[i];
-        sumBetaScaledSq += bs*bs;
-    }
-    double scale = (nu + sumBetaScaledSq)/df;
-    
-    double tauSqScaled = rinvchisq1(df, scale);
-    double tauScaled = sqrt(tauSqScaled);
-    double tau = A * fabs(zeta) * tauScaled;
-    if (tau < tauMax) {
-      SET_SLOT(prior_R, zeta_sym, ScalarReal(zeta));
-      SET_DOUBLESCALE_SLOT(prior_R, tauScaled_sym, tauScaled);
-      SET_DOUBLESCALE_SLOT(prior_R, tau_sym, tau);
     }
 }
 
@@ -4867,9 +4631,8 @@ updateThetaAndValueAgPoisson_PoissonNotUseExp(SEXP object, SEXP y_R)
             log_diff_prior -= dnorm(vec_log_th_curr[i], this_mu, sigma, USE_LOG);
         
         }
-        /* double log_diff_ag = (exposure_k*(ag_prop - ag_curr) */
-        /*                 + mean_k * exposure_k *(log(ag_prop) - log(ag_curr))); */
-        double log_diff_ag = (exposure_k*(ag_curr - ag_prop) /* corrected by John 1 May 2015 - mistake in R original */
+        
+        double log_diff_ag = (exposure_k*(ag_curr - ag_prop) 
                         + mean_k * exposure_k *(log(ag_prop) - log(ag_curr)));
         
         double log_diff = log_diff_lik + log_diff_prior + log_diff_ag;
@@ -5241,10 +5004,7 @@ updateThetaAndValueAgPoisson_PoissonUseExp(SEXP object, SEXP y_R, SEXP exposure_
         
         }
 
-        /* double log_diff_ag = (exposure_k*(ag_prop - ag_curr) */
-        /*                 + mean_k * exposure_k *(log(ag_prop) - log(ag_curr))); */
-
-        double log_diff_ag = (exposure_k*(ag_curr - ag_prop) /* corrected by John 1 May 2016 - mistake in R original */
+        double log_diff_ag = (exposure_k*(ag_curr - ag_prop) 
                         + mean_k * exposure_k *(log(ag_prop) - log(ag_curr)));
         
         double log_diff = log_diff_lik + log_diff_prior + log_diff_ag;

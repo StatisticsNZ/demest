@@ -57,7 +57,7 @@ predictModelUseExp_PoissonFixedUseExpPredict_i(SEXP object, SEXP y_R, SEXP expos
     
     updateTheta_PoissonFixedUseExp(object, y_R, exposure_R);    
 }
-		case 101:
+        case 101:
             predictModelNotUseExp_NormalFixedVarsigmaKnownPredict_i(object, y_R);
             break;
         case 102:
@@ -172,7 +172,7 @@ transferParamModel_PoissonFixedUseExpPredict_i(SEXP model_R, const char *filenam
             transferParamModel_PoissonFixedNotUseExpPredict_i(model_R, 
                         filename, lengthIter, iteration);
             break;
-		case 107: 
+        case 107: 
             transferParamModel_BinomialFixedPredict_i(model_R, 
                         filename, lengthIter, iteration);
             break;
@@ -1998,7 +1998,7 @@ updateWPriorWAR11(SEXP prior_R, double zeta)
                             KL, deltaNoInitial, deltaHat, zeta);
     
     updateVarDLM_Internal(w, KL, priorW_R, 
-			  deltaNoInitial, deltaHat);
+              deltaNoInitial, deltaHat);
 
 }
 
@@ -2742,8 +2742,8 @@ void
 predictBeta_PolyPredict(double *beta, SEXP prior_R, int J)
 {
     SEXP components_R = GET_SLOT(prior_R, components_sym);
-	double *v = REAL(GET_SLOT(prior_R, v_sym));
-	
+    double *v = REAL(GET_SLOT(prior_R, v_sym));
+    
     int forward = *INTEGER(GET_SLOT(prior_R, forward_sym));
     
     /* beta.hat <- betaHatPoly(components) */
@@ -2762,9 +2762,9 @@ predictBeta(double *beta, SEXP prior_R, int J)
     int i_method_prior = *(INTEGER(GET_SLOT(prior_R, iMethodPrior_sym)));
     
     switch(i_method_prior)
-    {	
-		/* functions deleted */
-		#if(0)
+    {   
+        /* functions deleted */
+        #if(0)
         case 1: case 2:
             predictBeta_ExchNormZero_i(beta, prior_R, J);
             break;
@@ -2782,11 +2782,11 @@ predictBeta(double *beta, SEXP prior_R, int J)
             predictBeta_PolyPredict(beta, prior_R, J); 
             break;
         case 129:
-			predictBeta_AR1Predict_i(beta, prior_R, J); 
-			break;
+            predictBeta_AR1Predict_i(beta, prior_R, J); 
+            break;
         case 130:
-			predictBeta_AR1Predict_i(beta, prior_R, J); 
-			break;
+            predictBeta_AR1Predict_i(beta, prior_R, J); 
+            break;
         default:
             error("unknown i_method_prior for predictBeta: %d", i_method_prior);
             break;
@@ -2982,12 +2982,12 @@ predictPrior_PolyPredict(SEXP prior_R, double zeta)
     int n = LENGTH(components_R);
     
     SEXP priorV_R = GET_SLOT(prior_R, priorV_sym); /* a PriorVarDLM */
-	
+    
     SEXP v_R = GET_SLOT(prior_R, v_sym);
     int J = LENGTH(v_R);
-	double *v = REAL(v_R);
+    double *v = REAL(v_R);
 
-	int forward = *INTEGER(GET_SLOT(prior_R, forward_sym));
+    int forward = *INTEGER(GET_SLOT(prior_R, forward_sym));
  
     for (int i = 0; i < n; ++i) {
         
@@ -3013,7 +3013,7 @@ predictPrior_AR10Predict(SEXP prior_R, double zeta)
     SEXP priorW_R = GET_SLOT(prior_R, priorW_sym);
     SEXP iterGamma_R = GET_SLOT(prior_R, iteratorGamma_sym); /* AlongIterator */
     SEXP iterV_R = GET_SLOT(prior_R, iteratorV_sym); /* AlongIterator */
-	int forward = *INTEGER(GET_SLOT(prior_R, forward_sym)); 
+    int forward = *INTEGER(GET_SLOT(prior_R, forward_sym)); 
     
     resetA(iterGamma_R);
     resetA(iterV_R);
@@ -3022,47 +3022,47 @@ predictPrior_AR10Predict(SEXP prior_R, double zeta)
     int *indicesV = INTEGER(GET_SLOT(iterV_R, indices_sym));
 
     for (int l = 0; l < L; ++l) {
-		
-		if (forward) {
-			
-			for (int k = 0; k < K; ++k) {
-			
-				int ig0 = indicesGamma[k] - 1;
-				int ig1 = indicesGamma[k+1] - 1;
-				int iv = indicesV[k] - 1;
-				
-				v[iv] = predictVarDLM(priorV_R, zeta);
-				w[iv] = predictVarDLM(priorW_R, zeta);
-				double mean = phi * gamma[ig0];
-				double sd = sqrt(w[iv]);
-				gamma[ig1] = rnorm(mean, sd);
-			}
-		}
-		else {
-			
-			for (int k = K-1; k >= 0; --k) {
+        
+        if (forward) {
             
-				int ig0 = indicesGamma[k] - 1;
-				int ig1 = indicesGamma[k+1] - 1;
-				int iv = indicesV[k] - 1;
+            for (int k = 0; k < K; ++k) {
+            
+                int ig0 = indicesGamma[k] - 1;
+                int ig1 = indicesGamma[k+1] - 1;
+                int iv = indicesV[k] - 1;
+                
+                v[iv] = predictVarDLM(priorV_R, zeta);
+                w[iv] = predictVarDLM(priorW_R, zeta);
+                double mean = phi * gamma[ig0];
+                double sd = sqrt(w[iv]);
+                gamma[ig1] = rnorm(mean, sd);
+            }
+        }
+        else {
+            
+            for (int k = K-1; k >= 0; --k) {
+            
+                int ig0 = indicesGamma[k] - 1;
+                int ig1 = indicesGamma[k+1] - 1;
+                int iv = indicesV[k] - 1;
 
-				v[iv] = predictVarDLM(priorV_R, zeta);
-				w[iv] = predictVarDLM(priorW_R, zeta);
-				double mean = phi * gamma[ig1];
-				double sd = sqrt(w[iv]);
-				gamma[ig0] = rnorm(mean, sd);
-			}
-		}
-		
-		advanceA(iterGamma_R);
+                v[iv] = predictVarDLM(priorV_R, zeta);
+                w[iv] = predictVarDLM(priorW_R, zeta);
+                double mean = phi * gamma[ig1];
+                double sd = sqrt(w[iv]);
+                gamma[ig0] = rnorm(mean, sd);
+            }
+        }
+        
+        advanceA(iterGamma_R);
         advanceA(iterV_R);
-	} /* end L loop */
+    } /* end L loop */
 
-	/* functions removed */
-	#if(0)
-	updateGammaNoInitialAR1(prior_R);
-	updateGammaHatAR10(prior_R);
-	#endif
+    /* functions removed */
+    #if(0)
+    updateGammaNoInitialAR1(prior_R);
+    updateGammaHatAR10(prior_R);
+    #endif
 }
 
 
@@ -3080,7 +3080,7 @@ predictPrior_AR11Predict(SEXP prior_R, double zeta)
     SEXP priorW_R = GET_SLOT(prior_R, priorW_sym);
     SEXP iterGamma_R = GET_SLOT(prior_R, iteratorGamma_sym); /* AlongIterator */
     SEXP iterV_R = GET_SLOT(prior_R, iteratorV_sym); /* AlongIterator */
-	int forward = *INTEGER(GET_SLOT(prior_R, forward_sym)); 
+    int forward = *INTEGER(GET_SLOT(prior_R, forward_sym)); 
     
     resetA(iterGamma_R);
     resetA(iterV_R);
@@ -3089,48 +3089,48 @@ predictPrior_AR11Predict(SEXP prior_R, double zeta)
     int *indicesV = INTEGER(GET_SLOT(iterV_R, indices_sym));
 
     for (int l = 0; l < L; ++l) {
-		
-		if (forward) {
-			
-			for (int k = 0; k < K; ++k) {
-			
-				int ig0 = indicesGamma[k] - 1;
-				int ig1 = indicesGamma[k+1] - 1;
-				int iv = indicesV[k] - 1;
-				
-				v[iv] = predictVarDLM(priorV_R, zeta);
-				w[iv] = predictVarDLM(priorW_R, zeta);
-				double mean = phi * delta[ig0];
-				double sd = sqrt(w[iv]);
-				delta[ig1] = rnorm(mean, sd);
-                gamma[ig1] = gamma[ig0] + delta[ig0];
-			}
-		}
-		else {
-			
-			for (int k = K-1; k >= 0; --k) {
+        
+        if (forward) {
             
-				int ig0 = indicesGamma[k] - 1;
-				int ig1 = indicesGamma[k+1] - 1;
-				int iv = indicesV[k] - 1;
+            for (int k = 0; k < K; ++k) {
+            
+                int ig0 = indicesGamma[k] - 1;
+                int ig1 = indicesGamma[k+1] - 1;
+                int iv = indicesV[k] - 1;
+                
+                v[iv] = predictVarDLM(priorV_R, zeta);
+                w[iv] = predictVarDLM(priorW_R, zeta);
+                double mean = phi * delta[ig0];
+                double sd = sqrt(w[iv]);
+                delta[ig1] = rnorm(mean, sd);
+                gamma[ig1] = gamma[ig0] + delta[ig0];
+            }
+        }
+        else {
+            
+            for (int k = K-1; k >= 0; --k) {
+            
+                int ig0 = indicesGamma[k] - 1;
+                int ig1 = indicesGamma[k+1] - 1;
+                int iv = indicesV[k] - 1;
 
-				v[iv] = predictVarDLM(priorV_R, zeta);
-				w[iv] = predictVarDLM(priorW_R, zeta);
-				double mean = phi * delta[ig1];
-				double sd = sqrt(w[iv]);
-				delta[ig0] = rnorm(mean, sd);
+                v[iv] = predictVarDLM(priorV_R, zeta);
+                w[iv] = predictVarDLM(priorW_R, zeta);
+                double mean = phi * delta[ig1];
+                double sd = sqrt(w[iv]);
+                delta[ig0] = rnorm(mean, sd);
                 gamma[ig0] = gamma[ig1] + delta[ig1]; 
-			}
-		}
-		
-		advanceA(iterGamma_R);
+            }
+        }
+        
+        advanceA(iterGamma_R);
         advanceA(iterV_R);
-	} /* end L loop */
+    } /* end L loop */
 
-	#if(0) /* these functions deleted */
+    #if(0) /* these functions deleted */
     updateGammaNoInitialAR1(prior_R);
     updateDeltaNoInitialAR11(prior_R);
-	updateDeltaHatAR11(prior_R);
+    updateDeltaHatAR11(prior_R);
     #endif
 }
 
@@ -3452,7 +3452,7 @@ transferParamPolyComponent(SEXP component_R, double *values,
 
 void transferParamPrior(SEXP prior_R, double *values, int nValues);
 void transferParamPrior_ExchNormZeroKnown(SEXP prior_R, double *values, 
-					  int nValues);
+                      int nValues);
 void transferParamPrior_ExchNormZeroUnknown(SEXP prior_R, double *values, 
                                             int nValues);
 void transferParamPrior_ExchNormCovKnown(SEXP prior_R, double *values, 
@@ -3524,7 +3524,7 @@ TRANSFERPARAMPRIOR_WRAPPER_R(transferParamPriorVarDLM_RobustUnknown);
 
 void
 transferParamPrior_ExchNormZeroKnown(SEXP prior_R,  double *values, 
-				     int nValues) 
+                     int nValues) 
 {
     SET_SLOT(prior_R, gamma_sym, ScalarReal(values[0]));
 }
@@ -3678,7 +3678,7 @@ transferParamPrior_PolyPredict(SEXP prior_R, double *values,
         #if(0)
         transferParamPolyComponent(VECTOR_ELT(components_R, i), 
                         this_values, this_nValues, forward);
-		#endif
+        #endif
     }
     
     transferParamPriorV(prior_R, values, nValues);
@@ -3690,8 +3690,8 @@ transferParamPrior_AR10(SEXP prior_R, double *values,
 {
     transferParamGammaAR1(prior_R, values, nValues);
     /* functions removed */
-	#if(0)
-	updateGammaNoInitialAR1(prior_R);
+    #if(0)
+    updateGammaNoInitialAR1(prior_R);
     updateGammaHatAR10(prior_R);
     #endif
     transferParamPhiAR1(prior_R, values, nValues);
@@ -3949,9 +3949,9 @@ updatePrior_ExchRobustZeroKnown_i(SEXP prior, SEXP beta_R, double zeta)
 {
     int n_update = N_UPDATE;
      /* function deleted */
-	#if(0)
-	updateTauKnown(prior, zeta);
-	#endif
+    #if(0)
+    updateTauKnown(prior, zeta);
+    #endif
     for (int i = 0; i < n_update; ++i) {
         /* functions deleted */
         #if(0)
@@ -4077,9 +4077,9 @@ updatePrior_RWRobustZeroKnown_i(SEXP prior, SEXP beta_R)
     PROTECT(beta_diffed_R= diffRandomWalk_Internal(prior, beta_R));
     
     /* functions deleted */
-	#if(0)
-	updateUZero(prior, beta_diffed_R);
-	updateGammaRobust(prior, beta_diffed_R);
+    #if(0)
+    updateUZero(prior, beta_diffed_R);
+    updateGammaRobust(prior, beta_diffed_R);
     #endif
     UNPROTECT(1); /* beta_diffed_R */
 }
@@ -4093,8 +4093,8 @@ updatePrior_RWRobustZeroUnknown_i(SEXP prior, SEXP beta_R)
     
     updateTauAndAlphaRobust(prior, beta_diffed_R);
     /* functions deleted */
-	#if(0)
-	updateUZero(prior, beta_diffed_R);
+    #if(0)
+    updateUZero(prior, beta_diffed_R);
     updateGammaRobust(prior, beta_diffed_R);
     #endif
     UNPROTECT(1); /* beta_diffed_R */
@@ -4179,14 +4179,14 @@ updatePrior_AR10_i(SEXP prior, SEXP beta_R, double zeta)
     int n_update = N_UPDATE;
     for (int i = 0; i < n_update; ++i) {
         /* functions removed */
-		#if(0)
-		updateVPriorVAR1(prior, beta_R, zeta);
+        #if(0)
+        updateVPriorVAR1(prior, beta_R, zeta);
         updateWPriorWAR10(prior, zeta);
         updateGammaAR10(prior, beta_R); /* changed name */
         updateGammaNoInitialAR1(prior);
         updateGammaHatAR10(prior);
         updatePhiAR10(prior);
-		#endif
+        #endif
     }
 }
 
@@ -4199,8 +4199,8 @@ updatePrior_AR11_i(SEXP prior, SEXP beta_R, double zeta)
     int n_update = N_UPDATE;
     for (int i = 0; i < n_update; ++i) {
         /* functions removed */
-		#if(0)
-		updateVPriorVAR1(prior, beta_R, zeta);
+        #if(0)
+        updateVPriorVAR1(prior, beta_R, zeta);
         updateWPriorWAR11(prior, zeta);
         updateGammaDeltaAR11(prior, beta_R, forward);
         updateGammaNoInitialAR1(prior);
@@ -4208,7 +4208,7 @@ updatePrior_AR11_i(SEXP prior, SEXP beta_R, double zeta)
         updateDeltaHatAR11(prior);
         updatePhiAR11(prior);
         updateGAR11(prior);
-		#endif
+        #endif
     }
 }
 
@@ -4422,22 +4422,22 @@ updatePrior_KnownUncertain(SEXP prior, SEXP beta_R, double zeta)
 void
 updatePrior_Poly(SEXP prior_R, SEXP beta_R, double zeta)
 {
-	SEXP components_R = GET_SLOT(prior_R, components_sym);
-	int n = LENGTH(components_R);
-	
-	int J = LENGTH(beta_R);
-	double *beta = REAL(beta_R);
+    SEXP components_R = GET_SLOT(prior_R, components_sym);
+    int n = LENGTH(components_R);
+    
+    int J = LENGTH(beta_R);
+    double *beta = REAL(beta_R);
     
     double *v = REAL(GET_SLOT(prior_R, v_sym));
-	
-	SEXP priorV = GET_SLOT(prior_R, priorV_sym); /* a PriorVarDLM */
+    
+    SEXP priorV = GET_SLOT(prior_R, priorV_sym); /* a PriorVarDLM */
     
     int n_update = N_UPDATE;
         
     double *workspace = (double *)R_alloc(J, sizeof(double));
     
     int forward = 1; /* true */
-	
+    
     for (int j = 0; j < n_update; ++j) {
     
         /* treat workspace as beta.hat here */
@@ -4452,10 +4452,10 @@ updatePrior_Poly(SEXP prior_R, SEXP beta_R, double zeta)
         for (int i = 0; i < n; ++i) {
             
             SEXP component_R = VECTOR_ELT(components_R, i);
-			/* function deleted */
-			#if(0)
+            /* function deleted */
+            #if(0)
             updateWAndPriorsW(component_R, zeta);
-			#endif
+            #endif
             /* treat workspace as betaTilde here */
             memcpy(workspace, beta, J*sizeof(double));
             betaTilde_Internal(workspace, J, components_R, i, forward);
@@ -4468,15 +4468,15 @@ updatePrior_Poly(SEXP prior_R, SEXP beta_R, double zeta)
 void
 updatePrior_PolyPredict(SEXP prior_R, SEXP beta_R, double zeta)
 {
-	SEXP components_R = GET_SLOT(prior_R, components_sym);
-	int n = LENGTH(components_R);
-	
-	int J = LENGTH(beta_R);
-	double *beta = REAL(beta_R);
+    SEXP components_R = GET_SLOT(prior_R, components_sym);
+    int n = LENGTH(components_R);
+    
+    int J = LENGTH(beta_R);
+    double *beta = REAL(beta_R);
     
     double *v = REAL(GET_SLOT(prior_R, v_sym));
-	
-	SEXP priorV = GET_SLOT(prior_R, priorV_sym); /* a PriorVarDLM */
+    
+    SEXP priorV = GET_SLOT(prior_R, priorV_sym); /* a PriorVarDLM */
     
     int n_update = N_UPDATE;
         
@@ -4500,9 +4500,9 @@ updatePrior_PolyPredict(SEXP prior_R, SEXP beta_R, double zeta)
             SEXP component_R = VECTOR_ELT(components_R, i);
 
             /* function deleted */
-			#if(0)
+            #if(0)
             updateWAndPriorsW(component_R, zeta);
-			#endif
+            #endif
             /* treat workspace as betaTilde here */
             memcpy(workspace, beta, J*sizeof(double));
             betaTilde_Internal(workspace, J, components_R, i, forward);
@@ -4591,7 +4591,7 @@ updateBeta(SEXP beta_R, SEXP prior,
 {
     int i_method_prior = *(INTEGER(GET_SLOT(prior, iMethodPrior_sym)));
     
-	switch(i_method_prior)
+    switch(i_method_prior)
     {
         case 1: case 2:
             updateBeta_ExchNormZero(beta_R, prior, vbar, 
@@ -5119,7 +5119,7 @@ updateBeta_RWNormZero(SEXP beta_R, SEXP prior,
         
         --n_classifying;
     }
-	//free(workspace);
+    //free(workspace);
 }
 #endif
 
@@ -6036,28 +6036,28 @@ void
 updateBeta_Poly(SEXP beta_R, SEXP prior_R,
                         double *vbar, int n, double sigma)
 {
-	SEXP components_R = GET_SLOT(prior_R, components_sym);
-	int J = LENGTH(beta_R);
-	double *beta = REAL(beta_R);
-	
-	double *v = REAL(GET_SLOT(prior_R, v_sym));
-	
-	double *beta_hat = (double *)R_alloc(J, sizeof(double));
+    SEXP components_R = GET_SLOT(prior_R, components_sym);
+    int J = LENGTH(beta_R);
+    double *beta = REAL(beta_R);
+    
+    double *v = REAL(GET_SLOT(prior_R, v_sym));
+    
+    double *beta_hat = (double *)R_alloc(J, sizeof(double));
     
     int forward = 1 /* true */;
-	
-	betaHatPoly_Internal(beta_hat, J, components_R, forward);
-	
-	double prec_data = n/(sigma*sigma);
-	
-	for (int j = 0; j < J; ++j) {
-		double this_prec_prior = 1/v[j];
-		double this_var = 1/(prec_data + this_prec_prior);
-		double this_sd = sqrt(this_var);
-		double this_mean = this_var*(prec_data*vbar[j] + 
-									this_prec_prior * beta_hat[j]);
-		beta[j] = rnorm(this_mean,this_sd);
-	}
+    
+    betaHatPoly_Internal(beta_hat, J, components_R, forward);
+    
+    double prec_data = n/(sigma*sigma);
+    
+    for (int j = 0; j < J; ++j) {
+        double this_prec_prior = 1/v[j];
+        double this_var = 1/(prec_data + this_prec_prior);
+        double this_sd = sqrt(this_var);
+        double this_mean = this_var*(prec_data*vbar[j] + 
+                                    this_prec_prior * beta_hat[j]);
+        beta[j] = rnorm(this_mean,this_sd);
+    }
 }
 #endif
 
@@ -6066,22 +6066,22 @@ void
 updateBeta_AR1_Internal(SEXP beta_R, SEXP prior_R,
                         double *vbar, int n, double sigma)
 {
-	int J = LENGTH(beta_R);
-	double *beta = REAL(beta_R);
-	
+    int J = LENGTH(beta_R);
+    double *beta = REAL(beta_R);
+    
     double *gammaNoInitial = REAL(GET_SLOT(prior_R, gammaNoInitial_sym));
-	double *v = REAL(GET_SLOT(prior_R, v_sym));
-	
-	double prec_data = n/(sigma*sigma);
-	
-	for (int j = 0; j < J; ++j) {
-		double this_prec_prior = 1/v[j];
-		double this_var = 1/(prec_data + this_prec_prior);
-		double this_sd = sqrt(this_var);
-		double this_mean = this_var*(prec_data*vbar[j] + 
-									this_prec_prior * gammaNoInitial[j]);
-		beta[j] = rnorm(this_mean,this_sd);
-	}
+    double *v = REAL(GET_SLOT(prior_R, v_sym));
+    
+    double prec_data = n/(sigma*sigma);
+    
+    for (int j = 0; j < J; ++j) {
+        double this_prec_prior = 1/v[j];
+        double this_var = 1/(prec_data + this_prec_prior);
+        double this_sd = sqrt(this_var);
+        double this_mean = this_var*(prec_data*vbar[j] + 
+                                    this_prec_prior * gammaNoInitial[j]);
+        beta[j] = rnorm(this_mean,this_sd);
+    }
 }
 #endif
 
@@ -6090,7 +6090,7 @@ void
 updateBeta_AR10(SEXP beta_R, SEXP prior_R,
                         double *vbar, int n, double sigma)
 {
-	updateBeta_AR1_Internal(beta_R, prior_R,
+    updateBeta_AR1_Internal(beta_R, prior_R,
                         vbar, n, sigma);
 }
 #endif
@@ -6100,7 +6100,7 @@ void
 updateBeta_AR11(SEXP beta_R, SEXP prior_R,
                         double *vbar, int n, double sigma)
 {
-	updateBeta_AR1_Internal(beta_R, prior_R,
+    updateBeta_AR1_Internal(beta_R, prior_R,
                         vbar, n, sigma);
 }
 #endif
@@ -6250,7 +6250,7 @@ updatePriorVarDLM(SEXP prior_R, SEXP var_R,
     double *expected = REAL(expected_R);
     double zeta = *REAL(zeta_R);
     
-	updatePriorVarDLM_Internal(prior_R, var, J,
+    updatePriorVarDLM_Internal(prior_R, var, J,
                             observed, expected, zeta);
 }
 
@@ -6300,7 +6300,7 @@ updatePriorVarDLM_NormKnown(SEXP prior_R, SEXP var_R,
     double *expected = REAL(expected_R);
     double zeta = *REAL(zeta_R);
     
-	updatePriorVarDLM_NormKnown_Internal(prior_R, var, J,
+    updatePriorVarDLM_NormKnown_Internal(prior_R, var, J,
                                 observed, expected, zeta);
 }
 
@@ -6326,7 +6326,7 @@ updatePriorVarDLM_NormUnknown(SEXP prior_R, SEXP var_R,
     double *expected = REAL(expected_R);
     double zeta = *REAL(zeta_R);
     
-	updatePriorVarDLM_NormUnknown_Internal(prior_R, var, J,
+    updatePriorVarDLM_NormUnknown_Internal(prior_R, var, J,
                                 observed, expected, zeta);
 }
 
@@ -6368,7 +6368,7 @@ updatePriorVarDLM_RobustKnown(SEXP prior_R, SEXP var_R,
     double *expected = REAL(expected_R);
     double zeta = *REAL(zeta_R);
     
-	updatePriorVarDLM_RobustKnown_Internal(prior_R, var, J,
+    updatePriorVarDLM_RobustKnown_Internal(prior_R, var, J,
                                 observed, expected, zeta);
 }
 
@@ -6394,7 +6394,7 @@ updatePriorVarDLM_RobustUnknown(SEXP prior_R, SEXP var_R,
     double *expected = REAL(expected_R);
     double zeta = *REAL(zeta_R);
     
-	updatePriorVarDLM_RobustUnknown_Internal(prior_R, var, J,
+    updatePriorVarDLM_RobustUnknown_Internal(prior_R, var, J,
                                 observed, expected, zeta);
 }
 
@@ -6439,7 +6439,7 @@ updatePriorVarDLM_Zero(SEXP prior_R, SEXP var_R,
     double *expected = REAL(expected_R);
     double zeta = *REAL(zeta_R);
     
-	updatePriorVarDLM_Zero_Internal(prior_R, var, J,
+    updatePriorVarDLM_Zero_Internal(prior_R, var, J,
                                 observed, expected, zeta);
 }
 
@@ -6448,7 +6448,7 @@ updatePriorVarDLM_Zero_Internal(SEXP prior_R, double *var, int J,
                                 double *observed, double *expected,
                                 double zeta)
 {
-	/* null op */
+    /* null op */
 }
 
 
@@ -6885,7 +6885,7 @@ updateZetas_General(SEXP object_R, double (*g)(double))
                     && (zeta_prop < ZETA_PROP_UPPER_LIMIT)) {
             zetas[iBeta] = zeta_prop;
         }
-	
+    
     }
 }
 #endif
@@ -6920,21 +6920,21 @@ void FFBS_Internal(SEXP object_R, double *y,  double *v, int forward);
 void
 FFBS(SEXP object_R, SEXP y_R, SEXP v_R, int forward)
 {
-	double *y = REAL(y_R);
+    double *y = REAL(y_R);
     double *v = REAL(v_R);
     
-	FFBS_Internal(object_R, y, v, forward);
+    FFBS_Internal(object_R, y, v, forward);
 }
 
 void
 FFBS_Internal(SEXP object_R, double *y,  double *v, int forward)
 {
-	forwardFilter_Internal(object_R, y, v, forward);
-	/* function deleted */
-	#if(0)
-	updateFinalGamma(object_R, forward);
-	#endif
-	backwardSample(object_R, forward);
+    forwardFilter_Internal(object_R, y, v, forward);
+    /* function deleted */
+    #if(0)
+    updateFinalGamma(object_R, forward);
+    #endif
+    backwardSample(object_R, forward);
 }
 
 void backwardSample(SEXP object_R, int forward);
@@ -7288,7 +7288,7 @@ SEXP betaHatPoly(SEXP components_R, int forward);
 void betaHatComponent_Internal(double *ans, int J, SEXP component_R,
                                         int forward);
 void betaHatPoly_Internal(double *ans, int J, SEXP components_R,
-							int forward);
+                            int forward);
 /* one-off wrapper for betaHatComponent */
 SEXP
 betaHatComponent_R(SEXP component_R, SEXP forward_R)
@@ -7430,7 +7430,7 @@ betaTilde_R(SEXP beta_R, SEXP components_R, SEXP i_R, SEXP forward_R)
 }
 CALLDEF(betaTilde_R, 4),
 void betaTilde_Internal(double *betaToTilde, int J, SEXP components_R,
-							int i, int forward);
+                            int i, int forward);
 SEXP
 betaTilde(SEXP beta_R, SEXP components_R, SEXP i_R, int forward)
 {
@@ -7946,11 +7946,11 @@ void minv2 (SEXP m_ans_R);
 * one-off wrapper for minv2 */
 SEXP minv2_R(SEXP m_R)
 {
-	SEXP ans_R;         
+    SEXP ans_R;         
     PROTECT(ans_R = duplicate(m_R));
     minv2(ans_R);
     UNPROTECT(1);
-	return ans_R;
+    return ans_R;
 }
 CALLDEF(minv2_R, 1),
 void minv2_Internal (double *m_ans);
@@ -8333,114 +8333,114 @@ void
 transferParamDeltaAR11(SEXP prior_R, double *values, int nValues)
 {
     int *offsets = INTEGER(GET_SLOT(prior_R, offsetsDelta_sym));
-	int first = offsets[0] - 1;
-	int last =  offsets[1] - 1;
+    int first = offsets[0] - 1;
+    int last =  offsets[1] - 1;
     
     int nToCopy = last - first + 1;
-	double *delta = REAL(GET_SLOT(prior_R, delta_sym)); 
+    double *delta = REAL(GET_SLOT(prior_R, delta_sym)); 
     /* copy from values to delta */
-	memcpy(delta, values + first, nToCopy*sizeof(double)); 
+    memcpy(delta, values + first, nToCopy*sizeof(double)); 
 }
 
 void
 transferParamDelta0AR11Predict(SEXP prior_R, double *values, int nValues)
 {
-	int K = *INTEGER(GET_SLOT(prior_R, K_sym));
-	int L = *INTEGER(GET_SLOT(prior_R, L_sym));
-	int forward = *INTEGER(GET_SLOT(prior_R, forward_sym));
-	
-	double *delta = REAL(GET_SLOT(prior_R, delta_sym)); 
-	
-	int *offsets = INTEGER(GET_SLOT(prior_R, offsetsDelta_sym));
-	int first = offsets[0] - 1;
-	
-	double *valsToCopy = values + first;
-	
-	SEXP iterPred_R = GET_SLOT(prior_R, iteratorGamma_sym);
-	SEXP iterEst_R = GET_SLOT(prior_R, iteratorGammaEst_sym);
-	
-	resetA(iterPred_R);
-	resetA(iterEst_R);
-	
-	int *indicesPred = INTEGER(GET_SLOT(iterPred_R, indices_sym));
-	SEXP indicesEst_R = GET_SLOT(iterEst_R, indices_sym);
-	int *indicesEst = INTEGER(indicesEst_R);
-	
-	int K_plus_1_est = LENGTH(indicesEst_R);
+    int K = *INTEGER(GET_SLOT(prior_R, K_sym));
+    int L = *INTEGER(GET_SLOT(prior_R, L_sym));
+    int forward = *INTEGER(GET_SLOT(prior_R, forward_sym));
     
-	for (int l = 0; l < L; ++l) {
-		int i_pred = (forward ? indicesPred[0] : indicesPred[K]) - 1;
-		int i_est = (forward ? indicesEst[K_plus_1_est - 1] 
-												: indicesEst[0]) - 1;
-		delta[i_pred] = valsToCopy[i_est];
-		
-		advanceA(iterPred_R);
-		advanceA(iterEst_R);
-	}
+    double *delta = REAL(GET_SLOT(prior_R, delta_sym)); 
+    
+    int *offsets = INTEGER(GET_SLOT(prior_R, offsetsDelta_sym));
+    int first = offsets[0] - 1;
+    
+    double *valsToCopy = values + first;
+    
+    SEXP iterPred_R = GET_SLOT(prior_R, iteratorGamma_sym);
+    SEXP iterEst_R = GET_SLOT(prior_R, iteratorGammaEst_sym);
+    
+    resetA(iterPred_R);
+    resetA(iterEst_R);
+    
+    int *indicesPred = INTEGER(GET_SLOT(iterPred_R, indices_sym));
+    SEXP indicesEst_R = GET_SLOT(iterEst_R, indices_sym);
+    int *indicesEst = INTEGER(indicesEst_R);
+    
+    int K_plus_1_est = LENGTH(indicesEst_R);
+    
+    for (int l = 0; l < L; ++l) {
+        int i_pred = (forward ? indicesPred[0] : indicesPred[K]) - 1;
+        int i_est = (forward ? indicesEst[K_plus_1_est - 1] 
+                                                : indicesEst[0]) - 1;
+        delta[i_pred] = valsToCopy[i_est];
+        
+        advanceA(iterPred_R);
+        advanceA(iterEst_R);
+    }
 }
 
 void
 transferParamGammaAR1(SEXP prior_R, double *values, int nValues)
 {
-	int *offsets = INTEGER(GET_SLOT(prior_R, offsetsGamma_sym));
-	int first = offsets[0] - 1;
-	int last =  offsets[1] - 1;
-	
-	int nToCopy = last - first + 1;
-	double *gamma = REAL(GET_SLOT(prior_R, gamma_sym)); 
-	
-	/* copy from values to gamma */
-	memcpy(gamma, values + first, nToCopy*sizeof(double)); 
+    int *offsets = INTEGER(GET_SLOT(prior_R, offsetsGamma_sym));
+    int first = offsets[0] - 1;
+    int last =  offsets[1] - 1;
+    
+    int nToCopy = last - first + 1;
+    double *gamma = REAL(GET_SLOT(prior_R, gamma_sym)); 
+    
+    /* copy from values to gamma */
+    memcpy(gamma, values + first, nToCopy*sizeof(double)); 
 }
 
 void
 transferParamGamma0AR1Predict(SEXP prior_R, double *values, int nValues)
 {
-	int K = *INTEGER(GET_SLOT(prior_R, K_sym));
-	int L = *INTEGER(GET_SLOT(prior_R, L_sym));
-	int forward = *INTEGER(GET_SLOT(prior_R, forward_sym));
-	
-	double *gamma = REAL(GET_SLOT(prior_R, gamma_sym)); 
-	
-	int *offsets = INTEGER(GET_SLOT(prior_R, offsetsGamma_sym));
-	int first = offsets[0] - 1;
-	
-	double *valsToCopy = values + first;
-	
-	SEXP iterPred_R = GET_SLOT(prior_R, iteratorGamma_sym);
-	SEXP iterEst_R = GET_SLOT(prior_R, iteratorGammaEst_sym);
-	
-	resetA(iterPred_R);
-	resetA(iterEst_R);
-	
-	int *indicesPred = INTEGER(GET_SLOT(iterPred_R, indices_sym));
-	SEXP indicesEst_R = GET_SLOT(iterEst_R, indices_sym);
-	int *indicesEst = INTEGER(indicesEst_R);
-	
-	int K_plus_1_est = LENGTH(indicesEst_R);
-	
-	for (int l = 0; l < L; ++l) {
-		int i_pred = (forward ? indicesPred[0] : indicesPred[K]) - 1;
-		int i_est = (forward ? indicesEst[K_plus_1_est - 1] 
-												: indicesEst[0]) - 1;
-		gamma[i_pred] = valsToCopy[i_est];
-		
-		advanceA(iterPred_R);
-		advanceA(iterEst_R);
-	}
+    int K = *INTEGER(GET_SLOT(prior_R, K_sym));
+    int L = *INTEGER(GET_SLOT(prior_R, L_sym));
+    int forward = *INTEGER(GET_SLOT(prior_R, forward_sym));
+    
+    double *gamma = REAL(GET_SLOT(prior_R, gamma_sym)); 
+    
+    int *offsets = INTEGER(GET_SLOT(prior_R, offsetsGamma_sym));
+    int first = offsets[0] - 1;
+    
+    double *valsToCopy = values + first;
+    
+    SEXP iterPred_R = GET_SLOT(prior_R, iteratorGamma_sym);
+    SEXP iterEst_R = GET_SLOT(prior_R, iteratorGammaEst_sym);
+    
+    resetA(iterPred_R);
+    resetA(iterEst_R);
+    
+    int *indicesPred = INTEGER(GET_SLOT(iterPred_R, indices_sym));
+    SEXP indicesEst_R = GET_SLOT(iterEst_R, indices_sym);
+    int *indicesEst = INTEGER(indicesEst_R);
+    
+    int K_plus_1_est = LENGTH(indicesEst_R);
+    
+    for (int l = 0; l < L; ++l) {
+        int i_pred = (forward ? indicesPred[0] : indicesPred[K]) - 1;
+        int i_est = (forward ? indicesEst[K_plus_1_est - 1] 
+                                                : indicesEst[0]) - 1;
+        gamma[i_pred] = valsToCopy[i_est];
+        
+        advanceA(iterPred_R);
+        advanceA(iterEst_R);
+    }
 }
 
 void
 transferParamPhiAR1(SEXP prior_R, double *values, int nValues)
 {
-	int phiKnown = *INTEGER(GET_SLOT(prior_R, phiKnown_sym));
-	
-	if (!phiKnown) {
-		int *offsets = INTEGER(GET_SLOT(prior_R, offsetsPhi_sym));
-		
-		int first = offsets[0] - 1;
-		SET_SLOT(prior_R, phi_sym, ScalarReal(values[first]));
-	}
+    int phiKnown = *INTEGER(GET_SLOT(prior_R, phiKnown_sym));
+    
+    if (!phiKnown) {
+        int *offsets = INTEGER(GET_SLOT(prior_R, offsetsPhi_sym));
+        
+        int first = offsets[0] - 1;
+        SET_SLOT(prior_R, phi_sym, ScalarReal(values[first]));
+    }
 }
       
 
@@ -8494,7 +8494,7 @@ transferParamPriorV(SEXP prior_R, double *values, int nValues)
         int nValuesToTransfer = last - first + 1;
         
         /* function deleted */
-		transferParamPriorVarDLM(priorV_R, values + first, nValuesToTransfer); 
+        transferParamPriorVarDLM(priorV_R, values + first, nValuesToTransfer); 
         #endif
     }
 }
@@ -8503,12 +8503,12 @@ transferParamPriorV(SEXP prior_R, double *values, int nValues)
 void
 transferParamPriorWAR1(SEXP prior_R, double *values, int nValues)
 {
-	SEXP offsetsPriorW_R = GET_SLOT(prior_R, offsetsPriorW_sym);
-	
-	if ( !isNull(offsetsPriorW_R) ) {
+    SEXP offsetsPriorW_R = GET_SLOT(prior_R, offsetsPriorW_sym);
+    
+    if ( !isNull(offsetsPriorW_R) ) {
         
         /* unused since transferParamPriorVarDLM function deleted */
-		#if(0)
+        #if(0)
         int *offsets = INTEGER(offsetsPriorW_R);
         SEXP priorW_R = GET_SLOT(prior_R, priorW_sym);
         int first = offsets[0]-1;
@@ -8517,7 +8517,7 @@ transferParamPriorWAR1(SEXP prior_R, double *values, int nValues)
         int nValuesToTransfer = last - first + 1;
         
         /* function deleted */
-		transferParamPriorVarDLM(priorW_R, values + first, nValuesToTransfer); 
+        transferParamPriorVarDLM(priorW_R, values + first, nValuesToTransfer); 
         #endif
     }
 }
@@ -8550,8 +8550,8 @@ transferPriorsW(SEXP component_R, double *values, int nValues)
     int q = *(INTEGER(GET_SLOT(component_R, q_sym)));
     
     /* unused since transferParamPriorVarDLM function deleted */
-	#if(0)
-	/* PriorsW a list of PriorVarDLM types, length q */
+    #if(0)
+    /* PriorsW a list of PriorVarDLM types, length q */
     SEXP priorsW_R = GET_SLOT(component_R, priorsW_sym);
     #endif
     
@@ -8564,8 +8564,8 @@ transferPriorsW(SEXP component_R, double *values, int nValues)
         if( !isNull(this_offset_R)) {
             
             /* unused since transferParamPriorVarDLM function deleted */
-			#if(0)
-			int *this_offset = INTEGER(this_offset_R);
+            #if(0)
+            int *this_offset = INTEGER(this_offset_R);
             int first = this_offset[0]-1;
             int last = this_offset[1]-1;
             
@@ -8578,12 +8578,466 @@ transferPriorsW(SEXP component_R, double *values, int nValues)
             /* function deleted */
             transferParamPriorVarDLM(thisPriorW, &values[first], 
                                                     nValuesToTransfer);
-			#endif
+            #endif
         }
     }
 }
 
+/* ************** deleted Jan 2017 ********************* */
+
+void
+betaExchZero(double *betaScaledMutable, int J, SEXP prior_R)
+{
+    double A = *REAL(GET_SLOT(prior_R, ATau_sym));
+    
+    double zeta = *REAL(GET_SLOT(prior_R, zeta_sym));
+    
+    double mult = A * zeta;
+    
+    for (int i = 0; i < J; ++i) {
+        betaScaledMutable[i] *= mult;
+    }
+}
+
+void
+updateUBetaExchRobustZero(SEXP prior_R)
+{
+    int J = *INTEGER(GET_SLOT(prior_R, J_sym));   
+     
+    double *UBetaScaled = REAL(GET_SLOT(prior_R, UBetaScaled_sym));
+    double A = *REAL(GET_SLOT(prior_R, ATau_sym));
+    double zeta = *REAL(GET_SLOT(prior_R, zeta_sym));
+    
+    double *UBeta = REAL(GET_SLOT(prior_R, UBeta_sym));
+    
+    double ASqTimesZetaSq = A * A * zeta * zeta;
+    
+    for (int j = 0; j < J; ++j) {
+    
+        UBeta[j] = ASqTimesZetaSq * UBetaScaled[j];
+    }
+}
+
+void
+updateUBetaScaled(SEXP prior_R, double *betaScaled, int J)
+{
+    double *U = REAL(GET_SLOT(prior_R, UBetaScaled_sym));
+    double nu = *REAL(GET_SLOT(prior_R, nuBeta_sym));
+    double tau = *REAL(GET_SLOT(prior_R, tauScaled_sym));
+    
+    double df = nu + 1;
+    
+    double nuTimesTauSq = nu * tau * tau;
+    
+    for (int j = 0; j < J; ++j) {
+        double bs = betaScaled[j];
+        double thisScale = (nuTimesTauSq + bs*bs)/df;
+        
+        U[j] = rinvchisq1(df, thisScale);
+    }
+}
+
+void
+predictUBetaScaled(SEXP prior_R)
+{
+    int J = *INTEGER(GET_SLOT(prior_R, J_sym));
+    double zeta = *REAL(GET_SLOT(prior_R, zeta_sym));
+    double A = *REAL(GET_SLOT(prior_R, ATau_sym));
+    
+    double *U = REAL(GET_SLOT(prior_R, UBeta_sym));
+    double *UScaled = REAL(GET_SLOT(prior_R, UBetaScaled_sym));
+    
+    double div = A*A * zeta*zeta;
+    
+    for (int j = 0; j < J; ++j) {
+        
+        UScaled[j] = U[j] / div;
+    }
+
+}
+
+void
+updateTauScaledRobust(SEXP prior_R)
+{
+    int J = *INTEGER(GET_SLOT(prior_R, J_sym));   
+     
+    double *U = REAL(GET_SLOT(prior_R, UBetaScaled_sym));
+    double nu = *REAL(GET_SLOT(prior_R, nuTau_sym));
+    
+    double shape = J*nu/2;
+     
+    double rate = 0;
+    for (int i = 0; i < J; ++i) {
+        rate += 1/U[i];
+    }
+    rate *= nu/2;
+    
+    double tauSqScaled = rgamma(shape, 1/rate);
+    
+    double tauScaled = sqrt(tauSqScaled);
+    SET_DOUBLESCALE_SLOT(prior_R, tauScaled_sym, tauScaled);
+}
+
+void
+updateBetaScaled(double *betaScaled, int J, SEXP prior_R, 
+                        double *vbar, int n, double sigma)
+{
+    double A = *REAL(GET_SLOT(prior_R, ATau_sym));
+    double zeta = *REAL(GET_SLOT(prior_R, zeta_sym));
+    
+    double *v = (double*)R_alloc(J, sizeof(double));
+    
+    getV_Internal(v, prior_R, J);
+    
+    double ATimesZeta = A*zeta;
+    
+    double precData = (n*ATimesZeta*ATimesZeta)/(sigma*sigma);
+    
+    for (int i = 0; i < J; ++i) {
+        
+        double thisK = vbar[i]/(ATimesZeta);
+        double thisPrecPrior =1/v[i];
+        double thisVar = 1/(precData + thisPrecPrior);
+        
+        double thisMean = precData * thisK * thisVar;
+        double thisSD = sqrt(thisVar);
+        
+        betaScaled[i] = rnorm(thisMean, thisSD);
+    }
+}
+
+void
+updateZetaAndTau(SEXP prior_R, int J, double *betaScaled, 
+         double *vbar, int n, double sigma)
+{
+    double A = *REAL(GET_SLOT(prior_R, ATau_sym));
+    double nu = *REAL(GET_SLOT(prior_R, nuTau_sym));
+    double tauMax = *REAL(GET_SLOT(prior_R, tauMax_sym));
+
+    double JTimesA = J*A;
+    
+    double L = 0;
+    double sumOneOverBetaScaledSq = 0;
+    
+    for (int i = 0; i < J; ++i) {
+        
+        double bs = betaScaled[i];
+        
+        L += vbar[i]/bs;
+        sumOneOverBetaScaledSq += 1/(bs*bs);
+        
+    }
+    
+    L /= JTimesA; 
+    
+    double precData = (n*JTimesA*JTimesA)/(sigma*sigma*sumOneOverBetaScaledSq);
+    double var = 1/(precData+1);
+    double mean = precData * L * var;
+    double sd = sqrt(var);
+    
+    double zeta = rnorm(mean, sd);
+
+    double df = nu + J;
+    double sumBetaScaledSq = 0;
+    for (int i = 0; i < J; ++i) {
+        double bs = betaScaled[i];
+        sumBetaScaledSq += bs*bs;
+    }
+    double scale = (nu + sumBetaScaledSq)/df;
+    
+    double tauSqScaled = rinvchisq1(df, scale);
+    double tauScaled = sqrt(tauSqScaled);
+    double tau = A * fabs(zeta) * tauScaled;
+    if (tau < tauMax) {
+      SET_SLOT(prior_R, zeta_sym, ScalarReal(zeta));
+      SET_DOUBLESCALE_SLOT(prior_R, tauScaled_sym, tauScaled);
+      SET_DOUBLESCALE_SLOT(prior_R, tau_sym, tau);
+    }
+}
+
+/* one-off wrapper for updateZetaAndTau */
+SEXP updateZetaAndTau_R(SEXP prior_R, SEXP betaScaled_R, SEXP vbar_R, SEXP n_R, SEXP sigma_R)
+{
+    double *betaScaled = REAL(betaScaled_R);
+    double *vbar = REAL(vbar_R);
+    int n = *INTEGER(n_R);
+    double sigma = *REAL(sigma_R);
+    int J = *INTEGER(GET_SLOT(prior_R, J_sym));
+    SEXP ans_R;
+    PROTECT(ans_R = duplicate(prior_R));
+    GetRNGstate();
+    updateZetaAndTau(ans_R, J, betaScaled, vbar, n, sigma);
+    PutRNGstate();
+    UNPROTECT(1);
+    return ans_R;
+}
+
+#if(0) /* I think this was commented out and replaced at some stage by John?? - JAH */
+double  
+updateSDNorm(double sigma, double A, double nu, double V, int n, double max) 
+{ 
+    double sigmaSq = sigma * sigma; 
+    double nuPlusOne = nu + 1; 
+    double nPlusNuPlusOne = n + nuPlusOne; 
+    double nuASq = nu * A * A; 
+    double n_nuASq = n*nuASq; 
+
+    double f = -n*log(sigma) - V/(2*sigmaSq) - nuPlusOne/2 * log(sigmaSq + nuASq); 
+    double e = rexp(1.0); 
+    double z = f - e; 
+    double numerator = V - n_nuASq  
+         + sqrt((V - n_nuASq)*(V - n_nuASq) + 4*nPlusNuPlusOne*V*nuASq); 
+    double denominator = 2*nPlusNuPlusOne; 
+
+    double sigma_f_max = sqrt(numerator/denominator); 
+    double sigma0_left = 0.5*sigma_f_max; 
+    double sigma0_right = 1.5*sigma_f_max; 
+
+    double ans = -99; /* default answer */ 
+
+    double rootLeft = findOneRootLogPostSigmaNorm(sigma0_left, 
+                                     z, A, nu, V, n, 0, sigma_f_max); 
+    int foundRootLeft = (rootLeft > 0); 
+
+    if (foundRootLeft) { 
+        double rootRight = findOneRootLogPostSigmaNorm(sigma0_right, 
+                                     z, A, nu, V, n, sigma_f_max, max); 
+        int foundRootRight = (rootRight > 0); 
+
+        if (foundRootRight) { 
+            ans = runif(rootLeft, rootRight); 
+        } 
+
+    } 
+    else { 
+        double near_sigma_f_max = (rootLeft > -2); 
+        if (near_sigma_f_max) { 
+            ans = sigma_f_max; 
+        } 
+    }     
+
+    return ans; 
+
+} 
+#endif
+
+
+
+#if(0) /* I think this was commented out and replaced at some stage by John?? - JAH */
+double 
+updateSDRobust(double sigma, double A, double nuBeta, double nuTau, double V, int n, double max)
+{
+    double sigmaSq = sigma * sigma;
+    double nuTauPlusOne = nuTau + 1;
+    double nuTauASq = nuTau * A * A;
+    double n_nuBeta = n*nuBeta;
+    
+    double f = n_nuBeta*log(sigma) - nuBeta/2 *sigmaSq* V - nuTauPlusOne/2 * log(sigmaSq + nuTauASq);
+    double e = rexp(1.0);
+    double z = f - e;
+    double H1 = nuBeta*V;
+    double H2 = H1 * nuTauASq + nuTauPlusOne - n_nuBeta;
+    double H3 = -n_nuBeta*nuTauASq;
+    
+    double sigma_f_max = sqrt((-H2 +sqrt(H2*H2 - 4*H1*H3))/(2*H1));
+    double sigma0_left = 0.5*sigma_f_max;
+    double sigma0_right = 1.5*sigma_f_max;
+    
+    double ans = -99; /* default answer */
+    
+    double rootLeft = findOneRootLogPostSigmaRobust(sigma0_left,
+                        z, A, nuBeta, nuTau, V, n, 0, sigma_f_max);
+    int foundRootLeft = (rootLeft > 0);
+    
+    if (foundRootLeft) {
+        double rootRight = findOneRootLogPostSigmaRobust(sigma0_right,
+                        z, A, nuBeta, nuTau, V, n, sigma_f_max, max);
+        int foundRootRight = (rootRight > 0);
+        
+        if (foundRootRight) {
+            ans = runif(rootLeft, rootRight);
+        }
+    
+    }
+    else {
+        double near_sigma_f_max = (rootLeft > -2);
+        if (near_sigma_f_max) {
+            ans = sigma_f_max;
+        }
+    }    
+    
+    return ans;
+}
+#endif
+
+
+/* component_R is a polycomponent, forward_R is a logical */
+void
+predictPolyComponent(SEXP component_R, int forward, double zeta)
+{
+    /* J integer, q an integer
+    gamma a list of length J+1 of doubles length q 
+    G and inverseG both qxq matrices of doubles */
+    int J = *(INTEGER(GET_SLOT(component_R, J_sym)));
+    int q = *(INTEGER(GET_SLOT(component_R, q_sym)));
+    SEXP gamma_R = GET_SLOT(component_R, gamma_sym);
+    /* G a matrix of doubles, size q x q */
+    double *G = REAL(GET_SLOT(component_R, G_sym));
+    
+    /* unused since predictVarDLM function deleted */
+    #if(0)
+    /* W a list of matrices of doubles, len J, each matrix size q x q */
+    SEXP W_R = GET_SLOT(component_R, W_sym);
+    /* PriorsW a list of PriorVarDLM types, length q */
+    SEXP priorsW_R = GET_SLOT(component_R, priorsW_sym);
+    #endif
+    
+    /* for blas operations */
+    char transN = 'N'; /* no operation */
+    double alpha_blas = 1.0;
+    double beta_blas = 0.0;
+    int inc = 1;
+
+    /*W[[j]][i, i] <- predictVarDLM(prior = priorsW[[i]],
+                                                  zeta = zeta)*/
+    if(forward) {
+        /*first gamma */
+        double *this_gamma_old = REAL(VECTOR_ELT(gamma_R, 0));
+        
+        for (int j = 0; j < J; ++j) {
+            
+            /* not used since predictVarDLM function deleted */
+            #if(0)
+            double *this_W = REAL(VECTOR_ELT(W_R, j));
+            #endif
+            
+            double *this_gamma_new = REAL(VECTOR_ELT(gamma_R, j+1));
+            
+            /* first part of
+             * gamma[[j + 1L]] <- drop(G %*% gamma[[j]]) + epsilon */
+         
+            F77_CALL(dgemv)(&transN, &q, &q, &alpha_blas, 
+                G, &q, this_gamma_old, &inc, &beta_blas, 
+                this_gamma_new, &inc);    
+            /* result is stored in this_gamma_new */
+            
+            for (int i = 0; i < q; ++i) {
+                
+                /* function deleted */
+                #if(0)
+                double thisDiagW = predictVarDLM(VECTOR_ELT(priorsW_R, i),
+                                                zeta);
+                this_W[i*q + i]  = thisDiagW;
+                this_gamma_new[i] += rnorm(0, sqrt(thisDiagW));
+                #endif
+            }
+            
+            this_gamma_old = this_gamma_new;
+        }
+    }
+    else { /* backwards */
+        /*first gamma */
+        double *this_gamma_old = REAL(VECTOR_ELT(gamma_R, J));
+        
+        for (int j = J-1; j >= 0; --j) {
+            
+            /* not used since predictVarDLM function deleted */
+            #if(0)
+            double *this_W = REAL(VECTOR_ELT(W_R, j));
+            #endif
+            
+            double *this_gamma_new = REAL(VECTOR_ELT(gamma_R, j));
+            
+            /* first part of
+             * gamma[[j]] <- drop(G %*% gamma[[j + 1L]]) + epsilon */
+         
+            F77_CALL(dgemv)(&transN, &q, &q, &alpha_blas, 
+                G, &q, this_gamma_old, &inc, &beta_blas, 
+                this_gamma_new, &inc);    
+            /* result is stored in this_gamma_new */
+            
+            for (int i = 0; i < q; ++i) {
+                
+                /* function deleted */
+                #if(0)
+                double thisDiagW = predictVarDLM(VECTOR_ELT(priorsW_R, i),
+                                                zeta);
+                this_W[i*q + i]  = thisDiagW;
+                this_gamma_new[i] += rnorm(0, sqrt(thisDiagW));
+                #endif
+            }
+            
+            this_gamma_old = this_gamma_new;
+        }
+    }
+}
+
+SEXP predictPolyComponent_R(SEXP component_R, SEXP forward_R, SEXP zeta_R)
+{
+    int forward = *INTEGER(forward_R);
+    double zeta = *REAL(zeta_R);
+    SEXP ans_R;         
+    PROTECT(ans_R = duplicate(component_R));
+    GetRNGstate();
+    predictPolyComponent(ans_R, forward, zeta);
+    PutRNGstate();
+    UNPROTECT(1);
+    return ans_R;
+    
+}
+
+
+Jan 2017: removed symbols
+U_sym,
+values_sym,
+valuesUnscaled_sym,
+sd_sym,
+sdUnscaled_sym,
+mean_sym,
+meanUnscaled_sym,
+contribShared_sym,
+nShared_sym,
+scaleSigma_sym,
+  dfPriorSigma_sym,
+  scalePriorSigma_sym,
+  acceptSigma_sym,
+zetas_sym,
+  iMissing_sym,
+ iMissingOutsideSubtotals_sym,
+ yIsIncomplete_sym,
+q_sym,
+  G_sym, /* only used in predictPolyComponent */
+  zeta_sym,        
+  tauScaled_sym,
+  UBetaScaled_sym,
+          
+ADD_SYM(U);
+ADD_SYM(values);
+ADD_SYM(valuesUnscaled);
+  ADD_SYM(mean);
+  ADD_SYM(meanUnscaled);
+  ADD_SYM(sd);
+ADD_SYM(sdUnscaled);
+ADD_SYM(contribShared);
+ADD_SYM(nShared);
+ADD_SYM(scaleSigma);
+  ADD_SYM(dfPriorSigma);
+  ADD_SYM(scalePriorSigma);
+  ADD_SYM(acceptSigma);
+  ADD_SYM(zetas);
+ ADD_SYM(iMissing);
+ ADD_SYM(iMissingOutsideSubtotals);
+ ADD_SYM(yIsIncomplete);
+  ADD_SYM(q);
+  ADD_SYM(G);
+  ADD_SYM(zeta);
+  ADD_SYM(tauScaled);
+  ADD_SYM(UBetaScaled);
+  
+          
+
+
 
     
-	   
+         
     
