@@ -27,11 +27,11 @@ AlongIterator <- function(dim, iAlong) {
     initial <- seq.int(from = 1L, by = n.within, length.out = n.along)
     increment.between <- n.within * (n.along - 1L) + 1L
     methods::new("AlongIterator",
-        indices = initial,
-        nWithin = n.within,
-        nBetween = n.between,
-        initial = initial,
-        incrementBetween = increment.between)
+                 indices = initial,
+                 nWithin = n.within,
+                 nBetween = n.between,
+                 initial = initial,
+                 incrementBetween = increment.between)
 }
 
 ## HAS_TESTS
@@ -167,9 +167,9 @@ DimIterator <- function(dim, i) {
     n.between <- dim[i]
     n.strides <- 1L - n.between
     methods::new("DimIterator",
-        nStrides = n.strides,
-        nWithin = n.within,
-        nBetween = n.between)
+                 nStrides = n.strides,
+                 nWithin = n.within,
+                 nBetween = n.between)
 }
 
 ## HAS_TESTS
@@ -180,7 +180,7 @@ MarginIterator <- function(dim) {
     for (i in seq_along(dimIterators))
         dimIterators[[i]] <- DimIterator(dim = dim, i = i)
     methods::new("MarginIterator",
-        indices = indices,
-        dimIterators = dimIterators)
+                 indices = indices,
+                 dimIterators = dimIterators)
 }
 

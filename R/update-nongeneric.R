@@ -952,6 +952,7 @@ updateUEtaCoef <- function(prior, useC = FALSE) {
         prior
     }
 }
+
  
 ## TRANSLATED
 ## HAS_TESTS

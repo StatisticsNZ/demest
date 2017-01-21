@@ -2,6 +2,40 @@
 ## Mixin classes that extend a general class such as "numeric" or "list",
 ## and that do not contain a specific slot
 
+setClass("ClassIndex",
+         contains = c("VIRTUAL", "integer"),
+         validity = function(object) {
+             ## 'object' has no missing values
+             if (is.na(object))
+                 return(gettext("missing"))
+             ## 'object' consists of consecutive numbers"
+             unique.values <- unique(object)
+             diff.unique.values <- diff(unique.values)
+             if (any(diff.unique.values != 1L))
+                 return(gettext("not consecutive"))
+             TRUE
+         })
+
+setClass("ClassIndexWithZeros",
+         contains = "ClassIndex",
+         validity = function(object) {
+             ## minimum value is 0 or 1
+             min <- min(object)
+             if ((min != 0L) && (min != 1L))
+                 return(gettext("minimum value not 0 or 1"))
+             TRUE
+         })
+
+setClass("ClassIndexWithoutZeros",
+         contains = "ClassIndex",
+         validity = function(object) {
+             ## minimum value is 1
+             min <- min(object)
+             if (min != 1L)
+                 return(gettext("minimum value not 1"))
+             TRUE
+         })
+
 setClass("Counter",
          contains = "integer",
          validity = function(object) {
@@ -38,8 +72,8 @@ setClass("DegreesFreedom",
              TRUE
          })
 
-setClass("DLMMatrix",
-         contains = "matrix",
+setClass("DegreesFreedomVector",
+         contains = "numeric",
          validity = function(object) {
              ## 'object' has type "double"
              if (!is.double(object))
@@ -47,10 +81,10 @@ setClass("DLMMatrix",
                                  "double"))
              ## 'object' has no missing values
              if (any(is.na(object)))
-                 return(gettext("has missing values"))
-             ## 'object' is square
-             if (!identical(nrow(object), ncol(object)))
-                 return(gettext("not square"))
+                 return(gettext("missing values"))
+             ## 'object' is positive
+             if (any(object <= 0))
+                 return(gettext("non-positive values"))
              TRUE
          })
 
@@ -122,6 +156,28 @@ setClass("Name",
              TRUE
          })
 
+setClass("NumericMatrix",
+         contains = "matrix",
+         validity = function(object) {
+             ## 'object' has type "double"
+             if (!is.double(object))
+                 return(gettextf("does not have type \"%s\"",
+                                 "double"))
+             ## 'object' has no missing values
+             if (any(is.na(object)))
+                 return(gettext("has missing values"))
+             TRUE
+         })
+
+setClass("NumericMatrixSquare",
+         contains = "NumericMatrix",
+         validity = function(object) {
+             ## 'object' is square
+             if (!identical(nrow(object), ncol(object)))
+                 return(gettext("not square"))
+             TRUE
+         })
+
 setClass("Parameter",
          contains = "numeric",
          validity = function(object) {
@@ -129,7 +185,7 @@ setClass("Parameter",
              if (!is.double(object))
                  return(gettextf("does not have type \"%s\"",
                                  "double"))
-             ## 'object' has length 1
+             ## 'object' has length
              if (!identical(length(object), 1L))
                  return(gettextf("does not have length %d",
                                  1L))
@@ -218,6 +274,25 @@ setClass("SpecScale",
              ## if 'object' is not missing, 'object is positive
              if (!is.na(object) && (object <= 0))
                  return(gettextf("non-positive"))
+             TRUE
+         })
+
+setClass("UnitIntervalVec",
+         contains = "numeric",
+         validity = function(object) {
+             ## 'object' is double
+             if (!is.double(object))
+                 return(gettextf("does not have type \"%s\"",
+                                 "double"))
+             ## 'object' has no missing values
+             if (any(is.na(object)))
+                 return(gettext("missing values"))
+             ## 'object' all non-negative
+             if (any(object < 0))
+                 return(gettextf("negative values"))
+             ## 'object' all less than or equal to 1
+             if (any(object > 1))
+                 return(gettextf("values greater than 1"))
              TRUE
          })
 

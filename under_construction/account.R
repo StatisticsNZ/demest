@@ -2558,7 +2558,7 @@ setClass("System",
          contains = "VIRTUAL",
          validity = function(object) {
              system <- object@system
-             ## all elements of "system" have class "Poisson"
+             ## all elements of "system" have class "Poisson" - except for net
              TRUE
          })
 

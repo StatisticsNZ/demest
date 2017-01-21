@@ -1436,13 +1436,13 @@ makePhi <- function(phi, phiKnown, minPhi, maxPhi) {
 ## NO_TESTS
 makeGWithTrend <- function(phi) {
     ans <- matrix(c(1, 0, 1, phi), nrow = 2, ncol = 2)
-    methods::new("DLMMatrix", ans)
+    methods::new("NumericMatrixSquare", ans)
 }
 
 ## NO_TESTS
 makeWSqrt <- function(omegaAlpha, omegaDelta) {
     ans <- matrix(c(omegaAlpha, 0, 0, omegaDelta), nrow = 2L, ncol = 2L)
-    methods::new("DLMMatrix", ans)
+    methods::new("NumericMatrixSquare", ans)
 }
 
 ## NO_TESTS
@@ -1451,7 +1451,7 @@ makeWSqrtInvG <- function(omegaAlpha, omegaDelta, phi) {
     ans[1L] <- 1 / omegaAlpha
     ans[3L] <- 1 / omegaAlpha
     ans[4L] <- phi / omegaDelta
-    methods::new("DLMMatrix", ans)
+    methods::new("NumericMatrixSquare", ans)
 }
 
 ## NO_TESTS
@@ -3452,6 +3452,7 @@ betaHatAlphaDLM <- function(prior, useC = FALSE) {
 ##         prior@alphaICAR@.Data
 ##     }
 ## }
+
 
 ## TRANSLATED
 ## HAS_TESTS
