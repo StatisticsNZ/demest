@@ -33,7 +33,6 @@
 SEXP
   Data_sym,  /* used for .Data slot */
   iMethodPrior_sym, 
-  U_sym,
   Z_sym,
   beta_sym,
   eta_sym,
@@ -44,12 +43,6 @@ SEXP
   upper_sym,
   order_sym,
   iteratorBeta_sym,
-  values_sym,
-  valuesUnscaled_sym,
-  sd_sym,
-  sdUnscaled_sym,
-  mean_sym,
-  meanUnscaled_sym,
   iWithin_sym,
   nWithin_sym,
   iBetween_sym,
@@ -62,8 +55,6 @@ SEXP
   nStrides_sym,
   dimBefore_sym,
   dimAfter_sym,
-  contribShared_sym,
-  nShared_sym,
   iMethodModel_sym, 
   priorsBetas_sym, 
   theta_sym,
@@ -72,10 +63,6 @@ SEXP
   sigmaMax_sym,
   ASigma_sym,
   nuSigma_sym,
-  scaleSigma_sym,
-  dfPriorSigma_sym,
-  scalePriorSigma_sym,
-  acceptSigma_sym,
   varsigma_sym,
   varsigmaMax_sym,
   AVarsigma_sym,
@@ -86,7 +73,6 @@ SEXP
   nAcceptTheta_sym,
   betas_sym,
   priors_sym,
-  zetas_sym,
   iteratorBetas_sym,
   dims_sym,
   prob_sym,
@@ -111,24 +97,19 @@ SEXP
   nxAg_sym,
   nAgeAg_sym,
   transformThetaToMxAg_sym,
-  iMissing_sym,
   subtotals_sym,
   transformSubtotals_sym,
   subtotalsNet_sym,
-  iMissingOutsideSubtotals_sym,
   slotsToExtract_sym,
   iMethodCombined_sym,
   model_sym,
   exposure_sym,
   y_sym,
-  yIsIncomplete_sym,
   observation_sym,
   datasets_sym,
   transforms_sym,
-  /* polycomponents */
-  q_sym,
+  
   J_sym,
-  G_sym, /* only used in predictPolyComponent */
   
   UC_sym,
   DC_sym,
@@ -194,7 +175,6 @@ SEXP
   /*new priors*/
   ATau_sym,
   nuTau_sym,
-  zeta_sym,
   hasAlphaMove_sym,
   hasAlphaDLM_sym,
   hasAlphaICAR_sym,
@@ -233,15 +213,13 @@ SEXP
   ADelta_sym,
   minPhi_sym,
   maxPhi_sym,
-  tauScaled_sym,
-  UBetaScaled_sym,
+  
   WSqrt_sym,
   WSqrtInvG_sym,
   exposureAg_sym,
   P_sym,
   AEtaIntercept_sym,
   AEtaCoef_sym,
-  UEtaCoef_sym,
   nuEtaCoef_sym,
   UEtaCoef_sym,
   nSeason_sym,
@@ -254,7 +232,6 @@ SEXP
   CSeason_sym,
   aSeason_sym,
   RSeason_sym,
-  P_sym,
   JOld_sym;
   
   
@@ -262,11 +239,6 @@ SEXP
 
 void updateBeta(double *beta, int J, SEXP prior, double *vbar, 
                 int n, double sigma);
-void updateBetaScaled(double *betaScaled, int J, SEXP prior, double *vbar,
-                int n, double sigma);
-
-void updateZetaAndTau(SEXP prior_R, int J, double *betaScaled, 
-              double *vbar, int n, double sigma);
 
 void updateGWithTrend(SEXP prior_R);
 void updateOmegaAlpha(SEXP prior_R, int isWithTrend);
@@ -278,11 +250,8 @@ void updateWSqrt(SEXP prior_R);
 void updateWSqrtInvG(SEXP prior_R);
 void updateTauNorm(SEXP prior_R, double *betaScaled, int J);
 void updateTauRobust(SEXP prior_R, int J);
-void updateTauScaledRobust(SEXP prior_R);
 
 void updateUBeta(SEXP prior_R, double *beta, int J);
-void updateUBetaExchRobustZero(SEXP prior_R);
-void updateUBetaScaled(SEXP prior_R, double *betaScaled, int J);
 
 void
 updateBetaAndPriorBeta(double *beta, int J, SEXP prior_R, 
@@ -364,10 +333,7 @@ SEXP rnormTruncated(int n, SEXP mean_R, SEXP sd_R,
                 double lower, double upper, double tolerance,
                 int maxAttempt,
                 int uniform);
-int
-rpoisTrunc1(double lambda, int lower, int upper, int maxAttempt);
-                
-void betaExchZero(double *betaScaledMutable, int J, SEXP prior_R);               
+int rpoisTrunc1(double lambda, int lower, int upper, int maxAttempt);
                 
 void betaHat(double *beta_hat, SEXP prior_R, int J);
 void betaHatAlphaDLM(double *beta_hat, SEXP prior_R, int J);
@@ -411,15 +377,12 @@ void predictBetas(SEXP object_R);
 void predictPriorsBetas(SEXP object_R);
 void predictSeason(SEXP prior_R);
 void predictUBeta(SEXP prior_R);
-void predictUBetaScaled(SEXP prior_R);
 
 void transferAlphaDelta0(double *state, double *values, int offset,
                     SEXP iteratorValues_R, SEXP iteratorState_R);
 void transferSeason0(SEXP s_R, int nSeason, double *values, int offset,
                     SEXP iteratorState_R, SEXP iteratorValues_R);
                     
-void predictPolyComponent(SEXP component_R, int forward, double zeta);
-
 void transferParamBetas(SEXP model_R, const char *filename, 
                                         int lengthIter, int iteration);
 

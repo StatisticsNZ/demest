@@ -4,7 +4,7 @@
 
 ## DELETED JANUARY 2017 ##########################################
 
-## TRANSLATED
+## TRANSLATED ## removed C code
 ## HAS_TESTS
 betaExchZero <- function(betaScaled, prior, useC = FALSE) {
     ## betaScaled
@@ -27,7 +27,7 @@ betaExchZero <- function(betaScaled, prior, useC = FALSE) {
 }
 
 
-## TRANSLATED
+## TRANSLATED ## removed C code
 ## HAS_TESTS
 updateBetaScaled <- function(prior, vbar, n, sigma, useC = FALSE) {
     checkUpdateBetaAndPriorBeta(prior = prior,
@@ -55,7 +55,7 @@ updateBetaScaled <- function(prior, vbar, n, sigma, useC = FALSE) {
 }
 
 
-## TRANSLATED
+## TRANSLATED ## removed C code
 ## HAS_TESTS
 updateZetaAndTau <- function(prior, betaScaled, vbar, n, sigma, useC = FALSE) {
     ## prior
@@ -108,7 +108,7 @@ updateZetaAndTau <- function(prior, betaScaled, vbar, n, sigma, useC = FALSE) {
 
 ## I have done a new version of this (the new version is pretty trivial) but did
 ## not want to delete the old one - JB
-## TRANSLATED
+## TRANSLATED ## removed C code
 ## HAS_TESTS
 setMethod("updateBetaAndPriorBeta",
           signature(prior = "ExchNormZero"),
@@ -142,7 +142,7 @@ setMethod("updateBetaAndPriorBeta",
 
 ## Model-methods ####################################################
 
-## TRANSLATED ## removed iMethodModel number from C switch
+## TRANSLATED ## C code now used for loglikelihood method for BinomialVarying model
 ## HAS_TESTS
 ## Calling function should test that dataset[i] is not missing
 setMethod("logLikelihood",
@@ -184,7 +184,7 @@ setMethod("logLikelihood",
               }
           })
 
-## TRANSLATED ## removed iMethodModel number from C switch
+## TRANSLATED ## C code now used for loglikelihood method for PoissonVaryingUseExp model
 ## HAS_TESTS
 ## Calling function should test that dataset[i] is not missing
 setMethod("logLikelihood",
@@ -274,7 +274,7 @@ setMethod("predictModelNotUseExp",
               }
           })
 
-## TRANSLATED
+## TRANSLATED ## removed from C code
 ## HAS_TESTS
 setMethod("predictModelNotUseExp",
           signature(object = "PoissonFixedNotUseExpPredict",
@@ -5331,7 +5331,7 @@ transferParamPriorWAR1 <- function(prior, values, useC = FALSE) {
     }
 }
 
-## TRANSLATED
+## TRANSLATED # removed C code
 ## HAS_TESTS
 updateUBetaExchRobustZero <- function(prior, useC = FALSE) {
     ## prior
@@ -5354,7 +5354,7 @@ updateUBetaExchRobustZero <- function(prior, useC = FALSE) {
     }
 }
 
-## TRANSLATED
+## TRANSLATED # removed C code
 ## HAS_TESTS
 updateUBetaScaled <- function(prior, betaScaled, useC = FALSE) {
     ## prior
@@ -5384,7 +5384,7 @@ updateUBetaScaled <- function(prior, betaScaled, useC = FALSE) {
 
 
 
-## TRANSLATED
+## TRANSLATED # removed C code
 ## HAS_TESTS
 predictUBetaScaled <- function(prior, useC = FALSE) {
     stopifnot(is(prior, "ExchRobustZero"))
@@ -5406,7 +5406,7 @@ predictUBetaScaled <- function(prior, useC = FALSE) {
     }
 }
 
-## TRANSLATED
+## TRANSLATED # removed C code
 ## HAS_TESTS
 updateTauScaledRobust <- function(prior, useC = FALSE) {
     ## prior

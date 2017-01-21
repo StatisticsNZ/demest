@@ -468,7 +468,6 @@ SEXP makeMu_R(SEXP n_R, SEXP betas_R, SEXP iterator_R)
 }
 
 /* one-off wrapper for updateTauRobust */
-/* ADDED BY JOHN 29 MAY 2016 */
 SEXP updateTauRobust_R(SEXP prior_R)
 {
     SEXP ans_R;               
@@ -531,20 +530,6 @@ rpoisTrunc1_R(SEXP lambda_R, SEXP lower_R, SEXP upper_R, SEXP maxAttempt_R)
     PutRNGstate();
     
     return ScalarInteger(ans);
-}
-
-SEXP
-betaExchZero_R(SEXP betaScaled_R, SEXP prior_R)
-{
-    SEXP ans_R;
-    PROTECT(ans_R = duplicate(betaScaled_R));
-    double *ans = REAL(ans_R);
-    
-    int J = *INTEGER(GET_SLOT(prior_R, J_sym));
-    
-    betaExchZero(ans, J, prior_R);
-    UNPROTECT(1);
-    return ans_R;
 }
 
 SEXP
@@ -636,19 +621,6 @@ SEXP safeLogProp_Poisson_R(SEXP log_th_new_R, SEXP log_th_other_new_R,
 }
 
 
-SEXP predictPolyComponent_R(SEXP component_R, SEXP forward_R, SEXP zeta_R)
-{
-    int forward = *INTEGER(forward_R);
-    double zeta = *REAL(zeta_R);
-    SEXP ans_R;         
-    PROTECT(ans_R = duplicate(component_R));
-    GetRNGstate();
-    predictPolyComponent(ans_R, forward, zeta);
-    PutRNGstate();
-    UNPROTECT(1);
-    return ans_R;
-    
-}
 
 BETAHAT_NOPRNG_WRAPPER_R(betaHat);
 BETAHAT_NOPRNG_WRAPPER_R(betaHatAlphaDLM);
@@ -657,7 +629,6 @@ BETAHAT_NOPRNG_WRAPPER_R(betaHatSeason);
 
 /* wrap updateBeta functions */
 UPDATEBETA_WRAPPER_R(updateBeta);
-UPDATEBETA_WRAPPER_R(updateBetaScaled);
 
 UPDATEBETA_AND_PRIORBETA_WRAPPER_R(updateBetaAndPriorBeta);
 UPDATEBETA_AND_PRIORBETA_WRAPPER_R(updateBetaAndPriorBeta_ExchFixed);
@@ -681,23 +652,6 @@ UPDATEBETA_AND_PRIORBETA_WRAPPER_R(updateBetaAndPriorBeta_DLMNoTrendRobustCovNoS
 UPDATEBETA_AND_PRIORBETA_WRAPPER_R(updateBetaAndPriorBeta_DLMWithTrendRobustCovNoSeason);
 UPDATEBETA_AND_PRIORBETA_WRAPPER_R(updateBetaAndPriorBeta_DLMNoTrendRobustCovWithSeason);
 UPDATEBETA_AND_PRIORBETA_WRAPPER_R(updateBetaAndPriorBeta_DLMWithTrendRobustCovWithSeason);
-
-/* one-off wrapper for updateZetaAndTau */
-SEXP updateZetaAndTau_R(SEXP prior_R, SEXP betaScaled_R, SEXP vbar_R, SEXP n_R, SEXP sigma_R)
-{
-    double *betaScaled = REAL(betaScaled_R);
-    double *vbar = REAL(vbar_R);
-    int n = *INTEGER(n_R);
-    double sigma = *REAL(sigma_R);
-    int J = *INTEGER(GET_SLOT(prior_R, J_sym));
-    SEXP ans_R;
-    PROTECT(ans_R = duplicate(prior_R));
-    GetRNGstate();
-    updateZetaAndTau(ans_R, J, betaScaled, vbar, n, sigma);
-    PutRNGstate();
-    UNPROTECT(1);
-    return ans_R;
-}
 
 UPDATEOBJECT_NOPRNG_WRAPPER_R(updateGWithTrend);
 
@@ -733,12 +687,8 @@ UPDATEOBJECT_NOPRNG_WRAPPER_R(updateWSqrt);
 UPDATEOBJECT_NOPRNG_WRAPPER_R(updateWSqrtInvG);
 
 UPDATEPRIORWITHBETA_WRAPPER_R(updateTauNorm);
-/* UPDATEPRIORWITHBETA_WRAPPER_R(updateTauRobust); */
-UPDATEOBJECT_WRAPPER_R(updateTauScaledRobust);
 
 UPDATEPRIORWITHBETA_WRAPPER_R(updateUBeta);
-UPDATEOBJECT_NOPRNG_WRAPPER_R(updateUBetaExchRobustZero);
-UPDATEPRIORWITHBETA_WRAPPER_R(updateUBetaScaled);
 
 /* wrap transferParam function; */
 TRANSFERPARAM_WRAPPER_R(transferParamBetas);
@@ -924,7 +874,6 @@ PREDICTOBJECT_WRAPPER_R(predictBetas);
 PREDICTOBJECT_WRAPPER_R(predictPriorsBetas);
 PREDICTOBJECT_WRAPPER_R(predictSeason);
 PREDICTOBJECT_WRAPPER_R(predictUBeta);
-PREDICTOBJECT_WRAPPER_R(predictUBetaScaled);
 
 /* miscellaneous-functions */
 
@@ -1232,9 +1181,6 @@ R_CallMethodDef callMethods[] = {
   /* update betas */
   
   CALLDEF(updateBeta_R, 4),
-  CALLDEF(updateBetaScaled_R, 4),
-  
-  CALLDEF(updateZetaAndTau_R, 5),
   
   CALLDEF(updateGWithTrend_R, 1),
   CALLDEF(updateOmegaAlpha_R, 2),
@@ -1246,11 +1192,8 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateWSqrtInvG_R, 1),
   CALLDEF(updateTauNorm_R, 2),
   CALLDEF(updateTauRobust_R, 1),
-  CALLDEF(updateTauScaledRobust_R, 1),
   
   CALLDEF(updateUBeta_R, 2),
-  CALLDEF(updateUBetaExchRobustZero_R, 1),
-  CALLDEF(updateUBetaScaled_R, 2),
   
   CALLDEF(updateBetaAndPriorBeta_R, 4),
   CALLDEF(updateBetaAndPriorBeta_ExchFixed_R, 4),
@@ -1286,8 +1229,6 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(rnormTruncated_R, 8),
   CALLDEF(rpoisTrunc1_R, 4),
   
-  CALLDEF(betaExchZero_R, 2),
-  
   CALLDEF(betaHat_R, 1),
   CALLDEF(betaHatAlphaDLM_R, 1),
   CALLDEF(betaHatCovariates_R, 1),
@@ -1312,10 +1253,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(predictPriorsBetas_R, 1),
   CALLDEF(predictSeason_R, 1),
   CALLDEF(predictUBeta_R, 1),
-  CALLDEF(predictUBetaScaled_R, 1),
   
-  
-  CALLDEF(predictPolyComponent_R, 3),
   CALLDEF(transferParamBetas_R, 4),
   
   CALLDEF(transferParamPriorsBetas_R,4),
@@ -1558,7 +1496,6 @@ R_init_demest(DllInfo *info)
   ADD_SYM(beta);
   /* priors */
   ADD_SYM(iMethodPrior);
-  ADD_SYM(U);
   ADD_SYM(Z);
   ADD_SYM(eta);
   ADD_SYM(gamma);
@@ -1569,13 +1506,6 @@ R_init_demest(DllInfo *info)
   /* random walk priors */
   ADD_SYM(order);
   ADD_SYM(iteratorBeta);
-  /* known priors */
-  ADD_SYM(values);
-  ADD_SYM(valuesUnscaled);
-  ADD_SYM(sd);
-  ADD_SYM(sdUnscaled);
-  ADD_SYM(mean);
-  ADD_SYM(meanUnscaled);
   /* iterators */
   ADD_SYM(iWithin);
   ADD_SYM(nWithin);
@@ -1589,8 +1519,6 @@ R_init_demest(DllInfo *info)
   ADD_SYM(nStrides);
   ADD_SYM(dimBefore);
   ADD_SYM(dimAfter);
-  ADD_SYM(contribShared);
-  ADD_SYM(nShared);
   /* models */
   ADD_SYM(iMethodModel);
   ADD_SYM(priorsBetas);
@@ -1600,10 +1528,6 @@ R_init_demest(DllInfo *info)
   ADD_SYM(sigmaMax);
   ADD_SYM(ASigma);
   ADD_SYM(nuSigma);
-  ADD_SYM(scaleSigma);
-  ADD_SYM(dfPriorSigma);
-  ADD_SYM(scalePriorSigma);
-  ADD_SYM(acceptSigma);
   ADD_SYM(varsigma);
   ADD_SYM(varsigmaMax);
   ADD_SYM(AVarsigma);
@@ -1613,7 +1537,6 @@ R_init_demest(DllInfo *info)
   ADD_SYM(scaleThetaMultiplier); 
   ADD_SYM(nAcceptTheta);
   ADD_SYM(betas);
-  ADD_SYM(zetas);
   ADD_SYM(iteratorBetas);
   ADD_SYM(dims);
   ADD_SYM(prob);
@@ -1641,25 +1564,20 @@ R_init_demest(DllInfo *info)
   ADD_SYM(transformThetaToMxAg);
   
   /* y */
-  ADD_SYM(iMissing);
   ADD_SYM(subtotals);
   ADD_SYM(transformSubtotals);
   ADD_SYM(subtotalsNet);
-  ADD_SYM(iMissingOutsideSubtotals);
   /* combined */
   ADD_SYM(slotsToExtract);
   ADD_SYM(iMethodCombined);
   ADD_SYM(model);
   ADD_SYM(exposure);
   ADD_SYM(y);
-  ADD_SYM(yIsIncomplete);
   ADD_SYM(observation);
   ADD_SYM(datasets);
   ADD_SYM(transforms);
-  /* polycomponents */
-  ADD_SYM(q);
+  
   ADD_SYM(J);
-  ADD_SYM(G);
   
   ADD_SYM(UC);
   ADD_SYM(DC);
@@ -1726,7 +1644,6 @@ R_init_demest(DllInfo *info)
   /*new priors */
   ADD_SYM(ATau);
   ADD_SYM(nuTau);
-  ADD_SYM(zeta);
   ADD_SYM(hasAlphaMove);
   ADD_SYM(hasAlphaDLM);
   ADD_SYM(hasAlphaICAR);
@@ -1765,8 +1682,6 @@ R_init_demest(DllInfo *info)
   ADD_SYM(omegaDeltaMax);
   ADD_SYM(minPhi);
   ADD_SYM(maxPhi);
-  ADD_SYM(tauScaled);
-  ADD_SYM(UBetaScaled);
   ADD_SYM(WSqrt);
   ADD_SYM(WSqrtInvG);
   ADD_SYM(exposureAg);
@@ -1775,7 +1690,6 @@ R_init_demest(DllInfo *info)
   ADD_SYM(AEtaCoef);
   ADD_SYM(UEtaCoef);
   ADD_SYM(nuEtaCoef);
-  ADD_SYM(UEtaCoef);
   ADD_SYM(nSeason);
   ADD_SYM(ASeason);
   ADD_SYM(omegaSeason);
@@ -1786,7 +1700,6 @@ R_init_demest(DllInfo *info)
   ADD_SYM(CSeason);
   ADD_SYM(aSeason);
   ADD_SYM(RSeason);
-  ADD_SYM(P);
   ADD_SYM(JOld);
   
 #undef ADD_SYM

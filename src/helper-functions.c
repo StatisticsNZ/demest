@@ -500,23 +500,8 @@ int intersect(int* intersect, int nIntersect,
 }
 
 /* *************************************************************************** */
-/*** UPDATING ************************************************************* */
+/* ** UPDATING ************************************************************* */
 /* *************************************************************************** */
-
-
-void
-betaExchZero(double *betaScaledMutable, int J, SEXP prior_R)
-{
-    double A = *REAL(GET_SLOT(prior_R, ATau_sym));
-    
-    double zeta = *REAL(GET_SLOT(prior_R, zeta_sym));
-    
-    double mult = A * zeta;
-    
-    for (int i = 0; i < J; ++i) {
-        betaScaledMutable[i] *= mult;
-    }
-}
 
 
 void
@@ -1513,24 +1498,6 @@ predictUBeta(SEXP prior_R)
 
 }
 
-void
-predictUBetaScaled(SEXP prior_R)
-{
-    int J = *INTEGER(GET_SLOT(prior_R, J_sym));
-    double zeta = *REAL(GET_SLOT(prior_R, zeta_sym));
-    double A = *REAL(GET_SLOT(prior_R, ATau_sym));
-    
-    double *U = REAL(GET_SLOT(prior_R, UBeta_sym));
-    double *UScaled = REAL(GET_SLOT(prior_R, UBetaScaled_sym));
-    
-    double div = A*A * zeta*zeta;
-    
-    for (int j = 0; j < J; ++j) {
-        
-        UScaled[j] = U[j] / div;
-    }
-
-}
 
 void
 transferAlphaDelta0(double *state, double *values, int offset,
@@ -1596,108 +1563,6 @@ transferSeason0(SEXP s_R, int nSeason, double *values, int offset,
         advanceA(iteratorState_R);
     }
 
-}
-
-
-/* component_R is a polycomponent, forward_R is a logical */
-void
-predictPolyComponent(SEXP component_R, int forward, double zeta)
-{
-    /* J integer, q an integer
-    gamma a list of length J+1 of doubles length q 
-    G and inverseG both qxq matrices of doubles */
-    int J = *(INTEGER(GET_SLOT(component_R, J_sym)));
-    int q = *(INTEGER(GET_SLOT(component_R, q_sym)));
-    SEXP gamma_R = GET_SLOT(component_R, gamma_sym);
-    /* G a matrix of doubles, size q x q */
-    double *G = REAL(GET_SLOT(component_R, G_sym));
-    
-    /* unused since predictVarDLM function deleted */
-    #if(0)
-    /* W a list of matrices of doubles, len J, each matrix size q x q */
-    SEXP W_R = GET_SLOT(component_R, W_sym);
-    /* PriorsW a list of PriorVarDLM types, length q */
-    SEXP priorsW_R = GET_SLOT(component_R, priorsW_sym);
-    #endif
-    
-    /* for blas operations */
-    char transN = 'N'; /* no operation */
-    double alpha_blas = 1.0;
-    double beta_blas = 0.0;
-    int inc = 1;
-
-    /*W[[j]][i, i] <- predictVarDLM(prior = priorsW[[i]],
-                                                  zeta = zeta)*/
-    if(forward) {
-        /*first gamma */
-        double *this_gamma_old = REAL(VECTOR_ELT(gamma_R, 0));
-        
-        for (int j = 0; j < J; ++j) {
-            
-            /* not used since predictVarDLM function deleted */
-            #if(0)
-            double *this_W = REAL(VECTOR_ELT(W_R, j));
-            #endif
-            
-            double *this_gamma_new = REAL(VECTOR_ELT(gamma_R, j+1));
-            
-            /* first part of
-             * gamma[[j + 1L]] <- drop(G %*% gamma[[j]]) + epsilon */
-         
-            F77_CALL(dgemv)(&transN, &q, &q, &alpha_blas, 
-                G, &q, this_gamma_old, &inc, &beta_blas, 
-                this_gamma_new, &inc);    
-            /* result is stored in this_gamma_new */
-            
-            for (int i = 0; i < q; ++i) {
-                
-                /* function deleted */
-                #if(0)
-                double thisDiagW = predictVarDLM(VECTOR_ELT(priorsW_R, i),
-                                                zeta);
-                this_W[i*q + i]  = thisDiagW;
-                this_gamma_new[i] += rnorm(0, sqrt(thisDiagW));
-                #endif
-            }
-            
-            this_gamma_old = this_gamma_new;
-        }
-    }
-    else { /* backwards */
-        /*first gamma */
-        double *this_gamma_old = REAL(VECTOR_ELT(gamma_R, J));
-        
-        for (int j = J-1; j >= 0; --j) {
-            
-            /* not used since predictVarDLM function deleted */
-            #if(0)
-            double *this_W = REAL(VECTOR_ELT(W_R, j));
-            #endif
-            
-            double *this_gamma_new = REAL(VECTOR_ELT(gamma_R, j));
-            
-            /* first part of
-             * gamma[[j]] <- drop(G %*% gamma[[j + 1L]]) + epsilon */
-         
-            F77_CALL(dgemv)(&transN, &q, &q, &alpha_blas, 
-                G, &q, this_gamma_old, &inc, &beta_blas, 
-                this_gamma_new, &inc);    
-            /* result is stored in this_gamma_new */
-            
-            for (int i = 0; i < q; ++i) {
-                
-                /* function deleted */
-                #if(0)
-                double thisDiagW = predictVarDLM(VECTOR_ELT(priorsW_R, i),
-                                                zeta);
-                this_W[i*q + i]  = thisDiagW;
-                this_gamma_new[i] += rnorm(0, sqrt(thisDiagW));
-                #endif
-            }
-            
-            this_gamma_old = this_gamma_new;
-        }
-    }
 }
 
 
