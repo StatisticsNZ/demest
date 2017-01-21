@@ -3423,6 +3423,75 @@ test_that("R and C versions of rnormTruncated give same answer", {
     }
 })
 
+test_that("rtnorm1 gives valid answer", {
+    rtnorm1 <- demest:::rtnorm1
+    for (seed in seq_len(n.test)) {
+        ## limits non-finite
+        for (i in seq_len(10)) {
+            mean <- as.double(i)
+            sd <-  11 - i
+            set.seed(seed + 1)
+            ans.obtained <- rtnorm1(mean = mean, sd = sd)
+            set.seed(seed + 1)
+            ans.expected <- rnorm(n = 1L, mean = mean, sd = sd)
+            if (test.identity)
+                expect_identical(ans.obtained, ans.expected)
+            else
+                expect_equal(ans.obtained, ans.expected)
+        }
+        ## all within range
+        for (i in seq_len(10)) {
+            ans <- rtnorm1(lower = -2, upper = 2)
+            expect_true(ans > -2)
+            expect_true(ans < 2)
+        }
+        ## check distribution
+        ans <- numeric(1000)
+        for (i in seq_len(1000))
+            ans[i] <- rtnorm1(lower = 0)
+        true_mean <- 1/(sqrt(2*pi))/(0.5)
+        expect_equal(round(mean(ans),1), round(true_mean,1))
+        ans <- numeric(1000)
+        for (i in seq_len(1000))
+            ans[i] <- rtnorm1(upper = 0)
+        expect_equal(round(mean(ans),1), round(-true_mean,1))
+    }
+})
+
+
+test_that("R and C versions of rtnorm1 give same answer", {
+    rtnorm1 <- demest:::rtnorm1
+    for (seed in seq_len(n.test)) {
+        ## limits non-finite
+        for (i in seq_len(10)) {
+            mean <- as.double(i)
+            sd <-  11 - i
+            set.seed(seed + 1)
+            ans.R <- rtnorm1(mean = mean, sd = sd, useC = FALSE)
+            set.seed(seed + 1)
+            ans.C <- rtnorm1(mean = mean, sd = sd, useC = TRUE)
+            if (test.identity)
+                expect_identical(ans.R, ans.C)
+            else
+                expect_equal(ans.R, ans.C)
+        }
+        ## limits finite
+        for (i in seq_len(10)) {
+            mean <- as.double(i)
+            sd <-  11 - i
+            set.seed(seed + 1)
+            ans.R <- rtnorm1(mean = mean, sd = sd, lower = -1, upper = 0.5, useC = FALSE)
+            set.seed(seed + 1)
+            ans.C <- rtnorm1(mean = mean, sd = sd, lower = -1, upper = 0.5, useC = TRUE)
+            if (test.identity)
+                expect_identical(ans.R, ans.C)
+            else
+                expect_equal(ans.R, ans.C)
+        }
+    }
+})
+
+
 test_that("rpoisTrunc1 gives valid answer", {
     rpoisTrunc1 <- demest:::rpoisTrunc1
     for (seed in seq_len(n.test)) {

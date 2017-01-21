@@ -3180,14 +3180,91 @@ rnormTruncated <- function(n, mean, sd, lower, upper, tolerance = 1e-5, maxAttem
                         lower.unif <- max(upper - tolerance - sd[i], lower + tolerance)
                     }
                     ans[i] <- stats::runif(n = 1L,
-                                    min = lower.unif,
-                                    max = upper.unif)
+                                           min = lower.unif,
+                                           max = upper.unif)
                 }
                 else
                     stop("failed to generate value within specified range")
             }
         }
         ans
+    }
+}
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+## modified from code in package 'TruncatedNormal'.
+## which uses alorithm from Z. I. Botev (2015),
+## "The Normal Law Under Linear Restrictions:
+##  Simulation and Estimation via Minimax Tilting", submitted to JRSS(B)
+rtnorm1 <- function(mean = 0, sd = 1, lower = -Inf, upper = Inf,
+                    useC = FALSE) {
+    ## mean
+    stopifnot(identical(length(mean), 1L))
+    stopifnot(is.double(mean))
+    stopifnot(!is.na(mean))
+    ## sd
+    stopifnot(identical(length(sd), 1L))
+    stopifnot(is.double(sd))
+    stopifnot(!is.na(sd))
+    stopifnot(sd >= 0)
+    ## lower
+    stopifnot(identical(length(lower), 1L))
+    stopifnot(is.double(lower))
+    stopifnot(!is.na(lower))
+    ## upper
+    stopifnot(identical(length(upper), 1L))
+    stopifnot(is.double(upper))
+    stopifnot(!is.na(upper))
+    ## lower, upper
+    stopifnot(lower < upper)
+    if (useC) {
+        .Call(rtnorm1_R, mean, sd, lower, upper)
+    }
+    else {
+        ## set threshold for switching between methods - in C this can be done via macro
+        a <- 0.4
+        tol <- 2.05
+        ## standardized variables
+        l <- (lower - mean)/sd
+        u <- (upper - mean)/sd
+        if (l > a) {
+            c <- l^2 / 2
+            f <- expm1(c - u^2 / 2)
+            x <- c - log(1 + stats::runif(n = 1L) * f); # sample using Rayleigh
+            ## keep list of rejected
+            while (stats::runif(n = 1L)^2 * x > c) { # while there are rejections
+                x <- c - log(1 + stats::runif(n = 1L) * f)
+            }
+            ans <- sqrt(2*x) # this Rayleigh transform can be delayed till the end
+        }
+        else if (u < (-a)) {
+            c <- (-u)^2 / 2
+            f <- expm1(c - (-l)^2 / 2)
+            x <- c-log(1+stats::runif(n = 1L)*f); # sample using Rayleigh
+            ## keep list of rejected
+            while (stats::runif(n = 1L)^2 * x > c) { # while there are rejections
+                x <- c - log(1 + stats::runif(n = 1L) * f)
+            }
+            ans <- (-1)*sqrt(2*x) # this Rayleigh transform can be delayed till the end
+        }
+        else {
+            if (abs(u-l) > tol) { # abs(u-l)>tol, uses accept-reject
+                x <- stats::rnorm(n = 1L) # sample from standard normal
+                while (x < l | x > u) { # while there are rejections
+                    x <- stats::rnorm(n = 1L)
+                } 
+                ans <- x         
+            }
+            else { # abs(u-l)<tol, uses inverse-transform
+                pl <- stats::pnorm(q = l)
+                pu <- stats::pnorm(q = u)
+                u <- stats::runif(n = 1L)
+                trans <- pl + (pu - pl) * u
+                ans <- stats::qnorm(p = trans)
+            }      
+        }
+        ans * sd + mean
     }
 }
 
