@@ -3331,8 +3331,8 @@ test_that("R and C versions of rinvchisq1 give same answer", {
         set.seed(seed)
         ans.C <- rinvchisq1(df = df, scale = scale, useC = TRUE)
         if (test.identity)
-			expect_identical(ans.R, ans.C)
-		else
+            expect_identical(ans.R, ans.C)
+        else
             expect_equal(ans.R, ans.C)
     }
 })
@@ -3483,6 +3483,21 @@ test_that("R and C versions of rtnorm1 give same answer", {
             ans.R <- rtnorm1(mean = mean, sd = sd, lower = -1, upper = 0.5, useC = FALSE)
             set.seed(seed + 1)
             ans.C <- rtnorm1(mean = mean, sd = sd, lower = -1, upper = 0.5, useC = TRUE)
+            if (test.identity)
+                expect_identical(ans.R, ans.C)
+            else
+                expect_equal(ans.R, ans.C)
+        }
+        ## limits finite, force cases where some l > a
+        for (i in seq_len(10)) {
+            mean <- as.double(i)
+            sd <-  11 - i
+            set.seed(seed + 1)
+            lower <- mean + i/10*sd + mean + 0.1
+            upper <- lower + i/10
+            ans.R <- rtnorm1(mean = mean, sd = sd, lower = lower, upper = upper, useC = FALSE)
+            set.seed(seed + 1)
+            ans.C <- rtnorm1(mean = mean, sd = sd, lower = lower, upper = upper, useC = TRUE)
             if (test.identity)
                 expect_identical(ans.R, ans.C)
             else

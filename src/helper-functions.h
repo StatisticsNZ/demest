@@ -10,6 +10,9 @@
     #define K_EPSILON_MAX 1e-14
     #define K_EPSILON_BOUNDARIES 1e-30
     #define K_MAX_ITER 1000
+    
+    #define RNORMTRUNC_A 0.4
+    #define RNORMTRUNC_TOL 2.05
 
     #include <Rinternals.h>
     
@@ -28,7 +31,9 @@
                 double lowerPlusTol, double upperMinusTol,
                 int maxAttempt,
                 int uniform);
-	
+    
+    double getRtnorm1_x(double bnd1, double bnd2);
+    
     void getTwoMultinomialProposalsNoExp (int *yProp,
                     int *y, double *theta, int ir, int ir_other);
     
@@ -41,7 +46,7 @@
                 int* inputSecond, int nInputSecond);
     
     void betaHat(double *betaHat, SEXP prior_R, int J);
-	void betaHat_AlphaCrossInternal(double *betaHat, SEXP prior_R, int J);
+    void betaHat_AlphaCrossInternal(double *betaHat, SEXP prior_R, int J);
     void betaHat_AlphaDLMInternal(double *betaHat, SEXP prior_R, int J);
     void betaHat_AlphaICARInternal(double *betaHat, SEXP prior_R, int J);
     void betaHat_CovariatesInternal(double *betaHat, SEXP prior_R, int J);

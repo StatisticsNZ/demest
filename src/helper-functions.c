@@ -356,6 +356,266 @@ getRnormTruncatedSingle(double mean, double sd,
     return ans;
 }
     
+/*## READY_TO_TRANSLATE
+## HAS_TESTS
+## modified from code in package 'TruncatedNormal'.
+## which uses alorithm from Z. I. Botev (2015),
+## "The Normal Law Under Linear Restrictions:
+##  Simulation and Estimation via Minimax Tilting", submitted to JRSS(B)
+rtnorm1 <- function(mean = 0, sd = 1, lower = -Inf, upper = Inf,
+                    useC = FALSE) {
+    ## mean
+    stopifnot(identical(length(mean), 1L))
+    stopifnot(is.double(mean))
+    stopifnot(!is.na(mean))
+    ## sd
+    stopifnot(identical(length(sd), 1L))
+    stopifnot(is.double(sd))
+    stopifnot(!is.na(sd))
+    stopifnot(sd >= 0)
+    ## lower
+    stopifnot(identical(length(lower), 1L))
+    stopifnot(is.double(lower))
+    stopifnot(!is.na(lower))
+    ## upper
+    stopifnot(identical(length(upper), 1L))
+    stopifnot(is.double(upper))
+    stopifnot(!is.na(upper))
+    ## lower, upper
+    stopifnot(lower < upper)
+    if (useC) {
+        .Call(rtnorm1_R, mean, sd, lower, upper)
+    }
+    else {
+        ## set threshold for switching between methods - in C this can be done via macro
+        a <- 0.4
+        tol <- 2.05
+        ## standardized variables
+        l <- (lower - mean)/sd
+        u <- (upper - mean)/sd
+        if (l > a) {
+            c <- l^2 / 2
+            f <- expm1(c - u^2 / 2)
+            x <- c - log(1 + stats::runif(n = 1L) * f); # sample using Rayleigh
+            ## keep list of rejected
+            while (stats::runif(n = 1L)^2 * x > c) { # while there are rejections
+                x <- c - log(1 + stats::runif(n = 1L) * f)
+            }
+            ans <- sqrt(2*x) # this Rayleigh transform can be delayed till the end
+        }
+        else if (u < (-a)) {
+            c <- (-u)^2 / 2
+            f <- expm1(c - (-l)^2 / 2)
+            x <- c-log(1+stats::runif(n = 1L)*f); # sample using Rayleigh
+            ## keep list of rejected
+            while (stats::runif(n = 1L)^2 * x > c) { # while there are rejections
+                x <- c - log(1 + stats::runif(n = 1L) * f)
+            }
+            ans <- (-1)*sqrt(2*x) # this Rayleigh transform can be delayed till the end
+        }
+        else {
+            if (abs(u-l) > tol) { # abs(u-l)>tol, uses accept-reject
+                x <- stats::rnorm(n = 1L) # sample from standard normal
+                while (x < l | x > u) { # while there are rejections
+                    x <- stats::rnorm(n = 1L)
+                } 
+                ans <- x         
+            }
+            else { # abs(u-l)<tol, uses inverse-transform
+                pl <- stats::pnorm(q = l)
+                pu <- stats::pnorm(q = u)
+                u <- stats::runif(n = 1L)
+                trans <- pl + (pu - pl) * u
+                ans <- stats::qnorm(p = trans)
+            }      
+        }
+        ans * sd + mean
+    }
+}
+*/    
+
+        
+
+double
+rtnorm1(double mean, double sd, double lower, double upper)
+{
+    /*a <- 0.4
+        tol <- 2.05
+        ## standardized variables
+        l <- (lower - mean)/sd
+        u <- (upper - mean)/sd
+        if (l > a) {
+            c <- l^2 / 2
+            f <- expm1(c - u^2 / 2)
+            x <- c - log(1 + stats::runif(n = 1L) * f); # sample using Rayleigh
+            ## keep list of rejected
+            while (stats::runif(n = 1L)^2 * x > c) { # while there are rejections
+                x <- c - log(1 + stats::runif(n = 1L) * f)
+            }
+            ans <- sqrt(2*x) # this Rayleigh transform can be delayed till the end
+        }
+        */
+    double a = RNORMTRUNC_A;
+    double tol = RNORMTRUNC_TOL;
+    
+    double l = (lower - mean)/sd;
+    double u = (upper - mean)/sd;
+    
+    double ans = 0.0;
+    
+    #ifdef DEBUGGING
+    PrintValue(mkString(""));
+    PrintValue(mkString("mean"));
+    PrintValue(ScalarReal(mean));
+    PrintValue(mkString("sd"));
+    PrintValue(ScalarReal(sd));
+    PrintValue(mkString("lower"));
+    PrintValue(ScalarReal(lower));
+    PrintValue(mkString("upper"));
+    PrintValue(ScalarReal(upper));
+    PrintValue(mkString("l"));
+    PrintValue(ScalarReal(l));
+    PrintValue(mkString("u"));
+    PrintValue(ScalarReal(u));
+    
+    #endif
+    
+    
+    if ( l > a) {
+        double x = getRtnorm1_x(l, u);
+        ans = sqrt(2*x);
+        
+        PrintValue(mkString("l>a"));
+        
+        #ifdef DEBUGGING
+        PrintValue(mkString("l>a"));
+        PrintValue(mkString("x"));
+        PrintValue(ScalarReal(x));
+        PrintValue(mkString("ans"));
+        PrintValue(ScalarReal(ans));
+        #endif
+    }
+    
+    
+    /*else if (u < (-a)) {
+            c <- (-u)^2 / 2
+            f <- expm1(c - (-l)^2 / 2)
+            x <- c-log(1+stats::runif(n = 1L)*f); # sample using Rayleigh
+            ## keep list of rejected
+            while (stats::runif(n = 1L)^2 * x > c) { # while there are rejections
+                x <- c - log(1 + stats::runif(n = 1L) * f)
+            }
+            ans <- (-1)*sqrt(2*x) # this Rayleigh transform can be delayed till the end
+        } */
+    else if (u < (-a)) {
+        double x = getRtnorm1_x(-u, -l);
+        ans = -sqrt(2*x);
+        
+        PrintValue(mkString("u < (-a)"));
+        #ifdef DEBUGGING
+        PrintValue(mkString("u < (-a)"));
+        PrintValue(mkString("x"));
+        PrintValue(ScalarReal(x));
+        PrintValue(mkString("ans"));
+        PrintValue(ScalarReal(ans));
+        #endif
+    }
+    
+    /*else {
+            if (abs(u-l) > tol) { # abs(u-l)>tol, uses accept-reject
+                x <- stats::rnorm(n = 1L) # sample from standard normal
+                while (x < l | x > u) { # while there are rejections
+                    x <- stats::rnorm(n = 1L)
+                } 
+                ans <- x         
+            }
+            else { # abs(u-l)<tol, uses inverse-transform
+                pl <- stats::pnorm(q = l)
+                pu <- stats::pnorm(q = u)
+                u <- stats::runif(n = 1L)
+                trans <- pl + (pu - pl) * u
+                ans <- stats::qnorm(p = trans)
+            }      
+        }*/
+    else {
+        if (fabs(u - l) > tol) {
+            double x = rnorm(0,1);
+            while ( (x < l) || (x > u) ) {
+                x = rnorm(0,1);
+            }
+            ans = x;
+            
+            PrintValue(mkString("fabs(u - l) > tol"));
+            #ifdef DEBUGGING
+            PrintValue(mkString("fabs(u - l) > tol"));
+            PrintValue(mkString("x"));
+            PrintValue(ScalarReal(x));
+            PrintValue(mkString("ans"));
+            PrintValue(ScalarReal(ans));
+            #endif
+        }
+        else {
+            double pl = pnorm(l, 0, 1, 1, 0);
+            double pu = pnorm(u, 0, 1, 1, 0);
+            double unif = runif(0,1);
+            double trans = pl + (pu - pl) * unif;
+            ans = qnorm(trans, 0, 1, 1, 0);
+            
+            PrintValue(mkString("final else"));
+            #ifdef DEBUGGING
+            PrintValue(mkString("final else"));
+            PrintValue(mkString("trans"));
+            PrintValue(ScalarReal(trans));
+            PrintValue(mkString("ans"));
+            PrintValue(ScalarReal(ans));
+            #endif
+        }
+    }
+    
+    #ifdef DEBUGGING
+            PrintValue(mkString("final ans"));
+            PrintValue(ScalarReal(ans * sd + mean));
+            #endif
+            
+    return ans * sd + mean;
+        
+}
+
+/*
+ *      c <- (-u)^2 / 2
+            f <- expm1(c - (-l)^2 / 2)
+            x <- c-log(1+stats::runif(n = 1L)*f); # sample using Rayleigh
+            ## keep list of rejected
+            while (stats::runif(n = 1L)^2 * x > c) { # while there are rejections
+                x <- c - log(1 + stats::runif(n = 1L) * f)
+            }
+            
+            
+            c <- l^2 / 2
+            f <- expm1(c - u^2 / 2)
+            x <- c - log(1 + stats::runif(n = 1L) * f); # sample using Rayleigh
+            ## keep list of rejected
+            while (stats::runif(n = 1L)^2 * x > c) { # while there are rejections
+                x <- c - log(1 + stats::runif(n = 1L) * f)
+            }
+        */
+double getRtnorm1_x(double bnd1, double bnd2)
+{
+    double c = (bnd1 * bnd1) / 2;
+    double f = expm1(c - (bnd2 * bnd2) / 2);
+    double x = c - log(1 + runif(0,1)*f);
+    
+    double u = runif(0,1);
+    
+    while ( (u * u * x) > c) {
+        x = c - log(1 + runif(0,1)*f);
+        u = runif(0,1); 
+    }
+    
+    return x;
+}        
+    
+    
 /* new (R >= 3.0.0) R rpois just seems to use a cast from
  * the double return from rpois in C to get new integer
  * return value in R so I have done the same. */
