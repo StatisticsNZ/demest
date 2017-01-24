@@ -173,10 +173,11 @@ estimateModel <- function(model, y, exposure = NULL, weights = NULL,
                   control.args,
                   list(continuing = FALSE))
     if (parallel) {
+        pseed <- runif(n=1L)
         cl <- parallel::makeCluster(getOption("cl.cores",
                                               default = mcmc.args$nChain))
-        parallel::clusterSetRNGStream(cl)
-        ##parallel::clusterSetRNGStream(cl, iseed=1)  ## note setting the seed here for testing
+        ##parallel::clusterSetRNGStream(cl)
+        parallel::clusterSetRNGStream(cl, iseed=pseed)  ## note setting the seed here for testing
         final.combineds <- parallel::clusterMap(cl = cl,
                                                 fun = estimateOneChain,
                                                 tempfile = tempfiles,
@@ -248,10 +249,11 @@ estimateModelNew <- function(model, y, exposure = NULL, weights = NULL,
                   control.args,
                   list(continuing = FALSE))
     if (parallel) {
+        pseed <- runif(n=1L)
         cl <- parallel::makeCluster(getOption("cl.cores",
                                               default = mcmc.args$nChain))
-        parallel::clusterSetRNGStream(cl)
-        ## parallel::clusterSetRNGStream(cl, iseed=1)  ## note setting the seed here for testing
+        ##parallel::clusterSetRNGStream(cl)
+        parallel::clusterSetRNGStream(cl, iseed=pseed)  ## note setting the seed here for testing
         final.combineds <- parallel::clusterMap(cl = cl,
                                                 fun = estimateOneChainNew,
                                                 tempfile = tempfiles,
@@ -822,7 +824,7 @@ continueEstimation <- function(filename, nBurnin = 0, nSim = 1000, verbose = FAL
                                   nThin = mcmc.args.old[["nThin"]])
     append <- identical(mcmc.args.new$nBurnin, 0L)
     combineds <- object@final
-    tempfiles.new <- paste(filename, "cont", seq_len(mcmc.args$nChain), sep = "_")
+    tempfiles.new <- paste(filename, "cont", seq_len(mcmc.args.new$nChain), sep = "_")
     MoreArgs <- c(mcmc.args.new, control.args, list(continuing = TRUE))
     if (control.args$parallel) {
         cl <- parallel::makeCluster(getOption("cl.cores",
