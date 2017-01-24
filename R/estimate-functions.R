@@ -173,7 +173,7 @@ estimateModel <- function(model, y, exposure = NULL, weights = NULL,
                   control.args,
                   list(continuing = FALSE))
     if (parallel) {
-        pseed <- runif(n=1L)
+        pseed <- sample(1:100000, 1)
         cl <- parallel::makeCluster(getOption("cl.cores",
                                               default = mcmc.args$nChain))
         ##parallel::clusterSetRNGStream(cl)
@@ -249,7 +249,7 @@ estimateModelNew <- function(model, y, exposure = NULL, weights = NULL,
                   control.args,
                   list(continuing = FALSE))
     if (parallel) {
-        pseed <- runif(n=1L)
+        pseed <- sample(1:100000, 1)
         cl <- parallel::makeCluster(getOption("cl.cores",
                                               default = mcmc.args$nChain))
         ##parallel::clusterSetRNGStream(cl)
