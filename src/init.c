@@ -516,6 +516,21 @@ SEXP rnormTruncated_R(SEXP n_R, SEXP mean_R, SEXP sd_R,
     
 }
 
+/* one-off wrapper for rtnorm1 */
+SEXP rtnorm1_R(SEXP mean_R, SEXP sd_R, SEXP lower_R, SEXP upper_R)
+{
+    double mean = *REAL(mean_R);
+    double sd = *REAL(sd_R);
+    double lower = *REAL(lower_R);
+    double upper = *REAL(upper_R);
+    
+    GetRNGstate();
+    double ans = rtnorm1(mean, sd, lower, upper);
+    PutRNGstate();
+    return ScalarReal(ans);
+    
+}
+
 
 SEXP
 rpoisTrunc1_R(SEXP lambda_R, SEXP lower_R, SEXP upper_R, SEXP maxAttempt_R)
@@ -1227,6 +1242,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(rmvnorm1_R, 2),
   CALLDEF(rmvnorm2_R, 2),
   CALLDEF(rnormTruncated_R, 8),
+  CALLDEF(rtnorm1_R, 4),
   CALLDEF(rpoisTrunc1_R, 4),
   
   CALLDEF(betaHat_R, 1),

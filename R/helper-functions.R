@@ -3205,7 +3205,7 @@ rnormTruncated <- function(n, mean, sd, lower, upper, tolerance = 1e-5, maxAttem
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 ## modified from code in package 'TruncatedNormal'.
 ## which uses alorithm from Z. I. Botev (2015),

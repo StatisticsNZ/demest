@@ -333,6 +333,7 @@ SEXP rnormTruncated(int n, SEXP mean_R, SEXP sd_R,
                 double lower, double upper, double tolerance,
                 int maxAttempt,
                 int uniform);
+double rtnorm1(double mean, double sd, double lower, double upper);
 int rpoisTrunc1(double lambda, int lower, int upper, int maxAttempt);
                 
 void betaHat(double *beta_hat, SEXP prior_R, int J);
