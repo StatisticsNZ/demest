@@ -330,7 +330,7 @@ setClass("DimIterator",
 ## HAS_TESTS
 setClass("MarginIterator",
          slots = c(indices = "integer",
-                        dimIterators = "list"),
+                   dimIterators = "list"),
          validity = function(object) {
              indices <- object@indices
              dimIterators <- object@dimIterators

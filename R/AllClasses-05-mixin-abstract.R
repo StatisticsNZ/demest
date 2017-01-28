@@ -185,16 +185,13 @@ setClass("Parameter",
              if (!is.double(object))
                  return(gettextf("does not have type \"%s\"",
                                  "double"))
-             ## 'object' has length
+             ## 'object' has length 1
              if (!identical(length(object), 1L))
                  return(gettextf("does not have length %d",
                                  1L))
              ## 'object' is not missing
              if (is.na(object))
                  return(gettext("missing"))
-             ## 'object' has no missing values
-             if (any(is.na(object)))
-                 return(gettext("has missing values"))
              TRUE
          })
 

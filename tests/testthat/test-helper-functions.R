@@ -903,28 +903,6 @@ test_that("checkAndTidyNSeason works", {
                  "'n' is less than 2")
 })
 
-test_that("checkAndTidyPriorSD works", {
-    checkAndTidyPriorSD <- demest:::checkAndTidyPriorSD
-    expect_identical(checkAndTidyPriorSD(NULL),
-                     list(df = as.double(-1), scale = as.double(0)))
-    expect_identical(checkAndTidyPriorSD(list(scale = 10L, df = 3L)),
-                     list(df = as.double(3), scale = as.double(10)))
-    expect_error(checkAndTidyPriorSD(list(wrong = 10, scale = 3)),
-                 "'priorSD' does not have names \"df\" and \"scale\"")
-    expect_error(checkAndTidyPriorSD(list(df = c(4, 4), scale = 3),
-                                     "'df' does not have length 1"))
-    expect_error(checkAndTidyPriorSD(list(df = 4, scale = "3"),
-                                     "'scale' is non-numeric"))
-    expect_error(checkAndTidyPriorSD(list(df = as.numeric(NA), scale = 3),
-                                     "'df' is missing"))
-    expect_error(checkAndTidyPriorSD(list(df = 10, scale = -3),
-                                     "'scale' is non-positive"))
-    expect_error(checkAndTidyPriorSD(list(df = 10, scale = 0),
-                                     "'scale' is non-positive"))
-    expect_error(checkAndTidyPriorSD("wrong",
-                                     "'priorSD' has class \"character\""))
-})
-
 test_that("extractResponse works", {
     extractResponse <- demest:::extractResponse
     expect_identical(extractResponse(age ~ income, separateNames = TRUE),
@@ -3491,7 +3469,6 @@ test_that("R and C versions of rtnorm1 give same answer", {
     }
 })
 
-
 test_that("rpoisTrunc1 gives valid answer", {
     rpoisTrunc1 <- demest:::rpoisTrunc1
     for (seed in seq_len(n.test)) {
@@ -4260,6 +4237,234 @@ test_that("R and C versions of findOneRootLogPostSigmaRobust give same answer", 
                     || isTRUE(all.equal(ans.at.max, root.right)))
     }
 })
+
+test_that("logPostPhiMix works", {
+    logPostPhiMix <- demest:::logPostPhiMix
+    phi <- 0.5
+    level <- matrix(1*seq(1,6),nrow=2)
+    meanLevel <- 0
+    nAlong <- 2L
+    indexClassMax <- 2L
+    omega <- 1
+    ans.expected <- ((1-phi^2)*10+1.5^2+2.5^2)/(-2)
+    ans.obtained <- logPostPhiMix(phi = phi,
+                                       level = level,
+                                       meanLevel = meanLevel,
+                                       nAlong = nAlong,
+                                       indexClassMax = indexClassMax,
+                                       omega = omega)
+    expect_equal(ans.obtained, ans.expected)
+    phi_log_posterior <- function(mu,phi,Lw,alpha,Kstar,sigma2ETA)
+    {
+        ## 'mu'
+        stopifnot(identical(length(mu), 1L))
+        stopifnot(is.double(mu))
+        ## 'phi'
+        stopifnot(identical(length(phi), 1L))
+        stopifnot(is.double(phi))
+                                        #stopifnot(abs(phi) <= 1)
+        ## 'alpha'
+        stopifnot(is.matrix(alpha))
+        stopifnot(sum(is.na(alpha))<1)
+        stopifnot(dim(alpha)[2]>=Kstar)
+        stopifnot(identical(dim(alpha)[1], Lw))
+        ## 'Lw'
+        stopifnot(identical(length(Lw), 1L))
+        stopifnot(is.integer(Lw))
+        stopifnot(Lw > 0)
+        ## 'Kstar'
+        stopifnot(identical(length(Kstar), 1L))
+        stopifnot(is.integer(Kstar))
+        stopifnot(Kstar > 0)
+        ## 'sigma2ETA'
+        stopifnot(identical(length(sigma2ETA), 1L))
+        stopifnot(is.double(sigma2ETA))
+        stopifnot(sigma2ETA > 0)
+        if(abs(phi)<1)
+        {
+            res0 <- (1-phi^2)/(-2*sigma2ETA)*sum((alpha[1,1:Kstar]-mu/(1-phi))^2)
+            res <- res0+1/(-2*sigma2ETA)*sum((alpha[2:Lw,1:Kstar]-mu-phi*alpha[1:(Lw-1),1:Kstar])^2)
+        }else{
+            res <- 0.0001
+        }
+        return(res)
+    }
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        phi <- runif(1)
+        nAlong <- sample(2:10, 1)
+        indexClassMax <- sample(2:10, 1)
+        level <- matrix(rnorm(nAlong * indexClassMax),
+                        nrow = nAlong,
+                        ncol = indexClassMax)
+        meanLevel <- rnorm(n = 1, sd = 0.1)
+        omega <- runif(1)
+        ans.obtained <- logPostPhiMix(phi = phi,
+                                           level = level,
+                                           meanLevel = meanLevel,
+                                           nAlong = nAlong,
+                                           indexClassMax = indexClassMax,
+                                           omega = omega)
+        ans.expected <- phi_log_posterior(mu = meanLevel,
+                                          phi = phi,
+                                          Lw = nAlong,
+                                          alpha = level,
+                                          Kstar = indexClassMax,
+                                          sigma2ETA = omega^2)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of logPostPhiMix give same answer", {
+    logPostPhiMix <- demest:::logPostPhiMix
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        phi <- runif(1)
+        nAlong <- sample(2:10, 1)
+        indexClassMax <- sample(2:10, 1)
+        level <- matrix(rnorm(nAlong * indexClassMax),
+                        nrow = nAlong,
+                        ncol = indexClassMax)
+        meanLevel <- rnorm(n = 1, sd = 0.1)
+        omega <- runif(1)
+        ans.R <- logPostPhiMix(phi = phi,
+                                    level = level,
+                                    meanLevel = meanLevel,
+                                    nAlong = nAlong,
+                                    indexClassMax = indexClassMax,
+                                    omega = omega,
+                                    useC = FALSE)
+        ans.C <- logPostPhiMix(phi = phi,
+                                    level = level,
+                                    meanLevel = meanLevel,
+                                    nAlong = nAlong,
+                                    indexClassMax = indexClassMax,
+                                    omega = omega,
+                                    useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
+
+test_that("logPostPhiFirstOrderMix works", {
+    logPostPhiFirstOrderMix <- demest:::logPostPhiFirstOrderMix
+    phi <- 0.5
+    level <- matrix(1*seq(1,6),nrow=2)
+    meanLevel <- 0.5
+    nAlong <- 2L
+    indexClassMax <- 2L
+    omega <- 1
+    ans.expected <- (-1)*(0+4)+(1-0.25)*2*(-0.5)/(0.5^2)*(3-1)+(-2)*((2-0.5-0.5*1)+(4-0.5-1.5)*(3))
+    ans.expected <- 1/(-2*omega^2)*ans.expected
+    ans.obtained <- logPostPhiFirstOrderMix(phi = phi,
+                                                 level = level,
+                                                 meanLevel = meanLevel,
+                                                 nAlong = nAlong,
+                                                 indexClassMax = indexClassMax,
+                                                 omega = omega)
+    expect_equal(ans.obtained, ans.expected)
+    phi_log_posterior_first_order <- function(mu,phi,Lw,alpha,Kstar,sigma2ETA)
+    {
+        ## 'mu'
+        stopifnot(identical(length(mu), 1L))
+        stopifnot(is.double(mu))
+        ## 'phi'
+        stopifnot(identical(length(phi), 1L))
+        stopifnot(is.double(phi))
+        ## 'alpha'
+        stopifnot(is.matrix(alpha))
+        stopifnot(sum(is.na(alpha))<1)
+        stopifnot(dim(alpha)[2]>=Kstar)
+        stopifnot(identical(dim(alpha)[1], Lw))
+        ## 'Lw'
+        stopifnot(identical(length(Lw), 1L))
+        stopifnot(is.integer(Lw))
+        stopifnot(Lw > 0)
+        ## 'Kstar'
+        stopifnot(identical(length(Kstar), 1L))
+        stopifnot(is.integer(Kstar))
+        stopifnot(Kstar > 0)
+        ## 'sigma2ETA'
+        stopifnot(identical(length(sigma2ETA), 1L))
+        stopifnot(is.double(sigma2ETA))
+        stopifnot(sigma2ETA > 0)
+        if(abs(phi)<1)
+        {
+            res0 <- -2*sum((alpha[1,1:Kstar]-mu/(1-phi))*(phi*alpha[1,1:Kstar]+mu/(1-phi)))
+            res <- res0-2*(sum((alpha[1:(Lw-1),1:Kstar])*(alpha[2:Lw,1:Kstar]-mu-phi*alpha[1:(Lw-1),1:Kstar])))
+            res <- res*(-1/(2*sigma2ETA))  ## corrected from 'res*(-1/2*sigma2ETA)'
+        }else{
+            res <- 0.0001
+        }
+        return(res)
+    }
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        phi <- runif(1)
+        nAlong <- sample(2:10, 1)
+        indexClassMax <- sample(2:10, 1)
+        level <- matrix(rnorm(nAlong * indexClassMax),
+                        nrow = nAlong,
+                        ncol = indexClassMax)
+        meanLevel <- rnorm(n = 1, sd = 0.1)
+        omega <- runif(1)
+        ans.obtained <- logPostPhiFirstOrderMix(phi = phi,
+                                                     level = level,
+                                                     meanLevel = meanLevel,
+                                                     nAlong = nAlong,
+                                                     indexClassMax = indexClassMax,
+                                                     omega = omega)
+        ans.expected <- phi_log_posterior_first_order(mu = meanLevel,
+                                                      phi = phi,
+                                                      Lw = nAlong,
+                                                      alpha = level,
+                                                      Kstar = indexClassMax,
+                                                      sigma2ETA = omega^2)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of logPostPhiFirstOrderMix give same answer", {
+    logPostPhiFirstOrderMix <- demest:::logPostPhiFirstOrderMix
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        phi <- runif(1)
+        nAlong <- sample(2:10, 1)
+        indexClassMax <- sample(2:10, 1)
+        level <- matrix(rnorm(nAlong * indexClassMax),
+                        nrow = nAlong,
+                        ncol = indexClassMax)
+        meanLevel <- rnorm(n = 1, sd = 0.1)
+        omega <- runif(1)
+        ans.R <- logPostPhiFirstOrderMix(phi = phi,
+                                              level = level,
+                                              meanLevel = meanLevel,
+                                              nAlong = nAlong,
+                                              indexClassMax = indexClassMax,
+                                              omega = omega,
+                                              useC = FALSE)
+        ans.C <- logPostPhiFirstOrderMix(phi = phi,
+                                              level = level,
+                                              meanLevel = meanLevel,
+                                              nAlong = nAlong,
+                                              indexClassMax = indexClassMax,
+                                              omega = omega,
+                                              useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
+
 
 
 

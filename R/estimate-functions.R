@@ -136,7 +136,7 @@
 estimateModel <- function(model, y, exposure = NULL, weights = NULL,
                           filename = NULL, nBurnin = 1000, nSim = 1000,
                           nChain = 4, nThin = 1, parallel = TRUE,
-                          verbose = FALSE) {
+                          verbose = TRUE) {
     call <- match.call()
     methods::validObject(model)
     mcmc.args <- makeMCMCArgs(nBurnin = nBurnin,

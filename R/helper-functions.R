@@ -181,6 +181,33 @@ maxWithSubtotal <- function(x, max, subtotal) {
 
 ## SPECIFICATIONS ##################################################################
 
+## NO_TESTS
+checkAndTidyDFVectors <- function(df) {
+    checkPositiveNumericVector(x = df,
+                               name = "df")
+    if (length(x) == 0L)
+        stop(gettextf("'%s' has length %d",
+                      name, 0L))
+    as.double(df)
+}
+
+## NO_TESTS
+checkScaleVectors <- function(scale) {
+    if (!is.list(scale))
+        stop(gettextf("'%s' has class \"%s\"",
+                      "scale", class(scale)))
+    if (length(scale) == 0L)
+        stop(gettextf("'%s' has length %d",
+                      "scale", 0L))
+    if (!all(sapply(scale, methods::is, "HalfT")))
+        stop(gettextf("'%s' has elements not of class \"%s\"",
+                      "scale", "HalfT"))
+    NULL
+}
+
+    
+
+
 ## HAS_TESTS
 checkLowerOrUpper <- function(value,
                               name = c("lower", "upper"),
@@ -289,36 +316,6 @@ checkAndTidyMeanOrProb <- function(object, name = "mean") {
         stop(gettextf("'%s' is missing", "mean"))
     object <- as.double(object)
     object
-}
-
-## HAS_TESTS
-checkAndTidyPriorSD <- function(priorSD) {
-    if (is.null(priorSD))
-        list(df = as.double(-1), scale = as.double(0))
-    else if (is.list(priorSD)) {
-        if (!identical(sort(names(priorSD)), c("df", "scale")))
-            stop(gettextf("'%s' does not have names \"%s\" and \"%s\"",
-                          "priorSD", "df", "scale"))
-        for (name in c("df", "scale")) {
-            value <- priorSD[[name]]
-            if (!identical(length(value), 1L))
-                stop(gettextf("'%s' does not have length %d",
-                              name, 1L))
-            if (!is.numeric(value))
-                stop(gettextf("'%s' is non-numeric",
-                              name))
-            if (is.na(value))
-                stop(gettextf("'%s' is missing",
-                              name))
-            if (value < 0)
-                stop(gettextf("'%s' is non-positive",
-                              name))
-        }
-        list(df = as.double(priorSD$df), scale = as.double(priorSD$scale))
-    }
-    else
-        stop(gettextf("'%s' has class \"%s\"",
-                      "priorSD", class(priorSD)))
 }
 
 ## HAS_TESTS
@@ -441,6 +438,23 @@ checkPositiveNumeric <- function(x, name) {
     ## 'x' is positive
     if (x <= 0)
         stop(gettextf("'%s' is non-positive",
+                      name))
+    NULL
+}
+
+## NO_TESTS
+checkPositiveNumericVector <- function(x, name) {
+    ## 'x' has no missing values
+    if (any(is.na(x)))
+        stop(gettextf("'%s' has missing values",
+                      name))
+    ## 'x' is numeric
+    if (!is.numeric(x))
+        stop(gettextf("'%s' is not numeric",
+                      name))
+    ## 'x' is positive
+    if (any(x <= 0))
+        stop(gettextf("'%s' has non-positive values",
                       name))
     NULL
 }
@@ -3759,6 +3773,137 @@ getV <- function(prior, useC = FALSE) {
         }
     }
 }
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+logPostPhiMix <- function(phi, level, meanLevel, nAlong, indexClassMax, omega,
+                          useC = FALSE) {
+    ## 'phi'
+    stopifnot(identical(length(phi), 1L))
+    stopifnot(is.double(phi))
+    stopifnot(!is.na(phi))
+    stopifnot(abs(phi) <= 1)
+    ## 'level'
+    stopifnot(is.double(level))
+    stopifnot(!any(is.na(level)))
+    ## 'meanLevel'
+    stopifnot(identical(length(meanLevel), 1L))
+    stopifnot(is.double(meanLevel))
+    stopifnot(!is.na(meanLevel))
+    ## 'nAlong'
+    stopifnot(identical(length(nAlong), 1L))
+    stopifnot(is.integer(nAlong))
+    stopifnot(!is.na(nAlong))
+    stopifnot(nAlong >= 2L)
+    ## 'indexClassMax'
+    stopifnot(identical(length(indexClassMax), 1L))
+    stopifnot(is.integer(indexClassMax))
+    stopifnot(!is.na(indexClassMax))
+    stopifnot(indexClassMax > 0L)
+    ## 'omega'
+    stopifnot(identical(length(omega), 1L))
+    stopifnot(is.double(omega))
+    stopifnot(!is.na(omega))
+    stopifnot(omega > 0)
+    ## 'level', 'nAlong', 'indexClassMax'
+    stopifnot(length(level) >= nAlong * indexClassMax)
+    if (useC) {
+        .Call(logPostPhiMix_R, phi, level, meanLevel, nAlong, indexClassMax, omega)
+    }
+    else {
+        if (abs(phi) < 1) {
+            ratio <- meanLevel / (1 - phi)
+            ans.first <- 0
+            for (i.class in seq_len(indexClassMax)) {
+                i.wt.first <- (i.class - 1L) * nAlong + 1L
+                level.first <- level[i.wt.first]
+                ans.first <- ans.first + (level.first - ratio)^2
+            }
+            ans.first <- (1 - phi^2) * ans.first
+            ans.rest <- 0
+            for (i.class in seq_len(indexClassMax)) {
+                for (i.along in seq.int(from = 2L, to = nAlong)) {
+                    i.wt.curr <- (i.class - 1L) * nAlong + i.along
+                    i.wt.prev <- i.wt.curr - 1L
+                    level.curr <- level[i.wt.curr]
+                    level.prev <- level[i.wt.prev]
+                    ans.rest <-  ans.rest + (level.curr - meanLevel - phi * level.prev)^2
+                }
+            }
+            (ans.first + ans.rest) / (-2 * omega^2)
+        }
+        else {
+            0.0001
+        }
+    }
+}
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+logPostPhiFirstOrderMix <- function(phi, level, meanLevel, nAlong, indexClassMax, omega,
+                                    useC = FALSE) {
+    ## 'phi'
+    stopifnot(identical(length(phi), 1L))
+    stopifnot(is.double(phi))
+    stopifnot(!is.na(phi))
+    stopifnot(abs(phi) <= 1)
+    ## 'level'
+    stopifnot(is.double(level))
+    stopifnot(!any(is.na(level)))
+    ## 'meanLevel'
+    stopifnot(identical(length(meanLevel), 1L))
+    stopifnot(is.double(meanLevel))
+    stopifnot(!is.na(meanLevel))
+    ## 'nAlong'
+    stopifnot(identical(length(nAlong), 1L))
+    stopifnot(is.integer(nAlong))
+    stopifnot(!is.na(nAlong))
+    stopifnot(nAlong >= 2L)
+    ## 'indexClassMax'
+    stopifnot(identical(length(indexClassMax), 1L))
+    stopifnot(is.integer(indexClassMax))
+    stopifnot(!is.na(indexClassMax))
+    stopifnot(indexClassMax > 0)
+    ## 'omega'
+    stopifnot(identical(length(omega), 1L))
+    stopifnot(is.double(omega))
+    stopifnot(!is.na(omega))
+    stopifnot(omega > 0)
+    ## 'level', 'nAlong', 'indexClassMax'
+    stopifnot(length(level) >= nAlong * indexClassMax)
+    if (useC) {
+        .Call(logPostPhiFirstOrderMix_R, phi, level, meanLevel, nAlong, indexClassMax, omega)
+    }
+    else {
+        if(abs(phi) < 1) {
+            ans.first <- 0
+            ratio <- meanLevel / (1 - phi)
+            for (i.class in seq_len(indexClassMax)) {
+                i.wt.first <- (i.class - 1L) * nAlong + 1L
+                level.first <- level[i.wt.first]
+                ans.first <- ans.first + (level.first - ratio) * (phi * level.first + ratio)
+            }
+            ans.rest <- 0
+            for (i.class in seq_len(indexClassMax)) {
+                for (i.along in seq.int(from = 2L, to = nAlong)) {
+                    i.wt.curr <- (i.class - 1L) * nAlong + i.along
+                    i.wt.prev <- i.wt.curr - 1L
+                    level.curr <- level[i.wt.curr]
+                    level.prev <- level[i.wt.prev]
+                    ans.rest <- ans.rest + level.prev * (level.curr - meanLevel - phi * level.prev)
+                }
+            }
+            (ans.first + ans.rest) / omega^2
+        }
+        else {
+            0.0001
+        }
+    }
+}
+
+
+
+
 
 ## TRANSLATED
 ## HAS_TESTS
