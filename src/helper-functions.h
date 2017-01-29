@@ -14,6 +14,8 @@
     #define RNORMTRUNC_A 0.4
     #define RNORMTRUNC_TOL 2.05
 
+    #define DEFAULT_LOGPOSTPHI 0.0001
+
     #include <Rinternals.h>
     
     /* utility functions for debugging printing */

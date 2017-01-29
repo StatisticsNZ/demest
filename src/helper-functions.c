@@ -356,86 +356,7 @@ getRnormTruncatedSingle(double mean, double sd,
     return ans;
 }
     
-/*## READY_TO_TRANSLATE
-## HAS_TESTS
-## modified from code in package 'TruncatedNormal'.
-## which uses alorithm from Z. I. Botev (2015),
-## "The Normal Law Under Linear Restrictions:
-##  Simulation and Estimation via Minimax Tilting", submitted to JRSS(B)
-rtnorm1 <- function(mean = 0, sd = 1, lower = -Inf, upper = Inf,
-                    useC = FALSE) {
-    ## mean
-    stopifnot(identical(length(mean), 1L))
-    stopifnot(is.double(mean))
-    stopifnot(!is.na(mean))
-    ## sd
-    stopifnot(identical(length(sd), 1L))
-    stopifnot(is.double(sd))
-    stopifnot(!is.na(sd))
-    stopifnot(sd >= 0)
-    ## lower
-    stopifnot(identical(length(lower), 1L))
-    stopifnot(is.double(lower))
-    stopifnot(!is.na(lower))
-    ## upper
-    stopifnot(identical(length(upper), 1L))
-    stopifnot(is.double(upper))
-    stopifnot(!is.na(upper))
-    ## lower, upper
-    stopifnot(lower < upper)
-    if (useC) {
-        .Call(rtnorm1_R, mean, sd, lower, upper)
-    }
-    else {
-        ## set threshold for switching between methods - in C this can be done via macro
-        a <- 0.4
-        tol <- 2.05
-        ## standardized variables
-        l <- (lower - mean)/sd
-        u <- (upper - mean)/sd
-        if (l > a) {
-            c <- l^2 / 2
-            f <- expm1(c - u^2 / 2)
-            x <- c - log(1 + stats::runif(n = 1L) * f); # sample using Rayleigh
-            ## keep list of rejected
-            while (stats::runif(n = 1L)^2 * x > c) { # while there are rejections
-                x <- c - log(1 + stats::runif(n = 1L) * f)
-            }
-            ans <- sqrt(2*x) # this Rayleigh transform can be delayed till the end
-        }
-        else if (u < (-a)) {
-            c <- (-u)^2 / 2
-            f <- expm1(c - (-l)^2 / 2)
-            x <- c-log(1+stats::runif(n = 1L)*f); # sample using Rayleigh
-            ## keep list of rejected
-            while (stats::runif(n = 1L)^2 * x > c) { # while there are rejections
-                x <- c - log(1 + stats::runif(n = 1L) * f)
-            }
-            ans <- (-1)*sqrt(2*x) # this Rayleigh transform can be delayed till the end
-        }
-        else {
-            if (abs(u-l) > tol) { # abs(u-l)>tol, uses accept-reject
-                x <- stats::rnorm(n = 1L) # sample from standard normal
-                while (x < l | x > u) { # while there are rejections
-                    x <- stats::rnorm(n = 1L)
-                } 
-                ans <- x         
-            }
-            else { # abs(u-l)<tol, uses inverse-transform
-                pl <- stats::pnorm(q = l)
-                pu <- stats::pnorm(q = u)
-                u <- stats::runif(n = 1L)
-                trans <- pl + (pu - pl) * u
-                ans <- stats::qnorm(p = trans)
-            }      
-        }
-        ans * sd + mean
-    }
-}
-*/    
-
         
-
 double
 rtnorm1(double mean, double sd, double lower, double upper)
 {
@@ -1188,26 +1109,85 @@ double identity(double x)
 
 
 double
+logPostPhiMix(double phi, double *level, double meanLevel, int nAlong, 
+                int indexClassMax_r, double omega)
+{
+    double ans = DEFAULT_LOGPOSTPHI;
+    
+    if (fabs(phi) < 1) {
+        
+        double ratio = meanLevel / (1 - phi);
+        double ansFirst = 0;
+        double ansRest = 0;
+        for (int iClass = 0; iClass < indexClassMax_r; ++ iClass) {
+
+            int iWtFirst = iClass * nAlong;
+            double levelFirst = level[iWtFirst];
+            double tmp = levelFirst - ratio;
+            ansFirst += tmp*tmp;
+            
+            for (int iAlong = 1; iAlong < nAlong; ++ iAlong) {
+
+                int iWtCurr = iClass * nAlong + iAlong;
+                int iWtPrev = iWtCurr-1;
+                double levelCurr = level[iWtCurr];
+                double levelPrev = level[iWtPrev];
+                double tmp = levelCurr - meanLevel - phi*levelPrev;
+                ansRest += tmp*tmp;
+            }
+        }
+        ansFirst *= (1 - phi*phi);
+        ans = (ansFirst + ansRest) / (-2 * omega*omega);
+       
+    } /* else ans stays as default */
+
+    return ans;
+}
+
+
+double
+logPostPhiFirstOrderMix(double phi, double *level, double meanLevel, int nAlong, 
+                int indexClassMax_r, double omega)
+{
+    double ans = DEFAULT_LOGPOSTPHI;
+    
+    if (fabs(phi) < 1) {
+        
+        double ratio = meanLevel / (1 - phi);
+        double ansFirst = 0;
+        double ansRest = 0;
+        for (int iClass = 0; iClass < indexClassMax_r; ++ iClass) {
+            
+            int iWtFirst = iClass * nAlong;
+            double levelFirst = level[iWtFirst];
+            
+            ansFirst += (levelFirst - ratio) * (phi * levelFirst + ratio);
+            
+            for (int iAlong = 1; iAlong < nAlong; ++ iAlong) {
+            
+                int iWtCurr = iClass * nAlong + iAlong;
+                int iWtPrev = iWtCurr-1;
+                double levelCurr = level[iWtCurr];
+                double levelPrev = level[iWtPrev];
+                ansRest += levelPrev * 
+                            (levelCurr - meanLevel - phi * levelPrev);
+            }
+        }
+        
+        ans = (ansFirst + ansRest) / (omega*omega);
+       
+    } /* else ans stays as default */
+
+    return ans;
+}
+
+
+double
 makeLifeExpBirth(double *mx, double *nx, double *ax, int iAge0_r, int nAge)
 {
     double ans = 0;
     int iAge0 = iAge0_r - 1; /* adjust R indexing for C */
     double lx_i = 1;
-    
-    /*lx.i <- 1
-    for (i in seq_len(nAge - 1L)) {
-        mx.i <- mx[iAge0 + i - 1L]
-        nx.i <- nx[i]
-        ax.i <- ax[iAge0 + i - 1L]
-        qx.i <- nx.i * mx.i / (1 + (nx.i - ax.i) * mx.i)
-        lx.iplus1 <- lx.i * (1 - qx.i)
-        Lx.i <- lx.iplus1 * nx.i + (lx.i - lx.iplus1) * ax.i
-        ans <- ans + Lx.i
-        lx.i <- lx.iplus1
-    }
-    mx.i <- mx[iAge0 + nAge - 1L]
-    Lx.i <- lx.i / mx.i
-    ans <- ans + Lx.i*/
     
     for (int i = 0; i < nAge - 1; ++i) {
         
@@ -1229,7 +1209,6 @@ makeLifeExpBirth(double *mx, double *nx, double *ax, int iAge0_r, int nAge)
     ans += newLx_i;
     
     return ans;
-    
 }
 
 /* only here for testing makeVBar_General: 

@@ -480,6 +480,42 @@ SEXP updateTauRobust_R(SEXP prior_R)
     return ans_R;             
 }
 
+/* one off wrapper for logPostPhiMix */
+SEXP logPostPhiMix_R(SEXP phi_R, SEXP level_R, SEXP meanLevel_R, 
+                        SEXP nAlong_R, SEXP indexClassMax_R, SEXP omega_R)
+                
+{
+    double phi = *REAL(phi_R);
+    double *level = REAL(level_R);
+    double meanLevel = *REAL(meanLevel_R);
+    int nAlong = *INTEGER(nAlong_R);
+    int indexClassMax_r = *INTEGER(indexClassMax_R);
+    double omega = *REAL(omega_R);
+    
+    double ans = logPostPhiMix(phi, level, meanLevel, nAlong, 
+                                indexClassMax_r, omega);
+    
+    return ScalarReal(ans);
+}
+
+/* one off wrapper for logPostPhiFirstOrderMix */
+SEXP logPostPhiFirstOrderMix_R(SEXP phi_R, SEXP level_R, SEXP meanLevel_R, 
+                        SEXP nAlong_R, SEXP indexClassMax_R, SEXP omega_R)
+                
+{
+    double phi = *REAL(phi_R);
+    double *level = REAL(level_R);
+    double meanLevel = *REAL(meanLevel_R);
+    int nAlong = *INTEGER(nAlong_R);
+    int indexClassMax_r = *INTEGER(indexClassMax_R);
+    double omega = *REAL(omega_R);
+    
+    double ans = logPostPhiFirstOrderMix(phi, level, meanLevel, nAlong, 
+                                indexClassMax_r, omega);
+    
+    return ScalarReal(ans);
+}
+
 /* one off wrapper for makeLifeExpBirth */
 SEXP makeLifeExpBirth_R(SEXP mx_R, SEXP nx_R, SEXP ax_R, 
                         SEXP iAge0_R, SEXP nAge_R)
@@ -1254,6 +1290,8 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(getV_R, 1),
   
   CALLDEF(makeVBar_R, 2),
+  CALLDEF(logPostPhiMix_R, 6),
+  CALLDEF(logPostPhiFirstOrderMix_R, 6),
   CALLDEF(makeLifeExpBirth_R, 5),
   CALLDEF(safeLogProp_Binomial_R, 7),
   CALLDEF(safeLogProp_Poisson_R, 7),
