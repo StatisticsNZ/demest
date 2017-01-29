@@ -26,7 +26,8 @@ test_that("can create valid object of class ResultsModelEst", {
                        initialCombinedModel(spec, y = y, exposure = NULL, weights = NULL))
     control <- list(call = call,
                     parallel = TRUE,
-                    lengthIter = length(extractValues(final[[1L]])))
+                    lengthIter = length(extractValues(final[[1L]])),
+                    nUpdateMax = 200L)
     model <- makeOutputModel(model = final[[1]]@model, pos = 1L, mcmc = mcmc)
     ans <- new("ResultsModelEst",
                mcmc = mcmc,
@@ -57,7 +58,8 @@ test_that("validity tests for ResultsModelEst inherited from Results work", {
                        initialCombinedModel(spec, y = y, exposure = NULL, weights = NULL))
     control <- list(call = call,
                     parallel = TRUE,
-                    lengthIter = length(extractValues(final[[1]])))
+                    lengthIter = length(extractValues(final[[1]])),
+                    nUpdateMax = 200L)
     model <- makeOutputModel(model = final[[1]]@model, pos = 1L, mcmc = mcmc)
     x <- new("ResultsModelEst",
              mcmc = mcmc,
@@ -70,7 +72,7 @@ test_that("validity tests for ResultsModelEst inherited from Results work", {
     x.wrong <- x
     names(x.wrong@control)[1] <- "wrong"
     expect_error(validObject(x.wrong),
-                 "'control' has incorrect names")
+                 "'control' does not have required names")
     ## control has no missing values
     x.wrong <- x
     x.wrong@control[["parallel"]] <- NA
@@ -130,7 +132,8 @@ test_that("validity tests for ResultsModelEst inherited from ResultsEst work", {
                        initialCombinedModel(spec, y = y, exposure = NULL, weights = NULL))
     control <- list(call = call,
                     parallel = TRUE,
-                    lengthIter = length(extractValues(final[[1]])))
+                    lengthIter = length(extractValues(final[[1]])),
+                    nUpdateMax = 200L)
     model <- makeOutputModel(model = final[[1]]@model, pos = 1L, mcmc = mcmc)
     x <- new("ResultsModelEst",
              mcmc = mcmc,
@@ -139,6 +142,11 @@ test_that("validity tests for ResultsModelEst inherited from ResultsEst work", {
              final = final,
              model = model,
              y = y)
+    ## 'control' has "nUpdateMax"
+    x.wrong <- x
+    names(x.wrong@control)[4] <- "wrong"
+    expect_error(validObject(x.wrong),
+                 "'control' does not include 'nUpdateMax'")
     ## mcmc has correct names
     x.wrong <- x
     names(x.wrong@mcmc)[1] <- "wrong"
@@ -202,7 +210,8 @@ test_that("validity tests for ResultsModelEst inherited from ResultsModelEst wor
                        initialCombinedModel(spec, y = y, exposure = NULL, weights = NULL))
     control <- list(call = call,
                     parallel = TRUE,
-                    lengthIter = length(extractValues(final[[1]])))
+                    lengthIter = length(extractValues(final[[1]])),
+                    nUpdateMax = 200L)
     model <- makeOutputModel(model = final[[1]]@model, pos = 1L, mcmc = mcmc)
     seed <- list(c(407L, 1:6), c(407L, 6:1), c(407L, 3:8))
     x <- new("ResultsModelEst",
@@ -251,7 +260,8 @@ test_that("can create valid object of class ResultsModelExposureEst", {
                        initialCombinedModel(spec, y = y, exposure = exposure, weights = NULL))
     control <- list(call = call,
                     parallel = TRUE,
-                    lengthIter = length(extractValues(final[[1]])))
+                    lengthIter = length(extractValues(final[[1]])),
+                    nUpdateMax = 200L)
     model <- makeOutputModel(model = final[[1]]@model, pos = 1L, mcmc = mcmc)
     ans <- new("ResultsModelExposureEst",
                mcmc = mcmc,
@@ -283,7 +293,8 @@ test_that("can create valid object of class ResultsModelPred", {
                        initialCombinedModel(spec, y = y, exposure = NULL, weights = NULL))
     control <- list(call = call,
                     parallel = TRUE,
-                    lengthIter = length(extractValues(final[[1L]])))
+                    lengthIter = length(extractValues(final[[1L]])),
+                    nUpdateMax = 200L)
     model <- makeOutputModel(model = final[[1]]@model, pos = 1L, mcmc = mcmc)
     mcmc <- c(nIteration = 300L)
     ans <- new("ResultsModelPred",
@@ -314,7 +325,8 @@ test_that("validity tests for ResultsModelPred inherited from ResultsModelPred w
                        initialCombinedModel(spec, y = y, exposure = NULL, weights = NULL))
     control <- list(call = call,
                     parallel = TRUE,
-                    lengthIter = length(extractValues(final[[1L]])))
+                    lengthIter = length(extractValues(final[[1L]])),
+                    nUpdateMax = 200L)
     model <- makeOutputModel(model = final[[1]]@model, pos = 1L, mcmc = mcmc)
     mcmc <- c(nIteration = 300L)
     x <- new("ResultsModelPred",
@@ -343,7 +355,8 @@ test_that("can create valid object of class ResultsCountsEst", {
               nIteration = 300L)
     control <- list(call = call,
                     parallel = TRUE,
-                    lengthIter = -1L)
+                    lengthIter = -1L,
+                    nUpdateMax = 200L)
     seed <- list(c(407L, 1:6), c(407L, 6:1), c(407L, 3:8))
     y.data <- Counts(array(as.integer(rpois(n = 24, lambda = 20)),
                            dim = 2:4,
@@ -429,7 +442,8 @@ test_that("validity tests for ResultsCountsEst inherited from ResultsCountsEst w
               nIteration = 300L)
     control <- list(call = call,
                     parallel = TRUE,
-                    lengthIter = -1L)
+                    lengthIter = -1L,
+                    nUpdateMax = 200L)
     seed <- list(c(407L, 1:6), c(407L, 6:1), c(407L, 3:8))
     y.data <- Counts(array(as.integer(rpois(n = 24, lambda = 20)),
                            dim = 2:4,
@@ -550,7 +564,8 @@ test_that("can create valid object of class ResultsCountsExposureEst", {
               nIteration = 300L)
     control <- list(call = call,
                     parallel = TRUE,
-                    lengthIter = -1L)
+                    lengthIter = -1L,
+                    nUpdateMax = 200L)
     seed <- list(c(407L, 1:6), c(407L, 6:1), c(407L, 3:8))
     y.data <- Counts(array(as.integer(rpois(n = 24, lambda = 20)),
                            dim = 2:4,

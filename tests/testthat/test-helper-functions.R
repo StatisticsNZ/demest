@@ -5868,6 +5868,7 @@ test_that("predictOneChain works", {
                                      seed = NULL,
                                      nBurnin = 0L,
                                      nSim = 3L,
+                                     nUpdateMax = 200L,
                                      continuing = FALSE,
                                      nThin = 1L,
                                      nAttempt = 100L)
@@ -7570,7 +7571,6 @@ test_that("R and C versions of makeIOther give same answer", {
 
 ## ESTIMATION #########################################################################
 
-
 test_that("joinFiles works", {
     joinFiles <- demest:::joinFiles
     filenames.first <- character(3)
@@ -8310,33 +8310,65 @@ test_that("makeControlArgs works", {
     set.seed(100)
     call <- call("estimateModel", list())
     ans.obtained <- makeControlArgs(call = call,
-                                    parallel = TRUE)
+                                    parallel = TRUE,
+                                    nUpdateMax = 200)
     ans.expected <- list(call = call,
                          parallel = TRUE,
-                         lengthIter = NULL)
+                         lengthIter = NULL,
+                         nUpdateMax = 200L)
     expect_identical(ans.obtained, ans.expected)
     ans.obtained <- makeControlArgs(call = call,
-                                    parallel = FALSE)
+                                    parallel = FALSE,
+                                    nUpdateMax = 20L)
     ans.expected <- list(call = call,
                          parallel = FALSE,
-                         lengthIter = NULL)
+                         lengthIter = NULL,
+                         nUpdateMax = 20L)
     expect_identical(ans.obtained, ans.expected)
     ## call is call
     expect_error(makeControlArgs(call = "wrong",
-                                 parallel = TRUE),
+                                 parallel = TRUE,
+                                 nUpdateMax = 200),
                  "'call' does not have class \"call\"")
     ## parallel is logical
     expect_error(makeControlArgs(call = call,
-                                 parallel = "TRUE"),
+                                 parallel = "TRUE",
+                                 nUpdateMax = 200),
                  "'parallel' does not have type \"logical\"")
     ## parallel has length 1
     expect_error(makeControlArgs(call = call,
-                                 parallel = c(TRUE, FALSE)),
+                                 parallel = c(TRUE, FALSE),
+                                 nUpdateMax = 200),
                  "'parallel' does not have length 1")
     ## parallel is not missing
     expect_error(makeControlArgs(call = call,
-                                 parallel = NA),
+                                 parallel = NA,
+                                 nUpdateMax = 200),
                  "'parallel' is missing")
+    ## 'nUpdateMax' has length 1
+    expect_error(makeControlArgs(call = call,
+                                 parallel = TRUE,
+                                 nUpdateMax = c(200, 200)),
+                 "'nUpdateMax' does not have length 1")
+    ## 'nUpdateMax' is not missing
+    expect_error(makeControlArgs(call = call,
+                                 parallel = TRUE,
+                                 nUpdateMax = NA),
+                 "'nUpdateMax' is missing")
+    ## 'nUpdateMax' is numeric
+    expect_error(makeControlArgs(call = call,
+                                 parallel = TRUE,
+                                 nUpdateMax = "200"),
+                 "'nUpdateMax' is non-numeric")
+    ## 'nUpdateMax' is integer
+    expect_error(makeControlArgs(call = call,
+                                 parallel = TRUE,
+                                 nUpdateMax = 200.1),
+                 "'nUpdateMax' has non-integer value")
+    expect_error(makeControlArgs(call = call,
+                                 parallel = TRUE,
+                                 nUpdateMax = 0L),
+                 "'nUpdateMax' is less than 1")
 })
 
 test_that("makeMCMCArgs works", {
@@ -8696,7 +8728,9 @@ test_that("makeResultsModelEst works with valid input", {
     mcmcArgs <- list(nBurnin = 1000L, nSim = 1000L, nChain = 3L, nThin = 20L)
     lengthIter <- length(extractValues(finalCombineds[[1L]]))
     controlArgs <- list(call = call,
-                        parallel = TRUE, lengthIter = lengthIter)
+                        parallel = TRUE,
+                        lengthIter = lengthIter,
+                        nUpdateMax = 200L)
     seed <- list(c(407L, 1:6), c(407L, 6:1), c(407L, 3:8))
     ans <- makeResultsModelEst(finalCombineds = finalCombineds,
                             mcmcArgs = mcmcArgs,
@@ -8722,7 +8756,9 @@ test_that("makeResultsModelEst works with valid input", {
     mcmcArgs <- list(nBurnin = 1000L, nSim = 1000L, nChain = 3L, nThin = 20L)
     lengthIter <- length(extractValues(finalCombineds[[1L]]))
     controlArgs <- list(call = call,
-                        parallel = TRUE, lengthIter = lengthIter)
+                        parallel = TRUE,
+                        lengthIter = lengthIter,
+                        nUpdateMax = 200L)
     seed <- list(c(407L, 1:6), c(407L, 6:1), c(407L, 3:8))
     ans <- makeResultsModelEst(finalCombineds = finalCombineds,
                             mcmcArgs = mcmcArgs,
@@ -8745,7 +8781,10 @@ test_that("makeResultsModelEst works with valid input", {
     call <- call("estimateModel", list("model"))
     mcmcArgs <- list(nBurnin = 1000L, nSim = 1000L, nChain = 3L, nThin = 20L)
     lengthIter <- length(extractValues(finalCombineds[[1L]]))
-    controlArgs <- list(call = call, parallel = FALSE, lengthIter = lengthIter)
+    controlArgs <- list(call = call,
+                        parallel = FALSE,
+                        lengthIter = lengthIter,
+                        nUpdateMax = 200L)
     seed <- list(c(407L, 1:6))
     ans <- makeResultsModelEst(finalCombineds = finalCombineds,
                                mcmcArgs = mcmcArgs,
@@ -8768,7 +8807,10 @@ test_that("makeResultsModelEst works with valid input", {
     call <- call("estimateModel", list("model"))
     mcmcArgs <- list(nBurnin = 1000L, nSim = 1000L, nChain = 3L, nThin = 20L)
     lengthIter <- length(extractValues(finalCombineds[[1L]]))
-    controlArgs <- list(call = call, parallel = TRUE, lengthIter = lengthIter)
+    controlArgs <- list(call = call,
+                        parallel = TRUE,
+                        lengthIter = lengthIter,
+                        nUpdateMax = 200L)
     seed <- list(c(407L, 1:6), c(407L, 6:1), c(407L, 3:8))
     ans <- makeResultsModelEst(finalCombineds = finalCombineds,
                             mcmcArgs = mcmcArgs,
@@ -8812,7 +8854,9 @@ test_that("makeResultsModelPred works with valid input", {
     mcmcArgs <- list(nBurnin = 1000L, nSim = 1000L, nChain = 3L, nThin = 20L)
     lengthIter <- length(extractValues(finalCombineds[[1L]]))
     controlArgs <- list(call = call,
-                        parallel = TRUE, lengthIter = lengthIter)
+                        parallel = TRUE,
+                        lengthIter = lengthIter,
+                        nUpdateMax = 200L)
     seed <- list(c(407L, 1:6), c(407L, 6:1), c(407L, 3:8))
     ans <- makeResultsModelPred(finalCombineds = finalCombineds,
                                 mcmcArgs = mcmcArgs,
@@ -8857,7 +8901,10 @@ test_that("makeResultsCounts works with no exposure", {
     call <- call("estimateCounts", list("model"))
     mcmcArgs <- list(nBurnin = 1000L, nSim = 1000L, nChain = 3L, nThin = 20L)
     lengthIter <- length(extractValues(finalCombineds[[1L]]))
-    controlArgs <- list(call = call, parallel = TRUE, lengthIter = lengthIter)
+    controlArgs <- list(call = call,
+                        parallel = TRUE,
+                        lengthIter = lengthIter,
+                        nUpdateMax = 200L)
     seed <- list(c(407L, 1:6), c(407L, 6:1), c(407L, 3:8))
     ans <- makeResultsCounts(finalCombineds = finalCombineds,
                              mcmcArgs = mcmcArgs,
@@ -8903,7 +8950,10 @@ test_that("makeResultsCounts works with exposure", {
     call <- call("estimateCounts", list("model"))
     mcmcArgs <- list(nBurnin = 1000L, nSim = 1000L, nChain = 3L, nThin = 20L)
     lengthIter <- length(extractValues(finalCombineds[[1L]]))
-    controlArgs <- list(call = call, parallel = TRUE, lengthIter = lengthIter)
+    controlArgs <- list(call = call,
+                        parallel = TRUE,
+                        lengthIter = lengthIter,
+                        nUpdateMax = 200L)
     seed <- list(c(407L, 1:6), c(407L, 6:1), c(407L, 3:8))
     ans <- makeResultsCounts(finalCombineds = finalCombineds,
                              mcmcArgs = mcmcArgs,
@@ -9144,13 +9194,14 @@ test_that("finiteSDInner works with ResultsModel from BinomialVarying", {
                       dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000:2003)),
                 dimscales = c(time = "Intervals"))
     filename <- tempfile()
-    res <- estimateModel(Model(y ~ Binomial(mean ~ age + sex)),
-                         y = y,
-                         exposure = exposure,
-                         nBurnin = 0,
-                         nSim = 2, nThin = 2,
-                         nChain = 2,
-                         filename = filename)
+    estimateModel(Model(y ~ Binomial(mean ~ age + sex)),
+                  y = y,
+                  exposure = exposure,
+                  nBurnin = 0,
+                  nSim = 2,
+                  nThin = 2,
+                  nChain = 2,
+                  filename = filename)
     object <- fetchResultsObject(filename)
     ans.obtained <- finiteSDInner(filename = filename,
                                   model = object@final[[1]]@model,
@@ -9650,11 +9701,11 @@ test_that("giveListElementsLongNames works", {
 
 test_that("isTimeVarying works", {
     isTimeVarying <- demest:::isTimeVarying
-    exposure <- Counts(array(as.numeric(rpois(n = 24, lambda = 10)),
-                             dim = 2:4,
-                             dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000:2003)),
-                       dimscales = c(time = "Intervals"))
-    y <- Counts(array(as.integer(rbinom(n = 24, size = exposure, prob = 0.8)),
+    expose <- Counts(array(as.numeric(rpois(n = 24, lambda = 10)),
+                           dim = 2:4,
+                           dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000:2003)),
+                     dimscales = c(time = "Intervals"))
+    y <- Counts(array(as.integer(rbinom(n = 24, size = expose, prob = 0.8)),
                       dim = 2:4,
                       dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000:2003)),
                 dimscales = c(time = "Intervals"))
@@ -9662,7 +9713,7 @@ test_that("isTimeVarying works", {
     filename.pred <- tempfile()
     estimateModel(Model(y ~ Binomial(mean ~ age + time)),
                   y = y,
-                  exposure = exposure,
+                  exposure = expose,
                   nBurnin = 0,
                   nSim = 2,
                   nChain = 1,

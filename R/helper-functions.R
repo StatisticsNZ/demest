@@ -5256,55 +5256,53 @@ joinFiles <- function(filenamesFirst, filenamesLast) {
     NULL
 }
 
-## NO_TESTS
-estimateOneChain <- function(combined, seed, tempfile, nBurnin, nSim, nThin,
-                             continuing, ...) {
-    ## set seed if continuing
-    if (!is.null(seed))
-        assign(".Random.seed", seed, envir = .GlobalEnv)
-    ## burnin
-    combined <- updateCombined(combined, nUpdate = nBurnin, useC = TRUE)
-    ## production
-    con <- file(tempfile, open = "wb")
-    n.prod <- nSim %/% nThin
-    for (i in seq_len(n.prod)) {
-        combined <- updateCombined(combined, nUpdate = nThin, useC = TRUE)
-        values <- extractValues(combined)
-        writeBin(values, con = con)
-    }
-    close(con)
-    ## return final state
-    combined
-}
+## ## NO_TESTS
+## estimateOneChain <- function(combined, seed, tempfile, nBurnin, nSim, nThin,
+##                              continuing, ...) {
+##     ## set seed if continuing
+##     if (!is.null(seed))
+##         assign(".Random.seed", seed, envir = .GlobalEnv)
+##     ## burnin
+##     combined <- updateCombined(combined, nUpdate = nBurnin, useC = TRUE)
+##     ## production
+##     con <- file(tempfile, open = "wb")
+##     n.prod <- nSim %/% nThin
+##     for (i in seq_len(n.prod)) {
+##         combined <- updateCombined(combined, nUpdate = nThin, useC = TRUE)
+##         values <- extractValues(combined)
+##         writeBin(values, con = con)
+##     }
+##     close(con)
+##     ## return final state
+##     combined
+## }
 
-## estimate one Chain with a max number of updates in any one .Call
-estimateOneChainNew <- function(combined, seed, tempfile, nBurnin, nSim, nThin,
-                             continuing, ...) {
-    nUpdatesMax <- 200L ## this should really be something like a parameter to the function
+## We limit the number of updates in any one call to .Call, because R does
+## not release memory until the end of the call.
+estimateOneChain <- function(combined, seed, tempfile, nBurnin, nSim, nThin,
+                             nUpdateMax, continuing, ...) {
     ## set seed if continuing
     if (!is.null(seed))
         assign(".Random.seed", seed, envir = .GlobalEnv)
     ## burnin
-    ##combined <- updateCombined(combined, nUpdate = nBurnin, useC = TRUE)
-    nLoops <- nBurnin %/% nUpdatesMax
+    nLoops <- nBurnin %/% nUpdateMax
     for (i in seq_len(nLoops)) {
-        combined <- updateCombined(combined, nUpdate = nUpdatesMax, useC = TRUE)
+        combined <- updateCombined(combined, nUpdate = nUpdateMax, useC = TRUE)
     }
     ## and any final ones
-    nLeftOver <- nBurnin - nLoops * nUpdatesMax
+    nLeftOver <- nBurnin - nLoops * nUpdateMax
     combined <- updateCombined(combined, nUpdate = nLeftOver, useC = TRUE)
     ## production
     con <- file(tempfile, open = "wb")
     n.prod <- nSim %/% nThin
     for (i in seq_len(n.prod)) {
-        nLoops <- nThin %/% nUpdatesMax
+        nLoops <- nThin %/% nUpdateMax
         for (i in seq_len(nLoops)) {
-           combined <- updateCombined(combined, nUpdate = nUpdatesMax, useC = TRUE)
+           combined <- updateCombined(combined, nUpdate = nUpdateMax, useC = TRUE)
         }
         ## and any final ones
-        nLeftOver <- nThin - nLoops * nUpdatesMax
+        nLeftOver <- nThin - nLoops * nUpdateMax
         combined <- updateCombined(combined, nUpdate = nLeftOver, useC = TRUE)
-        #combined <- updateCombined(combined, nUpdate = nThin, useC = TRUE)
         values <- extractValues(combined)
         writeBin(values, con = con)
     }
@@ -5312,61 +5310,6 @@ estimateOneChainNew <- function(combined, seed, tempfile, nBurnin, nSim, nThin,
     ## return final state
     combined
 }
-
-
-## estimateOneChainInC <- function(combined, tempfile, nBurnin, nSim, nThin,
-##                              continuing = FALSE) {
-##     return.value <- tryCatch(.Call(estimateOneChain_R, combined, tempfile, nBurnin, nSim, nThin, continuing),
-##                                          error = function(e) e)
-##     if (methods::is(return.value, "error")) {
-##         print("error")
-##         print(return.value)
-##         NULL
-##     }
-##     else {
-##         return.value
-##     }
-## }
-
-## estimateOneChainAllInR <- function(combined, tempfile, nBurnin, nSim, nThin,
-##                              continuing = FALSE, nAttempt, wait) {
-##     con <- file(tempfile, open = "wb")
-##     on.exit(close(con))
-##     n.prod <- nSim %/% nThin
-##     if (nBurnin > 0L)
-##         combined <- updateCombined(combined, nUpdate = nBurnin - 1L)
-##     for (i in seq_len(n.prod)) {
-##         ## using R for updateCombined
-##         if ((nBurnin == 0L) && (i == 1L) && !continuing)
-##             combined <- updateCombined(combined, nUpdate = nThin - 1L)
-##         else
-##             combined <- updateCombined(combined, nUpdate = nThin)
-##         values <- extractValues(combined)
-##         wrote.values <- FALSE
-##         for (attempt in seq_len(nAttempt)) {
-##             return.value <- tryCatch(writeBin(values, con = con),
-##                                      error = function(e) e)
-##             if (methods::is(return.value, "error")) {
-##                 if (attempt < nAttempt)
-##                     Sys.sleep(time = wait)
-##             }
-##             else {
-##                 wrote.values <- TRUE
-##                 break
-##             }
-##         }
-##         if (!wrote.values)
-##             break
-##     }
-##     ## if completed successfully, return final combined; otherwise return NULL
-##     if (wrote.values)
-##         combined
-##     else {
-##         warning(gettextf("a chain has failed because unable to write to file \"%\"",
-##                          tempfile))
-##         NULL
-##     }
-## }
 
 ## HAS_TESTS
 finalMessage <- function(filename, verbose) {
@@ -5377,7 +5320,7 @@ finalMessage <- function(filename, verbose) {
 }
 
 ## HAS_TESTS
-makeControlArgs <- function(call, parallel) {
+makeControlArgs <- function(call, parallel, nUpdateMax) {
     ## call is 'call'
     if (!is.call(call))
         stop(gettextf("'%s' does not have class \"%s\"",
@@ -5394,9 +5337,31 @@ makeControlArgs <- function(call, parallel) {
     if (is.na(parallel))
         stop(gettextf("'%s' is missing",
                       "parallel"))
+    ## 'nUpdateMax' is length 1
+    if (!identical(length(nUpdateMax), 1L))
+        stop(gettextf("'%s' does not have length %d",
+                      "nUpdateMax", 1L))
+    ## 'nUpdateMax' is not missing
+    if (is.na(nUpdateMax))
+        stop(gettextf("'%s' is missing",
+                      "nUpdateMax"))
+    ## 'nUpdateMax' is numeric
+    if (!is.numeric(nUpdateMax))
+        stop(gettextf("'%s' is non-numeric",
+                      "nUpdateMax"))
+    ## 'nUpdateMax' is integer
+    if (round(nUpdateMax) != nUpdateMax)
+        stop(gettextf("'%s' has non-integer value",
+                      "nUpdateMax"))
+    nUpdateMax <- as.integer(nUpdateMax)
+    ## 'nUpdateMax' positive
+    if (nUpdateMax < 1L)
+        stop(gettextf("'%s' is less than %d",
+                      "nUpdateMax", 1L))
     list(call = call,
          parallel = parallel,
-         lengthIter = NULL)
+         lengthIter = NULL,
+         nUpdateMax = nUpdateMax)
 }
 
 ## HAS_TESTS
@@ -5444,7 +5409,6 @@ makeMCMCArgs <- function(nBurnin, nSim, nChain, nThin) {
          nChain = nChain,
          nThin = nThin)
 }
-
 
 
 
@@ -5688,11 +5652,11 @@ makeResultsModelPred <- function(finalCombineds, mcmcArgs, controlArgs, seed) {
     output.model <- makeOutputModel(model = model, pos = 1L, mcmc = mcmc)
     mcmc <- mcmc["nIteration"]
     methods::new("ResultsModelPred",
-        model = output.model,
-        mcmc = mcmc,
-        control = controlArgs,
-        seed = seed,
-        final = final)
+                 model = output.model,
+                 mcmc = mcmc,
+                 control = controlArgs,
+                 seed = seed,
+                 final = final)
 }
 
 ## HAS_TESTS
@@ -5989,10 +5953,12 @@ printJump <- function(object) {
 printJumpAg <- function(object) {
     jump <- object@scaleAg
     value <- object@valueAg
-    weight <- object@weightAg
+    if (.hasSlot(object, "weightAg"))
+        has.weight <- !is.null(object@weightAg)
+    else
+        has.weight <- FALSE
     value.is.scalar <- identical(length(value), 1L)
-    weight.is.null <- is.null(weight)
-    if (!value.is.scalar || !weight.is.null)
+    if (!value.is.scalar || has.weight)
         cat("\n")
     cat("jump:", jump, "\n")
 }

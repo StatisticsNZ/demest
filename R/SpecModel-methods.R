@@ -221,7 +221,6 @@ setMethod("show",
               cat("An object of class \"", class(object), "\"\n", sep = "")
               printSpecAgAccuracyEqns(object)
               printValueAg(object)
-              printWeightAg(object)
               printJumpAg(object)
           })
 

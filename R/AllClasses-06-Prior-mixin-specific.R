@@ -1207,9 +1207,9 @@ setClass("PhiMixMixin",
          })
 
 setClass("PosProdVectorsMixMixin",
-         slots(posProdVectors1Mix = "integer",
-               posProdVectors2Mix = "integer",
-               nBetaNoAlongMix = "integer"),
+         slots = c(posProdVectors1Mix = "integer",
+                   posProdVectors2Mix = "integer",
+                   nBetaNoAlongMix = "integer"),
          contains = "VIRTUAL",
          validity = function(object) {
              posProdVectors1Mix <- object@posProdVectors1Mix

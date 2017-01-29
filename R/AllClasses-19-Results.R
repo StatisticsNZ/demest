@@ -10,9 +10,9 @@ setClass("Results",
              control <- object@control
              final <- object@final
              seed <- object@seed
-             ## control has correct names
-             if (!identical(names(control), kNamesControl))
-                 return(gettextf("'%s' has incorrect names",
+             ## control has required names
+             if (!all(kNamesControl %in% names(control)))
+                 return(gettextf("'%s' does not have required names",
                                  "control"))
              ## control has no missing values
              for (name in setdiff(kNamesControl, "call"))
@@ -68,6 +68,10 @@ setClass("ResultsEst",
              control <- object@control
              final <- object@final
              nSim <- mcmc[["nSim"]]
+             ## 'control' has "nUpdateMax"
+             if (!("nUpdateMax" %in% names(control)))
+                 return(gettextf("'%s' does not include '%s'",
+                                 "control", "nUpdateMax"))
              ## mcmc has correct names
              if (!identical(names(mcmc), kNamesMCMC))
                  return(gettextf("'%s' has incorrect names",

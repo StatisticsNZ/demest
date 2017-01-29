@@ -6,7 +6,7 @@
 \usage{
 estimateCounts(model, y, exposure = NULL, observation, datasets,
   filename = NULL, nBurnin = 1000, nSim = 1000, nChain = 5, nThin = 1,
-  parallel = TRUE, verbose = FALSE)
+  parallel = TRUE, nUpdateMax = 200, verbose = FALSE)
 }
 \arguments{
 \item{model}{An object of class \code{\linkS4class{SpecModel}},
@@ -38,6 +38,10 @@ the datasets and counts.}
 
 \item{parallel}{Logical.  If \code{TRUE} (the default), parallel processing
 is used.}
+
+\item{nUpdateMax}{Maximum number of iterations completed before releasing
+memory.  If running out of memory, setting a lower value than the default
+may help.}
 
 \item{verbose}{Logical.  If \code{TRUE} (the default) a message is
 printed at the end of the calculations.}
