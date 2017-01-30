@@ -3796,7 +3796,7 @@ getV <- function(prior, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 logPostPhiMix <- function(phi, level, meanLevel, nAlong, indexClassMax, omega,
                           useC = FALSE) {
@@ -3860,7 +3860,7 @@ logPostPhiMix <- function(phi, level, meanLevel, nAlong, indexClassMax, omega,
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 logPostPhiFirstOrderMix <- function(phi, level, meanLevel, nAlong, indexClassMax, omega,
                                     useC = FALSE) {

@@ -177,10 +177,11 @@ estimateModel <- function(model, y, exposure = NULL, weights = NULL,
                   control.args,
                   list(continuing = FALSE))
     if (parallel) {
-        cl <- parallel::makeCluster(getOption("cl.cores",
-                                              default = mcmc.args$nChain))
         pseed <- sample.int(n = 100000, # so that RNG behaves the same whether or not
                             size = 1)   # seed has previously been set
+                                        # this must be done BEFORE call to makeCluster!
+        cl <- parallel::makeCluster(getOption("cl.cores",
+                                              default = mcmc.args$nChain))
         parallel::clusterSetRNGStream(cl,
                                       iseed = pseed)
         final.combineds <- parallel::clusterMap(cl = cl,
