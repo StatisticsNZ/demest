@@ -368,4 +368,3 @@ setClass("SpecKnownCertain",
 setClass("SpecKnownUncertain",
          contains = c("SpecKnown",
              "AKnownVecMixin"))
-

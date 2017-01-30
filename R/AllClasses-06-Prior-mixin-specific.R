@@ -1179,7 +1179,7 @@ setClass("PhiMinMaxMixin",
          })
 
 setClass("PhiMixMixin",
-         slots = c(phi = "numeric"),
+         slots = c(phiMix = "numeric"),
          contains = "VIRTUAL",
          validity = function(object) {
              phiMix <- object@phiMix
@@ -1399,6 +1399,10 @@ setClass("SpecATauMixin",
          slots = c(ATau = "SpecScale"),
          contains = "VIRTUAL")
 
+setClass("SpecDFVectorsMixin",
+         slots = c(dfVectors = "DegreesFreedomVector"),
+         contains = "VIRTUAL")
+
 setClass("SpecOmegaAlphaMaxMixin",
          slots = c(omegaAlphaMax = "SpecScale"),
          contains = "VIRTUAL")
@@ -1439,6 +1443,22 @@ setClass("SpecPhiMixin",
 setClass("SpecScaleMaxMixin",
          slots = c(scaleMax = "SpecScale"),
          contains = "VIRTUAL")
+
+setClass("SpecScaleVectorsMixin",
+         slots = c(scaleVectors = "list"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             scaleVectors <- object@scaleVectors
+             ## 'scaleVectors' has length > 0
+             if (length(scaleVectors) == 0L)
+                 return(gettextf("'%s' has length %d",
+                                 "scaleVectors", 1L))
+             ## all elements of 'scaleVectors' have class "HalfT"
+             if (!all(sapply(scaleVectors, methods::is, "HalfT")))
+                 return(gettextf("'%s' has elements not of class \"%\"",
+                                 "scaleVectors", "HalfT"))
+             TRUE
+         })
 
 setClass("SpecTauMixin",
          slots = c(tau = "SpecScale"),

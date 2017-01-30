@@ -232,3 +232,9 @@ setClass("Trend",
                       "SpecADelta0Mixin",
                       "SpecOmegaDeltaMaxMixin"))
 
+
+
+setClass("Vectors",
+         contains = c("SpecDFVectorsMixin",
+                      "SpecScaleVectorsMixin"))
+         

@@ -11,8 +11,8 @@ Mix <- function(along = NULL,
     if (!methods::is(vectors, "Vectors"))
         stop(gettextf("'%s' has class \"%s\"",
                       "vectors", class(vectors)))
-    nuVectorsMix <- vectors@df
-    scaleVectorsMix <- vectors@scale
+    dfVectorsMix <- vectors@df # vector
+    scaleVectorsMix <- vectors@scale # list of HalfT objects
     ## weights
     if (!methods::is(weights, "Weights"))
         stop(gettextf("'%s' has class \"%s\"",
@@ -52,28 +52,28 @@ Mix <- function(along = NULL,
     is.robust <- methods::is(error, "ErrorRobust")
     if (is.robust)
         nuBeta <- error@nuBeta
-    ## maxClass
-    maxClassStored <- checkAndTidyMaxClassStored(maxClass)
+    ## indexClassMax
+    indexClassMax <- checkAndTidyIndexClassMax(maxClass)
     ## return
     if (!is.robust && !has.covariates) {
         methods::new("SpecMixNormZero",
-                     along = along,
                      AComponentWeightMix = AComponentWeightMix,
                      ALevelComponentWeightMix = ALevelComponentWeightMix,
                      ATau = ATau,
-                     maxClassStored = maxClassStored,
+                     along = along,
+                     dfVectorsMix = dfVectorsMix,
+                     indexClassMax = indexClassMax,
                      multComponentWeightMix = multComponentWeightMix,
                      multLevelComponentWeightMix = multLevelComponentWeightMix,
                      multTau = multTau,
                      nuComponentWeightMix = nuComponentWeightMix,
                      nuLevelComponentWeightMix = nuLevelComponentWeightMix,
                      nuTau = nuTau,
-                     nuVectorsMix = nuVectorsMix,
                      omegaComponentMaxWeightMix = omegaComponentMaxWeightMix,
                      omegaLevelComponentWeightMaxMix = omegaLevelComponentWeightMaxMix,
                      priorMeanLevelComponentWeightMix = priorMeanLevelComponentWeightMix,
                      priorSDLevelComponentWeightMix = priorSDLevelComponentWeightMix,
-                     scaleVectorsMix = scaleVectorsMixm
+                     scaleVectorsMix = scaleVectorsMix,
                      tauMax = tauMax)
     }
     else
@@ -86,7 +86,9 @@ Weights <- function(mean = 0, sd = 1, temp = HalfT(), perm = HalfT()) {
                                                                name = "mean")
     checkPositiveNumeric(x = sd,
                          name = "sd")
+    priorMeanLevelComponent = new("Parameter", priorMeanLevelComponent)
     priorSDLevelComponent <- as.double(sd)
+    priorSDLevelComponent <- new("Scale", priorSDLevelComponent)
     if (!methods::is(temp, "HalfT"))
         stop(gettextf("'%s' has class \"%s\"",
                       "temp", class(temp)))
@@ -114,9 +116,32 @@ Weights <- function(mean = 0, sd = 1, temp = HalfT(), perm = HalfT()) {
                  priorSDLevelComponent = priorSDLevelComponent)
 }
 
+checkAndTidyDFVectors <- function(df) {
+    checkPositiveIntegerVector(x = df,
+                               name  = "df")
+    if (length(df) == 0L)
+        stop(gettextf("'%s' has length %d",
+                      "df", 0L))
+    df <- as.integer(df)
+    new("DegreesFreedomVector", df)
+}
+
+checkScaleVectors <- function(scale) {
+    if (!is.list(scale))
+        stop(gettextf("'%s' has class \"%s\"",
+                      "scale", class(scale)))
+    if (!all(sapply(scale, methods::is, "HalfT")))
+        stop(gettextf("'%s' has elements not of class \"%s\"",
+                      "scale", "HalfT"))
+    if (length(df) == 0L)
+        stop(gettextf("'%s' has length %d",
+                      "df", 0L))
+    NULL
+}
+
 Vectors <- function(df = 4, scale = list(HalfT())) {
     df <- checkAndTidyDFVectors(df)
-    scale <- checkScaleVectors(scale)
+    checkScaleVectors(scale)
     methods::new("Vectors",
                  df = df,
                  scale = scale)
@@ -130,30 +155,44 @@ setMethod("initialPrior",
                                      metadata = metadata,
                                      sY = sY)
               methods::new("MixNormZero",
-                           AAlpha = l.all$AAlpha,
-                           aNoTrend = l.no.trend$aNoTrend,
+                           AComponentWeightMix = l.all$AComponentWeightMix,
+                           ALevelComponentWeightMix = l.all$ALevelComponentWeightMix,
+                           alphaMix = l.all$alphaMix,
+                           aMix = l.all$aMix,
                            ATau = l.all$ATau,
-                           alphaDLM = l.all$alphaDLM,
-                           CNoTrend = l.no.trend$CNoTrend,
+                           AVectorsMix = l.all$AVectorsMix,
+                           CMix = l.all$componentWeightMix,
+                           dimBeta = l.all$dimBeta,
                            iAlong = l.all$iAlong,
+                           indexClassMaxMix = l.all$indexClassMaxMix,
+                           indexClassMix = l.all$indexClassMix,
+                           indexClassProbMix = l.all$indexClassProbMix,
+                           iteratorProdVectorMix = l.all$iteratorProdVectorMix,
                            J = l.all$J,
-                           K = l.all$K,
-                           L = l.all$L,
-                           iteratorState = l.all$iteratorState,
-                           iteratorV = l.all$iteratorV,
-                           mNoTrend = l.no.trend$mNoTrend,
-                           m0NoTrend = l.no.trend$m0NoTrend,
-                           minPhi = l.all$minPhi,
-                           maxPhi = l.all$maxPhi,
-                           nuAlpha = l.all$nuAlpha,
+                           latentComponentWeightMix = l.all$latentComponentWeightMix,
+                           latentWeightMix = l.all$latentWeightMix,
+                           levelComponentWeightMix = l.all$levelComponentWeightMix,
+                           meanLevelComponentWeightMix = l.all$meanLevelComponentWeightMix,
+                           mMix = l.all$mMix,
+                           nuComponentWeightMix = l.all$nuComponentWeightMix,
+                           nuLevelComponentWeightMix = l.all$nuLevelComponentWeightMix,
                            nuTau = l.all$nuTau,
-                           omegaAlpha = l.all$omegaAlpha,
-                           omegaAlphaMax = l.all$omegaAlphaMax,
-                           phi = l.all$phi,
-                           phiKnown = l.all$phiKnown,
-                           RNoTrend = l.no.trend$RNoTrend,
+                           nuVectorsMix = l.all$nuVectorsMix,
+                           omegaComponentWeightMaxMix = l.all$omegaComponentWeightMaxMix,
+                           omegaComponentWeightMix = l.all$omegaComponentWeightMix,
+                           omegaLevelComponentWeightMaxMix = l.all$omegaLevelComponentWeightMaxMix,
+                           omegaLevelComponentWeightMix = l.all$omegaLevelComponentWeightMix,
+                           omegaVectorsMaxMix = l.all$omegaVectorsMaxMix,
+                           omegaVectorsMix = l.all$omegaVectorsMaxMix,
+                           phiMix = l.all$phiMix,
+                           priorMeanLevelComponentWeightMix = l.all$priorMeanLevelComponentWeightMix,
+                           priorSDLevelComponentWeightMix = l.all$priorSDLevelComponentWeightMix,
+                           prodVectorsMix = l.all$prodVectorsMix,
+                           RMix = l.all$RMix,
                            tau = l.all$tau,
-                           tauMax = l.all$tauMax)
+                           tauMax = l.all$tauMax,
+                           vectorsMix = l.all$vectorsMix,
+                           weightMix = l.all$weightMix)
           })
 
 
@@ -928,32 +967,266 @@ modePhiMix <- function(phi, level, meanLevel, nAlong, numClass, omega,
     }
 }
 
-
-
-
-## record logical variable if max class not high enough
-updateCurrentNumClassMix <- function(prior) {
-    latent.weight <- prior@latentWeightMix@.Data
-    weight <- prior@weightMix@.Data
-    max.num.class <- prior@maxClassStored@.Data
-    i.along <- object@iAlong
-    dim.beta <- object@dimBeta
-    n.along <- dim.beta[i.along]
-    one.minus.min.latent <- 1 - min(latent.weight)
-    sums.weights <- rep(0, times = n.along)
-    found.ans <- FALSE
-    current.num.class <- 0L
-    while (!found.ans && (current.num.class < max.num.class)) {
-        current.num.class <- current.num.class + 1L
-        offset <- (current.num.class - 1L) * n.along
-        for (i in seq_len(n.along))
-            sums.weights[i] <- sums.weights[i] + weights[i + offset]
-        for (i in seq_len(n.along)) {
-            if (sums.weights[i] < one.minus.min.latent)
-                break
-            if (i == n.along)
-                found.ans <- TRUE
-        }
-    }
-    prior@currentNumClass@.Data <- current.num.class
+checkAndTidyIndexClassMax <- function(maxClass) {
+    checkPositiveInteger(x = maxClass,
+                         name = "maxClass")
+    as.integer(maxClass)
 }
+
+checkLengthVectorArg <- function(x, name = "df", metadata) {
+    names <- names(metadata)
+    n.arg <- length(x)
+    n.dim <- length(names)
+    name.interaction <- paste(names, collapse = ":")
+    if (n.arg < n.dim) {
+        divides.evenly <- (n.dim %% n.arg) == 0L
+        if (!divides.evenly)
+            stop(gettextf("number of dimensions of %s interaction not a multiple of length of '%s' argument from '%s'",
+                          name.interaction, name, "vector"))
+    }
+    if (n.arg > n.dim)
+            stop(gettextf("length of '%s' argument from '%s' larger than number of dimensions of %s interaction",
+                          name, "vector", name.interaction))
+    NULL
+}
+    
+makeVarianceVectorsMix <- function(df, scale, metadata, sY) {
+    names <- names(metadata)
+    n.dim <- length(names)
+    df <- df@.Data
+    checkLengthVectorArg(x = df,
+                         name = "df",
+                         metadata = metadata)
+    checkLengthVectorArg(x = scale,
+                         name = "scale",
+                         metadata = metadata)
+    ans.nu <- rep_len(df, length.out = n.dim)
+    ans.A <- vector(mode = "list", length = n.dim)
+    ans.scale <- vector(mode = "list", length = n.dim)
+    ans.scale.max <- vector(mode = "list", length = n.dim)
+    for (i in seq_len(n.dim)) {
+        ans.A[[i]] <- makeAHalfT(A = scale[[i]]@A,
+                            metadata = metadata,
+                            sY = sY,
+                            mult = scale[[i]]@mult)
+        ans.scale.max[[i]] <- makeScaleMax(scaleMax = scale[[i]]@scaleMax,
+                                           A = ans.A[[i]],
+                                           nu = ans.nu[i])
+        ans.scale[[i]] <- makeScale(A = ans.A[[i]],
+                                    nu = ans.nu[i],
+                                    scaleMax = ans.scale.max[[i]])
+    }
+    ans.nu <- new("DegreesFreedomVector", ans.nu)
+    ans.A <- sapply(ans.A, methods::slot, ".Data")
+    ans.scale.max <- sapply(ans.scale.max, methods::slot, ".Data")
+    ans.scale <- sapply(ans.scale, methods::slot, ".Data")
+    ans.A <- new("ScaleVec", ans.A)
+    ans.scale.max <- new("ScaleVec", ans.scale.max)
+    ans.scale <- new("ScaleVec", ans.scale)
+    list(AVectorsMix = ans.A,
+         nuVectorsMix = ans.nu,
+         omegaVectorsMaxMix = ans.scale.max,
+         omegaVectorsMix = ans.scale)
+}
+    
+    
+    
+
+                            
+initialMixAll <- function(object, beta, metadata, sY, ...) {
+    AComponentWeightMix <- object@AComponentWeightMix,
+    ALevelComponentWeightMix <- object@ALevelComponentWeightMix
+    ATau <- object@ATau
+    along <- object@along
+    dfVectorsMix <- object@dfVectorsMix
+    indexClassMax <- object@indexClassMax
+    multComponentWeightMix <- object@multComponentWeightMix
+    multLevelComponentWeightMix <- object@multLevelComponentWeightMix
+    multTau <- object@multTau
+    nuComponentWeightMix <- object@nuComponentWeightMix
+    nuLevelComponentWeightMix <- object@nuLevelComponentWeightMix
+    nuTau <- object@nuTau
+    nuVectorsMix <- object@nuVectorsMix
+    omegaComponentMaxWeightMix <- object@omegaComponentMaxWeightMix
+    omegaLevelComponentWeightMaxMix <- object@omegaLevelComponentWeightMaxMix
+    priorMeanLevelComponentWeightMix <- object@priorMeanLevelComponentWeightMix
+    priorSDLevelComponentWeightMix <- object@priorSDLevelComponentWeightMix
+    scaleVectorsMix <- object@scaleVectorsMix
+    tauMax <- object@tauMax
+    ## AComponentWeightMix, omegaComponentWeightMaxMix, omegaComponentWeight
+    AComponentWeightMix <- makeAHalfT(A = AComponentWeightMix,
+                                      metadata = metadata,
+                                      sY = sY,
+                                      mult = multComponentWeightMix)
+    omegaComponentWeightMixMax <- makeScaleMax(scaleMax = omegaComponentWeightMaxMix,
+                                               A = AComponentWeightMix,
+                                               nu = nuComponentWeightMix)
+    omegaComponentWeightMix <- makeScale(A = AComponentWeightMix,
+                                         nu = nuComponentWeightMix,
+                                         scaleMax = omegaComponentWeightMaxMix)
+    ## ALevelComponentWeightMix, omegaLevelComponentWeightMaxMix, omegaLevelComponentWeight
+    ALevelComponentWeightMix <- makeAHalfT(A = ALevelComponentWeightMix,
+                                           metadata = metadata,
+                                           sY = sY,
+                                           mult = multLevelComponentWeightMix)
+    omegaLevelComponentWeightMixMax <- makeScaleMax(scaleMax = omegaLevelComponentWeightMaxMix,
+                                                    A = ALevelComponentWeightMix,
+                                                    nu = nuLevelComponentWeightMix)
+    omegaLevelComponentWeightMix <- makeScale(A = ALevelComponentWeightMix,
+                                              nu = nuLevelComponentWeightMix,
+                                              scaleMax = omegaLevelComponentWeightMaxMix)
+    ## ATau, tauMax, tau
+    ATau <- makeAHalfT(A = ATau,
+                       metadata = metadata,
+                       sY = sY,
+                       mult = multTau)
+    tauMax <- makeScaleMax(scaleMax = tauMax,
+                           A = ATau,
+                           nu = nuTau)
+    tau <- makeScale(A = ATau,
+                     nu = nuTau,
+                     scaleMax = tauMax)
+    ## iAlong
+    if (is.na(along))
+        along <- NULL
+    iAlong <- dembase::checkAndTidyAlong(along = along,
+                                         metadata = metadata,
+                                         numericDimScales = TRUE)
+    ## J
+    J <- makeJ(beta)
+    ## dimBeta
+    dimBeta <- dim(metadata)
+    ## AVectorsMix, nuVectorsMix, omegaVectorsMaxMix, omegaVectorsMix
+    l <- makeVarianceVectorsMix(df = dfVectorsMix,
+                                scale = scaleVectorsMix,
+                                metadata = metadata,
+                                sY = sY)
+    AVectorsMix <- l$AVectorsMix
+    nuVectorsMix <- l$nuVectorsMix
+    omegaVectorsMix <- l$omegaVectorsMix
+    omegaVectorsMaxMix <- l$omegaVectorsMaxMix
+    ## vectorsMix
+    length <- dimBeta * indexClassMax
+    sd <- omegaVectorsMix@.Data
+    length[iAlong] <- 0
+    vectorsMix <- vector(mode = "list",
+                         length = length(dimBeta))
+    for (i in seq_along(vectorsMix)) {
+        .Data <- rnorm(n = length[i],
+                       sd = sd[i])
+        vectorsMix[[i]] <- new("ParameterVector", .Data)
+    }
+    ## prodVectorsMix
+    prodVectorsMix <- vectorsMix[-Along]
+    prodVectorsMix <- lapply(vectorsMix, methods::slot, ".Data")
+    prodVectorsMix <- Reduce(outer, prodVectorsMix)
+    prodVectorsMix <- as.double(prodVectorsMix)
+    prodVectorsMix <- new("ParameterVector", prodVectorsMix)
+    ## phi
+    phi <- runif(n = 1L,
+                 min = 0.8,
+                 max = 0.98)
+    ## meanLevelComponentWeightMix
+    meanLevelComponentWeightMix <- rnorm(n = 1L,
+                                         mean = priorMeanLevelComponentWeightMix@.Data,
+                                         sd = priorSDLevelComponentWeightMix@.Data)
+    meanLevelcomponentWeightMix <- new("Parameter", meanLevelcomponentWeightMix)
+    ## levelComponentWeightMix
+    levelComponentWeightMix <- matrix(nrow = n.along,
+                                      ncol = indexClassMax)
+    mean.initial <- meanLevelComponentWeightMix / (1 - phi)
+    sd.initial <- omegaLevelComponentWeightMaxMix@.Data / sqrt(1 - phi^2)
+    sd.rest <- omegaLevelComponentWeightMaxMix@.Data
+    levelComponentWeightMix[1L, ] <- rnorm(n = indexClassMax,
+                                           mean = mean.initial,
+                                           sd = sd.initial)
+    for (i in seq.int(from = 2L, to = n.along) {
+        mean.i <- (meanLevelComponentWeightMix@.Data
+            + phi * levelComponentWeightMix[i - 1L, ])
+        levelComponentWeightMix[i, ] <- rnorm(n = indexClassMix,
+                                              mean = mean.i,
+                                              sd = sd.rest)
+    }
+    levelComponentWeightMix <- as.double(levelComponentWeightMix)
+    levelComponentWeightMix <- new("ParameterVector", levelComponentWeightMix)
+    ## componentWeightMix
+    componentWeightMix <- rnorm(n = n.along * indexClassMax,
+                                mean = levelComponentWeightMix@.Data,
+                                sd = omegaComponentWeightMix@.Data)
+    componentWeightMix <- new("ParameterVector", componentWeightMix)
+                                           
+
+
+    ## mMix, CMix, aMix, RMix
+    n.along <- dimBeta[iAlong]
+    mMix <- rep(0, times = n.along)
+    CMix <- rep(1, times = n.along)
+    aMix <- rep(0, times = n.along - 1L)
+    RMix <- rep(1, times = n.along - 1L)
+    mMix <- new("ParameterVector", mMix)
+    CMix <- new("ParameterVector", CMix)
+    aMix <- new("ParameterVector", aMix)
+    RMix <- new("ParameterVector", RMix)
+    
+    
+    
+    
+    list(AComponentWeightMix = AComponentWeightMix,
+         ALevelComponentWeightMix = ALevelComponentWeightMix,
+         ATau = ATau,
+         AVectorsMix = AVectorsMix,
+         aMix = aMix,
+         CMix = CMix,
+         componentWeightMix = componentWeightMix,
+         dimBeta = dimBeta,
+         iAlong = iAlong,
+         J = J,
+         levelComponentWeightMix = levelComponentWeightMix,
+         mMix = mMix,
+         nuComponentWeightMix = nuComponentWeightMix,
+         nuLevelComponentWeightMix = nuLevelComponentWeightMix,
+         nuTau = nuTau,
+         nuVectorsMix = nuVectorsMix,
+         omegaComponentWeightMix = omegaComponentWeightMix,
+         omegaLevelComponentWeightMix = omegaLevelComponentWeightMix,
+         omegaVectorsMaxMix = omegaVectorsMaxMix,
+         omegaVectorsMix = omegaVectorsMix,
+         meanLevelComponentWeightMix = meanLevelComponentWeightMix,
+         phi = phi,
+         priorMeanLevelComponentWeightMix = priorMeanLevelComponentWeightMix,
+         priorSDLevelComponentWeightMix = priorSDLevelComponentWeightMix,
+         prodVectorsMix = prodVectorsMix,
+         RMix = RMix,
+         tau = tau,
+         tauMax = tauMax,
+         vectorsMix = vectorsMix)
+}
+
+
+
+## ## record logical variable if max class not high enough
+## updateCurrentNumClassMix <- function(prior) {
+##     latent.weight <- prior@latentWeightMix@.Data
+##     weight <- prior@weightMix@.Data
+##     max.num.class <- prior@indexClassMax@.Data
+##     i.along <- object@iAlong
+##     dim.beta <- object@dimBeta
+##     n.along <- dim.beta[i.along]
+##     one.minus.min.latent <- 1 - min(latent.weight)
+##     sums.weights <- rep(0, times = n.along)
+##     found.ans <- FALSE
+##     current.num.class <- 0L
+##     while (!found.ans && (current.num.class < max.num.class)) {
+##         current.num.class <- current.num.class + 1L
+##         offset <- (current.num.class - 1L) * n.along
+##         for (i in seq_len(n.along))
+##             sums.weights[i] <- sums.weights[i] + weights[i + offset]
+##         for (i in seq_len(n.along)) {
+##             if (sums.weights[i] < one.minus.min.latent)
+##                 break
+##             if (i == n.along)
+##                 found.ans <- TRUE
+##         }
+##     }
+##     prior@currentNumClass@.Data <- current.num.class
+## }

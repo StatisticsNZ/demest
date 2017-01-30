@@ -422,6 +422,28 @@ checkPositiveInteger <- function(x, name) {
 }
 
 ## NO_TESTS
+checkPositiveIntegerVector <- function(x, name) {
+    ## 'x' has no missing values
+    if (any(is.na(x)))
+        stop(gettextf("'%s' has missing values",
+                      name))
+    ## 'x' is numeric
+    if (!is.numeric(x))
+        stop(gettextf("'%s' is non-numeric",
+                      name))
+    ## 'x' is integer
+    if (!isTRUE(all.equal(x, round(x))))
+        stop(gettextf("'%s' has non-integer values",
+                      name))
+    ## 'x' is positive
+    if (any(x <= 0))
+        stop(gettextf("'%s' has non-positive values",
+                      name))
+    NULL
+}
+
+
+## NO_TESTS
 checkPositiveNumeric <- function(x, name) {
     ## 'x' has length 1
     if (!identical(length(x), 1L))
