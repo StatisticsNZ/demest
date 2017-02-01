@@ -551,5 +551,64 @@ test_that("validity tests for MarginIterator inherited from MarginIterator work"
 })
 
 
+## SliceIterator
 
- 
+test_that("can create valid object of class SliceIterator", {
+    x <- new("SliceIterator",
+             indices = c(1L, 4L, 7L, 10L),
+             increment = 1L,
+             posDim = 1L,
+             lengthDim = 3L)
+    expect_true(validObject(x))
+    x <- new("SliceIterator",
+             indices = 7:12,
+             increment = 6L,
+             posDim = 2L,
+             lengthDim = 2L)
+    expect_true(validObject(x))
+})
+
+test_that("validity tests for SliceIterator inherited from SliceIterator work", {
+    x <- new("SliceIterator",
+             indices = c(1L, 4L, 7L, 10L),
+             increment = 1L,
+             posDim = 1L,
+             lengthDim = 3L)
+    expect_true(validObject(x))
+    ## 'indices' has no missing values
+    x.wrong <- x
+    x.wrong@indices[1] <- NA
+    expect_error(validObject(x.wrong),
+                 "'indices' has missing values")
+    ## 'indices' has no values less than 1
+    x.wrong <- x
+    x.wrong@indices[1] <- 0L
+    expect_error(validObject(x.wrong),
+                 "'indices' has values less than 1")
+    ## elements of 'indices' increasing'
+    x.wrong <- x
+    x.wrong@indices[1] <- 10L
+    expect_error(validObject(x.wrong),
+                 "'indices' non-increasing")
+    ## increment, posDim, lengthDim length 1
+    x.wrong <- x
+    x.wrong@increment <- c(1L, 1L)
+    expect_error(validObject(x.wrong),
+                 "'increment' does not have length 1")
+    ## increment, posDim, lengthDim not missing
+    x.wrong <- x
+    x.wrong@posDim <- as.integer(NA)
+    expect_error(validObject(x.wrong),
+                 "'posDim' is missing")
+    ## increment, posDim, lengthDim positive
+    x.wrong <- x
+    x.wrong@lengthDim <- 0L
+    expect_error(validObject(x.wrong),
+                 "'lengthDim' is non-positive")
+    ## posDim less than or equal to lengthDim
+    x.wrong <- x
+    x.wrong@posDim <- 10L
+    expect_error(validObject(x.wrong),
+                 "'posDim' is greater than 'lengthDim'")
+})
+

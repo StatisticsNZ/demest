@@ -328,6 +328,7 @@ setClass("SpecICAR",
          contains = c("VIRTUAL",
              "SpecPrior"))
 
+
 ## SpecMove
 
 setClass("SpecMove",
@@ -356,6 +357,7 @@ setClass("SpecMoveRobustCov",
              "SpecRobustMixin"))
 
 
+## SpecKnown
 
 setClass("SpecKnown",
          contains = c("VIRTUAL",
@@ -367,4 +369,41 @@ setClass("SpecKnownCertain",
 
 setClass("SpecKnownUncertain",
          contains = c("SpecKnown",
-             "AKnownVecMixin"))
+                      "AKnownVecMixin"))
+
+
+## SpecMix
+setClass("SpecMix",
+         contains = c("VIRTUAL",
+                      "SpecPrior",
+                      "AlongMixin",
+                      "IndexClassMaxMixMixin",
+                      "MultComponentWeightMixMixin",
+                      "MultLevelComponentWeightMixMixin",
+                      "NuComponentWeightMixMixin",
+                      "NuLevelComponentWeightMixMixin",
+                      "SpecAComponentWeightMixMixin",
+                      "SpecALevelComponentWeightMixMixin",
+                      "SpecOmegaComponentWeightMaxMixMixin",
+                      "SpecOmegaLevelComponentWeightMaxMixMixin",
+                      "SpecScaleVectorsMixMixin",
+                      "PriorMeanLevelComponentWeightMixMixin",
+                      "PriorSDLevelComponentWeightMixMixin"))
+
+setClass("SpecMixNormZero",
+         contains = c("SpecMix",
+             "SpecNormMixin"))
+
+setClass("SpecMixNormCov",
+         contains = c("SpecMix",
+             "SpecCovariatesMixin",
+             "SpecNormMixin"))
+
+setClass("SpecMixRobustZero",
+         contains = c("SpecMix",
+             "SpecRobustMixin"))
+
+setClass("SpecMixRobustCov",
+         contains = c("SpecMix",
+             "SpecCovariatesMixin",
+             "SpecRobustMixin"))

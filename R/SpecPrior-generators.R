@@ -1372,6 +1372,84 @@ Level <- function(scale = HalfT()) {
                  omegaAlphaMax = omegaAlphaMax)
 }
 
+Mix <- function(along = NULL,
+                vectors = Vectors(),
+                weights = Weights(),
+                covariates = NULL,
+                error = Error(),
+                maxClass = 10) {
+    ## along
+    along <- checkAndTidyAlongDLM(along)
+    ## vectors
+    if (!methods::is(vectors, "Vectors"))
+        stop(gettextf("'%s' has class \"%s\"",
+                      "vectors", class(vectors)))
+    scaleVectorsMix <- vectors@scaleVectorsMix # list of HalfT objects
+    ## weights
+    if (!methods::is(weights, "Weights"))
+        stop(gettextf("'%s' has class \"%s\"",
+                      "weights", class(weights)))
+    AComponentWeightMix <- weights@AComponentWeightMix
+    ALevelComponentWeightMix <- weights@ALevelComponentWeightMix
+    multComponentWeightMix <- weights@multComponentWeightMix
+    multLevelComponentWeightMix <- weights@multLevelComponentWeightMix
+    nuComponentWeightMix <- weights@nuComponentWeightMix
+    nuLevelComponentWeightMix <- weights@nuLevelComponentWeightMix
+    omegaComponentWeightMaxMix <- weights@omegaComponentWeightMaxMix
+    omegaLevelComponentWeightMaxMix <- weights@omegaLevelComponentWeightMaxMix
+    priorMeanLevelComponentWeightMix <- weights@priorMeanLevelComponentWeightMix
+    priorSDLevelComponentWeightMix <- weights@priorSDLevelComponentWeightMix
+    ## covariates
+    has.covariates <- !is.null(covariates)
+    if (has.covariates) {
+        if (!methods::is(covariates, "Covariates"))
+            stop(gettextf("'%s' has class",
+                          "covariates", class(covariates)))
+        AEtaCoef <- covariates@AEtaCoef
+        AEtaIntercept <- covariates@AEtaIntercept
+        contrastsArg <- covariates@contrastsArg
+        data <- covariates@data
+        formula <- covariates@formula
+        multEtaCoef <- covariates@multEtaCoef
+        nuEtaCoef <- covariates@nuEtaCoef
+    }
+    ## error
+    if (!methods::is(error, "Error"))
+        stop(gettextf("'%s' has class \"%s\"",
+                      "error", class(error)))
+    ATau <- error@ATau
+    multTau <- error@multTau
+    nuTau <- error@nuTau
+    tauMax <- error@tauMax
+    is.robust <- methods::is(error, "ErrorRobust")
+    if (is.robust)
+        nuBeta <- error@nuBeta
+    ## indexClassMax
+    indexClassMaxMix <- checkAndTidyIndexClassMaxMix(maxClass)
+    ## return
+    if (!is.robust && !has.covariates) {
+        methods::new("SpecMixNormZero",
+                     AComponentWeightMix = AComponentWeightMix,
+                     ALevelComponentWeightMix = ALevelComponentWeightMix,
+                     ATau = ATau,
+                     along = along,
+                     indexClassMaxMix = indexClassMaxMix,
+                     multComponentWeightMix = multComponentWeightMix,
+                     multLevelComponentWeightMix = multLevelComponentWeightMix,
+                     multTau = multTau,
+                     nuComponentWeightMix = nuComponentWeightMix,
+                     nuLevelComponentWeightMix = nuLevelComponentWeightMix,
+                     nuTau = nuTau,
+                     omegaComponentWeightMaxMix = omegaComponentWeightMaxMix,
+                     omegaLevelComponentWeightMaxMix = omegaLevelComponentWeightMaxMix,
+                     priorMeanLevelComponentWeightMix = priorMeanLevelComponentWeightMix,
+                     priorSDLevelComponentWeightMix = priorSDLevelComponentWeightMix,
+                     scaleVectorsMix = scaleVectorsMix,
+                     tauMax = tauMax)
+    }
+    else
+        NULL
+}
 
 Move <- function(classes, covariates = NULL, error = Error()) {
     ## classes
@@ -1611,6 +1689,46 @@ Trend <- function(initial = Initial(), scale = HalfT()) {
                  omegaDeltaMax = omegaDeltaMax)
 }
 
+Weights <- function(mean = 0, sd = 1, temporary = HalfT(), permanent = HalfT()) {
+    priorMeanLevelComponentWeightMix <- checkAndTidyMeanOrProb(object = mean,
+                                                               name = "mean")
+    checkPositiveNumeric(x = sd,
+                         name = "sd")
+    priorMeanLevelComponentWeightMix = new("Parameter", priorMeanLevelComponentWeightMix)
+    priorSDLevelComponentWeightMix <- as.double(sd)
+    priorSDLevelComponentWeightMix <- new("Scale", priorSDLevelComponentWeightMix)
+    if (!methods::is(temporary, "HalfT"))
+        stop(gettextf("'%s' has class \"%s\"",
+                      "temporary", class(temporary)))
+    if (!methods::is(permanent, "HalfT"))
+        stop(gettextf("'%s' has class \"%s\"",
+                      "permanent", class(permanent)))
+    AComponentWeightMix <- temporary@A
+    ALevelComponentWeightMix <- permanent@A
+    multComponentWeightMix <- temporary@mult
+    multLevelComponentWeightMix <- permanent@mult
+    nuComponentWeightMix <- temporary@nu
+    nuLevelComponentWeightMix <- permanent@nu
+    omegaComponentWeightMaxMix <- temporary@scaleMax
+    omegaLevelComponentWeightMaxMix <- permanent@scaleMax
+    methods::new("Weights",
+                 AComponentWeightMix = AComponentWeightMix,
+                 ALevelComponentWeightMix = ALevelComponentWeightMix,
+                 multComponentWeightMix = multComponentWeightMix,
+                 multLevelComponentWeightMix = multLevelComponentWeightMix,
+                 nuComponentWeightMix = nuComponentWeightMix,
+                 nuLevelComponentWeightMix = nuLevelComponentWeightMix,
+                 omegaComponentWeightMaxMix = omegaComponentWeightMaxMix,
+                 omegaLevelComponentWeightMaxMix = omegaLevelComponentWeightMaxMix,
+                 priorMeanLevelComponentWeightMix = priorMeanLevelComponentWeightMix,
+                 priorSDLevelComponentWeightMix = priorSDLevelComponentWeightMix)
+}
+
+Vectors <- function(scale = list(HalfT())) {
+    checkScaleVectors(scale)
+    methods::new("Vectors",
+                 scaleVectorsMix = scale)
+}
 
 
 

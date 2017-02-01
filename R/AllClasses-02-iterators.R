@@ -358,3 +358,50 @@ setClass("MarginIterator",
                                  "dimIterators", "indices"))
              TRUE
          })
+
+## HAS_TESTS
+setClass("SliceIterator",
+         slots = c(indices = "integer",
+                   increment = "integer",
+                   posDim = "integer",
+                   lengthDim = "integer"),
+         validity = function(object) {
+             indices <- object@indices
+             increment <- object@increment
+             posDim <- object@posDim
+             lengthDim <- object@lengthDim
+             ## 'indices' has no missing values
+             if (any(is.na(indices)))
+                 return(gettextf("'%s' has missing values",
+                                 "indices"))
+             ## 'indices' has no values less than 1
+             if (any(indices < 1L))
+                 return(gettextf("'%s' has values less than %d",
+                                 "indices", 1L))
+             ## elements of 'indices' increasing'
+             if (any(diff(indices) < 1L))
+                 return(gettextf("'%s' non-increasing",
+                                 "indices"))
+             for (name in c("increment", "posDim", "lengthDim")) {
+                 value <- slot(object, name)
+                 ## increment, posDim, lengthDim length 1
+                 if (!identical(length(value), 1L))
+                     return(gettextf("'%s' does not have length %d",
+                                     name, 1L))
+                 ## increment, posDim, lengthDim not missing
+                 if (is.na(value))
+                     return(gettextf("'%s' is missing",
+                                     name))
+                 ## increment, posDim, lengthDim positive
+                 if (value < 1L)
+                     return(gettextf("'%s' is non-positive",
+                                     name))
+             }
+             ## posDim less than or equal to lengthDim
+             if (posDim > lengthDim)
+                 return(gettextf("'%s' is greater than '%s'",
+                                 "posDim", "lengthDim"))
+             TRUE
+         })
+         
+                   

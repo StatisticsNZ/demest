@@ -2,40 +2,6 @@
 ## Mixin classes that extend a general class such as "numeric" or "list",
 ## and that do not contain a specific slot
 
-setClass("ClassIndex",
-         contains = c("VIRTUAL", "integer"),
-         validity = function(object) {
-             ## 'object' has no missing values
-             if (is.na(object))
-                 return(gettext("missing"))
-             ## 'object' consists of consecutive numbers"
-             unique.values <- unique(object)
-             diff.unique.values <- diff(unique.values)
-             if (any(diff.unique.values != 1L))
-                 return(gettext("not consecutive"))
-             TRUE
-         })
-
-setClass("ClassIndexWithZeros",
-         contains = "ClassIndex",
-         validity = function(object) {
-             ## minimum value is 0 or 1
-             min <- min(object)
-             if ((min != 0L) && (min != 1L))
-                 return(gettext("minimum value not 0 or 1"))
-             TRUE
-         })
-
-setClass("ClassIndexWithoutZeros",
-         contains = "ClassIndex",
-         validity = function(object) {
-             ## minimum value is 1
-             min <- min(object)
-             if (min != 1L)
-                 return(gettext("minimum value not 1"))
-             TRUE
-         })
-
 setClass("Counter",
          contains = "integer",
          validity = function(object) {

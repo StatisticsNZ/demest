@@ -700,6 +700,13 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendNormZeroWithSeason", {
                                     sigma = sigma)
         beta1 <- l[[1]]
         prior1 <- l[[2]]
+        for (i in 1:5) {
+            l <- updateBetaAndPriorBeta(prior1,
+                                    vbar = vbar,
+                                    n = n,
+                                    sigma = sigma)
+            prior1 <- l[[2]]
+        }
         expect_is(prior1, "DLMNoTrendNormZeroWithSeason")
         ## beta
         expect_true(all(beta1 != beta0))
@@ -790,6 +797,20 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendNormZeroWithSeason", {
                                     sigma = sigma)
         beta1 <- l[[1]]
         prior1 <- l[[2]]
+        for (i in 1:5) {
+            l <- updateBetaAndPriorBeta(prior1,
+                                    vbar = vbar,
+                                    n = n,
+                                    sigma = sigma)
+            prior1 <- l[[2]]
+        }
+        for (i in 1:5) {
+            l <- updateBetaAndPriorBeta(prior1,
+                                    vbar = vbar,
+                                    n = n,
+                                    sigma = sigma)
+            prior1 <- l[[2]]
+        }
         expect_is(prior1, "DLMWithTrendNormZeroWithSeason")
         ## beta
         expect_true(all(beta1 != beta0))
@@ -1025,6 +1046,20 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendNormCovNoSeason", {
                                     sigma = sigma)
         beta1 <- l[[1]]
         prior1 <- l[[2]]
+        for (i in 1:5) {
+            l <- updateBetaAndPriorBeta(prior1,
+                                    vbar = vbar,
+                                    n = n,
+                                    sigma = sigma)
+            prior1 <- l[[2]]
+        }
+        for (i in 1:5) {
+            l <- updateBetaAndPriorBeta(prior1,
+                                    vbar = vbar,
+                                    n = n,
+                                    sigma = sigma)
+            prior1 <- l[[2]]
+        }
         expect_is(prior1, "DLMWithTrendNormCovNoSeason")
         ## beta
         expect_true(all(beta1 != beta0))
@@ -1599,6 +1634,13 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendRobustZeroWithSeason", {
                                     sigma = sigma)
         beta1 <- l[[1]]
         prior1 <- l[[2]]
+        for (i in 1:5) {
+            l <- updateBetaAndPriorBeta(prior1,
+                                    vbar = vbar,
+                                    n = n,
+                                    sigma = sigma)
+            prior1 <- l[[2]]
+        }
         expect_is(prior1, "DLMNoTrendRobustZeroWithSeason")
         ## beta
         expect_true(all(beta1 != beta0))

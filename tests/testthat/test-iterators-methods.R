@@ -1381,6 +1381,160 @@ test_that("R and C versions of resetM give same answer", {
     }
 })
 
+test_that("advanceS gives valid answer", {
+    advanceS <- demest:::advanceS
+    SliceIterator <- demest:::SliceIterator
+    ## three dimensions
+    x <- SliceIterator(dim = c(3L, 2L, 2L),
+                       iAlong = 1L)
+    expect_identical(x@indices, c(1L, 4L, 7L, 10L))
+    x <- advanceS(x)
+    expect_identical(x@indices, c(2L, 5L, 8L, 11L))
+    x <- advanceS(x)
+    expect_identical(x@indices, c(3L, 6L, 9L, 12L))
+    x <- advanceS(x)
+    expect_identical(x@indices, c(1L, 4L, 7L, 10L))
+    x <- SliceIterator(dim = c(3L, 2L, 2L),
+                       iAlong = 2L)
+    expect_identical(x@indices, c(1L, 2L, 3L, 7L, 8L, 9L))
+    x <- advanceS(x)
+    expect_identical(x@indices, c(4L, 5L, 6L, 10L, 11L, 12L))
+    x <- advanceS(x)
+    expect_identical(x@indices, c(1L, 2L, 3L, 7L, 8L, 9L))
+    x <- SliceIterator(dim = c(3L, 2L, 2L),
+                       iAlong = 3L)
+    expect_identical(x@indices, c(1L, 2L, 3L, 4L, 5L, 6L))
+    x <- advanceS(x)
+    expect_identical(x@indices, c(7L, 8L, 9L, 10L, 11L, 12L))
+    x <- advanceS(x)
+    expect_identical(x@indices, c(1L, 2L, 3L, 4L, 5L, 6L))
+    ## one dimension
+    x <- SliceIterator(dim = 3L,
+                       iAlong = 1L)
+    expect_identical(x@indices, 1L)
+    x <- advanceS(x)
+    expect_identical(x@indices, 2L)
+    x <- advanceS(x)
+    expect_identical(x@indices, 3L)
+    x <- advanceS(x)
+    expect_identical(x@indices, 1L)
+})
+
+test_that("R and C versions ofadvanceS give same answer", {
+    advanceS <- demest:::advanceS
+    SliceIterator <- demest:::SliceIterator
+    ## three dimensions
+    x <- SliceIterator(dim = c(3L, 2L, 2L),
+                       iAlong = 1L)
+    x.R <- x
+    x.C <- x
+    for (i in 1:4) {
+        x.R <- advanceS(x.R, useC = FALSE)
+        x.C <- advanceS(x.C, useC = TRUE)
+        expect_identical(x.R, x.C)
+    }
+    x <- SliceIterator(dim = c(3L, 2L, 2L),
+                       iAlong = 2L)
+    x.R <- x
+    x.C <- x
+    for (i in 1:4) {
+        x.R <- advanceS(x.R, useC = FALSE)
+        x.C <- advanceS(x.C, useC = TRUE)
+        expect_identical(x.R, x.C)
+    }
+    x <- SliceIterator(dim = c(3L, 2L, 2L),
+                       iAlong = 3L)
+    x.R <- x
+    x.C <- x
+    for (i in 1:4) {
+        x.R <- advanceS(x.R, useC = FALSE)
+        x.C <- advanceS(x.C, useC = TRUE)
+        expect_identical(x.R, x.C)
+    }
+    ## one dimension
+    x <- SliceIterator(dim = 3L,
+                       iAlong = 1L)
+    x.R <- x
+    x.C <- x
+    for (i in 1:4) {
+        x.R <- advanceS(x.R, useC = FALSE)
+        x.C <- advanceS(x.C, useC = TRUE)
+        expect_identical(x.R, x.C)
+    }
+})
+
+test_that("resetS gives valid answer", {
+    resetS <- demest:::resetS
+    advanceS <- demest:::advanceS
+    SliceIterator <- demest:::SliceIterator
+    ## three dimensions
+    x <- SliceIterator(dim = c(3L, 2L, 2L),
+                       iAlong = 1L)
+    x0 <- x
+    x <- advanceS(x)
+    x <- advanceS(x)
+    x <- resetS(x)
+    expect_identical(x, x0)
+    x <- SliceIterator(dim = c(3L, 2L, 2L),
+                       iAlong = 2L)
+    x0 <- x
+    x <- advanceS(x)
+    x <- resetS(x)
+    expect_identical(x, x0)
+    x <- SliceIterator(dim = c(3L, 2L, 2L),
+                       iAlong = 3L)
+    x0 <- x
+    x <- advanceS(x)
+    x <- advanceS(x)
+    x <- advanceS(x)
+    x <- resetS(x)
+    expect_identical(x, x0)
+    ## one dimension
+    x <- SliceIterator(dim = 3L,
+                       iAlong = 1L)
+    x0 <- x
+    x <- advanceS(x)
+    x <- advanceS(x)
+    x <- resetS(x)
+    expect_identical(x, x0)
+})
+
+test_that("R and C versions of resetS give same answer", {
+    resetS <- demest:::resetS
+    advanceS <- demest:::advanceS
+    SliceIterator <- demest:::SliceIterator
+    ## three dimensions
+    x <- SliceIterator(dim = c(3L, 2L, 2L),
+                       iAlong = 1L)
+    x <- advanceS(x)
+    x <- advanceS(x)
+    x.R <- resetS(x, useC = FALSE)
+    x.C <- resetS(x, useC = TRUE)
+    expect_identical(x.R, x.C)
+    x <- SliceIterator(dim = c(3L, 2L, 2L),
+                       iAlong = 2L)
+    x <- advanceS(x)
+    x.R <- resetS(x, useC = FALSE)
+    x.C <- resetS(x, useC = TRUE)
+    expect_identical(x.R, x.C)
+    x <- SliceIterator(dim = c(3L, 2L, 2L),
+                       iAlong = 3L)
+    x <- advanceS(x)
+    x <- advanceS(x)
+    x <- advanceS(x)
+    x.R <- resetS(x, useC = FALSE)
+    x.C <- resetS(x, useC = TRUE)
+    expect_identical(x.R, x.C)
+    ## one dimension
+    x <- SliceIterator(dim = 3L,
+                       iAlong = 1L)
+    x <- advanceS(x)
+    x <- advanceS(x)
+    x.R <- resetS(x, useC = FALSE)
+    x.C <- resetS(x, useC = TRUE)
+    expect_identical(x.R, x.C)
+})
+
 
 
 

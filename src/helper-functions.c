@@ -1110,7 +1110,7 @@ double identity(double x)
 
 double
 logPostPhiMix(double phi, double *level, double meanLevel, int nAlong, 
-                int indexClassMax_r, double omega)
+                int indexClassMaxMix_r, double omega)
 {
     double ans = DEFAULT_LOGPOSTPHI;
     
@@ -1119,7 +1119,7 @@ logPostPhiMix(double phi, double *level, double meanLevel, int nAlong,
         double ratio = meanLevel / (1 - phi);
         double ansFirst = 0;
         double ansRest = 0;
-        for (int iClass = 0; iClass < indexClassMax_r; ++ iClass) {
+        for (int iClass = 0; iClass < indexClassMaxMix_r; ++ iClass) {
 
             int iWtFirst = iClass * nAlong;
             double levelFirst = level[iWtFirst];
@@ -1147,7 +1147,7 @@ logPostPhiMix(double phi, double *level, double meanLevel, int nAlong,
 
 double
 logPostPhiFirstOrderMix(double phi, double *level, double meanLevel, int nAlong, 
-                int indexClassMax_r, double omega)
+                int indexClassMaxMix_r, double omega)
 {
     double ans = DEFAULT_LOGPOSTPHI;
     
@@ -1156,7 +1156,7 @@ logPostPhiFirstOrderMix(double phi, double *level, double meanLevel, int nAlong,
         double ratio = meanLevel / (1 - phi);
         double ansFirst = 0;
         double ansRest = 0;
-        for (int iClass = 0; iClass < indexClassMax_r; ++ iClass) {
+        for (int iClass = 0; iClass < indexClassMaxMix_r; ++ iClass) {
             
             int iWtFirst = iClass * nAlong;
             double levelFirst = level[iWtFirst];

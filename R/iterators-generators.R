@@ -184,3 +184,18 @@ MarginIterator <- function(dim) {
                  dimIterators = dimIterators)
 }
 
+## HAS_TESTS
+SliceIterator <- function(dim, iAlong) {
+    x <- array(dim = dim)
+    indices <- which(slice.index(x, iAlong) == 1L)
+    increment <- 1L
+    for (i in seq_len(iAlong - 1L))
+        increment <- increment * dim[i]
+    posDim <- 1L
+    lengthDim <- dim[iAlong]
+    methods::new("SliceIterator",
+                 indices = indices,
+                 increment = increment,
+                 posDim = posDim,
+                 lengthDim = lengthDim)
+}

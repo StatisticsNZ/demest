@@ -487,12 +487,27 @@ setClass("IMethodPrior",
          contains = "VIRTUAL")
 
 setClass("IndexClassAlphaMoveMixin",
-         slots = c(indexClassAlpha = "ClassIndexWithZeros"),
+         slots = c(indexClassAlpha = "integer"),
          contains = "VIRTUAL",
          validity = function(object) {
-             indexClassAlpha <- object@indexClassAlpha@.Data
+             indexClassAlpha <- object@indexClassAlpha
              alphaMove <- object@alphaMove
              J <- object@J@.Data
+             ## 'indexClassAlpha' has no missing values
+             if (is.na(indexClassAlpha))
+                 return(gettextf("'%s' has missing values",
+                                 "indexClassAlpha"))
+             ## 'indexClassAlpha' consists of consecutive numbers"
+             unique.values <- unique(indexClassAlpha)
+             diff.unique.values <- diff(unique.values)
+             if (any(diff.unique.values != 1L))
+                 return(gettextf("'%s' has gaps",
+                                 "indexClassAlpha"))
+             ## 'indexClassAlpha' has minimum value of 0 or 1
+             min <- min(indexClassAlpha)
+             if ((min != 0L) && (min != 1L))
+                 return(gettextf("minimum value of '%s' is not 0 or 1",
+                                 "indexClassAlpha"))
              ## 'indexClassAlpha' has length 'J'
              if (!identical(length(indexClassAlpha), as.integer(J)))
                  return(gettextf("'%s' does not have length '%s'",
@@ -520,40 +535,49 @@ setClass("IndexClassMaxMixMixin",
 
 ## 'k' in notes
 setClass("IndexClassMixMixin",
-         slots = c(indexClassMix = "ClassIndexWithoutZeros"),
+         slots = c(indexClassMix = "integer"),
          contains = "VIRTUAL",
          validity = function(object) {
-             indexClassMix <- object@indexClassMix@.Data
+             indexClassMix <- object@indexClassMix
              J <- object@J@.Data
              indexClassMaxMix <- object@indexClassMaxMix@.Data
+             ## 'indexClassMix' has no missing values
+             if (is.na(indexClassMix))
+                 return(gettextf("'%s' has missing values",
+                                 "indexClassMix"))
              ## 'indexClassMix' has length 'J'
              if (!identical(length(indexClassMix), as.integer(J)))
                  return(gettextf("'%s' does not have length '%s'",
                                  "indexClassMix", "J"))
-             ## maximum less than or equal to 'indexClassMaxMix'
-             if (max(indexClassMix) > indexClassMaxMix)
-                 return(gettextf("maximum value of '%s' not equal to '%s'",
+             ## no values less than 1
+             if (any(indexClassMix < 1L))
+                 return(gettextf("'%s' has values less than '%s'",
+                                 "indexClassMix", 1L))
+             ## all values less than or equal to 'indexClassMaxMix'
+             if (any(indexClassMix > indexClassMaxMix))
+                 return(gettextf("'%s' has values greater than '%s'",
                                  "indexClassMix", "indexClassMaxMix"))
              TRUE
          })
 
-## 'k' in notes
-setClass("IndexClassProbMixMixin",
-         slots = c(indexClassProbMix = "ParameterVector"),
-         contains = "VIRTUAL",
-         validity = function(object) {
-             indexClassProbMix <- object@indexClassProbMix@.Data
-             indexClassMaxMix <- object@indexClassMaxMix@.Data
-             ## 'indexClassProbMix' has length 'indexClassMaxMix'
-             if (!identical(length(indexClassProbMix), indexClassMaxMix))
-                 return(gettextf("'%s' does not have length '%s'",
-                                 "indexClassMix", "indexClassMaxMix"))
-             ## 'indexClassProbMix' non-negative
-             if (any(indexClassProbMix < 0))
-                 return(gettextf("'%s' has negative values",
-                                 "indexClassProbMix"))
-             TRUE
-         })
+## WHAT IS THIS NEEDED FOR????
+## ## 'k' in notes
+## setClass("IndexClassProbMixMixin",
+##          slots = c(indexClassProbMix = "ParameterVector"),
+##          contains = "VIRTUAL",
+##          validity = function(object) {
+##              indexClassProbMix <- object@indexClassProbMix@.Data
+##              indexClassMaxMix <- object@indexClassMaxMix@.Data
+##              ## 'indexClassProbMix' has length 'indexClassMaxMix'
+##              if (!identical(length(indexClassProbMix), indexClassMaxMix))
+##                  return(gettextf("'%s' does not have length '%s'",
+##                                  "indexClassMix", "indexClassMaxMix"))
+##              ## 'indexClassProbMix' non-negative
+##              if (any(indexClassProbMix < 0))
+##                  return(gettextf("'%s' has negative values",
+##                                  "indexClassProbMix"))
+##              TRUE
+##          })
 
 setClass("IsRobustMixin",
          slots = c(isRobust = "LogicalFlag"),
@@ -570,7 +594,7 @@ setClass("IteratorProdVectorMix",
              dimIterators <- iteratorProdVectorMix@dimIterators
              ## 'nBetween' slots of elements of 'dimIterators'
              ## equal to 'dimBeta', minus "along" dimension,
-             ## plus maximum number of classes
+z             ## plus maximum number of classes
              n.between.obtained <- sapply(dimIterators, methods::slot, "nBetween")
              n.between.expected <- dim.iter[-iAlong]
              n.between.expected <- c(n.between.expected, indexClassMax)
@@ -1071,10 +1095,11 @@ setClass("OmegaVectorsMaxMixMixin",
                      return(gettextf("element %d of '%s' is greater than '%s'",
                                      i, "omegaVectorsMix", "omegaVectorsMaxMix"))
              ## omegaMax for 'along' dimension equals 1
-             omega.max.along <- omegaVectorsMaxMix[iAlong]
-             if (!isTRUE(all.equal(omega.max.along, 1.0)))
+             ans.obtained <- omegaVectorsMaxMix[iAlong]
+             ans.expected <- 1
+             if (!isTRUE(all.equal(ans.obtained, ans.expected)))
                  return(gettextf("value of '%s' for \"%s\" dimension not equal to %d",
-                                 "omegaVectorsMaxMix", "along", 1L))             
+                                 "omegaVectorsMaxMix", "along", 1L))       
              TRUE
          })
 
@@ -1371,6 +1396,10 @@ setClass("SpecAAlphaMixin",
          slots = c(AAlpha = "SpecScale"),
          contains = "VIRTUAL")
 
+setClass("SpecAComponentWeightMixMixin",
+         slots = c(AComponentWeightMix = "SpecScale"),
+         contains = "VIRTUAL")
+
 setClass("SpecADeltaMixin",
          slots = c(ADelta = "SpecScale"),
          contains = "VIRTUAL")
@@ -1387,6 +1416,10 @@ setClass("SpecAEtaInterceptMixin",
          slots = c(AEtaIntercept = "SpecScale"),
          contains = "VIRTUAL")
 
+setClass("SpecALevelComponentWeightMixMixin",
+         slots = c(ALevelComponentWeightMix = "SpecScale"),
+         contains = "VIRTUAL")
+
 setClass("SpecAMoveMixin",
          slots = c(AMove = "SpecScale"),
          contains = "VIRTUAL")
@@ -1399,16 +1432,20 @@ setClass("SpecATauMixin",
          slots = c(ATau = "SpecScale"),
          contains = "VIRTUAL")
 
-setClass("SpecDFVectorsMixin",
-         slots = c(dfVectors = "DegreesFreedomVector"),
-         contains = "VIRTUAL")
-
 setClass("SpecOmegaAlphaMaxMixin",
          slots = c(omegaAlphaMax = "SpecScale"),
          contains = "VIRTUAL")
 
+setClass("SpecOmegaComponentWeightMaxMixMixin",
+         slots = c(omegaComponentWeightMaxMix = "SpecScale"),
+         contains = "VIRTUAL")
+
 setClass("SpecOmegaDeltaMaxMixin",
          slots = c(omegaDeltaMax = "SpecScale"),
+         contains = "VIRTUAL")
+
+setClass("SpecOmegaLevelComponentWeightMaxMixMixin",
+         slots = c(omegaLevelComponentWeightMaxMix = "SpecScale"),
          contains = "VIRTUAL")
 
 setClass("SpecOmegaSeasonMaxMixin",
@@ -1444,19 +1481,19 @@ setClass("SpecScaleMaxMixin",
          slots = c(scaleMax = "SpecScale"),
          contains = "VIRTUAL")
 
-setClass("SpecScaleVectorsMixin",
-         slots = c(scaleVectors = "list"),
+setClass("SpecScaleVectorsMixMixin",
+         slots = c(scaleVectorsMix = "list"),
          contains = "VIRTUAL",
          validity = function(object) {
-             scaleVectors <- object@scaleVectors
-             ## 'scaleVectors' has length > 0
-             if (length(scaleVectors) == 0L)
+             scaleVectorsMix <- object@scaleVectorsMix
+             ## 'scaleVectorsMix' has length > 0
+             if (length(scaleVectorsMix) == 0L)
                  return(gettextf("'%s' has length %d",
-                                 "scaleVectors", 1L))
-             ## all elements of 'scaleVectors' have class "HalfT"
-             if (!all(sapply(scaleVectors, methods::is, "HalfT")))
+                                 "scaleVectorsMix", 1L))
+             ## all elements of 'scaleVectorsMix' have class "HalfT"
+             if (!all(sapply(scaleVectorsMix, methods::is, "HalfT")))
                  return(gettextf("'%s' has elements not of class \"%\"",
-                                 "scaleVectors", "HalfT"))
+                                 "scaleVectorsMix", "HalfT"))
              TRUE
          })
 

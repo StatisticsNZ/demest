@@ -400,6 +400,49 @@ resetM <- function(object, useC = FALSE) {
     }
 }
 
+## Slice Iterator ##########################################################
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+advanceS <- function(object, useC = FALSE) {
+    stopifnot(methods::is(object, "SliceIterator"))
+    methods::validObject(object)
+    if (useC) {
+        .Call(advanceS_R, object)
+    }
+    else {
+        if (object@posDim < object@lengthDim) {
+            for (i in seq_along(object@indices))
+                object@indices[i] <- object@indices[i] + object@increment
+            object@posDim <- object@posDim + 1L
+        }
+        else {
+            combined.increment <- (object@lengthDim - 1L) * object@increment
+            for (i in seq_along(object@indices))
+                object@indices[i] <- object@indices[i] - combined.increment
+            object@posDim <- 1L
+        }
+        object
+    }
+}
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+resetS <- function(object, useC = FALSE) {
+    stopifnot(methods::is(object, "SliceIterator"))
+    methods::validObject(object)
+    if (useC) {
+        .Call(resetS_R, object)
+    }
+    else {
+        combined.increment <- (object@posDim - 1L) * object@increment
+        for (i in seq_along(object@indices))
+            object@indices[i] <- object@indices[i] - combined.increment
+        object@posDim <- 1L
+        object
+    }
+}
+
 
 ## PosInTarget Iterator ##########################################################
 

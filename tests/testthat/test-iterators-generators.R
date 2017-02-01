@@ -295,6 +295,41 @@ test_that("MarginIterator creates objects from valid inputs", {
 
 
 
-
+test_that("SliceIterator creates objects from valid inputs", {
+    SliceIterator <- demest:::SliceIterator
+    ans.obtained <- SliceIterator(dim = c(3L, 2L, 2L),
+                                 iAlong = 1L)
+    ans.expected <- new("SliceIterator",
+                        indices = c(1L, 4L, 7L, 10L),
+                        increment = 1L,
+                        posDim = 1L,
+                        lengthDim = 3L)
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- SliceIterator(dim = c(3L, 2L, 2L),
+                                 iAlong = 2L)
+    ans.expected <- new("SliceIterator",
+                        indices = c(1:3, 7:9),
+                        increment = 3L,
+                        posDim = 1L,
+                        lengthDim = 2L)
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- SliceIterator(dim = c(3L, 2L, 2L),
+                                 iAlong = 3L)
+    ans.expected <- new("SliceIterator",
+                        indices = 1:6,
+                        increment = 6L,
+                        posDim = 1L,
+                        lengthDim = 2L)
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- SliceIterator(dim = 5L,
+                                  iAlong = 1L)
+    ans.expected <- new("SliceIterator",
+                        indices = 1L,
+                        increment = 1L,
+                        posDim = 1L,
+                        lengthDim = 5L)
+    expect_identical(ans.obtained, ans.expected)
+})
+  
 
 

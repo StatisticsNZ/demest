@@ -232,9 +232,20 @@ setClass("Trend",
                       "SpecADelta0Mixin",
                       "SpecOmegaDeltaMaxMixin"))
 
-
-
 setClass("Vectors",
-         contains = c("SpecDFVectorsMixin",
-                      "SpecScaleVectorsMixin"))
+         contains = "SpecScaleVectorsMixMixin")
+
+setClass("Weights",
+         contains = c("MultComponentWeightMixMixin",
+                      "MultLevelComponentWeightMixMixin",
+                      "NuComponentWeightMixMixin",
+                      "NuLevelComponentWeightMixMixin",
+                      "PriorMeanLevelComponentWeightMixMixin",
+                      "PriorSDLevelComponentWeightMixMixin",
+                      "SpecAComponentWeightMixMixin",
+                      "SpecALevelComponentWeightMixMixin",
+                      "SpecOmegaComponentWeightMaxMixMixin",
+                      "SpecOmegaLevelComponentWeightMaxMixMixin"))
+
+         
          

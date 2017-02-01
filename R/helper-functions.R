@@ -182,13 +182,14 @@ maxWithSubtotal <- function(x, max, subtotal) {
 ## SPECIFICATIONS ##################################################################
 
 ## NO_TESTS
-checkAndTidyDFVectors <- function(df) {
-    checkPositiveNumericVector(x = df,
-                               name = "df")
-    if (length(x) == 0L)
-        stop(gettextf("'%s' has length %d",
-                      name, 0L))
-    as.double(df)
+checkAndTidyIndexClassMaxMix <- function(maxClass) {
+    checkPositiveInteger(x = maxClass,
+                         name = "maxClass")
+    maxClass <- as.integer(maxClass)
+    if (maxClass < 2L)
+        stop(gettextf("'%s' is less than %d",
+                      "maxClass", 2L))
+    new("Counter", maxClass)    
 }
 
 ## NO_TESTS
@@ -204,9 +205,6 @@ checkScaleVectors <- function(scale) {
                       "scale", "HalfT"))
     NULL
 }
-
-    
-
 
 ## HAS_TESTS
 checkLowerOrUpper <- function(value,
@@ -1132,7 +1130,31 @@ makeIndexClassAlpha <- function(classes, metadata) {
         stop(gettextf("problem aligning '%s' with interaction term '%s' : %s",
                       "cl", name.term, classes$message))
     as.integer(classes@.Data)
-}        
+}
+
+## HAS_TESTS
+makeIndexClassMix <- function(dimBeta, iAlong, indexClassMaxMix,
+                              weightMix) {
+    n.along <- dimBeta[iAlong]
+    indexClassMaxMix <- indexClassMaxMix@.Data
+    weightMix <- weightMix@.Data
+    weightMix <- matrix(weightMix,
+                        nrow = n.along,
+                        ncol = indexClassMaxMix)
+    ans <- array(dim = dimBeta)
+    index.array <- slice.index(x = ans,
+                               MARGIN = iAlong)
+    length.slice.i <- prod(dimBeta[-iAlong])
+    for (i in seq_len(n.along)) {
+        is.in.slice.i <- index.array == i
+        prob <- weightMix[i, ]
+        ans[is.in.slice.i] <- replicate(n = length.slice.i,
+                                        sample.int(n = indexClassMaxMix,
+                                                   size = 1L,
+                                                   prob = prob))
+    }
+    as.integer(ans)
+}
 
 ## NO_TESTS
 makeJ <- function(beta) {
@@ -1147,7 +1169,47 @@ makeJPredict <- function(metadata) {
     methods::new("Length", length)
 }
 
-
+makeLatentComponentWeightMix <- function(dimBeta, iAlong, indexClassMix,
+                                         indexClassMaxMix, componentWeightMix,
+                                         iteratorsDimsMix) {
+    n.along <- dimBeta[iAlong]
+    componentWeightMix <- componentWeightMix@.Data
+    indexClassMaxMix <- indexClassMaxMix@.Data
+    componentWeightMix <- matrix(componentWeightMix,
+                                 nrow = n.along,
+                                 ncol = indexClassMaxMix)
+    J <- length(indexClassMix)
+    ans <- matrix(nrow = J,
+                  ncol = indexClassMaxMix)
+    iterator.beta <- iteratorsDimsMix[[iAlong]]
+    iterator.beta <- resetA(object = iterator.beta,
+                            useC = TRUE)
+    s <- seq_len(indexClassMaxMix)
+    makeLatentComp <- function(k, W) {
+        lower <- ifelse(s == k, 0, -Inf)
+        upper <- ifelse(s < k, 0, Inf)
+        val <- double(length = indexClassMaxMix)
+        for (i in s)
+            val[i] <- rtnorm1(mean = W,
+                              sd = 1,
+                              lower = lower[i],
+                              upper = upper[i],
+                              useC = TRUE)
+        val
+    }
+    for (i.along in seq_len(n.along)) {
+        indices.beta <- iterator.beta@indices
+        for (i.beta in indices.beta) {
+            k <- indexClassMix[i.beta]
+            W <- componentWeightMix[i.along, k]
+            ans[i.beta, ] <- makeLatentComp(k = k, W = W)
+        }
+        iterator.beta <- advanceA(object = iterator.beta,
+                                  useC = TRUE)
+    }
+    ans <- as.double(ans)
+    new("ParameterVector", ans)
+}
     
 ## NO_TESTS
 makeP <- function(Z) {
@@ -1158,7 +1220,9 @@ makeP <- function(Z) {
 ## NO_TESTS
 makeScale <- function(A, nu, scaleMax) {
     max <- scaleMax@.Data
-    ans <- rinvchisq1(df = nu, scale = A^2)
+    ans <- rhalft(n = 1L,
+                  df = nu,
+                  scale = A)
     if (ans > max)
         ans <- stats::runif(n = 1,
                             min = 0,
@@ -2502,6 +2566,19 @@ jitterBetas <- function(betas) {
 }
 
 ## HAS_TESTS
+makeComponentWeightMix <- function(dimBeta, iAlong, indexClassMaxMix,
+                                   levelComponent, omegaComponent) {
+    n.along <- dimBeta[iAlong]
+    indexClassMaxMix <- indexClassMaxMix@.Data
+    levelComponent <- levelComponent@.Data
+    omegaComponent <- omegaComponent@.Data
+    componentWeightMix <- rnorm(n = n.along * indexClassMaxMix,
+                                mean = levelComponent,
+                                sd = omegaComponent)
+    new("ParameterVector", componentWeightMix)
+}
+
+## HAS_TESTS
 makeDims <- function(dim, margins) {
     ans <- list(0L)
     if (length(margins) > 0L) {
@@ -2551,6 +2628,38 @@ makeIAlong <- function(along, metadata) {
 }
 
 ## HAS_TESTS
+makeIteratorProdVectorMix <- function(dimBeta, iAlong, indexClassMaxMix) {
+    dim <- dimBeta[-iAlong]
+    dim <- c(dim, indexClassMaxMix@.Data)
+    MarginIterator(dim = dim)
+}
+
+## HAS_TESTS
+makeLevelComponentWeightMix <- function(dimBeta, iAlong, indexClassMaxMix,
+                                        phi, meanLevel, omegaLevel) {
+    n.along <- dimBeta[iAlong]
+    indexClassMaxMix <- indexClassMaxMix@.Data
+    meanLevel <- meanLevel@.Data
+    omegaLevel <- omegaLevel@.Data
+    ans <- matrix(nrow = n.along,
+                  ncol = indexClassMaxMix)
+    mean.initial <- meanLevel / (1 - phi)
+    sd.initial <- omegaLevel / sqrt(1 - phi^2)
+    sd.rest <- omegaLevel
+    ans[1L, ] <- rnorm(n = indexClassMaxMix,
+                       mean = mean.initial,
+                       sd = sd.initial)
+    for (i in seq.int(from = 2L, to = n.along)) {
+        mean.i <- meanLevel + phi * ans[i - 1L, ]
+        ans[i, ] <- rnorm(n = indexClassMaxMix,
+                          mean = mean.i,
+                          sd = sd.rest)
+    }
+    ans <- as.double(ans)
+    ans <- new("ParameterVector", ans)
+}
+
+## HAS_TESTS
 makeLinearBetas <- function(theta, formula) {
     checkForMarginalTerms(formula)
     data <- data.frame(expand.grid(dimnames(theta)), mean = as.numeric(theta))
@@ -2587,6 +2696,17 @@ makeMargins <- function(betas, y) {
         }
     }
     ans
+}
+
+## HAS_TESTS
+makeMeanLevelComponentWeightMix <- function(priorMean, priorSD, min) {
+    mean <- priorMean@.Data
+    sd <- priorSD@.Data
+    ans <- rtnorm1(mean = mean,
+                   sd = sd,
+                   lower = min,
+                   useC = TRUE)
+    new("Parameter", ans)
 }
 
 ## HAS_TESTS
@@ -2645,6 +2765,15 @@ makePriors <- function(betas, specs, namesSpecs, margins, y, sY) {
                                  sY = sY)
     }
     ans
+}
+
+## HAS_TESTS
+makeProdVectorsMix <- function(vectorsMix, iAlong) {
+    ans <- vectorsMix[-iAlong]
+    ans <- lapply(ans, methods::slot, ".Data")
+    ans <- Reduce(outer, ans)
+    ans <- as.double(ans)
+    new("ParameterVector", ans)
 }
 
 ## HAS_TESTS
@@ -2762,6 +2891,80 @@ makeValueAndMetaDataAg <- function(value) {
 }
 
 ## HAS_TESTS
+makeVarianceVectorsMix <- function(scale, metadata, sY, iAlong) {
+    n.scale <- length(scale)
+    names <- names(metadata)
+    n.dim <- length(names)
+    name.interaction <- paste(names, collapse = ":")
+    if (n.scale < n.dim - 1L) {
+        divides.evenly <- ((n.dim - 1L) %% n.scale) == 0L
+        if (!divides.evenly)
+            stop(gettextf("length of '%s' argument from '%s' function does not divide evenly into the number of dimensions of '%s' interaction minus 1",
+                          "scale", "Vector", name.interaction))
+    }
+    if (n.scale > n.dim - 1L)
+            stop(gettextf("'%s' argument from '%s' function has more elements than number of dimensions of '%s' interaction minus 1",
+                          "scale", "Vector", name.interaction))
+    scale <- rep_len(scale, length.out = n.dim - 1L)
+    scale <- append(scale,
+                    value = list(NULL),
+                    after = iAlong - 1L)
+    ans.A <- vector(mode = "list", length = n.dim)
+    ans.nu <- vector(mode = "list", length = n.dim)
+    ans.scale <- vector(mode = "list", length = n.dim)
+    ans.scale.max <- vector(mode = "list", length = n.dim)
+    for (i in seq_len(n.dim)) {
+        if (i == iAlong) {
+            ans.A[[i]] <- new("Scale", 1)
+            ans.nu[[i]] <- new("DegreesFreedom", 7)
+            ans.scale.max[[i]] <- new("Scale", 1)
+            ans.scale[[i]] <- new("Scale", 1)
+        }
+        else {
+            ans.A[[i]] <- makeAHalfT(A = scale[[i]]@A,
+                                     metadata = metadata,
+                                     sY = sY,
+                                     mult = scale[[i]]@mult)
+            ans.nu[[i]] <- scale[[i]]@nu
+            ans.scale.max[[i]] <- makeScaleMax(scaleMax = scale[[i]]@scaleMax,
+                                               A = ans.A[[i]],
+                                               nu = ans.nu[[i]])
+            ans.scale[[i]] <- makeScale(A = ans.A[[i]],
+                                        nu = ans.nu[[i]],
+                                        scaleMax = ans.scale.max[[i]])
+        }
+    }
+    ans.A <- sapply(ans.A, methods::slot, ".Data")
+    ans.nu <- sapply(ans.nu, methods::slot, ".Data")
+    ans.scale.max <- sapply(ans.scale.max, methods::slot, ".Data")
+    ans.scale <- sapply(ans.scale, methods::slot, ".Data")
+    ans.A <- new("ScaleVec", ans.A)
+    ans.nu <- new("DegreesFreedomVector", ans.nu)
+    ans.scale.max <- new("ScaleVec", ans.scale.max)
+    ans.scale <- new("ScaleVec", ans.scale)
+    list(AVectorsMix = ans.A,
+         nuVectorsMix = ans.nu,
+         omegaVectorsMaxMix = ans.scale.max,
+         omegaVectorsMix = ans.scale)
+}
+
+## HAS_TESTS
+makeVectorsMix <- function(dimBeta, iAlong, indexClassMaxMix, omegaVectorsMix) {
+    n.dim <- length(dimBeta)
+    sd <- omegaVectorsMix@.Data
+    length <- dimBeta * indexClassMaxMix
+    length[iAlong] <- 0L
+    ans <- vector(mode = "list",
+                  length = n.dim)
+    for (i in seq_len(n.dim)) {
+        .Data <- rnorm(n = length[i],
+                       sd = sd[i])
+        ans[[i]] <- new("ParameterVector", .Data)
+    }
+    ans
+}
+
+## HAS_TESTS
 makeWeightAg <- function(weight, default, model, thetaObj, transform, values) {
     if (is.null(weight)) {
         if (is.null(default))
@@ -2805,6 +3008,24 @@ makeWeightAg <- function(weight, default, model, thetaObj, transform, values) {
     ans
 }
 
+## HAS_TESTS
+makeWeightMix <- function(dimBeta, iAlong, indexClassMaxMix,
+                          componentWeightMix) {
+    n.along <- dimBeta[iAlong]
+    indexClassMaxMix <- indexClassMaxMix@.Data
+    componentWeightMix <- componentWeightMix@.Data
+    ans <- pnorm(componentWeightMix)
+    ans <- matrix(ans,
+                  nrow = n.along,
+                  ncol = indexClassMaxMix)
+    mult <- 1 - ans
+    mult <- apply(mult,
+                  MARGIN = 2L,
+                  FUN = cumprod)
+    ans[-1L, ] <- ans[-1L, ] * mult[-n.along, ]
+    ans <- as.double(ans)
+    new("UnitIntervalVec", ans)
+}
     
 
 ## RANDOM VARIATES #################################################################
@@ -3798,7 +4019,7 @@ getV <- function(prior, useC = FALSE) {
 
 ## TRANSLATED
 ## HAS_TESTS
-logPostPhiMix <- function(phi, level, meanLevel, nAlong, indexClassMax, omega,
+logPostPhiMix <- function(phi, level, meanLevel, nAlong, indexClassMaxMix, omega,
                           useC = FALSE) {
     ## 'phi'
     stopifnot(identical(length(phi), 1L))
@@ -3817,33 +4038,33 @@ logPostPhiMix <- function(phi, level, meanLevel, nAlong, indexClassMax, omega,
     stopifnot(is.integer(nAlong))
     stopifnot(!is.na(nAlong))
     stopifnot(nAlong >= 2L)
-    ## 'indexClassMax'
-    stopifnot(identical(length(indexClassMax), 1L))
-    stopifnot(is.integer(indexClassMax))
-    stopifnot(!is.na(indexClassMax))
-    stopifnot(indexClassMax > 0L)
+    ## 'indexClassMaxMix'
+    stopifnot(identical(length(indexClassMaxMix), 1L))
+    stopifnot(is.integer(indexClassMaxMix))
+    stopifnot(!is.na(indexClassMaxMix))
+    stopifnot(indexClassMaxMix > 0L)
     ## 'omega'
     stopifnot(identical(length(omega), 1L))
     stopifnot(is.double(omega))
     stopifnot(!is.na(omega))
     stopifnot(omega > 0)
-    ## 'level', 'nAlong', 'indexClassMax'
-    stopifnot(length(level) >= nAlong * indexClassMax)
+    ## 'level', 'nAlong', 'indexClassMaxMix'
+    stopifnot(length(level) >= nAlong * indexClassMaxMix)
     if (useC) {
-        .Call(logPostPhiMix_R, phi, level, meanLevel, nAlong, indexClassMax, omega)
+        .Call(logPostPhiMix_R, phi, level, meanLevel, nAlong, indexClassMaxMix, omega)
     }
     else {
         if (abs(phi) < 1) {
             ratio <- meanLevel / (1 - phi)
             ans.first <- 0
-            for (i.class in seq_len(indexClassMax)) {
+            for (i.class in seq_len(indexClassMaxMix)) {
                 i.wt.first <- (i.class - 1L) * nAlong + 1L
                 level.first <- level[i.wt.first]
                 ans.first <- ans.first + (level.first - ratio)^2
             }
             ans.first <- (1 - phi^2) * ans.first
             ans.rest <- 0
-            for (i.class in seq_len(indexClassMax)) {
+            for (i.class in seq_len(indexClassMaxMix)) {
                 for (i.along in seq.int(from = 2L, to = nAlong)) {
                     i.wt.curr <- (i.class - 1L) * nAlong + i.along
                     i.wt.prev <- i.wt.curr - 1L
@@ -3862,7 +4083,7 @@ logPostPhiMix <- function(phi, level, meanLevel, nAlong, indexClassMax, omega,
 
 ## TRANSLATED
 ## HAS_TESTS
-logPostPhiFirstOrderMix <- function(phi, level, meanLevel, nAlong, indexClassMax, omega,
+logPostPhiFirstOrderMix <- function(phi, level, meanLevel, nAlong, indexClassMaxMix, omega,
                                     useC = FALSE) {
     ## 'phi'
     stopifnot(identical(length(phi), 1L))
@@ -3881,32 +4102,32 @@ logPostPhiFirstOrderMix <- function(phi, level, meanLevel, nAlong, indexClassMax
     stopifnot(is.integer(nAlong))
     stopifnot(!is.na(nAlong))
     stopifnot(nAlong >= 2L)
-    ## 'indexClassMax'
-    stopifnot(identical(length(indexClassMax), 1L))
-    stopifnot(is.integer(indexClassMax))
-    stopifnot(!is.na(indexClassMax))
-    stopifnot(indexClassMax > 0)
+    ## 'indexClassMaxMix'
+    stopifnot(identical(length(indexClassMaxMix), 1L))
+    stopifnot(is.integer(indexClassMaxMix))
+    stopifnot(!is.na(indexClassMaxMix))
+    stopifnot(indexClassMaxMix > 0)
     ## 'omega'
     stopifnot(identical(length(omega), 1L))
     stopifnot(is.double(omega))
     stopifnot(!is.na(omega))
     stopifnot(omega > 0)
-    ## 'level', 'nAlong', 'indexClassMax'
-    stopifnot(length(level) >= nAlong * indexClassMax)
+    ## 'level', 'nAlong', 'indexClassMaxMix'
+    stopifnot(length(level) >= nAlong * indexClassMaxMix)
     if (useC) {
-        .Call(logPostPhiFirstOrderMix_R, phi, level, meanLevel, nAlong, indexClassMax, omega)
+        .Call(logPostPhiFirstOrderMix_R, phi, level, meanLevel, nAlong, indexClassMaxMix, omega)
     }
     else {
         if(abs(phi) < 1) {
             ans.first <- 0
             ratio <- meanLevel / (1 - phi)
-            for (i.class in seq_len(indexClassMax)) {
+            for (i.class in seq_len(indexClassMaxMix)) {
                 i.wt.first <- (i.class - 1L) * nAlong + 1L
                 level.first <- level[i.wt.first]
                 ans.first <- ans.first + (level.first - ratio) * (phi * level.first + ratio)
             }
             ans.rest <- 0
-            for (i.class in seq_len(indexClassMax)) {
+            for (i.class in seq_len(indexClassMaxMix)) {
                 for (i.along in seq.int(from = 2L, to = nAlong)) {
                     i.wt.curr <- (i.class - 1L) * nAlong + i.along
                     i.wt.prev <- i.wt.curr - 1L

@@ -825,6 +825,8 @@ test_that("updateCombined method for CombinedCountsBinomial updates correct slot
                                namesDatasets = namesDatasets,
                                transforms = transforms)
     x1 <- updateCombined(x0)
+    for (i in 1:5)
+        x1 <- updateCombined(x1)
     for (name in c("model", "y", "observation")) {
         expect_false(identical(slot(x1, name), slot(x0, name)))
     }
