@@ -757,6 +757,37 @@ test_that("initialDLMSeasonPredict works", {
     expect_identical(l$CSeason[[1]], rep(0, 2))
 })
 
+
+
+
+
+
+
+
+test_that("initialMixAll works", {
+    initialMixAll <- demest:::initialMixAll
+    initialPrior <- demest:::initialPrior
+    set.seed(100)
+    ## main effect
+    spec <- Mix()
+    beta <- rnorm(420)
+    metadata <- new("MetaData",
+                    nms = c("age", "sex", "time"),
+                    dimtypes = c("age", "sex", "time"),
+                    DimScales = list(new("Intervals", dimvalues = 0:20),
+                                     new("Sexes", dimvalues = c("female", "male")),
+                                     new("Points", dimvalues = 2001:2010)))
+    l <- initialMixAll(spec,
+                       beta = beta,
+                       metadata = metadata,
+                       sY = NULL)
+})
+
+
+
+
+
+
 test_that("checkAndTidyJump works", {
     checkAndTidyJump <- demest:::checkAndTidyJump
     expect_identical(checkAndTidyJump(NULL),
@@ -2531,61 +2562,66 @@ test_that("makeIteratorProdVectorMix works", {
 ##                      list(NULL))
 ## })
 
-## test_that("makeLatentComponentWeightMix works", {
-##     makeLatentComponentWeightMix <- demest:::makeLatentComponentWeightMix
-##     makeComponentWeightMix <- demest:::makeComponentWeightMix
-##     makeWeightMix <- demest:::makeWeightMix
-##     makeIndexClassMix <- demest:::makeIndexClassMix
-##     AlongIterator <- demest:::AlongIterator
-##     dimBeta <- 4:6
-##     iAlong <- 2L
-##     indexClassMaxMix <- new("Counter", 10L)
-##     levelComponent <- new("ParameterVector", rnorm(50))
-##     componentWeightMix <- makeComponentWeightMix(dimBeta = dimBeta,
-##                                                  iAlong = iAlong,
-##                                                  indexClassMaxMix = indexClassMaxMix,
-##                                                  levelComponent = levelComponent,
-##                                                  omegaComponent = 0.4)
-##     weightMix <- makeWeightMix(dimBeta = dimBeta,
-##                                iAlong = iAlong,
-##                                indexClassMaxMix = indexClassMaxMix,
-##                                componentWeightMix = componentWeightMix)
-##     indexClassMix <- makeIndexClassMix(dimBeta = dimBeta,
-##                                        iAlong = iAlong,
-##                                        indexClassMaxMix = indexClassMaxMix,
-##                                        weightMix = weightMix)
-##     iteratorsDimsMix <- lapply(1:3, function(x) AlongIterator(dim = 4:6, x))
-##     set.seed(1)
-##     ans.obtained <-
-##         makeLatentComponentWeightMix(dimBeta = dimBeta,
-##                                      iAlong = iAlong,
-##                                      indexClassMix = indexClassMix,
-##                                      indexClassMaxMix = indexClassMaxMix,
-##                                      componentWeightMix = componentWeightMix,
-##                                      iteratorsDimsMix = iteratorsDimsMix)
-##     set.seed(1)
-##     ans.expected <- matrix(nrow = 120, ncol = 10)
-##     for (i in 1:120) {
-##         k <- indexClassMix[i]
-##         for (j in 1:10) {
-##             if (j < k)
-##                 ans[i, j] <- rtnorm1(mean = 0, sd = 1, lower = 0)
-##             else if (j == k)
-##                 ans[i, j] <- rtnorm1(mean = 0, sd = 1, 
-##     wt <- matrix(weightMix@.Data, nrow = 6)
-##     for (k in 1:6) {
-##         for (j in 1:5) {
-##             for (i in 1:4) {
-##                 ans.expected[i,j,k] <- sample.int(n = 10, size = 1, prob = wt[k, ])
-##             }
-##         }
-##     }
-##     ans.expected <- as.integer(ans.expected)
-##     if (test.identity)
-##         expect_identical(ans.obtained, ans.expected)
-##     else
-##         expect_equal(ans.obtained, ans.expected)
-## })
+test_that("makeLatentComponentWeightMix works", {
+    makeLatentComponentWeightMix <- demest:::makeLatentComponentWeightMix
+    makeComponentWeightMix <- demest:::makeComponentWeightMix
+    makeWeightMix <- demest:::makeWeightMix
+    makeIndexClassMix <- demest:::makeIndexClassMix
+    SliceIterator <- demest:::SliceIterator
+    dimBeta <- 4:6
+    iAlong <- 2L
+    indexClassMaxMix <- new("Counter", 10L)
+    levelComponent <- new("ParameterVector", rnorm(50))
+    componentWeightMix <- makeComponentWeightMix(dimBeta = dimBeta,
+                                                 iAlong = iAlong,
+                                                 indexClassMaxMix = indexClassMaxMix,
+                                                 levelComponent = levelComponent,
+                                                 omegaComponent = 0.4)
+    weightMix <- makeWeightMix(dimBeta = dimBeta,
+                               iAlong = iAlong,
+                               indexClassMaxMix = indexClassMaxMix,
+                               componentWeightMix = componentWeightMix)
+    indexClassMix <- makeIndexClassMix(dimBeta = dimBeta,
+                                       iAlong = iAlong,
+                                       indexClassMaxMix = indexClassMaxMix,
+                                       weightMix = weightMix)
+    iteratorsDimsMix <- lapply(1:3, function(x) SliceIterator(dim = 4:6, x))
+    set.seed(1)
+    ans.obtained <-
+        makeLatentComponentWeightMix(dimBeta = dimBeta,
+                                     iAlong = iAlong,
+                                     indexClassMix = indexClassMix,
+                                     indexClassMaxMix = indexClassMaxMix,
+                                     componentWeightMix = componentWeightMix,
+                                     iteratorsDimsMix = iteratorsDimsMix)
+    set.seed(1)
+    cwm <- matrix(componentWeightMix@.Data,
+                  nrow = 5)
+    ans.expected <- matrix(nrow = 120, ncol = 10)
+    iterator.beta <- iteratorsDimsMix[[2]]
+    iterator.beta <- resetS(iterator.beta)
+    for (i.along in 1:5) {
+        indices.beta <- iterator.beta@indices
+        for (i.beta in indices.beta) {
+            k <- indexClassMix[i.beta]
+            W <- cwm[i.along, k]
+            for (j in 1:10) {
+                if (j < k)
+                    ans.expected[i.beta, j] <- rtnorm1(mean = W, sd = 1, lower = -Inf, upper = 0)
+                else if (j == k)
+                    ans.expected[i.beta, j] <- rtnorm1(mean = W, sd = 1, lower = 0, upper = Inf)
+                else
+                    ans.expected[i.beta, j] <- rtnorm1(mean = W, sd = 1, lower = -Inf, upper = Inf)
+            }
+        }
+        iterator.beta <- advanceS(iterator.beta)
+    }
+    ans.expected <- new("ParameterVector", as.double(ans.expected))
+    if (test.identity)
+        expect_identical(ans.obtained, ans.expected)
+    else
+        expect_equal(ans.obtained, ans.expected)
+})
 
 
 test_that("makeLinearBetas leads to correct fitted values", {

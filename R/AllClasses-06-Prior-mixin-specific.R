@@ -611,10 +611,10 @@ setClass("IteratorsDimsMixMixin",
          validity = function(object) {
              iteratorsDimsMix <- object@iteratorsDimsMix
              dimBeta <- object@dimBeta
-             ## all elements of 'iteratorsDimsMix' have class "AlongIterator"
-             if (!all(iteratorsDimsMix, methods::is, "AlongIterator"))
+             ## all elements of 'iteratorsDimsMix' have class "SliceIterator"
+             if (!all(iteratorsDimsMix, methods::is, "SliceIterator"))
                  return(gettextf("'%s' has elements not of class \"%s\"",
-                                 "iteratorsDimsMix", "AlongIterator"))
+                                 "iteratorsDimsMix", "SliceIterator"))
              ## length of 'indices' slot of each iterator equal to
              ## product of other dimension lengths
              for (i in seq_along(iteratorsDimsMix)) {
