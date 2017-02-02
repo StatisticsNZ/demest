@@ -55,6 +55,8 @@ SEXP
   nStrides_sym,
   dimBefore_sym,
   dimAfter_sym,
+  posDim_sym,
+  lengthDim_sym,
   iMethodModel_sym, 
   priorsBetas_sym, 
   theta_sym,
@@ -425,6 +427,8 @@ void advanceD(SEXP iterator_R);
 void resetD(SEXP iterator_R);
 void advanceM(SEXP object_R);
 void resetM(SEXP object_R);
+void advanceS(SEXP object_R);
+void resetS(SEXP object_R);
 void advanceCAP(SEXP iterator_R);
 void advanceCC(SEXP iterator_R);
 void resetCAP(SEXP iterator_R, int i);

@@ -979,6 +979,8 @@ UPDATEOBJECT_NOPRNG_WRAPPER_R(advanceD);
 UPDATEOBJECT_NOPRNG_WRAPPER_R(resetD);
 UPDATEOBJECT_NOPRNG_WRAPPER_R(advanceM);
 UPDATEOBJECT_NOPRNG_WRAPPER_R(resetM);
+UPDATEOBJECT_NOPRNG_WRAPPER_R(advanceS);
+UPDATEOBJECT_NOPRNG_WRAPPER_R(resetS);
 UPDATEOBJECT_NOPRNG_WRAPPER_R(advanceCAP);
 UPDATEOBJECT_NOPRNG_WRAPPER_R(advanceCC);
 
@@ -1332,6 +1334,8 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(resetD_R, 1),
   CALLDEF(advanceM_R, 1),
   CALLDEF(resetM_R, 1),
+  CALLDEF(advanceS_R, 1),
+  CALLDEF(resetS_R, 1),
   CALLDEF(advanceCAP_R, 1),
   CALLDEF(advanceCC_R, 1),
   CALLDEF(resetCAP_R, 2),
@@ -1573,6 +1577,8 @@ R_init_demest(DllInfo *info)
   ADD_SYM(nStrides);
   ADD_SYM(dimBefore);
   ADD_SYM(dimAfter);
+  ADD_SYM(posDim);
+  ADD_SYM(lengthDim);
   /* models */
   ADD_SYM(iMethodModel);
   ADD_SYM(priorsBetas);

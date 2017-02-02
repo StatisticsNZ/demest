@@ -280,7 +280,7 @@ advanceCAP(SEXP iterator_R)
 void
 advanceCC(SEXP iterator_R)
 {
-	int i = *INTEGER(GET_SLOT(iterator_R, i_sym));
+    int i = *INTEGER(GET_SLOT(iterator_R, i_sym));
     int stepTime = *INTEGER(GET_SLOT(iterator_R, stepTime_sym));
     int nTime = *INTEGER(GET_SLOT(iterator_R, nTime_sym));
     int iTime = *INTEGER(GET_SLOT(iterator_R, iTime_sym));
@@ -302,27 +302,27 @@ advanceCC(SEXP iterator_R)
         }
         
         else {
-			if (iAge < nAge) {
-				++iAge;
-				iTriangle = 1;
-				i += stepAge - stepTriangle;
-			}
-			else {
-				++iTime;
-				i += stepTime;
-			}
-			finished = ((iTriangle == 1) && (iTime == nTime));
-		}
-		
-		SET_SLOT(iterator_R, iAge_sym, ScalarInteger(iAge));
-		SET_SLOT(iterator_R, iTriangle_sym, ScalarInteger(iTriangle));
+            if (iAge < nAge) {
+                ++iAge;
+                iTriangle = 1;
+                i += stepAge - stepTriangle;
+            }
+            else {
+                ++iTime;
+                i += stepTime;
+            }
+            finished = ((iTriangle == 1) && (iTime == nTime));
+        }
+        
+        SET_SLOT(iterator_R, iAge_sym, ScalarInteger(iAge));
+        SET_SLOT(iterator_R, iTriangle_sym, ScalarInteger(iTriangle));
     
     }
     else {
-		++iTime;
-		i += stepTime;
-		finished = (iTime == nTime);
-	}	
+        ++iTime;
+        i += stepTime;
+        finished = (iTime == nTime);
+    }   
     
     SET_SLOT(iterator_R, i_sym, ScalarInteger(i));
     SET_SLOT(iterator_R, iTime_sym, ScalarInteger(iTime));
@@ -442,4 +442,51 @@ resetM(SEXP object_R)
         
     }
      
+}
+
+/* ********************* slice iterators ********************** */
+
+void
+advanceS(SEXP object_R)
+{
+    int posDim = *INTEGER(GET_SLOT(object_R, posDim_sym));
+    int lengthDim = *INTEGER(GET_SLOT(object_R, lengthDim_sym));
+    int increment = *INTEGER(GET_SLOT(object_R, increment_sym));
+    
+    SEXP indices_R = GET_SLOT(object_R, indices_sym);
+    int nIndices = LENGTH(indices_R);
+    int *indices = INTEGER(indices_R);
+    
+    if (posDim < lengthDim) {
+        for (int i = 0; i < nIndices; ++i) {
+            indices[i] += increment;
+        }
+        posDim += 1;
+    }
+    else {
+        int combinedIncrement = (lengthDim - 1) * increment;
+        for (int i = 0; i < nIndices; ++i) {
+            indices[i] -= combinedIncrement;
+        }
+        posDim = 1;
+    }
+    SET_INTSCALE_SLOT(object_R, posDim_sym, posDim)    
+}
+
+void
+resetS(SEXP object_R)
+{
+    int posDim = *INTEGER(GET_SLOT(object_R, posDim_sym));
+    int increment = *INTEGER(GET_SLOT(object_R, increment_sym));
+    
+    SEXP indices_R = GET_SLOT(object_R, indices_sym);
+    int nIndices = LENGTH(indices_R);
+    int *indices = INTEGER(indices_R);
+    
+    int combinedIncrement = (posDim - 1) * increment;
+    for (int i = 0; i < nIndices; ++i) {
+        indices[i] -= combinedIncrement;
+    }
+    posDim = 1;
+    SET_INTSCALE_SLOT(object_R, posDim_sym, posDim)    
 }

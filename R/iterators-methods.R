@@ -402,7 +402,7 @@ resetM <- function(object, useC = FALSE) {
 
 ## Slice Iterator ##########################################################
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 advanceS <- function(object, useC = FALSE) {
     stopifnot(methods::is(object, "SliceIterator"))
@@ -426,7 +426,7 @@ advanceS <- function(object, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 resetS <- function(object, useC = FALSE) {
     stopifnot(methods::is(object, "SliceIterator"))
