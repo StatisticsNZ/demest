@@ -1372,6 +1372,7 @@ Level <- function(scale = HalfT()) {
                  omegaAlphaMax = omegaAlphaMax)
 }
 
+#' @export
 Mix <- function(along = NULL,
                 vectors = Vectors(),
                 weights = Weights(),
@@ -1689,6 +1690,7 @@ Trend <- function(initial = Initial(), scale = HalfT()) {
                  omegaDeltaMax = omegaDeltaMax)
 }
 
+#' @export
 Weights <- function(mean = 0, sd = 1, temporary = HalfT(), permanent = HalfT()) {
     priorMeanLevelComponentWeightMix <- checkAndTidyMeanOrProb(object = mean,
                                                                name = "mean")
@@ -1724,6 +1726,7 @@ Weights <- function(mean = 0, sd = 1, temporary = HalfT(), permanent = HalfT()) 
                  priorSDLevelComponentWeightMix = priorSDLevelComponentWeightMix)
 }
 
+#' @export
 Vectors <- function(scale = list(HalfT())) {
     checkScaleVectors(scale)
     methods::new("Vectors",

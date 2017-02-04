@@ -126,9 +126,9 @@ setClass("AVectorsMixMixin",
          slots = c(AVectorsMix = "ScaleVec"),
          contains = "VIRTUAL",
          validity = function(object) {
-             AVectorsMix <- prior@AVectorsMix@.Data
-             vectorsMix <- prior@vectorsMix
-             iAlong <- prior@iAlong
+             AVectorsMix <- object@AVectorsMix@.Data
+             vectorsMix <- object@vectorsMix
+             iAlong <- object@iAlong
              ## 'AVectorsMix' has same length as 'vectorsMix'
              if (!identical(length(AVectorsMix), length(vectorsMix)))
                  return(gettextf("'%s' has different length from '%s'",
@@ -199,18 +199,19 @@ setClass("AlphaKnownMixin",
              TRUE
          })
 
-setClass("AlphaMixMixin",
-         slots = c(alphaMix = "ParameterVector"),
-         contains = "VIRTUAL",
-         validity = function(object) {
-             J <- object@J@.Data
-             alphaMix <- object@alphaMix
-             ## 'alphaMix' has length 'J'
-             if (!identical(length(alphaMix), J))
-                 return(gettextf("'%s' does not have length '%s'",
-                                 "alphaMix", "J"))
-             TRUE
-         })
+## NOT NEEDED???
+## setClass("AlphaMixMixin",
+##          slots = c(alphaMix = "ParameterVector"),
+##          contains = "VIRTUAL",
+##          validity = function(object) {
+##              J <- object@J@.Data
+##              alphaMix <- object@alphaMix
+##              ## 'alphaMix' has length 'J'
+##              if (!identical(length(alphaMix), J))
+##                  return(gettextf("'%s' does not have length '%s'",
+##                                  "alphaMix", "J"))
+##              TRUE
+##          })
 
 setClass("AlphaMoveMixin",
          slots = c(alphaMove = "ParameterVector"),
@@ -326,6 +327,7 @@ setClass("ClassesMixin",
 ## 'W' in notes
 setClass("ComponentWeightMixMixin", 
          slots = c(componentWeightMix = "ParameterVector"),
+         contains = "VIRTUAL",
          validity = function(object) {
              componentWeightMix <- object@componentWeightMix@.Data
              weightMix <- object@weightMix@.Data
@@ -376,7 +378,9 @@ setClass("DeltaDLMMixin",
 
 setClass("DimBetaMixin",
          slots = c(dimBeta = "integer"),
+         contains = "VIRTUAL",
          validity = function(object) {
+             dimBeta <- object@dimBeta
              ## 'dimBeta' has no missing values
              if (any(is.na(dimBeta)))
                  return(gettextf("'%s' has missing values",
@@ -542,7 +546,7 @@ setClass("IndexClassMixMixin",
              J <- object@J@.Data
              indexClassMaxMix <- object@indexClassMaxMix@.Data
              ## 'indexClassMix' has no missing values
-             if (is.na(indexClassMix))
+             if (any(is.na(indexClassMix)))
                  return(gettextf("'%s' has missing values",
                                  "indexClassMix"))
              ## 'indexClassMix' has length 'J'
@@ -590,18 +594,18 @@ setClass("IteratorProdVectorMix",
              iteratorProdVectorMix <- object@iteratorProdVectorMix
              dimBeta <- object@dimBeta
              iAlong <- object@iAlong
-             indexClassMax <- object@indexClassMax@.Data
+             indexClassMaxMix <- object@indexClassMaxMix@.Data
              dimIterators <- iteratorProdVectorMix@dimIterators
              ## 'nBetween' slots of elements of 'dimIterators'
              ## equal to 'dimBeta', minus "along" dimension,
-z             ## plus maximum number of classes
+             ## plus maximum number of classes
              n.between.obtained <- sapply(dimIterators, methods::slot, "nBetween")
-             n.between.expected <- dim.iter[-iAlong]
-             n.between.expected <- c(n.between.expected, indexClassMax)
+             n.between.expected <- dimBeta[-iAlong]
+             n.between.expected <- c(n.between.expected, indexClassMaxMix)
              if (!identical(n.between.obtained, n.between.expected))
                  return(gettextf("'%s' slot of '%s' not consistent with '%s', '%s', and '%s'",
                                  "dimIterators", "iteratorProdVectorMix", "dimBeta",
-                                 "iAlong", "indexClassMax"))
+                                 "iAlong", "indexClassMaxMix"))
              TRUE
          })             
 
@@ -612,7 +616,7 @@ setClass("IteratorsDimsMixMixin",
              iteratorsDimsMix <- object@iteratorsDimsMix
              dimBeta <- object@dimBeta
              ## all elements of 'iteratorsDimsMix' have class "SliceIterator"
-             if (!all(iteratorsDimsMix, methods::is, "SliceIterator"))
+             if (!all(sapply(iteratorsDimsMix, methods::is, "SliceIterator")))
                  return(gettextf("'%s' has elements not of class \"%s\"",
                                  "iteratorsDimsMix", "SliceIterator"))
              ## length of 'indices' slot of each iterator equal to
@@ -712,6 +716,7 @@ setClass("KLMixin",
 ## 'z' in notes
 setClass("LatentComponentWeightMixMixin", 
          slots = c(latentComponentWeightMix = "ParameterVector"),
+         contains = "VIRTUAL",
          validity = function(object) {
              ## 'latentComponentWeightMix' has length J * indexClassMaxMix
              latentComponentWeightMix <- object@latentComponentWeightMix@.Data
@@ -726,6 +731,7 @@ setClass("LatentComponentWeightMixMixin",
 ## 'u' in notes
 setClass("LatentWeightMixMixin", 
          slots = c(latentWeightMix = "UnitIntervalVec"),
+         contains = "VIRTUAL",
          validity = function(object) {
              ## 'latentWeightMix' has length 'J'
              latentWeightMix <- object@latentWeightMix@.Data
@@ -739,6 +745,7 @@ setClass("LatentWeightMixMixin",
 ## 'alpha' in notes
 setClass("LevelComponentWeightMixMixin",
          slots = c(levelComponentWeightMix = "ParameterVector"),
+         contains = "VIRTUAL",
          validity = function(object) {
              levelComponentWeightMix <- object@levelComponentWeightMix@.Data
              weightMix <- object@weightMix@.Data
@@ -998,9 +1005,9 @@ setClass("NuVectorsMixMixin",
          slots = c(nuVectorsMix = "DegreesFreedomVector"),
          contains = "VIRTUAL",
          validity = function(object) {
-             nuVectorsMix <- prior@nuVectorsMix@.Data
-             vectorsMix <- prior@vectorsMix
-             iAlong <- prior@iAlong
+             nuVectorsMix <- object@nuVectorsMix@.Data
+             vectorsMix <- object@vectorsMix
+             iAlong <- object@iAlong
              ## 'nuVectorsMix' has same length as 'vectorsMix'
              if (!identical(length(nuVectorsMix), length(vectorsMix)))
                  return(gettextf("'%s' has different length from '%s'",
@@ -1085,6 +1092,7 @@ setClass("OmegaVectorsMaxMixMixin",
          validity = function(object) {
              omegaVectorsMix <- object@omegaVectorsMix@.Data
              omegaVectorsMaxMix <- object@omegaVectorsMaxMix@.Data
+             iAlong <- object@iAlong
              ## 'omegaVectorsMaxMix' has same length as 'omegaVectorsMix'
              if (!identical(length(omegaVectorsMaxMix), length(omegaVectorsMix)))
                  return(gettextf("'%s' has different length from '%s'",
@@ -1108,9 +1116,9 @@ setClass("OmegaVectorsMixMixin",
          slots = c(omegaVectorsMix = "ScaleVec"),
          contains = "VIRTUAL",
          validity = function(object) {
-             omegaVectorsMix <- prior@omegaVectorsMix@.Data
-             vectorsMix <- prior@vectorsMix
-             iAlong <- prior@iAlong
+             omegaVectorsMix <- object@omegaVectorsMix@.Data
+             vectorsMix <- object@vectorsMix
+             iAlong <- object@iAlong
              ## 'omegaVectorsMix' has same length as 'vectorsMix'
              if (!identical(length(omegaVectorsMix), length(vectorsMix)))
                  return(gettextf("'%s' has different length from '%s'",
@@ -1220,14 +1228,14 @@ setClass("PhiMixMixin",
              if (is.na(phiMix))
                  return(gettext("'%s' is missing",
                                 "phiMix"))
-             ## 'phi' is greater than or equal to -1
-             if (phi < -1)
+             ## 'phiMix' is greater than or equal to -1
+             if (phiMix < -1)
                  return(gettext("'%s' is less than %d",
-                                "phi", -1L))
-             ## 'phi' is less than or equal to 1
-             if (phi > 1)
+                                "phiMix", -1L))
+             ## 'phiMix' is less than or equal to 1
+             if (phiMix > 1)
                  return(gettext("'%s' is greater than %d",
-                                "phi", 1L))
+                                "phiMix", 1L))
              TRUE
          })
 
@@ -1241,6 +1249,7 @@ setClass("PosProdVectorsMixMixin",
              posProdVectors2Mix <- object@posProdVectors2Mix
              nBetaNoAlongMix <- object@nBetaNoAlongMix
              dim.beta <- object@dimBeta
+             iAlong <- object@iAlong
              pos1 <- dim.beta[1L]
              pos2 <- 1L
              n.beta <- 1L
@@ -1285,14 +1294,14 @@ setClass("ProdVectorsMixMixin",
          validity = function(object) {
              prodVectors <- object@prodVectorsMix@.Data
              dimBeta <- object@dimBeta
-             iAlong <- dim@iAlong@.Data
-             indexClassMaxMix <- object@indexClassMaxMixMix@.Data
+             iAlong <- object@iAlong
+             indexClassMaxMix <- object@indexClassMaxMix@.Data
              ## length of 'prodVectors' equal to product of non-along
              ## dimensions times indexClassMaxMix
              ans.obtained <- length(prodVectors)
-             ans.expected <- as.integer(prod(dimBeta[-iAlong])) * indexClassMaxMix
+             ans.expected <- as.integer(prod(dimBeta[-iAlong] * indexClassMaxMix))
              if (!identical(ans.obtained, ans.expected)) {
-                 return(gettextf("length of '%s' not equal to product of non-\"%s\" dimensions and '%s'",
+                 return(gettextf("length of '%s' not equal to product of non-\"%s\" dimensions times '%s'",
                                  "prodVectors", "along", "indexClassMaxMix"))
              }
              TRUE
@@ -1595,10 +1604,10 @@ setClass("VectorsMixMixin",
          validity = function(object) {
              vectorsMix <- object@vectorsMix
              dimBeta <- object@dimBeta
-             iAlong <- object@iAlong@.Data
+             iAlong <- object@iAlong
              indexClassMaxMix <- object@indexClassMaxMix@.Data
              ## all elements of 'vectorsMix' have class "ParameterVector"
-             if (!all(vectorsMix, methods::is, "ParameterVector"))
+             if (!all(sapply(vectorsMix, methods::is, "ParameterVector")))
                  return(gettextf("'%s' has elements not of class \"%s\"",
                                  "vectorsMix", "ParameterVector"))
              ## Length of vector equals length of associated dimension
@@ -1652,12 +1661,13 @@ setClass("WSqrtMixin",
 ## weights stored as if matrix in which row is 'i.along' and column is 'class'
 setClass("WeightMixMixin",
          slots = c(weightMix = "UnitIntervalVec"),
+         contains = "VIRTUAL",
          validity = function(object) {
              weightMix <- object@weightMix@.Data
              iAlong <- object@iAlong
              dimBeta <- object@dimBeta
              n.along <- dimBeta[iAlong]
-             indexClassMaxMix <- object@maxMumClass@Data
+             indexClassMaxMix <- object@indexClassMaxMix@.Data
              ## length of 'weightMix' equal to length of 'along' dimension
              ## multiplied by maximum number of classes
              length.obtained <- length(weightMix)

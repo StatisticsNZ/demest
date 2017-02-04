@@ -607,6 +607,55 @@ test_that("generator function and initialPrior work with DLMWithTrendRobustCovWi
 })
 
 
+## Mix
+
+test_that("generator function and initialPrior work with MixNormZero", {
+    set.seed(100)
+    initialPrior <- demest:::initialPrior
+    beta <- rnorm(200)
+    metadata <- new("MetaData",
+                    nms = c("time", "reg", "age"),
+                    dimtypes = c("time", "state", "age"),
+                    DimScales = list(new("Points", dimvalues = 2001:2010),
+                                     new("Categories", dimvalues = c("a", "b")),
+                                     new("Intervals", dimvalues = as.numeric(0:10))))
+    ## all defaults
+    spec <- Mix()
+    expect_is(spec, "SpecMixNormZero")
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          multScale = 1)
+    expect_is(prior, "MixNormZero")
+    ## nondefault
+    spec <- Mix(along = "age",
+                vectors = Vectors(list(HalfT(df = 4, mult = 2), HalfT(scale = 0.5))),
+                weights = Weights(mean = 0.5,
+                                  sd = 0.5,
+                                  temporary = HalfT(scale = 0.4),
+                                  permanent = HalfT(mult = 0.5)),
+                error = Error(scale = HalfT(df = 6)),
+                maxClass = 11)
+    beta <- rnorm(200)
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          multScale = 1)
+    expect_identical(prior@iAlong, 3L)
+    expect_identical(prior@AVectorsMix, new("ScaleVec", c(0.5, 0.5, 1)))
+    expect_identical(prior@nuVectorsMix, new("DegreesFreedomVector", c(4, 7, 7)))
+    expect_identical(prior@priorMeanLevelComponentWeightMix, new("Parameter", 0.5))
+    expect_identical(prior@priorSDLevelComponentWeightMix, new("Scale", 0.5))
+    expect_identical(prior@AComponentWeightMix, new("Scale", 0.4))
+    expect_identical(prior@ALevelComponentWeightMix, new("Scale", 0.125))
+    expect_identical(prior@nuTau, new("DegreesFreedom", 6))
+})
+
+
+
+
 ## initialPriorPredict ###############################################################
 
 test_that("initialPriorPredict workw with ExchNormZero", {

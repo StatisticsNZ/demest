@@ -1290,6 +1290,59 @@ setMethod("initialPrior",
 ## }
 
 
+## Mix
+
+
+setMethod("initialPrior",
+          signature(object = "SpecMixNormZero"),
+          function(object, beta, metadata, sY, ...) {
+              l.all <- initialMixAll(object = object,
+                                     beta = beta,
+                                     metadata = metadata,
+                                     sY = sY)
+              methods::new("MixNormZero",
+                           AComponentWeightMix = l.all$AComponentWeightMix,
+                           ALevelComponentWeightMix = l.all$ALevelComponentWeightMix,
+                           aMix = l.all$aMix,
+                           ATau = l.all$ATau,
+                           AVectorsMix = l.all$AVectorsMix,
+                           CMix = l.all$CMix,
+                           componentWeightMix = l.all$componentWeightMix,
+                           dimBeta = l.all$dimBeta,
+                           iAlong = l.all$iAlong,
+                           indexClassMaxMix = l.all$indexClassMaxMix,
+                           indexClassMix = l.all$indexClassMix,
+                           iteratorsDimsMix = l.all$iteratorsDimsMix,
+                           iteratorProdVectorMix = l.all$iteratorProdVectorMix,
+                           J = l.all$J,
+                           latentComponentWeightMix = l.all$latentComponentWeightMix,
+                           latentWeightMix = l.all$latentWeightMix,
+                           levelComponentWeightMix = l.all$levelComponentWeightMix,
+                           meanLevelComponentWeightMix = l.all$meanLevelComponentWeightMix,
+                           mMix = l.all$mMix,
+                           nuComponentWeightMix = l.all$nuComponentWeightMix,
+                           nuLevelComponentWeightMix = l.all$nuLevelComponentWeightMix,
+                           nuTau = l.all$nuTau,
+                           nuVectorsMix = l.all$nuVectorsMix,
+                           omegaComponentWeightMaxMix = l.all$omegaComponentWeightMaxMix,
+                           omegaComponentWeightMix = l.all$omegaComponentWeightMix,
+                           omegaLevelComponentWeightMaxMix = l.all$omegaLevelComponentWeightMaxMix,
+                           omegaLevelComponentWeightMix = l.all$omegaLevelComponentWeightMix,
+                           omegaVectorsMaxMix = l.all$omegaVectorsMaxMix,
+                           omegaVectorsMix = l.all$omegaVectorsMaxMix,
+                           phiMix = l.all$phiMix,
+                           priorMeanLevelComponentWeightMix = l.all$priorMeanLevelComponentWeightMix,
+                           priorSDLevelComponentWeightMix = l.all$priorSDLevelComponentWeightMix,
+                           prodVectorsMix = l.all$prodVectorsMix,
+                           RMix = l.all$RMix,
+                           tau = l.all$tau,
+                           tauMax = l.all$tauMax,
+                           vectorsMix = l.all$vectorsMix,
+                           weightMix = l.all$weightMix)
+          })
+
+
+
 
 ## initialPriorPredict ###############################################################
 
