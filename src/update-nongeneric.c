@@ -29,11 +29,12 @@ updateSDNorm(double sigma, double A, double nu, double V, int n, double max)
     double nuASq = nu * A * A;
     double n_nuASq = n*nuASq;
     
-    double f0 = -n*log(sigma) - V/(2*sigmaSq) - nuPlusOne/2 * log(sigmaSq + nuASq);
+    double f0 = -n*log(sigma) - V/(2*sigmaSq) 
+                        - nuPlusOne/2 * log(sigmaSq + nuASq);
     double e = rexp(1.0);
     double z = f0 - e;
     double numerator = V - n_nuASq 
-    + sqrt((V - n_nuASq)*(V - n_nuASq) + 4*nPlusNuPlusOne*V*nuASq);
+        + sqrt((V - n_nuASq)*(V - n_nuASq) + 4*nPlusNuPlusOne*V*nuASq);
     double denominator = 2*nPlusNuPlusOne;
     double sigma_star = sqrt(numerator/denominator);
 
@@ -41,53 +42,64 @@ updateSDNorm(double sigma, double A, double nu, double V, int n, double max)
     double rootLeft = findOneRootLogPostSigmaNorm(sigma0_left,
                           z, A, nu, V, n, 0, sigma_star);
     int foundRootLeft = (rootLeft > 0);
+    
     if (foundRootLeft) {
-    int rootLessThanMax;
-    double sigma0_right;
-    if (R_finite(max)) {
-        double maxSq = max * max;
-        double fmax = -n*log(max) - V/(2*maxSq) - nuPlusOne/2 * log(maxSq + nuASq);
-        rootLessThanMax = (z > fmax);
+    
+        int rootLessThanMax;
+        double sigma0_right;
+    
+        if (R_finite(max)) {
+            double maxSq = max * max;
+            double fmax = -n*log(max) - V/(2*maxSq) - nuPlusOne/2 * log(maxSq + nuASq);
+            rootLessThanMax = (z > fmax);
+            if (rootLessThanMax) {
+                sigma0_right = 1.5*sigma_star;
+                if (sigma0_right > max) {
+                    sigma0_right = 0.5*sigma_star + 0.5*max;
+                }
+            }
+        }
+        else {
+            rootLessThanMax = 1;
+            sigma0_right = 1.5*sigma_star;
+        }
+        double limitRight;
+        int foundLimitRight;
+ 
         if (rootLessThanMax) {
-        sigma0_right = 1.5*sigma_star;
-        if (sigma0_right > max)
-            sigma0_right = 0.5*sigma_star + 0.5*max;
+            double rootRight = findOneRootLogPostSigmaNorm(sigma0_right,
+                                   z, A, nu, V, n, sigma_star, max);
+            int foundRootRight = (rootRight > 0);
+    
+            if (foundRootRight) {
+                limitRight = rootRight;
+                foundLimitRight = 1;
+            }
+            else {
+                foundLimitRight = 0;
+            }
+        }
+        else {
+            limitRight = max;
+            foundLimitRight = 1;
+        }
+ 
+        if (foundLimitRight) {
+            ans = runif(rootLeft, limitRight);
         }
     }
     else {
-        rootLessThanMax = 1;
-        sigma0_right = 1.5*sigma_star;
-    }
-    double limitRight;
-    int foundLimitRight;
-    if (rootLessThanMax) {
-        double rootRight = findOneRootLogPostSigmaNorm(sigma0_right,
-                               z, A, nu, V, n, sigma_star, max);
-        int foundRootRight = (rootRight > 0);
-        if (foundRootRight) {
-        limitRight = rootRight;
-        foundLimitRight = 1;
+        double near_sigma_star = (rootLeft > -2);
+        if (near_sigma_star) {
+            ans = sigma_star;
         }
-        else
-        foundLimitRight = 0;
-    }
-    else {
-        limitRight = max;
-        foundLimitRight = 1;
-    }
-    if (foundLimitRight)
-        ans = runif(rootLeft, limitRight);
-    }
-    else {
-    double near_sigma_star = (rootLeft > -2);
-    if (near_sigma_star)
-        ans = sigma_star;
     }
     return ans;
 }
 
 double 
-updateSDRobust(double sigma, double A, double nuBeta, double nuTau, double V, int n, double max)
+updateSDRobust(double sigma, double A, double nuBeta, double nuTau,
+                            double V, int n, double max)
 {
     double ans = -99;       /* default answer */
 
@@ -108,42 +120,50 @@ updateSDRobust(double sigma, double A, double nuBeta, double nuTau, double V, in
     double rootLeft = findOneRootLogPostSigmaRobust(sigma0_left,
                             z, A, nuBeta, nuTau, V, n, 0, sigma_star);
     int foundRootLeft = (rootLeft > 0);
+
     if (foundRootLeft) {
-    int rootLessThanMax;
-    double sigma0_right;
-    if (R_finite(max)) {
-        double maxSq = max * max;
-        double fmax = n_nuBeta*log(max) - nuBeta/2 *maxSq* V - nuTauPlusOne/2 * log(maxSq + nuTauASq);
-        rootLessThanMax = (z > fmax);
+        int rootLessThanMax;
+        double sigma0_right;
+
+        if (R_finite(max)) {
+            double maxSq = max * max;
+            double fmax = n_nuBeta*log(max) - nuBeta/2 *maxSq* V 
+                            - nuTauPlusOne/2 * log(maxSq + nuTauASq);
+            rootLessThanMax = (z > fmax);
+
+            if (rootLessThanMax) {
+                sigma0_right = 1.5 * sigma_star;
+                if (sigma0_right > max) {
+                    sigma0_right = 0.5*sigma_star + 0.5*max;
+                }
+            }
+        }
+        else {
+            rootLessThanMax = 1;
+            sigma0_right = 1.5*sigma_star;
+        }
+        double limitRight;
+        int foundLimitRight;
+
         if (rootLessThanMax) {
-        sigma0_right = 1.5 * sigma_star;
-        if (sigma0_right > max)
-            sigma0_right = 0.5*sigma_star + 0.5*max;
+            double rootRight = findOneRootLogPostSigmaRobust(sigma0_right,
+                            z, A, nuBeta, nuTau, V, n, sigma_star, max);
+            int foundRootRight = (rootRight > 0);
+            if (foundRootRight) {
+                limitRight = rootRight;
+                foundLimitRight = 1;
+            }
+            else {
+                foundLimitRight = 0;
+            }
         }
-    }
-    else {
-        rootLessThanMax = 1;
-        sigma0_right = 1.5*sigma_star;
-    }
-    double limitRight;
-    int foundLimitRight;
-    if (rootLessThanMax) {
-        double rootRight = findOneRootLogPostSigmaRobust(sigma0_right,
-                                 z, A, nuBeta, nuTau, V, n, sigma_star, max);
-        int foundRootRight = (rootRight > 0);
-        if (foundRootRight) {
-        limitRight = rootRight;
-        foundLimitRight = 1;
+        else {
+            limitRight = max;
+            foundLimitRight = 1;
         }
-        else
-        foundLimitRight = 0;
-    }
-    else {
-        limitRight = max;
-        foundLimitRight = 1;
-    }
-    if (foundLimitRight)
-        ans = runif(rootLeft, limitRight);
+        if (foundLimitRight) {
+            ans = runif(rootLeft, limitRight);
+        }
     }
     else {
         double near_sigma_star = (rootLeft > -2);
@@ -884,6 +904,71 @@ updateEta(SEXP prior_R, double* beta, int J)
         PrintValue(mkString("end updateEta"));
     #endif
 }
+
+void
+updateComponentWeightMix(SEXP prior_R)
+{
+    double *compWeight = REAL(GET_SLOT(prior_R, componentWeightMix_sym));
+    double *latentCompWeight = REAL(GET_SLOT(prior_R, latentComponentWeightMix_sym));
+    double *levelCompWeight = REAL(GET_SLOT(prior_R, levelComponentWeightMix_sym));
+    int *indexClass = INTEGER(GET_SLOT(prior_R, indexClassMix_sym));
+    int indexClassMax = *INTEGER(GET_SLOT(prior_R, indexClassMaxMix_sym));
+    double omega = *REAL(GET_SLOT(prior_R, omegaComponentWeightMix_sym));
+    int iAlong_r = *INTEGER(GET_SLOT(prior_R, iAlong_sym));  
+    int iAlong_c = iAlong_r -1;
+    SEXP dimBeta_R = GET_SLOT(prior_R, dimBeta_sym);  
+    int *dimBeta = INTEGER(dimBeta_R);  
+    int  nDimBeta = LENGTH(dimBeta_R);  
+    SEXP iteratorsDims_R = GET_SLOT(prior_R, iteratorsDimsMix_sym);
+    SEXP iteratorBeta_R = VECTOR_ELT(iteratorsDims_R, iAlong_c);
+    int nAlong = dimBeta[iAlong_c];
+    
+    int nBeta = 1;
+    for (int i = 0; i < nDimBeta; ++i) {
+        nBeta *= dimBeta[i];
+    }
+    
+    double invOmegaSq = 1/(omega * omega);
+    
+    resetS(iteratorBeta_R); 
+    
+    SEXP indicesBeta_R = GET_SLOT(iteratorBeta_R, indices_sym);
+    int *indicesBeta = INTEGER(indicesBeta_R);
+    int nIndicesBeta = LENGTH(indicesBeta_R);
+    
+    for (int iAlong = 0; iAlong < nAlong; ++iAlong) {
+        
+        for (int iClass = 0; iClass < indexClassMax; ++iClass) {
+            
+            int iW = iClass * nAlong + iAlong;
+            int sumIsComp = 0;
+            double sumLatentCompWeight = 0;
+        
+            for (int iB = 0; iB < nIndicesBeta; ++iB) {
+                int iBeta = indicesBeta[iB] - 1;
+                int class = indexClass[iBeta]-1;
+                int isComp = (iClass <= class);
+                
+                if (isComp) {
+                    ++sumIsComp;
+                    int iZ = iClass * nBeta + iBeta;
+                    sumLatentCompWeight += latentCompWeight[iZ];
+                }
+                
+            }
+            
+            double level = levelCompWeight[iW];
+            double var = 1 / (invOmegaSq + sumIsComp);
+            double mean = var * (level * invOmegaSq + sumLatentCompWeight);
+            double sd = sqrt(var);
+            compWeight[iW] = rnorm(mean, sd);             
+        }
+        
+        advanceS(iteratorBeta_R);
+    }
+                
+}
+
 
 void
 updateBetasAndPriorsBetas(SEXP object_R)

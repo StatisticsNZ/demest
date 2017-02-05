@@ -234,7 +234,17 @@ SEXP
   CSeason_sym,
   aSeason_sym,
   RSeason_sym,
-  JOld_sym;
+  JOld_sym,
+  /* new priors Jan 2017 */
+  componentWeightMix_sym,
+  latentComponentWeightMix_sym,
+  levelComponentWeightMix_sym,
+  indexClassMix_sym,
+  indexClassMaxMix_sym,
+  omegaComponentWeightMix_sym,
+  iteratorsDimsMix_sym,
+  iAlong_sym,
+  dimBeta_sym;
   
   
 /* Priors-methods */
@@ -355,6 +365,8 @@ SEXP makeVBar_R(SEXP object, SEXP iBeta);
 double logPostPhiMix(double phi, double *level, double meanLevel, 
                 int nAlong, int indexClassMax_r, double omega);
 double logPostPhiFirstOrderMix(double phi, double *level, double meanLevel, 
+                int nAlong, int indexClassMax_r, double omega);
+double logPostPhiSecondOrderMix(double phi, double *level, double meanLevel, 
                 int nAlong, int indexClassMax_r, double omega);
 double makeLifeExpBirth(double *mx, double *nx, double *ax, 
                         int iAge0_r, int nAge);
@@ -506,6 +518,7 @@ double updateSDRobust(double sigma, double A, double nuBeta,
               double nuTau, double V, int n, double max);
 
 void updateEta(SEXP prior_R, double* beta, int J);
+void updateComponentWeightMix(SEXP prior_R);
 
 void
 updateAlphaDLMNoTrend(SEXP prior_R, double *betaTilde, int J);
