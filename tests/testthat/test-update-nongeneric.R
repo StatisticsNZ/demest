@@ -1102,154 +1102,105 @@ test_that("R and C versions of updateGWithTrend give same answer", {
     expect_identical(ans.R, ans.C)
 })
 
-## test_that("updateLevelComponentWeightMix gives valid answer", {
-##     ## updateLevelComponentWeightMix <- demest:::updateLevelComponentWeightMix
-##     set.seed(100)
-##     initialPrior <- demest:::initialPrior
-##     beta <- rnorm(200)
-##     metadata <- new("MetaData",
-##                     nms = c("reg", "time"),
-##                     dimtypes = c("state", "time"),
-##                     DimScales = list(new("Categories", dimvalues = letters[1:20]),
-##                                      new("Points", dimvalues = 2001:2010)))
-##     spec <- Mix()
-##     prior <- initialPrior(spec,
-##                           beta = beta,
-##                           metadata = metadata,
-##                           sY = NULL,
-##                           multScale = 1)
-##     set.seed(2)
-##     ans.obtained <- updateLevelComponentWeightMix(prior)
-##     kalman_filter <- function(mu,phi,Q,R,X0,P0,Z,useC=FALSE)
-##     {
-##         ## 'mu'
-##         stopifnot(identical(length(mu), 1L))
-##         stopifnot(is.double(mu))
-##         ## 'phi'
-##         stopifnot(identical(length(phi), 1L))
-##         stopifnot(is.double(phi))
-##         stopifnot(abs(phi) <= 1)
-##         ## 'Q'
-##         stopifnot(identical(length(Q), 1L))
-##         stopifnot(is.double(Q))
-##         ## 'R'
-##         stopifnot(identical(length(R), 1L))
-##         stopifnot(is.double(R))
-##         ## 'X0'
-##         stopifnot(identical(length(X0), 1L))
-##         stopifnot(is.double(X0))
-##         ## 'P0'
-##         stopifnot(identical(length(P0), 1L))
-##         stopifnot(is.double(P0))
-##         stopifnot(P0>0)
-##         ## 'Z'
-##         stopifnot(is.vector(Z))
-##         stopifnot(sum(is.na(Z))<1)
-##         if (useC) {
-##             .Call(kalman_filter_R,mu,phi,Q,R,X0,P0,Z)
-##         }
-##         else {
-##             X <- c(X0)
-##             P <- c(P0)
-##             X[1] <- X0
-##             N <- length(Z)
-##             for (i in 1:N) 
-##             {
-##                                         # predict error matrix
-##                 Pp <- phi^2*P[i]+Q
-##                                         # Kalman Gain
-##                 K <- Pp/(Pp+R)
-##                                         # predict State
-##                 Xp <- mu+phi*X[i]
-##                                         # state correction
-##                 X[i+1] <- Xp+K*(Z[i]-Xp)
-##                                         # filter error
-##                 P[i+1] <- (1-K)^2*Pp+K^2*R            
-##             }
-##             res <- cbind(X[2:(N+1)],P[2:(N+1)])
-##             return(res)
-##         }
-##     }
-##     sample_alpha_using_forback <- function(Kstar,mu,phi,sigma2EPS,sigma2ETA,W,alpha,Lw,useC=FALSE)
-##     {
-##         ## 'mu'
-##         stopifnot(identical(length(mu), 1L))
-##         stopifnot(is.double(mu))
-##         ## 'phi'
-##         stopifnot(identical(length(phi), 1L))
-##         stopifnot(is.double(phi))
-##         stopifnot(abs(phi) < 1)
-##         ## 'Kstar'
-##         stopifnot(identical(length(Kstar), 1L))
-##         stopifnot(is.integer(Kstar))
-##         stopifnot(Kstar > 0)
-##         ## 'sigma2EPS'
-##         stopifnot(identical(length(sigma2EPS), 1L))
-##         stopifnot(is.double(sigma2EPS))
-##         stopifnot(sigma2EPS > 0)
-##         ## 'sigma2ETA'
-##         stopifnot(identical(length(sigma2ETA), 1L))
-##         stopifnot(is.double(sigma2ETA))
-##         stopifnot(sigma2ETA > 0)
-##         ## 'W'
-##         stopifnot(identical(dim(W)[1], Lw))
-##         stopifnot(is.matrix(W))
-##         stopifnot(sum(is.na(W))<1)
-##         ## 'alpha'
-##         stopifnot(identical(dim(alpha)[1], Lw))
-##         stopifnot(is.matrix(alpha))
-##         stopifnot(sum(is.na(alpha))<1)
-##         if (useC) {
-##             .Call(sample_alpha_using_forback_R,Kstar,mu,phi,sigma2EPS,sigma2ETA,W,alpha,Lw)
-##         }
-##         else {
-##             tutaK <- dim(W)[2]
-##             for(h in 1:Kstar)
-##             {
-##                 ##use Kalman filter first
-##                 res <- kalman_filter(mu,phi,sigma2EPS,sigma2ETA,0,1,W[,h])
-##                 x <- res[,1]
-##                 P <- res[,2]
-##                 ##use forward filtering backward sampling algorithm
-##                 alpha[Lw,h] <- rnorm(1,x[Lw],sd=sqrt(P[Lw]))
-##                 for(t in (Lw-1):1)
-##                 {
-##                     theV <- 1/(phi^2/sigma2ETA+1/P[t])
-##                     theE <- theV*(phi*(alpha[t+1,h]-mu)/sigma2ETA+x[t]/P[t])
-##                     alpha[t,h] <- rnorm(1,mean=theE,sd=sqrt(theV))
-##                 }
-##             }
-##             if(tutaK>Kstar) #sampling from the priors
-##             {
-##                 num <- seq(Kstar+1,tutaK)
-##                 alpha[1,num] <- rnorm(length(num),mean=mu/(1-phi),sd=sqrt(sigma2ETA/(1-phi^2)))
-##                 alpha[2:Lw,num] <- rnorm(length(num)*(Lw-1),mu+phi*alpha[1:(Lw-1),num],sd=sqrt(sigma2ETA))
-##             }
-##             return(alpha)
-##         }
-##     }
-##     set.seed(2)
-##     alpha <- sample_alpha_using_forback(Kstar = prior@indexClassMaxMix@.Data,
-##                                         mu = prior@priorMeanLevelComponentWeightMix@.Data,
-##                                         phi = prior@phiMix,
-##                                         sigma2EPS = prior@omegaComponentWeightMix@.Data^2,
-##                                         sigma2ETA = prior@omegaLevelComponentWeightMix@.Data^2,
-##                                         W = matrix(prior@componentWeightMix@.Data,
-##                                                    ncol = prior@indexClassMaxMix@.Data),
-##                                         alpha = matrix(prior@levelComponentWeightMix@.Data,
-##                                                        ncol = prior@indexClassMaxMix@.Data),
-##                                         Lw = prior@indexClassMaxMix@.Data,
-##                                         useC=FALSE)
-##     ans.expected <- prior
-##     ans.expected@levelComponentWeightMix@.Data <- as.double(alpha)
-##     if (test.identity)
-##         expect_identical(ans.obtained, ans.expected)
-##     else
-##         expect_equal(ans.obtained, ans.expected)
-## })
+test_that("updateLevelComponentWeightMix gives valid answer", {
+    updateLevelComponentWeightMix <- demest:::updateLevelComponentWeightMix
+    set.seed(100)
+    initialPrior <- demest:::initialPrior
+    beta <- rnorm(200)
+    metadata <- new("MetaData",
+                    nms = c("reg", "time"),
+                    dimtypes = c("state", "time"),
+                    DimScales = list(new("Categories", dimvalues = letters[1:20]),
+                                     new("Points", dimvalues = 2001:2010)))
+    spec <- Mix()
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          multScale = 1)
+    set.seed(2)
+    ans.obtained <- updateLevelComponentWeightMix(prior)
+    ffbs <- function(beta, alpha, mu, m, C, phi, tau, omega) {
+        K <- length(alpha) - 1L
+        a <- numeric(K)
+        R <- numeric(K)
+        for (k in seq_len(K)) {
+            a[k] <- mu + phi * m[[k]]
+            R[k] <- phi^2 * C[[k]] + omega^2
+            q <- R[k] + tau^2
+            e <- beta[k] - a[k]
+            A <- R[k] / q
+            m[[k+1]] <- a[k] + A * e
+            C[[k+1]] <- R[k] - A^2 * q
+        }
+        alpha[K+1] <- rnorm(n = 1, mean = m[[K+1]], sd = sqrt(C[[K+1]]))
+        for (k in seq(from = K, to = 1)) {
+            B <- C[[k]] * phi / R[k]
+            mean <- m[[k]] + B * (alpha[k+1] - a[k])
+            var <- C[[k]] - B^2 * R[k]
+            alpha[k] <- rnorm(n = 1, mean = mean, sd = sqrt(var))
+        }
+        alpha
+    }
+    set.seed(2)
+    mu <- prior@meanLevelComponentWeightMix@.Data
+    phi <- prior@phiMix
+    tau <- prior@omegaComponentWeightMix@.Data
+    omega <- prior@omegaLevelComponentWeightMix@.Data
+    beta.all <- matrix(prior@componentWeightMix@.Data,
+                       ncol = prior@indexClassMaxMix@.Data)[-1,] # not using first row
+    alpha.all <- matrix(prior@levelComponentWeightMix@.Data,
+                        ncol = prior@indexClassMaxMix@.Data)
+    for (j in seq_len(prior@indexClassMaxMix@.Data)) {
+        m <- numeric(nrow(alpha.all))
+        m[1] <- mu / (1 - phi)
+        C <- numeric(nrow(alpha.all))
+        C[1] <- omega^2 / (1 - phi^2)
+        alpha.all[, j] <- ffbs(beta = beta.all[,j],
+                               alpha = alpha.all[,j],
+                               mu = mu,
+                               m = m,
+                               C = C,
+                               phi = phi,
+                               tau = tau,
+                               omega = omega)
+    }
+    ans.expected <- prior
+    ans.expected@levelComponentWeightMix@.Data <- as.double(alpha.all)
+    if (test.identity)
+        expect_identical(ans.obtained, ans.expected)
+    else
+        expect_equal(ans.obtained, ans.expected)
+})
 
-
-
+test_that("R and C versions of updateLevelComponentWeightMix give same answer", {
+    updateLevelComponentWeightMix <- demest:::updateLevelComponentWeightMix
+    set.seed(100)
+    initialPrior <- demest:::initialPrior
+    metadata <- new("MetaData",
+                    nms = c("reg", "time"),
+                    dimtypes = c("state", "time"),
+                    DimScales = list(new("Categories", dimvalues = letters[1:20]),
+                                     new("Points", dimvalues = 2001:2010)))
+    spec <- Mix()
+    for (seed in seq_len(n.test)) {
+        set.seed(seed + 1)
+        beta <- rnorm(200)
+        prior <- initialPrior(spec,
+                              beta = beta,
+                              metadata = metadata,
+                              sY = NULL,
+                              multScale = 1)
+        set.seed(seed)
+        ans.R <- updateLevelComponentWeightMix(prior, useC = FALSE)
+        set.seed(seed)
+        ans.C <- updateLevelComponentWeightMix(prior, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
 
 test_that("updateOmegaAlpha works", {
     updateOmegaAlpha <- demest:::updateOmegaAlpha
