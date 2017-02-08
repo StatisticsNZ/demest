@@ -4373,7 +4373,7 @@ logPostPhiFirstOrderMix <- function(phi, level, meanLevel, nAlong, indexClassMax
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 logPostPhiSecondOrderMix <- function(phi, level, meanLevel, nAlong, indexClassMaxMix, omega,
                                      useC = FALSE) {

@@ -1181,6 +1181,36 @@ logPostPhiFirstOrderMix(double phi, double *level, double meanLevel, int nAlong,
     return ans;
 }
 
+double
+logPostPhiSecondOrderMix(double phi, double *level, double meanLevel, int nAlong, 
+                int indexClassMaxMix_r, double omega)
+{
+    double ans = DEFAULT_LOGPOSTPHI;
+    
+    if (fabs(phi) < 1) {
+        double oneMinusPhi = 1 - phi;
+        double ansFirst = -2 * indexClassMaxMix_r * meanLevel * meanLevel 
+                    / (oneMinusPhi * oneMinusPhi * oneMinusPhi);
+        double ansRest = 0;
+        if (nAlong > 2) {
+        
+            for (int iClass = 0; iClass < indexClassMaxMix_r; ++ iClass) {
+                
+                for (int iAlong = 1; iAlong < nAlong-1; ++iAlong) {
+                
+                    int iWt = iClass * nAlong + iAlong;
+                    double levelWt = level[iWt];
+                    ansRest -= (levelWt * levelWt);
+                }
+            }
+        }
+        ans = (ansFirst + ansRest) / (omega*omega);
+       
+    } /* else ans stays as default */
+
+    return ans;
+}
+
 
 double
 makeLifeExpBirth(double *mx, double *nx, double *ax, int iAge0_r, int nAge)

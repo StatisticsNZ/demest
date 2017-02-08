@@ -876,7 +876,7 @@ test_that("R and C versions of updateBetasAndPriorsBetas give same answer with B
     initialModel <- demest:::initialModel
     updateBetasAndPriorsBetas <- demest:::updateBetasAndPriorsBetas
     for (seed in seq_len(n.test)) {
-		set.seed(seed)
+        set.seed(seed)
         value <- Values(array(rbeta(n = 3, shape1 = 20, shape2 = 5), dim = 3, dimnames = list(age = 0:2)))
         aggregate <- AgCertain(value = value)
         theta <- rbeta(n = 20, shape1 = 20, shape2 = 5)
@@ -888,14 +888,14 @@ test_that("R and C versions of updateBetasAndPriorsBetas give same answer with B
         model <- initialModel(spec, y = y, exposure = exposure)
         logit <- function(x) log(x/(1-x))
         set.seed(seed)
-		ans.R <- updateBetasAndPriorsBetas(model, g = logit, useC = FALSE)
-		set.seed(seed)
-		ans.C <- updateBetasAndPriorsBetas(model, g = logit, useC = TRUE)
-		if (test.identity)
-			expect_identical(ans.R, ans.C)
-		else
-			expect_equal(ans.R, ans.C)
-	}
+        ans.R <- updateBetasAndPriorsBetas(model, g = logit, useC = FALSE)
+        set.seed(seed)
+        ans.C <- updateBetasAndPriorsBetas(model, g = logit, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
 })
 
 test_that("updateComponentWeightMix gives valid answer", {
@@ -954,29 +954,31 @@ test_that("updateComponentWeightMix gives valid answer", {
 
 test_that("R and C versions of updateComponentWeightMix give same answer", {
     updateComponentWeightMix <- demest:::updateComponentWeightMix
-    set.seed(100)
-    initialPrior <- demest:::initialPrior
-    beta <- rnorm(200)
-    metadata <- new("MetaData",
-                    nms = c("reg", "time", "age"),
-                    dimtypes = c("state", "time", "age"),
-                    DimScales = list(new("Categories", dimvalues = c("a", "b")),
-                                     new("Points", dimvalues = 2001:2010),
-                                     new("Intervals", dimvalues = as.numeric(0:10))))
-    spec <- Mix()
-    prior <- initialPrior(spec,
-                          beta = beta,
-                          metadata = metadata,
-                          sY = NULL,
-                          multScale = 1)
-    set.seed(1)
-    ans.R <- updateComponentWeightMix(prior, useC = FALSE)
-    set.seed(1)
-    ans.C <- updateComponentWeightMix(prior, useC = TRUE)
-    if (test.identity)
-        expect_identical(ans.obtained, ans.expected)
-    else
-        expect_equal(ans.obtained, ans.expected)
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        initialPrior <- demest:::initialPrior
+        beta <- rnorm(200)
+        metadata <- new("MetaData",
+                        nms = c("reg", "time", "age"),
+                        dimtypes = c("state", "time", "age"),
+                        DimScales = list(new("Categories", dimvalues = c("a", "b")),
+                                         new("Points", dimvalues = 2001:2010),
+                                         new("Intervals", dimvalues = as.numeric(0:10))))
+        spec <- Mix()
+        prior <- initialPrior(spec,
+                              beta = beta,
+                              metadata = metadata,
+                              sY = NULL,
+                              multScale = 1)
+        set.seed(seed+1)
+        ans.R <- updateComponentWeightMix(prior, useC = FALSE)
+        set.seed(seed+1)
+        ans.C <- updateComponentWeightMix(prior, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
 })
 
 test_that("updateEta gives valid answer", {

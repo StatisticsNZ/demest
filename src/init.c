@@ -457,6 +457,22 @@ SEXP name##_R(SEXP prior_R, SEXP vbar_R, SEXP n_R, SEXP sigma_R) {    \
     return ScalarInteger(ans);         \
     }
 
+/* Wrapper for logPostPhiMix functions*/
+#define LOGPOSTPHI_WRAPPER(name)      \
+    SEXP name##_R(SEXP phi_R, SEXP level_R, SEXP meanLevel_R,      \
+    SEXP nAlong_R, SEXP indexClassMax_R, SEXP omega_R) {      \
+    double phi = *REAL(phi_R);      \
+    double *level = REAL(level_R);      \
+    double meanLevel = *REAL(meanLevel_R);      \
+    int nAlong = *INTEGER(nAlong_R);      \
+    int indexClassMax_r = *INTEGER(indexClassMax_R);      \
+    double omega = *REAL(omega_R);      \
+    double ans = name(phi, level, meanLevel, nAlong, indexClassMax_r, omega);      \
+    return ScalarReal(ans);      \
+}
+
+
+
 /* one-off wrapper for makeMu */
 SEXP makeMu_R(SEXP n_R, SEXP betas_R, SEXP iterator_R)
 {
@@ -480,41 +496,6 @@ SEXP updateTauRobust_R(SEXP prior_R)
     return ans_R;             
 }
 
-/* one off wrapper for logPostPhiMix */
-SEXP logPostPhiMix_R(SEXP phi_R, SEXP level_R, SEXP meanLevel_R, 
-                        SEXP nAlong_R, SEXP indexClassMax_R, SEXP omega_R)
-                
-{
-    double phi = *REAL(phi_R);
-    double *level = REAL(level_R);
-    double meanLevel = *REAL(meanLevel_R);
-    int nAlong = *INTEGER(nAlong_R);
-    int indexClassMax_r = *INTEGER(indexClassMax_R);
-    double omega = *REAL(omega_R);
-    
-    double ans = logPostPhiMix(phi, level, meanLevel, nAlong, 
-                                indexClassMax_r, omega);
-    
-    return ScalarReal(ans);
-}
-
-/* one off wrapper for logPostPhiFirstOrderMix */
-SEXP logPostPhiFirstOrderMix_R(SEXP phi_R, SEXP level_R, SEXP meanLevel_R, 
-                        SEXP nAlong_R, SEXP indexClassMax_R, SEXP omega_R)
-                
-{
-    double phi = *REAL(phi_R);
-    double *level = REAL(level_R);
-    double meanLevel = *REAL(meanLevel_R);
-    int nAlong = *INTEGER(nAlong_R);
-    int indexClassMax_r = *INTEGER(indexClassMax_R);
-    double omega = *REAL(omega_R);
-    
-    double ans = logPostPhiFirstOrderMix(phi, level, meanLevel, nAlong, 
-                                indexClassMax_r, omega);
-    
-    return ScalarReal(ans);
-}
 
 /* one off wrapper for makeLifeExpBirth */
 SEXP makeLifeExpBirth_R(SEXP mx_R, SEXP nx_R, SEXP ax_R, 
@@ -671,7 +652,10 @@ SEXP safeLogProp_Poisson_R(SEXP log_th_new_R, SEXP log_th_other_new_R,
     return ScalarReal(ans);
 }
 
-
+/* wrapper logPostPhi functions */
+LOGPOSTPHI_WRAPPER(logPostPhiMix);
+LOGPOSTPHI_WRAPPER(logPostPhiFirstOrderMix);
+LOGPOSTPHI_WRAPPER(logPostPhiSecondOrderMix);
 
 BETAHAT_NOPRNG_WRAPPER_R(betaHat);
 BETAHAT_NOPRNG_WRAPPER_R(betaHatAlphaDLM);
@@ -1065,6 +1049,7 @@ SEXP updateSDRobust_R(SEXP sigma_R,
 }
 
 UPDATEPRIORWITHBETA_WRAPPER_R(updateEta);
+UPDATEOBJECT_WRAPPER_R(updateComponentWeightMix);
 
 UPDATEPRIORWITHBETA_WRAPPER_R(updateAlphaDLMNoTrend);
 UPDATEPRIORWITHBETA_WRAPPER_R(updateAlphaDeltaDLMWithTrend);
@@ -1294,6 +1279,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(makeVBar_R, 2),
   CALLDEF(logPostPhiMix_R, 6),
   CALLDEF(logPostPhiFirstOrderMix_R, 6),
+  CALLDEF(logPostPhiSecondOrderMix_R, 6),
   CALLDEF(makeLifeExpBirth_R, 5),
   CALLDEF(safeLogProp_Binomial_R, 7),
   CALLDEF(safeLogProp_Poisson_R, 7),
@@ -1347,6 +1333,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateSDRobust_R, 7),
   
   CALLDEF(updateEta_R, 2),
+  CALLDEF(updateComponentWeightMix_R, 1),
   
   CALLDEF(updateAlphaDLMNoTrend_R, 2), 
   CALLDEF(updateAlphaDeltaDLMWithTrend_R, 2), 
@@ -1761,6 +1748,15 @@ R_init_demest(DllInfo *info)
   ADD_SYM(aSeason);
   ADD_SYM(RSeason);
   ADD_SYM(JOld);
+  ADD_SYM(componentWeightMix);
+  ADD_SYM(latentComponentWeightMix);
+  ADD_SYM(levelComponentWeightMix);
+  ADD_SYM(indexClassMix);
+  ADD_SYM(indexClassMaxMix);
+  ADD_SYM(omegaComponentWeightMix);
+  ADD_SYM(iteratorsDimsMix);
+  ADD_SYM(iAlong);
+  ADD_SYM(dimBeta);
   
 #undef ADD_SYM
 

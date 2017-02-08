@@ -497,7 +497,7 @@ updateBetasAndPriorsBetas <- function(object, g, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 ## 'W' in notes
 updateComponentWeightMix <- function(prior, useC = FALSE) {
