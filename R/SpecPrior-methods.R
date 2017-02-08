@@ -1,8 +1,5 @@
 
 
-## ## fakeBeta ###################################################################
-
-
 ## ## SpecUnknownTau
 
 ## ## HAS_TESTS
@@ -28,20 +25,6 @@
 
 
 ## ## Exchangeable Normal
-
-## ## HAS_TESTS
-## setMethod("fakeBeta",
-##           signature(object = "SpecExchNormZeroKnown",
-##                     metadata = "MetaData"),
-##           function(object, metadata) {
-##               tau <- object@tau
-##               dim <- dim(metadata)
-##               n <- prod(dim)
-##               ans <- stats::rnorm(n = n, mean = 0, sd = tau)
-##               ans <- array(ans, dim = dim)
-##               ans <- sweepAllMargins(ans)
-##               as.double(ans)
-##           })
 
 ## ## HAS_TESTS
 ## ## Include to avoid ambiguous inheritance from UnknownTau and Covariates

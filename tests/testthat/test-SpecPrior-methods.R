@@ -6,62 +6,6 @@ test.identity <- FALSE
 test.extended <- TRUE
 
 
-## ## fakeBeta ###########################################################################
-
-## test_that("fakeBeta works with SpecUnknownTau", {
-##     fakeBeta <- demest:::fakeBeta
-##     x <- Exch()
-##     metadata <- new("MetaData",
-##                     nms = "region",
-##                     dimtypes = "state",
-##                     DimScales = list(new("Categories", dimvalues = c("a", "b", "c"))))
-##     expect_error(fakeBeta(object = x, metadata = metadata),
-##                  "priors must have known variance when used in function 'fakeData'")
-## })
-
-
-## test_that("fakeBeta works with SpecUnknownTau", {
-##     fakeBeta <- demest:::fakeBeta
-##     d <- data.frame(region = c("a", "b", "c"), income = rnorm(3))
-##     x <- Exch(mean ~ income, data = d, sd = 1)
-##     metadata <- new("MetaData",
-##                     nms = "region",
-##                     dimtypes = "state",
-##                     DimScales = list(new("Categories", dimvalues = c("a", "b", "c"))))
-##     expect_error(fakeBeta(object = x, metadata = metadata),
-##                  "priors must not have covariates when used in function 'fakeData'")
-## })
-
-## test_that("fakeBeta works with SpecExchNormalZeroKnown", {
-##     fakeBeta <- demest:::fakeBeta
-##     x <- Exch(sd = 1.5)
-##     ## one dimension
-##     metadata <- new("MetaData",
-##                     nms = "region",
-##                     dimtypes = "state",
-##                     DimScales = list(new("Categories", dimvalues = c("a", "b", "c"))))
-##     set.seed(1)
-##     ans.obtained <- fakeBeta(object = x, metadata = metadata)
-##     set.seed(1)
-##     ans.expected <- rnorm(3, sd = 1.5)
-##     ans.expected <- ans.expected - mean(ans.expected)
-##     expect_identical(ans.obtained, ans.expected)
-##     ## two dimensions
-##     metadata <- new("MetaData",
-##                     nms = c("region", "age"),
-##                     dimtypes = c("state", "age"),
-##                     DimScales = list(new("Categories", dimvalues = c("a", "b", "c")),
-##                                      new("Intervals", dimvalues = 0:5)))
-##     set.seed(1)
-##     ans.obtained <- fakeBeta(object = x, metadata = metadata)
-##     set.seed(1)
-##     ans.expected <- array(rnorm(15, sd = 1.5), dim = c(3, 5))
-##     ans.expected <- ans.expected - mean(ans.expected)
-##     ans.expected <- ans.expected - rowMeans(ans.expected)
-##     ans.expected <- ans.expected - rep(colMeans(ans.expected), each = 3)
-##     ans.expected <- as.double(ans.expected)
-##     expect_equal(ans.obtained, ans.expected)
-## })
 
 ## test_that("fakeBeta works with SpecUnknownTau", {
 ##     fakeBeta <- demest:::fakeBeta

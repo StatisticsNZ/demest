@@ -1,4 +1,43 @@
-              
+
+
+## fakeBeta ###################################################################
+
+## HAS_TESTS
+setMethod("fakeBeta",
+          signature(object = "ExchFixed",
+                    metadata = "MetaData"),
+          function(object, metadata) {
+              J <- object@J@.Data
+              tau <- object@tau@.Data
+              dim <- dim(metadata)
+              ans <- stats::rnorm(n = J,
+                                  mean = 0,
+                                  sd = tau)
+              ans <- array(ans,
+                           dim = dim)
+              ans <- sweepAllMargins(ans)
+              as.double(ans)
+          })
+
+## HAS_TESTS
+setMethod("fakeBeta",
+          signature(object = "ExchNormZero",
+                    metadata = "MetaData"),
+          function(object, metadata) {
+              J <- object@J@.Data
+              tau <- object@tau@.Data
+              dim <- dim(metadata)
+              ans <- stats::rnorm(n = J,
+                                  mean = 0,
+                                  sd = tau)
+              ans <- array(ans,
+                           dim = dim)
+              ans <- sweepAllMargins(ans)
+              as.double(ans)
+          })
+
+
+
 ## makeOutputPrior ###################################################################
 
 ## ExchFixed

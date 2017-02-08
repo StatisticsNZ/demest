@@ -1,7 +1,4 @@
 
-setGeneric("fakeBeta",
-           function(object, metadata)
-           standardGeneric("fakeBeta"))
 
 setGeneric("fakeDLMErrors",
            function(spec, J)
