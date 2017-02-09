@@ -4202,7 +4202,6 @@ logPostPhiMix <- function(phi, level, meanLevel, nAlong, indexClassMaxMix, omega
     stopifnot(identical(length(phi), 1L))
     stopifnot(is.double(phi))
     stopifnot(!is.na(phi))
-    stopifnot(abs(phi) <= 1)
     ## 'level'
     stopifnot(is.double(level))
     stopifnot(!any(is.na(level)))
@@ -4266,7 +4265,6 @@ logPostPhiFirstOrderMix <- function(phi, level, meanLevel, nAlong, indexClassMax
     stopifnot(identical(length(phi), 1L))
     stopifnot(is.double(phi))
     stopifnot(!is.na(phi))
-    stopifnot(abs(phi) <= 1)
     ## 'level'
     stopifnot(is.double(level))
     stopifnot(!any(is.na(level)))
@@ -4329,7 +4327,6 @@ logPostPhiSecondOrderMix <- function(phi, level, meanLevel, nAlong, indexClassMa
     stopifnot(identical(length(phi), 1L))
     stopifnot(is.double(phi))
     stopifnot(!is.na(phi))
-    stopifnot(abs(phi) <= 1)
     ## 'level'
     stopifnot(is.double(level))
     stopifnot(!any(is.na(level)))
@@ -4477,7 +4474,8 @@ makeVBar <- function(object, iBeta, g, useC = FALSE) {
 }
 
 
-modePhiMix <- function(phi, level, meanLevel, nAlong, indexClassMaxMix, omega,
+modePhiMix <- function(phi, level, meanLevel, nAlong,
+                       indexClassMaxMix, omega,
                        useC = FALSE) {
     ## 'phi'
     stopifnot(identical(length(phi), 1L))
@@ -4523,7 +4521,6 @@ modePhiMix <- function(phi, level, meanLevel, nAlong, indexClassMaxMix, omega,
                                            indexClassMaxMix = indexClassMaxMix,
                                            omega = omega)
             diff.inner <- 0
-            phi.new <- 1
             while (((diff.inner <= 0) & (length.step > 0.001)) | (abs(phi.new) >= 1)) {
                 log.post.first <- logPostPhiFirstOrderMix(phi = phi,
                                                           level = level,
@@ -4553,9 +4550,6 @@ modePhiMix <- function(phi, level, meanLevel, nAlong, indexClassMaxMix, omega,
         phi.new
     }
 }
-
-
-
 
 ## TRANSLATED
 ## HAS_TESTS
