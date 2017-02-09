@@ -601,7 +601,7 @@ updateGWithTrend <- function(prior, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 ## 'alpha' in notes
 updateLevelComponentWeightMix <- function(prior, useC = FALSE) {

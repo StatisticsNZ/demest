@@ -689,6 +689,7 @@ UPDATEBETA_AND_PRIORBETA_WRAPPER_R(updateBetaAndPriorBeta_DLMNoTrendRobustCovWit
 UPDATEBETA_AND_PRIORBETA_WRAPPER_R(updateBetaAndPriorBeta_DLMWithTrendRobustCovWithSeason);
 
 UPDATEOBJECT_NOPRNG_WRAPPER_R(updateGWithTrend);
+UPDATEOBJECT_WRAPPER_R(updateLevelComponentWeightMix);
 
 SEXP
 updateOmegaAlpha_R(SEXP prior_R, SEXP withTrend_R)
@@ -1221,6 +1222,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateBeta_R, 4),
   
   CALLDEF(updateGWithTrend_R, 1),
+  CALLDEF(updateLevelComponentWeightMix_R, 1),
   CALLDEF(updateOmegaAlpha_R, 2),
   CALLDEF(updateOmegaDelta_R, 1),
   CALLDEF(updateOmegaSeason_R, 1),
@@ -1751,12 +1753,19 @@ R_init_demest(DllInfo *info)
   ADD_SYM(componentWeightMix);
   ADD_SYM(latentComponentWeightMix);
   ADD_SYM(levelComponentWeightMix);
+  ADD_SYM(meanLevelComponentWeightMix);
   ADD_SYM(indexClassMix);
   ADD_SYM(indexClassMaxMix);
   ADD_SYM(omegaComponentWeightMix);
+  ADD_SYM(omegaLevelComponentWeightMix);
   ADD_SYM(iteratorsDimsMix);
   ADD_SYM(iAlong);
   ADD_SYM(dimBeta);
+  ADD_SYM(phiMix);
+  ADD_SYM(mMix);
+  ADD_SYM(CMix);
+  ADD_SYM(aMix);
+  ADD_SYM(RMix);
   
 #undef ADD_SYM
 

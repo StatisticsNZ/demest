@@ -45,8 +45,8 @@ updateSDNorm(double sigma, double A, double nu, double V, int n, double max)
     
     if (foundRootLeft) {
     
-        int rootLessThanMax;
-        double sigma0_right;
+        int rootLessThanMax = 1;
+        double sigma0_right = 1.5*sigma_star;
     
         if (R_finite(max)) {
             double maxSq = max * max;
@@ -59,12 +59,10 @@ updateSDNorm(double sigma, double A, double nu, double V, int n, double max)
                 }
             }
         }
-        else {
-            rootLessThanMax = 1;
-            sigma0_right = 1.5*sigma_star;
-        }
-        double limitRight;
-        int foundLimitRight;
+        /* else rootLessThanMax and sigma0_right stay as default values */
+        
+        double limitRight = max;
+        int foundLimitRight = 1;
  
         if (rootLessThanMax) {
             double rootRight = findOneRootLogPostSigmaNorm(sigma0_right,
@@ -79,10 +77,7 @@ updateSDNorm(double sigma, double A, double nu, double V, int n, double max)
                 foundLimitRight = 0;
             }
         }
-        else {
-            limitRight = max;
-            foundLimitRight = 1;
-        }
+        /* else limitRight and foundLimitRight stay as default values */
  
         if (foundLimitRight) {
             ans = runif(rootLeft, limitRight);
@@ -122,8 +117,8 @@ updateSDRobust(double sigma, double A, double nuBeta, double nuTau,
     int foundRootLeft = (rootLeft > 0);
 
     if (foundRootLeft) {
-        int rootLessThanMax;
-        double sigma0_right;
+        int rootLessThanMax = 1;
+        double sigma0_right = 1.5*sigma_star;
 
         if (R_finite(max)) {
             double maxSq = max * max;
@@ -138,12 +133,10 @@ updateSDRobust(double sigma, double A, double nuBeta, double nuTau,
                 }
             }
         }
-        else {
-            rootLessThanMax = 1;
-            sigma0_right = 1.5*sigma_star;
-        }
-        double limitRight;
-        int foundLimitRight;
+        /* else rootLessThanMax and sigma0_right stay as default values */
+        
+        double limitRight = max;
+        int foundLimitRight = 1;
 
         if (rootLessThanMax) {
             double rootRight = findOneRootLogPostSigmaRobust(sigma0_right,
@@ -157,10 +150,8 @@ updateSDRobust(double sigma, double A, double nuBeta, double nuTau,
                 foundLimitRight = 0;
             }
         }
-        else {
-            limitRight = max;
-            foundLimitRight = 1;
-        }
+        /* else limitRight and foundLimitRight stay as default values */
+        
         if (foundLimitRight) {
             ans = runif(rootLeft, limitRight);
         }
@@ -1103,6 +1094,94 @@ updateGWithTrend(SEXP prior_R)
     
     GWithTrend[3] = phi;
 }
+
+
+void
+updateLevelComponentWeightMix(SEXP prior_R)
+{
+    int *dimBeta = INTEGER(GET_SLOT(prior_R, dimBeta_sym));  
+    int iAlong_r = *INTEGER(GET_SLOT(prior_R, iAlong_sym));  
+    int iAlong_c = iAlong_r -1;
+    int nAlong = dimBeta[iAlong_c];
+    
+    int indexClassMax = *INTEGER(GET_SLOT(prior_R, indexClassMaxMix_sym));
+    double *comp = REAL(GET_SLOT(prior_R, componentWeightMix_sym));
+    double *level = REAL(GET_SLOT(prior_R, levelComponentWeightMix_sym));
+    double meanLevel = *REAL(GET_SLOT(prior_R, meanLevelComponentWeightMix_sym));
+    
+    double *mOriginal = REAL(GET_SLOT(prior_R, mMix_sym)); /* len nAlong */
+    double *COriginal = REAL(GET_SLOT(prior_R, CMix_sym)); /* len nAlong */
+    double *aOriginal = REAL(GET_SLOT(prior_R, aMix_sym)); /* len nAlong - 1 */
+    double *ROriginal = REAL(GET_SLOT(prior_R, RMix_sym)); /* len nAlong - 1 */
+    
+    double phi = *REAL(GET_SLOT(prior_R, phiMix_sym));
+    double phiSq = phi * phi;
+    double oneMinusPhi = 1 - phi;
+    double oneMinusPhiSq = 1 - phiSq;
+    
+    double omegaComp = *REAL(GET_SLOT(prior_R, omegaComponentWeightMix_sym));
+    double omegaCompSq = omegaComp * omegaComp;
+    double omegaLevel = *REAL(GET_SLOT(prior_R, omegaLevelComponentWeightMix_sym));
+    double omegaLevelSq = omegaLevel * omegaLevel;
+    
+    /* malloc space to copy things we do not want to change into,
+     * do not want to change m, C, a, R */
+    int sz1 = nAlong;
+    int sz2 = nAlong - 1;
+    int spaceNeeded = 2*sz1 + 2*sz2;
+    double *copies = (double *)R_alloc(spaceNeeded, sizeof(double));
+    double *m = copies;
+    double *C = copies + sz1;
+    double *a = copies + 2*sz1;
+    double *R = copies + 2*sz1 + sz2;
+    memcpy(m, mOriginal, sz1*sizeof(double));
+    memcpy(C, COriginal, sz1*sizeof(double));
+    memcpy(a, aOriginal, sz2*sizeof(double));
+    memcpy(R, ROriginal, sz2*sizeof(double));
+    
+    for (int iClass = 0; iClass < indexClassMax; ++iClass) {
+        
+        m[0] = meanLevel / oneMinusPhi;
+        C[0] = omegaLevelSq / oneMinusPhiSq;
+        
+        /* forward filter */
+        for (int iAlong = 0; iAlong < nAlong-1; ++iAlong) {
+            
+            int iWt = iClass * nAlong + iAlong + 1;
+            double this_a = meanLevel + phi * m[iAlong];
+            a[iAlong] = this_a;
+            double this_R = phiSq * C[iAlong] + omegaLevelSq;
+            R[iAlong] = this_R;
+            
+            double q = this_R + omegaCompSq;
+            double e = comp[iWt] - this_a;
+            double A = this_R / q;
+            int next_iAlong = iAlong+1;
+            m[next_iAlong] = this_a + A * e;
+            C[next_iAlong] = this_R - A*A * q;
+        }
+        
+        /* draw final values */
+        int final_iWt = (iClass + 1) * nAlong - 1;
+        level[final_iWt] = rnorm( m[nAlong-1], sqrt(C[nAlong-1]) );
+        
+        /* backwards smooth */
+        for (int iAlong = nAlong-2; iAlong >= 0; --iAlong) {
+            
+            int iWtCurr = iClass * nAlong + iAlong;
+            int iWtNext = iWtCurr + 1;
+            
+            double this_C = C[iAlong];
+            double this_R = R[iAlong];
+            double B = this_C * phi / this_R;
+            double mStar = m[iAlong] + B * ( level[iWtNext] - a[iAlong]); 
+            double CStar = this_C - B*B * this_R;
+            
+            level[iWtCurr] = rnorm( mStar, sqrt(CStar) ); 
+        }
+   }
+}
+
 
 void
 updateOmegaAlpha(SEXP prior_R, int isWithTrend)

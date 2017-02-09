@@ -1196,11 +1196,42 @@ test_that("R and C versions of updateLevelComponentWeightMix give same answer", 
         set.seed(seed)
         ans.C <- updateLevelComponentWeightMix(prior, useC = TRUE)
         if (test.identity)
-            expect_identical(ans.obtained, ans.expected)
+            expect_identical(ans.R, ans.C)
         else
-            expect_equal(ans.obtained, ans.expected)
+            expect_equal(ans.R, ans.C)
     }
 })
+
+    updateLevelComponentWeightMix <- demest:::updateLevelComponentWeightMix
+    set.seed(100)
+    initialPrior <- demest:::initialPrior
+    metadata <- new("MetaData",
+                    nms = c("reg", "time"),
+                    dimtypes = c("state", "time"),
+                    DimScales = list(new("Categories", dimvalues = letters[1:20]),
+                                     new("Points", dimvalues = 2001:2010)))
+    spec <- Mix()
+    seed <- 1
+        set.seed(seed + 1)
+        beta <- rnorm(200)
+        prior <- initialPrior(spec,
+                              beta = beta,
+                              metadata = metadata,
+                              sY = NULL,
+                              multScale = 1)
+        set.seed(seed)
+        sink("outputR.txt", append=FALSE, split=TRUE) 
+        ans.R <- updateLevelComponentWeightMix(prior, useC = FALSE)
+        print(ans.R@levelComponentWeightMix)
+        sink()
+        
+        sink("outputC.txt", append=FALSE, split=TRUE) 
+        set.seed(seed)
+        ans.C <- updateLevelComponentWeightMix(prior, useC = TRUE)
+        print(ans.C@levelComponentWeightMix)
+        all.equal(ans.R, ans.C)
+
+
 
 test_that("updateOmegaAlpha works", {
     updateOmegaAlpha <- demest:::updateOmegaAlpha

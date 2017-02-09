@@ -239,12 +239,19 @@ SEXP
   componentWeightMix_sym,
   latentComponentWeightMix_sym,
   levelComponentWeightMix_sym,
+  meanLevelComponentWeightMix_sym,
   indexClassMix_sym,
   indexClassMaxMix_sym,
   omegaComponentWeightMix_sym,
+  omegaLevelComponentWeightMix_sym,
   iteratorsDimsMix_sym,
   iAlong_sym,
-  dimBeta_sym;
+  dimBeta_sym,
+  phiMix_sym,
+  mMix_sym,
+  CMix_sym,
+  aMix_sym,
+  RMix_sym;
   
   
 /* Priors-methods */
@@ -253,6 +260,7 @@ void updateBeta(double *beta, int J, SEXP prior, double *vbar,
                 int n, double sigma);
 
 void updateGWithTrend(SEXP prior_R);
+void updateLevelComponentWeightMix(SEXP prior_R);
 void updateOmegaAlpha(SEXP prior_R, int isWithTrend);
 void updateOmegaDelta(SEXP prior_R);
 void updateOmegaSeason(SEXP prior_R);
