@@ -192,20 +192,6 @@ checkAndTidyIndexClassMaxMix <- function(maxClass) {
     new("Counter", maxClass)    
 }
 
-## NO_TESTS
-checkScaleVectors <- function(scale) {
-    if (!is.list(scale))
-        stop(gettextf("'%s' has class \"%s\"",
-                      "scale", class(scale)))
-    if (length(scale) == 0L)
-        stop(gettextf("'%s' has length %d",
-                      "scale", 0L))
-    if (!all(sapply(scale, methods::is, "HalfT")))
-        stop(gettextf("'%s' has elements not of class \"%s\"",
-                      "scale", "HalfT"))
-    NULL
-}
-
 ## HAS_TESTS
 checkLowerOrUpper <- function(value,
                               name = c("lower", "upper"),
@@ -1018,19 +1004,22 @@ initialMixAll <- function(object, beta, metadata, sY, ...) {
     AComponentWeightMix <- object@AComponentWeightMix
     ALevelComponentWeightMix <- object@ALevelComponentWeightMix
     ATau <- object@ATau
+    AVectorsMix <- object@AVectorsMix
     along <- object@along
     indexClassMaxMix <- object@indexClassMaxMix
     multComponentWeightMix <- object@multComponentWeightMix
     multLevelComponentWeightMix <- object@multLevelComponentWeightMix
     multTau <- object@multTau
+    multVectorsMix <- object@multVectorsMix
     nuComponentWeightMix <- object@nuComponentWeightMix
     nuLevelComponentWeightMix <- object@nuLevelComponentWeightMix
     nuTau <- object@nuTau
+    nuVectorsMix <- object@nuVectorsMix
     omegaComponentWeightMaxMix <- object@omegaComponentWeightMaxMix
     omegaLevelComponentWeightMaxMix <- object@omegaLevelComponentWeightMaxMix
+    omegaVectorsMaxMix <- object@omegaVectorsMaxMix
     priorMeanLevelComponentWeightMix <- object@priorMeanLevelComponentWeightMix
     priorSDLevelComponentWeightMix <- object@priorSDLevelComponentWeightMix
-    scaleVectorsMix <- object@scaleVectorsMix
     tauMax <- object@tauMax
     ## AComponentWeightMix, omegaComponentWeightMaxMix, omegaComponentWeight
     AComponentWeightMix <-
@@ -1085,15 +1074,20 @@ initialMixAll <- function(object, beta, metadata, sY, ...) {
     ## nBetaNoAlong
     nBetaNoAlong <- as.integer(prod(dimBeta[-iAlong]))
     nBetaNoAlong <- new("Length", nBetaNoAlong)
-    ## AVectorsMix, nuVectorsMix, omegaVectorsMaxMix, omegaVectorsMix
-    l <- makeVarianceVectorsMix(scale = scaleVectorsMix,
-                                metadata = metadata,
-                                sY = sY,
-                                iAlong = iAlong)
-    AVectorsMix <- l$AVectorsMix
-    nuVectorsMix <- l$nuVectorsMix
-    omegaVectorsMix <- l$omegaVectorsMix
-    omegaVectorsMaxMix <- l$omegaVectorsMaxMix
+    ## AVectorsMix, omegaVectorsMaxMix, omegaVectorsMix
+    AVectorsMix <-
+        makeAHalfT(A = AVectorsMix,
+                   metadata = metadata,
+                   sY = sY,
+                   mult = multVectorsMix)
+    omegaVectorsMaxMix <-
+        makeScaleMax(scaleMax = omegaVectorsMaxMix,
+                     A = AVectorsMix,
+                     nu = nuVectorsMix)
+    omegaVectorsMix <-
+        makeScale(A = AVectorsMix,
+                  nu = nuVectorsMix,
+                  scaleMax = omegaVectorsMaxMix)
     ## vectorsMix
     vectorsMix <- makeVectorsMix(dimBeta = dimBeta,
                                  iAlong = iAlong,
@@ -3132,64 +3126,6 @@ makeValueAndMetaDataAg <- function(value) {
 }
 
 ## HAS_TESTS
-makeVarianceVectorsMix <- function(scale, metadata, sY, iAlong) {
-    n.scale <- length(scale)
-    names <- names(metadata)
-    n.dim <- length(names)
-    name.interaction <- paste(names, collapse = ":")
-    if (n.scale < n.dim - 1L) {
-        divides.evenly <- ((n.dim - 1L) %% n.scale) == 0L
-        if (!divides.evenly)
-            stop(gettextf("length of '%s' argument from '%s' function does not divide evenly into the number of dimensions of '%s' interaction minus 1",
-                          "scale", "Vector", name.interaction))
-    }
-    if (n.scale > n.dim - 1L)
-            stop(gettextf("'%s' argument from '%s' function has more elements than number of dimensions of '%s' interaction minus 1",
-                          "scale", "Vector", name.interaction))
-    scale <- rep_len(scale, length.out = n.dim - 1L)
-    scale <- append(scale,
-                    value = list(NULL),
-                    after = iAlong - 1L)
-    ans.A <- vector(mode = "list", length = n.dim)
-    ans.nu <- vector(mode = "list", length = n.dim)
-    ans.scale <- vector(mode = "list", length = n.dim)
-    ans.scale.max <- vector(mode = "list", length = n.dim)
-    for (i in seq_len(n.dim)) {
-        if (i == iAlong) {
-            ans.A[[i]] <- new("Scale", 1)
-            ans.nu[[i]] <- new("DegreesFreedom", 7)
-            ans.scale.max[[i]] <- new("Scale", 1)
-            ans.scale[[i]] <- new("Scale", 1)
-        }
-        else {
-            ans.A[[i]] <- makeAHalfT(A = scale[[i]]@A,
-                                     metadata = metadata,
-                                     sY = sY,
-                                     mult = scale[[i]]@mult)
-            ans.nu[[i]] <- scale[[i]]@nu
-            ans.scale.max[[i]] <- makeScaleMax(scaleMax = scale[[i]]@scaleMax,
-                                               A = ans.A[[i]],
-                                               nu = ans.nu[[i]])
-            ans.scale[[i]] <- makeScale(A = ans.A[[i]],
-                                        nu = ans.nu[[i]],
-                                        scaleMax = ans.scale.max[[i]])
-        }
-    }
-    ans.A <- sapply(ans.A, methods::slot, ".Data")
-    ans.nu <- sapply(ans.nu, methods::slot, ".Data")
-    ans.scale.max <- sapply(ans.scale.max, methods::slot, ".Data")
-    ans.scale <- sapply(ans.scale, methods::slot, ".Data")
-    ans.A <- new("ScaleVec", ans.A)
-    ans.nu <- new("DegreesFreedomVector", ans.nu)
-    ans.scale.max <- new("ScaleVec", ans.scale.max)
-    ans.scale <- new("ScaleVec", ans.scale)
-    list(AVectorsMix = ans.A,
-         nuVectorsMix = ans.nu,
-         omegaVectorsMaxMix = ans.scale.max,
-         omegaVectorsMix = ans.scale)
-}
-
-## HAS_TESTS
 makeVectorsMix <- function(dimBeta, iAlong, indexClassMaxMix, omegaVectorsMix) {
     n.dim <- length(dimBeta)
     sd <- omegaVectorsMix@.Data
@@ -3199,7 +3135,7 @@ makeVectorsMix <- function(dimBeta, iAlong, indexClassMaxMix, omegaVectorsMix) {
                   length = n.dim)
     for (i in seq_len(n.dim)) {
         .Data <- rnorm(n = length[i],
-                       sd = sd[i])
+                       sd = sd)
         ans[[i]] <- new("ParameterVector", .Data)
     }
     ans
@@ -4387,8 +4323,8 @@ logPostPhiFirstOrderMix <- function(phi, level, meanLevel, nAlong, indexClassMax
 
 ## TRANSLATED
 ## HAS_TESTS
-logPostPhiSecondOrderMix <- function(phi, level, meanLevel, nAlong, indexClassMaxMix, omega,
-                                     useC = FALSE) {
+logPostPhiSecondOrderMix <- function(phi, level, meanLevel, nAlong, indexClassMaxMix,
+                                     omega, useC = FALSE) {
     ## 'phi'
     stopifnot(identical(length(phi), 1L))
     stopifnot(is.double(phi))
@@ -4419,7 +4355,8 @@ logPostPhiSecondOrderMix <- function(phi, level, meanLevel, nAlong, indexClassMa
     ## 'level', 'nAlong', 'indexClassMaxMix'
     stopifnot(length(level) >= nAlong * indexClassMaxMix)
     if (useC) {
-        .Call(logPostPhiSecondOrderMix_R, phi, level, meanLevel, nAlong, indexClassMaxMix, omega)
+        .Call(logPostPhiSecondOrderMix_R, phi, level, meanLevel, nAlong,
+              indexClassMaxMix, omega)
     }
     else {
         if(abs(phi) < 1) {
@@ -4538,7 +4475,6 @@ makeVBar <- function(object, iBeta, g, useC = FALSE) {
         ans
     }
 }
-
 
 
 modePhiMix <- function(phi, level, meanLevel, nAlong, indexClassMaxMix, omega,

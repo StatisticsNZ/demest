@@ -123,23 +123,8 @@ setClass("ATauMixin",
          contains = "VIRTUAL")
 
 setClass("AVectorsMixMixin",
-         slots = c(AVectorsMix = "ScaleVec"),
-         contains = "VIRTUAL",
-         validity = function(object) {
-             AVectorsMix <- object@AVectorsMix@.Data
-             vectorsMix <- object@vectorsMix
-             iAlong <- object@iAlong
-             ## 'AVectorsMix' has same length as 'vectorsMix'
-             if (!identical(length(AVectorsMix), length(vectorsMix)))
-                 return(gettextf("'%s' has different length from '%s'",
-                                 "AVectorsMix", "vectorsMix"))
-             ## A for 'along' dimension equals 1
-             A.along <- AVectorsMix[iAlong]
-             if (!isTRUE(all.equal(A.along, 1.0)))
-                 return(gettextf("value of '%s' for \"%s\" dimension not equal to %d",
-                                 "AVectorsMix", "along", 1L))             
-             TRUE
-         })                 
+         slots = c(AVectorsMix = "Scale"),
+         contains = "VIRTUAL")
 
 setClass("AlongMixin",
          slots = c(along = "character"),
@@ -941,6 +926,10 @@ setClass("MultTauMixin",
          slots = c(multTau = "Scale"),
          contains = "VIRTUAL")
 
+setClass("MultVectorsMixMixin",
+         slots = c(multVectorsMix = "Scale"),
+         contains = "VIRTUAL")
+
 setClass("NBetaNoAlongMixin",
          slots = c(nBetaNoAlong = "Length"),
          contains = "VIRTUAL",
@@ -1028,23 +1017,8 @@ setClass("NuTauMixin",
          contains = "VIRTUAL")
 
 setClass("NuVectorsMixMixin",
-         slots = c(nuVectorsMix = "DegreesFreedomVector"),
-         contains = "VIRTUAL",
-         validity = function(object) {
-             nuVectorsMix <- object@nuVectorsMix@.Data
-             vectorsMix <- object@vectorsMix
-             iAlong <- object@iAlong
-             ## 'nuVectorsMix' has same length as 'vectorsMix'
-             if (!identical(length(nuVectorsMix), length(vectorsMix)))
-                 return(gettextf("'%s' has different length from '%s'",
-                                 "nuVectorsMix", "vectorsMix"))
-             ## nu for 'along' dimension equals 7
-             nu.along <- nuVectorsMix[iAlong]
-             if (!isTRUE(all.equal(nu.along, 7.0)))
-                 return(gettextf("value of '%s' for \"%s\" dimension not equal to %d",
-                                 "nuVectorsMix", "along", 7L))             
-             TRUE
-         })
+         slots = c(nuVectorsMix = "DegreesFreedom"),
+         contains = "VIRTUAL")
 
 setClass("OmegaAlphaMaxMixin",
          slots = c(omegaAlphaMax = "Scale"),
@@ -1113,49 +1087,12 @@ setClass("OmegaComponentWeightMixMixin",
          contains = "VIRTUAL")
 
 setClass("OmegaVectorsMaxMixMixin",
-         slots = c(omegaVectorsMaxMix = "ScaleVec"),
-         contains = "VIRTUAL",
-         validity = function(object) {
-             omegaVectorsMix <- object@omegaVectorsMix@.Data
-             omegaVectorsMaxMix <- object@omegaVectorsMaxMix@.Data
-             iAlong <- object@iAlong
-             ## 'omegaVectorsMaxMix' has same length as 'omegaVectorsMix'
-             if (!identical(length(omegaVectorsMaxMix), length(omegaVectorsMix)))
-                 return(gettextf("'%s' has different length from '%s'",
-                                 "omegaVectorsMix", "vectorsMix"))
-             ## omegaVectorsMix <= omegaVectorsMaxMix
-             for (i in seq_along(omegaVectorsMix))
-                 if (omegaVectorsMix[i] > omegaVectorsMaxMix[i])
-                     return(gettextf("element %d of '%s' is greater than '%s'",
-                                     i, "omegaVectorsMix", "omegaVectorsMaxMix"))
-             ## omegaMax for 'along' dimension equals 1
-             ans.obtained <- omegaVectorsMaxMix[iAlong]
-             ans.expected <- 1
-             if (!isTRUE(all.equal(ans.obtained, ans.expected)))
-                 return(gettextf("value of '%s' for \"%s\" dimension not equal to %d",
-                                 "omegaVectorsMaxMix", "along", 1L))       
-             TRUE
-         })
+         slots = c(omegaVectorsMaxMix = "Scale"),
+         contains = "VIRTUAL")
 
 ## 'sigma_A', 'sigma_S' in notes
 setClass("OmegaVectorsMixMixin",
-         slots = c(omegaVectorsMix = "ScaleVec"),
-         contains = "VIRTUAL",
-         validity = function(object) {
-             omegaVectorsMix <- object@omegaVectorsMix@.Data
-             vectorsMix <- object@vectorsMix
-             iAlong <- object@iAlong
-             ## 'omegaVectorsMix' has same length as 'vectorsMix'
-             if (!identical(length(omegaVectorsMix), length(vectorsMix)))
-                 return(gettextf("'%s' has different length from '%s'",
-                                 "omegaVectorsMix", "vectorsMix"))
-             ## omega for 'along' dimension equals 1
-             omega.along <- omegaVectorsMix[iAlong]
-             if (!isTRUE(all.equal(omega.along, 1.0)))
-                 return(gettextf("value of '%s' for \"%s\" dimension not equal to %d",
-                                 "omegaVectorsMix", "along", 1L))             
-             TRUE
-         })                 
+         slots = c(omegaVectorsMix = "Scale"))
 
 setClass("PMixin",
          slots = c(P = "Length"),
@@ -1467,6 +1404,10 @@ setClass("SpecATauMixin",
          slots = c(ATau = "SpecScale"),
          contains = "VIRTUAL")
 
+setClass("SpecAVectorsMixMixin",
+         slots = c(AVectorsMix = "SpecScale"),
+         contains = "VIRTUAL")
+
 setClass("SpecOmegaAlphaMaxMixin",
          slots = c(omegaAlphaMax = "SpecScale"),
          contains = "VIRTUAL")
@@ -1485,6 +1426,10 @@ setClass("SpecOmegaLevelComponentWeightMaxMixMixin",
 
 setClass("SpecOmegaSeasonMaxMixin",
          slots = c(omegaSeasonMax = "SpecScale"),
+         contains = "VIRTUAL")
+
+setClass("SpecOmegaVectorsMaxMixMixin",
+         slots = c(omegaVectorsMaxMix = "SpecScale"),
          contains = "VIRTUAL")
 
 setClass("SpecPhiMixin",
@@ -1515,22 +1460,6 @@ setClass("SpecPhiMixin",
 setClass("SpecScaleMaxMixin",
          slots = c(scaleMax = "SpecScale"),
          contains = "VIRTUAL")
-
-setClass("SpecScaleVectorsMixMixin",
-         slots = c(scaleVectorsMix = "list"),
-         contains = "VIRTUAL",
-         validity = function(object) {
-             scaleVectorsMix <- object@scaleVectorsMix
-             ## 'scaleVectorsMix' has length > 0
-             if (length(scaleVectorsMix) == 0L)
-                 return(gettextf("'%s' has length %d",
-                                 "scaleVectorsMix", 1L))
-             ## all elements of 'scaleVectorsMix' have class "HalfT"
-             if (!all(sapply(scaleVectorsMix, methods::is, "HalfT")))
-                 return(gettextf("'%s' has elements not of class \"%\"",
-                                 "scaleVectorsMix", "HalfT"))
-             TRUE
-         })
 
 setClass("SpecTauMixin",
          slots = c(tau = "SpecScale"),

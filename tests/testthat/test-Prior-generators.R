@@ -630,7 +630,7 @@ test_that("generator function and initialPrior work with MixNormZero", {
     expect_is(prior, "MixNormZero")
     ## nondefault
     spec <- Mix(along = "age",
-                vectors = Vectors(list(HalfT(df = 4, mult = 2), HalfT(scale = 0.5))),
+                vectors = Vectors(scale = HalfT(df = 4, scale = 0.5, mult = 2)),
                 weights = Weights(mean = 0.5,
                                   sd = 0.5,
                                   temporary = HalfT(scale = 0.4),
@@ -644,8 +644,8 @@ test_that("generator function and initialPrior work with MixNormZero", {
                           sY = NULL,
                           multScale = 1)
     expect_identical(prior@iAlong, 3L)
-    expect_identical(prior@AVectorsMix, new("ScaleVec", c(0.5, 0.5, 1)))
-    expect_identical(prior@nuVectorsMix, new("DegreesFreedomVector", c(4, 7, 7)))
+    expect_identical(prior@AVectorsMix, new("Scale", 0.5))
+    expect_identical(prior@nuVectorsMix, new("DegreesFreedom", 4))
     expect_identical(prior@priorMeanLevelComponentWeightMix, new("Parameter", 0.5))
     expect_identical(prior@priorSDLevelComponentWeightMix, new("Scale", 0.5))
     expect_identical(prior@AComponentWeightMix, new("Scale", 0.4))

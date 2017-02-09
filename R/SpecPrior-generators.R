@@ -1385,7 +1385,10 @@ Mix <- function(along = NULL,
     if (!methods::is(vectors, "Vectors"))
         stop(gettextf("'%s' has class \"%s\"",
                       "vectors", class(vectors)))
-    scaleVectorsMix <- vectors@scaleVectorsMix # list of HalfT objects
+    AVectorsMix <- vectors@AVectorsMix
+    multVectorsMix <- vectors@multVectorsMix
+    nuVectorsMix <- vectors@nuVectorsMix
+    omegaVectorsMaxMix <- vectors@omegaVectorsMaxMix
     ## weights
     if (!methods::is(weights, "Weights"))
         stop(gettextf("'%s' has class \"%s\"",
@@ -1433,19 +1436,22 @@ Mix <- function(along = NULL,
                      AComponentWeightMix = AComponentWeightMix,
                      ALevelComponentWeightMix = ALevelComponentWeightMix,
                      ATau = ATau,
+                     AVectorsMix = AVectorsMix,
                      along = along,
                      indexClassMaxMix = indexClassMaxMix,
                      multComponentWeightMix = multComponentWeightMix,
                      multLevelComponentWeightMix = multLevelComponentWeightMix,
                      multTau = multTau,
+                     multVectorsMix = multVectorsMix,
                      nuComponentWeightMix = nuComponentWeightMix,
                      nuLevelComponentWeightMix = nuLevelComponentWeightMix,
                      nuTau = nuTau,
+                     nuVectorsMix = nuVectorsMix,
                      omegaComponentWeightMaxMix = omegaComponentWeightMaxMix,
                      omegaLevelComponentWeightMaxMix = omegaLevelComponentWeightMaxMix,
                      priorMeanLevelComponentWeightMix = priorMeanLevelComponentWeightMix,
+                     omegaVectorsMaxMix = omegaVectorsMaxMix,
                      priorSDLevelComponentWeightMix = priorSDLevelComponentWeightMix,
-                     scaleVectorsMix = scaleVectorsMix,
                      tauMax = tauMax)
     }
     else
@@ -1727,10 +1733,19 @@ Weights <- function(mean = 0, sd = 1, temporary = HalfT(), permanent = HalfT()) 
 }
 
 #' @export
-Vectors <- function(scale = list(HalfT())) {
-    checkScaleVectors(scale)
+Vectors <- function(scale = HalfT()) {
+    if (!methods::is(scale, "HalfT"))
+        stop(gettextf("'%s' has class \"%s\"",
+                      scale, class(scale)))
+    AVectorsMix <- scale@A
+    multVectorsMix <- scale@mult
+    nuVectorsMix <- scale@nu
+    omegaVectorsMaxMix <- scale@scaleMax
     methods::new("Vectors",
-                 scaleVectorsMix = scale)
+                 AVectorsMix = AVectorsMix,
+                 multVectorsMix = multVectorsMix,
+                 nuVectorsMix = nuVectorsMix,
+                 omegaVectorsMaxMix = omegaVectorsMaxMix)
 }
 
 

@@ -762,7 +762,7 @@ test_that("initialMixAll works", {
     initialPrior <- demest:::initialPrior
     set.seed(0)
     ## main effect
-    spec <- Mix()
+    spec <- Mix(weights = Weights(mean = -20))
     beta <- rnorm(400)
     metadata <- new("MetaData",
                     nms = c("age", "sex", "time"),
@@ -777,7 +777,7 @@ test_that("initialMixAll works", {
     stopifnot(identical(l$AComponentWeightMix, new("Scale", 0.25)))
     stopifnot(identical(l$ALevelComponentWeightMix, new("Scale", 0.25)))
     stopifnot(identical(l$ATau, new("Scale", 0.25)))
-    stopifnot(identical(l$AVectorsMix, new("ScaleVec", c(0.25, 0.25, 1))))
+    stopifnot(identical(l$AVectorsMix, new("Scale", 0.25)))
     stopifnot(identical(l$aMix, new("ParameterVector", rep(0, times = 9))))
     stopifnot(identical(l$CMix, new("ParameterVector", rep(1, times = 10))))
     stopifnot(identical(length(l$componentWeightMix), 10L * 10L))
@@ -794,30 +794,30 @@ test_that("initialMixAll works", {
     stopifnot(identical(l$J@.Data, 400L))
     stopifnot(identical(length(l$latentComponentWeightMix), 400L * 10L))
     lcwm <- matrix(l$latentComponentWeightMix@.Data, nr = 400)
-    lcm <- l$indexClassMix@.Data
+    icm <- l$indexClassMix@.Data
     s <- 1:10
     for (i in 1:400)
-        stopifnot(all(lcwm[i, s < lcm[i]] < 0))
+        stopifnot(all(lcwm[i, s < icm[i]] < 0))
     for (i in 1:400)
-        stopifnot(lcwm[i, s == lcm[i]] > 0)
+        stopifnot(lcwm[i, s == icm[i]] > 0)
     stopifnot(identical(length(l$latentWeightMix), 400L))
     lwm <- l$latentWeightMix
     wm <- matrix(l$weightMix, nr = 10)
     for (i in 1:400)
-        stopifnot(lwm[i] < wm[(i-1) %/% 40L + 1L, lcm[i]])
+        stopifnot(lwm[i] <= wm[(i-1) %/% 40L + 1L, icm[i]])
     stopifnot(identical(length(l$levelComponentWeightMix), 10L * 10L))
     stopifnot(identical(l$mMix, new("ParameterVector", rep(0, 10))))
     stopifnot(identical(l$nBetaNoAlong, new("Length", 40L)))
     stopifnot(identical(l$nuComponentWeightMix, new("DegreesFreedom", 7)))
     stopifnot(identical(l$nuLevelComponentWeightMix, new("DegreesFreedom", 7)))
     stopifnot(identical(l$nuTau, new("DegreesFreedom", 7)))
-    stopifnot(identical(l$nuVectorsMix, new("DegreesFreedomVector", c(7, 7, 7))))
+    stopifnot(identical(l$nuVectorsMix, new("DegreesFreedom", 7)))
     stopifnot(is(l$omegaComponentWeightMaxMix, "Scale"))
     stopifnot(is(l$omegaComponentWeightMix, "Scale"))
     stopifnot(is(l$omegaLevelComponentWeightMaxMix, "Scale"))
     stopifnot(is(l$omegaLevelComponentWeightMix, "Scale"))
-    stopifnot(is(l$omegaVectorsMaxMix, "ScaleVec"))
-    stopifnot(is(l$omegaVectorsMix, "ScaleVec"))    
+    stopifnot(is(l$omegaVectorsMaxMix, "Scale"))
+    stopifnot(is(l$omegaVectorsMix, "Scale"))    
     stopifnot(is(l$meanLevelComponentWeightMix, "Parameter"))
     stopifnot(l$phiMix > 0.8 && l$phiMix < 1)
     stopifnot(is(l$priorMeanLevelComponentWeightMix, "Parameter"))
@@ -3166,82 +3166,12 @@ test_that("makeValueAndMetaDataAg works", {
                  "'value' has class \"character\"")
 })
 
-test_that("makeVarianceVectorsMix works", {
-    makeVarianceVectorsMix <- demest:::makeVarianceVectorsMix
-    metadata <- new("MetaData",
-                    nms = c("age", "time", "sex"),
-                    dimtypes = c("age", "time", "sex"),
-                    DimScales = list(new("Intervals", dimvalues = c(0, 1, 5, 10)),
-                                     new("Points", dimvalues = c(2000, 2005, 2010)),
-                                     new("Sexes", dimvalues = c("female", "male"))))
-    ## scale has length 1, sY is NULL
-    scale <- list(HalfT())
-    sY <- NULL
-    set.seed(1)
-    ans.obtained <- makeVarianceVectorsMix(scale = scale,
-                                           metadata = metadata,
-                                           sY = sY,
-                                           iAlong = 2L)
-    set.seed(1)
-    ans.expected <- list(AVectorsMix = new("ScaleVec", c(0.25, 1, 0.25)),
-                         nuVectorsMix = new("DegreesFreedomVector", rep(7, 3)),
-                         omegaVectorsMaxMix = new("ScaleVec", c(demest:::qhalft(p = 0.999, df = 7, 0.25),
-                                                                1,
-                                                                demest:::qhalft(p = 0.999, df = 7, 0.25))),
-                         omegaVectorsMix = new("ScaleVec", c(demest:::rhalft(1, 7, 0.25),
-                                                             1,
-                                                             demest:::rhalft(1, 7, 0.25))))
-    if (test.identity)
-        expect_identical(ans.obtained, ans.expected)
-    else
-        expect_equal(ans.obtained, ans.expected)
-    ## scale have length 3, sY is 100
-    scale <- list(HalfT(df = 3, scale = 10), HalfT(mult = 2, max = 1000))
-    sY <- 100
-    set.seed(1)
-    ans.obtained <- makeVarianceVectorsMix(scale = scale,
-                                           iAlong = 2L,
-                                           metadata = metadata,
-                                           sY = sY)
-    set.seed(1)
-    ans.expected <- list(AVectorsMix = new("ScaleVec", c(10, 1, 50)),
-                         nuVectorsMix = new("DegreesFreedomVector", c(3, 7, 7)),
-                         omegaVectorsMaxMix = new("ScaleVec", c(demest:::qhalft(p = 0.999,
-                                                                                df = 3,
-                                                                                scale = 10),
-                                                                1,
-                                                                1000)),
-                         omegaVectorsMix = new("ScaleVec",
-                                               c(demest:::rhalft(1, 3, 10),
-                                                 1,
-                                                 demest:::rhalft(1, 7, 50))))
-    if (test.identity)
-        expect_identical(ans.obtained, ans.expected)
-    else
-        expect_equal(ans.obtained, ans.expected)
-    ## scale does not divide evenly
-    metadata <- new("MetaData",
-                    nms = c("age", "region", "time", "sex"),
-                    dimtypes = c("age", "state", "time", "sex"),
-                    DimScales = list(new("Intervals", dimvalues = c(0, 1, 5, 10)),
-                                     new("Categories", dimvalues = c("A", "B", "C")),
-                                     new("Points", dimvalues = c(2000, 2005, 2010)),
-                                     new("Sexes", dimvalues = c("female", "male"))))
-    scale.list <- list(HalfT(), HalfT())
-    sY <- NULL
-    expect_error(makeVarianceVectorsMix(scale = scale.list,
-                                        metadata = metadata,
-                                        sY = sY,
-                                        iAlong = 3L),
-                 "length of 'scale' argument from 'Vector' function does not divide evenly into the number of dimensions of 'age\\:region\\:time\\:sex' interaction minus 1")
-})
-
 test_that("makeVectorsMix works", {
     makeVectorsMix <- demest:::makeVectorsMix
     dimBeta <- 3:5
     iAlong <- 2L
     indexClassMaxMix <- new("Counter", 10L)
-    omegaVectorsMix <- new("ScaleVec", c(0.2, 1, 0.1))
+    omegaVectorsMix <- new("Scale", 0.2)
     set.seed(1)
     ans.obtained <- makeVectorsMix(dimBeta = dimBeta,
                                    iAlong = iAlong,
@@ -3255,7 +3185,7 @@ test_that("makeVectorsMix works", {
     ans.expected[[2]] <- new("ParameterVector", ans.expected[[2]])
     ans.expected[[3]] <- new("ParameterVector",
                              rnorm(n = 50,
-                                   sd = 0.1))
+                                   sd = 0.2))
     if (test.identity)
         expect_identical(ans.obtained, ans.expected)
     else
@@ -5451,92 +5381,86 @@ test_that("R and C versions of makeVBar give same answer with Normal, main effec
     }
 })
 
-
-
-## test_that("modePhiMix works", {
-##     modePhiMix <- demest:::modePhiMix
-##     phi <- 0.5
-##     level <- matrix(1*seq(1,6),nrow=2)
-##     meanLevel <- 0.5
-##     nAlong <- 2L
-##     indexClassMaxMix <- 2L
-##     omega <- 1
-##     ans.expected <- (-1)*(0+4)+(1-0.25)*2*(-0.5)/(0.5^2)*(3-1)+(-2)*((2-0.5-0.5*1)+(4-0.5-1.5)*(3))
-##     ans.expected <- 1/(-2*omega^2)*ans.expected
-##     ans.obtained <- modePhiMix(phi = phi,
-##                                             level = level,
-##                                             meanLevel = meanLevel,
-##                                             nAlong = nAlong,
-##                                             indexClassMaxMix = indexClassMaxMix,
-##                                             omega = omega)
-##     expect_equal(ans.obtained, ans.expected)
-##     phi_log_posterior_first_order <- function(mu,phi,Lw,alpha,Kstar,sigma2ETA)
-##     {
-##         ## 'mu'
-##         stopifnot(identical(length(mu), 1L))
-##         stopifnot(is.double(mu))
-##         ## 'phi'
-##         stopifnot(identical(length(phi), 1L))
-##         stopifnot(is.double(phi))
-##         ## 'alpha'
-##         stopifnot(is.matrix(alpha))
-##         stopifnot(sum(is.na(alpha))<1)
-##         stopifnot(dim(alpha)[2]>=Kstar)
-##         stopifnot(identical(dim(alpha)[1], Lw))
-##         ## 'Lw'
-##         stopifnot(identical(length(Lw), 1L))
-##         stopifnot(is.integer(Lw))
-##         stopifnot(Lw > 0)
-##         ## 'Kstar'
-##         stopifnot(identical(length(Kstar), 1L))
-##         stopifnot(is.integer(Kstar))
-##         stopifnot(Kstar > 0)
-##         ## 'sigma2ETA'
-##         stopifnot(identical(length(sigma2ETA), 1L))
-##         stopifnot(is.double(sigma2ETA))
-##         stopifnot(sigma2ETA > 0)
-##         if(abs(phi)<1)
-##         {
-##             res0 <- -2*sum((alpha[1,1:Kstar]-mu/(1-phi))*(phi*alpha[1,1:Kstar]+mu/(1-phi)))
-##             res <- res0-2*(sum((alpha[1:(Lw-1),1:Kstar])*(alpha[2:Lw,1:Kstar]-mu-phi*alpha[1:(Lw-1),1:Kstar])))
-##             res <- res*(-1/(2*sigma2ETA))  ## corrected from 'res*(-1/2*sigma2ETA)'
-##         }else{
-##             res <- 0.0001
-##         }
-##         return(res)
-##     }
-##     for (seed in seq_len(n.test)) {
-##         set.seed(seed)
-##         phi <- runif(1)
-##         nAlong <- sample(2:10, 1)
-##         indexClassMaxMix <- sample(2:10, 1)
-##         level <- matrix(rnorm(nAlong * indexClassMaxMix),
-##                         nrow = nAlong,
-##                         ncol = indexClassMaxMix)
-##         meanLevel <- rnorm(n = 1, sd = 0.1)
-##         omega <- runif(1)
-##         ans.obtained <- modePhiMix(phi = phi,
-##                                                 level = level,
-##                                                 meanLevel = meanLevel,
-##                                                 nAlong = nAlong,
-##                                                 indexClassMaxMix = indexClassMaxMix,
-##                                                 omega = omega)
-##         ans.expected <- phi_log_posterior_first_order(mu = meanLevel,
-##                                                       phi = phi,
-##                                                       Lw = nAlong,
-##                                                       alpha = level,
-##                                                       Kstar = indexClassMaxMix,
-##                                                       sigma2ETA = omega^2)
-##         if (test.identity)
-##             expect_identical(ans.obtained, ans.expected)
-##         else
-##             expect_equal(ans.obtained, ans.expected)
-##     }
-## })
-
-
-
-
+test_that("modePhiMix works", {
+    modePhiMix <- demest:::modePhiMix
+    phi <- 0.5
+    level <- matrix(1*seq(1,6),nrow=2)
+    meanLevel <- 0.5
+    nAlong <- 2L
+    indexClassMaxMix <- 2L
+    omega <- 1
+    ans.expected <- (-1)*(0+4)+(1-0.25)*2*(-0.5)/(0.5^2)*(3-1)+(-2)*((2-0.5-0.5*1)+(4-0.5-1.5)*(3))
+    ans.expected <- 1/(-2*omega^2)*ans.expected
+    ans.obtained <- modePhiMix(phi = phi,
+                               level = level,
+                               meanLevel = meanLevel,
+                               nAlong = nAlong,
+                               indexClassMaxMix = indexClassMaxMix,
+                               omega = omega)
+    expect_equal(ans.obtained, ans.expected)
+    phi_log_posterior_first_order <- function(mu,phi,Lw,alpha,Kstar,sigma2ETA)
+    {
+        ## 'mu'
+        stopifnot(identical(length(mu), 1L))
+        stopifnot(is.double(mu))
+        ## 'phi'
+        stopifnot(identical(length(phi), 1L))
+        stopifnot(is.double(phi))
+        ## 'alpha'
+        stopifnot(is.matrix(alpha))
+        stopifnot(sum(is.na(alpha))<1)
+        stopifnot(dim(alpha)[2]>=Kstar)
+        stopifnot(identical(dim(alpha)[1], Lw))
+        ## 'Lw'
+        stopifnot(identical(length(Lw), 1L))
+        stopifnot(is.integer(Lw))
+        stopifnot(Lw > 0)
+        ## 'Kstar'
+        stopifnot(identical(length(Kstar), 1L))
+        stopifnot(is.integer(Kstar))
+        stopifnot(Kstar > 0)
+        ## 'sigma2ETA'
+        stopifnot(identical(length(sigma2ETA), 1L))
+        stopifnot(is.double(sigma2ETA))
+        stopifnot(sigma2ETA > 0)
+        if(abs(phi)<1)
+        {
+            res0 <- -2*sum((alpha[1,1:Kstar]-mu/(1-phi))*(phi*alpha[1,1:Kstar]+mu/(1-phi)))
+            res <- res0-2*(sum((alpha[1:(Lw-1),1:Kstar])*(alpha[2:Lw,1:Kstar]-mu-phi*alpha[1:(Lw-1),1:Kstar])))
+            res <- res*(-1/(2*sigma2ETA))  ## corrected from 'res*(-1/2*sigma2ETA)'
+        }else{
+            res <- 0.0001
+        }
+        return(res)
+    }
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        phi <- runif(1)
+        nAlong <- sample(2:10, 1)
+        indexClassMaxMix <- sample(2:10, 1)
+        level <- matrix(rnorm(nAlong * indexClassMaxMix),
+                        nrow = nAlong,
+                        ncol = indexClassMaxMix)
+        meanLevel <- rnorm(n = 1, sd = 0.1)
+        omega <- runif(1)
+        ans.obtained <- modePhiMix(phi = phi,
+                                   level = level,
+                                   meanLevel = meanLevel,
+                                   nAlong = nAlong,
+                                   indexClassMaxMix = indexClassMaxMix,
+                                   omega = omega)
+        ans.expected <- phi_log_posterior_first_order(mu = meanLevel,
+                                                      phi = phi,
+                                                      Lw = nAlong,
+                                                      alpha = level,
+                                                      Kstar = indexClassMaxMix,
+                                                      sigma2ETA = omega^2)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
 
 test_that("safeLogProp_Binomial gives valid answers", {
     safeLogProp_Binomial <- demest:::safeLogProp_Binomial
