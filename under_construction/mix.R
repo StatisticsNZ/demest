@@ -37,14 +37,16 @@ setMethod("updateBetaAndPriorBeta",
                   prior <- updateLatentWeightMix(prior)
                   prior <- updateIndexClassMix(prior = prior,
                                                betaTilde = beta)
+                  prior <- updateIndexClassMaxUsedMix(prior) # deterministic
                   prior <- updateCurrentNumClassMix(prior) # deterministic
                   prior <- updateLevelComponentWeightMix(prior)
                   prior <- updateMeanLevelComponentWeightMix(prior)
-                  prior <- updatePhiMix(prior) ### NOT WRITTEN YET!!!!!
+                  prior <- updatePhiMix(prior)
                   ## return
                   list(beta, prior)
               }
           })
+
 
 
 
@@ -147,6 +149,20 @@ updateVectorsMixAndProdVectorsMix <- function(prior, betaTilde, useC = FALSE) {
     }
 }
 
+## 'k-star' in notes
+updateIndexClassMaxUsedMix <- function(prior, useC = FALSE) {
+    stopifnot(methods::is(prior, "Mix"))
+    stopifnot(validObject(prior))
+    if (useC) {
+        .Call(updateIndexClassMaxUsedMix_R, prior)
+    }
+    else {
+        index.class <- object@indexClassMix
+        index.class.max.used <- max(index.class)
+        prior@indexClassMaxUsedMix@.Data <- index.class.max.used
+        prior
+    }
+}
 
 ## 'sigma_A', 'sigma_S' in notes
 updateOmegaVectorsMix <- function(prior, useC = FALSE) {
@@ -165,13 +181,15 @@ updateOmegaVectorsMix <- function(prior, useC = FALSE) {
         dim.beta <- prior@dimBeta
         index.class.max.used <- prior@indexClassMaxUsed@.Data
         V <- 0
+        n <- 0L
         for (i in seq_along(vectors)) {
             if (i != iAlong) {
                 vector <- vectors[[i]]
                 dim <- dim.beta[i]
-                n <- dim * index.class.max.used
-                for (i.vector in seq_len(n))
+                n.cells <- dim * index.class.max.used
+                for (i.vector in seq_len(n.cells))
                     V <- V + vector[i.vector]^2
+                n <- n + n.cells
             }
         }
         omega.vectors <- updateSDNorm(sigma = omega,
@@ -186,45 +204,45 @@ updateOmegaVectorsMix <- function(prior, useC = FALSE) {
 
 
 
-## 'sigma_A', 'sigma_S' in notes
-updateOmegaVectorsMix <- function(prior, useC = FALSE) {
-    stopifnot(methods::is(prior, "Mix"))
-    stopifnot(validObject(prior))
-    if (useC) {
-        .Call(updateOmegaVectorsMix_R, prior)
-    }
-    else {    
-        omega.vectors <- prior@omegaVectorsMix@.Data
-        omega.vectors.max <- prior@omegaVectorsMaxMix@.Data
-        A.vectors <- prior@AVectorsMix@.Data
-        nu.vectors <- prior@nuVectorsMix@.Data
-        vectors <- prior@vectorsMix
-        iAlong <- prior@iAlong
-        dim.beta <- prior@dimBeta
-        index.class.max <- prior@indexClassMax@.Data
-        for (i in seq_along(omega.vectors)) {
-            if (i != iAlong) {
-                omega <- omega.vectors[i]
-                A <- A.vectors[i]
-                nu <- nu.vectors[i]
-                omega.max <- omega.max.vectors[i]
-                vector <- vectors[[i]]
-                dim <- dim.beta[i]
-                n <- dim * index.class.max
-                V <- 0
-                for (i.vector in seq_len(n))
-                    V <- V + vector[i.vector]^2
-                omega.vectors[i.dim] <- updateSDNorm(sigma = omega,
-                                                     A = A,
-                                                     nu = nu,
-                                                     V = V,
-                                                     n = n,
-                                                     max = omega.max)
-            }
-        }
-        prior@omegaVectorsMix@.Data <- omega.vectors
-    }
-}
+## ## 'sigma_A', 'sigma_S' in notes
+## updateOmegaVectorsMix <- function(prior, useC = FALSE) {
+##     stopifnot(methods::is(prior, "Mix"))
+##     stopifnot(validObject(prior))
+##     if (useC) {
+##         .Call(updateOmegaVectorsMix_R, prior)
+##     }
+##     else {    
+##         omega.vectors <- prior@omegaVectorsMix@.Data
+##         omega.vectors.max <- prior@omegaVectorsMaxMix@.Data
+##         A.vectors <- prior@AVectorsMix@.Data
+##         nu.vectors <- prior@nuVectorsMix@.Data
+##         vectors <- prior@vectorsMix
+##         iAlong <- prior@iAlong
+##         dim.beta <- prior@dimBeta
+##         index.class.max <- prior@indexClassMax@.Data
+##         for (i in seq_along(omega.vectors)) {
+##             if (i != iAlong) {
+##                 omega <- omega.vectors[i]
+##                 A <- A.vectors[i]
+##                 nu <- nu.vectors[i]
+##                 omega.max <- omega.max.vectors[i]
+##                 vector <- vectors[[i]]
+##                 dim <- dim.beta[i]
+##                 n <- dim * index.class.max
+##                 V <- 0
+##                 for (i.vector in seq_len(n))
+##                     V <- V + vector[i.vector]^2
+##                 omega.vectors[i.dim] <- updateSDNorm(sigma = omega,
+##                                                      A = A,
+##                                                      nu = nu,
+##                                                      V = V,
+##                                                      n = n,
+##                                                      max = omega.max)
+##             }
+##         }
+##         prior@omegaVectorsMix@.Data <- omega.vectors
+##     }
+## }
 
 ## 'z' in notes
 updateLatentComponentWeightMix <- function(prior, useC = FALSE) {
@@ -338,6 +356,7 @@ updateLatentWeightMix <- function(prior, useC = FALSE) {
     }
 }
 
+## READY
 ## 'k' in notes
 updateIndexClassMix <- function(prior, betaTilde, useC = FALSE) {
     ## 'prior'
@@ -364,9 +383,9 @@ updateIndexClassMix <- function(prior, betaTilde, useC = FALSE) {
         n.along <- dim.beta[iAlong]
         pos1 <- object@posProdVectors1
         pos2 <- object@posProdVectors2
-        n.beta.no.along <- object@nBetaNoAlongMix
+        n.beta.no.along <- object@nBetaNoAlongMix@.Data
         v <- getV(prior)
-        iterator.beta <- resetA(iterator.beta)
+        iterator.beta <- resetS(iterator.beta)
         for (i.along in seq_along(n.along)) {
             indices.beta <- iterator.beta@indices
             for (i.beta in indices.beta) {
@@ -396,7 +415,7 @@ updateIndexClassMix <- function(prior, betaTilde, useC = FALSE) {
                 }
                 index.class[i.beta] <- i.class
             }
-            iterator.beta <- advanceA(iterator.beta)
+            iterator.beta <- advanceS(iterator.beta)
         }
         prior@indexClassMix@.Data <- index.class
     }

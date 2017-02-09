@@ -537,6 +537,19 @@ setClass("IndexClassMaxMixMixin",
                                  "indexClassMaxMix", 2L))
          })
 
+## 'k-star' in notes
+setClass("IndexClassMaxUsedMixMixin",
+         slots = c(indexClassMaxUsedMix = "Counter"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             indexClassMaxUsedMix <- object@indexClassMaxUsedMix@.Data
+             indexClassMix <- object@indexClassMix
+             ## 'indexClassMaxUsed' is maximum of 'indexClassMix'
+             if (!identical(indexClassMaxUsedMix, max(indexClassMix)))
+                 return(gettextf("'%s' is not maximum of '%s'",
+                                 "indexClassMaxUsedMix", "indexClassMix"))
+         })
+
 ## 'k' in notes
 setClass("IndexClassMixMixin",
          slots = c(indexClassMix = "integer"),
@@ -564,24 +577,22 @@ setClass("IndexClassMixMixin",
              TRUE
          })
 
-## WHAT IS THIS NEEDED FOR????
-## ## 'k' in notes
-## setClass("IndexClassProbMixMixin",
-##          slots = c(indexClassProbMix = "ParameterVector"),
-##          contains = "VIRTUAL",
-##          validity = function(object) {
-##              indexClassProbMix <- object@indexClassProbMix@.Data
-##              indexClassMaxMix <- object@indexClassMaxMix@.Data
-##              ## 'indexClassProbMix' has length 'indexClassMaxMix'
-##              if (!identical(length(indexClassProbMix), indexClassMaxMix))
-##                  return(gettextf("'%s' does not have length '%s'",
-##                                  "indexClassMix", "indexClassMaxMix"))
-##              ## 'indexClassProbMix' non-negative
-##              if (any(indexClassProbMix < 0))
-##                  return(gettextf("'%s' has negative values",
-##                                  "indexClassProbMix"))
-##              TRUE
-##          })
+setClass("IndexClassProbMixMixin",
+         slots = c(indexClassProbMix = "ParameterVector"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             indexClassProbMix <- object@indexClassProbMix@.Data
+             indexClassMaxMix <- object@indexClassMaxMix@.Data
+             ## 'indexClassProbMix' has length 'indexClassMaxMix'
+             if (!identical(length(indexClassProbMix), indexClassMaxMix))
+                 return(gettextf("'%s' does not have length '%s'",
+                                 "indexClassMix", "indexClassMaxMix"))
+             ## 'indexClassProbMix' non-negative
+             if (any(indexClassProbMix < 0))
+                 return(gettextf("'%s' has negative values",
+                                 "indexClassProbMix"))
+             TRUE
+         })
 
 setClass("IsRobustMixin",
          slots = c(isRobust = "LogicalFlag"),
@@ -929,6 +940,21 @@ setClass("MultSeasonMixin",
 setClass("MultTauMixin",
          slots = c(multTau = "Scale"),
          contains = "VIRTUAL")
+
+setClass("NBetaNoAlongMixin",
+         slots = c(nBetaNoAlong = "Length"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             nBetaNoAlong <- object@nBetaNoAlong@.Data
+             dimBeta <- object@dimBeta
+             iAlong <- object@iAlong
+             ## consistent with 'iAlong' and 'dimBeta'
+             n.expected <- as.integer(prod(dimBeta[-iAlong]))
+             if (!identical(nBetaNoAlong, n.expected))
+                 return(gettextf("'%s', '%s', and '%s' inconsistent",
+                                 "nBetaNoAlong", "iAlong", "dimBeta"))
+             TRUE
+         })
 
 setClass("NElementClassAlphaMixin",
          slots = c(nElementClassAlpha = "integer"),

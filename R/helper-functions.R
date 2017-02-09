@@ -1013,7 +1013,7 @@ initialDLMSeasonPredict <- function(prior, metadata) {
          s = s.new)
 }
 
-
+## HAS_TESTS
 initialMixAll <- function(object, beta, metadata, sY, ...) {
     AComponentWeightMix <- object@AComponentWeightMix
     ALevelComponentWeightMix <- object@ALevelComponentWeightMix
@@ -1082,6 +1082,9 @@ initialMixAll <- function(object, beta, metadata, sY, ...) {
     J <- makeJ(beta)
     ## dimBeta
     dimBeta <- dim(metadata)
+    ## nBetaNoAlong
+    nBetaNoAlong <- as.integer(prod(dimBeta[-iAlong]))
+    nBetaNoAlong <- new("Length", nBetaNoAlong)
     ## AVectorsMix, nuVectorsMix, omegaVectorsMaxMix, omegaVectorsMix
     l <- makeVarianceVectorsMix(scale = scaleVectorsMix,
                                 metadata = metadata,
@@ -1142,6 +1145,12 @@ initialMixAll <- function(object, beta, metadata, sY, ...) {
                                        iAlong = iAlong,
                                        indexClassMaxMix = indexClassMaxMix,
                                        weightMix = weightMix)
+    ## indexClassMaxUsedMix
+    indexClassMaxUsedMix <- max(indexClassMix)
+    indexClassMaxUsedMix <- new("Counter", indexClassMaxUsedMix)
+    ## indexClassProbMix
+    indexClassProbMix <- rep(0, times = indexClassMaxMix@.Data)
+    indexClassProbMix <- new("ParameterVector", indexClassProbMix)
     ## latentComponentWeightMix
     latentComponentWeightMix <-
         makeLatentComponentWeightMix(dimBeta = dimBeta,
@@ -1178,7 +1187,9 @@ initialMixAll <- function(object, beta, metadata, sY, ...) {
          dimBeta = dimBeta,
          iAlong = iAlong,
          indexClassMaxMix = indexClassMaxMix,
+         indexClassMaxUsedMix = indexClassMaxUsedMix,
          indexClassMix = indexClassMix,
+         indexClassProbMix = indexClassProbMix,
          iteratorProdVectorMix = iteratorProdVectorMix,
          iteratorsDimsMix = iteratorsDimsMix,
          J = J,
@@ -1186,6 +1197,7 @@ initialMixAll <- function(object, beta, metadata, sY, ...) {
          latentWeightMix = latentWeightMix,
          levelComponentWeightMix = levelComponentWeightMix,
          mMix = mMix,
+         nBetaNoAlong = nBetaNoAlong,
          nuComponentWeightMix = nuComponentWeightMix,
          nuLevelComponentWeightMix = nuLevelComponentWeightMix,
          nuTau = nuTau,

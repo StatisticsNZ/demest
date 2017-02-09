@@ -760,7 +760,6 @@ test_that("initialDLMSeasonPredict works", {
 test_that("initialMixAll works", {
     initialMixAll <- demest:::initialMixAll
     initialPrior <- demest:::initialPrior
-    Mix <- demest:::Mix() ## NOT NEEDED WHEN EXPORTED
     set.seed(0)
     ## main effect
     spec <- Mix()
@@ -784,8 +783,11 @@ test_that("initialMixAll works", {
     stopifnot(identical(length(l$componentWeightMix), 10L * 10L))
     stopifnot(identical(l$dimBeta, c(20L, 2L, 10L)))
     stopifnot(identical(l$iAlong, 3L))
+    stopifnot(identical(l$indexClassMaxMix, new("Counter", 10L)))
+    stopifnot(identical(l$indexClassMaxUsedMix, new("Counter", max(l$indexClassMix))))
     stopifnot(identical(length(l$indexClassMix), 400L))
     stopifnot(all(l$indexClassMix@.Data %in% 1:10))
+    stopifnot(identical(l$indexClassProbMix, new("ParameterVector", rep(0, 10))))
     stopifnot(is(l$iteratorProdVector, "MarginIterator"))
     stopifnot(all(sapply(l$iteratorsDimsMix, is, "SliceIterator")))
     stopifnot(identical(length(l$iteratorsDimsMix), 3L))
@@ -805,6 +807,7 @@ test_that("initialMixAll works", {
         stopifnot(lwm[i] < wm[(i-1) %/% 40L + 1L, lcm[i]])
     stopifnot(identical(length(l$levelComponentWeightMix), 10L * 10L))
     stopifnot(identical(l$mMix, new("ParameterVector", rep(0, 10))))
+    stopifnot(identical(l$nBetaNoAlong, new("Length", 40L)))
     stopifnot(identical(l$nuComponentWeightMix, new("DegreesFreedom", 7)))
     stopifnot(identical(l$nuLevelComponentWeightMix, new("DegreesFreedom", 7)))
     stopifnot(identical(l$nuTau, new("DegreesFreedom", 7)))
