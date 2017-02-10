@@ -955,21 +955,6 @@ setClass("MultVectorsMixMixin",
          slots = c(multVectorsMix = "Scale"),
          contains = "VIRTUAL")
 
-setClass("NBetaNoAlongMixin",
-         slots = c(nBetaNoAlong = "Length"),
-         contains = "VIRTUAL",
-         validity = function(object) {
-             nBetaNoAlong <- object@nBetaNoAlong@.Data
-             dimBeta <- object@dimBeta
-             iAlong <- object@iAlong
-             ## consistent with 'iAlong' and 'dimBeta'
-             n.expected <- as.integer(prod(dimBeta[-iAlong]))
-             if (!identical(nBetaNoAlong, n.expected))
-                 return(gettextf("'%s', '%s', and '%s' inconsistent",
-                                 "nBetaNoAlong", "iAlong", "dimBeta"))
-             TRUE
-         })
-
 setClass("NElementClassAlphaMixin",
          slots = c(nElementClassAlpha = "integer"),
          contains = "VIRTUAL",
@@ -1671,7 +1656,24 @@ setClass("WeightMixMixin",
                  return(gettextf("length of '%s' not equal to length of \"%s\" dimension times '%s'",
                                  "weightMix", "along", "indexClassMaxMix"))
              TRUE
-         })             
+         })
+
+setClass("YXXXMixMixin",
+         slots = c(yXMix = "ParameterVector",
+                   XXMix = "ParameterVector"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             indexClassMaxMix <- object@indexClassMaxMix@.Data
+             ## yXMix, XXMix have length 'indexClassMaxMix'
+             for (name in c("yXMix", "XXMix")) {
+                 value <- slot(object, name)
+                 value <- value@.Data
+                 if (!identical(length(value), indexClassMaxMix))
+                     return(gettextf("'%s' does not have length '%s'",
+                                     name, "indexClassMaxMix"))
+             }
+             TRUE
+         })
 
 ## Do not require that nrows >= ncols, since we have
 ## an informative prior on the coefficients.

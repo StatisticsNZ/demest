@@ -1324,7 +1324,7 @@ setMethod("initialPrior",
                            levelComponentWeightMix = l.all$levelComponentWeightMix,
                            meanLevelComponentWeightMix = l.all$meanLevelComponentWeightMix,
                            mMix = l.all$mMix,
-                           nBetaNoAlong = l.all$nBetaNoAlong,
+                           nBetaNoAlongMix = l.all$nBetaNoAlongMix,
                            nuComponentWeightMix = l.all$nuComponentWeightMix,
                            nuLevelComponentWeightMix = l.all$nuLevelComponentWeightMix,
                            nuTau = l.all$nuTau,
@@ -1336,6 +1336,8 @@ setMethod("initialPrior",
                            omegaVectorsMaxMix = l.all$omegaVectorsMaxMix,
                            omegaVectorsMix = l.all$omegaVectorsMaxMix,
                            phiMix = l.all$phiMix,
+                           posProdVectors1Mix = l.all$posProdVectors1Mix,
+                           posProdVectors2Mix = l.all$posProdVectors2Mix,
                            priorMeanLevelComponentWeightMix = l.all$priorMeanLevelComponentWeightMix,
                            priorSDLevelComponentWeightMix = l.all$priorSDLevelComponentWeightMix,
                            prodVectorsMix = l.all$prodVectorsMix,
@@ -1344,7 +1346,9 @@ setMethod("initialPrior",
                            tau = l.all$tau,
                            tauMax = l.all$tauMax,
                            vectorsMix = l.all$vectorsMix,
-                           weightMix = l.all$weightMix)
+                           weightMix = l.all$weightMix,
+                           XXMix = l.all$XXMix,
+                           yXMix = l.all$yXMix)
           })
 
 

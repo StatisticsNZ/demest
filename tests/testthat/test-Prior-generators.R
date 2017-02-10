@@ -630,7 +630,7 @@ test_that("generator function and initialPrior work with MixNormZero", {
     expect_is(prior, "MixNormZero")
     ## nondefault
     spec <- Mix(along = "age",
-                vectors = Vectors(scale = HalfT(df = 4, scale = 0.5, mult = 2)),
+                vectors = Vectors(scale = HalfT(df = 4, scale = 0.5)),
                 weights = Weights(mean = 0.5,
                                   sd = 0.5,
                                   temporary = HalfT(scale = 0.4),

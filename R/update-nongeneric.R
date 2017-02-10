@@ -643,6 +643,107 @@ updateIndexClassMaxPossibleMix <- function(prior, useC = FALSE) {
     prior
 }
 
+## READY_TO_TRANSLATE
+## HAS_TESTS
+## 'k' in notes
+updateIndexClassMix <- function(prior, betaTilde, useC = FALSE) {
+    ## 'prior'
+    stopifnot(methods::is(prior, "Mix"))
+    stopifnot(validObject(prior))
+    ## 'betaTilde'
+    stopifnot(is.double(betaTilde))
+    stopifnot(!any(is.na(betaTilde)))
+    stopifnot(identical(length(betaTilde), prior@J@.Data))
+    if (useC) {
+        .Call(updateIndexClassMix_R, prior, betaTilde)
+    }
+    else {
+        index.class <- prior@indexClassMix # 'k'; length J
+        index.class.max <- prior@indexClassMaxMix@.Data
+        index.class.max.poss <- prior@indexClassMaxPossibleMix@.Data # k-tilde
+        index.class.prob <- prior@indexClassProbMix@.Data # length indexClassMaxMix
+        weight <- prior@weightMix@.Data # 'v'; length n.along * classIndexMax
+        latent.weight <- prior@latentWeightMix@.Data # 'u'; length J
+        prod.vectors <- prior@prodVectorsMix@.Data # length (J/n.along) * classIndexMax
+        iAlong <- prior@iAlong
+        dim.beta <- prior@dimBeta
+        iteratorsDims <- prior@iteratorsDimsMix
+        pos1 <- prior@posProdVectors1Mix
+        pos2 <- prior@posProdVectors2Mix
+        n.beta.no.along <- prior@nBetaNoAlongMix
+        iterator.beta <- iteratorsDims[[iAlong]]
+        n.along <- dim.beta[iAlong]
+        v <- getV(prior)
+        iterator.beta <- resetS(iterator.beta)
+        for (i.along in seq_len(n.along)) {
+            ## update the i.along'th slice of index.class
+            indices.beta <- iterator.beta@indices
+            for (i.beta in indices.beta) {
+                ## update the i.beta'th cell of index.class
+                latent.weight.i.beta <- latent.weight[i.beta]
+                beta.tilde.i.beta <- betaTilde[i.beta]
+                v.i.beta <- v[i.beta]
+                i.beta.no.along <- ((i.beta - 1L) %/% pos1) * pos2 + (i.beta - 1L) %% pos2 + 1L
+                ## Identify possible classes that the i.beta'th cell can belong to,
+                ## and calculate log f(beta.tilde | vectors, v) for each of
+                ## these classes.  Put the results in 'index.class.prob'.
+                for (i.class in seq_len(index.class.max.poss)) {
+                    i.w <- (i.class - 1L) * n.along + i.along
+                    weight.i.w <- weight[i.w]
+                    include.class <- latent.weight.i.beta < weight.i.w
+                    if (include.class) {
+                        i.prod <- (i.class - 1L) * n.beta.no.along + i.beta.no.along
+                        val.prod.vector <- prod.vectors[i.prod]
+                        log.prob <- -0.5 * (beta.tilde.i.beta - val.prod.vector)^2 / v.i.beta
+                        index.class.prob[i.class] <- log.prob
+                    }
+                    else
+                        index.class.prob[i.class] <- Inf
+                }
+                ## Randomly choose one of the possible classes,
+                ## with probabilities proportional to prob. But first
+                ## subtract maximum log value (equivalent to dividing
+                ## by maximum value) to avoid numerical problems.
+                max.log.prob <- -Inf
+                for (i.class in seq_len(index.class.max.poss)) {
+                    log.prob <- index.class.prob[i.class]
+                    include.class <- log.prob <= 0
+                    if (include.class) {
+                        if (log.prob > max.log.prob)
+                            max.log.prob <- log.prob
+                    }
+                }
+                sum.prob <- 0
+                for (i.class in seq_len(index.class.max.poss)) {
+                    log.prob <- index.class.prob[i.class]
+                    include.class <- log.prob <= 0
+                    if (include.class) {
+                        log.prob <- log.prob - max.log.prob
+                        prob <- exp(log.prob)
+                        index.class.prob[i.class] <- prob
+                        sum.prob <- sum.prob + prob
+                    }
+                }
+                U <- runif(1L) * sum.prob
+                cum.sum <- 0
+                for (i.class in seq_len(index.class.max.poss)) {
+                    include.class <- index.class.prob[i.class] <= 1
+                    if (include.class) {
+                        cum.sum <- cum.sum + index.class.prob[i.class]
+                        if (U <= cum.sum)
+                            break
+                    }
+                }
+                index.class[i.beta] <- i.class
+            }
+            iterator.beta <- advanceS(iterator.beta)
+        }
+        prior@indexClassMix <- index.class
+        prior
+    }
+}
+
+
 ## READY_TO_TRANSLATE (AGAIN)
 ## HAS_TESTS
 ## 'alpha' in notes

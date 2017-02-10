@@ -1102,6 +1102,66 @@ test_that("R and C versions of updateGWithTrend give same answer", {
     expect_identical(ans.R, ans.C)
 })
 
+test_that("updateIndexClassMaxMix gives valid answer", {
+    updateIndexClassMix <- demest:::updateIndexClassMix
+    set.seed(100)
+    initialPrior <- demest:::initialPrior
+    beta <- rnorm(200)
+    metadata <- new("MetaData",
+                    nms = c("reg", "time"),
+                    dimtypes = c("state", "time"),
+                    DimScales = list(new("Categories", dimvalues = letters[1:20]),
+                                     new("Points", dimvalues = 2001:2010)))
+    spec <- Mix(weights = Weights(mean = -20))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          multScale = 1)
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        beta.tilde <- rnorm(200)
+        ans.obtained <- updateIndexClassMix(prior = prior,
+                                            betaTilde = beta.tilde)
+        expect_false(identical(ans.obtained@indexClassMix, prior@indexClassMix))
+        u <- ans.obtained@latentWeightMix@.Data
+        wt <- matrix(ans.obtained@weightMix@.Data, nrow = 10)
+        k <- ans.obtained@indexClassMix
+        expect_true(all(wt[cbind(rep(1:10, each = 20), k)] > u))
+    }
+})
+
+test_that("R and C versions of updateIndexClassMaxMix give same answer", {
+    updateIndexClassMix <- demest:::updateIndexClassMix
+    set.seed(100)
+    initialPrior <- demest:::initialPrior
+    beta <- rnorm(200)
+    metadata <- new("MetaData",
+                    nms = c("reg", "time"),
+                    dimtypes = c("state", "time"),
+                    DimScales = list(new("Categories", dimvalues = letters[1:20]),
+                                     new("Points", dimvalues = 2001:2010)))
+    spec <- Mix(weights = Weights(mean = -20))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          multScale = 1)
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        beta.tilde <- rnorm(200)
+        set.seed(seed + 1)
+        ans.R <- updateIndexClassMix(prior = prior,
+                                     betaTilde = beta.tilde,
+                                     useC = FALSE)
+        set.seed(seed + 1)
+        ans.C <- updateIndexClassMix(prior = prior,
+                                     betaTilde = beta.tilde,
+                                     useC = TRUE)
+        expect_identical(ans.R, ans.C)
+    }
+})
+
 test_that("updateIndexClassMaxPossibleMix gives valid answer", {
     updateIndexClassMaxPossibleMix <- demest:::updateIndexClassMaxPossibleMix
     set.seed(100)

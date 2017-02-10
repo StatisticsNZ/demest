@@ -1072,8 +1072,20 @@ initialMixAll <- function(object, beta, metadata, sY, ...) {
     ## dimBeta
     dimBeta <- dim(metadata)
     ## nBetaNoAlong
-    nBetaNoAlong <- as.integer(prod(dimBeta[-iAlong]))
-    nBetaNoAlong <- new("Length", nBetaNoAlong)
+    nBetaNoAlongMix <- as.integer(prod(dimBeta[-iAlong]))
+    ## posProdVectors1Mix, posProdVectors2Mix
+    if (iAlong == 1L) {
+        posProdVectors1Mix <- dimBeta[1L]
+        posProdVectors2Mix <- 1L
+    }
+    else {
+        s1 <- seq_len(iAlong)
+        s2 <- seq_len(iAlong - 1L)
+        posProdVectors1Mix <- prod(dimBeta[s1])
+        posProdVectors2Mix <- prod(dimBeta[s2])
+        posProdVectors1Mix <- as.integer(posProdVectors1Mix)
+        posProdVectors2Mix <- as.integer(posProdVectors2Mix)
+    }        
     ## AVectorsMix, omegaVectorsMaxMix, omegaVectorsMix
     AVectorsMix <-
         makeAHalfT(A = AVectorsMix,
@@ -1179,6 +1191,11 @@ initialMixAll <- function(object, beta, metadata, sY, ...) {
     CMix <- new("ParameterVector", CMix)
     aMix <- new("ParameterVector", aMix)
     RMix <- new("ParameterVector", RMix)
+    ## yXMix, XXMix
+    yXMix <- rep(0, times = indexClassMaxMix@.Data)
+    XXMix <- rep(0, times = indexClassMaxMix@.Data)
+    yXMix <- new("ParameterVector", yXMix)
+    XXMix <- new("ParameterVector", XXMix)
     list(AComponentWeightMix = AComponentWeightMix,
          ALevelComponentWeightMix = ALevelComponentWeightMix,
          ATau = ATau,
@@ -1201,7 +1218,7 @@ initialMixAll <- function(object, beta, metadata, sY, ...) {
          latentWeightMix = latentWeightMix,
          levelComponentWeightMix = levelComponentWeightMix,
          mMix = mMix,
-         nBetaNoAlong = nBetaNoAlong,
+         nBetaNoAlongMix = nBetaNoAlongMix,
          nuComponentWeightMix = nuComponentWeightMix,
          nuLevelComponentWeightMix = nuLevelComponentWeightMix,
          nuTau = nuTau,
@@ -1214,6 +1231,8 @@ initialMixAll <- function(object, beta, metadata, sY, ...) {
          omegaVectorsMix = omegaVectorsMix,
          meanLevelComponentWeightMix = meanLevelComponentWeightMix,
          phiMix = phiMix,
+         posProdVectors1Mix = posProdVectors1Mix,
+         posProdVectors2Mix = posProdVectors2Mix,
          priorMeanLevelComponentWeightMix = priorMeanLevelComponentWeightMix,
          priorSDLevelComponentWeightMix = priorSDLevelComponentWeightMix,
          prodVectorsMix = prodVectorsMix,
@@ -1222,7 +1241,9 @@ initialMixAll <- function(object, beta, metadata, sY, ...) {
          tau = tau,
          tauMax = tauMax,
          vectorsMix = vectorsMix,
-         weightMix = weightMix)
+         weightMix = weightMix,
+         XXMix = XXMix,
+         yXMix = yXMix)
 }
 
 
@@ -4484,83 +4505,88 @@ makeVBar <- function(object, iBeta, g, useC = FALSE) {
     }
 }
 
-
-modePhiMix <- function(phi, level, meanLevel, nAlong,
-                       indexClassMaxMix, omega,
-                       useC = FALSE) {
-    ## 'phi'
-    stopifnot(identical(length(phi), 1L))
-    stopifnot(is.double(phi))
-    stopifnot(!is.na(phi))
-    stopifnot(abs(phi) <= 1)
-    ## 'level'
-    stopifnot(is.double(level))
-    stopifnot(!any(is.na(level)))
-    ## 'meanLevel'
-    stopifnot(identical(length(meanLevel), 1L))
-    stopifnot(is.double(meanLevel))
-    stopifnot(!is.na(meanLevel))
-    ## 'nAlong'
-    stopifnot(identical(length(nAlong), 1L))
-    stopifnot(is.integer(nAlong))
-    stopifnot(!is.na(nAlong))
-    stopifnot(nAlong >= 2L)
-    ## 'indexClassMaxMix'
-    stopifnot(identical(length(indexClassMaxMix), 1L))
-    stopifnot(is.integer(indexClassMaxMix))
-    stopifnot(!is.na(indexClassMaxMix))
-    stopifnot(indexClassMaxMix > 0)
-    ## 'omega'
-    stopifnot(identical(length(omega), 1L))
-    stopifnot(is.double(omega))
-    stopifnot(!is.na(omega))
-    stopifnot(omega > 0)
-    ## 'level', 'nAlong', 'indexClassMaxMix'
-    stopifnot(length(level) >= nAlong * indexClassMaxMix)
-    if (useC) {
-        .Call(modePhiMix_R, phi, level, meanLevel, nAlong, indexClassMaxMix, omega)
-    }
-    else {
-        phi.curr <- 0
-        diff.outer <- 1
-        while (diff.outer > 0.0001) {
-            length.step <- 0.1
-            log.post.curr <- logPostPhiMix(phi = phi.curr,
-                                           level = level,
-                                           meanLevel = meanLevel,
-                                           nAlong = nAlong,
-                                           indexClassMaxMix = indexClassMaxMix,
-                                           omega = omega)
-            diff.inner <- 0
-            while (((diff.inner <= 0) & (length.step > 0.001)) | (abs(phi.new) >= 1)) {
-                log.post.first <- logPostPhiFirstOrderMix(phi = phi,
-                                                          level = level,
-                                                          meanLevel = meanLevel,
-                                                          nAlong = nAlong,
-                                                          indexClassMaxMix = indexClassMaxMix,
-                                                          omega = omega)
-                log.post.second <- logPostPhiSecondOrderMix(phi = phi,
-                                                            level = level,
-                                                            meanLevel = meanLevel,
-                                                            nAlong = nAlong,
-                                                            indexClassMaxMix = indexClassMaxMix,
-                                                            omega = omega)
-                phi.new <- phi.curr - length.step * log.post.first / log.post.second
-                log.post.new <- logPostPhiMix(phi = phi.new,
-                                              level = level,
-                                              meanLevel = meanLevel,
-                                              nAlong = nAlong,
-                                              indexClassMaxMix = indexClassMaxMix,
-                                              omega = omega)
-                diff.inner <- log.post.new - log.post.curr
-                length.step <- length.step - 0.001
-            }
-            diff.outer <- abs(phi.new - phi.curr)
-            phi.curr <- phi.new
-        }
-        phi.new
-    }
-}
+## ## HAS_TESTS
+## modePhiMix <- function(phi, level, meanLevel, nAlong,
+##                        indexClassMaxMix, omega,
+##                        useC = FALSE) {
+##     ## 'phi'
+##     stopifnot(identical(length(phi), 1L))
+##     stopifnot(is.double(phi))
+##     stopifnot(!is.na(phi))
+##     stopifnot(abs(phi) <= 1)
+##     ## 'level'
+##     stopifnot(is.double(level))
+##     stopifnot(!any(is.na(level)))
+##     ## 'meanLevel'
+##     stopifnot(identical(length(meanLevel), 1L))
+##     stopifnot(is.double(meanLevel))
+##     stopifnot(!is.na(meanLevel))
+##     ## 'nAlong'
+##     stopifnot(identical(length(nAlong), 1L))
+##     stopifnot(is.integer(nAlong))
+##     stopifnot(!is.na(nAlong))
+##     stopifnot(nAlong >= 2L)
+##     ## 'indexClassMaxMix'
+##     stopifnot(identical(length(indexClassMaxMix), 1L))
+##     stopifnot(is.integer(indexClassMaxMix))
+##     stopifnot(!is.na(indexClassMaxMix))
+##     stopifnot(indexClassMaxMix > 0)
+##     ## 'omega'
+##     stopifnot(identical(length(omega), 1L))
+##     stopifnot(is.double(omega))
+##     stopifnot(!is.na(omega))
+##     stopifnot(omega > 0)
+##     ## 'level', 'nAlong', 'indexClassMaxMix'
+##     stopifnot(length(level) >= nAlong * indexClassMaxMix)
+##     if (useC) {
+##         .Call(modePhiMix_R, phi, level, meanLevel, nAlong, indexClassMaxMix, omega)
+##     }
+##     else {
+##         phi.curr <- 0
+##         diff.outer <- 1
+##         while (diff.outer > 0.0001) {
+##             length.step <- 0.1
+##             log.post.curr <- logPostPhiMix(phi = phi.curr,
+##                                            level = level,
+##                                            meanLevel = meanLevel,
+##                                            nAlong = nAlong,
+##                                            indexClassMaxMix = indexClassMaxMix,
+##                                            omega = omega,
+##                                            useC = TRUE)
+##             diff.inner <- 0
+##             phi.new <- 0
+##             while (((diff.inner <= 0) & (length.step > 0.001)) | (abs(phi.curr) >= 1)) {
+##                 log.post.first <- logPostPhiFirstOrderMix(phi = phi.curr,
+##                                                           level = level,
+##                                                           meanLevel = meanLevel,
+##                                                           nAlong = nAlong,
+##                                                           indexClassMaxMix = indexClassMaxMix,
+##                                                           omega = omega,
+##                                                           useC = TRUE)
+##                 log.post.second <- logPostPhiSecondOrderMix(phi = phi.curr,
+##                                                             level = level,
+##                                                             meanLevel = meanLevel,
+##                                                             nAlong = nAlong,
+##                                                             indexClassMaxMix = indexClassMaxMix,
+##                                                             omega = omega,
+##                                                             useC = TRUE)
+##                 phi.new <- phi.curr - length.step * log.post.first / log.post.second
+##                 log.post.new <- logPostPhiMix(phi = phi.new,
+##                                               level = level,
+##                                               meanLevel = meanLevel,
+##                                               nAlong = nAlong,
+##                                               indexClassMaxMix = indexClassMaxMix,
+##                                               omega = omega,
+##                                               useC = TRUE)
+##                 diff.inner <- log.post.new - log.post.curr
+##                 length.step <- length.step - 0.001
+##             }
+##             diff.outer <- abs(phi.new - phi.curr)
+##             phi.curr <- phi.new
+##         }
+##         phi.new
+##     }
+## }
 
 ## TRANSLATED
 ## HAS_TESTS
