@@ -601,7 +601,49 @@ updateGWithTrend <- function(prior, useC = FALSE) {
     }
 }
 
-## TRANSLATED
+## READY_TO_TRANSLATE
+## HAS_TESTS
+## 'k-tilde' in notes
+updateIndexClassMaxPossibleMix <- function(prior, useC = FALSE) {
+    stopifnot(methods::is(prior, "Mix"))
+    stopifnot(validObject(prior))
+    if (useC) {
+        .Call(updateIndexClassMaxPossibleMix_R, prior)
+    }
+    else {
+        latent.weight <- prior@latentWeightMix@.Data # 'u'; J
+        weight <- prior@weightMix@.Data # 'v'; n.along * index.class.max
+        index.class.max <- prior@indexClassMaxMix@.Data
+        sums.weights <- prior@sumsWeightsMix@.Data
+        iAlong <- prior@iAlong
+        dim.beta <- prior@dimBeta
+        n.along <- dim.beta[iAlong]
+        min.latent.weight <- min(latent.weight)
+        one.minus.min.latent <- 1 - min.latent.weight
+        found.ans <- FALSE
+        index.class.max.poss <- 0L
+        for (i in seq_len(n.along))
+            sums.weights[i] <- 0
+        while (!found.ans && (index.class.max.poss < index.class.max)) {
+            index.class.max.poss <- index.class.max.poss + 1L
+            offset <- (index.class.max.poss - 1L) * n.along
+            for (i.along in seq_len(n.along))
+                sums.weights[i.along] <- (sums.weights[i.along]
+                    + weight[i.along + offset])
+            for (i in seq_len(n.along)) {
+                if (sums.weights[i] <= one.minus.min.latent)
+                    break
+                if (i == n.along)
+                    found.ans <- TRUE
+            }
+        }
+        prior@foundIndexClassMaxPossibleMix@.Data <- found.ans
+        prior@indexClassMaxPossibleMix@.Data <- index.class.max.poss
+    }
+    prior
+}
+
+## READY_TO_TRANSLATE (AGAIN)
 ## HAS_TESTS
 ## 'alpha' in notes
 updateLevelComponentWeightMix <- function(prior, useC = FALSE) {
@@ -616,6 +658,7 @@ updateLevelComponentWeightMix <- function(prior, useC = FALSE) {
         iAlong <- prior@iAlong
         n.along <- dimBeta[iAlong]
         index.class.max <- prior@indexClassMaxMix@.Data
+        index.class.max.used <- prior@indexClassMaxUsedMix@.Data ## NEW
         comp <- prior@componentWeightMix@.Data # 'W'; n.along * index.class.max
         level <- prior@levelComponentWeightMix@.Data # 'alpha'; n.along * index.class.max
         mean.level <- prior@meanLevelComponentWeightMix@.Data # 'mu'; 1
@@ -629,9 +672,15 @@ updateLevelComponentWeightMix <- function(prior, useC = FALSE) {
         omega.comp.sq <- omega.comp^2
         omega.level <- prior@omegaLevelComponentWeightMix@.Data # 'eta'; 1
         omega.level.sq <- omega.level^2
-        for (i.class in seq_len(index.class.max)) {
-            m[1L] <- mean.level / (1 - phi)
-            C[1L] <- omega.level.sq / (1 - phi.sq)
+        prior.mean.first <- mean.level / (1 - phi) ## NEW
+        prior.var.first <- omega.level.sq / (1 - phi.sq) ## NEW
+        prior.sd.first <- sqrt(prior.var.first) ## NEW
+        ## for (i.class in seq_len(index.class.max)) {
+        for (i.class in seq_len(index.class.max.used)) { ## CHANGED
+            ## m[1L] <- mean.level / (1 - phi)
+            ## C[1L] <- omega.level.sq / (1 - phi.sq)
+            m[1L] <- prior.mean.first ## CHANGED
+            C[1L] <- prior.var.first ## CHANGED
             ## forward filter
             for (i.along in seq_len(n.along - 1L)) {
                 i.wt <- (i.class - 1L) * n.along + i.along + 1L
@@ -660,12 +709,29 @@ updateLevelComponentWeightMix <- function(prior, useC = FALSE) {
                                                  sd = sqrt(C.star))
             }
         }
+        ## EVERYTHING WITHIN THE IF STATEMENT IS NEW
+        ## draw remaining values straight from prior
+        if (index.class.max.used < index.class.max) {
+            for (i.class in seq.int(from = index.class.max.used + 1L,
+                                    to = index.class.max)) {
+                i.wt <- (i.class - 1L) * n.along + 1L
+                level[i.wt] <- rnorm(n = 1L,
+                                     mean = prior.mean.first,
+                                     sd = prior.sd.first)
+                for (i.along in seq.int(from = 2L, to = n.along)) {
+                    i.wt.curr <- (i.class - 1L) * n.along + i.along
+                    i.wt.prev <- i.wt.curr - 1L
+                    mean <- mean.level + phi * level[i.wt.prev]
+                    level[i.wt.curr] <- rnorm(n = 1L,
+                                              mean = mean,
+                                              sd = omega.level)
+                }
+            }
+        }
         prior@levelComponentWeightMix@.Data <- level
         prior
     }
 }
-
-
 
 ## TRANSLATED
 ## HAS_TESTS

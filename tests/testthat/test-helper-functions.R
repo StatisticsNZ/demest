@@ -782,8 +782,12 @@ test_that("initialMixAll works", {
     stopifnot(identical(l$CMix, new("ParameterVector", rep(1, times = 10))))
     stopifnot(identical(length(l$componentWeightMix), 10L * 10L))
     stopifnot(identical(l$dimBeta, c(20L, 2L, 10L)))
+    stopifnot(identical(l$foundIndexClassMaxPossibleMix,
+                        new("LogicalFlag", TRUE)))
     stopifnot(identical(l$iAlong, 3L))
     stopifnot(identical(l$indexClassMaxMix, new("Counter", 10L)))
+    stopifnot(identical(l$indexClassMaxPossibleMix,
+                        new("Counter", max(l$indexClassMix))))
     stopifnot(identical(l$indexClassMaxUsedMix, new("Counter", max(l$indexClassMix))))
     stopifnot(identical(length(l$indexClassMix), 400L))
     stopifnot(all(l$indexClassMix@.Data %in% 1:10))
@@ -824,6 +828,7 @@ test_that("initialMixAll works", {
     stopifnot(is(l$priorSDLevelComponentWeightMix, "Scale"))
     stopifnot(identical(sum(l$prodVectorsMix@.Data), sum(outer(l$vectorsMix[[1]], l$vectorsMix[[2]]))))
     stopifnot(identical(l$RMix, new("ParameterVector", rep(1, 9))))
+    stopifnot(identical(l$sumsWeightsMix, new("UnitIntervalVec", rep(0, 10))))
     stopifnot(is(l$tau, "Scale"))
     stopifnot(is(l$tauMax, "Scale"))
     stopifnot(identical(sapply(l$vectorsMix, length), c(20L * 10L, 2L * 10L, 0L)))

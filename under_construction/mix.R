@@ -25,23 +25,28 @@ setMethod("updateBetaAndPriorBeta",
                                          beta = beta)
                   ## vectors
                   prior <- updateVectorsMixAndProdVectorsMix(prior = prior,
-                                                             betaTilde = beta)
-                  prior <- updateOmegaVectorsMix(prior)
+                                                             betaTilde = beta) # psi
+                  prior <- updateOmegaVectorsMix(prior) # sigma
                   ## weights
-                  prior <- updateLatentComponentWeightMix(prior)
-                  prior <- updateComponentWeightMix(prior)
-                  prior <- updateWeightMix(prior) # deterministic
-                  prior <- updateLatentWeightMix(prior)
+                  prior <- updateLatentComponentWeightMix(prior) # z
+                  prior <- updateComponentWeightMix(prior) # W
+                  prior <- updateWeightMix(prior) # v; deterministic
+                  prior <- updateLatentWeightMix(prior) # u
+                  prior <- updateIndexClassMaxPossibleMix(prior) # k-tilde
                   prior <- updateIndexClassMix(prior = prior,
-                                               betaTilde = beta)
-                  prior <- updateIndexClassMaxUsedMix(prior) # deterministic
-                  prior <- updateLevelComponentWeightMix(prior)
-                  prior <- updateMeanLevelComponentWeightMix(prior)
-                  prior <- updatePhiMix(prior)
+                                               betaTilde = beta) # k
+                  prior <- updateIndexClassMaxUsedMix(prior) # k-star; deterministic
+                  prior <- updateLevelComponentWeightMix(prior) # alpha
+                  prior <- updateMeanLevelComponentWeightMix(prior) # mu
+                  prior <- updatePhiMix(prior) # phi
                   ## return
                   list(beta, prior)
               }
           })
+
+
+
+
 
 
 ## READY
@@ -538,30 +543,3 @@ betaHatAlphaMix <- function(prior, useC = FALSE) {
 
 
                             
-
-## ## record logical variable if max class not high enough
-## updateCurrentNumClassMix <- function(prior) {
-##     latent.weight <- prior@latentWeightMix@.Data
-##     weight <- prior@weightMix@.Data
-##     max.num.class <- prior@indexClassMaxMix@.Data
-##     i.along <- object@iAlong
-##     dim.beta <- object@dimBeta
-##     n.along <- dim.beta[i.along]
-##     one.minus.min.latent <- 1 - min(latent.weight)
-##     sums.weights <- rep(0, times = n.along)
-##     found.ans <- FALSE
-##     current.num.class <- 0L
-##     while (!found.ans && (current.num.class < max.num.class)) {
-##         current.num.class <- current.num.class + 1L
-##         offset <- (current.num.class - 1L) * n.along
-##         for (i in seq_len(n.along))
-##             sums.weights[i] <- sums.weights[i] + weights[i + offset]
-##         for (i in seq_len(n.along)) {
-##             if (sums.weights[i] < one.minus.min.latent)
-##                 break
-##             if (i == n.along)
-##                 found.ans <- TRUE
-##         }
-##     }
-##     prior@currentNumClass@.Data <- current.num.class
-## }

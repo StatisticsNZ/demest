@@ -1139,12 +1139,20 @@ initialMixAll <- function(object, beta, metadata, sY, ...) {
                                        iAlong = iAlong,
                                        indexClassMaxMix = indexClassMaxMix,
                                        weightMix = weightMix)
+    ## indexClassMaxPossibleMix
+    indexClassMaxPossibleMix <- max(indexClassMix)
+    indexClassMaxPossibleMix <- new("Counter", indexClassMaxPossibleMix)
     ## indexClassMaxUsedMix
     indexClassMaxUsedMix <- max(indexClassMix)
     indexClassMaxUsedMix <- new("Counter", indexClassMaxUsedMix)
     ## indexClassProbMix
     indexClassProbMix <- rep(0, times = indexClassMaxMix@.Data)
     indexClassProbMix <- new("ParameterVector", indexClassProbMix)
+    ## foundIndexClassMaxPossibleMix
+    foundIndexClassMaxPossibleMix <- new("LogicalFlag", TRUE)
+    ## sumsWeightsMix
+    sumsWeightsMix <- rep(0, times = dimBeta[iAlong])
+    sumsWeightsMix <- new("UnitIntervalVec", sumsWeightsMix)
     ## latentComponentWeightMix
     latentComponentWeightMix <-
         makeLatentComponentWeightMix(dimBeta = dimBeta,
@@ -1179,8 +1187,10 @@ initialMixAll <- function(object, beta, metadata, sY, ...) {
          CMix = CMix,
          componentWeightMix = componentWeightMix,
          dimBeta = dimBeta,
+         foundIndexClassMaxPossibleMix = foundIndexClassMaxPossibleMix,
          iAlong = iAlong,
          indexClassMaxMix = indexClassMaxMix,
+         indexClassMaxPossibleMix = indexClassMaxPossibleMix,
          indexClassMaxUsedMix = indexClassMaxUsedMix,
          indexClassMix = indexClassMix,
          indexClassProbMix = indexClassProbMix,
@@ -1208,6 +1218,7 @@ initialMixAll <- function(object, beta, metadata, sY, ...) {
          priorSDLevelComponentWeightMix = priorSDLevelComponentWeightMix,
          prodVectorsMix = prodVectorsMix,
          RMix = RMix,
+         sumsWeightsMix = sumsWeightsMix,
          tau = tau,
          tauMax = tauMax,
          vectorsMix = vectorsMix,

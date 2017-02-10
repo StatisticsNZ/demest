@@ -1102,6 +1102,77 @@ test_that("R and C versions of updateGWithTrend give same answer", {
     expect_identical(ans.R, ans.C)
 })
 
+test_that("updateIndexClassMaxPossibleMix gives valid answer", {
+    updateIndexClassMaxPossibleMix <- demest:::updateIndexClassMaxPossibleMix
+    set.seed(100)
+    initialPrior <- demest:::initialPrior
+    beta <- rnorm(200)
+    metadata <- new("MetaData",
+                    nms = c("reg", "time"),
+                    dimtypes = c("state", "time"),
+                    DimScales = list(new("Categories", dimvalues = letters[1:20]),
+                                     new("Points", dimvalues = 2001:2010)))
+    spec <- Mix(weights = Weights(mean = -20))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          multScale = 1)
+    found <- 0L
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        prior@latentWeightMix@.Data <- runif(n = 200)
+        prior@weightMix@.Data <- runif(n = 100, min = 0, max = 0.3)
+        ans.obtained <- updateIndexClassMaxPossibleMix(prior)
+        found <- found + ans.obtained@foundIndexClassMaxPossibleMix@.Data
+        ans.expected <- prior
+        one.minus.u.min <- 1 - min(prior@latentWeightMix@.Data)
+        w <- matrix(prior@weightMix@.Data,
+                    ncol = prior@indexClassMaxMix@.Data)
+        w.cum <- t(apply(w, 1, cumsum))
+        all.w.cum.gt.one.minus.u.min <- apply(w.cum, 2, function(x) all(x > one.minus.u.min))
+        if (any(all.w.cum.gt.one.minus.u.min)) {
+            max.poss <- which.max(all.w.cum.gt.one.minus.u.min)
+            ans.expected@indexClassMaxPossibleMix@.Data <- max.poss
+            ans.expected@foundIndexClassMaxPossibleMix@.Data <- TRUE
+        }
+        else
+            ans.expected@foundIndexClassMaxPossibleMix@.Data <- FALSE
+        expect_identical(ans.obtained, ans.expected)
+    }
+    if ((found == n.test) || (found == 0L))
+        warning("all found or none found")
+})
+
+test_that("R and C versions of updateIndexClassMaxPossibleMix give same answer", {
+    updateIndexClassMaxPossibleMix <- demest:::updateIndexClassMaxPossibleMix
+    set.seed(100)
+    initialPrior <- demest:::initialPrior
+    beta <- rnorm(200)
+    metadata <- new("MetaData",
+                    nms = c("reg", "time"),
+                    dimtypes = c("state", "time"),
+                    DimScales = list(new("Categories", dimvalues = letters[1:20]),
+                                     new("Points", dimvalues = 2001:2010)))
+    spec <- Mix(weights = Weights(mean = -20))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          multScale = 1)
+    found <- 0L
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        prior@latentWeightMix@.Data <- runif(n = 200)
+        prior@weightMix@.Data <- runif(n = 100, min = 0, max = 0.3)
+        ans.R <- updateIndexClassMaxPossibleMix(prior, useC = FALSE)
+        ans.C <- updateIndexClassMaxPossibleMix(prior, useC = TRUE)
+        expect_identical(ans.R, ans.C)
+    }
+    if ((found == n.test) || (found == 0L))
+        warning("all found or none found")
+})
+
 test_that("updateLevelComponentWeightMix gives valid answer", {
     updateLevelComponentWeightMix <- demest:::updateLevelComponentWeightMix
     set.seed(100)
@@ -1112,12 +1183,14 @@ test_that("updateLevelComponentWeightMix gives valid answer", {
                     dimtypes = c("state", "time"),
                     DimScales = list(new("Categories", dimvalues = letters[1:20]),
                                      new("Points", dimvalues = 2001:2010)))
-    spec <- Mix()
+    spec <- Mix(weights = Weights(mean = -20))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
                           multScale = 1)
+    prior@indexClassMaxUsedMix@.Data <- 8L
+    prior@indexClassMix[prior@indexClassMix > 8L] <- 8L
     set.seed(2)
     ans.obtained <- updateLevelComponentWeightMix(prior)
     ffbs <- function(beta, alpha, mu, m, C, phi, tau, omega) {
@@ -1151,7 +1224,7 @@ test_that("updateLevelComponentWeightMix gives valid answer", {
                        ncol = prior@indexClassMaxMix@.Data)[-1,] # not using first row
     alpha.all <- matrix(prior@levelComponentWeightMix@.Data,
                         ncol = prior@indexClassMaxMix@.Data)
-    for (j in seq_len(prior@indexClassMaxMix@.Data)) {
+    for (j in seq_len(prior@indexClassMaxUsedMix@.Data)) {
         m <- numeric(nrow(alpha.all))
         m[1] <- mu / (1 - phi)
         C <- numeric(nrow(alpha.all))
@@ -1165,6 +1238,17 @@ test_that("updateLevelComponentWeightMix gives valid answer", {
                                tau = tau,
                                omega = omega)
     }
+    for (j in seq.int(from = prior@indexClassMaxUsedMix@.Data + 1L,
+                      to = prior@indexClassMaxMix@.Data)) {
+        alpha.all[1,j] <- rnorm(n = 1,
+                                mean = mu / (1 - phi),
+                                sd = sqrt(omega^2 / (1 - phi^2)))
+        for (i in 2:nrow(alpha.all)) {
+            alpha.all[i, j] <- rnorm(n = 1,
+                                     mean = mu + phi* alpha.all[i-1,j],
+                                     sd = omega)
+        }
+    }
     ans.expected <- prior
     ans.expected@levelComponentWeightMix@.Data <- as.double(alpha.all)
     if (test.identity)
@@ -1175,14 +1259,14 @@ test_that("updateLevelComponentWeightMix gives valid answer", {
 
 test_that("R and C versions of updateLevelComponentWeightMix give same answer", {
     updateLevelComponentWeightMix <- demest:::updateLevelComponentWeightMix
-    set.seed(100)
     initialPrior <- demest:::initialPrior
+    set.seed(100)
     metadata <- new("MetaData",
                     nms = c("reg", "time"),
                     dimtypes = c("state", "time"),
                     DimScales = list(new("Categories", dimvalues = letters[1:20]),
                                      new("Points", dimvalues = 2001:2010)))
-    spec <- Mix()
+    spec <- Mix(weights = Weights(mean = -20))
     for (seed in seq_len(n.test)) {
         set.seed(seed + 1)
         beta <- rnorm(200)
@@ -1191,6 +1275,9 @@ test_that("R and C versions of updateLevelComponentWeightMix give same answer", 
                               metadata = metadata,
                               sY = NULL,
                               multScale = 1)
+        max.val <- sample(7:10, 1)
+        prior@indexClassMaxUsedMix@.Data <- max.val
+        prior@indexClassMix[prior@indexClassMix > max.val] <- max.val
         set.seed(seed)
         ans.R <- updateLevelComponentWeightMix(prior, useC = FALSE)
         set.seed(seed)
@@ -1201,37 +1288,6 @@ test_that("R and C versions of updateLevelComponentWeightMix give same answer", 
             expect_equal(ans.R, ans.C)
     }
 })
-
-    updateLevelComponentWeightMix <- demest:::updateLevelComponentWeightMix
-    set.seed(100)
-    initialPrior <- demest:::initialPrior
-    metadata <- new("MetaData",
-                    nms = c("reg", "time"),
-                    dimtypes = c("state", "time"),
-                    DimScales = list(new("Categories", dimvalues = letters[1:20]),
-                                     new("Points", dimvalues = 2001:2010)))
-    spec <- Mix()
-    seed <- 1
-        set.seed(seed + 1)
-        beta <- rnorm(200)
-        prior <- initialPrior(spec,
-                              beta = beta,
-                              metadata = metadata,
-                              sY = NULL,
-                              multScale = 1)
-        set.seed(seed)
-        sink("outputR.txt", append=FALSE, split=TRUE) 
-        ans.R <- updateLevelComponentWeightMix(prior, useC = FALSE)
-        print(ans.R@levelComponentWeightMix)
-        sink()
-        
-        sink("outputC.txt", append=FALSE, split=TRUE) 
-        set.seed(seed)
-        ans.C <- updateLevelComponentWeightMix(prior, useC = TRUE)
-        print(ans.C@levelComponentWeightMix)
-        all.equal(ans.R, ans.C)
-
-
 
 test_that("updateOmegaAlpha works", {
     updateOmegaAlpha <- demest:::updateOmegaAlpha

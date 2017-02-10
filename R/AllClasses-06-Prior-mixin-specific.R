@@ -415,6 +415,10 @@ setClass("FormulaMixin",
              TRUE
          })
 
+setClass("FoundIndexClassMaxPossibleMixMixin",
+         slots = c(foundIndexClassMaxPossibleMix = "LogicalFlag"),
+         contains = "VIRTUAL")
+
 setClass("GWithTrendMixin",
          slots = c(GWithTrend = "NumericMatrixSquare"),
          contains = "VIRTUAL",
@@ -520,6 +524,26 @@ setClass("IndexClassMaxMixMixin",
              if (indexClassMaxMix < 2L)
                  return(gettextf("'%s' is less than %d",
                                  "indexClassMaxMix", 2L))
+             TRUE
+         })
+
+## 'k-tilde' in notes
+setClass("IndexClassMaxPossibleMixMixin",
+         slots = c(indexClassMaxPossibleMix = "Counter"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             indexClassMaxPossibleMix <- object@indexClassMaxPossibleMix@.Data
+             indexClassMaxUsedMix <- object@indexClassMaxUsedMix@.Data
+             indexClassMaxMix <- object@indexClassMaxMix@.Data
+             ## 'indexClassMaxPossibleMix' is greater than or equal to 'indexClassMaxUsedMix'
+             if (indexClassMaxPossibleMix < indexClassMaxUsedMix)
+                 return(gettextf("'%s' is smaller than '%s'",
+                                 "indexClassMaxPossibleMix", "indexClassMaxUsedMix"))
+             ## 'indexClassMaxPossibleMix' is less than or equal to 'indexClassMaxMix'
+             if (indexClassMaxPossibleMix > indexClassMaxMix)
+                 return(gettextf("'%s' is greater than '%s'",
+                                 "indexClassMaxPossibleMix", "indexClassMaxMix"))
+             TRUE
          })
 
 ## 'k-star' in notes
@@ -533,6 +557,7 @@ setClass("IndexClassMaxUsedMixMixin",
              if (!identical(indexClassMaxUsedMix, max(indexClassMix)))
                  return(gettextf("'%s' is not maximum of '%s'",
                                  "indexClassMaxUsedMix", "indexClassMix"))
+             TRUE
          })
 
 ## 'k' in notes
@@ -1468,6 +1493,21 @@ setClass("SpecTauMixin",
 setClass("SpecTauMaxMixin",
          slots = c(tauMax = "SpecScale"),
          contains = "VIRTUAL")
+
+setClass("SumsWeightsMixMixin",
+         slots = c(sumsWeightsMix = "UnitIntervalVec"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             sumsWeightsMix <- object@sumsWeightsMix@.Data
+             iAlong <- object@iAlong
+             dim.beta <- object@dimBeta
+             n.along <- dim.beta[iAlong]
+             ## length of 'sumsWeightMix' equal to n.along
+             if (!identical(length(sumsWeightsMix), n.along))
+                 return(gettextf("'%s', '%s', and '%s' inconsistent",
+                                 "sumsWeightsMix", "iAlong", "dimBeta"))
+             TRUE
+         })
 
 setClass("TauMaxMixin",
          slots = c(tauMax = "Scale"),
