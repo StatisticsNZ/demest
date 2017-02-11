@@ -50,22 +50,6 @@ setMethod("updateBetaAndPriorBeta",
 
 
 ## READY
-## 'k-star' in notes
-updateIndexClassMaxUsedMix <- function(prior, useC = FALSE) {
-    stopifnot(methods::is(prior, "Mix"))
-    stopifnot(validObject(prior))
-    if (useC) {
-        .Call(updateIndexClassMaxUsedMix_R, prior)
-    }
-    else {
-        index.class <- prior@indexClassMix
-        index.class.max.used <- max(index.class)
-        prior@indexClassMaxUsedMix@.Data <- index.class.max.used
-        prior
-    }
-}
-
-## READY
 ## 'sigma_A', 'sigma_S' in notes
 updateOmegaVectorsMix <- function(prior, useC = FALSE) {
     stopifnot(methods::is(prior, "Mix"))
@@ -240,8 +224,9 @@ updateMeanLevelComponentWeightMix <- function(prior, useC = FALSE) {
                 mean.data <- mean.data + (level[i.curr] - phi * level[i.prev])
             }
         }
-        prec.data <- (index.class.max * (n.along - 1L + (1 + phi) / (1 - phi))
-            * inv.omega.sq)
+        n.obs <- index.class.max * (n.along - 1L + (1 + phi) / (1 - phi))
+        mean.data <- mean.data / n.obs
+        prec.data <- n.obs * inv.omega.sq
         var <- 1 / (prec.data + prec.prior)
         mean <- var * (prec.data * mean.data + prec.prior * mean.prior)
         sd <- sqrt(var)

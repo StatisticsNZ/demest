@@ -1214,7 +1214,7 @@ test_that("R and C versions of updateIndexClassMaxPossibleMix give same answer",
                     dimtypes = c("state", "time"),
                     DimScales = list(new("Categories", dimvalues = letters[1:20]),
                                      new("Points", dimvalues = 2001:2010)))
-    spec <- Mix(weights = Weights(mean = -20))
+    spec <- Mix(weights = Weights(mean = -40))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
@@ -1225,11 +1225,12 @@ test_that("R and C versions of updateIndexClassMaxPossibleMix give same answer",
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         prior@latentWeightMix@.Data <- runif(n = 200)
-        prior@weightMix@.Data <- runif(n = 100, min = 0, max = 0.3)
+        prior@weightMix@.Data <- runif(n = 100, min = 0, max = 0.4)
         indexClassMaxPossibleMix.prev = prior@indexClassMaxPossibleMix@.Data
         ans.R <- updateIndexClassMaxPossibleMix(prior, useC = FALSE)
         ans.C <- updateIndexClassMaxPossibleMix(prior, useC = TRUE)
         expect_identical(ans.R, ans.C)
+        found <- found + ans.C@foundIndexClassMaxPossibleMix@.Data
         if (ans.R@indexClassMaxPossibleMix@.Data == indexClassMaxPossibleMix.prev) {
             nochanges = nochanges +1L
         }
@@ -1238,6 +1239,53 @@ test_that("R and C versions of updateIndexClassMaxPossibleMix give same answer",
         warning("all found or none found")
     if (nochanges == as.integer(n.test))
         warning("no changes in indexClassMaxPossibleMix")
+})
+
+test_that("updateIndexClassMaxUsedMix gives valid answer", {
+    updateIndexClassMaxUsedMix <- demest:::updateIndexClassMaxUsedMix
+    set.seed(100)
+    initialPrior <- demest:::initialPrior
+    beta <- rnorm(200)
+    metadata <- new("MetaData",
+                    nms = c("reg", "time"),
+                    dimtypes = c("state", "time"),
+                    DimScales = list(new("Categories", dimvalues = letters[1:20]),
+                                     new("Points", dimvalues = 2001:2010)))
+    spec <- Mix(weights = Weights(mean = -20))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          multScale = 1)
+    max.old <- prior@indexClassMaxUsedMix@.Data ## 10
+    max.new <- max.old - 2L
+    prior@indexClassMix[prior@indexClassMix > max.new] <- max.new
+    ans.obtained <- updateIndexClassMaxUsedMix(prior)
+    expect_identical(ans.obtained@indexClassMaxUsedMix@.Data, max.new)
+})
+
+test_that("R and C versions of updateIndexClassMaxUsedMix give same answer", {
+    updateIndexClassMaxUsedMix <- demest:::updateIndexClassMaxUsedMix
+    set.seed(100)
+    initialPrior <- demest:::initialPrior
+    beta <- rnorm(200)
+    metadata <- new("MetaData",
+                    nms = c("reg", "time"),
+                    dimtypes = c("state", "time"),
+                    DimScales = list(new("Categories", dimvalues = letters[1:20]),
+                                     new("Points", dimvalues = 2001:2010)))
+    spec <- Mix(weights = Weights(mean = -20))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          multScale = 1)
+    max.old <- prior@indexClassMaxUsedMix@.Data ## 10
+    max.new <- max.old - 2L
+    prior@indexClassMix[prior@indexClassMix > max.new] <- max.new
+    ans.R <- updateIndexClassMaxUsedMix(prior, useC = FALSE)
+    ans.C <- updateIndexClassMaxUsedMix(prior, useC = TRUE)
+    expect_identical(ans.R, ans.C)
 })
 
 test_that("updateLatentWeightMix gives valid answer", {
@@ -1492,11 +1540,11 @@ test_that("updateOmegaAlpha works", {
         set.seed(seed)
         ans.expected <- prior
         V <- sum((prior@alphaDLM[-1] - prior@alphaDLM[-11] - prior@deltaDLM[-11])^2)
-        omega <- updateSDNorm(sigma = prior@omegaAlpha,
-                              A = prior@AAlpha,
-                              nu = prior@nuAlpha,
+        omega <- updateSDNorm(sigma = prior@omegaAlpha@.Data,
+                              A = prior@AAlpha@.Data,
+                              nu = prior@nuAlpha@.Data,
                               V = V,
-                              n = prior@J,
+                              n = prior@J@.Data,
                               max = prior@omegaAlphaMax@.Data)
         if (omega > 0)
             ans.expected@omegaAlpha@.Data <- omega
@@ -1521,11 +1569,11 @@ test_that("updateOmegaAlpha works", {
         set.seed(seed)
         ans.expected <- prior
         V <- sum((prior@alphaDLM[-1] - prior@phi * prior@alphaDLM[-11])^2)
-        omega <- updateSDNorm(sigma = prior@omegaAlpha,
-                              A = prior@AAlpha,
-                              nu = prior@nuAlpha,
+        omega <- updateSDNorm(sigma = prior@omegaAlpha@.Data,
+                              A = prior@AAlpha@.Data,
+                              nu = prior@nuAlpha@.Data,
                               V = V,
-                              n = prior@J,
+                              n = prior@J@.Data,
                               max = prior@omegaAlphaMax@.Data)
         if (omega > 0)
             ans.expected@omegaAlpha@.Data <- omega
@@ -1605,11 +1653,11 @@ test_that("updateOmegaDelta works", {
         set.seed(seed)
         ans.expected <- prior
         V <- sum((prior@deltaDLM[-1] - prior@phi * prior@deltaDLM[-11])^2)
-        omega <- updateSDNorm(sigma = prior@omegaDelta,
-                              A = prior@ADelta,
-                              nu = prior@nuDelta,
+        omega <- updateSDNorm(sigma = prior@omegaDelta@.Data,
+                              A = prior@ADelta@.Data,
+                              nu = prior@nuDelta@.Data,
                               V = V,
-                              n = prior@J,
+                              n = prior@J@.Data,
                               max = prior@omegaAlphaMax@.Data)
         if (omega > 0)
             ans.expected@omegaDelta@.Data <- omega
@@ -1671,11 +1719,11 @@ test_that("updateOmegaSeason works", {
         V <- 0
         for (i in 1:10)
             V <- V + (prior@s[[i+1]][1] - prior@s[[i]][4])^2
-        omega <- updateSDNorm(sigma = prior@omegaSeason,
-                              A = prior@ASeason,
-                              nu = prior@nuSeason,
+        omega <- updateSDNorm(sigma = prior@omegaSeason@.Data,
+                              A = prior@ASeason@.Data,
+                              nu = prior@nuSeason@.Data,
                               V = V,
-                              n = prior@J,
+                              n = prior@J@.Data,
                               max = prior@omegaAlphaMax@.Data)
         if (omega > 0)
             ans.expected@omegaSeason@.Data <- omega
@@ -1734,7 +1782,7 @@ test_that("updatePhi works", {
         set.seed(seed)
         ans.expected <- prior
         mean <- sum(prior@deltaDLM[-1] * prior@deltaDLM[-11])/sum(prior@deltaDLM[-11]^2)
-        sd <- prior@omegaDelta / sqrt(sum(prior@deltaDLM[-11]^2))
+        sd <- prior@omegaDelta@.Data / sqrt(sum(prior@deltaDLM[-11]^2))
         found <- FALSE
         i <- 1
         while (!found && i < 1000) {
@@ -1782,7 +1830,7 @@ test_that("updatePhi works", {
         set.seed(seed)
         ans.expected <- prior
         mean <- sum(prior@alphaDLM[-1] * prior@alphaDLM[-11])/sum(prior@alphaDLM[-11]^2)
-        sd <- prior@omegaAlpha / sqrt(sum(prior@alphaDLM[-11]^2))
+        sd <- prior@omegaAlpha@.Data / sqrt(sum(prior@alphaDLM[-11]^2))
         found <- FALSE
         i <- 1
         while (!found && i < 1000) {
@@ -2196,7 +2244,7 @@ test_that("updateTauRobust gives valid answer", {
         ans.obtained <- updateTauRobust(prior = prior0)
         set.seed(seed)
         ans.expected <- prior0
-        V <- sum(1/prior0@UBeta)
+        V <- sum(1/prior0@UBeta@.Data)
         ans.expected@tau@.Data <- updateSDRobust(sigma = prior0@tau@.Data,
                                                  A = prior0@ATau@.Data,
                                                  nuBeta = prior0@nuBeta@.Data,
@@ -2282,11 +2330,11 @@ test_that("updateUBeta gives valid answer", {
         set.seed(seed)
         ans.expected <- prior0
         U <- numeric(10)
-        beta.hat <- prior0@Z %*% prior0@eta
+        beta.hat <- prior0@Z@.Data %*% prior0@eta@.Data
         for (i in 1:10) {
-            U[i] <- rinvchisq1(df = prior0@nuBeta + 1,
-                               scale = ((prior0@nuBeta * prior0@tau^2 + (beta[i] - beta.hat[i])^2)
-                                        / (prior0@nuBeta + 1)))
+            U[i] <- rinvchisq1(df = prior0@nuBeta@.Data + 1,
+                               scale = ((prior0@nuBeta@.Data * prior0@tau@.Data^2 + (beta[i] - beta.hat[i])^2)
+                                        / (prior0@nuBeta@.Data + 1)))
         }
         ans.expected@UBeta@.Data <- U
         expect_identical(ans.obtained, ans.expected)

@@ -643,6 +643,22 @@ updateIndexClassMaxPossibleMix <- function(prior, useC = FALSE) {
     }
 }
 
+## READY_TO_TRANSLATE
+## HAS_TESTS
+## 'k-star' in notes
+updateIndexClassMaxUsedMix <- function(prior, useC = FALSE) {
+    stopifnot(methods::is(prior, "Mix"))
+    if (useC) {
+        .Call(updateIndexClassMaxUsedMix_R, prior)
+    }
+    else {
+        index.class <- prior@indexClassMix # integer, length = prior@J.Data
+        index.class.max.used <- max(index.class)
+        prior@indexClassMaxUsedMix@.Data <- index.class.max.used
+        prior
+    }
+}
+
 ## TRANSLATED
 ## HAS_TESTS
 ## 'k' in notes
