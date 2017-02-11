@@ -743,6 +743,90 @@ updateIndexClassMix <- function(prior, betaTilde, useC = FALSE) {
     }
 }
 
+## READY_TO_TRANSLATE
+## HAS_TESTS
+## 'z' in notes
+updateLatentComponentWeightMix <- function(prior, useC = FALSE) {
+    stopifnot(methods::is(prior, "Mix"))
+    stopifnot(validObject(prior))
+    if (useC) {
+        .Call(updateLatentComponentWeightMix_R, prior)
+    }
+    else {    
+        latent.comp.weight <- prior@latentComponentWeightMix@.Data # z; J * index.class.max
+        comp.weight <- prior@componentWeightMix@.Data # W; n.along * index.class.max
+        index.class <- prior@indexClassMix@.Data # k; J
+        iAlong <- prior@iAlong
+        dim.beta <- prior@dimBeta
+        n.beta <- prior@J@.Data
+        iterators.dims <- prior@iteratorsDimsMix
+        iterator.beta <- iterators.dims[[iAlong]]
+        n.along <- dim.beta[iAlong]
+        iterator.beta <- resetS(iterator.beta)
+        for (i.along in seq_len(n.along)) {
+            ## update i.along'th slice of 'z'
+            indices.beta <- iterator.beta@indices
+            for (i.beta in indices.beta) {
+                ## update first 'class.i.beta' values of i.beta'th vector
+                class.i.beta <- index.class[i.beta]
+                for (i.class in seq_len(class.i.beta)) {
+                    i.z <- (i.class - 1L) * n.beta + i.beta
+                    i.w <- (i.class - 1L) * n.along + i.along
+                    comp.weight.i.w <- comp.weight[i.w]
+                    if (i.class < class.i.beta)
+                        latent.comp.weight[i.z] <- rtnorm1(mean = comp.weight.i.w,
+                                                           sd = 1,
+                                                           lower = -Inf,
+                                                           upper = 0)
+                    else
+                        latent.comp.weight[i.z] <- rtnorm1(mean = comp.weight.i.w,
+                                                           sd = 1,
+                                                           lower = 0,
+                                                           upper = Inf)
+                }
+            }
+            iterator.beta <- advanceS(iterator.beta)
+        }
+        prior@latentComponentWeightMix@.Data <- latent.comp.weight
+        prior
+    }
+}
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+## 'u' in notes
+updateLatentWeightMix <- function(prior, useC = FALSE) {
+    stopifnot(methods::is(prior, "Mix"))
+    stopifnot(validObject(prior))
+    if (useC) {
+        .Call(updateLatentWeightMix_R, prior)
+    }
+    else {
+        latent.weight <- prior@latentWeightMix@.Data # 'u'; J
+        weight <- prior@weightMix@.Data # 'v'; n.along * index.class.max
+        index.class <- prior@indexClassMix@.Data # 'k'; J
+        iterators.dims <- prior@iteratorsDimsMix
+        dim.beta <- prior@dimBeta
+        iAlong <- prior@iAlong
+        iterator.beta <- iterators.dims[[iAlong]]
+        n.along <- dim.beta[iAlong]
+        iterator.beta <- resetS(iterator.beta)
+        for (i.along in seq_len(n.along)) {
+            indices.beta <- iterator.beta@indices
+            for (i.beta in indices.beta) {
+                i.class <- index.class[i.beta]
+                i.w <- (i.class - 1L) * n.along + i.along
+                weight.i.w <- weight[i.w]
+                latent.weight[i.beta] <- runif(n = 1L,
+                                               min = 0,
+                                               max = weight.i.w)
+            }
+            iterator.beta <- advanceS(iterator.beta)
+        }
+        prior@latentWeightMix@.Data <- latent.weight
+        prior
+    }
+}
 
 ## READY_TO_TRANSLATE (AGAIN)
 ## HAS_TESTS

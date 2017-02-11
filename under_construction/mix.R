@@ -58,7 +58,7 @@ updateIndexClassMaxUsedMix <- function(prior, useC = FALSE) {
         .Call(updateIndexClassMaxUsedMix_R, prior)
     }
     else {
-        index.class <- object@indexClassMix
+        index.class <- prior@indexClassMix
         index.class.max.used <- max(index.class)
         prior@indexClassMaxUsedMix@.Data <- index.class.max.used
         prior
@@ -178,57 +178,6 @@ updatePhiMix <- function(prior, useC = FALSE) {
 }
 
 
-## 'z' in notes
-updateLatentComponentWeightMix <- function(prior, useC = FALSE) {
-    stopifnot(methods::is(prior, "Mix"))
-    stopifnot(validObject(prior))
-    if (useC) {
-        .Call(updateLatentComponentWeightMix_R, prior)
-    }
-    else {    
-        latent.comp.weight <- prior@latentComponentWeightMix@.Data # 'z'; J * indexClassMax
-        comp.weight <- prior@componentWeightMix@.Data # 'W';  n.along * indexClassMax
-        index.class <- prior@indexClassMix@.Data # 'k'; J
-        index.class.max <- prior@indexClassMaxUsedMix@.Data ## CORRECT??????
-        iAlong <- object@iAlong
-        dim.beta <- object@dimBeta
-        n.beta <- object@J@.Data
-        iterator <- iteratorsDims[[iAlong]]
-        n.along <- dim.beta[iAlong]
-        iterator <- resetS(iterator)
-        for (i.along in seq_len(n.along)) {
-            ## update i.along'th slice
-            indices.beta <- iterator@indices
-            for (i.beta in indices.beta) {
-                ## update i.beta'th cell
-                class.i.beta <- index.class[i.beta]
-                for (i.class in seq_len(index.class.max)) {
-                    i.z <- (i.class - 1L) * n.beta + i.beta
-                    i.w <- (i.class - 1L) * n.along + i.along
-                    comp.weight.i.w <- comp.weight[i.w]
-                    if (i.class < class.i.beta)
-                        latent.comp.weight[i.z] <- rtnorm1(mean = comp.weight.i.w,
-                                                           sd = 1,
-                                                           l = -Inf,
-                                                           u = 0)
-                    else if (i.class == class.i.beta)
-                        latent.comp.weight[i.z] <- rtnorm1(mean = comp.weight.i.w,
-                                                           sd = 1,
-                                                           l = 0,
-                                                           u = Inf)
-                    else
-                        latent.comp.weight[i.z] <- rnorm(n = 1L,
-                                                         mean = comp.weight.i.w,
-                                                         sd = 1)
-                }
-            }
-            iterator <- advanceA(iterator)
-        }
-        prior@latentComponentWeightMix@.Data <- latent.comp.weight
-    }
-}
-
-
 ## 'v' in notes. Function is deterministic
 updateWeightMix <- function(prior, useC = FALSE) {
     stopifnot(methods::is(prior, "Mix"))
@@ -260,39 +209,6 @@ updateWeightMix <- function(prior, useC = FALSE) {
     }
 }
 
-## 'u' in notes
-updateLatentWeightMix <- function(prior, useC = FALSE) {
-    stopifnot(methods::is(prior, "Mix"))
-    stopifnot(validObject(prior))
-    if (useC) {
-        .Call(updateLatentWeightMix_R, prior)
-    }
-    else {
-        latent.weight <- prior@latentWeightMix@.Data # 'u'; J
-        weight <- prior@weightMix@.Data # 'v'; n.along * index.class.max
-        index.class <- prior@indexClassMix@.Data # 'k'; J
-        index.class.max <- prior@indexClassMaxMix@.Data
-        iteratorsDims <- object@iteratorsDimsMix
-        dim.beta <- object@dimBeta
-        iAlong <- object@iAlong
-        iterator.beta <- iteratorsDims[[iAlong]]
-        n.along <- dim.beta[iAlong]
-        iterator.beta <- resetA(iterator.beta)
-        for (i.along in seq_len(n.along)) {
-            indices.beta <- iterator.beta@indices
-            for (i.beta in indices.beta) {
-                i.class <- index.class[i.beta]
-                i.w <- (i.class - 1L) * n.along + i.along
-                weight.i.w <- weight[i.w]
-                latent.weight[i.beta] <- runif(n = 1L,
-                                               min = 0,
-                                               max = weight.i.w)
-            }
-        }
-        prior@latentWeightMix@.Data <- latent.weight
-    }
-}
-
 ## 'mu' in notes
 updateMeanLevelComponentWeightMix <- function(prior, useC = FALSE) {
     ## prior
@@ -302,22 +218,22 @@ updateMeanLevelComponentWeightMix <- function(prior, useC = FALSE) {
         .Call(updateMeanLevelComponentWeightMix_R, prior)
     }
     else {
-        mean.level <- prior@meanLevelComponentWeightMixMixin@.Data # 'mu'; 1
+        mean.level <- prior@meanLevelComponentWeightMix@.Data # 'mu'; 1
         level <- prior@levelComponentWeightMix@.Data # 'alpha'; n.along * index.class.max
         omega <- prior@omegaLevelComponentWeightMix@.Data # 'eta'; 1
-        mean.prior <- prior@priorMeanLevelComponentWeightMixMixin@.Data # 'mu0'; 1
-        sd.prior <- prior@priorSDLevelComponentWeightMixMixin@.Data # 'sigma0'; 1
+        mean.prior <- prior@priorMeanLevelComponentWeightMix@.Data # 'mu0'; 1
+        sd.prior <- prior@priorSDLevelComponentWeightMix@.Data # 'sigma0'; 1
         phi <- prior@phiMix
-        index.class.max <- prior@indexClassMax@.Data
-        dimBeta <- prior@dimBeta
+        index.class.max.used <- prior@indexClassMaxUsedMix@.Data # 'k-star'; 1
+        dim.beta <- prior@dimBeta
         iAlong <- prior@iAlong
-        n.along <- dimBeta[iAlong]
+        n.along <- dim.beta[iAlong]
         inv.omega.sq <- 1 / omega^2
         prec.prior <- 1 / sd.prior^2
         mean.data <- 0
-        for (i.class in seq_len(index.class.max)) {
-            i.level <- (i.class - 1L) * n.along + 1L
-            mean.data <- mean.data + level[i.level] * (1 + phi)
+        for (i.class in seq_len(index.class.max.used)) {
+            i.w <- (i.class - 1L) * n.along + 1L
+            mean.data <- mean.data + level[i.w] * (1 + phi)
             for (i.along in seq.int(from = 2L, to = n.along)) {
                 i.curr <- (i.class - 1L) * n.along + i.along
                 i.prev <- i.curr - 1L
@@ -347,7 +263,7 @@ updateAlphaMix <- function(prior, useC = FALSE) {
         .Call(updateAlphaMix_R, prior)
     }
     else {
-        alphaMix <- object@alphaMix@.Data
+        alphaMix <- prior@alphaMix@.Data
         J <- prior@J@.Data
         index <- prior@indexClassMix@.Data
         prodVectors <- prior@prodVectorsMix@.Data

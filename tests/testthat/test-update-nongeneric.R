@@ -1233,6 +1233,119 @@ test_that("R and C versions of updateIndexClassMaxPossibleMix give same answer",
         warning("all found or none found")
 })
 
+test_that("updateLatentWeightMix gives valid answer", {
+    updateLatentWeightMix <- demest:::updateLatentWeightMix
+    set.seed(100)
+    initialPrior <- demest:::initialPrior
+    beta <- rnorm(200)
+    metadata <- new("MetaData",
+                    nms = c("reg", "time"),
+                    dimtypes = c("state", "time"),
+                    DimScales = list(new("Categories", dimvalues = letters[1:20]),
+                                     new("Points", dimvalues = 2001:2010)))
+    spec <- Mix(weights = Weights(mean = -20))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          multScale = 1)
+    set.seed(2)
+    ans.obtained <- updateLatentWeightMix(prior)
+    lw.old <- prior@latentWeightMix@.Data
+    lw.new <- ans.obtained@latentWeightMix@.Data
+    k <- ans.obtained@indexClassMix
+    w <- matrix(ans.obtained@weightMix@.Data,
+                ncol = ans.obtained@indexClassMaxMix@.Data)
+    i.along <- rep(1:10, each = 20)
+    for (i in seq_along(lw.new))
+        expect_true(lw.new[i] < w[i.along[i], k[i]])
+    expect_true(all(lw.new != lw.old))
+})
+
+test_that("R and C versions of updateLatentWeightMix give same answer", {
+    updateLatentWeightMix <- demest:::updateLatentWeightMix
+    set.seed(100)
+    initialPrior <- demest:::initialPrior
+    beta <- rnorm(200)
+    metadata <- new("MetaData",
+                    nms = c("reg", "time"),
+                    dimtypes = c("state", "time"),
+                    DimScales = list(new("Categories", dimvalues = letters[1:20]),
+                                     new("Points", dimvalues = 2001:2010)))
+    spec <- Mix(weights = Weights(mean = -20))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          multScale = 1)
+    set.seed(2)
+    ans.R <- updateLatentWeightMix(prior, useC = FALSE)
+    set.seed(2)
+    ans.C <- updateLatentWeightMix(prior, useC = TRUE)
+    if (test.identity)
+        expect_identical(ans.R, ans.C)
+    else
+        expect_equal(ans.R, ans.C)
+})
+
+test_that("updateLatentComponentWeightMix gives valid answer", {
+    updateLatentComponentWeightMix <- demest:::updateLatentComponentWeightMix
+    set.seed(100)
+    initialPrior <- demest:::initialPrior
+    beta <- rnorm(200)
+    metadata <- new("MetaData",
+                    nms = c("reg", "time"),
+                    dimtypes = c("state", "time"),
+                    DimScales = list(new("Categories", dimvalues = letters[1:20]),
+                                     new("Points", dimvalues = 2001:2010)))
+    spec <- Mix(weights = Weights(mean = -20))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          multScale = 1)
+    set.seed(2)
+    ans.obtained <- updateLatentComponentWeightMix(prior)
+    lcw.old <- matrix(prior@latentComponentWeightMix@.Data,
+                      nrow = prior@J@.Data)
+    lcw.new <- matrix(ans.obtained@latentComponentWeightMix@.Data,
+                      nrow = ans.obtained@J@.Data)
+    k <- ans.obtained@indexClassMix
+    s <- seq_len(ans.obtained@indexClassMaxMix@.Data)
+    for (i in seq_len(nrow(lcw.new))) {
+        expect_true(all(lcw.new[i, s < k[i]] < 0))
+        expect_true(lcw.new[i, k[i]] > 0)
+        expect_true(all(lcw.new[i, s <= k[i]] != lcw.old[i, s <= k[i]]))
+        expect_true(all(lcw.new[i, s > k[i]] == lcw.old[i, s > k[i]]))
+    }
+})
+
+test_that("R and C versions of updateLatentComponentWeightMix give same answer", {
+    updateLatentComponentWeightMix <- demest:::updateLatentComponentWeightMix
+    set.seed(100)
+    initialPrior <- demest:::initialPrior
+    beta <- rnorm(200)
+    metadata <- new("MetaData",
+                    nms = c("reg", "time"),
+                    dimtypes = c("state", "time"),
+                    DimScales = list(new("Categories", dimvalues = letters[1:20]),
+                                     new("Points", dimvalues = 2001:2010)))
+    spec <- Mix(weights = Weights(mean = -20))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          multScale = 1)
+    set.seed(2)
+    ans.R <- updateLatentComponentWeightMix(prior, useC = FALSE)
+    set.seed(2)
+    ans.C <- updateLatentComponentWeightMix(prior, useC = TRUE)
+    if (test.identity)
+        expect_identical(ans.R, ans.C)
+    else
+        expect_equal(ans.R, ans.C)
+})
+
 test_that("updateLevelComponentWeightMix gives valid answer", {
     updateLevelComponentWeightMix <- demest:::updateLevelComponentWeightMix
     set.seed(100)
