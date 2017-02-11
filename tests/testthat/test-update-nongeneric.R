@@ -1102,7 +1102,7 @@ test_that("R and C versions of updateGWithTrend give same answer", {
     expect_identical(ans.R, ans.C)
 })
 
-test_that("updateIndexClassMaxMix gives valid answer", {
+test_that("updateIndexClassMix gives valid answer", {
     updateIndexClassMix <- demest:::updateIndexClassMix
     set.seed(100)
     initialPrior <- demest:::initialPrior
@@ -1131,7 +1131,7 @@ test_that("updateIndexClassMaxMix gives valid answer", {
     }
 })
 
-test_that("R and C versions of updateIndexClassMaxMix give same answer", {
+test_that("R and C versions of updateIndexClassMix give same answer", {
     updateIndexClassMix <- demest:::updateIndexClassMix
     set.seed(100)
     initialPrior <- demest:::initialPrior
@@ -1231,6 +1231,43 @@ test_that("R and C versions of updateIndexClassMaxPossibleMix give same answer",
     }
     if ((found == n.test) || (found == 0L))
         warning("all found or none found")
+})
+
+test_that("R and C versions of updateIndexClassMaxPossibleMix give same answer", {
+    updateIndexClassMaxPossibleMix <- demest:::updateIndexClassMaxPossibleMix
+    set.seed(100)
+    initialPrior <- demest:::initialPrior
+    beta <- rnorm(200)
+    metadata <- new("MetaData",
+                    nms = c("reg", "time"),
+                    dimtypes = c("state", "time"),
+                    DimScales = list(new("Categories", dimvalues = letters[1:20]),
+                                     new("Points", dimvalues = 2001:2010)))
+    spec <- Mix(weights = Weights(mean = -20))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          multScale = 1)
+    found <- 0L
+    nochanges <- 0L
+    
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        prior@latentWeightMix@.Data <- runif(n = 200)
+        prior@weightMix@.Data <- runif(n = 100, min = 0, max = 0.3)
+        indexClassMaxPossibleMix.prev = prior@indexClassMaxPossibleMix@.Data
+        ans.R <- updateIndexClassMaxPossibleMix(prior, useC = FALSE)
+        ans.C <- updateIndexClassMaxPossibleMix(prior, useC = TRUE)
+        expect_identical(ans.R, ans.C)
+        if (ans.R@indexClassMaxPossibleMix@.Data == indexClassMaxPossibleMix.prev) {
+            nochanges = nochanges +1L
+        }
+    }
+    if ((found == n.test) || (found == 0L))
+        warning("all found or none found")
+    if (nochanges == as.integer(n.test))
+        warning("no changes in indexClassMaxPossibleMix")
 })
 
 test_that("updateLevelComponentWeightMix gives valid answer", {

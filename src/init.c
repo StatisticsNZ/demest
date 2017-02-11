@@ -690,6 +690,9 @@ UPDATEBETA_AND_PRIORBETA_WRAPPER_R(updateBetaAndPriorBeta_DLMWithTrendRobustCovW
 
 UPDATEOBJECT_NOPRNG_WRAPPER_R(updateGWithTrend);
 UPDATEOBJECT_WRAPPER_R(updateLevelComponentWeightMix);
+UPDATEOBJECT_WRAPPER_R(updateIndexClassMaxPossibleMix);
+UPDATEPRIORWITHBETA_WRAPPER_R(updateIndexClassMix);
+
 
 SEXP
 updateOmegaAlpha_R(SEXP prior_R, SEXP withTrend_R)
@@ -1223,6 +1226,8 @@ R_CallMethodDef callMethods[] = {
   
   CALLDEF(updateGWithTrend_R, 1),
   CALLDEF(updateLevelComponentWeightMix_R, 1),
+  CALLDEF(updateIndexClassMaxPossibleMix_R, 1),
+  CALLDEF(updateIndexClassMix_R, 2),
   CALLDEF(updateOmegaAlpha_R, 2),
   CALLDEF(updateOmegaDelta_R, 1),
   CALLDEF(updateOmegaSeason_R, 1),
@@ -1750,12 +1755,19 @@ R_init_demest(DllInfo *info)
   ADD_SYM(aSeason);
   ADD_SYM(RSeason);
   ADD_SYM(JOld);
+  ADD_SYM(sumsWeightsMix);
+  ADD_SYM(weightMix);
+  ADD_SYM(latentWeightMix);
   ADD_SYM(componentWeightMix);
   ADD_SYM(latentComponentWeightMix);
   ADD_SYM(levelComponentWeightMix);
   ADD_SYM(meanLevelComponentWeightMix);
   ADD_SYM(indexClassMix);
   ADD_SYM(indexClassMaxMix);
+  ADD_SYM(indexClassMaxUsedMix);
+  ADD_SYM(foundIndexClassMaxPossibleMix);
+  ADD_SYM(indexClassMaxPossibleMix);
+  ADD_SYM(indexClassProbMix);
   ADD_SYM(omegaComponentWeightMix);
   ADD_SYM(omegaLevelComponentWeightMix);
   ADD_SYM(iteratorsDimsMix);
@@ -1766,6 +1778,10 @@ R_init_demest(DllInfo *info)
   ADD_SYM(CMix);
   ADD_SYM(aMix);
   ADD_SYM(RMix);
+  ADD_SYM(prodVectorsMix);
+  ADD_SYM(posProdVectors1Mix);
+  ADD_SYM(posProdVectors2Mix);
+  ADD_SYM(nBetaNoAlongMix);
   
 #undef ADD_SYM
 

@@ -1095,6 +1095,183 @@ updateGWithTrend(SEXP prior_R)
     GWithTrend[3] = phi;
 }
 
+void
+updateIndexClassMaxPossibleMix(SEXP prior_R)
+{
+    SEXP latentWeight_R = GET_SLOT(prior_R, latentWeightMix_sym);
+    double *latentWeight = REAL(latentWeight_R);
+    int nLatentWeight = LENGTH(latentWeight_R);
+    
+    double *weight = REAL(GET_SLOT(prior_R, weightMix_sym));
+    int indexClassMax = *INTEGER(GET_SLOT(prior_R, indexClassMaxMix_sym));
+    int iAlong_r = *INTEGER(GET_SLOT(prior_R, iAlong_sym));  
+    int iAlong_c = iAlong_r -1;
+        
+    int *dimBeta = INTEGER(GET_SLOT(prior_R, dimBeta_sym));  
+    int nAlong = dimBeta[iAlong_c];
+    
+    double minLatentWeight = 1; /* max latent weight is 1 */
+    for (int j = 0; j < nLatentWeight; ++j) {
+        if (latentWeight[j] < minLatentWeight) {
+            minLatentWeight = latentWeight[j];
+        }
+    }
+    double oneMinusMinLatentWeight = 1- minLatentWeight;
+    
+    /* make our own sumsWeights and zero it*/
+    double sumsWeights[nAlong];
+    memset(sumsWeights, 0, nAlong * sizeof(double));
+    
+    int foundAns = 0;
+    int indexClassMaxPoss = 0;
+    
+    while (!foundAns && (indexClassMaxPoss < indexClassMax)) {
+        
+        ++indexClassMaxPoss;
+        
+        int offset = (indexClassMaxPoss - 1) * nAlong;
+        
+        for (int iAlong = 0; iAlong < nAlong; ++iAlong) {
+            sumsWeights[iAlong] += weight[offset + iAlong];
+        }
+        for (int i = 0; i < nAlong; ++i) {
+            if (sumsWeights[i] <= oneMinusMinLatentWeight) {
+                break;
+            }
+            else if (i == (nAlong - 1)) {
+                foundAns = 1;
+            }
+        }
+    }
+    
+    SET_INTSCALE_SLOT(prior_R, indexClassMaxPossibleMix_sym, indexClassMaxPoss);
+    SET_LOGICALSCALE_SLOT(prior_R, foundIndexClassMaxPossibleMix_sym, foundAns);
+}
+
+void
+updateIndexClassMix(SEXP prior_R, double* betaTilde, int J)
+{
+    int *indexClass = INTEGER(GET_SLOT(prior_R, indexClassMix_sym));
+    int indexClassMaxPoss = *INTEGER(GET_SLOT(prior_R, indexClassMaxPossibleMix_sym));
+    
+    double *indexClassProbOriginal = REAL(GET_SLOT(prior_R, indexClassProbMix_sym));
+    
+    double *weight = REAL(GET_SLOT(prior_R, weightMix_sym));
+    double *latentWeight = REAL(GET_SLOT(prior_R, latentWeightMix_sym));
+    
+    double *prodVectors = REAL(GET_SLOT(prior_R, prodVectorsMix_sym));
+    
+    int iAlong_r = *INTEGER(GET_SLOT(prior_R, iAlong_sym));  
+    int iAlong_c = iAlong_r -1;
+        
+    int *dimBeta = INTEGER(GET_SLOT(prior_R, dimBeta_sym));  
+    int nAlong = dimBeta[iAlong_c];
+    
+    int pos1 = *INTEGER(GET_SLOT(prior_R, posProdVectors1Mix_sym));
+    int pos2 = *INTEGER(GET_SLOT(prior_R, posProdVectors2Mix_sym));
+    int nBetaNoAlong = *INTEGER(GET_SLOT(prior_R, nBetaNoAlongMix_sym));
+    
+    SEXP iteratorsDims_R = GET_SLOT(prior_R, iteratorsDimsMix_sym);
+    SEXP iteratorBeta_R = VECTOR_ELT(iteratorsDims_R, iAlong_c);
+    
+    resetS(iteratorBeta_R); 
+    
+    /* space for v and indexClassProb, both length J */
+    double *work = (double*)R_alloc(2*J, sizeof(double));
+    double *v = work;
+    getV_Internal(v, prior_R, J);
+    
+    /* copy the original indexClassProbs so we can change them */
+    double *indexClassProb = work + J;
+    memcpy(indexClassProb, indexClassProbOriginal, J*sizeof(double));
+    
+    SEXP indicesBeta_R = GET_SLOT(iteratorBeta_R, indices_sym);
+    int *indicesBeta = INTEGER(indicesBeta_R);
+    int nIndicesBeta = LENGTH(indicesBeta_R);
+    
+    for (int iAlong = 0; iAlong < nAlong; ++iAlong) {
+
+        for (int iB = 0; iB < nIndicesBeta; ++iB) {
+            int iBeta = indicesBeta[iB] - 1;
+            double thisLatentWeight = latentWeight[iBeta];
+            double thisBetaTilde = betaTilde[iBeta];
+            double thisV = v[iBeta];
+            
+            int iBetaNoAlong = (iBeta/pos1)* pos2 + (iBeta%pos2);
+            
+            for (int iClass = 0; iClass < indexClassMaxPoss; ++iClass) {
+                
+                int iW = iClass * nAlong + iAlong;
+                double thisWeight = weight[iW];
+                int includeClass = (thisLatentWeight < thisWeight);
+                if (includeClass) {
+                    int iProd = iClass * nBetaNoAlong + iBetaNoAlong;
+                    double valProdVector = prodVectors[iProd];
+                    double tmp = thisBetaTilde - valProdVector;
+                    double logProb = -0.5 * (tmp * tmp) / thisV;
+                    indexClassProb[iClass] = logProb;
+                }
+                else {
+                    indexClassProb[iClass] = R_PosInf;
+                }
+            
+            }
+
+            double maxLogProb = R_NegInf;
+            for (int iClass = 0; iClass < indexClassMaxPoss; ++iClass) {
+                
+                double logProb = indexClassProb[iClass];
+                int includeClass = !(logProb > 0);
+                
+                if (includeClass && (logProb > maxLogProb)) {
+                    maxLogProb = logProb;
+                }
+                
+                
+            }
+            
+            double sumProb = 0;
+            for (int iClass = 0; iClass < indexClassMaxPoss; ++iClass) {
+                
+                double logProb = indexClassProb[iClass];
+                int includeClass = !(logProb > 0);
+                
+                if (includeClass) {
+                    logProb -= maxLogProb;
+                    double prob = exp(logProb);
+                    indexClassProb[iClass] = prob;
+                    sumProb += prob;
+                }
+            }
+            
+            double U = runif(0,1) * sumProb;
+            double cumSum = 0;
+            
+            int iClassStays = 0;
+            for (int iClass = 0; iClass < indexClassMaxPoss; ++iClass) {
+            
+                iClassStays = iClass;
+                
+                double prob = indexClassProb[iClass];
+                int includeClass = !(prob > 1);
+                
+                if (includeClass) {
+                    cumSum += prob;
+                            
+                    if (!(U > cumSum)) {
+                        break;
+                    }
+                }
+            }
+            
+            indexClass[iBeta] = iClassStays+1;
+
+        } /* end beta index loop */
+        
+        advanceS(iteratorBeta_R);
+    }
+}
+
 
 void
 updateLevelComponentWeightMix(SEXP prior_R)
@@ -1105,6 +1282,8 @@ updateLevelComponentWeightMix(SEXP prior_R)
     int nAlong = dimBeta[iAlong_c];
     
     int indexClassMax = *INTEGER(GET_SLOT(prior_R, indexClassMaxMix_sym));
+    int indexClassMaxUsed = *INTEGER(GET_SLOT(prior_R, indexClassMaxUsedMix_sym));
+    
     double *comp = REAL(GET_SLOT(prior_R, componentWeightMix_sym));
     double *level = REAL(GET_SLOT(prior_R, levelComponentWeightMix_sym));
     double meanLevel = *REAL(GET_SLOT(prior_R, meanLevelComponentWeightMix_sym));
@@ -1116,13 +1295,15 @@ updateLevelComponentWeightMix(SEXP prior_R)
     
     double phi = *REAL(GET_SLOT(prior_R, phiMix_sym));
     double phiSq = phi * phi;
-    double oneMinusPhi = 1 - phi;
-    double oneMinusPhiSq = 1 - phiSq;
     
     double omegaComp = *REAL(GET_SLOT(prior_R, omegaComponentWeightMix_sym));
     double omegaCompSq = omegaComp * omegaComp;
     double omegaLevel = *REAL(GET_SLOT(prior_R, omegaLevelComponentWeightMix_sym));
     double omegaLevelSq = omegaLevel * omegaLevel;
+    
+    double priorMeanFirst = meanLevel / (1 - phi);
+    double priorVarFirst = omegaLevelSq / (1 - phi*phi);
+    double priorSdFirst = sqrt(priorVarFirst);
     
     /* malloc space to copy things we do not want to change into,
      * do not want to change m, C, a, R */
@@ -1139,10 +1320,10 @@ updateLevelComponentWeightMix(SEXP prior_R)
     memcpy(a, aOriginal, sz2*sizeof(double));
     memcpy(R, ROriginal, sz2*sizeof(double));
     
-    for (int iClass = 0; iClass < indexClassMax; ++iClass) {
+    for (int iClass = 0; iClass < indexClassMaxUsed; ++iClass) {
         
-        m[0] = meanLevel / oneMinusPhi;
-        C[0] = omegaLevelSq / oneMinusPhiSq;
+        m[0] = priorMeanFirst;
+        C[0] = priorVarFirst;
         
         /* forward filter */
         for (int iAlong = 0; iAlong < nAlong-1; ++iAlong) {
@@ -1179,7 +1360,24 @@ updateLevelComponentWeightMix(SEXP prior_R)
             
             level[iWtCurr] = rnorm( mStar, sqrt(CStar) ); 
         }
-   }
+    }
+
+    if ( indexClassMaxUsed < indexClassMax) {
+        
+        for (int iClass = indexClassMaxUsed; iClass < indexClassMax; ++iClass) {
+            
+            int iWt = iClass * nAlong;
+            level[iWt] = rnorm( priorMeanFirst, priorSdFirst );
+            
+            for (int iAlong = 1; iAlong < nAlong; ++iAlong) {
+                
+                int iWtCurr = iClass * nAlong + iAlong;
+                int iWtPrev = iWtCurr - 1;
+                double mean = meanLevel + phi * level[iWtPrev];
+                level[iWtCurr] = rnorm( mean, omegaLevel);
+            }
+        }
+    }
 }
 
 
