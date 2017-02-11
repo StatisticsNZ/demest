@@ -828,7 +828,7 @@ test_that("initialMixAll works", {
     stopifnot(identical(l$posProdVectors2Mix, 40L))
     stopifnot(is(l$priorMeanLevelComponentWeightMix, "Parameter"))
     stopifnot(is(l$priorSDLevelComponentWeightMix, "Scale"))
-    stopifnot(identical(sum(l$prodVectorsMix@.Data), sum(outer(l$vectorsMix[[1]], l$vectorsMix[[2]]))))
+    stopifnot(identical(length(l$prodVectorsMix@.Data), 20L * 2L * 10L))
     stopifnot(identical(l$RMix, new("ParameterVector", rep(1, 9))))
     stopifnot(identical(l$sumsWeightsMix, new("UnitIntervalVec", rep(0, 10))))
     stopifnot(is(l$tau, "Scale"))
@@ -2569,9 +2569,8 @@ test_that("makeIteratorProdVectorMix works", {
     makeIteratorProdVectorMix <- demest:::makeIteratorProdVectorMix
     MarginIterator <- demest:::MarginIterator
     ans.obtained <- makeIteratorProdVectorMix(dimBeta = 3:5,
-                                              iAlong = 1L,
-                                              indexClassMaxMix = new("Counter", 10L))
-    ans.expected <- MarginIterator(dim = c(4L, 5L, 10L))
+                                              iAlong = 1L)
+    ans.expected <- MarginIterator(dim = c(1L, 4L, 5L))
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -2899,15 +2898,22 @@ test_that("makeProdVectorsMix works", {
     makeProdVectorsMix <- demest:::makeProdVectorsMix
     set.seed(1)
     vectorsMix <- list(new("ParameterVector",
-                        rnorm(n = 30,
-                              sd = 0.2)),
-                    new("ParameterVector", numeric()),
-                    new("ParameterVector",
-                        rnorm(n = 50,
-                              sd = 0.1)))
+                           rnorm(n = 30,
+                                 sd = 0.2)),
+                       new("ParameterVector", numeric()),
+                       new("ParameterVector",
+                           rnorm(n = 50,
+                                 sd = 0.1)))
     ans.obtained <- makeProdVectorsMix(vectorsMix = vectorsMix,
-                                       iAlong = 2L)
-    ans.expected <- outer(vectorsMix[[1]]@.Data, vectorsMix[[3]]@.Data)
+                                       iAlong = 2L,
+                                       dimBeta = c(3L, 10L, 5L),
+                                       indexClassMaxMix = new("Counter", 10L))
+    vec1 <- matrix(vectorsMix[[1]]@.Data, nr = 3)
+    vec3 <- matrix(vectorsMix[[3]]@.Data, nr = 5)
+    ans.expected <- vector(mode = "list", length = 10)
+    for (i in 1:10)
+        ans.expected[[i]] <- outer(vec1[,i], vec3[,i])
+    ans.expected <- as.double(unlist(ans.expected))
     ans.expected <- new("ParameterVector", ans.expected)
     if (test.identity)
         expect_identical(ans.obtained, ans.expected)
