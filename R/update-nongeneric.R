@@ -601,7 +601,7 @@ updateGWithTrend <- function(prior, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 ## 'k-tilde' in notes
 updateIndexClassMaxPossibleMix <- function(prior, useC = FALSE) {
@@ -639,11 +639,11 @@ updateIndexClassMaxPossibleMix <- function(prior, useC = FALSE) {
         }
         prior@foundIndexClassMaxPossibleMix@.Data <- found.ans
         prior@indexClassMaxPossibleMix@.Data <- index.class.max.poss
+        prior
     }
-    prior
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 ## 'k' in notes
 updateIndexClassMix <- function(prior, betaTilde, useC = FALSE) {
@@ -828,7 +828,7 @@ updateLatentWeightMix <- function(prior, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE (AGAIN)
+## TRANSLATED
 ## HAS_TESTS
 ## 'alpha' in notes
 updateLevelComponentWeightMix <- function(prior, useC = FALSE) {
@@ -843,7 +843,7 @@ updateLevelComponentWeightMix <- function(prior, useC = FALSE) {
         iAlong <- prior@iAlong
         n.along <- dimBeta[iAlong]
         index.class.max <- prior@indexClassMaxMix@.Data
-        index.class.max.used <- prior@indexClassMaxUsedMix@.Data ## NEW
+        index.class.max.used <- prior@indexClassMaxUsedMix@.Data 
         comp <- prior@componentWeightMix@.Data # 'W'; n.along * index.class.max
         level <- prior@levelComponentWeightMix@.Data # 'alpha'; n.along * index.class.max
         mean.level <- prior@meanLevelComponentWeightMix@.Data # 'mu'; 1
@@ -857,15 +857,12 @@ updateLevelComponentWeightMix <- function(prior, useC = FALSE) {
         omega.comp.sq <- omega.comp^2
         omega.level <- prior@omegaLevelComponentWeightMix@.Data # 'eta'; 1
         omega.level.sq <- omega.level^2
-        prior.mean.first <- mean.level / (1 - phi) ## NEW
-        prior.var.first <- omega.level.sq / (1 - phi.sq) ## NEW
-        prior.sd.first <- sqrt(prior.var.first) ## NEW
-        ## for (i.class in seq_len(index.class.max)) {
-        for (i.class in seq_len(index.class.max.used)) { ## CHANGED
-            ## m[1L] <- mean.level / (1 - phi)
-            ## C[1L] <- omega.level.sq / (1 - phi.sq)
-            m[1L] <- prior.mean.first ## CHANGED
-            C[1L] <- prior.var.first ## CHANGED
+        prior.mean.first <- mean.level / (1 - phi) 
+        prior.var.first <- omega.level.sq / (1 - phi.sq) 
+        prior.sd.first <- sqrt(prior.var.first) 
+        for (i.class in seq_len(index.class.max.used)) { 
+            m[1L] <- prior.mean.first 
+            C[1L] <- prior.var.first 
             ## forward filter
             for (i.along in seq_len(n.along - 1L)) {
                 i.wt <- (i.class - 1L) * n.along + i.along + 1L
@@ -894,7 +891,6 @@ updateLevelComponentWeightMix <- function(prior, useC = FALSE) {
                                                  sd = sqrt(C.star))
             }
         }
-        ## EVERYTHING WITHIN THE IF STATEMENT IS NEW
         ## draw remaining values straight from prior
         if (index.class.max.used < index.class.max) {
             for (i.class in seq.int(from = index.class.max.used + 1L,

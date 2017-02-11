@@ -1102,7 +1102,7 @@ test_that("R and C versions of updateGWithTrend give same answer", {
     expect_identical(ans.R, ans.C)
 })
 
-test_that("updateIndexClassMaxMix gives valid answer", {
+test_that("updateIndexClassMix gives valid answer", {
     updateIndexClassMix <- demest:::updateIndexClassMix
     set.seed(100)
     initialPrior <- demest:::initialPrior
@@ -1131,7 +1131,7 @@ test_that("updateIndexClassMaxMix gives valid answer", {
     }
 })
 
-test_that("R and C versions of updateIndexClassMaxMix give same answer", {
+test_that("R and C versions of updateIndexClassMix give same answer", {
     updateIndexClassMix <- demest:::updateIndexClassMix
     set.seed(100)
     initialPrior <- demest:::initialPrior
@@ -1221,16 +1221,23 @@ test_that("R and C versions of updateIndexClassMaxPossibleMix give same answer",
                           sY = NULL,
                           multScale = 1)
     found <- 0L
+    nochanges <- 0L
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         prior@latentWeightMix@.Data <- runif(n = 200)
         prior@weightMix@.Data <- runif(n = 100, min = 0, max = 0.3)
+        indexClassMaxPossibleMix.prev = prior@indexClassMaxPossibleMix@.Data
         ans.R <- updateIndexClassMaxPossibleMix(prior, useC = FALSE)
         ans.C <- updateIndexClassMaxPossibleMix(prior, useC = TRUE)
         expect_identical(ans.R, ans.C)
+        if (ans.R@indexClassMaxPossibleMix@.Data == indexClassMaxPossibleMix.prev) {
+            nochanges = nochanges +1L
+        }
     }
     if ((found == n.test) || (found == 0L))
         warning("all found or none found")
+    if (nochanges == as.integer(n.test))
+        warning("no changes in indexClassMaxPossibleMix")
 })
 
 test_that("updateLatentWeightMix gives valid answer", {
@@ -1344,7 +1351,7 @@ test_that("R and C versions of updateLatentComponentWeightMix give same answer",
         expect_identical(ans.R, ans.C)
     else
         expect_equal(ans.R, ans.C)
-})
+    })
 
 test_that("updateLevelComponentWeightMix gives valid answer", {
     updateLevelComponentWeightMix <- demest:::updateLevelComponentWeightMix

@@ -28,6 +28,10 @@
     int *ptr = INTEGER(GET_SLOT(object, slotname));     \
     *ptr = (value);}
 
+#define SET_LOGICALSCALE_SLOT(object, slotname, value) {    \
+    int *ptr = LOGICAL(GET_SLOT(object, slotname));     \
+    *ptr = (value);}
+
 
 /* everything in "x_sym" form here must be macro defined in init.c */
 SEXP
@@ -236,12 +240,19 @@ SEXP
   RSeason_sym,
   JOld_sym,
   /* new priors Jan 2017 */
+  sumsWeightsMix_sym,
+  weightMix_sym,
+  latentWeightMix_sym,
+  foundIndexClassMaxPossibleMix_sym,
+  indexClassMaxPossibleMix_sym,
+  indexClassProbMix_sym,
   componentWeightMix_sym,
   latentComponentWeightMix_sym,
   levelComponentWeightMix_sym,
   meanLevelComponentWeightMix_sym,
   indexClassMix_sym,
   indexClassMaxMix_sym,
+  indexClassMaxUsedMix_sym,
   omegaComponentWeightMix_sym,
   omegaLevelComponentWeightMix_sym,
   iteratorsDimsMix_sym,
@@ -251,7 +262,11 @@ SEXP
   mMix_sym,
   CMix_sym,
   aMix_sym,
-  RMix_sym;
+  RMix_sym,
+  prodVectorsMix_sym,
+  posProdVectors1Mix_sym,
+  posProdVectors2Mix_sym,
+  nBetaNoAlongMix_sym;
   
   
 /* Priors-methods */
@@ -261,6 +276,8 @@ void updateBeta(double *beta, int J, SEXP prior, double *vbar,
 
 void updateGWithTrend(SEXP prior_R);
 void updateLevelComponentWeightMix(SEXP prior_R);
+void updateIndexClassMaxPossibleMix(SEXP prior_R);
+void updateIndexClassMix(SEXP prior_R, double * betaTilde_R, int J);
 void updateOmegaAlpha(SEXP prior_R, int isWithTrend);
 void updateOmegaDelta(SEXP prior_R);
 void updateOmegaSeason(SEXP prior_R);
