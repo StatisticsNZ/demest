@@ -1235,6 +1235,117 @@ updateUEtaCoef <- function(prior, useC = FALSE) {
     }
 }
 
+## READY_TO_TRANSLATE
+## HAS_TESTS
+## 'vectors' are 'psi' in notes
+updateVectorsMixAndProdVectorsMix <- function(prior, betaTilde, useC = FALSE) {
+    ## 'prior'
+    stopifnot(methods::is(prior, "Mix"))
+    stopifnot(validObject(prior))
+    ## 'betaTilde'
+    stopifnot(is.double(betaTilde))
+    stopifnot(!any(is.na(betaTilde)))
+    stopifnot(identical(length(betaTilde), prior@J@.Data))
+    if (useC) {
+        .Call(updateVectorsMixAndProdVectorsMix_R, prior, betaTilde)
+    }
+    else {    
+        vectors <- prior@vectorsMix
+        omega.vectors <- prior@omegaVectorsMix
+        iterators.dims <- prior@iteratorsDimsMix
+        prod.vectors <- prior@prodVectorsMix@.Data
+        iterator.prod <- prior@iteratorProdVectorMix
+        index.class <- prior@indexClassMix@.Data
+        index.class.max <- prior@indexClassMaxMix@.Data
+        iAlong <- prior@iAlong
+        dim.beta <- prior@dimBeta
+        pos1 <- prior@posProdVectors1Mix
+        pos2 <- prior@posProdVectors2Mix
+        n.beta.no.along <- prior@nBetaNoAlongMix
+        yX <- prior@yXMix@.Data # length index.class.max
+        XX <- prior@XXMix@.Data # length index.class.max
+        prec.prior <- 1 / omega.vectors^2
+        v <- getV(prior)
+        ## loop through vectors, skipping position occupied by "along" dimension
+        for (i in seq_along(vectors)) {
+            if (i == iAlong)
+                next
+            vector <- vectors[[i]]
+            n.element.vector <- dim.beta[i]
+            iterator.beta <- iterators.dims[[i]]
+            iterator.beta <- resetS(iterator.beta)
+            ## update i'th vector
+            for (i.element in seq_len(n.element.vector)) {
+                ## reset vectors holding statistics for updating
+                for (i.class in seq_len(index.class.max)) {
+                    yX[i.class] <- 0
+                    XX[i.class] <- 0
+                }
+                ## Loop along selected elements of 'betaTilde', 'v', and 'index.class',
+                ## plus associated elements from prod.vector, to calculate
+                ## statistics needed for updating i.element'th slice of i'th vector.
+                indices.beta <- iterator.beta@indices
+                for (i.beta in indices.beta) {
+                    beta.tilde.i.beta <- betaTilde[i.beta]
+                    v.i.beta <- v[i.beta]
+                    index.class.i.beta <- index.class[i.beta]
+                    i.vector <- (index.class.i.beta - 1L) * n.element.vector + i.element
+                    val.vector <- vector[i.vector]
+                    i.beta.no.along <- ((i.beta - 1L) %/% pos1) * pos2 + (i.beta - 1L) %% pos2 + 1L
+                    i.prod <- (i.class - 1L) * n.beta.no.along + i.beta.no.along
+                    val.prod.vector <- prod.vectors[i.prod]
+                    X <- val.prod.vector / val.vector
+                    yX[i.class] <- yX[i.class] + beta.tilde.i.beta * X  / v.i.beta
+                    XX[i.class] <- XX[i.class] + X * X / v.i.beta
+                }
+                iterator.beta <- advanceS(iterator.beta)
+                ## Update this slice.  Note that, because of the nice form of
+                ## updates from normal distributions, if no statistics were collected
+                ## for a particular 'i.class', then the corresponding element
+                ## of 'vector' is updated from its prior.
+                for (i.class in seq_len(index.class.max)) {
+                    i.vector <- (i.class - 1L) * n.element.vector + i.element
+                    prec.data <- XX[i.class]
+                    var <- 1 / (prec.data + prec.prior)
+                    sd <- sqrt(var)
+                    mean <- var * yX[i.class]
+                    vector[i.vector] <- rnorm(n = 1L,
+                                              mean = mean,
+                                              sd = sd)
+                }
+            }
+            vectors[[i]] <- vector
+            ## Update 'prod.vectors'. We calculate 'prod.vectors' from scratch,
+            ## rather than by scaling up or down in proportion to the change
+            ## in vector i, to avoid the possibility of small numerical
+            ## inconsistencies creeping in.
+            for (i.class in seq_len(index.class.max)) {
+                iterator.prod <- resetM(iterator.prod)
+                for (i.beta.no.along in seq_len(n.beta.no.along)) {
+                    indices.vectors <- iterator.prod@indices
+                    i.prod.vectors <- (i.class - 1L) * n.beta.no.along + i.beta.no.along
+                    prod.values <- 1
+                    for (i in seq_along(vectors)) {
+                        if (i == iAlong)
+                            next
+                        vector <- vectors[[i]]
+                        n.element <- dim.beta[i]
+                        i.element <- indices.vectors[i]
+                        i.vector <- (i.class - 1L) * n.element + i.element
+                        value <- vector[i.vector]
+                        prod.values <- prod.values * value
+                    }
+                    prod.vectors[i.prod.vectors] <- prod.values
+                    iterator.prod <- advanceM(iterator.prod)
+                }
+            }
+        }
+        ## update slots in prior
+        prior@vectorsMix <- vectors
+        prior@prodVectorsMix@.Data <- prod.vectors
+        prior
+    }
+}
  
 ## TRANSLATED
 ## HAS_TESTS

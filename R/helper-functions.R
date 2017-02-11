@@ -1107,12 +1107,13 @@ initialMixAll <- function(object, beta, metadata, sY, ...) {
                                  omegaVectorsMix = omegaVectorsMix)
     ## prodVectorsMix
     prodVectorsMix <- makeProdVectorsMix(vectorsMix = vectorsMix,
-                                         iAlong = iAlong)
+                                         iAlong = iAlong,
+                                         dimBeta = dimBeta,
+                                         indexClassMaxMix = indexClassMaxMix)
     ## iteratorProdVectorMix
     iteratorProdVectorMix <-
         makeIteratorProdVectorMix(dimBeta = dimBeta,
-                                  iAlong = iAlong,
-                                  indexClassMaxMix = indexClassMaxMix)
+                                  iAlong = iAlong)
     ## phiMix
     phiMix <- runif(n = 1L,
                     min = 0.8,
@@ -2865,9 +2866,9 @@ makeIAlong <- function(along, metadata) {
 }
 
 ## HAS_TESTS
-makeIteratorProdVectorMix <- function(dimBeta, iAlong, indexClassMaxMix) {
-    dim <- dimBeta[-iAlong]
-    dim <- c(dim, indexClassMaxMix@.Data)
+makeIteratorProdVectorMix <- function(dimBeta, iAlong) {
+    dim <- dimBeta
+    dim[iAlong] <- 1L
     MarginIterator(dim = dim)
 }
 
@@ -3035,11 +3036,22 @@ makePriors <- function(betas, specs, namesSpecs, margins, y, sY) {
 }
 
 ## HAS_TESTS
-makeProdVectorsMix <- function(vectorsMix, iAlong) {
-    ans <- vectorsMix[-iAlong]
-    ans <- lapply(ans, methods::slot, ".Data")
-    ans <- Reduce(outer, ans)
-    ans <- as.double(ans)
+makeProdVectorsMix <- function(vectorsMix, iAlong, dimBeta, indexClassMaxMix) {
+    index.class.max <- indexClassMaxMix@.Data
+    vectors <- vectorsMix[-iAlong]
+    dim <- dimBeta[-iAlong]
+    vectors <- lapply(vectors, methods::slot, ".Data")
+    for (i.vector in seq_along(vectors))
+        vectors[[i.vector]] <- matrix(vectors[[i.vector]],
+                                      nrow = dim[i.vector],
+                                      ncol = index.class.max)
+    ans <- vector(mode = "list",
+                  length = index.class.max)
+    for (i.class in seq_len(index.class.max)) {
+        vectors.i.class <- lapply(vectors, function(x) x[ , i.class])
+        ans[[i.class]] <- Reduce(`%o%`, vectors.i.class)
+    }
+    ans <- unlist(ans)
     new("ParameterVector", ans)
 }
 

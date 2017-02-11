@@ -615,18 +615,18 @@ setClass("IteratorProdVectorMix",
              iteratorProdVectorMix <- object@iteratorProdVectorMix
              dimBeta <- object@dimBeta
              iAlong <- object@iAlong
-             indexClassMaxMix <- object@indexClassMaxMix@.Data
              dimIterators <- iteratorProdVectorMix@dimIterators
              ## 'nBetween' slots of elements of 'dimIterators'
-             ## equal to 'dimBeta', minus "along" dimension,
-             ## plus maximum number of classes
+             ## equal to 'dimBeta', except that 'along' dimension
+             ## has length 1
              n.between.obtained <- sapply(dimIterators, methods::slot, "nBetween")
-             n.between.expected <- dimBeta[-iAlong]
-             n.between.expected <- c(n.between.expected, indexClassMaxMix)
+             n.between.expected <- replace(dimBeta,
+                                           list = iAlong,
+                                           values = 1L)
              if (!identical(n.between.obtained, n.between.expected))
-                 return(gettextf("'%s' slot of '%s' not consistent with '%s', '%s', and '%s'",
+                 return(gettextf("'%s' slot of '%s' not consistent with '%s' and '%s'",
                                  "dimIterators", "iteratorProdVectorMix", "dimBeta",
-                                 "iAlong", "indexClassMaxMix"))
+                                 "iAlong"))
              TRUE
          })             
 
@@ -1272,7 +1272,7 @@ setClass("ProdVectorsMixMixin",
              ## length of 'prodVectors' equal to product of non-along
              ## dimensions times indexClassMaxMix
              ans.obtained <- length(prodVectors)
-             ans.expected <- as.integer(prod(dimBeta[-iAlong] * indexClassMaxMix))
+             ans.expected <- as.integer(prod(dimBeta[-iAlong]) * indexClassMaxMix)
              if (!identical(ans.obtained, ans.expected)) {
                  return(gettextf("length of '%s' not equal to product of non-\"%s\" dimensions times '%s'",
                                  "prodVectors", "along", "indexClassMaxMix"))
