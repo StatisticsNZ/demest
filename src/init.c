@@ -692,7 +692,7 @@ UPDATEOBJECT_NOPRNG_WRAPPER_R(updateGWithTrend);
 UPDATEOBJECT_WRAPPER_R(updateLevelComponentWeightMix);
 UPDATEOBJECT_WRAPPER_R(updateIndexClassMaxPossibleMix);
 UPDATEPRIORWITHBETA_WRAPPER_R(updateIndexClassMix);
-
+UPDATEPRIORWITHBETA_WRAPPER_R(updateVectorsMixAndProdVectorsMix);
 
 SEXP
 updateOmegaAlpha_R(SEXP prior_R, SEXP withTrend_R)
@@ -1228,6 +1228,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateLevelComponentWeightMix_R, 1),
   CALLDEF(updateIndexClassMaxPossibleMix_R, 1),
   CALLDEF(updateIndexClassMix_R, 2),
+  CALLDEF(updateVectorsMixAndProdVectorsMix_R, 2),
   CALLDEF(updateOmegaAlpha_R, 2),
   CALLDEF(updateOmegaDelta_R, 1),
   CALLDEF(updateOmegaSeason_R, 1),
@@ -1782,6 +1783,11 @@ R_init_demest(DllInfo *info)
   ADD_SYM(posProdVectors1Mix);
   ADD_SYM(posProdVectors2Mix);
   ADD_SYM(nBetaNoAlongMix);
+  ADD_SYM(vectorsMix);
+  ADD_SYM(omegaVectorsMix);
+  ADD_SYM(iteratorProdVectorMix);
+  ADD_SYM(yXMix);
+  ADD_SYM(XXMix);
   
 #undef ADD_SYM
 

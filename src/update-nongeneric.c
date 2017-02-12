@@ -1760,6 +1760,133 @@ updateUEtaCoef(SEXP prior_R)
 }
 
 void
+updateVectorsMixAndProdVectorsMix(SEXP prior_R, double * betaTilde, int J)
+{
+    SEXP vectors_R = GET_SLOT(prior_R, vectorsMix_sym); /* list */
+    int nVectors = LENGTH(vectors_R);
+    double omegaVectors = *REAL(GET_SLOT(prior_R, omegaVectorsMix_sym));
+    
+    SEXP iteratorsDims_R = GET_SLOT(prior_R, iteratorsDimsMix_sym);
+    
+    double *prodVectors = REAL(GET_SLOT(prior_R, prodVectorsMix_sym));
+    
+    SEXP iteratorProd_R = GET_SLOT(prior_R, iteratorProdVectorMix_sym);
+    
+    int *indexClass = INTEGER(GET_SLOT(prior_R, indexClassMix_sym));
+    int indexClassMax = *INTEGER(GET_SLOT(prior_R, indexClassMaxMix_sym));
+    int indexClassMaxMinusOne = indexClassMax - 1;
+    size_t sizeToZero = indexClassMax * sizeof(double);
+    
+    int iAlong_r = *INTEGER(GET_SLOT(prior_R, iAlong_sym));  
+    int iAlong_c = iAlong_r -1;
+        
+    int *dimBeta = INTEGER(GET_SLOT(prior_R, dimBeta_sym));  
+    
+    int pos1 = *INTEGER(GET_SLOT(prior_R, posProdVectors1Mix_sym));
+    int pos2 = *INTEGER(GET_SLOT(prior_R, posProdVectors2Mix_sym));
+    int nBetaNoAlong = *INTEGER(GET_SLOT(prior_R, nBetaNoAlongMix_sym));
+    
+    double precPrior = 1/(omegaVectors * omegaVectors);
+    
+    /* space for v length J and two lots of indexClassMax*/
+    double *work = (double*)R_alloc(J + 2*indexClassMax, sizeof(double));
+    double *v = work;
+    getV_Internal(v, prior_R, J);
+    
+    /* make our own yX and XX from the remaining work so we can change them */
+    double *yX = work + J;
+    double *XX = work + J + indexClassMax;
+    
+    /* only need to get the iteratorProd indices once */
+    int *indicesVectors = INTEGER(GET_SLOT(iteratorProd_R, indices_sym));
+        
+    /* loop through vectors, skipping position occupied by "along" dimension*/
+    for (int i = 0; i < nVectors; ++i) {
+        
+        if (i == iAlong_c) {
+            continue;
+        }
+        
+        double *thisVector = REAL(VECTOR_ELT(vectors_R, i));
+        int nElementVector = dimBeta[i];
+        
+        SEXP iteratorBeta_R = VECTOR_ELT(iteratorsDims_R, i);
+        resetS(iteratorBeta_R); 
+    
+        SEXP indicesBeta_R = GET_SLOT(iteratorBeta_R, indices_sym);
+        int *indicesBeta = INTEGER(indicesBeta_R);
+        int nIndicesBeta = LENGTH(indicesBeta_R);
+        
+        /* update i'th vector*/
+        for (int iElement = 0; iElement < nElementVector; ++iElement) {
+
+            memset(yX, 0, sizeToZero);
+            memset(XX, 0, sizeToZero);
+            
+            for (int iB = 0; iB < nIndicesBeta; ++iB) {
+                
+                int iBeta = indicesBeta[iB] - 1;
+                double thisBetaTilde = betaTilde[iBeta];
+                double thisV = v[iBeta];
+                int thisIndexClass = indexClass[iBeta] - 1;
+                int iVector = thisIndexClass * nElementVector + iElement;
+                double valVector = thisVector[iVector];
+                
+                int iBetaNoAlong = (iBeta/pos1)* pos2 + (iBeta%pos2);
+                int iProd = indexClassMaxMinusOne * nBetaNoAlong + iBetaNoAlong;
+                double valProdVector = prodVectors[iProd];
+                double X = valProdVector/valVector;
+                double tmp = X / thisV;
+                
+                yX[indexClassMaxMinusOne] += thisBetaTilde * tmp;
+                XX[indexClassMaxMinusOne] += X * tmp;
+            }
+            
+            advanceS(iteratorBeta_R);
+            
+            for (int iClass = 0; iClass < indexClassMax; ++iClass) {
+                
+                int iVector = iClass * nElementVector + iElement;
+                double precData = XX[iClass];
+                double var = 1/ (precData + precPrior);
+                double sd = sqrt(var);
+                double mean = var * yX[iClass];
+                thisVector[iVector] = rnorm(mean, sd);
+            }
+        } /* end iElement loop */
+        
+        for (int iClass = 0; iClass < indexClassMax; ++iClass) {
+            
+            resetM(iteratorProd_R);
+        
+            for (int iBetaNoAlong = 0; iBetaNoAlong < nBetaNoAlong; ++iBetaNoAlong) {
+                
+                int iProdVectors = iClass * nBetaNoAlong + iBetaNoAlong;
+                double prodValues = 1;
+                
+                for (int iV = 0; iV < nVectors; ++iV) {
+        
+                    if (iV == iAlong_c) {
+                        continue;
+                    }
+                    
+                    double *vector_iV = REAL(VECTOR_ELT(vectors_R, iV));
+                    int nElement_iV = dimBeta[iV];
+                    int iElement_iV = indicesVectors[iV] - 1;
+                    int iVector_iV = iClass * nElement_iV + iElement_iV;
+                    double value = vector_iV[iVector_iV];
+                    prodValues *= value;
+                }
+                
+                prodVectors[iProdVectors] = prodValues;
+                advanceM(iteratorProd_R);
+            }
+        } 
+    } /* end main loop through vectors */
+}
+
+
+void
 updateWSqrt(SEXP prior_R)
 {
     double *WSqrt = REAL(GET_SLOT(prior_R, WSqrt_sym));

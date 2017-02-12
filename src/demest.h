@@ -266,7 +266,12 @@ SEXP
   prodVectorsMix_sym,
   posProdVectors1Mix_sym,
   posProdVectors2Mix_sym,
-  nBetaNoAlongMix_sym;
+  nBetaNoAlongMix_sym,
+  vectorsMix_sym,
+  omegaVectorsMix_sym,
+  iteratorProdVectorMix_sym,
+  yXMix_sym,
+  XXMix_sym;
   
   
 /* Priors-methods */
@@ -277,7 +282,8 @@ void updateBeta(double *beta, int J, SEXP prior, double *vbar,
 void updateGWithTrend(SEXP prior_R);
 void updateLevelComponentWeightMix(SEXP prior_R);
 void updateIndexClassMaxPossibleMix(SEXP prior_R);
-void updateIndexClassMix(SEXP prior_R, double * betaTilde_R, int J);
+void updateIndexClassMix(SEXP prior_R, double * betaTilde, int J);
+void updateVectorsMixAndProdVectorsMix(SEXP prior_R, double * betaTilde, int J);
 void updateOmegaAlpha(SEXP prior_R, int isWithTrend);
 void updateOmegaDelta(SEXP prior_R);
 void updateOmegaSeason(SEXP prior_R);

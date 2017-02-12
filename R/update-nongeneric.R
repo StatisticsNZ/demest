@@ -1495,7 +1495,7 @@ updateUEtaCoef <- function(prior, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 ## 'vectors' are 'psi' in notes
 updateVectorsMixAndProdVectorsMix <- function(prior, betaTilde, useC = FALSE) {
