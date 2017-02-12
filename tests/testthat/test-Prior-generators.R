@@ -651,6 +651,7 @@ test_that("generator function and initialPrior work with MixNormZero", {
     expect_identical(prior@AComponentWeightMix, new("Scale", 0.4))
     expect_identical(prior@ALevelComponentWeightMix, new("Scale", 0.125))
     expect_identical(prior@nuTau, new("DegreesFreedom", 6))
+    expect_identical(prior@tolerance, new("Parameter", 1e-5))
 })
 
 

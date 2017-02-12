@@ -5396,74 +5396,86 @@ test_that("R and C versions of makeVBar give same answer with Normal, main effec
     }
 })
 
-## test_that("modePhiMix works", {
-##     modePhiMix <- demest:::modePhiMix
-##     logPostPhiMix <- demest:::logPostPhiMix
-##     for (seed in seq_len(n.test)) {
-##         set.seed(seed)
-##         phi <- runif(1)
-##         nAlong <- sample(2:10, 1)
-##         indexClassMaxMix <- sample(2:10, 1)
-##         level <- matrix(rnorm(nAlong * indexClassMaxMix),
-##                         nrow = nAlong,
-##                         ncol = indexClassMaxMix)
-##         meanLevel <- rnorm(n = 1, sd = 0.1)
-##         omega <- runif(1)
-##         print(nAlong)
-##         ans.obtained <- modePhiMix(phi = phi,
-##                                    level = level,
-##                                    meanLevel = meanLevel,
-##                                    nAlong = nAlong,
-##                                    indexClassMaxMix = indexClassMaxMix,
-##                                    omega = omega)
-##         print(ans.obtained)
-##         logpost <- function(p)
-##             logPostPhiMix(phi = p,
-##                           level = level,
-##                           meanLevel = meanLevel,
-##                           nAlong = nAlong,
-##                           indexClassMaxMix = indexClassMaxMix,
-##                           omega = omega,
-##                           useC = TRUE)
-##         x <- seq(-0.99999, 0.99, length = 100)
-##         vals <- sapply(x, logpost)
-##         expect_true(all(vals <= ans.obtained))
-##         print(seed)
-##     }
-## })
+test_that("modePhiMix works", {
+    modePhiMix <- demest:::modePhiMix
+    logPostPhiMix <- demest:::logPostPhiMix
+    for (seed in seq_len(n.test)) {
+        ## on fourth iteraction, where nAlong = 2, the mode
+        ## is at -0.99999, ie -1 + tolerance
+        set.seed(seed)
+        phi <- runif(1)
+        nAlong <- sample(2:10, 1)
+        indexClassMaxMix <- sample(2:10, 1)
+        level <- matrix(rnorm(nAlong * indexClassMaxMix),
+                        nrow = nAlong,
+                        ncol = indexClassMaxMix)
+        meanLevel <- rnorm(n = 1, sd = 0.1)
+        omega <- runif(1)
+        tolerance <- 1e-5
+        ans.obtained <- modePhiMix(level = level,
+                                   meanLevel = meanLevel,
+                                   nAlong = nAlong,
+                                   indexClassMaxMix = indexClassMaxMix,
+                                   omega = omega,
+                                   tolerance = tolerance)
+        logpost <- function(p)
+            logPostPhiMix(phi = p,
+                          level = level,
+                          meanLevel = meanLevel,
+                          nAlong = nAlong,
+                          indexClassMaxMix = indexClassMaxMix,
+                          omega = omega,
+                          useC = TRUE)
+        x <- seq(-0.99999, 0.99, length = 1000)
+        vals <- sapply(x, logpost)
+        expect_true(all(vals <= ans.obtained))
+        if (FALSE) { # Graphical check. Creates 'n.text' new devices.
+            dev.new()
+            plot(vals ~ x, type = "l")
+            max.val <- logPostPhiMix(phi = ans.obtained,
+                                     level = level,
+                                     meanLevel = meanLevel,
+                                     nAlong = nAlong,
+                                     indexClassMaxMix = indexClassMaxMix,
+                                     omega = omega,
+                                     useC = TRUE)
+            points(x = ans.obtained, y = max.val)
+        }
+    }
+})
 
-## test_that("R and C versions of modePhiMix give same answer", {
-##     modePhiMix <- demest:::modePhiMix
-##     for (seed in seq_len(n.test)) {
-##         set.seed(seed)
-##         phi <- runif(1)
-##         nAlong <- sample(2:10, 1)
-##         indexClassMaxMix <- sample(2:10, 1)
-##         level <- matrix(rnorm(nAlong * indexClassMaxMix),
-##                         nrow = nAlong,
-##                         ncol = indexClassMaxMix)
-##         meanLevel <- rnorm(n = 1, sd = 0.1)
-##         omega <- runif(1)
-##         ans.R <- modePhiMix(phi = phi,
-##                             level = level,
-##                             meanLevel = meanLevel,
-##                             nAlong = nAlong,
-##                             indexClassMaxMix = indexClassMaxMix,
-##                             omega = omega,
-##                             useC = FALSE)
-##         ans.C <- modePhiMix(phi = phi,
-##                             level = level,
-##                             meanLevel = meanLevel,
-##                             nAlong = nAlong,
-##                             indexClassMaxMix = indexClassMaxMix,
-##                             omega = omega,
-##                             useC = TRUE)
-##         if (test.identity)
-##             expect_identical(ans.R, ans.C)
-##         else
-##             expect_equal(ans.R, ans.C)
-##     }
-## })        
+test_that("R and C versions of modePhiMix give same answer", {
+    modePhiMix <- demest:::modePhiMix
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        nAlong <- sample(2:10, 1)
+        indexClassMaxMix <- sample(2:10, 1)
+        level <- matrix(rnorm(nAlong * indexClassMaxMix),
+                        nrow = nAlong,
+                        ncol = indexClassMaxMix)
+        meanLevel <- rnorm(n = 1, sd = 0.1)
+        omega <- runif(1)
+        tolerance <- 1e-5
+        ans.R <- modePhiMix(level = level,
+                            meanLevel = meanLevel,
+                            nAlong = nAlong,
+                            indexClassMaxMix = indexClassMaxMix,
+                            omega = omega,
+                            tolerance = tolerance,
+                            useC = FALSE)
+        ans.C <- modePhiMix(level = level,
+                            meanLevel = meanLevel,
+                            nAlong = nAlong,
+                            indexClassMaxMix = indexClassMaxMix,
+                            omega = omega,
+                            tolerance = tolerance,
+                            useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})        
 
 test_that("safeLogProp_Binomial gives valid answers", {
     safeLogProp_Binomial <- demest:::safeLogProp_Binomial

@@ -1510,6 +1510,19 @@ setClass("TauMixin",
          slots = c(tau = "Scale"),
          contains = "VIRTUAL")
 
+setClass("ToleranceMixin",
+         slots = c(tolerance = "Parameter"),
+         prototype = prototype(tolerance = new("Parameter", 1e-5)),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             tolerance <- object@tolerance@.Data
+             ## 'tolerance' is positive
+             if (tolerance <= 0)
+                 return(gettextf("'%s' is non-positive",
+                                 "tolerance"))
+             TRUE
+         })
+
 setClass("UBetaMixin",
          slots = c(UBeta = "VarTDist"),
          contains = "VIRTUAL",
