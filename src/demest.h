@@ -401,6 +401,8 @@ double logPostPhiSecondOrderMix(double phi, double *level, double meanLevel,
                 int nAlong, int indexClassMax_r, double omega);
 double makeLifeExpBirth(double *mx, double *nx, double *ax, 
                         int iAge0_r, int nAge);
+double modePhiMix (double * level, double meanLevel, int nAlong,
+              int indexClassMax, double omega, double tolerance);
 
 double safeLogProp_Binomial(double logit_th_new, 
                             double logit_th_other_new,
