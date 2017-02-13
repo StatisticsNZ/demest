@@ -391,6 +391,7 @@ test_that("updateAlphaMix gives valid answer", {
 
 test_that("R and C versions of updateAlphaMix give same answer", {
     updateAlphaMix <- demest:::updateAlphaMix
+    updateVectorsMixAndProdVectorsMix <- demest:::updateVectorsMixAndProdVectorsMix
     set.seed(100)
     initialPrior <- demest:::initialPrior
     beta <- rnorm(200)
@@ -1273,7 +1274,7 @@ test_that("R and C versions of updateIndexClassMaxPossibleMix give same answer",
                     dimtypes = c("state", "time"),
                     DimScales = list(new("Categories", dimvalues = letters[1:20]),
                                      new("Points", dimvalues = 2001:2010)))
-    spec <- Mix(weights = Weights(mean = -20))
+    spec <- Mix(weights = Weights(mean = -10))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
