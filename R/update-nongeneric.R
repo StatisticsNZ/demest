@@ -251,6 +251,37 @@ updateSDRobust <- function(sigma, A, nuBeta, nuTau, V, n, max, useC = FALSE) {
 ##         w <- neighbours[[j]]
 ##         mean <- sum(w * 
 
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+updateAlphaMix <- function(prior, useC = FALSE) {
+    stopifnot(methods::is(prior, "Prior"))
+    stopifnot(methods::is(prior, "ComponentFlags"))
+    stopifnot(prior@hasAlphaMix)
+    if (useC) {
+        .Call(updateAlphaMix_R, prior)
+    }
+    else {
+        alpha <- prior@alphaMix@.Data
+        n.beta <- prior@J@.Data
+        index.class <- prior@indexClassMix
+        prod.vectors <- prior@prodVectorsMix@.Data
+        pos1 <- prior@posProdVectors1Mix
+        pos2 <- prior@posProdVectors2Mix
+        n.beta.no.along <- prior@nBetaNoAlongMix
+        for (i.beta in seq_len(n.beta)) {
+            i.class <- index.class[i.beta]
+            i.beta.no.along <- ((i.beta - 1L) %/% pos1) * pos2 + (i.beta - 1L) %% pos2 + 1L
+            i.prod <- (i.class - 1L) * n.beta.no.along + i.beta.no.along
+            alpha[i.beta] <- prod.vectors[i.prod]
+        }
+        prior@alphaMix@.Data <- alpha
+        prior
+    }
+}
+
+
+
 updateAlphaMove <- function(prior, betaTilde, useC = FALSE) {
     J <- prior@J@.Data
     alpha <- prior@alphaMove@.Data
@@ -1032,6 +1063,45 @@ updateOmegaAlpha <- function(prior, withTrend, useC = FALSE) {
     }
 }
 
+## READY_TO_TRANSLATE
+## HAS_TESTS
+## 'sigma_epsilon'
+updateOmegaComponentWeightMix <- function(prior, useC = FALSE) {
+    stopifnot(methods::is(prior, "Mix"))
+    stopifnot(validObject(prior))
+    if (useC) {
+        .Call(updateOmegaComponentWeightMix_R, prior)
+    }
+    else {    
+        omega <- prior@omegaComponentWeightMix@.Data
+        omega.max <- prior@omegaComponentWeightMaxMix@.Data
+        A <- prior@AComponentWeightMix@.Data
+        nu <- prior@nuComponentWeightMix@.Data
+        comp.weight <- prior@componentWeightMix@.Data
+        level.comp.weight <- prior@levelComponentWeightMix@.Data
+        index.class.max.used <- prior@indexClassMaxUsedMix@.Data
+        dimBeta <- prior@dimBeta
+        iAlong <- prior@iAlong
+        n.along <- dimBeta[iAlong]
+        n <- n.along * index.class.max.used
+        V <- 0
+        for (i.class in seq_len(index.class.max.used)) {
+            for (i.along in seq_len(n.along)) {
+                i.wt <- (i.class - 1L) * n.along + i.along
+                V <- V + (comp.weight[i.wt] - level.comp.weight[i.wt])^2
+            }
+        }
+        omega <- updateSDNorm(sigma = omega,
+                              A = A,
+                              nu = nu,
+                              V = V,
+                              n = n,
+                              max = omega.max)
+        prior@omegaComponentWeightMix@.Data <- omega
+        prior
+    }
+}
+
 ## TRANSLATED
 ## HAS_TESTS
 updateOmegaDelta <- function(prior, useC = FALSE) {
@@ -1071,6 +1141,49 @@ updateOmegaDelta <- function(prior, useC = FALSE) {
         successfully.updated <- omega > 0
         if (successfully.updated)
             prior@omegaDelta@.Data <- omega
+        prior
+    }
+}
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+## 'sigma_eta'
+updateOmegaLevelComponentWeightMix <- function(prior, useC = FALSE) {
+    stopifnot(methods::is(prior, "Mix"))
+    stopifnot(validObject(prior))
+    if (useC) {
+        .Call(updateOmegaLevelComponentWeightMix_R, prior)
+    }
+    else {    
+        omega <- prior@omegaLevelComponentWeightMix@.Data
+        omega.max <- prior@omegaLevelComponentWeightMaxMix@.Data
+        A <- prior@ALevelComponentWeightMix@.Data
+        nu <- prior@nuLevelComponentWeightMix@.Data
+        level <- prior@levelComponentWeightMix@.Data # alpha; n.along * index.class.max
+        mean.level <- prior@meanLevelComponentWeightMix@.Data # mu; 1
+        phi <- prior@phiMix
+        index.class.max.used <- prior@indexClassMaxUsedMix@.Data # k-star
+        dimBeta <- prior@dimBeta
+        iAlong <- prior@iAlong
+        n.along <- dimBeta[iAlong]
+        n <- n.along * index.class.max.used
+        V <- 0
+        for (i.class in seq_len(index.class.max.used)) {
+            i.wt <- (i.class - 1L) * n.along + 1L
+            V <- V + (1 - phi^2) * (level[i.wt] - mean.level / (1 - phi))^2
+            for (i.along in seq.int(from = 2L, to = n.along)) {
+                i.wt.curr <- (i.class - 1L) * n.along + i.along
+                i.wt.prev <- i.wt.curr - 1L
+                V <- V + (level[i.wt.curr] - mean.level - phi * level[i.wt.prev])^2
+            }
+        }
+        omega <- updateSDNorm(sigma = omega,
+                              A = A,
+                              nu = nu,
+                              V = V,
+                              n = n,
+                              max = omega.max)
+        prior@omegaLevelComponentWeightMix@.Data <- omega
         prior
     }
 }
@@ -1122,7 +1235,7 @@ updateOmegaSeason <- function(prior, useC = FALSE) {
 
 ## READY_TO_TRANSLATE
 ## HAS_TESTS
-## 'sigma_A', 'sigma_S' in notes
+## 'sigma_e' in notes
 updateOmegaVectorsMix <- function(prior, useC = FALSE) {
     stopifnot(methods::is(prior, "Mix"))
     stopifnot(validObject(prior))

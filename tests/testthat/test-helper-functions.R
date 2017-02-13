@@ -779,6 +779,8 @@ test_that("initialMixAll works", {
     stopifnot(identical(l$ATau, new("Scale", 0.25)))
     stopifnot(identical(l$AVectorsMix, new("Scale", 0.25)))
     stopifnot(identical(l$aMix, new("ParameterVector", rep(0, times = 9))))
+    stopifnot(identical(length(l$alphaMix@.Data), l$J@.Data))
+    stopifnot(all(l$alphaMix@.Data %in% l$prodVectors@.Data))
     stopifnot(identical(l$CMix, new("ParameterVector", rep(1, times = 10))))
     stopifnot(identical(length(l$componentWeightMix), 10L * 10L))
     stopifnot(identical(l$dimBeta, c(20L, 2L, 10L)))
@@ -2400,6 +2402,36 @@ test_that("jitterBetas works", {
         cor <- cor(unlist(betas), unlist(betas.jittered))
         expect_true((cor < 0.99) && (cor > 0.9))
     }
+})
+
+test_that("makeAlphaMix works", {
+    makeAlphaMix <- demest:::makeAlphaMix
+    set.seed(1)
+    dimBeta <- c(3:5, 20L)
+    iAlong <- 4L
+    nBetaNoAlongMix <- as.integer(prod(dimBeta[-iAlong]))
+    posProdVectors1Mix <- as.integer(prod(dimBeta))
+    posProdVectors2Mix <- as.integer(prod(dimBeta[-iAlong]))
+    indexClassMaxMix <- new("Counter", 10L)
+    prodVectorsMix <- new("ParameterVector",
+                          rnorm(n = nBetaNoAlongMix * indexClassMaxMix@.Data))
+    indexClassMix <- sample(indexClassMaxMix@.Data,
+                            size = prod(dimBeta),
+                            replace = TRUE)
+    ans.obtained <- makeAlphaMix(prodVectorsMix = prodVectorsMix,
+                                 indexClassMix = indexClassMix,
+                                 indexClassMaxMix = indexClassMaxMix,
+                                 nBetaNoAlongMix = nBetaNoAlongMix,
+                                 posProdVectors1Mix = posProdVectors1Mix,
+                                 posProdVectors2Mix = posProdVectors2Mix)
+    ans.expected <- numeric(length(indexClassMix))
+    pv <- matrix(prodVectorsMix@.Data, ncol = indexClassMaxMix@.Data)
+    i.beta.no.along <- rep(1:60, times = 20)
+    for (i in seq_along(ans.expected)) {
+        ans.expected[i] <- pv[i.beta.no.along[i], indexClassMix[i]]
+    }
+    ans.expected <- new("ParameterVector", ans.expected)
+    expect_identical(ans.obtained, ans.expected)
 })
     
 test_that("makeComponentWeightMix works", {

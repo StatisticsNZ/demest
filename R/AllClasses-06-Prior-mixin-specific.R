@@ -184,19 +184,18 @@ setClass("AlphaKnownMixin",
              TRUE
          })
 
-## NOT NEEDED???
-## setClass("AlphaMixMixin",
-##          slots = c(alphaMix = "ParameterVector"),
-##          contains = "VIRTUAL",
-##          validity = function(object) {
-##              J <- object@J@.Data
-##              alphaMix <- object@alphaMix
-##              ## 'alphaMix' has length 'J'
-##              if (!identical(length(alphaMix), J))
-##                  return(gettextf("'%s' does not have length '%s'",
-##                                  "alphaMix", "J"))
-##              TRUE
-##          })
+setClass("AlphaMixMixin",
+         slots = c(alphaMix = "ParameterVector"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             J <- object@J@.Data
+             alphaMix <- object@alphaMix
+             ## 'alphaMix' has length 'J'
+             if (!identical(length(alphaMix), J))
+                 return(gettextf("'%s' does not have length '%s'",
+                                 "alphaMix", "J"))
+             TRUE
+         })
 
 setClass("AlphaMoveMixin",
          slots = c(alphaMove = "ParameterVector"),

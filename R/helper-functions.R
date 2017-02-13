@@ -1197,11 +1197,19 @@ initialMixAll <- function(object, beta, metadata, sY, ...) {
     XXMix <- rep(0, times = indexClassMaxMix@.Data)
     yXMix <- new("ParameterVector", yXMix)
     XXMix <- new("ParameterVector", XXMix)
+    ## alphaMix
+    alphaMix <- makeAlphaMix(prodVectorsMix = prodVectorsMix,
+                             indexClassMix = indexClassMix,
+                             indexClassMaxMix = indexClassMaxMix,
+                             nBetaNoAlongMix = nBetaNoAlongMix,
+                             posProdVectors1Mix = posProdVectors1Mix,
+                             posProdVectors2Mix = posProdVectors2Mix)
     list(AComponentWeightMix = AComponentWeightMix,
          ALevelComponentWeightMix = ALevelComponentWeightMix,
          ATau = ATau,
          AVectorsMix = AVectorsMix,
          aMix = aMix,
+         alphaMix = alphaMix,
          CMix = CMix,
          componentWeightMix = componentWeightMix,
          dimBeta = dimBeta,
@@ -1324,6 +1332,24 @@ makeASigma <- function(A, sY, isSpec = FALSE) {
         methods::new("Scale", ans)
 }
 
+## HAS_TESTS
+makeAlphaMix <- function(prodVectorsMix, indexClassMix, indexClassMaxMix,
+                         nBetaNoAlongMix, posProdVectors1Mix,
+                         posProdVectors2Mix) {
+    index.class.max <- indexClassMaxMix@.Data
+    prod.vectors <- prodVectorsMix@.Data
+    prod.vectors <- matrix(prod.vectors,
+                           nrow = nBetaNoAlongMix,
+                           ncol = index.class.max)
+    i.beta <- seq_along(indexClassMix)
+    i.beta.no.along <- (((i.beta - 1L) %/% posProdVectors1Mix) * posProdVectors2Mix
+        + (i.beta - 1L) %% posProdVectors2Mix
+        + 1L)
+    i <- cbind(i.beta.no.along, indexClassMix)
+    ans <- prod.vectors[i]
+    new("ParameterVector", ans)
+}
+    
 ## NO_TESTS
 makeEta <- function(beta, UEtaCoef) {
     P <- length(UEtaCoef) + 1L

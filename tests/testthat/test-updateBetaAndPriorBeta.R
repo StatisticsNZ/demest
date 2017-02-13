@@ -2304,3 +2304,135 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithT
             expect_equal(ans.R, ans.C)
     }
 })
+
+
+
+## Mix #################################################################################
+
+
+test_that("updateBetaAndPriorBeta updates correct slots with MixNormZero", {
+    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+    initialPrior <- demest:::initialPrior
+    set.seed(1)
+    beta0 <- rnorm(200)
+    metadata <- new("MetaData",
+                    nms = c("reg", "time", "age"),
+                    dimtypes = c("state", "time", "age"),
+                    DimScales = list(new("Categories", dimvalues = c("a", "b")),
+                                     new("Points", dimvalues = 2001:2010),
+                                     new("Intervals", dimvalues = as.numeric(0:10))))
+    spec <- Mix(weights = Weights(mean = -10))
+    prior0 <- initialPrior(spec,
+                           beta = beta0,
+                           metadata = metadata,
+                           sY = NULL,
+                           multScale = 1)
+    vbar <- rnorm(200)
+    n <- 5L
+    sigma <- runif(1)
+    l <- updateBetaAndPriorBeta(prior = prior0,
+                                vbar = vbar,
+                                n = n,
+                                sigma = sigma)
+    beta1 <- l[[1]]
+    prior1 <- l[[2]]
+    expect_is(prior1, "MixNormZero")
+    ## beta
+    expect_true(all(beta0 != beta1))
+    ## u
+    u0 <- prior0@latentWeightMix@.Data
+    u1 <- prior1@latentWeightMix@.Data
+    expect_true(all(u0 != u1))
+    ## k
+    k0 <- prior0@indexClassMix
+    k1 <- prior1@indexClassMix
+    expect_true(!all(k0 == k1))
+    ## z 
+    z0 <- prior0@latentComponentWeightMix@.Data
+    z1 <- prior1@latentComponentWeightMix@.Data
+    expect_true(!all(z0 == z1))
+    ## W
+    W0 <- prior0@componentWeightMix@.Data
+    W1 <- prior1@componentWeightMix@.Data
+    expect_true(all(W0 != W1))
+    ## v
+    v0 <- prior0@weightMix@.Data
+    v1 <- prior1@weightMix@.Data
+    expect_true(all(v0 != v1))
+    ## psi
+    psi0 <- unlist(prior0@vectorsMix)
+    psi1 <- unlist(prior1@vectorsMix)
+    expect_true(all(psi0 != psi1))
+    ## sigma_delta
+    sdelta0 <- prior0@tau@.Data
+    sdelta1 <- prior1@tau@.Data
+    expect_true(sdelta0 != sdelta1)
+    ## sigma_e
+    se0 <- prior0@omegaVectorsMix@.Data
+    se1 <- prior1@omegaVectorsMix@.Data
+    expect_true(se0 != se1)
+    ## sigma_epsilon
+    sepsilon0 <- prior0@omegaComponentWeightMix@.Data
+    sepsilon1 <- prior1@omegaComponentWeightMix@.Data
+    expect_true(sepsilon0 != sepsilon1)
+    ## sigma_eta
+    seta0 <- prior0@omegaLevelComponentWeightMix@.Data
+    seta1 <- prior1@omegaLevelComponentWeightMix@.Data
+    expect_true(seta0 != seta1)
+    ## mu
+    mu0 <- prior0@meanLevelComponentWeightMix@.Data
+    mu1 <- prior1@meanLevelComponentWeightMix@.Data
+    expect_true(mu0 != mu1)
+    ## alpha
+    alpha0 <- prior0@levelComponentWeightMix@.Data
+    alpha1 <- prior1@levelComponentWeightMix@.Data
+    expect_true(all(alpha0 != alpha1))
+    ## alphaMix
+    alphaMix0 <- prior0@alphaMix@.Data
+    alphaMix1 <- prior1@alphaMix@.Data
+    expect_true(all(alphaMix0 != alphaMix1))
+})
+
+test_that("updateBetaAndPriorBeta updates correct slots with MixNormZero", {
+    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+    initialPrior <- demest:::initialPrior
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        metadata <- new("MetaData",
+                        nms = c("reg", "time", "age"),
+                        dimtypes = c("state", "time", "age"),
+                        DimScales = list(new("Categories", dimvalues = c("a", "b")),
+                                         new("Points", dimvalues = 2001:2010),
+                                         new("Intervals", dimvalues = as.numeric(0:10))))
+        spec <- Mix(weights = Weights(mean = -10))
+        beta0 <- rnorm(200)
+        prior0 <- initialPrior(spec,
+                               beta = beta0,
+                               metadata = metadata,
+                               sY = NULL,
+                               multScale = 1)
+        vbar <- rnorm(200)
+        n <- 5L
+        sigma <- runif(1)
+        set.seed(seed + 1)
+        ans.R <- updateBetaAndPriorBeta(prior = prior0,
+                                        vbar = vbar,
+                                        n = n,
+                                        sigma = sigma,
+                                        useC = FALSE)
+        set.seed(seed + 1)
+        ans.C <- updateBetaAndPriorBeta(prior = prior0,
+                                        vbar = vbar,
+                                        n = n,
+                                        sigma = sigma,
+                                        useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
+
+
+
+

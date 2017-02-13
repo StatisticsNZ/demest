@@ -354,6 +354,65 @@ test_that("R and C versions of updateSDRobust give same answer with upper limit"
 
 
 ## UPDATING PRIORS ################################################################
+
+
+test_that("updateAlphaMix gives valid answer", {
+    updateAlphaMix <- demest:::updateAlphaMix
+    updateVectorsMixAndProdVectorsMix <- demest:::updateVectorsMixAndProdVectorsMix
+    makeAlphaMix <- demest:::makeAlphaMix
+    set.seed(100)
+    initialPrior <- demest:::initialPrior
+    beta <- rnorm(200)
+    metadata <- new("MetaData",
+                    nms = c("reg", "time"),
+                    dimtypes = c("state", "time"),
+                    DimScales = list(new("Categories", dimvalues = letters[1:20]),
+                                     new("Points", dimvalues = 2001:2010)))
+    spec <- Mix(weights = Weights(mean = -20))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          multScale = 1)
+    beta.tilde <- rnorm(200)
+    prior <- updateVectorsMixAndProdVectorsMix(prior = prior,
+                                               betaTilde = beta.tilde)
+    ans.obtained <- updateAlphaMix(prior)
+    alpha <- makeAlphaMix(prodVectorsMix = prior@prodVectorsMix,
+                          indexClassMix = prior@indexClassMix,
+                          indexClassMaxMix = prior@indexClassMaxMix,
+                          nBetaNoAlongMix = prior@nBetaNoAlongMix, 
+                          posProdVectors1Mix = prior@posProdVectors1Mix,
+                          posProdVectors2Mix = prior@posProdVectors2Mix)
+    ans.expected <- prior
+    ans.expected@alphaMix <- alpha
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("R and C versions of updateAlphaMix give same answer", {
+    updateAlphaMix <- demest:::updateAlphaMix
+    set.seed(100)
+    initialPrior <- demest:::initialPrior
+    beta <- rnorm(200)
+    metadata <- new("MetaData",
+                    nms = c("reg", "time"),
+                    dimtypes = c("state", "time"),
+                    DimScales = list(new("Categories", dimvalues = letters[1:20]),
+                                     new("Points", dimvalues = 2001:2010)))
+    spec <- Mix(weights = Weights(mean = -20))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          multScale = 1)
+    beta.tilde <- rnorm(200)
+    prior <- updateVectorsMixAndProdVectorsMix(prior = prior,
+                                               betaTilde = beta.tilde)
+    ans.R <- updateAlphaMix(prior, useC = FALSE)
+    ans.C <- updateAlphaMix(prior, useC = TRUE)
+    expect_identical(ans.R, ans.C)
+})
+
 if (test.extended) {
     test_that("updateAlphaDeltaDLMWithTrend gives valid answer", {
         ffbs <- function(beta, alphaDelta, m, C, phi, tau, omegaAlpha, omegaDelta) {
@@ -1700,6 +1759,87 @@ test_that("R and C versions of updateOmegaAlpha give same answer", {
     }
 })
 
+test_that("updateOmegaComponentWeightMix gives valid answer", {
+    updateOmegaComponentWeightMix <- demest:::updateOmegaComponentWeightMix
+    updateSDNorm <- demest:::updateSDNorm
+    set.seed(100)
+    initialPrior <- demest:::initialPrior
+    beta <- rnorm(200)
+    metadata <- new("MetaData",
+                    nms = c("reg", "time", "age"),
+                    dimtypes = c("state", "time", "age"),
+                    DimScales = list(new("Categories", dimvalues = c("a", "b")),
+                                     new("Points", dimvalues = 2001:2010),
+                                     new("Intervals", dimvalues = as.numeric(0:10))))
+    spec <- Mix()
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          multScale = 1)
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.obtained <- updateOmegaComponentWeightMix(prior)
+        set.seed(seed)
+        max.used <- prior@indexClassMaxUsedMix@.Data
+        sigma <- prior@omegaComponentWeightMix@.Data
+        A <- prior@AComponentWeightMix@.Data
+        nu <- prior@nuComponentWeightMix@.Data
+        comp <- prior@componentWeightMix@.Data
+        level <- prior@levelComponentWeightMix@.Data
+        index.class.max <- prior@indexClassMaxMix@.Data
+        index.class.max.used <- prior@indexClassMaxUsedMix@.Data
+        comp <- matrix(comp, ncol = index.class.max)
+        level <- matrix(level, ncol = index.class.max)
+        comp <- comp[,1:index.class.max.used]
+        level <- level[,1:index.class.max.used]
+        V <- sum((comp - level)^2)
+        n <- 10L * index.class.max.used
+        omega.new <- updateSDNorm(sigma = sigma,
+                                  A = A,
+                                  nu = nu,
+                                  V = V,
+                                  n = n,
+                                  max = 1 * index.class.max.used)
+        ans.expected <- prior
+        ans.expected@omegaComponentWeightMix@.Data <- omega.new
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of updateOmegaComponentWeightMix give same answer", {
+    updateOmegaComponentWeightMix <- demest:::updateOmegaComponentWeightMix
+    updateSDNorm <- demest:::updateSDNorm
+    set.seed(100)
+    initialPrior <- demest:::initialPrior
+    beta <- rnorm(200)
+    metadata <- new("MetaData",
+                    nms = c("reg", "time", "age"),
+                    dimtypes = c("state", "time", "age"),
+                    DimScales = list(new("Categories", dimvalues = c("a", "b")),
+                                     new("Points", dimvalues = 2001:2010),
+                                     new("Intervals", dimvalues = as.numeric(0:10))))
+    spec <- Mix()
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          multScale = 1)
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.R <- updateOmegaComponentWeightMix(prior, useC = FALSE)
+        set.seed(seed)
+        ans.C <- updateOmegaComponentWeightMix(prior, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
+
 test_that("updateOmegaDelta works", {
     updateOmegaDelta <- demest:::updateOmegaDelta
     initialPrior <- demest:::initialPrior
@@ -1757,6 +1897,87 @@ test_that("R and C versions of updateOmegaDelta give same answer", {
         ans.R <- updateOmegaDelta(prior, useC = FALSE)
         set.seed(seed)
         ans.C <- updateOmegaDelta(prior, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
+
+test_that("updateOmegaLevelComponentWeightMix gives valid answer", {
+    updateOmegaLevelComponentWeightMix <- demest:::updateOmegaLevelComponentWeightMix
+    updateSDNorm <- demest:::updateSDNorm
+    set.seed(100)
+    initialPrior <- demest:::initialPrior
+    beta <- rnorm(200)
+    metadata <- new("MetaData",
+                    nms = c("reg", "time", "age"),
+                    dimtypes = c("state", "time", "age"),
+                    DimScales = list(new("Categories", dimvalues = c("a", "b")),
+                                     new("Points", dimvalues = 2001:2010),
+                                     new("Intervals", dimvalues = as.numeric(0:10))))
+    spec <- Mix()
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          multScale = 1)
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.obtained <- updateOmegaLevelComponentWeightMix(prior)
+        set.seed(seed)
+        max.used <- prior@indexClassMaxUsedMix@.Data
+        sigma <- prior@omegaLevelComponentWeightMix@.Data
+        A <- prior@ALevelComponentWeightMix@.Data
+        nu <- prior@nuLevelComponentWeightMix@.Data
+        level <- prior@levelComponentWeightMix@.Data
+        index.class.max <- prior@indexClassMaxMix@.Data
+        index.class.max.used <- prior@indexClassMaxUsedMix@.Data
+        level <- matrix(level, ncol = index.class.max)
+        level <- level[,1:index.class.max.used]
+        phi <- prior@phiMix
+        mu <- prior@meanLevelComponentWeightMix@.Data
+        n.along <- 10L
+        V <- ((1-phi^2) * sum((level[1,] - mu/(1-phi))^2)
+            + sum((level[-1,] - mu - phi*level[-n.along,])^2))
+        n <- n.along * index.class.max.used
+        omega.new <- updateSDNorm(sigma = sigma,
+                                  A = A,
+                                  nu = nu,
+                                  V = V,
+                                  n = n,
+                                  max = 1 * index.class.max.used)
+        ans.expected <- prior
+        ans.expected@omegaLevelComponentWeightMix@.Data <- omega.new
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of updateOmegaLevelComponentWeightMix give same answer", {
+    updateOmegaLevelComponentWeightMix <- demest:::updateOmegaLevelComponentWeightMix
+    set.seed(100)
+    initialPrior <- demest:::initialPrior
+    beta <- rnorm(200)
+    metadata <- new("MetaData",
+                    nms = c("reg", "time", "age"),
+                    dimtypes = c("state", "time", "age"),
+                    DimScales = list(new("Categories", dimvalues = c("a", "b")),
+                                     new("Points", dimvalues = 2001:2010),
+                                     new("Intervals", dimvalues = as.numeric(0:10))))
+    spec <- Mix()
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          multScale = 1)
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.R <- updateOmegaLevelComponentWeightMix(prior, useC = FALSE)
+        set.seed(seed)
+        ans.C <- updateOmegaLevelComponentWeightMix(prior, useC = TRUE)
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else
