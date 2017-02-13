@@ -10,6 +10,7 @@
     #define K_EPSILON_MAX 1e-14
     #define K_EPSILON_BOUNDARIES 1e-30
     #define K_MAX_ITER 1000
+    #define K_CUTOFF_CONV_MODE_PHI 0.0001
     
     #define RNORMTRUNC_A 0.4
     #define RNORMTRUNC_TOL 2.05

@@ -605,6 +605,21 @@ findOneRootLogPostSigmaRobust_R(SEXP sigma0_R, SEXP z_R, SEXP A_R,
     return ScalarReal(ans);
 }
 
+/* one off wrapper for modePhiMix */
+SEXP modePhiMix_R(SEXP level_R, SEXP meanLevel_R, SEXP nAlong_R,
+              SEXP indexClassMax_R, SEXP omega_R, SEXP tolerance_R)
+{    
+    double *level = REAL(level_R);
+    double meanLevel = *REAL(meanLevel_R);
+    int nAlong = *INTEGER(nAlong_R);
+    int indexClassMax_r = *INTEGER(indexClassMax_R);
+    double omega = *REAL(omega_R);
+    double tolerance = *REAL(tolerance_R);
+    double ans = modePhiMix(level, meanLevel, nAlong, indexClassMax_r,
+                            omega, tolerance);
+    return ScalarReal(ans);
+}
+
 
 //* one-off wrapper for safeLogProp_Binomial */
 SEXP safeLogProp_Binomial_R(SEXP logit_th_new_R, SEXP logit_th_other_new_R,
@@ -1289,6 +1304,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(logPostPhiFirstOrderMix_R, 6),
   CALLDEF(logPostPhiSecondOrderMix_R, 6),
   CALLDEF(makeLifeExpBirth_R, 5),
+  CALLDEF(modePhiMix_R, 6),
   CALLDEF(safeLogProp_Binomial_R, 7),
   CALLDEF(safeLogProp_Poisson_R, 7),
   

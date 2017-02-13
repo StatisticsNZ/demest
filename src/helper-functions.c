@@ -1341,6 +1341,52 @@ getVBar(double *vbar, int len_vbar,
     }
 }
 
+double
+modePhiMix(double * level, double meanLevel, int nAlong,
+              int indexClassMax, double omega, double tolerance)
+{
+    double kCutoffConvergenceModePhi = K_CUTOFF_CONV_MODE_PHI;
+    double lengthStepInc = 0.001;
+    double phiCurr = 0.9;
+    double diffOuter = 1;
+    
+    while (diffOuter > kCutoffConvergenceModePhi) {
+        double lengthStep = 0.1;
+        double logPostCurr = logPostPhiMix(phiCurr, level, meanLevel, 
+                nAlong, indexClassMax, omega);
+        double diffInner = 0;
+        
+        double phiNew = 0;
+        while (!(diffInner > 0) && (lengthStep > lengthStepInc)) {
+            
+            double logPostFirst = logPostPhiFirstOrderMix(phiCurr, level,
+                            meanLevel, nAlong, indexClassMax, omega);
+            double logPostSecond = logPostPhiSecondOrderMix(phiCurr, level,
+                            meanLevel, nAlong, indexClassMax, omega);
+            
+            phiNew = phiCurr - lengthStep * logPostFirst/logPostSecond;
+            
+            if ( phiNew > (1 - tolerance) ) {
+                phiNew = 1-tolerance;
+            }
+            else if (phiNew < ( -1 + tolerance) ) {
+                phiNew = -1 + tolerance;
+            }
+            
+            double logPostNew = logPostPhiMix(phiNew, level, meanLevel, 
+                                    nAlong, indexClassMax, omega);
+            
+            diffInner = logPostNew - logPostCurr;
+            lengthStep -= lengthStepInc;
+        }
+        
+        diffOuter = fabs(phiNew - phiCurr);
+        phiCurr = phiNew;
+    }
+    
+    return phiCurr; /* same as phiNew */
+}
+
 double safeLogProp_Binomial(double logit_th_new, 
                             double logit_th_other_new,
                             double logit_th_old, 

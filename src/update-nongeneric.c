@@ -1774,7 +1774,6 @@ updateVectorsMixAndProdVectorsMix(SEXP prior_R, double * betaTilde, int J)
     
     int *indexClass = INTEGER(GET_SLOT(prior_R, indexClassMix_sym));
     int indexClassMax = *INTEGER(GET_SLOT(prior_R, indexClassMaxMix_sym));
-    int indexClassMaxMinusOne = indexClassMax - 1;
     size_t sizeToZero = indexClassMax * sizeof(double);
     
     int iAlong_r = *INTEGER(GET_SLOT(prior_R, iAlong_sym));  
@@ -1828,18 +1827,19 @@ updateVectorsMixAndProdVectorsMix(SEXP prior_R, double * betaTilde, int J)
                 int iBeta = indicesBeta[iB] - 1;
                 double thisBetaTilde = betaTilde[iBeta];
                 double thisV = v[iBeta];
+                
                 int thisIndexClass = indexClass[iBeta] - 1;
                 int iVector = thisIndexClass * nElementVector + iElement;
                 double valVector = thisVector[iVector];
                 
                 int iBetaNoAlong = (iBeta/pos1)* pos2 + (iBeta%pos2);
-                int iProd = indexClassMaxMinusOne * nBetaNoAlong + iBetaNoAlong;
+                int iProd = thisIndexClass * nBetaNoAlong + iBetaNoAlong;
                 double valProdVector = prodVectors[iProd];
                 double X = valProdVector/valVector;
                 double tmp = X / thisV;
                 
-                yX[indexClassMaxMinusOne] += thisBetaTilde * tmp;
-                XX[indexClassMaxMinusOne] += X * tmp;
+                yX[thisIndexClass] += thisBetaTilde * tmp;
+                XX[thisIndexClass] += X * tmp;
             }
             
             advanceS(iteratorBeta_R);

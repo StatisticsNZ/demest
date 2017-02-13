@@ -4517,7 +4517,7 @@ makeVBar <- function(object, iBeta, g, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 modePhiMix <- function(level, meanLevel, nAlong,
                        indexClassMaxMix, omega,
