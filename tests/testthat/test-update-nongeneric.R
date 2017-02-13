@@ -1620,24 +1620,25 @@ test_that("updateMeanLevelComponentWeightMix gives valid answer", {
 
 test_that("R and C versions of updateMeanLevelComponentWeightMix give same answer", {
     updateMeanLevelComponentWeightMix <- demest:::updateMeanLevelComponentWeightMix
-    set.seed(100)
     initialPrior <- demest:::initialPrior
-    beta <- rnorm(200)
-    metadata <- new("MetaData",
+    
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        beta <- rnorm(200)
+        metadata <- new("MetaData",
                     nms = c("reg", "time"),
                     dimtypes = c("state", "time"),
                     DimScales = list(new("Categories", dimvalues = letters[1:20]),
                                      new("Points", dimvalues = 2001:2010)))
-    spec <- Mix(weights = Weights(mean = -20))
-    prior <- initialPrior(spec,
+        spec <- Mix(weights = Weights(mean = -20))
+        prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
                           multScale = 1)
-    for (seed in seq_len(n.test)) {
-        set.seed(seed)
+        set.seed(seed+1)
         ans.R <- updateMeanLevelComponentWeightMix(prior, useC = FALSE)
-        set.seed(seed)
+        set.seed(seed+1)
         ans.C <- updateMeanLevelComponentWeightMix(prior, useC = TRUE)
         if (test.identity)
             expect_identical(ans.R, ans.C)

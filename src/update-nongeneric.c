@@ -170,7 +170,25 @@ updateSDRobust(double sigma, double A, double nuBeta, double nuTau,
 /*** UPDATING PRIORS ********************************************************* */
 /* *************************************************************************** */
 
-
+void
+updateAlphaMix(SEXP prior_R)
+{
+    double *alpha = REAL(GET_SLOT(prior_R, alphaMix_sym));
+    int nBeta = *INTEGER(GET_SLOT(prior_R, J_sym));
+    int *indexClass = INTEGER(GET_SLOT(prior_R, indexClassMix_sym));
+    
+    double *prodVectors = REAL(GET_SLOT(prior_R, prodVectorsMix_sym));
+    int pos1 = *INTEGER(GET_SLOT(prior_R, posProdVectors1Mix_sym));
+    int pos2 = *INTEGER(GET_SLOT(prior_R, posProdVectors2Mix_sym));
+    int nBetaNoAlong = *INTEGER(GET_SLOT(prior_R, nBetaNoAlongMix_sym));
+    
+    for (int iBeta = 0; iBeta < nBeta; ++iBeta) {
+        int iClass = indexClass[iBeta] - 1;
+        int iBetaNoAlong = (iBeta/pos1) * pos2 + iBeta%pos2;
+        int iProd = iClass * nBetaNoAlong + iBetaNoAlong;
+        alpha[iBeta] = prodVectors[iProd];
+    }
+}
 
 void
 updateAlphaDeltaDLMWithTrend(SEXP prior_R, double *betaTilde, int J)
@@ -1148,6 +1166,24 @@ updateIndexClassMaxPossibleMix(SEXP prior_R)
     SET_LOGICALSCALE_SLOT(prior_R, foundIndexClassMaxPossibleMix_sym, foundAns);
 }
 
+
+void
+updateIndexClassMaxUsedMix(SEXP prior_R)
+{
+    int *indexClass = INTEGER(GET_SLOT(prior_R, indexClassMix_sym));
+    int J = *INTEGER(GET_SLOT(prior_R, J_sym));
+    
+    int indexClassMaxUsed = 0;
+    for (int j = 0; j < J; ++j) {
+        if ( indexClass[j] > indexClassMaxUsed ) {
+            indexClassMaxUsed = indexClass[j];
+        }
+    }
+    
+    SET_INTSCALE_SLOT(prior_R, indexClassMaxUsedMix_sym, indexClassMaxUsed);
+}
+
+
 void
 updateIndexClassMix(SEXP prior_R, double* betaTilde, int J)
 {
@@ -1272,6 +1308,94 @@ updateIndexClassMix(SEXP prior_R, double* betaTilde, int J)
     }
 }
 
+void
+updateLatentComponentWeightMix(SEXP prior_R)
+{
+    double *latentCompWeight = REAL(GET_SLOT(prior_R, latentComponentWeightMix_sym));
+    double *compWeight = REAL(GET_SLOT(prior_R, componentWeightMix_sym));
+    int *indexClass = INTEGER(GET_SLOT(prior_R, indexClassMix_sym));
+    
+    int iAlong_r = *INTEGER(GET_SLOT(prior_R, iAlong_sym));  
+    int iAlong_c = iAlong_r - 1;
+    
+    int *dimBeta = INTEGER(GET_SLOT(prior_R, dimBeta_sym));  
+    int  nBeta = *INTEGER(GET_SLOT(prior_R, J_sym));  
+    SEXP iteratorsDims_R = GET_SLOT(prior_R, iteratorsDimsMix_sym);
+    SEXP iteratorBeta_R = VECTOR_ELT(iteratorsDims_R, iAlong_c);
+    int nAlong = dimBeta[iAlong_c];
+    
+    resetS(iteratorBeta_R);
+    
+    SEXP indicesBeta_R = GET_SLOT(iteratorBeta_R, indices_sym);
+    int *indicesBeta = INTEGER(indicesBeta_R);
+    int nIndicesBeta = LENGTH(indicesBeta_R);
+    
+    for (int iAlong = 0; iAlong < nAlong; ++iAlong) {
+
+        for (int iB = 0; iB < nIndicesBeta; ++iB) {
+            
+            int iBeta = indicesBeta[iB] - 1;
+            int class_iBeta_r = indexClass[iBeta];
+            int class_iBeta_c = class_iBeta_r - 1;
+            
+            for (int iClass = 0; iClass < class_iBeta_r; ++iClass) {
+                
+                int iz = iClass * nBeta + iBeta;
+                int iw = iClass * nAlong + iAlong;
+                double compWeight_iw = compWeight[iw];
+                
+                if (iClass < class_iBeta_c) {
+                    latentCompWeight[iz] = rtnorm1(compWeight_iw,
+                                                        1, R_NegInf, 0);
+                }
+                else {
+                    latentCompWeight[iz] = rtnorm1(compWeight_iw,
+                                                        1, 0, R_PosInf);
+                }
+            }
+        }
+        advanceS(iteratorBeta_R);
+    }
+}
+
+void
+updateLatentWeightMix(SEXP prior_R)
+{
+    double *latentWeight = REAL(GET_SLOT(prior_R, latentWeightMix_sym));
+    double *weight = REAL(GET_SLOT(prior_R, weightMix_sym));
+    int *indexClass = INTEGER(GET_SLOT(prior_R, indexClassMix_sym));
+    
+    int iAlong_r = *INTEGER(GET_SLOT(prior_R, iAlong_sym));  
+    int iAlong_c = iAlong_r - 1;
+    
+    int *dimBeta = INTEGER(GET_SLOT(prior_R, dimBeta_sym));  
+    SEXP iteratorsDims_R = GET_SLOT(prior_R, iteratorsDimsMix_sym);
+    SEXP iteratorBeta_R = VECTOR_ELT(iteratorsDims_R, iAlong_c);
+    int nAlong = dimBeta[iAlong_c];
+    
+    resetS(iteratorBeta_R);
+    
+    SEXP indicesBeta_R = GET_SLOT(iteratorBeta_R, indices_sym);
+    int *indicesBeta = INTEGER(indicesBeta_R);
+    int nIndicesBeta = LENGTH(indicesBeta_R);
+    
+    for (int iAlong = 0; iAlong < nAlong; ++iAlong) {
+
+        for (int iB = 0; iB < nIndicesBeta; ++iB) {
+            
+            int iBeta = indicesBeta[iB] - 1;
+            int iClass = indexClass[iBeta] - 1;
+            
+            int iw = iClass * nAlong + iAlong;
+            double weight_iw = weight[iw];
+                
+            latentWeight[iBeta] = runif(0, weight_iw);
+        }
+        advanceS(iteratorBeta_R);
+    }
+}
+
+
 
 void
 updateLevelComponentWeightMix(SEXP prior_R)
@@ -1380,6 +1504,58 @@ updateLevelComponentWeightMix(SEXP prior_R)
     }
 }
 
+void
+updateMeanLevelComponentWeightMix(SEXP prior_R)
+{
+    double *level = REAL(GET_SLOT(prior_R, levelComponentWeightMix_sym));
+    double omega = *REAL(GET_SLOT(prior_R, omegaLevelComponentWeightMix_sym));
+    double meanPrior = *REAL(GET_SLOT(prior_R, priorMeanLevelComponentWeightMix_sym));
+    double sdPrior = *REAL(GET_SLOT(prior_R, priorSDLevelComponentWeightMix_sym));
+    double phi = *REAL(GET_SLOT(prior_R, phiMix_sym));
+    
+    int indexClassMaxUsed = *INTEGER(GET_SLOT(prior_R, indexClassMaxUsedMix_sym));
+    
+    int *dimBeta = INTEGER(GET_SLOT(prior_R, dimBeta_sym));  
+    int iAlong_r = *INTEGER(GET_SLOT(prior_R, iAlong_sym));  
+    int iAlong_c = iAlong_r -1;
+    int nAlong = dimBeta[iAlong_c];
+    
+    double invOmegaSq = 1/(omega * omega);
+    double precPrior = 1/(sdPrior * sdPrior);
+    double onePlusPhi = 1 + phi;
+    double meanData = 0;
+    
+    for (int iClass = 0; iClass < indexClassMaxUsed; ++iClass) {
+        
+        int iw = iClass * nAlong;
+        
+        double levelPrev = level[iw];
+        meanData += levelPrev * onePlusPhi;
+        
+        int iPrev = iw;
+        
+        for (int iAlong = 1; iAlong < nAlong; ++iAlong) {
+            
+            int iCurr = iPrev + 1; /* iClass * nAlong + iAlong */
+            double levelCurr = level[iCurr];
+            
+            meanData += levelCurr - phi * levelPrev;
+            
+            iPrev = iCurr;
+            levelPrev = levelCurr;
+        }
+    }
+    
+    double nObs = indexClassMaxUsed * (nAlong - 1 + onePlusPhi / (1 - phi) );
+    meanData /= nObs;
+    double precData = nObs * invOmegaSq;
+    double var = 1 / (precData + precPrior);
+    double mean = var * (precData * meanData + precPrior * meanPrior);
+    double sd = sqrt(var);
+    double newMean = rnorm(mean, sd);
+    
+    SET_DOUBLESCALE_SLOT(prior_R, meanLevelComponentWeightMix_sym, newMean);
+}
 
 void
 updateOmegaAlpha(SEXP prior_R, int isWithTrend)
