@@ -1548,8 +1548,10 @@ updateVectorsMixAndProdVectorsMix <- function(prior, betaTilde, useC = FALSE) {
                 for (i.beta in indices.beta) {
                     beta.tilde.i.beta <- betaTilde[i.beta]
                     v.i.beta <- v[i.beta]
-                    index.class.i.beta <- index.class[i.beta]
-                    i.vector <- (index.class.i.beta - 1L) * n.element.vector + i.element
+                    ## index.class.i.beta <- index.class[i.beta]
+                    ## i.vector <- (index.class.i.beta - 1L) * n.element.vector + i.element
+                    i.class <- index.class[i.beta] ## changed 'index.class.i.beta' to 'i.class'
+                    i.vector <- (i.class - 1L) * n.element.vector + i.element ## changed 'index.class.i.beta' to 'i.class'
                     val.vector <- vector[i.vector]
                     i.beta.no.along <- ((i.beta - 1L) %/% pos1) * pos2 + (i.beta - 1L) %% pos2 + 1L
                     i.prod <- (i.class - 1L) * n.beta.no.along + i.beta.no.along
