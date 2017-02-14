@@ -254,7 +254,9 @@ SEXP
   indexClassMaxMix_sym,
   indexClassMaxUsedMix_sym,
   omegaComponentWeightMix_sym,
+  omegaComponentWeightMaxMix_sym,
   omegaLevelComponentWeightMix_sym,
+  omegaLevelComponentWeightMaxMix_sym,
   iteratorsDimsMix_sym,
   iAlong_sym,
   dimBeta_sym,
@@ -274,8 +276,13 @@ SEXP
   XXMix_sym,
   alphaMix_sym,
   priorMeanLevelComponentWeightMix_sym,
-  priorSDLevelComponentWeightMix_sym;
-  
+  priorSDLevelComponentWeightMix_sym,
+  AComponentWeightMix_sym,
+  nuComponentWeightMix_sym,
+  omegaVectorsMix_sym,
+  omegaVectorsMaxMix_sym,
+  AVectorsMix_sym,
+  nuVectorsMix_sym;  
   
 /* Priors-methods */
 
@@ -292,9 +299,13 @@ void updateIndexClassMaxUsedMix(SEXP prior_R);
 void updateIndexClassMix(SEXP prior_R, double * betaTilde, int J);
 void updateVectorsMixAndProdVectorsMix(SEXP prior_R, double * betaTilde, int J);
 void updateOmegaAlpha(SEXP prior_R, int isWithTrend);
+void updateOmegaComponentWeightMix(SEXP prior_R);
 void updateOmegaDelta(SEXP prior_R);
+void updateOmegaLevelComponentWeightMix(SEXP prior_R);
 void updateOmegaSeason(SEXP prior_R);
+void updateOmegaVectorsMix(SEXP prior_R);
 void updatePhi(SEXP prior_R, int isWithTrend);
+void updatePhiMix(SEXP prior_R);
 void updateUEtaCoef(SEXP prior_R);
 void updateWSqrt(SEXP prior_R);
 void updateWSqrtInvG(SEXP prior_R);

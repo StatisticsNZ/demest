@@ -1532,16 +1532,15 @@ updateMeanLevelComponentWeightMix(SEXP prior_R)
         double levelPrev = level[iw];
         meanData += levelPrev * onePlusPhi;
         
-        int iPrev = iw;
+        int iCurr = iw;
         
         for (int iAlong = 1; iAlong < nAlong; ++iAlong) {
             
-            int iCurr = iPrev + 1; /* iClass * nAlong + iAlong */
+            ++iCurr; /* iClass * nAlong + iAlong */
             double levelCurr = level[iCurr];
             
             meanData += levelCurr - phi * levelPrev;
             
-            iPrev = iCurr;
             levelPrev = levelCurr;
         }
     }
@@ -1619,6 +1618,42 @@ updateOmegaAlpha(SEXP prior_R, int isWithTrend)
     }
 }
 
+
+void
+updateOmegaComponentWeightMix(SEXP prior_R)
+{
+    double omega = *REAL(GET_SLOT(prior_R, omegaComponentWeightMix_sym));
+    double omegaMax = *REAL(GET_SLOT(prior_R, omegaComponentWeightMaxMix_sym));
+    double A = *REAL(GET_SLOT(prior_R, AComponentWeightMix_sym));
+    double nu = *REAL(GET_SLOT(prior_R, nuComponentWeightMix_sym));
+    
+    double *compWeight = REAL(GET_SLOT(prior_R, componentWeightMix_sym));
+    double *levelCompWeight = REAL(GET_SLOT(prior_R, levelComponentWeightMix_sym));
+    int indexClassMaxUsed = *INTEGER(GET_SLOT(prior_R, indexClassMaxUsedMix_sym));
+    
+    int *dimBeta = INTEGER(GET_SLOT(prior_R, dimBeta_sym));  
+    int iAlong_r = *INTEGER(GET_SLOT(prior_R, iAlong_sym));  
+    int iAlong_c = iAlong_r -1;
+    int nAlong = dimBeta[iAlong_c];
+    
+    int n = nAlong * indexClassMaxUsed;
+    double V = 0;
+    
+    for (int iClass = 0; iClass < indexClassMaxUsed; ++iClass) {
+        
+        for (int iAlong = 0; iAlong < nAlong; ++iAlong) {
+            
+            int iWt = iClass * nAlong + iAlong;
+            double tmp = compWeight[iWt] - levelCompWeight[iWt];
+            V += tmp * tmp;
+        }
+    }
+    
+    omega = updateSDNorm(omega, A, nu, V, n, omegaMax);
+    
+    SET_DOUBLESCALE_SLOT(prior_R, omegaComponentWeightMix_sym, omega);
+}
+
 void
 updateOmegaDelta(SEXP prior_R)
 {
@@ -1659,6 +1694,59 @@ updateOmegaDelta(SEXP prior_R)
     if(successfullyUpdated) {
         SET_DOUBLESCALE_SLOT(prior_R, omegaDelta_sym, omega);
     }
+}
+
+void
+updateOmegaLevelComponentWeightMix(SEXP prior_R)
+{
+    double omega = *REAL(GET_SLOT(prior_R, omegaLevelComponentWeightMix_sym));
+    double omegaMax = *REAL(GET_SLOT(prior_R, omegaLevelComponentWeightMaxMix_sym));
+    double A = *REAL(GET_SLOT(prior_R, AComponentWeightMix_sym));
+    double nu = *REAL(GET_SLOT(prior_R, nuComponentWeightMix_sym));
+    
+    double *level = REAL(GET_SLOT(prior_R, levelComponentWeightMix_sym));
+    double meanLevel = *REAL(GET_SLOT(prior_R, meanLevelComponentWeightMix_sym));
+    
+    double phi = *REAL(GET_SLOT(prior_R, phiMix_sym));
+    
+    double oneMinusPhiSq = 1 - phi*phi;
+    double meanOverOneMinusPhi = meanLevel/(1 - phi);
+    
+    int indexClassMaxUsed = *INTEGER(GET_SLOT(prior_R, indexClassMaxUsedMix_sym));
+    
+    int *dimBeta = INTEGER(GET_SLOT(prior_R, dimBeta_sym));  
+    int iAlong_r = *INTEGER(GET_SLOT(prior_R, iAlong_sym));  
+    int iAlong_c = iAlong_r -1;
+    int nAlong = dimBeta[iAlong_c];
+    
+    int n = nAlong * indexClassMaxUsed;
+    double V = 0;
+    
+    for (int iClass = 0; iClass < indexClassMaxUsed; ++iClass) {
+        
+        int iWt = iClass * nAlong;
+        double levelPrev = level[iWt];
+            
+        double tmp = levelPrev - meanOverOneMinusPhi;
+        V += oneMinusPhiSq * tmp * tmp;
+        
+        int iWtCurr = iWt;
+        
+        for (int iAlong = 1; iAlong < nAlong; ++iAlong) {
+            
+            ++iWtCurr; /* iClass * nAlong + iAlong */
+            double levelCurr = level[iWtCurr];
+            
+            double tmp = levelCurr - meanLevel - phi * levelPrev;
+            V += tmp * tmp;
+        
+            levelPrev = levelCurr;
+        }
+    }
+    
+    omega = updateSDNorm(omega, A, nu, V, n, omegaMax);
+    
+    SET_DOUBLESCALE_SLOT(prior_R, omegaLevelComponentWeightMix_sym, omega);
 }
 
 void
@@ -1709,6 +1797,47 @@ updateOmegaSeason(SEXP prior_R)
     }
 }
 
+void
+updateOmegaVectorsMix(SEXP prior_R)
+{
+    double omega = *REAL(GET_SLOT(prior_R, omegaVectorsMix_sym));
+    double omegaMax = *REAL(GET_SLOT(prior_R, omegaVectorsMaxMix_sym));
+    double A = *REAL(GET_SLOT(prior_R, AVectorsMix_sym));
+    double nu = *REAL(GET_SLOT(prior_R, nuVectorsMix_sym));
+    
+    SEXP vectors_R = GET_SLOT(prior_R, vectorsMix_sym); /* list */
+    int nVectors = LENGTH(vectors_R);
+    
+    int indexClassMaxUsed = *INTEGER(GET_SLOT(prior_R, indexClassMaxUsedMix_sym));
+    
+    int *dimBeta = INTEGER(GET_SLOT(prior_R, dimBeta_sym));  
+    int iAlong_r = *INTEGER(GET_SLOT(prior_R, iAlong_sym));  
+    int iAlong_c = iAlong_r -1;
+    
+    int n = 0;
+    double V = 0;
+    
+    for (int i = 0; i < nVectors; ++i) {
+        
+        if (i != iAlong_c) {
+            double *vector = REAL(VECTOR_ELT(vectors_R, i));
+            int dim = dimBeta[i];
+            int nCells = dim * indexClassMaxUsed;
+            
+            for (int iVector = 0; iVector < nCells; ++iVector) {
+                
+                double tmp = vector[iVector];
+                V += tmp * tmp;
+            }
+
+            n += nCells;
+        }
+    }
+    
+    omega = updateSDNorm(omega, A, nu, V, n, omegaMax);
+    
+    SET_DOUBLESCALE_SLOT(prior_R, omegaVectorsMix_sym, omega);
+}
 
 void
 updatePhi(SEXP prior_R, int isWithTrend)
@@ -1779,6 +1908,61 @@ updatePhi(SEXP prior_R, int isWithTrend)
     
     /* prior unchanged if phi known or !foundValue */
 }
+
+void
+updatePhiMix(SEXP prior_R)
+
+{
+    double phiCurr = *REAL(GET_SLOT(prior_R, phiMix_sym));
+    
+    double *level = REAL(GET_SLOT(prior_R, levelComponentWeightMix_sym));
+    double meanLevel = *REAL(GET_SLOT(prior_R, meanLevelComponentWeightMix_sym));
+    
+    int indexClassMaxUsed = *INTEGER(GET_SLOT(prior_R, indexClassMaxUsedMix_sym));
+    
+    double omega = *REAL(GET_SLOT(prior_R, omegaLevelComponentWeightMix_sym));
+    
+    int *dimBeta = INTEGER(GET_SLOT(prior_R, dimBeta_sym));  
+    int iAlong_r = *INTEGER(GET_SLOT(prior_R, iAlong_sym));  
+    int iAlong_c = iAlong_r -1;
+    int nAlong = dimBeta[iAlong_c];
+    
+    double tolerance = *REAL(GET_SLOT(prior_R, tolerance_sym));
+    
+    double phiMax = modePhiMix(level, meanLevel, nAlong,
+              indexClassMaxUsed, omega, tolerance);
+    
+    double logPostPhiFirst = logPostPhiFirstOrderMix(phiMax, level, meanLevel,
+                                    nAlong, indexClassMaxUsed, omega);
+
+    double logPostPhiSecond = logPostPhiSecondOrderMix(phiMax, level, meanLevel,
+                                    nAlong, indexClassMaxUsed, omega);
+    
+    double varProp = -1/logPostPhiSecond;
+    double meanProp = phiMax + varProp * logPostPhiFirst;
+    double sdProp = sqrt(varProp);
+    
+    double phiProp = rtnorm1(meanProp, sdProp, -1, 1);
+    
+    double logPostProp = logPostPhiMix(phiProp, level, meanLevel,
+                                nAlong, indexClassMaxUsed, omega);
+    
+    double logPostCurr = logPostPhiMix(phiCurr, level, meanLevel,
+                                nAlong, indexClassMaxUsed, omega);
+    
+    double logPropProp = dnorm(phiProp, meanProp, sdProp, USE_LOG);
+    double logPropCurr = dnorm(phiCurr, meanProp, sdProp, USE_LOG);
+    
+    double logDiff = logPostProp - logPostCurr + 
+                        logPropCurr - logPropProp;
+    
+    int accept = (!(logDiff < 0) || (runif(0, 1) < exp(logDiff)));  
+    if (accept) {
+        SET_DOUBLESCALE_SLOT(prior_R, phiMix_sym, phiProp);
+    }
+}
+
+
 
 void
 updateSeason(SEXP prior_R, double *betaTilde, int J)
