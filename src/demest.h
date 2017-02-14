@@ -271,7 +271,10 @@ SEXP
   omegaVectorsMix_sym,
   iteratorProdVectorMix_sym,
   yXMix_sym,
-  XXMix_sym;
+  XXMix_sym,
+  alphaMix_sym,
+  priorMeanLevelComponentWeightMix_sym,
+  priorSDLevelComponentWeightMix_sym;
   
   
 /* Priors-methods */
@@ -280,8 +283,12 @@ void updateBeta(double *beta, int J, SEXP prior, double *vbar,
                 int n, double sigma);
 
 void updateGWithTrend(SEXP prior_R);
+void updateLatentComponentWeightMix(SEXP prior_R);
+void updateLatentWeightMix(SEXP prior_R);
 void updateLevelComponentWeightMix(SEXP prior_R);
+void updateMeanLevelComponentWeightMix(SEXP prior_R);
 void updateIndexClassMaxPossibleMix(SEXP prior_R);
+void updateIndexClassMaxUsedMix(SEXP prior_R);
 void updateIndexClassMix(SEXP prior_R, double * betaTilde, int J);
 void updateVectorsMixAndProdVectorsMix(SEXP prior_R, double * betaTilde, int J);
 void updateOmegaAlpha(SEXP prior_R, int isWithTrend);
@@ -549,6 +556,8 @@ void transferParamPrior_DLMWithTrendRobustCovWithSeasonPredict(SEXP prior_R,
 double updateSDNorm(double sigma, double A, double nu, double V, int n, double max);
 double updateSDRobust(double sigma, double A, double nuBeta, 
               double nuTau, double V, int n, double max);
+
+void updateAlphaMix(SEXP prior_R);
 
 void updateEta(SEXP prior_R, double* beta, int J);
 void updateComponentWeightMix(SEXP prior_R);

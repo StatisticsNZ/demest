@@ -252,7 +252,7 @@ updateSDRobust <- function(sigma, A, nuBeta, nuTau, V, n, max, useC = FALSE) {
 ##         mean <- sum(w * 
 
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 updateAlphaMix <- function(prior, useC = FALSE) {
     stopifnot(methods::is(prior, "Prior"))
@@ -674,7 +674,7 @@ updateIndexClassMaxPossibleMix <- function(prior, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 ## 'k-star' in notes
 updateIndexClassMaxUsedMix <- function(prior, useC = FALSE) {
@@ -790,7 +790,7 @@ updateIndexClassMix <- function(prior, betaTilde, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 ## 'z' in notes
 updateLatentComponentWeightMix <- function(prior, useC = FALSE) {
@@ -839,7 +839,7 @@ updateLatentComponentWeightMix <- function(prior, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 ## 'u' in notes
 updateLatentWeightMix <- function(prior, useC = FALSE) {
@@ -961,7 +961,7 @@ updateLevelComponentWeightMix <- function(prior, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 ## 'mu' in notes
 updateMeanLevelComponentWeightMix <- function(prior, useC = FALSE) {
@@ -990,6 +990,9 @@ updateMeanLevelComponentWeightMix <- function(prior, useC = FALSE) {
             for (i.along in seq.int(from = 2L, to = n.along)) {
                 i.curr <- (i.class - 1L) * n.along + i.along
                 i.prev <- i.curr - 1L
+                
+                
+            
                 mean.data <- mean.data + (level[i.curr] - phi * level[i.prev])
             }
         }

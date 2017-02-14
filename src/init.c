@@ -704,8 +704,12 @@ UPDATEBETA_AND_PRIORBETA_WRAPPER_R(updateBetaAndPriorBeta_DLMNoTrendRobustCovWit
 UPDATEBETA_AND_PRIORBETA_WRAPPER_R(updateBetaAndPriorBeta_DLMWithTrendRobustCovWithSeason);
 
 UPDATEOBJECT_NOPRNG_WRAPPER_R(updateGWithTrend);
+UPDATEOBJECT_WRAPPER_R(updateLatentComponentWeightMix);
+UPDATEOBJECT_WRAPPER_R(updateLatentWeightMix);
 UPDATEOBJECT_WRAPPER_R(updateLevelComponentWeightMix);
+UPDATEOBJECT_WRAPPER_R(updateMeanLevelComponentWeightMix);
 UPDATEOBJECT_WRAPPER_R(updateIndexClassMaxPossibleMix);
+UPDATEOBJECT_NOPRNG_WRAPPER_R(updateIndexClassMaxUsedMix);
 UPDATEPRIORWITHBETA_WRAPPER_R(updateIndexClassMix);
 UPDATEPRIORWITHBETA_WRAPPER_R(updateVectorsMixAndProdVectorsMix);
 
@@ -1067,6 +1071,7 @@ SEXP updateSDRobust_R(SEXP sigma_R,
 
 }
 
+UPDATEOBJECT_NOPRNG_WRAPPER_R(updateAlphaMix);
 UPDATEPRIORWITHBETA_WRAPPER_R(updateEta);
 UPDATEOBJECT_WRAPPER_R(updateComponentWeightMix);
 
@@ -1240,8 +1245,12 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateBeta_R, 4),
   
   CALLDEF(updateGWithTrend_R, 1),
+  CALLDEF(updateLatentComponentWeightMix_R, 1),
+  CALLDEF(updateLatentWeightMix_R, 1),
   CALLDEF(updateLevelComponentWeightMix_R, 1),
+  CALLDEF(updateMeanLevelComponentWeightMix_R, 1),
   CALLDEF(updateIndexClassMaxPossibleMix_R, 1),
+  CALLDEF(updateIndexClassMaxUsedMix_R, 1),
   CALLDEF(updateIndexClassMix_R, 2),
   CALLDEF(updateVectorsMixAndProdVectorsMix_R, 2),
   CALLDEF(updateOmegaAlpha_R, 2),
@@ -1355,6 +1364,8 @@ R_CallMethodDef callMethods[] = {
   /* update-nongeneric) */
   CALLDEF(updateSDNorm_R, 6),
   CALLDEF(updateSDRobust_R, 7),
+  
+  CALLDEF(updateAlphaMix_R, 1),
   
   CALLDEF(updateEta_R, 2),
   CALLDEF(updateComponentWeightMix_R, 1),
@@ -1804,6 +1815,9 @@ R_init_demest(DllInfo *info)
   ADD_SYM(iteratorProdVectorMix);
   ADD_SYM(yXMix);
   ADD_SYM(XXMix);
+  ADD_SYM(alphaMix);
+  ADD_SYM(priorMeanLevelComponentWeightMix);
+  ADD_SYM(priorSDLevelComponentWeightMix);
   
 #undef ADD_SYM
 
