@@ -1316,7 +1316,7 @@ setMethod("transferParamPrior",
               stopifnot(all(values > 0))
               if (useC) {
                   if (useSpecific)
-                      .Call(transferParamPrior_ExchRobustCov_R, prior, values) ##changed line from ExchRobustZero JAH 23/5 
+                      .Call(transferParamPrior_ExchRobustCov_R, prior, values)
                   else
                       .Call(transferParamPrior_R, prior, values)
               }

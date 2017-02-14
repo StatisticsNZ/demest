@@ -1,6 +1,6 @@
 
 setMethod("predictPrior",
-          signature(prior = "MixNormZero"),
+          signature(prior = "MixNormZeroPredict"),
           function(prior, useC = FALSE, useSpecific = FALSE) {
               methods::validObject(prior)
               if (useC) {
@@ -16,6 +16,30 @@ setMethod("predictPrior",
                   XXX
               }
           })
+
+predictLevelComponentWeightMix <- function(prior) {
+    
+
+    
+
+setMethod("transferParamPrior",
+          signature(prior = "MixNormZeroPredict"),
+          function(prior, values, useC = FALSE, useSpecific = FALSE) {
+              ## prior
+              methods::validObject(prior)
+              ## values
+              stopifnot(is.double(values))
+              stopifnot(!any(is.na(values)))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(transferParamPrior_MixNormZeroPredict_R, prior, values)
+                  else
+                      .Call(transferParamPrior_R, prior, values)
+              }
+              else {
+              }
+          })
+
 
 
 
