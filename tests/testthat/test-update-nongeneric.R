@@ -2300,7 +2300,7 @@ test_that("updatePhiMix gives valid answer", {
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         ans.obtained <- updatePhiMix(prior)
-        updated <- updated + ans.obtained@phiMix != prior@phiMix
+        updated <- updated + as.integer(ans.obtained@phiMix != prior@phiMix)
     }
     expect_true(updated > 0L)
 })
@@ -2331,7 +2331,7 @@ test_that("R and C versions of updatePhiMix give same answer", {
             expect_identical(ans.R, ans.C)
         else
             expect_equal(ans.R, ans.C)
-        updated <- updated + ans.R@phiMix != prior@phiMix
+        updated <- updated + as.integer(ans.R@phiMix != prior@phiMix)
     }
     expect_true(updated > 0L)
 })

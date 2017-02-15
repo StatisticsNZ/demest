@@ -1066,7 +1066,7 @@ updateOmegaAlpha <- function(prior, withTrend, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 ## 'sigma_epsilon'
 updateOmegaComponentWeightMix <- function(prior, useC = FALSE) {
@@ -1148,7 +1148,7 @@ updateOmegaDelta <- function(prior, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 ## 'sigma_eta'
 updateOmegaLevelComponentWeightMix <- function(prior, useC = FALSE) {
@@ -1236,7 +1236,7 @@ updateOmegaSeason <- function(prior, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 ## 'sigma_e' in notes
 updateOmegaVectorsMix <- function(prior, useC = FALSE) {
@@ -1341,7 +1341,7 @@ updatePhi <- function(prior, withTrend, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 updatePhiMix <- function(prior, useC = FALSE) {
     ## prior

@@ -724,8 +724,11 @@ updateOmegaAlpha_R(SEXP prior_R, SEXP withTrend_R)
     return ans_R;
 }
 
+UPDATEOBJECT_NOPRNG_WRAPPER_R(updateOmegaComponentWeightMix);
 UPDATEOBJECT_NOPRNG_WRAPPER_R(updateOmegaDelta);
+UPDATEOBJECT_NOPRNG_WRAPPER_R(updateOmegaLevelComponentWeightMix);
 UPDATEOBJECT_NOPRNG_WRAPPER_R(updateOmegaSeason);
+UPDATEOBJECT_NOPRNG_WRAPPER_R(updateOmegaVectorsMix);
 
 SEXP
 updatePhi_R(SEXP prior_R, SEXP withTrend_R)
@@ -740,6 +743,7 @@ updatePhi_R(SEXP prior_R, SEXP withTrend_R)
     return ans_R;
 }
 
+UPDATEOBJECT_WRAPPER_R(updatePhiMix);
 UPDATEOBJECT_WRAPPER_R(updateUEtaCoef);
 UPDATEOBJECT_NOPRNG_WRAPPER_R(updateWSqrt);
 UPDATEOBJECT_NOPRNG_WRAPPER_R(updateWSqrtInvG);
@@ -1254,9 +1258,13 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateIndexClassMix_R, 2),
   CALLDEF(updateVectorsMixAndProdVectorsMix_R, 2),
   CALLDEF(updateOmegaAlpha_R, 2),
+  CALLDEF(updateOmegaComponentWeightMix_R, 1),
   CALLDEF(updateOmegaDelta_R, 1),
+  CALLDEF(updateOmegaLevelComponentWeightMix_R, 1),
   CALLDEF(updateOmegaSeason_R, 1),
+  CALLDEF(updateOmegaVectorsMix_R, 1),
   CALLDEF(updatePhi_R, 2),
+  CALLDEF(updatePhiMix_R, 1),
   CALLDEF(updateUEtaCoef_R, 1),
   CALLDEF(updateWSqrt_R, 1),
   CALLDEF(updateWSqrtInvG_R, 1),
@@ -1797,7 +1805,9 @@ R_init_demest(DllInfo *info)
   ADD_SYM(indexClassMaxPossibleMix);
   ADD_SYM(indexClassProbMix);
   ADD_SYM(omegaComponentWeightMix);
+  ADD_SYM(omegaComponentWeightMaxMix);
   ADD_SYM(omegaLevelComponentWeightMix);
+  ADD_SYM(omegaLevelComponentWeightMaxMix);
   ADD_SYM(iteratorsDimsMix);
   ADD_SYM(iAlong);
   ADD_SYM(dimBeta);
@@ -1818,6 +1828,12 @@ R_init_demest(DllInfo *info)
   ADD_SYM(alphaMix);
   ADD_SYM(priorMeanLevelComponentWeightMix);
   ADD_SYM(priorSDLevelComponentWeightMix);
+  ADD_SYM(AComponentWeightMix);
+  ADD_SYM(nuComponentWeightMix);
+  ADD_SYM(omegaVectorsMix);
+  ADD_SYM(omegaVectorsMaxMix);
+  ADD_SYM(AVectorsMix);
+  ADD_SYM(nuVectorsMix);  
   
 #undef ADD_SYM
 
