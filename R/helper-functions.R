@@ -3974,7 +3974,7 @@ checkUpdateBetaAndPriorBeta <- function(prior, vbar, n, sigma) {
     NULL
 }
 
-## READY_TO_TRANSLATE (AGAIN)
+## TRANSLATED
 ## HAS_TESTS (INCLUDING FOR MIX)
 ## ADD TESTS FOR ICAR AND Cross WHEN CLASSES FINISHED
 betaHat <- function(prior, useC = FALSE) {
@@ -3988,7 +3988,7 @@ betaHat <- function(prior, useC = FALSE) {
         has.alpha.cross <- prior@hasAlphaMove@.Data
         has.alpha.dlm <- prior@hasAlphaDLM@.Data
         has.alpha.icar <- prior@hasAlphaICAR@.Data
-        has.alpha.mix <- prior@hasAlphaMix@.Data ## NEW
+        has.alpha.mix <- prior@hasAlphaMix@.Data
         has.covariates <- prior@hasCovariates@.Data
         has.season <- prior@hasSeason@.Data
         ans <- rep(0, times = J)
@@ -4027,10 +4027,10 @@ betaHat <- function(prior, useC = FALSE) {
             alpha.icar <- prior@alphaICAR@.Data
             ans <- ans + alpha.icar
         }
-        if (has.alpha.mix) { ## NEW
-            alpha.mix <- prior@alphaMix@.Data ## NEW
-            ans <- ans + alpha.mix ## NEW
-        } ## NEW
+        if (has.alpha.mix) { 
+            alpha.mix <- prior@alphaMix@.Data 
+            ans <- ans + alpha.mix 
+        } 
         if (has.covariates) {
             Z <- unname(prior@Z)
             eta <- prior@eta@.Data
@@ -5234,7 +5234,7 @@ predictBetas <- function(object, useC = FALSE) {
     }
 }
 
-## READY_T0_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 predictComponentWeightMix <- function(prior, useC = FALSE) {
     stopifnot(methods::is(prior, "Mix"))
@@ -5263,7 +5263,7 @@ predictComponentWeightMix <- function(prior, useC = FALSE) {
     }
 }
 
-## READY_T0_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 predictIndexClassMix <- function(prior, useC = FALSE) {
     stopifnot(methods::is(prior, "Mix"))
@@ -5311,7 +5311,7 @@ predictIndexClassMix <- function(prior, useC = FALSE) {
     }
 }
 
-## READY_T0_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 predictLevelComponentWeightMix <- function(prior, useC = FALSE) {
     stopifnot(methods::is(prior, "Mix"))
@@ -5543,7 +5543,7 @@ transferAlphaDelta0 <- function(state, values, offset, iteratorNew, iteratorOld,
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 transferLevelComponentWeightOldMix <- function(values, offset, nAlongOld,
                                                indexClassMax, useC = FALSE) {

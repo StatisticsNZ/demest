@@ -1766,7 +1766,7 @@ updateWSqrtInvG <- function(prior, useC = FALSE) {
 }
 
 
-
+## JAH - I have translated and tested (C vs R) this one  16/2/2017
 ## 'v' in notes. Function is deterministic
 updateWeightMix <- function(prior, useC = FALSE) {
     stopifnot(methods::is(prior, "Mix"))

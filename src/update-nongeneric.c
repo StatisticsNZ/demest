@@ -1529,19 +1529,18 @@ updateMeanLevelComponentWeightMix(SEXP prior_R)
         
         int iw = iClass * nAlong;
         
-        double levelPrev = level[iw];
-        meanData += levelPrev * onePlusPhi;
+        double levelCurr = level[iw];
+        meanData += levelCurr * onePlusPhi;
         
         int iCurr = iw;
         
         for (int iAlong = 1; iAlong < nAlong; ++iAlong) {
             
             ++iCurr; /* iClass * nAlong + iAlong */
-            double levelCurr = level[iCurr];
+            double levelPrev = levelCurr;
+            levelCurr = level[iCurr];
             
             meanData += levelCurr - phi * levelPrev;
-            
-            levelPrev = levelCurr;
         }
     }
     
@@ -1725,9 +1724,9 @@ updateOmegaLevelComponentWeightMix(SEXP prior_R)
     for (int iClass = 0; iClass < indexClassMaxUsed; ++iClass) {
         
         int iWt = iClass * nAlong;
-        double levelPrev = level[iWt];
+        double levelCurr = level[iWt];
             
-        double tmp = levelPrev - meanOverOneMinusPhi;
+        double tmp = levelCurr - meanOverOneMinusPhi;
         V += oneMinusPhiSq * tmp * tmp;
         
         int iWtCurr = iWt;
@@ -1735,12 +1734,11 @@ updateOmegaLevelComponentWeightMix(SEXP prior_R)
         for (int iAlong = 1; iAlong < nAlong; ++iAlong) {
             
             ++iWtCurr; /* iClass * nAlong + iAlong */
-            double levelCurr = level[iWtCurr];
+            double levelPrev = levelCurr;
+            levelCurr = level[iWtCurr];
             
-            double tmp = levelCurr - meanLevel - phi * levelPrev;
+            tmp = levelCurr - meanLevel - phi * levelPrev;
             V += tmp * tmp;
-        
-            levelPrev = levelCurr;
         }
     }
     
@@ -2268,6 +2266,44 @@ updateWSqrtInvG(SEXP prior_R)
     WSqrtInvG[0] = 1/omegaAlpha;
     WSqrtInvG[2] = 1/omegaAlpha;
     WSqrtInvG[3] = phi/omegaDelta;
+}
+
+
+void
+updateWeightMix(SEXP prior_R)
+{
+    double *weight = REAL(GET_SLOT(prior_R, weightMix_sym));
+    double *compWeight = REAL(GET_SLOT(prior_R, componentWeightMix_sym));
+    
+    int indexClassMax = *INTEGER(GET_SLOT(prior_R, indexClassMaxMix_sym));
+    
+    int iAlong_r = *INTEGER(GET_SLOT(prior_R, iAlong_sym));  
+    int iAlong_c = iAlong_r -1;
+    SEXP dimBeta_R = GET_SLOT(prior_R, dimBeta_sym);  
+    int *dimBeta = INTEGER(dimBeta_R);  
+    int nAlong = dimBeta[iAlong_c];
+    
+    int nWt = nAlong * indexClassMax;
+    
+    for (int iWt = 0; iWt < nWt; ++iWt) {
+        
+        weight[iWt] = pnorm(compWeight[iWt], 0, 1, 1, 0);
+        
+    }    
+        
+    for (int iAlong = 0; iAlong < nAlong; ++iAlong) {
+        
+        double multiplierNext = 1;
+        
+        for (int iClass = 0; iClass < indexClassMax; ++iClass) {
+            
+            int iWtCurr = iClass * nAlong + iAlong;
+            double multiplierCurr = multiplierNext;
+            double thisWeight = weight[iWtCurr];
+            multiplierNext = multiplierCurr * (1 - thisWeight);
+            weight[iWtCurr] *= multiplierCurr;
+        }
+    }
 }
 
 void

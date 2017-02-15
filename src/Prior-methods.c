@@ -156,6 +156,22 @@ predictPrior_DLMWithTrendRobustCovWithSeasonPredict_i(SEXP prior_R)
     predictUBeta(prior_R);
 }
 
+
+static __inline__ void
+predictPrior_MixNormZero_i(SEXP prior_R) 
+{
+    
+    predictLevelComponentWeightMix(prior_R);
+    predictComponentWeightMix(prior_R);
+    updateWeightMix(prior_R);
+    predictIndexClassMix(prior_R);
+    updateIndexClassMaxUsedMix(prior_R);
+    updateAlphaMix(prior_R);
+    
+}
+
+
+
 void
 predictPrior(SEXP prior_R) 
 {
@@ -222,6 +238,9 @@ predictPrior(SEXP prior_R)
             break;
         case 120:
             predictPrior_DLMWithTrendRobustCovWithSeasonPredict_i(prior_R);
+            break;
+        case 131:
+            predictPrior_MixNormZero_i(prior_R);
             break;
         default:
             error("unknown i_method_prior for predictPrior: %d", i_method_prior);
@@ -351,6 +370,11 @@ predictPrior_DLMWithTrendRobustCovWithSeasonPredict(SEXP prior_R)
 }
 
 
+void
+predictPrior_MixNormZero(SEXP prior_R) 
+{
+    predictPrior_MixNormZero_i(prior_R);
+}
 
 
 /* ********************** transferParamPrior ******************* */
@@ -1231,6 +1255,73 @@ transferParamPrior_DLMWithTrendRobustCovWithSeasonPredict(SEXP prior_R,
     SET_DOUBLESCALE_SLOT(prior_R, tau_sym, t);
 }
 
+/*## Mix
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("transferParamPrior",
+          signature(prior = "MixNormZeroPredict"),
+          function(prior, values, useC = FALSE, useSpecific = FALSE) {
+              ## prior
+              methods::validObject(prior)
+              ## values
+              stopifnot(is.double(values))
+              stopifnot(!any(is.na(values)))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(transferParamPrior_MixNormZeroPredict_R, prior, values)
+                  else
+                      .Call(transferParamPrior_R, prior, values)
+              }
+              else {
+                  dim.beta.old <- prior@dimBetaOld
+                  iAlong <- prior@iAlong
+                  index.class.max <- prior@indexClassMaxMix@.Data
+                  n.beta.no.along <- prior@nBetaNoAlongMix@.Data
+                  J.old <- prior@JOld@.Data
+                  n.along.old <- dim.beta.old[iAlong]
+                  offset <- 1L
+                  ## alphaMix, foundIndexClassMaxPossibleMix, indexClassMaxUsedMix (skip)
+                  offset <- offset + J.old + 2L
+                  ## levelComponentWeightOldMix (final values of levelComponetWeightMix)
+                  prior@levelComponentWeightOldMix@.Data <-
+                      transferLevelComponentWeightOldMix(values = values,
+                                                         offset = offset,
+                                                         nAlongOld = n.along.old,
+                                                         indexClassMax = index.class.max)
+                  offset <- offset + n.along.old * index.class.max
+                  ## meanLevelComponentWeightMix
+                  prior@meanLevelComponentWeightMix@.Data <- values[offset]
+                  offset <- offset + 1L
+                  ## omegaComponentWeightMix
+                  prior@omegaComponentWeightMix@.Data <- values[offset]
+                  offset <- offset + 1L
+                  ## omegaLevelComponentWeightMix
+                  prior@omegaLevelComponentWeightMix@.Data <- values[offset]
+                  offset <- offset + 1L
+                  ## omegaVectorsMix
+                  prior@omegaVectorsMix@.Data <- values[offset]
+                  offset <- offset + 1L
+                  ## phiMix
+                  prior@phiMix <- values[offset]
+                  offset <- offset + 1L
+                  ## prodVectorsMix
+                  n.prod <- n.beta.no.along * index.class.max
+                  prior@prodVectorsMix@.Data <- values[offset : (offset + n.prod - 1L)]
+                  offset <- offset + n.prod
+                  ## tau
+                  prior@tau@.Data <- values[offset]
+                  ## return
+                  prior
+              }
+          })
+*/
+
+void
+transferParamPrior_MixNormZeroPredict(SEXP prior_R,
+                        double *values, int nValues) 
+{
+}
+
 
 void
 transferParamPrior(SEXP prior_R, double *values, int nValues) 
@@ -1315,6 +1406,11 @@ transferParamPrior(SEXP prior_R, double *values, int nValues)
             transferParamPrior_DLMWithTrendRobustCovWithSeasonPredict(prior_R,
                                                     values, nValues);
             break;
+        case 131:
+            transferParamPrior_MixNormZeroPredict(prior_R,
+                                                    values, nValues);
+            break;
+            
         default:
             error("unknown i_method_prior for transferParamPrior: %d", i_method_prior);
             break;

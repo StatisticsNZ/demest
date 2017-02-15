@@ -1168,7 +1168,7 @@ setMethod("predictPrior",
 
 ## Mix
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("predictPrior",
           signature(prior = "MixNormZeroPredict"),

@@ -560,6 +560,93 @@ int intersect(int* intersect, int nIntersect,
 /* ** UPDATING ************************************************************* */
 /* *************************************************************************** */
 
+/*## READY_TO_TRANSLATE (AGAIN)
+## HAS_TESTS (INCLUDING FOR MIX)
+## ADD TESTS FOR ICAR AND Cross WHEN CLASSES FINISHED
+betaHat <- function(prior, useC = FALSE) {
+    stopifnot(methods::is(prior, "Prior"))
+    stopifnot(methods::is(prior, "ComponentFlags"))
+    if (useC) {
+        .Call(betaHat_R, prior)
+    }
+    else {
+        J <- prior@J@.Data
+        has.alpha.cross <- prior@hasAlphaMove@.Data
+        has.alpha.dlm <- prior@hasAlphaDLM@.Data
+        has.alpha.icar <- prior@hasAlphaICAR@.Data
+        has.alpha.mix <- prior@hasAlphaMix@.Data ## NEW
+        has.covariates <- prior@hasCovariates@.Data
+        has.season <- prior@hasSeason@.Data
+        ans <- rep(0, times = J)
+        if (has.alpha.cross) {
+            alpha.cross <- prior@alphaCross@.Data
+            indices.cross <- prior@indicesCross
+            for (j in seq_len(J)) {
+                index.cross <- indices.cross[j]
+                if (is.infinite(index.cross))
+                    ans[j] <- if (index.cross < 0) -Inf else Inf
+                else
+                    ans[j] <- ans[j] + alpha.cross[index.cross]
+            }
+        }
+        if (has.alpha.dlm) {
+            alpha.dlm <- prior@alphaDLM@.Data
+            K <- prior@K@.Data
+            L <- prior@L@.Data
+            iterator.alpha <- prior@iteratorState
+            iterator.v <- prior@iteratorV
+            iterator.alpha <- resetA(iterator.alpha)
+            iterator.v <- resetA(iterator.v)
+            for (l in seq_len(L)) {
+                indices.alpha <- iterator.alpha@indices
+                indices.v <- iterator.v@indices
+                for (k in seq_len(K)) {
+                    i.alpha <- indices.alpha[k + 1L]
+                    i.ans <- indices.v[k]
+                    ans[i.ans] <- ans[i.ans] + alpha.dlm[i.alpha]
+                }
+                iterator.alpha <- advanceA(iterator.alpha)
+                iterator.v <- advanceA(iterator.v)
+            }
+        }
+        if (has.alpha.icar) {
+            alpha.icar <- prior@alphaICAR@.Data
+            ans <- ans + alpha.icar
+        }
+        if (has.alpha.mix) { ## NEW
+            alpha.mix <- prior@alphaMix@.Data ## NEW
+            ans <- ans + alpha.mix ## NEW
+        } ## NEW
+        if (has.covariates) {
+            Z <- unname(prior@Z)
+            eta <- prior@eta@.Data
+            ans <- ans + drop(Z %*% eta)
+        }
+        if (has.season) {
+            s <- prior@s@.Data
+            K <- prior@K@.Data
+            L <- prior@L@.Data
+            iterator.s <- prior@iteratorState
+            iterator.v <- prior@iteratorV
+            iterator.s <- resetA(iterator.s)
+            iterator.v <- resetA(iterator.v)
+            for (l in seq_len(L)) {
+                indices.s <- iterator.s@indices
+                indices.v <- iterator.v@indices
+                for (k in seq_len(K)) {
+                    i.s <- indices.s[k + 1L]
+                    i.ans <- indices.v[k]
+                    ans[i.ans] <- ans[i.ans] + s[[i.s]][1L]
+                }
+                ## changed these 2 lines - JAH 18/4/2016
+                iterator.s <- advanceA(iterator.s)
+                iterator.v <- advanceA(iterator.v)
+            }
+        }
+        ans
+    }
+}
+*/
 
 void
 betaHat(double *beta_hat, SEXP prior_R, int J)
@@ -567,6 +654,7 @@ betaHat(double *beta_hat, SEXP prior_R, int J)
     double hasAlphaMove = *LOGICAL(GET_SLOT(prior_R, hasAlphaMove_sym));
     double hasAlphaDLM = *LOGICAL(GET_SLOT(prior_R, hasAlphaDLM_sym));
     double hasAlphaICAR = *LOGICAL(GET_SLOT(prior_R, hasAlphaICAR_sym));
+    double hasAlphaMix = *LOGICAL(GET_SLOT(prior_R, hasAlphaMix_sym));
     double hasCovariates = *LOGICAL(GET_SLOT(prior_R, hasCovariates_sym));
     double hasSeason = *LOGICAL(GET_SLOT(prior_R, hasSeason_sym));
     
@@ -596,6 +684,10 @@ betaHat(double *beta_hat, SEXP prior_R, int J)
 
     if(hasAlphaICAR) {
         betaHat_AlphaICARInternal(beta_hat, prior_R, J);
+    }
+    
+    if(hasAlphaMix) {
+        betaHat_AlphaMixInternal(beta_hat, prior_R, J);
     }
         
     if(hasCovariates) {
@@ -665,6 +757,19 @@ betaHat_AlphaICARInternal(double *beta_hat, SEXP prior_R, int J)
         
     }
 }
+
+void
+betaHat_AlphaMixInternal(double *beta_hat, SEXP prior_R, int J)
+{
+    double *alphaMix = REAL(GET_SLOT(prior_R, alphaMix_sym));
+    
+    for (int j = 0; j < J; ++j) {
+        
+        beta_hat[j] += alphaMix[j]; 
+        
+    }
+}
+        
  
 /* store result of matrix-vector multiplication prior@Z * prior@eta */
 void
@@ -1606,6 +1711,136 @@ predictBetas(SEXP object_R)
     }
 }
 
+void
+predictComponentWeightMix(SEXP prior_R)
+{
+    double *comp = REAL(GET_SLOT(prior_R, componentWeightMix_sym));
+    double *level = REAL(GET_SLOT(prior_R, levelComponentWeightMix_sym));
+    int indexClassMax = *INTEGER(GET_SLOT(prior_R, indexClassMaxMix_sym));
+    double omega = *REAL(GET_SLOT(prior_R, omegaComponentWeightMix_sym));
+    int iAlong_r = *INTEGER(GET_SLOT(prior_R, iAlong_sym));  
+    int iAlong_c = iAlong_r -1;
+    SEXP dimBeta_R = GET_SLOT(prior_R, dimBeta_sym);  
+    int *dimBeta = INTEGER(dimBeta_R);  
+    int nAlong = dimBeta[iAlong_c];
+    
+    for (int iClass = 0; iClass < indexClassMax; ++iClass) {
+        
+        for (int iAlong = 0; iAlong < nAlong; ++iAlong) {
+            
+            int iWt = iClass * nAlong + iAlong;
+            comp[iWt] = rnorm(level[iWt], omega);
+        }
+    }
+}
+
+void
+predictIndexClassMix(SEXP prior_R)
+{
+    int *indexClass = INTEGER(GET_SLOT(prior_R, indexClassMix_sym));
+    int indexClassMax = *INTEGER(GET_SLOT(prior_R, indexClassMaxMix_sym));
+    
+    double *weight = REAL(GET_SLOT(prior_R, weightMix_sym));
+    double *probOriginal = REAL(GET_SLOT(prior_R, indexClassProbMix_sym));
+    
+    int iAlong_r = *INTEGER(GET_SLOT(prior_R, iAlong_sym));  
+    int iAlong_c = iAlong_r -1;
+    SEXP dimBeta_R = GET_SLOT(prior_R, dimBeta_sym);  
+    int *dimBeta = INTEGER(dimBeta_R);  
+    int nAlong = dimBeta[iAlong_c];
+    
+    SEXP iteratorsDims_R = GET_SLOT(prior_R, iteratorsDimsMix_sym);
+    SEXP iteratorBeta_R = VECTOR_ELT(iteratorsDims_R, iAlong_c);
+    
+    resetS(iteratorBeta_R); 
+    
+    SEXP indicesBeta_R = GET_SLOT(iteratorBeta_R, indices_sym);
+    int *indicesBeta = INTEGER(indicesBeta_R);
+    int nIndicesBeta = LENGTH(indicesBeta_R);
+    
+    /* space for prob, length indexClassMax */
+    double *prob = (double*)R_alloc(indexClassMax, sizeof(double));
+    
+    /* copy the original probs so we can change them 
+     * (actually I don't think we need the originals but
+     * just in case we change rest of code at any point...)*/
+    memcpy(prob, probOriginal, indexClassMax*sizeof(double));
+    
+    for (int iAlong = 0; iAlong < nAlong; ++iAlong) {
+        
+        double sumWt = 0;
+        
+        for (int iClass = 0; iClass < indexClassMax; ++iClass) {
+        
+            int iWt = iClass * nAlong + iAlong;
+            double thisWeight = weight[iWt];
+            prob[iClass] = thisWeight;
+            sumWt += thisWeight;
+        }
+        
+        double cumProb = prob[0];
+        prob[0] = cumProb/sumWt;
+        
+        for (int iClass = 1; iClass < indexClassMax; ++iClass) {
+            cumProb += prob[iClass];
+            prob[iClass] = cumProb/sumWt;;
+        }
+        
+        for (int iB = 0; iB < nIndicesBeta; ++iB) {
+            int iBeta = indicesBeta[iB] - 1;
+            double U = runif(0, 1);
+            int iClassStays = 0;
+            for (int iClass = 0; iClass < indexClassMax; ++iClass) {
+                iClassStays = iClass;
+                if ( U < prob[iClass] ) {
+                    break;
+                }
+            }
+            indexClass[iBeta] = iClassStays+1; /* R style index */
+        }
+        advanceS(iteratorBeta_R);
+    }
+}
+
+void
+predictLevelComponentWeightMix(SEXP prior_R)
+{
+    double *level = REAL(GET_SLOT(prior_R, levelComponentWeightMix_sym));
+    double *levelOld = REAL(GET_SLOT(prior_R, levelComponentWeightOldMix_sym));
+    double meanLevel = *REAL(GET_SLOT(prior_R, meanLevelComponentWeightMix_sym));
+    
+    int indexClassMax = *INTEGER(GET_SLOT(prior_R, indexClassMaxMix_sym));
+    
+    double phi = *REAL(GET_SLOT(prior_R, phiMix_sym));
+    double omega = *REAL(GET_SLOT(prior_R, omegaLevelComponentWeightMix_sym));
+    
+    int iAlong_r = *INTEGER(GET_SLOT(prior_R, iAlong_sym));  
+    int iAlong_c = iAlong_r -1;
+    SEXP dimBeta_R = GET_SLOT(prior_R, dimBeta_sym);  
+    int *dimBeta = INTEGER(dimBeta_R);  
+    int nAlong = dimBeta[iAlong_c];
+    
+    for (int iClass = 0; iClass < indexClassMax; ++iClass) {
+    
+        int iWtCurr = iClass * nAlong;
+        double levelPrevOld = levelOld[iClass];
+        double mean = meanLevel + phi * levelPrevOld;
+        double levelCurr = rnorm(mean, omega);
+        level[iWtCurr] = levelCurr;
+        
+        for (int iAlong = 1; iAlong < nAlong; ++iAlong) {
+        
+            ++iWtCurr; /* iClass * nAlong + iAlong */
+            double levelPrev = levelCurr;
+        
+            mean = meanLevel + phi * levelPrev;
+            levelCurr = rnorm(mean, omega);
+            level[iWtCurr] = levelCurr;
+            
+        }
+    }
+}
+
 /* component_R is a polycomponent, forward_R is a logical */
 void
 predictPriorsBetas(SEXP object_R)
@@ -1756,6 +1991,16 @@ transferSeason0(SEXP s_R, int nSeason, double *values, int offset,
 
 }
 
+void 
+transferLevelComponentWeightOldMix(double * ans, double * values, int offset,
+                                int nAlongOld, int indexClassMax)
+{
+    for (int iClass = 0; iClass < indexClassMax; ++iClass) {
+        int iWt = nAlongOld * (iClass+1) - 1;
+        int iValues = iWt + offset - 1;
+        ans[iClass] = values[iValues];
+    }
+}
 
 void transferParamBetas(SEXP model_R, const char *filename,
                                 int lengthIter, int iteration)

@@ -184,11 +184,13 @@ SEXP
   hasAlphaMove_sym,
   hasAlphaDLM_sym,
   hasAlphaICAR_sym,
+  hasAlphaMix_sym,
   hasCovariates_sym,
   hasSeason_sym,
   alphaCross_sym,
   alphaDLM_sym,
   alphaICAR_sym,
+  alphaMix_sym,
   indicesCross_sym,
   iteratorState_sym,
   iteratorStateOld_sym,
@@ -249,6 +251,7 @@ SEXP
   componentWeightMix_sym,
   latentComponentWeightMix_sym,
   levelComponentWeightMix_sym,
+  levelComponentWeightOldMix_sym,
   meanLevelComponentWeightMix_sym,
   indexClassMix_sym,
   indexClassMaxMix_sym,
@@ -309,6 +312,7 @@ void updatePhiMix(SEXP prior_R);
 void updateUEtaCoef(SEXP prior_R);
 void updateWSqrt(SEXP prior_R);
 void updateWSqrtInvG(SEXP prior_R);
+void updateWeightMix(SEXP prior_R);
 void updateTauNorm(SEXP prior_R, double *betaScaled, int J);
 void updateTauRobust(SEXP prior_R, int J);
 
@@ -441,7 +445,9 @@ void predictAlphaDLMNoTrend(SEXP prior_R);
 void predictAlphaDeltaDLMWithTrend(SEXP prior_R);
 void predictBeta(double* beta, SEXP prior_R, int J);
 void predictBetas(SEXP object_R);
-
+void predictComponentWeightMix(SEXP prior_R);
+void predictIndexClassMix(SEXP prior_R);
+void predictLevelComponentWeightMix(SEXP prior_R);
 
 void predictPriorsBetas(SEXP object_R);
 void predictSeason(SEXP prior_R);
@@ -451,7 +457,8 @@ void transferAlphaDelta0(double *state, double *values, int offset,
                     SEXP iteratorValues_R, SEXP iteratorState_R);
 void transferSeason0(SEXP s_R, int nSeason, double *values, int offset,
                     SEXP iteratorState_R, SEXP iteratorValues_R);
-                    
+void transferLevelComponentWeightOldMix(double * ans, double * values, int offset,
+                                int nAlongOld, int indexClassMax);                   
 void transferParamBetas(SEXP model_R, const char *filename, 
                                         int lengthIter, int iteration);
 
@@ -520,6 +527,7 @@ void predictPrior_DLMNoTrendRobustCovNoSeasonPredict(SEXP prior_R);
 void predictPrior_DLMWithTrendRobustCovNoSeasonPredict(SEXP prior_R);
 void predictPrior_DLMNoTrendRobustCovWithSeasonPredict(SEXP prior_R);
 void predictPrior_DLMWithTrendRobustCovWithSeasonPredict(SEXP prior_R);
+void predictPrior_MixNormZero(SEXP prior_R);
 
 void transferParamPrior(SEXP prior_R, double *values, int nValues);
 void transferParamPrior_ExchNormZero(SEXP prior_R, double *values, 
@@ -562,7 +570,9 @@ void transferParamPrior_DLMNoTrendRobustCovWithSeasonPredict(SEXP prior_R,
                         double *values, int nValues);
 void transferParamPrior_DLMWithTrendRobustCovWithSeasonPredict(SEXP prior_R,
                     double *values, int nValues);
-
+void transferParamPrior_MixNormZeroPredict(SEXP prior_R,
+                    double *values, int nValues);
+                    
 /* update-nongeneric */
 double updateSDNorm(double sigma, double A, double nu, double V, int n, double max);
 double updateSDRobust(double sigma, double A, double nuBeta, 

@@ -747,6 +747,7 @@ UPDATEOBJECT_WRAPPER_R(updatePhiMix);
 UPDATEOBJECT_WRAPPER_R(updateUEtaCoef);
 UPDATEOBJECT_NOPRNG_WRAPPER_R(updateWSqrt);
 UPDATEOBJECT_NOPRNG_WRAPPER_R(updateWSqrtInvG);
+UPDATEOBJECT_NOPRNG_WRAPPER_R(updateWeightMix);
 
 UPDATEPRIORWITHBETA_WRAPPER_R(updateTauNorm);
 
@@ -757,6 +758,25 @@ TRANSFERPARAM_WRAPPER_R(transferParamBetas);
 TRANSFERPARAM_WRAPPER_R(transferParamPriorsBetas);
 TRANSFERPARAM_WRAPPER_R(transferParamSigma);
 TRANSFERPARAM_WRAPPER_R(transferParamVarsigma);
+
+/* one off wrapper for transferLevelComponentWeightOldMix */
+SEXP
+transferLevelComponentWeightOldMix_R(SEXP values_R, SEXP offset_R,
+                                SEXP nAlongOld_R, SEXP indexClassMax_R)
+{
+    double *values = REAL(values_R);
+    int offset = *INTEGER(offset_R);
+    int nAlongOld = *INTEGER(nAlongOld_R);
+    int indexClassMax = *INTEGER(indexClassMax_R);
+    SEXP ans_R;
+    PROTECT(ans_R = allocVector(REALSXP, indexClassMax));
+    double *ans = REAL(ans_R);
+    transferLevelComponentWeightOldMix(ans, values, offset,
+                                nAlongOld, indexClassMax);
+    
+    UNPROTECT(1);
+    return ans_R;
+}
 
 /* wrapper for rmvnorm functions */
 RMV_WRAPPER_R(rmvnorm1);
@@ -932,7 +952,9 @@ transferSeason0_R(SEXP s_R, SEXP nSeason_R, SEXP values_R, SEXP offset_R,
 
 
 PREDICTOBJECT_WRAPPER_R(predictBetas);
-
+PREDICTOBJECT_WRAPPER_R(predictComponentWeightMix);
+PREDICTOBJECT_WRAPPER_R(predictIndexClassMix);
+PREDICTOBJECT_WRAPPER_R(predictLevelComponentWeightMix);
 PREDICTOBJECT_WRAPPER_R(predictPriorsBetas);
 PREDICTOBJECT_WRAPPER_R(predictSeason);
 PREDICTOBJECT_WRAPPER_R(predictUBeta);
@@ -1212,6 +1234,7 @@ PREDICTOBJECT_WRAPPER_R(predictPrior_DLMNoTrendRobustCovNoSeasonPredict);
 PREDICTOBJECT_WRAPPER_R(predictPrior_DLMWithTrendRobustCovNoSeasonPredict);
 PREDICTOBJECT_WRAPPER_R(predictPrior_DLMNoTrendRobustCovWithSeasonPredict);
 PREDICTOBJECT_WRAPPER_R(predictPrior_DLMWithTrendRobustCovWithSeasonPredict);
+PREDICTOBJECT_WRAPPER_R(predictPrior_MixNormZero);
 
 TRANSFERPARAMPRIOR_WRAPPER_R(transferParamPrior);
 TRANSFERPARAMPRIOR_WRAPPER_R(transferParamPrior_ExchNormZero);
@@ -1234,6 +1257,8 @@ TRANSFERPARAMPRIOR_WRAPPER_R(transferParamPrior_DLMNoTrendRobustCovNoSeasonPredi
 TRANSFERPARAMPRIOR_WRAPPER_R(transferParamPrior_DLMWithTrendRobustCovNoSeasonPredict);
 TRANSFERPARAMPRIOR_WRAPPER_R(transferParamPrior_DLMNoTrendRobustCovWithSeasonPredict);
 TRANSFERPARAMPRIOR_WRAPPER_R(transferParamPrior_DLMWithTrendRobustCovWithSeasonPredict);
+TRANSFERPARAMPRIOR_WRAPPER_R(transferParamPrior_MixNormZeroPredict);
+
 
 /* ******************************************************************************* */
 /* Create table describing R-visible versions of C functions ********************* */
@@ -1268,6 +1293,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateUEtaCoef_R, 1),
   CALLDEF(updateWSqrt_R, 1),
   CALLDEF(updateWSqrtInvG_R, 1),
+  CALLDEF(updateWeightMix_R, 1),
   CALLDEF(updateTauNorm_R, 2),
   CALLDEF(updateTauRobust_R, 1),
   
@@ -1332,7 +1358,9 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(transferSeason0_R, 6),
   
   CALLDEF(predictBetas_R, 1),
-
+  CALLDEF(predictComponentWeightMix_R, 1),
+  CALLDEF(predictIndexClassMix_R, 1),
+  CALLDEF(predictLevelComponentWeightMix_R, 1),
   CALLDEF(predictPriorsBetas_R, 1),
   CALLDEF(predictSeason_R, 1),
   CALLDEF(predictUBeta_R, 1),
@@ -1342,6 +1370,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(transferParamPriorsBetas_R,4),
   CALLDEF(transferParamSigma_R,4),
   CALLDEF(transferParamVarsigma_R,4),
+  CALLDEF(transferLevelComponentWeightOldMix_R, 4),
   
   
   CALLDEF(centerA_R, 2),
@@ -1522,6 +1551,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(predictPrior_DLMWithTrendRobustCovNoSeasonPredict_R, 1),
   CALLDEF(predictPrior_DLMNoTrendRobustCovWithSeasonPredict_R, 1),
   CALLDEF(predictPrior_DLMWithTrendRobustCovWithSeasonPredict_R, 1),
+  CALLDEF(predictPrior_MixNormZero_R, 1),
   
   CALLDEF(transferParamPrior_R, 2),
   CALLDEF(transferParamPrior_ExchNormZero_R, 2),
@@ -1544,6 +1574,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(transferParamPrior_DLMWithTrendRobustCovNoSeasonPredict_R, 2),
   CALLDEF(transferParamPrior_DLMNoTrendRobustCovWithSeasonPredict_R, 2),
   CALLDEF(transferParamPrior_DLMWithTrendRobustCovWithSeasonPredict_R, 2),
+  CALLDEF(transferParamPrior_MixNormZeroPredict_R, 2),
   
   {NULL}
 };
@@ -1737,11 +1768,13 @@ R_init_demest(DllInfo *info)
   ADD_SYM(hasAlphaMove);
   ADD_SYM(hasAlphaDLM);
   ADD_SYM(hasAlphaICAR);
+  ADD_SYM(hasAlphaMix);
   ADD_SYM(hasCovariates);
   ADD_SYM(hasSeason);
   ADD_SYM(alphaCross);
   ADD_SYM(alphaDLM);
   ADD_SYM(alphaICAR);
+  ADD_SYM(alphaMix);
   ADD_SYM(indicesCross);
   ADD_SYM(iteratorState);
   ADD_SYM(iteratorStateOld);
@@ -1797,6 +1830,7 @@ R_init_demest(DllInfo *info)
   ADD_SYM(componentWeightMix);
   ADD_SYM(latentComponentWeightMix);
   ADD_SYM(levelComponentWeightMix);
+  ADD_SYM(levelComponentWeightOldMix);
   ADD_SYM(meanLevelComponentWeightMix);
   ADD_SYM(indexClassMix);
   ADD_SYM(indexClassMaxMix);
