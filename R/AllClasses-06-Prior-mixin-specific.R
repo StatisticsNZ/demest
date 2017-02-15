@@ -376,6 +376,22 @@ setClass("DimBetaMixin",
              TRUE
          })
 
+setClass("DimBetaOldMixin",
+         slots = c(dimBetaOld = "integer"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             dimBetaOld <- object@dimBetaOld
+             ## 'dimBeta' has no missing values
+             if (any(is.na(dimBetaOld)))
+                 return(gettextf("'%s' has missing values",
+                                 "dimBetaOld"))
+             ## all values of 'dimBetaOld' at least 2
+             if (any(dimBetaOld < 2L))
+                 return(gettextf("'%s' has values less than %d",
+                                 "dimBetaOld", 2L))
+             TRUE
+         })
+
 setClass("EtaMixin",
          slots = c(eta = "ParameterVector"),
          contains = "VIRTUAL",
@@ -532,12 +548,7 @@ setClass("IndexClassMaxPossibleMixMixin",
          contains = "VIRTUAL",
          validity = function(object) {
              indexClassMaxPossibleMix <- object@indexClassMaxPossibleMix@.Data
-             indexClassMaxUsedMix <- object@indexClassMaxUsedMix@.Data
              indexClassMaxMix <- object@indexClassMaxMix@.Data
-             ## 'indexClassMaxPossibleMix' is greater than or equal to 'indexClassMaxUsedMix'
-             if (indexClassMaxPossibleMix < indexClassMaxUsedMix)
-                 return(gettextf("'%s' is smaller than '%s'",
-                                 "indexClassMaxPossibleMix", "indexClassMaxUsedMix"))
              ## 'indexClassMaxPossibleMix' is less than or equal to 'indexClassMaxMix'
              if (indexClassMaxPossibleMix > indexClassMaxMix)
                  return(gettextf("'%s' is greater than '%s'",
@@ -551,11 +562,11 @@ setClass("IndexClassMaxUsedMixMixin",
          contains = "VIRTUAL",
          validity = function(object) {
              indexClassMaxUsedMix <- object@indexClassMaxUsedMix@.Data
-             indexClassMix <- object@indexClassMix
-             ## 'indexClassMaxUsed' is maximum of 'indexClassMix'
-             if (!identical(indexClassMaxUsedMix, max(indexClassMix)))
-                 return(gettextf("'%s' is not maximum of '%s'",
-                                 "indexClassMaxUsedMix", "indexClassMix"))
+             indexClassMaxMix <- object@indexClassMaxMix@.Data
+             ## 'indexClassMaxUsed' is less than or equal to 'indexClassMaxMix'
+             if (indexClassMaxUsedMix > indexClassMaxMix)
+                 return(gettextf("'%s' is greater than '%s'",
+                                 "indexClassMaxUsedMix", "indexClassMaxMix"))
              TRUE
          })
 
@@ -773,6 +784,21 @@ setClass("LevelComponentWeightMixMixin",
              if (!identical(length(levelComponentWeightMix), length(weightMix)))
                  return(gettextf("'%s' and '%s' have different lengths",
                                  "levelComponentWeightMix", "weightMix"))
+             TRUE
+         })
+
+setClass("LevelComponentWeightOldMixMixin",
+                  slots = c(levelComponentWeightOldMix = "ParameterVector"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             levelComponentWeightOldMix <- object@levelComponentWeightOldMix@.Data
+             indexClassMaxMix <- object@indexClassMaxMix@.Data
+             ## 'levelComponentWeightOldMix' has same length as 'indexClassMaxMix'
+             if (!identical(length(levelComponentWeightOldMix),
+                            indexClassMaxMix))
+                 return(gettextf("'%s' does not have length '%s'",
+                                 "levelComponentWeightOldMix",
+                                 "indexClassMaxMix"))
              TRUE
          })             
 

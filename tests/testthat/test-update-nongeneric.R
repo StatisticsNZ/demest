@@ -1274,7 +1274,7 @@ test_that("R and C versions of updateIndexClassMaxPossibleMix give same answer",
                     dimtypes = c("state", "time"),
                     DimScales = list(new("Categories", dimvalues = letters[1:20]),
                                      new("Points", dimvalues = 2001:2010)))
-    spec <- Mix(weights = Weights(mean = -10))
+    spec <- Mix(weights = Weights(mean = -5))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,

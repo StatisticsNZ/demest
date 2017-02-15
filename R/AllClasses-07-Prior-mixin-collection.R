@@ -37,6 +37,12 @@ setClass("NormMixin",
          contains = c("VIRTUAL",
              "ObsError"))
 
+setClass("MixPredictMixin",
+         contains = c("VIRTUAL",
+                      "DimBetaOldMixin",
+                      "JOldMixin",
+                      "LevelComponentWeightOldMixMixin"))
+
 setClass("MoveMixin",
          contains = c("VIRTUAL",
              "AMoveMixin",

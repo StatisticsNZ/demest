@@ -2480,9 +2480,9 @@ test_that("R and C versions of predictPrior give same answer with DLMWithTrendRo
     set.seed(1)
     ans.R <- predictPrior(prior.new, useC = FALSE)
     set.seed(1)
-    ans.C.generic <- predictPrior(prior.new, useC = TRUE, , useSpecific = FALSE)
+    ans.C.generic <- predictPrior(prior.new, useC = TRUE, useSpecific = FALSE)
     set.seed(1)
-    ans.C.specific <- predictPrior(prior.new, useC = TRUE, , useSpecific = TRUE)
+    ans.C.specific <- predictPrior(prior.new, useC = TRUE, useSpecific = TRUE)
     if (test.identity)
         expect_identical(ans.R, ans.C.generic)
     else
@@ -2490,6 +2490,92 @@ test_that("R and C versions of predictPrior give same answer with DLMWithTrendRo
     expect_equal(ans.C.generic, ans.C.specific)
 })
 
+test_that("predictPrior works with MixNormZero", {
+    predictPrior <- demest:::predictPrior
+    transferParamPrior <- demest:::transferParamPrior
+    set.seed(100)
+    initialPrior <- demest:::initialPrior
+    initialPriorPredict <- demest:::initialPriorPredict
+    extractValues <- demest:::extractValues
+    beta <- rnorm(200)
+    metadata <- new("MetaData",
+                    nms = c("time", "reg", "age"),
+                    dimtypes = c("time", "state", "age"),
+                    DimScales = list(new("Points", dimvalues = 2001:2010),
+                                     new("Categories", dimvalues = c("a", "b")),
+                                     new("Intervals", dimvalues = as.numeric(0:10))))
+    spec <- Mix(weights = Weights(mean = -10))
+    prior.old <- initialPrior(spec,
+                              beta = beta,
+                              metadata = metadata,
+                              sY = NULL,
+                              multScale = 1)
+    metadata.new <- new("MetaData",
+                        nms = c("time", "reg", "age"),
+                        dimtypes = c("time", "state", "age"),
+                        DimScales = list(new("Points", dimvalues = 2011:2030),
+                                         new("Categories", dimvalues = c("a", "b")),
+                                         new("Intervals", dimvalues = as.numeric(0:10))))
+    prior.new <- initialPriorPredict(prior.old,
+                                      metadata = metadata.new,
+                                      name = "time:reg:age",
+                                      along = 1L)
+    expect_is(prior.new, "MixNormZeroPredict")
+    prior.new <- transferParamPrior(prior = prior.new,
+                                    values = extractValues(prior.old))
+    ans.obtained <- predictPrior(prior.new)
+    expect_true(all(ans.obtained@levelComponentWeightMix@.Data != prior.new@levelComponentWeightMix@.Data))
+    expect_true(all(ans.obtained@componentWeightMix@.Data != prior.new@componentWeightMix@.Data))
+    expect_true(all(ans.obtained@weightMix@.Data != prior.new@weightMix@.Data))
+    expect_true(!all(ans.obtained@indexClassMix@.Data == prior.new@indexClassMix@.Data))
+    expect_true(all(ans.obtained@alphaMix@.Data != prior.new@alphaMix@.Data))
+})
+
+test_that("R and C versions of predictPrior give same answer MixNormZero", {
+    predictPrior <- demest:::predictPrior
+    transferParamPrior <- demest:::transferParamPrior
+    set.seed(100)
+    initialPrior <- demest:::initialPrior
+    initialPriorPredict <- demest:::initialPriorPredict
+    extractValues <- demest:::extractValues
+    beta <- rnorm(200)
+    metadata <- new("MetaData",
+                    nms = c("time", "reg", "age"),
+                    dimtypes = c("time", "state", "age"),
+                    DimScales = list(new("Points", dimvalues = 2001:2010),
+                                     new("Categories", dimvalues = c("a", "b")),
+                                     new("Intervals", dimvalues = as.numeric(0:10))))
+    spec <- Mix(weights = Weights(mean = -10))
+    prior.old <- initialPrior(spec,
+                              beta = beta,
+                              metadata = metadata,
+                              sY = NULL,
+                              multScale = 1)
+    metadata.new <- new("MetaData",
+                        nms = c("time", "reg", "age"),
+                        dimtypes = c("time", "state", "age"),
+                        DimScales = list(new("Points", dimvalues = 2011:2030),
+                                         new("Categories", dimvalues = c("a", "b")),
+                                         new("Intervals", dimvalues = as.numeric(0:10))))
+    prior.new <- initialPriorPredict(prior.old,
+                                     metadata = metadata.new,
+                                     name = "time:reg:age",
+                                     along = 1L)
+    expect_is(prior.new, "MixNormZeroPredict")
+    prior.new <- transferParamPrior(prior = prior.new,
+                                    values = extractValues(prior.old))
+    set.seed(1)
+    ans.R <- predictPrior(prior.new, useC = FALSE)
+    set.seed(1)
+    ans.C.generic <- predictPrior(prior.new, useC = TRUE, useSpecific = FALSE)
+    set.seed(1)
+    ans.C.specific <- predictPrior(prior.new, useC = TRUE, useSpecific = TRUE)
+    if (test.identity)
+        expect_identical(ans.R, ans.C.generic)
+    else
+        expect_equal(ans.R, ans.C.generic)
+    expect_equal(ans.C.generic, ans.C.specific)
+})
 
 
 ## transferParamPrior ################################################################
@@ -4151,6 +4237,96 @@ test_that("R and C versions of transferParamPrior give same answer with DLMWithT
     expect_identical(ans.C.specific, ans.C.generic)
 })
 
+test_that("transferParamPrior works with MixNormZero", {
+    transferParamPrior <- demest:::transferParamPrior
+    set.seed(100)
+    initialPrior <- demest:::initialPrior
+    initialPriorPredict <- demest:::initialPriorPredict
+    extractValues <- demest:::extractValues
+    beta <- rnorm(200)
+    metadata <- new("MetaData",
+                    nms = c("time", "reg", "age"),
+                    dimtypes = c("time", "state", "age"),
+                    DimScales = list(new("Points", dimvalues = 2001:2010),
+                                     new("Categories", dimvalues = c("a", "b")),
+                                     new("Intervals", dimvalues = as.numeric(0:10))))
+    spec <- Mix()
+    prior.old <- initialPrior(spec,
+                              beta = beta,
+                              metadata = metadata,
+                              sY = NULL,
+                              multScale = 1)
+    metadata.new <- new("MetaData",
+                        nms = c("time", "reg", "age"),
+                        dimtypes = c("time", "state", "age"),
+                        DimScales = list(new("Points", dimvalues = 2011:2030),
+                                         new("Categories", dimvalues = c("a", "b")),
+                                         new("Intervals", dimvalues = as.numeric(0:10))))
+    prior.new <- initialPriorPredict(prior.old,
+                                      metadata = metadata.new,
+                                      name = "time:reg:age",
+                                      along = 1L)
+    expect_is(prior.new, "MixNormZeroPredict")
+    ans.obtained <- transferParamPrior(prior = prior.new,
+                                       values = extractValues(prior.old))
+    ans.expected <- prior.new
+    lcwo <- matrix(prior.old@levelComponentWeightMix@.Data,
+                   nrow = 10)[10,]
+    ans.expected@levelComponentWeightOldMix@.Data <- lcwo
+    ans.expected@meanLevelComponentWeightMix@.Data <- prior.old@meanLevelComponentWeightMix@.Data
+    ans.expected@omegaComponentWeightMix@.Data <- prior.old@omegaComponentWeightMix@.Data
+    ans.expected@omegaLevelComponentWeightMix@.Data <- prior.old@omegaLevelComponentWeightMix@.Data
+    ans.expected@omegaVectorsMix@.Data <- prior.old@omegaVectorsMix@.Data
+    ans.expected@phiMix <- prior.old@phiMix
+    ans.expected@prodVectorsMix@.Data <- prior.old@prodVectorsMix@.Data
+    ans.expected@tau@.Data <- prior.old@tau@.Data
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("R and C versions of transferParamPrior give same answer with MixNormZero", {
+    transferParamPrior <- demest:::transferParamPrior
+    set.seed(100)
+    initialPrior <- demest:::initialPrior
+    initialPriorPredict <- demest:::initialPriorPredict
+    extractValues <- demest:::extractValues
+    beta <- rnorm(200)
+    metadata <- new("MetaData",
+                    nms = c("time", "reg", "age"),
+                    dimtypes = c("time", "state", "age"),
+                    DimScales = list(new("Points", dimvalues = 2001:2010),
+                                     new("Categories", dimvalues = c("a", "b")),
+                                     new("Intervals", dimvalues = as.numeric(0:10))))
+    spec <- Mix()
+    prior.old <- initialPrior(spec,
+                              beta = beta,
+                              metadata = metadata,
+                              sY = NULL,
+                              multScale = 1)
+    metadata.new <- new("MetaData",
+                        nms = c("time", "reg", "age"),
+                        dimtypes = c("time", "state", "age"),
+                        DimScales = list(new("Points", dimvalues = 2011:2030),
+                                         new("Categories", dimvalues = c("a", "b")),
+                                         new("Intervals", dimvalues = as.numeric(0:10))))
+    prior.new <- initialPriorPredict(prior.old,
+                                      metadata = metadata.new,
+                                      name = "time:reg:age",
+                                      along = 1L)
+    expect_is(prior.new, "MixNormZeroPredict")
+    ans.R <- transferParamPrior(prior = prior.new,
+                                values = extractValues(prior.old),
+                                useC = FALSE)
+    ans.C.specific <- transferParamPrior(prior = prior.new,
+                                values = extractValues(prior.old),
+                                useC = TRUE,
+                                useSpecific = TRUE)
+    ans.C.generic <- transferParamPrior(prior = prior.new,
+                                values = extractValues(prior.old),
+                                useC = TRUE,
+                                useSpecific = FALSE)
+    expect_identical(ans.R, ans.C.specific)
+    expect_identical(ans.C.generic, ans.C.specific)
+})    
 
 
 ## hasEstimated ######################################################################

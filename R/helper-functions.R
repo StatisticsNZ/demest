@@ -1256,6 +1256,98 @@ initialMixAll <- function(object, beta, metadata, sY, ...) {
 }
 
 
+initialMixAllPredict <- function(prior, metadata, name, along) {
+    index.class.max <- prior@indexClassMaxMix@.Data
+    ## dimBeta
+    dimBeta <- dim(metadata)
+    ## J
+    J <- makeJPredict(metadata)
+    ## iAlong
+    iAlong <- dembase::checkAndTidyAlong(along = along,
+                                         metadata = metadata,
+                                         numericDimScales = TRUE)
+    i.along.old <- prior@iAlong
+    if (!identical(iAlong, i.along.old))
+        stop(gettextf("\"%s\" dimension of prediction does not match \"%s\" dimension of prior for '%s'",
+                      "along", "along", name))
+    n.along <- dimBeta[iAlong]
+    ## posProdVectors1Mix, posProdVectors2Mix
+    if (iAlong == 1L) {
+        posProdVectors1Mix <- dimBeta[1L]
+        posProdVectors2Mix <- 1L
+    }
+    else {
+        s1 <- seq_len(iAlong)
+        s2 <- seq_len(iAlong - 1L)
+        posProdVectors1Mix <- prod(dimBeta[s1])
+        posProdVectors2Mix <- prod(dimBeta[s2])
+        posProdVectors1Mix <- as.integer(posProdVectors1Mix)
+        posProdVectors2Mix <- as.integer(posProdVectors2Mix)
+    }        
+    ## componentWeightMix
+    componentWeightMix <- rep(0, times = n.along * index.class.max)
+    componentWeightMix <- new("ParameterVector", componentWeightMix)
+    ## indexClassMix
+    indexClassMix <- rep(1L, times = J@.Data)
+    ## iteratorProdVectorMix
+    iteratorProdVectorMix <-
+        makeIteratorProdVectorMix(dimBeta = dimBeta,
+                                  iAlong = iAlong)
+    ## iteratorsDimsMix
+    makeSliceIterator <- function(i) SliceIterator(dim = dimBeta, iAlong = i)
+    iteratorsDimsMix <- lapply(seq_along(dimBeta), makeSliceIterator)
+    ## latentComponentWeightMix
+    latentComponentWeightMix <- rep(0, times = J * index.class.max)
+    latentComponentWeightMix <- new("ParameterVector", latentComponentWeightMix)
+    ## latentWeightMix
+    latentWeightMix <- rep(0, times = J@.Data)
+    latentWeightMix <- new("UnitIntervalVec", latentWeightMix)
+    ## levelComponentWeightMix
+    levelComponentWeightMix <- rep(0, times = n.along * index.class.max)
+    levelComponentWeightMix <- new("ParameterVector", levelComponentWeightMix)
+    ## levelComponentWeightOldMix
+    levelComponentWeightOldMix <- rep(0, times = index.class.max)
+    levelComponentWeightOldMix <- new("ParameterVector", levelComponentWeightOldMix)
+    ## sumsWeightsMix
+    sumsWeightsMix <- rep(0, times = n.along)
+    sumsWeightsMix <- new("UnitIntervalVec", sumsWeightsMix)
+    ## weightMix
+    weightMix <- rep(0, times = n.along * index.class.max)
+    weightMix <- new("UnitIntervalVec", weightMix)
+    ## mMix, CMix, aMix, RMix
+    mMix <- rep(0, times = n.along)
+    CMix <- rep(1, times = n.along)
+    aMix <- rep(0, times = n.along - 1L)
+    RMix <- rep(1, times = n.along - 1L)
+    mMix <- new("ParameterVector", mMix)
+    CMix <- new("ParameterVector", CMix)
+    aMix <- new("ParameterVector", aMix)
+    RMix <- new("ParameterVector", RMix)
+    ## alphaMix
+    alphaMix <- rep(0, times = J@.Data)
+    alphaMix <- new("ParameterVector", alphaMix)
+    list(aMix = aMix,
+         alphaMix = alphaMix,
+         CMix = CMix,
+         componentWeightMix = componentWeightMix,
+         dimBeta = dimBeta,
+         iAlong = iAlong,
+         indexClassMix = indexClassMix,
+         iteratorProdVectorMix = iteratorProdVectorMix,
+         iteratorsDimsMix = iteratorsDimsMix,
+         J = J,
+         latentComponentWeightMix = latentComponentWeightMix,
+         latentWeightMix = latentWeightMix,
+         levelComponentWeightMix = levelComponentWeightMix,
+         levelComponentWeightOldMix = levelComponentWeightOldMix,
+         mMix = mMix,
+         posProdVectors1Mix = posProdVectors1Mix,
+         posProdVectors2Mix = posProdVectors2Mix,
+         RMix = RMix,
+         sumsWeightsMix = sumsWeightsMix,
+         weightMix = weightMix)
+}
+
 ## HAS_TESTS
 initialRobust <- function(object, lAll) {
     nuBeta <- object@nuBeta
@@ -3882,8 +3974,8 @@ checkUpdateBetaAndPriorBeta <- function(prior, vbar, n, sigma) {
     NULL
 }
 
-## TRANSLATED but C code for ICAR and Cross not tested
-## HAS_TESTS
+## READY_TO_TRANSLATE (AGAIN)
+## HAS_TESTS (INCLUDING FOR MIX)
 ## ADD TESTS FOR ICAR AND Cross WHEN CLASSES FINISHED
 betaHat <- function(prior, useC = FALSE) {
     stopifnot(methods::is(prior, "Prior"))
@@ -3896,6 +3988,7 @@ betaHat <- function(prior, useC = FALSE) {
         has.alpha.cross <- prior@hasAlphaMove@.Data
         has.alpha.dlm <- prior@hasAlphaDLM@.Data
         has.alpha.icar <- prior@hasAlphaICAR@.Data
+        has.alpha.mix <- prior@hasAlphaMix@.Data ## NEW
         has.covariates <- prior@hasCovariates@.Data
         has.season <- prior@hasSeason@.Data
         ans <- rep(0, times = J)
@@ -3934,6 +4027,10 @@ betaHat <- function(prior, useC = FALSE) {
             alpha.icar <- prior@alphaICAR@.Data
             ans <- ans + alpha.icar
         }
+        if (has.alpha.mix) { ## NEW
+            alpha.mix <- prior@alphaMix@.Data ## NEW
+            ans <- ans + alpha.mix ## NEW
+        } ## NEW
         if (has.covariates) {
             Z <- unname(prior@Z)
             eta <- prior@eta@.Data
@@ -5137,6 +5234,127 @@ predictBetas <- function(object, useC = FALSE) {
     }
 }
 
+## READY_T0_TRANSLATE
+## HAS_TESTS
+predictComponentWeightMix <- function(prior, useC = FALSE) {
+    stopifnot(methods::is(prior, "Mix"))
+    stopifnot(validObject(prior))
+    if (useC) {
+        .Call(predictComponentWeightMix_R, prior)
+    }
+    else {    
+        comp <- prior@componentWeightMix@.Data # W; n.along * index.class.max
+        level <- prior@levelComponentWeightMix@.Data # alpha; n.along * index.class.max
+        index.class.max <- prior@indexClassMaxMix@.Data
+        omega <- prior@omegaComponentWeightMix@.Data # sigma_epsilon; 1
+        iAlong <- prior@iAlong
+        dim.beta <- prior@dimBeta
+        n.along <- dim.beta[iAlong]
+        for (i.class in seq_len(index.class.max)) {
+            for (i.along in seq_len(n.along)) {
+                i.wt <- (i.class - 1L) * n.along + i.along
+                comp[i.wt] <- rnorm(n = 1L,
+                                    mean = level[i.wt],
+                                    sd = omega)
+            }
+        }
+        prior@componentWeightMix@.Data <- comp
+        prior
+    }
+}
+
+## READY_T0_TRANSLATE
+## HAS_TESTS
+predictIndexClassMix <- function(prior, useC = FALSE) {
+    stopifnot(methods::is(prior, "Mix"))
+    stopifnot(validObject(prior))
+    if (useC) {
+        .Call(predictIndexClassMix_R, prior)
+    }
+    else {    
+        index.class <- prior@indexClassMix
+        index.class.max <- prior@indexClassMaxMix@.Data
+        weight <- prior@weightMix
+        iAlong <- prior@iAlong
+        dim.beta <- prior@dimBeta
+        iteratorsDims <- prior@iteratorsDimsMix
+        prob <- prior@indexClassProbMix@.Data # length index.class.max
+        n.along <- dim.beta[iAlong]
+        iterator.beta <- iteratorsDims[[iAlong]]
+        iterator.beta <- resetS(iterator.beta)
+        for (i.along in seq_len(n.along)) {
+            ## prepare cumulative probabilities
+            sum.wt <- 0
+            for (i.class in seq_len(index.class.max)) {
+                i.wt <- (i.class - 1L) * n.along + i.along
+                prob[i.class] <- weight[i.wt]
+                sum.wt <- sum.wt + weight[i.wt]
+            }
+            for (i.class in seq_len(index.class.max))
+                prob[i.class] <- prob[i.class] / sum.wt
+            for (i.class in seq.int(from = 2L, to = index.class.max))
+                prob[i.class] <- prob[i.class] + prob[i.class - 1L]
+            ## draw classes
+            indices.beta <- iterator.beta@indices
+            for (i.beta in indices.beta) {
+                U <- runif(n = 1L)
+                for (i.class in seq_len(index.class.max)) {
+                    if (U < prob[i.class])
+                        break
+                }
+                index.class[i.beta] <- i.class
+            }
+            iterator.beta <- advanceS(iterator.beta)
+        }
+        prior@indexClassMix <- index.class
+        prior
+    }
+}
+
+## READY_T0_TRANSLATE
+## HAS_TESTS
+predictLevelComponentWeightMix <- function(prior, useC = FALSE) {
+    stopifnot(methods::is(prior, "Mix"))
+    stopifnot(validObject(prior))
+    if (useC) {
+        .Call(predictLevelComponentWeightMix_R, prior)
+    }
+    else {        
+        level <- prior@levelComponentWeightMix@.Data # alpha; n.along * index.class.max
+        level.old <- prior@levelComponentWeightOldMix # final values of alpha; index.class.max
+        mean.level <- prior@meanLevelComponentWeightMix@.Data # 'mu'; 1
+        dim.beta <- prior@dimBeta
+        iAlong <- prior@iAlong
+        n.along <- dim.beta[iAlong]
+        index.class.max <- prior@indexClassMaxMix@.Data
+        phi <- prior@phiMix
+        omega <- prior@omegaLevelComponentWeightMix@.Data # sigma_eta; 1
+        for (i.class in seq_len(index.class.max)) {
+            i.wt <- (i.class - 1L) * n.along + 1L
+            level.prev <- level.old[i.class]
+            mean <- mean.level + phi * level.prev
+            level[i.wt] <- rnorm(n = 1L,
+                                 mean = mean,
+                                 sd = omega)
+            for (i.along in seq.int(from = 2L, to = n.along)) {
+                i.wt.curr <- (i.class - 1L) * n.along + i.along
+                i.wt.prev <- i.wt.curr - 1L
+                level.prev <- level[i.wt.prev]
+                mean <- mean.level + phi * level.prev
+                level[i.wt.curr] <- rnorm(n = 1L,
+                                          mean = mean,
+                                          sd = omega)
+            }
+        }
+        prior@levelComponentWeightMix@.Data <- level
+        prior
+    }
+}
+
+
+
+
+
 ## HAS_TESTS
 predictOneChain <- function(combined, tempfileOld, tempfileNew,
                             lengthIter, nIteration, nUpdate) {
@@ -5324,6 +5542,45 @@ transferAlphaDelta0 <- function(state, values, offset, iteratorNew, iteratorOld,
         state
     }
 }
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+transferLevelComponentWeightOldMix <- function(values, offset, nAlongOld,
+                                               indexClassMax, useC = FALSE) {
+    ## values
+    stopifnot(is.double(values))
+    stopifnot(!any(is.na(values)))
+    ## offset
+    stopifnot(is.integer(offset))
+    stopifnot(identical(length(offset), 1L))
+    stopifnot(!is.na(offset))
+    ## nAlongOld
+    stopifnot(is.integer(nAlongOld))
+    stopifnot(identical(length(nAlongOld), 1L))
+    stopifnot(!is.na(nAlongOld))
+    stopifnot(nAlongOld >= 1L)
+    ## indexClassMax
+    stopifnot(is.integer(indexClassMax))
+    stopifnot(identical(length(indexClassMax), 1L))
+    stopifnot(!is.na(indexClassMax))
+    stopifnot(indexClassMax >= 2L)
+    ## offset, values
+    stopifnot(offset %in% seq_along(values))
+    if (useC) {
+        .Call(transferLevelComponentWeightOldMix_R,
+              values, offset, nAlongOld, indexClassMax)
+    }
+    else {
+        ans <- double(length = indexClassMax)
+        for (i.class in seq_len(indexClassMax)) {
+            i.wt <- nAlongOld * i.class
+            i.values <- i.wt + offset - 1L
+            ans[i.class] <- values[i.values]
+        }
+        ans
+    }
+}
+
 
 ## TRANSLATED
 ## HAS_TESTS
@@ -5543,7 +5800,10 @@ transferSeason0 <- function(s, nSeason, values, offset, iteratorNew, iteratorOld
 ## HAS_TESTS
 extractValues <- function(object) {
     if (is.numeric(object)) {
-        object
+        as.numeric(object)
+    }
+    else if (is.logical(object)) {
+        as.numeric(object)
     }
     else if (is.list(object)) {
         unlist(lapply(object, extractValues))
@@ -5563,6 +5823,35 @@ extractValues <- function(object) {
             numeric()
     }
 }
+
+## ## JAH note: I am not sure if we translate this.  At present the
+## ## write_to_file function in C combines extracting and writing and
+## ## I think is much more efficient like that for C purposes even though
+## ## it is a bit ugly from a design point of view.  What I'd really like
+## ## is a more efficient way of getting at the slots to extract in C.
+## ## HAS_TESTS
+## extractValues <- function(object) {
+##     if (is.numeric(object)) {
+##         object
+##     }
+##     else if (is.list(object)) {
+##         unlist(lapply(object, extractValues))
+##     }
+##     else {
+##         slots.to.extract <- object@slotsToExtract
+##         n <- length(slots.to.extract)
+##         if (n > 0L) {
+##             ans <- vector(mode = "list", length = n)
+##             for (i in seq_along(ans)) {
+##                 obj <- methods::slot(object, slots.to.extract[i])
+##                 ans[[i]] <- extractValues(obj)
+##             }
+##             unlist(ans)
+##         }
+##         else
+##             numeric()
+##     }
+## }
 
 ## HAS_TESTS
 ## Helper function for 'sweepAllMargins'.

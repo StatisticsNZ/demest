@@ -1499,4 +1499,34 @@ test_that("initialPriorPredict works with DLMWithTrendRobustCovWithSeason", {
 
 
 
+## Mix
 
+test_that("generator function and initialPrior work with MixNormZeroPredict", {
+    set.seed(100)
+    initialPrior <- demest:::initialPrior
+    initialPriorPredict <- demest:::initialPriorPredict
+    beta <- rnorm(200)
+    metadata <- new("MetaData",
+                    nms = c("time", "reg", "age"),
+                    dimtypes = c("time", "state", "age"),
+                    DimScales = list(new("Points", dimvalues = 2001:2010),
+                                     new("Categories", dimvalues = c("a", "b")),
+                                     new("Intervals", dimvalues = as.numeric(0:10))))
+    spec <- Mix()
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          multScale = 1)
+    metadata.new <- new("MetaData",
+                        nms = c("time", "reg", "age"),
+                        dimtypes = c("time", "state", "age"),
+                        DimScales = list(new("Points", dimvalues = 2011:2030),
+                                         new("Categories", dimvalues = c("a", "b")),
+                                         new("Intervals", dimvalues = as.numeric(0:10))))
+    prior.pred <- initialPriorPredict(prior,
+                                      metadata = metadata.new,
+                                      name = "time:reg:age",
+                                      along = 1L)
+    expect_is(prior.pred, "MixNormZeroPredict")
+})

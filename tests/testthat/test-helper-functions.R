@@ -214,7 +214,27 @@ test_that("maxWithSubtotal works", {
 
 ## SPECIFICATIONS ##################################################################
 
-test_that("checAndTidySeries works", {
+
+
+test_that("checkAndTidyJump works", {
+    checkAndTidyJump <- demest:::checkAndTidyJump
+    expect_identical(checkAndTidyJump(NULL),
+                     new("Scale", 0.1))
+    expect_identical(checkAndTidyJump(0.5),
+                     new("Scale", 0.5))
+    expect_identical(checkAndTidyJump(1L),
+                     new("Scale", 1.0))
+    expect_error(checkAndTidyJump(c(1, 1)),
+                 "'jump' does not have length 1")
+    expect_error(checkAndTidyJump(as.numeric(NA)),
+                 "'jump' is missing")
+    expect_error(checkAndTidyJump("a"),
+                 "'jump' is not numeric")
+    expect_error(checkAndTidyJump(-1),
+                 "'jump' is negative")
+})
+
+test_that("checkAndTidySeries works", {
     checkAndTidySeries <- demest:::checkAndTidySeries
     expect_identical(checkAndTidySeries("births"),
                      new("SpecName", "births"))
@@ -311,8 +331,6 @@ test_that("checkLowerAndUpper works", {
                                     distribution = "Poisson"),
                  "'lower' is less than 0")
 })
-
-
     
 test_that("initialDLMAll works", {
     initialDLMAll <- demest:::initialDLMAll
@@ -842,22 +860,54 @@ test_that("initialMixAll works", {
     stopifnot(identical(l$yXMix, new("ParameterVector", rep(0, 10))))
 })
 
-test_that("checkAndTidyJump works", {
-    checkAndTidyJump <- demest:::checkAndTidyJump
-    expect_identical(checkAndTidyJump(NULL),
-                     new("Scale", 0.1))
-    expect_identical(checkAndTidyJump(0.5),
-                     new("Scale", 0.5))
-    expect_identical(checkAndTidyJump(1L),
-                     new("Scale", 1.0))
-    expect_error(checkAndTidyJump(c(1, 1)),
-                 "'jump' does not have length 1")
-    expect_error(checkAndTidyJump(as.numeric(NA)),
-                 "'jump' is missing")
-    expect_error(checkAndTidyJump("a"),
-                 "'jump' is not numeric")
-    expect_error(checkAndTidyJump(-1),
-                 "'jump' is negative")
+test_that("initialMixAllPredict works", {
+    initialMixAllPredict <- demest:::initialMixAllPredict
+    initialPrior <- demest:::initialPrior
+    set.seed(0)
+    ## main effect
+    spec <- Mix(weights = Weights(mean = -20))
+    beta <- rnorm(400)
+    metadata <- new("MetaData",
+                    nms = c("age", "sex", "time"),
+                    dimtypes = c("age", "sex", "time"),
+                    DimScales = list(new("Intervals", dimvalues = 0:20),
+                                     new("Sexes", dimvalues = c("female", "male")),
+                                     new("Points", dimvalues = 2001:2010)))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL)
+    metadata.new <- new("MetaData",
+                        nms = c("age", "sex", "time"),
+                        dimtypes = c("age", "sex", "time"),
+                        DimScales = list(new("Intervals", dimvalues = 0:20),
+                                         new("Sexes", dimvalues = c("female", "male")),
+                                         new("Points", dimvalues = 2011:2030)))
+    l <- initialMixAllPredict(prior,
+                              metadata = metadata.new,
+                              along = 3L,
+                              name = "age:sex:time")
+    stopifnot(identical(l$aMix, new("ParameterVector", rep(0, times = 19))))
+    stopifnot(identical(length(l$alphaMix@.Data), l$J@.Data))
+    stopifnot(identical(l$CMix, new("ParameterVector", rep(1, times = 20))))
+    stopifnot(identical(length(l$componentWeightMix), 20L * 10L))
+    stopifnot(identical(l$latentWeightMix, new("UnitIntervalVec", rep(0, 800))))
+    stopifnot(identical(l$dimBeta, c(20L, 2L, 20L)))
+    stopifnot(identical(l$iAlong, 3L))
+    stopifnot(identical(length(l$indexClassMix), 800L))
+    stopifnot(is(l$iteratorProdVector, "MarginIterator"))
+    stopifnot(all(sapply(l$iteratorsDimsMix, is, "SliceIterator")))
+    stopifnot(identical(length(l$iteratorsDimsMix), 3L))
+    stopifnot(identical(l$J@.Data, 800L))
+    stopifnot(identical(length(l$latentComponentWeightMix), 800L * 10L))
+    stopifnot(identical(length(l$levelComponentWeightMix), 20L * 10L))
+    stopifnot(identical(l$mMix, new("ParameterVector", rep(0, 20))))
+    stopifnot(identical(l$posProdVectors1Mix, 800L))
+    stopifnot(identical(l$posProdVectors2Mix, 40L))
+    stopifnot(identical(l$RMix, new("ParameterVector", rep(1, 19))))
+    stopifnot(identical(l$sumsWeightsMix, new("UnitIntervalVec", rep(0, 20))))
+    stopifnot(is(l$weightMix, "UnitIntervalVec"))
+    stopifnot(identical(length(l$weightMix), 20L * 10L))
 })
 
 test_that("checkAndTidyMaxAttempt works", {
@@ -4281,6 +4331,48 @@ test_that("R and C versions of betaHat give same answer with prior of class DLM 
         expect_equal(ans.R, ans.C)
 })
 
+test_that("betaHat gives valid answer with prior of class Mix", {
+    betaHat <- demest:::betaHat
+    initialPrior <- demest:::initialPrior
+    beta <- rnorm(200)
+    metadata <- new("MetaData",
+                    nms = c("time", "reg", "age"),
+                    dimtypes = c("time", "state", "age"),
+                    DimScales = list(new("Points", dimvalues = 2001:2010),
+                                     new("Categories", dimvalues = c("a", "b")),
+                                     new("Intervals", dimvalues = as.numeric(0:10))))
+    spec <- Mix()
+    prior <- initialPrior(spec,
+                              beta = beta,
+                              metadata = metadata,
+                              sY = NULL,
+                          multScale = 1)
+    ans.obtained <- betaHat(prior)
+    ans.expected <- prior@alphaMix@.Data
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("R and C versions of betaHat give same answer with prior of class Mix", {
+    betaHat <- demest:::betaHat
+    initialPrior <- demest:::initialPrior
+    beta <- rnorm(200)
+    metadata <- new("MetaData",
+                    nms = c("time", "reg", "age"),
+                    dimtypes = c("time", "state", "age"),
+                    DimScales = list(new("Points", dimvalues = 2001:2010),
+                                     new("Categories", dimvalues = c("a", "b")),
+                                     new("Intervals", dimvalues = as.numeric(0:10))))
+    spec <- Mix()
+    prior <- initialPrior(spec,
+                              beta = beta,
+                              metadata = metadata,
+                              sY = NULL,
+                          multScale = 1)
+    ans.R <- betaHat(prior, useC = FALSE)
+    ans.C <- betaHat(prior, useC = TRUE)
+    expect_identical(ans.R, ans.C)
+})
+
 test_that("betaHatAlphaDLM works", {
     betaHatAlphaDLM <- demest:::betaHatAlphaDLM
     initialPrior <- demest:::initialPrior
@@ -6458,6 +6550,288 @@ test_that("R and C versons of predictBetas give same answer", {
     }
 })
 
+test_that("predictComponentWeightMix works", {
+    predictComponentWeightMix <- demest:::predictComponentWeightMix
+    transferParamPrior <- demest:::transferParamPrior
+    initialPrior <- demest:::initialPrior
+    initialPriorPredict <- demest:::initialPriorPredict
+    extractValues <- demest:::extractValues
+    set.seed(100)
+    beta <- rnorm(200)
+    metadata <- new("MetaData",
+                    nms = c("time", "reg", "age"),
+                    dimtypes = c("time", "state", "age"),
+                    DimScales = list(new("Points", dimvalues = 2001:2010),
+                                     new("Categories", dimvalues = c("a", "b")),
+                                     new("Intervals", dimvalues = as.numeric(0:10))))
+    spec <- Mix()
+    prior.old <- initialPrior(spec,
+                              beta = beta,
+                              metadata = metadata,
+                              sY = NULL,
+                              multScale = 1)
+    metadata.new <- new("MetaData",
+                        nms = c("time", "reg", "age"),
+                        dimtypes = c("time", "state", "age"),
+                        DimScales = list(new("Points", dimvalues = 2011:2030),
+                                         new("Categories", dimvalues = c("a", "b")),
+                                         new("Intervals", dimvalues = as.numeric(0:10))))
+    prior.new <- initialPriorPredict(prior.old,
+                                     metadata = metadata.new,
+                                     name = "time:reg:age",
+                                     along = 1L)
+    prior.new <- transferParamPrior(prior = prior.new,
+                                    values = extractValues(prior.old))
+    set.seed(1)
+    ans.obtained <- predictComponentWeightMix(prior.new)
+    set.seed(1)
+    ans.expected <- prior.new
+    lcw <- matrix(prior.new@levelComponentWeightMix@.Data,
+                  nr = 20, nc = 10)
+    cw <- matrix(nr = 20, nc = 10)
+    omega <- prior.new@omegaComponentWeightMix@.Data
+    for (j in 1:10) {
+        for (i in 1:20) {
+            cw[i,j] <- rnorm(n = 1,
+                             mean = lcw[i,j],
+                             sd = omega)
+        }
+    }
+    ans.expected@componentWeightMix@.Data <- as.numeric(cw)
+    if (test.identity)
+        expect_identical(ans.obtained, ans.expected)
+    else
+        expect_equal(ans.obtained, ans.expected)
+})
+
+test_that("R and C versions of predictComponentWeightMix give same answer", {
+    predictComponentWeightMix <- demest:::predictComponentWeightMix
+    transferParamPrior <- demest:::transferParamPrior
+    initialPrior <- demest:::initialPrior
+    initialPriorPredict <- demest:::initialPriorPredict
+    extractValues <- demest:::extractValues
+    set.seed(100)
+    beta <- rnorm(200)
+    metadata <- new("MetaData",
+                    nms = c("time", "reg", "age"),
+                    dimtypes = c("time", "state", "age"),
+                    DimScales = list(new("Points", dimvalues = 2001:2010),
+                                     new("Categories", dimvalues = c("a", "b")),
+                                     new("Intervals", dimvalues = as.numeric(0:10))))
+    spec <- Mix()
+    prior.old <- initialPrior(spec,
+                              beta = beta,
+                              metadata = metadata,
+                              sY = NULL,
+                              multScale = 1)
+    metadata.new <- new("MetaData",
+                        nms = c("time", "reg", "age"),
+                        dimtypes = c("time", "state", "age"),
+                        DimScales = list(new("Points", dimvalues = 2011:2030),
+                                         new("Categories", dimvalues = c("a", "b")),
+                                         new("Intervals", dimvalues = as.numeric(0:10))))
+    prior.new <- initialPriorPredict(prior.old,
+                                     metadata = metadata.new,
+                                     name = "time:reg:age",
+                                     along = 1L)
+    prior.new <- transferParamPrior(prior = prior.new,
+                                    values = extractValues(prior.old))
+    set.seed(1)
+    ans.R <- predictComponentWeightMix(prior.new,
+                                       useC = FALSE)
+    set.seed(1)
+    ans.C <- predictComponentWeightMix(prior.new,
+                                       useC = TRUE)
+    if (test.identity)
+        expect_identical(ans.R, ans.C)
+    else
+        expect_equal(ans.R, ans.C)
+})
+
+
+test_that("predictIndexClassMix works", {
+    predictIndexClassMix <- demest:::predictIndexClassMix
+    transferParamPrior <- demest:::transferParamPrior
+    initialPrior <- demest:::initialPrior
+    initialPriorPredict <- demest:::initialPriorPredict
+    extractValues <- demest:::extractValues
+    set.seed(100)
+    beta <- rnorm(200)
+    metadata <- new("MetaData",
+                    nms = c("time", "reg", "age"),
+                    dimtypes = c("time", "state", "age"),
+                    DimScales = list(new("Points", dimvalues = 2001:2010),
+                                     new("Categories", dimvalues = c("a", "b")),
+                                     new("Intervals", dimvalues = as.numeric(0:10))))
+    spec <- Mix()
+    prior.old <- initialPrior(spec,
+                              beta = beta,
+                              metadata = metadata,
+                              sY = NULL,
+                              multScale = 1)
+    metadata.new <- new("MetaData",
+                        nms = c("time", "reg", "age"),
+                        dimtypes = c("time", "state", "age"),
+                        DimScales = list(new("Points", dimvalues = 2011:2030),
+                                         new("Categories", dimvalues = c("a", "b")),
+                                         new("Intervals", dimvalues = as.numeric(0:10))))
+    prior.new <- initialPriorPredict(prior.old,
+                                     metadata = metadata.new,
+                                     name = "time:reg:age",
+                                     along = 1L)
+    prior.new <- transferParamPrior(prior = prior.new,
+                                    values = extractValues(prior.old))
+    prior.new@weightMix@.Data <- runif(n = 200, max = 0.1)
+    set.seed(1)
+    ans.obtained <- predictIndexClassMix(prior.new)
+    expect_true(all(ans.obtained@indexClassMix %in% 1:10))
+    expect_true(!all(ans.obtained@indexClassMix == prior.new@indexClassMix))
+})
+
+test_that("R and C versions of predictIndexClassMix give same answer", {
+    predictIndexClassMix <- demest:::predictIndexClassMix
+    transferParamPrior <- demest:::transferParamPrior
+    initialPrior <- demest:::initialPrior
+    initialPriorPredict <- demest:::initialPriorPredict
+    extractValues <- demest:::extractValues
+    set.seed(100)
+    beta <- rnorm(200)
+    metadata <- new("MetaData",
+                    nms = c("time", "reg", "age"),
+                    dimtypes = c("time", "state", "age"),
+                    DimScales = list(new("Points", dimvalues = 2001:2010),
+                                     new("Categories", dimvalues = c("a", "b")),
+                                     new("Intervals", dimvalues = as.numeric(0:10))))
+    spec <- Mix()
+    prior.old <- initialPrior(spec,
+                              beta = beta,
+                              metadata = metadata,
+                              sY = NULL,
+                              multScale = 1)
+    metadata.new <- new("MetaData",
+                        nms = c("time", "reg", "age"),
+                        dimtypes = c("time", "state", "age"),
+                        DimScales = list(new("Points", dimvalues = 2011:2030),
+                                         new("Categories", dimvalues = c("a", "b")),
+                                         new("Intervals", dimvalues = as.numeric(0:10))))
+    prior.new <- initialPriorPredict(prior.old,
+                                     metadata = metadata.new,
+                                     name = "time:reg:age",
+                                     along = 1L)
+    prior.new <- transferParamPrior(prior = prior.new,
+                                    values = extractValues(prior.old))
+    prior.new@weightMix@.Data <- runif(n = 200, max = 0.1)
+    set.seed(1)
+    ans.R <- predictIndexClassMix(prior.new,
+                                  useC = FALSE)
+    set.seed(1)
+    ans.C <- predictIndexClassMix(prior.new,
+                                  useC = TRUE)
+    if (test.identity)
+        expect_identical(ans.R, ans.C)
+    else
+        expect_equal(ans.R, ans.C)
+})
+
+test_that("predictLevelComponentWeightMix works", {
+    predictLevelComponentWeightMix <- demest:::predictLevelComponentWeightMix
+    transferParamPrior <- demest:::transferParamPrior
+    initialPrior <- demest:::initialPrior
+    initialPriorPredict <- demest:::initialPriorPredict
+    extractValues <- demest:::extractValues
+    set.seed(100)
+    beta <- rnorm(200)
+    metadata <- new("MetaData",
+                    nms = c("time", "reg", "age"),
+                    dimtypes = c("time", "state", "age"),
+                    DimScales = list(new("Points", dimvalues = 2001:2010),
+                                     new("Categories", dimvalues = c("a", "b")),
+                                     new("Intervals", dimvalues = as.numeric(0:10))))
+    spec <- Mix()
+    prior.old <- initialPrior(spec,
+                              beta = beta,
+                              metadata = metadata,
+                              sY = NULL,
+                              multScale = 1)
+    metadata.new <- new("MetaData",
+                        nms = c("time", "reg", "age"),
+                        dimtypes = c("time", "state", "age"),
+                        DimScales = list(new("Points", dimvalues = 2011:2030),
+                                         new("Categories", dimvalues = c("a", "b")),
+                                         new("Intervals", dimvalues = as.numeric(0:10))))
+    prior.new <- initialPriorPredict(prior.old,
+                                      metadata = metadata.new,
+                                      name = "time:reg:age",
+                                      along = 1L)
+    prior.new <- transferParamPrior(prior = prior.new,
+                                    values = extractValues(prior.old))
+    set.seed(1)
+    ans.obtained <- predictLevelComponentWeightMix(prior.new)
+    set.seed(1)
+    ans.expected <- prior.new
+    lcw <- matrix(nr = 21, nc = 10)
+    lcw[1,] <- prior.new@levelComponentWeightOldMix@.Data
+    phi <- prior.new@phiMix
+    mu <- prior.new@meanLevelComponentWeightMix@.Data
+    omega <- prior.new@omegaLevelComponentWeightMix@.Data
+    for (j in 1:10) {
+        for (i in 1:20) {
+            lcw[i+1,j] <- rnorm(n = 1,
+                                mean = mu + phi*lcw[i,j],
+                                sd = omega)
+        }
+    }
+    ans.expected@levelComponentWeightMix@.Data <- as.numeric(lcw[-1,])
+    if (test.identity)
+        expect_identical(ans.obtained, ans.expected)
+    else
+        expect_equal(ans.obtained, ans.expected)
+})
+
+test_that("R and C versions of predictLevelComponentWeightMix give same answer", {
+    predictLevelComponentWeightMix <- demest:::predictLevelComponentWeightMix
+    transferParamPrior <- demest:::transferParamPrior
+    initialPrior <- demest:::initialPrior
+    initialPriorPredict <- demest:::initialPriorPredict
+    extractValues <- demest:::extractValues
+    set.seed(100)
+    beta <- rnorm(200)
+    metadata <- new("MetaData",
+                    nms = c("time", "reg", "age"),
+                    dimtypes = c("time", "state", "age"),
+                    DimScales = list(new("Points", dimvalues = 2001:2010),
+                                     new("Categories", dimvalues = c("a", "b")),
+                                     new("Intervals", dimvalues = as.numeric(0:10))))
+    spec <- Mix()
+    prior.old <- initialPrior(spec,
+                              beta = beta,
+                              metadata = metadata,
+                              sY = NULL,
+                              multScale = 1)
+    metadata.new <- new("MetaData",
+                        nms = c("time", "reg", "age"),
+                        dimtypes = c("time", "state", "age"),
+                        DimScales = list(new("Points", dimvalues = 2011:2030),
+                                         new("Categories", dimvalues = c("a", "b")),
+                                         new("Intervals", dimvalues = as.numeric(0:10))))
+    prior.new <- initialPriorPredict(prior.old,
+                                      metadata = metadata.new,
+                                      name = "time:reg:age",
+                                      along = 1L)
+    prior.new <- transferParamPrior(prior = prior.new,
+                                    values = extractValues(prior.old))
+    set.seed(1)
+    ans.R <- predictLevelComponentWeightMix(prior.new,
+                                            useC = FALSE)
+    set.seed(1)
+    ans.C <- predictLevelComponentWeightMix(prior.new,
+                                            useC = TRUE)
+    if (test.identity)
+        expect_identical(ans.R, ans.C)
+    else
+        expect_equal(ans.R, ans.C)
+})
+
 test_that("predictOneChain works", {
     predictOneChain <- demest:::predictOneChain
     estimateOneChain <- demest:::estimateOneChain
@@ -6943,6 +7317,36 @@ test_that("R and C versions of transferAlphaDelta0 give same answer", {
                                  iteratorNew = iterNew,
                                  iteratorOld = iterOld,
                                  useC = TRUE)
+    expect_identical(ans.R, ans.C)
+})
+
+test_that("transferLevelComponentWeightOldMix works", {
+    transferLevelComponentWeightOldMix <- demest:::transferLevelComponentWeightOldMix
+    values <- as.double(1:1000)
+    ans.obtained <- transferLevelComponentWeightOldMix(values = values,
+                                                       offset = 101L,
+                                                       nAlongOld = 20L,
+                                                       indexClassMax = 10L)
+    ans.expected <- matrix(as.double(101:300),
+                           nrow = 20,
+                           ncol = 10)
+    ans.expected <- ans.expected[20,]
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("R and C versions of transferLevelComponentWeightOldMix give same answer", {
+    transferLevelComponentWeightOldMix <- demest:::transferLevelComponentWeightOldMix
+    values <- as.double(1:1000)
+    ans.R <- transferLevelComponentWeightOldMix(values = values,
+                                                offset = 101L,
+                                                nAlongOld = 20L,
+                                                indexClassMax = 10L,
+                                                useC = FALSE)
+    ans.C <- transferLevelComponentWeightOldMix(values = values,
+                                                offset = 101L,
+                                                nAlongOld = 20L,
+                                                indexClassMax = 10L,
+                                                useC = TRUE)
     expect_identical(ans.R, ans.C)
 })
 

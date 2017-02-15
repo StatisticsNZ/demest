@@ -1009,20 +1009,30 @@ setClass("KnownUncertain",
 
 setClass("MixNormZero",
          prototype = prototype(iMethodPrior = 31L,
-             slotsToExtract = "tau",  
-             hasAlphaDLM = methods::new("LogicalFlag", FALSE),
-             hasAlphaICAR = methods::new("LogicalFlag", FALSE),
-             hasAlphaMix = methods:::new("LogicalFlag", TRUE),
-             hasAlphaMove = methods::new("LogicalFlag", FALSE),
-             hasCovariates = methods::new("LogicalFlag", FALSE),
-             hasSeason = methods::new("LogicalFlag", FALSE),
-             isRobust = methods::new("LogicalFlag", FALSE),
-             tau = methods::new("Scale", 1),
-             ATau = methods::new("Scale", 1),
-             nuTau = methods::new("DegreesFreedom", 7)),
+                               slotsToExtract = c("alphaMix",
+                                                  "foundIndexClassMaxPossibleMix",
+                                                  "indexClassMaxUsedMix",
+                                                  "levelComponentWeightMix",
+                                                  "meanLevelComponentWeightMix",
+                                                  "omegaComponentWeightMix",
+                                                  "omegaLevelComponentWeightMix",
+                                                  "omegaVectorsMix",
+                                                  "phiMix",
+                                                  "prodVectorsMix",
+                                                  "tau"),
+                               hasAlphaDLM = methods::new("LogicalFlag", FALSE),
+                               hasAlphaICAR = methods::new("LogicalFlag", FALSE),
+                               hasAlphaMix = methods:::new("LogicalFlag", TRUE),
+                               hasAlphaMove = methods::new("LogicalFlag", FALSE),
+                               hasCovariates = methods::new("LogicalFlag", FALSE),
+                               hasSeason = methods::new("LogicalFlag", FALSE),
+                               isRobust = methods::new("LogicalFlag", FALSE),
+                               tau = methods::new("Scale", 1),
+                               ATau = methods::new("Scale", 1),
+                               nuTau = methods::new("DegreesFreedom", 7)),
          contains = c("Mix",
-             "NormMixin",
-             "ZeroMixin"))
+                      "NormMixin",
+                      "ZeroMixin"))
 
 setClass("MixNormCov",
          prototype = prototype(iMethodPrior = 32L,
@@ -1166,5 +1176,28 @@ setClass("DLMWithTrendRobustCovWithSeasonPredict",
          prototype = prototype(iMethodPrior = 120L),
          contains = c("DLMWithTrendRobustCovWithSeason",
              "DLMPredictMixin"))
+
+
+## MixPredict
+
+setClass("MixNormZeroPredict",
+         prototype = prototype(iMethodPrior = 131L),
+         contains = c("MixNormZero",
+                      "MixPredictMixin"))
+
+setClass("MixNormCovPredict",
+         prototype = prototype(iMethodPrior = 132L),
+         contains = c("MixNormCov",
+                      "MixPredictMixin"))
+
+setClass("MixRobustZeroPredict",
+         prototype = prototype(iMethodPrior = 133L),
+         contains = c("MixRobustZero",
+                      "MixPredictMixin"))
+
+setClass("MixRobustCovPredict",
+         prototype = prototype(iMethodPrior = 134L),
+         contains = c("MixRobustCov",
+                      "MixPredictMixin"))
 
 
