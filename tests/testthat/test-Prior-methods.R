@@ -4237,7 +4237,7 @@ test_that("R and C versions of transferParamPrior give same answer with DLMWithT
     expect_identical(ans.C.specific, ans.C.generic)
 })
 
-test_that("transferParamPrior works with MixNormZero", {
+test_that("transferParamPrior works with MixNormZeroPredict", {
     transferParamPrior <- demest:::transferParamPrior
     set.seed(100)
     initialPrior <- demest:::initialPrior
