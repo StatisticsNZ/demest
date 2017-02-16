@@ -4270,15 +4270,15 @@ test_that("transferParamPrior works with MixNormZero", {
     ans.obtained <- transferParamPrior(prior = prior.new,
                                        values = extractValues(prior.old))
     ans.expected <- prior.new
+    ans.expected@prodVectorsMix@.Data <- prior.old@prodVectorsMix@.Data
+    ans.expected@omegaVectorsMix@.Data <- prior.old@omegaVectorsMix@.Data
+    ans.expected@omegaComponentWeightMix@.Data <- prior.old@omegaComponentWeightMix@.Data
     lcwo <- matrix(prior.old@levelComponentWeightMix@.Data,
                    nrow = 10)[10,]
     ans.expected@levelComponentWeightOldMix@.Data <- lcwo
     ans.expected@meanLevelComponentWeightMix@.Data <- prior.old@meanLevelComponentWeightMix@.Data
-    ans.expected@omegaComponentWeightMix@.Data <- prior.old@omegaComponentWeightMix@.Data
+    ans.expected@phiMix <- prior.old@phiMix    
     ans.expected@omegaLevelComponentWeightMix@.Data <- prior.old@omegaLevelComponentWeightMix@.Data
-    ans.expected@omegaVectorsMix@.Data <- prior.old@omegaVectorsMix@.Data
-    ans.expected@phiMix <- prior.old@phiMix
-    ans.expected@prodVectorsMix@.Data <- prior.old@prodVectorsMix@.Data
     ans.expected@tau@.Data <- prior.old@tau@.Data
     expect_identical(ans.obtained, ans.expected)
 })

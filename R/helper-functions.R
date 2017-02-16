@@ -6672,8 +6672,12 @@ expandTermsSpec <- function(f) {
 }
 
 printAggregateEqns <- function(object) {
-    printAgValEqns(object)
-    printAgAccuracyEqns(object)
+    if (extends(class(object), "Aggregate")) {
+        printAgValEqns(object)
+        printAgAccuracyEqns(object)
+    }
+    else
+        invisible()
 }
 
 printAggregateSpecEqns <- function(object) {

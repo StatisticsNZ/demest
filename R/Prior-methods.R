@@ -773,6 +773,12 @@ setMethod("makeOutputPrior",
           })
 
 
+## Mix
+
+
+
+
+
 ## predictPrior ###########################################################
 
 ## TRANSLATED
@@ -2221,8 +2227,22 @@ setMethod("transferParamPrior",
                   J.old <- prior@JOld@.Data
                   n.along.old <- dim.beta.old[iAlong]
                   offset <- 1L
-                  ## alphaMix, foundIndexClassMaxPossibleMix, indexClassMaxUsedMix (skip)
-                  offset <- offset + J.old + 2L
+                  ## alphaMix (skip)
+                  offset <- offset + J.old
+                  ## prodVectorsMix
+                  n.prod <- n.beta.no.along * index.class.max
+                  prior@prodVectorsMix@.Data <- values[offset : (offset + n.prod - 1L)]
+                  offset <- offset + n.prod
+                  ## omegaVectorsMix
+                  prior@omegaVectorsMix@.Data <- values[offset]
+                  offset <- offset + 1L
+                  ## weightMix
+                  offset <- offset + n.along.old * index.class.max
+                  ## componentWeightMix
+                  offset <- offset + n.along.old * index.class.max
+                  ## omegaComponentWeightMix
+                  prior@omegaComponentWeightMix@.Data <- values[offset]
+                  offset <- offset + 1L
                   ## levelComponentWeightOldMix (final values of levelComponetWeightMix)
                   prior@levelComponentWeightOldMix@.Data <-
                       transferLevelComponentWeightOldMix(values = values,
@@ -2233,22 +2253,12 @@ setMethod("transferParamPrior",
                   ## meanLevelComponentWeightMix
                   prior@meanLevelComponentWeightMix@.Data <- values[offset]
                   offset <- offset + 1L
-                  ## omegaComponentWeightMix
-                  prior@omegaComponentWeightMix@.Data <- values[offset]
+                  ## phiMix
+                  prior@phiMix <- values[offset]
                   offset <- offset + 1L
                   ## omegaLevelComponentWeightMix
                   prior@omegaLevelComponentWeightMix@.Data <- values[offset]
                   offset <- offset + 1L
-                  ## omegaVectorsMix
-                  prior@omegaVectorsMix@.Data <- values[offset]
-                  offset <- offset + 1L
-                  ## phiMix
-                  prior@phiMix <- values[offset]
-                  offset <- offset + 1L
-                  ## prodVectorsMix
-                  n.prod <- n.beta.no.along * index.class.max
-                  prior@prodVectorsMix@.Data <- values[offset : (offset + n.prod - 1L)]
-                  offset <- offset + n.prod
                   ## tau
                   prior@tau@.Data <- values[offset]
                   ## return
