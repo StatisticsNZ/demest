@@ -1845,6 +1845,7 @@ R_init_demest(DllInfo *info)
   ADD_SYM(iteratorsDimsMix);
   ADD_SYM(iAlong);
   ADD_SYM(dimBeta);
+  ADD_SYM(dimBetaOld);
   ADD_SYM(phiMix);
   ADD_SYM(mMix);
   ADD_SYM(CMix);

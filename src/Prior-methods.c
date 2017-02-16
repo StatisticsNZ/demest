@@ -1280,8 +1280,22 @@ setMethod("transferParamPrior",
                   J.old <- prior@JOld@.Data
                   n.along.old <- dim.beta.old[iAlong]
                   offset <- 1L
-                  ## alphaMix, foundIndexClassMaxPossibleMix, indexClassMaxUsedMix (skip)
-                  offset <- offset + J.old + 2L
+                  ## alphaMix (skip)
+                  offset <- offset + J.old
+                  ## prodVectorsMix
+                  n.prod <- n.beta.no.along * index.class.max
+                  prior@prodVectorsMix@.Data <- values[offset : (offset + n.prod - 1L)]
+                  offset <- offset + n.prod
+                  ## omegaVectorsMix
+                  prior@omegaVectorsMix@.Data <- values[offset]
+                  offset <- offset + 1L
+                  ## weightMix
+                  offset <- offset + n.along.old * index.class.max
+                  ## componentWeightMix
+                  offset <- offset + n.along.old * index.class.max
+                  ## omegaComponentWeightMix
+                  prior@omegaComponentWeightMix@.Data <- values[offset]
+                  offset <- offset + 1L
                   ## levelComponentWeightOldMix (final values of levelComponetWeightMix)
                   prior@levelComponentWeightOldMix@.Data <-
                       transferLevelComponentWeightOldMix(values = values,
@@ -1292,34 +1306,91 @@ setMethod("transferParamPrior",
                   ## meanLevelComponentWeightMix
                   prior@meanLevelComponentWeightMix@.Data <- values[offset]
                   offset <- offset + 1L
-                  ## omegaComponentWeightMix
-                  prior@omegaComponentWeightMix@.Data <- values[offset]
+                  ## phiMix
+                  prior@phiMix <- values[offset]
                   offset <- offset + 1L
                   ## omegaLevelComponentWeightMix
                   prior@omegaLevelComponentWeightMix@.Data <- values[offset]
                   offset <- offset + 1L
-                  ## omegaVectorsMix
-                  prior@omegaVectorsMix@.Data <- values[offset]
-                  offset <- offset + 1L
-                  ## phiMix
-                  prior@phiMix <- values[offset]
-                  offset <- offset + 1L
-                  ## prodVectorsMix
-                  n.prod <- n.beta.no.along * index.class.max
-                  prior@prodVectorsMix@.Data <- values[offset : (offset + n.prod - 1L)]
-                  offset <- offset + n.prod
                   ## tau
                   prior@tau@.Data <- values[offset]
                   ## return
                   prior
               }
           })
+
+
 */
 
 void
 transferParamPrior_MixNormZeroPredict(SEXP prior_R,
                         double *values, int nValues) 
 {
+    /*dim.beta.old <- prior@dimBetaOld
+                  iAlong <- prior@iAlong
+                  index.class.max <- prior@indexClassMaxMix@.Data
+                  n.beta.no.along <- prior@nBetaNoAlongMix@.Data
+                  J.old <- prior@JOld@.Data
+                  n.along.old <- dim.beta.old[iAlong]
+                  offset <- 1L
+                  
+                  */
+    int *dimBetaOld = INTEGER(GET_SLOT(prior_R, dimBetaOld_sym));
+    int iAlong_r = *INTEGER(GET_SLOT(prior_R, iAlong_sym));  
+    int iAlong_c = iAlong_r -1;
+    
+    int indexClassMax = *INTEGER(GET_SLOT(prior_R, indexClassMaxMix_sym));
+    int nBetaNoAlong = *INTEGER(GET_SLOT(prior_R, nBetaNoAlongMix_sym));
+    int J_old = *INTEGER(GET_SLOT(prior_R, JOld_sym));
+    
+    double *prodVectors = REAL(GET_SLOT(prior_R, prodVectorsMix_sym));
+    double *levelComponentWeightOld = REAL(GET_SLOT(prior_R,
+                                            levelComponentWeightOldMix_sym));
+    
+    int nAlongOld = dimBetaOld[iAlong_c];
+    int nAlongOldTimesIndexClassMax = nAlongOld * indexClassMax;
+    int offset = 1;
+    
+    offset += J_old; /* alphaMix */
+    
+    int nProd = nBetaNoAlong * indexClassMax;
+    /* prodVectorsMix */
+    memcpy(prodVectors, values + offset - 1, nProd * sizeof(double));
+    offset += nProd;
+    
+    /* omegaVectorsMix */
+    SET_DOUBLESCALE_SLOT(prior_R, omegaVectorsMix_sym, values[offset -1]);
+    ++offset;
+    
+    offset += nAlongOldTimesIndexClassMax; /* weightMix */
+    offset += nAlongOldTimesIndexClassMax; /* componentWeightMix */
+    
+    /* omegaComponentWeightMix */
+    SET_DOUBLESCALE_SLOT(prior_R, omegaComponentWeightMix_sym, values[offset -1]);
+    ++offset;
+    
+    /* levelComponentWeightOldMix */              
+    transferLevelComponentWeightOldMix(levelComponentWeightOld, values, offset,
+                                            nAlongOld, indexClassMax);  
+    offset += nAlongOldTimesIndexClassMax;
+    
+    /* meanLevelComponentWeightMix */
+    SET_DOUBLESCALE_SLOT(prior_R, meanLevelComponentWeightMix_sym, 
+                                            values[offset -1]);
+    ++offset;
+    
+    /* phiMix */
+    SET_DOUBLESCALE_SLOT(prior_R, phiMix_sym, 
+                                            values[offset -1]);
+    ++offset;
+    
+    /* omegaLevelComponentWeightMix */
+    SET_DOUBLESCALE_SLOT(prior_R, omegaLevelComponentWeightMix_sym, 
+                                            values[offset -1]);
+    ++offset;
+    
+    /* tau */
+    SET_DOUBLESCALE_SLOT(prior_R, tau_sym, values[offset -1]);
 }
 
 

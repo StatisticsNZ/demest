@@ -263,6 +263,7 @@ SEXP
   iteratorsDimsMix_sym,
   iAlong_sym,
   dimBeta_sym,
+  dimBetaOld_sym,
   phiMix_sym,
   mMix_sym,
   CMix_sym,
