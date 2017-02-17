@@ -2203,7 +2203,7 @@ setMethod("transferParamPrior",
 
 
 ## Mix
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("transferParamPrior",
           signature(prior = "MixNormZeroPredict"),
