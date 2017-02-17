@@ -15,20 +15,17 @@ betaHatAlphaMix <- function(prior, useC = FALSE) {
     }
 }
 
-v - weight
 psi - component
+sigma_e - scaleComponent
+v - weight
+W - level1AR
+sigma_epsilon - scale1AR
+alpha - level2AR
+sigma_eta - scale2AR
+mu - meanAR
+phi - coefAR
+
 sigma_delta - scaleError
-W - 
-
-
-
-mix
-components
-
-level
-meanlev
-
-scaleError
 
 
 setMethod("makeOutputPrior",
@@ -36,9 +33,62 @@ setMethod("makeOutputPrior",
                     metadata = "MetaData"),
           function(prior, metadata, pos) {
               J <- prior@J@.Data
+              J.old <- prior@JOld@.Data
               iAlong <- prior@iAlong
+              n.beta.no.along <- prior@nBetaNoAlongMix
+              index.class.max <- prior@indexClassMaxMix@.Data
+              metadata.vectors <- makeMetadataVectorsMix(metadata = metadata,
+                                                         iAlong = iAlong,
+                                                         indexClassMax = indexClassMax)
+              metadata.weights <- makeMetadataWeightsMix(metadata = metadata,
+                                                         iAlong = iAlong,
+                                                         indexClassMax = indexClassMax)
+              ## skip 'alphaMix'
+              pos <- pos + J.old
+              ## prodVectorsMix
+              components <- Skeleton(metadata = metadata,
+                                     first = pos)
+              pos <- pos + n.beta.no.along * index.class.max
+              ## omegaVectorsMix
+              scaleComponents <- makeOutputPriorScale(pos = pos)
+              pos <- pos + 1L
+              ## weightsMix
+              weights <- Skeleton(metadata = metadata.weights,
+                                  first = pos)
+              pos <- pos + n.along * index.class.max
+              ## componentWeightMix
+              level1AR <- Skeleton(metadata = metadata.weights,
+                                   first = pos)
+              pos <- pos + n.along * index.class.max
+              ## omegaComponentWeightMix
+              scale1AR <- makeOutputPriorScale(pos = pos)
+              pos <- pos + 1L
+              ## levelComponentWeightMix
+              level2AR <- Skeleton(metadata = metadata.weights,
+                                   first = pos)
+              pos <- pos + n.along * index.class.max
+              ## meanLevelComponentWeightMix
+              meanAR <- Skeleton(pos = pos)
+              pos <- pos + 1L
+              ## phiMix
+              coefAR <- Skeleton(pos = pos)
+              pos <- pos + 1L
+              ## omegaLevelComponentWeightMix
+              scale2AR <- makeOutputPriorScale(pos = pos)
+              pos <- pos + 1L
+              ## tau
+              scaleError <- makeOutputPriorScale(pos = pos)
+              pos <- pos + 1L
+              
+              
+              
+              
+              
+              
+
               level <- Skeleton(metadata = metadata,
                                 first = pos)
+              
               
                                 
 

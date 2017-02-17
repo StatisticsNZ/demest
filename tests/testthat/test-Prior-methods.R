@@ -4239,6 +4239,7 @@ test_that("R and C versions of transferParamPrior give same answer with DLMWithT
 
 test_that("transferParamPrior works with MixNormZeroPredict", {
     transferParamPrior <- demest:::transferParamPrior
+    predictPrior <- demest:::predictPrior
     set.seed(100)
     initialPrior <- demest:::initialPrior
     initialPriorPredict <- demest:::initialPriorPredict
@@ -4263,13 +4264,24 @@ test_that("transferParamPrior works with MixNormZeroPredict", {
                                          new("Categories", dimvalues = c("a", "b")),
                                          new("Intervals", dimvalues = as.numeric(0:10))))
     prior.new <- initialPriorPredict(prior.old,
-                                      metadata = metadata.new,
-                                      name = "time:reg:age",
-                                      along = 1L)
+                                     metadata = metadata.new,
+                                     name = "time:reg:age",
+                                     along = 1L)
     expect_is(prior.new, "MixNormZeroPredict")
-    ans.obtained <- transferParamPrior(prior = prior.new,
+    ## create 'prior.updated' that does not have same values as prior.new
+    ## for slots where values are transferred
+    prior.updated <- predictPrior(prior.new)
+    prior.updated@prodVectorsMix@.Data <- rep(0, times = 200)
+    prior.updated@omegaVectorsMix@.Data <- runif(1)
+    prior.updated@omegaComponentWeightMix@.Data <- runif(1)
+    prior.updated@meanLevelComponentWeightMix@.Data <- runif(1)
+    prior.updated@phiMix <- runif(1)
+    prior.updated@omegaLevelComponentWeightMix@.Data <- runif(1)
+    prior.updated@tau@.Data <- runif(1)
+    expect_false(isTRUE(all.equal(prior.updated, prior.new)))
+    ans.obtained <- transferParamPrior(prior = prior.updated,
                                        values = extractValues(prior.old))
-    ans.expected <- prior.new
+    ans.expected <- prior.updated
     ans.expected@prodVectorsMix@.Data <- prior.old@prodVectorsMix@.Data
     ans.expected@omegaVectorsMix@.Data <- prior.old@omegaVectorsMix@.Data
     ans.expected@omegaComponentWeightMix@.Data <- prior.old@omegaComponentWeightMix@.Data
@@ -4309,21 +4321,32 @@ test_that("R and C versions of transferParamPrior give same answer with MixNormZ
                                          new("Categories", dimvalues = c("a", "b")),
                                          new("Intervals", dimvalues = as.numeric(0:10))))
     prior.new <- initialPriorPredict(prior.old,
-                                      metadata = metadata.new,
-                                      name = "time:reg:age",
-                                      along = 1L)
+                                     metadata = metadata.new,
+                                     name = "time:reg:age",
+                                     along = 1L)
     expect_is(prior.new, "MixNormZeroPredict")
-    ans.R <- transferParamPrior(prior = prior.new,
+    ## create 'prior.updated' that does not have same values as prior.new
+    ## for slots where values are transferred
+    prior.updated <- predictPrior(prior.new)
+    prior.updated@prodVectorsMix@.Data <- rep(0, times = 200)
+    prior.updated@omegaVectorsMix@.Data <- runif(1)
+    prior.updated@omegaComponentWeightMix@.Data <- runif(1)
+    prior.updated@meanLevelComponentWeightMix@.Data <- runif(1)
+    prior.updated@phiMix <- runif(1)
+    prior.updated@omegaLevelComponentWeightMix@.Data <- runif(1)
+    prior.updated@tau@.Data <- runif(1)
+    expect_false(isTRUE(all.equal(prior.updated, prior.new)))
+    ans.R <- transferParamPrior(prior = prior.updated,
                                 values = extractValues(prior.old),
                                 useC = FALSE)
-    ans.C.specific <- transferParamPrior(prior = prior.new,
-                                values = extractValues(prior.old),
-                                useC = TRUE,
-                                useSpecific = TRUE)
-    ans.C.generic <- transferParamPrior(prior = prior.new,
-                                values = extractValues(prior.old),
-                                useC = TRUE,
-                                useSpecific = FALSE)
+    ans.C.specific <- transferParamPrior(prior = prior.updated,
+                                         values = extractValues(prior.old),
+                                         useC = TRUE,
+                                         useSpecific = TRUE)
+    ans.C.generic <- transferParamPrior(prior = prior.updated,
+                                        values = extractValues(prior.old),
+                                        useC = TRUE,
+                                        useSpecific = FALSE)
     expect_identical(ans.R, ans.C.specific)
     expect_identical(ans.C.generic, ans.C.specific)
 })    

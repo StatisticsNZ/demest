@@ -296,7 +296,7 @@ setGeneric("predictCombined",
            standardGeneric("predictCombined"))
 
 setGeneric("predictPrior",
-           function(prior, zeta, useC = FALSE, useSpecific = FALSE)
+           function(prior, useC = FALSE, useSpecific = FALSE)
                standardGeneric("predictPrior"))
 
 setGeneric("predictModelNotUseExp",
