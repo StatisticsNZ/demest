@@ -1341,7 +1341,7 @@ transferParamPrior_MixNormZeroPredict(SEXP prior_R,
     
     int indexClassMax = *INTEGER(GET_SLOT(prior_R, indexClassMaxMix_sym));
     int nBetaNoAlong = *INTEGER(GET_SLOT(prior_R, nBetaNoAlongMix_sym));
-    int J_old = *INTEGER(GET_SLOT(prior_R, JOld_sym));
+    /* int J_old = *INTEGER(GET_SLOT(prior_R, JOld_sym)); DELETED BY JB 17 FEB 17*/ 
     
     double *prodVectors = REAL(GET_SLOT(prior_R, prodVectorsMix_sym));
     double *levelComponentWeightOld = REAL(GET_SLOT(prior_R,
@@ -1351,7 +1351,7 @@ transferParamPrior_MixNormZeroPredict(SEXP prior_R,
     int nAlongOldTimesIndexClassMax = nAlongOld * indexClassMax;
     int offset = 1;
     
-    offset += J_old; /* alphaMix */
+    /* offset += J_old; /\* alphaMix *\/ DELETED BY JB 17 FEB 17*/
     
     int nProd = nBetaNoAlong * indexClassMax;
     /* prodVectorsMix */

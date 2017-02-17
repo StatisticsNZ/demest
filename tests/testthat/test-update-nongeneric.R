@@ -1285,7 +1285,7 @@ test_that("R and C versions of updateIndexClassMaxPossibleMix give same answer",
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         prior@latentWeightMix@.Data <- runif(n = 200)
-        prior@weightMix@.Data <- runif(n = 100, min = 0, max = 0.4)
+        prior@weightMix@.Data <- runif(n = 100, min = 0, max = 0.35)
         indexClassMaxPossibleMix.prev = prior@indexClassMaxPossibleMix@.Data
         ans.R <- updateIndexClassMaxPossibleMix(prior, useC = FALSE)
         ans.C <- updateIndexClassMaxPossibleMix(prior, useC = TRUE)
@@ -2939,6 +2939,36 @@ test_that("R and C versions of updateVectorsMixAndProdVectorsMix give same answe
         expect_identical(ans.R, ans.C)
     else
         expect_equal(ans.R, ans.C)
+})
+
+test_that("updateVectorsMixAndProdVectorsMix_additive gives valid answer", {
+    updateVectorsMixAndProdVectorsMix <- demest:::updateVectorsMixAndProdVectorsMix
+    set.seed(100)
+    initialPrior <- demest:::initialPrior
+    beta <- rnorm(200)
+    metadata <- new("MetaData",
+                    nms = c("reg", "time", "age"),
+                    dimtypes = c("state", "time", "age"),
+                    DimScales = list(new("Categories", dimvalues = c("a", "b")),
+                                     new("Points", dimvalues = 2001:2010),
+                                     new("Intervals", dimvalues = as.numeric(0:10))))
+    spec <- Mix()
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          multScale = 1)
+    beta.tilde <- rnorm(200)
+    set.seed(2)
+    ans.obtained <- updateVectorsMixAndProdVectorsMix_additive(prior = prior,
+                                                      betaTilde = beta.tilde)
+    for (i in 1:3)
+        expect_true(all(ans.obtained@vectorsMix[[i]] != prior@vectorsMix[[i]]))
+    vec.reg <- matrix(ans.obtained@vectorsMix[[1]], nc = 10)
+    vec.age <- matrix(ans.obtained@vectorsMix[[3]], nc = 10)
+    prod.vec <- lapply(1:10, function(i) outer(vec.reg[,i], vec.age[,i], FUN = "+"))
+    prod.vec <- unlist(prod.vec)
+    expect_equal(ans.obtained@prodVectorsMix@.Data, prod.vec)
 })
 
 test_that("updateWSqrt works", {

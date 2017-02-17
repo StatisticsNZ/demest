@@ -825,7 +825,8 @@ setMethod("updateBetaAndPriorBeta",
 
 ## Mix #################################################################################
 
-
+## READY_TO_TRANSLATE
+## HAS_TESTS
 setMethod("updateBetaAndPriorBeta",
           signature(prior = "MixNormZero"),
           function(prior, vbar, n, sigma, useC = FALSE, useSpecific = FALSE) {

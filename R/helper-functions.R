@@ -6377,6 +6377,45 @@ indicesShow <- function(iterator, nSeason = NULL) {
 }
 
 ## HAS_TESTS
+makeMetadataVectorsMix <- function(metadata, iAlong, indexClassMax) {
+    nms.old <- names(metadata)
+    dimtypes.old <- dembase:::dimtypes(metadata, use.names = FALSE)
+    DimScales.old <- dembase:::DimScales(metadata, use.names = FALSE)
+    name.class <- make.unique(c(nms.old[-iAlong], "component"))[length(nms.old)]
+    dimvalues.class <- as.character(seq_len(indexClassMax))
+    DimScale.class <- new("Categories", dimvalues = dimvalues.class)
+    nms.ans <- replace(nms.old,
+                       list = iAlong,
+                       values = name.class)
+    dimtypes.ans <- replace(dimtypes.old,
+                            list = iAlong,
+                            values = "state")
+    DimScales.ans <- replace(DimScales.old,
+                             list = iAlong,
+                             values = list(DimScale.class))
+    methods::new("MetaData",
+                 nms = nms.ans,
+                 dimtypes = dimtypes.ans,
+                 DimScales = DimScales.ans)
+}
+
+## HAS_TESTS
+makeMetadataWeightsMix <- function(metadata, iAlong, indexClassMax) {
+    nms.old <- names(metadata)
+    dimtypes.old <- dembase:::dimtypes(metadata, use.names = FALSE)
+    DimScales.old <- dembase:::DimScales(metadata, use.names = FALSE)
+    dimvalues.class <- as.character(seq_len(indexClassMax))
+    DimScale.class <- new("Categories", dimvalues = dimvalues.class)
+    nms.ans <- make.unique(c(nms.old[iAlong], "component"))
+    dimtypes.ans <- c(dimtypes.old[iAlong], "state")
+    DimScales.ans <- c(DimScales.old[iAlong], list(DimScale.class))
+    methods::new("MetaData",
+                 nms = nms.ans,
+                 dimtypes = dimtypes.ans,
+                 DimScales = DimScales.ans)
+}
+
+## HAS_TESTS
 makeOutputMCMC <- function(mcmcArgs, finalCombineds) {
     if (!identical(length(finalCombineds), mcmcArgs$nChain))
         stop(gettextf("length of '%s' [%d] not equal to '%s' argument [%d]",
@@ -6672,7 +6711,7 @@ expandTermsSpec <- function(f) {
 }
 
 printAggregateEqns <- function(object) {
-    if (extends(class(object), "Aggregate")) {
+    if (methods::extends(class(object), "Aggregate")) {
         printAgValEqns(object)
         printAgAccuracyEqns(object)
     }

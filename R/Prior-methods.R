@@ -775,6 +775,68 @@ setMethod("makeOutputPrior",
 
 ## Mix
 
+## HAS_TESTS
+setMethod("makeOutputPrior",
+          signature(prior = "MixNormZero",
+                    metadata = "MetaData"),
+          function(prior, metadata, pos) {
+              J <- prior@J@.Data
+              iAlong <- prior@iAlong
+              dim.beta <- prior@dimBeta
+              n.beta.no.along <- prior@nBetaNoAlongMix
+              index.class.max <- prior@indexClassMaxMix@.Data
+              n.along <- dim.beta[iAlong]
+              metadata.vectors <- makeMetadataVectorsMix(metadata = metadata,
+                                                         iAlong = iAlong,
+                                                         indexClassMax = index.class.max)
+              metadata.weights <- makeMetadataWeightsMix(metadata = metadata,
+                                                         iAlong = iAlong,
+                                                         indexClassMax = index.class.max)
+              ## prodVectorsMix
+              components <- Skeleton(metadata = metadata.vectors,
+                                     first = pos)
+              pos <- pos + n.beta.no.along * index.class.max
+              ## omegaVectorsMix
+              scaleComponents <- makeOutputPriorScale(pos = pos)
+              pos <- pos + 1L
+              ## weightMix
+              weights <- Skeleton(metadata = metadata.weights,
+                                  first = pos)
+              pos <- pos + n.along * index.class.max
+              ## componentWeightMix
+              level1AR <- Skeleton(metadata = metadata.weights,
+                                   first = pos)
+              pos <- pos + n.along * index.class.max
+              ## omegaComponentWeightMix
+              scale1AR <- makeOutputPriorScale(pos = pos)
+              pos <- pos + 1L
+              ## levelComponentWeightMix
+              level2AR <- Skeleton(metadata = metadata.weights,
+                                   first = pos)
+              pos <- pos + n.along * index.class.max
+              ## meanLevelComponentWeightMix
+              meanAR <- Skeleton(first = pos)
+              pos <- pos + 1L
+              ## phiMix
+              coefAR <- Skeleton(first = pos)
+              pos <- pos + 1L
+              ## omegaLevelComponentWeightMix
+              scale2AR <- makeOutputPriorScale(pos = pos)
+              pos <- pos + 1L
+              ## tau
+              scaleError <- makeOutputPriorScale(pos = pos)
+              ## return
+              list(components = components,
+                   scaleComponents = scaleComponents,
+                   weights = weights,
+                   level1AR = level1AR,
+                   scale1AR = scale1AR,
+                   level2AR = level2AR,
+                   meanAR = meanAR,
+                   coefAR = coefAR,
+                   scale2AR = scale2AR,
+                   scaleError = scaleError)
+          })
 
 
 
@@ -2224,11 +2286,8 @@ setMethod("transferParamPrior",
                   iAlong <- prior@iAlong
                   index.class.max <- prior@indexClassMaxMix@.Data
                   n.beta.no.along <- prior@nBetaNoAlongMix@.Data
-                  J.old <- prior@JOld@.Data
                   n.along.old <- dim.beta.old[iAlong]
                   offset <- 1L
-                  ## alphaMix (skip)
-                  offset <- offset + J.old
                   ## prodVectorsMix
                   n.prod <- n.beta.no.along * index.class.max
                   prior@prodVectorsMix@.Data <- values[offset : (offset + n.prod - 1L)]

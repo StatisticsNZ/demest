@@ -9541,7 +9541,50 @@ test_that("indicesShow works - nSeason is non-NULL", {
     ans.obtained <- indicesShow(iterator, nSeason = 4L)
     ans.expected <- seq.int(25L, 93L, 4L)
     expect_identical(ans.obtained, ans.expected)
-})    
+})
+
+test_that("makeMetadataVectorsMix works", {
+    makeMetadataVectorsMix <- demest:::makeMetadataVectorsMix
+    metadata <- new("MetaData",
+                    nms = c("time", "reg", "age"),
+                    dimtypes = c("time", "state", "age"),
+                    DimScales = list(new("Points", dimvalues = 2001:2010),
+                                     new("Categories", dimvalues = c("a", "b")),
+                                     new("Intervals", dimvalues = as.numeric(0:10))))
+    iAlong <- 1L
+    indexClassMax <- 10L
+    ans.obtained <- makeMetadataVectorsMix(metadata = metadata,
+                                           iAlong = iAlong,
+                                           indexClassMax = indexClassMax)
+    ans.expected <- new("MetaData",
+                    nms = c("component", "reg", "age"),
+                    dimtypes = c("state", "state", "age"),
+                    DimScales = list(new("Categories", dimvalues = as.character(1:10)),
+                                     new("Categories", dimvalues = c("a", "b")),
+                                     new("Intervals", dimvalues = as.numeric(0:10))))
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("makeMetadataWeightsMix works", {
+    makeMetadataWeightsMix <- demest:::makeMetadataWeightsMix
+    metadata <- new("MetaData",
+                    nms = c("time", "reg", "age"),
+                    dimtypes = c("time", "state", "age"),
+                    DimScales = list(new("Points", dimvalues = 2001:2010),
+                                     new("Categories", dimvalues = c("a", "b")),
+                                     new("Intervals", dimvalues = as.numeric(0:10))))
+    iAlong <- 1L
+    indexClassMax <- 10L
+    ans.obtained <- makeMetadataWeightsMix(metadata = metadata,
+                                           iAlong = iAlong,
+                                           indexClassMax = indexClassMax)
+    ans.expected <- new("MetaData",
+                    nms = c("time", "component"),
+                    dimtypes = c("time", "state"),
+                    DimScales = list(new("Points", dimvalues = 2001:2010),
+                                     new("Categories", dimvalues = as.character(1:10))))
+    expect_identical(ans.obtained, ans.expected)
+})
     
 test_that("makeOutputMCMC works with valid input", {
     makeOutputMCMC <- demest:::makeOutputMCMC

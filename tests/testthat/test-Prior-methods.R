@@ -966,6 +966,56 @@ test_that("makeOutputPrior works with DLMWithTrendRobustCovWithSeason", {
     expect_identical(ans.obtained, ans.expected)
 })
 
+test_that("makeOutputPrior works with MixNormZero", {
+    makeOutputPrior <- demest:::makeOutputPrior
+    set.seed(100)
+    initialPrior <- demest:::initialPrior
+    Skeleton <- demest:::Skeleton
+    beta <- rnorm(200)
+    metadata <- new("MetaData",
+                    nms = c("time", "reg", "age"),
+                    dimtypes = c("time", "state", "age"),
+                    DimScales = list(new("Points", dimvalues = 2001:2010),
+                                     new("Categories", dimvalues = c("a", "b")),
+                                     new("Intervals", dimvalues = as.numeric(0:10))))
+    spec <- Mix(weights = Weights(mean = -10))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          multScale = 1)
+    ans.obtained <- makeOutputPrior(prior = prior,
+                                    metadata = metadata,
+                                    pos = 101L)
+    metadata.vec <- new("MetaData",
+                        nms = c("component", "reg", "age"),
+                        dimtypes = c("state", "state", "age"),
+                        DimScales = list(new("Categories", dimvalues = as.character(1:10)),
+                                         new("Categories", dimvalues = c("a", "b")),
+                                         new("Intervals", dimvalues = as.numeric(0:10))))
+    metadata.wt <- new("MetaData",
+                       nms = c("time", "component"),
+                       dimtypes = c("time", "state"),
+                       DimScales = list(new("Points", dimvalues = 2001:2010),
+                                        new("Categories", dimvalues = as.character(1:10))))
+    ans.expected <- list(components = Skeleton(metadata = metadata.vec,
+                                               first = 101L),
+                         scaleComponents = Skeleton(first = 301L),
+                         weights = Skeleton(metadata = metadata.wt,
+                                            first = 302L),
+                         level1AR = Skeleton(metadata = metadata.wt,
+                                             first = 402L),
+                         scale1AR = Skeleton(first = 502L),
+                         level2AR = Skeleton(metadata = metadata.wt,
+                                             first = 503L),
+                         meanAR = Skeleton(first = 603L),
+                         coefAR = Skeleton(first = 604L),
+                         scale2AR = Skeleton(first = 605L),
+                         scaleError = Skeleton(first = 606L))
+    expect_identical(ans.obtained, ans.expected)
+})
+
+
           
 ## predictPrior ######################################################################
 
@@ -1049,9 +1099,9 @@ test_that("R and C versions of predictPrior give same answer with ExchRobustZero
     set.seed(1)
     ans.R <- predictPrior(prior, useC = FALSE)
     set.seed(1)
-    ans.C.generic <- predictPrior(prior, useC = TRUE, , useSpecific = FALSE)
+    ans.C.generic <- predictPrior(prior, useC = TRUE, useSpecific = FALSE)
     set.seed(1)
-    ans.C.specific <- predictPrior(prior, useC = TRUE, , useSpecific = TRUE)
+    ans.C.specific <- predictPrior(prior, useC = TRUE, useSpecific = TRUE)
     if (test.identity)
         expect_identical(ans.R, ans.C.generic)
     else
@@ -1170,9 +1220,9 @@ test_that("R and C versions of predictPrior give same answer with ExchRobustCov"
     set.seed(1)
     ans.R <- predictPrior(prior, useC = FALSE)
     set.seed(1)
-    ans.C.generic <- predictPrior(prior, useC = TRUE, , useSpecific = FALSE)
+    ans.C.generic <- predictPrior(prior, useC = TRUE, useSpecific = FALSE)
     set.seed(1)
-    ans.C.specific <- predictPrior(prior, useC = TRUE, , useSpecific = TRUE)
+    ans.C.specific <- predictPrior(prior, useC = TRUE, useSpecific = TRUE)
     if (test.identity)
         expect_identical(ans.R, ans.C.generic)
     else
@@ -1242,9 +1292,9 @@ test_that("R and C versions of predictPrior give same answer with DLMNoTrendNorm
     set.seed(1)
     ans.R <- predictPrior(prior.new, useC = FALSE)
     set.seed(1)
-    ans.C.generic <- predictPrior(prior.new, useC = TRUE, , useSpecific = FALSE)
+    ans.C.generic <- predictPrior(prior.new, useC = TRUE, useSpecific = FALSE)
     set.seed(1)
-    ans.C.specific <- predictPrior(prior.new, useC = TRUE, , useSpecific = TRUE)
+    ans.C.specific <- predictPrior(prior.new, useC = TRUE, useSpecific = TRUE)
     if (test.identity)
         expect_identical(ans.R, ans.C.generic)
     else
@@ -1311,9 +1361,9 @@ test_that("R and C versions of predictPrior give same answer with DLMWithTrendNo
     set.seed(1)
     ans.R <- predictPrior(prior.new, useC = FALSE)
     set.seed(1)
-    ans.C.generic <- predictPrior(prior.new, useC = TRUE, , useSpecific = FALSE)
+    ans.C.generic <- predictPrior(prior.new, useC = TRUE, useSpecific = FALSE)
     set.seed(1)
-    ans.C.specific <- predictPrior(prior.new, useC = TRUE, , useSpecific = TRUE)
+    ans.C.specific <- predictPrior(prior.new, useC = TRUE, useSpecific = TRUE)
     if (test.identity)
         expect_identical(ans.R, ans.C.generic)
     else
@@ -1382,9 +1432,9 @@ test_that("R and C versions of predictPrior give same answer with DLMNoTrendNorm
     set.seed(1)
     ans.R <- predictPrior(prior.new, useC = FALSE)
     set.seed(1)
-    ans.C.generic <- predictPrior(prior.new, useC = TRUE, , useSpecific = FALSE)
+    ans.C.generic <- predictPrior(prior.new, useC = TRUE, useSpecific = FALSE)
     set.seed(1)
-    ans.C.specific <- predictPrior(prior.new, useC = TRUE, , useSpecific = TRUE)
+    ans.C.specific <- predictPrior(prior.new, useC = TRUE, useSpecific = TRUE)
     if (test.identity)
         expect_identical(ans.R, ans.C.generic)
     else
@@ -1453,9 +1503,9 @@ test_that("R and C versions of predictPrior give same answer with DLMWithTrendNo
     set.seed(1)
     ans.R <- predictPrior(prior.new, useC = FALSE)
     set.seed(1)
-    ans.C.generic <- predictPrior(prior.new, useC = TRUE, , useSpecific = FALSE)
+    ans.C.generic <- predictPrior(prior.new, useC = TRUE, useSpecific = FALSE)
     set.seed(1)
-    ans.C.specific <- predictPrior(prior.new, useC = TRUE, , useSpecific = TRUE)
+    ans.C.specific <- predictPrior(prior.new, useC = TRUE, useSpecific = TRUE)
     if (test.identity)
         expect_identical(ans.R, ans.C.generic)
     else
@@ -1541,9 +1591,9 @@ test_that("R and C versions of predictPrior give same answer with DLMNoTrendNorm
     set.seed(1)
     ans.R <- predictPrior(prior.new, useC = FALSE)
     set.seed(1)
-    ans.C.generic <- predictPrior(prior.new, useC = TRUE, , useSpecific = FALSE)
+    ans.C.generic <- predictPrior(prior.new, useC = TRUE, useSpecific = FALSE)
     set.seed(1)
-    ans.C.specific <- predictPrior(prior.new, useC = TRUE, , useSpecific = TRUE)
+    ans.C.specific <- predictPrior(prior.new, useC = TRUE, useSpecific = TRUE)
     if (test.identity)
         expect_identical(ans.R, ans.C.generic)
     else
@@ -1624,9 +1674,9 @@ test_that("R and C versions of predictPrior give same answer with DLMWithTrendNo
     set.seed(1)
     ans.R <- predictPrior(prior.new, useC = FALSE)
     set.seed(1)
-    ans.C.generic <- predictPrior(prior.new, useC = TRUE, , useSpecific = FALSE)
+    ans.C.generic <- predictPrior(prior.new, useC = TRUE, useSpecific = FALSE)
     set.seed(1)
-    ans.C.specific <- predictPrior(prior.new, useC = TRUE, , useSpecific = TRUE)
+    ans.C.specific <- predictPrior(prior.new, useC = TRUE, useSpecific = TRUE)
     if (test.identity)
         expect_identical(ans.R, ans.C.generic)
     else
@@ -1715,9 +1765,9 @@ test_that("R and C versions of predictPrior give same answer with DLMNoTrendNorm
     set.seed(1)
     ans.R <- predictPrior(prior.new, useC = FALSE)
     set.seed(1)
-    ans.C.generic <- predictPrior(prior.new, useC = TRUE, , useSpecific = FALSE)
+    ans.C.generic <- predictPrior(prior.new, useC = TRUE, useSpecific = FALSE)
     set.seed(1)
-    ans.C.specific <- predictPrior(prior.new, useC = TRUE, , useSpecific = TRUE)
+    ans.C.specific <- predictPrior(prior.new, useC = TRUE, useSpecific = TRUE)
     if (test.identity)
         expect_identical(ans.R, ans.C.generic)
     else
@@ -1805,9 +1855,9 @@ test_that("R and C versions of predictPrior give same answer with DLMWithTrendNo
     set.seed(1)
     ans.R <- predictPrior(prior.new, useC = FALSE)
     set.seed(1)
-    ans.C.generic <- predictPrior(prior.new, useC = TRUE, , useSpecific = FALSE)
+    ans.C.generic <- predictPrior(prior.new, useC = TRUE, useSpecific = FALSE)
     set.seed(1)
-    ans.C.specific <- predictPrior(prior.new, useC = TRUE, , useSpecific = TRUE)
+    ans.C.specific <- predictPrior(prior.new, useC = TRUE, useSpecific = TRUE)
     if (test.identity)
         expect_identical(ans.R, ans.C.generic)
     else
@@ -1881,9 +1931,9 @@ test_that("R and C versions of predictPrior give same answer with DLMNoTrendRobu
     set.seed(1)
     ans.R <- predictPrior(prior.new, useC = FALSE)
     set.seed(1)
-    ans.C.generic <- predictPrior(prior.new, useC = TRUE, , useSpecific = FALSE)
+    ans.C.generic <- predictPrior(prior.new, useC = TRUE, useSpecific = FALSE)
     set.seed(1)
-    ans.C.specific <- predictPrior(prior.new, useC = TRUE, , useSpecific = TRUE)
+    ans.C.specific <- predictPrior(prior.new, useC = TRUE, useSpecific = TRUE)
     if (test.identity)
         expect_identical(ans.R, ans.C.generic)
     else
@@ -1954,9 +2004,9 @@ test_that("R and C versions of predictPrior give same answer with DLMWithTrendRo
     set.seed(1)
     ans.R <- predictPrior(prior.new, useC = FALSE)
     set.seed(1)
-    ans.C.generic <- predictPrior(prior.new, useC = TRUE, , useSpecific = FALSE)
+    ans.C.generic <- predictPrior(prior.new, useC = TRUE, useSpecific = FALSE)
     set.seed(1)
-    ans.C.specific <- predictPrior(prior.new, useC = TRUE, , useSpecific = TRUE)
+    ans.C.specific <- predictPrior(prior.new, useC = TRUE, useSpecific = TRUE)
     if (test.identity)
         expect_identical(ans.R, ans.C.generic)
     else
@@ -2029,9 +2079,9 @@ test_that("R and C versions of predictPrior give same answer with DLMNoTrendRobu
     set.seed(1)
     ans.R <- predictPrior(prior.new, useC = FALSE)
     set.seed(1)
-    ans.C.generic <- predictPrior(prior.new, useC = TRUE, , useSpecific = FALSE)
+    ans.C.generic <- predictPrior(prior.new, useC = TRUE, useSpecific = FALSE)
     set.seed(1)
-    ans.C.specific <- predictPrior(prior.new, useC = TRUE, , useSpecific = TRUE)
+    ans.C.specific <- predictPrior(prior.new, useC = TRUE, useSpecific = TRUE)
     if (test.identity)
         expect_identical(ans.R, ans.C.generic)
     else
@@ -2104,9 +2154,9 @@ test_that("R and C versions of predictPrior give same answer with DLMWithTrendRo
     set.seed(1)
     ans.R <- predictPrior(prior.new, useC = FALSE)
     set.seed(1)
-    ans.C.generic <- predictPrior(prior.new, useC = TRUE, , useSpecific = FALSE)
+    ans.C.generic <- predictPrior(prior.new, useC = TRUE, useSpecific = FALSE)
     set.seed(1)
-    ans.C.specific <- predictPrior(prior.new, useC = TRUE, , useSpecific = TRUE)
+    ans.C.specific <- predictPrior(prior.new, useC = TRUE, useSpecific = TRUE)
     if (test.identity)
         expect_identical(ans.R, ans.C.generic)
     else
@@ -2198,9 +2248,9 @@ test_that("R and C versions of predictPrior give same answer with DLMNoTrendRobu
     set.seed(1)
     ans.R <- predictPrior(prior.new, useC = FALSE)
     set.seed(1)
-    ans.C.generic <- predictPrior(prior.new, useC = TRUE, , useSpecific = FALSE)
+    ans.C.generic <- predictPrior(prior.new, useC = TRUE, useSpecific = FALSE)
     set.seed(1)
-    ans.C.specific <- predictPrior(prior.new, useC = TRUE, , useSpecific = TRUE)
+    ans.C.specific <- predictPrior(prior.new, useC = TRUE, useSpecific = TRUE)
     if (test.identity)
         expect_identical(ans.R, ans.C.generic)
     else
@@ -2287,9 +2337,9 @@ test_that("R and C versions of predictPrior give same answer with DLMWithTrendRo
     set.seed(1)
     ans.R <- predictPrior(prior.new, useC = FALSE)
     set.seed(1)
-    ans.C.generic <- predictPrior(prior.new, useC = TRUE, , useSpecific = FALSE)
+    ans.C.generic <- predictPrior(prior.new, useC = TRUE, useSpecific = FALSE)
     set.seed(1)
-    ans.C.specific <- predictPrior(prior.new, useC = TRUE, , useSpecific = TRUE)
+    ans.C.specific <- predictPrior(prior.new, useC = TRUE, useSpecific = TRUE)
     if (test.identity)
         expect_identical(ans.R, ans.C.generic)
     else
@@ -2384,9 +2434,9 @@ test_that("R and C versions of predictPrior give same answer with DLMNoTrendRobu
     set.seed(1)
     ans.R <- predictPrior(prior.new, useC = FALSE)
     set.seed(1)
-    ans.C.generic <- predictPrior(prior.new, useC = TRUE, , useSpecific = FALSE)
+    ans.C.generic <- predictPrior(prior.new, useC = TRUE, useSpecific = FALSE)
     set.seed(1)
-    ans.C.specific <- predictPrior(prior.new, useC = TRUE, , useSpecific = TRUE)
+    ans.C.specific <- predictPrior(prior.new, useC = TRUE, useSpecific = TRUE)
     if (test.identity)
         expect_identical(ans.R, ans.C.generic)
     else
@@ -4300,6 +4350,7 @@ test_that("R and C versions of transferParamPrior give same answer with MixNormZ
     set.seed(100)
     initialPrior <- demest:::initialPrior
     initialPriorPredict <- demest:::initialPriorPredict
+    predictPrior <- demest:::predictPrior
     extractValues <- demest:::extractValues
     beta <- rnorm(200)
     metadata <- new("MetaData",
