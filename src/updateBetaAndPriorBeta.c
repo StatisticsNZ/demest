@@ -98,7 +98,10 @@ updateBetaAndPriorBeta(double *beta, int J, SEXP prior_R,
             updateBetaAndPriorBeta_DLMWithTrendRobustCovWithSeason(beta, J, 
                                             prior_R, vbar, n, sigma); 
             break;
-        
+        case 31:
+            updateBetaAndPriorBeta_MixNormZero(beta, J, 
+                                            prior_R, vbar, n, sigma);
+            break;
         default:
             error("unknown i_method_prior: %d", i_method_prior);
             break;
@@ -779,3 +782,25 @@ updateBetaAndPriorBeta_DLMWithTrendRobustCovWithSeason(double *beta, int J, SEXP
     updateOmegaSeason(prior_R);
 }
 
+void
+updateBetaAndPriorBeta_MixNormZero(double *beta, int J, SEXP prior_R, 
+                        double *vbar, int n, double sigma)
+{
+    updateBeta(beta, J, prior_R, vbar, n, sigma);
+    updateTauNorm(prior_R, beta, J);
+    updateVectorsMixAndProdVectorsMix(prior_R, beta, J);
+    updateOmegaVectorsMix(prior_R);
+    updateLatentComponentWeightMix(prior_R);
+    updateComponentWeightMix(prior_R);
+    updateWeightMix(prior_R);
+    updateLatentWeightMix(prior_R);
+    updateOmegaComponentWeightMix(prior_R);
+    updateOmegaLevelComponentWeightMix(prior_R);
+    updateIndexClassMaxPossibleMix(prior_R);
+    updateIndexClassMix(prior_R, beta, J);
+    updateIndexClassMaxUsedMix(prior_R);
+    updateLevelComponentWeightMix(prior_R);
+    updateMeanLevelComponentWeightMix(prior_R);
+    updatePhiMix(prior_R);
+    updateAlphaMix(prior_R);
+}

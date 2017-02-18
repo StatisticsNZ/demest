@@ -702,6 +702,7 @@ UPDATEBETA_AND_PRIORBETA_WRAPPER_R(updateBetaAndPriorBeta_DLMNoTrendRobustCovNoS
 UPDATEBETA_AND_PRIORBETA_WRAPPER_R(updateBetaAndPriorBeta_DLMWithTrendRobustCovNoSeason);
 UPDATEBETA_AND_PRIORBETA_WRAPPER_R(updateBetaAndPriorBeta_DLMNoTrendRobustCovWithSeason);
 UPDATEBETA_AND_PRIORBETA_WRAPPER_R(updateBetaAndPriorBeta_DLMWithTrendRobustCovWithSeason);
+UPDATEBETA_AND_PRIORBETA_WRAPPER_R(updateBetaAndPriorBeta_MixNormZero);
 
 UPDATEOBJECT_NOPRNG_WRAPPER_R(updateGWithTrend);
 UPDATEOBJECT_WRAPPER_R(updateLatentComponentWeightMix);
@@ -1321,6 +1322,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateBetaAndPriorBeta_DLMWithTrendRobustCovNoSeason_R, 4),
   CALLDEF(updateBetaAndPriorBeta_DLMNoTrendRobustCovWithSeason_R, 4),
   CALLDEF(updateBetaAndPriorBeta_DLMWithTrendRobustCovWithSeason_R, 4),
+  CALLDEF(updateBetaAndPriorBeta_MixNormZero_R, 4),
   
   /* helper-functions */
   CALLDEF(makeMu_R, 3),

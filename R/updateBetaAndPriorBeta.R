@@ -825,7 +825,7 @@ setMethod("updateBetaAndPriorBeta",
 
 ## Mix #################################################################################
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("updateBetaAndPriorBeta",
           signature(prior = "MixNormZero"),

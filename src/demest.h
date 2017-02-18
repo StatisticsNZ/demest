@@ -385,7 +385,9 @@ updateBetaAndPriorBeta_DLMNoTrendRobustCovWithSeason(double *beta, int J,
 void
 updateBetaAndPriorBeta_DLMWithTrendRobustCovWithSeason(double *beta, int J,
                     SEXP prior_R, double *vbar, int n, double sigma);
-                    
+void
+updateBetaAndPriorBeta_MixNormZero(double *beta, int J,
+                    SEXP prior_R, double *vbar, int n, double sigma);                    
 /* helper-functions */
 SEXP makeMu(int n, SEXP betas_R, SEXP iterator_R);
 double dpoibin1(int x, int size, double prob, int use_log);
