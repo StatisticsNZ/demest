@@ -890,7 +890,7 @@ updateLevelComponentWeightMix <- function(prior, useC = FALSE) {
         iAlong <- prior@iAlong
         n.along <- dimBeta[iAlong]
         index.class.max <- prior@indexClassMaxMix@.Data
-        index.class.max.used <- prior@indexClassMaxUsedMix@.Data 
+        index.class.max.poss <- prior@indexClassMaxPossibleMix@.Data 
         comp <- prior@componentWeightMix@.Data # 'W'; n.along * index.class.max
         level <- prior@levelComponentWeightMix@.Data # 'alpha'; n.along * index.class.max
         mean.level <- prior@meanLevelComponentWeightMix@.Data # 'mu'; 1
@@ -900,14 +900,14 @@ updateLevelComponentWeightMix <- function(prior, useC = FALSE) {
         R <- prior@RMix@.Data # length n.along - 1
         phi <- prior@phiMix
         phi.sq <- phi^2
-        omega.comp <- prior@omegaComponentWeightMix@.Data # 'epsilon'; 1
+        omega.comp <- prior@omegaComponentWeightMix@.Data # 'sigma-epsilon'; 1
         omega.comp.sq <- omega.comp^2
-        omega.level <- prior@omegaLevelComponentWeightMix@.Data # 'eta'; 1
+        omega.level <- prior@omegaLevelComponentWeightMix@.Data # 'sigma_eta'; 1
         omega.level.sq <- omega.level^2
         prior.mean.first <- mean.level / (1 - phi) 
         prior.var.first <- omega.level.sq / (1 - phi.sq) 
         prior.sd.first <- sqrt(prior.var.first) 
-        for (i.class in seq_len(index.class.max.used)) { 
+        for (i.class in seq_len(index.class.max.poss)) { 
             m[1L] <- prior.mean.first 
             C[1L] <- prior.var.first 
             ## forward filter
@@ -939,8 +939,8 @@ updateLevelComponentWeightMix <- function(prior, useC = FALSE) {
             }
         }
         ## draw remaining values straight from prior
-        if (index.class.max.used < index.class.max) {
-            for (i.class in seq.int(from = index.class.max.used + 1L,
+        if (index.class.max.poss < index.class.max) {
+            for (i.class in seq.int(from = index.class.max.poss + 1L,
                                     to = index.class.max)) {
                 i.wt <- (i.class - 1L) * n.along + 1L
                 level[i.wt] <- rnorm(n = 1L,
@@ -990,9 +990,6 @@ updateMeanLevelComponentWeightMix <- function(prior, useC = FALSE) {
             for (i.along in seq.int(from = 2L, to = n.along)) {
                 i.curr <- (i.class - 1L) * n.along + i.along
                 i.prev <- i.curr - 1L
-                
-                
-            
                 mean.data <- mean.data + (level[i.curr] - phi * level[i.prev])
             }
         }
@@ -1100,7 +1097,9 @@ updateOmegaComponentWeightMix <- function(prior, useC = FALSE) {
                               V = V,
                               n = n,
                               max = omega.max)
-        prior@omegaComponentWeightMix@.Data <- omega
+        successfully.updated <- omega > 0
+        if (successfully.updated)
+            prior@omegaComponentWeightMix@.Data <- omega
         prior
     }
 }
@@ -1186,7 +1185,9 @@ updateOmegaLevelComponentWeightMix <- function(prior, useC = FALSE) {
                               V = V,
                               n = n,
                               max = omega.max)
-        prior@omegaLevelComponentWeightMix@.Data <- omega
+        successfully.updated <- omega > 0
+        if (successfully.updated)
+            prior@omegaLevelComponentWeightMix@.Data <- omega
         prior
     }
 }
@@ -1272,7 +1273,9 @@ updateOmegaVectorsMix <- function(prior, useC = FALSE) {
                                       V = V,
                                       n = n,
                                       max = omega.max)
-        prior@omegaVectorsMix@.Data <- omega.vectors
+        successfully.updated <- omega > 0
+        if (successfully.updated)
+            prior@omegaVectorsMix@.Data <- omega.vectors
         prior
     }
 }
@@ -1664,10 +1667,8 @@ updateVectorsMixAndProdVectorsMix <- function(prior, betaTilde, useC = FALSE) {
                 for (i.beta in indices.beta) {
                     beta.tilde.i.beta <- betaTilde[i.beta]
                     v.i.beta <- v[i.beta]
-                    ## index.class.i.beta <- index.class[i.beta]
-                    ## i.vector <- (index.class.i.beta - 1L) * n.element.vector + i.element
-                    i.class <- index.class[i.beta] ## changed 'index.class.i.beta' to 'i.class'
-                    i.vector <- (i.class - 1L) * n.element.vector + i.element ## changed 'index.class.i.beta' to 'i.class'
+                    i.class <- index.class[i.beta]
+                    i.vector <- (i.class - 1L) * n.element.vector + i.element
                     val.vector <- vector[i.vector]
                     i.beta.no.along <- ((i.beta - 1L) %/% pos1) * pos2 + (i.beta - 1L) %% pos2 + 1L
                     i.prod <- (i.class - 1L) * n.beta.no.along + i.beta.no.along
@@ -1888,8 +1889,8 @@ updateWSqrtInvG <- function(prior, useC = FALSE) {
     }
 }
 
-
-## JAH - I have translated and tested (C vs R) this one  16/2/2017
+## TRANSLATED
+## HAS_TESTS
 ## 'v' in notes. Function is deterministic
 updateWeightMix <- function(prior, useC = FALSE) {
     stopifnot(methods::is(prior, "Mix"))

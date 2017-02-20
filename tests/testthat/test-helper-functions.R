@@ -780,7 +780,7 @@ test_that("initialMixAll works", {
     initialPrior <- demest:::initialPrior
     set.seed(0)
     ## main effect
-    spec <- Mix(weights = Weights(mean = -20))
+    spec <- Mix(weights = Weights(mean = 0))
     beta <- rnorm(400)
     metadata <- new("MetaData",
                     nms = c("age", "sex", "time"),
@@ -2945,18 +2945,15 @@ test_that("makeMargins works with valid input", {
 
 test_that("makeMeanLevelComponentWeightMix works", {
     makeMeanLevelComponentWeightMix <- demest:::makeMeanLevelComponentWeightMix
-    rtnorm1 <- demest:::rtnorm1
     priorMean <- new("Parameter", 0.4)
     priorSD <- new("Scale", 1.1)
-    min <- 0.5
     set.seed(1)
     ans.obtained <- makeMeanLevelComponentWeightMix(priorMean = priorMean,
-                                                    priorSD = priorSD,
-                                                    min = min)
+                                                    priorSD = priorSD)
     set.seed(1)
-    ans.expected <- rtnorm1(mean = priorMean@.Data,
-                            sd = priorSD@.Data,
-                            lower = min)
+    ans.expected <- rnorm(n = 1,
+                          mean = priorMean@.Data,
+                          sd = priorSD@.Data)
     ans.expected <- new("Parameter", ans.expected)
     if (test.identity)
         expect_identical(ans.obtained, ans.expected)
@@ -3419,7 +3416,7 @@ test_that("makeWeightMix works", {
                                   indexClassMaxMix = indexClassMaxMix,
                                   componentWeightMix = componentWeightMix)
     ans.expected <- apply(matrix(componentWeightMix@.Data, nrow = 6),
-                          2,
+                          1,
                           function(x) {
                               n <- length(x)
                               ans <- pnorm(x)
@@ -3427,6 +3424,7 @@ test_that("makeWeightMix works", {
                               ans[-1] <- ans[-1] * m[-n]
                               ans
                           })
+    ans.expected <- t(ans.expected)
     ans.expected <- new("UnitIntervalVec", ans.expected)
     if (test.identity)
         expect_identical(ans.obtained, ans.expected)

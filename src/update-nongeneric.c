@@ -1406,7 +1406,7 @@ updateLevelComponentWeightMix(SEXP prior_R)
     int nAlong = dimBeta[iAlong_c];
     
     int indexClassMax = *INTEGER(GET_SLOT(prior_R, indexClassMaxMix_sym));
-    int indexClassMaxUsed = *INTEGER(GET_SLOT(prior_R, indexClassMaxUsedMix_sym));
+    int indexClassMaxPossible = *INTEGER(GET_SLOT(prior_R, indexClassMaxPossibleMix_sym));
     
     double *comp = REAL(GET_SLOT(prior_R, componentWeightMix_sym));
     double *level = REAL(GET_SLOT(prior_R, levelComponentWeightMix_sym));
@@ -1444,7 +1444,7 @@ updateLevelComponentWeightMix(SEXP prior_R)
     memcpy(a, aOriginal, sz2*sizeof(double));
     memcpy(R, ROriginal, sz2*sizeof(double));
     
-    for (int iClass = 0; iClass < indexClassMaxUsed; ++iClass) {
+    for (int iClass = 0; iClass < indexClassMaxPossible; ++iClass) {
         
         m[0] = priorMeanFirst;
         C[0] = priorVarFirst;
@@ -1486,9 +1486,9 @@ updateLevelComponentWeightMix(SEXP prior_R)
         }
     }
 
-    if ( indexClassMaxUsed < indexClassMax) {
+    if ( indexClassMaxPossible < indexClassMax) {
         
-        for (int iClass = indexClassMaxUsed; iClass < indexClassMax; ++iClass) {
+        for (int iClass = indexClassMaxPossible; iClass < indexClassMax; ++iClass) {
             
             int iWt = iClass * nAlong;
             level[iWt] = rnorm( priorMeanFirst, priorSdFirst );
@@ -1650,7 +1650,10 @@ updateOmegaComponentWeightMix(SEXP prior_R)
     
     omega = updateSDNorm(omega, A, nu, V, n, omegaMax);
     
-    SET_DOUBLESCALE_SLOT(prior_R, omegaComponentWeightMix_sym, omega);
+    int successfullyUpdated = (omega > 0);
+    if(successfullyUpdated) {
+	SET_DOUBLESCALE_SLOT(prior_R, omegaComponentWeightMix_sym, omega);
+    }
 }
 
 void
@@ -1744,7 +1747,10 @@ updateOmegaLevelComponentWeightMix(SEXP prior_R)
     
     omega = updateSDNorm(omega, A, nu, V, n, omegaMax);
     
-    SET_DOUBLESCALE_SLOT(prior_R, omegaLevelComponentWeightMix_sym, omega);
+    int successfullyUpdated = (omega > 0);
+    if(successfullyUpdated) {
+	SET_DOUBLESCALE_SLOT(prior_R, omegaLevelComponentWeightMix_sym, omega);
+    }    
 }
 
 void
@@ -1834,7 +1840,10 @@ updateOmegaVectorsMix(SEXP prior_R)
     
     omega = updateSDNorm(omega, A, nu, V, n, omegaMax);
     
-    SET_DOUBLESCALE_SLOT(prior_R, omegaVectorsMix_sym, omega);
+    int successfullyUpdated = (omega > 0);
+    if(successfullyUpdated) {
+	SET_DOUBLESCALE_SLOT(prior_R, omegaVectorsMix_sym, omega);
+    }
 }
 
 void
@@ -1941,7 +1950,7 @@ updatePhiMix(SEXP prior_R)
     double sdProp = sqrt(varProp);
     
     double phiProp = rtnorm1(meanProp, sdProp, -1, 1);
-    
+
     double logPostProp = logPostPhiMix(phiProp, level, meanLevel,
                                 nAlong, indexClassMaxUsed, omega);
     

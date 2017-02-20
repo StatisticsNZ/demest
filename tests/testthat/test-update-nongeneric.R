@@ -1471,13 +1471,13 @@ test_that("updateLevelComponentWeightMix gives valid answer", {
                     dimtypes = c("state", "time"),
                     DimScales = list(new("Categories", dimvalues = letters[1:20]),
                                      new("Points", dimvalues = 2001:2010)))
-    spec <- Mix(weights = Weights(mean = -20))
+    spec <- Mix()
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
                           multScale = 1)
-    prior@indexClassMaxUsedMix@.Data <- 8L
+    prior@indexClassMaxPossibleMix@.Data <- 8L
     prior@indexClassMix[prior@indexClassMix > 8L] <- 8L
     set.seed(2)
     ans.obtained <- updateLevelComponentWeightMix(prior)
@@ -1512,7 +1512,7 @@ test_that("updateLevelComponentWeightMix gives valid answer", {
                        ncol = prior@indexClassMaxMix@.Data)[-1,] # not using first row
     alpha.all <- matrix(prior@levelComponentWeightMix@.Data,
                         ncol = prior@indexClassMaxMix@.Data)
-    for (j in seq_len(prior@indexClassMaxUsedMix@.Data)) {
+    for (j in seq_len(prior@indexClassMaxPossibleMix@.Data)) {
         m <- numeric(nrow(alpha.all))
         m[1] <- mu / (1 - phi)
         C <- numeric(nrow(alpha.all))
@@ -1526,7 +1526,7 @@ test_that("updateLevelComponentWeightMix gives valid answer", {
                                tau = tau,
                                omega = omega)
     }
-    for (j in seq.int(from = prior@indexClassMaxUsedMix@.Data + 1L,
+    for (j in seq.int(from = prior@indexClassMaxPossibleMix@.Data + 1L,
                       to = prior@indexClassMaxMix@.Data)) {
         alpha.all[1,j] <- rnorm(n = 1,
                                 mean = mu / (1 - phi),
@@ -2941,35 +2941,35 @@ test_that("R and C versions of updateVectorsMixAndProdVectorsMix give same answe
         expect_equal(ans.R, ans.C)
 })
 
-test_that("updateVectorsMixAndProdVectorsMix_additive gives valid answer", {
-    updateVectorsMixAndProdVectorsMix <- demest:::updateVectorsMixAndProdVectorsMix
-    set.seed(100)
-    initialPrior <- demest:::initialPrior
-    beta <- rnorm(200)
-    metadata <- new("MetaData",
-                    nms = c("reg", "time", "age"),
-                    dimtypes = c("state", "time", "age"),
-                    DimScales = list(new("Categories", dimvalues = c("a", "b")),
-                                     new("Points", dimvalues = 2001:2010),
-                                     new("Intervals", dimvalues = as.numeric(0:10))))
-    spec <- Mix()
-    prior <- initialPrior(spec,
-                          beta = beta,
-                          metadata = metadata,
-                          sY = NULL,
-                          multScale = 1)
-    beta.tilde <- rnorm(200)
-    set.seed(2)
-    ans.obtained <- updateVectorsMixAndProdVectorsMix_additive(prior = prior,
-                                                      betaTilde = beta.tilde)
-    for (i in 1:3)
-        expect_true(all(ans.obtained@vectorsMix[[i]] != prior@vectorsMix[[i]]))
-    vec.reg <- matrix(ans.obtained@vectorsMix[[1]], nc = 10)
-    vec.age <- matrix(ans.obtained@vectorsMix[[3]], nc = 10)
-    prod.vec <- lapply(1:10, function(i) outer(vec.reg[,i], vec.age[,i], FUN = "+"))
-    prod.vec <- unlist(prod.vec)
-    expect_equal(ans.obtained@prodVectorsMix@.Data, prod.vec)
-})
+## test_that("updateVectorsMixAndProdVectorsMix_additive gives valid answer", {
+##     updateVectorsMixAndProdVectorsMix <- demest:::updateVectorsMixAndProdVectorsMix
+##     set.seed(100)
+##     initialPrior <- demest:::initialPrior
+##     beta <- rnorm(200)
+##     metadata <- new("MetaData",
+##                     nms = c("reg", "time", "age"),
+##                     dimtypes = c("state", "time", "age"),
+##                     DimScales = list(new("Categories", dimvalues = c("a", "b")),
+##                                      new("Points", dimvalues = 2001:2010),
+##                                      new("Intervals", dimvalues = as.numeric(0:10))))
+##     spec <- Mix()
+##     prior <- initialPrior(spec,
+##                           beta = beta,
+##                           metadata = metadata,
+##                           sY = NULL,
+##                           multScale = 1)
+##     beta.tilde <- rnorm(200)
+##     set.seed(2)
+##     ans.obtained <- updateVectorsMixAndProdVectorsMix_additive(prior = prior,
+##                                                       betaTilde = beta.tilde)
+##     for (i in 1:3)
+##         expect_true(all(ans.obtained@vectorsMix[[i]] != prior@vectorsMix[[i]]))
+##     vec.reg <- matrix(ans.obtained@vectorsMix[[1]], nc = 10)
+##     vec.age <- matrix(ans.obtained@vectorsMix[[3]], nc = 10)
+##     prod.vec <- lapply(1:10, function(i) outer(vec.reg[,i], vec.age[,i], FUN = "+"))
+##     prod.vec <- unlist(prod.vec)
+##     expect_equal(ans.obtained@prodVectorsMix@.Data, prod.vec)
+## })
 
 test_that("updateWSqrt works", {
     updateWSqrt <- demest:::updateWSqrt

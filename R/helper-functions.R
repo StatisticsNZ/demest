@@ -1118,20 +1118,20 @@ initialMixAll <- function(object, beta, metadata, sY, ...) {
     phiMix <- runif(n = 1L,
                     min = 0.8,
                     max = 0.98)
-    ## meanLevelComponentWeightMix - we want this to be reasonably high, to avoid
-    ## starting with too many components
+    ## meanLevelComponentWeightMix
     meanLevelComponentWeightMix <-
         makeMeanLevelComponentWeightMix(priorMean = priorMeanLevelComponentWeightMix,
-                                        priorSD = priorSDLevelComponentWeightMix,
-                                        min = 0)
+                                        priorSD = priorSDLevelComponentWeightMix)
     ## levelComponentWeightMix
-    levelComponentWeightMix <-
-        makeLevelComponentWeightMix(dimBeta = dimBeta,
-                                    iAlong = iAlong,
-                                    indexClassMaxMix = indexClassMaxMix,
-                                    phiMix = phiMix,
-                                    meanLevel = meanLevelComponentWeightMix,
-                                    omegaLevel = omegaLevelComponentWeightMix)
+    ## levelComponentWeightMix <-
+    ##     makeLevelComponentWeightMix(dimBeta = dimBeta,
+    ##                                 iAlong = iAlong,
+    ##                                 indexClassMaxMix = indexClassMaxMix,
+    ##                                 phiMix = phiMix,
+    ##                                 meanLevel = meanLevelComponentWeightMix,
+    ##                                 omegaLevel = omegaLevelComponentWeightMix)
+    levelComponentWeightMix <- rnorm(n = dimBeta[iAlong] * indexClassMaxMix@.Data)
+    levelComponentWeightMix <- new("ParameterVector", levelComponentWeightMix)
     ## componentWeightMix
     componentWeightMix <-
         makeComponentWeightMix(dimBeta = dimBeta,
@@ -3085,13 +3085,12 @@ makeMargins <- function(betas, y) {
 }
 
 ## HAS_TESTS
-makeMeanLevelComponentWeightMix <- function(priorMean, priorSD, min) {
+makeMeanLevelComponentWeightMix <- function(priorMean, priorSD) {
     mean <- priorMean@.Data
     sd <- priorSD@.Data
-    ans <- rtnorm1(mean = mean,
-                   sd = sd,
-                   lower = min,
-                   useC = TRUE)
+    ans <- rnorm(n = 1L,
+                 mean = mean,
+                 sd = sd)
     new("Parameter", ans)
 }
 
@@ -3351,17 +3350,18 @@ makeWeightAg <- function(weight, default, model, thetaObj, transform, values) {
 makeWeightMix <- function(dimBeta, iAlong, indexClassMaxMix,
                           componentWeightMix) {
     n.along <- dimBeta[iAlong]
-    indexClassMaxMix <- indexClassMaxMix@.Data
-    componentWeightMix <- componentWeightMix@.Data
-    ans <- pnorm(componentWeightMix)
+    index.class.max <- indexClassMaxMix@.Data
+    component.weight <- componentWeightMix@.Data
+    ans <- pnorm(component.weight)
     ans <- matrix(ans,
                   nrow = n.along,
-                  ncol = indexClassMaxMix)
+                  ncol = index.class.max)
     mult <- 1 - ans
     mult <- apply(mult,
-                  MARGIN = 2L,
+                  MARGIN = 1L,
                   FUN = cumprod)
-    ans[-1L, ] <- ans[-1L, ] * mult[-n.along, ]
+    mult <- t(mult)
+    ans[ , -1L] <- ans[ , -1L] * mult[ , -index.class.max]
     ans <- as.double(ans)
     new("UnitIntervalVec", ans)
 }
@@ -6879,7 +6879,7 @@ printExchEqns <- function(object, name, hasCovariates) {
     if (is.null(name))
         name <- "parameter"
     name <- sprintf("%13s", name) 
-    cat(name, "[j] ~ ", sep = "")
+    cat(name, "[j] = ", sep = "")
     if (hasCovariates)
         cat("covariate[j] + ")
     cat("error[j]\n")
@@ -6959,12 +6959,12 @@ printLevelTrendEqns <- function(object, isMain, hasTrend) {
     show.damp <- !phi.known || (phi < 1)
     if (hasTrend) {
         if (isMain) {
-            cat("        level[j] ~ level[j-1] + trend[j-1] + errorLevel[j]\n")
-            cat("        trend[j] ~ ")
+            cat("        level[j] = level[j-1] + trend[j-1] + errorLevel[j]\n")
+            cat("        trend[j] = ")
         }
         else {
-            cat("      level[k,l] ~ level[k-1,l] + trend[k-1,l] + errorLevel[k,l]\n")
-            cat("      trend[k,l] ~ ")
+            cat("      level[k,l] = level[k-1,l] + trend[k-1,l] + errorLevel[k,l]\n")
+            cat("      trend[k,l] = ")
         }
         if (show.damp)
             cat("damp * ")
@@ -6975,9 +6975,9 @@ printLevelTrendEqns <- function(object, isMain, hasTrend) {
     }
     else {
         if (isMain)
-            cat("        level[j] ~ ")
+            cat("        level[j] = ")
         else
-            cat("      level[k,l] ~ ")
+            cat("      level[k,l] = ")
         if (show.damp)
             cat("damp * ")
         if (isMain)
@@ -7035,7 +7035,13 @@ printLevelTrendEqns <- function(object, isMain, hasTrend) {
             ")\n",
             sep = "")
     }
-}        
+}
+
+
+
+
+
+
 
 printNormalVarsigmaKnownLikEqns <- function(object) {
     formulaMu <- object@formulaMu

@@ -4663,6 +4663,18 @@ test_that("whereEstimated works", {
                        "scaleSeason",
                        "coef",
                        "scaleError"))
+    x <- new("MixNormZero")
+    expect_identical(whereEstimated(x),
+                     c("components",
+                       "scaleComponents",
+                       "weights",
+                       "level1AR",
+                       "scale1AR",
+                       "level2AR",
+                       "meanAR",
+                       "coefAR",
+                       "scale2AR",
+                       "scaleError"))
 })
 
 

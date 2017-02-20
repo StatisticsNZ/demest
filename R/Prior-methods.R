@@ -37,7 +37,25 @@ setMethod("fakeBeta",
           })
 
 
+setMethod("fakeBeta",
+          signature(object = "MixNormZero",
+                    metadata = "MetaData"),
+          function(object, metadata) {
+              J <- object@J@.Data
+              tau <- object@tau@.Data
+              dim <- dim(metadata)
+              omega.
+              ans <- stats::rnorm(n = J,
+                                  mean = 0,
+                                  sd = tau)
+              ans <- array(ans,
+                           dim = dim)
+              ans <- sweepAllMargins(ans)
+              as.double(ans)
+          })
 
+          
+          
 ## makeOutputPrior ###################################################################
 
 ## ExchFixed
@@ -2265,6 +2283,7 @@ setMethod("transferParamPrior",
 
 
 ## Mix
+
 ## TRANSLATED
 ## HAS_TESTS
 setMethod("transferParamPrior",
@@ -2558,3 +2577,19 @@ setMethod("whereEstimated",
           })
 
 
+## Mix
+
+setMethod("whereEstimated",
+          signature(object = "MixNormZero"),
+          function(object) {
+              c("components",
+                "scaleComponents",
+                "weights",
+                "level1AR",
+                "scale1AR",
+                "level2AR",
+                "meanAR",
+                "coefAR",
+                "scale2AR",
+                "scaleError")
+          })
