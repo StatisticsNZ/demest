@@ -1,9 +1,19 @@
 
 
+    
+p(age:time[l,k]) = sum_h weights[h,k] N(age:time[l,k] | components[l,h], scaleError)
+components[l,h] = prod_d v_d[l,h]
+v_d[l,h] ~ N(0, scaleComponent)
+weights[h,k] = f(level1AR[1,k], ..., level1AR[h,k])
+level1AR[h,k] = level2AR[h,k] + error1AR[h,k]
+level2AR[h,k] = meanAR + coefAR * level2AR[h,k-1] + error2AR[h,k]
+scaleC
 
 
-p(age:time[k,l]) = sum_h weight[h,k] N(age:time[k,l] | component[h,l], scaleError)
-component[h,l] = prod_d vector_d
+
+    level1AR[h,k] + error1AR
+level1AR = level
+v[h
 vector_d[j] ~ N(0, scaleComponent^2)
 
 

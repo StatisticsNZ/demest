@@ -1949,7 +1949,8 @@ updatePhiMix(SEXP prior_R)
     double meanProp = phiMax + varProp * logPostPhiFirst;
     double sdProp = sqrt(varProp);
     
-    double phiProp = rtnorm1(meanProp, sdProp, -1, 1);
+    /* double phiProp = rtnorm1(meanProp, sdProp, -1, 1); */
+    double phiProp = rtnorm1(meanProp, sdProp, 0.8, 0.98);
 
     double logPostProp = logPostPhiMix(phiProp, level, meanLevel,
                                 nAlong, indexClassMaxUsed, omega);
@@ -2140,8 +2141,8 @@ updateVectorsMixAndProdVectorsMix(SEXP prior_R, double * betaTilde, int J)
     SEXP iteratorProd_R = GET_SLOT(prior_R, iteratorProdVectorMix_sym);
     
     int *indexClass = INTEGER(GET_SLOT(prior_R, indexClassMix_sym));
-    int indexClassMax = *INTEGER(GET_SLOT(prior_R, indexClassMaxMix_sym));
-    size_t sizeToZero = indexClassMax * sizeof(double);
+    int indexClassMaxUsed = *INTEGER(GET_SLOT(prior_R, indexClassMaxUsedMix_sym));
+    size_t sizeToZero = indexClassMaxUsed * sizeof(double);
     
     int iAlong_r = *INTEGER(GET_SLOT(prior_R, iAlong_sym));  
     int iAlong_c = iAlong_r -1;
@@ -2154,14 +2155,14 @@ updateVectorsMixAndProdVectorsMix(SEXP prior_R, double * betaTilde, int J)
     
     double precPrior = 1/(omegaVectors * omegaVectors);
     
-    /* space for v length J and two lots of indexClassMax*/
-    double *work = (double*)R_alloc(J + 2*indexClassMax, sizeof(double));
+    /* space for v length J and two lots of indexClassMaxUsed*/
+    double *work = (double*)R_alloc(J + 2*indexClassMaxUsed, sizeof(double));
     double *v = work;
     getV_Internal(v, prior_R, J);
     
     /* make our own yX and XX from the remaining work so we can change them */
     double *yX = work + J;
-    double *XX = work + J + indexClassMax;
+    double *XX = work + J + indexClassMaxUsed;
     
     /* only need to get the iteratorProd indices once */
     int *indicesVectors = INTEGER(GET_SLOT(iteratorProd_R, indices_sym));
@@ -2211,8 +2212,7 @@ updateVectorsMixAndProdVectorsMix(SEXP prior_R, double * betaTilde, int J)
             
             advanceS(iteratorBeta_R);
             
-            for (int iClass = 0; iClass < indexClassMax; ++iClass) {
-                
+            for (int iClass = 0; iClass < indexClassMaxUsed; ++iClass) {
                 int iVector = iClass * nElementVector + iElement;
                 double precData = XX[iClass];
                 double var = 1/ (precData + precPrior);
@@ -2220,9 +2220,11 @@ updateVectorsMixAndProdVectorsMix(SEXP prior_R, double * betaTilde, int J)
                 double mean = var * yX[iClass];
                 thisVector[iVector] = rnorm(mean, sd);
             }
-        } /* end iElement loop */
-        
-        for (int iClass = 0; iClass < indexClassMax; ++iClass) {
+
+	} /* end iElement loop */
+
+	
+        for (int iClass = 0; iClass < indexClassMaxUsed; ++iClass) {
             
             resetM(iteratorProd_R);
         

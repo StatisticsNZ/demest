@@ -2362,7 +2362,7 @@ test_that("updateBetaAndPriorBeta updates correct slots with MixNormZero", {
     ## psi
     psi0 <- unlist(prior0@vectorsMix)
     psi1 <- unlist(prior1@vectorsMix)
-    expect_true(all(psi0 != psi1))
+    expect_true(!all(psi0 == psi1))
     ## sigma_delta
     sdelta0 <- prior0@tau@.Data
     sdelta1 <- prior1@tau@.Data

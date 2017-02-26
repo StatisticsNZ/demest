@@ -2554,7 +2554,7 @@ test_that("predictPrior works with MixNormZero", {
                     DimScales = list(new("Points", dimvalues = 2001:2010),
                                      new("Categories", dimvalues = c("a", "b")),
                                      new("Intervals", dimvalues = as.numeric(0:10))))
-    spec <- Mix(weights = Weights(mean = -10))
+    spec <- Mix(weights = Weights())
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
@@ -2567,9 +2567,9 @@ test_that("predictPrior works with MixNormZero", {
                                          new("Categories", dimvalues = c("a", "b")),
                                          new("Intervals", dimvalues = as.numeric(0:10))))
     prior.new <- initialPriorPredict(prior.old,
-                                      metadata = metadata.new,
-                                      name = "time:reg:age",
-                                      along = 1L)
+                                     metadata = metadata.new,
+                                     name = "time:reg:age",
+                                     along = 1L)
     expect_is(prior.new, "MixNormZeroPredict")
     prior.new <- transferParamPrior(prior = prior.new,
                                     values = extractValues(prior.old))
@@ -2595,7 +2595,7 @@ test_that("R and C versions of predictPrior give same answer MixNormZero", {
                     DimScales = list(new("Points", dimvalues = 2001:2010),
                                      new("Categories", dimvalues = c("a", "b")),
                                      new("Intervals", dimvalues = as.numeric(0:10))))
-    spec <- Mix(weights = Weights(mean = -10))
+    spec <- Mix()
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,

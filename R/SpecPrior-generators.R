@@ -1374,21 +1374,21 @@ Level <- function(scale = HalfT()) {
 
 #' @export
 Mix <- function(along = NULL,
-                vectors = Vectors(),
+                components = Components(),
                 weights = Weights(),
                 covariates = NULL,
                 error = Error(),
                 maxClass = 10) {
     ## along
     along <- checkAndTidyAlongDLM(along)
-    ## vectors
-    if (!methods::is(vectors, "Vectors"))
+    ## components
+    if (!methods::is(components, "Components"))
         stop(gettextf("'%s' has class \"%s\"",
-                      "vectors", class(vectors)))
-    AVectorsMix <- vectors@AVectorsMix
-    multVectorsMix <- vectors@multVectorsMix
-    nuVectorsMix <- vectors@nuVectorsMix
-    omegaVectorsMaxMix <- vectors@omegaVectorsMaxMix
+                      "components", class(components)))
+    AVectorsMix <- components@AVectorsMix
+    multVectorsMix <- components@multVectorsMix
+    nuVectorsMix <- components@nuVectorsMix
+    omegaVectorsMaxMix <- components@omegaVectorsMaxMix
     ## weights
     if (!methods::is(weights, "Weights"))
         stop(gettextf("'%s' has class \"%s\"",
@@ -1697,7 +1697,7 @@ Trend <- function(initial = Initial(), scale = HalfT()) {
 }
 
 #' @export
-Weights <- function(mean = 0, sd = 1, temporary = HalfT(), permanent = HalfT()) {
+Weights <- function(mean = 0, sd = 1, scale1AR = HalfT(), scale2AR = HalfT()) {
     priorMeanLevelComponentWeightMix <- checkAndTidyMeanOrProb(object = mean,
                                                                name = "mean")
     checkPositiveNumeric(x = sd,
@@ -1705,20 +1705,20 @@ Weights <- function(mean = 0, sd = 1, temporary = HalfT(), permanent = HalfT()) 
     priorMeanLevelComponentWeightMix = new("Parameter", priorMeanLevelComponentWeightMix)
     priorSDLevelComponentWeightMix <- as.double(sd)
     priorSDLevelComponentWeightMix <- new("Scale", priorSDLevelComponentWeightMix)
-    if (!methods::is(temporary, "HalfT"))
+    if (!methods::is(scale1AR, "HalfT"))
         stop(gettextf("'%s' has class \"%s\"",
-                      "temporary", class(temporary)))
-    if (!methods::is(permanent, "HalfT"))
+                      "scale1AR", class(scale1AR)))
+    if (!methods::is(scale2AR, "HalfT"))
         stop(gettextf("'%s' has class \"%s\"",
-                      "permanent", class(permanent)))
-    AComponentWeightMix <- temporary@A
-    ALevelComponentWeightMix <- permanent@A
-    multComponentWeightMix <- temporary@mult
-    multLevelComponentWeightMix <- permanent@mult
-    nuComponentWeightMix <- temporary@nu
-    nuLevelComponentWeightMix <- permanent@nu
-    omegaComponentWeightMaxMix <- temporary@scaleMax
-    omegaLevelComponentWeightMaxMix <- permanent@scaleMax
+                      "scale2AR", class(scale2AR)))
+    AComponentWeightMix <- scale1AR@A
+    ALevelComponentWeightMix <- scale2AR@A
+    multComponentWeightMix <- scale1AR@mult
+    multLevelComponentWeightMix <- scale2AR@mult
+    nuComponentWeightMix <- scale1AR@nu
+    nuLevelComponentWeightMix <- scale2AR@nu
+    omegaComponentWeightMaxMix <- scale1AR@scaleMax
+    omegaLevelComponentWeightMaxMix <- scale2AR@scaleMax
     methods::new("Weights",
                  AComponentWeightMix = AComponentWeightMix,
                  ALevelComponentWeightMix = ALevelComponentWeightMix,
@@ -1733,7 +1733,7 @@ Weights <- function(mean = 0, sd = 1, temporary = HalfT(), permanent = HalfT()) 
 }
 
 #' @export
-Vectors <- function(scale = HalfT()) {
+Components <- function(scale = HalfT()) {
     if (!methods::is(scale, "HalfT"))
         stop(gettextf("'%s' has class \"%s\"",
                       scale, class(scale)))
@@ -1741,7 +1741,7 @@ Vectors <- function(scale = HalfT()) {
     multVectorsMix <- scale@mult
     nuVectorsMix <- scale@nu
     omegaVectorsMaxMix <- scale@scaleMax
-    methods::new("Vectors",
+    methods::new("Components",
                  AVectorsMix = AVectorsMix,
                  multVectorsMix = multVectorsMix,
                  nuVectorsMix = nuVectorsMix,

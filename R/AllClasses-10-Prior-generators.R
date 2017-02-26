@@ -232,7 +232,7 @@ setClass("Trend",
                       "SpecADelta0Mixin",
                       "SpecOmegaDeltaMaxMixin"))
 
-setClass("Vectors",
+setClass("Components",
          contains = c("MultVectorsMixMixin",
                       "NuVectorsMixMixin",
                       "SpecAVectorsMixMixin",

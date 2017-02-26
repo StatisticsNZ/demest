@@ -1282,10 +1282,10 @@ test_that("R and C versions of updateIndexClassMaxPossibleMix give same answer",
                           multScale = 1)
     found <- 0L
     nochanges <- 0L
-    for (seed in seq_len(n.test)) {
+    for (seed in seq_len(n.test * 2)) {
         set.seed(seed)
         prior@latentWeightMix@.Data <- runif(n = 200)
-        prior@weightMix@.Data <- runif(n = 100, min = 0, max = 0.35)
+        prior@weightMix@.Data <- runif(n = 100, min = 0, max = 0.3)
         indexClassMaxPossibleMix.prev = prior@indexClassMaxPossibleMix@.Data
         ans.R <- updateIndexClassMaxPossibleMix(prior, useC = FALSE)
         ans.C <- updateIndexClassMaxPossibleMix(prior, useC = TRUE)
@@ -1295,9 +1295,9 @@ test_that("R and C versions of updateIndexClassMaxPossibleMix give same answer",
             nochanges = nochanges +1L
         }
     }
-    if ((found == n.test) || (found == 0L))
+    if ((found == 2* n.test) || (found == 0L))
         warning("all found or none found")
-    if (nochanges == as.integer(n.test))
+    if (nochanges == 2* as.integer(n.test))
         warning("no changes in indexClassMaxPossibleMix")
 })
 
@@ -1943,12 +1943,13 @@ test_that("updateOmegaLevelComponentWeightMix gives valid answer", {
         V <- ((1-phi^2) * sum((level[1,] - mu/(1-phi))^2)
             + sum((level[-1,] - mu - phi*level[-n.along,])^2))
         n <- n.along * index.class.max.used
+        max <- prior@omegaLevelComponentWeightMaxMix@.Data
         omega.new <- updateSDNorm(sigma = sigma,
                                   A = A,
                                   nu = nu,
                                   V = V,
                                   n = n,
-                                  max = 1 * index.class.max.used)
+                                  max = max)
         ans.expected <- prior
         ans.expected@omegaLevelComponentWeightMix@.Data <- omega.new
         if (test.identity)
@@ -2900,13 +2901,70 @@ test_that("updateVectorsMixAndProdVectorsMix gives valid answer", {
     set.seed(2)
     ans.obtained <- updateVectorsMixAndProdVectorsMix(prior = prior,
                                                       betaTilde = beta.tilde)
-    for (i in 1:3)
-        expect_true(all(ans.obtained@vectorsMix[[i]] != prior@vectorsMix[[i]]))
-    vec.reg <- matrix(ans.obtained@vectorsMix[[1]], nc = 10)
-    vec.age <- matrix(ans.obtained@vectorsMix[[3]], nc = 10)
+    set.seed(2)
+    index.class <- prior@indexClassMix
+    tau.sq <- prior@tau@.Data^2
+    a <- array(dim = c(2, 10, 10))
+    vec.reg <- matrix(prior@vectorsMix[[1]]@.Data, nr = 2)
+    vec.age <- matrix(prior@vectorsMix[[3]]@.Data, nr = 10)
+    bt <- array(beta.tilde, dim = c(2, 10, 10))
+    ic <- array(index.class, dim = c(2, 10, 10))
+    omega.vectors.sq <- prior@omegaVectorsMix@.Data^2
+    ans.reg <- vec.reg
+    ans.age <- vec.age
+    ans.expected <- prior
+    max.used <- prior@indexClassMaxUsedMix@.Data
+    ## reg vector
+    for (i.reg in 1:2) {
+        for (i.class in 1:max.used) {
+            XX <- 0
+            yX <- 0
+            for (i.time in 1:10) {
+                for (i.age in 1:10) {
+                    include <- ic[i.reg, i.time, i.age] == i.class
+                    if (include) {
+                        XX <- XX + (vec.age[i.age, i.class])^2
+                        yX <- yX + bt[i.reg, i.time, i.age] * vec.age[i.age, i.class]
+                    }
+                }
+            }
+            var <- 1 / (1/omega.vectors.sq + XX / tau.sq)
+            mean <- var * yX / tau.sq
+            ans.reg[i.reg, i.class] <- rnorm(n = 1, mean = mean, sd = sqrt(var))
+        }
+    }
+    ans.expected@vectorsMix[[1]]@.Data <- as.numeric(ans.reg)
+    vec.reg <- matrix(ans.expected@vectorsMix[[1]], nc = 10)
+    vec.age <- matrix(ans.expected@vectorsMix[[3]], nc = 10)
     prod.vec <- lapply(1:10, function(i) outer(vec.reg[,i], vec.age[,i]))
     prod.vec <- unlist(prod.vec)
-    expect_equal(ans.obtained@prodVectorsMix@.Data, prod.vec)
+    ans.expected@prodVectorsMix@.Data <- prod.vec
+    ## age vector
+    for (i.age in 1:10) {
+        for (i.class in 1:max.used) {
+            XX <- 0
+            yX <- 0
+            for (i.reg in 1:2) {
+                for (i.time in 1:10) {
+                    include <- ic[i.reg, i.time, i.age] == i.class
+                    if (include) {
+                        XX <- XX + (vec.reg[i.reg, i.class])^2
+                        yX <- yX + bt[i.reg, i.time, i.age] * vec.reg[i.reg, i.class]
+                    }
+                }
+            }
+            var <- 1 / (1/omega.vectors.sq + XX / tau.sq)
+            mean <- var * yX / tau.sq
+            ans.age[i.age, i.class] <- rnorm(n = 1, mean = mean, sd = sqrt(var))
+        }
+    }
+    ans.expected@vectorsMix[[3]]@.Data <- as.numeric(ans.age)
+    vec.reg <- matrix(ans.expected@vectorsMix[[1]], nc = 10)
+    vec.age <- matrix(ans.expected@vectorsMix[[3]], nc = 10)
+    prod.vec <- lapply(1:10, function(i) outer(vec.reg[,i], vec.age[,i]))
+    prod.vec <- unlist(prod.vec)
+    ans.expected@prodVectorsMix@.Data <- prod.vec
+    expect_equal(ans.obtained, ans.expected)
 })
 
 test_that("R and C versions of updateVectorsMixAndProdVectorsMix give same answer", {
