@@ -1,10 +1,13 @@
 #generate data to check the code
 rm(list=ls(all=TRUE))
-setwd("D:/my workfiles/project/bmf")
+## setwd("D:/my workfiles/project/bmf")
+setwd("../../NewZealandChina/bmf")
 dir <- file.path(getwd(),"bmf")  #the directory where the bmf project is
 dirc <- file.path(dir,"src/R") #the directory where the codes are
 dirs  <-  file.path(dir,"results")
-data <- read.csv(file.path(dir,"/data/newdata.csv"),header=T) #the real data
+
+
+data <- read.csv("newdata.csv")
 
 
 #we use Tindex,Aindex and Sindex in the real data
@@ -16,7 +19,7 @@ N=length(Tindex)
 T=length(unique(Tindex))
 A=length(unique(Aindex))
 S=length(unique(Sindex))
-source(file.path(dir,"src/useful functions_v3.R"))
+source("useful functions_v3.R")
 
 #################
 #do not update sigma2's

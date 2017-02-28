@@ -1949,8 +1949,8 @@ updatePhiMix(SEXP prior_R)
     double meanProp = phiMax + varProp * logPostPhiFirst;
     double sdProp = sqrt(varProp);
     
-    /* double phiProp = rtnorm1(meanProp, sdProp, -1, 1); */
-    double phiProp = rtnorm1(meanProp, sdProp, 0.8, 0.98);
+    double phiProp = rtnorm1(meanProp, sdProp, -1, 1);
+    /* double phiProp = rtnorm1(meanProp, sdProp, 0.8, 0.98); */
 
     double logPostProp = logPostPhiMix(phiProp, level, meanLevel,
                                 nAlong, indexClassMaxUsed, omega);

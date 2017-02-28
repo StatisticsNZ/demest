@@ -9,138 +9,315 @@ test.extended <- FALSE
 
 ## test mixture prior
 if (FALSE) {
+
+    drawData <- function(mean.level.component.weight = 0,
+                         phi = 0.95,
+                         omega.vectors = 0.5,
+                         omega.component.weight = 0.1,
+                         omega.level.component.weight = 0.1,
+                         tau = 0.5,
+                         index.class.max = 10) {
+        rtnorm1 <- demest:::rtnorm1
+        initialPrior <- demest:::initialPrior
+        n.time <- 10
+        dv.time <- seq(from = 2001, length = n.time)
+        metadata <- new("MetaData",
+                        nms = c("time", "age", "sex"),
+                        dimtypes = c("time", "age", "sex"),
+                        DimScales = list(new("Points", dimvalues = dv.time),
+                                         new("Intervals", dimvalues = as.numeric(0:10)),
+                                         new("Sexes", dimvalues = c("Female", "Male"))))
+        n.beta.no.along <- as.integer(prod(dim(metadata)[-1]))
+        J <- as.integer(prod(dim(metadata)))
+        vectors <- list(numeric(),
+                        rnorm(n = 10 * index.class.max, sd = omega.vectors),
+                        rnorm(n = 2 * index.class.max, sd = omega.vectors))
+        vec2 <- matrix(vectors[[2]], ncol = index.class.max)
+        vec3 <- matrix(vectors[[3]], ncol = index.class.max)
+        prod.vectors <- sapply(1:index.class.max,
+                               function(i) outer(vec2[,i], vec3[,i]))
+        level.component.weight <- matrix(nrow = n.time, ncol = index.class.max)
+        level.component.weight[1,] <- rnorm(n = index.class.max,
+                                            mean = mean.level.component.weight / (1 - phi),
+                                            sd = omega.level.component.weight / sqrt(1 - phi^2))
+        for (i in 2:n.time)
+            level.component.weight[i,] <- rnorm(n = index.class.max,
+                                                mean = (mean.level.component.weight
+                                                    + phi * level.component.weight[i-1,]),
+                                                sd = omega.level.component.weight)
+        level.component.weight <- as.numeric(level.component.weight)
+        component.weight <- rnorm(n = n.time * index.class.max,
+                                  mean = level.component.weight,
+                                  sd = omega.component.weight)
+        makeWeight <- function(W) {
+            gW <- pnorm(W)
+            ans <- gW
+            n <- length(ans)
+            if (n > 1) {
+                for (i in 2:n)
+                    ans[i] <- ans[i] * prod(1-gW[1:(i-1)])
+            }
+            ans
+        }
+        weight <- apply(matrix(component.weight, ncol = index.class.max),
+                        1,
+                        makeWeight)
+        weight <- t(weight)
+        chooseIndexClass <- function(time)
+            sample(1:index.class.max, size = 1, prob = weight[time, ])
+        index.class <- sapply(rep(1:n.time, times = n.beta.no.along),
+                              chooseIndexClass)
+        makeLatCompWt <- function(index, time) {
+            mean <- weight[time, index]
+            ans <- numeric(length = index.class.max)
+            if (index > 1) {
+                for (i in 1:index)
+                    ans[i] <- rtnorm1(mean = mean, sd = 1, upper = 0)
+            }
+            ans[index] <- rtnorm1(mean = mean, sd = 1, lower = 0)
+            if (index < index.class.max) {
+                for (i in (index + 1):index.class.max)
+                    ans[i] <- rnorm(n = 1, mean = mean, sd = 1)
+            }
+            ans
+        }
+        i.time <- rep(1:n.time, times = n.beta.no.along)
+        latent.component.weight <- matrix(nrow = J, ncol = index.class.max)
+        for (i in 1:J) {
+            latent.component.weight[i,] <- makeLatCompWt(index.class[i],
+                                                         i.time[i])
+        }
+        v <- weight[cbind(rep(1:n.time, times = n.beta.no.along), index.class)]
+        latent.weight <- runif(n = J, max = v)
+        alpha <- prod.vectors[cbind(rep(1:n.beta.no.along, each = n.time), index.class)]
+        beta.tilde <- rnorm(n = J, mean = alpha, sd = tau)
+        spec <- Mix(maxClass = index.class.max)
+        prior <- initialPrior(spec,
+                              beta = beta.tilde,
+                              metadata = metadata,
+                              sY = NULL,
+                              multScale = 1)
+        prior@alphaMix@.Data <- alpha
+        prior@componentWeightMix@.Data <- component.weight
+        prior@indexClassMix <- index.class
+        prior@indexClassMaxUsedMix@.Data <- max(index.class)
+        prior@indexClassMaxPossibleMix@.Data <- max(index.class)
+        prior@latentWeightMix@.Data <- latent.weight
+        prior@latentComponentWeightMix@.Data <- as.numeric(latent.component.weight)
+        prior@levelComponentWeightMix@.Data <- level.component.weight
+        prior@meanLevelComponentWeightMix@.Data <- mean.level.component.weight
+        prior@omegaComponentWeightMix@.Data <- omega.component.weight
+        prior@omegaLevelComponentWeightMix@.Data <- omega.level.component.weight
+        prior@omegaVectorsMix@.Data <- omega.vectors
+        prior@phiMix <- phi
+        prior@prodVectorsMix@.Data <- as.numeric(prod.vectors)
+        prior@vectorsMix <- lapply(vectors, function(x) new("ParameterVector", x))
+        prior@weightMix@.Data <- as.numeric(weight)
+        prior@tau@.Data <- tau
+        stopifnot(validObject(prior))
+        print(round(matrix(prior@weightMix@.Data, ncol = index.class.max), 2))
+        print(table(index.class))
+        list(prior = prior,
+             beta.tilde = beta.tilde)
+    }
+
+
+    ## updateVectorsMixAndProdVectorsMix
+
+    n.update <- 10
+    l <- drawData(omega.vectors = 1)
+    prior <- l$prior
+    beta.tilde <- l$beta.tilde
+    index.class.max <- prior@indexClassMaxMix@.Data
+    dim.beta <- prior@dimBeta
+    ans.age <- matrix(nrow = dim.beta[2] * index.class.max,
+                      ncol = n.update) 
+    ans.sex <- matrix(nrow = dim.beta[3] * index.class.max,
+                      ncol = n.update)
+    ans.prod <- matrix(nrow = dim.beta[2] * dim.beta[3] * index.class.max,
+                       ncol = n.update)
+    updateVectorsMixAndProdVectorsMix <- demest:::updateVectorsMixAndProdVectorsMix
+    for (i in seq_len(n.update)) {
+        prior1 <- updateVectorsMixAndProdVectorsMix(prior,
+                                                    betaTilde = beta.tilde,
+                                                    useC = TRUE)
+        ans.age[,i] <- prior1@vectorsMix[[2]]@.Data
+        ans.sex[,i] <- prior1@vectorsMix[[3]]@.Data
+        ans.prod[,i] <- prior1@prodVectorsMix@.Data
+    }
+    ans.age <- rowMeans(ans.age)
+    ans.sex <- rowMeans(ans.sex)
+    ans.prod <- rowMeans(ans.prod)
+
+    op <- par(mfrow = c(2, 2))
+    plot(prior@vectorsMix[[2]]@.Data, ans.age)
+    plot(prior@vectorsMix[[3]]@.Data, ans.sex)
+    plot(prior@prodVectorsMix@.Data, ans.prod)
+    par(op)
+
+    n.comp <- 3
+    op <- par(mfrow = c(2, 2))
+    plot(prior@vectorsMix[[2]]@.Data[1 : (n.comp * dim.beta[2])],
+         ans.age[1 : (n.comp * dim.beta[2])])
+    plot(prior@vectorsMix[[3]]@.Data[1 : (n.comp * dim.beta[3])],
+         ans.sex[1 : (n.comp * dim.beta[3])])
+    plot(prior@prodVectorsMix@.Data[1 : (n.comp * dim.beta[2] * dim.beta[3])],
+         ans.prod[1 : (n.comp * dim.beta[2] * dim.beta[3])]) 
+    par(op)
+
+
+    ## updateOmegaVectorsMix
+
+    n.update <- 1000
+    l <- drawData()
+    prior <- l$prior
+    ans <- numeric(length = n.update)
+    updateOmegaVectorsMix <- demest:::updateOmegaVectorsMix
+    for (i in seq_len(n.update)) {
+        prior1 <- updateOmegaVectorsMix(prior,
+                                        useC = TRUE)
+        ans[i] <- prior1@omegaVectorsMix@.Data
+    }
+    plot(ans, type = "l")
+    abline(h = prior@omegaVectorsMix@.Data)
+
+
+    ## updateOmegaComponentWeightMix
+
+    n.update <- 1000
+    l <- drawData()
+    prior <- l$prior
+    ans <- numeric(length = n.update)
+    updateOmegaComponentWeightMix <- demest:::updateOmegaComponentWeightMix
+    for (i in seq_len(n.update)) {
+        prior1 <- updateOmegaComponentWeightMix(prior,
+                                                useC = TRUE)
+        ans[i] <- prior1@omegaComponentWeightMix@.Data
+    }
+    plot(ans, type = "l")
+    abline(h = prior@omegaComponentWeightMix@.Data)
+
+
+    ## updateLevelComponentWeightMix
+
+    n.update <- 1000
+    l <- drawData()
+    prior <- l$prior
+    ans <- numeric(length = n.update)
+    updateOmegaLevelComponentWeightMix <- demest:::updateOmegaLevelComponentWeightMix
+    for (i in seq_len(n.update)) {
+        prior1 <- updateOmegaLevelComponentWeightMix(prior,
+                                                useC = TRUE)
+        ans[i] <- prior1@omegaLevelComponentWeightMix@.Data
+    }
+    plot(ans, type = "l")
+    abline(h = prior@omegaLevelComponentWeightMix@.Data)
+
+
+    ## updateTau
+
+    n.update <- 1000
+    l <- drawData()
+    prior <- l$prior
+    ans <- numeric(length = n.update)
+    updateTauNorm <- demest:::updateTauNorm
+    for (i in seq_len(n.update)) {
+        prior1 <- updateTauNorm(prior,
+                                beta = beta.tilde,
+                                useC = TRUE)
+        ans[i] <- prior1@tau@.Data
+    }
+    plot(ans, type = "l")
+    abline(h = prior@tau@.Data)
+
+
+    ## updateMeanLevelComponentWeightMix
+
+    n.update <- 1000
+    l <- drawData()
+    prior <- l$prior
+    ans <- numeric(length = n.update)
+    updateMeanLevelComponentWeightMix <- demest:::updateMeanLevelComponentWeightMix
+    for (i in seq_len(n.update)) {
+        prior1 <- updateMeanLevelComponentWeightMix(prior,
+                                                    useC = TRUE)
+        ans[i] <- prior1@meanLevelComponentWeightMix@.Data
+    }
+    plot(ans, type = "l")
+    abline(h = prior@meanLevelComponentWeightMix@.Data)
+
+
+    ## updatePhiMix
+
+    n.update <- 1000
+    l <- drawData()
+    prior <- l$prior
+    ans <- numeric(length = n.update)
+    updatePhiMix <- demest:::updatePhiMix
+    for (i in seq_len(n.update)) {
+        prior1 <- updatePhiMix(prior,
+                               useC = TRUE)
+        ans[i] <- prior1@phiMix
+    }
+    plot(ans, type = "l")
+    abline(h = prior@phiMix)
+
+
+
+
+
+
+    n.update <- 10
+    ans.age <- matrix(nrow = 10 * index.class.max, ncol = n.update)
+    ans.sex <- matrix(nrow = 2 * index.class.max, ncol = n.update)
+    ans.prod <- matrix(nrow = 10 * 2 * index.class.max, ncol = n.update)
+    updateVectorsMixAndProdVectorsMix <- demest:::updateVectorsMixAndProdVectorsMix
+    for (i in seq_len(n.update)) {
+        prior1 <- updateVectorsMixAndProdVectorsMix(prior,
+                                                    betaTilde = beta.tilde,
+                                                    useC = TRUE)
+        ans.age[,i] <- prior1@vectorsMix[[2]]@.Data
+        ans.sex[,i] <- prior1@vectorsMix[[3]]@.Data
+        ans.prod[,i] <- prior1@prodVectorsMix@.Data
+    }
+    ans.age <- rowMeans(ans.age)
+    ans.sex <- rowMeans(ans.sex)
+    ans.prod <- rowMeans(ans.prod)
+
+    op <- par(mfrow = c(2, 2))
+    plot(prior@vectorsMix[[2]]@.Data, ans.age)
+    plot(prior@vectorsMix[[3]]@.Data, ans.sex)
+    plot(prior@prodVectorsMix@.Data, ans.prod)
+    par(op)
+
+
     
-    rhalft <- demest:::rhalft
-    rtnorm1 <- demest:::rtnorm1
-    initialPrior <- demest:::initialPrior
-    n.time <- 10
-    dv.time <- seq(from = 2001, length = n.time)
-    metadata <- new("MetaData",
-                    nms = c("time", "age", "sex"),
-                    dimtypes = c("time", "age", "sex"),
-                    DimScales = list(new("Points", dimvalues = dv.time),
-                                     new("Intervals", dimvalues = as.numeric(0:10)),
-                                     new("Sexes", dimvalues = c("Female", "Male"))))
-    n.beta.no.along <- as.integer(prod(dim(metadata)[-1]))
-    J <- as.integer(prod(dim(metadata)))
-    scale.omega.vectors <- 0.5
-    scale.omega.component.weight <- 0.2
-    scale.omega.level.component.weight <- 0.2
-    scale.tau <- 0.2
-    prior.mean.level.component.weight <- 0
-    prior.sd.level.component.weight <- 0.1
-    phi <- 0.9
-    index.class.max <- 20L
-    omega.vectors <- rhalft(n = 1,
-                            df = 7,
-                            scale = scale.omega.vectors)
-    omega.component.weight <- rhalft(n = 1,
-                                     df = 7,
-                                     scale = scale.omega.component.weight)
-    omega.level.component.weight <- rhalft(n = 1,
-                                           df = 7,
-                                           scale = scale.omega.level.component.weight)
-    tau <- rhalft(n = 1,
-                  df = 7,
-                  scale = scale.tau)
-    vectors <- list(numeric(),
-                    rnorm(n = 10 * index.class.max, sd = omega.vectors),
-                    rnorm(n = 2 * index.class.max, sd = omega.vectors))
-    vec2 <- matrix(vectors[[2]], ncol = index.class.max)
-    vec3 <- matrix(vectors[[3]], ncol = index.class.max)
-    prod.vectors <- sapply(1:index.class.max, function(i) outer(vec2[,i], vec3[,i]))
-    mean.level.component.weight <- rnorm(n = 1,
-                                         mean = prior.mean.level.component.weight,
-                                         sd = prior.sd.level.component.weight)
-    level.component.weight <- matrix(nrow = n.time, ncol = index.class.max)
-    level.component.weight[1,] <- rnorm(n = index.class.max,
-                                        mean = mean.level.component.weight / (1 - phi),
-                                        sd = omega.level.component.weight / sqrt(1 - phi^2))
-    for (i in 2:n.time)
-        level.component.weight[i,] <- rnorm(n = index.class.max,
-                                            mean = (mean.level.component.weight
-                                                + phi * level.component.weight[i-1,]),
-                                            sd = omega.level.component.weight)
-    level.component.weight <- as.numeric(level.component.weight)
-    component.weight <- rnorm(n = n.time * index.class.max,
-                              mean = level.component.weight,
-                              sd = omega.component.weight)
-    makeWeight <- function(W) {
-        gW <- pnorm(W)
-        ans <- gW
-        n <- length(ans)
-        if (n > 1) {
-            for (i in 2:n)
-                ans[i] <- ans[i] * prod(1-gW[1:(i-1)])
-        }
-        ans
+
+
+    ## updateLatentComponentWeightMix
+    prior <- drawData()
+    n.update <- 1000
+    ans <- matrix(nrow = J * index.class.max, ncol = n.update)
+    updateLatentComponentWeightMix <- demest:::updateLatentComponentWeightMix
+    prior1 <- prior
+    for (i in seq_len(n.update)) {
+        prior1 <- updateLatentComponentWeightMix(prior1,
+                                                 useC = TRUE)
+        ans[,i] <- prior1@latentComponentWeightMix@.Data
     }
-    weight <- apply(matrix(component.weight, ncol = index.class.max),
-                    1,
-                    makeWeight)
-    weight <- t(weight)
-    chooseIndexClass <- function(time)
-        which.max(rmultinom(n = 1, size = 1, prob = weight[time, ]))
-    index.class <- sapply(rep(1:n.time, times = n.beta.no.along),
-                          chooseIndexClass)
-    makeLatCompWt <- function(index, time) {
-        mean <- weight[time, index]
-        ans <- numeric(length = index.class.max)
-        if (index > 1) {
-            for (i in 1:index)
-                ans[i] <- rtnorm1(mean = mean, sd = 1, upper = 0)
-        }
-        ans[index] <- rtnorm1(mean = mean, sd = 1, lower = 0)
-        if (index < index.class.max) {
-            for (i in (index + 1):index.class.max)
-                ans[i] <- rnorm(n = 1, mean = mean, sd = 1)
-        }
-        ans
-    }
-    i.time <- rep(1:n.time, times = n.beta.no.along)
-    latent.component.weight <- matrix(nrow = J, ncol = index.class.max)
-    for (i in 1:J) {
-        latent.component.weight[i,] <- makeLatCompWt(index.class[i],
-                                                     i.time[i])
-    }
-    v <- weight[cbind(rep(1:n.time, times = n.beta.no.along), index.class)]
-    latent.weight <- runif(n = J, max = v)
-    alpha <- prod.vectors[cbind(rep(1:n.beta.no.along, each = n.time), index.class)]
-    beta.tilde <- rnorm(n = J, mean = alpha, sd = tau)
-    spec <- Mix(maxClass = index.class.max)
-    prior <- initialPrior(spec,
-                          beta = beta.tilde,
-                          metadata = metadata,
-                          sY = NULL,
-                          multScale = 1)
-    prior@AComponentWeightMix@.Data <- scale.omega.component.weight
-    prior@ALevelComponentWeightMix@.Data <- scale.omega.level.component.weight
-    prior@AVectorsMix@.Data <- scale.omega.vectors
-    prior@alphaMix@.Data <- alpha
-    prior@componentWeightMix@.Data <- component.weight
-    prior@indexClassMix <- index.class
-    prior@indexClassMaxUsedMix@.Data <- max(index.class)
-    prior@indexClassMaxPossibleMix@.Data <- max(index.class)
-    prior@latentWeightMix@.Data <- latent.weight
-    prior@latentComponentWeightMix@.Data <- as.numeric(latent.component.weight)
-    prior@levelComponentWeightMix@.Data <- level.component.weight
-    prior@meanLevelComponentWeightMix@.Data <- mean.level.component.weight
-    prior@omegaComponentWeightMix@.Data <- omega.component.weight
-    prior@omegaLevelComponentWeightMix@.Data <- omega.level.component.weight
-    prior@omegaVectorsMix@.Data <- omega.vectors
-    prior@phiMix <- phi
-    prior@priorMeanLevelComponentWeightMix@.Data <- prior.mean.level.component.weight
-    prior@priorSDLevelComponentWeightMix@.Data <- prior.sd.level.component.weight
-    prior@prodVectorsMix@.Data <- as.numeric(prod.vectors)
-    prior@vectorsMix <- lapply(vectors, function(x) new("ParameterVector", x))
-    prior@weightMix@.Data <- as.numeric(weight)
-    prior@ATau@.Data <- scale.tau
-    prior@tau@.Data <- tau
-    stopifnot(validObject(prior))
+    ans.all <- rowMeans(ans)
+    plot(prior@latentComponentWeightMix@.Data, ans.all)
 
 
 
 
+
+
+
+
+
+
+    
 ## updatePrior
     n.update <- 10000
     ## ans <- matrix(nrow = J, ncol = n.update)
@@ -182,7 +359,7 @@ if (FALSE) {
                                              useC = TRUE) # k-star; deterministic
         prior1 <- updateLevelComponentWeightMix(prior1,
                                                 useC = TRUE) # alpha
-        prior1 <- updateMeanLevelComponentWeightMix(prior1,
+        prior1 <- updateMeanLevelComponentWeightgMix(prior1,
                                                     useC = TRUE) # mu
         prior1 <- updatePhiMix(prior1,
                                useC = TRUE) # phi
@@ -265,23 +442,6 @@ if (FALSE) {
 
 
 
-    ## updateVectorsMixAndProdVectorsMix
-    
-    n.update <- 100
-    ans <- matrix(nrow = 2 * index.class.max, ncol = n.update)
-    updateVectorsMixAndProdVectorsMix <- demest:::updateVectorsMixAndProdVectorsMix
-    prior1 <- prior
-    for (i in seq_len(n.update)) {
-        prior1 <- updateVectorsMixAndProdVectorsMix(prior,
-                                                    betaTilde = beta.tilde,
-                                                    useC = TRUE)
-        ans[,i] <- prior1@vectorsMix[[3]]@.Data
-    }
-    ans.all <- rowMeans(ans)
-    plot(prior@vectorsMix[[3]]@.Data[1:40], ans.all[1:40], asp = 1)
-    abline(a = 0, b = 1)
-
-
 
     ans.all <- matrix(ans.all, nr = 20,
                       dimnames = list(cell = 1:20, comp = seq_len(index.class.max)))
@@ -297,32 +457,7 @@ if (FALSE) {
     abline(a = 0, b = 1)
 
 
-    ## updateOmegaVectorsMix
-    n.update <- 1000
-    ans <- numeric(length = n.update)
-    updateOmegaVectorsMix <- demest:::updateOmegaVectorsMix
-    prior1 <- prior
-    for (i in seq_len(n.update)) {
-        prior1 <- updateOmegaVectorsMix(prior1,
-                                        useC = TRUE)
-        ans[i] <- prior1@omegaVectorsMix@.Data
-    }
-    summary(ans)
-    prior@omegaVectorsMix@.Data
 
-
-    ## updateLatentComponentWeightMix
-    n.update <- 1000
-    ans <- matrix(nrow = J * index.class.max, ncol = n.update)
-    updateLatentComponentWeightMix <- demest:::updateLatentComponentWeightMix
-    prior1 <- prior
-    for (i in seq_len(n.update)) {
-        prior1 <- updateLatentComponentWeightMix(prior1,
-                                                 useC = TRUE)
-        ans[,i] <- prior1@latentComponentWeightMix@.Data
-    }
-    ans.all <- rowMeans(ans)
-    plot(prior@latentComponentWeightMix@.Data, ans.all)
 
     ## updateComponentWeightMix
     n.update <- 10000
