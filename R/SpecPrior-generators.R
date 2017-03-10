@@ -47,6 +47,65 @@ Classes <- function(cl, scale = NULL, mult = 1) {
                  mult = mult)                 
 }
 
+## NO_TESTS
+#' Specify priors for the components in a Mix prior.
+#'
+#' In normal usage, it is better to accept the default prior
+#' for the components than to specify it explicitly.
+#' End users are therefore unlikely to need this function.
+#'
+#' A \code{\link{Mix}} prior treats an interaction as a mixture of
+#' normal distributions.  The means for these normal distributions
+#' are formed by multiplying a component for each dimension
+#' other than the 'along' dimension (typically the time dimension).
+#' Each element of these components has a normal prior with mean
+#' 0 and standard deviation \code{scaleComponent}.  The prior
+#' for \code{scaleComponent} can be set using the \code{scale}
+#' argument.
+#'
+#' Let \eqn{s} be the standard deviation of data \eqn{y},
+#' or of \code{log(y)} in the case of a Poisson model without
+#' exposure.  Let \eqn{m} be the \code{mult} argument. Then
+#' the default value for scale parameter in the half-t distribution is
+#'
+#' \tabular{ll}{
+#'   \strong{Model} \tab \strong{Default} \cr
+#'   Poisson with exposure  \tab \eqn{m 0.5} \cr
+#'   Poisson without exposure \tab \eqn{ms 0.5} \cr
+#'   binomial  \tab \eqn{m 0.5} \cr
+#'   normal \tab \eqn{ms 0.5}
+#' }
+#'
+#' @param scale An object of class \code{\link{HalfT}}.
+#'
+#' @return An object of class \code{\linkS4class{Components}}.
+#'
+#' @seealso Mixture priors are specified using \code{\link{Mix}}.
+#' The weights in a mixture prior are specified using
+#' \code{\link{Weights}}.
+#'
+#' @examples
+#' Components()
+#' ## A tighter prior on 'scaleComponent'
+#' Components(scale = HalfT(scale = 0.25))
+#' 
+#' @export
+Components <- function(scale = HalfT()) {
+    if (!methods::is(scale, "HalfT"))
+        stop(gettextf("'%s' has class \"%s\"",
+                      scale, class(scale)))
+    AVectorsMix <- scale@A
+    multVectorsMix <- scale@mult
+    nuVectorsMix <- scale@nu
+    omegaVectorsMaxMix <- scale@scaleMax
+    methods::new("Components",
+                 AVectorsMix = AVectorsMix,
+                 multVectorsMix = multVectorsMix,
+                 nuVectorsMix = nuVectorsMix,
+                 omegaVectorsMaxMix = omegaVectorsMaxMix)
+}
+
+
 
 ## NO_TESTS
 #' Specify covariates in a prior for a main effect or interaction.
@@ -1372,13 +1431,47 @@ Level <- function(scale = HalfT()) {
                  omegaAlphaMax = omegaAlphaMax)
 }
 
+
+
+## NO_TESTS
+#' Specify a Mix prior.
+#'
+#' A \code{Mix} prior is used to model an iteraction that includes
+#' an "along" dimension (typically, but not necessarily, time),
+#' and additional dimensions.  Values for the additional
+#' dimensions evolve, generally smoothly, across successive values of the
+#' "along" dimension.  A typical application is modelling age-structures
+#' that change gradually over time.
+#'
+#' The prior is modified from a model developed by Kunihama and Dunson
+#' (2013).  The model is non-parametric, meaning that it extracts
+#' structure from the data with minimal guidance from the user.  It is
+#' designed for use with sparse data.
+#'
+#' @inheritParams DLM
+#' @param components An object of class \code{\linkS4class{Components}}.
+#' @param weights An object of class \code{\linkS4class{Weights}}.
+#' @param maxComponents The maximum number of components. Defaults to 10.
+#'
+#' @references
+#' Kunihama, T and Dunson, DB. 2013. Bayesian modeling of temporal dependence in
+#' large sparse contingency tables.  \emph{Journal of the American Statistical
+#' Association}, 108(504): 1324-1338.
+#'
+#' @seealso Priors for the components can be specified using
+#' function \code{\link{Components}}, and weights (ie mixing parameters)
+#' can be specified using function \code{\link{Weights}}.  However,
+#' in normal usage, it is typically best to stick with the defaults.
+#' 
+#' @examples
+#' Mix()
 #' @export
 Mix <- function(along = NULL,
                 components = Components(),
                 weights = Weights(),
                 covariates = NULL,
                 error = Error(),
-                maxClass = 10) {
+                maxComponents = 10) {
     ## along
     along <- checkAndTidyAlongDLM(along)
     ## components
@@ -1395,6 +1488,8 @@ Mix <- function(along = NULL,
                       "weights", class(weights)))
     AComponentWeightMix <- weights@AComponentWeightMix
     ALevelComponentWeightMix <- weights@ALevelComponentWeightMix
+    minLevelComponentWeight <- weights@minLevelComponentWeight
+    maxLevelComponentWeight <- weights@maxLevelComponentWeight
     multComponentWeightMix <- weights@multComponentWeightMix
     multLevelComponentWeightMix <- weights@multLevelComponentWeightMix
     nuComponentWeightMix <- weights@nuComponentWeightMix
@@ -1429,7 +1524,7 @@ Mix <- function(along = NULL,
     if (is.robust)
         nuBeta <- error@nuBeta
     ## indexClassMax
-    indexClassMaxMix <- checkAndTidyIndexClassMaxMix(maxClass)
+    indexClassMaxMix <- checkAndTidyIndexClassMaxMix(maxComponents)
     ## return
     if (!is.robust && !has.covariates) {
         methods::new("SpecMixNormZero",
@@ -1439,6 +1534,8 @@ Mix <- function(along = NULL,
                      AVectorsMix = AVectorsMix,
                      along = along,
                      indexClassMaxMix = indexClassMaxMix,
+                     minLevelComponentWeight = minLevelComponentWeight,
+                     maxLevelComponentWeight = maxLevelComponentWeight,
                      multComponentWeightMix = multComponentWeightMix,
                      multLevelComponentWeightMix = multLevelComponentWeightMix,
                      multTau = multTau,
@@ -1696,21 +1793,78 @@ Trend <- function(initial = Initial(), scale = HalfT()) {
                  omegaDeltaMax = omegaDeltaMax)
 }
 
+
+## NO_TESTS
+#' Specify priors for the weights in a Mix prior.
+#'
+#' In normal usage, it is better to accept the default priors
+#' for the weights than to specify them explicitly.
+#' End users are therefore unlikely to need this function.
+#'
+#' A \code{\link{Mix}} prior treats an interaction as a mixture of
+#' normal distributions.  The weights, also referred as mixture
+#' parameters, evolve over time.  The evolution of the weight for
+#' each component is governed by an auto-regressive time series model.
+#' Specifically, transformed values of the weights are modelled
+#' using
+#'
+#'   \code{levelAR1[k,h] = levelAR2[k,h] + errorAR1[k,h]}
+#' 
+#'   \code{levelAR2[k,h] = meanAR + dampAR * level2AR[k-1,h] + error2AR[k,h]}
+#'
+#' \code{meanAR} has a normal prior.
+#'
+#' \code{dampAR} has the boundary-avoiding prior described in
+#' Gelman et al (2004) p316-317.  This prior is equivalent to assuming
+#' a Beta(2, 2) prior on the transformed parameter (\code{dampAR}+0.5)/2.
+#'
+#' \code{errorAR1} and \code{errorAR2} both have half-t priors. These
+#' priors have the defaults described in \code{\link{HalfT}}.
+#'
+#' To avoid numerical problems, \code{levelAR2} is confined to the
+#' interval (\code{minAR2}, \code{maxAR2}). Users can override the
+#' default values, including setting them to \code{-Inf} and \code{Inf}.
+#' USER-SUPPLIED VALUES CURRENTLY IGNORED.
+#' 
+#' @param mean The mean of the prior for \code{meanAR}. Defaults to 0.
+#' @param sd The standard deviation of the prior for \code{meanAR}.
+#' Defaults to 1.
+#' @param scaleAR1 An object of class \code{\linkS4class{HalfT}} defining
+#' the prior for \code{errorAR1}.
+#' @param scaleAR2 An object of class \code{\linkS4class{HalfT}} defining
+#' the prior for \code{errorAR2}.
+#' @param minAR2 Minimum value that \code{levelAR2} can take. Defaults to -4.
+#' @param maxAR2 Maximum value that \code{levelAR2} can take. Defaults to 4.
+#'
+#' @return An object of class \code{\linkS4class{Weights}}.
+#' 
+#' @seealso Mixture priors are specified using \code{\link{Mix}}.
+#' The weights in a mixture prior are specified using
+#' \code{\link{Weights}}.
+#' 
 #' @export
-Weights <- function(mean = 0, sd = 1, scale1AR = HalfT(), scale2AR = HalfT()) {
+Weights <- function(mean = 0, sd = 1, scale1AR = HalfT(), scale2AR = HalfT(),
+                    minAR2 = -4, maxAR2 = 4) {
     priorMeanLevelComponentWeightMix <- checkAndTidyMeanOrProb(object = mean,
                                                                name = "mean")
     checkPositiveNumeric(x = sd,
                          name = "sd")
-    priorMeanLevelComponentWeightMix = new("Parameter", priorMeanLevelComponentWeightMix)
+    priorMeanLevelComponentWeightMix = methods::new("Parameter",
+                                                    priorMeanLevelComponentWeightMix)
     priorSDLevelComponentWeightMix <- as.double(sd)
-    priorSDLevelComponentWeightMix <- new("Scale", priorSDLevelComponentWeightMix)
+    priorSDLevelComponentWeightMix <- methods::new("Scale",
+                                                   priorSDLevelComponentWeightMix)
     if (!methods::is(scale1AR, "HalfT"))
         stop(gettextf("'%s' has class \"%s\"",
                       "scale1AR", class(scale1AR)))
     if (!methods::is(scale2AR, "HalfT"))
         stop(gettextf("'%s' has class \"%s\"",
                       "scale2AR", class(scale2AR)))
+    l <- checkAndTidyLevelComponentWeightMinMax(minAR2 = minAR2,
+                                                maxAR2 = maxAR2)
+    minLevelComponentWeight <- l$minLevelComponentWeight
+    maxLevelComponentWeight <- l$maxLevelComponentWeight
+    maxAR2 <- l$maxAR2
     AComponentWeightMix <- scale1AR@A
     ALevelComponentWeightMix <- scale2AR@A
     multComponentWeightMix <- scale1AR@mult
@@ -1722,6 +1876,8 @@ Weights <- function(mean = 0, sd = 1, scale1AR = HalfT(), scale2AR = HalfT()) {
     methods::new("Weights",
                  AComponentWeightMix = AComponentWeightMix,
                  ALevelComponentWeightMix = ALevelComponentWeightMix,
+                 maxLevelComponentWeight = maxLevelComponentWeight,
+                 minLevelComponentWeight = minLevelComponentWeight,
                  multComponentWeightMix = multComponentWeightMix,
                  multLevelComponentWeightMix = multLevelComponentWeightMix,
                  nuComponentWeightMix = nuComponentWeightMix,
@@ -1732,21 +1888,6 @@ Weights <- function(mean = 0, sd = 1, scale1AR = HalfT(), scale2AR = HalfT()) {
                  priorSDLevelComponentWeightMix = priorSDLevelComponentWeightMix)
 }
 
-#' @export
-Components <- function(scale = HalfT()) {
-    if (!methods::is(scale, "HalfT"))
-        stop(gettextf("'%s' has class \"%s\"",
-                      scale, class(scale)))
-    AVectorsMix <- scale@A
-    multVectorsMix <- scale@mult
-    nuVectorsMix <- scale@nu
-    omegaVectorsMaxMix <- scale@scaleMax
-    methods::new("Components",
-                 AVectorsMix = AVectorsMix,
-                 multVectorsMix = multVectorsMix,
-                 nuVectorsMix = nuVectorsMix,
-                 omegaVectorsMaxMix = omegaVectorsMaxMix)
-}
 
 
 

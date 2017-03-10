@@ -4,7 +4,7 @@
 #' All classes that describe priors inherit from
 #' class \code{SpecPrior}.  Examples include
 #' \code{\linkS4class{SpecExchFixed}}, \code{\linkS4class{SpecExch}}
-#' and \code{\linkS4class{SpecDLM}}.
+#' \code{\linkS4class{SpecDLM}}, and \code{\linkS4class{SpecMix}}.
 #'
 #' @export
 setClass("SpecPrior",
@@ -371,13 +371,66 @@ setClass("SpecKnownUncertain",
          contains = c("SpecKnown",
                       "AKnownVecMixin"))
 
-
-## SpecMix
+#' An S4 class to specify a Mix prior.
+#'
+#' An object of class \code{SpecMix} specifies a non-parametric
+#' prior, based on a mix of normal distributions, that can
+#' be used for modelling interactions, particularly interactions
+#' involving time.
+#'
+#' @section Warning:
+#' In  normal usage, it should not be necessary to
+#' access, or even know about, the slots of a
+#' \code{SpecMix} object.  The slots are not part of
+#' the API of the package, and may change in future.
+#'
+#' @slot along The name of the "along" dimension.
+#' @slot indexClassMaxMix The maximum number of components that
+#' can be accommodated.
+#' @slot minLevelComponentWeight The lower bound for values of
+#' \code{levelComponentWeightMix}.
+#' @slot maxLevelComponentWeight The upper bound for values of
+#' \code{levelComponentWeightMix}.
+#' @slot multComponentWeightMix Multiplier applied to the default
+#' value for \code{omegaComponentWeightMix}.
+#' @slot multLevelComponentWeightMix Multiplier applied to the default
+#' value for \code{omegaLevelComponentWeightMix}.
+#' @slot multVectorsMix Multiplier applied to the default
+#' value for \code{omegaVectorsMix}.
+#' @slot nuComponentWeightMix The degrees of freedom for the truncated
+#' half-t prior for \code{omegaComponentWeightMix}.
+#' @slot nuLevelComponentWeightMix The degrees of freedom for the truncated
+#' half-t prior for \code{omegaLevelComponentWeightMix}.
+#' @slot nuVectorsMix The degrees of freedom for the truncated
+#' half-t prior for \code{omegaVectorsMix}.
+#' @slot priorMeanLevelComponentWeightMix Mean for normal prior
+#' for \code{meanLevelComponentWeightMix}.
+#' @slot priorSDLevelComponentWeightMix Standard deviation for normal prior
+#' for \code{meanLevelComponentWeightMix}
+#' @slot AComponentWeightMix Scale for truncated half-t prior for
+#' \code{omegaComponentWeightMix}.
+#' @slot ALevelComponentWeightMix Scale for truncated half-t prior for
+#' \code{omegaLevelComponentWeightMix}.
+#' @slot AVectorsMix Scale for truncated half-t prior for
+#' \code{omegaVectorsMix}.
+#' @slot omegaComponentWeightMaxMix Upper limit for truncated half-t prior
+#' for \code{omegaComponentWeightMaxMix}.
+#' @slot omegaLevelComponentWeightMaxMix Upper limit for truncated half-t prior
+#' for \code{omegalevelComponentWeightMaxMix}.
+#' @slot omegaVectorsMix Upper limit for truncated half-t prior
+#' for \code{omegaVectorsMix}.
+#'
+#' @seealso Objects of class \code{SpecMix} are generated using function
+#' \code{\link{Mix}}.
+#' 
+#' @name SpecMix-class
+#' @export
 setClass("SpecMix",
          contains = c("VIRTUAL",
                       "SpecPrior",
                       "AlongMixin",
                       "IndexClassMaxMixMixin",
+                      "LevelComponentWeightMinMaxMixin",
                       "MultComponentWeightMixMixin",
                       "MultLevelComponentWeightMixMixin",
                       "MultVectorsMixMixin",

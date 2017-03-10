@@ -235,22 +235,6 @@ updateSDRobust <- function(sigma, A, nuBeta, nuTau, V, n, max, useC = FALSE) {
 
 ## UPDATING PRIORS ##################################################################
 
-## updateAlphaICAR <- function(prior, useC) {
-##     kTimesUpdate <- 2L
-##     J <- prior@J
-##     alpha <- prior@alphaICAR
-##     neighbours <- prior@neighbors
-##     n.update <- kTimesUpdate * J
-##     j.prev <- J
-##     for (update in seq_len(n.update)) {
-##         j <- as.integer(stats::runif(n = 1L) * (J - 1L))
-##         if (j == (J - 1L)) # just in case
-##             j <- J - 2L
-##         if (j >= j.prev)
-##             j <- j + 1L
-##         w <- neighbours[[j]]
-##         mean <- sum(w * 
-
 
 ## TRANSLATED
 ## HAS_TESTS
@@ -1358,7 +1342,7 @@ updatePhiMix <- function(prior, useC = FALSE) {
         level <- prior@levelComponentWeightMix@.Data # alpha; n.along * index.class.max
         mean.level <- prior@meanLevelComponentWeightMix@.Data # mu; 1
         index.class.max.used <- prior@indexClassMaxUsedMix@.Data # k-star; 1
-        omega <- prior@omegaLevelComponentWeightMix@.Data # eta; 1
+        omega <- prior@omegaLevelComponentWeightMix@.Data # sigma_eta; 1
         dim.beta <- prior@dimBeta
         iAlong <- prior@iAlong
         tolerance <- prior@tolerance@.Data
@@ -1366,7 +1350,7 @@ updatePhiMix <- function(prior, useC = FALSE) {
         phi.max <- modePhiMix(level = level,
                               meanLevel = mean.level,
                               nAlong = n.along,
-                              indexClassMax = index.class.max.used,
+                              indexClassMaxMix = index.class.max.used,
                               omega = omega,
                               tolerance = tolerance)
         log.post.phi.first <-
@@ -1374,14 +1358,14 @@ updatePhiMix <- function(prior, useC = FALSE) {
                                     level = level,
                                     meanLevel = mean.level,
                                     nAlong = n.along,
-                                    indexClassMax = index.class.max.used,
+                                    indexClassMaxMix = index.class.max.used,
                                     omega = omega)
         log.post.phi.second <-
             logPostPhiSecondOrderMix(phi = phi.max,
                                      level = level,
                                      meanLevel = mean.level,
                                      nAlong = n.along,
-                                     indexClassMax = index.class.max.used,
+                                     indexClassMaxMix = index.class.max.used,
                                      omega = omega)
         var.prop <- -1 / log.post.phi.second
         mean.prop <- phi.max + var.prop * log.post.phi.first
@@ -1390,18 +1374,20 @@ updatePhiMix <- function(prior, useC = FALSE) {
                             sd = sd.prop,
                             lower = -1,
                             upper = 1)
-        log.post.prop <- logPostPhiMix(phi = phi.prop,
-                                       level = level,
-                                       meanLevel = mean.level,
-                                       nAlong = n.along,
-                                       indexClassMax = index.class.max.used,
-                                       omega = omega)
-        log.post.curr <- logPostPhiMix(phi = phi.curr,
-                                       level = level,
-                                       meanLevel = mean.level,
-                                       nAlong = n.along,
-                                       indexClassMax = index.class.max.used,
-                                       omega = omega)
+        log.lik.prop <- logPostPhiMix(phi = phi.prop,
+                                      level = level,
+                                      meanLevel = mean.level,
+                                      nAlong = n.along,
+                                      indexClassMaxMix = index.class.max.used,
+                                      omega = omega)
+        log.lik.curr <- logPostPhiMix(phi = phi.curr,
+                                      level = level,
+                                      meanLevel = mean.level,
+                                      nAlong = n.along,
+                                      indexClassMaxMix = index.class.max.used,
+                                      omega = omega)
+        log.dens.prop <- log1p(phi.prop) + log1p(-phi.prop)
+        log.dens.curr <- log1p(phi.curr) + log1p(-phi.curr)
         log.prop.prop <- stats::dnorm(x = phi.prop,
                                       mean = mean.prop,
                                       sd = sd.prop,
@@ -1410,7 +1396,9 @@ updatePhiMix <- function(prior, useC = FALSE) {
                                       mean = mean.prop,
                                       sd = sd.prop,
                                       log = TRUE)
-        log.diff <- log.post.prop - log.post.curr + log.prop.curr - log.prop.prop
+        log.diff <- (log.lik.prop - log.lik.curr
+            + log.dens.prop - log.dens.curr
+            + log.prop.curr - log.prop.prop)
         accept <- (log.diff >= 0) || (stats::runif(1L) < exp(log.diff))
         if (accept)
             prior@phiMix <- phi.prop

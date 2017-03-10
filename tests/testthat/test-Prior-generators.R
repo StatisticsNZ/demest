@@ -636,7 +636,7 @@ test_that("generator function and initialPrior work with MixNormZero", {
                                   scale1AR = HalfT(scale = 0.4),
                                   scale2AR = HalfT(mult = 0.5)),
                 error = Error(scale = HalfT(df = 6)),
-                maxClass = 11)
+                maxComponents = 11)
     beta <- rnorm(200)
     prior <- initialPrior(spec,
                           beta = beta,

@@ -8,6 +8,6 @@
 All classes that describe priors inherit from
 class \code{SpecPrior}.  Examples include
 \code{\linkS4class{SpecExchFixed}}, \code{\linkS4class{SpecExch}}
-and \code{\linkS4class{SpecDLM}}.
+\code{\linkS4class{SpecDLM}}, and \code{\linkS4class{SpecMix}}.
 }
 

@@ -19,6 +19,13 @@ for standard deviations or scale parameters.
 
 \item{\code{mult}}{Multiplier applied to default value for \code{A}.}
 }}
+\section{Warning}{
+
+In  normal usage, it should not be necessary to
+access, or even know about, the slots of a
+\code{HalfT} object.  The slots are not part of
+the API of the package, and may change in future.
+}
 \seealso{
 Objects of class \code{HalfT} are created
 by calls to function \code{\link{HalfT}}.

@@ -2,6 +2,7 @@
 % Please edit documentation in R/AllGeneric.R, R/SpecModel-methods.R, R/SpecPrior-methods.R
 \docType{methods}
 \name{show-methods}
+\alias{show,Components-method}
 \alias{show,Covariates-method}
 \alias{show,DampKnown-method}
 \alias{show,DampUnknown-method}
@@ -24,11 +25,13 @@
 \alias{show,SpecLikelihoodNormalVarsigmaUnknown-method}
 \alias{show,SpecLikelihoodPoisson-method}
 \alias{show,SpecLikelihoodPoissonBinomialMixture-method}
+\alias{show,SpecMix-method}
 \alias{show,SpecNormalVaryingVarsigmaKnown-method}
 \alias{show,SpecNormalVaryingVarsigmaUnknown-method}
 \alias{show,SpecPoissonBinomialMixture-method}
 \alias{show,SpecPoissonVarying-method}
 \alias{show,Trend-method}
+\alias{show,Weights-method}
 \alias{show-methods}
 \title{Print description of model or prior.}
 \usage{
@@ -66,6 +69,8 @@
 
 \S4method{show}{SpecPoissonBinomialMixture}(object)
 
+\S4method{show}{Components}(object)
+
 \S4method{show}{Covariates}(object)
 
 \S4method{show}{Error}(object)
@@ -85,6 +90,10 @@
 \S4method{show}{SpecExch}(object)
 
 \S4method{show}{SpecExchFixed}(object)
+
+\S4method{show}{SpecMix}(object)
+
+\S4method{show}{Weights}(object)
 }
 \arguments{
 \item{object}{Object of class \code{\linkS4class{SpecModel}},

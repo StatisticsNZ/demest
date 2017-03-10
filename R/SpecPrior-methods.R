@@ -388,9 +388,32 @@ setMethod("printPriorEqns",
                                  name = name)
           })
 
+setMethod("printPriorEqns",
+          signature(object = "SpecMix"),
+          function(object, name = NULL, order = 1L) {
+              has.covariates <- methods::is(object, "SpecCovariatesMixin")
+              printMixEqns(object = object,
+                           name = name,
+                           hasCovariates = has.covariates)
+          })
+
+
 
 
 ## show ###############################################################################
+
+#' @rdname show-methods
+#' @export
+setMethod("show",
+          signature(object = "Components"),
+          function(object) {
+              cat("An object of class \"", class(object), "\"\n\n", sep = "")
+              nu <- object@nuVectorsMix@.Data
+              A <- object@AVectorsMix@.Data
+              max <- object@omegaVectorsMaxMix@.Data
+              cat("scaleComponent ~ trunc-half-t(", nu, ", ", sep = "")
+              cat(squaredOrNA(A), ", ", max, ")\n", sep = "")
+          })    
 
 #' @rdname show-methods
 #' @export
@@ -517,7 +540,36 @@ setMethod("show",
           })
 
 
+#' @rdname show-methods
+#' @export
+setMethod("show",
+          signature(object = "SpecMix"),
+          function(object) {
+              cat("An object of class \"", class(object), "\"\n\n", sep = "")
+              printPriorEqns(object)
+          })
 
+
+#' @rdname show-methods
+#' @export
+setMethod("show",
+          signature(object = "Weights"),
+          function(object) {
+              cat("An object of class \"", class(object), "\"\n\n", sep = "")
+              mean <- object@priorMeanLevelComponentWeightMix@.Data
+              sd <- object@priorSDLevelComponentWeightMix@.Data
+              nuComp <- object@nuComponentWeightMix@.Data
+              AComp <- object@AComponentWeightMix@.Data
+              maxComp <- object@omegaComponentWeightMaxMix@.Data
+              nuLevel <- object@nuLevelComponentWeightMix@.Data
+              ALevel <- object@ALevelComponentWeightMix@.Data
+              maxLevel <- object@omegaLevelComponentWeightMaxMix@.Data
+              cat("  meanAR ~ N(", mean, ", ", squaredOrNA(sd), ")\n", sep = "")
+              cat("scaleAR1 ~ trunc-half-t(", nuComp, ", ", sep = "")
+              cat(squaredOrNA(AComp), ", ", maxComp, ")\n", sep = "")
+              cat("scaleAR2 ~ trunc-half-t(", nuLevel, ", ", sep = "")
+              cat(squaredOrNA(ALevel), ", ", maxLevel, ")\n", sep = "")
+          })    
 
 
 

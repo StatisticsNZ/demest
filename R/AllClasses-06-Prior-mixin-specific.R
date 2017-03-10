@@ -773,6 +773,35 @@ setClass("LatentWeightMixMixin",
              TRUE
          })
 
+setClass("LevelComponentWeightMinMaxMixin",
+         slots = c(minLevelComponentWeight = "numeric",
+                   maxLevelComponentWeight = "numeric"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             minLevelComponentWeight <- object@minLevelComponentWeight
+             maxLevelComponentWeight <- object@maxLevelComponentWeight
+             for (name in c("minLevelComponentWeight", "maxLevelComponentWeight")) {
+                 value <- methods::slot(object, name) 
+                 ## 'minLevelComponentWeight', 'maxLevelComponentWeight' have length 1
+                 if (!identical(length(value), 1L))
+                     return(gettextf("'%s' does not have length %d",
+                                     name, 1L))
+                 ## 'minLevelComponentWeight', 'maxLevelComponentWeight' are double
+                 if (!is.double(value))
+                     return(gettextf("'%s' does not have type \"%s\"",
+                                     name, "double"))
+                 ## 'minLevelComponentWeight', 'maxLevelComponentWeight' are not missing
+                 if (is.na(value))
+                     return(gettextf("'%s' is missing",
+                                     name))
+             }
+             ## minLevelComponentWeight < maxLevelComponentWeight
+             if (minLevelComponentWeight >= maxLevelComponentWeight)
+                 return(gettextf("'%s' greater than or equal to '%s'",
+                                 "minLevelComponentWeight", "maxLevelComponentWeight"))
+             TRUE
+         })
+
 ## 'alpha' in notes
 setClass("LevelComponentWeightMixMixin",
          slots = c(levelComponentWeightMix = "ParameterVector"),

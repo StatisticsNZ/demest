@@ -970,7 +970,8 @@ updateComponentWeightMix(SEXP prior_R)
             double var = 1 / (invOmegaSq + sumIsComp);
             double mean = var * (level * invOmegaSq + sumLatentCompWeight);
             double sd = sqrt(var);
-            compWeight[iW] = rnorm(mean, sd);             
+            /* compWeight[iW] = rnorm(mean, sd);              */
+            compWeight[iW] = rtnorm1(mean, sd, -4, 4); /* changed by JB */
         }
         
         advanceS(iteratorBeta_R);
@@ -1952,16 +1953,20 @@ updatePhiMix(SEXP prior_R)
     double phiProp = rtnorm1(meanProp, sdProp, -1, 1);
     /* double phiProp = rtnorm1(meanProp, sdProp, 0.8, 0.98); */
 
-    double logPostProp = logPostPhiMix(phiProp, level, meanLevel,
+    double logLikProp = logPostPhiMix(phiProp, level, meanLevel,
                                 nAlong, indexClassMaxUsed, omega);
     
-    double logPostCurr = logPostPhiMix(phiCurr, level, meanLevel,
+    double logLikCurr = logPostPhiMix(phiCurr, level, meanLevel,
                                 nAlong, indexClassMaxUsed, omega);
+
+    double logDensProp = log1p(phiProp) + log1p(-phiProp);
+    double logDensCurr = log1p(phiCurr) + log1p(-phiCurr);	
     
     double logPropProp = dnorm(phiProp, meanProp, sdProp, USE_LOG);
     double logPropCurr = dnorm(phiCurr, meanProp, sdProp, USE_LOG);
     
-    double logDiff = logPostProp - logPostCurr + 
+    double logDiff = logLikProp - logLikCurr +
+	                logDensProp - logDensCurr +
                         logPropCurr - logPropProp;
     
     int accept = (!(logDiff < 0) || (runif(0, 1) < exp(logDiff)));  

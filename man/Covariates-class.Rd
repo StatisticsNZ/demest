@@ -27,6 +27,13 @@ for the coefficients.}
 \item{\code{AEtaCoef}}{Scale parameter for the t priors
 for the coefficients.}
 }}
+\section{Warning}{
+
+In  normal usage, it should not be necessary to
+access, or even know about, the slots of a
+\code{Covariates} object.  The slots are not part of
+the API of the package, and may change in future.
+}
 \seealso{
 Objects of class \code{Covariates} are created
 by a call to function \code{\link{Covariates}}.

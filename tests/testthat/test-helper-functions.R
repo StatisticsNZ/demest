@@ -214,7 +214,29 @@ test_that("maxWithSubtotal works", {
 
 ## SPECIFICATIONS ##################################################################
 
-
+test_that("checkAndTidyLevelComponentWeightMinMax works", {
+    checkAndTidyLevelComponentWeightMinMax <- demest:::checkAndTidyLevelComponentWeightMinMax
+    expect_identical(checkAndTidyLevelComponentWeightMinMax(minAR2 = -4,
+                                                            maxAR2 = 4),
+                     list(minLevelComponentWeight = -4,
+                          maxLevelComponentWeight = 4))
+    expect_identical(checkAndTidyLevelComponentWeightMinMax(minAR2 = -4L,
+                                                            maxAR2 = Inf),
+                     list(minLevelComponentWeight = -4,
+                          maxLevelComponentWeight = Inf))
+    expect_error(checkAndTidyLevelComponentWeightMinMax(minAR2 = -4L,
+                                                        maxAR2 = c(1, 2)),
+                 "'maxAR2' does not have length 1")
+    expect_error(checkAndTidyLevelComponentWeightMinMax(minAR2 = "-4",
+                                                        maxAR2 = 4),
+                 "'minAR2' is non-numeric")
+    expect_error(checkAndTidyLevelComponentWeightMinMax(minAR2 = -4L,
+                                                        maxAR2 = as.numeric(NA)),
+                 "'maxAR2' is missing")
+    expect_error(checkAndTidyLevelComponentWeightMinMax(minAR2 = -4,
+                                                        maxAR2 = -4),
+                 "'minAR2' is greater than or equal to 'maxAR2'")
+})
 
 test_that("checkAndTidyJump works", {
     checkAndTidyJump <- demest:::checkAndTidyJump
@@ -792,7 +814,7 @@ test_that("initialMixAll works", {
                        beta = beta,
                        metadata = metadata,
                        sY = NULL)
-    stopifnot(identical(l$AComponentWeightMix, new("Scale", 0.25)))
+    stopifnot(identical(l$AComponentWeightMix, new("Scale", 0.5)))
     stopifnot(identical(l$ALevelComponentWeightMix, new("Scale", 0.25)))
     stopifnot(identical(l$ATau, new("Scale", 0.25)))
     stopifnot(identical(l$AVectorsMix, new("Scale", 0.25)))
@@ -831,6 +853,8 @@ test_that("initialMixAll works", {
         stopifnot(lwm[i] <= wm[(i-1) %/% 40L + 1L, icm[i]])
     stopifnot(identical(length(l$levelComponentWeightMix), 10L * 10L))
     stopifnot(identical(l$mMix, new("ParameterVector", rep(0, 10))))
+    stopifnot(identical(l$minLevelComponentWeight, -4))
+    stopifnot(identical(l$maxLevelComponentWeight, 4))
     stopifnot(identical(l$nBetaNoAlongMix, 40L))
     stopifnot(identical(l$nuComponentWeightMix, new("DegreesFreedom", 7)))
     stopifnot(identical(l$nuLevelComponentWeightMix, new("DegreesFreedom", 7)))

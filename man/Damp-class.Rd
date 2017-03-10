@@ -23,6 +23,13 @@ for \code{DampKnown} and \code{DampUnknown}.
 
 \item{\code{maxPhi}}{Maximum value for coefficient.}
 }}
+\section{Warning}{
+
+In  normal usage, it should not be necessary to
+access, or even know about, the slots of a
+\code{Damp} object.  The slots are not part of
+the API of the package, and may change in future.
+}
 \seealso{
 Objects of class \code{Damp} are created  by a call to function
 \code{\link{Damp}}.

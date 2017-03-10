@@ -1313,6 +1313,15 @@ setMethod("printPriorEqns",
           })
 
 setMethod("printPriorEqns",
+          signature(object = "Mix"),
+          function(object, name = NULL, order = 1L) {
+              has.covariates <- object@hasCovariates@.Data
+              printMixEqns(object = object,
+                           name = name,
+                           hasCovariates = has.covariates)
+          })
+
+setMethod("printPriorEqns",
           signature(object = "TimeInvariant"),
           function(object, name = NULL, order = 1L) {
               cat(gettextf("-- values for '%s' held constant --\n",

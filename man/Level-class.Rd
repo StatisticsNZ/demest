@@ -20,6 +20,13 @@ innovations.}
 
 \item{\code{multAlpha}}{Multiplier applied to default value for \code{AAlpha}.}
 }}
+\section{Warning}{
+
+In  normal usage, it should not be necessary to
+access, or even know about, the slots of a
+\code{Level} object.  The slots are not part of
+the API of the package, and may change in future.
+}
 \seealso{
 Objects of class \code{Level} are created
 by calls to function \code{\link{Level}}.
