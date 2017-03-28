@@ -2969,6 +2969,25 @@ jitterBetas <- function(betas) {
 }
 
 ## HAS_TESTS
+makeCellInLikHelper <- function(transform, y) {
+    ans <- logical(length = length(y))
+    for (i in seq_along(y)) {
+        is.missing <- is.na(y[i])
+        if (is.missing) {
+            i.after <- dembase:::getIAfter(i = i,
+                                           transform = transform,
+                                           check = FALSE,
+                                           useC = TRUE)
+            contributes <- i.after > 0L
+            ans[i] <- contributes
+        }
+        else
+            ans[i] <- TRUE
+    }
+    ans
+}
+
+## HAS_TESTS
 makeComponentWeightMix <- function(dimBeta, iAlong, indexClassMaxMix,
                                    levelComponent, omegaComponent) {
     n.along <- dimBeta[iAlong]
@@ -4011,9 +4030,9 @@ checkUpdateBetaAndPriorBeta <- function(prior, vbar, n, sigma) {
     stopifnot(!any(is.na(vbar)))
     ## n
     stopifnot(is.integer(n))
-    stopifnot(identical(length(n), 1L))
-    stopifnot(!is.na(n))
-    stopifnot(n > 0L)
+    stopifnot(identical(length(n), length(vbar)))
+    stopifnot(!any(is.na(n)))
+    stopifnot(all(n >= 0L))
     ## sigma
     stopifnot(is.double(sigma))
     stopifnot(identical(length(sigma), 1L))
@@ -4689,6 +4708,54 @@ makeVBar <- function(object, iBeta, g, useC = FALSE) {
     }
 }
 
+## READY_TO_TRANSLATE
+## HAS_TESTS
+makeVBarAndN <- function(object, iBeta, g, useC = FALSE) {
+    ## object
+    stopifnot(methods::is(object, "Varying"))
+    stopifnot(methods::validObject(object))
+    ## iBeta
+    stopifnot(is.integer(iBeta))
+    stopifnot(identical(length(iBeta), 1L))
+    stopifnot(!is.na(iBeta))
+    stopifnot(iBeta %in% seq_along(object@betas))
+    ## g
+    stopifnot(is.function(g))
+    if (useC) {
+        .Call(makeVBarAndN_R, object, iBeta) ## g not passed
+    }
+    else {
+        theta <- object@theta
+        cell.in.lik <- object@cellInLik
+        betas <- object@betas
+        iterator <- object@iteratorBetas
+        beta <- betas[[iBeta]]
+        iterator <- resetB(iterator)
+        vbar <- rep(0, times = length(beta))
+        n <- rep(0L, times = length(beta))
+        i.other.betas <- seq_along(betas)[-iBeta]
+        for (i.mu in seq_along(theta)) {
+            include.cell <- cell.in.lik[i.mu]
+            if (include.cell) {
+                indices <- iterator@indices
+                pos.ans <- indices[iBeta]
+                vbar[pos.ans] <- vbar[pos.ans] + g(theta[i.mu])
+                for (i.other.beta in i.other.betas) {
+                    other.beta <- betas[[i.other.beta]]
+                    pos.other.beta <- indices[i.other.beta]
+                    vbar[pos.ans] <- vbar[pos.ans] - other.beta[pos.other.beta]
+                }
+                n[pos.ans] <- n[pos.ans] + 1L
+            }
+            iterator <- advanceB(iterator)
+        }
+        for (i in seq_along(vbar))
+            vbar[i] <- vbar[i] / n[i]
+        list(vbar, n)
+    }
+}
+
+
 ## TRANSLATED
 ## HAS_TESTS
 modePhiMix <- function(level, meanLevel, nAlong,
@@ -4954,6 +5021,7 @@ initialModelPredictHelper <- function(model, along, labels, n, offsetModel,
                                          labels = labels,
                                          n = n)
     theta <- rep(mean(theta.old), times = prod(dim(metadata.pred)))
+    cell.in.lik <- rep(FALSE, times = prod(dim(metadata.pred)))
     beta.is.predicted <- logical(length = n.beta)
     for (i in seq_len(n.beta)) {
         margin <- margins[[i]]
@@ -4996,6 +5064,7 @@ initialModelPredictHelper <- function(model, along, labels, n, offsetModel,
     i.method.model <- i.method.model.first + 100L
     list(theta = theta,
          metadataY = metadata.pred,
+         cellInLik = cell.in.lik,
          betas = betas,
          priorsBetas = priors.betas,
          iteratorBetas = iterator.betas,

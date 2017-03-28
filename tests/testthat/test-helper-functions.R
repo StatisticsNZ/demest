@@ -2478,6 +2478,30 @@ test_that("jitterBetas works", {
     }
 })
 
+test_that("makeCellInLikHelper works", {
+    makeCellInLikHelper <- demest:::makeCellInLikHelper
+    initialModel <- demest:::initialModel
+    exposure <- Counts(array(rpois(n = 20, lambda = 20),
+                             dim = c(5, 4),
+                             dimnames = list(age = 0:4, region = letters[1:4])))
+    y <- Counts(array(rbinom(n = 20, size = exposure, prob = 0.5),
+                      dim = c(5, 4),
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    y[c(1, 20)] <- NA
+    value <- Counts(array(c(0.1, 0.2, 0.3),
+                          dim = 3,
+                          dimnames = list(region = letters[1:3])))
+    aggregate <- AgCertain(value = value)
+    spec <- Model(y ~ Binomial(mean ~ age + region),
+                  aggregate = aggregate)
+    x <- initialModel(spec, y = y, exposure = exposure)
+    transform <- x@transformAg
+    ans.obtained <- makeCellInLikHelper(transform = transform,
+                                        y = y)
+    ans.expected <- rep(c(TRUE, FALSE), times = c(19, 1))
+    expect_identical(ans.obtained, ans.expected)
+})
+
 test_that("makeAlphaMix works", {
     makeAlphaMix <- demest:::makeAlphaMix
     set.seed(1)
@@ -5294,6 +5318,10 @@ test_that("R and C versions of makeLifeExpBirth give same answer", {
         expect_equal(ans.R, ans.C)
 })
 
+
+## makeVBar #####################################################################
+
+
 test_that("makeVBar gives valid answer with PoissonVaryingNotUseExp, main effects model, terms in order", {
     makeVBar <- demest:::makeVBar
     initialModel <- demest:::initialModel
@@ -5541,6 +5569,359 @@ test_that("R and C versions of makeVBar give same answer with Normal, main effec
         }
     }
 })
+
+
+
+
+
+
+
+## makeVBarAndN #####################################################################
+
+test_that("makeVBarAndN gives valid answer with PoissonVaryingNotUseExp, main effects model, terms in order, no missing", {
+    makeVBarAndN <- demest:::makeVBarAndN
+    initialModel <- demest:::initialModel
+    y <- Counts(array(rpois(n = 20, lambda = 10),
+                      dim = c(5, 4),
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    spec <- Model(y ~ Poisson(mean ~ age + region))
+    x <- initialModel(spec, y = y, exposure = NULL)
+    ## iBeta = 1L
+    ans.obtained <- makeVBarAndN(x, iBeta = 1L, g = log)
+    other.betas <- x@betas[[2]] + rep(x@betas[[3]], each = 5)
+    g.theta <- log(x@theta)
+    ans.expected <- list(sum(g.theta - other.betas) / length(x@theta),
+                         20L)
+    expect_equal(ans.obtained, ans.expected)
+    ## iBeta = 2L
+    ans.obtained <- makeVBarAndN(x, iBeta = 2L, g = log)
+    other.betas <- x@betas[[1]] + rep(x@betas[[3]], each = 5)
+    g.theta <- log(x@theta)
+    ans <- g.theta - other.betas
+    ans.expected <- list(rowMeans(matrix(ans, nrow = 5)),
+                         rep(4L, 5))
+    expect_equal(ans.obtained, ans.expected)
+    ## iBeta = 3L
+    ans.obtained <- makeVBarAndN(x, iBeta = 3L, g = log)
+    other.betas <- x@betas[[1]] + x@betas[[2]]
+    g.theta <- log(x@theta)
+    ans.expected <- g.theta - other.betas
+    ans.expected <- list(colMeans(matrix(ans.expected, nrow = 5)),
+                         rep(5L, 4))
+    expect_equal(ans.obtained, ans.expected)
+})
+
+
+test_that("R and C versions of makeVBarAndN give same answer with PoissonVaryingNotUseExp, main effects, terms in order, no missing", {
+    makeVBarAndN <- demest:::makeVBarAndN
+    initialModel <- demest:::initialModel  
+    for (seed in seq_len(n.test)) {
+        set.seed(seed+1)
+        y <- Counts(array(rpois(n = 20, lambda = 10),
+                          dim = c(5, 4),
+                          dimnames = list(age = 0:4, region = letters[1:4])))
+        spec <- Model(y ~ Poisson(mean ~ age + region))
+        x <- initialModel(spec, y = y, exposure = NULL)
+        save_x <- x
+        for (iBeta in seq.int(from = 1, to = 3)) {
+            ans.R <- makeVBarAndN(x, iBeta = iBeta, g = log, useC = FALSE)
+            ans.C <- makeVBarAndN(x, iBeta = iBeta, g = log, useC = TRUE)
+            expect_identical(x, save_x)
+            if (test.identity)
+                expect_identical(ans.R, ans.C)
+            else
+                expect_equal(ans.R, ans.C)
+        }
+    }
+})
+
+test_that("makeVBarAndN gives valid answer with PoissonVaryingNotUseExp, main effects model, terms in order, has missing", {
+    makeVBarAndN <- demest:::makeVBarAndN
+    initialModel <- demest:::initialModel
+    y <- Counts(array(rpois(n = 20, lambda = 10),
+                      dim = c(5, 4),
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    y[1] <- NA
+    spec <- Model(y ~ Poisson(mean ~ age + region))
+    x <- initialModel(spec, y = y, exposure = NULL)
+    ## iBeta = 1L
+    ans.obtained <- makeVBarAndN(x, iBeta = 1L, g = log)
+    other.betas <- x@betas[[2]] + rep(x@betas[[3]], each = 5)
+    other.betas <- other.betas[-1]
+    g.theta <- log(x@theta)
+    g.theta <- g.theta[-1]
+    ans.expected <- list(sum(g.theta - other.betas) / length(g.theta),
+                         19L)
+    expect_equal(ans.obtained, ans.expected)
+    ## iBeta = 2L
+    ans.obtained <- makeVBarAndN(x, iBeta = 2L, g = log)
+    other.betas <- x@betas[[1]] + rep(x@betas[[3]], each = 5)
+    g.theta <- log(x@theta)
+    vbar <- matrix(g.theta - other.betas, nr = 5)
+    vbar[1] <- 0
+    vbar <- rowSums(vbar)
+    n <- c(3L, rep(4L, 4))
+    vbar <- vbar/n
+    ans.expected <- list(vbar, n)
+    expect_equal(ans.obtained, ans.expected)
+    ## iBeta = 3L
+    ans.obtained <- makeVBarAndN(x, iBeta = 3L, g = log)
+    other.betas <- x@betas[[1]] + x@betas[[2]]
+    g.theta <- log(x@theta)
+    vbar <- matrix(g.theta - other.betas, nr = 5)
+    vbar[1] <- 0
+    vbar <- colSums(vbar)
+    n <- c(4L, rep(5L, 3))
+    vbar <- vbar/n
+    ans.expected <- list(vbar, n)
+    expect_equal(ans.obtained, ans.expected)
+})
+
+test_that("R and C versions of makeVBarAndN give same answer with PoissonVaryingNotUseExp, main effects, terms in order, has missing", {
+    makeVBarAndN <- demest:::makeVBarAndN
+    initialModel <- demest:::initialModel  
+    for (seed in seq_len(n.test)) {
+        set.seed(seed+1)
+        y <- Counts(array(rpois(n = 20, lambda = 10),
+                          dim = c(5, 4),
+                          dimnames = list(age = 0:4, region = letters[1:4])))
+        y[10] <- NA
+        spec <- Model(y ~ Poisson(mean ~ age + region))
+        x <- initialModel(spec, y = y, exposure = NULL)
+        save_x <- x
+        for (iBeta in seq.int(from = 1, to = 3)) {
+            ans.R <- makeVBarAndN(x, iBeta = iBeta, g = log, useC = FALSE)
+            ans.C <- makeVBarAndN(x, iBeta = iBeta, g = log, useC = TRUE)
+            expect_identical(x, save_x)
+            if (test.identity)
+                expect_identical(ans.R, ans.C)
+            else
+                expect_equal(ans.R, ans.C)
+        }
+    }
+})
+
+test_that("makeVBarAndN gives valid answer with PoissonVaryingNotUseExp, intercept only", {
+    makeVBarAndN <- demest:::makeVBarAndN
+    initialModel <- demest:::initialModel
+    y <- Counts(array(rpois(n = 20, lambda = 10),
+                      dim = c(5, 4),
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    y[3] <- NA
+    spec <- Model(y ~ Poisson(mean ~ 1))
+    x <- initialModel(spec, y = y, exposure = NULL)
+    ans.obtained <- makeVBarAndN(x, iBeta = 1L, g = log)
+    g.theta <- log(x@theta)
+    ans.expected <- list(mean(g.theta[-3]),
+                         19L)
+    expect_equal(ans.obtained, ans.expected)
+})
+
+test_that("makeVBarAndN gives valid answer with Binomial, terms out of order", {
+    ## dim = c(2, 3, 4), margins = list(0L, 3:2, 2L, 3L)
+    makeVBarAndN <- demest:::makeVBarAndN
+    initialModel <- demest:::initialModel
+    logit <- function(p) log(p / (1 - p))
+    exposure <- Counts(array(rpois(n = 24, lambda = 10),
+                             dim = 2:4,
+                             dimnames = list(sex = c("f", "m"),
+                                 age = c("0-4", "5-9", "10+"),
+                                 region = letters[1:4])))
+    y <- Counts(array(rbinom(n = 24, prob = 0.5, size = exposure),
+                dim = dim(exposure),
+                dimnames = dimnames(exposure)))
+    y[11] <- NA
+    spec <- Model(y ~ Binomial(mean ~ age:region + region + age))
+    x <- initialModel(spec, y = y, exposure = exposure)
+    ## iBeta = 1L
+    ans.obtained <- makeVBarAndN(x, iBeta = 1L, g = logit)
+    other.betas <- (rep(matrix(x@betas[[4]], nrow = 3), each = 2)
+                    + rep(x@betas[[3]], each = 2)
+                    + rep(x@betas[[2]], each = 6))
+    g.theta <- logit(x@theta)
+    ans.expected <- list(mean(g.theta[-11] - other.betas[-11]),
+                         23L)
+    expect_equal(ans.obtained, ans.expected) 
+    ## iBeta = 2L
+    ans.obtained <- makeVBarAndN(x, iBeta = 2L, g = logit)
+    other.betas <- (x@betas[[1]]
+                    + rep(x@betas[[3]], each = 2)
+                    + rep(x@betas[[4]], each = 2))
+    g.theta <- logit(x@theta)
+    ans.expected <- g.theta - other.betas
+    ans.expected <- matrix(ans.expected, nrow = 6)
+    ans.expected[11] <- NA
+    ans.expected <- colMeans(ans.expected, na.rm = TRUE)
+    ans.expected <- list(ans.expected,
+                         c(6L, 5L, 6L, 6L))
+    expect_equal(ans.obtained, ans.expected)
+    ## iBeta = 3L
+    ans.obtained <- makeVBarAndN(x, iBeta = 3L, g = logit)
+    other.betas <- (x@betas[[1]]
+                    + rep(x@betas[[2]], each = 6)
+                    + rep(x@betas[[4]], each = 2))
+    g.theta <- logit(x@theta)
+    ans.expected <- g.theta - other.betas
+    ans.expected <- array(ans.expected, dim = 2:4)
+    ans.expected[11] <- NA
+    ans.expected <- apply(ans.expected, 2, mean, na.rm = TRUE)
+    ans.expected <- list(ans.expected,
+                         c(8L, 8L, 7L))
+    expect_equal(ans.obtained, ans.expected)
+    ## iBeta = 4L
+    ans.obtained <- makeVBarAndN(x, iBeta = 4L, g = logit)
+    other.betas <- (x@betas[[1]]
+                    + rep(x@betas[[2]], each = 6)
+                    + rep(x@betas[[3]], each = 2))
+    g.theta <- logit(x@theta)
+    ans.expected <- g.theta - other.betas
+    ans.expected <- array(ans.expected, dim = 2:4)
+    ans.expected[11] <- NA
+    ans.expected <- apply(ans.expected, 2:3, mean, na.rm = TRUE)
+    ans.expected <- list(as.numeric(ans.expected),
+                         c(rep(2L, 5), 1L, rep(2L, 6)))
+    expect_equal(ans.obtained, ans.expected)
+})
+
+test_that("makeVBarAndN gives valid answer with Normal, main effects", {
+    makeVBarAndN <- demest:::makeVBarAndN
+    initialModel <- demest:::initialModel
+    y <- Counts(array(rnorm(n = 24),
+                      dim = 2:4,
+                      dimnames = list(sex = c("f", "m"),
+                          age = c("0-4", "5-9", "10+"),
+                          region = letters[1:4])))
+    weights <- Counts(array(1,
+                            dim = 2:4,
+                            dimnames = list(sex = c("f", "m"),
+                                age = c("0-4", "5-9", "10+"),
+                                region = letters[1:4])))
+    spec <- Model(y ~ Normal(mean ~ sex + age))
+    x <- initialModel(spec, y = y, weights = weights)
+    identity <- function(x) x
+    ## iBeta = 1L
+    ans.obtained <- makeVBarAndN(x, iBeta = 1L, g = identity)
+    other.betas <- rep(x@betas[[2]], times = 12) + rep(x@betas[[3]], each = 2)
+    g.theta <- x@theta
+    ans.expected <- mean(g.theta - other.betas)
+    ans.expected <- list(ans.expected, 24L)
+    expect_equal(ans.obtained, ans.expected)
+    ## iBeta = 2L
+    ans.obtained <- makeVBarAndN(x, iBeta = 2L, g = identity)
+    other.betas <- rep(x@betas[[1]], times = 24) + rep(x@betas[[3]], each = 2)
+    g.theta <- x@theta
+    ans.expected <- g.theta - other.betas
+    ans.expected <- matrix(ans.expected, nrow = 2)
+    ans.expected <- rowMeans(ans.expected)
+    ans.expected <- list(ans.expected,
+                         c(12L, 12L))
+    expect_equal(ans.obtained, ans.expected)
+    ## iBeta = 3L
+    ans.obtained <- makeVBarAndN(x, iBeta = 3L, g = identity)
+    other.betas <- rep(x@betas[[1]], times = 24) + x@betas[[2]]
+    g.theta <- x@theta
+    ans.expected <- g.theta - other.betas
+    ans.expected <- array(ans.expected, dim = 2:4)
+    ans.expected <- apply(ans.expected, 2, mean)
+    ans.expected <- list(ans.expected,
+                         c(8L, 8L, 8L))
+    expect_equal(ans.obtained, ans.expected)
+})
+
+## tests equal but not identical
+test_that("R and C versions of makeVBarAndN give same answer with Poisson, intercept only", {
+    makeVBarAndN <- demest:::makeVBarAndN
+    initialModel <- demest:::initialModel  
+    for (seed in seq_len(n.test)) {
+        set.seed(seed+1)
+        y <- Counts(array(rpois(n = 20, lambda = 10),
+                          dim = c(5, 4),
+                          dimnames = list(age = 0:4, region = letters[1:4])))
+        y[c(1, 3, 5)] <- NA
+        spec <- Model(y ~ Poisson(mean ~ 1))
+        x <- initialModel(spec, y = y, exposure = NULL)
+        save_x <- x
+        iBeta <- 1L
+        ans.R <- makeVBarAndN(x, iBeta = iBeta, g = log, useC = FALSE)
+        ans.C <- makeVBarAndN(x, iBeta = iBeta, g = log, useC = TRUE)
+        expect_identical(x, save_x)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
+
+## tests equal but not identical
+test_that("R and C versions of makeVBarAndN give same answer with Binomial, terms out of order", {
+    makeVBarAndN <- demest:::makeVBarAndN
+    initialModel <- demest:::initialModel
+    for (seed in seq_len(n.test)) {
+        set.seed(seed+1)
+        logit <- function(p) log(p / (1 - p))
+        exposure <- Counts(array(rpois(n = 24, lambda = 10),
+                                 dim = 2:4,
+                                 dimnames = list(sex = c("f", "m"),
+                                     age = c("0-4", "5-9", "10+"),
+                                     region = letters[1:4])))
+        y <- Counts(array(rbinom(n = 24, prob = 0.5, size = exposure),
+                          dim = dim(exposure),
+                          dimnames = dimnames(exposure)))
+        y[11] <- NA
+        spec <- Model(y ~ Binomial(mean ~ age:region + region + age))
+        x <- initialModel(spec, y = y, exposure = exposure)
+        save_x <- x
+        for (iBeta in seq.int(from = 1, to = 4)) {
+            ans.R <- makeVBarAndN(x, iBeta = iBeta, g = logit, useC = FALSE)
+            ans.C <- makeVBarAndN(x, iBeta = iBeta, g = logit, useC = TRUE)
+            expect_identical(x, save_x)
+            if (test.identity)
+                expect_identical(ans.R, ans.C)
+            else
+                expect_equal(ans.R, ans.C)
+        }
+    }
+})
+
+## tests equal but not identical
+test_that("R and C versions of makeVBarAndN give same answer with Normal, main effect only", {
+    makeVBarAndN <- demest:::makeVBarAndN
+    initialModel <- demest:::initialModel
+    for (seed in seq_len(n.test)) {
+        set.seed(seed+1)
+        identity <- function(x) x
+        y <- Counts(array(rnorm(n = 24),
+                          dim = 2:4,
+                          dimnames = list(sex = c("f", "m"),
+                              age = c("0-4", "5-9", "10+"),
+                              region = letters[1:4])))
+        y[21:22] <- NA
+        weights <- Counts(array(1,
+                                dim = 2:4,
+                                dimnames = list(sex = c("f", "m"),
+                                    age = c("0-4", "5-9", "10+"),
+                                    region = letters[1:4])))
+        spec <- Model(y ~ Normal(mean ~ sex + age))
+        x <- initialModel(spec, y = y, weights = weights)
+        save_x <- x
+        for (iBeta in seq.int(from = 1, to = 2)) {
+            ans.R <- makeVBarAndN(x, iBeta = iBeta, g = identity, useC = FALSE)
+            ans.C <- makeVBarAndN(x, iBeta = iBeta, g = identity, useC = TRUE)
+            expect_identical(x, save_x)
+            if (test.identity)
+                expect_identical(ans.R, ans.C)
+            else
+                expect_equal(ans.R, ans.C)
+        }
+    }
+})
+
+
+
+
+##########################################################################################
+
+
 
 test_that("modePhiMix works", {
     modePhiMix <- demest:::modePhiMix
@@ -6023,6 +6404,7 @@ test_that("initialModelPredictHelper works", {
                              DimScales = list(new("Intervals",
                                  dimvalues = as.numeric(2005:2009)),
                                  new("Categories", dimvalues = as.character(1:4)))),
+                         cellInLik = rep(FALSE, 16),
                          betas = list(mod@betas[[1]], rep(0, 4), mod@betas[[3]]),
                          priorsBetas = list(new("TimeInvariant", J = new("Length", 1L)),
                              initialPriorPredict(prior = mod@priorsBetas[[2]],

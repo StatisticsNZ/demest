@@ -271,6 +271,14 @@ setGeneric("logLikelihood",
            function(model, count, dataset, i, useC = FALSE, useSpecific = FALSE)
            standardGeneric("logLikelihood"))
 
+## HAS_TESTS
+setGeneric("makeCellInLik",
+           function(model, y) {
+               y <- as.numeric(y)
+               model@cellInLik <- !is.na(y)
+               model
+           })
+
 setGeneric("makeOutputAggregate",
            function(model, pos, nChain, nIteration)
            standardGeneric("makeOutputAggregate"))

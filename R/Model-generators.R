@@ -583,10 +583,12 @@ setMethod("initialModel",
               betas <- jitterBetas(betas)
               iterator.betas <- BetaIterator(dim = dim, margins = margins)
               dims <- makeDims(dim = dim, margins = margins)
+              cellInLik <- rep(TRUE, times = length(theta))
               model <- methods::new("BinomialVarying",
                                     call = call,
                                     theta = theta,
                                     metadataY = metadataY,
+                                    cellInLik = cellInLik,
                                     scaleTheta = scale.theta,
                                     scaleThetaMultiplier = scale.theta.multiplier,
                                     nAcceptTheta = methods::new("Counter", 0L),
@@ -606,9 +608,12 @@ setMethod("initialModel",
                                     iteratorBetas = iterator.betas,
                                     dims = dims)
               default.weights <- exposure
-              addAg(model = model,
-                    aggregate = aggregate,
-                    defaultWeights = default.weights)
+              model <- addAg(model = model,
+                             aggregate = aggregate,
+                             defaultWeights = default.weights)
+              model <- makeCellInLik(model = model,
+                                     y = y)
+              model
           })
 
 ## HAS_TESTS
@@ -674,33 +679,38 @@ setMethod("initialModel",
               betas <- jitterBetas(betas)
               iterator.betas <- BetaIterator(dim = dim, margins = margins)
               dims <- makeDims(dim = dim, margins = margins)
+              cellInLik <- rep(TRUE, times = length(theta))
               model <- methods::new("NormalVaryingVarsigmaKnown",
-                           call = call,
-                           theta = theta,
-                           metadataY = metadataY,
-                           w = w,
-                           varsigma = varsigma,
-                           lower = lower,
-                           upper = upper,
-                           tolerance = tolerance,
-                           scaleTheta = scale.theta,
-                           nAcceptTheta = methods::new("Counter", 0L),
-                           nFailedPropTheta = methods::new("Counter", 0L),
-                           maxAttempt = max.attempt,
-                           sigma = methods::new("Scale", sigma),
-                           sigmaMax = sigma.max,
-                           ASigma = A.sigma,
-                           nuSigma = nu.sigma,
-                           betas = betas,
-                           priorsBetas = priors.betas,
-                           namesBetas = names.betas,
-                           margins = margins,
-                           iteratorBetas = iterator.betas,
-                           dims = dims)
+                                    call = call,
+                                    theta = theta,
+                                    metadataY = metadataY,
+                                    cellInLik = cellInLik,
+                                    w = w,
+                                    varsigma = varsigma,
+                                    lower = lower,
+                                    upper = upper,
+                                    tolerance = tolerance,
+                                    scaleTheta = scale.theta,
+                                    nAcceptTheta = methods::new("Counter", 0L),
+                                    nFailedPropTheta = methods::new("Counter", 0L),
+                                    maxAttempt = max.attempt,
+                                    sigma = methods::new("Scale", sigma),
+                                    sigmaMax = sigma.max,
+                                    ASigma = A.sigma,
+                                    nuSigma = nu.sigma,
+                                    betas = betas,
+                                    priorsBetas = priors.betas,
+                                    namesBetas = names.betas,
+                                    margins = margins,
+                                    iteratorBetas = iterator.betas,
+                                    dims = dims)
               default.weights <- weights
-              addAg(model = model,
-                    aggregate = aggregate,
-                    defaultWeights = default.weights)
+              model <- addAg(model = model,
+                             aggregate = aggregate,
+                             defaultWeights = default.weights)
+              model <- makeCellInLik(model = model,
+                                     y = y)
+              model
           })
 
 ## HAS_TESTS
@@ -775,36 +785,41 @@ setMethod("initialModel",
               betas <- jitterBetas(betas)
               iterator.betas <- BetaIterator(dim = dim, margins = margins)
               dims <- makeDims(dim = dim, margins = margins)
+              cellInLik <- rep(TRUE, times = length(theta))
               model <- methods::new("NormalVaryingVarsigmaUnknown",
-                           call = call,
-                           theta = theta,
-                           metadataY = metadataY,
-                           w = w,
-                           varsigma = methods::new("Scale", varsigma),
-                           varsigmaMax = varsigma.max,
-                           AVarsigma = A.varsigma,
-                           nuVarsigma = nu.varsigma,
-                           lower = lower,
-                           upper = upper,
-                           tolerance = tolerance,
-                           scaleTheta = scale.theta,
-                           nAcceptTheta = methods::new("Counter", 0L),
-                           nFailedPropTheta = methods::new("Counter", 0L),
-                           maxAttempt = max.attempt,
-                           sigma = methods::new("Scale", sigma),
-                           sigmaMax = sigma.max,
-                           ASigma = A.sigma,
-                           nuSigma = nu.sigma,
-                           betas = betas,
-                           priorsBetas = priors.betas,
-                           namesBetas = names.betas,
-                           margins = margins,
-                           iteratorBetas = iterator.betas,
-                           dims = dims)
+                                    call = call,
+                                    theta = theta,
+                                    metadataY = metadataY,
+                                    cellInLik = cellInLik,
+                                    w = w,
+                                    varsigma = methods::new("Scale", varsigma),
+                                    varsigmaMax = varsigma.max,
+                                    AVarsigma = A.varsigma,
+                                    nuVarsigma = nu.varsigma,
+                                    lower = lower,
+                                    upper = upper,
+                                    tolerance = tolerance,
+                                    scaleTheta = scale.theta,
+                                    nAcceptTheta = methods::new("Counter", 0L),
+                                    nFailedPropTheta = methods::new("Counter", 0L),
+                                    maxAttempt = max.attempt,
+                                    sigma = methods::new("Scale", sigma),
+                                    sigmaMax = sigma.max,
+                                    ASigma = A.sigma,
+                                    nuSigma = nu.sigma,
+                                    betas = betas,
+                                    priorsBetas = priors.betas,
+                                    namesBetas = names.betas,
+                                    margins = margins,
+                                    iteratorBetas = iterator.betas,
+                                    dims = dims)
               default.weights <- weights
-              addAg(model = model,
-                    aggregate = aggregate,
-                    defaultWeights = default.weights)
+              model <- addAg(model = model,
+                             aggregate = aggregate,
+                             defaultWeights = default.weights)
+              model <- makeCellInLik(model = model,
+                                     y = y)
+              model
           })
 
 ## HAS_TESTS
@@ -896,9 +911,11 @@ setMethod("initialModel",
               iterator.betas <- BetaIterator(dim = dim, margins = margins)
               dims <- makeDims(dim = dim, margins = margins)
               class <- if (has.exposure) "PoissonVaryingUseExp" else "PoissonVaryingNotUseExp"
+              cellInLik <- rep(TRUE, times = length(theta))
               model <- methods::new(class,
                                     call = call,
                                     theta = theta,
+                                    cellInLik = cellInLik,
                                     metadataY = metadataY,
                                     scaleTheta = scale.theta,
                                     scaleThetaMultiplier = scale.theta.multiplier,
@@ -928,9 +945,12 @@ setMethod("initialModel",
                                                   .Data = .Data,
                                                   metadata = metadataY)
               }
-              addAg(model = model,
-                    aggregate = aggregate,
-                    defaultWeights = default.weights)
+              model <- addAg(model = model,
+                             aggregate = aggregate,
+                             defaultWeights = default.weights)
+              model <- makeCellInLik(model = model,
+                                     y = y)
+              model
           })
 
 ## HAS_TESTS
@@ -944,9 +964,9 @@ setMethod("initialModel",
               prob <- object@prob
               metadataY <- y@metadata
               methods::new("PoissonBinomialMixture",
-                  call = call,
-                  prob = prob,
-                  metadataY = metadataY)
+                           call = call,
+                           prob = prob,
+                           metadataY = metadataY)
           })
 
 
@@ -978,26 +998,28 @@ setMethod("initialModelPredict",
               lower <- logit(lower)
               upper <- logit(upper)
               ans <- methods::new("BinomialVaryingPredict",
-                         model,
-                         theta = l$theta,
-                         metadataY = metadataY,
-                         nAcceptTheta = methods::new("Counter", 0L),
-                         lower = lower,
-                         upper = upper,
-                         nFailedPropTheta = methods::new("Counter", 0L),
-                         betas = l$betas,
-                         priorsBetas = l$priorsBetas,
-                         iteratorBetas = l$iteratorBetas,
-                         dims = l$dims,
-                         betaIsPredicted = l$betaIsPredicted,
-                         offsetsBetas = l$offsetsBetas,
-                         offsetsPriorsBetas = l$offsetsPriorsBetas,
-                         offsetsSigma = l$offsetsSigma,
-                         iMethodModel = l$iMethodModel)
+                                  model,
+                                  theta = l$theta,
+                                  metadataY = metadataY,
+                                  cellInLik = l$cellInLik,
+                                  nAcceptTheta = methods::new("Counter", 0L),
+                                  lower = lower,
+                                  upper = upper,
+                                  nFailedPropTheta = methods::new("Counter", 0L),
+                                  betas = l$betas,
+                                  priorsBetas = l$priorsBetas,
+                                  iteratorBetas = l$iteratorBetas,
+                                  dims = l$dims,
+                                  betaIsPredicted = l$betaIsPredicted,
+                                  offsetsBetas = l$offsetsBetas,
+                                  offsetsPriorsBetas = l$offsetsPriorsBetas,
+                                  offsetsSigma = l$offsetsSigma,
+                                  iMethodModel = l$iMethodModel)
               if (!is.null(aggregate)) {
                   ans <- addAg(model = ans,
                                aggregate = aggregate,
                                defaultWeights = NULL)
+                  ans <- makeCellInLik(ans)
               }
               ans
           })
@@ -1032,6 +1054,7 @@ setMethod("initialModelPredict",
                          model,
                          theta = l$theta,
                          metadataY = metadataY,
+                         cellInLik = l$cellInLik,
                          nAcceptTheta = methods::new("Counter", 0L),
                          lower = lower,
                          upper = upper,
@@ -1055,6 +1078,7 @@ setMethod("initialModelPredict",
                   ans <- addAg(model = ans,
                                aggregate = aggregate,
                                defaultWeights = default.weights)
+                  ans <- makeCellInLik(ans)
               }
               ans
           })
@@ -1088,6 +1112,7 @@ setMethod("initialModelPredict",
                              model,
                              theta = l$theta,
                              metadataY = metadataY,
+                             cellInLik = l$cellInLik,
                              lower = lower,
                              upper = upper,
                              nFailedPropTheta = methods::new("Counter", 0L),
@@ -1107,6 +1132,7 @@ setMethod("initialModelPredict",
                              model,
                              theta = l$theta,
                              metadataY = metadataY,
+                             cellInLik = l$cellInLik,
                              lower = lower,
                              upper = upper,
                              nFailedPropTheta = methods::new("Counter", 0L),
@@ -1126,6 +1152,7 @@ setMethod("initialModelPredict",
                   ans <- addAg(model = ans,
                                aggregate = aggregate,
                                defaultWeights = NULL)
+                  ans <- makeCellInLik(ans)
               }
               ans
           })

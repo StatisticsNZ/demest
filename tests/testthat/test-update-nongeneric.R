@@ -819,7 +819,7 @@ test_that("updateBeta gives valid answer", {
                               metadata = metadata,
                               sY = NULL, multScale = 1)
         vbar <- rnorm(10)
-        n <- 5L
+        n <- c(4L, rep(5L, 9))
         sigma <- runif(1)
         set.seed(seed)
         ans.obtained <- updateBeta(prior = prior,
@@ -854,7 +854,7 @@ test_that("R and C versions of updateBeta give same answer", {
                               metadata = metadata,
                               sY = NULL, multScale = 1)
         vbar <- rnorm(10)
-        n <- 5L
+        n <- c(rep(5L, 8), 3L, 4L)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updateBeta(prior = prior,
@@ -898,7 +898,7 @@ test_that("updateBetasAndPriorsBetas works", {
         vbar <- makeVBar(ans.expected, iBeta = i, g = log)
         l <- updateBetaAndPriorBeta(prior = ans.expected@priorsBetas[[i]],
                                     vbar = vbar,
-                                    n = length(y) %/% length(vbar),
+                                    n = rep(length(y) %/% length(vbar), length(vbar)),
                                     sigma = ans.expected@sigma@.Data)
         ans.expected@betas[[i]] <- l[[1]]
         ans.expected@priorsBetas[[i]] <- l[[2]]
@@ -960,6 +960,7 @@ test_that("R and C versions of updateBetasAndPriorsBetas give same answer with B
 
 test_that("updateComponentWeightMix gives valid answer", {
     updateComponentWeightMix <- demest:::updateComponentWeightMix
+    rtnorm1 <- demest:::rtnorm1
     set.seed(100)
     initialPrior <- demest:::initialPrior
     beta <- rnorm(200)
@@ -969,7 +970,7 @@ test_that("updateComponentWeightMix gives valid answer", {
                     DimScales = list(new("Categories", dimvalues = c("a", "b")),
                                      new("Points", dimvalues = 2001:2010),
                                      new("Intervals", dimvalues = as.numeric(0:10))))
-    spec <- Mix()
+    spec <- Mix(weights = Weights(scaleAR2 = HalfT(mult = 2)))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
@@ -1001,7 +1002,8 @@ test_that("updateComponentWeightMix gives valid answer", {
             }
             var <- 1/(inv.omega.sq + A)
             mean <- var*(lev[i,i.class]*inv.omega.sq + B)
-            W[i, i.class] <- rnorm(1, mean = mean, sd = sqrt(var))
+            W[i, i.class] <- rtnorm1(mean = mean, sd = sqrt(var),
+                                     min = -4, max = 4)
         }
     }
     ans.expected <- prior
@@ -1024,7 +1026,7 @@ test_that("R and C versions of updateComponentWeightMix give same answer", {
                         DimScales = list(new("Categories", dimvalues = c("a", "b")),
                                          new("Points", dimvalues = 2001:2010),
                                          new("Intervals", dimvalues = as.numeric(0:10))))
-        spec <- Mix()
+        spec <- Mix(weights = Weights(scaleAR2 = HalfT(mult = 2)))
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,

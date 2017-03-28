@@ -185,6 +185,24 @@ setClass("Betas",
              TRUE
          })
 
+## HAS_TESTS
+setClass("CellInLikMixin",
+         slots = c(cellInLik = "logical"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             cellInLik <- object@cellInLik
+             theta <- object@theta
+             ## 'cellInLik' same length as 'theta'
+             if (!identical(length(cellInLik), length(theta)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "cellInLik", "theta"))
+             ## 'cellInLik' has no missing values
+             if (any(is.na(cellInLik)))
+                 return(gettextf("'%s' has missing values",
+                                 "cellInLik"))
+             TRUE
+         })
+
 ## NO_TESTS
 setClass("FormulaMuMixin",
          slots = c(formulaMu = "formula"),

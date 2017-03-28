@@ -217,6 +217,77 @@ setMethod("logLikelihood",
           })
 
 
+## makeCellInLik ################################################################
+
+## 'model' cannot have aggregate values if 'y' has subtotals
+
+## HAS_TESTS
+setMethod("makeCellInLik",
+          signature(model = "ANY",
+                    y = "HasSubtotals"),
+          function(model, y) {
+              transform <- y@transformSubtotals
+              y <- y@.Data
+              model@cellInLik <- makeCellInLikHelper(transform = transform,
+                                                      y = y)
+              model
+          })
+
+## HAS_TESTS
+setMethod("makeCellInLik",
+          signature(model = "TransformAgMixin",
+                    y = "ANY"),
+          function(model, y) {
+              transform <- model@transformAg
+              y <- y@.Data
+              model@cellInLik <- makeCellInLikHelper(transform = transform,
+                                                      y = y)
+              model
+          })
+
+## HAS_TESTS
+setMethod("makeCellInLik",
+          signature(model = "PoissonVaryingUseExpAgLife",
+                    y = "ANY"),
+          function(model, y) {
+              transform <- model@transformThetaToMxAg
+              y <- y@.Data
+              model@cellInLik <- makeCellInLikHelper(transform = transform,
+                                                      y = y)
+              model
+          })
+
+## not sure if we will keep the classes
+
+## HAS_TESTS
+setMethod("makeCellInLik",
+          signature(model = "TransformAgMixin",
+                    y = "missing"),
+          function(model) {
+              if (!methods::is(model, "BetaIsPredicted"))
+                  stop(gettextf("'%s' has class \"%s\"",
+                                "model", class(model)))
+              metadata.y <- model@metadataY
+              transform <- model@transformAg
+              y <- rep(NA, times = prod(dim(metadata.y)))
+              model@cellInLik <- makeCellInLikHelper(transform = transform,
+                                                     y = y)
+              model
+          })
+
+## ## NO_TESTS
+## setMethod("makeCellInLik",
+##           signature(model = "PoissonVaryingUseExpPredictAgLife",
+##                     y = "missing"),
+##           function(model) {
+##               metadata.y <- model@metadataY
+##               transform <- model@transformThetaToMxAg
+##               y <- rep(NA, times = prod(dim(metadata.y)))
+##               model@cellInLik <- makeCellInLikHelper(transform = transform,
+##                                                      y = y)
+##               model
+##           })
+
 
 ## makeOutputAggregate ######################################################
 

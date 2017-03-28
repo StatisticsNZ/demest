@@ -353,6 +353,137 @@ test_that("R, C-generic, and C-specific versions of logLikelihood give same answ
     }
 })
 
+## makeCellInLik ######################################################################
+
+test_that("makeCellInLik works with BinomialVarying", {
+    makeCellInLik <- demest:::makeCellInLik
+    initialModel <- demest:::initialModel
+    ## no missing
+    exposure <- Counts(array(rpois(20, lambda  = 10),
+                             dim = c(2, 10),
+                             dimnames = list(sex = c("f", "m"), age = 0:9)))
+    y <- Counts(array(rbinom(20, size = exposure, prob = 0.7),
+                      dim = c(2, 10),
+                      dimnames = list(sex = c("f", "m"), age = 0:9)))
+    spec <- Model(y ~ Binomial(mean ~ sex + age))
+    model <- initialModel(spec, y = y, exposure = exposure)
+    ans.obtained <- makeCellInLik(model,
+                                  y = y)
+    ans.expected <- model
+    expect_identical(ans.obtained, ans.expected)
+    ## has missing
+    exposure <- Counts(array(rpois(20, lambda  = 10),
+                             dim = c(2, 10),
+                             dimnames = list(sex = c("f", "m"), age = 0:9)))
+    y <- Counts(array(rbinom(20, size = exposure, prob = 0.7),
+                      dim = c(2, 10),
+                      dimnames = list(sex = c("f", "m"), age = 0:9)))
+    y[c(1, 15)] <- NA
+    spec <- Model(y ~ Binomial(mean ~ sex + age))
+    model <- initialModel(spec, y = y, exposure = exposure)
+    ans.obtained <- makeCellInLik(model,
+                                  y = y)
+    ans.expected <- model
+    ans.expected@cellInLik <- c(FALSE, rep(TRUE, 13), FALSE, rep(TRUE, 5))
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("makeCellInLik works with subtotals", {
+    makeCellInLik <- demest:::makeCellInLik
+    initialModel <- demest:::initialModel
+    y <- Counts(array(as.integer(rpois(n = 20, lambda = 30)),
+                      dim = c(2, 10),
+                      dimnames = list(sex = c("f", "m"), age = 0:9)))
+    y[c(1:12, 20)] <- NA
+    subtotals <- Counts(array(30L, dim = 1, dimnames = list(age = "0-4")))
+    y <- attachSubtotals(y, subtotals = subtotals)
+    spec <- Model(y ~ Poisson(mean ~ sex + age))
+    model <- initialModel(spec, y = y, exposure = NULL)
+    ans.obtained <- makeCellInLik(model,
+                                  y = y)
+    ans.expected <- model
+    ans.expected@cellInLik[20] <- FALSE
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("makeCellInLik works with aggregate", {
+    makeCellInLik <- demest:::makeCellInLik
+    initialModel <- demest:::initialModel
+    y <- Counts(array(as.integer(rpois(n = 20, lambda = 30)),
+                      dim = c(2, 10),
+                      dimnames = list(sex = c("f", "m"), age = 0:9)))
+    y[c(10, 20)] <- NA
+    value <- ValuesOne(2:4, labels = 7:9, name = "age")
+    sd <- sqrt(value)
+    aggregate <- AgNormal(value = value, sd = sd)
+    spec <- Model(y ~ Poisson(mean ~ sex + age),
+                  aggregate = aggregate)
+    model <- initialModel(spec, y = y, exposure = NULL)
+    ans.obtained <- makeCellInLik(model = model,
+                                  y = y)
+    ans.expected <- model
+    ans.expected@cellInLik[10] <- FALSE
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("makeCellInLik works with AgLif", {
+    makeCellInLik <- demest:::makeCellInLik
+    initialModel <- demest:::initialModel
+    exposure <- Counts(array(rpois(20, lambda  = 10),
+                             dim = c(2, 10),
+                             dimnames = list(sex = c("f", "m"), age = c(0:8, "9+"))))
+    y <- Counts(array(rbinom(20, size = exposure, prob = 0.7),
+                      dim = c(2, 10),
+                      dimnames = list(sex = c("f", "m"), age = c(0:8, "9+"))))
+    y[1:2] <- NA
+    value <- ValuesOne(4, labels = "f", name = "sex")
+    sd <- sqrt(value)
+    aggregate <- AgLife(value = value, sd = sd)
+    spec <- Model(y ~ Poisson(mean ~ sex + age),
+                  age ~ Exch(),
+                  aggregate = aggregate)
+    model <- initialModel(spec, y = y, exposure = exposure)
+    ans.obtained <- makeCellInLik(model = model,
+                                  y = y)
+    ans.expected <- model
+    ans.expected@cellInLik <- c(TRUE, FALSE, rep(TRUE, 18))
+    expect_identical(ans.obtained, ans.expected)
+})
+
+## not sure if we will keep the classes
+
+## test_that("makeCellInLik works with predict plus aggregate ", {
+##     makeCellInLik <- demest:::makeCellInLik
+##     initialModel <- demest:::initialModel
+##     initialModelPredict <- demest:::initialModelPredict
+##     weights.old <- Counts(array(runif(50),
+##                                 dim = c(5, 10),
+##                                 dimnames = list(age = 0:4, region = letters[1:10])))
+##     y <- Counts(array(rnorm(50),
+##                       dim = c(5, 10),
+##                       dimnames = list(age = 0:4, region = letters[1:10])))
+##     spec <- Model(y ~ Normal(mean ~ age + region, sd = 2.1))
+##     x.old <- initialModel(spec, y = y, weights = weights.old)
+##     value <- ValuesOne(3, letters[12], "region")
+##     weights.ag <- Counts(array(runif(50),
+##                                 dim = c(5, 4),
+##                                 dimnames = list(age = 0:4, region = letters[11:14])))
+##     aggregate <- AgCertain(value = value, weights = weights.ag)
+##     x.new <- initialModelPredict(x.old,
+##                                  along = 2L,
+##                                  labels = letters[11:14],
+##                                  n = NULL,
+##                                  offsetModel = 1L,
+##                                  covariates = NULL,
+##                                  aggregate = aggregate,
+##                                  lower = NULL,
+##                                  upper = NULL)
+##     ans.obtained <- makeCellInLik(x.new)
+##     ans.expected <- x.new
+##     ans.expected@cellInLik <- c(rep(FALSE, 5), rep(TRUE, 5), rep(FALSE, 10))
+##     expect_identical(ans.obtained, ans.expected)
+## })
+
 ## makeOutputAggregate ################################################################
 
 test_that("makeOutputAggregate works with AgCertain", {

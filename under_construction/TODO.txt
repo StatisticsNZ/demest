@@ -1,4 +1,6 @@
 
+finish predict versions of Aggregate models
+
 continueEstimation version of estimateCounts
 
 fix aggregate versions of PoissonVaryingNotUseExp to use sum rather than mean

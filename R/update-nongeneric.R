@@ -458,7 +458,7 @@ updateAlphaDLMNoTrend <- function(prior, betaTilde, useC = FALSE) {
     }
 }
 
-## TRANSLATED
+## READY_TO_TRANSLATE (AGAIN) - n is now a vector of same length as vbar
 ## HAS_TESTS
 updateBeta <- function(prior, vbar, n, sigma, useC = FALSE) {
     checkUpdateBetaAndPriorBeta(prior = prior,
@@ -472,7 +472,7 @@ updateBeta <- function(prior, vbar, n, sigma, useC = FALSE) {
     else {
         J <- prior@J@.Data
         v <- getV(prior)
-        prec.data <- n / sigma^2
+        prec.data <- n / sigma^2 ## now a vector
         prec.prior <- 1 / v
         var <- 1 / (prec.data + prec.prior)
         beta.hat <- betaHat(prior)
@@ -497,10 +497,12 @@ updateBetasAndPriorsBetas <- function(object, g, useC = FALSE) {
         theta <- object@theta
         betas <- object@betas
         sigma <- object@sigma
-        I <- length(theta)
+        ## I <- length(theta)
         for (b in seq_along(betas)) {
-            vbar <- makeVBar(object, iBeta = b, g = g)  ## uses updated object
-            n <- I %/% length(vbar)
+            l <- makeVBarAndN(object, iBeta = b, g = g)  ## uses updated object NEW
+            vbar <- l[[1L]] ## NEW
+            n <- l[[2L]]
+            ## n <- I %/% length(vbar)
             l <- updateBetaAndPriorBeta(prior = object@priorsBetas[[b]],
                                         vbar = vbar,
                                         n = n,
@@ -512,7 +514,7 @@ updateBetasAndPriorsBetas <- function(object, g, useC = FALSE) {
     }
 }
 
-## TRANSLATED
+## READY_T0_TRANSLATE (AGAIN) - ADDED MIN AND MAX
 ## HAS_TESTS
 ## 'W' in notes
 updateComponentWeightMix <- function(prior, useC = FALSE) {
@@ -531,6 +533,8 @@ updateComponentWeightMix <- function(prior, useC = FALSE) {
         iAlong <- prior@iAlong
         dim.beta <- prior@dimBeta
         iteratorsDims <- prior@iteratorsDimsMix
+        min <- prior@minLevelComponentWeight       ## NEW
+        max <- prior@maxLevelComponentWeight       ## NEW
         iterator.beta <- iteratorsDims[[iAlong]]
         n.along <- dim.beta[iAlong]
         n.beta <- as.integer(prod(dim.beta))
@@ -555,9 +559,13 @@ updateComponentWeightMix <- function(prior, useC = FALSE) {
                 var <- 1 / (inv.omega.sq + sum.is.comp)
                 mean <- var * (level * inv.omega.sq + sum.latent.comp.weight)
                 sd <- sqrt(var)
-                comp.weight[i.w] <- rnorm(n = 1L,
-                                          mean = mean,
-                                          sd = sd)
+                ## comp.weight[i.w] <- rnorm(n = 1L,
+                ##                           mean = mean,
+                ##                           sd = sd)
+                comp.weight[i.w] <- rtnorm1(mean = mean,    ## NEW
+                                            sd = sd,
+                                            lower = min,
+                                            upper = max)
             }
             iterator.beta <- advanceS(iterator.beta)
         }

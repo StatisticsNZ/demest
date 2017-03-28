@@ -288,6 +288,10 @@ setMethod("checkForSubtotals",
           signature(object = "HasSubtotals",
                     model = "SpecPoissonVarying"),
           function(object, model, name = "y") {
+              aggregate <- object@aggregate
+              if (!methods::is(aggregate, "SpecAgPlaceholder"))
+                  stop(gettextf("aggregate values not permitted when '%s' has subtotals",
+                                "y"))
               NULL
           })
 

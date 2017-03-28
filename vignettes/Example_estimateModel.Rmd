@@ -23,7 +23,7 @@ The paper [http://www.tandfonline.com/doi/full/10.1080/00324728.2015.1122826](Ba
 
 # Preparing and inspecting data
 
-The data are in package `demdata`.  The first step is to turn the data into counts arrays, using function `Counts` from package `dembase`. Because `dembase` is a dependency for `demest`, `demest` is automatically loaded when `demest` is. 
+The data are in package `demdata`.  The first step is to turn the data into counts arrays, using function `Counts` from package `dembase`. Because `dembase` is a dependency for `demest`, `dembase` is automatically loaded when `demest` is. 
 ```{r}
 library(demest)
 births <- demdata::nz.births
@@ -42,7 +42,7 @@ plot(births)
 plot(females)
 ```
 
-Function `dplot` to quickly obtained 'direct' estimates of birth rates.  (A direct estimate is one where we simply divide the births for a given age-region-year cell by the corresponding population, ignoring all other cells.) We can use the direct estimates to get a sense of how rates vary by age and region, and over time. 
+Function `dplot` allows us to quickly obtain 'direct' estimates of birth rates.  (A direct estimate is one where we simply divide the births for a given age-region-year cell by the corresponding population, ignoring all other cells.) We can use the direct estimates to get a sense of how the underlying rates vary by age and region, and over time. 
 ```{r, fig.width = 6.5, fig.height = 7}
 dplot(~ year | region,
       data = births / females,
@@ -51,7 +51,7 @@ dplot(~ year | region,
       auto.key = list(lines = TRUE, points = FALSE))
 ```
 
-There is a substantial variation in the age-pattern of fertility: compare Northland and Auckland, for instance.  There is also some evidence of changing age patterns, with rates for women over 30 drifting upwards in most regions, and rates for women under 30 drifting downwards.
+There is a substantial variation in the age pattern of fertility: compare Northland and Auckland, for instance.  There is also some evidence of changing age patterns, with rates for women over 30 drifting upwards in most regions, and rates for women under 30 drifting downwards.
 
 # Specify a model
 
@@ -64,22 +64,22 @@ Printing the model yields an informal mathematical description of the model--or 
 ```{r}
 model.main
 ```
-The `y[i]`, that is, births in age-region-year cell `i`, are assumed to follow a Poisson distribution.  However, we have not yet specified whether our model will include an exposure term, so `model.fert` allows for both possibilities.  
+The `y[i]`, that is, births in age-region-year cell `i`, are assumed to follow a Poisson distribution.  However, we have not yet specified whether our model will include an exposure term, so `model.main` allows for both possibilities.  
 
 The log rates (in a with-exposure model) or log counts (in a without-exposure model) are assumed to follow a normal distribution.  The expression `age[j[i]]` means "the element `j` of the age effect that is associated with cell `i`".  For instance, if cell `i` referred to females aged 20-24 in Taranaki, then `age[j[i]]` would be the second element in the age effect.  
 
-The standard deviation term `sd` follows a truncated half-t distribution with 7 degrees of freedom, but with scale and maximum value still to be determined.  The black line in the plot below shows the density for a half-t distribution with 7 degrees of freedom and scale 1.  The red line shows a half-t distribution with 7 degrees of freedom and scale 0.5.
+The standard deviation term `sd` follows a truncated half-t distribution with 7 degrees of freedom, with scale and maximum value still to be determined.  The black line in the plot below shows the density for a half-t distribution with 7 degrees of freedom and scale 1.  The red line shows a half-t distribution with 7 degrees of freedom and scale 0.5.
 ```{r, fig.width = 4, fig.height = 3}
 plotHalfT(df = 7, scale = 1, ylim = c(0, 1.6))
 plotHalfT(df = 7, scale = 0.5, add = TRUE, col = "red")
 ```
 
-The prior for `sd` is informative, in that it gives low weight to standard deviations about about 2 when the scale is 1, and above 1 when the scale is 0.5.
+The prior for `sd` is informative, in that it gives low weight to standard deviations above 2 when the scale is 1, and above 1 when the scale is 0.5.
 
 The age, region, and year terms do not have any priors at this stage.
 
 
-The specification below allows for the interactions between age and region and between and age and time. 
+The specification below allows for interactions between age and region and between and age and time. 
 ```{r}
 model.inter <- Model(y ~ Poisson(mean ~ age * region + age * year))
 model.inter
@@ -91,7 +91,7 @@ Numerical output from a Bayesian hierarchical model can easily take several giga
 ```{r}
 filename.main.est <- tempfile()
 ```
-If we wanted to save the results to examine later, we would specify a normal filename a directory of our choice.
+If we wanted to save the results to examine later, we would specify a normal filename in a directory of our choice.
 
 # Run the model
 
@@ -234,7 +234,7 @@ The software works, but the results are not terribly good!
 
 # Extending and refining the model
 
-In practice, the main-effects model, with nothing but default priors, gives reasonable results for estimation, but bad results for forecasting.  Success when estimating and failure when forecasting is a common experience.  When estimating, if a hierarchical model fits the data badly, the data can pull the posterior distribution towards something sensible. However, when forecasting, there are no data to rescue the model.
+In practice, the main-effects model, with nothing but default priors, gives reasonable results for estimation, but bad results for forecasting.  Success when estimating and failure when forecasting is, regrettably, rather common.  When estimating, if a hierarchical model fits the data badly, the data can pull the posterior distribution towards something sensible. However, when forecasting, there are no data to rescue the model.
 
 We are still gaining experience in constructing models that perform well when forecasting as well as estimating.  We will extend the documentation and software in the light of this experience.  For the moment, we describe how we extended the simple model above to arrive at a specification that performed satisfactorily.  For the details of the modelling functions, please consult the help for the relevant functions in `demest`.
 
@@ -271,15 +271,9 @@ prior.age.reg <- Exch(error = error.reg)
 prior.age.reg
 ```
 
-Finally, we add an age-year interaction, with no trend, a fixed damping parameter, and highly informative priors on the amount of annual variation,
+Finally, we add an age-year interaction, with a `Mix` prior. The 'mix' in the title is short for 'mixture model'. The model is something of a black box,  requires minimal input from users. It is designed for modelling complex patterns, including age-structures that change over time. See the help for `Mix` for more details. Since no explicit priors are given for the remaining main effects and interactions, the modelling functions will use defaults.
 ```{r}
-level.age.year <- Level(scale = HalfT(scale = 0.05))
-damp.age.year <- Damp(coef = 0.9)
-error.age.year <- Error(scale = HalfT(scale = 0.05))
-prior.age.year <- DLM(level = level.age.year,
-                      trend = NULL,
-                      damp = damp.age.year,
-                      error = error.age.year)
+prior.age.year <- Mix()
 prior.age.year
 ```
 
@@ -297,7 +291,7 @@ model.fancy
 
 Running the code below
 
-```{r, eval = FALSE}
+```{r}
 filename.fancy.est <- tempfile()
 filename.fancy.pred <- tempfile()
 set.seed(1) 

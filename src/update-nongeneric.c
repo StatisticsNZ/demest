@@ -970,8 +970,7 @@ updateComponentWeightMix(SEXP prior_R)
             double var = 1 / (invOmegaSq + sumIsComp);
             double mean = var * (level * invOmegaSq + sumLatentCompWeight);
             double sd = sqrt(var);
-            /* compWeight[iW] = rnorm(mean, sd);              */
-            compWeight[iW] = rtnorm1(mean, sd, -4, 4); /* changed by JB */
+            compWeight[iW] = rnorm(mean, sd);
         }
         
         advanceS(iteratorBeta_R);

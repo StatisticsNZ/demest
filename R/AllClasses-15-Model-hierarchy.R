@@ -541,11 +541,21 @@ setClass("PoissonVaryingNotUseExpPredictAgPoisson",
 ## NO_TESTS
 setClass("PoissonVaryingUseExpPredictAgPoisson",
          contains = c("PoissonVaryingUseExpPredict",
-             "AgPoisson"),
+                      "AgPoisson"),
          prototype = prototype(slotsToExtract = c("theta",
-                               "nFailedPropTheta", "nAcceptTheta",
-                               "betas", "sigma", "priorsBetas",
-                               "valueAg", "nFailedPropValueAg", "nAcceptAg"),
-         iMethodModel = 123L))
+                                                  "nFailedPropTheta", "nAcceptTheta",
+                                                  "betas", "sigma", "priorsBetas",
+                                                  "valueAg", "nFailedPropValueAg", "nAcceptAg"),
+                               iMethodModel = 123L))
+
+## NO_TESTS
+setClass("PoissonVaryingUseExpPredictAgLife",
+         contains = c("PoissonVaryingUseExp",
+                      "AgLife"),
+         prototype = prototype(slotsToExtract = c("theta",
+                                                  "nFailedPropTheta", "nAcceptTheta",
+                                                  "betas", "sigma", "priorsBetas",
+                                                  "valueAg", "mxAg"),
+                               iMethodModel = 129L))
 
 
