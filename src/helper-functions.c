@@ -651,12 +651,12 @@ betaHat <- function(prior, useC = FALSE) {
 void
 betaHat(double *beta_hat, SEXP prior_R, int J)
 {
-    double hasAlphaMove = *LOGICAL(GET_SLOT(prior_R, hasAlphaMove_sym));
-    double hasAlphaDLM = *LOGICAL(GET_SLOT(prior_R, hasAlphaDLM_sym));
-    double hasAlphaICAR = *LOGICAL(GET_SLOT(prior_R, hasAlphaICAR_sym));
-    double hasAlphaMix = *LOGICAL(GET_SLOT(prior_R, hasAlphaMix_sym));
-    double hasCovariates = *LOGICAL(GET_SLOT(prior_R, hasCovariates_sym));
-    double hasSeason = *LOGICAL(GET_SLOT(prior_R, hasSeason_sym));
+    int hasAlphaMove = *LOGICAL(GET_SLOT(prior_R, hasAlphaMove_sym));
+    int hasAlphaDLM = *LOGICAL(GET_SLOT(prior_R, hasAlphaDLM_sym));
+    int hasAlphaICAR = *LOGICAL(GET_SLOT(prior_R, hasAlphaICAR_sym));
+    int hasAlphaMix = *LOGICAL(GET_SLOT(prior_R, hasAlphaMix_sym));
+    int hasCovariates = *LOGICAL(GET_SLOT(prior_R, hasCovariates_sym));
+    int hasSeason = *LOGICAL(GET_SLOT(prior_R, hasSeason_sym));
     
     memset(beta_hat, 0, J * sizeof(double));
     
@@ -1445,6 +1445,132 @@ getVBar(double *vbar, int len_vbar,
         advanceB(iteratorBetas_R);
     }
 }
+
+
+/* only here for testing makeVBarAndN_General: 
+ * the uber update model function effectively duplicates this */
+SEXP
+makeVBarAndN_R(SEXP object, SEXP iBeta_R) 
+{
+    int iBeta = *(INTEGER(iBeta_R))-1;
+        
+    SEXP ans_R = NULL; 
+    /* ans_R will become a list holding vbar and n,
+     * where n is a vector of integers */
+        
+    int i_method_model = *(INTEGER(GET_SLOT(object, iMethodModel_sym)));
+        
+    switch(i_method_model)
+    {
+        case 4: case 5: /*Normal */
+            PROTECT(ans_R = makeVBarAndN_General(object, iBeta, identity));
+            break;
+        case 6: case 10: /* Poisson */
+            PROTECT(ans_R =  makeVBarAndN_General(object, iBeta, log));
+            break;
+        case 9: /* Binomial */
+            PROTECT(ans_R = makeVBarAndN_General(object, iBeta, logit));
+            break;
+        default:
+            error("unknown iMethodModel: %d", i_method_model);
+            break;
+    }
+    
+    UNPROTECT(1); /* ans_R */
+    return ans_R;
+}
+
+
+/* only used when testing makeVBarAndN from R */
+SEXP
+makeVBarAndN_General(SEXP object, int iBeta, double (*g)(double))
+{
+    SEXP theta_R = GET_SLOT(object, theta_sym);
+    int n_theta = LENGTH(theta_R);
+    double *theta = REAL(theta_R);
+    
+    SEXP betas_R = GET_SLOT(object, betas_sym);
+    int n_betas = LENGTH(betas_R);
+
+    SEXP iteratorBetas_R = GET_SLOT(object, iteratorBetas_sym); 
+    
+    int len_vbar = LENGTH(VECTOR_ELT(betas_R, iBeta));
+    
+    int *cellInLik = LOGICAL(GET_SLOT(object, cellInLik_sym));
+    
+    SEXP vbar_R;
+    PROTECT(vbar_R = allocVector(REALSXP, len_vbar));
+    SEXP n_vec_R;
+    PROTECT(n_vec_R = allocVector(INTSXP, len_vbar));
+    double *vbar = REAL(vbar_R);
+    int *n_vec = INTEGER(n_vec_R);
+    
+    getVBarAndN(vbar, n_vec,  
+                len_vbar, cellInLik,
+                betas_R, iteratorBetas_R,
+                theta, n_theta, n_betas,
+                iBeta, g);
+    
+    SEXP ans_R = PROTECT(allocVector(VECSXP, 2));
+    SET_VECTOR_ELT(ans_R, 0, vbar_R);
+    SET_VECTOR_ELT(ans_R, 1, n_vec_R);
+    UNPROTECT(3);
+    return ans_R;
+                
+}
+
+
+void
+getVBarAndN(double *vbar, int *n_vec, 
+        int len_vbar, int *cellInLik, 
+        SEXP betas_R, SEXP iteratorBetas_R, 
+                double *theta, int n_theta, int n_betas,
+                int iBeta, double (*g)(double))
+{
+    resetB(iteratorBetas_R);
+    int *indices = INTEGER(GET_SLOT(iteratorBetas_R, indices_sym));
+    
+    double* betas[n_betas]; /* array of pointers */
+    for (int b = 0; b < n_betas; ++b) {
+        betas[b] = REAL(VECTOR_ELT(betas_R, b));
+    }
+    
+    /* zero contents of vbar and n_vec*/
+    memset(vbar, 0, len_vbar * sizeof(double));
+    memset(n_vec, 0, len_vbar * sizeof(int));
+    
+    for (int i = 0; i < n_theta; ++i) {
+        
+        int includeCell = cellInLik[i];
+        
+        if (includeCell) {
+        
+            int pos_ans = indices[iBeta] - 1;
+        
+            double set_pos = g( theta[i] );
+        
+            for (int b = 0; b < n_betas; ++b) {
+            
+                if (b == iBeta) continue; /* skip b == iBeta */
+                int pos_other_beta = indices[b] - 1;
+            
+                set_pos -= betas[b][pos_other_beta];
+            }
+        
+            vbar[pos_ans] += set_pos;
+            ++n_vec[pos_ans];
+        
+        }
+        advanceB(iteratorBetas_R);
+    }
+    
+    for (int i = 0; i < len_vbar; ++i) {
+        
+        vbar[i] /= n_vec[i];
+    }
+}
+
+
 
 double
 modePhiMix(double * level, double meanLevel, int nAlong,

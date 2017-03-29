@@ -64,6 +64,7 @@ SEXP
   iMethodModel_sym, 
   priorsBetas_sym, 
   theta_sym,
+  cellInLik_sym,
   mu_sym,
   sigma_sym,
   sigmaMax_sym,
@@ -286,12 +287,14 @@ SEXP
   omegaVectorsMix_sym,
   omegaVectorsMaxMix_sym,
   AVectorsMix_sym,
-  nuVectorsMix_sym;  
+  nuVectorsMix_sym,
+  minLevelComponentWeight_sym,
+  maxLevelComponentWeight_sym;  
   
 /* Priors-methods */
 
 void updateBeta(double *beta, int J, SEXP prior, double *vbar, 
-                int n, double sigma);
+                int *n, double sigma);
 
 void updateGWithTrend(SEXP prior_R);
 void updateLatentComponentWeightMix(SEXP prior_R);
@@ -418,6 +421,7 @@ double findOneRootLogPostSigmaRobust(double sigma0, double z, double A,
 SEXP getV_R(SEXP prior_R);
 
 SEXP makeVBar_R(SEXP object, SEXP iBeta);
+SEXP makeVBarAndN_R(SEXP object, SEXP iBeta);
 double logPostPhiMix(double phi, double *level, double meanLevel, 
                 int nAlong, int indexClassMax_r, double omega);
 double logPostPhiFirstOrderMix(double phi, double *level, double meanLevel, 

@@ -67,6 +67,14 @@
     
     SEXP makeVBar_General(SEXP object, int iBeta, double (*g)(double));
     
+    void getVBarAndN(double *vbar, int *n_vec, 
+        int len_vbar, int *cellInLik, 
+        SEXP betas_R, SEXP iteratorBetas_R, 
+                double *theta, int n_theta, int n_betas,
+                int iBeta, double (*g)(double));
+    
+    SEXP makeVBarAndN_General(SEXP object, int iBeta, double (*g)(double));
+    
     double logit(double x);
     
     double identity(double x);

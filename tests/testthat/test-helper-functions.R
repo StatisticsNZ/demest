@@ -5828,7 +5828,7 @@ test_that("makeVBarAndN gives valid answer with Normal, main effects", {
     expect_equal(ans.obtained, ans.expected)
 })
 
-## tests equal but not identical
+
 test_that("R and C versions of makeVBarAndN give same answer with Poisson, intercept only", {
     makeVBarAndN <- demest:::makeVBarAndN
     initialModel <- demest:::initialModel  

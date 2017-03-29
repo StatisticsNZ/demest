@@ -59,14 +59,14 @@
 #define UPDATEBETA_WRAPPER_R(name)         \
 SEXP name##_R(SEXP prior_R, SEXP vbar_R, SEXP n_R, SEXP sigma_R) {    \
     double *vbar = REAL(vbar_R);    \
-    int n = *INTEGER(n_R);    \
+    int *n_vec = INTEGER(n_R);    \
     double sigma = *REAL(sigma_R);    \
     int J = *INTEGER(GET_SLOT(prior_R, J_sym));    \
     SEXP beta_R;    \
     PROTECT(beta_R = allocVector(REALSXP, J));    \
     double *beta = REAL(beta_R);    \
     GetRNGstate();    \
-    name(beta, J, prior_R, vbar, n, sigma);    \
+    name(beta, J, prior_R, vbar, n_vec, sigma);    \
     PutRNGstate();    \
     UNPROTECT(1);    \
     return beta_R;             \
@@ -1345,6 +1345,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(getV_R, 1),
   
   CALLDEF(makeVBar_R, 2),
+  CALLDEF(makeVBarAndN_R, 2),
   CALLDEF(logPostPhiMix_R, 6),
   CALLDEF(logPostPhiFirstOrderMix_R, 6),
   CALLDEF(logPostPhiSecondOrderMix_R, 6),
@@ -1646,6 +1647,7 @@ R_init_demest(DllInfo *info)
   ADD_SYM(iMethodModel);
   ADD_SYM(priorsBetas);
   ADD_SYM(theta);
+  ADD_SYM(cellInLik);
   ADD_SYM(mu);
   ADD_SYM(sigma);
   ADD_SYM(sigmaMax);
@@ -1870,7 +1872,9 @@ R_init_demest(DllInfo *info)
   ADD_SYM(omegaVectorsMix);
   ADD_SYM(omegaVectorsMaxMix);
   ADD_SYM(AVectorsMix);
-  ADD_SYM(nuVectorsMix);  
+  ADD_SYM(nuVectorsMix); 
+  ADD_SYM(minLevelComponentWeight);
+  ADD_SYM(maxLevelComponentWeight);   
   
 #undef ADD_SYM
 
