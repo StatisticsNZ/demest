@@ -4708,7 +4708,7 @@ makeVBar <- function(object, iBeta, g, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 makeVBarAndN <- function(object, iBeta, g, useC = FALSE) {
     ## object

@@ -708,7 +708,7 @@ updateAlphaDLMNoTrend(SEXP prior_R, double *betaTilde, int J)
 
 void
 updateBeta(double *beta, int J, SEXP prior_R, 
-                        double *vbar, int n, double sigma)
+                        double *vbar, int *n_vec, double sigma)
 {
     double *work = (double*)R_alloc(2*J, sizeof(double));
     
@@ -726,14 +726,15 @@ updateBeta(double *beta, int J, SEXP prior_R,
     printDblArray(v, J);
     #endif
     
-    double precData = n/(sigma*sigma);
+    double sigmaSq = sigma*sigma;
     
     for (int i = 0; i < J; ++i) {
         
         double thisPrecPrior =1/v[i];
-        double thisVar = 1/(precData + thisPrecPrior);
+        double thisPrecData = n_vec[i]/sigmaSq;
+        double thisVar = 1/(thisPrecData + thisPrecPrior);
         
-        double thisMean = (precData * vbar[i] + thisPrecPrior * beta_hat[i])*thisVar;
+        double thisMean = (thisPrecData * vbar[i] + thisPrecPrior * beta_hat[i])*thisVar;
         double thisSD = sqrt(thisVar);
         
         beta[i] = rnorm(thisMean, thisSD);
@@ -932,6 +933,9 @@ updateComponentWeightMix(SEXP prior_R)
     SEXP iteratorBeta_R = VECTOR_ELT(iteratorsDims_R, iAlong_c);
     int nAlong = dimBeta[iAlong_c];
     
+    double min = *REAL(GET_SLOT(prior_R, minLevelComponentWeight_sym));
+    double max = *REAL(GET_SLOT(prior_R, maxLevelComponentWeight_sym));
+    
     int nBeta = 1;
     for (int i = 0; i < nDimBeta; ++i) {
         nBeta *= dimBeta[i];
@@ -970,7 +974,8 @@ updateComponentWeightMix(SEXP prior_R)
             double var = 1 / (invOmegaSq + sumIsComp);
             double mean = var * (level * invOmegaSq + sumLatentCompWeight);
             double sd = sqrt(var);
-            compWeight[iW] = rnorm(mean, sd);
+            
+            compWeight[iW] = rtnorm1(mean, sd, min, max);
         }
         
         advanceS(iteratorBeta_R);
@@ -1652,7 +1657,7 @@ updateOmegaComponentWeightMix(SEXP prior_R)
     
     int successfullyUpdated = (omega > 0);
     if(successfullyUpdated) {
-	SET_DOUBLESCALE_SLOT(prior_R, omegaComponentWeightMix_sym, omega);
+    SET_DOUBLESCALE_SLOT(prior_R, omegaComponentWeightMix_sym, omega);
     }
 }
 
@@ -1749,7 +1754,7 @@ updateOmegaLevelComponentWeightMix(SEXP prior_R)
     
     int successfullyUpdated = (omega > 0);
     if(successfullyUpdated) {
-	SET_DOUBLESCALE_SLOT(prior_R, omegaLevelComponentWeightMix_sym, omega);
+    SET_DOUBLESCALE_SLOT(prior_R, omegaLevelComponentWeightMix_sym, omega);
     }    
 }
 
@@ -1842,7 +1847,7 @@ updateOmegaVectorsMix(SEXP prior_R)
     
     int successfullyUpdated = (omega > 0);
     if(successfullyUpdated) {
-	SET_DOUBLESCALE_SLOT(prior_R, omegaVectorsMix_sym, omega);
+    SET_DOUBLESCALE_SLOT(prior_R, omegaVectorsMix_sym, omega);
     }
 }
 
@@ -1959,13 +1964,13 @@ updatePhiMix(SEXP prior_R)
                                 nAlong, indexClassMaxUsed, omega);
 
     double logDensProp = log1p(phiProp) + log1p(-phiProp);
-    double logDensCurr = log1p(phiCurr) + log1p(-phiCurr);	
+    double logDensCurr = log1p(phiCurr) + log1p(-phiCurr);  
     
     double logPropProp = dnorm(phiProp, meanProp, sdProp, USE_LOG);
     double logPropCurr = dnorm(phiCurr, meanProp, sdProp, USE_LOG);
     
     double logDiff = logLikProp - logLikCurr +
-	                logDensProp - logDensCurr +
+                    logDensProp - logDensCurr +
                         logPropCurr - logPropProp;
     
     int accept = (!(logDiff < 0) || (runif(0, 1) < exp(logDiff)));  
@@ -2225,9 +2230,9 @@ updateVectorsMixAndProdVectorsMix(SEXP prior_R, double * betaTilde, int J)
                 thisVector[iVector] = rnorm(mean, sd);
             }
 
-	} /* end iElement loop */
+    } /* end iElement loop */
 
-	
+    
         for (int iClass = 0; iClass < indexClassMaxUsed; ++iClass) {
             
             resetM(iteratorProd_R);

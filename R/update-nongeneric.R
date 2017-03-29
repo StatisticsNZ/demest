@@ -458,7 +458,7 @@ updateAlphaDLMNoTrend <- function(prior, betaTilde, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE (AGAIN) - n is now a vector of same length as vbar
+## TRANSLATED (AGAIN) - n is now a vector of same length as vbar
 ## HAS_TESTS
 updateBeta <- function(prior, vbar, n, sigma, useC = FALSE) {
     checkUpdateBetaAndPriorBeta(prior = prior,
@@ -514,7 +514,7 @@ updateBetasAndPriorsBetas <- function(object, g, useC = FALSE) {
     }
 }
 
-## READY_T0_TRANSLATE (AGAIN) - ADDED MIN AND MAX
+## READY_T0_TRANSLATE (AGAIN) - ADDED MIN AND MAX - JAH cannot test 30/3/2017
 ## HAS_TESTS
 ## 'W' in notes
 updateComponentWeightMix <- function(prior, useC = FALSE) {
