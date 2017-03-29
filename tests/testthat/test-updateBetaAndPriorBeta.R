@@ -22,7 +22,7 @@ test_that("updateBetaAndPriorBeta works with ExchFixed", {
                                sY = NULL)
         expect_is(prior0, "ExchFixed")
         vbar <- rnorm(2)
-        n <- 10L
+        n <- rep(10L, 2)
         sigma <- runif(1)
         set.seed(seed)
         l <- updateBetaAndPriorBeta(prior0,
@@ -57,7 +57,7 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with Exch
                                sY = NULL)
         expect_is(prior0, "ExchFixed")
         vbar <- rnorm(2)
-        n <- 10L
+        n <- rep(10L, 2)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updateBetaAndPriorBeta(prior0,

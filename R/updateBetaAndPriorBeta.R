@@ -1,7 +1,7 @@
 
 ## ExchFixed
 
-## TRANSLATED
+## READY_TO_TRANSLATE (AGAIN)
 ## HAS_TESTS
 setMethod("updateBetaAndPriorBeta",
           signature(prior = "ExchFixed"),
@@ -19,7 +19,7 @@ setMethod("updateBetaAndPriorBeta",
               else {
                   J <- prior@J@.Data
                   tau <- prior@tau@.Data
-                  prec.data <- n / sigma^2
+                  prec.data <- n / sigma^2 ## FORMERLY A SCALAR, NOW A VECTOR
                   prec.prior <- 1 / tau^2
                   var <- 1 / (prec.data + prec.prior) 
                   mean <- prec.data * vbar * var # vector
