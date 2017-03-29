@@ -23,7 +23,7 @@ setMethod("updateBetaAndPriorBeta",
                   prec.prior <- 1 / tau^2
                   var <- 1 / (prec.data + prec.prior) 
                   mean <- prec.data * vbar * var # vector
-                  sd <- sqrt(var) # scalar
+                  sd <- sqrt(var) # vector
                   beta <- stats::rnorm(n = J, mean = mean, sd = sd)
                   list(beta, prior)
               }
