@@ -1109,71 +1109,128 @@ setMethod("initialPrior",
                                   metadata = metadata,
                                   sY = sY)
               l.robust <- initialRobust(object = object,
-                                           lAll = l.all)
+                                        lAll = l.all)
               methods::new("DLMWithTrendRobustCovWithSeason",
-                  AAlpha = l.all$AAlpha,
-                  ADelta = l.with.trend$ADelta,
-                  ADelta0 = l.with.trend$ADelta0,
-                  AEtaCoef = l.cov$AEtaCoef,
-                  AEtaIntercept = l.cov$AEtaIntercept,
-                  ASeason = l.season$ASeason,
-                  aWithTrend = l.with.trend$aWithTrend,
-                  aSeason = l.season$aSeason,
-                  ATau = l.all$ATau,
-                  alphaDLM = l.all$alphaDLM,
-                  CWithTrend = l.with.trend$CWithTrend,
-                  CSeason = l.season$CSeason,
-                  contrastsArg = l.cov$contrastsArg,
-                  DC = l.with.trend$DC,
-                  DCInv = l.with.trend$DCInv,
-                  DRInv = l.with.trend$DRInv,
-                  deltaDLM = l.with.trend$deltaDLM,
-                  eta = l.cov$eta,
-                  formula = l.cov$formula,
-                  GWithTrend = l.with.trend$GWithTrend,
-                  iAlong = l.all$iAlong,
-                  iteratorState = l.all$iteratorState,
-                  iteratorV = l.all$iteratorV,
-                  J = l.all$J,
-                  K = l.all$K,
-                  L = l.all$L,
-                  mWithTrend = l.with.trend$mWithTrend,
-                  m0WithTrend = l.with.trend$m0WithTrend,
-                  mSeason = l.season$mSeason,
-                  m0Season = l.season$m0Season,
-                  meanDelta0 = l.with.trend$meanDelta0,
-                  minPhi = l.all$minPhi,
-                  maxPhi = l.all$maxPhi,
-                  nSeason = l.season$nSeason,
-                  nuAlpha = l.all$nuAlpha,
-                  nuBeta = l.robust$nuBeta,
-                  nuDelta = l.with.trend$nuDelta,
-                  nuEtaCoef = l.cov$nuEtaCoef,
-                  nuSeason = l.season$nuSeason,
-                  nuTau = l.all$nuTau,
-                  omegaAlpha = l.all$omegaAlpha,
-                  omegaAlphaMax = l.all$omegaAlphaMax,
-                  omegaDelta = l.with.trend$omegaDelta,
-                  omegaDeltaMax = l.with.trend$omegaDeltaMax,
-                  omegaSeason = l.season$omegaSeason,
-                  omegaSeasonMax = l.season$omegaSeasonMax,
-                  P = l.cov$P,
-                  phi = l.all$phi,
-                  phiKnown = l.all$phiKnown,
-                  RWithTrend = l.with.trend$RWithTrend,
-                  RSeason = l.season$RSeason,
-                  s = l.season$s,
-                  tau = l.all$tau,
-                  tauMax = l.all$tauMax,
-                  UBeta = l.robust$UBeta,
-                  UC = l.with.trend$UC,
-                  UR = l.with.trend$UR,
-                  WSqrt = l.with.trend$WSqrt,
-                  WSqrtInvG = l.with.trend$WSqrtInvG,
-                  UEtaCoef = l.cov$UEtaCoef,
-                  Z = l.cov$Z)
+                           AAlpha = l.all$AAlpha,
+                           ADelta = l.with.trend$ADelta,
+                           ADelta0 = l.with.trend$ADelta0,
+                           AEtaCoef = l.cov$AEtaCoef,
+                           AEtaIntercept = l.cov$AEtaIntercept,
+                           ASeason = l.season$ASeason,
+                           aWithTrend = l.with.trend$aWithTrend,
+                           aSeason = l.season$aSeason,
+                           ATau = l.all$ATau,
+                           alphaDLM = l.all$alphaDLM,
+                           CWithTrend = l.with.trend$CWithTrend,
+                           CSeason = l.season$CSeason,
+                           contrastsArg = l.cov$contrastsArg,
+                           DC = l.with.trend$DC,
+                           DCInv = l.with.trend$DCInv,
+                           DRInv = l.with.trend$DRInv,
+                           deltaDLM = l.with.trend$deltaDLM,
+                           eta = l.cov$eta,
+                           formula = l.cov$formula,
+                           GWithTrend = l.with.trend$GWithTrend,
+                           iAlong = l.all$iAlong,
+                           iteratorState = l.all$iteratorState,
+                           iteratorV = l.all$iteratorV,
+                           J = l.all$J,
+                           K = l.all$K,
+                           L = l.all$L,
+                           mWithTrend = l.with.trend$mWithTrend,
+                           m0WithTrend = l.with.trend$m0WithTrend,
+                           mSeason = l.season$mSeason,
+                           m0Season = l.season$m0Season,
+                           meanDelta0 = l.with.trend$meanDelta0,
+                           minPhi = l.all$minPhi,
+                           maxPhi = l.all$maxPhi,
+                           nSeason = l.season$nSeason,
+                           nuAlpha = l.all$nuAlpha,
+                           nuBeta = l.robust$nuBeta,
+                           nuDelta = l.with.trend$nuDelta,
+                           nuEtaCoef = l.cov$nuEtaCoef,
+                           nuSeason = l.season$nuSeason,
+                           nuTau = l.all$nuTau,
+                           omegaAlpha = l.all$omegaAlpha,
+                           omegaAlphaMax = l.all$omegaAlphaMax,
+                           omegaDelta = l.with.trend$omegaDelta,
+                           omegaDeltaMax = l.with.trend$omegaDeltaMax,
+                           omegaSeason = l.season$omegaSeason,
+                           omegaSeasonMax = l.season$omegaSeasonMax,
+                           P = l.cov$P,
+                           phi = l.all$phi,
+                           phiKnown = l.all$phiKnown,
+                           RWithTrend = l.with.trend$RWithTrend,
+                           RSeason = l.season$RSeason,
+                           s = l.season$s,
+                           tau = l.all$tau,
+                           tauMax = l.all$tauMax,
+                           UBeta = l.robust$UBeta,
+                           UC = l.with.trend$UC,
+                           UR = l.with.trend$UR,
+                           WSqrt = l.with.trend$WSqrt,
+                           WSqrtInvG = l.with.trend$WSqrtInvG,
+                           UEtaCoef = l.cov$UEtaCoef,
+                           Z = l.cov$Z)
           })
 
+
+## Known
+
+setMethod("initialPrior",
+          signature(object = "SpecKnown"),
+          function(object, beta, metadata, sY, ...) {
+              alpha.all <- object@alphaKnown@.Data
+              metadata.all <- object@metadata
+              J <- makeJ(beta)
+              .Data.beta <- array(beta,
+                                  dim = dim(metadata),
+                                  dimnames = dimnames(metadata))
+              beta <- methods::new("Values",
+                                   .Data = .Data.beta,
+                                   metadata = metadata)
+              .Data.all <- array(alpha.all,
+                                 dim = dim(metadata.all),
+                                 dimnames = dimnames(metadata.all))
+              alpha.all <- methods::new("Values",
+                                        .Data = .Data.all,
+                                        metadata = metadata.alll)
+              alpha <- tryCatch(dembase::makeCompatible(x = alpha.all, y = beta, subset = TRUE),
+                                error = function(e) e)
+              if (methods::is(alpha, "error"))
+                  stop(gettextf("metadata for '%s' prior for '%s' not compatible with metadata for '%s' : %s",
+                                "Known", paste(names(metadata), collapse = ":"), "y", alpha$message))
+              alpha <- as.numeric(alpha)
+              alphaKnown <- new("ParameterVector", alpha)
+              if (methods::is(object, "SpecKnownCertain")) {
+                  methods::new("KnownCertain",
+                               alphaKnown = alphaKnown,
+                               alphaKnownAll = object@alphaKnown,
+                               J = J,
+                               metadata = metadata,
+                               metadataAll = object@metadata)
+              }
+              else {
+                  A.all <- object@AKnownVec@.Data
+                  .Data.A.all <- array(A.all,
+                                   dim = dim(metadata.all),
+                                   dimnames = dimnames(metadata.all))
+                  A <- methods::new("Values",
+                                    .Data = .Data.A.all,
+                                    metadata = metadata.all)
+                  A <- dembase::makeCompatible(x = A, y = beta, subset = TRUE)
+                  A <- as.numeric(A)
+                  AKnownVec <- new("ParameterVector", A)
+                  methods::new("KnownUncertain",
+                               AKnownVec = AKnownVec,
+                               AKnownAllVec = object@AKnownVec,
+                               alphaKnown = alphaKnown,
+                               alphaKnownAll = object@alphaKnown,
+                               J = J,
+                               metadata = metadata,
+                               metadataAll = object@metadata)
+              }
+          })
 
 ## Move
 
@@ -1222,76 +1279,7 @@ setMethod("initialPrior",
           })
 
 
-
-## ## HAS_TESTS
-## Known <- function(mean, sd = NULL) {
-##     ## 'mean' is "Values"
-##     if (!methods::is(mean, "Values"))
-##         stop(gettextf("'%s' has class \"%s\"",
-##                       "mean", class(mean)))
-##     ## 'mean' has no missing values
-##     if (any(is.na(mean)))
-##         stop(gettextf("'%s' has missing values",
-##                       "mean"))
-##     metadata <- mean@metadata
-##     if (is.null(sd)) {
-##         values <- as.double(mean)
-##         methods::new("SpecKnownCertain",
-##             values = values,
-##             valuesUnscaled = values,
-##             metadata = metadata)
-##     }
-##     else {
-##         if (methods::is(sd, "Values")) {
-##             ## 'sd' is compatible with 'mean'
-##             sd <- tryCatch(dembase::makeCompatible(x = sd, y = mean, subset = FALSE),
-##                            error = function(e) e)
-##             if (methods::is(sd, "error"))
-##                 stop(gettextf("'%s' and '%s' not compatible : %s",
-##                               "sd", "mean", sd$message))
-##             ## 'sd' has no missing values
-##             if (any(is.na(sd)))
-##                 stop(gettextf("'%s' has missing values",
-##                               "sd"))
-##             ## 'sd' has no negative values
-##             if (any(sd < 0))
-##                 stop(gettextf("'%s' has negative values",
-##                               "sd"))
-##         }
-##         else if (methods::is(sd, "numeric")) {
-##             ## 'sd' has length 1
-##             if (!identical(length(sd), 1L))
-##                 stop(gettextf("'%s' is numeric but does not have length %d",
-##                               "sd", 1L))
-##             ## 'sd' is not missing
-##             if (is.na(sd))
-##                 stop(gettextf("'%s' is missing",
-##                               "sd"))
-##             ## 'sd' is non-negative
-##             if (sd < 0)
-##                 stop(gettextf("'%s' is negative",
-##                               "sd"))
-##             sd <- as.numeric(sd)
-##             sd <- rep(sd, times = length(mean))
-##         }
-##         else { ## sd is Values or numeric
-##             stop(gettextf("'%s' has class \"%s\"",
-##                           "sd", class(sd)))
-##         }
-##         mean <- as.double(mean)
-##         sd <- as.double(sd)
-##         methods::new("SpecKnownUncertain",
-##             mean = mean,
-##             sd = sd,
-##             meanUnscaled = mean,
-##             sdUnscaled = sd,
-##             metadata = metadata)
-##     }
-## }
-
-
 ## Mix
-
 
 setMethod("initialPrior",
           signature(object = "SpecMixNormZero"),
@@ -1355,9 +1343,31 @@ setMethod("initialPrior",
           })
 
 
+setMethod("initialPrior",
+          signature(object = "SpecZero"),
+          function(object, beta, metadata, sY, ...) {
+              J <- makeJ(beta)
+              new("Zero",
+                  J = J)
+          })
 
 
 ## initialPriorPredict ###############################################################
+
+## ExchFixed
+
+## HAS_TESTS
+setMethod("initialPriorPredict",
+          signature(prior = "ExchNormZero"),
+          function(prior, data, metadata, name, along) {
+              if (!is.null(data))
+                  stop(gettextf("covariate data supplied for prior for '%s', but prior does not use covariates",
+                                name))
+              J <- makeJPredict(metadata)
+              methods::new("ExchFixed",
+                           J = J,
+                           tau = prior@tau)
+          })
 
 
 ## Exch
@@ -1371,11 +1381,11 @@ setMethod("initialPriorPredict",
                                 name))
               J <- makeJPredict(metadata)
               methods::new("ExchNormZero",
-                  ATau = prior@ATau,
-                  J = J,
-                  nuTau = prior@nuTau,
-                  tau = prior@tau,
-                  tauMax = prior@tauMax)
+                           ATau = prior@ATau,
+                           J = J,
+                           nuTau = prior@nuTau,
+                           tau = prior@tau,
+                           tauMax = prior@tauMax)
           })
 
 ## HAS_TESTS
@@ -2480,6 +2490,66 @@ setMethod("initialPriorPredict",
                   Z = l.cov$Z)
           })
 
+## Known
+
+## NO_TESTS
+setMethod("initialPriorPredict",
+          signature(prior = "Known"),
+          function(prior, data, metadata, name, along) {
+              if (!is.null(data))
+                  stop(gettextf("covariate data supplied for prior for '%s', but prior does not use covariates",
+                                name))
+              alpha.all <- prior@alphaKnownAll@.Data
+              metadata.all <- prior@metadataAll
+              J <- makeJPredict(metadata)
+              .Data.beta <- array(0,
+                                  dim = dim(metadata),
+                                  dimnames = dimnames(metadata))
+              beta <- methods::new("Values",
+                                   .Data = .Data.beta,
+                                   metadata = metadata)
+              .Data.all <- array(alpha.all,
+                                 dim = dim(metadata.all),
+                                 dimnames = dimnames(metadata.all))
+              alpha.all <- methods::new("Values",
+                                        .Data = .Data.all,
+                                        metadata = metadata.alll)
+              alpha <- tryCatch(dembase::makeCompatible(x = alpha.all, y = beta, subset = TRUE),
+                                error = function(e) e)
+              if (methods::is(alpha, "error"))
+                  stop(gettextf("metadata for '%s' prior for '%s' not compatible with metadata for '%s' : %s",
+                                "Known", paste(names(metadata), collapse = ":"), "y", alpha$message))
+              alpha <- as.numeric(alpha)
+              alphaKnown <- new("ParameterVector", alpha)
+              if (methods::is(prior, "KnownCertain")) {
+                  methods::new("KnownCertain",
+                               alphaKnown = alphaKnown,
+                               alphaKnownAll = prior@alphaKnownAll,
+                               J = J,
+                               metadata = metadata,
+                               metadataAll = prior@metadataAll)
+              }
+              else {
+                  A.all <- prior@AKnownAllVec@.Data
+                  .Data.A.all <- array(A.all,
+                                   dim = dim(metadata.all),
+                                   dimnames = dimnames(metadata.all))
+                  A <- methods::new("Values",
+                                    .Data = .Data.A.all,
+                                    metadata = metadata.all)
+                  A <- dembase::makeCompatible(x = A, y = beta, subset = TRUE)
+                  A <- as.numeric(A)
+                  AKnownVec <- new("ParameterVector", A)
+                  methods::new("KnownUncertain",
+                               AKnownVec = AKnownVec,
+                               AKnownAllVec = prior@AKnownAllVec,
+                               alphaKnown = alphaKnown,
+                               alphaKnownAll = prior@alphaKnownAll,
+                               J = J,
+                               metadata = metadata,
+                               metadataAll = prior@metadataAll)
+              }
+          })
 
 
 ## Mix
@@ -2550,5 +2620,16 @@ setMethod("initialPriorPredict",
           })
 
 
+## Zero
 
-
+## NO_TESTS
+setMethod("initialPriorPredict",
+          signature(prior = "Zero"),
+          function(prior, data, metadata, name, along) {
+              if (!is.null(data))
+                  stop(gettextf("covariate data supplied for prior for '%s', but prior does not use covariates",
+                                name))
+              J <- makeJPredict(metadata)
+              new("Zero",
+                  J = J)
+          })

@@ -861,6 +861,24 @@ setMethod("makeOutputPrior",
 
 ## predictPrior ###########################################################
 
+
+## NO_TESTS
+setMethod("predictPrior",
+          signature(prior = "ExchFixed"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(predictPrior_ExchFixed_R, prior)
+                  else
+                      .Call(predictPrior_R, prior)
+              }
+              else {
+                  prior
+              }
+          })
+
+
 ## TRANSLATED
 ## HAS_TESTS
 setMethod("predictPrior",
@@ -1252,6 +1270,41 @@ setMethod("predictPrior",
           })
 
 
+## Known
+
+## NO_TESTS
+setMethod("predictPrior",
+          signature(prior = "KnownCertain"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(predictPrior_KnownCertain_R, prior)
+                  else
+                      .Call(predictPrior_R, prior)
+              }
+              else {
+                  prior
+              }
+          })
+
+## NO_TESTS
+setMethod("predictPrior",
+          signature(prior = "KnownUncertain"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(predictPrior_KnownUncertain_R, prior)
+                  else
+                      .Call(predictPrior_R, prior)
+              }
+              else {
+                  prior
+              }
+          })
+
+
 ## Mix
 
 ## TRANSLATED
@@ -1278,6 +1331,21 @@ setMethod("predictPrior",
           })
 
 
+## NO_TESTS
+setMethod("predictPrior",
+          signature(prior = "Zero"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(predictPrior_Zero_R, prior)
+                  else
+                      .Call(predictPrior_R, prior)
+              }
+              else {
+                  prior
+              }
+          })
 
 
 ## printPriorEqns ####################################################################

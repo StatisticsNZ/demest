@@ -659,6 +659,44 @@ test_that("generator function and initialPrior work with MixNormZero", {
 
 ## initialPriorPredict ###############################################################
 
+
+test_that("initialPriorPredict works with ExchFixed", {
+    set.seed(100)
+    initialPriorPredict <- demest:::initialPriorPredict
+    initialPrior <- demest:::initialPrior
+    spec <- ExchFixed()
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          multScale = 1)
+    expect_is(prior, "ExchFixed")
+    metadata.new <- new("MetaData",
+                        nms = "region",
+                        dimtypes = "state",
+                        DimScales = list(new("Categories", dimvalues = letters[11:15])))
+    beta.new <- rnorm(5)
+    ans.obtained <- initialPriorPredict(prior,
+                                        data = NULL,
+                                        metadata = metadata.new,
+                                        name = "region",
+                                        along = "region")
+    ans.expected <- initialPrior(spec,
+                                 beta = beta.new,
+                                 metadata = metadata.new,
+                                 sY = NULL,
+                                 multScale = 1)
+    ans.expected@tau <- prior@tau
+    expect_identical(ans.obtained, ans.expected)
+})
+
+
+
 test_that("initialPriorPredict workw with ExchNormZero", {
     set.seed(100)
     initialPriorPredict <- demest:::initialPriorPredict

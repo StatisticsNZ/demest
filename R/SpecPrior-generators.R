@@ -1399,6 +1399,74 @@ Initial <- function(mean = 0, sd = NULL, mult = 1) {
                  mult = mult)
 }
 
+
+Known <- function(mean, sd = NULL) {
+    ## 'mean' is "Values"
+    if (!methods::is(mean, "Values"))
+        stop(gettextf("'%s' has class \"%s\"",
+                      "mean", class(mean)))
+    ## 'mean' has no missing values
+    if (any(is.na(mean)))
+        stop(gettextf("'%s' has missing values",
+                      "mean"))
+    ## 'mean' is numeric
+    if (!is.numeric(mean))
+        stop(gettextf("'%s' is not numeric",
+                      "mean"))
+    mean <- as.double(mean)
+    mean <- new("ParameterVector", mean)
+    metadata <- mean@metadata
+    if (is.null(sd)) {
+        new("SpecKnownCertain",
+            alphaKnown = mean,
+            metadata = metadata)
+    }
+    else {
+        if (methods::is(sd, "Values")) {
+            ## 'sd' is compatible with 'mean'
+            sd <- tryCatch(dembase::makeCompatible(x = sd, y = mean, subset = TRUE),
+                           error = function(e) e)
+            if (methods::is(sd, "error"))
+                stop(gettextf("'%s' and '%s' not compatible : %s",
+                              "sd", "mean", sd$message))
+            ## 'sd' has no missing values
+            if (any(is.na(sd)))
+                stop(gettextf("'%s' has missing values",
+                              "sd"))
+            ## 'sd' has no negative values
+            if (any(sd < 0))
+                stop(gettextf("'%s' has negative values",
+                              "sd"))
+        }
+        else if (methods::is(sd, "numeric")) {
+            ## 'sd' has length 1
+            if (!identical(length(sd), 1L))
+                stop(gettextf("'%s' is numeric but does not have length %d",
+                              "sd", 1L))
+            ## 'sd' is not missing
+            if (is.na(sd))
+                stop(gettextf("'%s' is missing",
+                              "sd"))
+            ## 'sd' is non-negative
+            if (sd < 0)
+                stop(gettextf("'%s' is negative",
+                              "sd"))
+            sd <- as.double(sd)
+            sd <- rep(sd, times = length(mean))
+        }
+        else { ## sd is Values or numeric
+            stop(gettextf("'%s' has class \"%s\"",
+                          "sd", class(sd)))
+        }
+        sd <- new("ScaleVec", sd)
+        new("SpecKnownUncertain",
+            alphaKnown = mean,
+            AKnownVec = sd,
+            metadata = metadata)
+    }
+}
+
+
 #' Specify the level term in a DLM prior.
 #'
 #' Specify the level term in a \code{\link{DLM}} prior.  Currently the only
@@ -1893,4 +1961,7 @@ Weights <- function(mean = 0, sd = 1, scale1AR = HalfT(), scale2AR = HalfT(),
 
 
 
-    
+#' @export  
+Zero <- function() {
+    new("SpecZero")
+}

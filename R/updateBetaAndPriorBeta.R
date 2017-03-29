@@ -823,6 +823,55 @@ setMethod("updateBetaAndPriorBeta",
 
 ## ICAR #################################################################################
 
+
+## Known ###############################################################################
+
+setMethod("updateBetaAndPriorBeta",
+          signature(prior = "KnownCertain"),
+          function(prior, vbar, n, sigma, useC = FALSE, useSpecific = FALSE) {
+              checkUpdateBetaAndPriorBeta(prior = prior,
+                                          vbar = vbar,
+                                          n = n,
+                                          sigma = sigma)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(updateBetaAndPriorBeta_KnownCertain_R,
+                            prior, vbar, n, sigma)
+                  else
+                      .Call(updateBetaAndPriorBeta_R,
+                            prior, vbar, n, sigma)
+              }
+              else {
+                  alpha <- object@alphaKnown@.Data
+                  beta <- alpha
+                  list(beta, prior)
+              }
+          })
+
+setMethod("updateBetaAndPriorBeta",
+          signature(prior = "KnownUncertain"),
+          function(prior, vbar, n, sigma, useC = FALSE, useSpecific = FALSE) {
+              checkUpdateBetaAndPriorBeta(prior = prior,
+                                          vbar = vbar,
+                                          n = n,
+                                          sigma = sigma)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(updateBetaAndPriorBeta_KnownCertain_R,
+                            prior, vbar, n, sigma)
+                  else
+                      .Call(updateBetaAndPriorBeta_R,
+                            prior, vbar, n, sigma)
+              }
+              else {
+                  alpha <- object@alphaKnown@.Data
+                  beta <- alpha
+                  list(beta, prior)
+              }
+          })
+
+
+
 ## Mix #################################################################################
 
 ## TRANSLATED

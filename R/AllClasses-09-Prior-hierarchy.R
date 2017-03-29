@@ -1093,6 +1093,16 @@ setClass("MixRobustCov",
              "CovariatesMixin",
              "RobustMixin"))
 
+
+
+## Zero
+
+setClass("Zero",
+         prototype = prototype(iMethodPrior = 40L,
+             slotsToExtract = character()),
+         contains = "Prior")
+
+
 ## DLMPredict, NoTrend
 
 setClass("DLMNoTrendNormZeroNoSeasonPredict",
