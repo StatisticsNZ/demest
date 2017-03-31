@@ -7044,6 +7044,18 @@ printJumpAg <- function(object) {
     cat("jump:", jump, "\n")
 }
 
+printKnownEqns <- function(object, name) {
+    is.uncertain <- (methods::is(object, "SpecKnownUncertain")
+        || methods::is(object, "KnownUncertain"))
+    if (is.null(name))
+        name <- "parameter"
+    name <- sprintf("%13s", name)
+    if (is.uncertain)
+        cat(name, "[j] ~ N(mean[j], sd[j]^2)\n", sep = "")
+    else
+        cat(name, "[j] = mean[j]\n", sep = "")
+}
+
 printLevelTrendEqns <- function(object, isMain, hasTrend) {
     AAlpha <- object@AAlpha
     omegaAlphaMax <- object@omegaAlphaMax
@@ -7528,6 +7540,14 @@ printValueAg <- function(object) {
         print(value, digits = 4)
     }
 }
+
+printZeroEqns <- function(name) {
+    if (is.null(name))
+        name <- "parameter"
+    name <- sprintf("%13s", name)
+    cat(name, "[j] = mean[j]\n", sep = "")
+}
+
 
 squaredOrNA <- function(x) {
     if (is.na(x))

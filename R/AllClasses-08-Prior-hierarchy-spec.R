@@ -332,10 +332,35 @@ setClass("SpecICAR",
 
 ## SpecKnown
 
+#' A S4 class to specify a Known prior.
+#'
+#' An object of class \code{SpecExchFixed} specifies
+#' a prior in which
+#'   parameter[j] ~ N(mean[j], sd[j]^2),
+#' where sd[j] can be 0. For details, see the documentation
+#' for function \code{\link{Known}}.
+#'
+#' @section Warning:
+#' In  normal usage, it should not be necessary to
+#' access, or even know about, the slots of a
+#' \code{SpecKnown} object.  The slots are not part of
+#' the API of the package, and may change in future.
+#' 
+#' @slot tau alphaKnown Mean values
+#' @slot multTau Multiplier applied to default value for \code{tau}.
+#'
+#' @seealso
+#' Object of class \code{SpecExchFixed} should be generated
+#' using function \code{\link{ExchFixed}}.  More complicated
+#' exchangeable priors are specified by object of class
+#' \code{\linkS4class{SpecExch}}.
+#'
+#' @export
 setClass("SpecKnown",
          contains = c("VIRTUAL",
-             "AlphaKnownMixin",
-             "SpecPrior"))
+                      "SpecPrior",
+                      "AlphaKnownMixin",
+                      "MetadataMixin"))
 
 setClass("SpecKnownCertain",
          contains = "SpecKnown")
@@ -465,5 +490,17 @@ setClass("SpecMixRobustCov",
              "SpecCovariatesMixin",
              "SpecRobustMixin"))
 
+#' A S4 class to specify a Zero prior.
+#'
+#' Specify a prior that fixes all values of the associated
+#' main effect or interaction to zero.
+#'
+#' The class has no slots.
+#'
+#' @seealso
+#' An object of class \code{SpecZero} should be generated
+#' using function \code{\link{Zero}}.
+#'
+#' @export
 setClass("SpecZero",
          contains = "SpecPrior")

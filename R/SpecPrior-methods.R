@@ -388,6 +388,14 @@ setMethod("printPriorEqns",
                                  name = name)
           })
 
+
+setMethod("printPriorEqns",
+          signature(object = "SpecKnown"),
+          function(object, name = NULL, order = 1L) {
+              printKnownEqns(object = object,
+                             name = name)
+          })
+
 setMethod("printPriorEqns",
           signature(object = "SpecMix"),
           function(object, name = NULL, order = 1L) {
@@ -397,6 +405,11 @@ setMethod("printPriorEqns",
                            hasCovariates = has.covariates)
           })
 
+setMethod("printPriorEqns",
+          signature(object = "SpecZero"),
+          function(object, name = NULL, order = 1L) {
+              printZeroEqns(name = name)
+          })
 
 
 
@@ -484,7 +497,6 @@ setMethod("show",
               cat(squaredOrNA(A), ", ", max, ")\n", sep = "")
           })
 
-
 #' @rdname show-methods
 #' @export
 setMethod("show",
@@ -500,7 +512,6 @@ setMethod("show",
               cat("scaleTrend ~ trunc-half-t(", nu, ", ", sep = "")
               cat(squaredOrNA(A), ", ", max, ")\n", sep = "")
           })
-
 
 #' @rdname show-methods
 #' @export
@@ -539,6 +550,14 @@ setMethod("show",
               printPriorEqns(object)
           })
 
+#' @rdname show-methods
+#' @export
+setMethod("show",
+          signature(object = "SpecKnown"),
+          function(object) {
+              cat("An object of class \"", class(object), "\"\n", sep = "")
+              printPriorEqns(object)
+          })
 
 #' @rdname show-methods
 #' @export
@@ -548,7 +567,6 @@ setMethod("show",
               cat("An object of class \"", class(object), "\"\n\n", sep = "")
               printPriorEqns(object)
           })
-
 
 #' @rdname show-methods
 #' @export
@@ -569,7 +587,17 @@ setMethod("show",
               cat(squaredOrNA(AComp), ", ", maxComp, ")\n", sep = "")
               cat("scaleAR2 ~ trunc-half-t(", nuLevel, ", ", sep = "")
               cat(squaredOrNA(ALevel), ", ", maxLevel, ")\n", sep = "")
-          })    
+          })
+
+#' @rdname show-methods
+#' @export
+setMethod("show",
+          signature(object = "SpecZero"),
+          function(object) {
+              cat("An object of class \"", class(object), "\"\n", sep = "")
+              printPriorEqns(object)
+          })
+
 
 
 

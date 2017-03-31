@@ -34,6 +34,33 @@ setClass("ICAR",
              "AlphaICARMixin",
              "ComponentFlags"))
 
+setClass("Known",
+         contains = c("VIRTUAL",
+                      "Prior",
+                      "AlphaKnownMixin",
+                      "AlphaKnownAllMixin",
+                      "MetadataMixin",
+                      "MetadataAllMixin"),
+         validity = function(object) {
+             alphaKnown <- object@alphaKnown@.Data
+             AKnownVec <- object@AKnownVec
+             metadata <- object@metadata
+             J <- object@J@.Data
+             ## 'alphaKnown' has length 'J'
+             if (!identical(length(alphaKnown), J))
+                 return(gettextf("'%s' does not have length '%s'",
+                                 "alphaKnown", "J"))
+             ## 'AKnownVec' has length 'J'
+             if (!identical(length(AKnownVec), J))
+                 return(gettextf("'%s' does not have length '%s'",
+                                 "AKnownVec", "J"))
+             ## 'metadata' consistent with J
+             if (!identical(as.integer(prod(dim(metadata))), J))
+                 return(gettextf("'%s' not consistent with '%s'",
+                                 "metadata", "J"))
+             TRUE
+         })
+
 setClass("Mix",
          contains = c("VIRTUAL",
                       "Prior",
@@ -95,11 +122,6 @@ setClass("Move",
                       "HasAlphaMoveMixin",
                       "IndexClassAlphaMoveMixin",
                       "NElementClassAlphaMixin"))
-
-setClass("Known",
-         contains = c("VIRTUAL",
-             "Prior",
-             "AlphaKnownMixin"))
 
 
 ## TimeInvariant
@@ -911,85 +933,6 @@ setClass("ICARRobustCov",
                       "CovariatesMixin",
                       "RobustMixin"))
 
-## Move
-
-setClass("MoveNormZero",
-         prototype = prototype(iMethodPrior = 25L,
-                               slotsToExtract = c("alphaMove", "tau"),
-                               hasAlphaDLM = methods::new("LogicalFlag", FALSE),
-                               hasAlphaICAR = methods::new("LogicalFlag", FALSE),
-                               hasAlphaMix = methods:::new("LogicalFlag", FALSE),
-                               hasAlphaMove = methods::new("LogicalFlag", TRUE),
-                               hasCovariates = methods::new("LogicalFlag", FALSE),
-                               hasSeason = methods::new("LogicalFlag", FALSE),
-                               isRobust = methods::new("LogicalFlag", FALSE),  
-                               tau = methods::new("Scale", 1),
-                               ATau = methods::new("Scale", 1),
-                               nuTau = methods::new("DegreesFreedom", 7)),
-         contains = c("Move",
-                      "NormMixin",
-                      "ZeroMixin"))
-
-setClass("MoveNormCov",
-         prototype = prototype(iMethodPrior = 26L,
-                               slotsToExtract = c("alphaMove", "eta", "tau"),
-                               hasAlphaDLM = methods::new("LogicalFlag", FALSE),
-                               hasAlphaICAR = methods::new("LogicalFlag", FALSE),
-                               hasAlphaMix = methods:::new("LogicalFlag", FALSE),
-                               hasAlphaMove = methods::new("LogicalFlag", TRUE),
-                               hasCovariates = methods::new("LogicalFlag", TRUE),
-                               hasSeason = methods::new("LogicalFlag", FALSE),
-                               isRobust = methods::new("LogicalFlag", FALSE),  
-                               AEtaIntercept = methods::new("Scale", 10),
-                               AEtaCoef = methods::new("Scale", 1),
-                               nuEtaCoef = methods::new("DegreesFreedom", 7),
-                               tau = methods::new("Scale", 1),
-                               ATau = methods::new("Scale", 1),
-                               nuTau = methods::new("DegreesFreedom", 7)),
-         contains = c("Move",
-                      "CovariatesMixin",
-                      "NormMixin"))
-
-setClass("MoveRobustZero",
-         prototype = prototype(iMethodPrior = 27L,
-                               slotsToExtract = c("alphaMove", "tau"),
-                               hasAlphaDLM = methods::new("LogicalFlag", FALSE),
-                               hasAlphaICAR = methods::new("LogicalFlag", FALSE),
-                               hasAlphaMix = methods:::new("LogicalFlag", FALSE),
-                               hasAlphaMove = methods::new("LogicalFlag", TRUE),
-                               hasCovariates = methods::new("LogicalFlag", FALSE),
-                               hasSeason = methods::new("LogicalFlag", FALSE),
-                               isRobust = methods::new("LogicalFlag", TRUE),  
-                               nuBeta = methods::new("DegreesFreedom", 4),
-                               tau = methods::new("Scale", 1),
-                               ATau = methods::new("Scale", 1),
-                               nuTau = methods::new("DegreesFreedom", 7)),
-         contains = c("Move",
-                      "RobustMixin",
-                      "ZeroMixin"))
-
-setClass("MoveRobustCov",
-         prototype = prototype(iMethodPrior = 28L,
-                               slotsToExtract = c("alphaMove", "eta", "tau"),
-                               hasAlphaDLM = methods::new("LogicalFlag", FALSE),
-                               hasAlphaICAR = methods::new("LogicalFlag", FALSE),
-                               hasAlphaMix = methods:::new("LogicalFlag", FALSE),
-                               hasAlphaMove = methods::new("LogicalFlag", TRUE),
-                               hasCovariates = methods::new("LogicalFlag", TRUE),
-                               hasSeason = methods::new("LogicalFlag", FALSE),
-                               isRobust = methods::new("LogicalFlag", TRUE),  
-                               nuBeta = methods::new("DegreesFreedom", 4),
-                               AEtaIntercept = methods::new("Scale", 10),
-                               AEtaCoef = methods::new("Scale", 1),
-                               nuEtaCoef = methods::new("DegreesFreedom", 7),
-                               tau = methods::new("Scale", 1),
-                               ATau = methods::new("Scale", 1),
-                               nuTau = methods::new("DegreesFreedom", 7)),
-         contains = c("Move",
-                      "CovariatesMixin",
-                      "RobustMixin"))
-
-
 ## Known
 
 setClass("KnownCertain",
@@ -1003,8 +946,8 @@ setClass("KnownUncertain",
              slotsToExtract = character()),
          contains = c("Prior",
              "Known",
-             "AKnownVecMixin"))
-
+             "AKnownVecMixin",
+             "AKnownAllVecMixin"))
 
 ## Mix
 
@@ -1093,6 +1036,84 @@ setClass("MixRobustCov",
              "CovariatesMixin",
              "RobustMixin"))
 
+
+## Move
+
+setClass("MoveNormZero",
+         prototype = prototype(iMethodPrior = 25L,
+                               slotsToExtract = c("alphaMove", "tau"),
+                               hasAlphaDLM = methods::new("LogicalFlag", FALSE),
+                               hasAlphaICAR = methods::new("LogicalFlag", FALSE),
+                               hasAlphaMix = methods:::new("LogicalFlag", FALSE),
+                               hasAlphaMove = methods::new("LogicalFlag", TRUE),
+                               hasCovariates = methods::new("LogicalFlag", FALSE),
+                               hasSeason = methods::new("LogicalFlag", FALSE),
+                               isRobust = methods::new("LogicalFlag", FALSE),  
+                               tau = methods::new("Scale", 1),
+                               ATau = methods::new("Scale", 1),
+                               nuTau = methods::new("DegreesFreedom", 7)),
+         contains = c("Move",
+                      "NormMixin",
+                      "ZeroMixin"))
+
+setClass("MoveNormCov",
+         prototype = prototype(iMethodPrior = 26L,
+                               slotsToExtract = c("alphaMove", "eta", "tau"),
+                               hasAlphaDLM = methods::new("LogicalFlag", FALSE),
+                               hasAlphaICAR = methods::new("LogicalFlag", FALSE),
+                               hasAlphaMix = methods:::new("LogicalFlag", FALSE),
+                               hasAlphaMove = methods::new("LogicalFlag", TRUE),
+                               hasCovariates = methods::new("LogicalFlag", TRUE),
+                               hasSeason = methods::new("LogicalFlag", FALSE),
+                               isRobust = methods::new("LogicalFlag", FALSE),  
+                               AEtaIntercept = methods::new("Scale", 10),
+                               AEtaCoef = methods::new("Scale", 1),
+                               nuEtaCoef = methods::new("DegreesFreedom", 7),
+                               tau = methods::new("Scale", 1),
+                               ATau = methods::new("Scale", 1),
+                               nuTau = methods::new("DegreesFreedom", 7)),
+         contains = c("Move",
+                      "CovariatesMixin",
+                      "NormMixin"))
+
+setClass("MoveRobustZero",
+         prototype = prototype(iMethodPrior = 27L,
+                               slotsToExtract = c("alphaMove", "tau"),
+                               hasAlphaDLM = methods::new("LogicalFlag", FALSE),
+                               hasAlphaICAR = methods::new("LogicalFlag", FALSE),
+                               hasAlphaMix = methods:::new("LogicalFlag", FALSE),
+                               hasAlphaMove = methods::new("LogicalFlag", TRUE),
+                               hasCovariates = methods::new("LogicalFlag", FALSE),
+                               hasSeason = methods::new("LogicalFlag", FALSE),
+                               isRobust = methods::new("LogicalFlag", TRUE),  
+                               nuBeta = methods::new("DegreesFreedom", 4),
+                               tau = methods::new("Scale", 1),
+                               ATau = methods::new("Scale", 1),
+                               nuTau = methods::new("DegreesFreedom", 7)),
+         contains = c("Move",
+                      "RobustMixin",
+                      "ZeroMixin"))
+
+setClass("MoveRobustCov",
+         prototype = prototype(iMethodPrior = 28L,
+                               slotsToExtract = c("alphaMove", "eta", "tau"),
+                               hasAlphaDLM = methods::new("LogicalFlag", FALSE),
+                               hasAlphaICAR = methods::new("LogicalFlag", FALSE),
+                               hasAlphaMix = methods:::new("LogicalFlag", FALSE),
+                               hasAlphaMove = methods::new("LogicalFlag", TRUE),
+                               hasCovariates = methods::new("LogicalFlag", TRUE),
+                               hasSeason = methods::new("LogicalFlag", FALSE),
+                               isRobust = methods::new("LogicalFlag", TRUE),  
+                               nuBeta = methods::new("DegreesFreedom", 4),
+                               AEtaIntercept = methods::new("Scale", 10),
+                               AEtaCoef = methods::new("Scale", 1),
+                               nuEtaCoef = methods::new("DegreesFreedom", 7),
+                               tau = methods::new("Scale", 1),
+                               ATau = methods::new("Scale", 1),
+                               nuTau = methods::new("DegreesFreedom", 7)),
+         contains = c("Move",
+                      "CovariatesMixin",
+                      "RobustMixin"))
 
 
 ## Zero
@@ -1209,5 +1230,6 @@ setClass("MixRobustCovPredict",
          prototype = prototype(iMethodPrior = 134L),
          contains = c("MixRobustCov",
                       "MixPredictMixin"))
+
 
 

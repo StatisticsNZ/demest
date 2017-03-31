@@ -95,14 +95,18 @@ setClass("AEtaInterceptMixin",
 
 setClass("AKnownVecMixin",
          slots = c(AKnownVec = "ScaleVec"),
+         contains = "VIRTUAL")
+
+setClass("AKnownAllVecMixin",
+         slots = c(AKnownAllVec = "ScaleVec"),
          contains = "VIRTUAL",
          validity = function(object) {
-             AKnownVec <- object@AKnownVec
-             J <- object@J
-             ## 'AKnownVec' has length 'J'
-             if (!identical(length(AKnownVec), as.integer(J)))
-                 return(gettextf("'%s' does not have length '%s'",
-                                 "AKnownVec", "J"))
+             AKnownAllVec <- object@AKnownAllVec
+             J <- object@J@.Data
+             ## length of 'AKnownVec' greater than or equal to 'J'
+             if (length(AKnownAllVec) < J)
+                 return(gettextf("length of '%s' less than '%s'",
+                                 "AKnownAllVec", "J"))
              TRUE
          })
 
@@ -173,14 +177,18 @@ setClass("AlphaICARMixin",
 
 setClass("AlphaKnownMixin",
          slots = c(alphaKnown = "ParameterVector"),
+         contains = "VIRTUAL")
+
+setClass("AlphaKnownAllMixin",
+         slots = c(alphaKnownAll = "ParameterVector"),
          contains = "VIRTUAL",
          validity = function(object) {
-             alphaKnown <- object@alphaKnown
-             J <- object@J
-             ## 'alphaKnown' has length 'J'
-             if (!identical(length(alphaKnown), as.integer(J)))
-                 return(gettextf("'%s' does not have length '%s'",
-                                 "alphaKnown", "J"))
+             alphaKnownAll <- object@alphaKnownAll@.Data
+             AKnownAllVec <- object@AKnownAllVec@.Data
+             ## 'alphaKnownAll' and 'AKnownAllVec' have same length
+             if (!identical(length(alphaKnownAll), length(AKnownAllVec)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "alphaKnownAll", "AKnownAllVec"))
              TRUE
          })
 
@@ -958,6 +966,23 @@ setClass("MeanDelta0Mixin",
          slots = c(meanDelta0 = "Parameter"),
          prototype = prototype(meanDelta0 = new("Parameter", 0)),
          contains = "VIRTUAL")
+
+setClass("MetadataMixin",
+         slots = c(metadata = "MetaData"),
+         contains = "VIRTUAL")
+
+setClass("MetadataAllMixin",
+         slots = c(metadataAll = "MetaData"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             metadataAll <- object@metadataAll
+             J <- object@J@.Data
+             ## consistent with J
+             if (prod(dim(metadataAll)) < J)
+                 return(gettextf("'%s' not consistent with '%s'",
+                                 "metadataAll", "J"))
+             TRUE
+         })
 
 ## 'mu' in notes
 setClass("MeanLevelComponentWeightMixMixin",

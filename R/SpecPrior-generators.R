@@ -1400,11 +1400,65 @@ Initial <- function(mean = 0, sd = NULL, mult = 1) {
 }
 
 
-Known <- function(mean, sd = NULL) {
+
+#' Specify a prior where the mean varies but is treated as known.
+#'
+#' Specify a 'Known' prior.  The prior comes in two forms.  With the first
+#' form, the corresponding main effect or interaction equals the mean
+#' exactly,
+#' \code{parameter[j] = mean[j]}.
+#' With the second form,
+#' \code{parameter[j] ~ N(mean[j], sd[j])}.
+#' The second form is obtained by supplying a \code{sd} argument
+#' to function \code{Known}.
+#' 
+#' Internally, the \code{mean} and \code{sd} arguments are permuted and
+#' subsetted to make them compatible with the corresponding main effect or
+#' interaction.  Thus, for example, if \code{mean} has values for regions
+#' \code{A}, \code{B}, and \code{C}, but data \code{y} only includes
+#' regions \code{A} and \code{B}, then \code{C} is silently ignored.
+#'
+#' The original \code{mean} and \code{sd} arguments are, however,
+#' stored, and can be used for prediction.  For example, we might
+#' supply a \code{mean} argument with values for years 2005,
+#' 2010, 2015, 2020, and 2025, then call \code{\link{estimateModel}}
+#' with data for 2005, 2010, and 2015, and finally call
+#' \code{\link{predictModel}} to obtain forecasts for 2020 and 2025.
+#' 
+#' @param mean The mean of the prior distribution.  An object of
+#' class \code{\link[dembase:Values-class]{Values}}.
+#' @param sd The standard deviation of the prior distribution.
+#' If omitted, it is assumed to be 0.  \code{sd} can be an object
+#' of class \code{\link[dembase:Values-class]{Values}}, or it can be
+#' a single number, in which case it is applied to all
+#' elements of \code{mean}.
+#'
+#' @return An object of class \code{\linkS4class{SpecKnown}}.
+#'
+#' @seealso \code{ExchFixed} creates a normal prior centered at 0.
+#'
+#' @examples
+#' mean <- ValuesOne(c(0.1, 0.2, 0.3),
+#'                   labels = c("A", "B", "C"),
+#'                   name = "region")
+#' sd <- ValuesOne(c(0.02, 0.03, 0.02),
+#'                   labels = c("A", "B", "C"),
+#'                   name = "region")
+#' ## No uncertainty
+#' Known(mean)
+#'
+#' ## Some uncertainty
+#' Known(mean = mean, sd = sd)
+#'
+#' ## Single standard deviation
+#' Known(mean = mean, sd = 0.05)
+#' @export
+Known <- function(mean, sd = 0) {
     ## 'mean' is "Values"
     if (!methods::is(mean, "Values"))
         stop(gettextf("'%s' has class \"%s\"",
                       "mean", class(mean)))
+    metadata <- mean@metadata
     ## 'mean' has no missing values
     if (any(is.na(mean)))
         stop(gettextf("'%s' has missing values",
@@ -1415,8 +1469,7 @@ Known <- function(mean, sd = NULL) {
                       "mean"))
     mean <- as.double(mean)
     mean <- new("ParameterVector", mean)
-    metadata <- mean@metadata
-    if (is.null(sd)) {
+    if (identical(sd, 0)) {
         new("SpecKnownCertain",
             alphaKnown = mean,
             metadata = metadata)
@@ -1956,11 +2009,27 @@ Weights <- function(mean = 0, sd = 1, scale1AR = HalfT(), scale2AR = HalfT(),
                  priorSDLevelComponentWeightMix = priorSDLevelComponentWeightMix)
 }
 
-
-
-
-
-
+#' Specify a prior that sets all terms to zero.
+#'
+#' Specify a prior for a main effect or interaction in which 
+#' \code{parameter[j] = 0}.
+#'
+#' In some cases, as with a dimension representing upper and lower
+#' Lexis triangles, setting all elements of the main effect or interaction
+#' to zero may make substantive sense.  In other cases, a \code{Zero} prior
+#' to reduce the number of terms being estimated, while conforming
+#' to that requirement from \code{\link{Model}} that all terms marginal
+#' to an interaction be included in a model.
+#' 
+#' @param mean The mean of the prior distribution.  An object of
+#'
+#' @return An object of class \code{\linkS4class{Zero}}.
+#'
+#' @seealso \code{Known} can be used to create a prior that
+#' fixes the main effect or interaction at values other than 0.
+#'
+#' @examples
+#' Zero()
 #' @export  
 Zero <- function() {
     new("SpecZero")
