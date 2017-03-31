@@ -1018,6 +1018,8 @@ void updateBetasAndPriorsBetas_General(SEXP object_R, double (*g)(double))
     int n_theta = LENGTH(theta_R);
     double *theta = REAL(theta_R);
 
+    int *cellInLik = LOGICAL(GET_SLOT(object_R, cellInLik_sym));
+    
     int len_beta_array[n_betas];
     int max_len_beta = 0;
     
@@ -1041,8 +1043,9 @@ void updateBetasAndPriorsBetas_General(SEXP object_R, double (*g)(double))
     }
     
 
-    /* one malloc */
+    /* one malloc for each*/
     double * vbar = (double *)R_alloc(max_len_beta, sizeof(double));
+    int * n_vec = (int *)R_alloc(max_len_beta, sizeof(int));
     
 /*       vbar <- makeVBar(object, iBeta = b, g = g)  ## uses updated object
             n <- I %/% length(vbar)
@@ -1058,13 +1061,12 @@ void updateBetasAndPriorsBetas_General(SEXP object_R, double (*g)(double))
 
         int len_beta = len_beta_array[iBeta];
 
-        getVBar(vbar, len_beta,
+        getVBarAndN(vbar, n_vec,
+                len_beta, cellInLik,
                 betas_R, iteratorBetas_R,
                 theta, n_theta, n_betas,
                 iBeta, g);
 
-        int n = n_theta/len_beta; /* integer division */
-        
         double *beta = REAL(VECTOR_ELT(betas_R, iBeta));
         SEXP prior_R = VECTOR_ELT(priors_R, iBeta);
         
@@ -1076,8 +1078,6 @@ void updateBetasAndPriorsBetas_General(SEXP object_R, double (*g)(double))
             PrintValue(ScalarInteger(len_beta));
             PrintValue(mkString("vbar"));
             printDblArray(vbar, len_beta);
-            PrintValue(mkString("n"));
-            PrintValue(ScalarInteger(n));
             PrintValue(mkString("beta"));
             printDblArray(beta, len_beta);
             PrintValue(mkString("prior_R"));
@@ -1091,7 +1091,7 @@ void updateBetasAndPriorsBetas_General(SEXP object_R, double (*g)(double))
                    len_beta, 
                    prior_R,
                    vbar, 
-                   n,
+                   n_vec,
                    sigma);
 #ifdef DEBUGGING
         PrintValue(mkString("after update"));

@@ -81,7 +81,7 @@ SEXP name##_R(SEXP prior_R, SEXP vbar_R, SEXP n_R, SEXP sigma_R) {    \
 #define UPDATEBETA_AND_PRIORBETA_WRAPPER_R(name)         \
 SEXP name##_R(SEXP prior_R, SEXP vbar_R, SEXP n_R, SEXP sigma_R) {    \
     double *vbar = REAL(vbar_R);    \
-    int n = *INTEGER(n_R);    \
+    int *n_vec = INTEGER(n_R);    \
     double sigma = *REAL(sigma_R);    \
     int J = *INTEGER(GET_SLOT(prior_R, J_sym));    \
     SEXP beta_R;    \
@@ -90,7 +90,7 @@ SEXP name##_R(SEXP prior_R, SEXP vbar_R, SEXP n_R, SEXP sigma_R) {    \
     SEXP priornew_R;    \
     PROTECT(priornew_R = duplicate(prior_R));    \
     GetRNGstate();    \
-    name(beta, J, priornew_R, vbar, n, sigma);    \
+    name(beta, J, priornew_R, vbar, n_vec, sigma);    \
     PutRNGstate();    \
     SEXP ans_R = PROTECT(allocVector(VECSXP, 2));    \
     SET_VECTOR_ELT(ans_R, 0, beta_R);    \
