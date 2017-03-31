@@ -96,7 +96,7 @@ test_that("updateBetaAndPriorBeta works with ExchNormZero", {
                                sY = NULL)
         expect_is(prior0, "ExchNormZero")
         vbar <- rnorm(10)
-        n <- 5L
+        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         l <- updateBetaAndPriorBeta(prior0,
@@ -124,7 +124,7 @@ test_that("updateBetaAndPriorBeta works with ExchNormZero", {
                                sY = NULL)
         expect_is(prior0, "ExchNormZero")
         vbar <- rnorm(10)
-        n <- 5L
+        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         l <- updateBetaAndPriorBeta(prior0,
@@ -159,7 +159,7 @@ test_that("R and C versions of updateBetaAndPriorBeta give same ansewr with Exch
                                sY = NULL)
         expect_is(prior0, "ExchNormZero")
         vbar <- rnorm(10)
-        n <- 5L
+        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updateBetaAndPriorBeta(prior0,
@@ -191,7 +191,7 @@ test_that("R and C versions of updateBetaAndPriorBeta give same ansewr with Exch
                                sY = NULL)
         expect_is(prior0, "ExchNormZero")
         vbar <- rnorm(10)
-        n <- 5L
+        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updateBetaAndPriorBeta(prior0,
@@ -230,7 +230,7 @@ test_that("updateBetaAndPriorBeta works with ExchRobustZero", {
                                sY = NULL)
         expect_is(prior0, "ExchRobustZero")
         vbar <- rnorm(10)
-        n <- 5L
+        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         l <- updateBetaAndPriorBeta(prior0,
@@ -267,7 +267,7 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with Exch
                                sY = NULL)
         expect_is(prior0, "ExchRobustZero")
         vbar <- rnorm(10)
-        n <- 5L
+        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updateBetaAndPriorBeta(prior0,
@@ -314,7 +314,7 @@ test_that("updateBetaAndPriorBeta works with ExchNormCov", {
                                sY = NULL)
         expect_is(prior0, "ExchNormCov")
         vbar <- rnorm(10)
-        n <- 5L
+        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         l <- updateBetaAndPriorBeta(prior0,
@@ -366,7 +366,7 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with Exch
                                sY = NULL)
         expect_is(prior0, "ExchNormCov")
         vbar <- rnorm(10)
-        n <- 5L
+        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updateBetaAndPriorBeta(prior0,
@@ -415,7 +415,7 @@ test_that("updateBetaAndPriorBeta works with ExchRobustCov", {
                                sY = NULL)
         expect_is(prior0, "ExchRobustCov")
         vbar <- rnorm(10)
-        n <- 5L
+        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         l <- updateBetaAndPriorBeta(prior0,
@@ -472,7 +472,7 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with Exch
                                sY = NULL)
         expect_is(prior0, "ExchRobustCov")
         vbar <- rnorm(10)
-        n <- 5L
+        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updateBetaAndPriorBeta(prior0,
@@ -512,7 +512,7 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendNormZeroNoSeason", {
                                sY = NULL)
         expect_is(prior0, "DLMNoTrendNormZeroNoSeason")
         vbar <- rnorm(10)
-        n <- 5L
+        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         l <- updateBetaAndPriorBeta(prior0,
@@ -559,7 +559,7 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTre
                                sY = NULL)
         expect_is(prior0, "DLMNoTrendNormZeroNoSeason")
         vbar <- rnorm(10)
-        n <- 5L
+        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updateBetaAndPriorBeta(prior0,
@@ -597,7 +597,7 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendNormZeroNoSeason", {
                                sY = NULL)
         expect_is(prior0, "DLMWithTrendNormZeroNoSeason")
         vbar <- rnorm(10)
-        n <- 5L
+        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         l <- updateBetaAndPriorBeta(prior0,
@@ -653,7 +653,7 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithT
                                sY = NULL)
         expect_is(prior0, "DLMWithTrendNormZeroNoSeason")
         vbar <- rnorm(10)
-        n <- 5L
+        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updateBetaAndPriorBeta(prior0,
@@ -691,7 +691,7 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendNormZeroWithSeason", {
                                sY = NULL)
         expect_is(prior0, "DLMNoTrendNormZeroWithSeason")
         vbar <- rnorm(10)
-        n <- 5L
+        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         l <- updateBetaAndPriorBeta(prior0,
@@ -750,7 +750,7 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTre
                                sY = NULL)
         expect_is(prior0, "DLMNoTrendNormZeroWithSeason")
         vbar <- rnorm(10)
-        n <- 5L
+        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updateBetaAndPriorBeta(prior0,
@@ -788,7 +788,7 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendNormZeroWithSeason", {
                                sY = NULL)
         expect_is(prior0, "DLMWithTrendNormZeroWithSeason")
         vbar <- rnorm(10)
-        n <- 5L
+        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         l <- updateBetaAndPriorBeta(prior0,
@@ -863,7 +863,7 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithT
                                sY = NULL)
         expect_is(prior0, "DLMWithTrendNormZeroWithSeason")
         vbar <- rnorm(10)
-        n <- 5L
+        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updateBetaAndPriorBeta(prior0,
@@ -917,7 +917,7 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendNormCovNoSeason", {
                                sY = NULL)
         expect_is(prior0, "DLMNoTrendNormCovNoSeason")
         vbar <- rnorm(10)
-        n <- 5L
+        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         l <- updateBetaAndPriorBeta(prior0,
@@ -981,7 +981,7 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMN
                                sY = NULL)
         expect_is(prior0, "DLMNoTrendNormCovNoSeason")
         vbar <- rnorm(10)
-        n <- 5L
+        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updateBetaAndPriorBeta(prior0,
@@ -1037,7 +1037,7 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendNormCovNoSeason", {
                                sY = NULL)
         expect_is(prior0, "DLMWithTrendNormCovNoSeason")
         vbar <- rnorm(10)
-        n <- 5L
+        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         l <- updateBetaAndPriorBeta(prior0,
@@ -1122,7 +1122,7 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMW
                                sY = NULL)
         expect_is(prior0, "DLMWithTrendNormCovNoSeason")
         vbar <- rnorm(10)
-        n <- 5L
+        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updateBetaAndPriorBeta(prior0,
@@ -1180,7 +1180,7 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendNormCovWithSeason", {
                                sY = NULL)
         expect_is(prior0, "DLMNoTrendNormCovWithSeason")
         vbar <- rnorm(10)
-        n <- 5L
+        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         l <- updateBetaAndPriorBeta(prior0,
@@ -1250,7 +1250,7 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMN
                                sY = NULL)
         expect_is(prior0, "DLMNoTrendNormCovWithSeason")
         vbar <- rnorm(10)
-        n <- 5L
+        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updateBetaAndPriorBeta(prior0,
@@ -1308,7 +1308,7 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendNormCovWithSeason", {
                                sY = NULL)
         expect_is(prior0, "DLMWithTrendNormCovWithSeason")
         vbar <- rnorm(10)
-        n <- 5L
+        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         l <- updateBetaAndPriorBeta(prior0,
@@ -1386,7 +1386,7 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMW
                                sY = NULL)
         expect_is(prior0, "DLMWithTrendNormCovWithSeason")
         vbar <- rnorm(10)
-        n <- 5L
+        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updateBetaAndPriorBeta(prior0,
@@ -1437,7 +1437,7 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendRobustZeroNoSeason", {
                                sY = NULL)
         expect_is(prior0, "DLMNoTrendRobustZeroNoSeason")
         vbar <- rnorm(10)
-        n <- 5L
+        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         l <- updateBetaAndPriorBeta(prior0,
@@ -1489,7 +1489,7 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTre
                                sY = NULL)
         expect_is(prior0, "DLMNoTrendRobustZeroNoSeason")
         vbar <- rnorm(10)
-        n <- 5L
+        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updateBetaAndPriorBeta(prior0,
@@ -1528,7 +1528,7 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendRobustZeroNoSeason", {
                                sY = NULL)
         expect_is(prior0, "DLMWithTrendRobustZeroNoSeason")
         vbar <- rnorm(10)
-        n <- 5L
+        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         l <- updateBetaAndPriorBeta(prior0,
@@ -1587,7 +1587,7 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithT
                                sY = NULL)
         expect_is(prior0, "DLMWithTrendRobustZeroNoSeason")
         vbar <- rnorm(10)
-        n <- 5L
+        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updateBetaAndPriorBeta(prior0,
@@ -1625,7 +1625,7 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendRobustZeroWithSeason", {
                                sY = NULL)
         expect_is(prior0, "DLMNoTrendRobustZeroWithSeason")
         vbar <- rnorm(10)
-        n <- 5L
+        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         l <- updateBetaAndPriorBeta(prior0,
@@ -1688,7 +1688,7 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTre
                                sY = NULL)
         expect_is(prior0, "DLMNoTrendRobustZeroWithSeason")
         vbar <- rnorm(10)
-        n <- 5L
+        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updateBetaAndPriorBeta(prior0,
@@ -1726,7 +1726,7 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendRobustZeroWithSeason", 
                                sY = NULL)
         expect_is(prior0, "DLMWithTrendRobustZeroWithSeason")
         vbar <- rnorm(10)
-        n <- 5L
+        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         l <- updateBetaAndPriorBeta(prior0,
@@ -1789,7 +1789,7 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithT
                                sY = NULL)
         expect_is(prior0, "DLMWithTrendRobustZeroWithSeason")
         vbar <- rnorm(10)
-        n <- 5L
+        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updateBetaAndPriorBeta(prior0,
@@ -1840,7 +1840,7 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendRobustCovNoSeason", {
                                sY = NULL)
         expect_is(prior0, "DLMNoTrendRobustCovNoSeason")
         vbar <- rnorm(10)
-        n <- 5L
+        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         l <- updateBetaAndPriorBeta(prior0,
@@ -1907,7 +1907,7 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTre
                                sY = NULL)
         expect_is(prior0, "DLMNoTrendRobustCovNoSeason")
         vbar <- rnorm(10)
-        n <- 5L
+        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updateBetaAndPriorBeta(prior0,
@@ -1956,7 +1956,7 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendRobustCovNoSeason", {
                                sY = NULL)
         expect_is(prior0, "DLMWithTrendRobustCovNoSeason")
         vbar <- rnorm(10)
-        n <- 5L
+        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         l <- updateBetaAndPriorBeta(prior0,
@@ -2031,7 +2031,7 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithT
                                sY = NULL)
         expect_is(prior0, "DLMWithTrendRobustCovNoSeason")
         vbar <- rnorm(10)
-        n <- 5L
+        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updateBetaAndPriorBeta(prior0,
@@ -2080,7 +2080,7 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendRobustCovWithSeason", {
                                sY = NULL)
         expect_is(prior0, "DLMNoTrendRobustCovWithSeason")
         vbar <- rnorm(10)
-        n <- 5L
+        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         l <- updateBetaAndPriorBeta(prior0,
@@ -2153,7 +2153,7 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTre
                                sY = NULL)
         expect_is(prior0, "DLMNoTrendRobustCovWithSeason")
         vbar <- rnorm(10)
-        n <- 5L
+        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updateBetaAndPriorBeta(prior0,
@@ -2203,7 +2203,7 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendRobustCovWithSeason", {
                                sY = NULL)
         expect_is(prior0, "DLMWithTrendRobustCovWithSeason")
         vbar <- rnorm(10)
-        n <- 5L
+        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         l <- updateBetaAndPriorBeta(prior0,
@@ -2284,7 +2284,7 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithT
                                sY = NULL)
         expect_is(prior0, "DLMWithTrendRobustCovWithSeason")
         vbar <- rnorm(10)
-        n <- 5L
+        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updateBetaAndPriorBeta(prior0,
@@ -2328,7 +2328,7 @@ test_that("updateBetaAndPriorBeta updates correct slots with MixNormZero", {
                            sY = NULL,
                            multScale = 1)
     vbar <- rnorm(200)
-    n <- 5L
+    n <- rep(5L, 200)
     sigma <- runif(1)
     l <- updateBetaAndPriorBeta(prior = prior0,
                                 vbar = vbar,
@@ -2412,7 +2412,7 @@ test_that("updateBetaAndPriorBeta updates correct slots with MixNormZero", {
                                sY = NULL,
                                multScale = 1)
         vbar <- rnorm(200)
-        n <- 5L
+        n <- rep(5L, 200)
         sigma <- runif(1)
         set.seed(seed + 1)
         ans.R <- updateBetaAndPriorBeta(prior = prior0,

@@ -1,7 +1,7 @@
 
 ## ExchFixed
 
-## READY_TO_TRANSLATE (AGAIN)
+## TRANSLATED
 ## HAS_TESTS
 setMethod("updateBetaAndPriorBeta",
           signature(prior = "ExchFixed"),
