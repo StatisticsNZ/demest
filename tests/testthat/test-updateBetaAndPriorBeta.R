@@ -2306,8 +2306,161 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithT
 })
 
 
+## Known #################################################################################
+
+test_that("updateBetaAndPriorBeta works with KnownCertain", {
+    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+    initialPrior <- demest:::initialPrior
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        mean <- ValuesOne(c(0.1, 0.2), labels = c("f", "m"), name = "sex")
+        spec <- Known(mean)
+        beta0 <- rnorm(2)
+        metadata <- new("MetaData",
+                        nms = "sex",
+                        dimtypes = "sex",
+                        DimScales = list(new("Sexes", dimvalues = c("f", "m"))))
+        prior0 <- initialPrior(spec,
+                               beta = beta0,
+                               metadata = metadata,
+                               sY = NULL)
+        expect_is(prior0, "KnownCertain")
+        vbar <- rnorm(2)
+        n <- 9:10
+        sigma <- runif(1)
+        set.seed(seed)
+        l <- updateBetaAndPriorBeta(prior0,
+                                    vbar = vbar,
+                                    n = n,
+                                    sigma = sigma)
+        beta1 <- l[[1]]
+        prior1 <- l[[2]]
+        set.seed(seed)
+        beta2 <- as.numeric(mean)
+        expect_identical(prior1, prior0)
+        expect_equal(beta2, beta1)
+    }
+})
+
+test_that("R and C versions of updateBetaAndPriorBeta give same answer with KnownCertain", {
+    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+    initialPrior <- demest:::initialPrior
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        mean <- ValuesOne(c(0.1, 0.2), labels = c("f", "m"), name = "sex")
+        spec <- Known(mean)
+        beta0 <- rnorm(2)
+        metadata <- new("MetaData",
+                        nms = "sex",
+                        dimtypes = "sex",
+                        DimScales = list(new("Sexes", dimvalues = c("f", "m"))))
+        prior0 <- initialPrior(spec,
+                               beta = beta0,
+                               metadata = metadata,
+                               sY = NULL)
+        expect_is(prior0, "KnownCertain")
+        vbar <- rnorm(2)
+        n <- 9:10
+        sigma <- runif(1)
+        set.seed(seed)
+        ans.R <- updateBetaAndPriorBeta(prior0,
+                                        vbar = vbar,
+                                        n = n,
+                                        sigma = sigma, 
+                                        useC = FALSE)
+        set.seed(seed)
+        ans.C <- updateBetaAndPriorBeta(prior0,
+                                        vbar = vbar,
+                                        n = n,
+                                        sigma = sigma, 
+                                        useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
+
+test_that("updateBetaAndPriorBeta works with KnownUncertain", {
+    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+    initialPrior <- demest:::initialPrior
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        mean <- ValuesOne(c(0.1, 0.2), labels = c("f", "m"), name = "sex")
+        spec <- Known(mean, sd = 0.1)
+        beta0 <- rnorm(2)
+        metadata <- new("MetaData",
+                        nms = "sex",
+                        dimtypes = "sex",
+                        DimScales = list(new("Sexes", dimvalues = c("f", "m"))))
+        prior0 <- initialPrior(spec,
+                               beta = beta0,
+                               metadata = metadata,
+                               sY = NULL)
+        expect_is(prior0, "KnownUncertain")
+        vbar <- rnorm(2)
+        n <- 9:10
+        sigma <- runif(1)
+        set.seed(seed)
+        l <- updateBetaAndPriorBeta(prior0,
+                                    vbar = vbar,
+                                    n = n,
+                                    sigma = sigma)
+        beta1 <- l[[1]]
+        prior1 <- l[[2]]
+        set.seed(seed)
+        beta2 <- rnorm(2,
+                       mean = ((n*vbar/sigma^2 + prior0@alphaKnown@.Data/prior0@AKnownVec@.Data^2)
+                           /(n/sigma^2+1/prior0@AKnownVec@.Data^2)),
+                       sd = 1/sqrt(n/sigma^2+1/prior0@AKnownVec@.Data^2))
+        expect_identical(prior1, prior0)
+        expect_equal(beta2, beta1)
+    }
+})
+
+test_that("R and C versions of updateBetaAndPriorBeta give same answer with KnownUncertain", {
+    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+    initialPrior <- demest:::initialPrior
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        mean <- ValuesOne(c(0.1, 0.2), labels = c("f", "m"), name = "sex")
+        spec <- Known(mean, sd = 0.1)
+        beta0 <- rnorm(2)
+        metadata <- new("MetaData",
+                        nms = "sex",
+                        dimtypes = "sex",
+                        DimScales = list(new("Sexes", dimvalues = c("f", "m"))))
+        prior0 <- initialPrior(spec,
+                               beta = beta0,
+                               metadata = metadata,
+                               sY = NULL)
+        expect_is(prior0, "KnownUncertain")
+        vbar <- rnorm(2)
+        n <- 9:10
+        sigma <- runif(1)
+        set.seed(seed)
+        ans.R <- updateBetaAndPriorBeta(prior0,
+                                        vbar = vbar,
+                                        n = n,
+                                        sigma = sigma, 
+                                        useC = FALSE)
+        set.seed(seed)
+        ans.C <- updateBetaAndPriorBeta(prior0,
+                                        vbar = vbar,
+                                        n = n,
+                                        sigma = sigma, 
+                                        useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
+
+
 
 ## Mix #################################################################################
+
 
 
 test_that("updateBetaAndPriorBeta updates correct slots with MixNormZero", {
@@ -2434,5 +2587,75 @@ test_that("updateBetaAndPriorBeta updates correct slots with MixNormZero", {
 })
 
 
+## Zero #################################################################################
 
+test_that("updateBetaAndPriorBeta works with Zero", {
+    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+    initialPrior <- demest:::initialPrior
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        spec <- Zero()
+        beta0 <- rnorm(2)
+        metadata <- new("MetaData",
+                        nms = "sex",
+                        dimtypes = "sex",
+                        DimScales = list(new("Sexes", dimvalues = c("f", "m"))))
+        prior0 <- initialPrior(spec,
+                               beta = beta0,
+                               metadata = metadata,
+                               sY = NULL)
+        expect_is(prior0, "Zero")
+        vbar <- rnorm(2)
+        n <- 9:10
+        sigma <- runif(1)
+        set.seed(seed)
+        l <- updateBetaAndPriorBeta(prior0,
+                                    vbar = vbar,
+                                    n = n,
+                                    sigma = sigma)
+        beta1 <- l[[1]]
+        prior1 <- l[[2]]
+        set.seed(seed)
+        beta2 <- rep(0, 2)
+        expect_identical(prior1, prior0)
+        expect_equal(beta2, beta1)
+    }
+})
 
+test_that("R and C versions of updateBetaAndPriorBeta give same answer with Zero", {
+    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+    initialPrior <- demest:::initialPrior
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        spec <- Zero()
+        beta0 <- rnorm(2)
+        metadata <- new("MetaData",
+                        nms = "sex",
+                        dimtypes = "sex",
+                        DimScales = list(new("Sexes", dimvalues = c("f", "m"))))
+        prior0 <- initialPrior(spec,
+                               beta = beta0,
+                               metadata = metadata,
+                               sY = NULL)
+        expect_is(prior0, "Zero")
+        vbar <- rnorm(2)
+        n <- 9:10
+        sigma <- runif(1)
+        set.seed(seed)
+        ans.R <- updateBetaAndPriorBeta(prior0,
+                                        vbar = vbar,
+                                        n = n,
+                                        sigma = sigma, 
+                                        useC = FALSE)
+        set.seed(seed)
+        ans.C <- updateBetaAndPriorBeta(prior0,
+                                        vbar = vbar,
+                                        n = n,
+                                        sigma = sigma, 
+                                        useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})

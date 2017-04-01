@@ -39,25 +39,14 @@ setClass("Known",
                       "Prior",
                       "AlphaKnownMixin",
                       "AlphaKnownAllMixin",
-                      "MetadataMixin",
                       "MetadataAllMixin"),
          validity = function(object) {
              alphaKnown <- object@alphaKnown@.Data
-             AKnownVec <- object@AKnownVec
-             metadata <- object@metadata
              J <- object@J@.Data
              ## 'alphaKnown' has length 'J'
              if (!identical(length(alphaKnown), J))
                  return(gettextf("'%s' does not have length '%s'",
                                  "alphaKnown", "J"))
-             ## 'AKnownVec' has length 'J'
-             if (!identical(length(AKnownVec), J))
-                 return(gettextf("'%s' does not have length '%s'",
-                                 "AKnownVec", "J"))
-             ## 'metadata' consistent with J
-             if (!identical(as.integer(prod(dim(metadata))), J))
-                 return(gettextf("'%s' not consistent with '%s'",
-                                 "metadata", "J"))
              TRUE
          })
 
@@ -947,7 +936,16 @@ setClass("KnownUncertain",
          contains = c("Prior",
              "Known",
              "AKnownVecMixin",
-             "AKnownAllVecMixin"))
+             "AKnownAllVecMixin"),
+         validity = function(object) {
+             AKnownVec <- object@AKnownVec
+             J <- object@J@.Data
+             ## 'AKnownVec' has length 'J'
+             if (!identical(length(AKnownVec), J))
+                 return(gettextf("'%s' does not have length '%s'",
+                                 "AKnownVec", "J"))
+             TRUE
+         })
 
 ## Mix
 

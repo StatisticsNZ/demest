@@ -19,7 +19,7 @@ setMethod("updateBetaAndPriorBeta",
               else {
                   J <- prior@J@.Data
                   tau <- prior@tau@.Data
-                  prec.data <- n / sigma^2 ## FORMERLY A SCALAR, NOW A VECTOR
+                  prec.data <- n / sigma^2 # vector
                   prec.prior <- 1 / tau^2
                   var <- 1 / (prec.data + prec.prior) 
                   mean <- prec.data * vbar * var # vector
@@ -826,6 +826,8 @@ setMethod("updateBetaAndPriorBeta",
 
 ## Known ###############################################################################
 
+## READY_TO_TRANSLATE
+## HAS_TESTS
 setMethod("updateBetaAndPriorBeta",
           signature(prior = "KnownCertain"),
           function(prior, vbar, n, sigma, useC = FALSE, useSpecific = FALSE) {
@@ -842,12 +844,14 @@ setMethod("updateBetaAndPriorBeta",
                             prior, vbar, n, sigma)
               }
               else {
-                  alpha <- object@alphaKnown@.Data
+                  alpha <- prior@alphaKnown@.Data
                   beta <- alpha
                   list(beta, prior)
               }
           })
 
+## READY_TO_TRANSLATE
+## HAS_TESTS
 setMethod("updateBetaAndPriorBeta",
           signature(prior = "KnownUncertain"),
           function(prior, vbar, n, sigma, useC = FALSE, useSpecific = FALSE) {
@@ -857,19 +861,25 @@ setMethod("updateBetaAndPriorBeta",
                                           sigma = sigma)
               if (useC) {
                   if (useSpecific)
-                      .Call(updateBetaAndPriorBeta_KnownCertain_R,
+                      .Call(updateBetaAndPriorBeta_KnownUncertain_R,
                             prior, vbar, n, sigma)
                   else
                       .Call(updateBetaAndPriorBeta_R,
                             prior, vbar, n, sigma)
               }
               else {
-                  alpha <- object@alphaKnown@.Data
-                  beta <- alpha
+                  alpha <- prior@alphaKnown@.Data # vector length J
+                  J <- prior@J@.Data 
+                  A <- prior@AKnownVec@.Data # vector length J
+                  prec.data <- n / sigma^2 # vector
+                  prec.prior <- 1 / A^2 # vector
+                  var <- 1 / (prec.data + prec.prior) # vector
+                  mean <- (prec.data * vbar + prec.prior * alpha) * var  # vector
+                  sd <- sqrt(var) # vector
+                  beta <- stats::rnorm(n = J, mean = mean, sd = sd)
                   list(beta, prior)
               }
           })
-
 
 
 ## Mix #################################################################################
@@ -925,159 +935,29 @@ setMethod("updateBetaAndPriorBeta",
           })
 
 
-## Move #################################################################################
-
-## setMethod("updateBetaAndPriorBeta",
-##           signature(prior = "MoveNormZero"),
-##           function(prior, vbar, sigma, useC = FALSE, useSpecific = FALSE) {
-##               checkUpdateBetaAndPriorBeta(prior = prior,
-##                                           vbar = vbar,
-##                                           sigma = sigma)
-##               if (useC) {
-##                   if (useSpecific)
-##                       .Call(updateBetaAndPriorBeta_MoveNormZero_R, prior, vbar, sigma)
-##                   else
-##                       .Call(updateBetaAndPriorBeta_R, prior, vbar, sigma)
-##               }
-##               else {
-##                   beta <- updateBeta(prior = prior,
-##                                      vbar = vbar,
-##                                      sigma = sigma)
-##                   prior <- updateAlphaMove(prior = prior,
-##                                            betaTilde = beta)
-##                   prior <- updateTauNorm(prior = prior,
-##                                        beta = beta)
-##                   list(beta, prior)
-##               }
-##           })
-
-## Known #################################################################################
+## Zero #################################################################################
 
 
-## setMethod("updateBetaAndPriorBeta",
-##           signature(prior = "KnownCertain"),
-##           function(prior, vbar, n, sigma, useC = FALSE, useSpecific = FALSE) {
-##               checkUpdateBetaAndPriorBeta(prior = prior,
-##                                           vbar = vbar,
-##                                           n = n,
-##                                           sigma = sigma)
-##               if (useC) {
-##                   if (useSpecific)
-##                       .Call(updateBetaAndPriorBeta_KnownCertain_R, prior, vbar, n, sigma)
-##                   else
-##                       .Call(updateBetaAndPriorBeta_R, prior, vbar, n, sigma)
-##               }
-##               else {
-##                   v <- getV(prior)
-##                   prec.data <- n / sigma^2
-##                   prec.prior <- 1 / v
-##                   var <- 1 / (prec.data + prec.prior)
-##                   beta.hat <- betaHat(prior)
-##                   mean <- (prec.data * vbar + prec.prior * beta.hat) * var
-##                   sd <- sqrt(var)
-##                   stats::rnorm(n = J, mean = mean, sd = sd)
-##                   beta <- updateBetaKnownCertain(beta = beta,
-##                                                  prior = prior)
-##                   list(beta, prior)
-##               }
-##           })
-
-
-## setMethod("updateBetaAndPriorBeta",
-##           signature(prior = "KnownUncertain"),
-##           function(prior, vbar, n, sigma, useC = FALSE, useSpecific = FALSE) {
-##               checkUpdateBetaAndPriorBeta(prior = prior,
-##                                           vbar = vbar,
-##                                           n = n,
-##                                           sigma = sigma)
-##               if (useC) {
-##                   if (useSpecific)
-##                       .Call(updateBetaAndPriorBeta_KnownUncertain_R, prior, vbar, n, sigma)
-##                   else
-##                       .Call(updateBetaAndPriorBeta_R, prior, vbar, n, sigma)
-##               }
-##               else {
-##                   alpha <- prior@alphaKnown
-##                   beta <- alpha
-##                   list(beta, prior)
-##               }
-##           })
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-## ICAR #################################################################################
-
-## Cross #################################################################################
-
-## Known #################################################################################
-
-
-## setMethod("updateBetaAndPriorBeta",
-##           signature(prior = "KnownCertain"),
-##           function(prior, vbar, n, sigma, useC = FALSE, useSpecific = FALSE) {
-##               checkUpdateBetaAndPriorBeta(prior = prior,
-##                                           vbar = vbar,
-##                                           n = n,
-##                                           sigma = sigma)
-##               if (useC) {
-##                   if (useSpecific)
-##                       .Call(updateBetaAndPriorBeta_KnownCertain_R, prior, vbar, n, sigma)
-##                   else
-##                       .Call(updateBetaAndPriorBeta_R, prior, vbar, n, sigma)
-##               }
-##               else {
-##                   v <- getV(prior)
-##                   prec.data <- n / sigma^2
-##                   prec.prior <- 1 / v
-##                   var <- 1 / (prec.data + prec.prior)
-##                   beta.hat <- betaHat(prior)
-##                   mean <- (prec.data * vbar + prec.prior * beta.hat) * var
-##                   sd <- sqrt(var)
-##                   stats::rnorm(n = J, mean = mean, sd = sd)
-##                   beta <- updateBetaKnownCertain(beta = beta,
-##                                                  prior = prior)
-##                   list(beta, prior)
-##               }
-##           })
-
-
-## setMethod("updateBetaAndPriorBeta",
-##           signature(prior = "KnownUncertain"),
-##           function(prior, vbar, n, sigma, useC = FALSE, useSpecific = FALSE) {
-##               checkUpdateBetaAndPriorBeta(prior = prior,
-##                                           vbar = vbar,
-##                                           n = n,
-##                                           sigma = sigma)
-##               if (useC) {
-##                   if (useSpecific)
-##                       .Call(updateBetaAndPriorBeta_KnownUncertain_R,
-##                             prior, vbar, n, sigma)
-##                   else
-##                       .Call(updateBetaAndPriorBeta_R,
-##                             prior, vbar, n, sigma)
-##               }
-##               else {
-##                   alpha <- prior@alphaKnown
-##                   beta <- alpha
-##                   list(beta, prior)
-##               }
-##           })
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("updateBetaAndPriorBeta",
+          signature(prior = "Zero"),
+          function(prior, vbar, n, sigma, useC = FALSE, useSpecific = FALSE) {
+              checkUpdateBetaAndPriorBeta(prior = prior,
+                                          vbar = vbar,
+                                          n = n,
+                                          sigma = sigma)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(updateBetaAndPriorBeta_Zero_R,
+                            prior, vbar, n, sigma)
+                  else
+                      .Call(updateBetaAndPriorBeta_R,
+                            prior, vbar, n, sigma)
+              }
+              else {
+                  J <- prior@J@.Data
+                  beta <- rep(0, times = J)
+                  list(beta, prior)
+              }
+          })

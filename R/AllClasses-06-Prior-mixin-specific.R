@@ -101,12 +101,12 @@ setClass("AKnownAllVecMixin",
          slots = c(AKnownAllVec = "ScaleVec"),
          contains = "VIRTUAL",
          validity = function(object) {
-             AKnownAllVec <- object@AKnownAllVec
-             J <- object@J@.Data
-             ## length of 'AKnownVec' greater than or equal to 'J'
-             if (length(AKnownAllVec) < J)
-                 return(gettextf("length of '%s' less than '%s'",
-                                 "AKnownAllVec", "J"))
+             alphaKnownAll <- object@alphaKnownAll@.Data
+             AKnownAllVec <- object@AKnownAllVec@.Data
+             ## 'alphaKnownAll' and 'AKnownAllVec' have same length
+             if (!identical(length(alphaKnownAll), length(AKnownAllVec)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "alphaKnownAll", "AKnownAllVec"))
              TRUE
          })
 
@@ -184,11 +184,11 @@ setClass("AlphaKnownAllMixin",
          contains = "VIRTUAL",
          validity = function(object) {
              alphaKnownAll <- object@alphaKnownAll@.Data
-             AKnownAllVec <- object@AKnownAllVec@.Data
-             ## 'alphaKnownAll' and 'AKnownAllVec' have same length
-             if (!identical(length(alphaKnownAll), length(AKnownAllVec)))
-                 return(gettextf("'%s' and '%s' have different lengths",
-                                 "alphaKnownAll", "AKnownAllVec"))
+             J <- object@J@.Data
+             ## length of 'alphaKnownAll' greater than or equal to 'J'
+             if (length(alphaKnownAll) < J)
+                 return(gettextf("length of '%s' less than '%s'",
+                                 "alphaKnownAll", "J"))
              TRUE
          })
 

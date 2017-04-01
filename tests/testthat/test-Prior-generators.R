@@ -606,6 +606,118 @@ test_that("generator function and initialPrior work with DLMWithTrendRobustCovWi
     expect_is(prior, "DLMWithTrendRobustCovWithSeason")
 })
 
+test_that("generator function and initialPrior work with KnownCertain", {
+    initialPrior <- demest:::initialPrior
+    mean <- ValuesOne(1:5, labels = 0:4, name = "age", dimscale = "Intervals")
+    spec <- Known(mean)
+    expect_is(spec, "SpecKnownCertain")
+    beta <- rnorm(4)
+    metadata <- new("MetaData",
+                    nms = "age",
+                    dimtypes = "age",
+                    DimScales = list(new("Intervals", dimvalues = 0:4)))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = 50)
+    expect_is(prior, "KnownCertain")
+    expect_identical(prior@J, new("Length", 4))
+    ## 'mean' is "Values"
+    expect_error(Known(mean = 1:4),
+                 "'mean' has class \"integer\"")
+    ## 'mean' has no missing values
+    mean <- ValuesOne(c(NA, 2:5), labels = 0:4, name = "age", dimscale = "Intervals")
+    expect_error(Known(mean),
+                 "'mean' has missing values")
+    ## mean has length of 2 or more
+    mean <- ValuesOne(1, labels = "0-4", name = "age")
+    expect_error(Known(mean),
+                 "'mean' has length 1")
+    ## mean compatible
+    mean <- ValuesOne(1:5, labels = 0:4, name = "age", dimscale = "Intervals")
+    spec <- Known(mean)
+    beta <- rnorm(4)
+    metadata <- new("MetaData",
+                    nms = "age",
+                    dimtypes = "age",
+                    DimScales = list(new("Intervals", dimvalues = 1:6)))
+    expect_error(initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = 50),
+                 "metadata for 'Known' prior for 'age' not compatible with metadata for 'y'")    
+})
+
+test_that("generator function and initialPrior work with KnownUncertain", {
+    initialPrior <- demest:::initialPrior
+    ## 'sd' is Values
+    mean <- ValuesOne(1:5, labels = 0:4, name = "age", dimscale = "Intervals")
+    sd <- ValuesOne(1:5, labels = 0:4, name = "age", dimscale = "Intervals")
+    spec <- Known(mean = mean,
+                  sd = sd)
+    expect_is(spec, "SpecKnownUncertain")
+    beta <- rnorm(4)
+    metadata <- new("MetaData",
+                    nms = "age",
+                    dimtypes = "age",
+                    DimScales = list(new("Intervals", dimvalues = 0:4)))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = 50)
+    expect_is(prior, "KnownUncertain")
+    expect_identical(prior@J, new("Length", 4))
+    ## 'sd' is numeric
+    mean <- ValuesOne(1:5, labels = 0:4, name = "age", dimscale = "Intervals")
+    sd <- 0.1
+    spec <- Known(mean = mean,
+                  sd = sd)
+    expect_is(spec, "SpecKnownUncertain")
+    beta <- rnorm(4)
+    metadata <- new("MetaData",
+                    nms = "age",
+                    dimtypes = "age",
+                    DimScales = list(new("Intervals", dimvalues = 0:4)))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = 50)
+    expect_is(prior, "KnownUncertain")
+    expect_identical(prior@J, new("Length", 4))
+    ## 'sd' is compatible with 'mean'
+    mean <- ValuesOne(1:5, labels = 0:4, name = "age", dimscale = "Intervals")
+    sd <- ValuesOne(1:5, labels = 1:5, name = "age", dimscale = "Intervals")
+    expect_error(Known(mean = mean, sd = sd),
+                 "'sd' and 'mean' not compatible")
+    ## 'sd' has no missing values
+    mean <- ValuesOne(1:5, labels = 0:4, name = "age", dimscale = "Intervals")
+    sd <- ValuesOne(c(NA, 2:5), labels = 0:4, name = "age", dimscale = "Intervals")
+    expect_error(Known(mean = mean, sd = sd),
+                 "'sd' has missing values")
+    ## 'sd' has no negative values
+    mean <- ValuesOne(1:5, labels = 0:4, name = "age", dimscale = "Intervals")
+    sd <- ValuesOne(c(-1, 2:5), labels = 0:4, name = "age", dimscale = "Intervals")
+    expect_error(Known(mean = mean, sd = sd),
+                 "'sd' has negative values")
+    ## 'sd' has length 1
+    mean <- ValuesOne(1:5, labels = 0:4, name = "age", dimscale = "Intervals")
+    expect_error(Known(mean = mean, sd = 1:2),
+                 "'sd' is numeric but does not have length 1")
+    ## 'sd' is not missing
+    mean <- ValuesOne(1:5, labels = 0:4, name = "age", dimscale = "Intervals")
+    expect_error(Known(mean = mean, sd = as.numeric(NA)),
+                 "'sd' is missing")
+    ## 'sd' is non-negative
+    mean <- ValuesOne(1:5, labels = 0:4, name = "age", dimscale = "Intervals")
+    expect_error(Known(mean = mean, sd = -0.1),
+                 "'sd' is negative")
+    ## sd is Values or numeric
+    mean <- ValuesOne(1:5, labels = 0:4, name = "age", dimscale = "Intervals")
+    expect_error(Known(mean = mean, sd = "1"),
+                 "'sd' has class \"character\"")
+})
+
+
 
 ## Mix
 
@@ -1568,3 +1680,23 @@ test_that("generator function and initialPrior work with MixNormZeroPredict", {
                                       along = 1L)
     expect_is(prior.pred, "MixNormZeroPredict")
 })
+
+
+## Zero
+
+test_that("generator function and initialPrior work with KnownCertain", {
+    initialPrior <- demest:::initialPrior
+    spec <- Zero()
+    expect_is(spec, "SpecZero")
+    beta <- rnorm(4)
+    metadata <- new("MetaData",
+                    nms = "age",
+                    dimtypes = "age",
+                    DimScales = list(new("Intervals", dimvalues = 0:4)))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = 50)
+    expect_is(prior, "Zero")
+})
+

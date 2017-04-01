@@ -790,6 +790,44 @@ setMethod("makeOutputPrior",
                    scaleError = scaleError)
           })
 
+## HAS_TESTS
+setMethod("makeOutputPrior",
+          signature(prior = "KnownCertain",
+                    metadata = "MetaData"),
+          function(prior, metadata, pos) {
+              alpha <- prior@alphaKnown@.Data
+              .Data <- array(alpha,
+                             dim = dim(metadata),
+                             dimnames = dimnames(metadata))
+              mean <- new("Values",
+                          .Data = .Data,
+                          metadata = metadata)
+              list(mean = mean)
+          })
+
+## HAS_TESTS
+setMethod("makeOutputPrior",
+          signature(prior = "KnownUncertain",
+                    metadata = "MetaData"),
+          function(prior, metadata, pos) {
+              alpha <- prior@alphaKnown@.Data
+              A <- prior@AKnownVec@.Data
+              .Data.mean <- array(alpha,
+                                  dim = dim(metadata),
+                                  dimnames = dimnames(metadata))
+              .Data.sd <- array(A,
+                                dim = dim(metadata),
+                                dimnames = dimnames(metadata))
+              mean <- new("Values",
+                          .Data = .Data.mean,
+                          metadata = metadata)
+              sd <- new("Values",
+                        .Data = .Data.sd,
+                        metadata = metadata)
+              list(mean = mean,
+                   sd = sd)
+          })
+
 
 ## Mix
 
@@ -856,13 +894,21 @@ setMethod("makeOutputPrior",
                    scaleError = scaleError)
           })
 
+## NO_TESTS
+setMethod("makeOutputPrior",
+          signature(prior = "Zero",
+                    metadata = "ANY"),
+          function(prior) {
+              NULL
+          })
 
 
 
 ## predictPrior ###########################################################
 
 
-## NO_TESTS
+## READY_TO_TRANLSATE
+## HAS_TESTS
 setMethod("predictPrior",
           signature(prior = "ExchFixed"),
           function(prior, useC = FALSE, useSpecific = FALSE) {
@@ -1272,7 +1318,8 @@ setMethod("predictPrior",
 
 ## Known
 
-## NO_TESTS
+## READY_TO_TRANSLATE
+## HAS_TESTS
 setMethod("predictPrior",
           signature(prior = "KnownCertain"),
           function(prior, useC = FALSE, useSpecific = FALSE) {
@@ -1288,7 +1335,8 @@ setMethod("predictPrior",
               }
           })
 
-## NO_TESTS
+## READY_TO_TRANSLATE
+## HAS_TESTS
 setMethod("predictPrior",
           signature(prior = "KnownUncertain"),
           function(prior, useC = FALSE, useSpecific = FALSE) {
@@ -1330,8 +1378,8 @@ setMethod("predictPrior",
               }
           })
 
-
-## NO_TESTS
+## READY_TO_TRANSLATE
+## HAS_TESTS
 setMethod("predictPrior",
           signature(prior = "Zero"),
           function(prior, useC = FALSE, useSpecific = FALSE) {
@@ -1415,6 +1463,7 @@ setMethod("printPriorIntercept",
 
 
 ## transferParamPrior #################################################################
+
 
 ## Exch
 

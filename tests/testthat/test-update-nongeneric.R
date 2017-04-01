@@ -970,7 +970,7 @@ test_that("updateComponentWeightMix gives valid answer", {
                     DimScales = list(new("Categories", dimvalues = c("a", "b")),
                                      new("Points", dimvalues = 2001:2010),
                                      new("Intervals", dimvalues = as.numeric(0:10))))
-    spec <- Mix(weights = Weights(scaleAR2 = HalfT(mult = 2)))
+    spec <- Mix(weights = Weights(scale2AR = HalfT(mult = 2)))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
@@ -1003,7 +1003,7 @@ test_that("updateComponentWeightMix gives valid answer", {
             var <- 1/(inv.omega.sq + A)
             mean <- var*(lev[i,i.class]*inv.omega.sq + B)
             W[i, i.class] <- rtnorm1(mean = mean, sd = sqrt(var),
-                                     min = -4, max = 4)
+                                     lower = -4, upper = 4)
         }
     }
     ans.expected <- prior
@@ -1026,7 +1026,7 @@ test_that("R and C versions of updateComponentWeightMix give same answer", {
                         DimScales = list(new("Categories", dimvalues = c("a", "b")),
                                          new("Points", dimvalues = 2001:2010),
                                          new("Intervals", dimvalues = as.numeric(0:10))))
-        spec <- Mix(weights = Weights(scaleAR2 = HalfT(mult = 2)))
+        spec <- Mix(weights = Weights(scale2AR = HalfT(mult = 2)))
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,

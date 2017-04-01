@@ -1194,7 +1194,7 @@ setMethod("initialPrior",
                                  dimnames = dimnames(metadata.all))
               alpha.all <- methods::new("Values",
                                         .Data = .Data.all,
-                                        metadata = metadata.alll)
+                                        metadata = metadata.all)
               alpha <- tryCatch(dembase::makeCompatible(x = alpha.all, y = beta, subset = TRUE),
                                 error = function(e) e)
               if (methods::is(alpha, "error"))
@@ -1207,7 +1207,6 @@ setMethod("initialPrior",
                                alphaKnown = alphaKnown,
                                alphaKnownAll = object@alphaKnown,
                                J = J,
-                               metadata = metadata,
                                metadataAll = object@metadata)
               }
               else {
@@ -1220,14 +1219,13 @@ setMethod("initialPrior",
                                     metadata = metadata.all)
                   A <- dembase::makeCompatible(x = A, y = beta, subset = TRUE)
                   A <- as.numeric(A)
-                  AKnownVec <- new("ParameterVector", A)
+                  AKnownVec <- new("ScaleVec", A)
                   methods::new("KnownUncertain",
                                AKnownVec = AKnownVec,
                                AKnownAllVec = object@AKnownVec,
                                alphaKnown = alphaKnown,
                                alphaKnownAll = object@alphaKnown,
                                J = J,
-                               metadata = metadata,
                                metadataAll = object@metadata)
               }
           })
@@ -1358,7 +1356,7 @@ setMethod("initialPrior",
 
 ## HAS_TESTS
 setMethod("initialPriorPredict",
-          signature(prior = "ExchNormZero"),
+          signature(prior = "ExchFixed"),
           function(prior, data, metadata, name, along) {
               if (!is.null(data))
                   stop(gettextf("covariate data supplied for prior for '%s', but prior does not use covariates",

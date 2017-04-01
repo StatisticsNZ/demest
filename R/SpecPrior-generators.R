@@ -1463,15 +1463,15 @@ Known <- function(mean, sd = 0) {
     if (any(is.na(mean)))
         stop(gettextf("'%s' has missing values",
                       "mean"))
-    ## 'mean' is numeric
-    if (!is.numeric(mean))
-        stop(gettextf("'%s' is not numeric",
-                      "mean"))
-    mean <- as.double(mean)
-    mean <- new("ParameterVector", mean)
+    ## mean has length of 2 or more
+    if (length(mean) < 2L)
+        stop(gettextf("'%s' has length %d",
+                      "mean", length(mean)))
+    alphaKnown <- as.double(mean)
+    alphaKnown <- new("ParameterVector", alphaKnown)
     if (identical(sd, 0)) {
         new("SpecKnownCertain",
-            alphaKnown = mean,
+            alphaKnown = alphaKnown,
             metadata = metadata)
     }
     else {
@@ -1482,6 +1482,7 @@ Known <- function(mean, sd = 0) {
             if (methods::is(sd, "error"))
                 stop(gettextf("'%s' and '%s' not compatible : %s",
                               "sd", "mean", sd$message))
+            sd <- as.double(sd)
             ## 'sd' has no missing values
             if (any(is.na(sd)))
                 stop(gettextf("'%s' has missing values",
@@ -1492,6 +1493,7 @@ Known <- function(mean, sd = 0) {
                               "sd"))
         }
         else if (methods::is(sd, "numeric")) {
+            sd <- as.double(sd)
             ## 'sd' has length 1
             if (!identical(length(sd), 1L))
                 stop(gettextf("'%s' is numeric but does not have length %d",
@@ -1504,7 +1506,6 @@ Known <- function(mean, sd = 0) {
             if (sd < 0)
                 stop(gettextf("'%s' is negative",
                               "sd"))
-            sd <- as.double(sd)
             sd <- rep(sd, times = length(mean))
         }
         else { ## sd is Values or numeric
@@ -1513,7 +1514,7 @@ Known <- function(mean, sd = 0) {
         }
         sd <- new("ScaleVec", sd)
         new("SpecKnownUncertain",
-            alphaKnown = mean,
+            alphaKnown = alphaKnown,
             AKnownVec = sd,
             metadata = metadata)
     }

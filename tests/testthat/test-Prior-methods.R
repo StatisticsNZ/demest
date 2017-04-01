@@ -966,6 +966,52 @@ test_that("makeOutputPrior works with DLMWithTrendRobustCovWithSeason", {
     expect_identical(ans.obtained, ans.expected)
 })
 
+test_that("makeOutputPrior works with KnownCertain", {
+    makeOutputPrior <- demest:::makeOutputPrior
+    initialPrior <- demest:::initialPrior
+    beta <- rnorm(4)
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:4])))
+    mean <- ValuesOne(1:6, labels = letters[1:6], name = "region")
+    spec <- Known(mean = mean)
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          multScale = 1)
+    ans.obtained <- makeOutputPrior(prior = prior,
+                                    metadata = metadata,
+                                    pos = 101L)
+    ans.expected <- list(mean = ValuesOne(as.double(1:4), labels = letters[1:4], name = "region"))
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("makeOutputPrior works with KnownUncertain", {
+    makeOutputPrior <- demest:::makeOutputPrior
+    initialPrior <- demest:::initialPrior
+    beta <- rnorm(4)
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:4])))
+    mean <- ValuesOne(1:6, labels = letters[1:6], name = "region")
+    sd <- ValuesOne(1:6, labels = letters[1:6], name = "region")
+    spec <- Known(mean = mean, sd = sd)
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          multScale = 1)
+    ans.obtained <- makeOutputPrior(prior = prior,
+                                    metadata = metadata,
+                                    pos = 101L)
+    ans.expected <- list(mean = ValuesOne(as.double(1:4), labels = letters[1:4], name = "region"),
+                         sd = ValuesOne(as.double(1:4), labels = letters[1:4], name = "region"))
+    expect_identical(ans.obtained, ans.expected)
+})
+
 test_that("makeOutputPrior works with MixNormZero", {
     makeOutputPrior <- demest:::makeOutputPrior
     set.seed(100)
@@ -1018,6 +1064,48 @@ test_that("makeOutputPrior works with MixNormZero", {
 
           
 ## predictPrior ######################################################################
+
+
+## ExchFixed
+
+test_that("predictPrior works with ExchFixed", {
+    predictPrior <- demest:::predictPrior
+    initialPrior <- demest:::initialPrior
+    spec <- ExchFixed()
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL)
+    ans.obtained <- predictPrior(prior)
+    ans.expected <- prior
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("R and C versions of predictPrior give same answer with ExchFixed", {
+    predictPrior <- demest:::predictPrior
+    initialPrior <- demest:::initialPrior
+    spec <- ExchFixed()
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL)
+    ans.R <- predictPrior(prior, useC = FALSE)
+    ans.C.generic <- predictPrior(prior, useC = TRUE, useSpecific = FALSE)
+    ans.C.specific <- predictPrior(prior, useC = TRUE, useSpecific = TRUE)
+    expect_identical(ans.R, ans.C.generic)
+    expect_identical(ans.C.generic, ans.C.specific)
+})
+
 
 ## Exch
 
@@ -2540,6 +2628,86 @@ test_that("R and C versions of predictPrior give same answer with DLMWithTrendRo
     expect_equal(ans.C.generic, ans.C.specific)
 })
 
+test_that("predictPrior works with KnownCertain", {
+    predictPrior <- demest:::predictPrior
+    initialPrior <- demest:::initialPrior
+    mean <- ValuesOne(1:10, labels = letters[1:10], name = "region")
+    spec <- Known(mean)
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL)
+    ans.obtained <- predictPrior(prior)
+    ans.expected <- prior
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("R and C versions of predictPrior give same answer with KnownCertain", {
+    predictPrior <- demest:::predictPrior
+    initialPrior <- demest:::initialPrior
+    mean <- ValuesOne(1:10, labels = letters[1:10], name = "region")
+    spec <- Known(mean)
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL)
+    ans.R <- predictPrior(prior, useC = FALSE)
+    ans.C.generic <- predictPrior(prior, useC = TRUE, useSpecific = FALSE)
+    ans.C.specific <- predictPrior(prior, useC = TRUE, useSpecific = TRUE)
+    expect_identical(ans.R, ans.C.generic)
+    expect_identical(ans.C.generic, ans.C.specific)
+})
+
+test_that("predictPrior works with KnownUncertain", {
+    predictPrior <- demest:::predictPrior
+    initialPrior <- demest:::initialPrior
+    mean <- ValuesOne(1:10, labels = letters[1:10], name = "region")
+    spec <- Known(mean, sd = 1)
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL)
+    ans.obtained <- predictPrior(prior)
+    ans.expected <- prior
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("R and C versions of predictPrior give same answer with KnownUncertain", {
+    predictPrior <- demest:::predictPrior
+    initialPrior <- demest:::initialPrior
+    mean <- ValuesOne(1:10, labels = letters[1:10], name = "region")
+    spec <- Known(mean, sd = 1)
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL)
+    ans.R <- predictPrior(prior, useC = FALSE)
+    ans.C.generic <- predictPrior(prior, useC = TRUE, useSpecific = FALSE)
+    ans.C.specific <- predictPrior(prior, useC = TRUE, useSpecific = TRUE)
+    expect_identical(ans.R, ans.C.generic)
+    expect_identical(ans.C.generic, ans.C.specific)
+})
+
 test_that("predictPrior works with MixNormZero", {
     predictPrior <- demest:::predictPrior
     transferParamPrior <- demest:::transferParamPrior
@@ -2626,6 +2794,45 @@ test_that("R and C versions of predictPrior give same answer MixNormZero", {
         expect_equal(ans.R, ans.C.generic)
     expect_equal(ans.C.generic, ans.C.specific)
 })
+
+test_that("predictPrior works with Zero", {
+    predictPrior <- demest:::predictPrior
+    initialPrior <- demest:::initialPrior
+    spec <- Zero()
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL)
+    ans.obtained <- predictPrior(prior)
+    ans.expected <- prior
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("R and C versions of predictPrior give same answer with Zero", {
+    predictPrior <- demest:::predictPrior
+    initialPrior <- demest:::initialPrior
+    spec <- Zero()
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL)
+    ans.R <- predictPrior(prior, useC = FALSE)
+    ans.C.generic <- predictPrior(prior, useC = TRUE, useSpecific = FALSE)
+    ans.C.specific <- predictPrior(prior, useC = TRUE, useSpecific = TRUE)
+    expect_identical(ans.R, ans.C.generic)
+    expect_identical(ans.C.generic, ans.C.specific)
+})
+
 
 
 ## transferParamPrior ################################################################
