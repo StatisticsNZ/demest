@@ -291,9 +291,7 @@ updateAlphaDeltaDLMWithTrend(SEXP prior_R, double *betaTilde, int J)
     double *lastDC = REAL(VECTOR_ELT(DC_R, K));
     double *last_m = REAL(VECTOR_ELT(m_R, K));
     
-    /* for (int l = 0; l < L; ++l) { */
-    int L2 = (L > 1) ? L - 1 : L;
-    for (int l = 0; l < L2; ++l) { /* JB_CHANGED */
+    for (int l = 0; l < L; ++l) {
 	
         double *m0_l = REAL(VECTOR_ELT(m0_R, l));
         double *m_first = REAL(VECTOR_ELT(m_R, 0));
@@ -1593,10 +1591,7 @@ updateOmegaAlpha(SEXP prior_R, int isWithTrend)
     
     double V = 0;
     
-    /* for (int l = 0; l < L; ++l) { */
-    int L2 = (L > 1) ? L - 1 : L;
-    for (int l = 0; l < L2; ++l) { /* JB_CHANGED */
-        
+    for (int l = 0; l < L; ++l) {
         for (int i = 0; i < K; ++i) {
             int k_curr = indices[i + 1] - 1; /* C style indices */
             int k_prev = indices[i] - 1;
@@ -1687,10 +1682,7 @@ updateOmegaDelta(SEXP prior_R)
 
     double V = 0;
     
-    /* for (int l = 0; l < L; ++l) { */
-    int L2 = (L > 1) ? L - 1 : L;
-    for (int l = 0; l < L2; ++l) { /* JB_CHANGED */
-    
+    for (int l = 0; l < L; ++l) {
         for (int i = 0; i < K; ++i) {
             int k_curr = indices[i + 1] - 1; /* C style indices */
             int k_prev = indices[i] - 1;
@@ -1890,9 +1882,7 @@ updatePhi(SEXP prior_R, int isWithTrend)
         double numerator = 0;
         double denominator = 0;
 
-        /* for (int l = 0; l < L; ++l) { */
-	int L2 = (L > 1) ? L - 1 : L;
-	for (int l = 0; l < L2; ++l) { /* JB_CHANGED */
+        for (int l = 0; l < L; ++l) {
             for (int i = 0; i < K; ++i) {
                 int k_curr = indices[i + 1] - 1; /* C style indices */
                 int k_prev = indices[i] - 1;
