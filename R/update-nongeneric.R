@@ -332,6 +332,8 @@ updateAlphaDeltaDLMWithTrend <- function(prior, betaTilde, useC = FALSE) {
         iterator.ad <- resetA(iterator.ad)
         iterator.v <- resetA(iterator.v)
         for (l in seq_len(L)) {
+            if ((l == 1L) && (L > 1L)) ## NEW
+                next                   ## NEW
             indices.ad <- iterator.ad@indices
             indices.v <- iterator.v@indices
             m[[1L]] <- m0[[l]]
@@ -426,6 +428,8 @@ updateAlphaDLMNoTrend <- function(prior, betaTilde, useC = FALSE) {
         iterator.a <- resetA(iterator.a)
         iterator.v <- resetA(iterator.v)
         for (l in seq_len(L)) {
+            if ((l == 1L) && (L > 1L)) ## NEW
+                next                   ## NEW
             indices.a <- iterator.a@indices
             indices.v <- iterator.v@indices
             m[[1L]] <- m0[[l]]
@@ -1031,6 +1035,8 @@ updateOmegaAlpha <- function(prior, withTrend, useC = FALSE) {
         iterator <- resetA(iterator)
         V <- 0
         for (l in seq_len(L)) {
+            if ((l == 1L) && (L > 1L)) ## NEW
+                next                   ## NEW
             indices <- iterator@indices
             for (i in seq_len(K)) {
                 k.curr <- indices[i + 1]
@@ -1118,6 +1124,8 @@ updateOmegaDelta <- function(prior, useC = FALSE) {
         iterator <- resetA(iterator)
         V <- 0
         for (l in seq_len(L)) {
+            if ((l == 1L) && (L > 1L)) ## NEW
+                next                   ## NEW
             indices <- iterator@indices
             for (i in seq_len(K)) {
                 k.curr <- indices[i + 1]
@@ -1206,6 +1214,8 @@ updateOmegaSeason <- function(prior, useC = FALSE) {
         iterator <- resetA(iterator)
         V <- 0
         for (l in seq_len(L)) {
+            if ((l == 1L) && (L > 1L)) ## NEW
+                next                   ## NEW
             indices <- iterator@indices
             for (i in seq_len(K)) {
                 i.curr <- indices[i + 1L]
@@ -1310,6 +1320,8 @@ updatePhi <- function(prior, withTrend, useC = FALSE) {
         numerator <- 0
         denominator <- 0
         for (l in seq_len(L)) {
+            if ((l == 1L) && (L > 1L)) ## NEW
+                next                   ## NEW
             indices <- iterator@indices
             for (i in seq_len(K)) {
                 k.curr <- indices[i + 1]
@@ -1444,6 +1456,8 @@ updateSeason <- function(prior, betaTilde, useC = FALSE) {
         iterator.s <- resetA(iterator.s)
         iterator.v <- resetA(iterator.v)
         for (l in seq_len(L)) {
+            if ((l == 1L) && (L > 1L)) ## NEW
+                next                   ## NEW
             indices.s <- iterator.s@indices
             indices.v <- iterator.v@indices
             m[[1L]] <- m0[[l]]
