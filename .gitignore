@@ -9,4 +9,6 @@ src-x86_64
 *.DS_Store
 symbols.rds
 *.dll
+*.est
+*.pred
 
