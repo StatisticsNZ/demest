@@ -36,7 +36,7 @@ model <- Model(y ~ Poisson(mean ~ age * sex + sex * year),
                           level = Level(scale = HalfT(scale = 0.2)),
                           trend = Trend(scale = HalfT(scale = 0.2)),
                           error = Error(scale = HalfT(scale = 0.2))),
-               sex:year ~ DLM(),
+               sex:year ~ DLM(trend = NULL, damp = NULL),
                jump = 0.08)
 filename.est <- "baseline2.est"
 estimateModel(model,
@@ -45,7 +45,7 @@ estimateModel(model,
               filename = filename.est,
               nBurnin = 1000,
               nSim = 1000,
-              nThin = 40,
+              nThin = 5,
               nChain = 4)
 s <- fetchSummary(filename.est)
 print(s)
@@ -58,10 +58,7 @@ for (i in 1:4) {
 }
 
 
-
-
-
-filename.pred <- "out/baseline.pred"
+filename.pred <- "baseline.pred"
 predictModel(filenameEst = filename.est,
              filenamePred = filename.pred,
              n = 10)
@@ -77,14 +74,22 @@ dplot(~ year | age,
 
 
 rate <- fetchBoth(filename.est, filename.pred,
-              where = c("model", "likelihood", "rate"))
+                  where = c("model", "likelihood", "rate"))
+
+
+dplot( ~ age | year,
+      data = rate,
+      subarray = sex == "Females" & year %in% c("1968", "1990", "2015", "2025"),
+      midpoints = "age")
+
+
 dplot(log(value) ~ age | year,
       data = rate,
       subarray = sex == "Females" & year %in% c("1968", "1990", "2015", "2025"),
       midpoints = "age")
 
 
-dplot(log(value) ~ year | age,
+dplot(value ~ year | age,
       data = rate,
       subarray = sex == "Females" & age %in% c("0", "20-24", "60-64", "90+"),
       midpoints = "year")
