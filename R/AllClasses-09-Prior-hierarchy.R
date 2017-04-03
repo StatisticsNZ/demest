@@ -26,7 +26,8 @@ setClass("DLM",
                       "OmegaAlphaMaxMixin",
                       "PhiMixin",
                       "PhiKnownMixin",
-                      "PhiMinMaxMixin"))
+                      "PhiMinMaxMixin",
+                      "UpdateSeriesDLM"))
 
 setClass("ICAR",
          contains = c("VIRTUAL",
