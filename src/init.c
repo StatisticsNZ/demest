@@ -1875,6 +1875,7 @@ R_init_demest(DllInfo *info)
   ADD_SYM(nuVectorsMix); 
   ADD_SYM(minLevelComponentWeight);
   ADD_SYM(maxLevelComponentWeight);   
+  ADD_SYM(updateSeriesDLM);
   
 #undef ADD_SYM
 

@@ -295,7 +295,7 @@ updateAlphaMove <- function(prior, betaTilde, useC = FALSE) {
 }
 
 
-## READY_TO_TRANSLATE (AGAIN)
+## TRANSLATED
 ## HAS_TESTS
 updateAlphaDeltaDLMWithTrend <- function(prior, betaTilde, useC = FALSE) {
     ## prior
@@ -397,7 +397,7 @@ updateAlphaDeltaDLMWithTrend <- function(prior, betaTilde, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE (AGAIN)
+## TRANSLATED
 ## HAS_TESTS
 updateAlphaDLMNoTrend <- function(prior, betaTilde, useC = FALSE) {
     ## prior
@@ -1004,7 +1004,7 @@ updateMeanLevelComponentWeightMix <- function(prior, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE (AGAIN)
+## READY_TO_TRANSLATE (AGAIN) - JAH updated in C but cannot test (test failing) 4/4/2017
 ## HAS_TESTS
 updateOmegaAlpha <- function(prior, withTrend, useC = FALSE) {
     ## 'prior'
@@ -1105,7 +1105,7 @@ updateOmegaComponentWeightMix <- function(prior, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE (AGAIN)
+## READY_TO_TRANSLATE (AGAIN) - JAH updated in C but cannot test (test failing) 4/4/2017
 ## HAS_TESTS
 updateOmegaDelta <- function(prior, useC = FALSE) {
     stopifnot(methods::is(prior, "WithTrendMixin"))
@@ -1196,7 +1196,7 @@ updateOmegaLevelComponentWeightMix <- function(prior, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE (AGAIN)
+## READY_TO_TRANSLATE (AGAIN) - JAH updated in C but cannot test (test failing) 4/4/2017
 ## HAS_TESTS
 updateOmegaSeason <- function(prior, useC = FALSE) {
     stopifnot(methods::is(prior, "SeasonMixin"))
@@ -1287,7 +1287,7 @@ updateOmegaVectorsMix <- function(prior, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE (AGAIN)
+## READY_TO_TRANSLATE (AGAIN) - JAH updated in C but cannot test (test failing) 4/4/2017
 ## HAS_TESTS
 updatePhi <- function(prior, withTrend, useC = FALSE) {
     ## 'prior'
@@ -1432,7 +1432,7 @@ updatePhiMix <- function(prior, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE (AGAIN)
+## TRANSLATED
 ## HAS_TESTS
 updateSeason <- function(prior, betaTilde, useC = FALSE) {
     ## prior
