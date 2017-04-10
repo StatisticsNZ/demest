@@ -1692,19 +1692,7 @@ updateOmegaAlpha(SEXP prior_R, int isWithTrend)
     double V = 0;
     
     for (int l = 0; l < L; ++l) {
-<<<<<<< HEAD
-        for (int i = 0; i < K; ++i) {
-            int k_curr = indices[i + 1] - 1; /* C style indices */
-            int k_prev = indices[i] - 1;
-            
-            double alpha_k_curr = alpha[k_curr];
-            double alpha_k_prev = alpha[k_prev];
-            
-            double toSq = 0;
-=======
-
         if (updateSeries[l]) {
-
             for (int i = 0; i < K; ++i) {
                 int k_curr = indices[i + 1] - 1; /* C style indices */
                 int k_prev = indices[i] - 1;
@@ -1721,8 +1709,6 @@ updateOmegaAlpha(SEXP prior_R, int isWithTrend)
                     toSq = alpha_k_curr - phi * alpha_k_prev;
                 }
                    V += toSq*toSq;
->>>>>>> newdlm
-            
             }
         } /* end if (updateSeries[l]) */
         
@@ -1801,15 +1787,6 @@ updateOmegaDelta(SEXP prior_R)
     double V = 0;
     
     for (int l = 0; l < L; ++l) {
-<<<<<<< HEAD
-        for (int i = 0; i < K; ++i) {
-            int k_curr = indices[i + 1] - 1; /* C style indices */
-            int k_prev = indices[i] - 1;
-            
-            double toSq = delta[k_curr] - phi * delta[k_prev];
-            V += toSq*toSq;
-        }
-=======
         
         if (updateSeries[l]) {
 
@@ -1822,7 +1799,6 @@ updateOmegaDelta(SEXP prior_R)
             }
         } /* end if (updateSeries[l]) */
         
->>>>>>> newdlm
         advanceA(iterator_R); 
     }
     
@@ -2025,16 +2001,6 @@ updatePhi(SEXP prior_R, int isWithTrend)
         double denominator = 0;
 
         for (int l = 0; l < L; ++l) {
-<<<<<<< HEAD
-            for (int i = 0; i < K; ++i) {
-                int k_curr = indices[i + 1] - 1; /* C style indices */
-                int k_prev = indices[i] - 1;
-                
-                double state_k_prev = state[k_prev];
-                numerator += state[k_curr] * state_k_prev;
-                denominator += state_k_prev * state_k_prev;
-            }
-=======
             
             if (updateSeries[l]) {
 
@@ -2049,7 +2015,6 @@ updatePhi(SEXP prior_R, int isWithTrend)
             
             } /* end if (updateSeries[l]) */
             
->>>>>>> newdlm
             advanceA(iterator_R); 
         }
         
