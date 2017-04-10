@@ -10,7 +10,6 @@ deaths <- Counts(deaths,
 popn <- demdata::sweden.popn
 popn <- Counts(popn,
                dimscales = c(year = "Intervals"))
-
 deaths <- collapseIntervals(deaths,
                             dimension = "age",
                             breaks = c(0, 1, seq(5, 90, 5)))
@@ -28,7 +27,7 @@ age.levels <- c("0",
 is.infant <- c(1, rep(0, length(age.levels) - 1))
 is.infant.df <- data.frame(age = age.levels,
                            is.infant)
-model <- Model(y ~ Poisson(mean ~ age * sex + sex * year),
+model <- Model(y ~ Poisson(mean ~ age * sex + year),
                age ~ DLM(covariates = Covariates(mean ~ is.infant,
                                                  data = is.infant.df),
                          damp = NULL),
@@ -36,7 +35,6 @@ model <- Model(y ~ Poisson(mean ~ age * sex + sex * year),
                           level = Level(scale = HalfT(scale = 0.2)),
                           trend = Trend(scale = HalfT(scale = 0.2)),
                           error = Error(scale = HalfT(scale = 0.2))),
-               sex:year ~ DLM(),
                jump = 0.08)
 filename.est <- "baseline2.est"
 estimateModel(model,
@@ -45,7 +43,7 @@ estimateModel(model,
               filename = filename.est,
               nBurnin = 1000,
               nSim = 1000,
-              nThin = 40,
+              nThin = 10,
               nChain = 4)
 s <- fetchSummary(filename.est)
 print(s)
@@ -58,10 +56,7 @@ for (i in 1:4) {
 }
 
 
-
-
-
-filename.pred <- "out/baseline.pred"
+filename.pred <- "baseline.pred"
 predictModel(filenameEst = filename.est,
              filenamePred = filename.pred,
              n = 10)
