@@ -72,14 +72,22 @@ dplot(~ year | age,
 
 
 rate <- fetchBoth(filename.est, filename.pred,
-              where = c("model", "likelihood", "rate"))
+                  where = c("model", "likelihood", "rate"))
+
+
+dplot( ~ age | year,
+      data = rate,
+      subarray = sex == "Females" & year %in% c("1968", "1990", "2015", "2025"),
+      midpoints = "age")
+
+
 dplot(log(value) ~ age | year,
       data = rate,
       subarray = sex == "Females" & year %in% c("1968", "1990", "2015", "2025"),
       midpoints = "age")
 
 
-dplot(log(value) ~ year | age,
+dplot(value ~ year | age,
       data = rate,
       subarray = sex == "Females" & age %in% c("0", "20-24", "60-64", "90+"),
       midpoints = "year")

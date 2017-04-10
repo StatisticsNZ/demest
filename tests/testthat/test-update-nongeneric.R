@@ -457,8 +457,8 @@ if (test.extended) {
                             new("Points", dimvalues = 1:10)))
         alpha.obtained <- array(dim = c(4, 11, 1000))
         delta.obtained <- array(dim = c(4, 11, 1000))
-        alpha.expected <- array(dim = c(4, 11, 1000))
-        delta.expected <- array(dim = c(4, 11, 1000))
+        alpha.expected <- array(0, dim = c(4, 11, 1000))
+        delta.expected <- array(0, dim = c(4, 11, 1000))
         set.seed(1)
         for (sim in 1:1000) {
             beta <- rnorm(n = 40, mean = rep(1:10, each = 4))
@@ -467,11 +467,11 @@ if (test.extended) {
             set.seed(1 + sim)
             ans.obtained <- updateAlphaDeltaDLMWithTrend(prior = prior,
                                                          betaTilde = betaTilde,
-                                                         useC = TRUE)
+                                                         useC = FALSE)
             alpha.obtained[ , , sim] <- ans.obtained@alphaDLM@.Data
             delta.obtained[ , , sim] <- ans.obtained@deltaDLM@.Data
             set.seed(sim + 1)
-            for (i in 1:4) {
+            for (i in 2:4) {
                 ans <- ffbs(beta = matrix(betaTilde, nr = 4)[i,],
                             alphaDelta = replicate(n = 11, c(0, 0), simplify = FALSE),
                             m = prior@mWithTrend@.Data,
@@ -628,9 +628,9 @@ test_that("updateAlphaDLMNoTrend gives valid answer", {
         ans.obtained <- updateAlphaDLMNoTrend(prior = prior,
                                               betaTilde = beta)
         ans.expected <- prior
-        alpha <- matrix(nr = 4, ncol = 11)
+        alpha <- matrix(0, nr = 4, ncol = 11)
         set.seed(seed)
-        for (i in 1:4) {
+        for (i in 2:4) {
             ans <- ffbs(beta = matrix(beta, nr = 4)[i,],
                         alpha = matrix(prior@alphaDLM, nr = 4)[i,],
                         m = prior@mNoTrend@.Data,
@@ -695,10 +695,10 @@ test_that("updateAlphaDLMNoTrend gives valid answer", {
         ans.obtained <- updateAlphaDLMNoTrend(prior = prior,
                                               beta = beta)
         ans.expected <- prior
-        alpha <- array(dim = c(6, 7, 10))
+        alpha <- array(0, dim = c(6, 7, 10))
         set.seed(seed)
-        for (j in 1:10) {
-            for (i in 1:6) {
+        for (j in 2:10) {
+            for (i in 2:6) {
                 ans <- ffbs(beta = array(beta, dim = c(6, 6, 10))[i, , j],
                             alpha = array(prior@alphaDLM@.Data, dim = c(6, 7, 10))[i, , j],
                             m = prior@mNoTrend@.Data,
@@ -1651,6 +1651,8 @@ test_that("R and C versions of updateMeanLevelComponentWeightMix give same answe
 
 test_that("updateOmegaAlpha works", {
     updateOmegaAlpha <- demest:::updateOmegaAlpha
+    updateAlphaDLMNoTrend <- demest:::updateAlphaDLMNoTrend
+    updateAlphaDeltaDLMWithTrend <- demest:::updateAlphaDeltaDLMWithTrend
     initialPrior <- demest:::initialPrior
     updateSDNorm <- demest:::updateSDNorm
     for (seed in seq_len(n.test)) {
@@ -1667,6 +1669,8 @@ test_that("updateOmegaAlpha works", {
                               sY = NULL,
                               multScale = 1)
         expect_is(prior, "DLMWithTrendNormZeroNoSeason")
+        prior <- updateAlphaDeltaDLMWithTrend(prior = prior,
+                                              betaTilde = beta)
         set.seed(seed)
         ans.obtained <- updateOmegaAlpha(prior, withTrend = TRUE)
         set.seed(seed)
@@ -1696,6 +1700,8 @@ test_that("updateOmegaAlpha works", {
                               metadata = metadata,
                               sY = NULL, multScale = 1)
         expect_is(prior, "DLMNoTrendNormZeroNoSeason")
+        prior <- updateAlphaDLMNoTrend(prior = prior,
+                                       betaTilde = beta)
         set.seed(seed)
         ans.obtained <- updateOmegaAlpha(prior, withTrend = FALSE)
         set.seed(seed)
@@ -1718,6 +1724,8 @@ test_that("updateOmegaAlpha works", {
 
 test_that("R and C versions of updateOmegaAlpha give same answer", {
     updateOmegaAlpha <- demest:::updateOmegaAlpha
+    updateAlphaDLMNoTrend <- demest:::updateAlphaDLMNoTrend
+    updateAlphaDeltaDLMWithTrend <- demest:::updateAlphaDeltaDLMWithTrend
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         ## withTrend = TRUE
@@ -1732,6 +1740,8 @@ test_that("R and C versions of updateOmegaAlpha give same answer", {
                               metadata = metadata,
                               sY = NULL, multScale = 1)
         expect_is(prior, "DLMWithTrendNormZeroNoSeason")
+        prior <- updateAlphaDeltaDLMWithTrend(prior = prior,
+                                              betaTilde = beta)
         set.seed(seed)
         ans.R <- updateOmegaAlpha(prior, withTrend = TRUE, useC = FALSE)
         set.seed(seed)
@@ -1751,6 +1761,8 @@ test_that("R and C versions of updateOmegaAlpha give same answer", {
                               beta = beta,
                               metadata = metadata,
                               sY = NULL, multScale = 1)
+        prior <- updateAlphaDLMNoTrend(prior = prior,
+                                       betaTilde = beta)
         expect_is(prior, "DLMNoTrendNormZeroNoSeason")
         set.seed(seed)
         ans.R <- updateOmegaAlpha(prior, withTrend = FALSE, useC = FALSE)
@@ -1846,6 +1858,7 @@ test_that("R and C versions of updateOmegaComponentWeightMix give same answer", 
 
 test_that("updateOmegaDelta works", {
     updateOmegaDelta <- demest:::updateOmegaDelta
+    updateAlphaDeltaDLMWithTrend <- demest:::updateAlphaDeltaDLMWithTrend
     initialPrior <- demest:::initialPrior
     updateSDNorm <- demest:::updateSDNorm
     for (seed in seq_len(n.test)) {
@@ -1861,6 +1874,8 @@ test_that("updateOmegaDelta works", {
                               sY = NULL,
                               multScale = 1)
         expect_is(prior, "DLMWithTrendNormZeroNoSeason")
+        prior <- updateAlphaDeltaDLMWithTrend(prior = prior,
+                                              betaTilde = beta)
         set.seed(seed)
         ans.obtained <- updateOmegaDelta(prior)
         set.seed(seed)
@@ -1883,6 +1898,7 @@ test_that("updateOmegaDelta works", {
 
 test_that("R and C versions of updateOmegaDelta give same answer", {
     updateOmegaDelta <- demest:::updateOmegaDelta
+    updateAlphaDeltaDLMWithTrend <- demest:::updateAlphaDeltaDLMWithTrend
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         spec <- DLM()
@@ -1897,6 +1913,8 @@ test_that("R and C versions of updateOmegaDelta give same answer", {
                               sY = NULL,
                               multScale = 1)
         expect_is(prior, "DLMWithTrendNormZeroNoSeason")
+        prior <- updateAlphaDeltaDLMWithTrend(prior = prior,
+                                              betaTilde = beta)
         set.seed(seed)
         ans.R <- updateOmegaDelta(prior, useC = FALSE)
         set.seed(seed)
@@ -1992,6 +2010,8 @@ test_that("R and C versions of updateOmegaLevelComponentWeightMix give same answ
 
 test_that("updateOmegaSeason works", {
     updateOmegaSeason <- demest:::updateOmegaSeason
+    updateAlphaDeltaDLMWithTrend <- demest:::updateAlphaDeltaDLMWithTrend
+    updateSeason <- demest:::updateSeason
     initialPrior <- demest:::initialPrior
     updateSDNorm <- demest:::updateSDNorm
     for (seed in seq_len(n.test)) {
@@ -2007,6 +2027,10 @@ test_that("updateOmegaSeason works", {
                               sY = NULL,
                               multScale = 1)
         expect_is(prior, "DLMWithTrendNormZeroWithSeason")
+        prior <- updateAlphaDeltaDLMWithTrend(prior = prior,
+                                              betaTilde = beta)
+        prior <- updateSeason(prior = prior,
+                              betaTilde = beta)
         set.seed(seed)
         ans.obtained <- updateOmegaSeason(prior)
         set.seed(seed)
@@ -2031,6 +2055,8 @@ test_that("updateOmegaSeason works", {
 
 test_that("R and C versions of updateOmegaSeason give same answer", {
     updateOmegaSeason <- demest:::updateOmegaSeason
+    updateAlphaDeltaDLMWithTrend <- demest:::updateAlphaDeltaDLMWithTrend
+    updateSeason <- demest:::updateSeason
     initialPrior <- demest:::initialPrior
     updateSDNorm <- demest:::updateSDNorm
     for (seed in seq_len(n.test)) {
@@ -2045,6 +2071,10 @@ test_that("R and C versions of updateOmegaSeason give same answer", {
                               metadata = metadata,
                               sY = NULL, multScale = 1)
         expect_is(prior, "DLMWithTrendNormZeroWithSeason")
+        prior <- updateAlphaDeltaDLMWithTrend(prior = prior,
+                                              betaTilde = beta)
+        prior <- updateSeason(prior = prior,
+                              betaTilde = beta)
         set.seed(seed)
         ans.R <- updateOmegaSeason(prior, useC = FALSE)
         set.seed(seed)
@@ -2134,6 +2164,8 @@ test_that("R and C versions of updateOmegaVectorsMix give same answer", {
 test_that("updatePhi works", {
     updatePhi <- demest:::updatePhi
     initialPrior <- demest:::initialPrior
+    updateAlphaDeltaDLMWithTrend <- demest:::updateAlphaDeltaDLMWithTrend
+    updateAlphaDLMNoTrend <- demest:::updateAlphaDLMNoTrend
     for (seed in seq_len(n.test)) {
         ## withTrend = TRUE
         spec <- DLM()
@@ -2147,6 +2179,7 @@ test_that("updatePhi works", {
                               metadata = metadata,
                               sY = NULL, multScale = 1)
         expect_is(prior, "DLMWithTrendNormZeroNoSeason")
+        prior <- updateAlphaDeltaDLMWithTrend(prior, betaTilde = beta, useC = TRUE)
         set.seed(seed)
         ans.obtained <- updatePhi(prior, withTrend = TRUE)
         set.seed(seed)
@@ -2168,6 +2201,7 @@ test_that("updatePhi works", {
             expect_equal(ans.obtained, ans.expected)
         ## withTrend = FALSE, phi = 1
         spec <- DLM(trend = NULL, damp = NULL)
+        beta <- rnorm(10)
         metadata <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -2175,8 +2209,10 @@ test_that("updatePhi works", {
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, multScale = 1)
+                              sY = NULL,
+                              multScale = 1)
         expect_is(prior, "DLMNoTrendNormZeroNoSeason")
+        prior <- updateAlphaDLMNoTrend(prior, betaTilde = beta, useC = TRUE)
         set.seed(seed)
         ans.obtained <- updatePhi(prior, withTrend = FALSE)
         set.seed(seed)
@@ -2195,6 +2231,7 @@ test_that("updatePhi works", {
                               sY = NULL,
                               multScale = 1)
         expect_is(prior, "DLMNoTrendNormZeroNoSeason")
+        prior <- updateAlphaDLMNoTrend(prior, betaTilde = beta, useC = TRUE)
         set.seed(seed)
         ans.obtained <- updatePhi(prior, withTrend = FALSE)
         set.seed(seed)
@@ -2220,6 +2257,8 @@ test_that("updatePhi works", {
 test_that("R and C versions of updatePhi give same answer", {
     updatePhi <- demest:::updatePhi
     initialPrior <- demest:::initialPrior
+    updateAlphaDeltaDLMWithTrend <- demest:::updateAlphaDeltaDLMWithTrend
+    updateAlphaDLMNoTrend <- demest:::updateAlphaDLMNoTrend
     for (seed in seq_len(n.test)) {
         ## withTrend = TRUE
         spec <- DLM()
@@ -2233,6 +2272,8 @@ test_that("R and C versions of updatePhi give same answer", {
                               metadata = metadata,
                               sY = NULL, multScale = 1)
         expect_is(prior, "DLMWithTrendNormZeroNoSeason")
+        prior <- updateAlphaDeltaDLMWithTrend(prior = prior,
+                                              betaTilde = beta)
         set.seed(seed)
         ans.R <- updatePhi(prior, withTrend = TRUE, useC = FALSE)
         set.seed(seed)
@@ -2243,6 +2284,7 @@ test_that("R and C versions of updatePhi give same answer", {
             expect_equal(ans.R, ans.C)        
         ## withTrend = FALSE, phi = 1
         spec <- DLM(trend = NULL, damp = NULL)
+        beta <- rnorm(10)
         metadata <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -2252,6 +2294,8 @@ test_that("R and C versions of updatePhi give same answer", {
                               metadata = metadata,
                               sY = NULL, multScale = 1)
         expect_is(prior, "DLMNoTrendNormZeroNoSeason")
+        prior <- updateAlphaDLMNoTrend(prior = prior,
+                                       betaTilde = beta)
         set.seed(seed)
         ans.R <- updatePhi(prior, withTrend = FALSE, useC = FALSE)
         set.seed(seed)
@@ -2272,6 +2316,8 @@ test_that("R and C versions of updatePhi give same answer", {
                               metadata = metadata,
                               sY = NULL, multScale = 1)
         expect_is(prior, "DLMNoTrendNormZeroNoSeason")
+        prior <- updateAlphaDLMNoTrend(prior = prior,
+                                       betaTilde = beta)
         set.seed(seed)
         ans.R <- updatePhi(prior, withTrend = FALSE, useC = FALSE)
         set.seed(seed)
@@ -2392,9 +2438,9 @@ test_that("updateSeason gives valid answer", {
         ans.obtained <- updateSeason(prior = prior,
                                      betaTilde = beta)
         ans.expected <- prior
-        season <- matrix(vector(mode = "list", length = 44), nr = 4, nc = 11)
+        season <- matrix(replicate(n = 44, c(0,0,0,0), simplify = FALSE), nr = 4, nc = 11)
         set.seed(seed)
-        for (i in 1:4) {
+        for (i in 2:4) {
             ans <- ffbs(beta = matrix(beta, nr = 4)[i,],
                         s = matrix(prior@s, nr = 4)[i,],
                         m = prior@mSeason@.Data,
@@ -2458,10 +2504,10 @@ test_that("updateSeason gives valid answer", {
         ans.obtained <- updateSeason(prior = prior,
                                      beta = beta)
         ans.expected <- prior
-        season <- array(vector(mode = "list", length = 420), dim = c(6, 7, 10))
+        season <- array(replicate(n = 420, c(0,0,0), simplify = FALSE), dim = c(6, 7, 10))
         set.seed(seed)
-        for (j in 1:10) {
-            for (i in 1:6) {
+        for (j in 2:10) {
+            for (i in 2:6) {
                 ans <- ffbs(beta = array(beta, dim = c(6, 6, 10))[i, , j],
                             s = array(prior@s@.Data, dim = c(6, 7, 10))[i, , j],
                             m = prior@mSeason@.Data,

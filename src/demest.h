@@ -289,7 +289,8 @@ SEXP
   AVectorsMix_sym,
   nuVectorsMix_sym,
   minLevelComponentWeight_sym,
-  maxLevelComponentWeight_sym;  
+  maxLevelComponentWeight_sym,
+  updateSeriesDLM_sym;  
   
 /* Priors-methods */
 
