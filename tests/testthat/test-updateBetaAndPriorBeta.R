@@ -500,7 +500,8 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendNormZeroNoSeason", {
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         set.seed(seed)
-        spec <- DLM(trend = NULL)
+        spec <- DLM(trend = NULL,
+                    damp = Damp(min = 0.1, max = 0.8))
         beta0 <- rnorm(10)
         metadata <- new("MetaData",
                         nms = "time",
@@ -587,7 +588,7 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendNormZeroNoSeason", {
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         set.seed(seed)
-        spec <- DLM()
+        spec <- DLM(damp = Damp(min = 0, max = 1))
         beta0 <- rnorm(10)
         metadata <- new("MetaData",
                         nms = "time",
@@ -895,6 +896,7 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithT
 test_that("updateBetaAndPriorBeta works with DLMNoTrendNormCovNoSeason", {
     updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
     initialPrior <- demest:::initialPrior
+    updated.phi <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         data <- data.frame(time = rep(1:10, times = 2),
@@ -907,6 +909,7 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendNormCovNoSeason", {
                                  data = data,
                                  contrastsArg = contrastsArg)
         spec <- DLM(trend = NULL,
+                    damp = Damp(min = 0),
                     covariates = covariates)
         beta0 <- rnorm(10)
         metadata <- new("MetaData",
@@ -929,6 +932,8 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendNormCovNoSeason", {
         beta1 <- l[[1]]
         prior1 <- l[[2]]
         expect_is(prior1, "DLMNoTrendNormCovNoSeason")
+        if (!updated.phi && prior1@phi != prior0@phi)
+            updated.phi <- TRUE
         ## beta
         expect_true(all(beta1 != beta0))
         ## basic
@@ -943,7 +948,6 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendNormCovNoSeason", {
         expect_identical(prior1@L, prior0@L)
         expect_identical(prior1@nuAlpha, prior0@nuAlpha)
         expect_true(prior1@omegaAlpha != prior0@omegaAlpha)
-        expect_true(prior1@phi != prior0@phi)
         expect_identical(prior1@phiKnown, prior0@phiKnown)
         expect_identical(prior1@minPhi, prior0@minPhi)
         expect_identical(prior1@maxPhi, prior0@maxPhi)
@@ -954,6 +958,7 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendNormCovNoSeason", {
         expect_true(all(prior1@UEtaCoef != prior0@UEtaCoef))
         expect_identical(prior1@Z, prior0@Z)
     }
+    expect_true(updated.phi)
 })
 
 test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMNoTrendNormCovNoSeason", {
@@ -1157,6 +1162,7 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMW
 test_that("updateBetaAndPriorBeta works with DLMNoTrendNormCovWithSeason", {
     updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
     initialPrior <- demest:::initialPrior
+    updated.phi <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         data <- data.frame(time = rep(1:10, times = 2),
@@ -1192,6 +1198,8 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendNormCovWithSeason", {
         beta1 <- l[[1]]
         prior1 <- l[[2]]
         expect_is(prior1, "DLMNoTrendNormCovWithSeason")
+        if (!updated.phi && prior1@phi != prior0@phi)
+            updated.phi <- TRUE
         ## beta
         expect_true(all(beta1 != beta0))
         ## basic
@@ -1206,7 +1214,6 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendNormCovWithSeason", {
         expect_identical(prior1@L, prior0@L)
         expect_identical(prior1@nuAlpha, prior0@nuAlpha)
         expect_true(prior1@omegaAlpha != prior0@omegaAlpha)
-        expect_true(prior1@phi != prior0@phi)
         expect_identical(prior1@phiKnown, prior0@phiKnown)
         expect_identical(prior1@minPhi, prior0@minPhi)
         expect_identical(prior1@maxPhi, prior0@maxPhi)
@@ -1222,6 +1229,7 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendNormCovWithSeason", {
         expect_identical(prior1@nSeason, prior0@nSeason)
         expect_identical(prior1@nuSeason, prior0@nuSeason)
     }
+    expect_true(updated.phi)
 })
 
 test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMNoTrendNormCovWithSeason", {
@@ -1424,6 +1432,7 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMW
 test_that("updateBetaAndPriorBeta works with DLMNoTrendRobustZeroNoSeason", {
     updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
     initialPrior <- demest:::initialPrior
+    updated.phi <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         error <- Error(robust = TRUE)
@@ -1449,6 +1458,8 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendRobustZeroNoSeason", {
         beta1 <- l[[1]]
         prior1 <- l[[2]]
         expect_is(prior1, "DLMNoTrendRobustZeroNoSeason")
+        if (!updated.phi && prior1@phi != prior0@phi)
+            updated.phi <- TRUE
         ## beta
         expect_true(all(beta1 != beta0))
         ## basic
@@ -1463,7 +1474,6 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendRobustZeroNoSeason", {
         expect_identical(prior1@L, prior0@L)
         expect_identical(prior1@nuAlpha, prior0@nuAlpha)
         expect_false(prior0@phiKnown@.Data)
-        expect_true(prior1@phi != prior0@phi)
         expect_identical(prior1@phiKnown, prior0@phiKnown)
         expect_identical(prior1@minPhi, prior0@minPhi)
         expect_identical(prior1@maxPhi, prior0@maxPhi)
@@ -1471,6 +1481,7 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendRobustZeroNoSeason", {
         expect_identical(prior1@nuBeta, prior0@nuBeta)
         expect_true(all(prior1@UBeta != prior0@UBeta))
     }
+    expect_true(updated.phi)
 })
 
 test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTrendRobustZeroNoSeason", {
@@ -1515,6 +1526,7 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTre
 test_that("updateBetaAndPriorBeta works with DLMWithTrendRobustZeroNoSeason", {
     updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
     initialPrior <- demest:::initialPrior
+    updated.phi <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         error <- Error(robust = TRUE)
@@ -1540,6 +1552,8 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendRobustZeroNoSeason", {
         beta1 <- l[[1]]
         prior1 <- l[[2]]
         expect_is(prior1, "DLMWithTrendRobustZeroNoSeason")
+        if (!updated.phi && prior1@phi != prior0@phi)
+            updated.phi <- TRUE
         ## beta
         expect_true(all(beta1 != beta0))
         ## basic
@@ -1553,14 +1567,12 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendRobustZeroNoSeason", {
         expect_identical(prior1@K, prior0@K)
         expect_identical(prior1@L, prior0@L)
         expect_identical(prior1@nuAlpha, prior0@nuAlpha)
-        expect_true(prior1@phi != prior0@phi)
         expect_identical(prior1@phiKnown, prior0@phiKnown)
         expect_identical(prior1@minPhi, prior0@minPhi)
         expect_identical(prior1@maxPhi, prior0@maxPhi)
         ## Trend
         expect_identical(prior1@ADelta, prior0@ADelta)
         expect_true(all(prior1@deltaDLM != prior0@deltaDLM))
-        expect_false(identical(prior1@GWithTrend, prior0@GWithTrend))
         expect_identical(prior1@nuDelta, prior0@nuDelta)
         expect_true(prior1@omegaDelta != prior0@omegaDelta)
         expect_false(identical(prior1@WSqrt, prior0@WSqrt))
@@ -1569,6 +1581,7 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendRobustZeroNoSeason", {
         expect_identical(prior1@nuBeta, prior0@nuBeta)
         expect_true(all(prior1@UBeta != prior0@UBeta))
     }
+    expect_true(updated.phi)
 })
 
 test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithTrendRobustZeroNoSeason", {
@@ -2057,6 +2070,7 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithT
 test_that("updateBetaAndPriorBeta works with DLMNoTrendRobustCovWithSeason", {
     updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
     initialPrior <- demest:::initialPrior
+    updated.phi <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         data <- data.frame(time = rep(1:10, times = 2),
@@ -2092,6 +2106,8 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendRobustCovWithSeason", {
         beta1 <- l[[1]]
         prior1 <- l[[2]]
         expect_is(prior1, "DLMNoTrendRobustCovWithSeason")
+        if (!updated.phi && prior1@phi != prior0@phi)
+            updated.phi <- TRUE
         ## beta
         expect_true(all(beta1 != beta0))
         ## basic
@@ -2106,7 +2122,6 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendRobustCovWithSeason", {
         expect_identical(prior1@L, prior0@L)
         expect_identical(prior1@nuAlpha, prior0@nuAlpha)
         expect_false(prior0@phiKnown@.Data)
-        expect_true(prior1@phi != prior0@phi)
         expect_identical(prior1@phiKnown, prior0@phiKnown)
         expect_identical(prior1@minPhi, prior0@minPhi)
         expect_identical(prior1@maxPhi, prior0@maxPhi)
@@ -2125,6 +2140,7 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendRobustCovWithSeason", {
         expect_true(all(prior1@UEtaCoef != prior0@UEtaCoef))
         expect_identical(prior1@Z, prior0@Z)
     }
+    expect_true(updated.phi)
 })
 
 test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTrendRobustCovWithSeason", {
@@ -2179,6 +2195,7 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTre
 test_that("updateBetaAndPriorBeta works with DLMWithTrendRobustCovWithSeason", {
     updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
     initialPrior <- demest:::initialPrior
+    updated.phi <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         damp <- Damp(min = 0.4, max = 0.999)
@@ -2215,6 +2232,8 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendRobustCovWithSeason", {
         beta1 <- l[[1]]
         prior1 <- l[[2]]
         expect_is(prior1, "DLMWithTrendRobustCovWithSeason")
+        if (!updated.phi && prior1@phi != prior0@phi)
+            updated.phi <- TRUE
         ## beta
         expect_true(all(beta1 != beta0))
         ## basic
@@ -2229,14 +2248,12 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendRobustCovWithSeason", {
         expect_identical(prior1@L, prior0@L)
         expect_identical(prior1@nuAlpha, prior0@nuAlpha)
         expect_false(prior0@phiKnown@.Data)
-        expect_true(prior1@phi != prior0@phi)
         expect_identical(prior1@phiKnown, prior0@phiKnown)
         expect_identical(prior1@minPhi, prior0@minPhi)
         expect_identical(prior1@maxPhi, prior0@maxPhi)
         # trend
         expect_identical(prior1@ADelta, prior0@ADelta)
         expect_true(all(prior1@deltaDLM != prior0@deltaDLM))
-        expect_false(identical(prior1@GWithTrend, prior0@GWithTrend))
         expect_identical(prior1@nuDelta, prior0@nuDelta)
         expect_true(prior1@omegaDelta != prior0@omegaDelta)
         expect_false(identical(prior1@WSqrt, prior0@WSqrt))
@@ -2256,6 +2273,7 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendRobustCovWithSeason", {
         expect_true(all(prior1@UEtaCoef != prior0@UEtaCoef))
         expect_identical(prior1@Z, prior0@Z)
     }
+    expect_true(updated.phi)
 })
 
 test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithTrendRobustCovWithSeason", {

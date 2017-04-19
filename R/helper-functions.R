@@ -408,6 +408,28 @@ checkModelMatrix <- function(formula, data, contrastsArg) {
 }
 
 ## NO_TESTS
+checkNonNegativeNumeric <- function(x, name) {
+    ## 'x' has length 1
+    if (!identical(length(x), 1L))
+        stop(gettextf("'%s' does not have length %d",
+                      name, 1L))
+    ## 'x' is not missing
+    if (is.na(x))
+        stop(gettextf("'%s' is missing",
+                      name))
+    ## 'x' is numeric
+    if (!is.numeric(x))
+        stop(gettextf("'%s' is not numeric",
+                      name))
+    ## 'x' is non-negative
+    if (x < 0)
+        stop(gettextf("'%s' is negative",
+                      name))
+    NULL
+}
+
+
+## NO_TESTS
 checkPositiveInteger <- function(x, name) {
     ## 'x' has length 1
     if (!identical(length(x), 1L))
@@ -573,7 +595,7 @@ checkAndTidyPhi <- function(phi) {
 
 ## NO_TESTS
 checkAndTidyPhiMinMax <- function(min, max) {
-    checkPositiveNumeric(x = min, name = "min")
+    checkNonNegativeNumeric(x = min, name = "min")
     checkPositiveNumeric(x = max, name = "max")
     if (max > 1)
         stop(gettextf("'%s' is greater than %d",
@@ -697,6 +719,8 @@ initialDLMAll <- function(object, beta, metadata, sY, ...) {
     phiKnown <- object@phiKnown
     minPhi <- object@minPhi
     maxPhi <- object@maxPhi
+    shape1Phi <- object@shape1Phi
+    shape2Phi <- object@shape2Phi
     tauMax <- object@tauMax
     dim <- dim(metadata)
     J <- makeJ(beta)
@@ -758,6 +782,8 @@ initialDLMAll <- function(object, beta, metadata, sY, ...) {
          omegaAlphaMax = omegaAlphaMax,
          phi = phi,
          phiKnown = phiKnown,
+         shape1Phi = shape1Phi,
+         shape2Phi = shape2Phi,
          tau = tau,
          tauMax = tauMax,
          updateSeriesDLM = updateSeriesDLM)
@@ -1964,8 +1990,11 @@ makeStateDLM <- function(K, L) {
 makePhi <- function(phi, phiKnown, minPhi, maxPhi) {
     if (phiKnown)
         phi
-    else
-        stats::runif(n = 1L, min = minPhi, max = maxPhi)
+    else {
+        min <- max(minPhi, 0.8)
+        max <- min(maxPhi, 0.98)
+        stats::runif(n = 1L, min = min, max = max)
+    }
 }
 
 ## NO_TESTS
@@ -7096,6 +7125,8 @@ printLevelTrendEqns <- function(object, isMain, hasTrend) {
     phi.known <- object@phiKnown
     min.phi <- object@minPhi
     max.phi <- object@maxPhi
+    shape1 <- object@shape1Phi@.Data
+    shape2 <- object@shape2Phi@.Data
     is.spec <- methods::is(object, "SpecPrior")
     if (hasTrend) {
         ADelta0 <- object@ADelta0@.Data
@@ -7163,15 +7194,25 @@ printLevelTrendEqns <- function(object, isMain, hasTrend) {
     }
     if (show.damp) {
         if (phi.known)
-            cat("            damp =",
+            cat("damp =",
                 format(phi, digits = 4),
                 "\n")
-        else
-            cat("            damp ~ Unif(",
+        else {
+            cat("   dampTransform = (damp-",
                 format(min.phi, digits = 4),
-                ", ",
-                format(max.phi, digits = 4), ")\n",
+                ")/(",
+                format(max.phi, digits = 4),
+                "-",
+                format(min.phi, digits = 4),
+                ")\n",
                 sep = "")
+            cat("   dampTransform ~ Beta(",
+                format(shape1, digits = 4),
+                ",",
+                format(shape2, digits = 4),
+                ")\n",
+                sep = "")
+        }
     }
     if (isMain)
         cat("   errorLevel[j] ~ N(0, scaleLevel^2)\n")

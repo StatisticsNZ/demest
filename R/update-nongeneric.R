@@ -1287,7 +1287,7 @@ updateOmegaVectorsMix <- function(prior, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE (AGAIN) - JAH updated in C but cannot test (test failing) 4/4/2017
+
 ## HAS_TESTS
 updatePhi <- function(prior, withTrend, useC = FALSE) {
     ## 'prior'
@@ -1304,13 +1304,13 @@ updatePhi <- function(prior, withTrend, useC = FALSE) {
         .Call(updatePhi_R, prior, withTrend)
     }
     else {
-        kMaxAttempt <- 1000L  # in C use macro to set this
         phi.known <- prior@phiKnown@.Data
         if (phi.known)
             return(prior)
+        phi.curr <- prior@phi
         K <- prior@K@.Data
         L <- prior@L@.Data
-        update.series <- prior@updateSeriesDLM # logical length L ## NEW
+        update.series <- prior@updateSeriesDLM # logical length L
         if (withTrend) {
             state <- prior@deltaDLM@.Data
             omega <- prior@omegaDelta@.Data
@@ -1321,12 +1321,14 @@ updatePhi <- function(prior, withTrend, useC = FALSE) {
         }
         phi.min <- prior@minPhi@.Data
         phi.max <- prior@maxPhi@.Data
+        shape1 <- prior@shape1Phi@.Data
+        shape2 <- prior@shape2Phi@.Data
         iterator <- prior@iteratorState
         iterator <- resetA(iterator)
         numerator <- 0
         denominator <- 0
         for (l in seq_len(L)) {
-            if (update.series[l]) { ## NEW
+            if (update.series[l]) {
                 indices <- iterator@indices
                 for (i in seq_len(K)) {
                     k.curr <- indices[i + 1]
@@ -1334,25 +1336,102 @@ updatePhi <- function(prior, withTrend, useC = FALSE) {
                     numerator <- numerator + state[k.curr] * state[k.prev]
                     denominator <- denominator + (state[k.prev])^2
                 }
-            } ## NEW
+            }
             iterator <- advanceA(iterator)
         }
         mean <- numerator / denominator
         sd <- omega / sqrt(denominator)
-        found.value <- FALSE
-        for (i in seq_len(kMaxAttempt)) {
-            phi.prop <- stats::rnorm(n = 1L, mean = mean, sd = sd)
-            within.limits <- (phi.min <= phi.prop) && (phi.prop <= phi.max)
-            if (within.limits) {
-                found.value <- TRUE
-                break
-            }
-        }
-        if (found.value)
+        phi.prop <- rtnorm1(mean = mean,
+                            sd = sd,
+                            lower = phi.min,
+                            upper = phi.max)
+        ## proposal density and likelihood cancel
+        phi.prop.tr <- (phi.prop - phi.min) / (phi.max - phi.min)
+        phi.curr.tr <- (phi.curr - phi.min) / (phi.max - phi.min)
+        log.dens.prop <- stats::dbeta(x = phi.prop.tr,
+                                      shape1 = shape1,
+                                      shape2 = shape2,
+                                      log = TRUE)
+        log.dens.curr <- stats::dbeta(x = phi.curr.tr,
+                                      shape1 = shape1,
+                                      shape2 = shape2,
+                                      log = TRUE)
+        log.diff <- log.dens.prop - log.dens.curr
+        accept <- (log.diff >= 0) || (stats::runif(1L) < exp(log.diff))
+        if (accept)
             prior@phi <- phi.prop
         prior
     }
 }
+
+
+
+## ## TRANSLATED
+## ## HAS_TESTS
+## updatePhi <- function(prior, withTrend, useC = FALSE) {
+##     ## 'prior'
+##     stopifnot(methods::is(prior, "DLM"))
+##     stopifnot(methods::validObject(prior))
+##     ## 'withTrend'
+##     stopifnot(is.logical(withTrend))
+##     stopifnot(identical(length(withTrend), 1L))
+##     stopifnot(!is.na(withTrend))
+##     ## 'prior' and 'withTrend'
+##     stopifnot((withTrend && methods::is(prior, "WithTrendMixin"))
+##               || (!withTrend && methods::is(prior, "NoTrendMixin")))
+##     if (useC) {
+##         .Call(updatePhi_R, prior, withTrend)
+##     }
+##     else {
+##         kMaxAttempt <- 1000L  # in C use macro to set this
+##         phi.known <- prior@phiKnown@.Data
+##         if (phi.known)
+##             return(prior)
+##         K <- prior@K@.Data
+##         L <- prior@L@.Data
+##         update.series <- prior@updateSeriesDLM # logical length L ## NEW
+##         if (withTrend) {
+##             state <- prior@deltaDLM@.Data
+##             omega <- prior@omegaDelta@.Data
+##         }
+##         else {
+##             state <- prior@alphaDLM@.Data
+##             omega <- prior@omegaAlpha@.Data
+##         }
+##         phi.min <- prior@minPhi@.Data
+##         phi.max <- prior@maxPhi@.Data
+##         iterator <- prior@iteratorState
+##         iterator <- resetA(iterator)
+##         numerator <- 0
+##         denominator <- 0
+##         for (l in seq_len(L)) {
+##             if (update.series[l]) { ## NEW
+##                 indices <- iterator@indices
+##                 for (i in seq_len(K)) {
+##                     k.curr <- indices[i + 1]
+##                     k.prev <- indices[i]
+##                     numerator <- numerator + state[k.curr] * state[k.prev]
+##                     denominator <- denominator + (state[k.prev])^2
+##                 }
+##             } ## NEW
+##             iterator <- advanceA(iterator)
+##         }
+##         mean <- numerator / denominator
+##         sd <- omega / sqrt(denominator)
+##         found.value <- FALSE
+##         for (i in seq_len(kMaxAttempt)) {
+##             phi.prop <- stats::rnorm(n = 1L, mean = mean, sd = sd)
+##             within.limits <- (phi.min <= phi.prop) && (phi.prop <= phi.max)
+##             if (within.limits) {
+##                 found.value <- TRUE
+##                 break
+##             }
+##         }
+##         if (found.value)
+##             prior@phi <- phi.prop
+##         prior
+##     }
+## }
 
 ## TRANSLATED
 ## HAS_TESTS

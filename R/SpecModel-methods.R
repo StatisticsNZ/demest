@@ -165,8 +165,23 @@ setMethod("show",
           function(object) {
               min <- object@minPhi
               max <- object@maxPhi
+              shape1 <- object@shape1Phi@.Data
+              shape2 <- object@shape2Phi@.Data
               cat("An object of class \"", class(object), "\"\n", sep = "")
-              cat("damp ~ Unif(", min, ", ", max, ")\n", sep = "")
+              cat("dampTransform = (damp-",
+                  format(min, digits = 4),
+                  ")/(",
+                  format(max, digits = 4),
+                  "-",
+                  format(min, digits = 4),
+                  ")\n",
+                  sep = "")
+              cat("dampTransform ~ Beta(",
+                  format(shape1, digits = 4),
+                  ",",
+                  format(shape2, digits = 4),
+                  ")\n",
+                  sep = "")
           })                        
 
 #' @rdname show-methods

@@ -222,7 +222,8 @@ SEXP
   ADelta_sym,
   minPhi_sym,
   maxPhi_sym,
-  
+  shape1Phi_sym, 		/* Added by JB 2017-04-19 */
+  shape2Phi_sym,		/* Added by JB 2017-04-19 */
   WSqrt_sym,
   WSqrtInvG_sym,
   exposureAg_sym,

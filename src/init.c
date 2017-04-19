@@ -1809,6 +1809,8 @@ R_init_demest(DllInfo *info)
   ADD_SYM(omegaDeltaMax);
   ADD_SYM(minPhi);
   ADD_SYM(maxPhi);
+  ADD_SYM(shape1Phi); 		/* Added by JB 2017-04-19 */
+  ADD_SYM(shape2Phi);           /* Added by JB 2017-04-19 */
   ADD_SYM(WSqrt);
   ADD_SYM(WSqrtInvG);
   ADD_SYM(exposureAg);

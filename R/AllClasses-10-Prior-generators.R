@@ -39,7 +39,7 @@ setClass("Covariates",
 #' Priors specified using \code{\link{DLM}} can include damping terms.  The
 #' coefficient can be supplied and treated as known, in which case an object
 #' of class \code{DampKnown} is used. Alternatively, the coefficient can be
-#' estimated from the data, using a uniform prior, in which case an object
+#' estimated from the data, using a beta prior, in which case an object
 #' of class \code{DampUnknown} is used. \code{Damp} is a virtual superclass
 #' for \code{DampKnown} and \code{DampUnknown}.
 #'
@@ -52,6 +52,11 @@ setClass("Covariates",
 #' @slot phi Coefficient, which must be between 0 and 1.
 #' @slot minPhi Minimum value for coefficient.
 #' @slot maxPhi Maximum value for coefficient.
+#' @slot shape1Phi First 'sample size' parameter in beta
+#' prior for coefficient.
+#' @slot shape2Phi Second 'sample size' parameter in beta
+#' prior for coefficient.
+#'
 #' 
 #' @seealso Objects of class \code{Damp} are created  by a call to function
 #' \code{\link{Damp}}.
@@ -72,7 +77,7 @@ setClass("DampKnown",
 #' @rdname Damp-class
 #' @export
 setClass("DampUnknown",
-         contains = c("Damp", "PhiMinMaxMixin"))
+         contains = c("Damp", "PhiMinMaxMixin", "Shape1Shape2PhiMixin"))
 
          
 #' S4 classes to specify error terms for priors.
