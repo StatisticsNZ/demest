@@ -826,7 +826,7 @@ setMethod("updateBetaAndPriorBeta",
 
 ## Known ###############################################################################
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("updateBetaAndPriorBeta",
           signature(prior = "KnownCertain"),
@@ -850,7 +850,7 @@ setMethod("updateBetaAndPriorBeta",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("updateBetaAndPriorBeta",
           signature(prior = "KnownUncertain"),
@@ -938,7 +938,7 @@ setMethod("updateBetaAndPriorBeta",
 ## Zero #################################################################################
 
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("updateBetaAndPriorBeta",
           signature(prior = "Zero"),
