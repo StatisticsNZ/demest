@@ -907,7 +907,7 @@ setMethod("makeOutputPrior",
 ## predictPrior ###########################################################
 
 
-## READY_TO_TRANLSATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("predictPrior",
           signature(prior = "ExchFixed"),
@@ -1318,7 +1318,7 @@ setMethod("predictPrior",
 
 ## Known
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("predictPrior",
           signature(prior = "KnownCertain"),
@@ -1335,7 +1335,7 @@ setMethod("predictPrior",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("predictPrior",
           signature(prior = "KnownUncertain"),
@@ -1378,7 +1378,7 @@ setMethod("predictPrior",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("predictPrior",
           signature(prior = "Zero"),

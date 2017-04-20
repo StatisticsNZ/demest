@@ -702,7 +702,10 @@ UPDATEBETA_AND_PRIORBETA_WRAPPER_R(updateBetaAndPriorBeta_DLMNoTrendRobustCovNoS
 UPDATEBETA_AND_PRIORBETA_WRAPPER_R(updateBetaAndPriorBeta_DLMWithTrendRobustCovNoSeason);
 UPDATEBETA_AND_PRIORBETA_WRAPPER_R(updateBetaAndPriorBeta_DLMNoTrendRobustCovWithSeason);
 UPDATEBETA_AND_PRIORBETA_WRAPPER_R(updateBetaAndPriorBeta_DLMWithTrendRobustCovWithSeason);
+UPDATEBETA_AND_PRIORBETA_WRAPPER_R(updateBetaAndPriorBeta_KnownCertain);
+UPDATEBETA_AND_PRIORBETA_WRAPPER_R(updateBetaAndPriorBeta_KnownUncertain);
 UPDATEBETA_AND_PRIORBETA_WRAPPER_R(updateBetaAndPriorBeta_MixNormZero);
+UPDATEBETA_AND_PRIORBETA_WRAPPER_R(updateBetaAndPriorBeta_Zero);
 
 UPDATEOBJECT_NOPRNG_WRAPPER_R(updateGWithTrend);
 UPDATEOBJECT_WRAPPER_R(updateLatentComponentWeightMix);
@@ -1215,6 +1218,7 @@ LOGLIKELIHOOD_WRAPPER_R(logLikelihood);
 
 /* wrap predict prior functions */
 PREDICTOBJECT_WRAPPER_R(predictPrior);
+PREDICTOBJECT_WRAPPER_R(predictPrior_ExchFixed);
 PREDICTOBJECT_WRAPPER_R(predictPrior_ExchNormZero);
 PREDICTOBJECT_WRAPPER_R(predictPrior_ExchNormCov);
 PREDICTOBJECT_WRAPPER_R(predictPrior_ExchRobustZero);
@@ -1235,7 +1239,10 @@ PREDICTOBJECT_WRAPPER_R(predictPrior_DLMNoTrendRobustCovNoSeasonPredict);
 PREDICTOBJECT_WRAPPER_R(predictPrior_DLMWithTrendRobustCovNoSeasonPredict);
 PREDICTOBJECT_WRAPPER_R(predictPrior_DLMNoTrendRobustCovWithSeasonPredict);
 PREDICTOBJECT_WRAPPER_R(predictPrior_DLMWithTrendRobustCovWithSeasonPredict);
+PREDICTOBJECT_WRAPPER_R(predictPrior_KnownCertain);
+PREDICTOBJECT_WRAPPER_R(predictPrior_KnownUncertain);
 PREDICTOBJECT_WRAPPER_R(predictPrior_MixNormZero);
+PREDICTOBJECT_WRAPPER_R(predictPrior_Zero);
 
 TRANSFERPARAMPRIOR_WRAPPER_R(transferParamPrior);
 TRANSFERPARAMPRIOR_WRAPPER_R(transferParamPrior_ExchNormZero);
@@ -1322,7 +1329,10 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateBetaAndPriorBeta_DLMWithTrendRobustCovNoSeason_R, 4),
   CALLDEF(updateBetaAndPriorBeta_DLMNoTrendRobustCovWithSeason_R, 4),
   CALLDEF(updateBetaAndPriorBeta_DLMWithTrendRobustCovWithSeason_R, 4),
+  CALLDEF(updateBetaAndPriorBeta_KnownCertain_R, 4),
+  CALLDEF(updateBetaAndPriorBeta_KnownUncertain_R, 4),
   CALLDEF(updateBetaAndPriorBeta_MixNormZero_R, 4),
+  CALLDEF(updateBetaAndPriorBeta_Zero_R, 4),
   
   /* helper-functions */
   CALLDEF(makeMu_R, 3),
@@ -1534,6 +1544,7 @@ R_CallMethodDef callMethods[] = {
   
   /*predict priors*/
   CALLDEF(predictPrior_R, 1),
+  CALLDEF(predictPrior_ExchFixed_R, 1),
   CALLDEF(predictPrior_ExchNormZero_R, 1),
   CALLDEF(predictPrior_ExchNormCov_R, 1),
   CALLDEF(predictPrior_ExchRobustZero_R, 1),
@@ -1554,7 +1565,10 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(predictPrior_DLMWithTrendRobustCovNoSeasonPredict_R, 1),
   CALLDEF(predictPrior_DLMNoTrendRobustCovWithSeasonPredict_R, 1),
   CALLDEF(predictPrior_DLMWithTrendRobustCovWithSeasonPredict_R, 1),
+  CALLDEF(predictPrior_KnownCertain_R, 1),
+  CALLDEF(predictPrior_KnownUncertain_R, 1),
   CALLDEF(predictPrior_MixNormZero_R, 1),
+  CALLDEF(predictPrior_Zero_R, 1),
   
   CALLDEF(transferParamPrior_R, 2),
   CALLDEF(transferParamPrior_ExchNormZero_R, 2),
@@ -1876,6 +1890,8 @@ R_init_demest(DllInfo *info)
   ADD_SYM(minLevelComponentWeight);
   ADD_SYM(maxLevelComponentWeight);   
   ADD_SYM(updateSeriesDLM);
+  ADD_SYM(alphaKnown);
+  ADD_SYM(AKnownVec);
   
 #undef ADD_SYM
 

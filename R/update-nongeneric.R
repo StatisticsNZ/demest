@@ -520,7 +520,7 @@ updateBetasAndPriorsBetas <- function(object, g, useC = FALSE) {
     }
 }
 
-## READY_T0_TRANSLATE (AGAIN) - ADDED MIN AND MAX - JAH cannot test 30/3/2017
+## TRANSLATED
 ## HAS_TESTS
 ## 'W' in notes
 updateComponentWeightMix <- function(prior, useC = FALSE) {
@@ -1004,7 +1004,7 @@ updateMeanLevelComponentWeightMix <- function(prior, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE (AGAIN) - JAH updated in C but cannot test (test failing) 4/4/2017
+## TRANSLATED
 ## HAS_TESTS
 updateOmegaAlpha <- function(prior, withTrend, useC = FALSE) {
     ## 'prior'
@@ -1105,7 +1105,7 @@ updateOmegaComponentWeightMix <- function(prior, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE (AGAIN) - JAH updated in C but cannot test (test failing) 4/4/2017
+## TRANSLATED
 ## HAS_TESTS
 updateOmegaDelta <- function(prior, useC = FALSE) {
     stopifnot(methods::is(prior, "WithTrendMixin"))
@@ -1196,7 +1196,7 @@ updateOmegaLevelComponentWeightMix <- function(prior, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE (AGAIN) - JAH updated in C but cannot test (test failing) 4/4/2017
+## TRANSLATED
 ## HAS_TESTS
 updateOmegaSeason <- function(prior, useC = FALSE) {
     stopifnot(methods::is(prior, "SeasonMixin"))
@@ -1287,7 +1287,7 @@ updateOmegaVectorsMix <- function(prior, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE (AGAIN) - JAH updated in C but cannot test (test failing) 4/4/2017
+## TRANSLATED
 ## HAS_TESTS
 updatePhi <- function(prior, withTrend, useC = FALSE) {
     ## 'prior'

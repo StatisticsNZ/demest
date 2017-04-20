@@ -21,6 +21,12 @@
    created in init.c. */
 
 static __inline__ void
+predictPrior_ExchFixed_i(SEXP prior_R) 
+{
+    /* null op */
+}
+
+static __inline__ void
 predictPrior_ExchNormZero_i(SEXP prior_R) 
 {
     /* null op */
@@ -156,6 +162,18 @@ predictPrior_DLMWithTrendRobustCovWithSeasonPredict_i(SEXP prior_R)
     predictUBeta(prior_R);
 }
 
+static __inline__ void
+predictPrior_KnownCertain_i(SEXP prior_R) 
+{
+    /* null op */
+}
+
+static __inline__ void
+predictPrior_KnownUncertain_i(SEXP prior_R) 
+{
+    /* null op */
+}
+
 
 static __inline__ void
 predictPrior_MixNormZero_i(SEXP prior_R) 
@@ -170,6 +188,11 @@ predictPrior_MixNormZero_i(SEXP prior_R)
     
 }
 
+static __inline__ void
+predictPrior_Zero_i(SEXP prior_R) 
+{
+    /* null op */
+}
 
 
 void
@@ -179,6 +202,9 @@ predictPrior(SEXP prior_R)
     
     switch(i_method_prior)
     {
+        case 0:
+            predictPrior_ExchFixed_i(prior_R);
+            break;
         case 1:
             predictPrior_ExchNormZero_i(prior_R);
             break;
@@ -190,6 +216,15 @@ predictPrior(SEXP prior_R)
             break;
         case 4:
             predictPrior_ExchRobustCov_i(prior_R);
+            break;
+        case 29:
+            predictPrior_KnownCertain_i(prior_R);
+            break;
+        case 30:
+            predictPrior_KnownUncertain_i(prior_R);
+            break;
+        case 40:
+            predictPrior_Zero_i(prior_R);
             break;
         case 105:
             predictPrior_DLMNoTrendNormZeroNoSeasonPredict_i(prior_R);
@@ -246,6 +281,12 @@ predictPrior(SEXP prior_R)
             error("unknown i_method_prior for predictPrior: %d", i_method_prior);
             break;
     }
+}
+
+void
+predictPrior_ExchFixed(SEXP prior_R) 
+{
+    predictPrior_ExchFixed_i(prior_R);
 }
 
 void
@@ -369,11 +410,28 @@ predictPrior_DLMWithTrendRobustCovWithSeasonPredict(SEXP prior_R)
     predictPrior_DLMWithTrendRobustCovWithSeasonPredict_i(prior_R);
 }
 
+void
+predictPrior_KnownCertain(SEXP prior_R) 
+{
+    predictPrior_KnownCertain_i(prior_R);
+}
+
+void
+predictPrior_KnownUncertain(SEXP prior_R) 
+{
+    predictPrior_KnownUncertain_i(prior_R);
+}
 
 void
 predictPrior_MixNormZero(SEXP prior_R) 
 {
     predictPrior_MixNormZero_i(prior_R);
+}
+
+void
+predictPrior_Zero(SEXP prior_R) 
+{
+    predictPrior_Zero_i(prior_R);
 }
 
 

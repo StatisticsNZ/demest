@@ -290,7 +290,10 @@ SEXP
   nuVectorsMix_sym,
   minLevelComponentWeight_sym,
   maxLevelComponentWeight_sym,
-  updateSeriesDLM_sym;  
+  updateSeriesDLM_sym,
+  
+  alphaKnown_sym,
+  AKnownVec_sym;  
   
 /* Priors-methods */
 
@@ -390,7 +393,16 @@ void
 updateBetaAndPriorBeta_DLMWithTrendRobustCovWithSeason(double *beta, int J,
                     SEXP prior_R, double *vbar, int *n_vec, double sigma);
 void
+updateBetaAndPriorBeta_KnownCertain(double *beta, int J,
+                    SEXP prior_R, double *vbar, int *n_vec, double sigma);                    
+void
+updateBetaAndPriorBeta_KnownUncertain(double *beta, int J,
+                    SEXP prior_R, double *vbar, int *n_vec, double sigma);                    
+void
 updateBetaAndPriorBeta_MixNormZero(double *beta, int J,
+                    SEXP prior_R, double *vbar, int *n_vec, double sigma);                    
+void
+updateBetaAndPriorBeta_Zero(double *beta, int J,
                     SEXP prior_R, double *vbar, int *n_vec, double sigma);                    
 /* helper-functions */
 SEXP makeMu(int n, SEXP betas_R, SEXP iterator_R);
@@ -515,6 +527,7 @@ void resetCODPCP(SEXP iterator_R, int i);
 
 /* priors */
 void predictPrior(SEXP prior_R);
+void predictPrior_ExchFixed(SEXP prior_R);
 void predictPrior_ExchNormZero(SEXP prior_R);
 void predictPrior_ExchNormCov(SEXP prior_R);
 void predictPrior_ExchRobustZero(SEXP prior_R);
@@ -535,7 +548,10 @@ void predictPrior_DLMNoTrendRobustCovNoSeasonPredict(SEXP prior_R);
 void predictPrior_DLMWithTrendRobustCovNoSeasonPredict(SEXP prior_R);
 void predictPrior_DLMNoTrendRobustCovWithSeasonPredict(SEXP prior_R);
 void predictPrior_DLMWithTrendRobustCovWithSeasonPredict(SEXP prior_R);
+void predictPrior_KnownCertain(SEXP prior_R);
+void predictPrior_KnownUncertain(SEXP prior_R);
 void predictPrior_MixNormZero(SEXP prior_R);
+void predictPrior_Zero(SEXP prior_R);
 
 void transferParamPrior(SEXP prior_R, double *values, int nValues);
 void transferParamPrior_ExchNormZero(SEXP prior_R, double *values, 

@@ -98,8 +98,20 @@ updateBetaAndPriorBeta(double *beta, int J, SEXP prior_R,
             updateBetaAndPriorBeta_DLMWithTrendRobustCovWithSeason(beta, J, 
                                             prior_R, vbar, n_vec, sigma); 
             break;
+        case 29:    
+            updateBetaAndPriorBeta_KnownCertain(beta, J, 
+                                            prior_R, vbar, n_vec, sigma); 
+            break;
+        case 30:    
+            updateBetaAndPriorBeta_KnownUncertain(beta, J, 
+                                            prior_R, vbar, n_vec, sigma); 
+            break;
         case 31:
             updateBetaAndPriorBeta_MixNormZero(beta, J, 
+                                            prior_R, vbar, n_vec, sigma);
+            break;
+        case 40:
+            updateBetaAndPriorBeta_Zero(beta, J, 
                                             prior_R, vbar, n_vec, sigma);
             break;
         default:
@@ -783,6 +795,37 @@ updateBetaAndPriorBeta_DLMWithTrendRobustCovWithSeason(double *beta, int J, SEXP
 }
 
 void
+updateBetaAndPriorBeta_KnownCertain(double *beta, int J, SEXP prior_R, 
+                        double *vbar, int *n_vec, double sigma)
+{
+	double *alpha = REAL(GET_SLOT(prior_R, alphaKnown_sym));  
+    memcpy(beta, alpha, J*sizeof(double));
+        
+}
+
+void
+updateBetaAndPriorBeta_KnownUncertain(double *beta, int J, SEXP prior_R, 
+                        double *vbar, int *n_vec, double sigma)
+{
+	double *alpha = REAL(GET_SLOT(prior_R, alphaKnown_sym));  
+    double *AKnownVec = REAL(GET_SLOT(prior_R, AKnownVec_sym));
+    
+    double sigmaSq = sigma * sigma;
+    
+    for (int i = 0; i < J; ++i) {
+		
+		double thisPrecData = n_vec[i]/sigmaSq;
+		double thisA = AKnownVec[i];
+		double thisPrecPrior = 1/(thisA * thisA);
+		double thisVar = 1/(thisPrecData + thisPrecPrior);
+		double thisMean = (thisPrecData * vbar[i] + 
+									thisPrecPrior * alpha[i]) * thisVar;
+		double thisSD = sqrt(thisVar);
+		beta[i] = rnorm(thisMean, thisSD);
+	}
+}
+
+void
 updateBetaAndPriorBeta_MixNormZero(double *beta, int J, SEXP prior_R, 
                         double *vbar, int *n_vec, double sigma)
 {
@@ -803,4 +846,11 @@ updateBetaAndPriorBeta_MixNormZero(double *beta, int J, SEXP prior_R,
     updateMeanLevelComponentWeightMix(prior_R);
     updatePhiMix(prior_R);
     updateAlphaMix(prior_R);
+}
+
+void
+updateBetaAndPriorBeta_Zero(double *beta, int J, SEXP prior_R, 
+                        double *vbar, int *n_vec, double sigma)
+{
+	memset(beta, 0, J * sizeof(double));
 }
