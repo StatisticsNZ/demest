@@ -1426,6 +1426,10 @@ setClass("RSeasonMixin",
              TRUE
          })
 
+setClass("Shape1Shape2PhiMixin",
+         slots = c(shape1Phi = "Scale",
+                   shape2Phi = "Scale"))
+
 setClass("SlotsToExtract",
          slots = c(slotsToExtract = "character"),
          contains = "VIRTUAL")

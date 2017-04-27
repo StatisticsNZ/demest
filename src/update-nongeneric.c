@@ -1972,6 +1972,9 @@ updatePhi(SEXP prior_R, int isWithTrend)
     int isPhiKnown = *LOGICAL(GET_SLOT(prior_R, phiKnown_sym));
     
     if (!isPhiKnown) {
+
+	double phiCurr = *REAL(GET_SLOT(prior_R, phi_sym));
+	
         int K = *INTEGER(GET_SLOT(prior_R, K_sym));
         int L = *INTEGER(GET_SLOT(prior_R, L_sym));
         
@@ -1991,7 +1994,10 @@ updatePhi(SEXP prior_R, int isWithTrend)
         
         double minPhi = *REAL(GET_SLOT(prior_R, minPhi_sym));
         double maxPhi = *REAL(GET_SLOT(prior_R, maxPhi_sym));
-        
+
+        double shape1 = *REAL(GET_SLOT(prior_R, shape1Phi_sym));
+        double shape2 = *REAL(GET_SLOT(prior_R, shape2Phi_sym));
+	
         SEXP iterator_R = GET_SLOT(prior_R, iteratorState_sym);
         
         resetA(iterator_R);
@@ -2021,26 +2027,106 @@ updatePhi(SEXP prior_R, int isWithTrend)
         double mean = numerator/denominator;
         double sd = omega/sqrt(denominator);
         
-        int foundValue = 0;
-        int nAttempts = 0;
-        
-        double phiProp = 0;
-        
-        while (!foundValue && (nAttempts < K_MAX_ATTEMPTS)) {
+	double phiProp = rtnorm1(mean, sd, minPhi, maxPhi);
+	
+	double phiPropTr = (phiProp - minPhi) / (maxPhi - minPhi);
+	double phiCurrTr = (phiCurr - minPhi) / (maxPhi - minPhi);
 
-            ++nAttempts;
-           
-            phiProp = rnorm(mean, sd);
-            foundValue = (!(phiProp < minPhi) && !(phiProp > maxPhi));
-        }
+	double logDensProp = dbeta(phiPropTr, shape1, shape2, USE_LOG);
+	double logDensCurr = dbeta(phiCurrTr, shape1, shape2, USE_LOG);
+    
+	double logDiff = logDensProp - logDensCurr;
+    
+	int accept = (!(logDiff < 0) || (runif(0, 1) < exp(logDiff)));  
+	if (accept) {
+	    SET_DOUBLESCALE_SLOT(prior_R, phi_sym, phiProp);
+	}
 
-        if(foundValue) {
-            SET_DOUBLESCALE_SLOT(prior_R, phi_sym, phiProp);
-        }
     }/* end !isPhiKnown */
     
     /* prior unchanged if phi known or !foundValue */
 }
+
+
+/* void */
+/* updatePhi(SEXP prior_R, int isWithTrend) */
+/* { */
+
+/*     int isPhiKnown = *LOGICAL(GET_SLOT(prior_R, phiKnown_sym)); */
+    
+/*     if (!isPhiKnown) { */
+/*         int K = *INTEGER(GET_SLOT(prior_R, K_sym)); */
+/*         int L = *INTEGER(GET_SLOT(prior_R, L_sym)); */
+        
+/*         int * updateSeries = LOGICAL(GET_SLOT(prior_R, updateSeriesDLM_sym)); */
+        
+/*         double *state = NULL; */
+/*         double omega = 0; */
+        
+/*         if (isWithTrend) { */
+/*             state = REAL(GET_SLOT(prior_R, deltaDLM_sym)); /\* vector, length (K+1)L *\/ */
+/*             omega = *REAL(GET_SLOT(prior_R, omegaDelta_sym)); */
+/*         } */
+/*         else { */
+/*             state = REAL(GET_SLOT(prior_R, alphaDLM_sym)); /\* vector, length (K+1)L *\/ */
+/*             omega = *REAL(GET_SLOT(prior_R, omegaAlpha_sym)); */
+/*         } */
+        
+/*         double minPhi = *REAL(GET_SLOT(prior_R, minPhi_sym)); */
+/*         double maxPhi = *REAL(GET_SLOT(prior_R, maxPhi_sym)); */
+        
+/*         SEXP iterator_R = GET_SLOT(prior_R, iteratorState_sym); */
+        
+/*         resetA(iterator_R); */
+/*         int *indices = INTEGER(GET_SLOT(iterator_R, indices_sym));  */
+
+/*         double numerator = 0; */
+/*         double denominator = 0; */
+
+/*         for (int l = 0; l < L; ++l) { */
+            
+/*             if (updateSeries[l]) { */
+
+/*                 for (int i = 0; i < K; ++i) { */
+/*                     int k_curr = indices[i + 1] - 1; /\* C style indices *\/ */
+/*                     int k_prev = indices[i] - 1; */
+                    
+/*                     double state_k_prev = state[k_prev]; */
+/*                     numerator += state[k_curr] * state_k_prev; */
+/*                     denominator += state_k_prev * state_k_prev; */
+/*                 } */
+            
+/*             } /\* end if (updateSeries[l]) *\/ */
+            
+/*             advanceA(iterator_R);  */
+/*         } */
+        
+/*         double mean = numerator/denominator; */
+/*         double sd = omega/sqrt(denominator); */
+        
+/*         int foundValue = 0; */
+/*         int nAttempts = 0; */
+        
+/*         double phiProp = 0; */
+        
+/*         while (!foundValue && (nAttempts < K_MAX_ATTEMPTS)) { */
+
+/*             ++nAttempts; */
+           
+/*             phiProp = rnorm(mean, sd); */
+/*             foundValue = (!(phiProp < minPhi) && !(phiProp > maxPhi)); */
+/*         } */
+
+/*         if(foundValue) { */
+/*             SET_DOUBLESCALE_SLOT(prior_R, phi_sym, phiProp); */
+/*         } */
+/*     }/\* end !isPhiKnown *\/ */
+    
+/*     /\* prior unchanged if phi known or !foundValue *\/ */
+/* } */
+
+
+
 
 void
 updatePhiMix(SEXP prior_R)

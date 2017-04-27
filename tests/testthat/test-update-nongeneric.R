@@ -2166,6 +2166,8 @@ test_that("updatePhi works", {
     initialPrior <- demest:::initialPrior
     updateAlphaDeltaDLMWithTrend <- demest:::updateAlphaDeltaDLMWithTrend
     updateAlphaDLMNoTrend <- demest:::updateAlphaDLMNoTrend
+    updated.with.trend <- FALSE
+    updated.no.trend <- FALSE
     for (seed in seq_len(n.test)) {
         ## withTrend = TRUE
         spec <- DLM()
@@ -2186,19 +2188,23 @@ test_that("updatePhi works", {
         ans.expected <- prior
         mean <- sum(prior@deltaDLM[-1] * prior@deltaDLM[-11])/sum(prior@deltaDLM[-11]^2)
         sd <- prior@omegaDelta@.Data / sqrt(sum(prior@deltaDLM[-11]^2))
-        found <- FALSE
-        i <- 1
-        while (!found && i < 1000) {
-            prop <- rnorm(n = 1, mean = mean, sd = sd)
-            found <- (prop >= prior@minPhi) && (prop <= prior@maxPhi)
-            i <- i + 1
-        }
-        if (found)
-            ans.expected@phi <- prop
+        phi.curr <- prior@phi
+        phi.prop <- rnorm(n = 1, mean = mean, sd = sd)
+        min <- prior@minPhi
+        max <- prior@maxPhi
+        shape1 <- prior@shape1Phi@.Data
+        shape2 <- prior@shape2Phi@.Data
+        log.diff <- (dbeta((phi.prop - min)/(max-min), shape1, shape2, log = TRUE)
+            - dbeta((phi.curr - min)/(max-min), shape1, shape2, log = TRUE))
+        accept <- (log.diff >= 0) || (runif(1) < exp(log.diff))
+        if (accept)
+            ans.expected@phi <- phi.prop
         if (test.identity)
             expect_identical(ans.obtained, ans.expected)
         else
             expect_equal(ans.obtained, ans.expected)
+        if (!updated.with.trend && accept)
+            updated.with.trend <- TRUE
         ## withTrend = FALSE, phi = 1
         spec <- DLM(trend = NULL, damp = NULL)
         beta <- rnorm(10)
@@ -2238,20 +2244,28 @@ test_that("updatePhi works", {
         ans.expected <- prior
         mean <- sum(prior@alphaDLM[-1] * prior@alphaDLM[-11])/sum(prior@alphaDLM[-11]^2)
         sd <- prior@omegaAlpha@.Data / sqrt(sum(prior@alphaDLM[-11]^2))
-        found <- FALSE
-        i <- 1
-        while (!found && i < 1000) {
-            prop <- rnorm(n = 1, mean = mean, sd = sd)
-            found <- (prop >= prior@minPhi) && (prop <= prior@maxPhi)
-            i <- i + 1
-        }
-        if (found)
-            ans.expected@phi <- prop
+        phi.curr <- prior@phi
+        phi.prop <- rnorm(n = 1, mean = mean, sd = sd)
+        min <- prior@minPhi
+        max <- prior@maxPhi
+        shape1 <- prior@shape1Phi@.Data
+        shape2 <- prior@shape2Phi@.Data
+        log.diff <- (dbeta((phi.prop - min)/(max-min), shape1, shape2, log = TRUE)
+            - dbeta((phi.curr - min)/(max-min), shape1, shape2, log = TRUE))
+        accept <- (log.diff >= 0) || (runif(1) < exp(log.diff))
+        if (accept)
+            ans.expected@phi <- phi.prop
         if (test.identity)
             expect_identical(ans.obtained, ans.expected)
         else
-            expect_equal(ans.obtained, ans.expected)        
+            expect_equal(ans.obtained, ans.expected)
+        if (!updated.no.trend && accept)
+            updated.no.trend <- TRUE
     }
+    if (!updated.with.trend)
+        warning("phi with trend not updated")
+    if (!updated.no.trend)
+        warning("phi no trend not updated")
 })
 
 test_that("R and C versions of updatePhi give same answer", {
@@ -2259,6 +2273,8 @@ test_that("R and C versions of updatePhi give same answer", {
     initialPrior <- demest:::initialPrior
     updateAlphaDeltaDLMWithTrend <- demest:::updateAlphaDeltaDLMWithTrend
     updateAlphaDLMNoTrend <- demest:::updateAlphaDLMNoTrend
+    updated.with.trend <- FALSE
+    updated.no.trend <- FALSE
     for (seed in seq_len(n.test)) {
         ## withTrend = TRUE
         spec <- DLM()
@@ -2282,6 +2298,8 @@ test_that("R and C versions of updatePhi give same answer", {
             expect_identical(ans.R, ans.C)
         else
             expect_equal(ans.R, ans.C)        
+        if (!updated.with.trend && ans.C@phi != prior@phi)
+            updated.with.trend <- TRUE
         ## withTrend = FALSE, phi = 1
         spec <- DLM(trend = NULL, damp = NULL)
         beta <- rnorm(10)
@@ -2304,8 +2322,8 @@ test_that("R and C versions of updatePhi give same answer", {
             expect_identical(ans.R, ans.C)
         else
             expect_equal(ans.R, ans.C)        
-        ## trend = NULL, damp(min = 0.6, max = 0.9)
-        spec <- DLM(trend = NULL, damp = Damp(min = 0.6, max = 0.9))
+        ## trend = NULL, damp(shape1 = 3, shape2 = 4, min = 0.6, max = 0.9)
+        spec <- DLM(trend = NULL, damp = Damp(shape1 = 3, shape2 = 4, min = 0.6, max = 0.9))
         beta <- rnorm(10)
         metadata <- new("MetaData",
                         nms = "time",
@@ -2326,7 +2344,13 @@ test_that("R and C versions of updatePhi give same answer", {
             expect_identical(ans.R, ans.C)
         else
             expect_equal(ans.R, ans.C)        
+        if (!updated.no.trend && ans.C@phi != prior@phi)
+            updated.no.trend <- TRUE
     }
+    if (!updated.with.trend)
+        warning("phi with trend not updated")
+    if (!updated.no.trend)
+        warning("phi no trend not updated")
 })
 
 test_that("updatePhiMix gives valid answer", {

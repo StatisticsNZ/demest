@@ -380,6 +380,8 @@ test_that("initialDLMAll works", {
     expect_identical(l$updateSeriesDLM, TRUE)
     expect_identical(l$minPhi, 0.8)
     expect_identical(l$maxPhi, 0.98)
+    expect_identical(l$shape1Phi, new("Scale", 2))
+    expect_identical(l$shape2Phi, new("Scale", 2))
     expect_identical(l$nuAlpha, new("DegreesFreedom", 7.0))
     expect_identical(l$nuTau, new("DegreesFreedom", 7.0))
     expect_identical(length(l$omegaAlpha), 1L)

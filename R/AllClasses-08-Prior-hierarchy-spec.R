@@ -185,6 +185,10 @@ setClass("SpecExchRobustCov",
 #' parameter for the error term.
 #' @slot maxTau The maximum value for the standard
 #' deviation or scale parameter for the error term.
+#' @slot shape1Phi First 'sample size' parameter in beta
+#' prior for damping parameter.
+#' @slot shape2Phi Second 'sample size' parameter in beta
+#' prior for damping parameter.
 #'
 #' @seealso Object of class \code{SpecDLM} are generated
 #' using function \code{\link{DLM}}.
@@ -199,6 +203,7 @@ setClass("SpecDLM",
              "NuAlphaMixin",
              "PhiKnownMixin",
              "PhiMinMaxMixin",
+             "Shape1Shape2PhiMixin",
              "SpecAAlphaMixin",
              "SpecOmegaAlphaMaxMixin",
              "SpecPhiMixin"))
