@@ -609,6 +609,9 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendNormZeroNoSeason", {
         beta1 <- l[[1]]
         prior1 <- l[[2]]
         expect_is(prior1, "DLMWithTrendNormZeroNoSeason")
+        phi.updated <- FALSE
+        if (!phi.updated)
+            phi.updated <- prior1@phi != prior0@phi
         ## beta
         expect_true(all(beta1 != beta0))
         ## basic
@@ -623,19 +626,18 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendNormZeroNoSeason", {
         expect_identical(prior1@L, prior0@L)
         expect_identical(prior1@nuAlpha, prior0@nuAlpha)
         expect_true(prior1@omegaAlpha != prior0@omegaAlpha)
-        expect_true(prior1@phi != prior0@phi)
         expect_identical(prior1@phiKnown, prior0@phiKnown)
         expect_identical(prior1@minPhi, prior0@minPhi)
         expect_identical(prior1@maxPhi, prior0@maxPhi)
         ## Trend
         expect_identical(prior1@ADelta, prior0@ADelta)
         expect_true(all(prior1@deltaDLM != prior0@deltaDLM))
-        expect_false(identical(prior1@GWithTrend, prior0@GWithTrend))
         expect_identical(prior1@nuDelta, prior0@nuDelta)
         expect_true(prior1@omegaDelta != prior0@omegaDelta)
         expect_false(identical(prior1@WSqrt, prior0@WSqrt))
         expect_false(identical(prior1@WSqrtInvG, prior0@WSqrtInvG))
     }
+    expect_true(phi.updated)
 })
 
 test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithTrendNormZeroNoSeason", {
@@ -1192,6 +1194,9 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendNormCovWithSeason", {
         beta1 <- l[[1]]
         prior1 <- l[[2]]
         expect_is(prior1, "DLMNoTrendNormCovWithSeason")
+                phi.updated <- FALSE
+        if (!phi.updated)
+            phi.updated <- prior1@phi != prior0@phi
         ## beta
         expect_true(all(beta1 != beta0))
         ## basic
@@ -1206,7 +1211,6 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendNormCovWithSeason", {
         expect_identical(prior1@L, prior0@L)
         expect_identical(prior1@nuAlpha, prior0@nuAlpha)
         expect_true(prior1@omegaAlpha != prior0@omegaAlpha)
-        expect_true(prior1@phi != prior0@phi)
         expect_identical(prior1@phiKnown, prior0@phiKnown)
         expect_identical(prior1@minPhi, prior0@minPhi)
         expect_identical(prior1@maxPhi, prior0@maxPhi)
@@ -1222,6 +1226,7 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendNormCovWithSeason", {
         expect_identical(prior1@nSeason, prior0@nSeason)
         expect_identical(prior1@nuSeason, prior0@nuSeason)
     }
+    expect_true(phi.updated)
 })
 
 test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMNoTrendNormCovWithSeason", {
