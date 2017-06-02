@@ -112,6 +112,12 @@ parameter for the error term.}
 
 \item{\code{maxTau}}{The maximum value for the standard
 deviation or scale parameter for the error term.}
+
+\item{\code{shape1Phi}}{First 'sample size' parameter in beta
+prior for damping parameter.}
+
+\item{\code{shape2Phi}}{Second 'sample size' parameter in beta
+prior for damping parameter.}
 }}
 \section{Warning}{
 

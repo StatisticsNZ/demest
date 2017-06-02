@@ -10,7 +10,7 @@
 Priors specified using \code{\link{DLM}} can include damping terms.  The
 coefficient can be supplied and treated as known, in which case an object
 of class \code{DampKnown} is used. Alternatively, the coefficient can be
-estimated from the data, using a uniform prior, in which case an object
+estimated from the data, using a beta prior, in which case an object
 of class \code{DampUnknown} is used. \code{Damp} is a virtual superclass
 for \code{DampKnown} and \code{DampUnknown}.
 }
@@ -22,6 +22,12 @@ for \code{DampKnown} and \code{DampUnknown}.
 \item{\code{minPhi}}{Minimum value for coefficient.}
 
 \item{\code{maxPhi}}{Maximum value for coefficient.}
+
+\item{\code{shape1Phi}}{First 'sample size' parameter in beta
+prior for coefficient.}
+
+\item{\code{shape2Phi}}{Second 'sample size' parameter in beta
+prior for coefficient.}
 }}
 \section{Warning}{
 

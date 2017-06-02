@@ -273,7 +273,9 @@ prior.age.reg
 
 Finally, we add an age-year interaction, with a `Mix` prior. The 'mix' in the title is short for 'mixture model'. The model is something of a black box,  requires minimal input from users. It is designed for modelling complex patterns, including age-structures that change over time. See the help for `Mix` for more details. Since no explicit priors are given for the remaining main effects and interactions, the modelling functions will use defaults.
 ```{r}
-prior.age.year <- Mix()
+prior.age.year <- Mix(weights = Weights(scale1AR = HalfT(scale = 0.1),
+                                        scale2AR = HalfT(scale = 0.1)),
+                      error = Error(scale = HalfT(scale = 0.1)))
 prior.age.year
 ```
 
@@ -299,26 +301,24 @@ estimateModel(model.fancy,
               y = births,
               exposure = females,
               filename = filename.fancy.est,
-              nBurnin = 20000,
-              nSim = 20000,
-              nThin = 40,
+              nBurnin = 50000,
+              nSim = 50000,
+              nThin = 100,
               nChain = 4)
+fetchSummary(filename.fancy.est)
 predictModel(filename.fancy.est, 
              filename.fancy.pred, 
-             n = 10)
+             n = 20)
 rates.fancy <- fetchBoth(filenameEst = filename.fancy.est,
                          filenamePred = filename.fancy.pred,
                          where = c("model", "likelihood", "rate"))
 dplot(~ year | age * region,
       data = rates.fancy,
-      subarray = region %in% c("Auckland", "Taranaki", "Southland"))
+      subarray = region %in% c("Auckland", "Taranaki", "Southland"),
+      midpoints = "year")
 ```
 
-yields
 
-![](fancy.png)
-
-which, while not perfect, is an improvement.
 
 
 # Other models implemented in `demest`

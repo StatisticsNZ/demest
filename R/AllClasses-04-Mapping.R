@@ -2,9 +2,12 @@
 ## HAS_TESTS
 setClass("Mapping",
          slots = c(isOneToOne = "logical",
-                        nSharedVec = "integer",
-                        stepSharedCurrentVec = "integer",
-                        stepSharedTargetVec = "integer"),
+                   nSharedVec = "integer",
+                   stepSharedCurrentVec = "integer",
+                   stepSharedTargetVec = "integer",
+                   nTimeCurrent = "integer",
+                   stepTimeCurrent = "integer",
+                   stepTimeTarget = "integer"),
          prototype = prototype(isOneToOne = FALSE),
          contains = "VIRTUAL",
          validity = function(object) {
@@ -12,14 +15,17 @@ setClass("Mapping",
              nSharedVec <- object@nSharedVec
              stepSharedCurrentVec <- object@stepSharedCurrentVec
              stepSharedTargetVec <- object@stepSharedTargetVec
-             ## 'isOneToOne' has length 1
-             if (!identical(length(isOneToOne), 1L))
-                 stop(gettextf("'%s' does not have length %d",
-                               "isOneToOne", 1L))
-             ## 'isOneToOne' is not missing
-             if (is.na(isOneToOne))
-                 stop(gettextf("'%s' is missing",
-                               "isOneToOne"))
+             for (name in c("isOneToOne", "nTimeCurrent", "stepTimeCurrent", "stepTimeTarget")) {
+                 value <- methods::slot(object, name)
+                 ## isOneToOne, nTimeCurrent, stepTimeCurrent, stepTimeTarget have length 1
+                 if (!identical(length(value), 1L))
+                     return(gettextf("'%s' does not have length %d",
+                                     name, 1L))
+                 ## isOneToOne, nTimeCurrent, stepTimeCurrent, stepTimeTarget not missing
+                 if (is.na(value))
+                     return(gettextf("'%s' is missing",
+                                     name))
+             }             
              ## nSharedVec, stepSharedCurrentVec, stepSharedTargetVec,
              ## have no missing values
              for (name in c("nSharedVec", "stepSharedCurrentVec", "stepSharedTargetVec")) {
@@ -44,16 +50,23 @@ setClass("Mapping",
              if (!identical(length(nSharedVec), length(stepSharedTargetVec)))
                  return(gettextf("'%s' and '%s' have different lengths",
                                  "nSharedVec", "stepSharedTargetVec"))
+             ## nTimeCurrent, stepTimeCurrent, stepTimeTarget positive
+             for (name in c("nTimeCurrent", "stepTimeCurrent", "stepTimeTarget")) {
+                 value <- methods::slot(object, name)
+                 if (value < 1L)
+                     return(gettextf("'%s' is non-positive",
+                                     name))
+             }
              TRUE
          })
 
 ## HAS_TESTS
 setClass("MappingMixinAge",
          slots = c(hasAge = "logical",
-                        nAge = "integer",
-                        stepAgeCurrent = "integer",
-                        stepAgeTarget = "integer",
-                        stepTriangleCurrent = "integer"),
+                   nAge = "integer",
+                   stepAgeCurrent = "integer",
+                   stepAgeTarget = "integer",
+                   stepTriangleCurrent = "integer"),
          contains = "VIRTUAL",
          validity = function(object) {
              hasAge <- object@hasAge
@@ -108,22 +121,29 @@ setClass("MappingMixinAge",
          })
 
 ## HAS_TESTS
-setClass("MappingMixinAgeStrict",
-         contains = c("VIRTUAL", "MappingMixinAge"),
+setClass("MappingMixinIMinAge",
+         slots = c(iMinAge = "integer"),
+         contains = "VIRTUAL",
          validity = function(object) {
-             hasAge <- object@hasAge
-             if (!isTRUE(hasAge))
-                 return(gettextf("'%s' is %s",
-                                 "hasAge", "FALSE"))
+             iMinAge <- object@iMinAge
+             ## 'iMinAge' has length 1
+             if (!identical(length(iMinAge), 1L))
+                 return(gettextf("'%s' does not have length %d",
+                                 "iMinAge", 1L))
+             ## iMinAge positive if not missing
+             if (!is.na(iMinAge) && iMinAge <= 1L)
+                 return(gettextf("'%s' is non-positive",
+                                 "iMinAge"))
              TRUE
          })
+
 
 ## HAS_TESTS
 setClass("MappingMixinOrigDest",
          slots = c(nOrigDestVec = "integer",
-                        stepOrigCurrentVec = "integer",
-                        stepDestCurrentVec = "integer",
-                        stepOrigDestTargetVec = "integer"),
+                   stepOrigCurrentVec = "integer",
+                   stepDestCurrentVec = "integer",
+                   stepOrigDestTargetVec = "integer"),
          contains = "VIRTUAL",
          validity = function(object) {
              nOrigDestVec <- object@nOrigDestVec
@@ -163,81 +183,71 @@ setClass("MappingMixinOrigDest",
              TRUE
          })
 
-## HAS_TESTS
-setClass("MappingMixinTime",
-         slots = c(nTimeCurrent = "integer",
-                        stepTimeCurrent = "integer",
-                        stepTimeTarget = "integer"),
-         contains = "VIRTUAL",
-         validity = function(object) {
-             for (name in c("nTimeCurrent", "stepTimeCurrent", "stepTimeTarget")) {
-                 value <- methods::slot(object, name)
-                 ## nTimeCurrent, stepTimeCurrent, stepTimeTarget have length 1
-                 if (!identical(length(value), 1L))
-                     return(gettextf("'%s' does not have length %d",
-                                     name, 1L))
-                 ## nTimeCurrent, stepTimeCurrent, stepTimeTarget not missing
-                 if (is.na(value))
-                     return(gettextf("'%s' is missing",
-                                     name))
-                 ## nTimeCurrent, stepTimeCurrent, stepTimeTarget positive
-                 for (name in c("nTimeCurrent", "stepTimeCurrent", "stepTimeTarget")) {
-                     value <- methods::slot(object, name)
-                     if (value < 1L)
-                         return(gettextf("'%s' is non-positive",
-                                         name))
-                 }
-             }
-         })
-
-## HAS_TESTS
-setClass("MappingMixinIMinAge",
-         slots = c(iMinAge = "integer"),
-         contains = "VIRTUAL",
-         validity = function(object) {
-             iMinAge <- object@iMinAge
-             ## 'iMinAge' has length 1
-             if (!identical(length(iMinAge), 1L))
-                 return(gettextf("'%s' does not have length %d",
-                                 "iMinAge", 1L))
-             ## iMinAge positive if not missing
-             if (!is.na(iMinAge) && iMinAge <= 1L)
-                 return(gettextf("'%s' is non-positive",
-                                 "iMinAge"))
-             TRUE
-         })
 
 ## Mappings to population
 
+setClass("MappingToPopn",
+         contains = c("VIRTUAL",
+                      "Mapping",
+                      "MappingMixinAge"))
+
 ## HAS_TESTS
 setClass("MappingCompToPopn",
-         contains = c("Mapping", "MappingMixinAge", "MappingMixinTime"))
+         contains = "MappingToPopn")
 
 ## HAS_TESTS
 setClass("MappingOrigDestToPopn",
-         contains = c("Mapping", "MappingMixinOrigDest", "MappingMixinAge", "MappingMixinTime"))
+         contains = c("MappingToPopn",
+                      "MappingMixinOrigDest"))
 
 
 ## Mappings to accession
 
+setClass("MappingToAcc",
+         contains = c("VIRTUAL",
+                      "Mapping",
+                      "MappingMixinAge"))
+
 ## HAS_TESTS
 setClass("MappingCompToAcc",
-         contains = c("Mapping", "MappingMixinAgeStrict", "MappingMixinTime"))
+         contains = "MappingToAcc")
 
 ## HAS_TESTS
 setClass("MappingOrigDestToAcc",
-         contains = c("Mapping", "MappingMixinOrigDest", "MappingMixinAgeStrict",
-                      "MappingMixinTime"))
+         contains = c("MappingToAcc",
+                      "MappingMixinOrigDest"))
 
+
+## Mappings to Exposure
+
+## NO_TESTS
+setClass("MappingToExp",
+         contains = c("VIRTUAL",
+                      "Mapping"))
+
+## NO_TESTS
+setClass("MappingToExpFromComp",
+         contains = "MappingToExp")
+
+## NO_TESTS
+setClass("MappingToExpFromBirths",
+         contains = c("MappingToExp",
+                      "MappingMixinIMinAge"))
 
 
 ## Mappings from Exposure
 
 ## HAS_TESTS
-setClass("MappingExpToComp",
-         contains = "Mapping")
+setClass("MappingFromExp",
+         contains = c("VIRTUAL",
+                      "Mapping"))
 
 ## HAS_TESTS
-setClass("MappingExpToBirths",
-         contains = c("Mapping", "MappingMixinTime", "MappingMixinIMinAge"))
+setClass("MappingFromExpToComp",
+         contains = "MappingFromExp")
+
+## HAS_TESTS
+setClass("MappingFromExpToBirths",
+         contains = c("MappingFromExp",
+                      "MappingMixinIMinAge"))
 

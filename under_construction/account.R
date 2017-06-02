@@ -28,7 +28,7 @@ updateAccountMove <- function(combined, useC = FALSE) {
 updateProposalAccountMove <- function(combined, useC = FALSE) {
     stopifnot(is(combined, "CombinedAccountMove"))
     if (useC) {
-        .Call(updateAccountMove_R, combined)
+        .Call(updateProposalAccountMove_R, combined)
     }
     else {
         prob.popn <- combined@probPopn
@@ -55,95 +55,7 @@ updateProposalAccountMove <- function(combined, useC = FALSE) {
 }
 
 
-updateProposalAccountMovePopn <- function(combined, useC = FALSE) {
-    stopifnot(is(combined, "CombinedAccountMove"))
-    if (useC) {
-        .Call(updateProposalAccountMovePopn_R, combined)
-    }
-    else {
-        account <- combined@account
-        population <- account@population
-        has.age <- combined@hasAge
-        if (has.age) {
-            accession <- combined@accession
-            iterator.acc <- combined@iteratorAcc
-        }
-        description <- combined@descriptionPopn
-        iterator.popn <- combined@iteratorPopn
-        sys.mod.popn <- combined@system[[1L]]
-        theta.popn <- sys.mod.popn@theta
-        max.attempt <- combined@maxAttempt
-        i.cell <- chooseICellPopn(description.popn)
-        i.exp.comp.first <- getIExpCompFirstFromPopn(i = i.cell,
-                                                     description = description)
-        i.popn.next <- getIPopnNextFromPopn(i = i.cell,
-                                            description = description.popn)
-        min.val <- getMinValCohort(i = i.popn.next,
-                                   series = population,
-                                   iter = iterator.popn)
-        if (has.age) {
-            i.acc.next <- getIAccNextFromPopn(i = i.cell,
-                                              description = description.popn)
-            has.later.accession <- i.acc.next > 0L
-            if (has.later.accession) {
-                min.acc <- getMinValCohort(i = i.acc.next,
-                                           series = accession,
-                                           iter = iterator.acc)
-                min.val <- min(min.val, min.acc)
-            }
-        }
-        val.curr <- population[i.cell]
-        lower <- val.curr - min.val
-        upper <- NA_integer_
-        lambda <- theta[i.cell]
-        val.prop <- rpoisTrunc1(lambda = lambda,
-                                lower = lower,
-                                upper = upper,
-                                maxAttempt = max.attempt)
-        found.value <- !is.na(val.prop)
-        if (found.value) {
-            diff.prop <- val.prop - val.curr
-            generated.new.proposal <- diff.prop != 0L
-        }
-        else
-            generated.new.proposal <- FALSE
-        if (generated.new.proposal) {
-            combined@iCell <- i.cell
-            combined@iCellOther <- NA_integer_
-            combined@isLowerTriangle <- NA
-            combined@iPopnNext <- i.popn.next
-            combined@iPopnNextOther <- NA_integer_
-            if (has.age) {
-                combined@iAccNext <- i.acc.next
-                combined@iAccNextOther <- NA_integer_
-            }
-            else {
-                combined@iAccNext <- NA_integer_
-                combined@iAccNextOther <- NA_integer_
-            }
-            combined@iExposure <- NA_integer_
-            combined@iExposureOther <- NA_integer_
-            combined@iExpCompFirst <- i.exp.comp.first
-            combined@iExpCompFirstOther <- NA_integer_
-            combined@diffProp <- diff.prop
-        }
-        else {
-            combined@iCell <- NA_integer_
-            combined@iCellOther <- NA_integer_
-            combined@isLowerTriangle <- NA
-            combined@iPopnNext <- NA_integer_
-            combined@iPopnNextOther <- NA_integer_
-            combined@iAccNext <- NA_integer_
-            combined@iAccNextOther <- NA_integer_
-            combined@iExposure <- NA_integer_
-            combined@iExposureOther <- NA_integer_
-            combined@iExpCompFirst <- NA_integer_
-            combined@iExpCompFirstOther <- NA_integer_
-            combined@diffProp <- NA_integer_
-        }
-        combined
-    }
-}
+
 
 updateProposalAccountMoveOrigDest <- function(combined, useC = FALSE) {
     stopifnot(is(combined, "CombinedAccountMove"))
@@ -451,7 +363,7 @@ updateProposalAccountMoveNet <- function(combined) {
         i.cell.2 <- pair.cell[2L]
         is.lower.triangle <- isLowerTriangle(i = i.cell,
                                              description = description.comp)
-        i.exp.comp.first.1 <- getIExpCompFirstFromComp(i = i.cell.1,
+        i.exp.comp.first.1 <- getIExpCompFirstFromComp(i = i.cell.1, # needed??
                                                        mapping = mapping.exposure)
         i.exp.comp.first.2 <- getIExpCompFirstFromComp(i = i.cell.2,
                                                        mapping = mapping.exposure)
@@ -561,7 +473,6 @@ updateProposalAccountMoveComp <- function(combined) {
             mapping.acc <- combined@mappingsToAcc[[i.comp]]
         }        
         mapping.to.popn <- combined@mappingsToPopn[[i.comp]]
-        mapping.to.exposure <- combined@mappingsToExposure[[i.comp]]
         iterator.popn <- combined@iteratorPopn
         uses.exposure <- combined@usesExposure[[i.comp]]
         if (uses.exposure) {
@@ -1417,7 +1328,7 @@ diffLogDensAccountMove <- function(combined, useC = FALSE) {
         else {
             if (uses.exposure[i.comp])
                 ans <- ans + diffLogDensJumpComp(combined)
-            ans <- ans + difLogDensExpComp(combined)
+            ans <- ans + diffLogDensExpComp(combined)
         }
         ans
     }
@@ -1868,7 +1779,8 @@ diffLogDensExpComp <- function(combined, useC = FALSE) {
                     ans <- ans + ans.one
                 }
                 else {
-                    i.cell <- getICellCompFromExpose(mapping = mapping, i = i.exp.comp.first)
+                    i.cell <- getICellCompFromExpose(mapping = mapping,
+                                                     i = i.exp.comp.first)
                     ans.one <- diffLogDensExpOneComp(iCell = i.cell,
                                                      component = component,
                                                      theta = theta,
@@ -2050,7 +1962,7 @@ diffLogDensExpOneComp <- function(iCell, component, theta, iteratorComp,
             comp.curr <- component[i.c]
             expose.curr <- exposure[i.e]
             expose.prop <- expose.curr + diff.expose
-            if ((expose.prop < kToleranceExposure) && (comp.corr > 0L))
+            if ((expose.prop < kToleranceExposure) && (comp.curr > 0L))
                 return(-Inf)
             diff.log.expose <- log(expose.prop) - log(expose.curr)
             theta.curr <- theta[i.c]
@@ -2417,12 +2329,6 @@ updateObservation <- function(combined) {
 
 ## HELPER FUNCTIONS ################################################
 
-
-
-getIExpCompFirstFromPopn <- function(i, description) {
-    NULL
-}
-
 getIExpCompFirstFromOrigDest <- function(i, mapping) {
     n.shared.vec <- mapping@nSharedVec
     step.shared.comp.vec <- mapping@stepSharedCurrentVec
@@ -2550,11 +2456,8 @@ rnormIntTrunc1 <- function(mean, sd, lower, upper, maxAttempt, useC = FALSE) {
 
 ## NEW CLASSES #################################################################
 
-
-
-
 setClass("System",
-         representation(system = "list"),
+         slots(system = "list"),
          contains = "VIRTUAL",
          validity = function(object) {
              system <- object@system
@@ -2562,29 +2465,263 @@ setClass("System",
              TRUE
          })
 
-## MovementsAccount plus some extra objects needed for updating.
-## Not visible to users.
-setClass("MovementsAccountInternal",
-         representation(accession = "Accession",
-                        descriptionPopn = "DescriptionPopn",
-                        descriptionsComp = "list",
-                        mappingsToPopn = "list",
-                        mappingsToAcc = "list",
-                        mappingsToExposure = "list",
-                        mappingsFromExposure = "list"),
-         prototype(slotsToExtract = c("account", "system", "observation")),
-         contains = c("MovementsAccount", "Accession",
-             "MappingPopn", "MappingComp", "IsIncrement",
-             "ProbPopn", "CumProbComp", "NCellAccount",
-             "ICell", "DiffVal", "IAffectedPopn", "IAffectedAcc",
-             "SlotsToExtract"),
+
+setClass("MappingsToPopnMixin",
+         slots(mappingsToPopn = "list"),
+         contains = "VIRTUAL",
          validity = function(object) {
-             ## 'accession' and 'population' have identical dimensions apart from time
+             mappingsToPopn <- object@mappingsToPopn
+             components <- object@components
+             ## all elements have class "MappingToPopn"
+             if (!all(sapply(mappingsToPopn, methods::is, "MappingToPopn")))
+                 return(gettextf("'%s' has elements not of class \"%s\"",
+                                 "mappingsToPopn", "MappingToPopn"))
+             ## has same length as 'components'
+             if (!identical(length(mappingsToPopn), length(components)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "mappingsToPopn", "components"))
+             ## element has class "MappingOrigDestToPopn" iff corresponding
+             ## element of 'components' has class "HasOrigDest",
+             is.mapping.orig.dest <- sapply(components, methods::is, "MappingOrigDestToPopn")
+             is.has.orig.dest <- sapply(components, methods::is, "HasOrigDest")
+             if (!identical(is.mapping.orig.dest, is.has.orig.dest))
+                 return(gettextf("elements of '%s' must have class \"%s\" iff correspondening element of '%s' has class \"%s\"",
+                                 "mappingsToPopn", "MappingOrigDestToPopn", "components", "HasOrigDest"))             
+             TRUE
+         })
+
+setClass("MappingsToAccMixin",
+         slots(mappingsToAcc = "list"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             mappingsToAcc <- object@mappingsToAcc
+             components <- object@components
+             ## all elements have class "MappingToAcc"
+             if (!all(sapply(mappingsToAcc, methods::is, "MappingToAcc")))
+                 return(gettextf("'%s' has elements not of class \"%s\"",
+                                 "mappingsToAcc", "MappingToAcc"))
+             ## has same length as 'components'
+             if (!identical(length(mappingsToAcc), length(components)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "mappingsToAcc", "components"))
+             ## element has class "MappingOrigDestToAcc" iff corresponding
+             ## element of 'components' has class "HasOrigDest",
+             is.mapping.orig.dest <- sapply(components, methods::is, "MappingOrigDestToAcc")
+             is.has.orig.dest <- sapply(components, methods::is, "HasOrigDest")
+             if (!identical(is.mapping.orig.dest, is.has.orig.dest))
+                 return(gettextf("elements of '%s' must have class \"%s\" iff correspondening element of '%s' has class \"%s\"",
+                                 "mappingsToAcc", "MappingOrigDestToAcc", "components", "HasOrigDest"))             
+             TRUE
+         })
+
+
+setClass("ICellMixin",
+         slots(iCell = "integer",
+               iCellOther = "integer"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             for (name in c("iCell", "iCellOther")) {
+                 value <- slot(object, name)
+                 ## 'iCell', 'iCellOther' have length 1
+                 if (!identical(length(value), 1L))
+                     return(gettextf("'%s' does not have length %d",
+                                     name, 1L))
+                 ## if 'iCell', 'iCellOther' not missing, they are greater than or equal to 1
+                 if (!is.na(value) && value < 1L)
+                     return(gettextf("'%s' is less than %d",
+                                     name, 1L))
+             }
+             TRUE
+         })
+
+setClass("IsLowerTriangle",
+         slots(isLowerTriangle = "logical"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             isLowerTriangle <- object@isLowerTriangle
+             ## 'isLowerTriangle' has length 1
+             if (!identical(length(isLowerTriangle), 1L))
+                 return(gettextf("'%s' does not have length %d",
+                                 "lowerTriangle", 1L))
+             TRUE
+         })
+
+
+setClass("IPopnNextMixin",
+         slots(iPopnNext = "integer",
+               iPopnNextOther = "integer"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             iPopnNext <- object@iPopnNext
+             iPopnNextOther <- object@iPopnNextOther
+             population <- object@population
+             n.population <- length(population)
+             for (name in c("iPopnNext", "iPopnNextOther")) {
+                 value <- slot(object, name)
+                 ## 'iPopnNext', 'iPopnNextOther' have length 1
+                 if (!identical(length(value), 1L))
+                     return(gettextf("'%s' does not have length %d",
+                                     name, 1L))
+                 ## if 'iPopnNext', 'iPopnNextOther' not missing, they are greater than or equal to 0L
+                 if (!is.na(value) && (value < 0L))
+                     return(gettextf("'%s' is less than %d",
+                                     name, 1L))
+                 ## if 'iPopnNext', 'iPopnNextOther' not missing, they are less than or
+                 ## equal to length of 'population'
+                 if (!is.na(value) && (value > n.population))
+                     return(gettextf("'%s' is greater than the length of '%s'",
+                                     name, "population"))
+             }
+             ## if 'iPopnNext' and 'iPopnNextOther' not missing, they have different values
+             if (!is.na(iPopnNext) && !is.na(iPopnNextOther) && (iPopnNext == iPopnNextOther))
+                 return(gettextf("'%s' equals '%s'",
+                                 "iPopnNext", "iPopnNextOther"))
+             TRUE
+         })
+
+
+setClass("IAccNextMixin",
+         slots(iAccNext = "integer",
+               iAccNextOther = "integer"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             iAccNext <- object@iAccNext
+             iAccNextOther <- object@iAccNextOther
+             for (name in c("iAccNext", "iAccNextOther")) {
+                 value <- slot(object, name)
+                 ## 'iAccNext', 'iAccNextOther' have length 1
+                 if (!identical(length(value), 1L))
+                     return(gettextf("'%s' does not have length %d",
+                                     name, 1L))
+                 ## if 'iAccNext', 'iAccNextOther' not missing, they are greater than or equal to 0L
+                 if (!is.na(value) && (value < 0L))
+                     return(gettextf("'%s' is less than %d",
+                                     name, 1L))
+                 ## if 'iAccNext', 'iAccNextOther' not missing, they are less than or
+                 ## equal to length of 'accession'
+                 if (!is.na(value)) {
+                     accession <- object@accession
+                     n.accession <- length(accession)
+                     return(gettextf("'%s' is greater than the length of '%s'",
+                                     name, "accession"))
+                 }
+             }
+             ## if 'iAccNext' and 'iAccNextOther' not missing, they have different values
+             if (!is.na(iAccNext) && !is.na(iAccNextOther) && (iAccNext == iAccNextOther))
+                 return(gettextf("'%s' equals '%s'",
+                                 "iAccNext", "iAccNextOther"))
+             TRUE
+         })
+
+## the index of the cell in 'exposure' corresponding
+## to the cell being updated
+setClass("IExposureMixin",
+         slots(iExposure = "integer",
+               iExposureOther = "integer"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             iExposure <- object@iExposure
+             iExposureOther <- object@iExposureOther
+             for (name in c("iExposure", "iExposureOther")) {
+                 value <- slot(object, name)
+                 ## 'iExposure', 'iExposureOther' have length 1
+                 if (!identical(length(value), 1L))
+                     return(gettextf("'%s' does not have length %d",
+                                     name, 1L))
+                 ## if 'iExposure', 'iExposureOther' not missing, they are greater than or equal to 1L
+                 if (!is.na(value) && (value < 1L))
+                     return(gettextf("'%s' is less than %d",
+                                     name, 1L))
+                 ## if 'iExposure', 'iExposureOther' not missing, they are less than or
+                 ## equal to length of 'exposure'
+                 if (!is.na(value)) {
+                     exposure <- object@exposure
+                     n.exposure <- length(exposure)
+                     if (value > n.exposure)
+                         return(gettextf("'%s' is greater than the length of '%s'",
+                                         name, "exposure"))
+                 }
+             }
+             ## if 'iExposure' and 'iExposureOther' not missing, they have different values
+             if (!is.na(iExposure) && !is.na(iExposureOther) && (iExposure == iExposureOther))
+                 return(gettextf("'%s' equals '%s'",
+                                 "iExposure", "iExposureOther"))
+             TRUE
+         })
+
+## the index of the first cell in 'exposure' that
+## will change if the cell being updated is changed
+setClass("IExpCompFirstMixin",
+         slots(iExpCompFirst = "integer",
+               iExpCompFirstOther = "integer"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             iExpCompFirst <- object@iExpCompFirst
+             iExpCompFirstOther <- object@iExpCompFirstOther
+             for (name in c("iExpCompFirst", "iExpCompFirstOther")) {
+                 value <- slot(object, name)
+                 ## 'iExpCompFirst', 'iExpCompFirstOther' have length 1
+                 if (!identical(length(value), 1L))
+                     return(gettextf("'%s' does not have length %d",
+                                     name, 1L))
+                 ## if 'iExpCompFirst', 'iExpCompFirstOther' not missing, they are greater than or equal to 1L
+                 if (!is.na(value) && (value < 1L))
+                     return(gettextf("'%s' is less than %d",
+                                     name, 1L))
+                 if (!is.na(value)) {
+                     ## if 'iExpCompFirst', 'iExpCompFirstOther' not missing, they are less than or
+                     ## equal to length of 'exposure'
+                     exposure <- object@exposure
+                     n.exposure <- length(exposure)
+                     if (value > n.exposure)
+                         return(gettextf("'%s' is greater than the length of '%s'",
+                                         name, "exposure"))
+                     ## if 'iExpCompFirst', 'iExpCompFirstOther' not missing,
+                     ## iExposure and iExposureOther not missing
+                     name.i.exp <- if (name == "iExpCompFirstFirst") "iExposure" else "iExposureOther"
+                     val.i.exp <- slot(object, name.i.exp)
+                     if (value <= val.i.exp)
+                         return(gettextf("'%s' less than or equal to '%s'",
+                                         name, name.i.exp))
+                 }
+             }
+             ## if 'iExpCompFirst' and 'iExpCompFirstOther' not missing, they have different values
+             if (!is.na(iExpCompFirst) && !is.na(iExpCompFirstOther) && (iExpCompFirst == iExpCompFirstOther))
+                 return(gettextf("'%s' equals '%s'",
+                                 "iExpCompFirst", "iExpCompFirstOther"))
+             TRUE
+         })
+
+setClass("MovementsAccountInternal",
+         slots(accession = "Accession",
+               descriptionPopn = "DescriptionPopn",
+               descriptionsComp = "list",
+               exposure = "Exposure",
+               mappingsToExposure = "list",
+               mappingsFromExposure = "list"),
+         prototype(slotsToExtract = c("account", "system", "observation")),
+         contains = c("MovementsAccount",
+                      "MappingsToPopnMixin",
+                      "MappingsToAccMixin",
+
+
+                      "MappingsToExpMixin",
+                      "MappingsFromExpMixin",
+
+
+                      "MappingPopn", "MappingComp", "IsIncrement",
+                      "ProbPopn", "CumProbComp", "NCellAccount",
+                      "ICell", "DiffVal", "IAffectedPopn", "IAffectedAcc",
+                      "SlotsToExtract"),
+         validity = function(object) {
+             ## 'accession' and 'population' have identical dimensions apart from time and age
+             ## accession does not start at age 0 (otherwise have to have different mappings
+             ## to accession, depending on whether account includes births)
              TRUE
          })
 
 setClass("CombinedAccount",
-         representation(account = "DemographicAccount"),
+         slots(account = "DemographicAccount"),
          contains = c("VIRTUAL", "AddToExpose", "MaxAttempt"))
 
 setClass("CombinedAccountMove",
@@ -2594,23 +2731,21 @@ setClass("CombinedAccountMove",
              TRUE
          })
 
-setClass("CombinedAccountMoveEst",
-         contains = c("CombinedAccountMove",
-             "System", "Observation"))
-
-## WHAT IS THIS??
-setClass("CombinedAccountMoveProj",
-         contains = c("CombinedAccountMove",
-             "Thetas"))
-
-setClass("CombinedAccountTransEst",
-         contains = c("CombinedAccountTrans",
-             "System", "Observation"))
-
-setClass("CombinedAccountMoveProj",
-         contains = c("CombinedAccountTrans", "Thetas"))
-
-
+setClass("diffProp",
+         slots(diffProp = "integer"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             diffProp <- object@diffProp
+             ## 'diffProp' has length 1
+             if (!identical(length(diffProp), 1L))
+                 return(gettextf("'%s' does not have length %d",
+                                 "diffProp", 1L))
+             ## if 'diffProp' not missing, is greater than or equal to 1
+             if (!is.na(diffProp) && value < 1L)
+                 return(gettextf("'%s' is less than %d",
+                                 name, 1L))
+             TRUE
+         })
 
 ## NO_TESTS
 setMethod("updateCombined",
@@ -2644,7 +2779,7 @@ setMethod("updateCombined",
 
 ## ## NO_TESTS
 ## setClass("CombinedAccount",
-##          representation(population = "Population",
+##          slots(population = "Population",
 ##                         mappingPopn = "Mapping",
 ##                         accession = "Accession",
 ##                         components = "list",
@@ -2684,7 +2819,7 @@ setMethod("updateCombined",
 ##          })
 
 ## setClass("CombinedAccountMovements",
-##          representation(population = "Counts",
+##          slots(population = "Counts",
 ##                         components = "list",
 ##                         namesComponents = "character",
 ##                         system = "list"),

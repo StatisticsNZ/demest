@@ -24,12 +24,12 @@ setMethod("Description",
               }
               length <- length(object)
               methods::new("DescriptionPopn",
-                  nTime = n.time,
-                  stepTime = step.time,
-                  hasAge = has.age,
-                  nAge = n.age,
-                  stepAge = step.age,
-                  length = length)
+                           nTime = n.time,
+                           stepTime = step.time,
+                           hasAge = has.age,
+                           nAge = n.age,
+                           stepAge = step.age,
+                           length = length)
           })
 
 ## HAS_TESTS

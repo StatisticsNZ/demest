@@ -20,6 +20,7 @@
 \alias{show,SpecDLM-method}
 \alias{show,SpecExch-method}
 \alias{show,SpecExchFixed-method}
+\alias{show,SpecKnown-method}
 \alias{show,SpecLikelihoodBinomial-method}
 \alias{show,SpecLikelihoodNormalVarsigmaKnown-method}
 \alias{show,SpecLikelihoodNormalVarsigmaUnknown-method}
@@ -30,6 +31,7 @@
 \alias{show,SpecNormalVaryingVarsigmaUnknown-method}
 \alias{show,SpecPoissonBinomialMixture-method}
 \alias{show,SpecPoissonVarying-method}
+\alias{show,SpecZero-method}
 \alias{show,Trend-method}
 \alias{show,Weights-method}
 \alias{show-methods}
@@ -91,9 +93,13 @@
 
 \S4method{show}{SpecExchFixed}(object)
 
+\S4method{show}{SpecKnown}(object)
+
 \S4method{show}{SpecMix}(object)
 
 \S4method{show}{Weights}(object)
+
+\S4method{show}{SpecZero}(object)
 }
 \arguments{
 \item{object}{Object of class \code{\linkS4class{SpecModel}},

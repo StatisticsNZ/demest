@@ -4,7 +4,7 @@
 \alias{Damp}
 \title{Specify the amount of damping in a DLM prior.}
 \usage{
-Damp(coef = NULL, min = 0.8, max = 0.98)
+Damp(coef = NULL, shape1 = 2, shape2 = 2, min = 0.8, max = 1)
 }
 \arguments{
 \item{coef}{A number between 0 and 1.}
@@ -44,7 +44,7 @@ and in linear trend model, the trend term has the form
 (See the documentation for function \code{\link{DLM}} for
 an explanation of the \code{k,l} subscripts.)
 
-Values of for \code{damp} are restricted to the range \code{0 < damp <= 1}.
+Values of for \code{damp} are restricted to the range \code{0 <= damp <= 1}.
 In linear trend models, including a damping term with a value near 1
 typically results in more accurate forecasts (Hyndman et al 2008).  There
 are exceptions, however: for instance, damping of the trend for the time
@@ -52,11 +52,16 @@ effect is probably not appropriate in mortality forecasts for developed
 countries (Oeppen and Vaupel 2002).  Damping is also not necessary
 appropriate in local level models.
 
-The user set the level of damping by providing a value for the
+The user can set the level of damping by providing a value for the
 \code{coef} argument.  Alternatively, an appropriate value can be inferred
-from the data, using a uniform prior, with limits set by arguments
-\code{min} and \code{max}.  The default for \code{min} and \code{max}
-are based on function \code{ets} in package \pkg{forecast}.
+from the data, using a beta prior on the transformed parameter
+\code{(damp - min)/(max - min)}.  The beta prior is specified
+using parameters \code{shape1} and \code{shape1}.  The default
+values give a boundary-avoiding prior, confined to the range \code{(min, max)},
+with \code{min} defaulting to 0.8 and \code{max} defaulting to \code{1}.
+(See Gelman et al 2014, pp313-318, for a definition
+of boundary-avoiding priors.) Setting \code{shape1 = 1} and \code{shape2 = 1}
+gives a uniform prior on the range \code{(min, max)}.
 
 Setting the \code{damp} argument to \code{NULL} in function
 \code{\link{DLM}} turns off damping.
@@ -70,6 +75,13 @@ Damp(coef = 0.95)
 
 ## estimate, but restrict to values between 0.85 and 0.95
 Damp(min = 0.85, max = 0.95)
+
+## uniform prior on the range (0, 1)
+Damp(min = 0, max = 1, shape1 = 1, shape2 = 1)
+
+## informative prior favouring high values, but
+## not ruling out any value between 0 and 1
+Damp(min = 0, max = 1, shape1 = 9, shape2 = 1)
 }
 \references{
 Hyndman, R., Koehler, A. B., Ord, J. K., & Snyder, R. D. (2008).

@@ -5,11 +5,11 @@
 ## HAS_TESTS
 setClass("Description",
          slots = c(nTime = "integer",
-                        stepTime = "integer",
-                        hasAge = "logical",
-                        nAge = "integer",
-                        stepAge = "integer",
-                        length = "integer"),
+                   stepTime = "integer",
+                   hasAge = "logical",
+                   nAge = "integer",
+                   stepAge = "integer",
+                   length = "integer"),
          contains = "VIRTUAL",
          validity = function(object) {
              nTime <- object@nTime

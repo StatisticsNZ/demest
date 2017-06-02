@@ -725,3 +725,170 @@ test_that("Mapping creates object of class MappingCompToAcc from object of class
                         stepTriangleCurrent = 36L)
     expect_identical(ans.obtained, ans.expected)
 })
+
+
+## births no parent
+
+test_that("Mapping creates object of class MappingCompToAcc from object of class BirthsMovementNoParentChild", {
+    Mapping <- demest:::Mapping
+    BirthsMovements <- dembase:::BirthsMovements
+    Accession <- dembase:::Accession
+    makeTemplateComponent <- dembase:::makeTemplateComponent
+    ## has age; no shared dimensions
+    births <- Counts(array(1:12,
+                           dim = c(2, 3, 2),
+                           dimnames = list(age = c("5-9", "10-14"),
+                                           time = c("2001-2005", "2006-2010", "2011-2015"),
+                                           triangle = c("TL", "TU"))))
+    population <- Counts(array(1:16,
+                               dim = c(4, 4),
+                               dimnames = list(age = c("0-4", "5-9", "10-14", "15+"),
+                                               time = c(2000, 2005, 2010, 2015))))
+    template <- makeTemplateComponent(population)
+    births <- BirthsMovements(births, template = template)
+    accession <- Counts(array(1:12,
+                              dim = c(4, 3),
+                              dimnames = list(age = c("5", "10", "15", "20"),
+                                              time = c("2001-2005", "2006-2010", "2011-2015"))))
+    accession <- Accession(accession)
+    ans.obtained <- Mapping(current = births,
+                            target = accession)
+    ans.expected <- new("MappingCompToAcc",
+                        nTimeCurrent = 3L,
+                        stepTimeCurrent = 2L,
+                        stepTimeTarget = 4L,
+                        nSharedVec = integer(),
+                        stepSharedCurrentVec = integer(),
+                        stepSharedTargetVec = integer(),
+                        hasAge = FALSE,
+                        nAge = NA_integer_,
+                        stepAgeCurrent = NA_integer_,
+                        stepAgeTarget = NA_integer_,
+                        stepTriangleCurrent = NA_integer_)
+    expect_identical(ans.obtained, ans.expected)
+    ## has age; shared dimensions
+    births <- Counts(array(1:36,
+                           dim = c(3, 2, 3, 2),
+                           dimnames = list(reg = 1:3,
+                                           age = c("5-9", "10-14"),
+                                           time = c("2001-2005", "2006-2010", "2011-2015"),
+                                           triangle = c("TL", "TU"))))
+    population <- Counts(array(1:48,
+                              dim = c(3, 4, 4),
+                              dimnames = list(reg = 1:3,
+                                              age = c("0-4", "5-9", "10-14", "15+"),
+                                              time = c(2000, 2005, 2010, 2015))))
+    template <- makeTemplateComponent(population)
+    births <- BirthsMovements(births, template = template)
+    accession <- Counts(array(1:36,
+                              dim = c(3, 4, 3),
+                              dimnames = list(reg = 1:3,
+                                              age = c("5", "10", "15", "20"),
+                                              time = c("2001-2005", "2006-2010", "2011-2015"))))
+    accession <- Accession(accession)
+    ans.obtained <- Mapping(current = births,
+                            target = accession)
+    ans.expected <- new("MappingCompToAcc",
+                        nTimeCurrent = 3L,
+                        stepTimeCurrent = 6L,
+                        stepTimeTarget = 12L,
+                        nSharedVec = 3L,
+                        stepSharedCurrentVec = 1L,
+                        stepSharedTargetVec = 1L,
+                        hasAge = FALSE,
+                        nAge = NA_integer_,
+                        stepAgeCurrent = NA_integer_,
+                        stepAgeTarget = NA_integer_,
+                        stepTriangleCurrent = NA_integer_)
+    expect_identical(ans.obtained, ans.expected)
+})
+
+## births has parent
+
+test_that("Mapping creates object of class MappingCompToAcc from object of class BirthsMovementHasParentChild", {
+    Mapping <- demest:::Mapping
+    BirthsMovements <- dembase:::BirthsMovements
+    Accession <- dembase:::Accession
+    makeTemplateComponent <- dembase:::makeTemplateComponent
+    ## has age; no shared dimensions
+    births <- Counts(array(1:108,
+                           dim = c(2, 3, 3, 3, 2),
+                           dimnames = list(age = c("5-9", "10-14"),
+                               time = c("2001-2005", "2006-2010", "2011-2015"),
+                               eth_parent = 1:3,
+                               eth_child = 1:3,
+                               triangle = c("TL", "TU"))))
+    population <- Counts(array(1:24,
+                               dim = c(4, 4, 3),
+                               dimnames = list(age = c("0-4", "5-9", "10-14", "15+"),
+                                   time = c(2000, 2005, 2010, 2015),
+                                   eth = 1:3)))
+    template <- makeTemplateComponent(population)
+    births <- BirthsMovements(births, template = template)
+    accession <- Counts(array(1:24,
+                              dim = c(4, 3, 3),
+                              dimnames = list(age = c("5", "10", "15", "20"),
+                                   time = c("2001-2005", "2006-2010", "2011-2015"),
+                                   eth = 1:3)))
+    accession <- Accession(accession)
+    ans.obtained <- Mapping(current = births,
+                            target = accession)
+    ans.expected <- new("MappingCompToAcc",
+                        nTimeCurrent = 3L,
+                        stepTimeCurrent = 2L,
+                        stepTimeTarget = 4L,
+                        nSharedVec = 3L,
+                        stepSharedCurrentVec = 18L,
+                        stepSharedTargetVec = 12L,
+                        hasAge = FALSE,
+                        nAge = NA_integer_,
+                        stepAgeCurrent = NA_integer_,
+                        stepAgeTarget = NA_integer_,
+                        stepTriangleCurrent = NA_integer_)
+    expect_identical(ans.obtained, ans.expected)
+    ## has age; shared dimensions
+    births <- Counts(array(1:1296,
+                           dim = c(3, 2, 2, 3, 3, 2, 3, 2),
+                           dimnames = list(reg = 1:3,
+                               eth_parent = 1:2,
+                               eth_child = 1:2,
+                               occ_parent = 1:3,
+                               occ_child = 1:3,
+                               age = c("5-9", "10-14"),
+                               time = c("2001-2005", "2006-2010", "2011-2015"),
+                               triangle = c("TL", "TU"))))
+    population <- Counts(array(1:288,
+                               dim = c(3, 2, 3, 4, 4),
+                               dimnames = list(reg = 1:3,
+                                   eth = 1:2,
+                                   occ = 1:3,
+                                   age = c("0-4", "5-9", "10-14", "15+"),
+                                   time = c(2000, 2005, 2010, 2015))))
+    template <- makeTemplateComponent(population)
+    births <- BirthsMovements(births, template = template)
+    accession <- Counts(array(1:216,
+                               dim = c(3, 2, 3, 4, 3),
+                               dimnames = list(reg = 1:3,
+                                   eth = 1:2,
+                                   occ = 1:3,
+                                   age = c("5", "10", "15", "20"),
+                                   time = c("2001-2005", "2006-2010", "2011-2015"))))
+    accession <- Accession(accession)
+    ans.obtained <- Mapping(current = births,
+                            target = accession)
+    ans.expected <- new("MappingCompToAcc",
+                        nTimeCurrent = 3L,
+                        stepTimeCurrent = 216L,
+                        stepTimeTarget = 72L,
+                        nSharedVec = c(3L, 2L, 3L),
+                        stepSharedCurrentVec = c(1L, 6L, 36L),
+                        stepSharedTargetVec = c(1L, 3L, 6L),
+                        hasAge = FALSE,
+                        nAge = NA_integer_,
+                        stepAgeCurrent = NA_integer_,
+                        stepAgeTarget = NA_integer_,
+                        stepTriangleCurrent = NA_integer_)
+    expect_identical(ans.obtained, ans.expected)
+})
+
+

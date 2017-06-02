@@ -8792,6 +8792,38 @@ getIAccNextFromPopn <- function(i, description, useC = FALSE) {
     }
 }
 
+## READY_TO_TRANSLATE
+## HAS_TESTS
+## Assumes that the Lexis triangle dimension is the
+## last dimension in 'exposure'.
+## We only ever update population values for the beginning
+## of the first period.
+getIExpCompFirstFromPopn <- function(i, description, useC = FALSE) {
+    ## 'i'
+    stopifnot(is.integer(i))
+    stopifnot(identical(length(i), 1L))
+    stopifnot(!is.na(i))
+    stopifnot(i >= 1L)
+    ## 'description'
+    stopifnot(methods::is(description, "DescriptionPopn"))
+    ## 'i' and 'description'
+    stopifnot(i <= description@length)
+    stopifnot((((i - 1L) %/% description@stepTime) %% description@nTime) == 0L) # first time point
+    if (useC) {
+        .Call(getIExpCompFirstFromPopn_R, i, description)
+    }
+    else {            
+        n.time.popn <- description@nTime
+        step.time <- description@stepTime
+        length.popn <- description@length
+        n.time.tri <- n.time.popn - 1L
+        length.lower.tri <- (length.popn * n.time.tri) %/% n.time.popn
+        n.cycles.completed <- (i - 1L) %/% (n.time.popn * step.time)
+        remainder <- (i - 1L) %% (n.time.popn * step.time) + 1L
+        index.upper.tri <- n.cycles.completed * n.time.tri * step.time + remainder
+        length.lower.tri + index.upper.tri
+    }
+}
 
 ## TRANSLATED
 ## HAS_TESTS

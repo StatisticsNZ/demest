@@ -12020,6 +12020,72 @@ test_that("R and C versions of getIAccNextFromPopn give same answer", {
     expect_identical(ans.R, ans.C)
 })
 
+test_that("getIExpCompFirstFromPopn works", {
+    getIExpCompFirstFromPopn <- demest:::getIExpCompFirstFromPopn
+    exposureWithTriangles <- dembase:::exposureWithTriangles
+    Description <- demest:::Description
+    Population <- dembase:::Population
+    ## time is first dimension of two
+    population <- Counts(array(1:6,
+                               dim = c(3, 2),
+                               dimnames = list(time = c(2000, 2010, 2020),
+                                               age = c("0-9", "10+"))))
+    exposure <- exposureWithTriangles(population)
+    population <- Population(population)
+    description <- Description(population)
+    ans.obtained <- getIExpCompFirstFromPopn(description, i = 1L)
+    ans.expected <- 5L
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- getIExpCompFirstFromPopn(description, i = 4L)
+    ans.expected <- 7L
+    expect_identical(ans.obtained, ans.expected)
+    ## time is second dimension of two
+    population <- Counts(array(1:9,
+                               dim = c(3, 3),
+                               dimnames = list(age = c("0-9", "10-19", "20+"),
+                                               time = c(2000, 2010, 2020))))
+    exposure <- exposureWithTriangles(population)
+    population <- Population(population)
+    description <- Description(population)
+    ans.obtained <- getIExpCompFirstFromPopn(description, i = 1L)
+    ans.expected <- 7L
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- getIExpCompFirstFromPopn(description, i = 2L)
+    ans.expected <- 8L
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- getIExpCompFirstFromPopn(description, i = 3L)
+    ans.expected <- 9L
+    expect_identical(ans.obtained, ans.expected)
+    ## time is second dimension of three
+    population <- Counts(array(1:18,
+                               dim = c(3, 3, 2),
+                               dimnames = list(reg = c("a", "b", "c"),
+                                   time = c(2000, 2010, 2020),
+                                   age = c("0-9", "10+"))))
+    exposure <- exposureWithTriangles(population)
+    population <- Population(population)
+    description <- Description(population)
+    ans.obtained <- getIExpCompFirstFromPopn(description, i = 1L)
+    ans.expected <- 13L
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- getIExpCompFirstFromPopn(description, i = 2L)
+    ans.expected <- 14L
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- getIExpCompFirstFromPopn(description, i = 3L)
+    ans.expected <- 15L
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- getIExpCompFirstFromPopn(description, i = 10L)
+    ans.expected <- 19L
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- getIExpCompFirstFromPopn(description, i = 11L)
+    ans.expected <- 20L
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- getIExpCompFirstFromPopn(description, i = 12L)
+    ans.expected <- 21L
+    expect_identical(ans.obtained, ans.expected)
+})
+
+
 
 test_that("getIPopnNextFromPopn works", {
     getIPopnNextFromPopn <- demest:::getIPopnNextFromPopn
