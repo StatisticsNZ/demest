@@ -65,7 +65,7 @@ test_that("ComponentIterator works with Accession", {
     Accession <- dembase:::Accession
     accession <- Counts(array(1L,
                             dim = c(3, 3, 2),
-                            dimnames = list(age = c("0-4", "5-9", "10+"),
+                            dimnames = list(age = c("5", "10", "15"),
                                 region = 1:3,
                                 time = c("2001-2005", "2006-2010"))))
     accession <- Accession(accession = accession)

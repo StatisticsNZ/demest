@@ -6,9 +6,7 @@ test.identity <- FALSE
 test.extended <- FALSE
 
 
-## MAPPING ############################################################################
-
-## Mappings to population
+## Mappings to population ############################################################
 
 test_that("can create valid object of class MappingCompToPopn", {
     ## population <- Counts(array(1:24,
@@ -107,6 +105,22 @@ test_that("validity tests for MappingCompToPopn inherited from Mapping work", {
     x.wrong@stepSharedTargetVec <- rep(6L, 2)
     expect_error(validObject(x.wrong),
                  "'nSharedVec' and 'stepSharedTargetVec' have different lengths")
+})
+
+
+test_that("validity tests for MappingCompToPopn inherited from MappingMixinTime work", {
+    x <- new("MappingCompToPopn",
+             nSharedVec = 2L,
+             stepSharedCurrentVec = 3L,
+             stepSharedTargetVec = 6L,
+             hasAge = TRUE,
+             nAge = 3L,
+             stepAgeCurrent = 1L,
+             stepAgeTarget = 1L,
+             stepTriangleCurrent = 3L,
+             nTimeCurrent = 3L,
+             stepTimeCurrent = 12L,
+             stepTimeTarget = 6L)
     ## nTimeCurrent, stepTimeCurrent, stepTimeTarget have length 1
     x.wrong <- x
     x.wrong@nTimeCurrent <- integer()
@@ -124,6 +138,7 @@ test_that("validity tests for MappingCompToPopn inherited from Mapping work", {
                  "'stepTimeCurrent' is non-positive")
 })
 
+
 test_that("validity tests for MappingCompToPopn inherited from MappingMixinAge work", {
     x <- new("MappingCompToPopn",
              nSharedVec = 2L,
@@ -137,7 +152,7 @@ test_that("validity tests for MappingCompToPopn inherited from MappingMixinAge w
              nTimeCurrent = 3L,
              stepTimeCurrent = 12L,
              stepTimeTarget = 6L)
-    ## hasAge, nAge, stepAgeCurrent, stepAgeTarget, stepTriangleCurrent have length 1
+    ## hasAge, nAge, stepAgeCurrent, stepAgeTarget have length 1
     x.wrong <- x
     x.wrong@nAge <- 1:2
     expect_error(validObject(x.wrong),
@@ -147,12 +162,12 @@ test_that("validity tests for MappingCompToPopn inherited from MappingMixinAge w
     x.wrong@hasAge <- NA
     expect_error(validObject(x.wrong),
                  "'hasAge' is missing")
-    ## if hasAge: nAge, stepAgeCurrent, stepAgeTarget, stepTriangleCurrent not missing
+    ## if hasAge: nAge, stepAgeCurrent, stepAgeTarget not missing
     x.wrong <- x
     x.wrong@stepAgeCurrent <- NA_integer_
     expect_error(validObject(x.wrong),
                  "'stepAgeCurrent' is missing")
-    ## if hasAge: nAge, stepAgeCurrent, stepAgeTarget, stepTriangleCurrent positive
+    ## if hasAge: nAge, stepAgeCurrent, stepAgeTarget positive
     x.wrong <- x
     x.wrong@stepAgeTarget <- -1L
     expect_error(validObject(x.wrong),
@@ -169,8 +184,39 @@ test_that("validity tests for MappingCompToPopn inherited from MappingMixinAge w
     ## if not hasAge: nAge, stepAgeCurrent, stepAgeTarget, stepTriangleCurrent missing
     x.wrong <- x
     x.wrong@hasAge <- FALSE
+    x.wrong@stepTriangleCurrent <- as.integer(NA)
     expect_error(validObject(x.wrong),
                  "'hasAge' is FALSE but 'nAge' is not missing")
+})
+
+test_that("validity tests for MappingCompToPopn inherited from stepTriangleCurrent work", {
+    x <- new("MappingCompToPopn",
+             nSharedVec = 2L,
+             stepSharedCurrentVec = 3L,
+             stepSharedTargetVec = 6L,
+             hasAge = TRUE,
+             nAge = 3L,
+             stepAgeCurrent = 1L,
+             stepAgeTarget = 1L,
+             stepTriangleCurrent = 3L,
+             nTimeCurrent = 3L,
+             stepTimeCurrent = 12L,
+             stepTimeTarget = 6L)
+    ## stepTriangleCurrent has length 1
+    x.wrong <- x
+    x.wrong@stepTriangleCurrent <- 1:2
+    expect_error(validObject(x.wrong),
+                 "'stepTriangleCurrent' does not have length 1")
+    ## stepTriangleCurrent not missing
+    x.wrong <- x
+    x.wrong@stepTriangleCurrent <- NA_integer_
+    expect_error(validObject(x.wrong),
+                 "'stepTriangleCurrent' is missing")
+    ## stepTriangleCurrent positive
+    x.wrong <- x
+    x.wrong@stepTriangleCurrent <- -1L
+    expect_error(validObject(x.wrong),
+                 "'stepTriangleCurrent' is non-positive")
 })
 
 test_that("can create value object of class MappingOrigDestToPopn", {
@@ -241,7 +287,7 @@ test_that("tests for MappingOrigDestToPopn inherited from MappingMixinOrigDest w
 
 
 
-## Mappings to accession
+## Mappings to accession ############################################################
 
 test_that("can create valid object of class MappingCompToAcc", {
     component <- Counts(array(1:36,
@@ -303,17 +349,9 @@ test_that("can create valid object of class MappingOrigDestToAcc", {
 })
 
 
-## Mappings to exposure
+## Mappings to exposure ############################################################
 
 test_that("can create valid object of class MappingToExpFromComp", {
-    exposure <- Counts(array(0.5,
-                             dim = c(4, 3, 2, 4, 2),
-                             dimnames = list(reg = 1:4,
-                                 age = c("0", "1", "2+"),
-                                 triangle = c("TL", "TU"),
-                                 time = 1:4,
-                                 sex = c("f", "m"))),
-                       dimscales = c(time = "Intervals"))
     component <- Counts(array(1L,
                               dim = c(4, 3, 2, 4, 2),
                               dimnames = list(reg = 1:4,
@@ -322,6 +360,14 @@ test_that("can create valid object of class MappingToExpFromComp", {
                                   time = 1:4,
                                   sex = c("f", "m"))),
                         dimscales = c(time = "Intervals"))
+    exposure <- Counts(array(0.5,
+                             dim = c(4, 3, 2, 4, 2),
+                             dimnames = list(reg = 1:4,
+                                 age = c("0", "1", "2+"),
+                                 triangle = c("TL", "TU"),
+                                 time = 1:4,
+                                 sex = c("f", "m"))),
+                       dimscales = c(time = "Intervals"))
     x <- new("MappingToExpFromComp",
              isOneToOne = TRUE,
              nSharedVec = c(4L, 3L, 2L, 4L, 2L),
@@ -331,18 +377,18 @@ test_that("can create valid object of class MappingToExpFromComp", {
              stepTimeCurrent = 24L,
              stepTimeTarget = 24L)
     expect_true(validObject(x))
-    exposure <- Counts(array(0.5,
-                             dim = c(2, 3, 3),
-                             dimnames = list(sex = c("f", "m"),
-                                 time = c("2001-2005", "2006-2010", "2011-2015"),
-                                 reg = 1:3)))
     pool <- Counts(array(1L,
                          dim = c(2, 3, 3, 2),
                          dimnames = list(sex = c("f", "m"),
                              time = c("2001-2005", "2006-2010", "2011-2015"),
                              reg = 1:3,
                              direction = c("Out", "In"))))
-    x <- new("MappingExpToComp",
+    exposure <- Counts(array(0.5,
+                             dim = c(2, 3, 3),
+                             dimnames = list(sex = c("f", "m"),
+                                 time = c("2001-2005", "2006-2010", "2011-2015"),
+                                 reg = 1:3)))
+    x <- new("MappingToExpFromComp",
              isOneToOne = FALSE,
              nSharedVec = c(2L, 3L, 3L),
              stepSharedCurrentVec = c(1L, 2L, 6L),
@@ -353,179 +399,200 @@ test_that("can create valid object of class MappingToExpFromComp", {
     expect_true(validObject(x))
 })
 
-test_that("can create valid object of class MappingExpToBirths", {
-    exposure <- Counts(array(0.5,
-                             dim = c(4, 3, 2, 4, 2),
-                             dimnames = list(reg = 1:4,
-                                 age = c("0", "1", "2+"),
-                                 triangle = c("TL", "TU"),
-                                 time = 1:4,
-                                 sex = c("f", "m"))),
-                       dimscales = c(time = "Intervals"))
-    component <- Counts(array(1L,
-                              dim = c(4, 1, 2, 4, 2),
-                              dimnames = list(reg = 1:4,
-                                  age = "1",
-                                  triangle = c("TL", "TU"),
-                                  time = 1:4,
-                                  sex = c("f", "m"))),
-                        dimscales = c(time = "Intervals"))
-    x <- new("MappingExpToBirths",
-             isOneToOne = FALSE,
-             nSharedVec = c(4L, 2L),
-             stepSharedCurrentVec = c(1L, 96L),
-             stepSharedTargetVec = c(1L, 32L),
-             nTimeCurrent = 4L,
-             stepTimeCurrent = 24L,
-             stepTimeTarget = 8L,
-             iMinAge = 2L)
-    expect_true(validObject(x))
-    x <- new("MappingExpToBirths",
-             isOneToOne = FALSE,
-             nSharedVec = c(4L, 2L),
-             stepSharedCurrentVec = c(1L, 96L),
-             stepSharedTargetVec = c(1L, 32L),
-             nTimeCurrent = 4L,
-             stepTimeCurrent = 24L,
-             stepTimeTarget = 8L,
-             iMinAge = NA_integer_)
-    expect_true(validObject(x))
-})
+## test_that("can create valid object of class MappingExpToBirths", {
+##     exposure <- Counts(array(0.5,
+##                              dim = c(4, 3, 2, 4, 2),
+##                              dimnames = list(reg = 1:4,
+##                                  age = c("0", "1", "2+"),
+##                                  triangle = c("TL", "TU"),
+##                                  time = 1:4,
+##                                  sex = c("f", "m"))),
+##                        dimscales = c(time = "Intervals"))
+##     component <- Counts(array(1L,
+##                               dim = c(4, 1, 2, 4, 2),
+##                               dimnames = list(reg = 1:4,
+##                                   age = "1",
+##                                   triangle = c("TL", "TU"),
+##                                   time = 1:4,
+##                                   sex = c("f", "m"))),
+##                         dimscales = c(time = "Intervals"))
+##     x <- new("MappingToExpFromBirths",
+##              isOneToOne = FALSE,
+##              nSharedVec = c(4L, 2L),
+##              stepSharedCurrentVec = c(1L, 96L),
+##              stepSharedTargetVec = c(1L, 32L),
+##              nTimeCurrent = 4L,
+##              stepTimeCurrent = 24L,
+##              stepTimeTarget = 8L,
+##              iMinAge = 2L)
+##     expect_true(validObject(x))
+##     x <- new("MappingExpToBirths",
+##              isOneToOne = FALSE,
+##              nSharedVec = c(4L, 2L),
+##              stepSharedCurrentVec = c(1L, 96L),
+##              stepSharedTargetVec = c(1L, 32L),
+##              nTimeCurrent = 4L,
+##              stepTimeCurrent = 24L,
+##              stepTimeTarget = 8L,
+##              iMinAge = NA_integer_)
+##     expect_true(validObject(x))
+## })
 
-test_that("validity tests for MappingExpToBirths inherited from MappingMixingIMinAge work", {
-    x <- new("MappingExpToBirths",
-             isOneToOne = FALSE,
-             nSharedVec = c(4L, 2L),
-             stepSharedCurrentVec = c(1L, 96L),
-             stepSharedTargetVec = c(1L, 32L),
-             nTimeCurrent = 4L,
-             stepTimeCurrent = 24L,
-             stepTimeTarget = 8L,
-             iMinAge = 2L)
-    ## 'iMinAge' has length 1
-    x.wrong <- x
-    x.wrong@iMinAge <- c(2L, 2L)
-    expect_error(validObject(x.wrong),
-                 "'iMinAge' does not have length 1")
-    ## iMinAge positive if not missing
-    x.wrong <- x
-    x.wrong@iMinAge <- 0L
-    expect_error(validObject(x.wrong),
-                 "'iMinAge' is non-positive")
-})
+## test_that("validity tests for MappingExpToBirths inherited from MappingMixingIMinAge work", {
+##     x <- new("MappingExpToBirths",
+##              isOneToOne = FALSE,
+##              nSharedVec = c(4L, 2L),
+##              stepSharedCurrentVec = c(1L, 96L),
+##              stepSharedTargetVec = c(1L, 32L),
+##              nTimeCurrent = 4L,
+##              stepTimeCurrent = 24L,
+##              stepTimeTarget = 8L,
+##              iMinAge = 2L)
+##     ## 'iMinAge' has length 1
+##     x.wrong <- x
+##     x.wrong@iMinAge <- c(2L, 2L)
+##     expect_error(validObject(x.wrong),
+##                  "'iMinAge' does not have length 1")
+##     ## iMinAge positive if not missing
+##     x.wrong <- x
+##     x.wrong@iMinAge <- 0L
+##     expect_error(validObject(x.wrong),
+##                  "'iMinAge' is non-positive")
+## })
 
 
 
-## Mappings from exposure
+## Mappings from exposure ############################################################
 
-test_that("can create valid object of class MappingFromExpToComp", {
-    exposure <- Counts(array(0.5,
-                             dim = c(4, 3, 2, 4, 2),
-                             dimnames = list(reg = 1:4,
-                                 age = c("0", "1", "2+"),
-                                 triangle = c("TL", "TU"),
-                                 time = 1:4,
-                                 sex = c("f", "m"))),
-                       dimscales = c(time = "Intervals"))
-    component <- Counts(array(1L,
-                              dim = c(4, 3, 2, 4, 2),
-                              dimnames = list(reg = 1:4,
-                                  age = c("0", "1", "2+"),
-                                  triangle = c("TL", "TU"),
-                                  time = 1:4,
-                                  sex = c("f", "m"))),
-                        dimscales = c(time = "Intervals"))
-    x <- new("MappingFromExpToComp",
-             isOneToOne = TRUE,
-             nSharedVec = c(4L, 3L, 2L, 4L, 2L),
-             stepSharedCurrentVec = c(1L, 4L, 12L, 24L, 96L),
-             stepSharedTargetVec = c(1L, 4L, 12L, 24L, 96L),
-             nTimeCurrent = 4L,
-             stepTimeCurrent = 24L,
-             stepTimeTarget = 24L)
-    expect_true(validObject(x))
-    exposure <- Counts(array(0.5,
-                             dim = c(2, 3, 3),
-                             dimnames = list(sex = c("f", "m"),
-                                 time = c("2001-2005", "2006-2010", "2011-2015"),
-                                 reg = 1:3)))
-    pool <- Counts(array(1L,
-                         dim = c(2, 3, 3, 2),
-                         dimnames = list(sex = c("f", "m"),
-                             time = c("2001-2005", "2006-2010", "2011-2015"),
-                             reg = 1:3,
-                             direction = c("Out", "In"))))
-    x <- new("MappingFromExpToComp",
-             isOneToOne = FALSE,
-             nSharedVec = c(2L, 3L, 3L),
-             stepSharedCurrentVec = c(1L, 2L, 6L),
-             stepSharedTargetVec = c(1L, 2L, 6L),
-             nTimeCurrent = 3L,
-             stepTimeCurrent = 2L,
-             stepTimeTarget = 2L)
-    expect_true(validObject(x))
-})
+## test_that("can create valid object of class MappingFromExpToComp", {
+##     exposure <- Counts(array(0.5,
+##                              dim = c(4, 3, 2, 4, 2),
+##                              dimnames = list(reg = 1:4,
+##                                  age = c("0", "1", "2+"),
+##                                  triangle = c("TL", "TU"),
+##                                  time = 1:4,
+##                                  sex = c("f", "m"))),
+##                        dimscales = c(time = "Intervals"))
+##     component <- Counts(array(1L,
+##                               dim = c(4, 3, 2, 4, 2),
+##                               dimnames = list(reg = 1:4,
+##                                   age = c("0", "1", "2+"),
+##                                   triangle = c("TL", "TU"),
+##                                   time = 1:4,
+##                                   sex = c("f", "m"))),
+##                         dimscales = c(time = "Intervals"))
 
-test_that("can create valid object of class MappingFromExpToBirths", {
-    exposure <- Counts(array(0.5,
-                             dim = c(4, 3, 2, 4, 2),
-                             dimnames = list(reg = 1:4,
-                                 age = c("0", "1", "2+"),
-                                 triangle = c("TL", "TU"),
-                                 time = 1:4,
-                                 sex = c("f", "m"))),
-                       dimscales = c(time = "Intervals"))
-    component <- Counts(array(1L,
-                              dim = c(4, 1, 2, 4, 2),
-                              dimnames = list(reg = 1:4,
-                                  age = "1",
-                                  triangle = c("TL", "TU"),
-                                  time = 1:4,
-                                  sex = c("f", "m"))),
-                        dimscales = c(time = "Intervals"))
-    x <- new("MappingFromExpToBirths",
-             isOneToOne = FALSE,
-             nSharedVec = c(4L, 2L),
-             stepSharedCurrentVec = c(1L, 96L),
-             stepSharedTargetVec = c(1L, 32L),
-             nTimeCurrent = 4L,
-             stepTimeCurrent = 24L,
-             stepTimeTarget = 8L,
-             iMinAge = 2L)
-    expect_true(validObject(x))
-    x <- new("MappingFromExpToBirths",
-             isOneToOne = FALSE,
-             nSharedVec = c(4L, 2L),
-             stepSharedCurrentVec = c(1L, 96L),
-             stepSharedTargetVec = c(1L, 32L),
-             nTimeCurrent = 4L,
-             stepTimeCurrent = 24L,
-             stepTimeTarget = 8L,
-             iMinAge = NA_integer_)
-    expect_true(validObject(x))
-})
 
-test_that("validity tests for MappingFromExpToBirths inherited from MappingMixingIMinAge work", {
-    x <- new("MappingFromExpToBirths",
-             isOneToOne = FALSE,
-             nSharedVec = c(4L, 2L),
-             stepSharedCurrentVec = c(1L, 96L),
-             stepSharedTargetVec = c(1L, 32L),
-             nTimeCurrent = 4L,
-             stepTimeCurrent = 24L,
-             stepTimeTarget = 8L,
-             iMinAge = 2L)
-    ## 'iMinAge' has length 1
-    x.wrong <- x
-    x.wrong@iMinAge <- c(2L, 2L)
-    expect_error(validObject(x.wrong),
-                 "'iMinAge' does not have length 1")
-    ## iMinAge positive if not missing
-    x.wrong <- x
-    x.wrong@iMinAge <- 0L
-    expect_error(validObject(x.wrong),
-                 "'iMinAge' is non-positive")
-})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+##     x <- new("MappingFromExpToComp",
+##              isOneToOne = TRUE,
+##              nSharedVec = c(4L, 3L, 2L, 4L, 2L),
+##              stepSharedCurrentVec = c(1L, 4L, 12L, 24L, 96L),
+##              stepSharedTargetVec = c(1L, 4L, 12L, 24L, 96L),
+##              nTimeCurrent = 4L,
+##              stepTimeCurrent = 24L,
+##              stepTimeTarget = 24L)
+##     expect_true(validObject(x))
+##     exposure <- Counts(array(0.5,
+##                              dim = c(2, 3, 3),
+##                              dimnames = list(sex = c("f", "m"),
+##                                  time = c("2001-2005", "2006-2010", "2011-2015"),
+##                                  reg = 1:3)))
+##     pool <- Counts(array(1L,
+##                          dim = c(2, 3, 3, 2),
+##                          dimnames = list(sex = c("f", "m"),
+##                              time = c("2001-2005", "2006-2010", "2011-2015"),
+##                              reg = 1:3,
+##                              direction = c("Out", "In"))))
+##     x <- new("MappingFromExpToComp",
+##              isOneToOne = FALSE,
+##              nSharedVec = c(2L, 3L, 3L),
+##              stepSharedCurrentVec = c(1L, 2L, 6L),
+##              stepSharedTargetVec = c(1L, 2L, 6L),
+##              nTimeCurrent = 3L,
+##              stepTimeCurrent = 2L,
+##              stepTimeTarget = 2L)
+##     expect_true(validObject(x))
+## })
+
+## test_that("can create valid object of class MappingFromExpToBirths", {
+##     exposure <- Counts(array(0.5,
+##                              dim = c(4, 3, 2, 4, 2),
+##                              dimnames = list(reg = 1:4,
+##                                  age = c("0", "1", "2+"),
+##                                  triangle = c("TL", "TU"),
+##                                  time = 1:4,
+##                                  sex = c("f", "m"))),
+##                        dimscales = c(time = "Intervals"))
+##     component <- Counts(array(1L,
+##                               dim = c(4, 1, 2, 4, 2),
+##                               dimnames = list(reg = 1:4,
+##                                   age = "1",
+##                                   triangle = c("TL", "TU"),
+##                                   time = 1:4,
+##                                   sex = c("f", "m"))),
+##                         dimscales = c(time = "Intervals"))
+##     x <- new("MappingFromExpToBirths",
+##              isOneToOne = FALSE,
+##              nSharedVec = c(4L, 2L),
+##              stepSharedCurrentVec = c(1L, 96L),
+##              stepSharedTargetVec = c(1L, 32L),
+##              nTimeCurrent = 4L,
+##              stepTimeCurrent = 24L,
+##              stepTimeTarget = 8L,
+##              iMinAge = 2L)
+##     expect_true(validObject(x))
+##     x <- new("MappingFromExpToBirths",
+##              isOneToOne = FALSE,
+##              nSharedVec = c(4L, 2L),
+##              stepSharedCurrentVec = c(1L, 96L),
+##              stepSharedTargetVec = c(1L, 32L),
+##              nTimeCurrent = 4L,
+##              stepTimeCurrent = 24L,
+##              stepTimeTarget = 8L,
+##              iMinAge = NA_integer_)
+##     expect_true(validObject(x))
+## })
+
+## test_that("validity tests for MappingFromExpToBirths inherited from MappingMixingIMinAge work", {
+##     x <- new("MappingFromExpToBirths",
+##              isOneToOne = FALSE,
+##              nSharedVec = c(4L, 2L),
+##              stepSharedCurrentVec = c(1L, 96L),
+##              stepSharedTargetVec = c(1L, 32L),
+##              nTimeCurrent = 4L,
+##              stepTimeCurrent = 24L,
+##              stepTimeTarget = 8L,
+##              iMinAge = 2L)
+##     ## 'iMinAge' has length 1
+##     x.wrong <- x
+##     x.wrong@iMinAge <- c(2L, 2L)
+##     expect_error(validObject(x.wrong),
+##                  "'iMinAge' does not have length 1")
+##     ## iMinAge positive if not missing
+##     x.wrong <- x
+##     x.wrong@iMinAge <- 0L
+##     expect_error(validObject(x.wrong),
+##                  "'iMinAge' is non-positive")
+## })
 
 
 

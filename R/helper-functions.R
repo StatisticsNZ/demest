@@ -8798,7 +8798,7 @@ getIAccNextFromPopn <- function(i, description, useC = FALSE) {
 ## last dimension in 'exposure'.
 ## We only ever update population values for the beginning
 ## of the first period.
-getIExpCompFirstFromPopn <- function(i, description, useC = FALSE) {
+getIExpFirstFromPopn <- function(i, description, useC = FALSE) {
     ## 'i'
     stopifnot(is.integer(i))
     stopifnot(identical(length(i), 1L))
@@ -8810,7 +8810,7 @@ getIExpCompFirstFromPopn <- function(i, description, useC = FALSE) {
     stopifnot(i <= description@length)
     stopifnot((((i - 1L) %/% description@stepTime) %% description@nTime) == 0L) # first time point
     if (useC) {
-        .Call(getIExpCompFirstFromPopn_R, i, description)
+        .Call(getIExpFirstFromPopn_R, i, description)
     }
     else {            
         n.time.popn <- description@nTime
@@ -8818,9 +8818,9 @@ getIExpCompFirstFromPopn <- function(i, description, useC = FALSE) {
         length.popn <- description@length
         n.time.tri <- n.time.popn - 1L
         length.lower.tri <- (length.popn * n.time.tri) %/% n.time.popn
-        n.cycles.completed <- (i - 1L) %/% (n.time.popn * step.time)
+        i.time <- (i - 1L) %/% (n.time.popn * step.time)
         remainder <- (i - 1L) %% (n.time.popn * step.time) + 1L
-        index.upper.tri <- n.cycles.completed * n.time.tri * step.time + remainder
+        index.upper.tri <- i.time * n.time.tri * step.time + remainder
         length.lower.tri + index.upper.tri
     }
 }

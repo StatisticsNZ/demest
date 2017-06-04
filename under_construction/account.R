@@ -90,10 +90,10 @@ updateProposalAccountMoveOrigDest <- function(combined, useC = FALSE) {
         if (uses.exposure)
             i.exposure <- getIExposure(i = i.cell,
                                        mapping = mapping.exposure)
-        pair.exp.comp.first <- getIExpCompFirstPairFromOrigDest(i = i.cell,
+        pair.exp.first <- getIExpFirstPairFromOrigDest(i = i.cell,
                                                                 mapping = mapping.exposure)
-        i.exp.comp.first.orig <- pair.exp.comp.first[1L]
-        i.exp.comp.first.dest <- pair.exp.comp.first[2L]
+        i.exp.first.orig <- pair.exp.first[1L]
+        i.exp.first.dest <- pair.exp.first[2L]
         is.lower.triangle <- isLowerTriangle(i = i.cell,
                                              description = description.comp)
         pair.popn.next <- getIPopnNextFromOrigDest(i = i.cell,
@@ -170,8 +170,8 @@ updateProposalAccountMoveOrigDest <- function(combined, useC = FALSE) {
                 combined@iExposure <- NA_integer_
                 combined@iExposureOther <- NA_integer_
             }
-            combined@iExpCompFirst <- i.exp.comp.first.orig
-            combined@iExpCompFirstOther <- i.exp.comp.first.dest
+            combined@iExpFirst <- i.exp.first.orig
+            combined@iExpFirstOther <- i.exp.first.dest
             combined@diffProp <- diff.prop
         }
         else {
@@ -184,8 +184,8 @@ updateProposalAccountMoveOrigDest <- function(combined, useC = FALSE) {
             combined@iAccNextOther <- NA_integer_
             combined@iExposure <- NA_integer_
             combined@iExposureOther <- NA_integer_
-            combined@iExpCompFirst <- NA_integer_
-            combined@iExpCompFirstOther <- NA_integer_
+            combined@iExpFirst <- NA_integer_
+            combined@iExpFirstOther <- NA_integer_
             combined@diffProp <- NA_integer_
         }
         combined
@@ -223,9 +223,9 @@ updateProposalAccountMovePool <- function(combined) {
         pair.cell <- chooseICellOutInPool(description.comp)
         i.cell.out <- pair.cell[1L]
         i.cell.in <- pair.cell[2L]
-        i.exp.comp.first.out <- getIExpCompFirstFromPool(i = i.cell.out,
+        i.exp.first.out <- getIExpFirstFromPool(i = i.cell.out,
                                                          mapping = mapping.exposure)
-        i.exp.comp.first.in <- getIExpCompFirstFromPool(i = i.cell.in,
+        i.exp.first.in <- getIExpFirstFromPool(i = i.cell.in,
                                                         mapping = mapping.exposure)
         is.lower.triangle <- isLowerTriangle(i = i.cell,
                                              description = description.comp)
@@ -310,8 +310,8 @@ updateProposalAccountMovePool <- function(combined) {
                 combined@iExposure <- NA_integer_
                 combined@iExposureOther <- NA_integer_
             }
-            combined@iExpCompFirst <- i.exp.comp.first.out
-            combined@iExpCompFirstOther <- i.exp.comp.first.in
+            combined@iExpFirst <- i.exp.first.out
+            combined@iExpFirstOther <- i.exp.first.in
             combined@diffProp <- diff.prop
         }
         else {
@@ -324,8 +324,8 @@ updateProposalAccountMovePool <- function(combined) {
             combined@iAccNextOther <- NA_integer_
             combined@iExposure <- NA_integer_
             combined@iExposureOther <- NA_integer_
-            combined@iExpCompFirst <- NA_integer_
-            combined@iExpCompFirstOther <- NA_integer_
+            combined@iExpFirst <- NA_integer_
+            combined@iExpFirstOther <- NA_integer_
             combined@diffProp <- NA_integer_
         }
         combined
@@ -363,9 +363,9 @@ updateProposalAccountMoveNet <- function(combined) {
         i.cell.2 <- pair.cell[2L]
         is.lower.triangle <- isLowerTriangle(i = i.cell,
                                              description = description.comp)
-        i.exp.comp.first.1 <- getIExpCompFirstFromComp(i = i.cell.1, # needed??
+        i.exp.first.1 <- getIExpFirstFromComp(i = i.cell.1, # needed??
                                                        mapping = mapping.exposure)
-        i.exp.comp.first.2 <- getIExpCompFirstFromComp(i = i.cell.2,
+        i.exp.first.2 <- getIExpFirstFromComp(i = i.cell.2,
                                                        mapping = mapping.exposure)
         i.popn.next.1 <- getIPopnNextFromComp(i = i.cell.1,
                                               mapping = mapping.to.popn)
@@ -433,8 +433,8 @@ updateProposalAccountMoveNet <- function(combined) {
             }
             combined@iExposure <- NA_integer_
             combined@iExposureOther <- NA_integer_
-            combined@iExpCompFirst <- i.exp.comp.first.1
-            combined@iExpCompFirstOther <- i.exp.comp.first.2
+            combined@iExpFirst <- i.exp.first.1
+            combined@iExpFirstOther <- i.exp.first.2
             combined@diffProp <- diff.prop
         }
         else {
@@ -447,8 +447,8 @@ updateProposalAccountMoveNet <- function(combined) {
             combined@iAccNextOther <- NA_integer_
             combined@iExposure <- NA_integer_
             combined@iExposureOther <- NA_integer_
-            combined@iExpCompFirst <- NA_integer_
-            combined@iExpCompFirstOther <- NA_integer_
+            combined@iExpFirst <- NA_integer_
+            combined@iExpFirstOther <- NA_integer_
             combined@diffProp <- NA_integer_
         }
         combined
@@ -491,7 +491,7 @@ updateProposalAccountMoveComp <- function(combined) {
         }
         max.attempt <- combined@maxAttempt
         i.cell <- chooseICellComp(description.comp)
-        i.exp.comp.first <- getIExpCompFirstFromComp(i = i.cell,
+        i.exp.first <- getIExpFirstFromComp(i = i.cell,
                                                      mapping = mapping.exposure)
         is.lower.triangle <- isLowerTriangle(i = i.cell,
                                              description = description.comp)
@@ -575,8 +575,8 @@ updateProposalAccountMoveComp <- function(combined) {
                 combined@iExposure <- NA_integer_
                 combined@iExposureOther <- NA_integer_
             }
-            combined@iExpCompFirst <- i.exp.comp.first
-            combined@iExpCompFirstOther <- NA_integer_
+            combined@iExpFirst <- i.exp.first
+            combined@iExpFirstOther <- NA_integer_
             combined@diffProp <- diff.prop
         }
         else {
@@ -589,8 +589,8 @@ updateProposalAccountMoveComp <- function(combined) {
             combined@iAccNextOther <- NA_integer_
             combined@iExposure <- NA_integer_
             combined@iExposureOther <- NA_integer_
-            combined@iExpCompFirst <- NA_integer_
-            combined@iExpCompFirstOther <- NA_integer_
+            combined@iExpFirst <- NA_integer_
+            combined@iExpFirstOther <- NA_integer_
             combined@diffProp <- NA_integer_
         }
         combined
@@ -1628,8 +1628,8 @@ diffLogDensExpOrigDestPool <- function(combined, useC = FALSE) {
         exposure <- combined@exposure
         uses.exposure <- combined@usesExposure
         mappings <- combined@mappingsFromExposure
-        i.exp.orig <- combined@iExpCompFirst
-        i.exp.dest <- combined@iExpCompFirstOth
+        i.exp.orig <- combined@iExpFirst
+        i.exp.dest <- combined@iExpFirstOth
         iterator.exposure <- combined@iteratorExposure
         diff <- combined@diffProp
         system <- combined@system
@@ -1640,13 +1640,15 @@ diffLogDensExpOrigDestPool <- function(combined, useC = FALSE) {
                 theta <- system[[i + 1L]]@theta
                 iterator.comp <- iterators.comp[[i]]
                 mapping <- mappings[[i]]
-                i.cell.orig <- getICellCompFromExp(mapping = mapping, i = i.exp.orig)
-                i.cell.dest <- getICellCompFromExp(mapping = mapping, i = i.exp.dest)
+                i.cell.orig <- getICellCompFromExp(mapping = mapping,
+                                                   i = i.exp.orig)
+                i.cell.dest <- getICellCompFromExp(mapping = mapping,
+                                                   i = i.exp.dest)
                 ans.orig <- diffLogDensExpComp(iCell = i.cell.orig,
                                                component = component,
                                                theta = theta,
                                                iteratorComp = iterator.comp,
-                                               iExpCompFirst = i.exp.orig,
+                                               iExpFirst = i.exp.orig,
                                                exposure = exposure,
                                                iteratorExposure = iterator.exposure,
                                                diff = -diff)
@@ -1656,7 +1658,7 @@ diffLogDensExpOrigDestPool <- function(combined, useC = FALSE) {
                                                component = component,
                                                theta = theta,
                                                iteratorComp = iterator.comp,
-                                               iExpCompFirst = i.exp.dest,
+                                               iExpFirst = i.exp.dest,
                                                exposure = exposure,
                                                iteratorExposure = iterator.exposure,
                                                diff = diff)
@@ -1681,8 +1683,8 @@ diffLogDensExpNet <- function(combined, useC = FALSE) {
         exposure <- combined@exposure
         uses.exposure <- combined@usesExposure
         mappings <- combined@mappingsFromExposure
-        i.exp.1 <- combined@iExpCompFirst
-        i.exp.2 <- combined@iExpCompFirstOth
+        i.exp.1 <- combined@iExpFirst
+        i.exp.2 <- combined@iExpFirstOth
         iterator.exposure <- combined@iteratorExposure
         diff <- combined@diffProp
         system <- combined@system
@@ -1699,7 +1701,7 @@ diffLogDensExpNet <- function(combined, useC = FALSE) {
                                             component = component,
                                             theta = theta,
                                             iteratorComp = iterator.comp,
-                                            iExpCompFirst = i.exp.1,
+                                            iExpFirst = i.exp.1,
                                             exposure = exposure,
                                             iteratorExposure = iterator.exposure,
                                             diff = diff)
@@ -1709,7 +1711,7 @@ diffLogDensExpNet <- function(combined, useC = FALSE) {
                                             component = component,
                                             theta = theta,
                                             iteratorComp = iterator.comp,
-                                            iExpCompFirst = i.exp.2,
+                                            iExpFirst = i.exp.2,
                                             exposure = exposure,
                                             iteratorExposure = iterator.exposure,
                                             diff = -diff)
@@ -1733,7 +1735,7 @@ diffLogDensExpComp <- function(combined, useC = FALSE) {
         iterators.comp <- combined@iteratorsComp
         uses.exposure <- combined@usesExposure
         mappings <- combined@mappingsFromExposure
-        i.exp.comp.first <- combined@iExpCompFirst
+        i.exp.first <- combined@iExpFirst
         iterator.exposure <- combined@iteratorExposure
         is.increment <- combined@isIncrement
         diff <- combined@diffProp
@@ -1751,12 +1753,13 @@ diffLogDensExpComp <- function(combined, useC = FALSE) {
                 iterator.comp <- iterators.comp[[i]]
                 mapping <- mappings[[i]]
                 if (i.comp == i.orig.dest) {
-                    i.cell <- getICellOrigDestFromExp(mapping = mapping, i = i.exp.comp.first)
+                    i.cell <- getICellOrigDestFromExp(i = i.exp.first,
+                                                      mapping = mapping)
                     diff.log <- diffLogDensExpOneOrigDestPool(iCell = i.cell,
                                                               component = component,
                                                               theta = theta,
                                                               iteratorComp = iterator.comp,
-                                                              iExpCompFirst = i.exp.comp.first,
+                                                              iExpFirst = i.exp.first,
                                                               exposure = exposure,
                                                               iteratorExposure = iterator.exposure,
                                                               diff = diff)
@@ -1765,12 +1768,13 @@ diffLogDensExpComp <- function(combined, useC = FALSE) {
                     ans <- ans + diff.log
                 }
                 if (i.comp == i.pool) {
-                    i.cell <- getICellPoolFromExp(mapping = mapping, i = i.exp.comp.first)
+                    i.cell <- getICellPoolFromExp(i = i.exp.first,
+                                                  mapping = mapping)
                     ans.one <- diffLogDensExpOneOrigDestPool(iCell = i.cell,
                                                              component = component,
                                                              theta = theta,
                                                              iteratorComp = iterator.comp,
-                                                             iExpCompFirst = i.exp.comp.first,
+                                                             iExpFirst = i.exp.first,
                                                              exposure = exposure,
                                                              iteratorExposure = iterator.exposure,
                                                              diff = diff)
@@ -1780,12 +1784,12 @@ diffLogDensExpComp <- function(combined, useC = FALSE) {
                 }
                 else {
                     i.cell <- getICellCompFromExpose(mapping = mapping,
-                                                     i = i.exp.comp.first)
+                                                     i = i.exp.first)
                     ans.one <- diffLogDensExpOneComp(iCell = i.cell,
                                                      component = component,
                                                      theta = theta,
                                                      iteratorComp = iterator.comp,
-                                                     iExpCompFirst = i.exp.comp.first,
+                                                     iExpFirst = i.exp.first,
                                                      exposure = exposure,
                                                      iteratorExposure = iterator.exposure,
                                                      diff = diff)
@@ -1803,7 +1807,7 @@ diffLogDensExpComp <- function(combined, useC = FALSE) {
 
 
 diffLogDensExpOneOrigDestParChPool <- function(iCell, component, theta, iteratorComp, 
-                                          iExpCompFirst, exposure, iteratorExposure,
+                                          iExpFirst, exposure, iteratorExposure,
                                           diff, useC = FALSE) {
     ## iCell
     stopifnot(identical(length(iCell), 1L))
@@ -1820,11 +1824,11 @@ diffLogDensExpOneOrigDestParChPool <- function(iCell, component, theta, iterator
     stopifnot(all(theta >= 0))
     ## iteratorComp
     stopifnot(is(iterator, "CohortIteratorOrigDestParChPool"))
-    ## iExpCompFirst
-    stopifnot(identical(length(iExpCompFirst), 1L))
-    stopifnot(is.integer(iExpCompFirst))
-    stopifnot(!is.na(iExpCompFirst))
-    stopifnot(iExpCompFirst > 0L)
+    ## iExpFirst
+    stopifnot(identical(length(iExpFirst), 1L))
+    stopifnot(is.integer(iExpFirst))
+    stopifnot(!is.na(iExpFirst))
+    stopifnot(iExpFirst > 0L)
     ## theta
     stopifnot(is(exposure, "Values"))
     stopifnot(is.double(exposure))
@@ -1838,20 +1842,20 @@ diffLogDensExpOneOrigDestParChPool <- function(iCell, component, theta, iterator
     stopifnot(!is.na(diff))
     ## iCell and component
     stopifnot(iCell <= length(component))
-    ## iExpCompFirst and exposure
-    stopifnot(iExpCompFirst <= length(exposure))
+    ## iExpFirst and exposure
+    stopifnot(iExpFirst <= length(exposure))
     ## component and theta
     stopifnot(identical(length(component), length(theta)))
     if (useC) {
         .Call(diffLogDensExpOneOrigDestParChPool_R,
               iCell, component, theta, iteratorComp,
-              iExpCompFirst, exposure, iteratorExposure,
+              iExpFirst, exposure, iteratorExposure,
               diff)
     }
     else {    
         kToleranceExposure <- 1e-5 ## in C can use a macro
         iteratorComp <- resetCODP(iteratorComp, i = iCell)
-        iteratorExposure <- resetCC(iteratorExposure, i = iExpCompFirst)
+        iteratorExposure <- resetCC(iteratorExposure, i = iExpFirst)
         ans <- 0
         diff.expose <- 0.5 * diff
         lengthVec <- iterator@lengthVec
@@ -1892,7 +1896,7 @@ diffLogDensExpOneOrigDestParChPool <- function(iCell, component, theta, iterator
 }
 
 diffLogDensExpOneComp <- function(iCell, component, theta, iteratorComp, 
-                                  iExpCompFirst, exposure, iteratorExposure,
+                                  iExpFirst, exposure, iteratorExposure,
                                   diff, useC = FALSE) {
     ## iCell
     stopifnot(identical(length(iCell), 1L))
@@ -1908,11 +1912,11 @@ diffLogDensExpOneComp <- function(iCell, component, theta, iteratorComp,
     stopifnot(all(theta >= 0))
     ## iteratorComp
     stopifnot(is(iterator, "CohortIteratorComponent"))
-    ## iExpCompFirst
-    stopifnot(identical(length(iExpCompFirst), 1L))
-    stopifnot(is.integer(iExpCompFirst))
-    stopifnot(!is.na(iExpCompFirst))
-    stopifnot(iExpCompFirst > 0L)
+    ## iExpFirst
+    stopifnot(identical(length(iExpFirst), 1L))
+    stopifnot(is.integer(iExpFirst))
+    stopifnot(!is.na(iExpFirst))
+    stopifnot(iExpFirst > 0L)
     ## theta
     stopifnot(is(exposure, "Values"))
     stopifnot(is.double(exposure))
@@ -1926,20 +1930,20 @@ diffLogDensExpOneComp <- function(iCell, component, theta, iteratorComp,
     stopifnot(!is.na(diff))
     ## iCell and component
     stopifnot(iCell <= length(component))
-    ## iExpCompFirst and exposure
-    stopifnot(iExpCompFirst <= length(exposure))
+    ## iExpFirst and exposure
+    stopifnot(iExpFirst <= length(exposure))
     ## component and theta
     stopifnot(identical(length(component), length(theta)))
     if (useC) {
         .Call(diffLogDensExpOneComp_R,
               iCell, component, theta, iteratorComp,
-              iExpCompFirst, exposure, iteratorExposure,
+              iExpFirst, exposure, iteratorExposure,
               diff)
     }
     else {    
         kToleranceExposure <- 1e-5 ## in C can use a macro
         iteratorComp <- resetCC(iteratorComp, i = iCell)
-        iteratorExposure <- resetCC(iteratorExposure, i = iExpCompFirst)
+        iteratorExposure <- resetCC(iteratorExposure, i = iExpFirst)
         ans <- 0
         diff.expose <- 0.5 * diff
         if (iteratorComp@iTriangle == 1L) {
@@ -2329,7 +2333,7 @@ updateObservation <- function(combined) {
 
 ## HELPER FUNCTIONS ################################################
 
-getIExpCompFirstFromOrigDest <- function(i, mapping) {
+getIExpFirstFromOrigDest <- function(i, mapping) {
     n.shared.vec <- mapping@nSharedVec
     step.shared.comp.vec <- mapping@stepSharedCurrentVec
     step.shared.popn.vec <- mapping@stepSharedTargetVec
@@ -2361,7 +2365,7 @@ getIExpCompFirstFromOrigDest <- function(i, mapping) {
 }
 
 
-getIExpCompFirstFromComp <- function(i, mapping) {
+getIExpFirstFromComp <- function(i, mapping) {
     n.shared.vec <- mapping@nSharedVec
     step.shared.comp.vec <- mapping@stepSharedCurrentVec
     step.shared.exp.vec <- mapping@stepSharedTargetVec
@@ -2613,8 +2617,9 @@ setClass("IAccNextMixin",
              TRUE
          })
 
-## the index of the cell in 'exposure' corresponding
-## to the cell being updated
+## The index of the cell in 'exposure' that appears in the likelihood for
+## the cell being updated.  iExposure is 0L if the model for the cell being
+## updated does not include exposure.
 setClass("IExposureMixin",
          slots(iExposure = "integer",
                iExposureOther = "integer"),
@@ -2651,44 +2656,44 @@ setClass("IExposureMixin",
 
 ## the index of the first cell in 'exposure' that
 ## will change if the cell being updated is changed
-setClass("IExpCompFirstMixin",
-         slots(iExpCompFirst = "integer",
-               iExpCompFirstOther = "integer"),
+setClass("IExpFirstMixin",
+         slots(iExpFirst = "integer",
+               iExpFirstOther = "integer"),
          contains = "VIRTUAL",
          validity = function(object) {
-             iExpCompFirst <- object@iExpCompFirst
-             iExpCompFirstOther <- object@iExpCompFirstOther
-             for (name in c("iExpCompFirst", "iExpCompFirstOther")) {
+             iExpFirst <- object@iExpFirst
+             iExpFirstOther <- object@iExpFirstOther
+             for (name in c("iExpFirst", "iExpFirstOther")) {
                  value <- slot(object, name)
-                 ## 'iExpCompFirst', 'iExpCompFirstOther' have length 1
+                 ## 'iExpFirst', 'iExpFirstOther' have length 1
                  if (!identical(length(value), 1L))
                      return(gettextf("'%s' does not have length %d",
                                      name, 1L))
-                 ## if 'iExpCompFirst', 'iExpCompFirstOther' not missing, they are greater than or equal to 1L
+                 ## if 'iExpFirst', 'iExpFirstOther' not missing, they are greater than or equal to 1L
                  if (!is.na(value) && (value < 1L))
                      return(gettextf("'%s' is less than %d",
                                      name, 1L))
                  if (!is.na(value)) {
-                     ## if 'iExpCompFirst', 'iExpCompFirstOther' not missing, they are less than or
+                     ## if 'iExpFirst', 'iExpFirstOther' not missing, they are less than or
                      ## equal to length of 'exposure'
                      exposure <- object@exposure
                      n.exposure <- length(exposure)
                      if (value > n.exposure)
                          return(gettextf("'%s' is greater than the length of '%s'",
                                          name, "exposure"))
-                     ## if 'iExpCompFirst', 'iExpCompFirstOther' not missing,
+                     ## if 'iExpFirst', 'iExpFirstOther' not missing,
                      ## iExposure and iExposureOther not missing
-                     name.i.exp <- if (name == "iExpCompFirstFirst") "iExposure" else "iExposureOther"
+                     name.i.exp <- if (name == "iExpFirstFirst") "iExposure" else "iExposureOther"
                      val.i.exp <- slot(object, name.i.exp)
                      if (value <= val.i.exp)
                          return(gettextf("'%s' less than or equal to '%s'",
                                          name, name.i.exp))
                  }
              }
-             ## if 'iExpCompFirst' and 'iExpCompFirstOther' not missing, they have different values
-             if (!is.na(iExpCompFirst) && !is.na(iExpCompFirstOther) && (iExpCompFirst == iExpCompFirstOther))
+             ## if 'iExpFirst' and 'iExpFirstOther' not missing, they have different values
+             if (!is.na(iExpFirst) && !is.na(iExpFirstOther) && (iExpFirst == iExpFirstOther))
                  return(gettextf("'%s' equals '%s'",
-                                 "iExpCompFirst", "iExpCompFirstOther"))
+                                 "iExpFirst", "iExpFirstOther"))
              TRUE
          })
 

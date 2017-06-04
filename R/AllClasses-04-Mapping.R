@@ -4,10 +4,7 @@ setClass("Mapping",
          slots = c(isOneToOne = "logical",
                    nSharedVec = "integer",
                    stepSharedCurrentVec = "integer",
-                   stepSharedTargetVec = "integer",
-                   nTimeCurrent = "integer",
-                   stepTimeCurrent = "integer",
-                   stepTimeTarget = "integer"),
+                   stepSharedTargetVec = "integer"),
          prototype = prototype(isOneToOne = FALSE),
          contains = "VIRTUAL",
          validity = function(object) {
@@ -15,17 +12,14 @@ setClass("Mapping",
              nSharedVec <- object@nSharedVec
              stepSharedCurrentVec <- object@stepSharedCurrentVec
              stepSharedTargetVec <- object@stepSharedTargetVec
-             for (name in c("isOneToOne", "nTimeCurrent", "stepTimeCurrent", "stepTimeTarget")) {
-                 value <- methods::slot(object, name)
-                 ## isOneToOne, nTimeCurrent, stepTimeCurrent, stepTimeTarget have length 1
-                 if (!identical(length(value), 1L))
-                     return(gettextf("'%s' does not have length %d",
-                                     name, 1L))
-                 ## isOneToOne, nTimeCurrent, stepTimeCurrent, stepTimeTarget not missing
-                 if (is.na(value))
-                     return(gettextf("'%s' is missing",
-                                     name))
-             }             
+             ## isOneToOne has length 1
+             if (!identical(length(isOneToOne), 1L))
+                 return(gettextf("'%s' does not have length %d",
+                                 "isOneToOne", 1L))
+             ## isOneToOne not missing
+             if (is.na(isOneToOne))
+                 return(gettextf("'%s' is missing",
+                                 "isOneToOne"))
              ## nSharedVec, stepSharedCurrentVec, stepSharedTargetVec,
              ## have no missing values
              for (name in c("nSharedVec", "stepSharedCurrentVec", "stepSharedTargetVec")) {
@@ -50,6 +44,28 @@ setClass("Mapping",
              if (!identical(length(nSharedVec), length(stepSharedTargetVec)))
                  return(gettextf("'%s' and '%s' have different lengths",
                                  "nSharedVec", "stepSharedTargetVec"))
+             TRUE
+         })
+
+## HAS_TESTS
+setClass("MappingMixinTime",
+         slots = c(nTimeCurrent = "integer",
+                   stepTimeCurrent = "integer",
+                   stepTimeTarget = "integer"),
+         prototype = prototype(isOneToOne = FALSE),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             for (name in c("nTimeCurrent", "stepTimeCurrent", "stepTimeTarget")) {
+                 value <- methods::slot(object, name)
+                 ## nTimeCurrent, stepTimeCurrent, stepTimeTarget have length 1
+                 if (!identical(length(value), 1L))
+                     return(gettextf("'%s' does not have length %d",
+                                     name, 1L))
+                 ## nTimeCurrent, stepTimeCurrent, stepTimeTarget not missing
+                 if (is.na(value))
+                     return(gettextf("'%s' is missing",
+                                     name))
+             }             
              ## nTimeCurrent, stepTimeCurrent, stepTimeTarget positive
              for (name in c("nTimeCurrent", "stepTimeCurrent", "stepTimeTarget")) {
                  value <- methods::slot(object, name)
@@ -70,9 +86,8 @@ setClass("MappingMixinAge",
          contains = "VIRTUAL",
          validity = function(object) {
              hasAge <- object@hasAge
-             ## hasAge, nAge, stepAgeCurrent, stepAgeTarget, stepTriangleCurrent have length 1
-             for (name in c("hasAge", "nAge", "stepAgeCurrent",
-                            "stepAgeTarget", "stepTriangleCurrent")) {
+             ## hasAge, nAge, stepAgeCurrent, stepAgeTarget have length 1
+             for (name in c("hasAge", "nAge", "stepAgeCurrent", "stepAgeTarget")) {
                  value <- methods::slot(object, name)
                  if (!identical(length(value), 1L))
                      return(gettextf("'%s' does not have length %d",
@@ -83,15 +98,15 @@ setClass("MappingMixinAge",
                  return(gettextf("'%s' is missing",
                                  "hasAge"))
              if (hasAge) {
-                 ## if hasAge: nAge, stepAgeCurrent, stepAgeTarget, stepTriangleCurrent not missing
-                 for (name in c("nAge", "stepAgeCurrent", "stepAgeTarget", "stepTriangleCurrent")) {
+                 ## if hasAge: nAge, stepAgeCurrent, stepAgeTarget not missing
+                 for (name in c("nAge", "stepAgeCurrent", "stepAgeTarget")) {
                      value <- methods::slot(object, name)
                      if (is.na(value))
                          return(gettextf("'%s' is missing",
                                          name))
                  }
-                 ## if hasAge: nAge, stepAgeCurrent, stepAgeTarget, stepTriangleCurrent positive
-                 for (name in c("nAge", "stepAgeCurrent", "stepAgeTarget", "stepTriangleCurrent")) {
+                 ## if hasAge: nAge, stepAgeCurrent, stepAgeTarget positive
+                 for (name in c("nAge", "stepAgeCurrent", "stepAgeTarget")) {
                      value <- methods::slot(object, name)
                      if (value < 1L)
                          return(gettextf("'%s' is non-positive",
@@ -109,8 +124,8 @@ setClass("MappingMixinAge",
                  }
              }
              else {
-                 ## if not hasAge: nAge, stepAgeCurrent, stepAgeTarget, stepTriangleCurrent missing
-                 for (name in c("nAge", "stepAgeCurrent", "stepAgeTarget", "stepTriangleCurrent")) {
+                 ## if not hasAge: nAge, stepAgeCurrent, stepAgeTarget missing
+                 for (name in c("nAge", "stepAgeCurrent", "stepAgeTarget")) {
                      value <- methods::slot(object, name)
                      if (!is.na(value))
                          return(gettextf("'%s' is %s but '%s' is not missing",
@@ -119,6 +134,75 @@ setClass("MappingMixinAge",
              }
              TRUE
          })
+
+## HAS_TESTS
+setClass("MappingMixinStepTriangleCurrent",
+         slots = c(stepTriangleCurrent = "integer"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             stepTriangleCurrent <- object@stepTriangleCurrent
+             hasAge <- object@hasAge
+             ## 'stepTriangleCurrent' has length 1
+             if (!identical(length(stepTriangleCurrent), 1L))
+                 return(gettextf("'%s' does not have length %d",
+                                 "stepTriangleCurrent", 1L))
+             ## 'hasAge' is not missing
+             if (is.na(hasAge))
+                 return(gettextf("'%s' is missing",
+                                 "hasAge"))
+             if (hasAge) {
+                 ## if hasAge: 'stepTriangleCurrent' not missing
+                 if (is.na(stepTriangleCurrent))
+                     return(gettextf("'%s' is missing",
+                                     "stepTriangleCurrent"))
+                 ## if hasAge: 'stepTriangleCurrent' positive
+                 if (stepTriangleCurrent < 1L)
+                     return(gettextf("'%s' is non-positive",
+                                     "stepTriangleCurrent"))
+             }
+             else {
+                 ## if not hasAge: 'stepTriangleCurrent' is missing
+                 if (!is.na(stepTriangleCurrent))
+                     return(gettextf("'%s' is %s but '%s' is not missing",
+                                     "hasAge", "FALSE", "stepTriangleCurrent"))
+             }
+             TRUE
+         })
+
+## NO_TESTS
+setClass("MappingMixinStepTriangleTarget",
+         slots = c(stepTriangleTarget = "integer"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             stepTriangleTarget <- object@stepTriangleTarget
+             hasAge <- object@hasAge
+             ## 'stepTriangleTarget' has length 1
+             if (!identical(length(stepTriangleTarget), 1L))
+                 return(gettextf("'%s' does not have length %d",
+                                 "stepTriangleTarget", 1L))
+             ## 'hasAge' is not missing
+             if (is.na(hasAge))
+                 return(gettextf("'%s' is missing",
+                                 "hasAge"))
+             if (hasAge) {
+                 ## if hasAge: 'stepTriangleTarget' not missing
+                 if (is.na(stepTriangleTarget))
+                     return(gettextf("'%s' is missing",
+                                     "stepTriangleTarget"))
+                 ## if hasAge: 'stepTriangleTarget' positive
+                 if (stepTriangleTarget < 1L)
+                     return(gettextf("'%s' is non-positive",
+                                     "stepTriangleTarget"))
+             }
+             else {
+                 ## if not hasAge: 'stepTriangleTarget' is missing
+                 if (!is.na(stepTriangleTarget))
+                     return(gettextf("'%s' is %s but '%s' is not missing",
+                                     "hasAge", "FALSE", "stepTriangleTarget"))
+             }
+             TRUE
+         })
+
 
 ## HAS_TESTS
 setClass("MappingMixinIMinAge",
@@ -189,7 +273,9 @@ setClass("MappingMixinOrigDest",
 setClass("MappingToPopn",
          contains = c("VIRTUAL",
                       "Mapping",
-                      "MappingMixinAge"))
+                      "MappingMixinTime",
+                      "MappingMixinAge",
+                      "MappingMixinStepTriangleCurrent"))
 
 ## HAS_TESTS
 setClass("MappingCompToPopn",
@@ -206,7 +292,9 @@ setClass("MappingOrigDestToPopn",
 setClass("MappingToAcc",
          contains = c("VIRTUAL",
                       "Mapping",
-                      "MappingMixinAge"))
+                      "MappingMixinTime",
+                      "MappingMixinAge",
+                      "MappingMixinStepTriangleCurrent"))
 
 ## HAS_TESTS
 setClass("MappingCompToAcc",
@@ -218,36 +306,39 @@ setClass("MappingOrigDestToAcc",
                       "MappingMixinOrigDest"))
 
 
-## Mappings to Exposure
+## Mappings to exposure
 
 ## NO_TESTS
 setClass("MappingToExp",
          contains = c("VIRTUAL",
-                      "Mapping"))
+                      "Mapping",
+                      "MappingMixinTime",
+                      "MappingMixinAge",
+                      "MappingMixinStepTriangleCurrent",
+                      "MappingMixinStepTriangleTarget"))
 
 ## NO_TESTS
-setClass("MappingToExpFromComp",
+setClass("MappingCompToExp",
          contains = "MappingToExp")
 
 ## NO_TESTS
-setClass("MappingToExpFromBirths",
+setClass("MappingBirthsToExp",
          contains = c("MappingToExp",
                       "MappingMixinIMinAge"))
 
 
 ## Mappings from Exposure
 
-## HAS_TESTS
 setClass("MappingFromExp",
          contains = c("VIRTUAL",
                       "Mapping"))
 
 ## HAS_TESTS
-setClass("MappingFromExpToComp",
+setClass("MappingExpToComp",
          contains = "MappingFromExp")
 
 ## HAS_TESTS
-setClass("MappingFromExpToBirths",
+setClass("MappingExpToBirths",
          contains = c("MappingFromExp",
                       "MappingMixinIMinAge"))
 

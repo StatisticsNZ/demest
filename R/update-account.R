@@ -22,7 +22,7 @@ updateProposalAccountMovePopn <- function(combined, useC = FALSE) {
         theta.popn <- sys.mod.popn@theta
         max.attempt <- combined@maxAttempt
         i.cell <- chooseICellPopn(description.popn)
-        i.exp.comp.first <- getIExpCompFirstFromPopn(i = i.cell,
+        i.exp.comp.first <- getIExpFirstFromPopn(i = i.cell,
                                                      description = description)
         i.popn.next <- getIPopnNextFromPopn(i = i.cell,
                                             description = description.popn)
@@ -71,8 +71,8 @@ updateProposalAccountMovePopn <- function(combined, useC = FALSE) {
             }
             combined@iExposure <- NA_integer_
             combined@iExposureOther <- NA_integer_
-            combined@iExpCompFirst <- i.exp.comp.first
-            combined@iExpCompFirstOther <- NA_integer_
+            combined@iExpFirst <- i.exp.comp.first
+            combined@iExpFirstOther <- NA_integer_
             combined@diffProp <- diff.prop
         }
         else {
@@ -85,8 +85,8 @@ updateProposalAccountMovePopn <- function(combined, useC = FALSE) {
             combined@iAccNextOther <- NA_integer_
             combined@iExposure <- NA_integer_
             combined@iExposureOther <- NA_integer_
-            combined@iExpCompFirst <- NA_integer_
-            combined@iExpCompFirstOther <- NA_integer_
+            combined@iExpFirst <- NA_integer_
+            combined@iExpFirstOther <- NA_integer_
             combined@diffProp <- NA_integer_
         }
         combined

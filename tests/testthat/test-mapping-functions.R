@@ -1628,6 +1628,290 @@ test_that("R and C versions getIAccNextFromComp give same answer with BirthsMove
     }
 })
 
+test_that("getIAccNextFromOrigDest works with InternalMovementsOrigDest", {
+    getIAccNextFromOrigDest <- demest:::getIAccNextFromOrigDest
+    InternalMovements <- dembase:::InternalMovements
+    Accession <- dembase:::Accession
+    makeTemplateComponent <- dembase:::makeTemplateComponent
+    Mapping <- demest:::Mapping
+    ## one orig-dest
+    component <- Counts(array(1:72,
+                              dim = c(2, 3, 3, 2, 2),
+                              dimnames = list(time = c("2001-2010", "2011-2020"),
+                                              reg_orig = 1:3,
+                                              reg_dest = 1:3,
+                                              triangle = c("TL", "TU"),
+                                              age = c("0-9", "10+"))))
+    population <- Counts(array(1:18,
+                               dim = c(3, 3, 2),
+                               dimnames = list(time = c(2000, 2010, 2020),
+                                               reg = 1:3,
+                                               age = c("0-9", "10+"))))
+    template <- makeTemplateComponent(population)
+    component <- InternalMovements(internal = component,
+                                   template = template)
+    accession <- Counts(array(1:6,
+                              dim = c(2, 3, 1),
+                              dimnames = list(time = c("2001-2010", "2011-2020"),
+                                              reg = 1:3,
+                                              age = "10")),
+                        dimscales = c(age = "Points"))
+    accession <- Accession(accession)
+    mapping <- Mapping(current = component,
+                       target = accession)
+    i <- seq_len(length(component))
+    i <- i[slice.index(component, 2) != slice.index(component, 3)]
+    ans.exp <- c(list(c(4L, 2L), c(0L, 0L), c(6L, 2L), c(0L, 0L), c(2L, 4L), c(0L, 0L),
+                      c(6L, 4L), c(0L, 0L), c(2L, 6L), c(0L, 0L), c(4L, 6L), c(0L, 0L)),
+                 rep(list(c(0L, 0L)), times = 12),
+                 list(c(3L, 1L), c(4L, 2L), c(5L, 1L), c(6L, 2L), c(1L, 3L), c(2L, 4L),
+                      c(5L, 3L), c(6L, 4L), c(1L, 5L), c(2L, 6L), c(3L, 5L), c(4L, 6L)),
+                 rep(list(c(0L, 0L)), times = 12))
+    for (j in seq_along(i)) {
+        ans.obtained <- getIAccNextFromOrigDest(i = i[j], mapping = mapping, useC = FALSE)
+        ans.expected <- ans.exp[[j]]
+        expect_identical(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of getIAccNextFromOrigDest give same answer with InternalMovementsOrigDest", {
+    getIAccNextFromOrigDest <- demest:::getIAccNextFromOrigDest
+    InternalMovements <- dembase:::InternalMovements
+    Accession <- dembase:::Accession
+    makeTemplateComponent <- dembase:::makeTemplateComponent
+    Mapping <- demest:::Mapping
+    ## one orig-dest
+    component <- Counts(array(1:72,
+                              dim = c(2, 3, 3, 2, 2),
+                              dimnames = list(time = c("2001-2010", "2011-2020"),
+                                              reg_orig = 1:3,
+                                              reg_dest = 1:3,
+                                              triangle = c("TL", "TU"),
+                                              age = c("0-9", "10+"))))
+    population <- Counts(array(1:18,
+                               dim = c(3, 3, 2),
+                               dimnames = list(time = c(2000, 2010, 2020),
+                                               reg = 1:3,
+                                               age = c("0-9", "10+"))))
+    template <- makeTemplateComponent(population)
+    component <- InternalMovements(internal = component,
+                                   template = template)
+    accession <- Counts(array(1:6,
+                              dim = c(2, 3, 1),
+                              dimnames = list(time = c("2001-2010", "2011-2020"),
+                                              reg = 1:3,
+                                              age = "10")),
+                        dimscales = c(age = "Points"))
+    accession <- Accession(accession)
+    mapping <- Mapping(current = component,
+                       target = accession)
+    i <- seq_len(length(component))
+    i <- i[slice.index(component, 2) != slice.index(component, 3)]
+    for (j in seq_along(i)) {
+        ans.R <- getIAccNextFromOrigDest(i = i[j], mapping = mapping, useC = FALSE)
+        ans.C <- getIAccNextFromOrigDest(i = i[j], mapping = mapping, useC = TRUE)
+        expect_identical(ans.R, ans.C)
+    }
+})
+
+test_that("getIAccNextFromComp works with InternalMovementsPool", {
+    getIAccNextFromComp <- demest:::getIAccNextFromComp
+    InternalMovements <- dembase:::InternalMovements
+    Accession <- dembase:::Accession
+    makeTemplateComponent <- dembase:::makeTemplateComponent
+    Mapping <- demest:::Mapping
+    ## one orig-dest
+    internal <- Counts(array(1:72,
+                             dim = c(2, 3, 3, 2, 3),
+                             dimnames = list(time = c("2001-2010", "2011-2020"),
+                                             reg_orig = 1:3,
+                                             reg_dest = 1:3,
+                                             triangle = c("TL", "TU"),
+                                             age = c("0-9", "10-19", "20+"))))
+    internal <- collapseOrigDest(internal, to = "pool")
+    population <- Counts(array(1:18,
+                               dim = c(3, 3, 3),
+                               dimnames = list(time = c(2000, 2010, 2020),
+                                               reg = 1:3,
+                                               age = c("0-9", "10-19", "20+"))))
+    template <- makeTemplateComponent(population)
+    internal <- InternalMovements(internal = internal,
+                                  template = template)
+    accession <- Counts(array(1:18,
+                              dim = c(2, 3, 2),
+                              dimnames = list(time = c("2001-2010", "2011-2020"),
+                                              reg = 1:3,
+                                              age = c("10", "20"))))
+    accession <- Accession(accession)
+    mapping <- Mapping(current = internal,
+                       target = accession)
+    ans.exp <- rep(c(2L, 0L, 4L, 0L, 6L, 0L,
+                     c(8L, 0L, 10L, 0L, 12L, 0L),
+                     rep(0L, 6),
+                     1:6,
+                     7:12,
+                     rep(0L, 6)),
+                   times = 2)
+    for (i in seq_along(internal)) {
+        ans.obtained <- getIAccNextFromComp(i = i, mapping = mapping)
+        ans.expected <- ans.exp[i]
+        expect_identical(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of getIAccNextFromComp give same answer with InternalMovementsPool", {
+    getIAccNextFromComp <- demest:::getIAccNextFromComp
+    InternalMovements <- dembase:::InternalMovements
+    Accession <- dembase:::Accession
+    makeTemplateComponent <- dembase:::makeTemplateComponent
+    Mapping <- demest:::Mapping
+    ## one orig-dest
+    internal <- Counts(array(1:72,
+                             dim = c(2, 3, 3, 2, 3),
+                             dimnames = list(time = c("2001-2010", "2011-2020"),
+                                             reg_orig = 1:3,
+                                             reg_dest = 1:3,
+                                             triangle = c("TL", "TU"),
+                                             age = c("0-9", "10-19", "20+"))))
+    internal <- collapseOrigDest(internal, to = "pool")
+    population <- Counts(array(1:18,
+                               dim = c(3, 3, 3),
+                               dimnames = list(time = c(2000, 2010, 2020),
+                                               reg = 1:3,
+                                               age = c("0-9", "10-19", "20+"))))
+    template <- makeTemplateComponent(population)
+    internal <- InternalMovements(internal = internal,
+                                  template = template)
+    accession <- Counts(array(1:18,
+                              dim = c(2, 3, 2),
+                              dimnames = list(time = c("2001-2010", "2011-2020"),
+                                              reg = 1:3,
+                                              age = c("10", "20"))))
+    accession <- Accession(accession)
+    mapping <- Mapping(current = internal,
+                       target = accession)
+    ans.exp <- rep(c(2L, 0L, 4L, 0L, 6L, 0L,
+                     c(8L, 0L, 10L, 0L, 12L, 0L),
+                     rep(0L, 6),
+                     1:6,
+                     7:12,
+                     rep(0L, 6)),
+                   times = 2)
+    for (i in seq_along(internal)) {
+        ans.R <- getIAccNextFromComp(i = i, mapping = mapping, useC = FALSE)
+        ans.C <- getIAccNextFromComp(i = i, mapping = mapping, useC = TRUE)
+        expect_identical(ans.R, ans.C)
+    }
+})
+
+
+
+## MAPPINGS TO EXPOSURE ################################################################
+
+## component
+
+test_that("getIExposureFromComp works with ordinary component", {
+    getIExposureFromComp <- demest:::getIExposureFromComp
+    ExitsMovements <- dembase:::ExitsMovements
+    Exposure <- dembase:::Exposure
+    makeTemplateComponent <- dembase:::makeTemplateComponent
+    Mapping <- demest:::Mapping
+    ## time is first dimension of two
+    component <- Counts(array(1:8,
+                              dim = c(2, 2, 2),
+                              dimnames = list(time = c("2001-2010", "2011-2020"),
+                                              triangle = c("TL", "TU"),
+                                              age = c("0-9", "10+"))))
+    population <- Counts(array(1:6,
+                               dim = c(3, 2),
+                               dimnames = list(time = c(2000, 2010, 2020),
+                                               age = c("0-9", "10+"))))
+    template <- makeTemplateComponent(population)
+    component <- ExitsMovements(exits = component,
+                                template = template,
+                                name = "exits")
+    exposure <- exposure(population, triangles = TRUE)
+    exposure <- Exposure(exposure)
+    mapping <- Mapping(current = component,
+                       target = exposure)
+    for (i in 1:8) {
+        ans.obtained <- getIExposureFromComp(i = i, mapping = mapping)
+        ans.expected <- i
+        expect_identical(ans.obtained, ans.expected)
+    }
+    ## time is second dimension of two
+    component <- Counts(array(1:3,
+                              dim = c(3, 1),
+                              dimnames = list(reg = c("a", "b", "c"),
+                                              time = "2001-2010")))
+    population <- Counts(array(1:6,
+                               dim = c(3, 2),
+                               dimnames = list(reg = c("a", "b", "c"),
+                                               time = c(2000, 2010))))
+    template <- makeTemplateComponent(population)
+    component <- ExitsMovements(exits = component,
+                                template = template,
+                                name = "exits")
+    exposure <- exposure(population)
+    exposure <- Exposure(exposure)
+    mapping <- Mapping(current = component,
+                       target = exposure)
+    for (i in 1:3) {
+        ans.obtained <- getIExposureFromComp(i = i, mapping = mapping)
+        ans.expected <- i
+        expect_identical(ans.obtained, ans.expected)
+    }
+    ## time is second dimension of three
+    component <- Counts(array(1:36,
+                              dim = c(3, 2, 2, 2),
+                              dimnames = list(reg = c("a", "b", "c"),
+                                              time = c("2001-2010", "2011-2020"),
+                                              age = c("0-9", "10+"),
+                                              triangle = c("TL", "TU"))))
+    population <- Counts(array(1:18,
+                               dim = c(3, 3, 2),
+                               dimnames = list(reg = c("a", "b", "c"),
+                                               time = c(2000, 2010, 2020),
+                                               age = c("0-9", "10+"))))
+    template <- makeTemplateComponent(population)
+    component <- ExitsMovements(exits = component,
+                                template = template,
+                                name = "exits")
+    exposure <- exposure(population, triangles = TRUE)
+    exposure <- Exposure(exposure)
+    mapping <- Mapping(current = component,
+                       target = exposure)
+    for (i in 1:36) {
+        ans.obtained <- getIExposureFromComp(i = i, mapping = mapping)
+        ans.expected <- i
+        expect_identical(ans.obtained, ans.expected)
+    }
+    ## only has time dimension
+    component <- Counts(array(1:11,
+                              dim = 11,
+                              dimnames = list(time = paste(seq(2001, by = 5, len = 11),
+                                                           seq(2005, by = 5, len = 11),
+                                                           sep = "-"))))
+    population <- Counts(array(1:12,
+                               dim = 12,
+                               dimnames = list(time = seq(from = 2000,
+                                                          by = 5,
+                                                          length = 12))))
+    template <- makeTemplateComponent(population)
+    component <- ExitsMovements(exits = component,
+                                template = template,
+                                name = "exits")
+    exposure <- exposure(population)
+    exposure <- Exposure(exposure)
+    mapping <- Mapping(current = component,
+                       target = exposure)
+    for (i in 1:11) {
+        ans.obtained <- getIExposureFromComp(i = i, mapping = mapping)
+        ans.expected <- i
+        expect_identical(ans.obtained, ans.expected)
+    }
+})
+
 
 
 
