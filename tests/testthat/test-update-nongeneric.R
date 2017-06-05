@@ -2166,6 +2166,7 @@ test_that("updatePhi works", {
     initialPrior <- demest:::initialPrior
     updateAlphaDeltaDLMWithTrend <- demest:::updateAlphaDeltaDLMWithTrend
     updateAlphaDLMNoTrend <- demest:::updateAlphaDLMNoTrend
+    rtnorm1 <- demest:::rtnorm1
     updated.with.trend <- FALSE
     updated.no.trend <- FALSE
     for (seed in seq_len(n.test)) {
@@ -2189,9 +2190,9 @@ test_that("updatePhi works", {
         mean <- sum(prior@deltaDLM[-1] * prior@deltaDLM[-11])/sum(prior@deltaDLM[-11]^2)
         sd <- prior@omegaDelta@.Data / sqrt(sum(prior@deltaDLM[-11]^2))
         phi.curr <- prior@phi
-        phi.prop <- rnorm(n = 1, mean = mean, sd = sd)
         min <- prior@minPhi
         max <- prior@maxPhi
+        phi.prop <- rtnorm1(mean = mean, sd = sd, lower = min, upper = max)
         shape1 <- prior@shape1Phi@.Data
         shape2 <- prior@shape2Phi@.Data
         log.diff <- (dbeta((phi.prop - min)/(max-min), shape1, shape2, log = TRUE)
@@ -2245,9 +2246,9 @@ test_that("updatePhi works", {
         mean <- sum(prior@alphaDLM[-1] * prior@alphaDLM[-11])/sum(prior@alphaDLM[-11]^2)
         sd <- prior@omegaAlpha@.Data / sqrt(sum(prior@alphaDLM[-11]^2))
         phi.curr <- prior@phi
-        phi.prop <- rnorm(n = 1, mean = mean, sd = sd)
         min <- prior@minPhi
         max <- prior@maxPhi
+        phi.prop <- rtnorm1(mean = mean, sd = sd, lower = min, upper = max)
         shape1 <- prior@shape1Phi@.Data
         shape2 <- prior@shape2Phi@.Data
         log.diff <- (dbeta((phi.prop - min)/(max-min), shape1, shape2, log = TRUE)

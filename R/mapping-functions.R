@@ -281,14 +281,15 @@ getIAccNextFromOrigDest <- function(i, mapping, useC = FALSE) {
 
 ## Function only called if 'component' has exposure
 
-## component - getIExposureFromComp
-## births no parent - getIExposureFromBirths
-## births with parent - getIExposureFromBirths
-## orig-dest - getIExposureFromComp
-## pool - getIExposureFromComp
+## component - getIExposureFromComp DONE
+## births no parent - getIExposureFromBirths DONE
+## births with parent - getIExposureFromBirths DONE
+## orig-dest - getIExposureFromOrigDest DONE
+## pool - getIExposureFromComp DONE
 ## net - Not used, since model for 'net' does not use exposure
 
-
+## READY_TO_TRANSLATE
+## HAS_TESTS
 getIExposureFromComp <- function(i, mapping, useC = FALSE) {
     ## 'i'
     stopifnot(is.integer(i))
@@ -309,10 +310,11 @@ getIExposureFromComp <- function(i, mapping, useC = FALSE) {
         step.time.exp <- mapping@stepTimeTarget
         has.age <- mapping@hasAge
         n.shared.vec <- mapping@nSharedVec
-        step.shared.exp.vec <- mapping@stepSharedCurrentVec
-        step.shared.comp.vec <- mapping@stepSharedTargetVec
-        n.dim.shared <- length(n.shared.vec)
-        i.exp <- 1L # R-style
+        step.shared.comp.vec <- mapping@stepSharedCurrentVec
+        step.shared.exp.vec <- mapping@stepSharedTargetVec
+        i.exp <- 1L
+        i.time <- ((i - 1L) %/% step.time.comp) %% n.time
+        i.exp <- i.exp + i.time * step.time.exp
         if (has.age) {
             n.age <- mapping@nAge
             step.age.comp <- mapping@stepAgeCurrent
@@ -324,18 +326,20 @@ getIExposureFromComp <- function(i, mapping, useC = FALSE) {
             i.exp <- i.exp + i.age * step.age.exp
             i.exp <- i.exp + i.triangle * step.triangle.exp
         }
+        n.dim.shared <- length(n.shared.vec)
         for (d in seq_len(n.dim.shared)) {
             n.shared <- n.shared.vec[d]
-            step.shared.exp <- step.shared.exp.vec[d]
             step.shared.comp <- step.shared.comp.vec[d]
-            i.shared <- ((i - 1L) %/% step.shared.comp) %% n.shared # C-style
-            i.exp <- i.exp + i.shared * step.shared.exp # R-style
+            step.shared.exp <- step.shared.exp.vec[d]
+            i.shared <- ((i - 1L) %/% step.shared.comp) %% n.shared
+            i.exp <- i.exp + i.shared * step.shared.exp
         }
-        i.exp # R-style
+        i.exp
     }
 }
 
-
+## READY_TO_TRANSLATE
+## HAS_TESTS
 getIExposureFromBirths <- function(i, mapping, useC = FALSE) {
     ## 'i'
     stopifnot(is.integer(i))
@@ -343,38 +347,105 @@ getIExposureFromBirths <- function(i, mapping, useC = FALSE) {
     stopifnot(!is.na(i))
     stopifnot(i >= 1L)
     ## 'mapping'
-    stopifnot(methods::is(mapping, "MappingToExpFromBirths"))
+    stopifnot(methods::is(mapping, "MappingBirthsToExp"))
     if (useC) {
-        .Call(getIExposure_R, i, mapping)
+        .Call(getIExposureFromBirths_R, i, mapping)
     }
     else {
+        n.time <- mapping@nTimeCurrent
+        step.time.births <- mapping@stepTimeCurrent
+        step.time.exp <- mapping@stepTimeTarget
         has.age <- mapping@hasAge
         n.shared.vec <- mapping@nSharedVec
-        step.shared.exp.vec <- mapping@stepSharedCurrentVec
-        step.shared.comp.vec <- mapping@stepSharedTargetVec
+        step.shared.births.vec <- mapping@stepSharedCurrentVec
+        step.shared.exp.vec <- mapping@stepSharedTargetVec
         n.dim.shared <- length(n.shared.vec)
         i.exp <- 1L # R-style
+        i.time <- ((i - 1L) %/% step.time.births) %% n.time
+        i.exp <- i.exp + i.time * step.time.exp
         if (has.age) {
             n.age.births <- mapping@nAge
             step.age.births <- mapping@stepAgeCurrent
             step.age.exp <- mapping@stepAgeTarget
-            step.triangle.comp <- mapping@stepTriangleCurrent
+            step.triangle.births <- mapping@stepTriangleCurrent
             step.triangle.exp <- mapping@stepTriangleTarget
             i.min.age <- mapping@iMinAge
             i.age.births <- ((i - 1L) %/% step.age.births) %% n.age.births
             i.age.exp <- i.age.births + i.min.age - 1L
-            i.triangle <- ((i - 1L) %/% step.triangle.births) %% n.age.births
+            i.triangle <- ((i - 1L) %/% step.triangle.births) %% 2L
             i.exp <- i.exp + i.age.exp * step.age.exp
             i.exp <- i.exp + i.triangle * step.triangle.exp
         }
         for (d in seq_len(n.dim.shared)) {
             n.shared <- n.shared.vec[d]
+            step.shared.births <- step.shared.births.vec[d]
             step.shared.exp <- step.shared.exp.vec[d]
-            step.shared.comp <- step.shared.comp.vec[d]
-            i.shared <- ((i - 1L) %/% step.shared.exp) %% n.shared # C-style
-            i.exp <- i.exp + i.shared * step.shared.comp # R-style
+            i.shared <- ((i - 1L) %/% step.shared.births) %% n.shared
+            i.exp <- i.exp + i.shared * step.shared.exp
         }
-        i.exp # R-style
+        i.exp
+    }
+}
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+getIExposureFromOrigDest <- function(i, mapping, useC = FALSE) {
+    ## 'i'
+    stopifnot(is.integer(i))
+    stopifnot(identical(length(i), 1L))
+    stopifnot(!is.na(i))
+    stopifnot(i >= 1L)
+    ## 'mapping'
+    stopifnot(methods::is(mapping, "MappingOrigDestToExp"))
+    if (useC) {
+        .Call(getIExposureFromOrigDest_R, i, mapping)
+    }
+    else {
+        is.one.to.one <- mapping@isOneToOne
+        if (is.one.to.one)
+            return(i)
+        n.time <- mapping@nTimeCurrent
+        step.time.comp <- mapping@stepTimeCurrent
+        step.time.exp <- mapping@stepTimeTarget
+        has.age <- mapping@hasAge
+        n.shared.vec <- mapping@nSharedVec
+        step.shared.comp.vec <- mapping@stepSharedCurrentVec
+        step.shared.exp.vec <- mapping@stepSharedTargetVec
+        n.orig.dest.vec <- mapping@nOrigDestVec
+        step.orig.comp.vec <- mapping@stepOrigCurrentVec
+        step.orig.dest.acc.vec <- mapping@stepOrigDestTargetVec    
+        i.exp <- 1L
+        i.time <- ((i - 1L) %/% step.time.comp) %% n.time
+        i.exp <- i.exp + i.time * step.time.exp
+        if (has.age) {
+            n.age <- mapping@nAge
+            step.age.comp <- mapping@stepAgeCurrent
+            step.age.exp <- mapping@stepAgeTarget
+            step.triangle.comp <- mapping@stepTriangleCurrent
+            step.triangle.exp <- mapping@stepTriangleTarget
+            i.age <- ((i - 1L) %/% step.age.comp) %% n.age
+            i.triangle <- ((i - 1L) %/% step.triangle.comp) %% 2L
+            i.exp <- i.exp + i.age * step.age.exp
+            i.exp <- i.exp + i.triangle * step.triangle.exp
+        }
+        n.dim.shared <- length(n.shared.vec)
+        for (d in seq_len(n.dim.shared)) {
+            n.shared <- n.shared.vec[d]
+            step.shared.comp <- step.shared.comp.vec[d]
+            step.shared.exp <- step.shared.exp.vec[d]
+            i.shared <- ((i - 1L) %/% step.shared.comp) %% n.shared
+            i.exp <- i.exp + i.shared * step.shared.exp
+        }
+        ## omit destination dimensions
+        n.dim.orig.dest <- length(n.orig.dest.vec)
+        for (d in seq_len(n.dim.orig.dest)) {
+            n.orig.dest <- n.orig.dest.vec[d]
+            step.orig.comp <- step.orig.comp.vec[d]
+            i.orig <- ((i - 1L) %/% step.orig.comp) %% n.orig.dest
+            step.orig.dest.acc <- step.orig.dest.acc.vec[d]
+            i.exp <- i.exp + i.orig * step.orig.dest.acc
+        }
+        i.exp
     }
 }
 
@@ -385,14 +456,15 @@ getIExposureFromBirths <- function(i, mapping, useC = FALSE) {
 ## iExpFirst is the index of the first cell in 'exposure' that
 ## will change if the cell being updated is changed
 
-## component - 
-## births no parent - 
-## births with parent - 
-## orig-dest - 
-## pool - 
-## net - 
+## component - getIExpFirstFromComp DONE
+## births no parent - getIExpFirstFromBirths DONE
+## births with parent - getIExpFirstFromBirths DONE
+## orig-dest - getIExpFirstPairFromComp DONE
+## pool - getIExpFirstFromComp DONE
+## net - getIExpFirstFromComp DONE
 
-
+## READY_TO_TRANSLATE
+## HAS_TESTS
 getIExpFirstFromComp <- function(i, mapping, useC = FALSE) {
     ## 'i'
     stopifnot(is.integer(i))
@@ -400,7 +472,7 @@ getIExpFirstFromComp <- function(i, mapping, useC = FALSE) {
     stopifnot(!is.na(i))
     stopifnot(i >= 1L)
     ## 'mapping'
-    stopifnot(methods::is(mapping, "MappingToExpFirstFromComp"))
+    stopifnot(methods::is(mapping, "MappingCompToExp"))
     if (useC) {
         .Call(getIExpFirstFromComp_R, i, mapping)
     }
@@ -409,8 +481,8 @@ getIExpFirstFromComp <- function(i, mapping, useC = FALSE) {
         step.time.comp <- mapping@stepTimeCurrent
         step.time.exp <- mapping@stepTimeTarget
         n.shared.vec <- mapping@nSharedVec
-        step.shared.exp.vec <- mapping@stepSharedCurrentVec
-        step.shared.comp.vec <- mapping@stepSharedTargetVec
+        step.shared.comp.vec <- mapping@stepSharedCurrentVec
+        step.shared.exp.vec <- mapping@stepSharedTargetVec
         has.age <- mapping@hasAge
         i.exp <- 1L
         i.time.comp <- ((i - 1L) %/% step.time.comp) %% n.time
@@ -432,7 +504,7 @@ getIExpFirstFromComp <- function(i, mapping, useC = FALSE) {
             }
             else {
                 i.time.exp <- i.time.comp
-                if (i.age == (n.age - 1L)) {
+                if (i.age.comp == (n.age - 1L)) {
                     i.age.exp <- i.age.comp
                     i.triangle.exp <- 1L
                 }
@@ -441,11 +513,11 @@ getIExpFirstFromComp <- function(i, mapping, useC = FALSE) {
                     i.triangle.exp <- 0L
                 }
             }
-            i.exp <- i.exp + i.age.exp * step.age.comp
+            i.exp <- i.exp + i.age.exp * step.age.exp
             i.exp <- i.exp + i.triangle.exp * step.triangle.exp
         }
         else
-            i.time.exp <- i.time.comp + 1L
+            i.time.exp <- i.time.comp
         i.exp <- i.exp + i.time.exp * step.time.exp
         n.dim.shared <- length(n.shared.vec)
         for (d in seq_len(n.dim.shared)) {
@@ -459,6 +531,8 @@ getIExpFirstFromComp <- function(i, mapping, useC = FALSE) {
     }
 }
 
+## READY_TO_TRANSLATE
+## HAS_TESTS
 ## i.age.exp and i.triangle.exp are both 0, so do not
 ## include them in the calculations
 getIExpFirstFromBirths <- function(i, mapping, useC = FALSE) {
@@ -468,7 +542,7 @@ getIExpFirstFromBirths <- function(i, mapping, useC = FALSE) {
     stopifnot(!is.na(i))
     stopifnot(i >= 1L)
     ## 'mapping'
-    stopifnot(methods::is(mapping, "MappingToExpFirstFromBirths"))
+    stopifnot(methods::is(mapping, "MappingBirthsToExp"))
     if (useC) {
         .Call(getIExpFirstFromBirths_R, i, mapping)
     }
@@ -477,9 +551,8 @@ getIExpFirstFromBirths <- function(i, mapping, useC = FALSE) {
         step.time.births <- mapping@stepTimeCurrent
         step.time.exp <- mapping@stepTimeTarget
         n.shared.vec <- mapping@nSharedVec
-        step.shared.exp.vec <- mapping@stepSharedCurrentVec
-        step.shared.births.vec <- mapping@stepSharedTargetVec
-        has.age <- mapping@hasAge
+        step.shared.births.vec <- mapping@stepSharedCurrentVec
+        step.shared.exp.vec <- mapping@stepSharedTargetVec
         i.exp <- 1L
         i.time <- ((i - 1L) %/% step.time.births) %% n.time
         i.exp <- i.exp + i.time * step.time.exp
@@ -494,6 +567,92 @@ getIExpFirstFromBirths <- function(i, mapping, useC = FALSE) {
         i.exp
     }
 }
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+getIExpFirstPairFromOrigDest <- function(i, mapping, useC = FALSE) {
+    ## 'i'
+    stopifnot(is.integer(i))
+    stopifnot(identical(length(i), 1L))
+    stopifnot(!is.na(i))
+    stopifnot(i >= 1L)
+    ## 'mapping'
+    stopifnot(methods::is(mapping, "MappingOrigDestToExp"))
+    if (useC) {
+        .Call(getIExpFirstFromOrigDest_R, i, mapping)
+    }
+    else {
+        n.time <- mapping@nTimeCurrent
+        step.time.comp <- mapping@stepTimeCurrent
+        step.time.exp <- mapping@stepTimeTarget
+        n.shared.vec <- mapping@nSharedVec
+        step.shared.comp.vec <- mapping@stepSharedCurrentVec
+        step.shared.exp.vec <- mapping@stepSharedTargetVec
+        has.age <- mapping@hasAge
+        n.orig.dest.vec <- mapping@nOrigDestVec
+        step.orig.comp.vec <- mapping@stepOrigCurrentVec
+        step.dest.comp.vec <- mapping@stepDestCurrentVec
+        step.orig.dest.exp.vec <- mapping@stepOrigDestTargetVec    
+        i.exp <- 1L
+        i.time.comp <- ((i - 1L) %/% step.time.comp) %% n.time
+        if (has.age) {
+            n.age <- mapping@nAge
+            step.age.comp <- mapping@stepAgeCurrent
+            step.age.exp <- mapping@stepAgeTarget
+            step.triangle.comp <- mapping@stepTriangleCurrent
+            step.triangle.exp <- mapping@stepTriangleTarget
+            i.age.comp <- ((i - 1L) %/% step.age.comp) %% n.age
+            i.triangle.comp <- ((i - 1L) %/% step.triangle.comp) %% 2L
+            is.lower <- i.triangle.comp == 0L
+            if (is.lower) {
+                if (i.time.comp == (n.time - 1L))
+                    return(c(0L, 0L))
+                i.time.exp <- i.time.comp + 1L
+                i.age.exp <- i.age.comp
+                i.triangle.exp <- 1L
+            }
+            else {
+                i.time.exp <- i.time.comp
+                if (i.age.comp == (n.age - 1L)) {
+                    i.age.exp <- i.age.comp
+                    i.triangle.exp <- 1L
+                }
+                else {
+                    i.age.exp <- i.age.comp + 1L
+                    i.triangle.exp <- 0L
+                }
+            }
+            i.exp <- i.exp + i.age.exp * step.age.exp
+            i.exp <- i.exp + i.triangle.exp * step.triangle.exp
+        }
+        else
+            i.time.exp <- i.time.comp
+        i.exp <- i.exp + i.time.exp * step.time.exp
+        n.dim.shared <- length(n.shared.vec)
+        for (d in seq_len(n.dim.shared)) {
+            n.shared <- n.shared.vec[d]
+            step.shared.comp <- step.shared.comp.vec[d]
+            step.shared.exp <- step.shared.exp.vec[d]
+            i.shared <- ((i - 1L) %/% step.shared.comp) %% n.shared
+            i.exp <- i.exp + i.shared * step.shared.exp
+        }
+        i.exp.orig <- i.exp
+        i.exp.dest <- i.exp
+        n.dim.orig.dest <- length(n.orig.dest.vec)
+        for (d in seq_len(n.dim.orig.dest)) {
+            n.orig.dest <- n.orig.dest.vec[d]
+            step.orig.comp <- step.orig.comp.vec[d]
+            step.dest.comp <- step.dest.comp.vec[d]
+            i.orig <- ((i - 1L) %/% step.orig.comp) %% n.orig.dest
+            i.dest <- ((i - 1L) %/% step.dest.comp) %% n.orig.dest
+            step.orig.dest.exp <- step.orig.dest.exp.vec[d]
+            i.exp.orig <- i.exp.orig + i.orig * step.orig.dest.exp
+            i.exp.dest <- i.exp.dest + i.dest * step.orig.dest.exp
+        }
+        c(i.exp.orig, i.exp.dest)
+    }
+}
+
 
 
 

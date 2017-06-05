@@ -169,7 +169,7 @@ setClass("MappingMixinStepTriangleCurrent",
              TRUE
          })
 
-## NO_TESTS
+## HAS_TESTS
 setClass("MappingMixinStepTriangleTarget",
          slots = c(stepTriangleTarget = "integer"),
          contains = "VIRTUAL",
@@ -202,7 +202,6 @@ setClass("MappingMixinStepTriangleTarget",
              }
              TRUE
          })
-
 
 ## HAS_TESTS
 setClass("MappingMixinIMinAge",
@@ -308,7 +307,6 @@ setClass("MappingOrigDestToAcc",
 
 ## Mappings to exposure
 
-## NO_TESTS
 setClass("MappingToExp",
          contains = c("VIRTUAL",
                       "Mapping",
@@ -317,14 +315,19 @@ setClass("MappingToExp",
                       "MappingMixinStepTriangleCurrent",
                       "MappingMixinStepTriangleTarget"))
 
-## NO_TESTS
+## HAS_TESTS
 setClass("MappingCompToExp",
          contains = "MappingToExp")
 
-## NO_TESTS
+## HAS_TESTS
 setClass("MappingBirthsToExp",
          contains = c("MappingToExp",
                       "MappingMixinIMinAge"))
+
+## HAS_TESTS
+setClass("MappingOrigDestToExp",
+         contains = c("MappingToExp",
+                      "MappingMixinOrigDest"))
 
 
 ## Mappings from Exposure
@@ -333,11 +336,11 @@ setClass("MappingFromExp",
          contains = c("VIRTUAL",
                       "Mapping"))
 
-## HAS_TESTS
+## NO_TESTS
 setClass("MappingExpToComp",
          contains = "MappingFromExp")
 
-## HAS_TESTS
+## NO_TESTS
 setClass("MappingExpToBirths",
          contains = c("MappingFromExp",
                       "MappingMixinIMinAge"))

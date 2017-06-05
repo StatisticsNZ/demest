@@ -1194,8 +1194,8 @@ test_that("Mapping creates object of class MappingCompToExp from object of class
     expect_identical(ans.obtained, ans.expected)
 })
 
-
 ## births no parent
+
 test_that("Mapping creates object of class MappingBirthsToExp from object of class BirthsMovementNoParentChild", {
     Mapping <- demest:::Mapping
     BirthsMovements <- dembase:::BirthsMovements
@@ -1299,5 +1299,265 @@ test_that("Mapping creates object of class MappingBirthsToExp from object of cla
                         stepAgeTarget = NA_integer_,
                         stepTriangleCurrent = NA_integer_,
                         stepTriangleTarget = NA_integer_)
+    expect_identical(ans.obtained, ans.expected)
+})
+
+## births has parent
+
+test_that("Mapping creates object of class MappingBirthsToExp from object of class BirthsMovementHasParentChild", {
+    Mapping <- demest:::Mapping
+    BirthsMovements <- dembase:::BirthsMovements
+    Exposure <- dembase:::Exposure
+    makeTemplateComponent <- dembase:::makeTemplateComponent
+    ## has age; no shared dimensions
+    births <- Counts(array(1:108,
+                           dim = c(2, 3, 3, 3, 2),
+                           dimnames = list(age = c("5-9", "10-14"),
+                               time = c("2001-2005", "2006-2010", "2011-2015"),
+                               eth_parent = 1:3,
+                               eth_child = 1:3,
+                               triangle = c("TL", "TU"))))
+    population <- Counts(array(1:24,
+                               dim = c(4, 4, 3),
+                               dimnames = list(age = c("0-4", "5-9", "10-14", "15+"),
+                                   time = c(2000, 2005, 2010, 2015),
+                                   eth = 1:3)))
+    template <- makeTemplateComponent(population)
+    births <- BirthsMovements(births, template = template)
+    exposure <- exposure(population, triangles = TRUE)
+    exposure <- Exposure(exposure)
+    ans.obtained <- Mapping(current = births,
+                            target = exposure)
+    ans.expected <- new("MappingBirthsToExp",
+                        isOneToOne = FALSE,
+                        nTimeCurrent = 3L,
+                        stepTimeCurrent = 2L,
+                        stepTimeTarget = 4L,
+                        nSharedVec = 3L,
+                        stepSharedCurrentVec = 18L,
+                        stepSharedTargetVec = 12L,
+                        hasAge = TRUE,
+                        nAge = 2L,
+                        iMinAge = 2L,
+                        stepAgeCurrent = 1L,
+                        stepAgeTarget = 1L,
+                        stepTriangleCurrent = 54L,
+                        stepTriangleTarget = 36L)
+    expect_identical(ans.obtained, ans.expected)
+    ## has age; shared dimensions
+    births <- Counts(array(1:1296,
+                           dim = c(3, 2, 2, 3, 3, 2, 3, 2),
+                           dimnames = list(reg = 1:3,
+                               eth_parent = 1:2,
+                               eth_child = 1:2,
+                               occ_parent = 1:3,
+                               occ_child = 1:3,
+                               age = c("5-9", "10-14"),
+                               time = c("2001-2005", "2006-2010", "2011-2015"),
+                               triangle = c("TL", "TU"))))
+    population <- Counts(array(1:288,
+                               dim = c(3, 2, 3, 4, 4),
+                               dimnames = list(reg = 1:3,
+                                   eth = 1:2,
+                                   occ = 1:3,
+                                   age = c("0-4", "5-9", "10-14", "15+"),
+                                   time = c(2000, 2005, 2010, 2015))))
+    template <- makeTemplateComponent(population)
+    births <- BirthsMovements(births, template = template)
+    exposure <- exposure(population, triangles = TRUE)
+    exposure <- Exposure(exposure)
+    ans.obtained <- Mapping(current = births,
+                            target = exposure)
+    ans.expected <- new("MappingBirthsToExp",
+                        isOneToOne = FALSE,
+                        nTimeCurrent = 3L,
+                        stepTimeCurrent = 216L,
+                        stepTimeTarget = 72L,
+                        nSharedVec = c(3L, 2L, 3L),
+                        stepSharedCurrentVec = c(1L, 6L, 36L),
+                        stepSharedTargetVec = c(1L, 3L, 6L),
+                        hasAge = TRUE,
+                        nAge = 2L,
+                        iMinAge = 2L,
+                        stepAgeCurrent = 108L,
+                        stepAgeTarget = 18L,
+                        stepTriangleCurrent = 648L,
+                        stepTriangleTarget = 216L)
+    expect_identical(ans.obtained, ans.expected)
+})
+
+## orig-dest
+
+test_that("Mapping creates object of class MappingOrigDestToExp from object of class InternalMovementsOrigDest", {
+    Mapping <- demest:::Mapping
+    InternalMovements <- dembase:::InternalMovements
+    Exposure <- dembase:::Exposure
+    makeTemplateComponent <- dembase:::makeTemplateComponent
+    ## has age; no shared dimensions
+    internal <- Counts(array(1:216,
+                             dim = c(4, 3, 3, 3, 2),
+                             dimnames = list(age = c("0-4", "5-9", "10-14", "15+"),
+                                             time = c("2001-2005", "2006-2010", "2011-2015"),
+                                             eth_orig = 1:3,
+                                             eth_dest = 1:3,
+                                             triangle = c("TL", "TU"))))
+    population <- Counts(array(1:24,
+                               dim = c(4, 4, 3),
+                               dimnames = list(age = c("0-4", "5-9", "10-14", "15+"),
+                                               time = c(2000, 2005, 2010, 2015),
+                                               eth = 1:3)))
+    template <- makeTemplateComponent(population)
+    internal <- InternalMovements(internal, template = template)
+    exposure <- exposure(population, triangles = TRUE)
+    exposure <- Exposure(exposure)
+    ans.obtained <- Mapping(current = internal,
+                            target = exposure)
+    ans.expected <- new("MappingOrigDestToExp",
+                        isOneToOne = FALSE,
+                        nTimeCurrent = 3L,
+                        stepTimeCurrent = 4L,
+                        stepTimeTarget = 4L,
+                        nSharedVec = integer(),
+                        stepSharedCurrentVec = integer(),
+                        stepSharedTargetVec = integer(),
+                        nOrigDestVec = 3L,
+                        stepOrigCurrentVec = 12L,
+                        stepDestCurrentVec = 36L,
+                        stepOrigDestTargetVec = 12L,
+                        hasAge = TRUE,
+                        nAge = 4L,
+                        stepAgeCurrent = 1L,
+                        stepAgeTarget = 1L,
+                        stepTriangleCurrent = 108L,
+                        stepTriangleTarget = 36L)
+    expect_identical(ans.obtained, ans.expected)
+    ## has age; shared dimensions
+    internal <- Counts(array(1:2592,
+                             dim = c(3, 2, 2, 3, 3, 2, 4, 3, 2),
+                             dimnames = list(reg = 1:3,
+                                             eth_orig = 1:2,
+                                             eth_dest = 1:2,
+                                             occ_orig = 1:3,
+                                             occ_dest = 1:3,
+                                             sex = c("f", "m"),
+                                             age = c("0-4", "5-9", "10-14", "15+"),
+                                             time = c("2001-2005", "2006-2010", "2011-2015"),
+                                             triangle = c("TL", "TU"))))
+    population <- Counts(array(1:576,
+                               dim = c(3, 2, 3, 2, 4, 4),
+                               dimnames = list(reg = 1:3,
+                                               eth = 1:2,
+                                               occ = 1:3,
+                                               sex = c("f", "m"),
+                                               age = c("0-4", "5-9", "10-14", "15+"),
+                                               time = c(2000, 2005, 2010, 2015))))
+    template <- makeTemplateComponent(population)
+    internal <- InternalMovements(internal, template = template)
+    exposure <- exposure(population, triangles = TRUE)
+    exposure <- Exposure(exposure)
+    ans.obtained <- Mapping(current = internal,
+                            target = exposure)
+    ans.expected <- new("MappingOrigDestToExp",
+                        nTimeCurrent = 3L,
+                        stepTimeCurrent = 864L,
+                        stepTimeTarget = 144L,
+                        nSharedVec = c(3L, 2L),
+                        stepSharedCurrentVec = c(1L, 108L),
+                        stepSharedTargetVec = c(1L, 18L),
+                        nOrigDestVec = c(2L, 3L),
+                        stepOrigCurrentVec = c(3L, 12L),
+                        stepDestCurrentVec = c(6L, 36L),
+                        stepOrigDestTargetVec = c(3L, 6L),
+                        hasAge = TRUE,
+                        nAge = 4L,
+                        stepAgeCurrent = 216L,
+                        stepAgeTarget = 36L,
+                        stepTriangleCurrent = 2592L,
+                        stepTriangleTarget = 432L)
+    expect_identical(ans.obtained, ans.expected)
+})
+
+
+## pool
+
+test_that("Mapping creates object of class MappingCompToExp from object of class InternalMovementsPool", {
+    Mapping <- demest:::Mapping
+    InternalMovements <- dembase:::InternalMovements
+    Exposure <- dembase:::Exposure
+    makeTemplateComponent <- dembase:::makeTemplateComponent
+    ## has age; no shared dimensions
+    internal <- Counts(array(1:216,
+                             dim = c(4, 3, 3, 3, 2),
+                             dimnames = list(age = c("0-4", "5-9", "10-14", "15+"),
+                                 time = c("2001-2005", "2006-2010", "2011-2015"),
+                                 eth_orig = 1:3,
+                                 eth_dest = 1:3,
+                                 triangle = c("TL", "TU"))))
+    internal <- collapseOrigDest(internal, to = "pool")
+    population <- Counts(array(1:24,
+                               dim = c(4, 4, 3),
+                               dimnames = list(age = c("0-4", "5-9", "10-14", "15+"),
+                                   time = c(2000, 2005, 2010, 2015),
+                                   eth = 1:3)))
+    template <- makeTemplateComponent(population)
+    internal <- InternalMovements(internal, template = template)
+    exposure <- exposure(population, triangles = TRUE)
+    exposure <- Exposure(exposure)
+    ans.obtained <- Mapping(current = internal,
+                            target = exposure)
+    ans.expected <- new("MappingCompToExp",
+                        nTimeCurrent = 3L,
+                        stepTimeCurrent = 4L,
+                        stepTimeTarget = 4L,
+                        nSharedVec = 3L,
+                        stepSharedCurrentVec = 12L,
+                        stepSharedTargetVec = 12L,
+                        hasAge = TRUE,
+                        nAge = 4L,
+                        stepAgeCurrent = 1L,
+                        stepAgeTarget = 1L,
+                        stepTriangleCurrent = 36L,
+                        stepTriangleTarget = 36L)
+    expect_identical(ans.obtained, ans.expected)
+    ## has age; shared dimensions
+    internal <- Counts(array(1:2592,
+                             dim = c(3, 2, 2, 3, 3, 2, 4, 3, 2),
+                             dimnames = list(reg = 1:3,
+                                 eth_orig = 1:2,
+                                 eth_dest = 1:2,
+                                 occ_orig = 1:3,
+                                 occ_dest = 1:3,
+                                 sex = c("f", "m"),
+                                 age = c("0-4", "5-9", "10-14", "15+"),
+                                 time = c("2001-2005", "2006-2010", "2011-2015"),
+                                 triangle = c("TL", "TU"))))
+    internal <- collapseOrigDest(internal, to = "pool")
+    population <- Counts(array(1:576,
+                               dim = c(3, 2, 3, 2, 4, 4),
+                               dimnames = list(reg = 1:3,
+                                   eth = 1:2,
+                                   occ = 1:3,
+                                   sex = c("f", "m"),
+                                   age = c("0-4", "5-9", "10-14", "15+"),
+                                   time = c(2000, 2005, 2010, 2015))))
+    template <- makeTemplateComponent(population)
+    internal <- InternalMovements(internal, template = template)
+    exposure <- exposure(population, triangles = TRUE)
+    exposure <- Exposure(exposure)
+    ans.obtained <- Mapping(current = internal,
+                            target = exposure)
+    ans.expected <- new("MappingCompToExp",
+                        nTimeCurrent = 3L,
+                        stepTimeCurrent = 144L,
+                        stepTimeTarget = 144L,
+                        nSharedVec = c(3L, 2L, 3L, 2L),
+                        stepSharedCurrentVec = c(1L, 3L, 6L, 18L),
+                        stepSharedTargetVec = c(1L, 3L, 6L, 18L),
+                        hasAge = TRUE,
+                        nAge = 4L,
+                        stepAgeCurrent = 36L,
+                        stepAgeTarget = 36L,
+                        stepTriangleCurrent = 432L,
+                        stepTriangleTarget = 432L)
     expect_identical(ans.obtained, ans.expected)
 })

@@ -379,7 +379,7 @@ test_that("initialDLMAll works", {
     expect_identical(l$L, new("Length", 1L))
     expect_identical(l$updateSeriesDLM, TRUE)
     expect_identical(l$minPhi, 0.8)
-    expect_identical(l$maxPhi, 0.98)
+    expect_identical(l$maxPhi, 1)
     expect_identical(l$shape1Phi, new("Scale", 2))
     expect_identical(l$shape2Phi, new("Scale", 2))
     expect_identical(l$nuAlpha, new("DegreesFreedom", 7.0))
@@ -12020,8 +12020,8 @@ test_that("R and C versions of getIAccNextFromPopn give same answer", {
     expect_identical(ans.R, ans.C)
 })
 
-test_that("getIExpCompFirstFromPopn works", {
-    getIExpCompFirstFromPopn <- demest:::getIExpCompFirstFromPopn
+test_that("getIExpFirstFromPopn works", {
+    getIExpFirstFromPopn <- demest:::getIExpFirstFromPopn
     exposureWithTriangles <- dembase:::exposureWithTriangles
     Description <- demest:::Description
     Population <- dembase:::Population
@@ -12033,10 +12033,10 @@ test_that("getIExpCompFirstFromPopn works", {
     exposure <- exposureWithTriangles(population)
     population <- Population(population)
     description <- Description(population)
-    ans.obtained <- getIExpCompFirstFromPopn(description, i = 1L)
+    ans.obtained <- getIExpFirstFromPopn(description, i = 1L)
     ans.expected <- 5L
     expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- getIExpCompFirstFromPopn(description, i = 4L)
+    ans.obtained <- getIExpFirstFromPopn(description, i = 4L)
     ans.expected <- 7L
     expect_identical(ans.obtained, ans.expected)
     ## time is second dimension of two
@@ -12047,13 +12047,13 @@ test_that("getIExpCompFirstFromPopn works", {
     exposure <- exposureWithTriangles(population)
     population <- Population(population)
     description <- Description(population)
-    ans.obtained <- getIExpCompFirstFromPopn(description, i = 1L)
+    ans.obtained <- getIExpFirstFromPopn(description, i = 1L)
     ans.expected <- 7L
     expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- getIExpCompFirstFromPopn(description, i = 2L)
+    ans.obtained <- getIExpFirstFromPopn(description, i = 2L)
     ans.expected <- 8L
     expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- getIExpCompFirstFromPopn(description, i = 3L)
+    ans.obtained <- getIExpFirstFromPopn(description, i = 3L)
     ans.expected <- 9L
     expect_identical(ans.obtained, ans.expected)
     ## time is second dimension of three
@@ -12065,22 +12065,22 @@ test_that("getIExpCompFirstFromPopn works", {
     exposure <- exposureWithTriangles(population)
     population <- Population(population)
     description <- Description(population)
-    ans.obtained <- getIExpCompFirstFromPopn(description, i = 1L)
+    ans.obtained <- getIExpFirstFromPopn(description, i = 1L)
     ans.expected <- 13L
     expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- getIExpCompFirstFromPopn(description, i = 2L)
+    ans.obtained <- getIExpFirstFromPopn(description, i = 2L)
     ans.expected <- 14L
     expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- getIExpCompFirstFromPopn(description, i = 3L)
+    ans.obtained <- getIExpFirstFromPopn(description, i = 3L)
     ans.expected <- 15L
     expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- getIExpCompFirstFromPopn(description, i = 10L)
+    ans.obtained <- getIExpFirstFromPopn(description, i = 10L)
     ans.expected <- 19L
     expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- getIExpCompFirstFromPopn(description, i = 11L)
+    ans.obtained <- getIExpFirstFromPopn(description, i = 11L)
     ans.expected <- 20L
     expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- getIExpCompFirstFromPopn(description, i = 12L)
+    ans.obtained <- getIExpFirstFromPopn(description, i = 12L)
     ans.expected <- 21L
     expect_identical(ans.obtained, ans.expected)
 })

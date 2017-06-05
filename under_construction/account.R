@@ -91,7 +91,7 @@ updateProposalAccountMoveOrigDest <- function(combined, useC = FALSE) {
             i.exposure <- getIExposure(i = i.cell,
                                        mapping = mapping.exposure)
         pair.exp.first <- getIExpFirstPairFromOrigDest(i = i.cell,
-                                                                mapping = mapping.exposure)
+                                                       mapping = mapping.exposure)
         i.exp.first.orig <- pair.exp.first[1L]
         i.exp.first.dest <- pair.exp.first[2L]
         is.lower.triangle <- isLowerTriangle(i = i.cell,
@@ -223,10 +223,10 @@ updateProposalAccountMovePool <- function(combined) {
         pair.cell <- chooseICellOutInPool(description.comp)
         i.cell.out <- pair.cell[1L]
         i.cell.in <- pair.cell[2L]
-        i.exp.first.out <- getIExpFirstFromPool(i = i.cell.out,
-                                                         mapping = mapping.exposure)
-        i.exp.first.in <- getIExpFirstFromPool(i = i.cell.in,
-                                                        mapping = mapping.exposure)
+        i.exp.first.out <- getIExpFirstFromComp(i = i.cell.out,
+                                                mapping = mapping.exposure)
+        i.exp.first.in <- getIExpFirstFromComp(i = i.cell.in,
+                                               mapping = mapping.exposure)
         is.lower.triangle <- isLowerTriangle(i = i.cell,
                                              description = description.comp)
         if (uses.exposure) {
