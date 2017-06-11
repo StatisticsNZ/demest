@@ -71,7 +71,7 @@ setMethod("Mapping",
                   stepSharedCurrentVec = step.shared.current.vec,
                   stepSharedTargetVec = step.shared.target.vec,
                   hasAge = has.age,
-                  nAge = n.age,
+                  nAgeCurrent = n.age,
                   stepAgeCurrent = step.age.current,
                   stepAgeTarget = step.age.target,
                   stepTriangleCurrent = step.triangle.current)
@@ -138,7 +138,7 @@ setMethod("Mapping",
                            stepSharedCurrentVec = step.shared.current.vec,
                            stepSharedTargetVec = step.shared.target.vec,
                            hasAge = FALSE,
-                           nAge = NA_integer_,
+                           nAgeCurrent = NA_integer_,
                            stepAgeCurrent = NA_integer_,
                            stepAgeTarget = NA_integer_,
                            stepTriangleCurrent = NA_integer_)
@@ -245,7 +245,7 @@ setMethod("Mapping",
                            stepSharedCurrentVec = step.shared.current.vec,
                            stepSharedTargetVec = step.shared.target.vec,
                            hasAge = has.age,
-                           nAge = n.age,
+                           nAgeCurrent = n.age,
                            stepAgeCurrent = step.age.current,
                            stepAgeTarget = step.age.target,
                            stepTriangleCurrent = step.triangle.current)
@@ -323,7 +323,7 @@ setMethod("Mapping",
                            stepSharedCurrentVec = step.shared.current.vec,
                            stepSharedTargetVec = step.shared.target.vec,
                            hasAge = has.age,
-                           nAge = n.age,
+                           nAgeCurrent = n.age,
                            stepAgeCurrent = step.age.current,
                            stepAgeTarget = step.age.target,
                            stepTriangleCurrent = step.triangle.current)
@@ -393,7 +393,7 @@ setMethod("Mapping",
                            stepSharedCurrentVec = step.shared.current.vec,
                            stepSharedTargetVec = step.shared.target.vec,
                            hasAge = TRUE,
-                           nAge = n.age,
+                           nAgeCurrent = n.age,
                            stepAgeCurrent = step.age.current,
                            stepAgeTarget = step.age.target,
                            stepTriangleCurrent = step.triangle.current)
@@ -458,7 +458,7 @@ setMethod("Mapping",
                            stepSharedCurrentVec = step.shared.current.vec,
                            stepSharedTargetVec = step.shared.target.vec,
                            hasAge = FALSE,
-                           nAge = NA_integer_,
+                           nAgeCurrent = NA_integer_,
                            stepAgeCurrent = NA_integer_,
                            stepAgeTarget = NA_integer_,
                            stepTriangleCurrent = NA_integer_)
@@ -556,7 +556,7 @@ setMethod("Mapping",
                            stepSharedCurrentVec = step.shared.current.vec,
                            stepSharedTargetVec = step.shared.target.vec,
                            hasAge = TRUE,
-                           nAge = n.age,
+                           nAgeCurrent = n.age,
                            stepAgeCurrent = step.age.current,
                            stepAgeTarget = step.age.target,
                            stepTriangleCurrent = step.triangle.current)
@@ -625,7 +625,7 @@ setMethod("Mapping",
                            stepSharedCurrentVec = step.shared.current.vec,
                            stepSharedTargetVec = step.shared.target.vec,
                            hasAge = TRUE,
-                           nAge = n.age,
+                           nAgeCurrent = n.age,
                            stepAgeCurrent = step.age.current,
                            stepAgeTarget = step.age.target,
                            stepTriangleCurrent = step.triangle.current)
@@ -634,6 +634,7 @@ setMethod("Mapping",
 
 ## MAPPINGS TO EXPOSURE ##################################################################
 
+## HAS_TESTS
 setMethod("Mapping",
           signature(current = "Component",
                     target = "Exposure"),
@@ -716,7 +717,7 @@ setMethod("Mapping",
                            stepSharedCurrentVec = step.shared.comp.vec,
                            stepSharedTargetVec = step.shared.exp.vec,
                            hasAge = has.age,
-                           nAge = n.age,
+                           nAgeCurrent = n.age,
                            stepAgeCurrent = step.age.comp,
                            stepAgeTarget = step.age.exp,
                            stepTriangleCurrent = step.triangle.comp,
@@ -815,7 +816,7 @@ setMethod("Mapping",
                            stepSharedCurrentVec = step.shared.births.vec,
                            stepSharedTargetVec = step.shared.exp.vec,
                            hasAge = has.age,
-                           nAge = n.age,
+                           nAgeCurrent = n.age,
                            iMinAge = i.min.age,
                            stepAgeCurrent = step.age.births,
                            stepAgeTarget = step.age.exp,
@@ -934,7 +935,7 @@ setMethod("Mapping",
                            stepSharedCurrentVec = step.shared.comp.vec,
                            stepSharedTargetVec = step.shared.exp.vec,
                            hasAge = has.age,
-                           nAge = n.age,
+                           nAgeCurrent = n.age,
                            stepAgeCurrent = step.age.comp,
                            stepAgeTarget = step.age.exp,
                            stepTriangleCurrent = step.triangle.comp,
@@ -1024,7 +1025,7 @@ setMethod("Mapping",
                            stepSharedCurrentVec = step.shared.comp.vec,
                            stepSharedTargetVec = step.shared.exp.vec,
                            hasAge = has.age,
-                           nAge = n.age,
+                           nAgeCurrent = n.age,
                            stepAgeCurrent = step.age.comp,
                            stepAgeTarget = step.age.exp,
                            stepTriangleCurrent = step.triangle.comp,
@@ -1032,192 +1033,191 @@ setMethod("Mapping",
           })
 
 
+## MAPPINGS FROM EXPOSURE ################################################################
 
+## HAS_TESTS
+## should always be one-to-one, but fill in other slots to get valid object
+setMethod("Mapping",
+          signature(current = "Exposure",
+                    target = "Component"),
+          function(current, target) {
+              metadata.exp <- current@metadata
+              metadata.comp <- target@metadata
+              is.one.to.one <- identical(metadata.exp, metadata.comp)
+              if (!is.one.to.one)
+                  stop(gettextf("'%s' and '%s' have different metadata",
+                                "exposure", "component"))
+              dim <- dim(current)
+              i.shared <- seq_along(dim)
+              n.shared.vec <- dim
+              length.shared <- length(i.shared)
+              step.shared.exp.vec <- integer(length = length.shared)
+              step.shared.comp.vec <- integer(length = length.shared)
+              for (i in seq_len(length.shared)) {
+                  step <- 1L
+                  for (d in seq_len(i.shared[i] - 1L))
+                      step <- step * dim[d]
+                  step.shared.exp.vec[i] <- step
+                  step.shared.comp.vec[i] <- step
+              }
+              methods::new("MappingExpToComp",
+                           isOneToOne = is.one.to.one,
+                           nSharedVec = dim,
+                           stepSharedCurrentVec = step.shared.exp.vec,
+                           stepSharedTargetVec = step.shared.exp.vec)
+          })
 
+## HAS_TESTS
+setMethod("Mapping",
+          signature(current = "Exposure",
+                    target = "BirthsMovements"),
+          function(current, target) {
+              i.min.age <- target@iMinAge
+              dim.exp <- dim(current)
+              dim.births <- dim(target)
+              dimtypes.exp <- dembase::dimtypes(current, use.names = FALSE)
+              dimtypes.births <- dembase::dimtypes(target, use.names = FALSE)
+              i.time.exp <- match("time", dimtypes.exp)
+              i.time.births <- match("time", dimtypes.births)
+              i.age.exp <- match("age", dimtypes.exp, nomatch = 0L)
+              has.age <- i.age.exp > 0L
+              i.parent <- grep("parent", dimtypes.births)
+              n.time <- dim.exp[i.time.exp]
+              step.time.exp <- 1L
+              for (d in seq_len(i.time.exp - 1L))
+                  step.time.exp <- step.time.exp * dim.exp[d]
+              step.time.births <- 1L
+              for (d in seq_len(i.time.births - 1L))
+                  step.time.births <- step.time.births * dim.births[d]
+              s.exp <- seq_along(dim.exp)
+              s.births <- seq_along(dim.births)
+              i.shared.exp <- setdiff(s.exp, i.time.exp)
+              i.shared.births <- setdiff(s.births,
+                                         c(i.time.births, i.parent))
+              if (has.age) {
+                  i.age.births <- match("age", dimtypes.births)
+                  i.triangle.exp <- match("triangle", dimtypes.exp, nomatch = 0L)
+                  i.triangle.births <- match("triangle", dimtypes.births, nomatch = 0L)
+                  n.age.exp <- dim.exp[i.age.exp]
+                  n.age.births <- dim.births[i.age.births]
+                  step.age.exp <- 1L
+                  for (d in seq_len(i.age.exp - 1L))
+                      step.age.exp <- step.age.exp * dim.exp[d]
+                  step.age.births <- 1L
+                  for (d in seq_len(i.age.births - 1L))
+                      step.age.births <- step.age.births * dim.births[d]
+                  step.triangle.exp <- 1L
+                  for (d in seq_len(i.triangle.exp - 1L))
+                      step.triangle.exp <- step.triangle.exp * dim.exp[d]
+                  step.triangle.births <- 1L
+                  for (d in seq_len(i.triangle.births - 1L))
+                      step.triangle.births <- step.triangle.births * dim.births[d]
+                  i.shared.exp <- setdiff(i.shared.exp,
+                                          c(i.age.exp, i.triangle.exp))
+                  i.shared.births <- setdiff(i.shared.births,
+                                             c(i.age.births, i.triangle.births))
+              }
+              else {
+                  n.age.exp <- NA_integer_
+                  n.age.births <- NA_integer_
+                  step.age.exp <- NA_integer_
+                  step.age.births <- NA_integer_
+                  step.triangle.exp <- NA_integer_
+                  step.triangle.births <- NA_integer_
+              }
+              n.shared.vec <- dim.exp[i.shared.exp]
+              length.shared <- length(i.shared.exp)
+              step.shared.exp.vec <- integer(length = length.shared)
+              step.shared.births.vec <- integer(length = length.shared)
+              for (i in seq_len(length.shared)) {
+                  step <- 1L
+                  for (d in seq_len(i.shared.exp[i] - 1L))
+                      step <- step * dim.exp[d]
+                  step.shared.exp.vec[i] <- step
+                  step <- 1L
+                  for (d in seq_len(i.shared.births[i] - 1L))
+                      step <- step * dim.births[d]
+                  step.shared.births.vec[i] <- step
+              }
+              methods::new("MappingExpToBirths",
+                           isOneToOne = FALSE,
+                           nSharedVec = n.shared.vec,
+                           stepSharedCurrentVec = step.shared.exp.vec,
+                           stepSharedTargetVec = step.shared.births.vec,
+                           nTimeCurrent = n.time,
+                           stepTimeCurrent = step.time.exp,
+                           stepTimeTarget = step.time.births,
+                           hasAge = has.age,
+                           iMinAge = i.min.age,
+                           nAgeCurrent = n.age.exp,
+                           nAgeTarget = n.age.births,
+                           stepAgeCurrent = step.age.exp,
+                           stepAgeTarget = step.age.births,
+                           stepTriangleCurrent = step.triangle.exp,
+                           stepTriangleTarget = step.triangle.births)
+          })              
 
+## HAS_TESTS
+setMethod("Mapping",
+          signature(current = "Exposure",
+                    target = "InternalMovementsOrigDest"),
+          function(current, target) {
+              dim.exp <- dim(current)
+              dim.comp <- dim(target)
+              dimtypes.comp <- dembase::dimtypes(target, use.names = FALSE)
+              i.dest <- grep("destination", dimtypes.comp)
+              i.shared.exp <- seq_along(dim.exp)
+              i.shared.comp <- seq_along(dim.comp)
+              i.shared.comp <- setdiff(i.shared.comp, i.dest)
+              n.shared.vec <- dim.exp[i.shared.exp]
+              length.shared <- length(i.shared.exp)
+              step.shared.exp.vec <- integer(length = length.shared)
+              step.shared.comp.vec <- integer(length = length.shared)
+              for (i in seq_len(length.shared)) {
+                  step <- 1L
+                  for (d in seq_len(i.shared.exp[i] - 1L))
+                      step <- step * dim.exp[d]
+                  step.shared.exp.vec[i] <- step
+                  step <- 1L
+                  for (d in seq_len(i.shared.comp[i] - 1L))
+                      step <- step * dim.comp[d]
+                  step.shared.comp.vec[i] <- step
+              }
+              methods::new("MappingExpToComp",
+                           isOneToOne = FALSE,
+                           nSharedVec = n.shared.vec,
+                           stepSharedCurrentVec = step.shared.exp.vec,
+                           stepSharedTargetVec = step.shared.comp.vec)
+          })
 
-
-## ## MAPPINGS FROM EXPOSURE ################################################################
-
-## ## NO_TESTS
-## setMethod("Mapping",
-##           signature(current = "Exposure",
-##                     target = "Component"),
-##           function(current, target) {
-##               metadata.exp <- current@metadata
-##               metadata.comp <- target@metadata
-##               dim.exp <- dim(current)
-##               dim.comp <- dim(target)
-##               dimtypes.exp <- dembase::dimtypes(current, use.names = FALSE)
-##               dimtypes.comp <- dembase::dimtypes(target, use.names = FALSE)
-##               is.one.to.one <- identical(metadata.exp, metadata.comp)
-##               i.time.exp <- match("time", dimtypes.exp)
-##               i.time.comp <- match("time", dimtypes.comp)
-##               n.time <- dim.exp[i.time.exp]
-##               step.time.exp <- 1L
-##               for (d in seq_len(i.time.exp - 1L))
-##                   step.time.exp <- step.time.exp * dim.exp[d]
-##               step.time.comp <- 1L
-##               for (d in seq_len(i.time.comp - 1L))
-##                   step.time.comp <- step.time.comp * dim.comp[d]
-##               s.exp <- seq_along(dim.exp)
-##               s.comp <- seq_along(dim.comp)
-##               i.shared.exp <- setdiff(s.exp, i.time.exp)
-##               i.shared.comp <- setdiff(s.comp, i.time.comp)
-##               n.shared.vec <- dim.exp[i.shared.exp]
-##               length.shared <- length(i.shared.exp)
-##               step.shared.exp.vec <- integer(length = length.shared)
-##               step.shared.comp.vec <- integer(length = length.shared)
-##               for (i in seq_len(length.shared)) {
-##                   step <- 1L
-##                   for (d in seq_len(i.shared.exp[i] - 1L))
-##                       step <- step * dim.exp[d]
-##                   step.shared.exp.vec[i] <- step
-##                   step <- 1L
-##                   for (d in seq_len(i.shared.comp[i] - 1L))
-##                       step <- step * dim.comp[d]
-##                   step.shared.comp.vec[i] <- step
-##               }
-##               methods::new("MappingExpToComp",
-##                            isOneToOne = is.one.to.on,
-##                            nSharedVec = dim,
-##                            stepSharedCurrentVec = step.shared.vec,
-##                            stepSharedTargetVec = step.shared.vec,
-##                            nTimeCurrent = n.time,
-##                            stepTimeCurrent = step.time.exp,
-##                            stepTimeTarget = step.time.comp)
-##           })
-
-## setMethod("Mapping",
-##           signature(current = "Exposure",
-##                     target = "BirthsMovements"),
-##           function(current, target) {
-##               i.min.age <- target@iMinAge
-##               dim.exp <- dim(current)
-##               dim.comp <- dim(target)
-##               dimtypes.exp <- dembase::dimtypes(current, use.names = FALSE)
-##               dimtypes.comp <- dembase::dimtypes(target, use.names = FALSE)
-##               i.time.exp <- match("time", dimtypes.exp)
-##               i.time.comp <- match("time", dimtypes.comp)
-##               i.age.exp <- match("age", dimtypes.exp, nomatch = 0L)
-##               i.parent <- grep("parent", dimtypes.comp)
-              
-
-              
-##               n.time <- dim.exp[i.time.exp]
-##               step.time.exp <- 1L
-##               for (d in seq_len(i.time.exp - 1L))
-##                   step.time.exp <- step.time.exp * dim.exp[d]
-##               step.time.comp <- 1L
-##               for (d in seq_len(i.time.comp - 1L))
-##                   step.time.comp <- step.time.comp * dim.comp[d]
-##               s.exp <- seq_along(dim.exp)
-##               s.comp <- seq_along(dim.comp)
-##               i.shared.exp <- setdiff(s.exp, i.time.exp)
-##               i.shared.comp <- setdiff(s.comp, i.time.comp)
-##               has.age <- i.age.exp > 0L
-##               if (has.age) {
-##                   i.age.comp <- match("age", dimtypes.comp)
-##                   i.triangle.exp <- match("triangle", dimtypes.exp, nomatch = 0L)
-##                   i.triangle.comp <- match("triangle", dimtypes.comp, nomatch = 0L)
-##                   i.shared.exp <- setdiff(i.shared.exp,
-##                                           c(i.age.exp, i.triangle.exp))
-##                   i.shared.comp <- setdiff(i.shared.comp,
-##                                            c(i.age.comp, i.triangle.comp))
-##               }
-##               i.shared.comp <- setdiff(i.shared.comp, i.parent)
-##               n.shared.vec <- dim.exp[i.shared.exp]
-##               length.shared <- length(i.shared.exp)
-##               step.shared.exp.vec <- integer(length = length.shared)
-##               step.shared.comp.vec <- integer(length = length.shared)
-##               for (i in seq_len(length.shared)) {
-##                   step <- 1L
-##                   for (d in seq_len(i.shared.exp[i] - 1L))
-##                       step <- step * dim.exp[d]
-##                   step.shared.exp.vec[i] <- step
-##                   step <- 1L
-##                   for (d in seq_len(i.shared.comp[i] - 1L))
-##                       step <- step * dim.comp[d]
-##                   step.shared.comp.vec[i] <- step
-##               }
-##               methods::new("MappingExpToComp",
-##                            isOneToOne = FALSE,
-##                            nSharedVec = n.shared.vec,
-##                            stepSharedCurrentVec = step.shared.exp.vec,
-##                            stepSharedTargetVec = step.shared.comp.vec,
-##                            nTimeCurrent = n.time,
-##                            stepTimeCurrent = step.time.exp,
-##                            stepTimeTarget = step.time.comp,
-##                            iMinAge = i.min.age)
-##           })              
-
-
-
-## setMethod("Mapping",
-##           signature(current = "Exposure",
-##                     target = "InternalMovementsOrigDest"),
-##           function(current, target) {
-##               dim.exp <- dim(current)
-##               dim.comp <- dim(target)
-##               dimtypes.comp <- dembase::dimtypes(target, use.names = FALSE)
-##               i.dest <- grep("parent", dimtypes.comp)
-##               i.shared.exp <- seq_along(dim.exp)
-##               i.shared.comp <- seq_along(dim.comp)
-##               i.shared.comp <- setdiff(i.shared.comp, i.dest)
-##               n.shared.vec <- dim.exp[i.shared.exp]
-##               length.shared <- length(i.shared.exp)
-##               step.shared.exp.vec <- integer(length = length.shared)
-##               step.shared.comp.vec <- integer(length = length.shared)
-##               for (i in seq_len(length.shared)) {
-##                   step <- 1L
-##                   for (d in seq_len(i.shared.exp[i] - 1L))
-##                       step <- step * dim.exp[d]
-##                   step.shared.exp.vec[i] <- step
-##                   step <- 1L
-##                   for (d in seq_len(i.shared.comp[i] - 1L))
-##                       step <- step * dim.comp[d]
-##                   step.shared.comp.vec[i] <- step
-##               }
-##               methods::new("MappingCompToExp",
-##                   isOneToOne = FALSE,
-##                   nSharedVec = n.shared.vec,
-##                   stepSharedCurrentVec = step.shared.exp.vec,
-##                   stepSharedTargetVec = step.shared.comp.vec)
-##           })              
-
-
-
-
-
-## setMethod("Mapping",
-##           signature(current = "Exposure",
-##                     target = "InternalMovementsPool"),
-##           function(current, target) {
-##               dim.exp <- dim(current)
-##               dim.comp <- dim(target)
-##               i.direction <- target@iDirection
-##               i.shared.exp <- seq_along(dim.exp)
-##               i.shared.comp <- seq_along(dim.comp)
-##               i.shared.comp <- setdiff(i.shared.comp, i.direction)
-##               n.shared.vec <- dim.exp[i.shared.exp]
-##               length.shared <- length(i.shared.exp)
-##               step.shared.exp.vec <- integer(length = length.shared)
-##               step.shared.comp.vec <- integer(length = length.shared)
-##               for (i in seq_len(length.shared)) {
-##                   step <- 1L
-##                   for (d in seq_len(i.shared.exp[i] - 1L))
-##                       step <- step * dim.exp[d]
-##                   step.shared.exp.vec[i] <- step
-##                   step <- 1L
-##                   for (d in seq_len(i.shared.comp[i] - 1L))
-##                       step <- step * dim.comp[d]
-##                   step.shared.comp.vec[i] <- step
-##               }
-##               methods::new("MappingCompToExp",
-##                   isOneToOne = FALSE,
-##                   nSharedVec = n.shared.vec,
-##                   stepSharedCurrentVec = step.shared.exp.vec,
-##                   stepSharedTargetVec = step.shared.comp.vec)
-##           })
-
-
+## HAS_TESTS
+setMethod("Mapping",
+          signature(current = "Exposure",
+                    target = "InternalMovementsPool"),
+          function(current, target) {
+              dim.exp <- dim(current)
+              dim.comp <- dim(target)
+              i.direction <- target@iDirection
+              i.shared.exp <- seq_along(dim.exp)
+              i.shared.comp <- seq_along(dim.comp)
+              i.shared.comp <- setdiff(i.shared.comp, i.direction)
+              n.shared.vec <- dim.exp[i.shared.exp]
+              length.shared <- length(i.shared.exp)
+              step.shared.exp.vec <- integer(length = length.shared)
+              step.shared.comp.vec <- integer(length = length.shared)
+              for (i in seq_len(length.shared)) {
+                  step <- 1L
+                  for (d in seq_len(i.shared.exp[i] - 1L))
+                      step <- step * dim.exp[d]
+                  step.shared.exp.vec[i] <- step
+                  step <- 1L
+                  for (d in seq_len(i.shared.comp[i] - 1L))
+                      step <- step * dim.comp[d]
+                  step.shared.comp.vec[i] <- step
+              }
+              methods::new("MappingExpToComp",
+                           isOneToOne = FALSE,
+                           nSharedVec = n.shared.vec,
+                           stepSharedCurrentVec = step.shared.exp.vec,
+                           stepSharedTargetVec = step.shared.comp.vec)
+          })

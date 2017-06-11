@@ -38,7 +38,7 @@ getIPopnNextFromComp(int i, SEXP mapping_R)
     iPopnNext_R += iTime * stepTimePopn;
     
     if (hasAge) {
-        int nAge = *INTEGER(GET_SLOT(mapping_R, nAge_sym));
+        int nAge = *INTEGER(GET_SLOT(mapping_R, nAgeCurrent_sym));
         int stepAgeComp = *INTEGER(GET_SLOT(mapping_R, stepAgeCurrent_sym));
         int stepAgePopn = *INTEGER(GET_SLOT(mapping_R, stepAgeTarget_sym));
         int iAge = (i - 1)/stepAgeComp % nAge;
@@ -219,7 +219,7 @@ getIPopnNextFromOrigDestInternal(int *ans, int i, SEXP mapping_R)
         }*/
         
     if (hasAge) {
-        int nAge = *INTEGER(GET_SLOT(mapping_R, nAge_sym));
+        int nAge = *INTEGER(GET_SLOT(mapping_R, nAgeCurrent_sym));
         int stepAgeComp = *INTEGER(GET_SLOT(mapping_R, stepAgeCurrent_sym));
         int stepAgePopn = *INTEGER(GET_SLOT(mapping_R, stepAgeTarget_sym));
         int iAge = (i - 1)/stepAgeComp % nAge;

@@ -2333,53 +2333,6 @@ updateObservation <- function(combined) {
 
 ## HELPER FUNCTIONS ################################################
 
-getIExpFirstFromOrigDest <- function(i, mapping) {
-    n.shared.vec <- mapping@nSharedVec
-    step.shared.comp.vec <- mapping@stepSharedCurrentVec
-    step.shared.popn.vec <- mapping@stepSharedTargetVec
-    n.orig.dest.vec <- mapping@nOrigDestVec
-    step.orig.vec <- mapping@stepOrigCurrentVec
-    step.dest.vec <- mapping@stepDestCurrentVec
-    step.orig.dest.vec <- mapping@stepOrigDestTargetVec    
-    n.dim.shared <- length(n.shared.vec)
-    n.dim.orig.dest <- length(n.orig.dest.vec)
-    i.exp.orig <- 1L
-    for (d in seq_len(n.dim.shared)) {
-        n.shared <- n.shared.vec[d]
-        step.shared.comp <- step.shared.comp.vec[d]
-        step.shared.popn <- step.shared.popn.vec[d]
-        i.shared <- ((i - 1L) %/% step.shared.comp) %% n.shared # C-style
-        i.exp.orig <- i.exp.orig + i.shared * step.shared.popn
-    }
-    i.exp.dest <- i.exp.orig
-    for (d in seq_len(n.dim.orig.dest)) {
-        n.orig.dest <- n.orig.dest.vec[d]
-        step.orig <- step.orig.vec[d]
-        step.dest <- step.dest.vec[d]
-        i.orig <- ((i - 1L) %/% step.orig) %% n.orig.dest # C-style
-        i.dest <- ((i - 1L) %/% step.dest) %% n.orig.dest # C-style
-        i.exp.orig <- i.exp.orig + i.orig * step.orig.dest
-        i.exp.dest <- i.exp.dest + i.dest * step.orig.dest
-    }
-    c(i.exp.orig, i.exp.dest)
-}
-
-
-getIExpFirstFromComp <- function(i, mapping) {
-    n.shared.vec <- mapping@nSharedVec
-    step.shared.comp.vec <- mapping@stepSharedCurrentVec
-    step.shared.exp.vec <- mapping@stepSharedTargetVec
-    n.dim.shared <- length(n.shared.vec)
-    i.exp <- 1L # R-style
-    for (d in seq_len(n.dim.shared)) {
-        n.shared <- n.shared.vec[d]
-        step.shared.comp <- step.shared.comp.vec[d]
-        step.shared.exp <- step.shared.exp.vec[d]
-        i.shared <- ((i - 1L) %/% step.shared.comp) %% n.shared # C-style
-        i.exp <- i.exp + i.shared * step.shared.exp # R-style
-    }
-    i.exp # R-style
-}
 
 isLowerTriangle <- function(i, description) {
     stopifnot(is(description, "DescriptionComp"))

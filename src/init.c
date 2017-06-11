@@ -1769,6 +1769,7 @@ R_init_demest(DllInfo *info)
   ADD_SYM(nTimeCurrent);
   ADD_SYM(stepTimeCurrent);
   ADD_SYM(stepTimeTarget);
+  ADD_SYM(nAgeCurrent); 	/* Added by JB 2017-06-10 */
   ADD_SYM(stepAgeCurrent);
   ADD_SYM(stepAgeTarget);
   ADD_SYM(stepTriangleCurrent);

@@ -171,6 +171,7 @@ SEXP
   nTimeCurrent_sym,
   stepTimeCurrent_sym,
   stepTimeTarget_sym,
+  nAgeCurrent_sym,    		/* Added by JB 2017-06-10 */
   stepAgeCurrent_sym,
   stepAgeTarget_sym,
   stepTriangleCurrent_sym,

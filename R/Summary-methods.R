@@ -166,7 +166,9 @@ setMethod("show",
                   cat("\nparameters:\n")
                   parameters <- round(parameters, digits = kDigits)
                   Rhat <- round(gelmanDiag, digits = kDigits - 1L)
-                  df <- data.frame(Rhat = Rhat,
+                  dot <- ifelse(Rhat < 1.1, "", ".")
+                  df <- data.frame(" " = dot,
+                                   Rhat = Rhat,
                                    parameters,
                                    check.names = FALSE)
                   print(df)

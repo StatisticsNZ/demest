@@ -79,15 +79,15 @@ setClass("MappingMixinTime",
 ## HAS_TESTS
 setClass("MappingMixinAge",
          slots = c(hasAge = "logical",
-                   nAge = "integer",
+                   nAgeCurrent = "integer",
                    stepAgeCurrent = "integer",
                    stepAgeTarget = "integer",
                    stepTriangleCurrent = "integer"),
          contains = "VIRTUAL",
          validity = function(object) {
              hasAge <- object@hasAge
-             ## hasAge, nAge, stepAgeCurrent, stepAgeTarget have length 1
-             for (name in c("hasAge", "nAge", "stepAgeCurrent", "stepAgeTarget")) {
+             ## hasAge, nAgeCurrent, stepAgeCurrent, stepAgeTarget have length 1
+             for (name in c("hasAge", "nAgeCurrent", "stepAgeCurrent", "stepAgeTarget")) {
                  value <- methods::slot(object, name)
                  if (!identical(length(value), 1L))
                      return(gettextf("'%s' does not have length %d",
@@ -98,15 +98,15 @@ setClass("MappingMixinAge",
                  return(gettextf("'%s' is missing",
                                  "hasAge"))
              if (hasAge) {
-                 ## if hasAge: nAge, stepAgeCurrent, stepAgeTarget not missing
-                 for (name in c("nAge", "stepAgeCurrent", "stepAgeTarget")) {
+                 ## if hasAge: nAgeCurrent, stepAgeCurrent, stepAgeTarget not missing
+                 for (name in c("nAgeCurrent", "stepAgeCurrent", "stepAgeTarget")) {
                      value <- methods::slot(object, name)
                      if (is.na(value))
                          return(gettextf("'%s' is missing",
                                          name))
                  }
-                 ## if hasAge: nAge, stepAgeCurrent, stepAgeTarget positive
-                 for (name in c("nAge", "stepAgeCurrent", "stepAgeTarget")) {
+                 ## if hasAge: nAgeCurrent, stepAgeCurrent, stepAgeTarget positive
+                 for (name in c("nAgeCurrent", "stepAgeCurrent", "stepAgeTarget")) {
                      value <- methods::slot(object, name)
                      if (value < 1L)
                          return(gettextf("'%s' is non-positive",
@@ -124,8 +124,8 @@ setClass("MappingMixinAge",
                  }
              }
              else {
-                 ## if not hasAge: nAge, stepAgeCurrent, stepAgeTarget missing
-                 for (name in c("nAge", "stepAgeCurrent", "stepAgeTarget")) {
+                 ## if not hasAge: nAgeCurrent, stepAgeCurrent, stepAgeTarget missing
+                 for (name in c("nAgeCurrent", "stepAgeCurrent", "stepAgeTarget")) {
                      value <- methods::slot(object, name)
                      if (!is.na(value))
                          return(gettextf("'%s' is %s but '%s' is not missing",
@@ -219,6 +219,25 @@ setClass("MappingMixinIMinAge",
                                  "iMinAge"))
              TRUE
          })
+
+
+## NO_TESTS
+setClass("MappingMixinNAgeTarget",
+         slots = c(nAgeTarget = "integer"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             nAgeTarget <- object@nAgeTarget
+             ## 'nAgeTarget' has length 1
+             if (!identical(length(nAgeTarget), 1L))
+                 return(gettextf("'%s' does not have length %d",
+                                 "nAgeTarget", 1L))
+             ## nAgeTarget positive if not missing
+             if (!is.na(nAgeTarget) && nAgeTarget <= 1L)
+                 return(gettextf("'%s' is non-positive",
+                                 "nAgeTarget"))
+             TRUE
+         })
+
 
 
 ## HAS_TESTS
@@ -343,5 +362,10 @@ setClass("MappingExpToComp",
 ## NO_TESTS
 setClass("MappingExpToBirths",
          contains = c("MappingFromExp",
-                      "MappingMixinIMinAge"))
+                      "MappingMixinTime",
+                      "MappingMixinAge",
+                      "MappingMixinIMinAge",
+                      "MappingMixinNAgeTarget",
+                      "MappingMixinStepTriangleCurrent",
+                      "MappingMixinStepTriangleTarget"))
 

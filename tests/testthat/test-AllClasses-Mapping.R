@@ -27,7 +27,7 @@ test_that("can create valid object of class MappingCompToPopn", {
              stepSharedCurrentVec = 3L,
              stepSharedTargetVec = 6L,
              hasAge = TRUE,
-             nAge = 3L,
+             nAgeCurrent = 3L,
              stepAgeCurrent = 1L,
              stepAgeTarget = 1L,
              stepTriangleCurrent = 3L,
@@ -50,7 +50,7 @@ test_that("can create valid object of class MappingCompToPopn", {
              stepSharedCurrentVec = 1L,
              stepSharedTargetVec = 4L,
              hasAge = FALSE,
-             nAge = as.integer(NA),
+             nAgeCurrent = as.integer(NA),
              stepAgeCurrent = as.integer(NA),
              stepAgeTarget = as.integer(NA),
              stepTriangleCurrent = as.integer(NA),
@@ -66,7 +66,7 @@ test_that("validity tests for MappingCompToPopn inherited from Mapping work", {
              stepSharedCurrentVec = 3L,
              stepSharedTargetVec = 6L,
              hasAge = TRUE,
-             nAge = 3L,
+             nAgeCurrent = 3L,
              stepAgeCurrent = 1L,
              stepAgeTarget = 1L,
              stepTriangleCurrent = 3L,
@@ -114,7 +114,7 @@ test_that("validity tests for MappingCompToPopn inherited from MappingMixinTime 
              stepSharedCurrentVec = 3L,
              stepSharedTargetVec = 6L,
              hasAge = TRUE,
-             nAge = 3L,
+             nAgeCurrent = 3L,
              stepAgeCurrent = 1L,
              stepAgeTarget = 1L,
              stepTriangleCurrent = 3L,
@@ -145,29 +145,29 @@ test_that("validity tests for MappingCompToPopn inherited from MappingMixinAge w
              stepSharedCurrentVec = 3L,
              stepSharedTargetVec = 6L,
              hasAge = TRUE,
-             nAge = 3L,
+             nAgeCurrent = 3L,
              stepAgeCurrent = 1L,
              stepAgeTarget = 1L,
              stepTriangleCurrent = 3L,
              nTimeCurrent = 3L,
              stepTimeCurrent = 12L,
              stepTimeTarget = 6L)
-    ## hasAge, nAge, stepAgeCurrent, stepAgeTarget have length 1
+    ## hasAge, nAgeCurrent, stepAgeCurrent, stepAgeTarget have length 1
     x.wrong <- x
-    x.wrong@nAge <- 1:2
+    x.wrong@nAgeCurrent <- 1:2
     expect_error(validObject(x.wrong),
-                 "'nAge' does not have length 1")
+                 "'nAgeCurrent' does not have length 1")
     ## hasAge is not missing
     x.wrong <- x
     x.wrong@hasAge <- NA
     expect_error(validObject(x.wrong),
                  "'hasAge' is missing")
-    ## if hasAge: nAge, stepAgeCurrent, stepAgeTarget not missing
+    ## if hasAge: nAgeCurrent, stepAgeCurrent, stepAgeTarget not missing
     x.wrong <- x
     x.wrong@stepAgeCurrent <- NA_integer_
     expect_error(validObject(x.wrong),
                  "'stepAgeCurrent' is missing")
-    ## if hasAge: nAge, stepAgeCurrent, stepAgeTarget positive
+    ## if hasAge: nAgeCurrent, stepAgeCurrent, stepAgeTarget positive
     x.wrong <- x
     x.wrong@stepAgeTarget <- -1L
     expect_error(validObject(x.wrong),
@@ -181,12 +181,12 @@ test_that("validity tests for MappingCompToPopn inherited from MappingMixinAge w
     x.wrong@stepAgeTarget <- x.wrong@stepSharedTargetVec[1]
     expect_error(validObject(x.wrong),
                  "overlap between 'stepAgeTarget' and 'stepSharedTargetVec'")
-    ## if not hasAge: nAge, stepAgeCurrent, stepAgeTarget, stepTriangleCurrent missing
+    ## if not hasAge: nAgeCurrent, stepAgeCurrent, stepAgeTarget, stepTriangleCurrent missing
     x.wrong <- x
     x.wrong@hasAge <- FALSE
     x.wrong@stepTriangleCurrent <- as.integer(NA)
     expect_error(validObject(x.wrong),
-                 "'hasAge' is FALSE but 'nAge' is not missing")
+                 "'hasAge' is FALSE but 'nAgeCurrent' is not missing")
 })
 
 test_that("validity tests for MappingCompToPopn inherited from stepTriangleCurrent work", {
@@ -195,7 +195,7 @@ test_that("validity tests for MappingCompToPopn inherited from stepTriangleCurre
              stepSharedCurrentVec = 3L,
              stepSharedTargetVec = 6L,
              hasAge = TRUE,
-             nAge = 3L,
+             nAgeCurrent = 3L,
              stepAgeCurrent = 1L,
              stepAgeTarget = 1L,
              stepTriangleCurrent = 3L,
@@ -225,7 +225,7 @@ test_that("can create value object of class MappingOrigDestToPopn", {
              stepSharedCurrentVec = 384L,
              stepSharedTargetVec = 60L,
              hasAge = TRUE,
-             nAge = 3L,
+             nAgeCurrent = 3L,
              stepAgeCurrent = 16L,
              stepAgeTarget = 4L,
              stepTriangleCurrent = 48L,
@@ -245,7 +245,7 @@ test_that("tests for MappingOrigDestToPopn inherited from MappingMixinOrigDest w
              stepSharedCurrentVec = 384L,
              stepSharedTargetVec = 60L,
              hasAge = TRUE,
-             nAge = 3L,
+             nAgeCurrent = 3L,
              stepAgeCurrent = 16L,
              stepAgeTarget = 4L,
              stepTriangleCurrent = 48L,
@@ -302,7 +302,7 @@ test_that("can create valid object of class MappingCompToAcc", {
              stepSharedCurrentVec = c(3L, 12L),
              stepSharedTargetVec = c(3L, 12L),
              hasAge = TRUE,
-             nAge = 3L,
+             nAgeCurrent = 3L,
              stepAgeCurrent = 1L,
              stepAgeTarget = 1L,
              stepTriangleCurrent = 3L,
@@ -334,7 +334,7 @@ test_that("can create valid object of class MappingOrigDestToAcc", {
              stepSharedCurrentVec = 384L,
              stepSharedTargetVec = 48L,
              hasAge = TRUE,
-             nAge = 3L,
+             nAgeCurrent = 3L,
              stepAgeCurrent = 16L,
              stepAgeTarget = 4L,
              stepTriangleCurrent = 48L,
@@ -376,7 +376,7 @@ test_that("can create valid object of class MappingCompToExp", {
              nTimeCurrent = 4L,
              stepTimeCurrent = 24L,
              stepTimeTarget = 24L,
-             nAge = 2L,
+             nAgeCurrent = 2L,
              hasAge = TRUE,
              stepAgeCurrent = 4L,
              stepAgeTarget = 4L,
@@ -402,7 +402,7 @@ test_that("can create valid object of class MappingCompToExp", {
              nTimeCurrent = 3L,
              stepTimeCurrent = 2L,
              stepTimeTarget = 2L,
-             nAge = NA_integer_,
+             nAgeCurrent = NA_integer_,
              hasAge = FALSE,
              stepAgeCurrent = NA_integer_,
              stepAgeTarget = NA_integer_,
@@ -420,7 +420,7 @@ test_that("validity tests inherited from MappingMixingStepTriangleTarget work", 
              nTimeCurrent = 4L,
              stepTimeCurrent = 24L,
              stepTimeTarget = 24L,
-             nAge = 2L,
+             nAgeCurrent = 2L,
              hasAge = TRUE,
              stepAgeCurrent = 4L,
              stepAgeTarget = 4L,
@@ -449,7 +449,7 @@ test_that("validity tests inherited from MappingMixingStepTriangleTarget work", 
              nTimeCurrent = 4L,
              stepTimeCurrent = 24L,
              stepTimeTarget = 24L,
-             nAge = NA_integer_,
+             nAgeCurrent = NA_integer_,
              hasAge = FALSE,
              stepAgeCurrent = NA_integer_,
              stepAgeTarget = NA_integer_,
@@ -489,7 +489,7 @@ test_that("can create valid object of class MappingBirthsToExp", {
              stepTimeCurrent = 8L,
              stepTimeTarget = 24L,
              hasAge = TRUE,
-             nAge = 1L,
+             nAgeCurrent = 1L,
              iMinAge = 2L,
              stepAgeCurrent = 4L,
              stepAgeTarget = 4L,
@@ -508,7 +508,7 @@ test_that("validity tests for MappingBirthsToExp inherited from MappingMixingIMi
              stepTimeCurrent = 8L,
              stepTimeTarget = 24L,
              hasAge = TRUE,
-             nAge = 1L,
+             nAgeCurrent = 1L,
              iMinAge = 2L,
              stepAgeCurrent = 4L,
              stepAgeTarget = 4L,
@@ -549,7 +549,7 @@ test_that("can create valid object of class MappingOrigDestToExp", {
              stepSharedCurrentVec = 384L,
              stepSharedTargetVec = 96L,
              hasAge = TRUE,
-             nAge = 3L,
+             nAgeCurrent = 3L,
              stepAgeCurrent = 16L,
              stepAgeTarget = 4L,
              stepTriangleCurrent = 48L,

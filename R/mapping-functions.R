@@ -42,7 +42,7 @@ getIPopnNextFromComp <- function(i, mapping, useC = FALSE) {
         i.time <- i.time + 1L # end of interval; C-style
         i.popn.next <- i.popn.next + i.time * step.time.popn # R-style
         if (has.age) {
-            n.age <- mapping@nAge
+            n.age <- mapping@nAgeCurrent
             step.age.comp <- mapping@stepAgeCurrent
             step.age.popn <- mapping@stepAgeTarget
             i.age <- ((i - 1L) %/% step.age.comp) %% n.age # C-style
@@ -98,7 +98,7 @@ getIPopnNextFromOrigDest <- function(i, mapping, useC = FALSE) {
         i.time <- i.time + 1L # end of interval
         i.popn.next.orig <- i.popn.next.orig + i.time * step.time.popn
         if (has.age) {
-            n.age <- mapping@nAge
+            n.age <- mapping@nAgeCurrent
             step.age.comp <- mapping@stepAgeCurrent
             step.age.popn <- mapping@stepAgeTarget
             i.age <- ((i - 1L) %/% step.age.comp) %% n.age # C-style
@@ -171,7 +171,7 @@ getIAccNextFromComp <- function(i, mapping, useC = FALSE) {
                 return(0L)
         }
         else {
-            n.age.comp <- mapping@nAge
+            n.age.comp <- mapping@nAgeCurrent
             step.age.comp <- mapping@stepAgeCurrent
             step.age.acc <- mapping@stepAgeTarget
             step.triangle.comp <- mapping@stepTriangleCurrent
@@ -220,7 +220,7 @@ getIAccNextFromOrigDest <- function(i, mapping, useC = FALSE) {
         n.time <- mapping@nTimeCurrent
         step.time.comp <- mapping@stepTimeCurrent
         step.time.acc <- mapping@stepTimeTarget
-        n.age <- mapping@nAge
+        n.age <- mapping@nAgeCurrent
         step.age.comp <- mapping@stepAgeCurrent
         step.age.acc <- mapping@stepAgeTarget
         step.triangle <- mapping@stepTriangleCurrent
@@ -316,7 +316,7 @@ getIExposureFromComp <- function(i, mapping, useC = FALSE) {
         i.time <- ((i - 1L) %/% step.time.comp) %% n.time
         i.exp <- i.exp + i.time * step.time.exp
         if (has.age) {
-            n.age <- mapping@nAge
+            n.age <- mapping@nAgeCurrent
             step.age.comp <- mapping@stepAgeCurrent
             step.age.exp <- mapping@stepAgeTarget
             step.triangle.comp <- mapping@stepTriangleCurrent
@@ -364,7 +364,7 @@ getIExposureFromBirths <- function(i, mapping, useC = FALSE) {
         i.time <- ((i - 1L) %/% step.time.births) %% n.time
         i.exp <- i.exp + i.time * step.time.exp
         if (has.age) {
-            n.age.births <- mapping@nAge
+            n.age.births <- mapping@nAgeCurrent
             step.age.births <- mapping@stepAgeCurrent
             step.age.exp <- mapping@stepAgeTarget
             step.triangle.births <- mapping@stepTriangleCurrent
@@ -418,7 +418,7 @@ getIExposureFromOrigDest <- function(i, mapping, useC = FALSE) {
         i.time <- ((i - 1L) %/% step.time.comp) %% n.time
         i.exp <- i.exp + i.time * step.time.exp
         if (has.age) {
-            n.age <- mapping@nAge
+            n.age <- mapping@nAgeCurrent
             step.age.comp <- mapping@stepAgeCurrent
             step.age.exp <- mapping@stepAgeTarget
             step.triangle.comp <- mapping@stepTriangleCurrent
@@ -487,7 +487,7 @@ getIExpFirstFromComp <- function(i, mapping, useC = FALSE) {
         i.exp <- 1L
         i.time.comp <- ((i - 1L) %/% step.time.comp) %% n.time
         if (has.age) {
-            n.age <- mapping@nAge
+            n.age <- mapping@nAgeCurrent
             step.age.comp <- mapping@stepAgeCurrent
             step.age.exp <- mapping@stepAgeTarget
             step.triangle.comp <- mapping@stepTriangleCurrent
@@ -596,7 +596,7 @@ getIExpFirstPairFromOrigDest <- function(i, mapping, useC = FALSE) {
         i.exp <- 1L
         i.time.comp <- ((i - 1L) %/% step.time.comp) %% n.time
         if (has.age) {
-            n.age <- mapping@nAge
+            n.age <- mapping@nAgeCurrent
             step.age.comp <- mapping@stepAgeCurrent
             step.age.exp <- mapping@stepAgeTarget
             step.triangle.comp <- mapping@stepTriangleCurrent
@@ -654,97 +654,117 @@ getIExpFirstPairFromOrigDest <- function(i, mapping, useC = FALSE) {
 }
 
 
-
-
 ## MAPPINGS FROM EXPOSURE ################################################################
 
-## This is dodgy. Do as part of coding of logLik
-
-
-## component - getICellCompFromExp
-## births no parent - getICellBirthsFromExp
-## births with parent - getICellBirthsFromExp
+## component - getICellCompFromExp DONE
+## births no parent - getICellBirthsFromExp DONE
+## births with parent - getICellBirthsFromExp DONE
 ## orig-dest - getICellCompFromExp
 ## pool - getICellCompFromExp
 ## net - getICellCompFromExp
 
-## ## also works with pool - dimension in comp but not in exp (direction)
-## ## gets first value (Out), which is what we want
-## ## can also get it to work with orig-dest, provided
-## ## region dimension from exposure matched to origin dimension
-## ## of orig-dest
-## getICellCompFromExp <- function(i, mapping, useC = FALSE) {
-##     ## 'i'
-##     stopifnot(is.integer(i))
-##     stopifnot(identical(length(i), 1L))
-##     stopifnot(!is.na(i))
-##     stopifnot(i >= 1L)
-##     ## 'mapping'
-##     stopifnot(methods::is(mapping, "MappingExpToComp"))
-##     if (useC) {
-##         .Call(getICellCompFromExp_R, i, mapping)
-##     }
-##     else {
-##         is.one.to.one <- mapping@isOneToOne
-##         if (is.one.to.one)
-##             return(i)
-##         n.shared.vec <- mapping@nSharedVec
-##         step.shared.exp.vec <- mapping@stepSharedCurrentVec
-##         step.shared.comp.vec <- mapping@stepSharedTargetVec
-##         n.dim.shared <- length(n.shared.vec)
-##         i.comp <- 1L # R-style
-##         for (d in seq_len(n.dim.shared)) {
-##             n.shared <- n.shared.vec[d]
-##             step.shared.exp <- step.shared.exp.vec[d]
-##             step.shared.comp <- step.shared.comp.vec[d]
-##             i.shared <- ((i - 1L) %/% step.shared.exp) %% n.shared # C-style
-##             i.comp <- i.comp + i.shared * step.shared.comp # R-style
-##         }
-##         i.comp # R-style
-##     }
-## }
+## NO_TESTS
+## works with pool and orig-dest because dimensions that are omitted
+## (ie "direction" and "destination") are implicitly given
+## the first value.
+getICellCompFromExp <- function(i, mapping, useC = FALSE) {
+    ## 'i'
+    stopifnot(is.integer(i))
+    stopifnot(identical(length(i), 1L))
+    stopifnot(!is.na(i))
+    stopifnot(i >= 1L)
+    ## 'mapping'
+    stopifnot(methods::is(mapping, "MappingExpToComp"))
+    if (useC) {
+        .Call(getICellCompFromExp_R, i, mapping)
+    }
+    else {
+        is.one.to.one <- mapping@isOneToOne
+        if (is.one.to.one)
+            return(i)
+        n.shared.vec <- mapping@nSharedVec
+        step.shared.exp.vec <- mapping@stepSharedCurrentVec
+        step.shared.comp.vec <- mapping@stepSharedTargetVec
+        n.dim.shared <- length(n.shared.vec)
+        i.comp <- 1L # R-style
+        for (d in seq_len(n.dim.shared)) {
+            n.shared <- n.shared.vec[d]
+            step.shared.exp <- step.shared.exp.vec[d]
+            step.shared.comp <- step.shared.comp.vec[d]
+            i.shared <- ((i - 1L) %/% step.shared.exp) %% n.shared
+            i.comp <- i.comp + i.shared * step.shared.comp
+        }
+        i.comp
+    }
+}
 
-
-
-## getICellBirthsFromExp <- function(i, mapping, useC = FALSE) {
-##     ## 'i'
-##     stopifnot(is.integer(i))
-##     stopifnot(identical(length(i), 1L))
-##     stopifnot(!is.na(i))
-##     stopifnot(i >= 1L)
-##     ## 'mapping'
-##     stopifnot(methods::is(mapping, "MappingExpToBirths"))
-##     if (useC) {
-##         .Call(getICellBirthsFromExp_R, i, mapping)
-##     }
-##     else {
-##         n.shared.vec <- mapping@nSharedVec
-##         step.shared.exp.vec <- mapping@stepSharedCurrentVec
-##         step.shared.births.vec <- mapping@stepSharedTargetVec
-##         n.time.exp <- mapping@nTimeCurrent
-##         step.time.exp <- mapping@stepTimeCurrent
-##         step.time.births <- mapping@stepTimeTarget
-##         i.min.age <- mapping@iMinAge
-##         i.births <- 1L ## R-style
-##         has.age <- !is.na(i.min.age)
-##         if (has.age) {
-##             if ((i.time + i.min.age - 1L) > n.time.exp)
-##                 return(0L)
-##             i.births <- i.births + (i.min.age - 1L) * step.time.births # R-style
-##         }        
-##         n.dim.shared <- length(n.shared.vec)
-##         for (d in seq_len(n.dim.shared)) {
-##             n.shared <- n.shared.vec[d]
-##             step.shared.exp <- step.shared.exp.vec[d]
-##             step.shared.births <- step.shared.births.vec[d]
-##             i.shared <- ((i - 1L) %/% step.shared.exp) %% n.shared # C-style
-##             i.births <- i.births + i.shared * step.shared.births # R-style
-##         }
-##         i.time <- ((i - 1L) %/% step.time.exp) %% n.time.exp # C-style
-##         i.births <- i.births + i.time * step.time.births # R-style
-##         i.births
-##     }
-## }
+## READY_TO_TRANSLATE
+## HAS_TESTS
+getICellBirthsFromExp <- function(i, mapping, useC = FALSE) {
+    ## 'i'
+    stopifnot(is.integer(i))
+    stopifnot(identical(length(i), 1L))
+    stopifnot(!is.na(i))
+    stopifnot(i >= 1L)
+    ## 'mapping'
+    stopifnot(methods::is(mapping, "MappingExpToBirths"))
+    if (useC) {
+        .Call(getICellBirthsFromExp_R, i, mapping)
+    }
+    else {
+        n.shared.vec <- mapping@nSharedVec
+        step.shared.exp.vec <- mapping@stepSharedCurrentVec
+        step.shared.births.vec <- mapping@stepSharedTargetVec
+        n.time <- mapping@nTimeCurrent
+        step.time.exp <- mapping@stepTimeCurrent
+        step.time.births <- mapping@stepTimeTarget
+        has.age <- mapping@hasAge
+        i.births <- 1L
+        i.time.exp <- ((i - 1L) %/% step.time.exp) %% n.time
+        if (has.age) {
+            n.age.exp <- mapping@nAgeCurrent
+            n.age.births <- mapping@nAgeTarget
+            step.age.exp <- mapping@stepAgeCurrent
+            step.age.births <- mapping@stepAgeTarget
+            step.triangle.exp <- mapping@stepTriangleCurrent
+            step.triangle.births <- mapping@stepTriangleTarget
+            i.min.age <- mapping@iMinAge ## R-style index
+            i.age.exp <- ((i - 1L) %/% step.age.exp) %% n.age.exp
+            i.triangle.exp <- ((i - 1L) %/% step.triangle.exp) %% 2L
+            if (i.age.exp < (i.min.age - 1L)) {
+                if (i.triangle.exp == 0L)
+                    i.time.births <- i.time.exp + i.min.age - i.age.exp - 1L
+                else
+                    i.time.births <- i.time.exp + i.min.age - i.age.exp - 2L
+                ## 'i.triangle.births' and 'i.age.births' are both
+                ## now guaranteed to be 0
+                if (i.time.births >= n.time)
+                    return(0L)
+            }
+            else if ((i.age.exp >= (i.min.age - 1L)) && (i.age.exp < (i.min.age + n.age.births - 1L))) {
+                i.age.births <- i.age.exp - i.min.age + 1L
+                i.triangle.births <- i.triangle.exp
+                i.time.births <- i.time.exp
+                i.births <- i.births + i.age.births * step.age.births
+                i.births <- i.births + i.triangle.births * step.triangle.births
+            }
+            else
+                return(0L)
+        }
+        else
+            i.time.births <- i.time.exp
+        i.births <- i.births + i.time.births * step.time.births
+        n.dim.shared <- length(n.shared.vec)
+        for (d in seq_len(n.dim.shared)) {
+            n.shared <- n.shared.vec[d]
+            step.shared.exp <- step.shared.exp.vec[d]
+            step.shared.births <- step.shared.births.vec[d]
+            i.shared <- ((i - 1L) %/% step.shared.exp) %% n.shared
+            i.births <- i.births + i.shared * step.shared.births
+        }
+        i.births
+    }
+}
 
 
 

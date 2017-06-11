@@ -1,0 +1,60 @@
+;; RefTeX parse info file
+;; File: /Users/johnbryant/Documents/NewZealandChina/book/Chapters/Inferring accounts/inferring_accounts_technical_notes.tex
+;; User: johnbryant (John Bryant)
+
+(set reftex-docstruct-symbol '(
+
+
+(xr nil "\\\\\\\\\\\\")
+
+(index-tags)
+
+(is-multi nil)
+
+(bibview-cache)
+
+(master-dir . "/Users/johnbryant/Documents/NewZealandChina/book/Chapters/Inferring accounts/")
+
+(label-numbers)
+
+(bof "/Users/johnbryant/Documents/NewZealandChina/book/Chapters/Inferring accounts/inferring_accounts_technical_notes.tex")
+
+(toc "toc" "    1 Definitions" "/Users/johnbryant/Documents/NewZealandChina/book/Chapters/Inferring accounts/inferring_accounts_technical_notes.tex" nil 2 "1" "\\section{Definitions}" 229)
+
+(toc "toc" "    2 Algorithm for updating population $\\bm{N}$" "/Users/johnbryant/Documents/NewZealandChina/book/Chapters/Inferring accounts/inferring_accounts_technical_notes.tex" nil 2 "2" "\\section{Algorithm  for updating population $\\bm{N}$}" 1216)
+
+(toc "toc" "    3 Algorithm for updating component $\\bm{C}$" "/Users/johnbryant/Documents/NewZealandChina/book/Chapters/Inferring accounts/inferring_accounts_technical_notes.tex" nil 2 "3" "\\section{Algorithm  for updating component $\\bm{C}$}" 3990)
+
+(toc "toc" "      3.1 Choose cells in component to update" "/Users/johnbryant/Documents/NewZealandChina/book/Chapters/Inferring accounts/inferring_accounts_technical_notes.tex" nil 3 "3.1" "\\subsection{Choose cells in component to update}" 4044)
+
+(toc "toc" "      3.2 Define population cells involved in update" "/Users/johnbryant/Documents/NewZealandChina/book/Chapters/Inferring accounts/inferring_accounts_technical_notes.tex" nil 3 "3.2" "\\subsection{Define population cells involved in update}" 5616)
+
+("tab:cells_update" "t" nil "/Users/johnbryant/Documents/NewZealandChina/book/Chapters/Inferring accounts/inferring_accounts_technical_notes.tex" nil "")
+
+(toc "toc" "      3.3 Identify accession cells involved in update" "/Users/johnbryant/Documents/NewZealandChina/book/Chapters/Inferring accounts/inferring_accounts_technical_notes.tex" nil 3 "3.3" "\\subsection{Identify accession cells involved in update}" 8052)
+
+(toc "toc" "      3.4 Find minimum values for population and accession" "/Users/johnbryant/Documents/NewZealandChina/book/Chapters/Inferring accounts/inferring_accounts_technical_notes.tex" nil 3 "3.4" "\\subsection{Find minimum values for population and accession}" 8641)
+
+(toc "toc" "      3.5 Obtain current exposures" "/Users/johnbryant/Documents/NewZealandChina/book/Chapters/Inferring accounts/inferring_accounts_technical_notes.tex" nil 3 "3.5" "\\subsection{Obtain current exposures}" 9678)
+
+(toc "toc" "      3.6 Obtain current expected values for component" "/Users/johnbryant/Documents/NewZealandChina/book/Chapters/Inferring accounts/inferring_accounts_technical_notes.tex" nil 3 "3.6" "\\subsection{Obtain current expected values for component}" 9827)
+
+(toc "toc" "      3.7 Obtain expected values for population" "/Users/johnbryant/Documents/NewZealandChina/book/Chapters/Inferring accounts/inferring_accounts_technical_notes.tex" nil 3 "3.7" "\\subsection{Obtain expected values for population}" 10109)
+
+(toc "toc" "      3.8 Generate proposed values for cells in component" "/Users/johnbryant/Documents/NewZealandChina/book/Chapters/Inferring accounts/inferring_accounts_technical_notes.tex" nil 3 "3.8" "\\subsection{Generate proposed values for cells in component}" 10227)
+
+(toc "toc" "      3.9 Calculate ratio of likelihoods for component $\\bm{C}$" "/Users/johnbryant/Documents/NewZealandChina/book/Chapters/Inferring accounts/inferring_accounts_technical_notes.tex" nil 3 "3.9" "\\subsection{Calculate ratio of likelihoods for component $\\bm{C}$}" 11888)
+
+(toc "toc" "      3.10 Calculate ratio of likelihoods for population $\\bm{N}$" "/Users/johnbryant/Documents/NewZealandChina/book/Chapters/Inferring accounts/inferring_accounts_technical_notes.tex" nil 3 "3.10" "\\subsection{Calculate ratio of likelihoods for population $\\bm{N}$}" 12294)
+
+(toc "toc" "      3.11 Calculate ratio of prior probabilities for component $\\bm{C}$" "/Users/johnbryant/Documents/NewZealandChina/book/Chapters/Inferring accounts/inferring_accounts_technical_notes.tex" nil 3 "3.11" "\\subsection{Calculate ratio of prior probabilities for component $\\bm{C}$}" 13657)
+
+(toc "toc" "      3.12 Calculate ratio of prior probabilities for component $\\bm{N}$" "/Users/johnbryant/Documents/NewZealandChina/book/Chapters/Inferring accounts/inferring_accounts_technical_notes.tex" nil 3 "3.12" "\\subsection{Calculate ratio of prior probabilities for component $\\bm{N}$}" 13886)
+
+(toc "toc" "      3.13 Calculate ratio of proposal probabilities" "/Users/johnbryant/Documents/NewZealandChina/book/Chapters/Inferring accounts/inferring_accounts_technical_notes.tex" nil 3 "3.13" "\\subsection{Calculate ratio of proposal probabilities}" 14109)
+
+(toc "toc" "      3.14 Calculate combined ratio, determine acceptance, and update" "/Users/johnbryant/Documents/NewZealandChina/book/Chapters/Inferring accounts/inferring_accounts_technical_notes.tex" nil 3 "3.14" "\\subsection{Calculate combined ratio, determine acceptance, and update}" 14283)
+
+(eof "/Users/johnbryant/Documents/NewZealandChina/book/Chapters/Inferring accounts/inferring_accounts_technical_notes.tex")
+))
+

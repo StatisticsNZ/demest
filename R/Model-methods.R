@@ -1228,10 +1228,10 @@ setMethod("showModelHelper",
               printAggregateEqns(object)
           })
 
-setMethod("show",
-          signature(object = "SpecPoissonBinomialMixture"),
+setMethod("showModelHelper",
+          signature(object = "PoissonBinomialMixture"),
           function(object) {
-              printPoissonBinomialSpecEqns(object)
+              printPoissonBinomialLikEqns(object)
           })
 
 
