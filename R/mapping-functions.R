@@ -136,7 +136,7 @@ getIPopnNextFromOrigDest <- function(i, mapping, useC = FALSE) {
 ## pool - getIAccNextFromComp DONE
 ## net - getIAccNextFromComp DONE
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 ## Assume that 'accession' does not contain age 0,
 ## so has one less age group than 'component'

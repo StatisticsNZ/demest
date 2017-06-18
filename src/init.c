@@ -833,7 +833,9 @@ SEXP chooseICellPopn_R(SEXP description_R)
 /* wrap getIMappingFunctions */
 MAPPING_GET_I_WRAPPER(getIAccNextFromPopn);
 MAPPING_GET_I_WRAPPER(getIPopnNextFromPopn);
+MAPPING_GET_I_WRAPPER(getIExpFirstFromPopn);
 MAPPING_GET_I_WRAPPER(getIPopnNextFromComp);
+MAPPING_GET_I_WRAPPER(getIAccNextFromComp);
 
 /* one off wrapper for getIPopnNextFromOrigDest */
 SEXP getIPopnNextFromOrigDest_R(SEXP i_R, SEXP mapping_R)
@@ -1536,11 +1538,14 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(chooseICellPopn_R, 1),
   CALLDEF(getIAccNextFromPopn_R, 2),
   CALLDEF(getIPopnNextFromPopn_R, 2),
+  CALLDEF(getIExpFirstFromPopn_R, 2),
   CALLDEF(getMinValCohort_R, 3),
-  
+
   /* mapping functions */
   CALLDEF(getIPopnNextFromComp_R, 2),
   CALLDEF(getIPopnNextFromOrigDest_R, 2),
+
+  CALLDEF(getIAccNextFromComp_R, 2),
   
   /*predict priors*/
   CALLDEF(predictPrior_R, 1),
@@ -1769,7 +1774,7 @@ R_init_demest(DllInfo *info)
   ADD_SYM(nTimeCurrent);
   ADD_SYM(stepTimeCurrent);
   ADD_SYM(stepTimeTarget);
-  ADD_SYM(nAgeCurrent); 	/* Added by JB 2017-06-10 */
+  ADD_SYM(nAgeCurrent);     /* Added by JB 2017-06-10 */
   ADD_SYM(stepAgeCurrent);
   ADD_SYM(stepAgeTarget);
   ADD_SYM(stepTriangleCurrent);
@@ -1824,7 +1829,7 @@ R_init_demest(DllInfo *info)
   ADD_SYM(omegaDeltaMax);
   ADD_SYM(minPhi);
   ADD_SYM(maxPhi);
-  ADD_SYM(shape1Phi); 		/* Added by JB 2017-04-19 */
+  ADD_SYM(shape1Phi);       /* Added by JB 2017-04-19 */
   ADD_SYM(shape2Phi);           /* Added by JB 2017-04-19 */
   ADD_SYM(WSqrt);
   ADD_SYM(WSqrtInvG);
