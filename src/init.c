@@ -457,6 +457,17 @@ SEXP name##_R(SEXP prior_R, SEXP vbar_R, SEXP n_R, SEXP sigma_R) {    \
     return ScalarInteger(ans);         \
     }
 
+/* Wrapper for the Mapping Get I functions that return an SEXP vec
+ * (no manipulatoin of PRNG state) */
+#define MAPPING_GET_IVEC_WRAPPER(name)      \
+    SEXP name##_R(SEXP i_R, SEXP mapping_R)  {       \
+    int i = *INTEGER(i_R);         \
+    SEXP ans_R;         \
+    PROTECT(ans_R = name(i, mapping_R));         \
+    UNPROTECT(1);         \
+    return ans_R;         \
+    }
+
 /* Wrapper for logPostPhiMix functions*/
 #define LOGPOSTPHI_WRAPPER(name)      \
     SEXP name##_R(SEXP phi_R, SEXP level_R, SEXP meanLevel_R,      \
@@ -836,17 +847,15 @@ MAPPING_GET_I_WRAPPER(getIPopnNextFromPopn);
 MAPPING_GET_I_WRAPPER(getIExpFirstFromPopn);
 MAPPING_GET_I_WRAPPER(getIPopnNextFromComp);
 MAPPING_GET_I_WRAPPER(getIAccNextFromComp);
-
-/* one off wrapper for getIPopnNextFromOrigDest */
-SEXP getIPopnNextFromOrigDest_R(SEXP i_R, SEXP mapping_R)
-{
-    int i = *INTEGER(i_R);
-    SEXP ans_R;
-    PROTECT(ans_R = getIPopnNextFromOrigDest(i, mapping_R));
-    UNPROTECT(1);
-    return ans_R;
-}
-
+MAPPING_GET_IVEC_WRAPPER(getIPopnNextFromOrigDest);
+MAPPING_GET_IVEC_WRAPPER(getIAccNextFromOrigDest);
+MAPPING_GET_I_WRAPPER(getIExposureFromComp);
+MAPPING_GET_I_WRAPPER(getIExposureFromBirths);
+MAPPING_GET_I_WRAPPER(getIExposureFromOrigDest);
+MAPPING_GET_I_WRAPPER(getIExpFirstFromComp);
+MAPPING_GET_I_WRAPPER(getIExpFirstFromBirths);
+MAPPING_GET_IVEC_WRAPPER(getIExpFirstFromOrigDest);
+MAPPING_GET_I_WRAPPER(getICellBirthsFromExp);
 
 /* one off wrapper for getMinValCohort */
 SEXP getMinValCohort_R(SEXP i_R, SEXP series_R, SEXP iterator_R)
@@ -1546,6 +1555,14 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(getIPopnNextFromOrigDest_R, 2),
 
   CALLDEF(getIAccNextFromComp_R, 2),
+  CALLDEF(getIAccNextFromOrigDest_R, 2),
+  CALLDEF(getIExposureFromComp_R, 2),
+  CALLDEF(getIExposureFromBirths_R, 2),
+  CALLDEF(getIExposureFromOrigDest_R, 2),
+  CALLDEF(getIExpFirstFromComp_R, 2),
+  CALLDEF(getIExpFirstFromBirths_R, 2),
+  CALLDEF(getIExpFirstFromOrigDest_R, 2),
+  CALLDEF(getICellBirthsFromExp_R, 2),
   
   /*predict priors*/
   CALLDEF(predictPrior_R, 1),
@@ -1774,10 +1791,12 @@ R_init_demest(DllInfo *info)
   ADD_SYM(nTimeCurrent);
   ADD_SYM(stepTimeCurrent);
   ADD_SYM(stepTimeTarget);
-  ADD_SYM(nAgeCurrent);     /* Added by JB 2017-06-10 */
+  ADD_SYM(nAgeCurrent);
+  ADD_SYM(nAgeTarget);
   ADD_SYM(stepAgeCurrent);
   ADD_SYM(stepAgeTarget);
   ADD_SYM(stepTriangleCurrent);
+  ADD_SYM(stepTriangleTarget);
   ADD_SYM(nOrigDestVec);
   ADD_SYM(stepOrigCurrentVec);
   ADD_SYM(stepDestCurrentVec);
@@ -1785,6 +1804,7 @@ R_init_demest(DllInfo *info)
   ADD_SYM(iVec);
   ADD_SYM(lengthVec);
   ADD_SYM(increment);
+  ADD_SYM(iMinAge);
   
   /*new priors */
   ADD_SYM(ATau);
@@ -1829,8 +1849,8 @@ R_init_demest(DllInfo *info)
   ADD_SYM(omegaDeltaMax);
   ADD_SYM(minPhi);
   ADD_SYM(maxPhi);
-  ADD_SYM(shape1Phi);       /* Added by JB 2017-04-19 */
-  ADD_SYM(shape2Phi);           /* Added by JB 2017-04-19 */
+  ADD_SYM(shape1Phi);
+  ADD_SYM(shape2Phi);
   ADD_SYM(WSqrt);
   ADD_SYM(WSqrtInvG);
   ADD_SYM(exposureAg);

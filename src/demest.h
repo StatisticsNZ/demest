@@ -171,14 +171,17 @@ SEXP
   nTimeCurrent_sym,
   stepTimeCurrent_sym,
   stepTimeTarget_sym,
-  nAgeCurrent_sym,          /* Added by JB 2017-06-10 */
+  nAgeCurrent_sym,
+  nAgeTarget_sym,
   stepAgeCurrent_sym,
   stepAgeTarget_sym,
   stepTriangleCurrent_sym,
+  stepTriangleTarget_sym,
   nOrigDestVec_sym,
   stepOrigCurrentVec_sym,
   stepDestCurrentVec_sym,
   stepOrigDestTargetVec_sym,
+  iMinAge_sym, 
   
   /*new priors*/
   ATau_sym,
@@ -775,7 +778,14 @@ int getIPopnNextFromComp(int i, SEXP mapping_R);
 SEXP getIPopnNextFromOrigDest(int i, SEXP mapping_R);
 
 int getIAccNextFromComp(int i, SEXP mapping_R);
-
+SEXP getIAccNextFromOrigDest(int i, SEXP mapping_R);
+int getIExposureFromComp(int i, SEXP mapping_R);
+int getIExposureFromBirths(int i, SEXP mapping_R);
+int getIExposureFromOrigDest(int i, SEXP mapping_R);
+int getIExpFirstFromComp(int i, SEXP mapping_R);
+int getIExpFirstFromBirths(int i, SEXP mapping_R);
+SEXP getIExpFirstFromOrigDest(int i, SEXP mapping_R);
+int getICellBirthsFromExp(int i, SEXP mapping_R);
 
 /* pointers for routines from dembase package 
  * 
