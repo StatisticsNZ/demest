@@ -364,9 +364,9 @@ updateProposalAccountMoveNet <- function(combined) {
         is.lower.triangle <- isLowerTriangle(i = i.cell,
                                              description = description.comp)
         i.exp.first.1 <- getIExpFirstFromComp(i = i.cell.1, # needed??
-                                                       mapping = mapping.exposure)
+                                              mapping = mapping.exposure)
         i.exp.first.2 <- getIExpFirstFromComp(i = i.cell.2,
-                                                       mapping = mapping.exposure)
+                                              mapping = mapping.exposure)
         i.popn.next.1 <- getIPopnNextFromComp(i = i.cell.1,
                                               mapping = mapping.to.popn)
         i.popn.next.2 <- getIPopnNextFromComp(i = i.cell.2,

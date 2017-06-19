@@ -30,8 +30,8 @@ For the purposes of this example, we treat the official estimates of population,
 
 The data are in package `demdata`.  The first step is to obtain the datasets from the package `demdata`. The datasets are in the form of arrays.
 ```{r}
-popn.true <- demdata::nz.popn.ta
-dimnames(popn.true)$region <- paste("Region", 1:68)
+sim.popn.true  <- demdata::nz.popn.ta
+dimnames(sim.popn.true  )$region <- paste("Region", 1:68)
 nat <- demdata::sim.admin.nat
 health <- demdata::sim.admin.health
 school <- demdata::sim.admin.school
@@ -41,8 +41,8 @@ Next we turn the arrays into Counts objects.  Since it is ambiguous whether the 
 
 ```{r}
 library(demest)
-popn.true <- Counts(popn.true,
-                    dimscales = c(year = "Points"))
+sim.popn.true  <- Counts(sim.popn.true ,
+                         dimscales = c(year = "Points"))
 nat <- Counts(nat,
               dimscales = c(year = "Points"))
 health <- Counts(health,
@@ -56,7 +56,7 @@ survey <- Counts(survey,
 The easiest way to get a feel for the data is to graph it:
 
 ```{r}
-plot(popn.true)
+plot(sim.popn.true )
 plot(nat)
 plot(health)
 plot(school)
@@ -79,7 +79,7 @@ Next we specify data models and put them in a list.  As we will see later, funct
 ```{r}
 nat.mod <- Model(nat ~ PoissonBinomial(prob = 0.98))
 health.mod <- Model(health ~ Poisson(mean ~ age))
-school.mod <- Model(school ~ PoissonBinomial(prob = 0.98))
+school.mod <- Model(school ~ PoissonBinomial(prob = 0.96))
 survey.mod <- Model(survey ~ Binomial(mean ~ 1))
 observation <- list(nat.mod, health.mod, school.mod, survey.mod)
 ```
@@ -164,7 +164,7 @@ dplot(~ age | region,
       scales = list(y = "free"),
       midpoints = "age",
       main = "Population, by age and region, in 2008",
-      overlay = list(values = subarray(popn.true, year == "2008"),
+      overlay = list(values = subarray(sim.popn.true , year == "2008"),
                      col = "red",
                      lwd = 2))
 ```
@@ -178,7 +178,7 @@ dplot(~ age | region,
       scales = list(y = "free"),
       midpoints = "age",
       main = "Population, by age and region, in 2014",
-      overlay = list(values = subarray(popn.true, year == "2014"),
+      overlay = list(values = subarray(sim.popn.true , year == "2014"),
                      col = "red"))
 ```
 
@@ -188,7 +188,7 @@ dplot(~ year | age,
       data = popn.est,
       subarray = region == "Region 1" & sex == "Female",
       main = "Region 1 female population, by age and time",
-      overlay = list(values = subarray(popn.true, region == "Region 1" & sex == "Female"),
+      overlay = list(values = subarray(sim.popn.true , region == "Region 1" & sex == "Female"),
                      col = "red"))
 ```
 
@@ -211,11 +211,11 @@ Among other things, the model generates 'coverage ratios', that is, the number o
 ```{r, fig.width = 7, fig.height = 7}
 coverage.health.est <- fetch(filename, 
                          where = c("observation", "health", "likelihood", "rate"))
-coverage.health.true <- health / popn.true
+coverage.health.true <- health / sim.popn.true 
 dplot(~ age | region,
       data = coverage.health.est,
       subarray = year == "2014" & region %in% paste("Region", 1:12),
-      weights = popn.true,
+      weights = sim.popn.true ,
       na.rm = TRUE,
       midpoints = "age",
       main = "Coverage ratios, health data, by age and region, in 2014",
