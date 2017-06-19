@@ -136,7 +136,7 @@ getIPopnNextFromOrigDest <- function(i, mapping, useC = FALSE) {
 ## pool - getIAccNextFromComp DONE
 ## net - getIAccNextFromComp DONE
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 ## Assume that 'accession' does not contain age 0,
 ## so has one less age group than 'component'
@@ -203,7 +203,7 @@ getIAccNextFromComp <- function(i, mapping, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 getIAccNextFromOrigDest <- function(i, mapping, useC = FALSE) {
     ## 'i'
@@ -288,7 +288,7 @@ getIAccNextFromOrigDest <- function(i, mapping, useC = FALSE) {
 ## pool - getIExposureFromComp DONE
 ## net - Not used, since model for 'net' does not use exposure
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 getIExposureFromComp <- function(i, mapping, useC = FALSE) {
     ## 'i'
@@ -338,7 +338,7 @@ getIExposureFromComp <- function(i, mapping, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 getIExposureFromBirths <- function(i, mapping, useC = FALSE) {
     ## 'i'
@@ -387,7 +387,7 @@ getIExposureFromBirths <- function(i, mapping, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 getIExposureFromOrigDest <- function(i, mapping, useC = FALSE) {
     ## 'i'
@@ -463,7 +463,7 @@ getIExposureFromOrigDest <- function(i, mapping, useC = FALSE) {
 ## pool - getIExpFirstFromComp DONE
 ## net - getIExpFirstFromComp DONE
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 getIExpFirstFromComp <- function(i, mapping, useC = FALSE) {
     ## 'i'
@@ -531,7 +531,7 @@ getIExpFirstFromComp <- function(i, mapping, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 ## i.age.exp and i.triangle.exp are both 0, so do not
 ## include them in the calculations
@@ -568,7 +568,7 @@ getIExpFirstFromBirths <- function(i, mapping, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 getIExpFirstPairFromOrigDest <- function(i, mapping, useC = FALSE) {
     ## 'i'
@@ -698,7 +698,7 @@ getICellCompFromExp <- function(i, mapping, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 getICellBirthsFromExp <- function(i, mapping, useC = FALSE) {
     ## 'i'

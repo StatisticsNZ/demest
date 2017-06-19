@@ -171,14 +171,17 @@ SEXP
   nTimeCurrent_sym,
   stepTimeCurrent_sym,
   stepTimeTarget_sym,
-  nAgeCurrent_sym,    		/* Added by JB 2017-06-10 */
+  nAgeCurrent_sym,
+  nAgeTarget_sym,
   stepAgeCurrent_sym,
   stepAgeTarget_sym,
   stepTriangleCurrent_sym,
+  stepTriangleTarget_sym,
   nOrigDestVec_sym,
   stepOrigCurrentVec_sym,
   stepDestCurrentVec_sym,
   stepOrigDestTargetVec_sym,
+  iMinAge_sym, 
   
   /*new priors*/
   ATau_sym,
@@ -223,8 +226,8 @@ SEXP
   ADelta_sym,
   minPhi_sym,
   maxPhi_sym,
-  shape1Phi_sym, 		/* Added by JB 2017-04-19 */
-  shape2Phi_sym,		/* Added by JB 2017-04-19 */
+  shape1Phi_sym,        /* Added by JB 2017-04-19 */
+  shape2Phi_sym,        /* Added by JB 2017-04-19 */
   WSqrt_sym,
   WSqrtInvG_sym,
   exposureAg_sym,
@@ -767,12 +770,22 @@ SEXP chooseICellOutInPool(SEXP description_R);
 int chooseICellPopn(SEXP description_R);
 int getIAccNextFromPopn(int i, SEXP description_R);
 int getIPopnNextFromPopn(int i, SEXP description_R);
+int getIExpFirstFromPopn(int i, SEXP description_R);
 int getMinValCohort(int i, SEXP series_R, SEXP iterator_R);
 
 /* mapping functions */
 int getIPopnNextFromComp(int i, SEXP mapping_R);
 SEXP getIPopnNextFromOrigDest(int i, SEXP mapping_R);
 
+int getIAccNextFromComp(int i, SEXP mapping_R);
+SEXP getIAccNextFromOrigDest(int i, SEXP mapping_R);
+int getIExposureFromComp(int i, SEXP mapping_R);
+int getIExposureFromBirths(int i, SEXP mapping_R);
+int getIExposureFromOrigDest(int i, SEXP mapping_R);
+int getIExpFirstFromComp(int i, SEXP mapping_R);
+int getIExpFirstFromBirths(int i, SEXP mapping_R);
+SEXP getIExpFirstFromOrigDest(int i, SEXP mapping_R);
+int getICellBirthsFromExp(int i, SEXP mapping_R);
 
 /* pointers for routines from dembase package 
  * 

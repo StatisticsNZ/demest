@@ -2396,7 +2396,7 @@ test_that("R and C versions of getIExposureFromBirths give same answer with Birt
                                dimnames = list(reg = c("a", "b", "c"),
                                    eth = 1:2,
                                    time = c(2000, 2010))))
-    population <- Population(population)
+    ##population <- Population(population)
     template <- makeTemplateComponent(population)
     births <- BirthsMovements(births = births,
                               template = template)
@@ -3986,7 +3986,7 @@ test_that("getICellBirthsFromExp works with BirthsNoParentChild", {
                                            time = "2001-2010")))
     population <- Counts(array(1:6,
                                dim = c(3, 2),
-                               dimna + 1Lmes = list(reg = c("a", "b", "c"),
+                               dimnames = list(reg = c("a", "b", "c"),
                                                time = c(2000, 2010))))
     exposure <- exposure(population)
     exposure <- Exposure(exposure)
@@ -4091,7 +4091,7 @@ test_that("R and C versions of getICellBirthsFromExp give same answer with Birth
                                            time = "2001-2010")))
     population <- Counts(array(1:6,
                                dim = c(3, 2),
-                               dimna + 1Lmes = list(reg = c("a", "b", "c"),
+                               dimnames = list(reg = c("a", "b", "c"),
                                                time = c(2000, 2010))))
     exposure <- exposure(population)
     exposure <- Exposure(exposure)

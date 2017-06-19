@@ -3275,6 +3275,25 @@ getIAccNextFromPopn(int i, SEXP description_R)
 }
     
 int
+getIExpFirstFromPopn(int i, SEXP description_R)
+{
+    int nTimePopn = *INTEGER(GET_SLOT(description_R, nTime_sym));
+    int stepTime = *INTEGER(GET_SLOT(description_R, stepTime_sym));
+    int lengthPopn = *INTEGER(GET_SLOT(description_R, length_sym));
+    
+    int nTimePopnTimesStepTime = nTimePopn * stepTime;
+    
+    int nTimeTri = nTimePopn - 1;
+    int lengthLowerTri = (lengthPopn * nTimeTri) / nTimePopn; /* integer div */
+    int iTime = (i - 1) / nTimePopnTimesStepTime; /* integer div */
+    int remainder = (i - 1) - iTime * nTimePopnTimesStepTime + 1;
+    int indexUpperTri = iTime * nTimeTri * stepTime + remainder;
+    
+    return (lengthLowerTri + indexUpperTri);
+}
+    
+    
+int
 getIPopnNextFromPopn(int i, SEXP description_R)
 {
     int stepTime = *INTEGER(GET_SLOT(description_R, stepTime_sym));

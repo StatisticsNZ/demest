@@ -8792,8 +8792,8 @@ getIAccNextFromPopn <- function(i, description, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
-## HAS_TESTS
+## TRANSLATED
+## HAS_TESTS (JAH added R vs C test 18/6/2017)
 ## Assumes that the Lexis triangle dimension is the
 ## last dimension in 'exposure'.
 ## We only ever update population values for the beginning

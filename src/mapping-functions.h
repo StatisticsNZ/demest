@@ -5,5 +5,9 @@
     #include <Rinternals.h>
 
     void getIPopnNextFromOrigDestInternal(int *ans, int i, SEXP mapping_R);
+    void getIAccNextFromOrigDestInternal(int *ans, int i, SEXP mapping_R);
+    int getIExposureFromCompNotOneToOne(int i, SEXP mapping_R);
+    int getIExposureFromOrigDestNotOneToOne(int i, SEXP mapping_R);
+    void getIExpFirstFromOrigDestInternal(int *ans, int i, SEXP mapping_R);
     
 #endif
