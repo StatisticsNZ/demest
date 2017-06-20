@@ -659,11 +659,11 @@ getIExpFirstPairFromOrigDest <- function(i, mapping, useC = FALSE) {
 ## component - getICellCompFromExp DONE
 ## births no parent - getICellBirthsFromExp DONE
 ## births with parent - getICellBirthsFromExp DONE
-## orig-dest - getICellCompFromExp
+## orig-dest - getICellCompFromExp DONE
 ## pool - getICellCompFromExp
-## net - getICellCompFromExp
+## net - getICellCompFromExp DONE
 
-## NO_TESTS
+## HAS_TESTS
 ## works with pool and orig-dest because dimensions that are omitted
 ## (ie "direction" and "destination") are implicitly given
 ## the first value.
