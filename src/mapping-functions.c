@@ -759,6 +759,43 @@ getIExpFirstFromOrigDestInternal(int *ans, int i, SEXP mapping_R)
     ans[1] = iExpDest_r;
 }
 
+int
+getICellCompFromExp(int i, SEXP mapping_R)
+{
+    int isOneToOne = *INTEGER(GET_SLOT(mapping_R, isOneToOne_sym));
+    
+    int returnValue = i;
+    if (!isOneToOne) {
+        returnValue = getICellCompFromExpNotOneToOne(i, mapping_R);
+    }
+    return returnValue;
+}
+
+/* does the work for getICellCompFromExp if mapping is not one-to-one */
+int
+getICellCompFromExpNotOneToOne(int i, SEXP mapping_R)
+{    
+    SEXP nSharedVec_R = GET_SLOT(mapping_R, nSharedVec_sym);
+    int *nSharedVec  = INTEGER(nSharedVec_R);
+    int *stepSharedExpVec  = INTEGER(GET_SLOT(mapping_R, stepSharedCurrentVec_sym));
+    int *stepSharedCompVec  = INTEGER(GET_SLOT(mapping_R, stepSharedTargetVec_sym));
+    
+    int nDimShared = LENGTH(nSharedVec_R);
+    
+    int iMinus1 = i - 1;
+    
+    int iComp_r = 1;
+    
+    for (int d = 0; d < nDimShared; ++d) {
+        int nShared = nSharedVec[d];
+        int stepSharedExp = stepSharedExpVec[d];
+        int stepSharedComp = stepSharedCompVec[d];
+        int iShared = (iMinus1/stepSharedExp) % nShared; 
+        iComp_r += iShared * stepSharedComp;
+    }
+    
+    return iComp_r;
+}
 
 int
 getICellBirthsFromExp(int i, SEXP mapping_R)

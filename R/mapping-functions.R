@@ -663,6 +663,7 @@ getIExpFirstPairFromOrigDest <- function(i, mapping, useC = FALSE) {
 ## pool - getICellCompFromExp
 ## net - getICellCompFromExp DONE
 
+## TRANSLATED
 ## HAS_TESTS
 ## works with pool and orig-dest because dimensions that are omitted
 ## (ie "direction" and "destination") are implicitly given
