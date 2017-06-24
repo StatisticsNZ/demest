@@ -76,4 +76,3 @@ year <- fetchBoth(filenameEst = filename.est,
 \seealso{
 Function \code{\link{fetch}} extracts results from a single file.
 }
-

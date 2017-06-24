@@ -88,4 +88,3 @@ Chapman & Hall/CRC. Section 16.3.
 \seealso{
 \code{\link{Error}}, \code{\link{Exch}}, \code{\link{Exch}}
 }
-

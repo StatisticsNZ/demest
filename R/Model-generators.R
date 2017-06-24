@@ -969,6 +969,69 @@ setMethod("initialModel",
                            metadataY = metadataY)
           })
 
+## HAS_TESTS
+setMethod("initialModel",
+          signature(object = "SpecNormalFixed",
+                    y = "DemographicArray",
+                    exposure = "ANY",
+                    weights = "missing"),
+          function(object, y, exposure) {
+              call <- object@call
+              meanAll <- object@mean
+              sdAll <- object@sd
+              metadataAll <- object@metadata
+              metadataY <- y@metadata
+              .Data.mean <- array(meanAll@.Data,
+                                  dim = dim(metadataAll),
+                                  dimnames = dimnames(metadataAll))
+              .Data.sd <- array(sdAll@.Data,
+                                dim = dim(metadataAll),
+                                dimnames = dimnames(metadataAll))
+              mean.before.subset <- new("Values",
+                                        .Data = .Data.mean,
+                                        metadata = metadataAll)
+              sd.before.subset <- new("Values",
+                                      .Data = .Data.sd,
+                                      metadata = metadataAll)
+              mean <- tryCatch(makeCompatible(x = mean.before.subset,
+                                              y = y,
+                                              subset = TRUE,
+                                              check = TRUE),
+                               error = function(e) e)
+              if (methods::is(mean, "error"))
+                  stop(gettextf("'%s' from %s model not compatible with data : %s",
+                                "mean", "NormalFixed", mean$message))
+              ## check that don't need to expand 'mean' to make compatible with 'y'
+              value <- tryCatch(makeCompatible(x = as(mean.before.subset, "Counts"),
+                                               y = y,
+                                               subset = TRUE,
+                                               check = TRUE),
+                                error = function(e) e)
+              if (methods::is(value, "error"))
+                  stop(gettextf("'%s' from %s model not compatible with data : %s",
+                                "mean", "NormalFixed", value$message))
+              sd <- makeCompatible(x = sd.before.subset,
+                                   y = y,
+                                   subset = TRUE,
+                                   check = FALSE)
+              mean <- new("ParameterVector", mean@.Data)
+              sd <- new("ScaleVec", sd@.Data)
+              has.exposure <- !is.null(exposure)
+              if (has.exposure)
+                  class <- "NormalFixedUseExp"
+              else
+                  class <- "NormalFixedNotUseExp"
+              methods::new(class,
+                           call = call,
+                           mean = mean,
+                           sd = sd,
+                           metadataY = metadataY,
+                           meanAll = meanAll,
+                           sdAll = sdAll,
+                           metadataAll = metadataAll)
+          })
+
+
 
 ## initialModelPredict ################################################################
 
@@ -1165,13 +1228,81 @@ setMethod("initialModelPredict",
               metadata.first <- model@metadataY
               i.method.model.first <- model@iMethodModel
               metadata.second <- makeMetadataPredict(metadata = metadata.first,
-                                                   along = along,
-                                                   labels = labels,
-                                                   n = n)
+                                                     along = along,
+                                                     labels = labels,
+                                                     n = n)
               i.method.model.second <- i.method.model.first + 100L
               methods::new("PoissonBinomialMixturePredict",
-                  prob = model@prob,
-                  metadataY = metadata.second,
-                  iMethodModel = i.method.model.second)
+                           prob = model@prob,
+                           metadataY = metadata.second,
+                           iMethodModel = i.method.model.second)
           })
+
+## HAS_TESTS
+setMethod("initialModelPredict",
+          signature(model = "NormalFixed"),
+          function(model, along, labels, n, offsetModel,
+                   covariates, aggregate, lower, upper) {
+              i.method.model.first <- model@iMethodModel
+              metadata.first <- model@metadataY
+              meanAll <- model@meanAll
+              sdAll <- model@sdAll
+              metadataAll <- model@metadataAll
+              metadata.second <- makeMetadataPredict(metadata = metadata.first,
+                                                     along = along,
+                                                     labels = labels,
+                                                     n = n)
+              .Data.mean <- array(meanAll@.Data,
+                                  dim = dim(metadataAll),
+                                  dimnames = dimnames(metadataAll))
+              .Data.sd <- array(sdAll@.Data,
+                                dim = dim(metadataAll),
+                                dimnames = dimnames(metadataAll))
+              .Data.second <- array(0L,
+                                    dim = dim(metadata.second),
+                                    dimnames = dimnames(metadata.second))
+              mean.before.subset <- new("Values",
+                                        .Data = .Data.mean,
+                                        metadata = metadataAll)
+              sd.before.subset <- new("Values",
+                                      .Data = .Data.sd,
+                                      metadata = metadataAll)
+              y.second <- new("Values",
+                              .Data = .Data.second,
+                              metadata = metadata.second)
+              mean <- tryCatch(makeCompatible(x = mean.before.subset,
+                                              y = y.second,
+                                              subset = TRUE,
+                                              check = TRUE),
+                               error = function(e) e)
+              if (methods::is(mean, "error"))
+                  stop(gettextf("'%s' from %s model not compatible with data : %s",
+                                "mean", "NormalFixed", mean$message))
+              ## check that don't need to expand 'mean' to make compatible with 'y'
+              value <- tryCatch(makeCompatible(x = as(mean.before.subset, "Counts"),
+                                               y = y.second,
+                                               subset = TRUE,
+                                               check = TRUE),
+                                error = function(e) e)
+              if (methods::is(value, "error"))
+                  stop(gettextf("'%s' from %s model not compatible with data : %s",
+                                "mean", "NormalFixed", value$message))
+              sd <- makeCompatible(x = sd.before.subset,
+                                   y = y.second,
+                                   subset = TRUE,
+                                   check = FALSE)
+              mean <- new("ParameterVector", mean@.Data)
+              sd <- new("ScaleVec", sd@.Data)
+              class <- paste0(class(model), "Predict")
+              i.method.model.second <- i.method.model.first + 100L
+              methods::new(class,
+                           mean = model@mean,
+                           sd = model@sd,
+                           metadataY = metadata.second,
+                           meanAll = meanAll,
+                           sdAll = sdAll,
+                           metadataAll = metadataAll,
+                           iMethodModel = i.method.model.second)
+          })
+
 

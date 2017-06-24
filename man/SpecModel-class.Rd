@@ -2,12 +2,13 @@
 % Please edit documentation in R/AllClasses-14-Model-hierarchy-spec.R
 \docType{class}
 \name{SpecModel-class}
-\alias{SpecBinomialVarying-class}
 \alias{SpecModel-class}
-\alias{SpecNormalVaryingVarsigmaKnown-class}
+\alias{SpecBinomialVarying-class}
 \alias{SpecNormalVaryingVarsigmaUnknown-class}
-\alias{SpecPoissonBinomialMixture-class}
+\alias{SpecNormalVaryingVarsigmaKnown-class}
 \alias{SpecPoissonVarying-class}
+\alias{SpecPoissonBinomialMixture-class}
+\alias{SpecNormalFixed-class}
 \title{S4 classes to specify a model.}
 \description{
 Classes describing all the parts of a model that can
@@ -104,7 +105,24 @@ in prior (level 2) model.}
 
 \item{\code{aggregate}}{An object of class
 \code{\linkS4class{SpecAggregate}}.}
+
+\item{\code{mean}}{Vector of means in NormalFixed model - subsetted to
+include only cells that are observed in \code{y}.}
+
+\item{\code{meanAll}}{Vector of means in NormalFixed model, before
+subsetting.}
+
+\item{\code{sd}}{Vector of standard deviations in NormalFixed model - subsetted to
+include only cells that are observed in \code{y}}
+
+\item{\code{sdAll}}{Vector of standard deviations in NormalFixed model, before
+subsetting.}
+
+\item{\code{metadata}}{Metadata for \code{mean} and \code{sd}.}
+
+\item{\code{metadataAll}}{Metadata for \code{meanAll} and \code{sdAll}.}
 }}
+
 \section{Warning}{
 
 In  normal usage, it should not be necessary to
@@ -112,8 +130,8 @@ access, or even know about, the slots of a
 \code{SpecModel} object.  The slots are not part of
 the API of the package, and may change in future.
 }
+
 \seealso{
 Object of class \code{SpecModel} are created
 by a call to function \code{\link{Model}}.
 }
-

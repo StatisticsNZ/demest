@@ -50,6 +50,25 @@ setClass("Poisson",
              TRUE
          })
 
+## HAS_TESTS
+setClass("NormalFixed",
+         contains = c("Model", "MeanSDMixin", "MeanSDMetadataAllMixin"),
+         validity = function(object) {
+             mean <- object@mean@.Data
+             meanAll <- object@meanAll@.Data
+             metadataY <- object@metadataY
+             ## 'metadataY' and 'mean' consistent
+             if (!identical(length(mean), as.integer(prod(dim(metadataY)))))
+                 return(gettextf("'%s' and '%s' inconsistent",
+                                 "mean", "metadataY"))
+             ## 'meanAll' is at least as long as 'mean'
+             if (length(meanAll) < length(mean))
+                 return(gettextf("'%s' is shorter than '%s'",
+                                 "meanAll", "mean"))
+             TRUE
+         })
+
+
 
 ## Basic Models ##################################################################
 
@@ -167,10 +186,24 @@ setClass("PoissonVaryingUseExp",
 ## HAS_TESTS
 ## HAS_UPDATE
 setClass("PoissonBinomialMixture",
-         slots = c(prob = "numeric"),
          contains = c("Model", "Prob", "UseExposure"),
          prototype = prototype(slotsToExtract = character(),
-             iMethodModel = 11L))
+                               iMethodModel = 11L))
+
+
+## HAS_TESTS
+setClass("NormalFixedNotUseExp",
+         contains = c("NormalFixed",
+                      "NotUseExposure"),
+         prototype = prototype(slotsToExtract = character(),
+                               iMethodModel = 30L))
+
+## HAS_TESTS
+setClass("NormalFixedUseExp",
+         contains = c("NormalFixed",
+                      "UseExposure"),
+         prototype = prototype(slotsToExtract = character(),
+                               iMethodModel = 31L))
 
 
 ## Models With Aggregate ##################################################################
@@ -425,6 +458,19 @@ setClass("PoissonVaryingUseExpPredict",
 setClass("PoissonBinomialMixturePredict",
          prototype = prototype(iMethodModel = 111L),
          contains = "PoissonBinomialMixture")
+
+## HAS_TESTS
+setClass("NormalFixedNotUseExpPredict",
+         prototype = prototype(iMethodModel = 130L),
+         contains = "NormalFixedNotUseExp")
+
+## HAS_TESTS
+setClass("NormalFixedUseExpPredict",
+         prototype = prototype(iMethodModel = 131L),
+         contains = "NormalFixedUseExp")
+
+
+
 
 
 ## Predicted Models - Aggregate #############################################################

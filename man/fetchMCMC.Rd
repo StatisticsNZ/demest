@@ -92,4 +92,3 @@ calls to \code{\link{estimateModel}}, \code{\link{estimateCounts}}, and
 \code{\link{estimateAccount}} include \code{\link{fetch}},
 \code{\link{fetchFiniteSD}}, and \code{\link{listContents}}.
 }
-

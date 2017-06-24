@@ -51,4 +51,3 @@ Exch(covariates = Covariates(mean ~ income, data = data))
 exchangeable prior.  \code{\link{DLM}} specifies a
 non-exchangeable prior.
 }
-

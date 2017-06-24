@@ -3,6 +3,7 @@
 \docType{class}
 \name{Error-class}
 \alias{Error-class}
+\alias{Error-class}
 \alias{ErrorNorm-class}
 \alias{ErrorRobust-class}
 \title{S4 classes to specify error terms for priors.}
@@ -31,6 +32,7 @@ have truncated half-t priors.
 
 \item{\code{tauMax}}{Maximum value for the \code{scale} parameter.}
 }}
+
 \section{Warning}{
 
 In  normal usage, it should not be necessary to
@@ -38,8 +40,8 @@ access, or even know about, the slots of an
 \code{Error} object.  The slots are not part of
 the API of the package, and may change in future.
 }
+
 \seealso{
 Objects of class \code{Error} are created by a call to function
 \code{\link{Error}}.
 }
-

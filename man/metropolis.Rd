@@ -37,4 +37,3 @@ metropolis(summary.est)
 \seealso{
 \code{\link{fetchSummary}}
 }
-

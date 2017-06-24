@@ -277,4 +277,86 @@ test_that("can create valid object of class SpecPoissonBinomialMixture", {
     expect_true(validObject(x))
 })
 
+test_that("can create valid object of class SpecNormalFixed", {
+    ## nameY and series supplied
+    x <- new("SpecNormalFixed",
+             call = call("Model", reg.deaths ~ NormalFixed(mean = mean, sd = sd)),
+             nameY = new("Name", "reg.deaths"),
+             mean = new("ParameterVector", rnorm(10)),
+             sd = new("ScaleVec", runif(10)),
+             metadata = new("MetaData",
+                            nms = "age",
+                            dimtypes = "age",
+                            DimScales = list(new("Intervals", dimvalues = 0:10))),
+             series = new("SpecName", "deaths"))
+    expect_true(validObject(x))
+    ## series NULL
+    x <- new("SpecNormalFixed",
+             call = call("Model", y ~ NormalFixed(mean = mean, sd = sd)),
+             nameY = new("Name", "y"),
+             mean = new("ParameterVector", rnorm(10)),
+             sd = new("ScaleVec", runif(10)),
+             metadata = new("MetaData",
+                            nms = "age",
+                            dimtypes = "age",
+                            DimScales = list(new("Intervals", dimvalues = 0:10))),
+             series = new("SpecName", as.character(NA)))
+    expect_true(validObject(x))
+})
+
+test_that("tests for SpecNormalFixed inherited from MeanSDMixin work", {
+    x <- new("SpecNormalFixed",
+             call = call("Model", reg.deaths ~ NormalFixed(mean = mean, sd = sd)),
+             nameY = new("Name", "reg.deaths"),
+             mean = new("ParameterVector", rnorm(10)),
+             sd = new("ScaleVec", runif(10)),
+             metadata = new("MetaData",
+                            nms = "age",
+                            dimtypes = "age",
+                            DimScales = list(new("Intervals", dimvalues = 0:10))),
+             series = new("SpecName", "deaths"))
+    ## 'mean' and 'sd' have the same length
+    x.wrong <- x
+    x.wrong@mean@.Data <- x.wrong@mean@.Data[-1]
+    expect_error(validObject(x.wrong),
+                 "'mean' and 'sd' have different lengths")
+})
+
+test_that("tests for SpecNormalFixed inherited from MeanSDMetadataMixin work", {
+    x <- new("SpecNormalFixed",
+             call = call("Model", reg.deaths ~ NormalFixed(mean = mean, sd = sd)),
+             nameY = new("Name", "reg.deaths"),
+             mean = new("ParameterVector", rnorm(10)),
+             sd = new("ScaleVec", runif(10)),
+             metadata = new("MetaData",
+                            nms = "age",
+                            dimtypes = "age",
+                            DimScales = list(new("Intervals", dimvalues = 0:10))),
+             series = new("SpecName", "deaths"))
+    ## 'metadata' does not have any dimensions with dimtype "iteration"
+    x.wrong <- x
+    x.wrong@metadata <- new("MetaData",
+                            nms = "iteration",
+                            dimtypes = "iteration",
+                            DimScales = list(new("Iterations", dimvalues = 1:10)))
+    expect_error(validObject(x.wrong),
+                 "dimension with dimtype \"iteration\"")
+    ## 'metadata' does not have any dimensions with dimtype "quantile"
+    x.wrong <- x
+    x.wrong@metadata <- new("MetaData",
+                            nms = "quantile",
+                            dimtypes = "quantile",
+                            DimScales = list(new("Quantiles", dimvalues = seq(0.1, 0.9, length = 10))))
+    expect_error(validObject(x.wrong),
+                 "dimension with dimtype \"quantile\"")
+    ## 'metadata' and 'mean' consistent
+    x.wrong <- x
+    x.wrong@mean@.Data <- x.wrong@mean@.Data[-1]
+    x.wrong@sd@.Data <- x.wrong@sd@.Data[-1]
+    expect_error(validObject(x.wrong),
+                 "'mean' and 'metadata' inconsistent")    
+})
+
+
+
 

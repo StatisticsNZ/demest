@@ -125,4 +125,3 @@ Chapman & Hall/CRC.
 Priors constructed with \code{\link{Exch}} and
 \code{\link{DLM}} both allow for covariates.
 }
-

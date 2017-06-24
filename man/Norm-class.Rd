@@ -14,6 +14,7 @@ prior distribution.
 \describe{
 \item{\code{A}}{Standard deviation.}
 }}
+
 \section{Warning}{
 
 In  normal usage, it should not be necessary to
@@ -21,8 +22,8 @@ access, or even know about, the slots of a
 \code{Norm} object.  The slots are not part of
 the API of the package, and may change in future.
 }
+
 \seealso{
 Objects of class \code{Norm} are created
     by calls to function \code{\link{Norm}}.
 }
-

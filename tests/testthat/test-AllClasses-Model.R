@@ -966,6 +966,122 @@ test_that("validity tests for PoissonBinomialMixture inherited from Prob work", 
                  "'prob' is not between 0 and 1")
 })
 
+test_that("can create valid object of class NormalFixedNotUseExp", {
+    x <- new("NormalFixedNotUseExp",
+             call = call("Model", reg.deaths ~ NormalFixed(mean = mean, sd = sd)),
+             mean = new("ParameterVector", rnorm(10)),
+             sd = new("ScaleVec", runif(10)),
+             meanAll = new("ParameterVector", rnorm(15)),
+             sdAll = new("ScaleVec", runif(15)),
+             metadataY = new("MetaData",
+                            nms = "age",
+                            dimtypes = "age",
+                            DimScales = list(new("Intervals", dimvalues = 0:10))),
+             metadataAll = new("MetaData",
+                            nms = "age",
+                            dimtypes = "age",
+                            DimScales = list(new("Intervals", dimvalues = 0:15))))
+    expect_true(validObject(x))
+})
+
+test_that("tests for NormalFixedNotUseExp inherited from NormalFixed work", {
+    x <- new("NormalFixedNotUseExp",
+             call = call("Model", reg.deaths ~ NormalFixed(mean = mean, sd = sd)),
+             mean = new("ParameterVector", rnorm(10)),
+             sd = new("ScaleVec", runif(10)),
+             meanAll = new("ParameterVector", rnorm(15)),
+             sdAll = new("ScaleVec", runif(15)),
+             metadataY = new("MetaData",
+                             nms = "age",
+                             dimtypes = "age",
+                             DimScales = list(new("Intervals", dimvalues = 0:10))),
+             metadataAll = new("MetaData",
+                               nms = "age",
+                               dimtypes = "age",
+                               DimScales = list(new("Intervals", dimvalues = 0:15))))
+    ## 'metadataY' and 'mean' consistent
+    x.wrong <- x
+    x.wrong@mean@.Data <- x.wrong@mean@.Data[-1]
+    x.wrong@sd@.Data <- x.wrong@sd@.Data[-1]
+    expect_error(validObject(x.wrong),
+                 "'mean' and 'metadataY' inconsistent")
+    ## 'meanAll' is at least as long as 'mean'
+    x.wrong <- x
+    x.wrong@mean@.Data <- rep(x.wrong@mean@.Data, 2)
+    x.wrong@sd@.Data <- rep(x.wrong@sd@.Data, 2)
+    x.wrong@metadataY <- new("MetaData",
+                             nms = "age",
+                             dimtypes = "age",
+                             DimScales = list(new("Intervals", dimvalues = 0:20)))
+    expect_error(validObject(x.wrong),
+                 "'meanAll' is shorter than 'mean'")
+})
+
+test_that("tests for NormalFixedNotUseExp inherited from MeanSDMetadataAllMixin work", {
+    x <- new("NormalFixedNotUseExp",
+             call = call("Model", reg.deaths ~ NormalFixed(mean = mean, sd = sd)),
+             mean = new("ParameterVector", rnorm(10)),
+             sd = new("ScaleVec", runif(10)),
+             meanAll = new("ParameterVector", rnorm(15)),
+             sdAll = new("ScaleVec", runif(15)),
+             metadataY = new("MetaData",
+                             nms = "age",
+                             dimtypes = "age",
+                             DimScales = list(new("Intervals", dimvalues = 0:10))),
+             metadataAll = new("MetaData",
+                               nms = "age",
+                               dimtypes = "age",
+                               DimScales = list(new("Intervals", dimvalues = 0:15))))
+    ## 'meanAll' and 'sdAll' have the same length
+    x.wrong <- x
+    x.wrong@meanAll@.Data <- x.wrong@meanAll@.Data[-1]
+    expect_error(validObject(x.wrong),
+                 "'meanAll' and 'sdAll' have different lengths")
+    ## 'metadataAll' does not have any dimensions with dimtype "iteration"
+    x.wrong <- x
+    x.wrong@metadataAll <- new("MetaData",
+                               nms = "iteration",
+                               dimtypes = "iteration",
+                               DimScales = list(new("Iterations", dimvalues = 1:15)))
+    expect_error(validObject(x.wrong),
+                 "dimension with dimtype \"iteration\"")
+    ## 'metadataAll' does not have any dimensions with dimtype "quantile"
+    x.wrong <- x
+    x.wrong@metadataAll <- new("MetaData",
+                               nms = "quantile",
+                               dimtypes = "quantile",
+                               DimScales = list(new("Quantiles", dimvalues = seq(0.1, 0.9, length = 15))))
+    expect_error(validObject(x.wrong),
+                 "dimension with dimtype \"quantile\"")
+    ## 'metadataAll' and 'mean' consistent
+    x.wrong <- x
+    x.wrong@meanAll@.Data <- x.wrong@mean@.Data[-1]
+    x.wrong@sdAll@.Data <- x.wrong@sd@.Data[-1]
+    expect_error(validObject(x.wrong),
+                 "'meanAll' and 'metadataAll' inconsistent")    
+})
+
+test_that("can create valid object of class NormalFixedUseExp", {
+    x <- new("NormalFixedUseExp",
+             call = call("Model", reg.deaths ~ NormalFixed(mean = mean, sd = sd)),
+             mean = new("ParameterVector", rnorm(10)),
+             sd = new("ScaleVec", runif(10)),
+             meanAll = new("ParameterVector", rnorm(15)),
+             sdAll = new("ScaleVec", runif(15)),
+             metadataY = new("MetaData",
+                            nms = "age",
+                            dimtypes = "age",
+                            DimScales = list(new("Intervals", dimvalues = 0:10))),
+             metadataAll = new("MetaData",
+                            nms = "age",
+                            dimtypes = "age",
+                            DimScales = list(new("Intervals", dimvalues = 0:15))))
+    expect_true(validObject(x))
+})
+
+
+
+
 ## Binomial - Aggregate
 
 test_that("can create a valid object of class BinomialVaryingAgCertain", {
@@ -4349,6 +4465,42 @@ test_that("can create an object of class PoissonBinomialMixturePredict", {
     x <- new("PoissonBinomialMixturePredict", prob = 0.98)
     expect_true(validObject(x))
 })
+
+test_that("can create valid object of class NormalFixedNotUseExpPredict", {
+    x <- new("NormalFixedNotUseExpPredict",
+             call = call("Model", reg.deaths ~ NormalFixed(mean = mean, sd = sd)),
+             mean = new("ParameterVector", rnorm(10)),
+             sd = new("ScaleVec", runif(10)),
+             meanAll = new("ParameterVector", rnorm(15)),
+             sdAll = new("ScaleVec", runif(15)),
+             metadataY = new("MetaData",
+                            nms = "age",
+                            dimtypes = "age",
+                            DimScales = list(new("Intervals", dimvalues = 0:10))),
+             metadataAll = new("MetaData",
+                            nms = "age",
+                            dimtypes = "age",
+                            DimScales = list(new("Intervals", dimvalues = 0:15))))
+    expect_true(validObject(x))
+})
+
+test_that("can create valid object of class NormalFixedUseExpPredict", {
+    x <- new("NormalFixedUseExpPredict",
+             call = call("Model", reg.deaths ~ NormalFixed(mean = mean, sd = sd)),
+             mean = new("ParameterVector", rnorm(10)),
+             sd = new("ScaleVec", runif(10)),
+             meanAll = new("ParameterVector", rnorm(15)),
+             sdAll = new("ScaleVec", runif(15)),
+             metadataY = new("MetaData",
+                            nms = "age",
+                            dimtypes = "age",
+                            DimScales = list(new("Intervals", dimvalues = 0:10))),
+             metadataAll = new("MetaData",
+                            nms = "age",
+                            dimtypes = "age",
+                            DimScales = list(new("Intervals", dimvalues = 0:15))))
+    expect_true(validObject(x))
+})
           
 
 ## Aggregate prediction #########################################
@@ -4997,6 +5149,8 @@ test_that("Model classes have correct value for iMethodModel", {
     expect_identical(x@iMethodModel, 5L)
     x <- new("PoissonVaryingNotUseExp")
     expect_identical(x@iMethodModel, 6L)
+    x <- new("NormalFixedNotUseExp")
+    expect_identical(x@iMethodModel, 30L)
     ## Exposure
     x <- new("BinomialVarying")
     expect_identical(x@iMethodModel, 9L)
@@ -5004,6 +5158,8 @@ test_that("Model classes have correct value for iMethodModel", {
     expect_identical(x@iMethodModel, 10L)
     x <- new("PoissonBinomialMixture")
     expect_identical(x@iMethodModel, 11L)
+    x <- new("NormalFixedUseExp")
+    expect_identical(x@iMethodModel, 31L)
     ## No exposure - aggregate
     x <- new("NormalVaryingVarsigmaKnownAgCertain")
     expect_identical(x@iMethodModel, 12L)
@@ -5053,6 +5209,10 @@ test_that("Model classes have correct value for iMethodModel", {
     expect_identical(x@iMethodModel, 109L)
     x <- new("PoissonVaryingUseExpPredict")
     expect_identical(x@iMethodModel, 110L)
+    x <- new("NormalFixedNotUseExpPredict")
+    expect_identical(x@iMethodModel, 130L)
+    x <- new("NormalFixedUseExpPredict")
+    expect_identical(x@iMethodModel, 131L)
     ## Predict - aggregate
     x <- new("NormalVaryingVarsigmaKnownPredictAgCertain")
     expect_identical(x@iMethodModel, 112L)

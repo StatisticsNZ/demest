@@ -21,4 +21,3 @@ Calling \code{\link{listContents}} on a the filenmame used by
 or \code{\link{estimateAccount}} shows the items available to be
 fetched, in a hierarchical structure.
 }
-

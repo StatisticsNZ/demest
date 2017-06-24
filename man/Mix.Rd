@@ -51,4 +51,3 @@ function \code{\link{Components}}, and weights (ie mixing parameters)
 can be specified using function \code{\link{Weights}}.  However,
 in normal usage, it is typically best to stick with the defaults.
 }
-

@@ -18,6 +18,7 @@ For details, see the documentation for function
 
 \item{\code{multTau}}{Multiplier applied to default value for \code{tau}.}
 }}
+
 \section{Warning}{
 
 In  normal usage, it should not be necessary to
@@ -25,10 +26,10 @@ access, or even know about, the slots of a
 \code{SpecExchFixed} object.  The slots are not part of
 the API of the package, and may change in future.
 }
+
 \seealso{
 Object of class \code{SpecExchFixed} should be generated
 using function \code{\link{ExchFixed}}.  More complicated
 exchangeable priors are specified by object of class
 \code{\linkS4class{SpecExch}}.
 }
-

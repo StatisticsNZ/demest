@@ -142,6 +142,7 @@ or
 Non-default versions of these can be specified using function 
 \code{\link{HalfT}}.
 }
+
 \examples{
 ## damped linear trend model with no seasonal effect
 ## and no covariates
@@ -183,4 +184,3 @@ correlations between them.  \code{DLM}, \code{\link{ExchFixed}},
 and \code{\link{Exch}} are usually called as part of a call
 to function \code{\link{Model}}.
 }
-

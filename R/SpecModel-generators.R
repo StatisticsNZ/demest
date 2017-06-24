@@ -140,6 +140,126 @@ Normal <- function(formula, sd = NULL, priorSD = HalfT()) {
 }
 
 ## HAS_TESTS
+#' Specify a model based on a normal distribution with known
+#' means and standard deviations.
+#'
+#' Specify a model of the form
+#'   \deqn{y_i = N(mean[i], sd[i])}
+#' or
+#'   \deqn{y_i = N(exposure[i] * mean[i], sqrt(exposure[i]) * sd[i])}.
+#'
+#' Among other things, the model is useful as a data model for
+#' surveys.  In such cases, \code{exposure} represents the
+#' true underlying counts, \code{mean} represents coverage rates,
+#' \code{sd} represents standard errors for the coverage rates,
+#' and \code{y} represents the observered counts.  If the model
+#' is being used to represent a census post-enumeration survey,
+#' for instance, then \code{exposure} would be the true population,
+#' \code{mean} the coverage rates as estimated from the survey,
+#' \code{se} the survey-based standard errors, and \code{y} the
+#' census counts.
+#'
+#' Subscript \eqn{i} denotes a cell within a classification
+#' defined by variables such as age, sex, and time.
+#' For instance cell \eqn{i} might be 30-34 year old females
+#' in 2020.
+#'
+#' @param mean An object of class \code{\link[dembase:Values-class]{Values}}
+#' holding means.
+#' @param sd The standard deviation of the means. \code{sd} can be an object
+#' of class \code{\link[dembase:Values-class]{Values}}, or it can be
+#' a single number, in which case it is applied to all
+#' elements of \code{mean}.
+#'
+#' @return An object of class \code{\linkS4class{SpecLikelihoodNormalFixed}}.
+#' 
+#' @seealso \code{NormalFixed} is typically used as
+#' part of a call to function \code{\link{Model}}.
+#' More flexible normal models can be specified using
+#' \code{\link{Normal}}.
+#'
+#' @examples
+#' mean <- Values(array(c(0.95, 0.96, 0.95, 0.94),
+#'                      dim = c(2, 2),
+#'                      dimnames = list(age = c("0-39", "40"),
+#'                                      sex = c("Female", "Male"))))
+#' sd <- Values(array(c(0.05, 0.08, 0.05, 0.04),
+#'                    dim = c(2, 2),
+#'                    dimnames = list(age = c("0-39", "40"),
+#'                                    sex = c("Female", "Male"))))
+#' NormalFixed(mean = mean, sd = sd)
+#' NormalFixed(mean = mean, sd = 0.1)
+#' @export
+NormalFixed <- function(mean, sd) {
+    ## 'mean' is "Values"
+    if (!methods::is(mean, "Values"))
+        stop(gettextf("'%s' has class \"%s\"",
+                      "mean", class(mean)))
+    metadata <- mean@metadata
+    ## 'metadata' does not have any dimensions with dimtype "iteration"
+    if ("iteration" %in% dimtypes(metadata))
+        stop(gettextf("'%s' has dimension with dimtype \"%s\"",
+                      "mean", "iteration"))
+    ## 'metadata' does not have any dimensions with dimtype "quantile"
+    if ("quantile" %in% dimtypes(metadata))
+        stop(gettextf("'%s' has dimension with dimtype \"%s\"",
+                      "mean", "quantile"))
+    ## 'mean' has no missing values
+    if (any(is.na(mean)))
+        stop(gettextf("'%s' has missing values",
+                      "mean"))
+    ## mean has length of 2 or more
+    if (length(mean) < 2L)
+        stop(gettextf("'%s' has length %d",
+                      "mean", length(mean)))
+    mean.param <- as.double(mean)
+    mean.param <- new("ParameterVector", mean.param)
+    if (methods::is(sd, "Values")) {
+        ## 'sd' is compatible with 'mean'
+        sd <- tryCatch(dembase::makeCompatible(x = sd, y = mean, subset = TRUE),
+                       error = function(e) e)
+        if (methods::is(sd, "error"))
+            stop(gettextf("'%s' and '%s' not compatible : %s",
+                          "sd", "mean", sd$message))
+        sd <- as.double(sd)
+        ## 'sd' has no missing values
+        if (any(is.na(sd)))
+            stop(gettextf("'%s' has missing values",
+                          "sd"))
+        ## 'sd' has no negative values
+        if (any(sd < 0))
+            stop(gettextf("'%s' has negative values",
+                          "sd"))
+    }
+    else if (methods::is(sd, "numeric")) {
+        sd <- as.double(sd)
+        ## 'sd' has length 1
+        if (!identical(length(sd), 1L))
+            stop(gettextf("'%s' is numeric but does not have length %d",
+                          "sd", 1L))
+        ## 'sd' is not missing
+        if (is.na(sd))
+            stop(gettextf("'%s' is missing",
+                          "sd"))
+        ## 'sd' is non-negative
+        if (sd < 0)
+            stop(gettextf("'%s' is negative",
+                          "sd"))
+        sd <- rep(sd, times = length(mean))
+    }
+    else { ## sd is Values or numeric
+        stop(gettextf("'%s' has class \"%s\"",
+                      "sd", class(sd)))
+    }
+    sd <- new("ScaleVec", sd)
+    new("SpecLikelihoodNormalFixed",
+        mean = mean.param,
+        sd = sd,
+        metadata = metadata)
+}
+
+
+## HAS_TESTS
 #' Specify a model for a single demographic series or
 #' dataset.
 #'
@@ -251,7 +371,7 @@ Model <- function(formula, ..., lower = NULL, upper = NULL,
                   priorSD = NULL, jump = NULL, series = NULL,
                   aggregate = NULL) {
     kValidDistributions <- c("Poisson", "Binomial", "Normal",
-                             "PoissonBinomial")
+                             "PoissonBinomial", "NormalFixed")
     call <- match.call()
     dots <- list(...)
     correct.length <- identical(length(formula), 3L)
@@ -569,7 +689,7 @@ setMethod("SpecModel",
                            aggregate = aggregate)
           })
 
-## NO_TESTS
+## HAS_TESTS
 setMethod("SpecModel",
           signature(specInner = "SpecLikelihoodPoissonBinomialMixture"),
           function(specInner, call, nameY, dots, lower, upper,
@@ -590,6 +710,33 @@ setMethod("SpecModel",
                            nameY = nameY,
                            series = series,
                            prob = prob)
+          })
+
+## HAS_TESTS
+setMethod("SpecModel",
+          signature(specInner = "SpecLikelihoodNormalFixed"),
+          function(specInner, call, nameY, dots, lower, upper,
+                   priorSD, jump, series, aggregate) {
+              mean <- specInner@mean
+              sd <- specInner@sd
+              metadata <- specInner@metadata
+              if (length(dots) > 0L)
+                  stop(gettextf("priors specified, but distribution is %s",
+                                "NormalFixed"))
+              for (name in c("lower", "upper", "priorSD", "jump", "aggregate")) {
+                  value <- get(name)
+                  if (!is.null(value))
+                      stop(gettextf("'%s' specified, but distribution is %s",
+                                    name, "NormalFixed"))
+              }
+              series <- checkAndTidySeries(series)
+              methods::new("SpecNormalFixed",
+                           call = call,
+                           nameY = nameY,
+                           series = series,
+                           mean = mean,
+                           sd = sd,
+                           metadata = metadata)
           })
 
 

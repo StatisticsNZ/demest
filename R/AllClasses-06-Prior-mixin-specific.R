@@ -977,10 +977,18 @@ setClass("MetadataAllMixin",
          validity = function(object) {
              metadataAll <- object@metadataAll
              J <- object@J@.Data
+             ## 'metadataAll' does not have any dimensions with dimtype "iteration"
+             if ("iteration" %in% dimtypes(metadataAll))
+                 return(gettextf("dimension with dimtype \"%s\"",
+                                 "iteration"))
+             ## 'metadataAll' does not have any dimensions with dimtype "quantile"
+             if ("quantile" %in% dimtypes(metadataAll))
+                 return(gettextf("dimension with dimtype \"%s\"",
+                                 "quantile"))
              ## consistent with J
              if (prod(dim(metadataAll)) < J)
                  return(gettextf("'%s' not consistent with '%s'",
-                                 "metadataAll", "J"))
+                                 "metadataAll", "J"))             
              TRUE
          })
 

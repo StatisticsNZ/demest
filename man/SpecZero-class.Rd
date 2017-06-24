@@ -3,7 +3,7 @@
 \docType{class}
 \name{SpecZero-class}
 \alias{SpecZero-class}
-\title{A S4 class to specify a Zero prior.}
+\title{An S4 class to specify a Zero prior.}
 \description{
 Specify a prior that fixes all values of the associated
 main effect or interaction to zero.
@@ -15,4 +15,3 @@ The class has no slots.
 An object of class \code{SpecZero} should be generated
 using function \code{\link{Zero}}.
 }
-

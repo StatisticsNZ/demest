@@ -90,4 +90,3 @@ fetchSummary(filename)
 \seealso{
 \code{\link{estimateModel}}, \code{\link{estimateAccount}}
 }
-

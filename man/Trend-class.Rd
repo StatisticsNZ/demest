@@ -30,6 +30,7 @@ standard deviation of innovations.}
 \item{\code{omegaDeltaMax}}{Maximum value for standard deviation
 of innovations.}
 }}
+
 \section{Warning}{
 
 In  normal usage, it should not be necessary to
@@ -37,8 +38,8 @@ access, or even know about, the slots of a
 \code{Trend} object.  The slots are not part of
 the API of the package, and may change in future.
 }
+
 \seealso{
 Objects of class \code{Trend} are created
 by calls to function \code{\link{Trend}}.
 }
-

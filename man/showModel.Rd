@@ -76,4 +76,3 @@ showModel(filename.pred)
 Parameter estimate can be extracted using function
 \code{\link{fetch}}.
 }
-

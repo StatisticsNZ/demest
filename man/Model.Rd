@@ -13,6 +13,10 @@ Model(formula, ..., lower = NULL, upper = NULL, priorSD = NULL,
 the likelihood, and possibly parts of the  prior.
 Constructed using functions such as \code{\link{Poisson}}.}
 
+\item{\dots}{Non-default hyper-priors, in models that
+include hyper-priors.  Constructed using functions
+such as \code{\link{Exch}} and \code{\link{DLM}}.}
+
 \item{lower}{A lower bound for estimates of data-level
 means or probabilities (the \eqn{gamma_i}).}
 
@@ -31,10 +35,6 @@ is being modelled. Only needed when the model is to
 be used in a call to \code{\link{estimateAccount}}.}
 
 \item{aggregate}{An object of class \code{\linkS4class{SpecAggregate}}.}
-
-\item{\dots}{Non-default hyper-priors, in models that
-include hyper-priors.  Constructed using functions
-such as \code{\link{Exch}} and \code{\link{DLM}}.}
 }
 \description{
 The likelihood and, if the model has a second level,
@@ -122,4 +122,3 @@ overall.av <- AgNormal(value = 0.3, sd = 0.01)
 Model(y ~ Binomial(mean ~ region + sex),
       aggregate = overall.av)
 }
-

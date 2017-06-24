@@ -150,6 +150,62 @@ test_that("Model works", {
         expect_equal(ans.obtained, ans.expected)
 })
 
+test_that("NormalFixed works", {
+    mean <- Values(array(1:3, dim = 3, dimnames = list(age = 0:2)))
+    sd <- sqrt(mean)
+    x <- NormalFixed(mean = mean, sd = sd)
+    expect_is(x, "SpecLikelihoodNormalFixed")
+    expect_true(validObject(x))
+    x <- NormalFixed(mean = mean, sd = 1)
+    expect_is(x, "SpecLikelihoodNormalFixed")
+    expect_true(validObject(x))
+    ## 'mean' is "Values"
+    expect_error(NormalFixed(mean = "wrong", sd = sd),
+                 "'mean' has class \"character\"")
+    ## 'metadata' does not have any dimensions with dimtype "iteration"
+    mean.wrong <- Values(array(1:3, dim = 3, dimnames = list(iteration = 1:3)))
+    expect_error(NormalFixed(mean = mean.wrong, sd = sd),
+                 "'mean' has dimension with dimtype \"iteration\"")
+    ## 'metadata' does not have any dimensions with dimtype "quantile"
+    mean.wrong <- Values(array(1:3, dim = 3, dimnames = list(quantile = c(0.1, 0.5, 0.9))))
+    expect_error(NormalFixed(mean = mean.wrong, sd = sd),
+                 "'mean' has dimension with dimtype \"quantile\"")
+    ## 'mean' has no missing values
+    mean.wrong <- mean
+    mean.wrong[1] <- NA
+    expect_error(NormalFixed(mean = mean.wrong, sd = sd),
+                 "'mean' has missing values")
+    ## 'mean' has length of 2 or more
+    mean.wrong <- Values(array(1, dim = 1, dimnames = list(age = 0)))
+    expect_error(NormalFixed(mean = mean.wrong, sd = 1),
+                 "'mean' has length 1")
+    ## 'sd' is compatible with 'mean'
+    expect_error(NormalFixed(mean = mean, sd = sd[1:2]),
+                 "'sd' and 'mean' not compatible :")
+    ## 'sd' has no missing values
+    sd.wrong <- sd
+    sd.wrong[1] <- NA
+    expect_error(NormalFixed(mean = mean, sd = sd.wrong),
+                 "'sd' has missing values")
+    ## 'sd' has no negative values
+    sd.wrong <- sd
+    sd.wrong[1] <- -1
+    expect_error(NormalFixed(mean = mean, sd = sd.wrong),
+                 "'sd' has negative values")
+    ## 'sd' has length 1
+    expect_error(NormalFixed(mean = mean, sd = 1:2),
+                 "'sd' is numeric but does not have length 1")
+    ## 'sd' is not missing
+    expect_error(NormalFixed(mean = mean, sd = as.numeric(NA)),
+                 "'sd' is missing")
+    ## 'sd' is non-negative
+    expect_error(NormalFixed(mean = mean, sd = -1),
+                 "'sd' is negative")
+    ## 'sd' is Values or numeric
+    expect_error(NormalFixed(mean = mean, sd = "wrong"),
+                 "'sd' has class \"character\"")
+})
+
 test_that("SpecModel works with SpecLikelihoodBinomial", {
     SpecModel <- demest:::SpecModel
     spec.inner <- Binomial(mean ~ age + sex)
@@ -598,6 +654,65 @@ test_that("SpecModel works with SpecPoissonBinomialMixture", {
     else
         expect_equal(ans.obtained, ans.expected)
 })
+
+
+test_that("SpecModel works with SpecNormalFixed", {
+    SpecModel <- demest:::SpecModel
+    mean <- Values(array(1:4,
+                         dim = c(2, 2),
+                         dimnames = list(age = c("0-39", "40"),
+                                         sex = c("Female", "Male"))))
+    spec.inner <- NormalFixed(mean = mean, sd = 1)
+    call <- call("Model",
+                 formula = y ~ NormalFixed(mean = mean, sd = 1))
+    ans.obtained <- SpecModel(specInner = spec.inner,
+                              call = call,
+                              nameY = new("Name", "y"),
+                              dots = list(),
+                              lower = NULL,
+                              upper = NULL,
+                              priorSD = NULL,
+                              jump = NULL,
+                              series = NULL,
+                              aggregate = NULL)
+    ans.expected <- new("SpecNormalFixed",
+                        call = call,
+                        nameY = new("Name", "y"),
+                        series = new("SpecName", as.character(NA)),
+                        mean = new("ParameterVector", 1 * 1:4),
+                        sd = new("ScaleVec", rep(1, 4)),
+                        metadata = mean@metadata)
+    if (test.identity)
+        expect_identical(ans.obtained, ans.expected)
+    else
+        expect_equal(ans.obtained, ans.expected)
+    spec.inner <- NormalFixed(mean = mean, sd = 1)
+    call <- call("Model",
+                 formula = deaths.reg ~ NormalFixed(mean = mean, sd = 1),
+                 series = "deaths")
+    ans.obtained <- SpecModel(specInner = spec.inner,
+                              call = call,
+                              nameY = new("Name", "deaths.reg"),
+                              dots = list(),
+                              lower = NULL,
+                              upper = NULL,
+                              priorSD = NULL,
+                              jump = NULL,
+                              series = "deaths",
+                              aggregate = NULL)
+    ans.expected <- new("SpecNormalFixed",
+                        call = call,
+                        nameY = new("Name", "deaths.reg"),
+                        series = new("SpecName", "deaths"),
+                        mean = new("ParameterVector", 1 * 1:4),
+                        sd = new("ScaleVec", rep(1, 4)),
+                        metadata = mean@metadata)
+    if (test.identity)
+        expect_identical(ans.obtained, ans.expected)
+    else
+        expect_equal(ans.obtained, ans.expected)
+})
+
 
 
 ## Aggregate ###################################################################

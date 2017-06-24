@@ -154,4 +154,3 @@ Brooks, S., Gelman, A., Jones, G. L., and Meng, X-L. (eds.)
 \code{\link{estimateModel}}, \code{\link{estimateCounts}},
 and \code{\link{estimateAccount}}.
 }
-

@@ -41,4 +41,3 @@ parameters(summary.est)
 \seealso{
 \code{\link{fetchSummary}}
 }
-

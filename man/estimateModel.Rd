@@ -135,6 +135,7 @@ using functions from the \pkg{parallel} package. For portability, however,
 the \code{parallel} argument is set to \code{FALSE} in the examples in the
 online help.
 }
+
 \examples{
 library(datasets)
 admissions <- Counts(UCBAdmissions)
@@ -165,4 +166,3 @@ account from multiple noisy datasets.  Calculations can be extended using
 from \code{estimateModel} can be constructed using function
 \code{\link{predictModel}}.
 }
-

@@ -112,4 +112,3 @@ probabilities, and standard errors from complex surveys.  The output from
 \code{equivalentSample} are typically analysed using function
 \code{\link{estimateModel}}.
 }
-

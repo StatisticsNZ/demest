@@ -138,4 +138,3 @@ and \code{\link{estimateAccount}}.  Function \code{\link{listContents}}
 shows the internal structure of the output, which is useful for
 constructing the \code{where} argument to \code{fetch}.
 }
-

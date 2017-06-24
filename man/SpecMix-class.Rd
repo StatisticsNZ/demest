@@ -66,6 +66,7 @@ for \code{omegalevelComponentWeightMaxMix}.}
 \item{\code{omegaVectorsMix}}{Upper limit for truncated half-t prior
 for \code{omegaVectorsMix}.}
 }}
+
 \section{Warning}{
 
 In  normal usage, it should not be necessary to
@@ -73,8 +74,8 @@ access, or even know about, the slots of a
 \code{SpecMix} object.  The slots are not part of
 the API of the package, and may change in future.
 }
+
 \seealso{
 Objects of class \code{SpecMix} are generated using function
 \code{\link{Mix}}.
 }
-

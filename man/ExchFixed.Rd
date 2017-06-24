@@ -61,4 +61,3 @@ ExchFixed(mult = 2)
 \code{\link{Exch}} specifies a more complicated
 exchangeable prior.
 }
-

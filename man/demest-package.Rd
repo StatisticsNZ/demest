@@ -34,4 +34,3 @@ Package \pkg{demest} uses S4 classes.  It builds on package \pkg{dembase},
 which provides the basic data structures and methods for manipulating
 cross-classified data.
 }
-

@@ -51,4 +51,3 @@ PoissonBinomial(prob = 0.98)
 \code{PoissonBinomial} is typically used as
 part of a call to function \code{\link{Model}}.
 }
-

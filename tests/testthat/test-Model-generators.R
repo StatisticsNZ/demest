@@ -1122,6 +1122,79 @@ test_that("initialModel creates object of class PoissonBinomialMixture from vali
 })
 
 
+## NormalFixed #############################################################
+
+test_that("initialModel creates object of class NormalFixedUseExp from valid inputs", {
+    initialModel <- demest:::initialModel
+    mean <- Values(array(runif(n = 25),
+                         dim = c(5, 5),
+                         dimnames = list(age = 0:4, region = letters[1:5])))
+    exposure <- Counts(array(rpois(n = 20, lambda = 20),
+                             dim = c(5, 4),
+                             dimnames = list(age = 0:4, region = letters[1:4])))
+    y <- Counts(array(rpois(n = 20, lambda = 0.3 * exposure),
+                      dim = c(5, 4),
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    spec <- Model(y ~ NormalFixed(mean = mean, sd = 0.1))
+    ans.obtained <- initialModel(spec, y = y, exposure = exposure)
+    ans.expected <- new("NormalFixedUseExp",
+                        call = call("Model", formula = y ~ NormalFixed(mean = mean, sd = 0.1)),
+                        mean = new("ParameterVector", mean@.Data[1:20]),
+                        sd = new("ScaleVec", rep(0.1, 20)),
+                        metadataY = y@metadata,
+                        meanAll = new("ParameterVector", mean@.Data),
+                        sdAll = new("ScaleVec", rep(0.1, 25)),
+                        metadataAll = mean@metadata)
+    expect_equal(ans.obtained, ans.expected)
+})
+
+test_that("initialModel throws appropriate errors with NormalFixedUseExp", {
+    initialModel <- demest:::initialModel
+    exposure <- Counts(array(rpois(n = 20, lambda = 20),
+                             dim = c(5, 4),
+                             dimnames = list(age = 0:4, region = letters[1:4])))
+    y <- Counts(array(rpois(n = 20, lambda = 0.3 * exposure),
+                      dim = c(5, 4),
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    mean.wrong <- Values(array(runif(n = 25),
+                               dim = c(5, 5),
+                               dimnames = list(age = 0:4, region = letters[2:6])))
+    spec <- Model(y ~ NormalFixed(mean = mean.wrong, sd = 0.1))
+    expect_error(initialModel(spec, y = y, exposure = exposure),
+                 "'mean' from NormalFixed model not compatible with data :")
+    mean.wrong <- Values(array(runif(n = 5),
+                               dim = 5,
+                               dimnames = list(age = 0:4)))
+    spec <- Model(y ~ NormalFixed(mean = mean.wrong, sd = 0.1))
+    expect_error(initialModel(spec, y = y, exposure = exposure),
+                 "'mean' from NormalFixed model not compatible with data :")
+})
+
+test_that("initialModel creates object of class NormalFixedNotUseExp from valid inputs", {
+    initialModel <- demest:::initialModel
+    mean <- Values(array(runif(n = 25),
+                         dim = c(5, 5),
+                         dimnames = list(age = 0:4, region = letters[1:5])))
+    y <- Counts(array(rpois(n = 20, lambda = 10),
+                      dim = c(5, 4),
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    spec <- Model(y ~ NormalFixed(mean = mean, sd = 0.1))
+    ans.obtained <- initialModel(spec, y = y, exposure = NULL)
+    ans.expected <- new("NormalFixedNotUseExp",
+                        call = call("Model", formula = y ~ NormalFixed(mean = mean, sd = 0.1)),
+                        mean = new("ParameterVector", mean@.Data[1:20]),
+                        sd = new("ScaleVec", rep(0.1, 20)),
+                        metadataY = y@metadata,
+                        meanAll = new("ParameterVector", mean@.Data),
+                        sdAll = new("ScaleVec", rep(0.1, 25)),
+                        metadataAll = mean@metadata)
+    expect_equal(ans.obtained, ans.expected)
+})
+
+
+
+
+
 ## Aggregate #########################################################################
 
 test_that("initialModel works with BinomialVarying and AgCertain", {
@@ -1133,7 +1206,7 @@ test_that("initialModel works with BinomialVarying and AgCertain", {
     y <- Counts(array(rbinom(n = 20, size = exposure, prob = 0.5),
                       dim = c(5, 4),
                       dimnames = list(age = 0:4, region = letters[1:4])),
-                dimscales = c(age = "Intervals"))
+n                dimscales = c(age = "Intervals"))
     ## scalar
     aggregate <- AgCertain(value = 0.4)
     spec <- Model(y ~ Binomial(mean ~ age + region),
@@ -1695,6 +1768,60 @@ test_that("initialModelPredict works with PoissonBinomial", {
     expect_identical(ans@metadataY, metadata.expected)
     expect_identical(ans@iMethodModel, model@iMethodModel + 100L)
 })
+
+
+test_that("initialModelPredict works with NormFixedUseExp", {
+    initialModelPredict <- demest:::initialModelPredict
+    initialModel <- demest:::initialModel
+    exposure <- Counts(array(rpois(n = 20, lambda = 20),
+                             dim = c(5, 4),
+                             dimnames = list(age = 0:4, region = letters[1:4])))
+    y <- Counts(array(rbinom(n = 20, size = exposure, prob = 0.5),
+                      dim = c(5, 4),
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    mean <- Values(array(rnorm(n = 40),
+                         dim = c(10, 4),
+                         dimnames = list(age = 0:9, region = letters[1:4])))
+    spec <- Model(y ~ NormalFixed(mean = mean, sd = sqrt(abs(mean))))
+    model <- initialModel(spec, y = y, exposure = exposure)
+    ans <- initialModelPredict(model,
+                               along = 1L,
+                               labels = NULL,
+                               n = 5L,
+                               offsetModel = 1L)
+    expect_true(validObject(ans))
+    metadata.expected <- Counts(array(1L,
+                                      dim = c(5, 4),
+                                      dimnames = list(age = 5:9, region = letters[1:4])))@metadata
+    expect_identical(ans@metadataY, metadata.expected)
+    expect_identical(ans@iMethodModel, model@iMethodModel + 100L)
+})
+
+test_that("initialModelPredict works with NormFixedNotUseExp", {
+    initialModelPredict <- demest:::initialModelPredict
+    initialModel <- demest:::initialModel
+    y <- Counts(array(rpois(n = 20, lambda = 10),
+                      dim = c(5, 4),
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    mean <- Values(array(rnorm(n = 40),
+                         dim = c(10, 4),
+                         dimnames = list(age = 0:9, region = letters[1:4])))
+    spec <- Model(y ~ NormalFixed(mean = mean, sd = sqrt(abs(mean))))
+    model <- initialModel(spec, y = y, exposure = NULL)
+    ans <- initialModelPredict(model,
+                               along = 1L,
+                               labels = NULL,
+                               n = 5L,
+                               offsetModel = 1L)
+    expect_true(validObject(ans))
+    metadata.expected <- Counts(array(1L,
+                                      dim = c(5, 4),
+                                      dimnames = list(age = 5:9, region = letters[1:4])))@metadata
+    expect_identical(ans@metadataY, metadata.expected)
+    expect_identical(ans@iMethodModel, model@iMethodModel + 100L)
+})
+
+
 
 
 

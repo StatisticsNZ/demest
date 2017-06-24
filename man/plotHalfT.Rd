@@ -33,4 +33,3 @@ plotHalfT()
 plotHalfT(df = 4, add = TRUE, col = "red")
 plotHalfT(df = 4, scale = 1.1, add = TRUE, col = "blue")
 }
-

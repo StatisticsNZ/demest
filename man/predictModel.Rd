@@ -54,4 +54,3 @@ When predicting along \code{"time"}, \code{"age"} or \code{"cohort"}
 dimensions, specifying an \code{n} argument is usually more convenient
 than specifying a \code{labels} argument.
 }
-

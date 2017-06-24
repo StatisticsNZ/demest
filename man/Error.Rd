@@ -49,4 +49,3 @@ Error(robust = TRUE, df = 10)
 Error(scale = HalfT(scale = 0.5, max = 1))
 Error(scale = HalfT(mult = 0.5))
 }
-

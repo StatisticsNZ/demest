@@ -31,4 +31,3 @@ Zero()
 \code{Known} can be used to create a prior that
 fixes the main effect or interaction at values other than 0.
 }
-

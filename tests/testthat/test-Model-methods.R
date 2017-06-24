@@ -353,6 +353,49 @@ test_that("R, C-generic, and C-specific versions of logLikelihood give same answ
     }
 })
 
+test_that("logLikelihood gives valid answer with NormalFixedUseExp", {
+    logLikelihood <- demest:::logLikelihood
+    initialModel <- demest:::initialModel
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        dataset <- Counts(array(as.integer(rpois(n = 20, lambda = 20)),
+                                dim = c(2, 10),
+                                dimnames = list(sex = c("f", "m"), age = 0:9)))
+        mean <- Values(array(runif(10),
+                             dim = c(2, 10),
+                             dimnames = list(sex = c("f", "m"), age = 0:9)))
+        spec <- Model(y ~ NormalFixed(mean = mean, sd = 0.1))
+        model <- initialModel(spec, y = dataset, exposure = dataset)
+        i <- sample.int(20, size = 1)
+        count <- as.integer(rpois(n = 1, lambda = dataset[i]))
+        ans.R <- logLikelihood(model = model,
+                               count = count,
+                               dataset = dataset,
+                               i = i,
+                               useC = FALSE)
+        ans.C.generic <- logLikelihood(model = model,
+                                       count = count,
+                                       dataset = dataset,
+                                       i = i,
+                                       useC = TRUE,
+                                       useSpecific = FALSE)
+        ans.C.specific <- logLikelihood(model = model,
+                                        count = count,
+                                        dataset = dataset,
+                                        i = i,
+                                        useC = TRUE,
+                                        useSpecific = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C.generic)
+        else
+            expect_equal(ans.R, ans.C.generic)
+        expect_identical(ans.C.generic, ans.C.specific)
+    }
+})
+
+
+
+
 ## makeCellInLik ######################################################################
 
 test_that("makeCellInLik works with BinomialVarying", {
@@ -1684,6 +1727,32 @@ test_that("makeOutputModel works with PoissonBinomialMixture", {
     ans.expected <- list(prob = 0.98)
 })
 
+
+## NormalFixed
+
+test_that("makeOutputModel works with NormalFixed", {
+    initialModel <- demest:::initialModel
+    makeOutputModel <- demest:::makeOutputModel
+    y <- Counts(array(rpois(20, lambda  = 10),
+                      dim = c(2, 10),
+                      dimnames = list(sex = c("f", "m"), age = 0:9)))
+    mean <- Values(array(rpois(20, lambda  = 10),
+                      dim = c(2, 10),
+                      dimnames = list(sex = c("f", "m"), age = 0:9)))
+    sd <- Values(array(runif(20),
+                      dim = c(2, 10),
+                      dimnames = list(sex = c("f", "m"), age = 0:9)))
+    spec <- Model(y ~ NormalFixed(mean = mean, sd = sd))
+    model <- initialModel(spec, y = y, exposure = NULL)
+    metadata <- y@metadata
+    pos <- 10L
+    ans.obtained <- makeOutputModel(model = model, pos = pos)
+    ans.expected <- list(mean = mean, sd = sd)
+})
+
+
+
+
 ## predictModelNotUseExp ##############################################################
 
 test_that("predictModelNotUseExp gives valid answer with NormalVaryingVarsigmKnownPredict", {
@@ -1932,6 +2001,80 @@ test_that("R, C-specific, and C-generic methods for predictModelNotUseExp give s
     }
 })
 
+test_that("predictModelNotUseExp gives valid answer with NormalFixed", {
+    initialModel <- demest:::initialModel
+    initialModelPredict <- demest:::initialModelPredict
+    predictModelNotUseExp <- demest:::predictModelNotUseExp
+    y.est <- Counts(array(rpois(10, lambda  = 10),
+                          dim = c(2, 5),
+                          dimnames = list(sex = c("f", "m"), age = 0:4)))
+    y.pred <- Counts(array(as.integer(NA),
+                           dim = c(2, 5),
+                           dimnames = list(sex = c("f", "m"), age = 5:9)))
+    mean <- Values(array(rpois(20, lambda  = 10),
+                         dim = c(2, 10),
+                         dimnames = list(sex = c("f", "m"), age = 0:9)))
+    sd <- Values(array(runif(20),
+                       dim = c(2, 10),
+                       dimnames = list(sex = c("f", "m"), age = 0:9)))
+    spec <- Model(y ~ NormalFixed(mean = mean, sd = sd))
+    model <- initialModel(spec, y = y.est, exposure = NULL)
+    model <- initialModelPredict(model,
+                                 along = 2L,
+                                 labels = NULL,
+                                 n = 5,
+                                 offsetModel = 1L,
+                                 covariates = NULL,
+                                 aggregate = NULL,
+                                 lower = NULL,
+                                 upper = NULL)
+    ans.obtained <- predictModelNotUseExp(model, y = y.pred)
+    ans.expected <- model
+    expect_identical(ans.obtained, ans.expected)
+})
+
+
+test_that("R, C-specific, and C-generic methods for predictModelNotUseExp give same answer with NormalFixedPredict", {
+    predictModelNotUseExp <- demest:::predictModelNotUseExp
+    initialModel <- demest:::initialModel
+    initialModelPredict <- demest:::initialModelPredict
+    y.est <- Counts(array(rpois(10, lambda  = 10),
+                          dim = c(2, 5),
+                          dimnames = list(sex = c("f", "m"), age = 0:4)))
+    y.pred <- Counts(array(as.integer(NA),
+                           dim = c(2, 5),
+                           dimnames = list(sex = c("f", "m"), age = 5:9)))
+    mean <- Values(array(rpois(20, lambda  = 10),
+                         dim = c(2, 10),
+                         dimnames = list(sex = c("f", "m"), age = 0:9)))
+    sd <- Values(array(runif(20),
+                       dim = c(2, 10),
+                       dimnames = list(sex = c("f", "m"), age = 0:9)))
+    spec <- Model(y ~ NormalFixed(mean = mean, sd = sd))
+    model <- initialModel(spec, y = y.est, exposure = NULL)
+    model <- initialModelPredict(model,
+                                 along = 2L,
+                                 labels = NULL,
+                                 n = 5,
+                                 offsetModel = 1L,
+                                 covariates = NULL,
+                                 aggregate = NULL,
+                                 lower = NULL,
+                                 upper = NULL)
+    ans.R <- predictModelNotUseExp(model, y = y.pred,
+                                   useC = FALSE)
+    ans.C.specific <- predictModelNotUseExp(model, y = y.pred,
+                                            useC = TRUE, useSpecific = TRUE)
+    ans.C.generic <- predictModelNotUseExp(model, y = y.pred,
+                                           useC = TRUE, useSpecific = FALSE)
+    if (test.identity)
+        expect_identical(ans.R, ans.C.specific)
+    else
+        expect_equal(ans.R, ans.C.specific)
+    expect_identical(ans.C.specific, ans.C.generic)
+})
+
+
 
 
 ## predictModelUseExp #################################################################
@@ -2171,6 +2314,93 @@ test_that("R, generic C, and specific C versions predictModelUseExp method for P
     expect_identical(ans.R, ans.C.specific)
     expect_identical(ans.C.generic, ans.C.specific)
 })
+
+
+test_that("predictModelUseExp gives valid answer with NormalFixed", {
+    initialModel <- demest:::initialModel
+    initialModelPredict <- demest:::initialModelPredict
+    predictModelUseExp <- demest:::predictModelUseExp
+    y.est <- Counts(array(rpois(10, lambda  = 10),
+                          dim = c(2, 5),
+                          dimnames = list(sex = c("f", "m"), age = 0:4)))
+    exposure.est <- Counts(array(rpois(10, lambda  = 10),
+                                 dim = c(2, 5),
+                                 dimnames = list(sex = c("f", "m"), age = 0:4)))
+    y.pred <- Counts(array(as.integer(NA),
+                           dim = c(2, 5),
+                           dimnames = list(sex = c("f", "m"), age = 5:9)))
+    exposure.pred <- Counts(array(as.integer(NA),
+                                  dim = c(2, 5),
+                                  dimnames = list(sex = c("f", "m"), age = 5:9)))
+    mean <- Values(array(rpois(20, lambda  = 10),
+                         dim = c(2, 10),
+                         dimnames = list(sex = c("f", "m"), age = 0:9)))
+    sd <- Values(array(runif(20),
+                       dim = c(2, 10),
+                       dimnames = list(sex = c("f", "m"), age = 0:9)))
+    spec <- Model(y ~ NormalFixed(mean = mean, sd = sd))
+    model <- initialModel(spec, y = y.est, exposure = exposure.est)
+    model <- initialModelPredict(model,
+                                 along = 2L,
+                                 labels = NULL,
+                                 n = 5,
+                                 offsetModel = 1L,
+                                 covariates = NULL,
+                                 aggregate = NULL,
+                                 lower = NULL,
+                                 upper = NULL)
+    ans.obtained <- predictModelUseExp(model, y = y.pred, exposure = exposure.pred)
+    ans.expected <- model
+    expect_identical(ans.obtained, ans.expected)
+})
+
+
+test_that("R, C-specific, and C-generic methods for predictModelUseExp give same answer with NormalFixedPredict", {
+    initialModel <- demest:::initialModel
+    initialModelPredict <- demest:::initialModelPredict
+    predictModelUseExp <- demest:::predictModelUseExp
+    y.est <- Counts(array(rpois(10, lambda  = 10),
+                          dim = c(2, 5),
+                          dimnames = list(sex = c("f", "m"), age = 0:4)))
+    exposure.est <- Counts(array(rpois(10, lambda  = 10),
+                                 dim = c(2, 5),
+                                 dimnames = list(sex = c("f", "m"), age = 0:4)))
+    y.pred <- Counts(array(as.integer(NA),
+                           dim = c(2, 5),
+                           dimnames = list(sex = c("f", "m"), age = 5:9)))
+    exposure.pred <- Counts(array(as.integer(NA),
+                                  dim = c(2, 5),
+                                  dimnames = list(sex = c("f", "m"), age = 5:9)))
+    mean <- Values(array(rpois(20, lambda  = 10),
+                         dim = c(2, 10),
+                         dimnames = list(sex = c("f", "m"), age = 0:9)))
+    sd <- Values(array(runif(20),
+                       dim = c(2, 10),
+                       dimnames = list(sex = c("f", "m"), age = 0:9)))
+    spec <- Model(y ~ NormalFixed(mean = mean, sd = sd))
+    model <- initialModel(spec, y = y.est, exposure = exposure.est)
+    model <- initialModelPredict(model,
+                                 along = 2L,
+                                 labels = NULL,
+                                 n = 5,
+                                 offsetModel = 1L,
+                                 covariates = NULL,
+                                 aggregate = NULL,
+                                 lower = NULL,
+                                 upper = NULL)
+    ans.R <- predictModelUseExp(model, y = y.pred, exposure = exposure.pred,
+                                   useC = FALSE)
+    ans.C.specific <- predictModelUseExp(model, y = y.pred, exposure = exposure.pred,
+                                            useC = TRUE, useSpecific = TRUE)
+    ans.C.generic <- predictModelUseExp(model, y = y.pred, exposure = exposure.pred,
+                                           useC = TRUE, useSpecific = FALSE)
+    if (test.identity)
+        expect_identical(ans.R, ans.C.specific)
+    else
+        expect_equal(ans.R, ans.C.specific)
+    expect_identical(ans.C.specific, ans.C.generic)
+})
+
 
 
 ## transferParamModel ################################################################
@@ -2705,6 +2935,259 @@ test_that("R, C-specific, and C-generic versions of transferParamModel give same
     expect_identical(ans.R, ans.C.generic)
 })
 
+test_that("transferParamModel method for PoissonBinomialMixturePredict works", {
+    transferParamModel <- demest:::transferParamModel
+    initialModel <- demest:::initialModel
+    initialModelPredict <- demest:::initialModelPredict
+    exposure.est <- Counts(array(as.integer(rpois(n = 20, lambda = 50)),
+                                 dim = c(5, 4),
+                                 dimnames = list(age = 0:4, region = letters[1:4])))
+    exposure.pred <- Counts(array(as.integer(NA),
+                                  dim = c(10, 4),
+                                  dimnames = list(age = 5:14, region = letters[1:4])))
+    y.est <- Counts(array(as.integer(rbinom(n = 20, size = exposure.est, prob = 0.5)),
+                          dim = c(5, 4),
+                          dimnames = list(age = 0:4, region = letters[1:4])))
+    y.pred <- Counts(array(as.integer(NA),
+                           dim = c(10, 4),
+                           dimnames = list(age = 5:14, region = letters[1:4])))
+    spec <- Model(y ~ PoissonBinomial(prob = 0.98))
+    model <- initialModel(spec, y = y.est, exposure = exposure.est)
+    model <- initialModelPredict(model,
+                                 along = 1L,
+                                 labels = NULL,
+                                 n = 10,
+                                 offsetModel = 1L)
+    ans <- transferParamModel(model,
+                              filename = "file",
+                              lengthIter = 100L,
+                              iteration = 1L)                              
+    expect_identical(ans, model)
+})
+
+test_that("R, generic C, and specific C versions transferParamModel method for PoissonBinomialMixturePredict give same answer", {
+    transferParamModel <- demest:::transferParamModel
+    initialModel <- demest:::initialModel
+    initialModelPredict <- demest:::initialModelPredict
+    exposure.est <- Counts(array(as.integer(rpois(n = 20, lambda = 50)),
+                                 dim = c(5, 4),
+                                 dimnames = list(age = 0:4, region = letters[1:4])))
+    exposure.pred <- Counts(array(as.integer(NA),
+                                  dim = c(10, 4),
+                                  dimnames = list(age = 5:14, region = letters[1:4])))
+    y.est <- Counts(array(as.integer(rbinom(n = 20, size = exposure.est, prob = 0.5)),
+                          dim = c(5, 4),
+                          dimnames = list(age = 0:4, region = letters[1:4])))
+    y.pred <- Counts(array(as.integer(NA),
+                           dim = c(10, 4),
+                           dimnames = list(age = 5:14, region = letters[1:4])))
+    spec <- Model(y ~ PoissonBinomial(prob = 0.98))
+    model <- initialModel(spec, y = y.est, exposure = exposure.est)
+    model <- initialModelPredict(model,
+                                 along = 1L,
+                                 labels = NULL,
+                                 n = 10,
+                                 offsetModel = 1L)
+    ans.R <- transferParamModel(model,
+                                filename = "file",
+                                lengthIter = 100L,
+                                iteration = 1L,
+                                useC = FALSE)                              
+    ans.C.specific <- transferParamModel(model,
+                                         filename = "file",
+                                         lengthIter = 100L,
+                                         iteration = 1L,
+                                         useC = TRUE,
+                                         useSpecific = TRUE)
+    ans.C.generic <- transferParamModel(model,
+                                        filename = "file",
+                                        lengthIter = 100L,
+                                        iteration = 1L,
+                                        useC = TRUE,
+                                        useSpecific = FALSE)
+    expect_identical(ans.R, ans.C.specific)
+    expect_identical(ans.C.generic, ans.C.specific)
+})
+
+test_that("transferParamModel gives valid answer with NormalFixedNotUseExpPredict", {
+    initialModel <- demest:::initialModel
+    initialModelPredict <- demest:::initialModelPredict
+    transferParamModel <- demest:::transferParamModel
+    y.est <- Counts(array(rpois(10, lambda  = 10),
+                          dim = c(2, 5),
+                          dimnames = list(sex = c("f", "m"), age = 0:4)))
+    y.pred <- Counts(array(as.integer(NA),
+                           dim = c(2, 5),
+                           dimnames = list(sex = c("f", "m"), age = 5:9)))
+    mean <- Values(array(rpois(20, lambda  = 10),
+                         dim = c(2, 10),
+                         dimnames = list(sex = c("f", "m"), age = 0:9)))
+    sd <- Values(array(runif(20),
+                       dim = c(2, 10),
+                       dimnames = list(sex = c("f", "m"), age = 0:9)))
+    spec <- Model(y ~ NormalFixed(mean = mean, sd = sd))
+    model <- initialModel(spec, y = y.est, exposure = NULL)
+    model <- initialModelPredict(model,
+                                 along = 2L,
+                                 labels = NULL,
+                                 n = 5,
+                                 offsetModel = 1L,
+                                 covariates = NULL,
+                                 aggregate = NULL,
+                                 lower = NULL,
+                                 upper = NULL)
+    ans <- transferParamModel(model,
+                              filename = "file",
+                              lengthIter = 100L,
+                              iteration = 1L)                              
+    expect_identical(ans, model)
+})
+
+test_that("R, C-specific, and C-generic methods for transferParamModel give same answer with NormalFixedNotUseExpPredict", {
+    transferParamModel <- demest:::transferParamModel
+    initialModel <- demest:::initialModel
+    initialModelPredict <- demest:::initialModelPredict
+    y.est <- Counts(array(rpois(10, lambda  = 10),
+                          dim = c(2, 5),
+                          dimnames = list(sex = c("f", "m"), age = 0:4)))
+    y.pred <- Counts(array(as.integer(NA),
+                           dim = c(2, 5),
+                           dimnames = list(sex = c("f", "m"), age = 5:9)))
+    mean <- Values(array(rpois(20, lambda  = 10),
+                         dim = c(2, 10),
+                         dimnames = list(sex = c("f", "m"), age = 0:9)))
+    sd <- Values(array(runif(20),
+                       dim = c(2, 10),
+                       dimnames = list(sex = c("f", "m"), age = 0:9)))
+    spec <- Model(y ~ NormalFixed(mean = mean, sd = sd))
+    model <- initialModel(spec, y = y.est, exposure = NULL)
+    model <- initialModelPredict(model,
+                                 along = 2L,
+                                 labels = NULL,
+                                 n = 5,
+                                 offsetModel = 1L,
+                                 covariates = NULL,
+                                 aggregate = NULL,
+                                 lower = NULL,
+                                 upper = NULL)
+    ans.R <- transferParamModel(model,
+                                filename = "file",
+                                lengthIter = 100L,
+                                iteration = 1L,
+                                useC = FALSE)                              
+    ans.C.specific <- transferParamModel(model,
+                                         filename = "file",
+                                         lengthIter = 100L,
+                                         iteration = 1L,
+                                         useC = TRUE,
+                                         useSpecific = TRUE)
+    ans.C.generic <- transferParamModel(model,
+                                        filename = "file",
+                                        lengthIter = 100L,
+                                        iteration = 1L,
+                                        useC = TRUE,
+                                        useSpecific = FALSE)
+    expect_identical(ans.R, ans.C.specific)
+    expect_identical(ans.C.generic, ans.C.specific)
+})
+
+
+test_that("transferParamModel gives valid answer with NormalFixedUseExpPredict", {
+    initialModel <- demest:::initialModel
+    initialModelPredict <- demest:::initialModelPredict
+    transferParamModel <- demest:::transferParamModel
+    y.est <- Counts(array(rpois(10, lambda  = 10),
+                          dim = c(2, 5),
+                          dimnames = list(sex = c("f", "m"), age = 0:4)))
+    exposure.est <- Counts(array(rpois(10, lambda  = 10),
+                                 dim = c(2, 5),
+                                 dimnames = list(sex = c("f", "m"), age = 0:4)))
+    y.pred <- Counts(array(as.integer(NA),
+                           dim = c(2, 5),
+                           dimnames = list(sex = c("f", "m"), age = 5:9)))
+    exposure.pred <- Counts(array(as.integer(NA),
+                                  dim = c(2, 5),
+                                  dimnames = list(sex = c("f", "m"), age = 5:9)))
+    mean <- Values(array(rpois(20, lambda  = 10),
+                         dim = c(2, 10),
+                         dimnames = list(sex = c("f", "m"), age = 0:9)))
+    sd <- Values(array(runif(20),
+                       dim = c(2, 10),
+                       dimnames = list(sex = c("f", "m"), age = 0:9)))
+    spec <- Model(y ~ NormalFixed(mean = mean, sd = sd))
+    model <- initialModel(spec, y = y.est, exposure = exposure.est)
+    model <- initialModelPredict(model,
+                                 along = 2L,
+                                 labels = NULL,
+                                 n = 5,
+                                 offsetModel = 1L,
+                                 covariates = NULL,
+                                 aggregate = NULL,
+                                 lower = NULL,
+                                 upper = NULL)
+    ans.obtained <- transferParamModel(model,
+                                       filename = "file",
+                                       lengthIter = 100L,
+                                       iteration = 1L)
+    ans.expected <- model
+    expect_identical(ans.obtained, ans.expected)
+})
+
+
+test_that("R, C-specific, and C-generic methods for transferParamModel give same answer with NormalFixedUseExpPredict", {
+    initialModel <- demest:::initialModel
+    initialModelPredict <- demest:::initialModelPredict
+    transferParamModel <- demest:::transferParamModel
+    y.est <- Counts(array(rpois(10, lambda  = 10),
+                          dim = c(2, 5),
+                          dimnames = list(sex = c("f", "m"), age = 0:4)))
+    exposure.est <- Counts(array(rpois(10, lambda  = 10),
+                                 dim = c(2, 5),
+                                 dimnames = list(sex = c("f", "m"), age = 0:4)))
+    y.pred <- Counts(array(as.integer(NA),
+                           dim = c(2, 5),
+                           dimnames = list(sex = c("f", "m"), age = 5:9)))
+    exposure.pred <- Counts(array(as.integer(NA),
+                                  dim = c(2, 5),
+                                  dimnames = list(sex = c("f", "m"), age = 5:9)))
+    mean <- Values(array(rpois(20, lambda  = 10),
+                         dim = c(2, 10),
+                         dimnames = list(sex = c("f", "m"), age = 0:9)))
+    sd <- Values(array(runif(20),
+                       dim = c(2, 10),
+                       dimnames = list(sex = c("f", "m"), age = 0:9)))
+    spec <- Model(y ~ NormalFixed(mean = mean, sd = sd))
+    model <- initialModel(spec, y = y.est, exposure = exposure.est)
+    model <- initialModelPredict(model,
+                                 along = 2L,
+                                 labels = NULL,
+                                 n = 5,
+                                 offsetModel = 1L,
+                                 covariates = NULL,
+                                 aggregate = NULL,
+                                 lower = NULL,
+                                 upper = NULL)
+    ans.R <- transferParamModel(model,
+                                filename = "file",
+                                lengthIter = 100L,
+                                iteration = 1L,
+                                useC = FALSE)                              
+    ans.C.specific <- transferParamModel(model,
+                                         filename = "file",
+                                         lengthIter = 100L,
+                                         iteration = 1L,
+                                         useC = TRUE,
+                                         useSpecific = TRUE)
+    ans.C.generic <- transferParamModel(model,
+                                        filename = "file",
+                                        lengthIter = 100L,
+                                        iteration = 1L,
+                                        useC = TRUE,
+                                        useSpecific = FALSE)
+    expect_identical(ans.R, ans.C.specific)
+    expect_identical(ans.C.generic, ans.C.specific)
+})
+
 
 ## updateModelNotUseExp ##############################################################
 
@@ -3163,13 +3646,6 @@ test_that("R, generic C, and specific C versions updateModelNotUseExp method for
 })
 
 
-
-
-
-
-
-
-
 ## updateModelNotUseExp for NormalVaryingVarsigmaKnownAgFun
 
 test_that("updateModelNotUseExp for NormalVaryingVarsigmaKnownAgFun updates the correct slots", {
@@ -3454,6 +3930,51 @@ test_that("R, generic C, and specific C versions updateModelNotUseExp method for
         expect_identical(x.C.generic, x.C.specific)
     }
 })
+
+test_that("updateModelNotUseExp for NormalFixedNotUseExp works", {
+    updateModelNotUseExp <- demest:::updateModelNotUseExp
+    initialModel <- demest:::initialModel
+    y <- Counts(array(rpois(10, lambda  = 10),
+                          dim = c(2, 5),
+                          dimnames = list(sex = c("f", "m"), age = 0:4)))
+    mean <- Values(array(rpois(20, lambda  = 10),
+                         dim = c(2, 10),
+                         dimnames = list(sex = c("f", "m"), age = 0:9)))
+    sd <- Values(array(runif(20),
+                       dim = c(2, 10),
+                       dimnames = list(sex = c("f", "m"), age = 0:9)))
+    spec <- Model(y ~ NormalFixed(mean = mean, sd = sd))
+    model <- initialModel(spec, y = y, exposure = NULL)
+    ans.obtained <- updateModelNotUseExp(model, y = y, useC = FALSE)
+    ans.expected <- model
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("R, generic C, and specific C versions updateModelNotUseExp method for NormalFixedNotUseExp give same answer", {
+    updateModelNotUseExp <- demest:::updateModelNotUseExp
+    initialModel <- demest:::initialModel
+    y <- Counts(array(rpois(10, lambda  = 10),
+                      dim = c(2, 5),
+                      dimnames = list(sex = c("f", "m"), age = 0:4)))
+    mean <- Values(array(rpois(20, lambda  = 10),
+                         dim = c(2, 10),
+                         dimnames = list(sex = c("f", "m"), age = 0:9)))
+    sd <- Values(array(runif(20),
+                       dim = c(2, 10),
+                       dimnames = list(sex = c("f", "m"), age = 0:9)))
+    spec <- Model(y ~ NormalFixed(mean = mean, sd = sd))
+    model <- initialModel(spec, y = y, exposure = NULL)
+    ans.R <- updateModelNotUseExp(model, y = y, useC = FALSE)
+    ans.C.generic <- updateModelNotUseExp(model, y = y, useC = TRUE, useSpecific = FALSE)
+    ans.C.specific <- updateModelNotUseExp(model, y = y, useC = TRUE, useSpecific = TRUE)
+    if (test.identity)
+        expect_identical(ans.R, ans.C.generic)
+    else
+        expect_equal(ans.R, ans.C.generic)
+    expect_identical(ans.C.generic, ans.C.specific)
+})
+
+
 
 ## updateModelUseExp ##################################################################
 
@@ -4100,6 +4621,58 @@ test_that("R, generic C, and specific C versions updateModelUseExp method for Po
 })
 
 
+test_that("updateModelUseExp for NormalFixedUseExp works", {
+    updateModelUseExp <- demest:::updateModelUseExp
+    initialModel <- demest:::initialModel
+    y <- Counts(array(rpois(10, lambda  = 10),
+                          dim = c(2, 5),
+                          dimnames = list(sex = c("f", "m"), age = 0:4)))
+    exposure <- Counts(array(rpois(10, lambda  = 10),
+                          dim = c(2, 5),
+                          dimnames = list(sex = c("f", "m"), age = 0:4)))
+    mean <- Values(array(rpois(20, lambda  = 10),
+                         dim = c(2, 10),
+                         dimnames = list(sex = c("f", "m"), age = 0:9)))
+    sd <- Values(array(runif(20),
+                       dim = c(2, 10),
+                       dimnames = list(sex = c("f", "m"), age = 0:9)))
+    spec <- Model(y ~ NormalFixed(mean = mean, sd = sd))
+    model <- initialModel(spec, y = y, exposure = exposure)
+    ans.obtained <- updateModelUseExp(model, y = y, exposure = exposure, useC = FALSE)
+    ans.expected <- model
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("R, generic C, and specific C versions updateModelUseExp method for NormalFixedUseExp give same answer", {
+    updateModelUseExp <- demest:::updateModelUseExp
+    initialModel <- demest:::initialModel
+    y <- Counts(array(rpois(10, lambda  = 10),
+                      dim = c(2, 5),
+                      dimnames = list(sex = c("f", "m"), age = 0:4)))
+    exposure <- Counts(array(rpois(10, lambda  = 10),
+                          dim = c(2, 5),
+                          dimnames = list(sex = c("f", "m"), age = 0:4)))
+    mean <- Values(array(rpois(20, lambda  = 10),
+                         dim = c(2, 10),
+                         dimnames = list(sex = c("f", "m"), age = 0:9)))
+    sd <- Values(array(runif(20),
+                       dim = c(2, 10),
+                       dimnames = list(sex = c("f", "m"), age = 0:9)))
+    spec <- Model(y ~ NormalFixed(mean = mean, sd = sd))
+    model <- initialModel(spec, y = y, exposure = exposure)
+    ans.R <- updateModelUseExp(model, y = y, exposure = exposure, useC = FALSE)
+    ans.C.generic <- updateModelUseExp(model, y = y, exposure = exposure,
+                                       useC = TRUE, useSpecific = FALSE)
+    ans.C.specific <- updateModelNotUseExp(model, y = y, exposure = exposure,
+                                           useC = TRUE, useSpecific = TRUE)
+    if (test.identity)
+        expect_identical(ans.R, ans.C.generic)
+    else
+        expect_equal(ans.R, ans.C.generic)
+    expect_identical(ans.C.generic, ans.C.specific)
+})
+
+
 
 
 ## whereAcceptance ###################################################################
@@ -4168,6 +4741,9 @@ test_that("whereAcceptance works", {
     x <- new("PoissonVaryingUseExpPredict")
     expect_identical(whereAcceptance(x),
                      list(NULL))
+    x <- new("NormalFixedNotUseExp")
+    expect_identical(whereAcceptance(x),
+                     list(NULL))
 })
 
 
@@ -4222,6 +4798,9 @@ test_that("whereAutocorr works", {
     expect_identical(whereAutocorr(x), list(NULL))
     x <- new("PoissonVaryingUseExpPredict")
     expect_identical(whereAutocorr(x), list(NULL))
+        x <- new("NormalFixedNotUseExp")
+    expect_identical(whereAutocorr(x),
+                     list(NULL))
 })
 
 
@@ -4280,6 +4859,9 @@ test_that("whereJump works", {
     expect_identical(whereJump(x), list(NULL))
     x <- new("PoissonVaryingUseExpPredict")
     expect_identical(whereJump(x), list(NULL))
+    x <- new("NormalFixedNotUseExp")
+    expect_identical(whereJump(x),
+                     list(NULL))
 })
 
 
@@ -4632,6 +5214,16 @@ test_that("whereEstimated works with PoissonBinomialMixture", {
     expect_identical(ans.obtained, ans.expected)
 })
 
+## NormalFixed
+
+test_that("whereEstimated works with NormalFixed", {
+    whereEstimated <- demest:::whereEstimated
+    model <- new("NormalFixedNotUseExp")
+    ans.obtained <- whereEstimated(model)
+    ans.expected <- list(NULL)
+    expect_identical(ans.obtained, ans.expected)
+})
+
 
 ## whereNoProposal ####################################################################
 
@@ -4702,6 +5294,9 @@ test_that("whereNoProposal works", {
                                               c("aggregate", "noProposal")))
     x <- new("PoissonBinomialMixture")
     expect_identical(whereNoProposal(x), list(NULL))
+    x <- new("NormalFixedNotUseExp")
+    expect_identical(whereNoProposal(x),
+                     list(NULL))
 })
 
 
@@ -4723,4 +5318,6 @@ test_that("whereTheta works", {
     expect_identical(whereTheta(x), c("likelihood", "prob"))
     x <- new("PoissonBinomialMixture")
     expect_error(whereTheta(x), "'object' has class \"PoissonBinomialMixture\"")
+    x <- new("NormalFixedNotUseExp")
+    expect_error(whereTheta(x), "'object' has class \"NormalFixedNotUseExp\"")
 })

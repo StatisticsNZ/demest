@@ -27,4 +27,3 @@ Trend(initial = Initial(mean = 0.05, sd = 0.1),
 \code{Trend} is usually called as part of a call to
 function \code{\link{DLM}}.
 }
-

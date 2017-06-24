@@ -8833,6 +8833,63 @@ test_that("R and C versions of logLikelihood_PoissonBinomialMixture give same an
     }
 })
 
+test_that("logLikelihood gives valid answer with NormalFixedUseExp", {
+    logLikelihood_NormalFixedUseExp <- demest:::logLikelihood_NormalFixedUseExp
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        dataset <- Counts(array(as.integer(rpois(n = 20, lambda = 20)),
+                                dim = c(2, 10),
+                                dimnames = list(sex = c("f", "m"), age = 0:9)))
+        mean <- Values(array(runif(20),
+                             dim = c(2, 10),
+                             dimnames = list(sex = c("f", "m"), age = 0:9)))
+        spec <- Model(y ~ NormalFixed(mean = mean, sd = 0.1))
+        model <- initialModel(spec, y = dataset, exposure = dataset)
+        i <- sample.int(20, size = 1)
+        count <- as.integer(rpois(n = 1, lambda = dataset[i]))
+        ans.obtained <- logLikelihood_NormalFixedUseExp(model = model,
+                                                        count = count,
+                                                        dataset = dataset,
+                                                        i = i)
+        ans.expected <- dnorm(x = dataset[i], mean = count * mean@.Data[i], sd = sqrt(count) * 0.1, log = TRUE)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of logLikelihood give same answer with NormalFixedUseExp", {
+    logLikelihood_NormalFixedUseExp <- demest:::logLikelihood_NormalFixedUseExp
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        dataset <- Counts(array(as.integer(rpois(n = 20, lambda = 20)),
+                                dim = c(2, 10),
+                                dimnames = list(sex = c("f", "m"), age = 0:9)))
+        mean <- Values(array(runif(20),
+                             dim = c(2, 10),
+                             dimnames = list(sex = c("f", "m"), age = 0:9)))
+        spec <- Model(y ~ NormalFixed(mean = mean, sd = 0.1))
+        model <- initialModel(spec, y = dataset, exposure = dataset)
+        i <- sample.int(20, size = 1)
+        count <- as.integer(rpois(n = 1, lambda = dataset[i]))
+        ans.R <- logLikelihood_NormalFixedUseExp(model = model,
+                                                 count = count,
+                                                 dataset = dataset,
+                                                 i = i,
+                                                 useC = FALSE)
+        ans.C <- logLikelihood_NormalFixedUseExp(model = model,
+                                                 count = count,
+                                                 dataset = dataset,
+                                                 i = i,
+                                                 useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
+
 test_that("makeIOther gives valid answers", {
     makeIOther <- demest:::makeIOther
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra

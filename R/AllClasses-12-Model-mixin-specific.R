@@ -278,6 +278,73 @@ setClass("LowerUpperMixin",
          })
 
 ## HAS_TESTS
+setClass("MeanSDMixin",
+         slots = c(mean = "ParameterVector",
+                   sd = "ScaleVec"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             mean <- object@mean@.Data
+             sd <- object@sd@.Data
+             ## 'mean' and 'sd' have the same length
+             if (!identical(length(mean), length(sd)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "mean", "sd"))
+             TRUE
+         })
+
+## HAS_TESTS
+setClass("MeanSDMetadataMixin",
+         slots = c(metadata = "MetaData"),
+         contains = c("VIRTUAL", "MeanSDMixin"),
+         validity = function(object) {
+             mean <- object@mean@.Data
+             sd <- object@sd@.Data
+             metadata <- object@metadata
+             ## 'metadata' does not have any dimensions with dimtype "iteration"
+             if ("iteration" %in% dimtypes(metadata))
+                 return(gettextf("dimension with dimtype \"%s\"",
+                                 "iteration"))
+             ## 'metadata' does not have any dimensions with dimtype "quantile"
+             if ("quantile" %in% dimtypes(metadata))
+                 return(gettextf("dimension with dimtype \"%s\"",
+                                 "quantile"))
+             ## 'metadata' and 'mean' consistent
+             if (!identical(length(mean), as.integer(prod(dim(metadata)))))
+                 return(gettextf("'%s' and '%s' inconsistent",
+                                 "mean", "metadata"))
+             TRUE
+         })
+
+## HAS_TESTS
+setClass("MeanSDMetadataAllMixin",
+         slots = c(meanAll = "ParameterVector",
+                   sdAll = "ScaleVec",
+                   metadataAll = "MetaData"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             meanAll <- object@meanAll@.Data
+             sdAll <- object@sdAll@.Data
+             metadataAll <- object@metadataAll
+             ## 'metadataAll' does not have any dimensions with dimtype "iteration"
+             if ("iteration" %in% dimtypes(metadataAll))
+                 return(gettextf("dimension with dimtype \"%s\"",
+                                 "iteration"))
+             ## 'metadataAll' does not have any dimensions with dimtype "quantile"
+             if ("quantile" %in% dimtypes(metadataAll))
+                 return(gettextf("dimension with dimtype \"%s\"",
+                                 "quantile"))
+             ## 'meanAll' and 'sdAll' have the same length
+             if (!identical(length(meanAll), length(sdAll)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "meanAll", "sdAll"))
+             ## 'metadataAll' and 'meanAll' consistent
+             if (!identical(length(meanAll), as.integer(prod(dim(metadataAll)))))
+                 return(gettextf("'%s' and '%s' inconsistent",
+                                 "meanAll", "metadataAll"))
+             TRUE
+         })
+
+## HAS_TESTS
 setClass("MetadataY",
          slots = c(metadataY = "MetaData"),
          contains = "VIRTUAL",

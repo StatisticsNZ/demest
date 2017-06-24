@@ -55,4 +55,3 @@ Season(n = 2, scale = HalfT(scale = 3))
 \code{Season} supplies an option argument
 to function \code{\link{DLM}}.
 }
-

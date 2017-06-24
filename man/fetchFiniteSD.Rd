@@ -45,4 +45,3 @@ why it is more important than ever
 \code{\link{estimateModel}}, \code{\link{estimateCounts}},
 \code{\link{estimateAccount}}
 }
-

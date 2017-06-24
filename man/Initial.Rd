@@ -40,4 +40,3 @@ Initial(mean = 0.02, mult = 0.1)
 \code{Initial} is usually called as part of a call to function
 \code{\link{Trend}}.
 }
-

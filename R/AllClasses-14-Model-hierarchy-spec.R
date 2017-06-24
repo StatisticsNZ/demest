@@ -22,6 +22,9 @@
 #' half-t prior for data-level standard deviation.
 #' @slot varsigmaMax Maximum value for data-level
 #' standard deviation.
+#' @slot mean Vector of means.
+#' @slot sd Vector of standard deviations.
+#' @slot metadata Metadata for \code{mean} and \code{sd}.
 #'
 #' @seealso Objects of class \code{SpecLikelihood}
 #' are created by calls to function such as
@@ -66,6 +69,12 @@ setClass("SpecLikelihoodPoisson",
 setClass("SpecLikelihoodPoissonBinomialMixture",
          contains = c("SpecLikelihood",
                       "Prob"))
+
+#' @rdname SpecLikelihood-class
+#' @export
+setClass("SpecLikelihoodNormalFixed",
+         contains = c("SpecLikelihood", "MeanSDMetadataMixin"))
+
 
 #' S4 classes to specify a model.
 #'
@@ -146,7 +155,17 @@ setClass("SpecLikelihoodPoissonBinomialMixture",
 #' in prior (level 2) model.
 #' @slot aggregate An object of class
 #' \code{\linkS4class{SpecAggregate}}.
-#'
+#' @slot mean Vector of means in NormalFixed model - subsetted to
+#' include only cells that are observed in \code{y}.
+#' @slot meanAll Vector of means in NormalFixed model, before
+#' subsetting.
+#' @slot sd Vector of standard deviations in NormalFixed model - subsetted to
+#' include only cells that are observed in \code{y}
+#' @slot sdAll Vector of standard deviations in NormalFixed model, before
+#' subsetting.
+#' @slot metadata Metadata for \code{mean} and \code{sd}.
+#' @slot metadataAll Metadata for \code{meanAll} and \code{sdAll}.
+#' 
 #' @seealso Object of class \code{SpecModel} are created
 #' by a call to function \code{\link{Model}}.
 #' 
@@ -232,5 +251,14 @@ setClass("SpecPoissonVarying",
 #' @export
 setClass("SpecPoissonBinomialMixture",
          contains = c("SpecModel", "Prob", "SpecSeriesMixin"))
+
+## HAS_TESTS
+#' @rdname SpecModel-class
+#' @export
+setClass("SpecNormalFixed",
+         contains = c("SpecModel", "MeanSDMetadataMixin",
+                      "SpecSeriesMixin"))
+
+
 
 

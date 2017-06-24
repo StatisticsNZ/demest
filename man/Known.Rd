@@ -62,4 +62,3 @@ Known(mean = mean, sd = 0.05)
 \seealso{
 \code{ExchFixed} creates a normal prior centered at 0.
 }
-

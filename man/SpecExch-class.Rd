@@ -3,10 +3,10 @@
 \docType{class}
 \name{SpecExch-class}
 \alias{SpecExch-class}
-\alias{SpecExchNormCov-class}
 \alias{SpecExchNormZero-class}
-\alias{SpecExchRobustCov-class}
+\alias{SpecExchNormCov-class}
 \alias{SpecExchRobustZero-class}
+\alias{SpecExchRobustCov-class}
 \title{A S4 class to specify an exchangeable prior.}
 \description{
 An object of class \code{SpecExch} specifies
@@ -50,6 +50,7 @@ parameter for the error term.}
 \item{\code{maxTau}}{The maximum value for the standard
 deviation or scale parameter for the error term.}
 }}
+
 \section{Warning}{
 
 In  normal usage, it should not be necessary to
@@ -57,8 +58,8 @@ access, or even know about, the slots of a
 \code{SpecExch} object.  The slots are not part of
 the API of the package, and may change in future.
 }
+
 \seealso{
 Object of class \code{SpecExch} are generated
 using function \code{\link{Exch}}.
 }
-

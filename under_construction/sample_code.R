@@ -1,4 +1,9 @@
 
+
+y ~ NormFixed(mean = vvv, sd = xxx)
+
+
+
 Move(classes = diag.matrix)
 
 Move(classes = diag.matrix,

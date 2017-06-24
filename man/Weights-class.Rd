@@ -48,6 +48,7 @@ for \code{omegaComponentWeightMaxMix}.}
 \item{\code{omegaLevelComponentWeightMaxMix}}{Upper limit for truncated half-t prior
 for \code{omegalevelComponentWeightMaxMix}.}
 }}
+
 \section{Warning}{
 
 In  normal usage, it should not be necessary to

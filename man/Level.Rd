@@ -25,4 +25,3 @@ Level(scale = HalfT(scale = 0.5))
 \code{Level} is usually called as part of a call to
 function \code{\link{DLM}}.
 }
-

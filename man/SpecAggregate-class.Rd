@@ -2,13 +2,13 @@
 % Please edit documentation in R/AllClasses-11-Aggregate.R
 \docType{class}
 \name{SpecAggregate-class}
-\alias{SpecAgCertain-class}
-\alias{SpecAgFun-class}
-\alias{SpecAgLife-class}
-\alias{SpecAgNormal-class}
-\alias{SpecAgPoisson-class}
-\alias{SpecAgUncertain-class}
 \alias{SpecAggregate-class}
+\alias{SpecAgCertain-class}
+\alias{SpecAgUncertain-class}
+\alias{SpecAgNormal-class}
+\alias{SpecAgFun-class}
+\alias{SpecAgPoisson-class}
+\alias{SpecAgLife-class}
 \title{S4 classes to represent aggregate values.}
 \description{
 Aggregate values can be used to represent additional

@@ -42,4 +42,3 @@ Norm(scale = 0.5)
 \seealso{
 \code{Norm} is used in calls to function \code{\link{Covariates}}.
 }
-

@@ -94,4 +94,3 @@ Oeppen, J., & Vaupel, J. W. (2002). Broken limits to life expectancy.
 \seealso{
 \code{Damp} is used in calls to function \code{\link{DLM}}
 }
-

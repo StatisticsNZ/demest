@@ -3,6 +3,7 @@
 \docType{class}
 \name{Damp-class}
 \alias{Damp-class}
+\alias{Damp-class}
 \alias{DampKnown-class}
 \alias{DampUnknown-class}
 \title{S4 classes to specify damping terms in DLM priors.}
@@ -29,6 +30,7 @@ prior for coefficient.}
 \item{\code{shape2Phi}}{Second 'sample size' parameter in beta
 prior for coefficient.}
 }}
+
 \section{Warning}{
 
 In  normal usage, it should not be necessary to
@@ -36,8 +38,8 @@ access, or even know about, the slots of a
 \code{Damp} object.  The slots are not part of
 the API of the package, and may change in future.
 }
+
 \seealso{
 Objects of class \code{Damp} are created  by a call to function
 \code{\link{Damp}}.
 }
-

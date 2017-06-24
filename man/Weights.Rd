@@ -62,4 +62,3 @@ Mixture priors are specified using \code{\link{Mix}}.
 The weights in a mixture prior are specified using
 \code{\link{Weights}}.
 }
-

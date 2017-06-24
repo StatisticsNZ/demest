@@ -3,12 +3,12 @@
 \docType{class}
 \name{SummaryResults-class}
 \alias{SummaryResults-class}
-\alias{show,SummaryDataset-method}
 \alias{show,SummaryModel-method}
-\alias{show,SummaryResultsCounts-method}
+\alias{show,SummaryDataset-method}
+\alias{show,SummarySeries-method}
 \alias{show,SummaryResultsModelEst-method}
 \alias{show,SummaryResultsModelPred-method}
-\alias{show,SummarySeries-method}
+\alias{show,SummaryResultsCounts-method}
 \title{S4 class summarizing results from estimation or prediction.}
 \usage{
 \S4method{show}{SummaryModel}(object)

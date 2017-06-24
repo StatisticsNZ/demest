@@ -287,6 +287,15 @@ setMethod("show",
 #' @rdname show-methods
 #' @export
 setMethod("show",
+          signature(object = "SpecLikelihoodNormalFixed"),
+          function(object) {
+              cat("An object of class \"", class(object), "\"\n\n", sep = "")
+              printNormalFixedLikEqns(object)
+          })
+
+#' @rdname show-methods
+#' @export
+setMethod("show",
           signature(object = "SpecBinomialVarying"),
           function(object) {
               cat("An object of class \"", class(object), "\"\n\n", sep = "")
@@ -349,6 +358,14 @@ setMethod("show",
               printPoissonBinomialSpecEqns(object)
           })
 
+#' @rdname show-methods
+#' @export
+setMethod("show",
+          signature(object = "SpecNormalFixed"),
+          function(object) {
+              cat("An object of class \"", class(object), "\"\n\n", sep = "")
+              printNormalFixedSpecEqns(object)
+          })
 
 ## stringScaleAg ##############################################################################
 

@@ -3,22 +3,22 @@
 \docType{class}
 \name{SpecDLM-class}
 \alias{SpecDLM-class}
-\alias{SpecDLMNoTrendNormCovNoSeason-class}
-\alias{SpecDLMNoTrendNormCovWithSeason-class}
 \alias{SpecDLMNoTrendNormZeroNoSeason-class}
 \alias{SpecDLMNoTrendNormZeroWithSeason-class}
-\alias{SpecDLMNoTrendRobustCovNoSeason-class}
-\alias{SpecDLMNoTrendRobustCovWithSeason-class}
+\alias{SpecDLMNoTrendNormCovNoSeason-class}
+\alias{SpecDLMNoTrendNormCovWithSeason-class}
 \alias{SpecDLMNoTrendRobustZeroNoSeason-class}
 \alias{SpecDLMNoTrendRobustZeroWithSeason-class}
-\alias{SpecDLMWithTrendNormCovNoSeason-class}
-\alias{SpecDLMWithTrendNormCovWithSeason-class}
+\alias{SpecDLMNoTrendRobustCovNoSeason-class}
+\alias{SpecDLMNoTrendRobustCovWithSeason-class}
 \alias{SpecDLMWithTrendNormZeroNoSeason-class}
 \alias{SpecDLMWithTrendNormZeroWithSeason-class}
-\alias{SpecDLMWithTrendRobustCovNoSeason-class}
-\alias{SpecDLMWithTrendRobustCovWithSeason-class}
+\alias{SpecDLMWithTrendNormCovNoSeason-class}
+\alias{SpecDLMWithTrendNormCovWithSeason-class}
 \alias{SpecDLMWithTrendRobustZeroNoSeason-class}
 \alias{SpecDLMWithTrendRobustZeroWithSeason-class}
+\alias{SpecDLMWithTrendRobustCovNoSeason-class}
+\alias{SpecDLMWithTrendRobustCovWithSeason-class}
 \title{An S4 class to specify a dynamic linear model (DLM) prior.}
 \description{
 An object of class \code{SpecDLM} specifies a prior
@@ -119,6 +119,7 @@ prior for damping parameter.}
 \item{\code{shape2Phi}}{Second 'sample size' parameter in beta
 prior for damping parameter.}
 }}
+
 \section{Warning}{
 
 In  normal usage, it should not be necessary to
@@ -126,8 +127,8 @@ access, or even know about, the slots of a
 \code{SpecDLM} object.  The slots are not part of
 the API of the package, and may change in future.
 }
+
 \seealso{
 Object of class \code{SpecDLM} are generated
 using function \code{\link{DLM}}.
 }
-

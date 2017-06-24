@@ -495,7 +495,8 @@ setClass("SpecMixRobustCov",
              "SpecCovariatesMixin",
              "SpecRobustMixin"))
 
-#' A S4 class to specify a Zero prior.
+
+#' An S4 class to specify a Zero prior.
 #'
 #' Specify a prior that fixes all values of the associated
 #' main effect or interaction to zero.

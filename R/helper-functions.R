@@ -6285,6 +6285,43 @@ logLikelihood_PoissonBinomialMixture <- function(model, count, dataset, i, useC 
     }
 }
 
+## READY_TO_TRANSLATE
+## HAS_TESTS
+## Calling function should test that dataset[i] is not missing
+logLikelihood_NormalFixedUseExp <- function(model, count, dataset, i, useC = FALSE) {
+    ## model
+    stopifnot(methods::is(model, "Model"))
+    stopifnot(methods::is(model, "NormalFixedUseExp"))
+    ## count
+    stopifnot(identical(length(count), 1L))
+    stopifnot(is.integer(count))
+    stopifnot(!is.na(count))
+    stopifnot(count >= 0L)
+    ## dataset
+    stopifnot(is.integer(dataset))
+    stopifnot(all(dataset[!is.na(dataset)] >= 0L))
+    ## i
+    stopifnot(identical(length(i), 1L))
+    stopifnot(is.integer(i))
+    stopifnot(!is.na(i))
+    stopifnot(i >= 1L)
+    ## dataset and i
+    stopifnot(i <= length(dataset))
+    stopifnot(!is.na(dataset@.Data[i]))
+    if (useC) {
+        .Call(logLikelihood_NormalFixedUseExp_R, model, count, dataset, i)
+    }
+    else {
+        x <- dataset[[i]]
+        mean <- model@mean@.Data[i]
+        sd <- model@sd@.Data[i]
+        mean <- count * mean
+        sd <- sqrt(count) * sd
+        dnorm(x = x, mean = mean, sd = sd, log = TRUE)
+    }
+}
+
+
 
 ## TRANSLATED
 ## HAS_TESTS
@@ -7292,6 +7329,30 @@ printMixEqns <- function(object, name, hasCovariates) {
                                isMain = FALSE)
     printErrorDLMEqns(object,
                       isMain = FALSE)
+}
+
+printNormalFixedLikEqns <- function(object) {
+    cat("            y[i] ~ Normal(exposure[i] * mean[i], sqrt(exposure[i]) * sd[i])\n")
+    cat("                 -------- or --------\n")
+    cat("            y[i] ~ Normal(mean[i], sd[i])\n")
+}
+
+printNormalFixedSpecEqns <- function(object) {
+    series <- object@series@.Data
+    call <- object@call
+    nameY <- object@nameY
+    has.series <- !is.na(series)
+    name.y <- deparse(call$formula[[2L]])
+    name.y <- sprintf("%13s", nameY)
+    if (has.series)
+        exposure <- series        
+    else
+        exposure <- "exposure"
+    cat(name.y, "[i] ~ Normal(", exposure, "[i] * mean[i], sqrt(", exposure, "[i]) * sd[i])\n", sep = "")
+    if (!has.series) {
+        cat("                 -------- or --------\n")
+        cat("            y[i] ~ Normal(mean[i], sd[i])\n")
+    }
 }
 
 printNormalVarsigmaKnownLikEqns <- function(object) {

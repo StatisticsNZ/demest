@@ -8,6 +8,7 @@
 \alias{SpecLikelihoodNormalVarsigmaUnknown-class}
 \alias{SpecLikelihoodPoisson-class}
 \alias{SpecLikelihoodPoissonBinomialMixture-class}
+\alias{SpecLikelihoodNormalFixed-class}
 \title{S4 classes to specify one or two levels of a model.}
 \description{
 Classes to specify the likelihood and, if the model
@@ -32,7 +33,14 @@ half-t prior for data-level standard deviation.}
 
 \item{\code{varsigmaMax}}{Maximum value for data-level
 standard deviation.}
+
+\item{\code{mean}}{Vector of means.}
+
+\item{\code{sd}}{Vector of standard deviations.}
+
+\item{\code{metadata}}{Metadata for \code{mean} and \code{sd}.}
 }}
+
 \section{Warning}{
 
 In  normal usage, it should not be necessary to
@@ -40,10 +48,10 @@ access, or even know about, the slots of a
 \code{SpecLikelihood} object.  The slots are not part of
 the API of the package, and may change in future.
 }
+
 \seealso{
 Objects of class \code{SpecLikelihood}
 are created by calls to function such as
 \code{\link{Poisson}}, \code{\link{Binomial}},
 \code{\link{Normal}}, and \code{\link{PoissonBinomial}}.
 }
-

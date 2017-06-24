@@ -1523,6 +1523,14 @@ Known <- function(mean, sd = 0) {
         stop(gettextf("'%s' has class \"%s\"",
                       "mean", class(mean)))
     metadata <- mean@metadata
+    ## 'metadata' does not have any dimensions with dimtype "iteration"
+    if ("iteration" %in% dimtypes(metadata))
+        stop(gettextf("'%s' has dimension with dimtype \"%s\"",
+                      "mean", "iteration"))
+    ## 'metadata' does not have any dimensions with dimtype "quantile"
+    if ("quantile" %in% dimtypes(metadata))
+        stop(gettextf("'%s' has dimension with dimtype \"%s\"",
+                      "mean", "quantile"))
     ## 'mean' has no missing values
     if (any(is.na(mean)))
         stop(gettextf("'%s' has missing values",

@@ -89,6 +89,7 @@ If greater control over the calculation of Rhat is desired, parameter
 estimates can be extracted using \code{\link{fetchMCMC}}, and
 results calculated using \code{\link[coda]{gelman.diag}}.
 }
+
 \examples{
 deaths <- demdata::VADeaths2
 popn <- demdata::VAPopn
@@ -133,4 +134,3 @@ using functions \code{\link{metropolis}}, \code{\link{parameters}},
 and \code{\link{gelmanDiag}}.  Parameter estimates from estimation
 or prediction are obtained using function \code{fetch}.
 }
-

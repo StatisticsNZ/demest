@@ -36,4 +36,3 @@ gelmanDiag(summary.deaths)
 \seealso{
 \code{\link{fetchSummary}}
 }
-

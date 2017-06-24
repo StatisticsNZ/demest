@@ -216,6 +216,45 @@ setMethod("logLikelihood",
               }
           })
 
+## READY_TO_TRANSLATE
+## HAS_TESTS
+## Calling function should test that dataset[i] is not missing
+## Do not create equivalent function for NormalFixedNotUseExp,
+setMethod("logLikelihood",
+          signature(model = "NormalFixedUseExp",
+                    count = "integer",
+                    dataset = "Counts",
+                    i = "integer"),
+          function(model, count, dataset, i, useC = FALSE, useSpecific = FALSE) {
+              ## count
+              stopifnot(identical(length(count), 1L))
+              stopifnot(!is.na(count))
+              stopifnot(count >= 0)
+              ## dataset
+              stopifnot(is.integer(dataset))
+              stopifnot(all(dataset[!is.na(dataset)] >= 0))
+              ## i
+              stopifnot(identical(length(i), 1L))
+              stopifnot(!is.na(i))
+              stopifnot(i >= 1L)
+              ## dataset and i
+              stopifnot(i <= length(dataset))
+              stopifnot(!is.na(dataset@.Data[i]))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(logLikelihood_NormalFixedUseExp_R, model, count, dataset, i)
+                  else
+                      .Call(logLikelihood_R, model, count, dataset, i)
+              }
+              else {
+                  logLikelihood_NormalFixedUseExp(model = model,
+                                                  count = count,
+                                                  dataset = dataset,
+                                                  i = i)
+              }
+          })
+
+
 
 ## makeCellInLik ################################################################
 
@@ -839,6 +878,34 @@ setMethod("makeOutputModel",
           })
 
 
+## NormalFixed
+
+## HAS_TESTS
+setMethod("makeOutputModel",
+          signature(model = "NormalFixed"),
+          function(model) {
+              metadata <- model@metadataY
+              mean <- model@mean@.Data
+              sd <- model@sd@.Data
+              .Data.mean <- array(mean,
+                                  dim = dim(metadata),
+                                  dimnames = dimnames(metadata))
+              .Data.sd <- array(sd,
+                                dim = dim(metadata),
+                                dimnames = dimnames(metadata))
+              mean <- new("Values",
+                          .Data = .Data.mean,
+                          metadata = metadata)
+              sd <- new("Values",
+                        .Data = .Data.sd,
+                        metadata = metadata)
+              list(mean = mean,
+                   sd = sd)
+          })
+
+
+
+
 ## predictModelNotUseExp ##############################################################
 
 ## TRANSLATED
@@ -901,7 +968,7 @@ setMethod("predictModelNotUseExp",
 ## HAS_TESTS
 setMethod("predictModelNotUseExp",
           signature(object = "PoissonVaryingNotUseExpPredict",
-                    y = "Counts"),
+                    y = "DemographicArray"),
           function(object, y, useC = FALSE, useSpecific = FALSE) {
               ## object
               stopifnot(methods::validObject(object))
@@ -924,6 +991,32 @@ setMethod("predictModelNotUseExp",
                   object
               }
           })
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("predictModelNotUseExp",
+          signature(object = "NormalFixedNotUseExpPredict",
+                    y = "Counts"),
+          function(object, y, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(is.integer(y))
+              stopifnot(all(is.na(y)))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(predictModelUseExp_NormalFixedNotUseExp_R,
+                            object, y)
+                  else
+                      .Call(predictModelUseExp_R,
+                            object, y)
+              }
+              else {
+                  object
+              }
+          })
+
+
 
 
 ## predictModelUseExp #################################################################
@@ -1017,6 +1110,36 @@ setMethod("predictModelUseExp",
               if (useC) {
                   if (useSpecific)
                       .Call(predictModelUseExp_PoissonBinomialMixturePredict_R,
+                            object, y, exposure)
+                  else
+                      .Call(predictModelUseExp_R,
+                            object, y, exposure)
+              }
+              else {
+                  object
+              }
+          })
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("predictModelUseExp",
+          signature(object = "NormalFixedUseExpPredict",
+                    y = "Counts",
+                    exposure = "Counts"),
+          function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(is.integer(y))
+              stopifnot(all(is.na(y)))
+              ## exposure
+              stopifnot(is.integer(exposure))
+              stopifnot(all(is.na(exposure)))
+              ## y and exposure
+              stopifnot(identical(length(exposure), length(y)))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(predictModelUseExp_NormalFixedUseExp_R,
                             object, y, exposure)
                   else
                       .Call(predictModelUseExp_R,
@@ -1400,6 +1523,62 @@ setMethod("transferParamModel",
               }
           })
 
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("transferParamModel",
+          signature(model = "PoissonBinomialMixturePredict"),
+          function(model, filename, lengthIter, iteration,
+                   useC = FALSE, useSpecific = FALSE) {
+              if (useC) {
+                  if (useSpecific)
+                      .Call(transferParamModel_PoissonBinomialMixture_R,
+                            model, filename, lengthIter, iteration)
+                  else
+                      .Call(transferParamModel_R,
+                            model, filename, lengthIter, iteration)
+              }
+              else {
+                  model
+              }
+          })
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("transferParamModel",
+          signature(model = "NormalFixedNotUseExpPredict"),
+          function(model, filename, lengthIter, iteration,
+                   useC = FALSE, useSpecific = FALSE) {
+              if (useC) {
+                  if (useSpecific)
+                      .Call(transferParamModel_NormalFixedNotUseExpPredict_R,
+                            model, filename, lengthIter, iteration)
+                  else
+                      .Call(transferParamModel_R,
+                            model, filename, lengthIter, iteration)
+              }
+              else {
+                  model
+              }
+          })
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("transferParamModel",
+          signature(model = "NormalFixedUseExpPredict"),
+          function(model, filename, lengthIter, iteration,
+                   useC = FALSE, useSpecific = FALSE) {
+              if (useC) {
+                  if (useSpecific)
+                      .Call(transferParamModel_NormalFixedUseExpPredict_R,
+                            model, filename, lengthIter, iteration)
+                  else
+                      .Call(transferParamModel_R,
+                            model, filename, lengthIter, iteration)
+              }
+              else {
+                  model
+              }
+          })
 
 
 ## updateModelNotUseExp ##############################################################
@@ -1750,6 +1929,30 @@ setMethod("updateModelNotUseExp",
                   object
               }
           })
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("updateModelNotUseExp",
+          signature(object = "NormalFixedNotUseExp",
+                    y = "Counts"),
+          function(object, y, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(is.integer(y))
+              stopifnot(all(y[!is.na(y)] >= 0))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(updateModelNotUseExp_NormalFixedNotUseExp_R, object, y)
+                  else
+                      .Call(updateModelNotUseExp_R, object, y)
+              }
+              else {
+                  ## object is not updated
+                  object
+              }
+          })
+
 
 
 
@@ -2138,6 +2341,37 @@ setMethod("updateModelUseExp",
               }
           })
 
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("updateModelUseExp",
+          signature(object = "NormalFixedUseExp",
+                    y = "Counts",
+                    exposure = "Counts"),
+          function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(is.integer(y))
+              stopifnot(all(y[!is.na(y)] >= 0))
+              ## exposure
+              stopifnot(is.integer(exposure))
+              stopifnot(all(exposure[!is.na(exposure)] >= 0L))
+              ## y and exposure
+              stopifnot(identical(length(exposure), length(y)))
+              stopifnot(all(is.na(exposure) <= is.na(y)))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(updateModelUseExp_NormalFixedUseExp_R, object, y, exposure)
+                  else
+                      .Call(updateModelUseExp_R, object, y, exposure)
+              }
+              else {
+                  ## object is not updated
+                  object
+              }
+          })
+
+
 
 
 ## whereAcceptance ###################################################################
@@ -2231,6 +2465,12 @@ setMethod("whereAcceptance",
           function(object) list(NULL))
 
 
+setMethod("whereAcceptance",
+          signature(object = "NormalFixed"),
+          function(object) list(NULL))
+
+
+
 
 ## whereAutocorr #####################################################################
 
@@ -2320,6 +2560,12 @@ setMethod("whereAutocorr",
 setMethod("whereAutocorr",
           signature(object = "PoissonVaryingUseExpPredict"),
           function(object) list(NULL))
+
+## HAS_TESTS
+setMethod("whereAutocorr",
+          signature(object = "NormalFixed"),
+          function(object) list(NULL))
+
 
 
 ## whereJump #########################################################################
@@ -2420,6 +2666,11 @@ setMethod("whereJump",
 ## HAS_TESTS
 setMethod("whereJump",
           signature(object = "PoissonVaryingUseExpPredict"),
+          function(object) list(NULL))
+
+## HAS_TESTS
+setMethod("whereJump",
+          signature(object = "NormalFixed"),
           function(object) list(NULL))
 
 
@@ -2561,6 +2812,12 @@ setMethod("whereEstimated",
               list(NULL)
           })
 
+## HAS_TESTS
+setMethod("whereEstimated",
+          signature(object = "NormalFixed"),
+          function(object) list(NULL))
+
+
 ## whereNoProposal ###################################################################
 
 ## HAS_TESTS
@@ -2695,6 +2952,13 @@ setMethod("whereNoProposal",
           signature(object = "PoissonBinomialMixture"),
           function(object) list(NULL))
 
+## HAS_TESTS
+setMethod("whereNoProposal",
+          signature(object = "NormalFixed"),
+          function(object) list(NULL))
+
+
+
 
 ## whereTheta #########################################################################
 
@@ -2725,3 +2989,12 @@ setMethod("whereTheta",
               stop(gettextf("'%s' has class \"%s\"",
                             "object", class(object)))
           })
+
+## HAS_TESTS
+setMethod("whereTheta",
+          signature(object = "NormalFixed"),
+          function(object) {
+              stop(gettextf("'%s' has class \"%s\"",
+                            "object", class(object)))
+          })
+

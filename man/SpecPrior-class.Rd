@@ -10,4 +10,3 @@ class \code{SpecPrior}.  Examples include
 \code{\linkS4class{SpecExchFixed}}, \code{\linkS4class{SpecExch}}
 \code{\linkS4class{SpecDLM}}, and \code{\linkS4class{SpecMix}}.
 }
-

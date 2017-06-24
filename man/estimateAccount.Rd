@@ -54,4 +54,3 @@ Subnational population estimation using multiple datasources. 2013.
 \seealso{
 \code{\link{estimateModel}}, \code{\link{estimateCounts}}
 }
-

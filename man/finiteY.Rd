@@ -112,4 +112,3 @@ Chapman & Hall/CRC. Section 8.3.
 a call to \code{estimate} or \code{predict} functions such
 as \code{\link{estimateModel}} and \code{\link{predictModel}}.
 }
-
