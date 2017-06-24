@@ -8835,6 +8835,7 @@ test_that("R and C versions of logLikelihood_PoissonBinomialMixture give same an
 
 test_that("logLikelihood gives valid answer with NormalFixedUseExp", {
     logLikelihood_NormalFixedUseExp <- demest:::logLikelihood_NormalFixedUseExp
+    initialModel <- demest:::initialModel
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         dataset <- Counts(array(as.integer(rpois(n = 20, lambda = 20)),
@@ -8861,6 +8862,7 @@ test_that("logLikelihood gives valid answer with NormalFixedUseExp", {
 
 test_that("R and C versions of logLikelihood give same answer with NormalFixedUseExp", {
     logLikelihood_NormalFixedUseExp <- demest:::logLikelihood_NormalFixedUseExp
+    initialModel <- demest:::initialModel
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         dataset <- Counts(array(as.integer(rpois(n = 20, lambda = 20)),

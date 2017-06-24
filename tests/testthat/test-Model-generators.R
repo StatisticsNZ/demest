@@ -1206,7 +1206,7 @@ test_that("initialModel works with BinomialVarying and AgCertain", {
     y <- Counts(array(rbinom(n = 20, size = exposure, prob = 0.5),
                       dim = c(5, 4),
                       dimnames = list(age = 0:4, region = letters[1:4])),
-n                dimscales = c(age = "Intervals"))
+                dimscales = c(age = "Intervals"))
     ## scalar
     aggregate <- AgCertain(value = 0.4)
     spec <- Model(y ~ Binomial(mean ~ age + region),

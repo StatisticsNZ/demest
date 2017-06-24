@@ -8910,7 +8910,7 @@ getIPopnNextFromPopn <- function(i, description, useC = FALSE) {
             has.age <- description@hasAge
             if (has.age) {
                 step.age <- description@stepAge
-                n.age <- description@nAgeCurrent
+                n.age <- description@nAge
                 i.age <- (((i - 1L) %/% step.age) %% n.age) + 1L # R-style
                 if (i.age < n.age)
                     ans <- ans + step.age
