@@ -855,6 +855,7 @@ MAPPING_GET_I_WRAPPER(getIExposureFromOrigDest);
 MAPPING_GET_I_WRAPPER(getIExpFirstFromComp);
 MAPPING_GET_I_WRAPPER(getIExpFirstFromBirths);
 MAPPING_GET_IVEC_WRAPPER(getIExpFirstFromOrigDest);
+MAPPING_GET_I_WRAPPER(getICellCompFromExp);
 MAPPING_GET_I_WRAPPER(getICellBirthsFromExp);
 
 /* one off wrapper for getMinValCohort */
@@ -1562,6 +1563,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(getIExpFirstFromComp_R, 2),
   CALLDEF(getIExpFirstFromBirths_R, 2),
   CALLDEF(getIExpFirstFromOrigDest_R, 2),
+  CALLDEF(getICellCompFromExp_R, 2),
   CALLDEF(getICellBirthsFromExp_R, 2),
   
   /*predict priors*/

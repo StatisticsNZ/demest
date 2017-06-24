@@ -785,6 +785,7 @@ int getIExposureFromOrigDest(int i, SEXP mapping_R);
 int getIExpFirstFromComp(int i, SEXP mapping_R);
 int getIExpFirstFromBirths(int i, SEXP mapping_R);
 SEXP getIExpFirstFromOrigDest(int i, SEXP mapping_R);
+int getICellCompFromExp(int i, SEXP mapping_R);
 int getICellBirthsFromExp(int i, SEXP mapping_R);
 
 /* pointers for routines from dembase package 
