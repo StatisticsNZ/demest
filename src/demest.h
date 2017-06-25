@@ -84,6 +84,9 @@ SEXP
   dims_sym,
   prob_sym,
   
+  mean_sym,
+  sd_sym,
+  
   tolerance_sym,
   betaIsPredicted_sym,
   nFailedPropTheta_sym,
@@ -508,6 +511,8 @@ double logLikelihood_Poisson(SEXP model_R, int count,
                                 SEXP dataset_R, int i);
 double logLikelihood_PoissonBinomialMixture(SEXP model_R, int count, 
                                 SEXP dataset_R, int i);
+double logLikelihood_NormalFixedUseExp(SEXP model_R, int count, 
+                                SEXP dataset_R, int i);
 double logLikelihood(SEXP model_R, int count, 
                                 SEXP dataset_R, int i);
 SEXP diffLogLik_R(SEXP yProp_R, SEXP y_R, SEXP indicesY_R, 
@@ -669,17 +674,25 @@ void transferParamModel_BinomialVaryingPredict(SEXP model_R,
         const char *filename, int lengthIter, int iteration);
 void transferParamModel_PoissonVaryingUseExpPredict(SEXP model_R, 
         const char *filename, int lengthIter, int iteration);
+void transferParamModel_PoissonBinomialMixture(SEXP model_R, 
+        const char *filename, int lengthIter, int iteration);
+void transferParamModel_NormalFixedNotUseExpPredict(SEXP model_R, 
+        const char *filename, int lengthIter, int iteration);
+void transferParamModel_NormalFixedUseExpPredict(SEXP model_R, 
+        const char *filename, int lengthIter, int iteration);
 
 
 /* predict models not using exposure*/
 void predictModelNotUseExp_NormalVaryingVarsigmaKnownPredict(SEXP object, SEXP y_R);
 void predictModelNotUseExp_NormalVaryingVarsigmaUnknownPredict(SEXP object, SEXP y_R);
 void predictModelNotUseExp_PoissonVaryingNotUseExpPredict(SEXP object, SEXP y_R);
+void predictModelNotUseExp_NormalFixedNotUseExpPredict(SEXP object, SEXP y_R);
 void predictModelNotUseExp(SEXP object, SEXP y_R);
 /* predict models using exposure*/
 void predictModelUseExp_BinomialVaryingPredict(SEXP object, SEXP y_R, SEXP exposure_R);
 void predictModelUseExp_PoissonVaryingUseExpPredict(SEXP object, SEXP y_R, SEXP exposure_R);
 void predictModelUseExp_PoissonBinomialMixturePredict(SEXP object, SEXP y_R, SEXP exposure_R);
+void predictModelUseExp_NormalFixedUseExpPredict(SEXP object, SEXP y_R, SEXP exposure_R);
 void predictModelUseExp(SEXP object, SEXP y_R, SEXP exposure_R);
 
 
@@ -697,6 +710,7 @@ void updateModelNotUseExp_NormalVaryingVarsigmaUnknownAgFun(SEXP object, SEXP y_
 void updateModelNotUseExp_PoissonVaryingNotUseExpAgNormal(SEXP object, SEXP y_R);
 void updateModelNotUseExp_PoissonVaryingNotUseExpAgFun(SEXP object, SEXP y_R);
 void updateModelNotUseExp_PoissonVaryingNotUseExpAgPoisson(SEXP object, SEXP y_R);
+void updateModelNotUseExp_NormalFixedNotUseExp(SEXP object, SEXP y_R);
 void updateModelNotUseExp(SEXP object, SEXP y_R);
 /* update models using exposure*/
 void updateModelUseExp_BinomialVarying(SEXP object, SEXP y_R, SEXP exposure_R);
@@ -718,6 +732,8 @@ void updateModelUseExp_PoissonVaryingUseExpAgFun
 void updateModelUseExp_PoissonVaryingUseExpAgPoisson
                             (SEXP object, SEXP y_R, SEXP exposure_R);
 void updateModelUseExp_PoissonVaryingUseExpAgLife
+                            (SEXP object, SEXP y_R, SEXP exposure_R);
+void updateModelUseExp_NormalFixedUseExp
                             (SEXP object, SEXP y_R, SEXP exposure_R);
 void updateModelUseExp(SEXP object, SEXP y_R, SEXP exposure_R);
 

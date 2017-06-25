@@ -216,7 +216,7 @@ setMethod("logLikelihood",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 ## Calling function should test that dataset[i] is not missing
 ## Do not create equivalent function for NormalFixedNotUseExp,
@@ -992,7 +992,7 @@ setMethod("predictModelNotUseExp",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("predictModelNotUseExp",
           signature(object = "NormalFixedNotUseExpPredict",
@@ -1005,10 +1005,10 @@ setMethod("predictModelNotUseExp",
               stopifnot(all(is.na(y)))
               if (useC) {
                   if (useSpecific)
-                      .Call(predictModelUseExp_NormalFixedNotUseExp_R,
+                      .Call(predictModelNotUseExp_NormalFixedNotUseExpPredict_R,
                             object, y)
                   else
-                      .Call(predictModelUseExp_R,
+                      .Call(predictModelNotUseExp_R,
                             object, y)
               }
               else {
@@ -1120,7 +1120,7 @@ setMethod("predictModelUseExp",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("predictModelUseExp",
           signature(object = "NormalFixedUseExpPredict",
@@ -1139,7 +1139,7 @@ setMethod("predictModelUseExp",
               stopifnot(identical(length(exposure), length(y)))
               if (useC) {
                   if (useSpecific)
-                      .Call(predictModelUseExp_NormalFixedUseExp_R,
+                      .Call(predictModelUseExp_NormalFixedUseExpPredict_R,
                             object, y, exposure)
                   else
                       .Call(predictModelUseExp_R,
@@ -1523,7 +1523,7 @@ setMethod("transferParamModel",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("transferParamModel",
           signature(model = "PoissonBinomialMixturePredict"),
@@ -1542,7 +1542,7 @@ setMethod("transferParamModel",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("transferParamModel",
           signature(model = "NormalFixedNotUseExpPredict"),
@@ -1561,7 +1561,7 @@ setMethod("transferParamModel",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("transferParamModel",
           signature(model = "NormalFixedUseExpPredict"),
@@ -1930,7 +1930,7 @@ setMethod("updateModelNotUseExp",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("updateModelNotUseExp",
           signature(object = "NormalFixedNotUseExp",
@@ -2341,7 +2341,7 @@ setMethod("updateModelUseExp",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("updateModelUseExp",
           signature(object = "NormalFixedUseExp",

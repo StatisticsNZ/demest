@@ -2487,6 +2487,23 @@ logLikelihood_PoissonBinomialMixture(SEXP model_R, int count,
     return dpoibin1(x, count, prob, USE_LOG);
 }
 
+double
+logLikelihood_NormalFixedUseExp(SEXP model_R, int count, 
+                                SEXP dataset_R, int i)
+{
+    int *dataset = INTEGER(dataset_R);
+    int i_c = i - 1;
+    double x = dataset[i_c];
+    
+    double *mean = REAL(GET_SLOT(model_R, mean_sym));
+    double *sd = REAL(GET_SLOT(model_R, sd_sym));
+    
+    double thisMean = count * mean[i_c];
+    double thisSd = sqrt(count) * sd[i_c];
+    
+    return dnorm(x, thisMean, thisSd, USE_LOG);
+}
+
 int
 makeIOther(int i, SEXP transform_R)
 {
