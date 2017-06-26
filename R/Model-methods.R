@@ -1330,7 +1330,7 @@ setMethod("showModelHelper",
           })
 
 setMethod("showModelHelper",
-          signature(object = "NormalVaryingVarsigmaKnown"),
+          signature(object = "NormalVaryingVarsigmaUnknown"),
           function(object) {
               printNormalVarsigmaUnknownModEqns(object)
               cat("\n")
