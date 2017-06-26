@@ -29,6 +29,10 @@ logLikelihood(SEXP model_R, int count, SEXP dataset_R, int i)
             ans = logLikelihood_PoissonBinomialMixture(
                                         model_R, count, dataset_R, i);
             break;
+         case 31: /* NormalFixedUseExp */
+            ans = logLikelihood_NormalFixedUseExp(
+                                        model_R, count, dataset_R, i);
+            break;
          default:
             error("unknown iMethodModel: %d", iMethodModel);
             break;
@@ -72,7 +76,6 @@ transferParamModel_PoissonVaryingNotUseExpPredict_i(SEXP model_R, const char *fi
     transferParamSigma(model_R, filename, lengthIter, iteration);
 }
 
-
 static __inline__ void
 transferParamModel_BinomialVaryingPredict_i(SEXP model_R, const char *filename,
                                 int lengthIter, int iteration)
@@ -91,6 +94,28 @@ transferParamModel_PoissonVaryingUseExpPredict_i(SEXP model_R, const char *filen
     transferParamPriorsBetas(model_R, filename, lengthIter, iteration);
     transferParamSigma(model_R, filename, lengthIter, iteration);
 }
+
+static __inline__ void
+transferParamModel_PoissonBinomialMixture_i(SEXP model_R, const char *filename,
+                                int lengthIter, int iteration)
+{
+    /* null op */
+}
+
+static __inline__ void
+transferParamModel_NormalFixedNotUseExpPredict_i(SEXP model_R, const char *filename,
+                                int lengthIter, int iteration)
+{
+    /* null op */
+}
+
+static __inline__ void
+transferParamModel_NormalFixedUseExpPredict_i(SEXP model_R, const char *filename,
+                                int lengthIter, int iteration)
+{
+    /* null op */
+}
+
 
 void
 transferParamModel(SEXP model_R, const char *filename,
@@ -120,6 +145,18 @@ transferParamModel(SEXP model_R, const char *filename,
             transferParamModel_PoissonVaryingUseExpPredict_i(model_R, 
                         filename, lengthIter, iteration);
             break;
+        case 111: 
+            transferParamModel_PoissonBinomialMixture_i(model_R, 
+                        filename, lengthIter, iteration);
+            break;
+        case 130: 
+            transferParamModel_NormalFixedNotUseExpPredict_i(model_R, 
+                        filename, lengthIter, iteration);
+            break;
+        case 131: 
+            transferParamModel_NormalFixedUseExpPredict_i(model_R, 
+                        filename, lengthIter, iteration);
+            break;
         default:
             error("unknown i_method_model in transferParamModel: %d", 
                                                         i_method_model);
@@ -135,6 +172,7 @@ transferParamModel_NormalVaryingVarsigmaKnownPredict(SEXP model_R, const char *f
     transferParamModel_NormalVaryingVarsigmaKnownPredict_i(model_R, filename, 
                                 lengthIter, iteration);
 }
+
 void
 transferParamModel_NormalVaryingVarsigmaUnknownPredict(SEXP model_R, const char *filename,
                                 int lengthIter, int iteration)
@@ -142,6 +180,7 @@ transferParamModel_NormalVaryingVarsigmaUnknownPredict(SEXP model_R, const char 
     transferParamModel_NormalVaryingVarsigmaUnknownPredict_i(model_R, filename, 
                                 lengthIter, iteration);
 }
+
 void
 transferParamModel_PoissonVaryingNotUseExpPredict(SEXP model_R, const char *filename,
                                 int lengthIter, int iteration)
@@ -149,6 +188,7 @@ transferParamModel_PoissonVaryingNotUseExpPredict(SEXP model_R, const char *file
     transferParamModel_PoissonVaryingNotUseExpPredict_i(model_R, filename, 
                                 lengthIter, iteration);
 }
+
 void
 transferParamModel_BinomialVaryingPredict(SEXP model_R, const char *filename,
                                 int lengthIter, int iteration)
@@ -156,11 +196,36 @@ transferParamModel_BinomialVaryingPredict(SEXP model_R, const char *filename,
     transferParamModel_BinomialVaryingPredict_i(model_R, filename, 
                                 lengthIter, iteration);
 }
+
 void
 transferParamModel_PoissonVaryingUseExpPredict(SEXP model_R, const char *filename,
                                 int lengthIter, int iteration)
 {
     transferParamModel_PoissonVaryingUseExpPredict_i(model_R, filename, 
+                                lengthIter, iteration);
+}
+
+void
+transferParamModel_PoissonBinomialMixture(SEXP model_R, const char *filename,
+                                int lengthIter, int iteration)
+{
+    transferParamModel_PoissonBinomialMixture_i(model_R, filename, 
+                                lengthIter, iteration);
+}
+
+void
+transferParamModel_NormalFixedNotUseExpPredict(SEXP model_R, const char *filename,
+                                int lengthIter, int iteration)
+{
+    transferParamModel_NormalFixedNotUseExpPredict_i(model_R, filename, 
+                                lengthIter, iteration);
+}
+
+void
+transferParamModel_NormalFixedUseExpPredict(SEXP model_R, const char *filename,
+                                int lengthIter, int iteration)
+{
+    transferParamModel_NormalFixedUseExpPredict_i(model_R, filename, 
                                 lengthIter, iteration);
 }
 
@@ -209,6 +274,12 @@ predictModelNotUseExp_PoissonVaryingNotUseExpPredict_i(SEXP object, SEXP y_R)
     updateTheta_PoissonVaryingNotUseExp(object, y_R);
 }
 
+static __inline__ void
+predictModelNotUseExp_NormalFixedNotUseExpPredict_i(SEXP object, SEXP y_R)
+{
+    /* null op */
+}
+
 /* models using exposure */
 
 static __inline__ void
@@ -239,6 +310,12 @@ predictModelUseExp_PoissonBinomialMixturePredict_i(SEXP object, SEXP y_R, SEXP e
     /*  do nothing */
 }
 
+static __inline__ void
+predictModelUseExp_NormalFixedUseExpPredict_i(SEXP object, SEXP y_R, SEXP exposure_R)
+{
+    /*  do nothing */
+}
+
 void
 predictModelNotUseExp(SEXP object, SEXP y_R) 
 {
@@ -261,6 +338,9 @@ predictModelNotUseExp_Internal(SEXP object, SEXP y_R, int i_method_model)
             break;
         case 106:
             predictModelNotUseExp_PoissonVaryingNotUseExpPredict_i(object, y_R);
+            break;
+        case 130:
+            predictModelNotUseExp_NormalFixedNotUseExpPredict_i(object, y_R);
             break;
         default:
             error("unknown i_method_model: %d", i_method_model);
@@ -292,6 +372,9 @@ predictModelUseExp_Internal(SEXP object, SEXP y_R, SEXP exposure_R,
         case 111: 
             predictModelUseExp_PoissonBinomialMixturePredict_i(object, y_R, exposure_R);
             break;
+        case 131:
+            predictModelUseExp_NormalFixedUseExpPredict_i(object, y_R, exposure_R);
+            break;
             
         default:
             error("unknown i_method_model: %d", i_method_model);
@@ -321,6 +404,12 @@ predictModelNotUseExp_PoissonVaryingNotUseExpPredict(SEXP object, SEXP y_R)
     
 }
 
+void
+predictModelNotUseExp_NormalFixedNotUseExpPredict(SEXP object, SEXP y_R) 
+{
+    predictModelNotUseExp_NormalFixedNotUseExpPredict_i(object, y_R);
+    
+}
 /* specific functions for models using exposure */
 
 void
@@ -341,6 +430,13 @@ void
 predictModelUseExp_PoissonBinomialMixturePredict(SEXP object, SEXP y_R, SEXP exposure_R)
 {
     predictModelUseExp_PoissonBinomialMixturePredict_i(object, y_R, exposure_R);
+    
+}
+
+void
+predictModelUseExp_NormalFixedUseExpPredict(SEXP object, SEXP y_R, SEXP exposure_R)
+{
+    predictModelUseExp_NormalFixedUseExpPredict_i(object, y_R, exposure_R);
     
 }
 
@@ -470,6 +566,12 @@ updateModelNotUseExp_PoissonVaryingNotUseExpAgPoisson_i(SEXP object, SEXP y_R)
     updateBetasAndPriorsBetas_General(object, log);
 }
 
+static __inline__ void
+updateModelNotUseExp_NormalFixedNotUseExp_i(SEXP object, SEXP y_R)
+{
+    /* null op */
+}
+
 /* models using exposure */
 
 
@@ -569,6 +671,11 @@ updateModelUseExp_PoissonVaryingUseExpAgLife_i(SEXP object, SEXP y_R, SEXP expos
     updateBetasAndPriorsBetas_General(object, log);
 }
 
+static __inline__ void
+updateModelUseExp_NormalFixedUseExp_i(SEXP object, SEXP y_R, SEXP exposure_R)
+{
+    /* null op */
+}
 
 void
 updateModelNotUseExp(SEXP object, SEXP y_R) 
@@ -621,6 +728,9 @@ updateModelNotUseExp_Internal(SEXP object, SEXP y_R, int i_method_model)
             break; 
         case 26:    
             updateModelNotUseExp_PoissonVaryingNotUseExpAgFun_i(object, y_R);
+            break; 
+        case 30:    
+            updateModelNotUseExp_NormalFixedNotUseExp_i(object, y_R);
             break; 
         default:
             error("unknown i_method_model: %d", i_method_model);
@@ -675,6 +785,9 @@ updateModelUseExp_Internal(SEXP object, SEXP y_R, SEXP exposure_R,
             break;
         case 29:    
             updateModelUseExp_PoissonVaryingUseExpAgLife_i(object, y_R, exposure_R);
+            break;
+        case 31:    
+            updateModelUseExp_NormalFixedUseExp_i(object, y_R, exposure_R);
             break;
         default:
             error("unknown i_method_model: %d", i_method_model);
@@ -764,6 +877,12 @@ updateModelNotUseExp_PoissonVaryingNotUseExpAgPoisson(SEXP object, SEXP y_R)
     updateModelNotUseExp_PoissonVaryingNotUseExpAgPoisson_i(object, y_R);
 }
 
+void
+updateModelNotUseExp_NormalFixedNotUseExp(SEXP object, SEXP y_R)
+{
+    updateModelNotUseExp_NormalFixedNotUseExp_i(object, y_R);
+}
+
 /* specific functions for models using exposure */
 void
 updateModelUseExp_BinomialVarying(SEXP object, SEXP y_R, SEXP exposure_R)
@@ -840,4 +959,11 @@ updateModelUseExp_PoissonVaryingUseExpAgLife
                                 (SEXP object, SEXP y_R, SEXP exposure_R)
 {
     updateModelUseExp_PoissonVaryingUseExpAgLife_i(object, y_R, exposure_R);
+}
+
+void
+updateModelUseExp_NormalFixedUseExp
+                                (SEXP object, SEXP y_R, SEXP exposure_R)
+{
+    updateModelUseExp_NormalFixedUseExp_i(object, y_R, exposure_R);
 }

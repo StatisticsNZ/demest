@@ -1162,16 +1162,20 @@ TRANSFERPARAM_WRAPPER_R(transferParamModel_NormalVaryingVarsigmaUnknownPredict);
 TRANSFERPARAM_WRAPPER_R(transferParamModel_PoissonVaryingNotUseExpPredict);
 TRANSFERPARAM_WRAPPER_R(transferParamModel_BinomialVaryingPredict);
 TRANSFERPARAM_WRAPPER_R(transferParamModel_PoissonVaryingUseExpPredict);
-
+TRANSFERPARAM_WRAPPER_R(transferParamModel_PoissonBinomialMixture);
+TRANSFERPARAM_WRAPPER_R(transferParamModel_NormalFixedNotUseExpPredict);
+TRANSFERPARAM_WRAPPER_R(transferParamModel_NormalFixedUseExpPredict);
 
 /* wrap predict model functions */
 UPDATEOBJECT_NOEXP_WRAPPER_R(predictModelNotUseExp_NormalVaryingVarsigmaKnownPredict);
 UPDATEOBJECT_NOEXP_WRAPPER_R(predictModelNotUseExp_NormalVaryingVarsigmaUnknownPredict);
 UPDATEOBJECT_NOEXP_WRAPPER_R(predictModelNotUseExp_PoissonVaryingNotUseExpPredict);
+UPDATEOBJECT_NOEXP_WRAPPER_R(predictModelNotUseExp_NormalFixedNotUseExpPredict);
 UPDATEOBJECT_NOEXP_WRAPPER_R(predictModelNotUseExp);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(predictModelUseExp_BinomialVaryingPredict);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(predictModelUseExp_PoissonVaryingUseExpPredict);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(predictModelUseExp_PoissonBinomialMixturePredict);
+UPDATEOBJECT_WITHEXP_WRAPPER_R(predictModelUseExp_NormalFixedUseExpPredict);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(predictModelUseExp);
 
 
@@ -1189,6 +1193,7 @@ UPDATEOBJECT_NOEXP_WRAPPER_R(updateModelNotUseExp_NormalVaryingVarsigmaUnknownAg
 UPDATEOBJECT_NOEXP_WRAPPER_R(updateModelNotUseExp_PoissonVaryingNotUseExpAgNormal);
 UPDATEOBJECT_NOEXP_WRAPPER_R(updateModelNotUseExp_PoissonVaryingNotUseExpAgFun);
 UPDATEOBJECT_NOEXP_WRAPPER_R(updateModelNotUseExp_PoissonVaryingNotUseExpAgPoisson);
+UPDATEOBJECT_NOEXP_WRAPPER_R(updateModelNotUseExp_NormalFixedNotUseExp);
 UPDATEOBJECT_NOEXP_WRAPPER_R(updateModelNotUseExp);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_BinomialVarying);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_PoissonVarying);
@@ -1201,6 +1206,7 @@ UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_PoissonVaryingUseExpAgNormal);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_PoissonVaryingUseExpAgFun);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_PoissonVaryingUseExpAgPoisson);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_PoissonVaryingUseExpAgLife);
+UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_NormalFixedUseExp);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp);
 
 /* wrap predict combined model functions */
@@ -1226,6 +1232,7 @@ UPDATECOMBINEDOBJECT_WRAPPER_R(updateCombined_CombinedCountsBinomial);
 LOGLIKELIHOOD_WRAPPER_R(logLikelihood_Binomial);
 LOGLIKELIHOOD_WRAPPER_R(logLikelihood_Poisson);
 LOGLIKELIHOOD_WRAPPER_R(logLikelihood_PoissonBinomialMixture);
+LOGLIKELIHOOD_WRAPPER_R(logLikelihood_NormalFixedUseExp);
 LOGLIKELIHOOD_WRAPPER_R(logLikelihood);
 
 /* wrap predict prior functions */
@@ -1403,6 +1410,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(logLikelihood_Binomial_R,4),
   CALLDEF(logLikelihood_Poisson_R,4),
   CALLDEF(logLikelihood_PoissonBinomialMixture_R,4),
+  CALLDEF(logLikelihood_NormalFixedUseExp_R, 4),
   CALLDEF(diffLogLik_R,6),
   CALLDEF(makeIOther_R,2),
   
@@ -1477,15 +1485,20 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(transferParamModel_PoissonVaryingNotUseExpPredict_R, 4),
   CALLDEF(transferParamModel_BinomialVaryingPredict_R, 4),
   CALLDEF(transferParamModel_PoissonVaryingUseExpPredict_R, 4),
+  CALLDEF(transferParamModel_PoissonBinomialMixture_R, 4),
+  CALLDEF(transferParamModel_NormalFixedNotUseExpPredict_R, 4),
+  CALLDEF(transferParamModel_NormalFixedUseExpPredict_R, 4),
 
   CALLDEF(predictModelNotUseExp_NormalVaryingVarsigmaKnownPredict_R, 2),
   CALLDEF(predictModelNotUseExp_NormalVaryingVarsigmaUnknownPredict_R, 2),
   CALLDEF(predictModelNotUseExp_PoissonVaryingNotUseExpPredict_R, 2),
+  CALLDEF(predictModelNotUseExp_NormalFixedNotUseExpPredict_R, 2),
   CALLDEF(predictModelNotUseExp_R, 2),
   
   CALLDEF(predictModelUseExp_BinomialVaryingPredict_R, 3),
   CALLDEF(predictModelUseExp_PoissonVaryingUseExpPredict_R, 3),
   CALLDEF(predictModelUseExp_PoissonBinomialMixturePredict_R, 3),
+  CALLDEF(predictModelUseExp_NormalFixedUseExpPredict_R, 3),
   CALLDEF(predictModelUseExp_R, 3),
   
   CALLDEF(updateModelNotUseExp_NormalVaryingVarsigmaKnown_R, 2),
@@ -1501,6 +1514,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateModelNotUseExp_PoissonVaryingNotUseExpAgNormal_R, 2),
   CALLDEF(updateModelNotUseExp_PoissonVaryingNotUseExpAgFun_R, 2),
   CALLDEF(updateModelNotUseExp_PoissonVaryingNotUseExpAgPoisson_R, 2),
+  CALLDEF(updateModelNotUseExp_NormalFixedNotUseExp_R, 2),
   CALLDEF(updateModelNotUseExp_R, 2),
   
   CALLDEF(updateModelUseExp_BinomialVarying_R, 3),
@@ -1514,6 +1528,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateModelUseExp_PoissonVaryingUseExpAgFun_R, 3),
   CALLDEF(updateModelUseExp_PoissonVaryingUseExpAgPoisson_R, 3),
   CALLDEF(updateModelUseExp_PoissonVaryingUseExpAgLife_R, 3),
+  CALLDEF(updateModelUseExp_NormalFixedUseExp_R, 3),
   CALLDEF(updateModelUseExp_R, 3),
   
   CALLDEF(updateBetasAndPriorsBetas_R, 1),
@@ -1706,6 +1721,10 @@ R_init_demest(DllInfo *info)
   
   ADD_SYM(tolerance);
   ADD_SYM(betaIsPredicted);
+  
+  ADD_SYM(mean);
+  ADD_SYM(sd);
+  
   /* ag */
   ADD_SYM(maxAttempt);
   ADD_SYM(nFailedPropTheta);

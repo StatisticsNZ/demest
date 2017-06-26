@@ -6285,7 +6285,7 @@ logLikelihood_PoissonBinomialMixture <- function(model, count, dataset, i, useC 
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 ## Calling function should test that dataset[i] is not missing
 logLikelihood_NormalFixedUseExp <- function(model, count, dataset, i, useC = FALSE) {

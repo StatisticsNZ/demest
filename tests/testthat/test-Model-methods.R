@@ -353,7 +353,7 @@ test_that("R, C-generic, and C-specific versions of logLikelihood give same answ
     }
 })
 
-test_that("logLikelihood gives valid answer with NormalFixedUseExp", {
+test_that("R, C-generic, and C-specific versions of logLikelihood give same answer with NormalFixedUseExp", {
     logLikelihood <- demest:::logLikelihood
     initialModel <- demest:::initialModel
     for (seed in seq_len(n.test)) {
@@ -4663,7 +4663,7 @@ test_that("R, generic C, and specific C versions updateModelUseExp method for No
     ans.R <- updateModelUseExp(model, y = y, exposure = exposure, useC = FALSE)
     ans.C.generic <- updateModelUseExp(model, y = y, exposure = exposure,
                                        useC = TRUE, useSpecific = FALSE)
-    ans.C.specific <- updateModelNotUseExp(model, y = y, exposure = exposure,
+    ans.C.specific <- updateModelUseExp(model, y = y, exposure = exposure,
                                            useC = TRUE, useSpecific = TRUE)
     if (test.identity)
         expect_identical(ans.R, ans.C.generic)
