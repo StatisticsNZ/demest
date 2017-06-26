@@ -104,9 +104,9 @@ setClass("NotHasSubtotals",
 ## HAS_TESTS
 setClass("Observation",
          slots = c(observation = "list",
-                        datasets = "list",
-                        namesDatasets = "character",
-                        transforms = "list"),
+                   datasets = "list",
+                   namesDatasets = "character",
+                   transforms = "list"),
          contains = "VIRTUAL",
          validity = function(object) {
              observation <- object@observation

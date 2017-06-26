@@ -1,55 +1,118 @@
 
-updateAccountMove <- function(combined, useC = FALSE) {
-    stopifnot(is(combined, "CombinedAccountMove"))
-    if (useC) {
-        .Call(updateAccountMove_R, combined)
-    }
-    else {
-        account <- combined@account
-        n.cell <- combined@nCellAccount
-        for (i in seq_len(n.cell)) {
-            combined <- updateProposalAccountMove(combined)
-            generated.new.proposal <- combined@generatedNewProposal
-            if (generated.new.proposal) {
-                diff.log.lik <- diffLogLikAccountMove(combined)
-                if (is.finite(diff.log.lik)) {
-                    diff.log.dens <- diffLogDensAccountMove(combined)
-                    log.r <- diff.log.lik + diff.log.dens
-                    accept <- (log.r > 0) || (runif(n = 1L) < exp(log.r))
-                    if (accept)
-                        combined <- updateValuesAccountMove(combined)
-                }
-            }
-        }
-        combined
-    }
-}
 
-updateProposalAccountMove <- function(combined, useC = FALSE) {
-    stopifnot(is(combined, "CombinedAccountMove"))
+         
+
+setMethod("updateCombined",
+          signature(object = "CombinedAccount"),
+          function(object, nUpdate = 1L, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## nUpdate
+              stopifnot(identical(length(nUpdate), 1L))
+              stopifnot(is.integer(nUpdate))
+              stopifnot(!is.na(nUpdate))
+              stopifnot(nUpdate >= 0L)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(updateCombined_CombinedAccount_R, object, nUpdate)
+                  else
+                      .Call(updateCombined_R, object, nUpdate)
+              }
+              else {
+                  for (i in seq_len(nUpdate)) {
+                      object <- updateAccount(object)
+                      object <- updateSystem(object)
+                      object <- updateObservationAccount(object)
+                  }
+                  object
+              }
+          })
+
+setMethod("updateAccount",
+          signature(object = "CombinedAccount"),
+          function(object, useC = FALSE) {
+              stopifnot(is(object, "CombinedAccount"))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(updateAccount_CombinedAccount_R, object)
+                  else
+                      .Call(updateAccount_R, object)
+              }
+              else {
+                  n.cell <- object@account@nCellAccount
+                  for (i in seq_len(n.cell)) {
+                      object <- updateProposalAccount(object)
+                      generated.new.proposal <- object@generatedNewProposal
+                      if (generated.new.proposal) {
+                          diff.log.lik <- diffLogLikAccount(object)
+                          if (is.finite(diff.log.lik)) {
+                              diff.log.dens <- diffLogDensAccount(object)
+                              log.r <- diff.log.lik + diff.log.dens
+                              accept <- (log.r > 0) || (runif(n = 1L) < exp(log.r))
+                              if (accept)
+                                  object <- updateValuesAccount(object)
+                          }
+                      }
+                  }
+                  object
+              }
+          })
+
+          
+setMethod("updateAccount",
+          signature(object = "CombinedAccountIter"),
+          function(object, useC = FALSE) {
+              stopifnot(is(object, "PredictIter"))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(updateAccount_PredictIter_R, object)
+                  else
+                      .Call(updateAccount_R, object)
+              }
+              else {
+                  n.cell <- object@account@nCellAccount
+                  for (i in seq_len(n.cell)) {
+                      object <- updateProposalAccount(object)
+                      generated.new.proposal <- object@generatedNewProposal
+                      if (generated.new.proposal) {
+                          log.r <- diffLogDensAccount(object)
+                          accept <- (log.r > 0) || (runif(n = 1L) < exp(log.r))
+                          if (accept)
+                              object <- updateValuesAccount(object)
+                      }
+                  }
+              }
+              object
+          })
+
+setMethod("updateProposalAccount",
+          
+          
+updateProposalAccountMove <- function(object, useC = FALSE) {
     if (useC) {
-        .Call(updateProposalAccountMove_R, combined)
+        .Call(updateProposalAccountMove_R, object)
     }
     else {
-        prob.popn <- combined@probPopn
+        account <- object@account
+        prob.popn <- account@probPopn
         update.popn <- runif(n = 1L) < prob.popn
         if (update.popn)
-            updateProposalAccountMovePopn(combined)
+            updateProposalAccountMovePopn(object)
         else {
-            cum.prob <- combined@cumProbComp
-            i.orig.dest <- combined@iOrigDest
-            i.pool <- combined@iPool
-            i.net <- combined@iNet
+            cum.prob <- object@cumProbComp
+            i.orig.dest <- object@iOrigDest
+            i.pool <- object@iPool
+            i.net <- object@iNet
             i.comp <- rcateg1(cum.prob)
-            combined@iComp <- i.comp
+            object@iComp <- i.comp
             if (i.comp == i.orig.dest)
-                updateProposalAccountMoveOrigDest(combined)
+                updateProposalAccountMoveOrigDest(object)
             else if (i.comp == i.pool)
-                updateProposalAccountMovePool(combined)
+                updateProposalAccountMovePool(object)
             else if (i.comp == i.net)
-                updateProposalAccountMoveNet(combined)
+                updateProposalAccountMoveNet(object)
             else
-                updateProposalAccountMoveComp(combined = combined)
+                updateProposalAccountMoveComp(object = object)
         }
     }
 }
@@ -2413,14 +2476,42 @@ rnormIntTrunc1 <- function(mean, sd, lower, upper, maxAttempt, useC = FALSE) {
 
 ## NEW CLASSES #################################################################
 
-setClass("System",
-         slots(system = "list"),
+
+
+setClass("SystemModelsMixin",
+         slots(systemModels = "list"),
          contains = "VIRTUAL",
          validity = function(object) {
-             system <- object@system
-             ## all elements of "system" have class "Poisson" - except for net
+             systemModels <- object@systemModels
+             ## all elements of "system" have class "Model"
+             if (!all(sapply(systemModels, methods::is, "Model")))
+                 return(gettextf("'%s' has elements not of class \"%s\"",
+                                 "systemModels", "model"))
              TRUE
          })
+
+setClass("ModelUsesExposureMixin",
+         slots = c(modelUsesExposure = "logical")
+         contains = "VIRTUAL",
+         validity = function(object) {
+             modelUsesExposure <- object@modelUsesExposure
+             systemModels <- object@systemModels
+             ## 'modelUsesExposure' has no missing values
+             if (any(is.na(modelUsesExposure)))
+                 return(gettextf("'%s' has missing values",
+                                 "modelUsesExposure"))
+             ## 'modelUsesExposure' has same length as 'systemModels'
+             if (!identical(length(modelUsesExposure), length(systemModels)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "modelUsesExposure", "systemModels"))
+             TRUE
+         })
+             
+
+setClass("System",
+         contains = c("VIRTUAL",
+                      "SystemModelsMixin",
+                      "ModelUsesExposureMixin"))
 
 
 setClass("MappingsToPopnMixin",
@@ -2491,7 +2582,7 @@ setClass("ICellMixin",
              TRUE
          })
 
-setClass("IsLowerTriangle",
+setClass("IsLowerTriangleMixin",
          slots(isLowerTriangle = "logical"),
          contains = "VIRTUAL",
          validity = function(object) {
@@ -2650,7 +2741,83 @@ setClass("IExpFirstMixin",
              TRUE
          })
 
-setClass("MovementsAccountInternal",
+
+
+setClass("AccessionMixin",
+         slot = c(accession = "Accession"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             accession <- object@accession
+             population <- object@population
+             .Data.acc <- accession@.Data
+             names.acc <- names(accession)
+             names.popn <- names(population)
+             dimtypes.acc <- dimtypes(accession, use.names = FALSE)
+             dimtypes.popn <- dimtypes(population, use.names = FALSE)
+             DimScales.acc <- DimScales(accession, use.names = FALSE)
+             DimScales.popn <- DimScales(population, use.names = FALSE)
+             ## 'accession' has no missing values
+             if (any(is.na(.Data.acc)))
+                 return(gettextf("'%s' has missing values",
+                                 "accession"))
+             ## 'accession' has no negative values
+             if (any(.Data.acc < 0L))
+                 return(gettextf("'%s' has negative values",
+                                 "accession"))
+             ## 'accession' has same names as 'population'
+             if (!identical(names.acc, names.popn))
+                 return(gettextf("'%s' and '%s' have different names",
+                                 "accession", "population"))
+             ## 'accession' has same dimtypes as 'population'
+             if (!identical(dimtypes.acc, dimtypes.popn))
+                 return(gettextf("'%s' and '%s' have different dimtypes",
+                                 "accession", "population"))
+             ## 'accession' has same DimScales as 'population',
+             ## except for "time" dimension, where have to have same dimvalues
+             for (i in seq_along(DimScales.acc)) {
+                 DS.acc <- DimScales.acc[[i]]
+                 DS.popn <- DimScales.popn[[i]]
+                 if (dimtypes.acc[i] == "time") {
+                     dv.acc <- DS.acc@dimvalues
+                     dv.popn <- DS.popn@dimvalues
+                     valid <- isTRUE(all.equal(dv.acc, dv.popn))
+                 }
+                 else
+                     valid <- isTRUE(all.equal(DS.acc, DS.popn))
+                 if (!valid)
+                     return(gettextf("'%s' and '%s' have inconsistent %s for dimension with %s \"%s\"",
+                                     "accession", "population", "dimscales", "dimtype", dimtype[i]))
+             }
+             TRUE
+         })
+
+
+setClass("ExposureMixin",
+         slot = c(exposure = "Exposure"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             exposure <- object@exposure
+             population <- object@exposure
+             ## 'exposure' object equals result of calling 'exposure' function
+             ## on 'population' with triangles = TRUE
+             exposure.calc <- dembase::exposure(population,
+                                                triangles = TRUE)
+             if (!isTRUE(all.equal(exposure, exposure.calc)))
+                 return(gettextf("'%s' and '%s' inconsistent",
+                                 "exposure", "population"))
+             TRUE
+         })
+
+         
+
+setClass("MovementsExtra",
+         contains = c("Movements",
+                      "AccessionMixin",
+                      "ExposureMixin",
+                      
+                      
+
+         
          slots(accession = "Accession",
                descriptionPopn = "DescriptionPopn",
                descriptionsComp = "list",
@@ -2705,36 +2872,48 @@ setClass("diffProp",
              TRUE
          })
 
-## NO_TESTS
-setMethod("updateCombined",
-          signature(object = "CombinedAccountMove"),
-          function(object, nUpdate = 1L, useC = FALSE, useSpecific = FALSE) {
-              ## object
-              stopifnot(validObject(object))
-              ## nUpdate
-              stopifnot(identical(length(nUpdate), 1L))
-              stopifnot(is.integer(nUpdate))
-              stopifnot(!is.na(nUpdate))
-              stopifnot(nUpdate >= 0L)
-              if (useC) {
-                  if (useSpecific)
-                      .Call(updateCombined_CombinedAccountMoveEst_R,
-                            object, nUpdate)
-                  else
-                      .Call(updateCombined_R, object, nUpdate)
-              }
-              else {
-                  for (i in seq_len(nUpdate)) {
-                      object <- updateAccountMove(object)
-                      object <- updateSystem(object)
-                      object <- updateObservation(object)
-                  }
-                  object
-              }
-          })
 
+setClass("CombinedAccount",
+         contains = c("VIRTUAL",
+                      "Combined",
+                      "Account"))
 
+setClass("CombinedAccountMovements",
+         contains = c("CombinedAccount",
+                      "SystemMovements"))
 
+setClass("CombinedAccountMovementsIter",
+         contains = c("CombinedAccount",
+                      "ThetasMovements"))
+
+setClass("CombinedAccountTransitions",
+         contains = c("CombinedAccount",
+                      "SystemTransitions"))
+
+setClass("CombinedAccountTransitionsIter",
+         contains = c("CombinedAccount",
+                      "ThetasTransitions"))
+
+setClass("AccountExtraMixin",
+         contains = c("VIRTUAL",
+                      "MappingsToPopnMixin",
+                      "MappingsToAccMixin",
+                      "ICellMixin",
+                      "IsLowerTriangleMixin",
+                      "IPopnNextMixin",
+                      "IAccNextMixin",
+                      "IExposureMixin",
+                      "IExpFirstMixin"))
+
+setClass("System",
+         
+         
+                      
+         
+         
+
+         setClass("MovementsExtra")
+                  
 ## ## NO_TESTS
 ## setClass("CombinedAccount",
 ##          slots(population = "Population",

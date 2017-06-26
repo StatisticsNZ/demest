@@ -152,12 +152,17 @@ setClass("CombinedModelPoissonHasExp",
 setClass("CombinedCounts",
          slots = c(model = "Model"),
          prototype = prototype(slotsToExtract = c("model", "y", "observation")),
-         contains = c("Combined", "YNonNegativeCounts", "Observation", "VIRTUAL"))
+         contains = c("VIRTUAL",
+                      "Combined",
+                      "YNonNegativeCounts",
+                      "Observation"))
 
 ## HAS_TESTS
 setClass("CombinedCountsPoissonNotHasExp",
          prototype = prototype(iMethodCombined = 6L),
-         contains = c("CombinedCounts", "CombinedPoisson", "NotHasExposure"))
+         contains = c("CombinedCounts",
+                      "CombinedPoisson",
+                      "NotHasExposure"))
 
 ## HAS_TESTS
 setClass("CombinedCountsPoissonHasExp",
@@ -175,5 +180,7 @@ setClass("CombinedCountsPoissonHasExp",
 ## HAS_TESTS
 setClass("CombinedCountsBinomial",
          prototype = prototype(iMethodCombined = 8L),
-         contains = c("CombinedCounts", "CombinedBinomial", "HasExposure"))
+         contains = c("CombinedCounts",
+                      "CombinedBinomial",
+                      "HasExposure"))
 

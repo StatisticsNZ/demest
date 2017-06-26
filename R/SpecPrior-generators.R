@@ -155,6 +155,12 @@ Components <- function(scale = HalfT()) {
 #' argument and that do do not serve as labels for the main effect or
 #' interaction are ignored.  Similarly, redundant rows are ignored.
 #'
+#' When modelling mortality rates with data that include the "infant"
+#' age group (ie age 0), it is good practice to include an indicator
+#' variable for this age group, since its mortality rates are much
+#' higher than subsequent age groups.  If \code{infant} is \code{TRUE},
+#' then an indicator is set up automatically.
+#' 
 #' Internally, covariates are standardized to have mean 0 and standard
 #' deviation 0.5, as described in Gelman et al (2014, Section 16.3).
 #' Coefficients for the standardized covariates are assumed to be drawn
@@ -175,6 +181,8 @@ Components <- function(scale = HalfT()) {
 #' 
 #' @param formula A \code{\link[stats]{formula}} with response \code{mean}.
 #' @param data A data.frame containing covariate data.
+#' @param infant Logical. Whether to add an 'infant' indicator to the
+#' covariates specified by \code{formula}. Defaults to \code{FALSE}.
 #' @param contrastsArg A named list, the elements which are matrices
 #'     or names of contrasts functions.
 #' @param intercept An object of class \code{\linkS4class{Norm}}.
@@ -219,6 +227,9 @@ Components <- function(scale = HalfT()) {
 #'                           weight = c(78, 94, 83, 84, 62, 75))
 #' Covariates(mean ~ weight,
 #'            data = agesex.data)
+#'
+#' ## 'infant' indicator
+#' Covariates(infant = TRUE)
 #' @export 
 Covariates <- function(formula, data, contrastsArg = list(),
                        intercept = Norm(),
