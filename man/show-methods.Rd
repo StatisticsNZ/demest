@@ -16,11 +16,13 @@
 \alias{show,SpecLikelihoodNormalVarsigmaUnknown-method}
 \alias{show,SpecLikelihoodPoisson-method}
 \alias{show,SpecLikelihoodPoissonBinomialMixture-method}
+\alias{show,SpecLikelihoodNormalFixed-method}
 \alias{show,SpecBinomialVarying-method}
 \alias{show,SpecNormalVaryingVarsigmaKnown-method}
 \alias{show,SpecNormalVaryingVarsigmaUnknown-method}
 \alias{show,SpecPoissonVarying-method}
 \alias{show,SpecPoissonBinomialMixture-method}
+\alias{show,SpecNormalFixed-method}
 \alias{show,Components-method}
 \alias{show,Covariates-method}
 \alias{show,Error-method}
@@ -62,6 +64,8 @@
 
 \S4method{show}{SpecLikelihoodPoissonBinomialMixture}(object)
 
+\S4method{show}{SpecLikelihoodNormalFixed}(object)
+
 \S4method{show}{SpecBinomialVarying}(object)
 
 \S4method{show}{SpecNormalVaryingVarsigmaKnown}(object)
@@ -71,6 +75,8 @@
 \S4method{show}{SpecPoissonVarying}(object)
 
 \S4method{show}{SpecPoissonBinomialMixture}(object)
+
+\S4method{show}{SpecNormalFixed}(object)
 
 \S4method{show}{Components}(object)
 

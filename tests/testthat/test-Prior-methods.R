@@ -4882,6 +4882,9 @@ test_that("whereEstimated works", {
                        "coefAR",
                        "scale2AR",
                        "scaleError"))
+    x <- new("Zero")
+    expect_identical(whereEstimated(x),
+                     character())
 })
 
 

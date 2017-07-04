@@ -15,6 +15,7 @@ setClass("CovariatesMixin",
              "ContrastsArgMixin",
              "EtaMixin",
              "FormulaMixin",
+             "InfantMixin",
              "NuEtaCoefMixin",
              "PMixin",
              "UEtaCoefMixin",
@@ -97,18 +98,34 @@ setClass("SpecPhiUnknown",
 
 setClass("SpecRobustMixin",
          contains = c("VIRTUAL",
-             "NuBetaMixin",
-             "SpecObsMixin"))
+                      "NuBetaMixin",
+                      "SpecObsMixin"))
 
 setClass("SpecCovariatesMixin",
          contains = c("VIRTUAL",
-             "ContrastsArgMixin",
-             "DataMixin",
-             "FormulaMixin",
-             "MultEtaCoefMixin",
-             "NuEtaCoefMixin",
-             "SpecAEtaCoefMixin",
-             "SpecAEtaInterceptMixin"))
+                      "ContrastsArgMixin",
+                      "DataMixin",
+                      "FormulaMixin",
+                      "InfantMixin",
+                      "MultEtaCoefMixin",
+                      "NuEtaCoefMixin",
+                      "SpecAEtaCoefMixin",
+                      "SpecAEtaInterceptMixin"),
+         validity = function(object) {
+             data <- object@data
+             formula <- object@formula
+             ## 'data' has length 0 iff 'formula' has length 0
+             data.length.0 <- length(data) == 0L
+             formula.length.0 <- length(formula) == 0L
+             if (data.length.0 && !formula.length.0)
+                 return(gettextf("'%s' has length %d but '%s' does not",
+                                 "data", "formula"))
+             if (formula.length.0 && !data.length.0)
+                 return(gettextf("'%s' has length %d but '%s' does not",
+                                 "formula", "data"))
+             TRUE
+         })
+                 
 
 ## NOT FINISHED!!!!!!!!!!!!!!
 setClass("SpecMoveMixin",

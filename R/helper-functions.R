@@ -181,6 +181,49 @@ maxWithSubtotal <- function(x, max, subtotal) {
 
 ## SPECIFICATIONS ##################################################################
 
+## HAS_TESTS
+addInfantToData <- function(metadata, data) {
+    names <- names(metadata)
+    dimtypes <- dimtypes(metadata,
+                         use.names = FALSE)
+    DimScales <- DimScales(metadata,
+                           use.names = FALSE)
+    namePrior <- paste(names, collapse = ":")
+    is.age.main.effect <- identical(dimtypes, "age")
+    if (!is.age.main.effect)
+        stop(gettextf("cannot add \"%s\" covariate to prior '%s' because '%s' is not a main effect for age",
+                      "infant", namePrior, namePrior))
+    DimScale <- DimScales[[1L]]
+    labels <- labels(DimScale)
+    n.age <- length(DimScale)
+    if (!methods::is(DimScale, "Intervals"))
+        stop(gettextf("cannot make \"%s\" covariate, because dimension with %s \"%s\" has %s \"%s\"",
+                      "infant", "dimtype", "age", "dimscale", class(DimScale)))
+    if (n.age < 2L)
+        stop(gettextf("cannot make \"%s\" covariate, because dimension with %s \"%s\" has length %d",
+                      "infant", "dimtype", "age", n.age))
+    dimvalues <- DimScale@dimvalues
+    if (!isTRUE(all.equal(dimvalues[1:2], 0:1)))
+        stop(gettextf("can't make '%s' indicator variable, because first age group for dimension with %s \"%s\" is not \"%d\"",
+                      "infant", "dimtype", "age", 0L))
+    infant <- c(1L, rep(0L, times = n.age - 1L))
+    name.age <- names
+    if (length(data) == 0L) {
+        data <- data.frame(labels, infant)
+        names(data) <- c(name.age, "infant")
+    }
+    else {
+        i.name.age <- match(name.age, names(data), nomatch = 0L)
+        has.name.age <- i.name.age > 0L
+        if (!has.name.age)
+            stop(gettextf("could not find variable '%s' in covariate data for prior '%s'",
+                          name.age, namePrior))
+        name.infant <- make.unique(c(names(data), "infant"))[length(data) + 1L]
+        data[[name.infant]] <- infant[match(data[[i.name.age]], labels)]
+    }
+    data
+}
+
 ## NO_TESTS
 checkAndTidyIndexClassMaxMix <- function(maxComponents) {
     checkPositiveInteger(x = maxComponents,
@@ -350,32 +393,50 @@ hasResponse <- function(formula)
 
 ## NO_TESTS
 checkCovariateData <- function(x, name) {
-    ## Do not check for variables or NAs
-    ## to avoid raising errors for variables
-    ## or records that are not subsequently
-    ## used.  Check within initialPrior
-    ## instead.
-    if (!is.data.frame(x))
-        stop(gettextf("'%s' has class \"%s\"",
-                      name, class(x)))
+    if (!is.null(x)) {
+        ## Do not check for variables or NAs
+        ## to avoid raising errors for variables
+        ## or records that are not subsequently
+        ## used.  Check within initialPrior
+        ## instead.
+        if (!is.data.frame(x))
+            stop(gettextf("'%s' has class \"%s\"",
+                          name, class(x)))
+    }
     NULL
 }
 
-## HAS_TESTS
+## NO_TESTS
 checkCovariateFormula <- function(formula) {
-    if (!hasResponse(formula))
-        stop(gettextf("formula '%s' does not include a response",
-                      deparse(formula)))
-    if (!identical(deparse(formula[[2L]]), "mean"))
-        stop(gettextf("response in formula '%s' is not '%s'",
-                      deparse(formula), "mean"))
-    has.intercept <- identical(attr(stats::terms(formula), "intercept"), 1L)
-    if (!has.intercept)
-        stop(gettextf("formula '%s' does not include an intercept",
-                      deparse(formula)))
-    if (identical(length(attr(stats::terms(formula), "term.labels")), 0L))
-        stop(gettextf("formula '%s' does not include any predictors (other than the intercept)",
-                      deparse(formula)))
+    if (!is.null(formula)) {
+        if (!hasResponse(formula))
+            stop(gettextf("formula '%s' does not include a response",
+                          deparse(formula)))
+        if (!identical(deparse(formula[[2L]]), "mean"))
+            stop(gettextf("response in formula '%s' is not '%s'",
+                          deparse(formula), "mean"))
+        has.intercept <- identical(attr(stats::terms(formula), "intercept"), 1L)
+        if (!has.intercept)
+            stop(gettextf("formula '%s' does not include an intercept",
+                          deparse(formula)))
+        if (identical(length(attr(stats::terms(formula), "term.labels")), 0L))
+            stop(gettextf("formula '%s' does not include any predictors (other than the intercept)",
+                          deparse(formula)))
+    }
+    NULL
+}
+
+## NO_TESTS
+checkInfant <- function(infant) {
+    if (!is.logical(infant))
+        stop(gettextf("'%s' does not have type \"%s\"",
+                      "infant", "logical"))
+    if (!identical(length(infant), 1L))
+        stop(gettextf("'%s' does not have length %d",
+                      "infant", 1L))
+    if (is.na(infant))
+        stop(gettextf("'%s' is missing",
+                      "infant"))
     NULL
 }
 
@@ -395,15 +456,17 @@ checkLogical <- function(x, name) {
 
 ## NO_TESTS
 checkModelMatrix <- function(formula, data, contrastsArg) {
-    formula.no.response <- formula[-2L]
-    contrasts.arg <- if (identical(contrastsArg, list())) NULL else contrastsArg
-    return.value <- tryCatch(stats::model.matrix(object = formula.no.response,
-                                                 data = data,
-                                                 contrasts.arg = contrasts.arg),
-                             error = function(e) e)
-    if (methods::is(return.value, "error"))
-        stop(gettextf("problem constructing model matrix from formula '%s' : %s",
-                      deparse(formula), return.value$message))
+    if (!is.null(formula)) {
+        formula.no.response <- formula[-2L]
+        contrasts.arg <- if (identical(contrastsArg, list())) NULL else contrastsArg
+        return.value <- tryCatch(stats::model.matrix(object = formula.no.response,
+                                                     data = data,
+                                                     contrasts.arg = contrasts.arg),
+                                 error = function(e) e)
+        if (methods::is(return.value, "error"))
+            stop(gettextf("problem constructing model matrix from formula '%s' : %s",
+                          deparse(formula), return.value$message))
+    }
     NULL
 }
 
@@ -669,6 +732,7 @@ initialCov <- function(object, beta, metadata, sY) {
     contrastsArg <- object@contrastsArg
     data <- object@data
     formula <- object@formula
+    infant <- object@infant
     multEtaCoef <- object@multEtaCoef
     nuEtaCoef <- object@nuEtaCoef
     AEtaCoef <- makeAHalfT(A = AEtaCoef,
@@ -679,7 +743,8 @@ initialCov <- function(object, beta, metadata, sY) {
     Z <- makeZ(formula = formula[-2L],
                data = data,
                metadata = metadata,
-               contrastsArg = contrastsArg)
+               contrastsArg = contrastsArg,
+               infant = infant)
     P <- makeP(Z)
     UEtaCoef <- makeU(nu = nuEtaCoef, A = AEtaCoef, n = P - 1L)
     eta <- makeEta(beta = beta, UEtaCoef = UEtaCoef)
@@ -688,6 +753,7 @@ initialCov <- function(object, beta, metadata, sY) {
          contrastsArg = contrastsArg,
          eta = eta,
          formula = formula,
+         infant = infant,
          nuEtaCoef = nuEtaCoef,
          P = P,
          UEtaCoef = UEtaCoef,
@@ -698,10 +764,12 @@ initialCov <- function(object, beta, metadata, sY) {
 initialCovPredict <- function(prior, data, metadata) {
     formula <- prior@formula
     contrastsArg <- prior@contrastsArg
+    infant <- prior@infant
     Z <- makeZ(formula = formula[-2L],
                data = data,
                metadata = metadata,
-               contrastsArg = contrastsArg)
+               contrastsArg = contrastsArg,
+               infant = infant)
     list(Z = Z)
 }
 
@@ -2034,8 +2102,22 @@ makeUR <- function(K) {
     methods::new("FFBSList", ans)
 }
 
-makeZ <- function(formula, data, metadata, contrastsArg) {
+
+makeZ <- function(formula, data, metadata, contrastsArg, infant) {
     namePrior <- paste(names(metadata), collapse = ":")
+    ## infant
+    if (infant@.Data) {
+        data <- addInfantToData(metadata = metadata,
+                                data = data)
+        if (length(formula) == 0L)
+            formula <- ~ infant
+        else {
+            name.infant <- names(data)[length(data)]
+            formula <- deparse(formula)
+            formula <- paste(formula, name.infant, sep = " + ")
+            formula <- as.formula(formula)
+        }
+    }
     ## make required response
     dimnames <- dimnames(metadata)
     response.required <- expand.grid(dimnames)
@@ -6991,9 +7073,9 @@ printBinomialSpecEqns <- function(object) {
 }
 
 printCovariatesEqns <- function(object) {
-    AEtaIntercept <- object@AEtaIntercept
-    AEtaCoef <- object@AEtaCoef
-    nuEtaCoef <- object@nuEtaCoef
+    AEtaIntercept <- object@AEtaIntercept@.Data
+    AEtaCoef <- object@AEtaCoef@.Data
+    nuEtaCoef <- object@nuEtaCoef@.Data
     cat("    covariate[j] ~ (Intercept) + data[j,] * coef\n")
     cat("     (Intercept) ~ N(0, ", squaredOrNA(AEtaIntercept), ")\n", sep = "")
     cat("         coef[p] ~ t(", nuEtaCoef, ", 0, ", squaredOrNA(AEtaCoef), ")\n",
@@ -7001,9 +7083,9 @@ printCovariatesEqns <- function(object) {
 }
 
 printCovariatesDLMEqns <- function(object, isMain) {
-    AEtaIntercept <- object@AEtaIntercept
-    AEtaCoef <- object@AEtaCoef
-    nuEtaCoef <- object@nuEtaCoef
+    AEtaIntercept <- object@AEtaIntercept@.Data
+    AEtaCoef <- object@AEtaCoef@.Data
+    nuEtaCoef <- object@nuEtaCoef@.Data
     if (isMain)
         cat("    covariate[j] ~ (Intercept) + data[j,] * coef\n")
     else
@@ -7056,7 +7138,7 @@ printDLMEqns <- function(object, name, order, hasTrend, hasSeason, hasCovariates
 
 printErrorDLMEqns <- function(object, isMain) {
     nuTau <- object@nuTau
-    A <- object@ATau
+    A <- object@ATau@.Data
     max <- object@tauMax
     is.robust <- methods::is(object, "SpecRobustMixin")
     if (is.robust) {
@@ -7078,7 +7160,7 @@ printErrorDLMEqns <- function(object, isMain) {
 
 printErrorEqns <- function(object) {
     nuTau <- object@nuTau
-    A <- object@ATau
+    A <- object@ATau@.Data
     max <- object@tauMax
     is.robust <- methods::is(object, "SpecRobustMixin")
     if (is.robust) {
@@ -7155,7 +7237,7 @@ printKnownEqns <- function(object, name) {
 }
 
 printLevelTrendEqns <- function(object, isMain, hasTrend) {
-    AAlpha <- object@AAlpha
+    AAlpha <- object@AAlpha@.Data
     omegaAlphaMax <- object@omegaAlphaMax
     nuAlpha <- object@nuAlpha
     phi <- object@phi
@@ -7365,9 +7447,9 @@ printNormalVarsigmaKnownLikEqns <- function(object) {
 
 printNormalVarsigmaUnknownLikEqns <- function(object) {
     formulaMu <- object@formulaMu
-    nu <- object@nuVarsigma
-    A <- object@AVarsigma
-    max <- object@varsigmaMax
+    nu <- object@nuVarsigma@.Data
+    A <- object@AVarsigma@.Data
+    max <- object@varsigmaMax@.Data
     terms <- expandTermsSpec(formulaMu)
     cat("            y[i] ~ N(mean[i], sdData^2 / weights[i])\n", sep = "")
     cat("         mean[i] ~ N(", terms, ", sd^2)\n", sep = "")
@@ -7413,9 +7495,9 @@ printNormalVarsigmaUnknownModEqns <- function(object) {
     lower <- object@lower
     upper <- object@upper
     names <- object@namesBetas
-    nu <- object@nuVarsigma
-    A <- object@AVarsigma
-    max <- object@varsigmaMax
+    nu <- object@nuVarsigma@.Data
+    A <- object@AVarsigma@.Data
+    max <- object@varsigmaMax@.Data
     series <- call$series
     has.series <- !is.null(series)
     name.y <- deparse(call$formula[[2L]])
@@ -7432,9 +7514,9 @@ printNormalVarsigmaUnknownModEqns <- function(object) {
 
 printNormalVarsigmaUnknownSpecEqns <- function(object) {
     formulaMu <- object@formulaMu
-    nu <- object@nuVarsigma
-    A <- object@AVarsigma
-    max <- object@varsigmaMax
+    nu <- object@nuVarsigma@.Data
+    A <- object@AVarsigma@.Data
+    max <- object@varsigmaMax@.Data
     nameY <- object@nameY
     lower <- object@lower
     upper <- object@upper
@@ -7594,18 +7676,18 @@ printSDAg <- function(object) {
 }
 
 printSDEqns <- function(object) {
-    nu <- object@nuSigma
-    A <- object@ASigma
-    max <- object@sigmaMax
+    nu <- object@nuSigma@.Data
+    A <- object@ASigma@.Data
+    max <- object@sigmaMax@.Data
     cat("              sd ~ trunc-half-t(", nu, ", ", sep = "")
     cat(squaredOrNA(A), ", ", format(max, digits = 4), ")\n", sep = "")
 }
 
 printSeasonEqns <- function(object, isMain) {
-    n <- object@nSeason
-    nu <- object@nuSeason
-    A <- object@ASeason
-    max <- object@omegaSeasonMax
+    n <- object@nSeason@.Data
+    nu <- object@nuSeason@.Data
+    A <- object@ASeason@.Data
+    max <- object@omegaSeasonMax@.Data
     if (isMain) {
         cat("       season[j] ~ season[j-", n, "] + errorSeason[j]\n", sep = "")
         cat("  errorSeason[j] ~ N(0, scaleSeason^2)\n")

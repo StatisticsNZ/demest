@@ -435,9 +435,12 @@ setMethod("show",
           function(object) {
               cat("An object of class \"", class(object), "\"\n\n", sep = "")
               contrastsArg <- object@contrastsArg
+              formula <- object@formula
               data <- object@data
-              cat("formula:\n")
-              cat(deparse(object@formula), "\n\n", sep = "")
+              if (length(formula) > 0L) {
+                  cat("formula:\n")
+                  cat(deparse(object@formula), "\n\n", sep = "")
+              }
               cat("priors:\n")
               printCovariatesEqns(object)
               if (length(contrastsArg) > 0L) {
@@ -446,8 +449,10 @@ setMethod("show",
               }
               else
                   cat("\n")
-              cat("data:\n")
-              print(data)
+              if (length(data) > 0L) {
+                  cat("data:\n")
+                  print(data)
+              }
           })    
 
 #' @rdname show-methods

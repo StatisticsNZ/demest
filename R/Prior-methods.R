@@ -1444,6 +1444,13 @@ setMethod("printPriorEqns",
                            name))
           })
 
+setMethod("printPriorEqns",
+          signature(object = "Zero"),
+          function(object, name = NULL, order = 1L) {
+              printZeroEqns(name)
+          })
+
+
 
 ## printPriorIntercept ###############################################################
 
@@ -2718,4 +2725,11 @@ setMethod("whereEstimated",
                 "coefAR",
                 "scale2AR",
                 "scaleError")
+          })
+
+## HAS_TESTS
+setMethod("whereEstimated",
+          signature(object = "Zero"),
+          function(object) {
+              character()
           })

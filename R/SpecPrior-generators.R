@@ -160,6 +160,11 @@ Components <- function(scale = HalfT()) {
 #' variable for this age group, since its mortality rates are much
 #' higher than subsequent age groups.  If \code{infant} is \code{TRUE},
 #' then an indicator is set up automatically.
+#'
+#' \code{infant = TRUE} can only be used when specifying the prior
+#' for a main effect for age.  If \code{infant} is \code{TRUE},
+#' then \code{formula} and \code{data} can also be supplied,
+#' but do not have to be.
 #' 
 #' Internally, covariates are standardized to have mean 0 and standard
 #' deviation 0.5, as described in Gelman et al (2014, Section 16.3).
@@ -231,14 +236,28 @@ Components <- function(scale = HalfT()) {
 #' ## 'infant' indicator
 #' Covariates(infant = TRUE)
 #' @export 
-Covariates <- function(formula, data, contrastsArg = list(),
-                       intercept = Norm(),
+Covariates <- function(formula = NULL, data = NULL, infant = FALSE,
+                       contrastsArg = list(), intercept = Norm(),
                        coef = HalfT()) {
     checkCovariateFormula(formula)
     checkCovariateData(x = data, name = "data")
     checkModelMatrix(formula = formula,
                      data = data,
                      contrastsArg = contrastsArg)
+    checkInfant(infant)
+    if (is.null(formula) & !is.null(data))
+        stop(gettextf("'%s' supplied but '%s' not supplied",
+                      "data", "formula"))
+    if (!is.null(formula) && is.null(data))
+        stop(gettextf("'%s' supplied but '%s' not supplied",
+                      "formula", "data"))
+    if (is.null(formula) && is.null(data)) {
+        if (!infant)
+            stop(gettextf("'%s' and '%s' not supplied, and '%s' is %s",
+                          "formula", "data", "infant", "FALSE"))
+        data <- new("data.frame")
+        formula <- new("formula")
+    }
     if (!methods::is(intercept, "Norm"))
         stop(gettextf("'%s' has class \"%s\"",
                       "intercept", class(intercept)))
@@ -249,12 +268,14 @@ Covariates <- function(formula, data, contrastsArg = list(),
     AEtaCoef <- coef@A
     multEtaCoef <- coef@mult
     nuEtaCoef <- coef@nu
+    infant <- new("LogicalFlag", infant)
     methods::new("Covariates",
                  AEtaCoef = AEtaCoef,
                  AEtaIntercept = AEtaIntercept,
                  contrastsArg = contrastsArg,
                  data = data,
                  formula = formula,
+                 infant = infant,
                  multEtaCoef = multEtaCoef,
                  nuEtaCoef = nuEtaCoef)
 }
@@ -621,6 +642,7 @@ DLM <- function(along = NULL, level = Level(), trend = Trend(),
         contrastsArg <- covariates@contrastsArg
         data <- covariates@data
         formula <- covariates@formula
+        infant <- covariates@infant
         multEtaCoef <- covariates@multEtaCoef
         nuEtaCoef <- covariates@nuEtaCoef
     }
@@ -749,6 +771,7 @@ DLM <- function(along = NULL, level = Level(), trend = Trend(),
                      contrastsArg = contrastsArg,
                      data = data,
                      formula = formula,
+                     infant = infant,
                      multAlpha = multAlpha,
                      multEtaCoef = multEtaCoef,
                      multTau = multTau,
@@ -776,6 +799,7 @@ DLM <- function(along = NULL, level = Level(), trend = Trend(),
                      contrastsArg = contrastsArg,
                      data = data,
                      formula = formula,
+                     infant = infant,
                      minPhi = minPhi,
                      maxPhi = maxPhi,
                      meanDelta0 = meanDelta0,
@@ -807,6 +831,7 @@ DLM <- function(along = NULL, level = Level(), trend = Trend(),
                      contrastsArg = contrastsArg,
                      data = data,
                      formula = formula,
+                     infant = infant,
                      minPhi = minPhi,
                      maxPhi = maxPhi,
                      multAlpha = multAlpha,
@@ -839,6 +864,7 @@ DLM <- function(along = NULL, level = Level(), trend = Trend(),
                      contrastsArg = contrastsArg,
                      data = data,
                      formula = formula,
+                     infant = infant,
                      minPhi = minPhi,
                      maxPhi = maxPhi,
                      meanDelta0 = meanDelta0,
@@ -973,6 +999,7 @@ DLM <- function(along = NULL, level = Level(), trend = Trend(),
                      contrastsArg = contrastsArg,
                      data = data,
                      formula = formula,
+                     infant = infant,
                      minPhi = minPhi,
                      maxPhi = maxPhi,
                      multAlpha = multAlpha,
@@ -1001,6 +1028,7 @@ DLM <- function(along = NULL, level = Level(), trend = Trend(),
                      contrastsArg = contrastsArg,
                      data = data,
                      formula = formula,
+                     infant = infant,
                      minPhi = minPhi,
                      maxPhi = maxPhi,
                      meanDelta0 = meanDelta0,
@@ -1033,6 +1061,7 @@ DLM <- function(along = NULL, level = Level(), trend = Trend(),
                      contrastsArg = contrastsArg,
                      data = data,
                      formula = formula,
+                     infant = infant,
                      minPhi = minPhi,
                      maxPhi = maxPhi,
                      multAlpha = multAlpha,
@@ -1066,6 +1095,7 @@ DLM <- function(along = NULL, level = Level(), trend = Trend(),
                      contrastsArg = contrastsArg,
                      data = data,
                      formula = formula,
+                     infant = infant,
                      minPhi = minPhi,
                      maxPhi = maxPhi,
                      meanDelta0 = meanDelta0,
@@ -1213,6 +1243,7 @@ Exch <- function(covariates = NULL, error = Error()) {
         contrastsArg <- covariates@contrastsArg
         data <- covariates@data
         formula <- covariates@formula
+        infant <- covariates@infant
         multEtaCoef <- covariates@multEtaCoef
         nuEtaCoef <- covariates@nuEtaCoef
     }
@@ -1251,6 +1282,7 @@ Exch <- function(covariates = NULL, error = Error()) {
                      contrastsArg = contrastsArg,
                      data = data,
                      formula = formula,
+                     infant = infant,
                      multEtaCoef = multEtaCoef,
                      multTau = multTau,
                      nuEtaCoef = nuEtaCoef,
@@ -1265,6 +1297,7 @@ Exch <- function(covariates = NULL, error = Error()) {
                      contrastsArg = contrastsArg,
                      data = data,
                      formula = formula,
+                     infant = infant,
                      multEtaCoef = multEtaCoef,
                      multTau = multTau,
                      nuBeta = nuBeta,
@@ -1714,6 +1747,7 @@ Mix <- function(along = NULL,
         contrastsArg <- covariates@contrastsArg
         data <- covariates@data
         formula <- covariates@formula
+        infant <- covariates@infant
         multEtaCoef <- covariates@multEtaCoef
         nuEtaCoef <- covariates@nuEtaCoef
     }
@@ -1779,6 +1813,7 @@ Move <- function(classes, covariates = NULL, error = Error()) {
         contrastsArg <- covariates@contrastsArg
         data <- covariates@data
         formula <- covariates@formula
+        infant <- covariates@infant
         multEtaCoef <- covariates@multEtaCoef
         nuEtaCoef <- covariates@nuEtaCoef
     }
@@ -1825,6 +1860,7 @@ Move <- function(classes, covariates = NULL, error = Error()) {
                      contrastsArg = contrastsArg,
                      data = data,
                      formula = formula,
+                     infant = infant,
                      multEtaCoef = multEtaCoef,
                      multMove = multMove,
                      multTau = multTau,
@@ -1842,6 +1878,7 @@ Move <- function(classes, covariates = NULL, error = Error()) {
                      contrastsArg = contrastsArg,
                      data = data,
                      formula = formula,
+                     infant = infant,
                      multEtaCoef = multEtaCoef,
                      multMove = multMove,
                      multTau = multTau,

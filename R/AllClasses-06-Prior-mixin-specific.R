@@ -339,18 +339,20 @@ setClass("DataMixin",
          contains = "VIRTUAL",
          validity = function(object) {
              data <- object@data
-             ## 'data' has no missing values
-             if (any(is.na(data)))
-                 return(gettextf("'%s' has missing values",
-                                 "data"))
-             ## 'data' has at least 2 rows
-             if (nrow(data) < 2L)
-                 return(gettextf("'%s' has fewer than 2 rows",
-                                 "data"))
-             ## 'data' has at least 1 column
-             if (ncol(data) < 1L)
-                 return(gettextf("'%s' has 0 columns",
-                                 "data"))
+             if (length(data) > 0L) {
+                 ## 'data' has no missing values
+                 if (any(is.na(data)))
+                     return(gettextf("'%s' has missing values",
+                                     "data"))
+                 ## 'data' has at least 2 rows
+                 if (nrow(data) < 2L)
+                     return(gettextf("'%s' has fewer than 2 rows",
+                                     "data"))
+                 ## 'data' has at least 1 column
+                 if (ncol(data) < 1L)
+                     return(gettextf("'%s' has 0 columns",
+                                     "data"))
+             }
              TRUE
          })
 
@@ -418,23 +420,25 @@ setClass("FormulaMixin",
          contains = "VIRTUAL",
          validity = function(object) {
              formula <- object@formula
-             ## 'formula' includes a response
-             if (!hasResponse(formula))
-                 return(gettextf("formula '%s' does not include a response",
-                                 deparse(formula)))
-             ## response in 'formula' is "mean"
-             if (!identical(deparse(formula[[2L]]), "mean"))
-                 return(gettextf("response in formula '%s' is not '%s'",
-                                 deparse(formula), "mean"))
-             ## 'formula' has intercept
-             has.intercept <- identical(attr(stats::terms(formula), "intercept"), 1L)
-             if (!has.intercept)
-                 return(gettextf("formula '%s' does not include an intercept",
-                                 deparse(formula)))
-             ## 'formula' has at least one predictor, other than intercept
-             if (identical(length(attr(stats::terms(formula), "term.labels")), 0L))
-                 return(gettextf("formula '%s' does not include any predictors (other than the intercept)",
-                                 deparse(formula)))
+             if (length(formula) > 0L) {
+                 ## 'formula' includes a response
+                 if (!hasResponse(formula))
+                     return(gettextf("formula '%s' does not include a response",
+                                     deparse(formula)))
+                 ## response in 'formula' is "mean"
+                 if (!identical(deparse(formula[[2L]]), "mean"))
+                     return(gettextf("response in formula '%s' is not '%s'",
+                                     deparse(formula), "mean"))
+                 ## 'formula' has intercept
+                 has.intercept <- identical(attr(stats::terms(formula), "intercept"), 1L)
+                 if (!has.intercept)
+                     return(gettextf("formula '%s' does not include an intercept",
+                                     deparse(formula)))
+                 ## 'formula' has at least one predictor, other than intercept
+                 if (identical(length(attr(stats::terms(formula), "term.labels")), 0L))
+                     return(gettextf("formula '%s' does not include any predictors (other than the intercept)",
+                                     deparse(formula)))
+             }
              TRUE
          })
 
@@ -621,6 +625,10 @@ setClass("IndexClassProbMixMixin",
                                  "indexClassProbMix"))
              TRUE
          })
+
+setClass("InfantMixin",
+         slots = c(infant = "LogicalFlag"),
+         contains = "VIRTUAL")
 
 setClass("IsRobustMixin",
          slots = c(isRobust = "LogicalFlag"),

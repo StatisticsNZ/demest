@@ -4,13 +4,16 @@
 \alias{Covariates}
 \title{Specify covariates in a prior for a main effect or interaction.}
 \usage{
-Covariates(formula, data, contrastsArg = list(), intercept = Norm(),
-  coef = HalfT())
+Covariates(formula = NULL, data = NULL, infant = FALSE,
+  contrastsArg = list(), intercept = Norm(), coef = HalfT())
 }
 \arguments{
 \item{formula}{A \code{\link[stats]{formula}} with response \code{mean}.}
 
 \item{data}{A data.frame containing covariate data.}
+
+\item{infant}{Logical. Whether to add an 'infant' indicator to the
+covariates specified by \code{formula}. Defaults to \code{FALSE}.}
 
 \item{contrastsArg}{A named list, the elements which are matrices
 or names of contrasts functions.}
@@ -69,6 +72,17 @@ Any columns in \code{data} that are not referred to by the \code{formula}
 argument and that do do not serve as labels for the main effect or
 interaction are ignored.  Similarly, redundant rows are ignored.
 
+When modelling mortality rates with data that include the "infant"
+age group (ie age 0), it is good practice to include an indicator
+variable for this age group, since its mortality rates are much
+higher than subsequent age groups.  If \code{infant} is \code{TRUE},
+then an indicator is set up automatically.
+
+\code{infant = TRUE} can only be used when specifying the prior
+for a main effect for age.  If \code{infant} is \code{TRUE},
+then \code{formula} and \code{data} can also be supplied,
+but do not have to be.
+
 Internally, covariates are standardized to have mean 0 and standard
 deviation 0.5, as described in Gelman et al (2014, Section 16.3).
 Coefficients for the standardized covariates are assumed to be drawn
@@ -115,6 +129,9 @@ agesex.data <- data.frame(age = rep(c("0-14", "15-29", "30+"),
                           weight = c(78, 94, 83, 84, 62, 75))
 Covariates(mean ~ weight,
            data = agesex.data)
+
+## 'infant' indicator
+Covariates(infant = TRUE)
 }
 \references{
 Gelman, A., Carlin, J.B., Stern, H.S. and Rubin, D.B., 2014.

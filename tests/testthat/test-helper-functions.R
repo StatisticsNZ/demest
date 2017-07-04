@@ -214,6 +214,94 @@ test_that("maxWithSubtotal works", {
 
 ## SPECIFICATIONS ##################################################################
 
+test_that("addInfantToData works", {
+    addInfantToData <- demest:::addInfantToData
+    ## 'data' blank
+    metadata <- new("MetaData",
+                    nms = "age",
+                    dimtypes = "age",
+                    DimScales = list(new("Intervals", dimvalues = c(0, 1, 5, 10, Inf))))
+    data <- new("data.frame")
+    ans.obtained <- addInfantToData(metadata = metadata,
+                                    data = data)
+    ans.expected <- data.frame(age = c("0", "1-4", "5-9", "10+"),
+                               infant = c(1L, 0L, 0L, 0L))
+    expect_identical(ans.obtained, ans.expected)
+    ## 'data' has values
+    metadata <- new("MetaData",
+                    nms = "age",
+                    dimtypes = "age",
+                    DimScales = list(new("Intervals", dimvalues = c(0, 1, 5, 10, Inf))))
+    data <- data.frame(income = 1:4,
+                       age = c("0", "1-4", "5-9", "10+"))
+    ans.obtained <- addInfantToData(metadata = metadata,
+                                    data = data)
+    ans.expected <- data.frame(income = 1:4,
+                               age = c("0", "1-4", "5-9", "10+"),
+                               infant = c(1L, 0L, 0L, 0L))
+    expect_identical(ans.obtained, ans.expected)
+    ## 'data' includes 'infant' column
+    metadata <- new("MetaData",
+                    nms = "age",
+                    dimtypes = "age",
+                    DimScales = list(new("Intervals", dimvalues = c(0, 1, 5, 10, Inf))))
+    data <- data.frame(income = 1:4,
+                       age = c("0", "1-4", "5-9", "10+"),
+                       infant = 4:1)
+    ans.obtained <- addInfantToData(metadata = metadata,
+                                    data = data)
+    ans.expected <- data.frame(income = 1:4,
+                               age = c("0", "1-4", "5-9", "10+"),
+                               infant = 4:1,
+                               infant.1 = c(1L, 0L, 0L, 0L))
+    expect_identical(ans.obtained, ans.expected)
+})
+
+
+test_that("addInfantToData throws appropriate errors", {
+    addInfantToData <- demest:::addInfantToData
+    ## not main effect
+    metadata <- new("MetaData",
+                    nms = c("age", "sex"),
+                    dimtypes = c("age", "sex"),
+                    DimScales = list(new("Intervals", dimvalues = c(0, 1, 5, 10, Inf)),
+                                     new("Sexes", dimvalues = c("Female", "Male"))))
+    data <- new("data.frame")
+    expect_error(addInfantToData(metadata = metadata,
+                                 data = data),
+                 "cannot add \"infant\" covariate to prior 'age\\:sex' because 'age\\:sex' is not a main effect for age")
+    ## dimension has Points dimscale
+    metadata <- new("MetaData",
+                    nms = "age", 
+                    dimtypes = "age",
+                    DimScales = list(new("Points", dimvalues = c(0, 1, 5))))
+    data <- new("data.frame")
+    expect_error(addInfantToData(metadata = metadata,
+                                 data = data),
+                 "cannot make \"infant\" covariate, because dimension with dimtype \"age\" has dimscale \"Points\"")
+    ## dimension too short
+    metadata <- new("MetaData",
+                    nms = "age", 
+                    dimtypes = "age",
+                    DimScales = list(new("Intervals", dimvalues = c(0, 1))))
+    data <- new("data.frame")
+    expect_error(addInfantToData(metadata = metadata,
+                                 data = data),
+                 "cannot make \"infant\" covariate, because dimension with dimtype \"age\" has length 1")
+    ## no age dimension in data
+    metadata <- new("MetaData",
+                    nms = "age",
+                    dimtypes = "age",
+                    DimScales = list(new("Intervals", dimvalues = c(0, 1, 5, 10, Inf))))
+    data <- data.frame(income = 1:4,
+                       wrong = c("0", "1-4", "5-9", "10+"),
+                       infant = 4:1)
+    expect_error(addInfantToData(metadata = metadata,
+                                 data = data),
+                 "could not find variable 'age' in covariate data for prior 'age'")
+})
+
+
 test_that("checkAndTidyLevelComponentWeightMinMax works", {
     checkAndTidyLevelComponentWeightMinMax <- demest:::checkAndTidyLevelComponentWeightMinMax
     expect_identical(checkAndTidyLevelComponentWeightMinMax(minAR2 = -4,
@@ -1099,7 +1187,7 @@ test_that("initialCov works", {
     formula <- mean ~ income * cat
     contrastsArg = list(cat = diag(3))
     spec <- Exch(covariates = Covariates(formula = formula,
-                     data = data, contrastsArg = contrastsArg))
+                                         data = data, contrastsArg = contrastsArg))
     expect_is(spec, "SpecExchNormCov")
     beta <- rnorm(20)
     metadata <- new("MetaData",
@@ -1116,6 +1204,7 @@ test_that("initialCov works", {
     expect_identical(l$contrastsArg, contrastsArg)
     expect_identical(length(l$eta), 8L)
     expect_identical(l$formula, formula)
+    expect_identical(l$infant, new("LogicalFlag", FALSE))
     expect_identical(l$nuEtaCoef, new("DegreesFreedom", 7.0))
     expect_identical(l$P, new("Length", 8L))
     expect_identical(length(l$UEtaCoef), 7L)
@@ -1133,7 +1222,7 @@ test_that("initialCovPredict works", {
     formula <- mean ~ income * cat
     contrastsArg = list(cat = diag(3))
     spec <- DLM(covariates = Covariates(formula = formula,
-                    data = data, contrastsArg = contrastsArg))
+                                        data = data, contrastsArg = contrastsArg))
     beta <- rnorm(22)
     metadata <- new("MetaData",
                     nms = c("time", "sex"),
@@ -1158,6 +1247,71 @@ test_that("initialCovPredict works", {
                            metadata = metadata.new)
     expect_identical(dim(l$Z), c(12L, 8L))
 })
+
+test_that("makeZ works", {
+    makeZ <- demest:::makeZ
+    makeStandardizedVariables <- demest:::makeStandardizedVariables
+    ## age main effect with infant = TRUE and no data
+    formula <- new("formula")
+    data <- new("data.frame")
+    metadata <- new("MetaData",
+                    nms = "age",
+                    dimtypes = "age", 
+                    DimScales = list(new("Intervals", dimvalues = c(0, 1, 5, 10, Inf))))
+    contrastsArg <- list()
+    infant <- TRUE
+    ans.obtained <- makeZ(formula = formula,
+                          data = data,
+                          metadata = metadata,
+                          contrastsArg = contrastsArg,
+                          infant = infant)
+    ans.expected <- cbind(`(Intercept)` = rep(1, 4),
+                          infant = c(0.75, -0.25, -0.25, -0.25))
+    rownames(ans.expected) <- 1:4
+    expect_identical(ans.obtained, ans.expected)
+    ## age main effect with infant = TRUE and has data
+    formula <- ~ income
+    data <- data.frame(age = c("0", "1-4", "5-9", "10+"),
+                       income = 1:4)
+    metadata <- new("MetaData",
+                    nms = "age",
+                    dimtypes = "age", 
+                    DimScales = list(new("Intervals", dimvalues = c(0, 1, 5, 10, Inf))))
+    contrastsArg <- list()
+    infant <- TRUE
+    ans.obtained <- makeZ(formula = formula,
+                          data = data,
+                          metadata = metadata,
+                          contrastsArg = contrastsArg,
+                          infant = infant)
+    ans.expected <- makeStandardizedVariables(formula = ~ income + infant,
+                                              inputs = data.frame(income = 1:4,
+                                                                  infant = c(1, 0, 0, 0)),
+                                              namePrior = "age",
+                                              contrastsArg = list())
+    expect_identical(ans.obtained, ans.expected)
+    ## infant = FALSE
+        formula <- ~ income
+    data <- data.frame(age = c("0", "1-4", "5-9", "10+"),
+                       income = 1:4)
+    metadata <- new("MetaData",
+                    nms = "age",
+                    dimtypes = "age", 
+                    DimScales = list(new("Intervals", dimvalues = c(0, 1, 5, 10, Inf))))
+    contrastsArg <- list()
+    infant <- FALSE
+    ans.obtained <- makeZ(formula = formula,
+                          data = data,
+                          metadata = metadata,
+                          contrastsArg = contrastsArg,
+                          infant = infant)
+    ans.expected <- makeStandardizedVariables(formula = ~ income,
+                                              inputs = data.frame(income = 1:4),
+                                              namePrior = "age",
+                                              contrastsArg = list())
+    expect_identical(ans.obtained, ans.expected)
+})
+
 
 
 ## INITIAL VALUES - MODELS ###############################################################
