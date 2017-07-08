@@ -4899,13 +4899,13 @@ test_that("whereEstimated works with NormalVaryingVarsigmaUnknown", {
                             dim = c(2, 10),
                             dimnames = list(sex = c("f", "m"), age = 0:9)))
     spec <- Model(y ~ Normal(mean ~ sex + age),
+                  sex ~ Zero(),
                   age ~ DLM())
     model <- initialModel(spec, y = y, weights = weights)
     ans.obtained <- whereEstimated(model)
     ans.expected <- list(c("likelihood", "mean"),
                          c("likelihood", "sd"),
                          c("prior", "(Intercept)"),
-                         c("prior", "sex"),
                          c("prior", "age"),
                          c("prior", "sd"),
                          c("hyper", "age", "level"),

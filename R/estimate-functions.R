@@ -107,6 +107,9 @@
 #' may help.
 #' @param verbose Logical.  If \code{TRUE} (the default) a message is
 #' printed at the end of the calculations.
+#' @param useC Logical.  If \code{TRUE} (the default), the calculations
+#' are done in C.  Setting \code{useC} to \code{FALSE} may be useful
+#' for debugging.
 #'
 #' @seealso \code{\link{estimateCounts}} is similar to \code{estimateModel},
 #' except that \code{y} is not observed directly, but must be inferred from
@@ -139,7 +142,7 @@
 estimateModel <- function(model, y, exposure = NULL, weights = NULL,
                           filename = NULL, nBurnin = 1000, nSim = 1000,
                           nChain = 4, nThin = 1, parallel = TRUE,
-                          nUpdateMax = 200, verbose = TRUE) {
+                          nUpdateMax = 200, verbose = TRUE, useC = TRUE) {
     call <- match.call()
     methods::validObject(model)
     mcmc.args <- makeMCMCArgs(nBurnin = nBurnin,
@@ -175,7 +178,8 @@ estimateModel <- function(model, y, exposure = NULL, weights = NULL,
     MoreArgs <- c(list(seed = NULL),
                   mcmc.args,
                   control.args,
-                  list(continuing = FALSE))
+                  list(continuing = FALSE,
+                       useC = useC))
     if (parallel) {
         pseed <- sample.int(n = 100000, # so that RNG behaves the same whether or not
                             size = 1)   # seed has previously been set
@@ -250,7 +254,7 @@ estimateModel <- function(model, y, exposure = NULL, weights = NULL,
 predictModel <- function(filenameEst, filenamePred, along = NULL, labels = NULL, n = NULL,
                          data = NULL, aggregate = NULL, lower = NULL,
                          upper = NULL, nBurnin = 0L,  parallel = TRUE,
-                         verbose = FALSE) {
+                         verbose = FALSE, useC = TRUE) {
     if (!identical(nBurnin, 0L))
         stop("'nBurnin' must currently be 0L")
     call <- match.call()
@@ -312,6 +316,7 @@ predictModel <- function(filenameEst, filenamePred, along = NULL, labels = NULL,
                                                 lengthIter = control.args.first[["lengthIter"]],
                                                 nIteration = n.iter.chain,
                                                 nUpdate = nBurnin,
+                                                useC = useC,
                                                 SIMPLIFY = FALSE,
                                                 USE.NAMES = FALSE)
         seed <- parallel::clusterCall(cl, function() .Random.seed)
@@ -325,6 +330,7 @@ predictModel <- function(filenameEst, filenamePred, along = NULL, labels = NULL,
                                   lengthIter = control.args.first[["lengthIter"]],
                                   nIteration = n.iter.chain,
                                   nUpdate = nBurnin,
+                                  useC = useC,
                                   SIMPLIFY = FALSE,
                                   USE.NAMES = FALSE)
         seed <- list(.Random.seed)
@@ -400,7 +406,7 @@ estimateCounts <- function(model, y, exposure = NULL, observation,
                            datasets, filename = NULL, nBurnin = 1000,
                            nSim = 1000, nChain = 5, nThin = 1,
                            parallel = TRUE, nUpdateMax = 200,
-                           verbose = FALSE) {
+                           verbose = FALSE, useC = TRUE) {
     call <- match.call()
     methods::validObject(model)
     mcmc.args <- makeMCMCArgs(nBurnin = nBurnin,
@@ -442,7 +448,8 @@ estimateCounts <- function(model, y, exposure = NULL, observation,
     MoreArgs <- c(list(seed = NULL),
                   mcmc.args,
                   control.args,
-                  list(continuing = FALSE))
+                  list(continuing = FALSE,
+                       useC = useC))
     if (parallel) {
         cl <- parallel::makeCluster(getOption("cl.cores", default = mcmc.args$nChain))
         parallel::clusterSetRNGStream(cl)
@@ -486,7 +493,7 @@ estimateCounts <- function(model, y, exposure = NULL, observation,
 predictCounts <- function(filenameEst, filenamePred, along = NULL, labels = NULL, n = NULL,
                           data = NULL, aggregate = NULL, lower = NULL,
                           upper = NULL, nBurnin = 0L,  parallel = TRUE,
-                          verbose = FALSE) {
+                          verbose = FALSE, useC = TRUE) {
     stop("not written yet")
 }
 
@@ -513,7 +520,7 @@ predictCounts <- function(filenameEst, filenamePred, along = NULL, labels = NULL
 estimateAccount <- function(y, system, observation, datasets, filename = NULL,
                             nBurnin = 1000, nSim = 1000, nChain = 4, nThin = 1,
                             parallel = TRUE, nUpdateMax = 200,
-                            verbose = FALSE) {
+                            verbose = FALSE, useC = TRUE) {
     stop("not written yet")
 }
 
@@ -528,7 +535,7 @@ estimateAccount <- function(y, system, observation, datasets, filename = NULL,
 predictAccount <- function(filenameEst, filenamePred, along = NULL, labels = NULL, n = NULL,
                            data = NULL, aggregate = NULL, lower = NULL,
                            upper = NULL, nBurnin = 0L,  parallel = TRUE,
-                           verbose = FALSE) {
+                           verbose = FALSE, useC = TRUE) {
     stop("not written yet")
 }
 
@@ -746,7 +753,7 @@ predictAccount <- function(filenameEst, filenamePred, along = NULL, labels = NUL
 #' fetchSummary(filename.discard.original) # see 'nBurnin' and 'nSim'
 #' 
 #' @export
-continueEstimation <- function(filename, nBurnin = 0, nSim = 1000, verbose = FALSE) {
+continueEstimation <- function(filename, nBurnin = 0, nSim = 1000, verbose = FALSE, useC = TRUE) {
     object <- fetchResultsObject(filename)
     if (methods::is(object, "CombinedCounts"))
         stop("sorry - method for estimateCounts not written yet!")
@@ -760,7 +767,7 @@ continueEstimation <- function(filename, nBurnin = 0, nSim = 1000, verbose = FAL
     append <- identical(mcmc.args.new$nBurnin, 0L)
     combineds <- object@final
     tempfiles.new <- paste(filename, "cont", seq_len(mcmc.args.new$nChain), sep = "_")
-    MoreArgs <- c(mcmc.args.new, control.args, list(continuing = TRUE))
+    MoreArgs <- c(mcmc.args.new, control.args, list(continuing = TRUE, useC = useC))
     if (control.args$parallel) {
         cl <- parallel::makeCluster(getOption("cl.cores",
                                               default = mcmc.args.new$nChain))

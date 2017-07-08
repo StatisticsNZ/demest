@@ -7441,7 +7441,8 @@ test_that("predictOneChain works", {
                                      nUpdateMax = 200L,
                                      continuing = FALSE,
                                      nThin = 1L,
-                                     nAttempt = 100L)
+                                     nAttempt = 100L,
+                                     useC = TRUE)
     combined.new.initial <- initialCombinedModelPredict(combined = combined.old,
                                                         along = 3L,
                                                         labels = c("2005", "2006"),
@@ -7459,7 +7460,8 @@ test_that("predictOneChain works", {
                                         tempfileNew = filename.new,
                                         lengthIter = lengthIter,
                                         nIteration = 3L,
-                                        nUpdate = 1L)
+                                        nUpdate = 1L,
+                                        useC = FALSE)
     con <- file(filename.new, "rb")
     ans.obtained.file <- readBin(con = con, what = "double", n = 1000)
     close(con)
@@ -11614,6 +11616,22 @@ test_that("makeParameters works with BinomialVarying", {
     q <- do.call(rbind, q)
     ans.expected <- data.frame(q, length = sapply(l, length)%/%20L)
     colnames(ans.expected)[1:3] <- nms
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("makeMCMCBetas works", {
+    makeMCMCBetas <- demest:::makeMCMCBetas
+    priors <- list(new("ExchFixed"), new("Zero"), 
+                   new("ExchNormCov"))
+    names <- c("(Intercept)", "a", "b")
+    ans.obtained <- makeMCMCBetas(priors = priors, names = names)
+    ans.expected <- list(c("prior", "(Intercept)"),
+                         c("prior", "b"))
+    expect_identical(ans.obtained, ans.expected)
+    priors <- list(new("ExchFixed"))
+    names <- "(Intercept)"
+    ans.obtained <- makeMCMCBetas(priors = priors, names = names)
+    ans.expected <- list(c("prior", "(Intercept)"))
     expect_identical(ans.obtained, ans.expected)
 })
 

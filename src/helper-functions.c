@@ -1564,10 +1564,17 @@ getVBarAndN(double *vbar, int *n_vec,
         advanceB(iteratorBetas_R);
     }
     
-    for (int i = 0; i < len_vbar; ++i) {
+    /* for (int i = 0; i < len_vbar; ++i) { */
         
-        vbar[i] /= n_vec[i];
+    /*     vbar[i] /= n_vec[i]; */
+    /* } */
+
+    for (int i = 0; i < len_vbar; ++i) {
+	if (n_vec[i] > 0L) { 	/* added by JB 2017-07-08 */
+	    vbar[i] /= n_vec[i];
+	}
     }
+
 }
 
 

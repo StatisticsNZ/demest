@@ -1476,10 +1476,6 @@ setMethod("transferParamModel",
                                               filename = filename,
                                               lengthIter = lengthIter,
                                               iteration = iteration)
-                  ## model <- transferParamZetas(model,
-                  ##                             filename = filename,
-                  ##                             lengthIter = lengthIter,
-                  ##                             iteration = iteration)
                   model <- transferParamPriorsBetas(model,
                                                     filename = filename,
                                                     lengthIter = lengthIter,
@@ -2683,10 +2679,12 @@ setMethod("whereEstimated",
               names.betas <- object@namesBetas
               priors.betas <- object@priorsBetas
               likelihood <- list(c("likelihood", "mean"))
-              prior <- c(names.betas, "sd")
-              prior <- lapply(prior, function(name) c("prior", name))
-              hyper <- makeMCMCPriorsBetas(priors = priors.betas, names = names.betas)
-              c(likelihood, prior, hyper)
+              betas <- makeMCMCBetas(priors = priors.betas,
+                                     names = names.betas)
+              sd <- list(c("prior", "sd"))
+              priors <- makeMCMCPriorsBetas(priors = priors.betas,
+                                            names = names.betas)
+              c(likelihood, betas, sd, priors)
           })
 
 ## HAS_TESTS
@@ -2697,10 +2695,12 @@ setMethod("whereEstimated",
               priors.betas <- object@priorsBetas
               likelihood <- list(c("likelihood", "mean"),
                                  c("likelihood", "sd"))
-              prior <- c(names.betas, "sd")
-              prior <- lapply(prior, function(name) c("prior", name))
-              hyper <- makeMCMCPriorsBetas(priors = priors.betas, names = names.betas)
-              c(likelihood, prior, hyper)
+              betas <- makeMCMCBetas(priors = priors.betas,
+                                     names = names.betas)
+              sd <- list(c("prior", "sd"))
+              priors <- makeMCMCPriorsBetas(priors = priors.betas,
+                                            names = names.betas)
+              c(likelihood, betas, sd, priors)
           })
 
 ## HAS_TESTS
@@ -2728,10 +2728,12 @@ setMethod("whereEstimated",
               names.betas <- object@namesBetas
               priors.betas <- object@priorsBetas
               likelihood <- list(c("likelihood", "prob"))
-              prior <- c(names.betas, "sd")
-              prior <- lapply(prior, function(name) c("prior", name))
-              hyper <- makeMCMCPriorsBetas(priors = priors.betas, names = names.betas)
-              c(likelihood, prior, hyper)
+              betas <- makeMCMCBetas(priors = priors.betas,
+                                     names = names.betas)
+              sd <- list(c("prior", "sd"))
+              priors <- makeMCMCPriorsBetas(priors = priors.betas,
+                                            names = names.betas)
+              c(likelihood, betas, sd, priors)
           })
 
 ## HAS_TESTS
@@ -2750,10 +2752,12 @@ setMethod("whereEstimated",
               names.betas <- object@namesBetas
               priors.betas <- object@priorsBetas
               likelihood <- list(c("likelihood", "count"))
-              prior <- c(names.betas, "sd")
-              prior <- lapply(prior, function(name) c("prior", name))
-              hyper <- makeMCMCPriorsBetas(priors = priors.betas, names = names.betas)
-              c(likelihood, prior, hyper)
+              betas <- makeMCMCBetas(priors = priors.betas,
+                                     names = names.betas)
+              sd <- list(c("prior", "sd"))
+              priors <- makeMCMCPriorsBetas(priors = priors.betas,
+                                            names = names.betas)
+              c(likelihood, betas, sd, priors)
           })
 
 ## HAS_TESTS
@@ -2763,10 +2767,12 @@ setMethod("whereEstimated",
               names.betas <- object@namesBetas
               priors.betas <- object@priorsBetas
               likelihood <- list(c("likelihood", "rate"))
-              prior <- c(names.betas, "sd")
-              prior <- lapply(prior, function(name) c("prior", name))
-              hyper <- makeMCMCPriorsBetas(priors = priors.betas, names = names.betas)
-              c(likelihood, prior, hyper)
+              betas <- makeMCMCBetas(priors = priors.betas,
+                                     names = names.betas)
+              sd <- list(c("prior", "sd"))
+              priors <- makeMCMCPriorsBetas(priors = priors.betas,
+                                            names = names.betas)
+              c(likelihood, betas, sd, priors)
           })
 
 ## HAS_TESTS

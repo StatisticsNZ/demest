@@ -5,7 +5,22 @@ n.test <- 5
 test.identity <- FALSE
 test.extended <- TRUE
 
-## ## fakeBeta ###########################################################################
+## betaIsEstimated ####################################################################
+
+test_that("betaIsEstimated works in default case", {
+    betaIsEstimated <- demest:::betaIsEstimated
+    x <- new("ExchFixed")
+    expect_true(betaIsEstimated(x))
+})
+
+test_that("betaIsEstimated works with Zero prior", {
+    betaIsEstimated <- demest:::betaIsEstimated
+    x <- new("Zero")
+    expect_false(betaIsEstimated(x))
+})
+
+
+## fakeBeta ###########################################################################
 
 test_that("fakeBeta works with ExchFixed", {
     fakeBeta <- demest:::fakeBeta
@@ -4884,7 +4899,7 @@ test_that("whereEstimated works", {
                        "scaleError"))
     x <- new("Zero")
     expect_identical(whereEstimated(x),
-                     character())
+                     NULL)
 })
 
 

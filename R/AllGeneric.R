@@ -66,7 +66,11 @@ setGeneric("SummaryModel",
 
 setGeneric("addAg",
            function(model, aggregate, defaultWeights)
-           standardGeneric("addAg"))
+               standardGeneric("addAg"))
+
+setGeneric("betaIsEstimated",
+           function(prior)
+               standardGeneric("betaIsEstimated"))
 
 setGeneric("castExposure",
            function(exposure, model)

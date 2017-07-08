@@ -1,3 +1,18 @@
+## betaIsEstimated ############################################################
+
+## HAS_TESTS 
+setMethod("betaIsEstimated",
+    signature(prior = "Prior"),
+    function(prior) {
+        TRUE
+    })
+
+## HAS_TESTS
+setMethod("betaIsEstimated",
+          signature(prior = "Zero"),
+          function(prior) {
+              FALSE
+          })
 
 
 ## fakeBeta ###################################################################
@@ -2731,5 +2746,5 @@ setMethod("whereEstimated",
 setMethod("whereEstimated",
           signature(object = "Zero"),
           function(object) {
-              character()
+              NULL
           })

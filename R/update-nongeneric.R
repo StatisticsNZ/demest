@@ -503,12 +503,10 @@ updateBetasAndPriorsBetas <- function(object, g, useC = FALSE) {
         theta <- object@theta
         betas <- object@betas
         sigma <- object@sigma
-        ## I <- length(theta)
         for (b in seq_along(betas)) {
-            l <- makeVBarAndN(object, iBeta = b, g = g)  ## uses updated object NEW
-            vbar <- l[[1L]] ## NEW
+            l <- makeVBarAndN(object, iBeta = b, g = g)
+            vbar <- l[[1L]]
             n <- l[[2L]]
-            ## n <- I %/% length(vbar)
             l <- updateBetaAndPriorBeta(prior = object@priorsBetas[[b]],
                                         vbar = vbar,
                                         n = n,

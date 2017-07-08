@@ -4893,7 +4893,8 @@ makeVBarAndN <- function(object, iBeta, g, useC = FALSE) {
             iterator <- advanceB(iterator)
         }
         for (i in seq_along(vbar))
-            vbar[i] <- vbar[i] / n[i]
+            if (n[i] > 0L)
+                vbar[i] <- vbar[i] / n[i]
         list(vbar, n)
     }
 }
@@ -5168,7 +5169,9 @@ initialModelPredictHelper <- function(model, along, labels, n, offsetModel,
     beta.is.predicted <- logical(length = n.beta)
     for (i in seq_len(n.beta)) {
         margin <- margins[[i]]
-        beta.is.predicted[i] <- along %in% margin
+        prior <- priors.betas[[i]]
+        beta.is.estimated <- betaIsEstimated(prior)
+        beta.is.predicted[i] <- (along %in% margin) && beta.is.estimated
         if (beta.is.predicted[[i]]) {
             metadata.pred.i <- metadata.pred[margin]
             dim.i <- dim(metadata.pred.i)
@@ -5177,7 +5180,7 @@ initialModelPredictHelper <- function(model, along, labels, n, offsetModel,
             dims[[i]] <- dim.i
             betas[[i]] <- rep(0, length = J)
             along.margin <- match(along, margin)
-            priors.betas[[i]] <- initialPriorPredict(prior = priors.betas[[i]],
+            priors.betas[[i]] <- initialPriorPredict(prior = prior,
                                                      data = covariates.i,
                                                      metadata = metadata.pred.i,
                                                      name = names.betas[i],
@@ -5618,7 +5621,8 @@ predictLevelComponentWeightMix <- function(prior, useC = FALSE) {
 
 ## HAS_TESTS
 predictOneChain <- function(combined, tempfileOld, tempfileNew,
-                            lengthIter, nIteration, nUpdate) {
+                            lengthIter, nIteration, nUpdate,
+                            useC) {
     con <- file(tempfileNew, open = "wb")
     on.exit(close(con))
     for (iteration in seq_len(nIteration)) {
@@ -5627,7 +5631,7 @@ predictOneChain <- function(combined, tempfileOld, tempfileNew,
                                     filename = tempfileOld,
                                     lengthIter = lengthIter,
                                     iteration = iteration,
-                                    useC = TRUE)
+                                    useC = useC)
         values <- extractValues(combined)
         writeBin(object = values, con = con)
     }
@@ -6498,29 +6502,29 @@ joinFiles <- function(filenamesFirst, filenamesLast) {
 ## We limit the number of updates in any one call to .Call, because R does
 ## not release memory until the end of the call.
 estimateOneChain <- function(combined, seed, tempfile, nBurnin, nSim, nThin,
-                             nUpdateMax, continuing, ...) {
+                             nUpdateMax, continuing, useC, ...) {
     ## set seed if continuing
     if (!is.null(seed))
         assign(".Random.seed", seed, envir = .GlobalEnv)
     ## burnin
     nLoops <- nBurnin %/% nUpdateMax
     for (i in seq_len(nLoops)) {
-        combined <- updateCombined(combined, nUpdate = nUpdateMax, useC = TRUE)
+        combined <- updateCombined(combined, nUpdate = nUpdateMax, useC = useC)
     }
     ## and any final ones
     nLeftOver <- nBurnin - nLoops * nUpdateMax
-    combined <- updateCombined(combined, nUpdate = nLeftOver, useC = TRUE)
+    combined <- updateCombined(combined, nUpdate = nLeftOver, useC = useC)
     ## production
     con <- file(tempfile, open = "wb")
     n.prod <- nSim %/% nThin
     for (i in seq_len(n.prod)) {
         nLoops <- nThin %/% nUpdateMax
         for (i in seq_len(nLoops)) {
-           combined <- updateCombined(combined, nUpdate = nUpdateMax, useC = TRUE)
+           combined <- updateCombined(combined, nUpdate = nUpdateMax, useC = useC)
         }
         ## and any final ones
         nLeftOver <- nThin - nLoops * nUpdateMax
-        combined <- updateCombined(combined, nUpdate = nLeftOver, useC = TRUE)
+        combined <- updateCombined(combined, nUpdate = nLeftOver, useC = useC)
         values <- extractValues(combined)
         writeBin(values, con = con)
     }
@@ -8457,6 +8461,13 @@ makeGelmanDiag <- function(object, filename) {
     }
     names(ans) <- names(l)
     ans
+}
+
+## HAS_TESTS
+makeMCMCBetas <- function(priors, names) {
+    is.estimated <- sapply(priors, betaIsEstimated)
+    names <- names[is.estimated]
+    lapply(names, function(name) c("prior", name))
 }
 
 ## HAS_TESTS
