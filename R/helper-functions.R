@@ -945,6 +945,7 @@ initialDLMWithTrend <- function(object, beta, metadata, sY, lAll) {
     ADelta0 <- object@ADelta0
     meanDelta0 <- object@meanDelta0
     along <- object@along
+    hasLevel <- object@hasLevel
     multDelta <- object@multDelta
     multDelta0 <- object@multDelta0
     nuDelta <- object@nuDelta
@@ -981,7 +982,8 @@ initialDLMWithTrend <- function(object, beta, metadata, sY, lAll) {
                                    meanDelta0 = meanDelta0)
     CWithTrend <- makeCWithTrend(K = K,
                                  sY = sY,
-                                 ADelta0 = ADelta0)
+                                 ADelta0 = ADelta0,
+                                 hasLevel = hasLevel)
     aWithTrend <- makeAWithTrend(K = K)
     RWithTrend <- makeRWithTrend(K = K)
     UC <- makeUC(K)
@@ -1006,6 +1008,7 @@ initialDLMWithTrend <- function(object, beta, metadata, sY, lAll) {
          DRInv = DRInv,
          deltaDLM = deltaDLM,
          GWithTrend = GWithTrend,
+         hasLevel = hasLevel,
          mWithTrend = mWithTrend,
          m0WithTrend = m0WithTrend,
          meanDelta0 = meanDelta0,
@@ -1916,9 +1919,12 @@ makeCSeason <- function(K, nSeason, ASeason, C0 = NULL) {
 }
 
 ## NO_TESTS
-makeCWithTrend <- function(K, C0 = NULL, sY, ADelta0) {
+makeCWithTrend <- function(K, C0 = NULL, sY, ADelta0, hasLevel = TRUE) {
     if (is.null(C0)) {
-        AAlpha <- makeAIntercept(A = NA, sY = sY)
+        if (hasLevel)
+            AAlpha <- makeAIntercept(A = NA, sY = sY)
+        else
+            AAlpha <- 0
         ADelta <- ADelta0@.Data
         C0 <- c(AAlpha^2, ADelta^2)
         C0 <- diag(C0,
@@ -1970,7 +1976,7 @@ makeDC <- function(CWithTrend) {
 ## NO_TESTS
 makeDCInv <- function(DC) {
     for (i in seq_along(DC))
-        diag(DC[[i]]) <- 1 / diag(DC[[i]])
+        diag(DC[[i]]) <- ifelse(diag(DC[[i]]) > 0, 1 / diag(DC[[i]]), Inf)
     DC
 }
 
@@ -2009,7 +2015,7 @@ makeRNoTrend <- function(K) {
     methods::new("FFBSList", ans)
 }
 
-## NO_TESTS
+## NO_TESTSz
 makeRSeason <- function(K, nSeason) {
     ans <- replicate(n = K,
                      rep(1.0, times = nSeason),
@@ -5402,7 +5408,7 @@ predictAlphaDLMNoTrend <- function(prior, useC = FALSE) {
     }
 }
 
-## TRANSLATED
+## READY_TO_TRANSLATE (AGAIN)
 ## HAS_TESTS
 predictAlphaDeltaDLMWithTrend <- function(prior, useC = FALSE) {
     stopifnot(methods::is(prior, "DLM"))
@@ -5420,6 +5426,7 @@ predictAlphaDeltaDLMWithTrend <- function(prior, useC = FALSE) {
         omega.alpha <- prior@omegaAlpha@.Data
         omega.delta <- prior@omegaDelta@.Data
         iterator <- prior@iteratorState
+        has.level <- prior@hasLevel@.Data ## NEW
         iterator <- resetA(iterator)
         for (l in seq_len(L)) {
             indices <- iterator@indices
@@ -5431,9 +5438,12 @@ predictAlphaDeltaDLMWithTrend <- function(prior, useC = FALSE) {
                                               mean = mean.delta,
                                               sd = omega.delta)
                 mean.alpha <- alpha[k.prev] + delta[k.prev]
-                alpha[k.curr] <- stats::rnorm(n = 1L,
-                                              mean = mean.alpha,
-                                              sd = omega.alpha)
+                if (has.level) ## NEW
+                    alpha[k.curr] <- stats::rnorm(n = 1L,
+                                                  mean = mean.alpha,
+                                                  sd = omega.alpha)
+                else ##NEW
+                    alpha[k.curr] <- mean.alpha ## NEW
             }
             iterator <- advanceA(iterator)
         }
@@ -7242,6 +7252,7 @@ printKnownEqns <- function(object, name) {
 
 printLevelTrendEqns <- function(object, isMain, hasTrend) {
     AAlpha <- object@AAlpha@.Data
+    has.level <- object@hasLevel@.Data
     omegaAlphaMax <- object@omegaAlphaMax
     nuAlpha <- object@nuAlpha
     phi <- object@phi
@@ -7275,11 +7286,19 @@ printLevelTrendEqns <- function(object, isMain, hasTrend) {
     show.damp <- !phi.known || (phi < 1)
     if (hasTrend) {
         if (isMain) {
-            cat("        level[j] = level[j-1] + trend[j-1] + errorLevel[j]\n")
+            cat("        level[j] = level[j-1] + trend[j-1]")
+            if (has.level)
+                cat(" + errorLevel[j]\n")
+            else
+                cat("\n")
             cat("        trend[j] = ")
         }
         else {
-            cat("      level[k,l] = level[k-1,l] + trend[k-1,l] + errorLevel[k,l]\n")
+            cat("      level[k,l] = level[k-1,l] + trend[k-1,l]")
+            if (has.level)
+                cat("+ errorLevel[k,l]\n")
+            else
+                cat("\n")
             cat("      trend[k,l] = ")
         }
         if (show.damp)
@@ -7302,14 +7321,20 @@ printLevelTrendEqns <- function(object, isMain, hasTrend) {
             cat("level[k-1,l] + errorLevel[k,l]\n")
     }
     if (isMain) {
-        cat("        level[0] ~ N(0, ", squaredOrNA(AAlpha0), ")\n", sep = "")
+        if (!hasTrend || (hasTrend && has.level))
+            cat("        level[0] ~ N(0, ", squaredOrNA(AAlpha0), ")\n", sep = "")
+        else
+            cat("        level[0] = 0\n")
         if (hasTrend) {
             cat("        trend[0] ~ N(", meanDelta0, ", ", sep = "")
             cat(squaredOrNA(ADelta0), ")\n", sep = "")
         }
     }
     else {
-        cat("      level[0,l] ~ N(0, ", squaredOrNA(AAlpha0), ")\n", sep = "")
+        if (!hasTrend || (hasTrend && has.level))
+            cat("      level[0,l] ~ N(0, ", squaredOrNA(AAlpha0), ")\n", sep = "")
+        else
+            cat("      level[0,l] = 0\n")
         if (hasTrend) {
             cat("      trend[0,l] ~ N(", meanDelta0, ", ", sep = "")
             cat(squaredOrNA(ADelta0), ")\n", sep = "")
@@ -7337,22 +7362,28 @@ printLevelTrendEqns <- function(object, isMain, hasTrend) {
                 sep = "")
         }
     }
-    if (isMain)
-        cat("   errorLevel[j] ~ N(0, scaleLevel^2)\n")
-    else
-        cat(" errorLevel[k,l] ~ N(0, scaleLevel^2)\n")
+    if (isMain) {
+        if (!hasTrend || (hasTrend && has.level))
+            cat("   errorLevel[j] ~ N(0, scaleLevel^2)\n")
+    }
+    else {
+        if (!hasTrend || (hasTrend && has.level))
+            cat(" errorLevel[k,l] ~ N(0, scaleLevel^2)\n")
+    }
     if (hasTrend) {
         if (isMain)
             cat("   errorTrend[j] ~ N(0, scaleTrend^2)\n")
         else
             cat(" errorTrend[k,l] ~ N(0, scaleTrend^2)\n")
     }
-    cat("      scaleLevel ~ trunc-half-t(", nuAlpha, ", ", sep = "")
-    cat(squaredOrNA(AAlpha),
-        ", ",
-        format(omegaAlphaMax, digits = 4),
-        ")\n",
-        sep = "")
+    if (!hasTrend || (hasTrend && has.level)) {
+        cat("      scaleLevel ~ trunc-half-t(", nuAlpha, ", ", sep = "")
+        cat(squaredOrNA(AAlpha),
+            ", ",
+            format(omegaAlphaMax, digits = 4),
+            ")\n",
+            sep = "")
+    }
     if (hasTrend) {
         cat("      scaleTrend ~ trunc-half-t(", nuDelta, ", ", sep = "")
         cat(squaredOrNA(ADelta),

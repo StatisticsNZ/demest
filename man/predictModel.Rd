@@ -6,7 +6,7 @@
 \usage{
 predictModel(filenameEst, filenamePred, along = NULL, labels = NULL,
   n = NULL, data = NULL, aggregate = NULL, lower = NULL, upper = NULL,
-  nBurnin = 0L, parallel = TRUE, verbose = FALSE)
+  nBurnin = 0L, parallel = TRUE, verbose = FALSE, useC = TRUE)
 }
 \arguments{
 \item{filenameEst}{Filename used to \code{\link{estimateModel}}.}
@@ -38,6 +38,10 @@ is used.}
 
 \item{verbose}{Logical.  If \code{TRUE} (the default) a message is
 printed at the end of the calculations.}
+
+\item{useC}{Logical.  If \code{TRUE} (the default), the calculations
+are done in C.  Setting \code{useC} to \code{FALSE} may be useful
+for debugging.}
 }
 \description{
 Typically predict along time dimension, but can predict along other

@@ -6,7 +6,7 @@
 \usage{
 estimateAccount(y, system, observation, datasets, filename = NULL,
   nBurnin = 1000, nSim = 1000, nChain = 4, nThin = 1, parallel = TRUE,
-  nUpdateMax = 200, verbose = FALSE)
+  nUpdateMax = 200, verbose = FALSE, useC = TRUE)
 }
 \arguments{
 \item{y}{An object of class
@@ -40,6 +40,10 @@ may help.}
 
 \item{verbose}{Logical.  If \code{TRUE} (the default) a message is
 printed at the end of the calculations.}
+
+\item{useC}{Logical.  If \code{TRUE} (the default), the calculations
+are done in C.  Setting \code{useC} to \code{FALSE} may be useful
+for debugging.}
 }
 \description{
 Infer the contents of a demographic account, and fit models

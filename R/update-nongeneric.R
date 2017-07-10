@@ -295,7 +295,8 @@ updateAlphaMove <- function(prior, betaTilde, useC = FALSE) {
 }
 
 
-## TRANSLATED
+
+## READY_TO_TRANSLATE (AGAIN)
 ## HAS_TESTS
 updateAlphaDeltaDLMWithTrend <- function(prior, betaTilde, useC = FALSE) {
     ## prior
@@ -312,7 +313,7 @@ updateAlphaDeltaDLMWithTrend <- function(prior, betaTilde, useC = FALSE) {
     else {    
         K <- prior@K@.Data
         L <- prior@L@.Data
-        update.series <- prior@updateSeriesDLM # logical length L ## NEW!!!
+        update.series <- prior@updateSeriesDLM # logical length L
         alpha <- prior@alphaDLM@.Data  # numeric length (K+1)L
         delta <- prior@deltaDLM@.Data  # numeric length (K+1)L
         G <- prior@GWithTrend@.Data  # 2x2 matrix
@@ -327,13 +328,18 @@ updateAlphaDeltaDLMWithTrend <- function(prior, betaTilde, useC = FALSE) {
         DC.inv <- prior@DCInv@.Data # list length K+1
         UR <- prior@UR@.Data  # list length K
         DR.inv <- prior@DRInv@.Data
+        has.level <- prior@hasLevel@.Data                              ###### NEW ######
+        if (!has.level) {                                              ###### NEW ######
+            phi <- prior@phi ## scalar                                 ###### NEW ######
+            omega.delta <- prior@omegaDelta@.Data ## scalar            ###### NEW ######
+        }                                                              ###### NEW ######
         v <- getV(prior) ## numeric length KL
         iterator.ad <- prior@iteratorState
         iterator.v <- prior@iteratorV
         iterator.ad <- resetA(iterator.ad)
         iterator.v <- resetA(iterator.v)
         for (l in seq_len(L)) {
-            if (update.series[l]) { ## NEW !!!
+            if (update.series[l]) {
                 indices.ad <- iterator.ad@indices
                 indices.v <- iterator.v@indices
                 m[[1L]] <- m0[[l]]
@@ -369,25 +375,47 @@ updateAlphaDeltaDLMWithTrend <- function(prior, betaTilde, useC = FALSE) {
                 delta[indices.ad[K + 1L]] <- theta[2L]
                 ## backward smooth
                 for (i in seq.int(from = K - 1L, to = 0L)) {
-                    R.inv <- (UR[[i + 1L]] %*% DR.inv[[i + 1L]]
-                        %*% DR.inv[[i + 1L]] %*% t(UR[[i + 1L]]))
-                    B <- C[[i + 1L]] %*% t(G) %*% R.inv
-                    M.C.star <- rbind(W.sqrt.inv.G,
-                                      DC.inv[[i + 1L]] %*% t(UC[[i + 1L]]))
-                    svd.C.star <- svd(M.C.star, nu = 0)
-                    UC.star <- svd.C.star$v
-                    DC.star <- 1 / svd.C.star$d
-                    DC.star[is.infinite(DC.star)] <- 0
-                    DC.star <- diag(DC.star, nrow = 2L)
-                    theta.prev <- c(alpha[indices.ad[i + 2L]], delta[indices.ad[i + 2L]])
-                    m.star <- m[[i + 1L]] + drop(B %*% (theta.prev - a[[i + 1L]]))
-                    z <- stats::rnorm(n = 2L)
-                    sqrt.C.star <- UC.star %*% DC.star
-                    theta.curr <- m.star + drop(sqrt.C.star %*% z)
-                    alpha[indices.ad[i + 1L]] <- theta.curr[1L]
-                    delta[indices.ad[i + 1L]] <- theta.curr[2L]
+                    ## NEW FROM HERE....
+                    if (!has.level) {
+                        if ((i == 0L) && is.infinite(DC.inv[[1L]][1L])) {
+                            delta.curr <- alpha[indices.ad[2L]]
+                        }
+                        else  {
+                            C.inv <- UC[[i + 1L]] %*% DC.inv[[i + 1L]] %*% DC.inv[[i + 1L]] %*% t(UC[[i + 1L]])
+                            var.delta <- 1 / (phi^2 / omega.delta + C.inv[1L] - 2 * C.inv[2L] + C.inv[4L])
+                            mean.delta <- (phi * delta[indices.ad[i + 2L]] / omega.delta
+                                + (C.inv[1L] - C.inv[2L]) * (alpha[indices.ad[i + 2L]] - m[[i + 1L]][1L])
+                                + (C.inv[4L] - C.inv[2L]) * m[[i + 1L]][2L]) * var.delta
+                            delta.curr <- stats::rnorm(n = 1L,
+                                                       mean = mean.delta,
+                                                       sd = sqrt(var.delta))
+                        }
+                        alpha.curr <- alpha[indices.ad[i + 2L]] - delta.curr
+                        alpha[indices.ad[i + 1L]] <- alpha.curr
+                        delta[indices.ad[i + 1L]] <- delta.curr
+                    }
+                    else {
+                        ## ... TO HERE
+                        R.inv <- (UR[[i + 1L]] %*% DR.inv[[i + 1L]]
+                            %*% DR.inv[[i + 1L]] %*% t(UR[[i + 1L]]))
+                        B <- C[[i + 1L]] %*% t(G) %*% R.inv
+                        M.C.star <- rbind(W.sqrt.inv.G,
+                                          DC.inv[[i + 1L]] %*% t(UC[[i + 1L]]))
+                        svd.C.star <- svd(M.C.star, nu = 0)
+                        UC.star <- svd.C.star$v
+                        DC.star <- 1 / svd.C.star$d
+                        DC.star[is.infinite(DC.star)] <- 0
+                        DC.star <- diag(DC.star, nrow = 2L)
+                        theta.prev <- c(alpha[indices.ad[i + 2L]], delta[indices.ad[i + 2L]])
+                        m.star <- m[[i + 1L]] + drop(B %*% (theta.prev - a[[i + 1L]]))
+                        sqrt.C.star <- UC.star %*% DC.star
+                        z <- stats::rnorm(n = 2L)
+                        theta.curr <- m.star + drop(sqrt.C.star %*% z)
+                        alpha[indices.ad[i + 1L]] <- theta.curr[1L]
+                        delta[indices.ad[i + 1L]] <- theta.curr[2L]
+                    }                    ## NEW
                 }
-            } ## NEW !!!
+            }
             iterator.ad <- advanceA(iterator.ad)
             iterator.v <- advanceA(iterator.v)
         }
@@ -396,6 +424,8 @@ updateAlphaDeltaDLMWithTrend <- function(prior, betaTilde, useC = FALSE) {
         prior
     }
 }
+
+
 
 ## TRANSLATED
 ## HAS_TESTS
@@ -1002,7 +1032,7 @@ updateMeanLevelComponentWeightMix <- function(prior, useC = FALSE) {
     }
 }
 
-## TRANSLATED
+## READY_TO_TRANSLATE (AGAIN)
 ## HAS_TESTS
 updateOmegaAlpha <- function(prior, withTrend, useC = FALSE) {
     ## 'prior'
@@ -1019,10 +1049,15 @@ updateOmegaAlpha <- function(prior, withTrend, useC = FALSE) {
         .Call(updateOmegaAlpha_R, prior, withTrend)
     }
     else {
+        if (withTrend) {                          ## NEW
+            has.level <- prior@hasLevel@.Data     ## NEW
+            if (!has.level)                       ## NEW
+                return(prior)                     ## NEW
+        }                                         ## NEW
         J <- prior@J@.Data
         K <- prior@K@.Data
         L <- prior@L@.Data
-        update.series <- prior@updateSeriesDLM # logical length L ## NEW
+        update.series <- prior@updateSeriesDLM # logical length L
         alpha <- prior@alphaDLM@.Data
         omega <- prior@omegaAlpha@.Data
         omegaMax <- prior@omegaAlphaMax@.Data
@@ -1036,7 +1071,7 @@ updateOmegaAlpha <- function(prior, withTrend, useC = FALSE) {
         iterator <- resetA(iterator)
         V <- 0
         for (l in seq_len(L)) {
-            if (update.series[l]) { ## NEW
+            if (update.series[l]) {
                 indices <- iterator@indices
                 for (i in seq_len(K)) {
                     k.curr <- indices[i + 1]
@@ -1046,7 +1081,7 @@ updateOmegaAlpha <- function(prior, withTrend, useC = FALSE) {
                     else
                         V <- V + (alpha[k.curr] - phi * alpha[k.prev])^2
                 }
-            } ## NEW
+            }
             iterator <- advanceA(iterator)
         }
         omega <- updateSDNorm(sigma = omega,

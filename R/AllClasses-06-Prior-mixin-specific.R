@@ -478,6 +478,31 @@ setClass("HasCovariatesMixin",
          slots = c(hasCovariates = "LogicalFlag"),
          contains = "VIRTUAL")
 
+setClass("HasLevelMixin",
+         slots = c(hasLevel = "LogicalFlag"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             hasLevel <- object@hasLevel@.Data
+             CWithTrend <- object@CWithTrend@.Data
+             DC <- object@DC@.Data
+             DCInv <- object@DCInv@.Data
+             if (!hasLevel) {
+                 ## first element of CWithTrend starts with 0
+                 if (!isTRUE(all.equal(CWithTrend[[1L]][1L], 0)))
+                     return(gettextf("'%s' is %s but first element of first element of '%s' is not %d",
+                                     "hasLevel", "FALSE", "CWithTrend", 0L))
+                 ## first element of DC starts with 0
+                 if (!isTRUE(all.equal(DC[[1L]][1L], 0)))
+                     return(gettextf("'%s' is %s but first element of first element of '%s' is not %d",
+                                     "hasLevel", "FALSE", "DC", 0L))
+                 ## first element of first element of DCInv is infinite
+                 if (is.finite(DCInv[[1L]][1L]))
+                     return(gettextf("'%s' is %s but first element of first element of '%s' is finite",
+                                     "hasLevel", "FALSE", "DCInv"))
+             }
+             TRUE
+         })             
+
 setClass("HasSeasonMixin",
          slots = c(hasSeason = "LogicalFlag"),
          contains = "VIRTUAL")
@@ -1515,6 +1540,10 @@ setClass("SpecATauMixin",
 
 setClass("SpecAVectorsMixMixin",
          slots = c(AVectorsMix = "SpecScale"),
+         contains = "VIRTUAL")
+
+setClass("SpecHasLevelMixin",
+         slots = c(hasLevel = "LogicalFlag"),
          contains = "VIRTUAL")
 
 setClass("SpecOmegaAlphaMaxMixin",

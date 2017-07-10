@@ -263,14 +263,14 @@ test_that("makeOutputPrior works with DLMNoTrendNormZeroNoSeason", {
                                     metadata = metadata,
                                     pos = 3L)
     ans.expected <- list(level = new("SkeletonLevelDLM",
-                             first = 3L,
-                             last = 13L,
-                             firstSeason = 0L,
-                             lastSeason = 0L,
-                             indicesShow = 2:11,
-                             iAlong = 1L,
-                             nSeason = 1L,
-                             metadata = metadata),
+                                     first = 3L,
+                                     last = 13L,
+                                     firstSeason = 0L,
+                                     lastSeason = 0L,
+                                     indicesShow = 2:11,
+                                     iAlong = 1L,
+                                     nSeason = 1L,
+                                     metadata = metadata),
                          scaleLevel = Skeleton(first = 14L),
                          damp = Skeleton(first = 15L),
                          scaleError = Skeleton(first = 16L))
@@ -281,6 +281,7 @@ test_that("makeOutputPrior works with DLMWithTrendNormZeroNoSeason", {
     makeOutputPrior <- demest:::makeOutputPrior
     initialPrior <- demest:::initialPrior
     Skeleton <- demest:::Skeleton
+    ## has level
     spec <- DLM()
     beta <- rnorm(10)
     metadata <- new("MetaData",
@@ -295,20 +296,52 @@ test_that("makeOutputPrior works with DLMWithTrendNormZeroNoSeason", {
                                     metadata = metadata,
                                     pos = 3L)
     ans.expected <- list(level = new("SkeletonLevelDLM",
-                             first = 3L,
-                             last = 13L,
-                             firstSeason = 0L,
-                             lastSeason = 0L,
-                             iAlong = 1L,
-                             nSeason = 1L,
-                             indicesShow = 2:11,
-                             metadata = metadata),
+                                     first = 3L,
+                                     last = 13L,
+                                     firstSeason = 0L,
+                                     lastSeason = 0L,
+                                     iAlong = 1L,
+                                     nSeason = 1L,
+                                     indicesShow = 2:11,
+                                     metadata = metadata),
                          scaleLevel = Skeleton(first = 14L),
                          trend = new("SkeletonTrendDLM",
-                             first = 15L,
-                             last = 25L,
-                             indicesShow = 2:11,
-                             metadata = metadata),
+                                     first = 15L,
+                                     last = 25L,
+                                     indicesShow = 2:11,
+                                     metadata = metadata),
+                         scaleTrend = Skeleton(first = 26L),
+                         damp = Skeleton(first = 27L),
+                         scaleError = Skeleton(first = 28L))
+    expect_identical(ans.obtained, ans.expected)
+    ## no level
+    spec <- DLM(level = NULL)
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 1:10)))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL)
+    ans.obtained <- makeOutputPrior(prior = prior,
+                                    metadata = metadata,
+                                    pos = 3L)
+    ans.expected <- list(level = new("SkeletonLevelDLM",
+                                     first = 3L,
+                                     last = 13L,
+                                     firstSeason = 0L,
+                                     lastSeason = 0L,
+                                     iAlong = 1L,
+                                     nSeason = 1L,
+                                     indicesShow = 2:11,
+                                     metadata = metadata),
+                         trend = new("SkeletonTrendDLM",
+                                     first = 15L,
+                                     last = 25L,
+                                     indicesShow = 2:11,
+                                     metadata = metadata),
                          scaleTrend = Skeleton(first = 26L),
                          damp = Skeleton(first = 27L),
                          scaleError = Skeleton(first = 28L))
@@ -360,6 +393,7 @@ test_that("makeOutputPrior works with DLMWithTrendNormZeroWithSeason", {
     makeOutputPrior <- demest:::makeOutputPrior
     initialPrior <- demest:::initialPrior
     Skeleton <- demest:::Skeleton
+    ## has level
     spec <- DLM(season = Season(n = 4))
     beta <- rnorm(10)
     metadata <- new("MetaData",
@@ -374,29 +408,69 @@ test_that("makeOutputPrior works with DLMWithTrendNormZeroWithSeason", {
                                     metadata = metadata,
                                     pos = 3L)
     ans.expected <- list(level = new("SkeletonLevelDLM",
-                             first = 3L,
-                             last = 13L,
-                             firstSeason = 28L,
-                             lastSeason = 71L,
-                             iAlong = 1L,
-                             nSeason = 4L,
-                             indicesShow = 2:11,
-                             metadata = metadata),
+                                     first = 3L,
+                                     last = 13L,
+                                     firstSeason = 28L,
+                                     lastSeason = 71L,
+                                     iAlong = 1L,
+                                     nSeason = 4L,
+                                     indicesShow = 2:11,
+                                     metadata = metadata),
                          scaleLevel = Skeleton(first = 14L),
                          trend = new("SkeletonTrendDLM",
-                             first = 15L,
-                             last = 25L,
-                             indicesShow = 2:11,
-                             metadata = metadata),
+                                     first = 15L,
+                                     last = 25L,
+                                     indicesShow = 2:11,
+                                     metadata = metadata),
                          scaleTrend = Skeleton(first = 26L),
                          damp = Skeleton(first = 27L),
                          season = new("SkeletonSeasonDLM",
-                             first = 28L,
-                             last = 71L,
-                             indicesShow = seq.int(5L, 41L, 4L),
-                             iAlong = 1L,
-                             nSeason = 4L,
-                             metadata = metadata),
+                                      first = 28L,
+                                      last = 71L,
+                                      indicesShow = seq.int(5L, 41L, 4L),
+                                      iAlong = 1L,
+                                      nSeason = 4L,
+                                      metadata = metadata),
+                         scaleSeason = Skeleton(first = 72L),
+                         scaleError = Skeleton(first = 73L))
+    expect_identical(ans.obtained, ans.expected)
+    ## no level
+    spec <- DLM(level = NULL, season = Season(n = 4))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 1:10)))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL)
+    ans.obtained <- makeOutputPrior(prior = prior,
+                                    metadata = metadata,
+                                    pos = 3L)
+    ans.expected <- list(level = new("SkeletonLevelDLM",
+                                     first = 3L,
+                                     last = 13L,
+                                     firstSeason = 28L,
+                                     lastSeason = 71L,
+                                     iAlong = 1L,
+                                     nSeason = 4L,
+                                     indicesShow = 2:11,
+                                     metadata = metadata),
+                         trend = new("SkeletonTrendDLM",
+                                     first = 15L,
+                                     last = 25L,
+                                     indicesShow = 2:11,
+                                     metadata = metadata),
+                         scaleTrend = Skeleton(first = 26L),
+                         damp = Skeleton(first = 27L),
+                         season = new("SkeletonSeasonDLM",
+                                      first = 28L,
+                                      last = 71L,
+                                      indicesShow = seq.int(5L, 41L, 4L),
+                                      iAlong = 1L,
+                                      nSeason = 4L,
+                                      metadata = metadata),
                          scaleSeason = Skeleton(first = 72L),
                          scaleError = Skeleton(first = 73L))
     expect_identical(ans.obtained, ans.expected)
@@ -452,6 +526,7 @@ test_that("makeOutputPrior works with DLMWithTrendNormCovNoSeason", {
     makeOutputPrior <- demest:::makeOutputPrior
     initialPrior <- demest:::initialPrior
     Skeleton <- demest:::Skeleton
+    ## has level
     data <- data.frame(time = 1:10,
                        income = rnorm(10),
                        cat = rep(c("a", "b"), each = 5))
@@ -473,26 +548,70 @@ test_that("makeOutputPrior works with DLMWithTrendNormCovNoSeason", {
                          dimtypes = "state",
                          DimScales = list(new("Categories", dimvalues = c("income", "catb"))))
     ans.expected <- list(level = new("SkeletonLevelDLM",
-                             first = 3L,
-                             last = 13L,
-                             firstSeason = 0L,
-                             lastSeason = 0L,
-                             iAlong = 1L,
-                             nSeason = 1L,
-                             indicesShow = 2:11,
-                             metadata = metadata),
+                                     first = 3L,
+                                     last = 13L,
+                                     firstSeason = 0L,
+                                     lastSeason = 0L,
+                                     iAlong = 1L,
+                                     nSeason = 1L,
+                                     indicesShow = 2:11,
+                                     metadata = metadata),
                          scaleLevel = Skeleton(first = 14L),
                          trend = new("SkeletonTrendDLM",
-                             first = 15L,
-                             last = 25L,
-                             indicesShow = 2:11,
-                             metadata = metadata),
+                                     first = 15L,
+                                     last = 25L,
+                                     indicesShow = 2:11,
+                                     metadata = metadata),
                          scaleTrend = Skeleton(first = 26L),
                          damp = Skeleton(first = 27L),
                          coef = new("SkeletonCovariates",
-                             first = 28L,
-                             last = 30L,
-                             metadata = metadata.coef),
+                                    first = 28L,
+                                    last = 30L,
+                                    metadata = metadata.coef),
+                         scaleError = Skeleton(first = 31L))
+    expect_identical(ans.obtained, ans.expected)
+    ## no level
+    data <- data.frame(time = 1:10,
+                       income = rnorm(10),
+                       cat = rep(c("a", "b"), each = 5))
+    spec <- DLM(level = NULL,
+                covariates = Covariates(mean ~ income + cat, data = data))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 1:10)))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL)
+    ans.obtained <- makeOutputPrior(prior = prior,
+                                    metadata = metadata,
+                                    pos = 3L)
+    metadata.coef <- new("MetaData",
+                         nms = "coef",
+                         dimtypes = "state",
+                         DimScales = list(new("Categories", dimvalues = c("income", "catb"))))
+    ans.expected <- list(level = new("SkeletonLevelDLM",
+                                     first = 3L,
+                                     last = 13L,
+                                     firstSeason = 0L,
+                                     lastSeason = 0L,
+                                     iAlong = 1L,
+                                     nSeason = 1L,
+                                     indicesShow = 2:11,
+                                     metadata = metadata),
+                         trend = new("SkeletonTrendDLM",
+                                     first = 15L,
+                                     last = 25L,
+                                     indicesShow = 2:11,
+                                     metadata = metadata),
+                         scaleTrend = Skeleton(first = 26L),
+                         damp = Skeleton(first = 27L),
+                         coef = new("SkeletonCovariates",
+                                    first = 28L,
+                                    last = 30L,
+                                    metadata = metadata.coef),
                          scaleError = Skeleton(first = 31L))
     expect_identical(ans.obtained, ans.expected)
 })
@@ -554,6 +673,7 @@ test_that("makeOutputPrior works with DLMWithTrendNormCovWithSeason", {
     makeOutputPrior <- demest:::makeOutputPrior
     initialPrior <- demest:::initialPrior
     Skeleton <- demest:::Skeleton
+    ## has level
     data <- data.frame(time = 1:10,
                        income = rnorm(10),
                        cat = rep(c("a", "b"), each = 5))
@@ -576,34 +696,87 @@ test_that("makeOutputPrior works with DLMWithTrendNormCovWithSeason", {
                          dimtypes = "state",
                          DimScales = list(new("Categories", dimvalues = c("income", "catb"))))
     ans.expected <- list(level = new("SkeletonLevelDLM",
-                             first = 3L,
-                             last = 13L,
-                             firstSeason = 28L,
-                             lastSeason = 71L,
-                             indicesShow = 2:11,
-                             iAlong = 1L,
-                             nSeason = 4L,
-                             metadata = metadata),
+                                     first = 3L,
+                                     last = 13L,
+                                     firstSeason = 28L,
+                                     lastSeason = 71L,
+                                     indicesShow = 2:11,
+                                     iAlong = 1L,
+                                     nSeason = 4L,
+                                     metadata = metadata),
                          scaleLevel = Skeleton(first = 14L),
                          trend = new("SkeletonTrendDLM",
-                             first = 15L,
-                             last = 25L,
-                             indicesShow = 2:11,
-                             metadata = metadata),
+                                     first = 15L,
+                                     last = 25L,
+                                     indicesShow = 2:11,
+                                     metadata = metadata),
                          scaleTrend = Skeleton(first = 26L),
                          damp = Skeleton(first = 27L),
                          season = new("SkeletonSeasonDLM",
-                             first = 28L,
-                             last = 71L,
-                             indicesShow = seq.int(5L, 41L, 4L),
-                             iAlong = 1L,
-                             nSeason = 4L,
-                             metadata = metadata),
+                                      first = 28L,
+                                      last = 71L,
+                                      indicesShow = seq.int(5L, 41L, 4L),
+                                      iAlong = 1L,
+                                      nSeason = 4L,
+                                      metadata = metadata),
                          scaleSeason = Skeleton(first = 72L),
                          coef = new("SkeletonCovariates",
-                             first = 73L,
-                             last = 75L,
-                             metadata = metadata.coef),
+                                    first = 73L,
+                                    last = 75L,
+                                    metadata = metadata.coef),
+                         scaleError = Skeleton(first = 76L))
+    expect_identical(ans.obtained, ans.expected)
+    ## no level
+    data <- data.frame(time = 1:10,
+                       income = rnorm(10),
+                       cat = rep(c("a", "b"), each = 5))
+    spec <- DLM(level = NULL,
+                covariates = Covariates(mean ~ income + cat, data = data),
+                season = Season(n = 4))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 1:10)))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL)
+    ans.obtained <- makeOutputPrior(prior = prior,
+                                    metadata = metadata,
+                                    pos = 3L)
+    metadata.coef <- new("MetaData",
+                         nms = "coef",
+                         dimtypes = "state",
+                         DimScales = list(new("Categories", dimvalues = c("income", "catb"))))
+    ans.expected <- list(level = new("SkeletonLevelDLM",
+                                     first = 3L,
+                                     last = 13L,
+                                     firstSeason = 28L,
+                                     lastSeason = 71L,
+                                     indicesShow = 2:11,
+                                     iAlong = 1L,
+                                     nSeason = 4L,
+                                     metadata = metadata),
+                         trend = new("SkeletonTrendDLM",
+                                     first = 15L,
+                                     last = 25L,
+                                     indicesShow = 2:11,
+                                     metadata = metadata),
+                         scaleTrend = Skeleton(first = 26L),
+                         damp = Skeleton(first = 27L),
+                         season = new("SkeletonSeasonDLM",
+                                      first = 28L,
+                                      last = 71L,
+                                      indicesShow = seq.int(5L, 41L, 4L),
+                                      iAlong = 1L,
+                                      nSeason = 4L,
+                                      metadata = metadata),
+                         scaleSeason = Skeleton(first = 72L),
+                         coef = new("SkeletonCovariates",
+                                    first = 73L,
+                                    last = 75L,
+                                    metadata = metadata.coef),
                          scaleError = Skeleton(first = 76L))
     expect_identical(ans.obtained, ans.expected)
 })
@@ -647,6 +820,7 @@ test_that("makeOutputPrior works with DLMWithTrendRobustZeroNoSeason", {
     makeOutputPrior <- demest:::makeOutputPrior
     initialPrior <- demest:::initialPrior
     Skeleton <- demest:::Skeleton
+    ## has level
     spec <- DLM(error = Error(robust = TRUE))
     beta <- rnorm(10)
     metadata <- new("MetaData",
@@ -670,6 +844,38 @@ test_that("makeOutputPrior works with DLMWithTrendRobustZeroNoSeason", {
                              indicesShow = 2:11,
                              metadata = metadata),
                          scaleLevel = Skeleton(first = 14L),
+                         trend = new("SkeletonTrendDLM",
+                             first = 15L,
+                             last = 25L,
+                             indicesShow = 2:11,
+                             metadata = metadata),
+                         scaleTrend = Skeleton(first = 26L),
+                         damp = Skeleton(first = 27L),
+                         scaleError = Skeleton(first = 28L))
+    expect_identical(ans.obtained, ans.expected)
+    ## no level
+    spec <- DLM(level = NULL, error = Error(robust = TRUE))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 1:10)))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL)
+    ans.obtained <- makeOutputPrior(prior = prior,
+                                    metadata = metadata,
+                                    pos = 3L)
+    ans.expected <- list(level = new("SkeletonLevelDLM",
+                             first = 3L,
+                             last = 13L,
+                             firstSeason = 0L,
+                             lastSeason = 0L,
+                             nSeason = 1L,
+                             iAlong = 1L,
+                             indicesShow = 2:11,
+                             metadata = metadata),
                          trend = new("SkeletonTrendDLM",
                              first = 15L,
                              last = 25L,
@@ -727,6 +933,7 @@ test_that("makeOutputPrior works with DLMWithTrendRobustZeroWithSeason", {
     makeOutputPrior <- demest:::makeOutputPrior
     initialPrior <- demest:::initialPrior
     Skeleton <- demest:::Skeleton
+    ## has level
     spec <- DLM(season = Season(n = 4),
                 error = Error(robust = TRUE))
     beta <- rnorm(10)
@@ -742,29 +949,71 @@ test_that("makeOutputPrior works with DLMWithTrendRobustZeroWithSeason", {
                                     metadata = metadata,
                                     pos = 3L)
     ans.expected <- list(level = new("SkeletonLevelDLM",
-                             first = 3L,
-                             last = 13L,
-                             firstSeason = 28L,
-                             lastSeason = 71L,
-                             indicesShow = 2:11,
-                             iAlong = 1L,
-                             nSeason = 4L,
-                             metadata = metadata),
+                                     first = 3L,
+                                     last = 13L,
+                                     firstSeason = 28L,
+                                     lastSeason = 71L,
+                                     indicesShow = 2:11,
+                                     iAlong = 1L,
+                                     nSeason = 4L,
+                                     metadata = metadata),
                          scaleLevel = Skeleton(first = 14L),
                          trend = new("SkeletonTrendDLM",
-                             first = 15L,
-                             last = 25L,
-                             indicesShow = 2:11,
-                             metadata = metadata),
+                                     first = 15L,
+                                     last = 25L,
+                                     indicesShow = 2:11,
+                                     metadata = metadata),
                          scaleTrend = Skeleton(first = 26L),
                          damp = Skeleton(first = 27L),
                          season = new("SkeletonSeasonDLM",
-                             first = 28L,
-                             last = 71L,
-                             indicesShow = seq.int(5L, 41L, 4L),
-                             iAlong = 1L,
-                             nSeason = 4L,
-                             metadata = metadata),
+                                      first = 28L,
+                                      last = 71L,
+                                      indicesShow = seq.int(5L, 41L, 4L),
+                                      iAlong = 1L,
+                                      nSeason = 4L,
+                                      metadata = metadata),
+                         scaleSeason = Skeleton(first = 72L),
+                         scaleError = Skeleton(first = 73L))
+    expect_identical(ans.obtained, ans.expected)
+    ## no level
+    spec <- DLM(level = NULL,
+                season = Season(n = 4),
+                error = Error(robust = TRUE))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 1:10)))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL)
+    ans.obtained <- makeOutputPrior(prior = prior,
+                                    metadata = metadata,
+                                    pos = 3L)
+    ans.expected <- list(level = new("SkeletonLevelDLM",
+                                     first = 3L,
+                                     last = 13L,
+                                     firstSeason = 28L,
+                                     lastSeason = 71L,
+                                     indicesShow = 2:11,
+                                     iAlong = 1L,
+                                     nSeason = 4L,
+                                     metadata = metadata),
+                         trend = new("SkeletonTrendDLM",
+                                     first = 15L,
+                                     last = 25L,
+                                     indicesShow = 2:11,
+                                     metadata = metadata),
+                         scaleTrend = Skeleton(first = 26L),
+                         damp = Skeleton(first = 27L),
+                         season = new("SkeletonSeasonDLM",
+                                      first = 28L,
+                                      last = 71L,
+                                      indicesShow = seq.int(5L, 41L, 4L),
+                                      iAlong = 1L,
+                                      nSeason = 4L,
+                                      metadata = metadata),
                          scaleSeason = Skeleton(first = 72L),
                          scaleError = Skeleton(first = 73L))
     expect_identical(ans.obtained, ans.expected)
@@ -822,6 +1071,7 @@ test_that("makeOutputPrior works with DLMWithTrendRobustCovNoSeason", {
     makeOutputPrior <- demest:::makeOutputPrior
     initialPrior <- demest:::initialPrior
     Skeleton <- demest:::Skeleton
+    ## has level
     data <- data.frame(time = 1:10,
                        income = rnorm(10),
                        cat = rep(c("a", "b"), each = 5))
@@ -844,26 +1094,71 @@ test_that("makeOutputPrior works with DLMWithTrendRobustCovNoSeason", {
                          dimtypes = "state",
                          DimScales = list(new("Categories", dimvalues = c("income", "catb"))))
     ans.expected <- list(level = new("SkeletonLevelDLM",
-                             first = 3L,
-                             last = 13L,
-                             firstSeason = 0L,
-                             lastSeason = 0L,
-                             indicesShow = 2:11,
-                             iAlong = 1L,
-                             nSeason = 1L,
-                             metadata = metadata),
+                                     first = 3L,
+                                     last = 13L,
+                                     firstSeason = 0L,
+                                     lastSeason = 0L,
+                                     indicesShow = 2:11,
+                                     iAlong = 1L,
+                                     nSeason = 1L,
+                                     metadata = metadata),
                          scaleLevel = Skeleton(first = 14L),
                          trend = new("SkeletonTrendDLM",
-                             first = 15L,
-                             last = 25L,
-                             indicesShow = 2:11,
-                             metadata = metadata),
+                                     first = 15L,
+                                     last = 25L,
+                                     indicesShow = 2:11,
+                                     metadata = metadata),
                          scaleTrend = Skeleton(first = 26L),
                          damp = Skeleton(first = 27L),
                          coef = new("SkeletonCovariates",
-                             first = 28L,
-                             last = 30L,
-                             metadata = metadata.coef),
+                                    first = 28L,
+                                    last = 30L,
+                                    metadata = metadata.coef),
+                         scaleError = Skeleton(first = 31L))
+    expect_identical(ans.obtained, ans.expected)
+    ## no level
+    data <- data.frame(time = 1:10,
+                       income = rnorm(10),
+                       cat = rep(c("a", "b"), each = 5))
+    spec <- DLM(level = NULL,
+                covariates = Covariates(mean ~ income + cat, data = data),
+                error = Error(robust = TRUE))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 1:10)))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL)
+    ans.obtained <- makeOutputPrior(prior = prior,
+                                    metadata = metadata,
+                                    pos = 3L)
+    metadata.coef <- new("MetaData",
+                         nms = "coef",
+                         dimtypes = "state",
+                         DimScales = list(new("Categories", dimvalues = c("income", "catb"))))
+    ans.expected <- list(level = new("SkeletonLevelDLM",
+                                     first = 3L,
+                                     last = 13L,
+                                     firstSeason = 0L,
+                                     lastSeason = 0L,
+                                     indicesShow = 2:11,
+                                     iAlong = 1L,
+                                     nSeason = 1L,
+                                     metadata = metadata),
+                         trend = new("SkeletonTrendDLM",
+                                     first = 15L,
+                                     last = 25L,
+                                     indicesShow = 2:11,
+                                     metadata = metadata),
+                         scaleTrend = Skeleton(first = 26L),
+                         damp = Skeleton(first = 27L),
+                         coef = new("SkeletonCovariates",
+                                    first = 28L,
+                                    last = 30L,
+                                    metadata = metadata.coef),
                          scaleError = Skeleton(first = 31L))
     expect_identical(ans.obtained, ans.expected)
 })
@@ -926,6 +1221,7 @@ test_that("makeOutputPrior works with DLMWithTrendRobustCovWithSeason", {
     makeOutputPrior <- demest:::makeOutputPrior
     initialPrior <- demest:::initialPrior
     Skeleton <- demest:::Skeleton
+    ## has level
     data <- data.frame(time = 1:10,
                        income = rnorm(10),
                        cat = rep(c("a", "b"), each = 5))
@@ -949,34 +1245,88 @@ test_that("makeOutputPrior works with DLMWithTrendRobustCovWithSeason", {
                          dimtypes = "state",
                          DimScales = list(new("Categories", dimvalues = c("income", "catb"))))
     ans.expected <- list(level = new("SkeletonLevelDLM",
-                             first = 3L,
-                             last = 13L,
-                             firstSeason = 28L,
-                             lastSeason = 71L,
-                             indicesShow = 2:11,
-                             iAlong = 1L,
-                             nSeason = 4L,
-                             metadata = metadata),
+                                     first = 3L,
+                                     last = 13L,
+                                     firstSeason = 28L,
+                                     lastSeason = 71L,
+                                     indicesShow = 2:11,
+                                     iAlong = 1L,
+                                     nSeason = 4L,
+                                     metadata = metadata),
                          scaleLevel = Skeleton(first = 14L),
                          trend = new("SkeletonTrendDLM",
-                             first = 15L,
-                             last = 25L,
-                             indicesShow = 2:11,
-                             metadata = metadata),
+                                     first = 15L,
+                                     last = 25L,
+                                     indicesShow = 2:11,
+                                     metadata = metadata),
                          scaleTrend = Skeleton(first = 26L),
                          damp = Skeleton(first = 27L),
                          season = new("SkeletonSeasonDLM",
-                             first = 28L,
-                             last = 71L,
-                             indicesShow = seq.int(5L, 41L, 4L),
-                             iAlong = 1L,
-                             nSeason = 4L,
-                             metadata = metadata),
+                                      first = 28L,
+                                      last = 71L,
+                                      indicesShow = seq.int(5L, 41L, 4L),
+                                      iAlong = 1L,
+                                      nSeason = 4L,
+                                      metadata = metadata),
                          scaleSeason = Skeleton(first = 72L),
                          coef = new("SkeletonCovariates",
-                             first = 73L,
-                             last = 75L,
-                             metadata = metadata.coef),
+                                    first = 73L,
+                                    last = 75L,
+                                    metadata = metadata.coef),
+                         scaleError = Skeleton(first = 76L))
+    expect_identical(ans.obtained, ans.expected)
+    ## no level
+    data <- data.frame(time = 1:10,
+                       income = rnorm(10),
+                       cat = rep(c("a", "b"), each = 5))
+    spec <- DLM(level = NULL,
+                covariates = Covariates(mean ~ income + cat, data = data),
+                season = Season(n = 4),
+                error = Error(robust = TRUE))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 1:10)))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL)
+    ans.obtained <- makeOutputPrior(prior = prior,
+                                    metadata = metadata,
+                                    pos = 3L)
+    metadata.coef <- new("MetaData",
+                         nms = "coef",
+                         dimtypes = "state",
+                         DimScales = list(new("Categories", dimvalues = c("income", "catb"))))
+    ans.expected <- list(level = new("SkeletonLevelDLM",
+                                     first = 3L,
+                                     last = 13L,
+                                     firstSeason = 28L,
+                                     lastSeason = 71L,
+                                     indicesShow = 2:11,
+                                     iAlong = 1L,
+                                     nSeason = 4L,
+                                     metadata = metadata),
+                         trend = new("SkeletonTrendDLM",
+                                     first = 15L,
+                                     last = 25L,
+                                     indicesShow = 2:11,
+                                     metadata = metadata),
+                         scaleTrend = Skeleton(first = 26L),
+                         damp = Skeleton(first = 27L),
+                         season = new("SkeletonSeasonDLM",
+                                      first = 28L,
+                                      last = 71L,
+                                      indicesShow = seq.int(5L, 41L, 4L),
+                                      iAlong = 1L,
+                                      nSeason = 4L,
+                                      metadata = metadata),
+                         scaleSeason = Skeleton(first = 72L),
+                         coef = new("SkeletonCovariates",
+                                    first = 73L,
+                                    last = 75L,
+                                    metadata = metadata.coef),
                          scaleError = Skeleton(first = 76L))
     expect_identical(ans.obtained, ans.expected)
 })
@@ -4667,22 +5017,45 @@ test_that("whereEstimated works", {
                        "damp",
                        "scaleError"))
     x <- new("DLMWithTrendNormZeroNoSeason")
+    x@hasLevel@.Data <- TRUE
     expect_identical(whereEstimated(x),
                      c("level", "scaleLevel",
                        "trend", "scaleTrend",
                        "damp",
                        "scaleError"))
+    x <- new("DLMWithTrendNormZeroNoSeason")
+    x@hasLevel@.Data <- FALSE
+    expect_identical(whereEstimated(x),
+                     c("level", 
+                       "trend",
+                       "scaleTrend",
+                       "damp",
+                       "scaleError"))
     x <- new("DLMNoTrendNormZeroWithSeason")
     expect_identical(whereEstimated(x),
-                     c("level", "scaleLevel",
+                     c("level",
+                       "scaleLevel",
                        "damp",
                        "season",
                        "scaleSeason",
                        "scaleError"))
     x <- new("DLMWithTrendNormZeroWithSeason")
+    x@hasLevel@.Data <- TRUE
     expect_identical(whereEstimated(x),
-                     c("level", "scaleLevel",
-                       "trend", "scaleTrend",
+                     c("level",
+                       "scaleLevel",
+                       "trend",
+                       "scaleTrend",
+                       "damp",
+                       "season",
+                       "scaleSeason",
+                       "scaleError"))
+    x <- new("DLMWithTrendNormZeroWithSeason")
+    x@hasLevel@.Data <- FALSE
+    expect_identical(whereEstimated(x),
+                     c("level",
+                       "trend",
+                       "scaleTrend",
                        "damp",
                        "season",
                        "scaleSeason",
@@ -4694,9 +5067,21 @@ test_that("whereEstimated works", {
                        "coef",
                        "scaleError"))
     x <- new("DLMWithTrendNormCovNoSeason")
+    x@hasLevel@.Data <- TRUE
     expect_identical(whereEstimated(x),
-                     c("level", "scaleLevel",
-                       "trend", "scaleTrend",
+                     c("level",
+                       "scaleLevel",
+                       "trend",
+                       "scaleTrend",
+                       "damp",
+                       "coef",
+                       "scaleError"))
+    x <- new("DLMWithTrendNormCovNoSeason")
+    x@hasLevel@.Data <- FALSE
+    expect_identical(whereEstimated(x),
+                     c("level",
+                       "trend",
+                       "scaleTrend",
                        "damp",
                        "coef",
                        "scaleError"))
@@ -4709,9 +5094,23 @@ test_that("whereEstimated works", {
                        "coef",
                        "scaleError"))
     x <- new("DLMWithTrendNormCovWithSeason")
+    x@hasLevel@.Data <- TRUE
     expect_identical(whereEstimated(x),
-                     c("level", "scaleLevel",
-                       "trend", "scaleTrend",
+                     c("level",
+                       "scaleLevel",
+                       "trend",
+                       "scaleTrend",
+                       "damp",
+                       "season",
+                       "scaleSeason",
+                       "coef",
+                       "scaleError"))
+    x <- new("DLMWithTrendNormCovWithSeason")
+    x@hasLevel@.Data <- FALSE
+    expect_identical(whereEstimated(x),
+                     c("level",
+                       "trend",
+                       "scaleTrend",
                        "damp",
                        "season",
                        "scaleSeason",
@@ -4723,9 +5122,20 @@ test_that("whereEstimated works", {
                        "damp",
                        "scaleError"))
     x <- new("DLMWithTrendRobustZeroNoSeason")
+    x@hasLevel@.Data <- TRUE
     expect_identical(whereEstimated(x),
-                     c("level", "scaleLevel",
-                       "trend", "scaleTrend",
+                     c("level",
+                       "scaleLevel",
+                       "trend",
+                       "scaleTrend",
+                       "damp",
+                       "scaleError"))
+    x <- new("DLMWithTrendRobustZeroNoSeason")
+    x@hasLevel@.Data <- FALSE
+    expect_identical(whereEstimated(x),
+                     c("level",
+                       "trend",
+                       "scaleTrend",
                        "damp",
                        "scaleError"))
     x <- new("DLMNoTrendRobustZeroWithSeason")
@@ -4736,9 +5146,22 @@ test_that("whereEstimated works", {
                        "scaleSeason",
                        "scaleError"))
     x <- new("DLMWithTrendRobustZeroWithSeason")
+    x@hasLevel@.Data <- TRUE
     expect_identical(whereEstimated(x),
-                     c("level", "scaleLevel",
-                       "trend", "scaleTrend",
+                     c("level",
+                       "scaleLevel",
+                       "trend",
+                       "scaleTrend",
+                       "damp",
+                       "season",
+                       "scaleSeason",
+                       "scaleError"))
+    x <- new("DLMWithTrendRobustZeroWithSeason")
+    x@hasLevel@.Data <- FALSE
+    expect_identical(whereEstimated(x),
+                     c("level",
+                       "trend",
+                       "scaleTrend",
                        "damp",
                        "season",
                        "scaleSeason",
@@ -4750,9 +5173,21 @@ test_that("whereEstimated works", {
                        "coef",
                        "scaleError"))
     x <- new("DLMWithTrendRobustCovNoSeason")
+    x@hasLevel@.Data <- TRUE
     expect_identical(whereEstimated(x),
-                     c("level", "scaleLevel",
-                       "trend", "scaleTrend",
+                     c("level",
+                       "scaleLevel",
+                       "trend",
+                       "scaleTrend",
+                       "damp",
+                       "coef",
+                       "scaleError"))
+    x <- new("DLMWithTrendRobustCovNoSeason")
+    x@hasLevel@.Data <- FALSE
+    expect_identical(whereEstimated(x),
+                     c("level",
+                       "trend",
+                       "scaleTrend",
                        "damp",
                        "coef",
                        "scaleError"))
@@ -4765,9 +5200,23 @@ test_that("whereEstimated works", {
                        "coef",
                        "scaleError"))
     x <- new("DLMWithTrendRobustCovWithSeason")
+    x@hasLevel@.Data <- TRUE
     expect_identical(whereEstimated(x),
-                     c("level", "scaleLevel",
-                       "trend", "scaleTrend",
+                     c("level",
+                       "scaleLevel",
+                       "trend",
+                       "scaleTrend",
+                       "damp",
+                       "season",
+                       "scaleSeason",
+                       "coef",
+                       "scaleError"))
+    x <- new("DLMWithTrendRobustCovWithSeason")
+    x@hasLevel@.Data <- FALSE
+    expect_identical(whereEstimated(x),
+                     c("level",
+                       "trend",
+                       "scaleTrend",
                        "damp",
                        "season",
                        "scaleSeason",
@@ -4780,6 +5229,7 @@ test_that("whereEstimated works", {
                        "scaleError"))
     x <- new("DLMWithTrendNormZeroNoSeason")
     x@phiKnown@.Data <- TRUE
+    x@hasLevel@.Data <- TRUE
     expect_identical(whereEstimated(x),
                      c("level", "scaleLevel",
                        "trend", "scaleTrend",
@@ -4793,6 +5243,7 @@ test_that("whereEstimated works", {
                        "scaleError"))
     x <- new("DLMWithTrendNormZeroWithSeason")
     x@phiKnown@.Data <- TRUE
+    x@hasLevel@.Data <- TRUE
     expect_identical(whereEstimated(x),
                      c("level", "scaleLevel",
                        "trend", "scaleTrend",
@@ -4807,6 +5258,7 @@ test_that("whereEstimated works", {
                        "scaleError"))
     x <- new("DLMWithTrendNormCovNoSeason")
     x@phiKnown@.Data <- TRUE
+    x@hasLevel@.Data <- TRUE
     expect_identical(whereEstimated(x),
                      c("level", "scaleLevel",
                        "trend", "scaleTrend",
@@ -4822,6 +5274,7 @@ test_that("whereEstimated works", {
                        "scaleError"))
     x <- new("DLMWithTrendNormCovWithSeason")
     x@phiKnown@.Data <- TRUE
+    x@hasLevel@.Data <- TRUE
     expect_identical(whereEstimated(x),
                      c("level", "scaleLevel",
                        "trend", "scaleTrend",
@@ -4836,6 +5289,7 @@ test_that("whereEstimated works", {
                        "scaleError"))
     x <- new("DLMWithTrendRobustZeroNoSeason")
     x@phiKnown@.Data <- TRUE
+    x@hasLevel@.Data <- TRUE
     expect_identical(whereEstimated(x),
                      c("level", "scaleLevel",
                        "trend", "scaleTrend",
@@ -4849,6 +5303,7 @@ test_that("whereEstimated works", {
                        "scaleError"))
     x <- new("DLMWithTrendRobustZeroWithSeason")
     x@phiKnown@.Data <- TRUE
+    x@hasLevel@.Data <- TRUE
     expect_identical(whereEstimated(x),
                      c("level", "scaleLevel",
                        "trend", "scaleTrend",
@@ -4863,6 +5318,7 @@ test_that("whereEstimated works", {
                        "scaleError"))
     x <- new("DLMWithTrendRobustCovNoSeason")
     x@phiKnown@.Data <- TRUE
+    x@hasLevel@.Data <- TRUE
     expect_identical(whereEstimated(x),
                      c("level", "scaleLevel",
                        "trend", "scaleTrend",
@@ -4877,6 +5333,7 @@ test_that("whereEstimated works", {
                        "coef",
                        "scaleError"))
     x <- new("DLMWithTrendRobustCovWithSeason")
+    x@hasLevel@.Data <- TRUE
     x@phiKnown@.Data <- TRUE
     expect_identical(whereEstimated(x),
                      c("level", "scaleLevel",

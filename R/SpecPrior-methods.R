@@ -602,8 +602,3 @@ setMethod("show",
               cat("An object of class \"", class(object), "\"\n", sep = "")
               printPriorEqns(object)
           })
-
-
-
-
-

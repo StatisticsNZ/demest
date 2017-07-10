@@ -415,7 +415,7 @@ test_that("R and C versions of updateAlphaMix give same answer", {
 })
 
 if (test.extended) {
-    test_that("updateAlphaDeltaDLMWithTrend gives valid answer", {
+    test_that("updateAlphaDeltaDLMWithTrend gives valid answer with useLevel = TRUE", {
         ffbs <- function(beta, alphaDelta, m, C, phi, tau, omegaAlpha, omegaDelta) {
             K <- length(alphaDelta) - 1
             a <- replicate(n = K, c(0, 0), simplify = FALSE)
@@ -493,12 +493,187 @@ if (test.extended) {
     })
 }
 
-test_that("R and C versions of updateAlphaDeltaDLMWithTrend give same answer", {
+test_that("R and C versions of updateAlphaDeltaDLMWithTrend give same answer with useLevel = TRUE", {
     updateAlphaDeltaDLMWithTrend <- demest:::updateAlphaDeltaDLMWithTrend
     initialPrior <- demest:::initialPrior
     ## dim = c(4, 10); along = 2
     for (seed in seq_len(n.test)) {
         spec <- DLM()
+        metadata <- new("MetaData",
+                        nms = c("region", "time"),
+                        dimtypes = c("state", "time"),
+                        DimScales = list(new("Categories",
+                            dimvalues = c("a", "b", "c", "d")),
+                            new("Points", dimvalues = 1:10)))
+        set.seed(seed)
+        beta <- rnorm(40)
+        betaTilde <- rnorm(40)
+        prior <- initialPrior(spec,
+                              beta = beta,
+                              metadata = metadata,
+                              sY = NULL,
+                              multScale = 1)
+        set.seed(seed)
+        ans.R <- updateAlphaDeltaDLMWithTrend(prior = prior,
+                                              betaTilde = betaTilde,
+                                              useC = FALSE)
+        set.seed(seed)
+        ans.C <- updateAlphaDeltaDLMWithTrend(prior = prior,
+                                              betaTilde = betaTilde,
+                                              useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+        ## dim = 5; along = 1
+        spec <- DLM()
+        metadata <- new("MetaData",
+                        nms = "age",
+                        dimtypes = "age",
+                        DimScales = list(new("Intervals", dimvalues = 0:5)))
+        set.seed(seed)
+        beta <- rnorm(5)
+        betaTilde <- rnorm(5)
+        prior <- initialPrior(spec,
+                              beta = beta,
+                              metadata = metadata,
+                              sY = NULL,
+                              multScale = 1)
+        set.seed(seed)
+        ans.R <- updateAlphaDeltaDLMWithTrend(prior = prior,
+                                              betaTilde = betaTilde,
+                                              useC = FALSE)
+        set.seed(seed)
+        ans.C <- updateAlphaDeltaDLMWithTrend(prior = prior,
+                                              betaTilde = betaTilde,
+                                              useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+        ## dim = c(6, 6, 10); along = 2
+        spec <- DLM()
+        metadata <- new("MetaData",
+                        nms = c("region", "time", "age"),
+                        dimtypes = c("state", "time", "age"),
+                        DimScales = list(new("Categories",
+                            dimvalues = c("a", "b", "c", "d", "e", "f")),
+                            new("Points", dimvalues = 1:6),
+                            new("Intervals", dimvalues = 0:10)))
+        set.seed(seed)
+        beta <- rnorm(360)
+        betaTilde <- rnorm(360)
+        prior <- initialPrior(spec,
+                              beta = beta,
+                              metadata = metadata,
+                              sY = NULL,
+                              multScale = 1)
+        set.seed(seed)
+        ans.R <- updateAlphaDeltaDLMWithTrend(prior = prior,
+                                              betaTilde = betaTilde,
+                                              useC = FALSE)
+        set.seed(seed)
+        ans.C <- updateAlphaDeltaDLMWithTrend(prior = prior,
+                                              betaTilde = betaTilde,
+                                              useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
+
+if (test.extended) {
+    test_that("updateAlphaDeltaDLMWithTrend gives valid answer with useLevel = FALSE", {
+        ffbs <- function(beta, alphaDelta, m, C, phi, tau, omegaAlpha, omegaDelta) {
+            K <- length(alphaDelta) - 1
+            a <- replicate(n = K, c(0, 0), simplify = FALSE)
+            R <- replicate(n = K, diag(2), simplify = FALSE)
+            G <- matrix(c(1, 0, 1, phi), nr = 2)
+            for (k in seq_len(K)) {
+                a[[k]] <- drop(G %*% m[[k]])
+                R[[k]] <- G %*% C[[k]] %*% t(G) + matrix(c(omegaAlpha^2, 0, 0, omegaDelta^2), nr = 2)
+                q <- R[[k]][1] + tau^2
+                e <- beta[k] - a[[k]][1]
+                A <- R[[k]][1:2] / q
+                m[[k+1]] <- a[[k]] + A * e
+                C[[k+1]] <- R[[k]] - A %*% t(A) * q
+            }
+            s <- svd(C[[K+1]])
+            C.sqrt <- s$u %*% diag(sqrt(s$d))
+            z <- rnorm(2)
+            alphaDelta[[K+1]] <- m[[K+1]] + drop(C.sqrt %*% z)
+            for (k in seq(from = K-1, to = 0)) {
+                if (k > 0L) {
+                    C.inv <- solve(C[[k+1L]])
+                    V <- 1/(phi^2/omegaDelta + (C.inv[1] - C.inv[2]) + (C.inv[4] - C.inv[3]))
+                    delta.hat <- (phi * alphaDelta[[k+2]][2] / phi
+                        + (C.inv[1] - C.inv[3]) * (alphaDelta[[k+2]][1] - m[[k+1]][1])
+                        + (C.inv[4] - C.inv[2]) * m[[k+1]][2]) * V
+                    alphaDelta[[k+1]][2] <- rnorm(n = 1, mean = delta.hat, sd = sqrt(V))
+                    alphaDelta[[k+1]][1] <- alphaDelta[[k+2]][1] - alphaDelta[[k+1]][2]
+                }
+                else {
+                    alphaDelta[[1]][1] <- 0
+                    alphaDelta[[1]][2] <- alphaDelta[[2]][1]
+                }
+            }
+            alphaDelta
+        }
+        updateAlphaDeltaDLMWithTrend <- demest:::updateAlphaDeltaDLMWithTrend
+        initialPrior <- demest:::initialPrior
+        ## dim = c(4, 10); along = 2
+        spec <- DLM(level = NULL)
+        metadata <- new("MetaData",
+                        nms = c("region", "time"),
+                        dimtypes = c("state", "time"),
+                        DimScales = list(new("Categories",
+                                             dimvalues = c("a", "b", "c", "d")),
+                                         new("Points", dimvalues = 1:10)))
+        alpha.obtained <- array(dim = c(4, 11, 1000))
+        delta.obtained <- array(dim = c(4, 11, 1000))
+        alpha.expected <- array(0, dim = c(4, 11, 1000))
+        delta.expected <- array(0, dim = c(4, 11, 1000))
+        set.seed(1)
+        for (sim in 1:1000) {
+            beta <- rnorm(n = 40, mean = rep(1:10, each = 4))
+            betaTilde <- rnorm(n = 40, mean = rep(1:10, each = 4))
+            prior <- initialPrior(spec, beta = beta, metadata = metadata, sY = NULL)
+            set.seed(1 + sim)
+            ans.obtained <- updateAlphaDeltaDLMWithTrend(prior = prior,
+                                                         betaTilde = betaTilde,
+                                                         useC = FALSE)
+            alpha.obtained[ , , sim] <- ans.obtained@alphaDLM@.Data
+            delta.obtained[ , , sim] <- ans.obtained@deltaDLM@.Data
+            set.seed(sim + 1)
+            for (i in 2:4) {
+                ans <- ffbs(beta = matrix(betaTilde, nr = 4)[i,],
+                            alphaDelta = replicate(n = 11, c(0, 0), simplify = FALSE),
+                            m = prior@mWithTrend@.Data,
+                            C = prior@CWithTrend@.Data,
+                            phi = prior@phi,
+                            tau = prior@tau@.Data,
+                            omegaAlpha = prior@omegaAlpha@.Data,
+                            omegaDelta = prior@omegaDelta@.Data)
+                alpha.expected[i,,sim] <- sapply(ans, function(x) x[1])
+                delta.expected[i,,sim] <- sapply(ans, function(x) x[2])
+            }
+        }
+        alpha.obtained <- apply(alpha.obtained, 1:2, sum)/1000
+        delta.obtained <- apply(delta.obtained, 1:2, sum)/1000
+        alpha.expected <- apply(alpha.expected, 1:2, sum)/1000
+        delta.expected <- apply(delta.expected, 1:2, sum)/1000
+        expect_equal(alpha.obtained[,-1], alpha.expected[,-1], tol = 0.03)
+        expect_equal(delta.obtained[,-1], delta.expected[,-1], tol = 0.03)
+    })
+}
+
+test_that("R and C versions of updateAlphaDeltaDLMWithTrend give same answer with useLevel = FALSE", {
+    updateAlphaDeltaDLMWithTrend <- demest:::updateAlphaDeltaDLMWithTrend
+    initialPrior <- demest:::initialPrior
+    ## dim = c(4, 10); along = 2
+    for (seed in seq_len(n.test)) {
+        spec <- DLM(level = NULL)
         metadata <- new("MetaData",
                         nms = c("region", "time"),
                         dimtypes = c("state", "time"),
@@ -1656,7 +1831,7 @@ test_that("updateOmegaAlpha works", {
     initialPrior <- demest:::initialPrior
     updateSDNorm <- demest:::updateSDNorm
     for (seed in seq_len(n.test)) {
-        ## withTrend = TRUE
+        ## withTrend = TRUE, hasLevel = TRUE
         spec <- DLM()
         beta <- rnorm(10)
         metadata <- new("MetaData",
@@ -1688,6 +1863,24 @@ test_that("updateOmegaAlpha works", {
             expect_identical(ans.obtained, ans.expected)
         else
             expect_equal(ans.obtained, ans.expected)        
+        ## withTrend = TRUE, hasLevel = FALSE
+        spec <- DLM(level = NULL)
+        beta <- rnorm(10)
+        metadata <- new("MetaData",
+                        nms = "time",
+                        dimtypes = "time",
+                        DimScales = list(new("Points", dimvalues = 2001:2010)))
+        prior <- initialPrior(spec,
+                              beta = beta,
+                              metadata = metadata,
+                              sY = NULL,
+                              multScale = 1)
+        expect_is(prior, "DLMWithTrendNormZeroNoSeason")
+        prior <- updateAlphaDeltaDLMWithTrend(prior = prior,
+                                              betaTilde = beta)
+        ans.obtained <- updateOmegaAlpha(prior, withTrend = TRUE)
+        ans.expected <- prior
+        expect_identical(ans.obtained, ans.expected)
         ## withTrend = FALSE, phi = 0.9
         spec <- DLM(trend = NULL, damp = Damp(coef = 0.9))
         beta <- rnorm(10)
@@ -1750,6 +1943,23 @@ test_that("R and C versions of updateOmegaAlpha give same answer", {
             expect_identical(ans.R, ans.C)
         else
             expect_equal(ans.R, ans.C)        
+        spec <- DLM(level = NULL)
+        beta <- rnorm(10)
+        metadata <- new("MetaData",
+                        nms = "time",
+                        dimtypes = "time",
+                        DimScales = list(new("Points", dimvalues = 2001:2010)))
+        prior <- initialPrior(spec,
+                              beta = beta,
+                              metadata = metadata,
+                              sY = NULL,
+                              multScale = 1)
+        expect_is(prior, "DLMWithTrendNormZeroNoSeason")
+        prior <- updateAlphaDeltaDLMWithTrend(prior = prior,
+                                              betaTilde = beta)
+        ans.R <- updateOmegaAlpha(prior, withTrend = TRUE, useC = FALSE)
+        ans.C <- updateOmegaAlpha(prior, withTrend = TRUE, useC = FALSE)
+        expect_identical(ans.R, ans.C)
         ## withTrend = FALSE, phi = 0.9
         spec <- DLM(trend = NULL, damp = Damp(coef = 0.9))
         beta <- rnorm(10)

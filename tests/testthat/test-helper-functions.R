@@ -726,6 +726,24 @@ test_that("initialDLMWithTrend works", {
     expect_identical(l$m0WithTrend[[1]], c(0, 0.05))
     expect_identical(l$ADelta0, new("Scale", 0.1))
     expect_identical(l$meanDelta0, new("Parameter", 0.05))
+    ## level is NULL
+    spec <- DLM(level = NULL)
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 2001:2010)))
+    lAll <- initialDLMAll(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL)
+    l <- initialDLMWithTrend(spec,
+                             beta = beta,
+                             metadata = metadata,
+                             sY = NULL,
+                             lAll = lAll)
+    expect_identical(l$hasLevel, new("LogicalFlag", FALSE))
+    expect_true(is.infinite(l$DCInv[[1]][1]))
 })
 
 test_that("initialDLMWithTrendPredict works", {
@@ -6871,6 +6889,7 @@ test_that("R and C versions of predictAlphaDLMNoTrend give same answer", {
 test_that("predictAlphaDeltaDLMWithTrend works", {
     predictAlphaDeltaDLMWithTrend <- demest:::predictAlphaDeltaDLMWithTrend
     initialPrior <- demest:::initialPrior
+    ## has level
     spec <- DLM()
     beta <- rnorm(10)
     metadata <- new("MetaData",
@@ -6898,12 +6917,60 @@ test_that("predictAlphaDeltaDLMWithTrend works", {
                                                   sd = ans.expected@omegaAlpha@.Data)
     }
     expect_identical(ans.obtained, ans.expected)
+    ## no level
+    spec <- DLM(level = NULL)
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 1:10)))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL)
+    prior@alphaDLM@.Data[1] <- rnorm(1)
+    prior@deltaDLM@.Data[1] <- rnorm(1)
+    set.seed(1)
+    ans.obtained <- predictAlphaDeltaDLMWithTrend(prior)
+    set.seed(1)
+    ans.expected <- prior
+    phi <- ans.expected@phi
+    for (i in seq_len(10)) {
+        ans.expected@deltaDLM@.Data[i+1] <- rnorm(n = 1,
+                                                  mean = phi * ans.expected@deltaDLM@.Data[i],
+                                                  sd = ans.expected@omegaDelta@.Data)
+        ans.expected@alphaDLM@.Data[i+1] <- ans.expected@alphaDLM@.Data[i] + ans.expected@deltaDLM@.Data[i]
+    }
+    expect_identical(ans.obtained, ans.expected)
 })
 
 test_that("R and C versions of predictAlphaDeltaDLMWithTrend give same answer", {
     predictAlphaDeltaDLMWithTrend <- demest:::predictAlphaDeltaDLMWithTrend
     initialPrior <- demest:::initialPrior
+    ## has level
     spec <- DLM()
+    for (seed in seq_len(n.test)) {
+    set.seed(seed)
+        beta <- rnorm(10)
+        metadata <- new("MetaData",
+                        nms = "time",
+                        dimtypes = "time",
+                        DimScales = list(new("Points", dimvalues = 1:10)))
+        prior <- initialPrior(spec,
+                              beta = beta,
+                              metadata = metadata,
+                              sY = NULL)
+        set.seed(seed+1)
+        ans.R <- predictAlphaDeltaDLMWithTrend(prior, useC = FALSE)
+        set.seed(seed+1)
+        ans.C <- predictAlphaDeltaDLMWithTrend(prior, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+    ## no level
+    spec <- DLM(level = NULL)
     for (seed in seq_len(n.test)) {
     set.seed(seed)
         beta <- rnorm(10)

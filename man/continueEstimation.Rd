@@ -4,7 +4,8 @@
 \alias{continueEstimation}
 \title{Add extra iterations to burnin or output.}
 \usage{
-continueEstimation(filename, nBurnin = 0, nSim = 1000, verbose = FALSE)
+continueEstimation(filename, nBurnin = 0, nSim = 1000, verbose = FALSE,
+  useC = TRUE)
 }
 \arguments{
 \item{filename}{The filename used by the original call.}
@@ -15,6 +16,10 @@ continueEstimation(filename, nBurnin = 0, nSim = 1000, verbose = FALSE)
 
 \item{verbose}{Logical.  If \code{TRUE} (the default) a message is
 printed at the end of the calculations.}
+
+\item{useC}{Logical.  If \code{TRUE} (the default), the calculations
+are done in C.  Setting \code{useC} to \code{FALSE} may be useful
+for debugging.}
 }
 \description{
 Continue estimation process, retaining current settings, but extending

@@ -479,6 +479,12 @@ Damp <- function(coef = NULL, shape1 = 2, shape2 = 2, min = 0.8, max = 1) {
 #' where \code{0 < damp <= 1}.  The documentaion for function
 #' \code{\link{Damp}} describe the role played by the \code{damp} term.
 #'
+#' If \code{level} is \code{NULL}, then the model does not
+#' include \code{errorLevel}.  This can be a useful simplification
+#' in situations where there is a trend in the data, but the full
+#' linear trend model is not converging properly.
+#' 
+#'
 #' @section Error terms:
 #' 
 #' The error term for the level, \code{errorLevel}, has the form
@@ -503,7 +509,9 @@ Damp <- function(coef = NULL, shape1 = 2, shape2 = 2, min = 0.8, max = 1) {
 #'
 #' @param along Name of a dimension.  
 #' @param level An object of class \code{\linkS4class{Level}}
-#' specifying the prior for \code{errorLevel}.
+#' specifying the prior for \code{errorLevel} or \code{NULL}.
+#' \code{level} can be \code{NULL} only when \code{trend} is
+#' non-\code{NULL}.
 #' @param trend An object of class \code{\linkS4class{Trend}}
 #' (the default) or \code{NULL}.  If \code{trend} is \code{NULL},
 #' then \code{DLM} produces local level model; otherwise
@@ -568,13 +576,28 @@ DLM <- function(along = NULL, level = Level(), trend = Trend(),
     ## along
     along <- checkAndTidyAlongDLM(along)
     ## level
-    if (!methods::is(level, "Level"))
-        stop(gettextf("'%s' has class \"%s\"",
-                      "level", class(level)))
-    AAlpha <- level@AAlpha
-    multAlpha <- level@multAlpha
-    nuAlpha <- level@nuAlpha
-    omegaAlphaMax <- level@omegaAlphaMax
+    if (methods::is(level, "Level")) {
+        has.level <- TRUE
+        AAlpha <- level@AAlpha
+        multAlpha <- level@multAlpha
+        nuAlpha <- level@nuAlpha
+        omegaAlphaMax <- level@omegaAlphaMax
+    }
+    else {
+        if (is.null(level)) {
+            has.level <- FALSE
+            level <- Level()
+            AAlpha <- level@AAlpha
+            multAlpha <- level@multAlpha
+            nuAlpha <- level@nuAlpha
+            omegaAlphaMax <- level@omegaAlphaMax
+        }
+        else {
+            stop(gettextf("'%s' has class \"%s\"",
+                          "level", class(level)))
+        }
+    }
+    has.level <- new("LogicalFlag", has.level)
     ## trend
     if (methods::is(trend, "Trend")) {
         has.trend <- TRUE
@@ -593,6 +616,9 @@ DLM <- function(along = NULL, level = Level(), trend = Trend(),
             stop(gettextf("'%s' has class \"%s\"",
                           "trend", class(trend)))
     }
+    if (!has.level && !has.trend)
+        stop(gettextf("'%s' and '%s' are both %s",
+                      "level", "trend", "NULL"))
     ## damp
     if (!methods::is(damp, "Damp")) {
         if (is.null(damp))
@@ -690,6 +716,7 @@ DLM <- function(along = NULL, level = Level(), trend = Trend(),
                      ADelta0 = ADelta0,
                      ATau = ATau,
                      along = along,
+                     hasLevel = has.level,
                      minPhi = minPhi,
                      maxPhi = maxPhi,
                      meanDelta0 = meanDelta0,
@@ -739,6 +766,7 @@ DLM <- function(along = NULL, level = Level(), trend = Trend(),
                      ASeason = ASeason,
                      ATau = ATau,
                      along = along,
+                     hasLevel = has.level,
                      minPhi = minPhi,
                      maxPhi = maxPhi,
                      meanDelta0 = meanDelta0,
@@ -799,6 +827,7 @@ DLM <- function(along = NULL, level = Level(), trend = Trend(),
                      contrastsArg = contrastsArg,
                      data = data,
                      formula = formula,
+                     hasLevel = has.level,
                      infant = infant,
                      minPhi = minPhi,
                      maxPhi = maxPhi,
@@ -864,6 +893,7 @@ DLM <- function(along = NULL, level = Level(), trend = Trend(),
                      contrastsArg = contrastsArg,
                      data = data,
                      formula = formula,
+                     hasLevel = has.level,
                      infant = infant,
                      minPhi = minPhi,
                      maxPhi = maxPhi,
@@ -915,6 +945,7 @@ DLM <- function(along = NULL, level = Level(), trend = Trend(),
                      ADelta0 = ADelta0,
                      ATau = ATau,
                      along = along,
+                     hasLevel = has.level,
                      minPhi = minPhi,
                      maxPhi = maxPhi,
                      meanDelta0 = meanDelta0,
@@ -966,6 +997,7 @@ DLM <- function(along = NULL, level = Level(), trend = Trend(),
                      ASeason = ASeason,
                      ATau = ATau,
                      along = along,
+                     hasLevel = has.level,
                      minPhi = minPhi,
                      maxPhi = maxPhi,
                      meanDelta0 = meanDelta0,
@@ -1028,6 +1060,7 @@ DLM <- function(along = NULL, level = Level(), trend = Trend(),
                      contrastsArg = contrastsArg,
                      data = data,
                      formula = formula,
+                     hasLevel = has.level,
                      infant = infant,
                      minPhi = minPhi,
                      maxPhi = maxPhi,
@@ -1095,6 +1128,7 @@ DLM <- function(along = NULL, level = Level(), trend = Trend(),
                      contrastsArg = contrastsArg,
                      data = data,
                      formula = formula,
+                     hasLevel = has.level,
                      infant = infant,
                      minPhi = minPhi,
                      maxPhi = maxPhi,
@@ -1122,6 +1156,7 @@ DLM <- function(along = NULL, level = Level(), trend = Trend(),
                      tauMax = tauMax)
     }
 }
+
 
 ## NO_TESTS
 #' Specify the error term in a prior for a main effect or interaction.

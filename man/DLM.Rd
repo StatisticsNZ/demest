@@ -11,7 +11,9 @@ DLM(along = NULL, level = Level(), trend = Trend(), damp = Damp(),
 \item{along}{Name of a dimension.}
 
 \item{level}{An object of class \code{\linkS4class{Level}}
-specifying the prior for \code{errorLevel}.}
+specifying the prior for \code{errorLevel} or \code{NULL}.
+\code{level} can be \code{NULL} only when \code{trend} is
+non-\code{NULL}.}
 
 \item{trend}{An object of class \code{\linkS4class{Trend}}
 (the default) or \code{NULL}.  If \code{trend} is \code{NULL},
@@ -117,6 +119,11 @@ and with an interaction,
 
 where \code{0 < damp <= 1}.  The documentaion for function
 \code{\link{Damp}} describe the role played by the \code{damp} term.
+
+If \code{level} is \code{NULL}, then the model does not
+include \code{errorLevel}.  This can be a useful simplification
+in situations where there is a trend in the data, but the full
+linear trend model is not converging properly.
 }
 
 \section{Error terms}{

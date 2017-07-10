@@ -6,7 +6,7 @@
 \usage{
 estimateModel(model, y, exposure = NULL, weights = NULL, filename = NULL,
   nBurnin = 1000, nSim = 1000, nChain = 4, nThin = 1, parallel = TRUE,
-  nUpdateMax = 200, verbose = TRUE)
+  nUpdateMax = 200, verbose = TRUE, useC = TRUE)
 }
 \arguments{
 \item{model}{An object of class \code{\linkS4class{SpecModel}},
@@ -40,6 +40,10 @@ may help.}
 
 \item{verbose}{Logical.  If \code{TRUE} (the default) a message is
 printed at the end of the calculations.}
+
+\item{useC}{Logical.  If \code{TRUE} (the default), the calculations
+are done in C.  Setting \code{useC} to \code{FALSE} may be useful
+for debugging.}
 }
 \description{
 Estimate rates, counts, probabilities, or means for a single
