@@ -294,7 +294,7 @@ updateAlphaMove <- function(prior, betaTilde, useC = FALSE) {
 
 
 
-## READY_TO_TRANSLATE (AGAIN)
+## TRANSLATED (AGAIN 16/7/2017)
 ## HAS_TESTS
 updateAlphaDeltaDLMWithTrend <- function(prior, betaTilde, useC = FALSE) {
     ## prior
@@ -326,11 +326,11 @@ updateAlphaDeltaDLMWithTrend <- function(prior, betaTilde, useC = FALSE) {
         DC.inv <- prior@DCInv@.Data # list length K+1
         UR <- prior@UR@.Data  # list length K
         DR.inv <- prior@DRInv@.Data
-        has.level <- prior@hasLevel@.Data                              ###### NEW ######
-        if (!has.level) {                                              ###### NEW ######
-            phi <- prior@phi ## scalar                                 ###### NEW ######
-            omega.delta <- prior@omegaDelta@.Data ## scalar            ###### NEW ######
-        }                                                              ###### NEW ######
+        has.level <- prior@hasLevel@.Data 
+        if (!has.level) {
+            phi <- prior@phi ## scalar 
+            omega.delta <- prior@omegaDelta@.Data ## scalar
+        }
         v <- getV(prior) ## numeric length KL
         iterator.ad <- prior@iteratorState
         iterator.v <- prior@iteratorV
@@ -373,7 +373,6 @@ updateAlphaDeltaDLMWithTrend <- function(prior, betaTilde, useC = FALSE) {
                 delta[indices.ad[K + 1L]] <- theta[2L]
                 ## backward smooth
                 for (i in seq.int(from = K - 1L, to = 0L)) {
-                    ## NEW FROM HERE....
                     if (!has.level) {
                         if ((i == 0L) && is.infinite(DC.inv[[1L]][1L])) {
                             delta.curr <- alpha[indices.ad[2L]]
@@ -393,7 +392,6 @@ updateAlphaDeltaDLMWithTrend <- function(prior, betaTilde, useC = FALSE) {
                         delta[indices.ad[i + 1L]] <- delta.curr
                     }
                     else {
-                        ## ... TO HERE
                         R.inv <- (UR[[i + 1L]] %*% DR.inv[[i + 1L]]
                             %*% DR.inv[[i + 1L]] %*% t(UR[[i + 1L]]))
                         B <- C[[i + 1L]] %*% t(G) %*% R.inv
@@ -411,7 +409,7 @@ updateAlphaDeltaDLMWithTrend <- function(prior, betaTilde, useC = FALSE) {
                         theta.curr <- m.star + drop(sqrt.C.star %*% z)
                         alpha[indices.ad[i + 1L]] <- theta.curr[1L]
                         delta[indices.ad[i + 1L]] <- theta.curr[2L]
-                    }                    ## NEW
+                    }
                 }
             }
             iterator.ad <- advanceA(iterator.ad)
@@ -1031,7 +1029,7 @@ updateMeanLevelComponentWeightMix <- function(prior, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE (AGAIN)
+## TRANSLATED (AGAIN 16/7/2017)
 ## HAS_TESTS
 updateOmegaAlpha <- function(prior, withTrend, useC = FALSE) {
     ## 'prior'
@@ -1048,11 +1046,11 @@ updateOmegaAlpha <- function(prior, withTrend, useC = FALSE) {
         .Call(updateOmegaAlpha_R, prior, withTrend)
     }
     else {
-        if (withTrend) {                          ## NEW
-            has.level <- prior@hasLevel@.Data     ## NEW
-            if (!has.level)                       ## NEW
-                return(prior)                     ## NEW
-        }                                         ## NEW
+        if (withTrend) {                          
+            has.level <- prior@hasLevel@.Data     
+            if (!has.level)                       
+                return(prior)                     
+        }                                         
         J <- prior@J@.Data
         K <- prior@K@.Data
         L <- prior@L@.Data

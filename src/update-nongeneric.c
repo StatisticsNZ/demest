@@ -190,92 +190,6 @@ updateAlphaMix(SEXP prior_R)
     }
 }
 
-/*        K <- prior@K@.Data
-        L <- prior@L@.Data
-        update.series <- prior@updateSeriesDLM # logical length L ## NEW!!!
-        alpha <- prior@alphaDLM@.Data  # numeric length (K+1)L
-        delta <- prior@deltaDLM@.Data  # numeric length (K+1)L
-        G <- prior@GWithTrend@.Data  # 2x2 matrix
-        m <- prior@mWithTrend@.Data # list length K+1
-        m0 <- prior@m0WithTrend@.Data # list length L
-        C <- prior@CWithTrend@.Data # list length K+1
-        a <- prior@aWithTrend@.Data # list length K
-        W.sqrt <- prior@WSqrt@.Data # matrix 2X2
-        W.sqrt.inv.G <- prior@WSqrtInvG@.Data # matrix 2X2
-        UC <- prior@UC@.Data  # list length K+1
-        DC <- prior@DC@.Data  # list length K+1
-        DC.inv <- prior@DCInv@.Data # list length K+1
-        UR <- prior@UR@.Data  # list length K
-        DR.inv <- prior@DRInv@.Data
-        v <- getV(prior) ## numeric length KL
-        iterator.ad <- prior@iteratorState
-        iterator.v <- prior@iteratorV
-        iterator.ad <- resetA(iterator.ad)
-        iterator.v <- resetA(iterator.v)
-        for (l in seq_len(L)) {
-            if (update.series[l]) { ## NEW !!!
-                indices.ad <- iterator.ad@indices
-                indices.v <- iterator.v@indices
-                m[[1L]] <- m0[[l]]
-                ## forward filter
-                for (i in seq_len(K)) {
-                    M.R <- rbind(DC[[i]] %*% t(UC[[i]]) %*% t(G),
-                                 W.sqrt)
-                    svd.R <- svd(M.R, nu = 0)
-                    UR[[i]] <- svd.R$v
-                    DR.inv.diag <- 1 / svd.R$d
-                    DR.inv.diag[is.infinite(DR.inv.diag)] <- 0
-                    DR.inv[[i]][c(1L, 4L)] <- DR.inv.diag
-                    M.C <- rbind(UR[[i]][c(1L, 3L)] / sqrt(v[indices.v[i]]),
-                                 DR.inv[[i]])
-                    svd.C <- svd(M.C, nu = 0)
-                    UC[[i + 1L]] <- UR[[i]] %*% svd.C$v
-                    DC.inv.diag <- svd.C$d
-                    DC.diag <- 1/DC.inv.diag
-                    DC.diag[is.infinite(DC.diag)] <- 0
-                    DC.inv[[i + 1L]][c(1L, 4L)] <- DC.inv.diag
-                    DC[[i + 1L]][c(1L, 4L)] <- DC.diag
-                    a[[i]] <- drop(G %*% m[[i]])
-                    e <- betaTilde[indices.v[i]] - a[[i]][1L]
-                    C[[i + 1L]] <- UC[[i + 1L]] %*% DC[[i + 1L]] %*% DC[[i + 1L]] %*% t(UC[[i + 1L]])
-                    A <- C[[i + 1L]][1:2] / v[indices.v[i]]
-                    m[[i + 1L]] <- a[[i]] + A * e
-                }
-                ## draw final gamma, delta
-                sqrt.C <- UC[[K + 1L]] %*% DC[[K + 1L]]
-                z <- stats::rnorm(n = 2L)
-                theta <- m[[K + 1L]] + drop(sqrt.C %*% z)
-                alpha[indices.ad[K + 1L]] <- theta[1L]
-                delta[indices.ad[K + 1L]] <- theta[2L]
-                ## backward smooth
-                for (i in seq.int(from = K - 1L, to = 0L)) {
-                    R.inv <- (UR[[i + 1L]] %*% DR.inv[[i + 1L]]
-                        %*% DR.inv[[i + 1L]] %*% t(UR[[i + 1L]]))
-                    B <- C[[i + 1L]] %*% t(G) %*% R.inv
-                    M.C.star <- rbind(W.sqrt.inv.G,
-                                      DC.inv[[i + 1L]] %*% t(UC[[i + 1L]]))
-                    svd.C.star <- svd(M.C.star, nu = 0)
-                    UC.star <- svd.C.star$v
-                    DC.star <- 1 / svd.C.star$d
-                    DC.star[is.infinite(DC.star)] <- 0
-                    DC.star <- diag(DC.star, nrow = 2L)
-                    theta.prev <- c(alpha[indices.ad[i + 2L]], delta[indices.ad[i + 2L]])
-                    m.star <- m[[i + 1L]] + drop(B %*% (theta.prev - a[[i + 1L]]))
-                    z <- stats::rnorm(n = 2L)
-                    sqrt.C.star <- UC.star %*% DC.star
-                    theta.curr <- m.star + drop(sqrt.C.star %*% z)
-                    alpha[indices.ad[i + 1L]] <- theta.curr[1L]
-                    delta[indices.ad[i + 1L]] <- theta.curr[2L]
-                }
-            } ## NEW !!!
-            iterator.ad <- advanceA(iterator.ad)
-            iterator.v <- advanceA(iterator.v)
-        }
-        prior@alphaDLM@.Data <- alpha
-        prior@deltaDLM@.Data <- delta
-        prior
-    }*/
-
 void
 updateAlphaDeltaDLMWithTrend(SEXP prior_R, double *betaTilde, int J)
 {
@@ -319,6 +233,21 @@ updateAlphaDeltaDLMWithTrend(SEXP prior_R, double *betaTilde, int J)
     /* UR a list of matrices of doubles, len K, each matrix 2x2 */
     SEXP UR_R;
     PROTECT(UR_R = duplicate(GET_SLOT(prior_R, UR_sym)));
+    
+    /*has.level <- prior@hasLevel@.Data                              ###### NEW ######
+        if (!has.level) {                                              ###### NEW ######
+            phi <- prior@phi ## scalar                                 ###### NEW ######
+            omega.delta <- prior@omegaDelta@.Data ## scalar            ###### NEW ######
+        }                                                              ###### NEW ######
+        * */
+    
+    int hasLevel = *LOGICAL(GET_SLOT(prior_R, hasLevel_sym));
+    double phi = 0;
+    double omegaDelta = 0;
+    if (!hasLevel) {
+		phi = *REAL(GET_SLOT(prior_R, phi_sym));
+		omegaDelta = *REAL(GET_SLOT(prior_R, omegaDelta_sym));
+	}
     
     double *v = (double *)R_alloc(J, sizeof(double));
     getV_Internal(v, prior_R, J);
@@ -587,132 +516,185 @@ updateAlphaDeltaDLMWithTrend(SEXP prior_R, double *betaTilde, int J)
                 
             /* backward smooth */
             for (int i = K-1; i >= 0; --i) {
-                
+				
+				int index_ad = indices_ad[i+1] - 1;
+		        
                 /*zero workspaces */
                 memset(workspace, 0, nWorkspace*sizeof(double));
                 memset(iwork_svd, 0, n_iwork_svd * sizeof(int));
                 
-                int index_ad = indices_ad[i+1] - 1;
+                if (!hasLevel) {
+					
+					double alphaIndexAd = alpha[index_ad];
+					
+					double deltaCurr = 0;
+										
+					double *testDCInv = REAL(VECTOR_ELT(DCInv_R, 0));
+					double testDCInvFirst = testDCInv[0];
+					
+					if ( ( i == 0 ) && (!R_finite(testDCInvFirst)) ) {
+						deltaCurr = alpha[indices_ad[1] - 1];
+					}
+					else {
+					
+						double *thisUC = REAL(VECTOR_ELT(UC_R, i));
+						double *thisDCInv = REAL(VECTOR_ELT(DCInv_R, i));
+						double *this_m = REAL(VECTOR_ELT(m_R, i));
+						
+						/* C.inv <- UC[[i + 1L]] %*% DC.inv[[i + 1L]] 
+						  %*% DC.inv[[i + 1L]] %*% t(UC[[i + 1L]]) */
+						
+						F77_CALL(dgemm)(&transN, &transT, &q, &q, &q,
+										&alpha_blas_one, thisDCInv, &q, 
+										thisUC, &q, 
+										&beta_blas_zero, work1, &q);
+						F77_CALL(dgemm)(&transN, &transN, &q, &q, &q,
+										&alpha_blas_one, thisDCInv, &q, 
+										work1, &q, 
+										&beta_blas_zero, work2, &q);
+						F77_CALL(dgemm)(&transN, &transN, &q, &q, &q,
+										&alpha_blas_one, thisUC, &q, 
+										work2, &q, 
+										&beta_blas_zero, work1, &q);
+						/* CInv in work1 */
+						
+						double varDelta = 1/ ( phi*phi / omegaDelta
+											+ work1[0] - 2*work1[1] + work1[3] );
+						double meanDelta = ( phi * delta[index_ad]/omegaDelta
+											+ (work1[0] - work1[1]) * (alphaIndexAd - this_m[0] )
+											+ (work1[3] - work1[1]) * this_m[1] ) * varDelta;
+						deltaCurr = rnorm(meanDelta, sqrt(varDelta));
+						
+					}
+					
+					double alphaCurr = alphaIndexAd - deltaCurr;
+                    int index_ad_now = indices_ad[i] - 1;
+					alpha[index_ad_now] = alphaCurr;
+					delta[index_ad_now] = deltaCurr;
+					
+				} /* end if !hasLevel */
+				else {
                 
-                double *thisUR = REAL(VECTOR_ELT(UR_R, i));
-                double *thisDRInv = REAL(VECTOR_ELT(DRInv_R, i));
-                double *this_C = REAL(VECTOR_ELT(C_R, i));
-                double *thisUC = REAL(VECTOR_ELT(UC_R, i));
-                double *thisDCInv = REAL(VECTOR_ELT(DCInv_R, i));
-                double *this_m = REAL(VECTOR_ELT(m_R, i));
-                double *this_a = REAL(VECTOR_ELT(a_R, i));
-                
-                /*R.inv <- (UR[[i + 1L]] %*% DR.inv[[i + 1L]]
-                              %*% DR.inv[[i + 1L]] %*% t(UR[[i + 1L]]))   */
-                F77_CALL(dgemm)(&transN, &transT, &q, &q, &q,
-                                &alpha_blas_one, thisDRInv, &q, 
-                                thisUR, &q, 
-                                &beta_blas_zero, work1, &q);
-                F77_CALL(dgemm)(&transN, &transN, &q, &q, &q,
-                                &alpha_blas_one, thisDRInv, &q, 
-                                work1, &q, 
-                                &beta_blas_zero, work2, &q);
-                F77_CALL(dgemm)(&transN, &transN, &q, &q, &q,
-                                &alpha_blas_one, thisUR, &q, 
-                                work2, &q, 
-                                &beta_blas_zero, work1, &q);
-                /* RInv in work1 */
-               
-                /*B <- C[[i + 1L]] %*% t(G) %*% R.inv*/
-                F77_CALL(dgemm)(&transT, &transN, &q, &q, &q,
-                                &alpha_blas_one, G, &q, 
-                                work1, &q, 
-                                &beta_blas_zero, work2, &q);
-                F77_CALL(dgemm)(&transN, &transN, &q, &q, &q,
-                                &alpha_blas_one, this_C, &q, 
-                                work2, &q, 
-                                &beta_blas_zero, work1, &q);
-               /* B in work1 */
-            
-                /*M.C.star <- rbind(W.sqrt.inv.G,
-                                      DC.inv[[i + 1L]] %*% t(UC[[i + 1L]])) */
-                F77_CALL(dgemm)(&transN, &transT, &q, &q, &q,
-                                &alpha_blas_one, thisDCInv, &q, 
-                                thisUC, &q, 
-                                &beta_blas_zero, work2, &q);
-                /* DC.inv[[i + 1L]] %*% t(UC[[i + 1L]]) in work 2*/
-                
-                /* put M.C.star into work 3 ( dimensions 2q x q ) */
-                for (int colj = 0; colj < q; ++colj) { 
-                        int sourceCol = q * colj;
-                        int destCol = 2*sourceCol;
-                    for (int rowi = 0; rowi < q; ++rowi) {
-                        int sourceIndex = sourceCol + rowi;
-                        int baseDestIndex = destCol + rowi;
-                        work3 [ baseDestIndex ] 
-                                    = WSqrtInvG[sourceIndex];
-                        work3 [ baseDestIndex+q ] 
-                                    = work2[sourceIndex];
-                    }
-                }
-                /* work3 should now contain M.C.star <- rbind(W.sqrt.inv.G,
-                                      DC.inv[[i + 1L]] %*% t(UC[[i + 1L]])) */
-                
-                /*svd.C.star <- svd(M.C.star, nu = 0)*/
-                {
-                    int dim_m = (2*q);
-        
-                    F77_CALL(dgesdd)(&jobz, &dim_m, &dim_n, work3,
-                                    &dim_m, singulars, &dummyU, &ldu, /* U not used */
-                                    work2, &dim_n, /* work2 for VT */
-                                    work_svd, &lwork,
-                                    iwork_svd, &info);
-                    if (info) error("error in dgesdd in updateAlphaDeltaDLMWithTrend: %d", info); 
-                }
-                /* after call, work2 contains V**T */
-                
-                memset(DCstar, 0, q*q * sizeof(double));
-                for (int rowi = 0; rowi < q; ++rowi) {
-                    
-                    double tmp = 1/singulars[rowi];
-                    diag[rowi] = ( R_finite( tmp ) ? tmp : 0.0 );
-                    
-                    for (int colj = 0; colj < q; ++colj) {
-                        int index = q*colj + rowi;
-                        UCstar[index] = work2[q*rowi + colj];
-                        if (rowi == colj) {
-                            DCstar[index] = diag[rowi];
-                        }
-                    }
-                }
-                
-                theta_prev_minus_a[0] = alpha[index_ad] - this_a[0];
-                theta_prev_minus_a[1] = delta[index_ad] - this_a[1];
-                
-                /* store z */
-                for (int zi = 0; zi < q; ++zi) {
-                    z[zi] = rnorm(0,1);
-                    /* put this_m into m_star to start with */
-                    m_star[zi] = this_m[zi];
-                }
-                /* m.star <- m[[i + 1L]] + drop(B %*% (theta.prev - a[[i + 1L]]))*/
-                F77_CALL(dgemv)(&transN, &q, &q, &alpha_blas_one, work1, /* B in work1 */
-                                &q, theta_prev_minus_a, &inc_blas, &beta_blas_one,
-                                m_star, &inc_blas);  
-                /* m_star complete */
-            
-                /* sqrt.C.star <- UC.star %*% DC.star */
-                F77_CALL(dgemm)(&transN, &transN, &q, &q, &q,
-                                &alpha_blas_one, UCstar, &q, 
-                                DCstar, &q, 
-                                &beta_blas_zero, sqrtCstar, &q);
-                
-                /*theta.curr <- m.star + drop(sqrt.C.star %*% z)*/  
-                /* put m_star into theta_curr to start with */
-                memcpy(theta_curr, m_star, q*sizeof(double));
-                F77_CALL(dgemv)(&transN, &q, &q, &alpha_blas_one, sqrtCstar, 
-                                &q, z, &inc_blas, &beta_blas_one,
-                                theta_curr, &inc_blas);  
-                /* theta_curr complete */
-                
-                int index_ad_now = indices_ad[i] - 1;
-                alpha[index_ad_now] = theta_curr[0];
-                delta[index_ad_now] = theta_curr[1];
+					double *thisUR = REAL(VECTOR_ELT(UR_R, i));
+					double *thisDRInv = REAL(VECTOR_ELT(DRInv_R, i));
+					double *this_C = REAL(VECTOR_ELT(C_R, i));
+					double *thisUC = REAL(VECTOR_ELT(UC_R, i));
+					double *thisDCInv = REAL(VECTOR_ELT(DCInv_R, i));
+					double *this_m = REAL(VECTOR_ELT(m_R, i));
+					double *this_a = REAL(VECTOR_ELT(a_R, i));
+					
+					/*R.inv <- (UR[[i + 1L]] %*% DR.inv[[i + 1L]]
+								  %*% DR.inv[[i + 1L]] %*% t(UR[[i + 1L]]))   */
+					F77_CALL(dgemm)(&transN, &transT, &q, &q, &q,
+									&alpha_blas_one, thisDRInv, &q, 
+									thisUR, &q, 
+									&beta_blas_zero, work1, &q);
+					F77_CALL(dgemm)(&transN, &transN, &q, &q, &q,
+									&alpha_blas_one, thisDRInv, &q, 
+									work1, &q, 
+									&beta_blas_zero, work2, &q);
+					F77_CALL(dgemm)(&transN, &transN, &q, &q, &q,
+									&alpha_blas_one, thisUR, &q, 
+									work2, &q, 
+									&beta_blas_zero, work1, &q);
+					/* RInv in work1 */
+				   
+					/*B <- C[[i + 1L]] %*% t(G) %*% R.inv*/
+					F77_CALL(dgemm)(&transT, &transN, &q, &q, &q,
+									&alpha_blas_one, G, &q, 
+									work1, &q, 
+									&beta_blas_zero, work2, &q);
+					F77_CALL(dgemm)(&transN, &transN, &q, &q, &q,
+									&alpha_blas_one, this_C, &q, 
+									work2, &q, 
+									&beta_blas_zero, work1, &q);
+				   /* B in work1 */
+				
+					/*M.C.star <- rbind(W.sqrt.inv.G,
+										  DC.inv[[i + 1L]] %*% t(UC[[i + 1L]])) */
+					F77_CALL(dgemm)(&transN, &transT, &q, &q, &q,
+									&alpha_blas_one, thisDCInv, &q, 
+									thisUC, &q, 
+									&beta_blas_zero, work2, &q);
+					/* DC.inv[[i + 1L]] %*% t(UC[[i + 1L]]) in work 2*/
+					
+					/* put M.C.star into work 3 ( dimensions 2q x q ) */
+					for (int colj = 0; colj < q; ++colj) { 
+							int sourceCol = q * colj;
+							int destCol = 2*sourceCol;
+						for (int rowi = 0; rowi < q; ++rowi) {
+							int sourceIndex = sourceCol + rowi;
+							int baseDestIndex = destCol + rowi;
+							work3 [ baseDestIndex ] 
+										= WSqrtInvG[sourceIndex];
+							work3 [ baseDestIndex+q ] 
+										= work2[sourceIndex];
+						}
+					}
+					/* work3 should now contain M.C.star <- rbind(W.sqrt.inv.G,
+										  DC.inv[[i + 1L]] %*% t(UC[[i + 1L]])) */
+					
+					/*svd.C.star <- svd(M.C.star, nu = 0)*/
+					{
+						int dim_m = (2*q);
+			
+						F77_CALL(dgesdd)(&jobz, &dim_m, &dim_n, work3,
+										&dim_m, singulars, &dummyU, &ldu, /* U not used */
+										work2, &dim_n, /* work2 for VT */
+										work_svd, &lwork,
+										iwork_svd, &info);
+						if (info) error("error in dgesdd in updateAlphaDeltaDLMWithTrend: %d", info); 
+					}
+					/* after call, work2 contains V**T */
+					
+					memset(DCstar, 0, q*q * sizeof(double));
+					for (int rowi = 0; rowi < q; ++rowi) {
+						
+						double tmp = 1/singulars[rowi];
+						diag[rowi] = ( R_finite( tmp ) ? tmp : 0.0 );
+						
+						for (int colj = 0; colj < q; ++colj) {
+							int index = q*colj + rowi;
+							UCstar[index] = work2[q*rowi + colj];
+							if (rowi == colj) {
+								DCstar[index] = diag[rowi];
+							}
+						}
+					}
+					
+					theta_prev_minus_a[0] = alpha[index_ad] - this_a[0];
+					theta_prev_minus_a[1] = delta[index_ad] - this_a[1];
+					
+					/* store z */
+					for (int zi = 0; zi < q; ++zi) {
+						z[zi] = rnorm(0,1);
+						/* put this_m into m_star to start with */
+						m_star[zi] = this_m[zi];
+					}
+					/* m.star <- m[[i + 1L]] + drop(B %*% (theta.prev - a[[i + 1L]]))*/
+					F77_CALL(dgemv)(&transN, &q, &q, &alpha_blas_one, work1, /* B in work1 */
+									&q, theta_prev_minus_a, &inc_blas, &beta_blas_one,
+									m_star, &inc_blas);  
+					/* m_star complete */
+				
+					/* sqrt.C.star <- UC.star %*% DC.star */
+					F77_CALL(dgemm)(&transN, &transN, &q, &q, &q,
+									&alpha_blas_one, UCstar, &q, 
+									DCstar, &q, 
+									&beta_blas_zero, sqrtCstar, &q);
+					
+					/*theta.curr <- m.star + drop(sqrt.C.star %*% z)*/  
+					/* put m_star into theta_curr to start with */
+					memcpy(theta_curr, m_star, q*sizeof(double));
+					F77_CALL(dgemv)(&transN, &q, &q, &alpha_blas_one, sqrtCstar, 
+									&q, z, &inc_blas, &beta_blas_one,
+									theta_curr, &inc_blas);  
+					/* theta_curr complete */
+					
+					int index_ad_now = indices_ad[i] - 1;
+					alpha[index_ad_now] = theta_curr[0];
+					delta[index_ad_now] = theta_curr[1];
+				} /* end else !hasLevel */
             } 
         }  /* end if (updateSeries[l]) */
         
@@ -1661,66 +1643,77 @@ updateMeanLevelComponentWeightMix(SEXP prior_R)
 void
 updateOmegaAlpha(SEXP prior_R, int isWithTrend)
 {
-    int J = *INTEGER(GET_SLOT(prior_R, J_sym));
-    int K = *INTEGER(GET_SLOT(prior_R, K_sym));
-    int L = *INTEGER(GET_SLOT(prior_R, L_sym));
-    
-    int * updateSeries = LOGICAL(GET_SLOT(prior_R, updateSeriesDLM_sym));
-    
-    double *alpha = REAL(GET_SLOT(prior_R, alphaDLM_sym)); /* vector, length (K+1)L */
-    double omega = *REAL(GET_SLOT(prior_R, omegaAlpha_sym));
-    double omegaMax = *REAL(GET_SLOT(prior_R, omegaAlphaMax_sym));
-    
-    double A = *REAL(GET_SLOT(prior_R, AAlpha_sym));
-    double nu = *REAL(GET_SLOT(prior_R, nuAlpha_sym));
-    
-    SEXP iterator_R = GET_SLOT(prior_R, iteratorState_sym);
-    
-    resetA(iterator_R);
-    int *indices = INTEGER(GET_SLOT(iterator_R, indices_sym)); 
-
-    double *delta = NULL;
-    double phi = 0;
-    
+	int returnUnchanged = 0;
     if (isWithTrend) {
-        delta = REAL(GET_SLOT(prior_R, deltaDLM_sym));
-    }
-    else { 
-        phi = *REAL(GET_SLOT(prior_R, phi_sym));
-    }
+		int hasLevel = *LOGICAL(GET_SLOT(prior_R, hasLevel_sym));
+		if (!hasLevel) {
+			returnUnchanged = 1;
+		}
+	}
+	
+	if (!returnUnchanged) {
     
-    double V = 0;
-    
-    for (int l = 0; l < L; ++l) {
-        if (updateSeries[l]) {
-            for (int i = 0; i < K; ++i) {
-                int k_curr = indices[i + 1] - 1; /* C style indices */
-                int k_prev = indices[i] - 1;
-                
-                double alpha_k_curr = alpha[k_curr];
-                double alpha_k_prev = alpha[k_prev];
-                
-                double toSq = 0;
-                
-                if (isWithTrend) {
-                    toSq = alpha_k_curr - alpha_k_prev - delta[k_prev];
-                }
-                else { 
-                    toSq = alpha_k_curr - phi * alpha_k_prev;
-                }
-                   V += toSq*toSq;
-            }
-        } /* end if (updateSeries[l]) */
-        
-        advanceA(iterator_R); 
-    }
+		int J = *INTEGER(GET_SLOT(prior_R, J_sym));
+		int K = *INTEGER(GET_SLOT(prior_R, K_sym));
+		int L = *INTEGER(GET_SLOT(prior_R, L_sym));
+		
+		int * updateSeries = LOGICAL(GET_SLOT(prior_R, updateSeriesDLM_sym));
+		
+		double *alpha = REAL(GET_SLOT(prior_R, alphaDLM_sym)); /* vector, length (K+1)L */
+		double omega = *REAL(GET_SLOT(prior_R, omegaAlpha_sym));
+		double omegaMax = *REAL(GET_SLOT(prior_R, omegaAlphaMax_sym));
+		
+		double A = *REAL(GET_SLOT(prior_R, AAlpha_sym));
+		double nu = *REAL(GET_SLOT(prior_R, nuAlpha_sym));
+		
+		SEXP iterator_R = GET_SLOT(prior_R, iteratorState_sym);
+		
+		resetA(iterator_R);
+		int *indices = INTEGER(GET_SLOT(iterator_R, indices_sym)); 
 
-    omega = updateSDNorm(omega, A, nu, V, J, omegaMax);
-    
-    int successfullyUpdated = (omega > 0);
-    if(successfullyUpdated) {
-        SET_DOUBLESCALE_SLOT(prior_R, omegaAlpha_sym, omega);
-    }
+		double *delta = NULL;
+		double phi = 0;
+		
+		if (isWithTrend) {
+			delta = REAL(GET_SLOT(prior_R, deltaDLM_sym));
+		}
+		else { 
+			phi = *REAL(GET_SLOT(prior_R, phi_sym));
+		}
+		
+		double V = 0;
+		
+		for (int l = 0; l < L; ++l) {
+			if (updateSeries[l]) {
+				for (int i = 0; i < K; ++i) {
+					int k_curr = indices[i + 1] - 1; /* C style indices */
+					int k_prev = indices[i] - 1;
+					
+					double alpha_k_curr = alpha[k_curr];
+					double alpha_k_prev = alpha[k_prev];
+					
+					double toSq = 0;
+					
+					if (isWithTrend) {
+						toSq = alpha_k_curr - alpha_k_prev - delta[k_prev];
+					}
+					else { 
+						toSq = alpha_k_curr - phi * alpha_k_prev;
+					}
+					   V += toSq*toSq;
+				}
+			} /* end if (updateSeries[l]) */
+			
+			advanceA(iterator_R); 
+		}
+
+		omega = updateSDNorm(omega, A, nu, V, J, omegaMax);
+		
+		int successfullyUpdated = (omega > 0);
+		if(successfullyUpdated) {
+			SET_DOUBLESCALE_SLOT(prior_R, omegaAlpha_sym, omega);
+		}
+	} /* end if !returnUnchanged */
 }
 
 

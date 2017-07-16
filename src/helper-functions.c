@@ -1735,12 +1735,10 @@ predictAlphaDLMNoTrend(SEXP prior_R)
     /* only alphaDLM gets updated in the prior */
 }
 
-
-
 void
 predictAlphaDeltaDLMWithTrend(SEXP prior_R)
 {
-    int K = *INTEGER(GET_SLOT(prior_R, K_sym));
+	int K = *INTEGER(GET_SLOT(prior_R, K_sym));
     int L = *INTEGER(GET_SLOT(prior_R, L_sym));
     
     double *alpha = REAL(GET_SLOT(prior_R, alphaDLM_sym)); /* vector, length (K+1)L */
@@ -1749,6 +1747,8 @@ predictAlphaDeltaDLMWithTrend(SEXP prior_R)
     double phi = *REAL(GET_SLOT(prior_R, phi_sym)); 
     double omegaAlpha = *REAL(GET_SLOT(prior_R, omegaAlpha_sym)); 
     double omegaDelta = *REAL(GET_SLOT(prior_R, omegaDelta_sym)); 
+    
+    int hasLevel = *LOGICAL(GET_SLOT(prior_R, hasLevel_sym));
     
     SEXP iterator_R = GET_SLOT(prior_R, iteratorState_sym);
     
@@ -1759,8 +1759,8 @@ predictAlphaDeltaDLMWithTrend(SEXP prior_R)
     for (int l = 0; l < L; ++l) {
         
         for (int i = 0; i < K; ++i) {
-            
-            int k_curr = indices[i+1] - 1;
+			
+			int k_curr = indices[i+1] - 1;
             int k_prev = indices[i] - 1;
             
             double delta_k_prev = delta[k_prev];
@@ -1769,7 +1769,12 @@ predictAlphaDeltaDLMWithTrend(SEXP prior_R)
             delta[k_curr] = rnorm(meanDelta, omegaDelta);
             
             double meanAlpha = alpha[k_prev] + delta_k_prev;
-            alpha[k_curr] = rnorm(meanAlpha, omegaAlpha);
+            if (hasLevel) {
+				alpha[k_curr] = rnorm(meanAlpha, omegaAlpha);
+			}
+			else {
+				alpha[k_curr] = meanAlpha;
+			}
         }
             
         advanceA(iterator_R);

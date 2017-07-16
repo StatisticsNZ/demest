@@ -1859,6 +1859,7 @@ R_init_demest(DllInfo *info)
   ADD_SYM(m0WithTrend);
   ADD_SYM(CWithTrend);
   ADD_SYM(aWithTrend);
+  ADD_SYM(hasLevel);
   ADD_SYM(omegaAlpha);
   ADD_SYM(omegaAlphaMax);
   ADD_SYM(AAlpha);

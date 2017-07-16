@@ -218,6 +218,7 @@ SEXP
   m0WithTrend_sym,
   CWithTrend_sym,
   aWithTrend_sym,
+  hasLevel_sym,
   omegaAlpha_sym,
   omegaAlphaMax_sym,
   AAlpha_sym,
