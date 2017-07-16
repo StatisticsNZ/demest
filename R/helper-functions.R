@@ -5408,7 +5408,7 @@ predictAlphaDLMNoTrend <- function(prior, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE (AGAIN)
+## TRANSLATED (AGAIN 16/7/2017)
 ## HAS_TESTS
 predictAlphaDeltaDLMWithTrend <- function(prior, useC = FALSE) {
     stopifnot(methods::is(prior, "DLM"))
@@ -5426,7 +5426,7 @@ predictAlphaDeltaDLMWithTrend <- function(prior, useC = FALSE) {
         omega.alpha <- prior@omegaAlpha@.Data
         omega.delta <- prior@omegaDelta@.Data
         iterator <- prior@iteratorState
-        has.level <- prior@hasLevel@.Data ## NEW
+        has.level <- prior@hasLevel@.Data
         iterator <- resetA(iterator)
         for (l in seq_len(L)) {
             indices <- iterator@indices
@@ -5438,12 +5438,12 @@ predictAlphaDeltaDLMWithTrend <- function(prior, useC = FALSE) {
                                               mean = mean.delta,
                                               sd = omega.delta)
                 mean.alpha <- alpha[k.prev] + delta[k.prev]
-                if (has.level) ## NEW
+                if (has.level)
                     alpha[k.curr] <- stats::rnorm(n = 1L,
                                                   mean = mean.alpha,
                                                   sd = omega.alpha)
-                else ##NEW
-                    alpha[k.curr] <- mean.alpha ## NEW
+                else
+                    alpha[k.curr] <- mean.alpha
             }
             iterator <- advanceA(iterator)
         }

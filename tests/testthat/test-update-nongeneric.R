@@ -1921,7 +1921,7 @@ test_that("R and C versions of updateOmegaAlpha give same answer", {
     updateAlphaDeltaDLMWithTrend <- demest:::updateAlphaDeltaDLMWithTrend
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
-        ## withTrend = TRUE
+		## withTrend = TRUE, hasLevel = TRUE
         spec <- DLM()
         beta <- rnorm(10)
         metadata <- new("MetaData",
@@ -1931,8 +1931,8 @@ test_that("R and C versions of updateOmegaAlpha give same answer", {
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, multScale = 1)
-        expect_is(prior, "DLMWithTrendNormZeroNoSeason")
+                              sY = NULL,
+                              multScale = 1)
         prior <- updateAlphaDeltaDLMWithTrend(prior = prior,
                                               betaTilde = beta)
         set.seed(seed)
@@ -1943,6 +1943,7 @@ test_that("R and C versions of updateOmegaAlpha give same answer", {
             expect_identical(ans.R, ans.C)
         else
             expect_equal(ans.R, ans.C)        
+        ## withTrend = TRUE, hasLevel = FALSE
         spec <- DLM(level = NULL)
         beta <- rnorm(10)
         metadata <- new("MetaData",
