@@ -1,8 +1,0 @@
-
-Function names are camel case, starting with a lower case letter, eg 'updateTheta', with the exception of generator functions for S4 classes, which start with an upper case letter, eg 'Exch'.
-
-Always use argument names in function calls
-
-One line per argument name
-
-

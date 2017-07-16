@@ -264,8 +264,6 @@ updateAlphaMix <- function(prior, useC = FALSE) {
     }
 }
 
-
-
 updateAlphaMove <- function(prior, betaTilde, useC = FALSE) {
     J <- prior@J@.Data
     alpha <- prior@alphaMove@.Data
@@ -494,7 +492,7 @@ updateAlphaDLMNoTrend <- function(prior, betaTilde, useC = FALSE) {
     }
 }
 
-## TRANSLATED (AGAIN) - n is now a vector of same length as vbar
+## TRANSLATED
 ## HAS_TESTS
 updateBeta <- function(prior, vbar, n, sigma, useC = FALSE) {
     checkUpdateBetaAndPriorBeta(prior = prior,
@@ -516,7 +514,8 @@ updateBeta <- function(prior, vbar, n, sigma, useC = FALSE) {
         sd <- sqrt(var)
         stats::rnorm(n = J, mean = mean, sd = sd)
     }
-}
+}  
+
 
 ## TRANSLATED
 ## HAS_TESTS

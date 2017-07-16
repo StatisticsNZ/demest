@@ -903,7 +903,7 @@ setMethod("updateBetaAndPriorBeta",
               }
               else {
                   ## beta
-                  ## THIS IS WRONG - IT HAS THE WRONG VARIANCE
+                  ## THIS IS WRONG
                   beta <- updateBeta(prior = prior,
                                      vbar = vbar,
                                      n = n,
