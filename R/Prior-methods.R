@@ -73,6 +73,11 @@ setMethod("fakeBeta",
           
 ## makeOutputPrior ###################################################################
 
+
+## Function "whereEstimated" controls whether a parameter
+## estimated is actually printed. We can't skip parameters,
+## because that messes up function 'changeInPos'.
+
 ## ExchFixed
 
 ## NO_TESTS
@@ -194,8 +199,7 @@ setMethod("makeOutputPrior",
                                           pos = pos,
                                           firstSeason = 0L)
               pos <- pos + (K + 1L) * L
-              if (has.level)
-                  scaleLevel <- makeOutputPriorScale(pos = pos)
+              scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
               trend <- makeOutputTrendDLM(iterator = iterator,
                                           metadata = metadata,
@@ -206,19 +210,12 @@ setMethod("makeOutputPrior",
               damp <- makeOutputPriorDamp(pos = pos)
               pos <- pos + 1L
               scaleError <- makeOutputPriorScale(pos = pos)
-              if (has.level)
-                  list(level = level,
-                       scaleLevel = scaleLevel,
-                       trend = trend,
-                       scaleTrend = scaleTrend,
-                       damp = damp,
-                       scaleError = scaleError)
-              else
-                  list(level = level,
-                       trend = trend,
-                       scaleTrend = scaleTrend,
-                       damp = damp,
-                       scaleError = scaleError)
+              list(level = level,
+                   scaleLevel = scaleLevel,
+                   trend = trend,
+                   scaleTrend = scaleTrend,
+                   damp = damp,
+                   scaleError = scaleError)
           })
 
 ## HAS_TESTS
@@ -281,8 +278,7 @@ setMethod("makeOutputPrior",
                                           pos = pos,
                                           firstSeason = firstSeason)
               pos <- pos + (K + 1L) * L
-              if (has.level)
-                  scaleLevel <- makeOutputPriorScale(pos = pos)
+              scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
               trend <- makeOutputTrendDLM(iterator = iterator,
                                           metadata = metadata,
@@ -301,23 +297,14 @@ setMethod("makeOutputPrior",
               scaleSeason <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
               scaleError <- makeOutputPriorScale(pos = pos)
-              if (has.level)
-                  list(level = level,
-                       scaleLevel = scaleLevel,
-                       trend = trend,
-                       scaleTrend = scaleTrend,
-                       damp = damp,
-                       season = season,
-                       scaleSeason = scaleSeason,
-                       scaleError = scaleError)
-              else
-                  list(level = level,
-                       trend = trend,
-                       scaleTrend = scaleTrend,
-                       damp = damp,
-                       season = season,
-                       scaleSeason = scaleSeason,
-                       scaleError = scaleError)
+              list(level = level,
+                   scaleLevel = scaleLevel,
+                   trend = trend,
+                   scaleTrend = scaleTrend,
+                   damp = damp,
+                   season = season,
+                   scaleSeason = scaleSeason,
+                   scaleError = scaleError)
           })
 
 
@@ -377,8 +364,7 @@ setMethod("makeOutputPrior",
                                           pos = pos,
                                           firstSeason = 0L)
               pos <- pos + (K + 1L) * L
-              if (has.level)
-                  scaleLevel <- makeOutputPriorScale(pos = pos)
+              scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
               trend <- makeOutputTrendDLM(iterator = iterator,
                                           metadata = metadata,
@@ -392,21 +378,13 @@ setMethod("makeOutputPrior",
                                           pos = pos)
               pos <- pos + P
               scaleError <- makeOutputPriorScale(pos = pos)
-              if (has.level)
-                  list(level = level,
-                       scaleLevel = scaleLevel,
-                       trend = trend,
-                       scaleTrend = scaleTrend,
-                       damp = damp,
-                       coef = coef,
-                       scaleError = scaleError)
-              else
-                  list(level = level,
-                       trend = trend,
-                       scaleTrend = scaleTrend,
-                       damp = damp,
-                       coef = coef,
-                       scaleError = scaleError)
+              list(level = level,
+                   scaleLevel = scaleLevel,
+                   trend = trend,
+                   scaleTrend = scaleTrend,
+                   damp = damp,
+                   coef = coef,
+                   scaleError = scaleError)
           })
 
 ## HAS_TESTS
@@ -477,8 +455,7 @@ setMethod("makeOutputPrior",
                                           pos = pos,
                                           firstSeason = firstSeason)
               pos <- pos + (K + 1L) * L
-              if (has.level)
-                  scaleLevel <- makeOutputPriorScale(pos = pos)
+              scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
               trend <- makeOutputTrendDLM(iterator = iterator,
                                           metadata = metadata, 
@@ -500,25 +477,15 @@ setMethod("makeOutputPrior",
                                           pos = pos)
               pos <- pos + P
               scaleError <- makeOutputPriorScale(pos = pos)
-              if (has.level)
-                  list(level = level,
-                       scaleLevel = scaleLevel,
-                       trend = trend,
-                       scaleTrend = scaleTrend,
-                       damp = damp,
-                       season = season,
-                       scaleSeason = scaleSeason,
-                       coef = coef,
-                       scaleError = scaleError)
-              else
-                  list(level = level,
-                       trend = trend,
-                       scaleTrend = scaleTrend,
-                       damp = damp,
-                       season = season,
-                       scaleSeason = scaleSeason,
-                       coef = coef,
-                       scaleError = scaleError)
+              list(level = level,
+                   scaleLevel = scaleLevel,
+                   trend = trend,
+                   scaleTrend = scaleTrend,
+                   damp = damp,
+                   season = season,
+                   scaleSeason = scaleSeason,
+                   coef = coef,
+                   scaleError = scaleError)
           })
 
 
@@ -568,8 +535,7 @@ setMethod("makeOutputPrior",
                                           pos = pos,
                                           firstSeason = 0L)
               pos <- pos + (K + 1L) * L
-              if (has.level)
-                  scaleLevel <- makeOutputPriorScale(pos = pos)
+              scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
               trend <- makeOutputTrendDLM(iterator = iterator,
                                           metadata = metadata,
@@ -580,19 +546,12 @@ setMethod("makeOutputPrior",
               damp <- makeOutputPriorDamp(pos = pos)
               pos <- pos + 1L
               scaleError <- makeOutputPriorScale(pos = pos)
-              if (has.level)
-                  list(level = level,
-                       scaleLevel = scaleLevel,
-                       trend = trend,
-                       scaleTrend = scaleTrend,
-                       damp = damp,
-                       scaleError = scaleError)
-              else
-                  list(level = level,
-                       trend = trend,
-                       scaleTrend = scaleTrend,
-                       damp = damp,
-                       scaleError = scaleError)
+              list(level = level,
+                   scaleLevel = scaleLevel,
+                   trend = trend,
+                   scaleTrend = scaleTrend,
+                   damp = damp,
+                   scaleError = scaleError)
           })
 
 ## HAS_TESTS
@@ -653,8 +612,7 @@ setMethod("makeOutputPrior",
                                           pos = pos,
                                           firstSeason = firstSeason)
               pos <- pos + (K + 1L) * L
-              if (has.level)
-                  scaleLevel <- makeOutputPriorScale(pos = pos)
+              scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
               trend <- makeOutputTrendDLM(iterator = iterator,
                                           metadata = metadata,
@@ -673,23 +631,14 @@ setMethod("makeOutputPrior",
               scaleSeason <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
               scaleError <- makeOutputPriorScale(pos = pos)
-              if (has.level)
-                  list(level = level,
-                       scaleLevel = scaleLevel,
-                       trend = trend,
-                       scaleTrend = scaleTrend,
-                       damp = damp,
-                       season = season,
-                       scaleSeason = scaleSeason,
-                       scaleError = scaleError)
-              else
-                  list(level = level,
-                       trend = trend,
-                       scaleTrend = scaleTrend,
-                       damp = damp,
-                       season = season,
-                       scaleSeason = scaleSeason,
-                       scaleError = scaleError)
+              list(level = level,
+                   scaleLevel = scaleLevel,
+                   trend = trend,
+                   scaleTrend = scaleTrend,
+                   damp = damp,
+                   season = season,
+                   scaleSeason = scaleSeason,
+                   scaleError = scaleError)
           })
 
 
@@ -747,8 +696,7 @@ setMethod("makeOutputPrior",
                                           pos = pos,
                                           firstSeason = 0L)
               pos <- pos + (K + 1L) * L
-              if (has.level)
-                  scaleLevel <- makeOutputPriorScale(pos = pos)
+              scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
               trend <- makeOutputTrendDLM(iterator = iterator,
                                           metadata = metadata,
@@ -762,21 +710,13 @@ setMethod("makeOutputPrior",
                                           pos = pos)
               pos <- pos + P
               scaleError <- makeOutputPriorScale(pos = pos)
-              if (has.level)
-                  list(level = level,
-                       scaleLevel = scaleLevel,
-                       trend = trend,
-                       scaleTrend = scaleTrend,
-                       damp = damp,
-                       coef = coef,
-                       scaleError = scaleError)
-              else
-                  list(level = level,
-                       trend = trend,
-                       scaleTrend = scaleTrend,
-                       damp = damp,
-                       coef = coef,
-                       scaleError = scaleError)
+              list(level = level,
+                   scaleLevel = scaleLevel,
+                   trend = trend,
+                   scaleTrend = scaleTrend,
+                   damp = damp,
+                   coef = coef,
+                   scaleError = scaleError)
           })
 
 ## HAS_TESTS
@@ -845,8 +785,7 @@ setMethod("makeOutputPrior",
                                           pos = pos,
                                           firstSeason = firstSeason)
               pos <- pos + (K + 1L) * L
-              if (has.level)
-                  scaleLevel <- makeOutputPriorScale(pos = pos)
+              scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
               trend <- makeOutputTrendDLM(iterator = iterator,
                                           metadata = metadata,
@@ -868,25 +807,15 @@ setMethod("makeOutputPrior",
                                           pos = pos)
               pos <- pos + P
               scaleError <- makeOutputPriorScale(pos = pos)
-              if (has.level)
-                  list(level = level,
-                       scaleLevel = scaleLevel,
-                       trend = trend,
-                       scaleTrend = scaleTrend,
-                       damp = damp,
-                       season = season,
-                       scaleSeason = scaleSeason,
-                       coef = coef,
-                       scaleError = scaleError)
-              else
-                  list(level = level,
-                       trend = trend,
-                       scaleTrend = scaleTrend,
-                       damp = damp,
-                       season = season,
-                       scaleSeason = scaleSeason,
-                       coef = coef,
-                       scaleError = scaleError)
+              list(level = level,
+                   scaleLevel = scaleLevel,
+                   trend = trend,
+                   scaleTrend = scaleTrend,
+                   damp = damp,
+                   season = season,
+                   scaleSeason = scaleSeason,
+                   coef = coef,
+                   scaleError = scaleError)
           })
 
 ## HAS_TESTS
