@@ -867,7 +867,8 @@ initialDLMAllPredict <- function(prior, metadata, name, along) {
     J <- makeJPredict(metadata)
     i.along.new <- dembase::checkAndTidyAlong(along = along,
                                               metadata = metadata,
-                                              numericDimScales = TRUE)
+                                              numericDimScales = TRUE,
+                                              checkNumericDimscales = FALSE)
     if (!identical(i.along.new, i.along.old))
         stop(gettextf("\"%s\" dimension of prediction does not match \"%s\" dimension of prior for '%s'",
                       "along", "along", name))
@@ -7252,7 +7253,6 @@ printKnownEqns <- function(object, name) {
 
 printLevelTrendEqns <- function(object, isMain, hasTrend) {
     AAlpha <- object@AAlpha@.Data
-    has.level <- object@hasLevel@.Data
     omegaAlphaMax <- object@omegaAlphaMax
     nuAlpha <- object@nuAlpha
     phi <- object@phi
@@ -7263,6 +7263,7 @@ printLevelTrendEqns <- function(object, isMain, hasTrend) {
     shape2 <- object@shape2Phi@.Data
     is.spec <- methods::is(object, "SpecPrior")
     if (hasTrend) {
+        has.level <- object@hasLevel@.Data
         ADelta0 <- object@ADelta0@.Data
         ADelta <- object@ADelta@.Data
         meanDelta0 <- object@meanDelta0@.Data
@@ -7276,6 +7277,7 @@ printLevelTrendEqns <- function(object, isMain, hasTrend) {
         }
     }
     else {
+        has.level <- FALSE
         if (is.spec)
             AAlpha0 <- NA
         else {
@@ -7796,7 +7798,7 @@ printZeroEqns <- function(name) {
     if (is.null(name))
         name <- "parameter"
     name <- sprintf("%13s", name)
-    cat(name, "[j] = mean[j]\n", sep = "")
+    cat(name, "[j] = 0\n", sep = "")
 }
 
 
