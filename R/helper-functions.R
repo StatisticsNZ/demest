@@ -5155,6 +5155,83 @@ checkDataPredict <- function(data) {
     NULL
 }
 
+
+## ## HAS_TESTS
+## initialModelPredictHelper <- function(model, along, labels, n, offsetModel,
+##                                       covariates) {
+##     theta.old <- model@theta
+##     metadata.first <- model@metadataY
+##     betas <- model@betas
+##     priors.betas <- model@priorsBetas
+##     names.betas <- model@namesBetas
+##     margins <- model@margins
+##     dims <- model@dims
+##     i.method.model.first <- model@iMethodModel
+##     n.beta <- length(betas)
+##     metadata.pred <- makeMetadataPredict(metadata = metadata.first,
+##                                          along = along,
+##                                          labels = labels,
+##                                          n = n)
+##     theta <- rep(mean(theta.old), times = prod(dim(metadata.pred)))
+##     cell.in.lik <- rep(FALSE, times = prod(dim(metadata.pred)))
+##     beta.is.predicted <- logical(length = n.beta)
+##     for (i in seq_len(n.beta)) {
+##         margin <- margins[[i]]
+##         prior <- priors.betas[[i]]
+##         beta.is.estimated <- betaIsEstimated(prior)
+##         beta.is.predicted[i] <- (along %in% margin) && beta.is.estimated
+##         if (beta.is.predicted[[i]]) {
+##             metadata.pred.i <- metadata.pred[margin]
+##             dim.i <- dim(metadata.pred.i)
+##             J <- prod(dim.i)
+##             covariates.i <- covariates[[names.betas[i]]]
+##             dims[[i]] <- dim.i
+##             betas[[i]] <- rep(0, length = J)
+##             along.margin <- match(along, margin)
+##             priors.betas[[i]] <- initialPriorPredict(prior = prior,
+##                                                      data = covariates.i,
+##                                                      metadata = metadata.pred.i,
+##                                                      name = names.betas[i],
+##                                                      along = along.margin)
+##         }
+##         else {
+##             J <- length(betas[[i]])
+##             J <- methods::new("Length", J)
+##             priors.betas[[i]] <- methods::new("TimeInvariant", J = J)
+##         }
+##     }
+##     names.predicted <- names.betas[beta.is.predicted]
+##     names.covariates <- names(covariates)
+##     for (name in names.covariates) {
+##         if (!(name %in% names.betas))
+##             stop(gettextf("'%s' includes data for '%s', but '%s' is not a term in the model",
+##                           "covariates", name, name))
+##         if (!name %in% names.predicted)
+##             stop(gettextf("'%s' includes data for '%s', but '%s' is not predicted",
+##                           "covariates", name, name))
+##     }
+##     dim <- dim(metadata.pred)
+##     iterator.betas <- BetaIterator(dim = dim, margins = margins)
+##     offsets.betas <- makeOffsetsBetas(model, offsetModel = offsetModel)
+##     offsets.priors.betas <- makeOffsetsPriorsBetas(model, offsetModel = offsetModel)
+##     offsets.sigma <- makeOffsetsSigma(model, offsetModel = offsetModel)
+##     i.method.model <- i.method.model.first + 100L
+##     list(theta = theta,
+##          metadataY = metadata.pred,
+##          cellInLik = cell.in.lik,
+##          betas = betas,
+##          priorsBetas = priors.betas,
+##          iteratorBetas = iterator.betas,
+##          dims = dims,
+##          betaIsPredicted = beta.is.predicted,
+##          offsetsBetas = offsets.betas,
+##          offsetsPriorsBetas = offsets.priors.betas,
+##          offsetsSigma = offsets.sigma,
+##          iMethodModel = i.method.model)         
+## }    
+
+
+
 ## HAS_TESTS
 initialModelPredictHelper <- function(model, along, labels, n, offsetModel,
                                       covariates) {
@@ -5177,21 +5254,20 @@ initialModelPredictHelper <- function(model, along, labels, n, offsetModel,
     for (i in seq_len(n.beta)) {
         margin <- margins[[i]]
         prior <- priors.betas[[i]]
-        beta.is.estimated <- betaIsEstimated(prior)
-        beta.is.predicted[i] <- (along %in% margin) && beta.is.estimated
-        if (beta.is.predicted[[i]]) {
+        beta.is.predicted[i] <- along %in% margin
+        if (beta.is.predicted[i]) {
             metadata.pred.i <- metadata.pred[margin]
             dim.i <- dim(metadata.pred.i)
             J <- prod(dim.i)
-            covariates.i <- covariates[[names.betas[i]]]
             dims[[i]] <- dim.i
             betas[[i]] <- rep(0, length = J)
+            covariates.i <- covariates[[names.betas[i]]]
             along.margin <- match(along, margin)
             priors.betas[[i]] <- initialPriorPredict(prior = prior,
                                                      data = covariates.i,
                                                      metadata = metadata.pred.i,
                                                      name = names.betas[i],
-                                                     along = along.margin)
+                                                     along = along.margin)            
         }
         else {
             J <- length(betas[[i]])
@@ -5924,10 +6000,10 @@ transferParamPriorsBetas <- function(model, filename, lengthIter, iteration,
     else {
         priors <- model@priorsBetas
         offsets.priors <- model@offsetsPriorsBetas
-        is.predicted <- model@betaIsPredicted  ## NEW
+        is.predicted <- model@betaIsPredicted
         n.beta <- length(priors)
         for (i in seq_len(n.beta)) {
-            if (is.predicted[i]) {  ## NEW
+            if (is.predicted[i]) {
                 offsets <- offsets.priors[[i]]
                 if (!is.null(offsets)) {
                     first <- offsets[1L]
