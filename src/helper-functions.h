@@ -113,6 +113,9 @@
     void chooseICellOutInPoolInternal(int *ans, SEXP description_R);
     
     void predictBeta_ExchFixed(double* beta, SEXP prior_R, int J);
+    void predictBeta_KnownCertain(double* beta, SEXP prior_R, int J);
+    void predictBeta_KnownUncertain(double* beta, SEXP prior_R, int J);
+    void predictBeta_Zero(double* beta, SEXP prior_R, int J);
     void predictBeta_Default(double* beta, SEXP prior_R, int J);
     
 #endif

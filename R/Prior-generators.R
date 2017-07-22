@@ -2627,7 +2627,7 @@ setMethod("initialPriorPredict",
 
 ## Known
 
-## NO_TESTS
+## HAS_TESTS
 setMethod("initialPriorPredict",
           signature(prior = "Known"),
           function(prior, data, metadata, name, along) {
@@ -2648,7 +2648,7 @@ setMethod("initialPriorPredict",
                                  dimnames = dimnames(metadata.all))
               alpha.all <- methods::new("Values",
                                         .Data = .Data.all,
-                                        metadata = metadata.alll)
+                                        metadata = metadata.all)
               alpha <- tryCatch(dembase::makeCompatible(x = alpha.all, y = beta, subset = TRUE),
                                 error = function(e) e)
               if (methods::is(alpha, "error"))
@@ -2661,7 +2661,6 @@ setMethod("initialPriorPredict",
                                alphaKnown = alphaKnown,
                                alphaKnownAll = prior@alphaKnownAll,
                                J = J,
-                               metadata = metadata,
                                metadataAll = prior@metadataAll)
               }
               else {
@@ -2674,14 +2673,13 @@ setMethod("initialPriorPredict",
                                     metadata = metadata.all)
                   A <- dembase::makeCompatible(x = A, y = beta, subset = TRUE)
                   A <- as.numeric(A)
-                  AKnownVec <- new("ParameterVector", A)
+                  AKnownVec <- new("ScaleVec", A)
                   methods::new("KnownUncertain",
                                AKnownVec = AKnownVec,
                                AKnownAllVec = prior@AKnownAllVec,
                                alphaKnown = alphaKnown,
                                alphaKnownAll = prior@alphaKnownAll,
                                J = J,
-                               metadata = metadata,
                                metadataAll = prior@metadataAll)
               }
           })

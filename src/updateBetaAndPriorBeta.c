@@ -819,7 +819,7 @@ updateBetaAndPriorBeta_KnownUncertain(double *beta, int J, SEXP prior_R,
 		double thisPrecPrior = 1/(thisA * thisA);
 		double thisVar = 1/(thisPrecData + thisPrecPrior);
 		double thisMean = (thisPrecData * vbar[i] + 
-									thisPrecPrior * alpha[i]) * thisVar;
+				   thisPrecPrior * alpha[i]) * thisVar;
 		double thisSD = sqrt(thisVar);
 		beta[i] = rnorm(thisMean, thisSD);
 	}

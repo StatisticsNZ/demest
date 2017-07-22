@@ -5543,16 +5543,27 @@ predictBeta <- function(prior, useC = FALSE) {
     }
     else {
         J <- prior@J@.Data
-        ## I'm assuming the C code will use iMethodPrior
-        ## to identify special cases. At present we only
-        ## have one special case, but we will add at least
-        ## one more ("Known").  If we forget a special case
-        ## functions 'betaHat' and 'getV' below will almost
+        ## If we forget a special case
+        ## functions 'betaHat' and 'getV' will almost
         ## certainly pick it up.
-        is.exch.fixed <- methods::is(prior, "ExchFixed") 
+        is.exch.fixed <- methods::is(prior, "ExchFixed")
+        is.known.certain <- methods::is(prior, "KnownCertain")
+        is.known.uncertain <- methods::is(prior, "KnownUncertain")
+        is.zero <- methods::is(prior, "Zero") 
         if (is.exch.fixed) {
             sd <- prior@tau@.Data
             stats::rnorm(n = J, mean = 0, sd = sd)
+        }
+        else if (is.known.certain) {
+            prior@alphaKnown@.Data
+        }
+        else if (is.known.uncertain) {
+            alpha <- prior@alphaKnown@.Data
+            A <- prior@AKnownVec@.Data
+            stats::rnorm(n = J, mean = alpha, sd = A)
+        }
+        else if (is.zero) {
+            rep(0, times = J)
         }
         else {
             mean <- betaHat(prior)

@@ -1792,6 +1792,9 @@ predictBeta(double* beta, SEXP prior_R, int J)
         case 0:/*ExchFixed */
             predictBeta_ExchFixed(beta, prior_R, J);
             break;
+        case 40:/*Zero */
+            predictBeta_Zero(beta, prior_R, J);
+            break;
         default:
             predictBeta_Default(beta, prior_R, J);;
             break;
@@ -1808,6 +1811,34 @@ predictBeta_ExchFixed(double* beta, SEXP prior_R, int J)
     }
 }
 
+void
+predictBeta_KnownCertain(double* beta, SEXP prior_R, int J)
+{
+    double *alpha = REAL(GET_SLOT(prior_R, alphaKnown_sym));
+    
+    for (int j = 0; j < J; ++j) {
+        beta[j] = alpha[j];
+    }
+}
+
+void
+predictBeta_KnownUncertain(double* beta, SEXP prior_R, int J)
+{
+    double *alpha = REAL(GET_SLOT(prior_R, alphaKnown_sym));
+    double *A = REAL(GET_SLOT(prior_R, AKnownVec_sym));
+    
+    for (int j = 0; j < J; ++j) {
+        beta[j] = rnorm(alpha[j], A[j]);
+    }
+}
+
+void
+predictBeta_Zero(double* beta, SEXP prior_R, int J)
+{
+    for (int j = 0; j < J; ++j) {
+        beta[j] = 0;
+    }
+}
 
 void
 predictBeta_Default(double* beta, SEXP prior_R, int J)

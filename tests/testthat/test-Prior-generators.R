@@ -1651,7 +1651,7 @@ test_that("initialPriorPredict works with DLMWithTrendRobustCovWithSeason", {
 
 ## Mix
 
-test_that("generator function and initialPrior work with MixNormZeroPredict", {
+test_that("initialPriorPredict works with MixNormZeroPredict", {
     set.seed(100)
     initialPrior <- demest:::initialPrior
     initialPriorPredict <- demest:::initialPriorPredict
@@ -1681,10 +1681,82 @@ test_that("generator function and initialPrior work with MixNormZeroPredict", {
     expect_is(prior.pred, "MixNormZeroPredict")
 })
 
+test_that("initialPriorPredict works with KnownCertain", {
+    initialPrior <- demest:::initialPrior
+    mean <- ValuesOne(1:10, labels = 0:9, name = "time", dimscale = "Intervals")
+    spec <- Known(mean)
+    expect_is(spec, "SpecKnownCertain")
+    beta <- rnorm(5)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Intervals", dimvalues = 0:5)))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL)
+    metadata.new <- new("MetaData",
+                        nms = "time",
+                        dimtypes = "time",
+                        DimScales = list(new("Intervals", dimvalues = 5:10)))
+    prior.pred <- initialPriorPredict(prior,
+                                      metadata = metadata.new,
+                                      name = "time",
+                                      along = 1L,
+                                      data = NULL)
+    expect_is(prior.pred, "KnownCertain")
+    metadata.wrong <- new("MetaData",
+                          nms = "time",
+                          dimtypes = "time",
+                          DimScales = list(new("Intervals", dimvalues = 5:11)))
+    expect_error(initialPriorPredict(prior,
+                                     metadata = metadata.wrong,
+                                     name = "time",
+                                     along = 1L,
+                                     data = NULL),
+                 "metadata for 'Known' prior for 'time' not compatible with metadata for 'y'")
+})
+
+test_that("initialPriorPredict works with KnownUncertain", {
+    initialPrior <- demest:::initialPrior
+    mean <- ValuesOne(1:10, labels = 0:9, name = "time", dimscale = "Intervals")
+    spec <- Known(mean, sd = 1)
+    expect_is(spec, "SpecKnownUncertain")
+    beta <- rnorm(5)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Intervals", dimvalues = 0:5)))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL)
+    metadata.new <- new("MetaData",
+                        nms = "time",
+                        dimtypes = "time",
+                        DimScales = list(new("Intervals", dimvalues = 5:10)))
+    prior.pred <- initialPriorPredict(prior,
+                                      metadata = metadata.new,
+                                      name = "time",
+                                      along = 1L,
+                                      data = NULL)
+    expect_is(prior.pred, "KnownUncertain")
+    metadata.wrong <- new("MetaData",
+                          nms = "time",
+                          dimtypes = "time",
+                          DimScales = list(new("Intervals", dimvalues = 5:11)))
+    expect_error(initialPriorPredict(prior,
+                                     metadata = metadata.wrong,
+                                     name = "time",
+                                     along = 1L,
+                                     data = NULL),
+                 "metadata for 'Known' prior for 'time' not compatible with metadata for 'y'")
+})
+
 
 ## Zero
 
-test_that("generator function and initialPrior work with KnownCertain", {
+test_that("generator function and initialPrior work with Zero", {
     initialPrior <- demest:::initialPrior
     spec <- Zero()
     expect_is(spec, "SpecZero")

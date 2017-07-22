@@ -7012,6 +7012,56 @@ test_that("predictBeta gives valid answer", {
     set.seed(1)
     ans.expected <- rnorm(n = 2, sd = prior@tau@.Data)
     expect_identical(ans.obtained, ans.expected)
+    ## Zero
+    spec <- Zero()
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL)
+    set.seed(1)
+    ans.obtained <- predictBeta(prior)
+    set.seed(1)
+    ans.expected <- rep(0, 10)
+    expect_identical(ans.obtained, ans.expected)
+    ## Known
+    mean <- ValuesOne(1:10, labels = 2000:2009, name = "time", dimscale = "Points")
+    spec <- Known(mean)
+    beta <- rnorm(5)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 2005:2009)))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL)
+    set.seed(1)
+    ans.obtained <- predictBeta(prior)
+    set.seed(1)
+    ans.expected <- as.numeric(mean@.Data[6:10])
+    expect_identical(ans.obtained, ans.expected)
+    ## KnownCertain
+    mean <- ValuesOne(1:10, labels = 2000:2009, name = "time", dimscale = "Points")
+    spec <- Known(mean, sd = 1)
+    beta <- rnorm(5)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 2005:2009)))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL)
+    set.seed(1)
+    ans.obtained <- predictBeta(prior)
+    set.seed(1)
+    ans.expected <- rnorm(n = 5, mean = mean@.Data[6:10], sd = 1)
+    expect_identical(ans.obtained, ans.expected)
     ## ExchNormZero
     spec <- Exch()
     beta <- rnorm(10)
@@ -7070,6 +7120,56 @@ test_that("R and C versions of predictBeta give same answer", {
             expect_identical(ans.R, ans.C)
         else
             expect_equal(ans.R, ans.C)
+        ## Zero
+        spec <- Zero()
+        beta <- rnorm(10)
+        metadata <- new("MetaData",
+                        nms = "region",
+                        dimtypes = "state",
+                        DimScales = list(new("Categories", dimvalues = letters[1:10])))
+        prior <- initialPrior(spec,
+                              beta = beta,
+                              metadata = metadata,
+                              sY = NULL)
+        set.seed(1)
+        ans.R <- predictBeta(prior, useC = FALSE)
+        set.seed(1)
+        ans.C <- predictBeta(prior, useC = FALSE)
+        expect_identical(ans.R, ans.C)
+        ## Known
+        mean <- ValuesOne(1:10, labels = 2000:2009, name = "time", dimscale = "Points")
+        spec <- Known(mean)
+        beta <- rnorm(5)
+        metadata <- new("MetaData",
+                        nms = "time",
+                        dimtypes = "time",
+                        DimScales = list(new("Points", dimvalues = 2005:2009)))
+        prior <- initialPrior(spec,
+                              beta = beta,
+                              metadata = metadata,
+                              sY = NULL)
+        set.seed(1)
+        ans.R <- predictBeta(prior, useC = FALSE)
+        set.seed(1)
+        ans.C <- predictBeta(prior, useC = FALSE)
+        expect_identical(ans.R, ans.C)
+        ## KnownCertain
+        mean <- ValuesOne(1:10, labels = 2000:2009, name = "time", dimscale = "Points")
+        spec <- Known(mean, sd = 1)
+        beta <- rnorm(5)
+        metadata <- new("MetaData",
+                        nms = "time",
+                        dimtypes = "time",
+                        DimScales = list(new("Points", dimvalues = 2005:2009)))
+        prior <- initialPrior(spec,
+                              beta = beta,
+                              metadata = metadata,
+                              sY = NULL)
+        set.seed(1)
+        ans.R <- predictBeta(prior, useC = FALSE)
+        set.seed(1)
+        ans.C <- predictBeta(prior, useC = FALSE)
+        expect_identical(ans.R, ans.C)
         ## ExchNormZero
         spec <- Exch()
         beta <- rnorm(10)
