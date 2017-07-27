@@ -4818,45 +4818,45 @@ makeLifeExpBirth <- function(mx, nx, ax, iAge0, nAge,
     }
 }
 
-## TRANSLATED
-## HAS_TESTS
-makeVBar <- function(object, iBeta, g, useC = FALSE) {
-    ## object
-    stopifnot(methods::is(object, "Varying"))
-    stopifnot(methods::validObject(object))
-    ## iBeta
-    stopifnot(is.integer(iBeta))
-    stopifnot(identical(length(iBeta), 1L))
-    stopifnot(!is.na(iBeta))
-    stopifnot(iBeta %in% seq_along(object@betas))
-    ## g
-    stopifnot(is.function(g))
-    if (useC) {
-        .Call(makeVBar_R, object, iBeta) ## g not passed
-    }
-    else {
-        theta <- object@theta
-        betas <- object@betas
-        iterator <- object@iteratorBetas
-        beta <- betas[[iBeta]]
-        iterator <- resetB(iterator)
-        ans <- rep(0, times = length(beta))
-        i.other.betas <- seq_along(betas)[-iBeta]
-        for (i.mu in seq_along(theta)) {
-            indices <- iterator@indices
-            pos.ans <- indices[iBeta]
-            ans[pos.ans] <- ans[pos.ans] + g(theta[i.mu])
-            for (i.other.beta in i.other.betas) {
-                other.beta <- betas[[i.other.beta]]
-                pos.other.beta <- indices[i.other.beta]
-                ans[pos.ans] <- ans[pos.ans] - other.beta[pos.other.beta]
-            }
-            iterator <- advanceB(iterator)
-        }
-        ans <- ans * length(ans) / length(theta)
-        ans
-    }
-}
+## ## TRANSLATED
+## ## HAS_TESTS
+## makeVBar <- function(object, iBeta, g, useC = FALSE) {
+##     ## object
+##     stopifnot(methods::is(object, "Varying"))
+##     stopifnot(methods::validObject(object))
+##     ## iBeta
+##     stopifnot(is.integer(iBeta))
+##     stopifnot(identical(length(iBeta), 1L))
+##     stopifnot(!is.na(iBeta))
+##     stopifnot(iBeta %in% seq_along(object@betas))
+##     ## g
+##     stopifnot(is.function(g))
+##     if (useC) {
+##         .Call(makeVBar_R, object, iBeta) ## g not passed
+##     }
+##     else {
+##         theta <- object@theta
+##         betas <- object@betas
+##         iterator <- object@iteratorBetas
+##         beta <- betas[[iBeta]]
+##         iterator <- resetB(iterator)
+##         ans <- rep(0, times = length(beta))
+##         i.other.betas <- seq_along(betas)[-iBeta]
+##         for (i.mu in seq_along(theta)) {
+##             indices <- iterator@indices
+##             pos.ans <- indices[iBeta]
+##             ans[pos.ans] <- ans[pos.ans] + g(theta[i.mu])
+##             for (i.other.beta in i.other.betas) {
+##                 other.beta <- betas[[i.other.beta]]
+##                 pos.other.beta <- indices[i.other.beta]
+##                 ans[pos.ans] <- ans[pos.ans] - other.beta[pos.other.beta]
+##             }
+##             iterator <- advanceB(iterator)
+##         }
+##         ans <- ans * length(ans) / length(theta)
+##         ans
+##     }
+## }
 
 ## TRANSLATED
 ## HAS_TESTS
