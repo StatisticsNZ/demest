@@ -1849,6 +1849,7 @@ R_init_demest(DllInfo *info)
   ADD_SYM(UBeta);
   ADD_SYM(nuBeta);
   ADD_SYM(isRobust);
+  ADD_SYM(isSaturated);
   ADD_SYM(mNoTrend);
   ADD_SYM(m0NoTrend);
   ADD_SYM(CNoTrend);

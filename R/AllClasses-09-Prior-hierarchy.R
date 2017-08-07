@@ -4,6 +4,7 @@ setClass("Prior",
          contains = c("VIRTUAL",
                       "SlotsToExtract",
                       "IMethodPrior",
+                      "IsSaturatedMixin",
                       "JMixin"))
 
 setClass("Exch",
@@ -45,10 +46,15 @@ setClass("Known",
          validity = function(object) {
              alphaKnown <- object@alphaKnown@.Data
              J <- object@J@.Data
+             isSaturated <- object@isSaturated@.Data
              ## 'alphaKnown' has length 'J'
              if (!identical(length(alphaKnown), J))
                  return(gettextf("'%s' does not have length '%s'",
                                  "alphaKnown", "J"))
+             ## is not saturated
+             if (isSaturated)
+                 return(gettextf("prior has class \"%s\" but '%s' is %s",
+                                 "Known", "isSaturated", "TRUE"))
              TRUE
          })
 
@@ -120,17 +126,33 @@ setClass("Move",
 setClass("TimeInvariant",
          prototype = prototype(iMethodPrior = -1L,
              slotsToExtract = character()),
-         contains = "Prior")
+         contains = "Prior",
+         validity = function(object) {
+             isSaturated <- object@isSaturated@.Data
+             ## is not saturated
+             if (isSaturated)
+                 return(gettextf("prior has class \"%s\" but '%s' is %s",
+                                 "TimeInvariant", "isSaturated", "TRUE"))
+             TRUE
+         })
 
 ## ExchFixed
 
 setClass("ExchFixed",
          prototype = prototype(iMethodPrior = 0L,
-             slotsToExtract = character(),
-             J = methods::new("Length", 1L),
-             tau = methods::new("Scale", 1)),
+                               slotsToExtract = character(),
+                               J = methods::new("Length", 1L),
+                               tau = methods::new("Scale", 1)),
          contains = c("Prior",
-             "TauMixin"))
+                      "TauMixin"),
+         validity = function(object) {
+             isSaturated <- object@isSaturated@.Data
+             ## is not saturated
+             if (isSaturated)
+                 return(gettextf("prior has class \"%s\" but '%s' is %s",
+                                 "Known", "isSaturated", "TRUE"))
+             TRUE
+         })
 
 
 ## Exch
@@ -1152,8 +1174,16 @@ setClass("MoveRobustCov",
 
 setClass("Zero",
          prototype = prototype(iMethodPrior = 40L,
-             slotsToExtract = character()),
-         contains = "Prior")
+                               slotsToExtract = character()),
+         contains = "Prior",
+         validity = function(object) {
+             isSaturated <- object@isSaturated@.Data
+             ## is not saturated
+             if (isSaturated)
+                 return(gettextf("prior has class \"%s\" but '%s' is %s",
+                                 "Zero", "isSaturated", "TRUE"))
+             TRUE
+         })
 
 
 ## DLMPredict, NoTrend

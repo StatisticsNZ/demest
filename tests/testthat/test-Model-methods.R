@@ -4876,6 +4876,7 @@ test_that("whereEstimated works with NormalVaryingVarsigmaKnown", {
     weights <- Counts(array(1,
                             dim = c(2, 10),
                             dimnames = list(sex = c("f", "m"), age = 0:9)))
+    ## is not saturated
     spec <- Model(y ~ Normal(mean ~ sex + age, sd = 2),
                   age ~ Exch())
     model <- initialModel(spec, y = y, weights = weights)
@@ -4886,6 +4887,19 @@ test_that("whereEstimated works with NormalVaryingVarsigmaKnown", {
                          c("prior", "age"),
                          c("prior", "sd"),
                          c("hyper", "age", "scaleError"))
+    expect_identical(ans.obtained, ans.expected)
+    ## is saturated
+    spec <- Model(y ~ Normal(mean ~ sex * age, sd = 2),
+                  age ~ Exch())
+    model <- initialModel(spec, y = y, weights = weights)
+    ans.obtained <- whereEstimated(model)
+    ans.expected <- list(c("likelihood", "mean"),
+                         c("prior", "(Intercept)"),
+                         c("prior", "sex"),
+                         c("prior", "age"),
+                         c("prior", "sex:age"),
+                         c("hyper", "age", "scaleError"),
+                         c("hyper", "sex:age", "scaleError"))
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -4898,6 +4912,7 @@ test_that("whereEstimated works with NormalVaryingVarsigmaUnknown", {
     weights <- Counts(array(1,
                             dim = c(2, 10),
                             dimnames = list(sex = c("f", "m"), age = 0:9)))
+    ## is not saturated
     spec <- Model(y ~ Normal(mean ~ sex + age),
                   sex ~ Zero(),
                   age ~ DLM())
@@ -4915,6 +4930,25 @@ test_that("whereEstimated works with NormalVaryingVarsigmaUnknown", {
                          c("hyper", "age", "damp"),
                          c("hyper", "age", "scaleError"))
     expect_identical(ans.obtained, ans.expected)
+    ## is saturated
+    spec <- Model(y ~ Normal(mean ~ sex * age),
+                  sex ~ Zero(),
+                  age ~ DLM())
+    model <- initialModel(spec, y = y, weights = weights)
+    ans.obtained <- whereEstimated(model)
+    ans.expected <- list(c("likelihood", "mean"),
+                         c("likelihood", "sd"),
+                         c("prior", "(Intercept)"),
+                         c("prior", "age"),
+                         c("prior", "sex:age"),                         
+                         c("hyper", "age", "level"),
+                         c("hyper", "age", "scaleLevel"),
+                         c("hyper", "age", "trend"),
+                         c("hyper", "age", "scaleTrend"),
+                         c("hyper", "age", "damp"),
+                         c("hyper", "age", "scaleError"),
+                         c("hyper", "sex:age", "scaleError"))
+    expect_identical(ans.obtained, ans.expected)
 })
 
 test_that("whereEstimated works with NormalVaryingVarsigmaKnownAgNormal", {
@@ -4927,6 +4961,7 @@ test_that("whereEstimated works with NormalVaryingVarsigmaKnownAgNormal", {
                             dim = c(2, 10),
                             dimnames = list(sex = c("f", "m"), age = 0:9)))
     aggregate <- AgNormal(value = 0, sd = 1)
+    ## is not saturated
     spec <- Model(y ~ Normal(mean ~ sex + age, sd = 2),
                   age ~ Exch(),
                   aggregate = aggregate)
@@ -4938,6 +4973,21 @@ test_that("whereEstimated works with NormalVaryingVarsigmaKnownAgNormal", {
                          c("prior", "age"),
                          c("prior", "sd"),
                          c("hyper", "age", "scaleError"),
+                         c("aggregate", "value"))
+    expect_identical(ans.obtained, ans.expected)
+    ## is saturated
+    spec <- Model(y ~ Normal(mean ~ sex * age, sd = 2),
+                  age ~ Exch(),
+                  aggregate = aggregate)
+    model <- initialModel(spec, y = y, weights = weights)
+    ans.obtained <- whereEstimated(model)
+    ans.expected <- list(c("likelihood", "mean"),
+                         c("prior", "(Intercept)"),
+                         c("prior", "sex"),
+                         c("prior", "age"),
+                         c("prior", "sex:age"),
+                         c("hyper", "age", "scaleError"),
+                         c("hyper", "sex:age", "scaleError"),
                          c("aggregate", "value"))
     expect_identical(ans.obtained, ans.expected)
 })
@@ -4977,9 +5027,10 @@ test_that("whereEstimated works with BinomialVarying", {
     y <- Counts(array(rbinom(20, size = exposure, prob = 0.7),
                       dim = c(2, 10),
                       dimnames = list(sex = c("f", "m"), age = 0:9)))
+    ## is not saturated
     spec <- Model(y ~ Binomial(mean ~ sex + age),
                   age ~ DLM(trend = NULL))
-      model <- initialModel(spec, y = y, exposure = exposure)
+    model <- initialModel(spec, y = y, exposure = exposure)
     ans.obtained <- whereEstimated(model)
     ans.expected <- list(c("likelihood", "prob"),
                          c("prior", "(Intercept)"),
@@ -4991,6 +5042,30 @@ test_that("whereEstimated works with BinomialVarying", {
                          c("hyper", "age", "damp"),
                          c("hyper", "age", "scaleError"))
     expect_identical(ans.obtained, ans.expected)
+    spec <- Model(y ~ Binomial(mean ~ 1))
+    model <- initialModel(spec, y = y, exposure = exposure)
+    ans.obtained <- whereEstimated(model)
+    ans.expected <- list(c("likelihood", "prob"),
+                         c("prior", "(Intercept)"),
+                         c("prior", "sd"))
+    expect_identical(ans.obtained, ans.expected)
+    ## is saturated
+    spec <- Model(y ~ Binomial(mean ~ sex * age),
+                  age ~ DLM(trend = NULL))
+    model <- initialModel(spec, y = y, exposure = exposure)
+    ans.obtained <- whereEstimated(model)
+    ans.expected <- list(c("likelihood", "prob"),
+                         c("prior", "(Intercept)"),
+                         c("prior", "sex"),
+                         c("prior", "age"),
+                         c("prior", "sex:age"),
+                         c("hyper", "age", "level"),
+                         c("hyper", "age", "scaleLevel"),
+                         c("hyper", "age", "damp"),
+                         c("hyper", "age", "scaleError"),
+                         c("hyper", "sex:age", "scaleError"))
+    expect_identical(ans.obtained, ans.expected)
+    ## intercept only
     spec <- Model(y ~ Binomial(mean ~ 1))
     model <- initialModel(spec, y = y, exposure = exposure)
     ans.obtained <- whereEstimated(model)
@@ -5058,6 +5133,7 @@ test_that("whereEstimated works with PoissonVaryingNotUseExp", {
     y <- Counts(array(rpois(20, lambda  = 10),
                       dim = c(2, 10),
                       dimnames = list(sex = c("f", "m"), age = 0:9)))
+    ## is not saturated
     spec <- Model(y ~ Poisson(mean ~ sex + age),
                   age ~ DLM(damp = NULL))
     model <- initialModel(spec, y = y, exposure = NULL)
@@ -5072,6 +5148,23 @@ test_that("whereEstimated works with PoissonVaryingNotUseExp", {
                          c("hyper", "age", "trend"),
                          c("hyper", "age", "scaleTrend"),
                          c("hyper", "age", "scaleError"))
+    expect_identical(ans.obtained, ans.expected)
+    ## is saturated
+    spec <- Model(y ~ Poisson(mean ~ sex * age),
+                  age ~ DLM(damp = NULL))
+    model <- initialModel(spec, y = y, exposure = NULL)
+    ans.obtained <- whereEstimated(model)
+    ans.expected <- list(c("likelihood", "count"),
+                         c("prior", "(Intercept)"),
+                         c("prior", "sex"),
+                         c("prior", "age"),
+                         c("prior", "sex:age"),
+                         c("hyper", "age", "level"),
+                         c("hyper", "age", "scaleLevel"),
+                         c("hyper", "age", "trend"),
+                         c("hyper", "age", "scaleTrend"),
+                         c("hyper", "age", "scaleError"),
+                         c("hyper", "sex:age", "scaleError"))
     expect_identical(ans.obtained, ans.expected)
 })
 

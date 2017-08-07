@@ -527,6 +527,10 @@ test_that("addAg works with PoissonVaryingUseExp and SpecAgFun", {
 
 ## initialModel - Varying ##################################################################
 
+
+## NEED TO ADD TESTS FOR WHEN MODEL IS SATURATED
+
+
 test_that("initialModel creates object of class BinomialVarying from valid inputs", {
     initialModel <- demest:::initialModel
     makeLinearBetas <- demest:::makeLinearBetas
@@ -640,6 +644,19 @@ test_that("initialModel creates object of class BinomialVarying from valid input
                    shape2 = (1-m) * (nu/sigma@.Data^2 - 1)  + exposure - y)
     expect_identical(x@sigma, sigma)
     expect_identical(x@theta, theta)
+    ## saturated model
+    exposure <- Counts(array(rpois(n = 20, lambda = 20),
+                             dim = c(5, 4),
+                             dimnames = list(age = 0:4, region = letters[1:4])))
+    y <- Counts(array(rbinom(n = 20, size = exposure, prob = 0.5),
+                      dim = c(5, 4),
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    spec <- Model(y ~ Binomial(mean ~ age * region),
+                  age:region ~ Exch(error = Error(scale = HalfT(df = 3, scale = 0.1, max = 0.6))))
+    x <- initialModel(spec, y = y, exposure = exposure)
+    expect_identical(x@ASigma, x@priorsBetas[[4]]@ATau)
+    expect_identical(x@sigmaMax, x@priorsBetas[[4]]@tauMax)
+    expect_identical(x@nuSigma, x@priorsBetas[[4]]@nuTau)    
 })
 
 test_that("initialModel methods for Varying model can cope with orig-dest dimtypes", {
@@ -789,6 +806,19 @@ test_that("initialModel creates object of class NormalVaryingVarsigmaKnown from 
     set.seed(1)
     x <- initialModel(spec, y = y, weights = weights)
     expect_identical(x@sigmaMax@.Data, 1000)
+    ## saturated model
+    y <- Values(array(rnorm(n = 20),
+                      dim = c(5, 4),
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    spec <- Model(y ~ Normal(mean ~ age * region, sd = 1),
+                  age:region ~ Exch(error = Error(scale = HalfT(df = 3, scale = 0.1, max = 0.6))))
+    weights <- Counts(array(rbeta(n = 20, shape1 = 1, shape2 = 1),
+                            dim = c(5, 4),
+                            dimnames = list(age = 0:4, region = letters[1:4])))
+    x <- initialModel(spec, y = y, weights = weights)
+    expect_identical(x@ASigma, x@priorsBetas[[4]]@ATau)
+    expect_identical(x@sigmaMax, x@priorsBetas[[4]]@tauMax)
+    expect_identical(x@nuSigma, x@priorsBetas[[4]]@nuTau)
 })
 
 test_that("initialModel creates object of class NormalVaryingVarsigmaUnknown from valid inputs", {
@@ -909,6 +939,19 @@ test_that("initialModel creates object of class NormalVaryingVarsigmaUnknown fro
     expect_identical(x@upper, Inf)
     expect_identical(x@maxAttempt, 100L)
     expect_identical(x@tolerance, 1e-5)
+    ## saturated model
+    y <- Values(array(rnorm(n = 20),
+                      dim = c(5, 4),
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    spec <- Model(y ~ Normal(mean ~ age * region),
+                  age:region ~ Exch(error = Error(scale = HalfT(df = 3, scale = 0.1, max = 0.6))))
+    weights <- Counts(array(rbeta(n = 20, shape1 = 1, shape2 = 1),
+                            dim = c(5, 4),
+                            dimnames = list(age = 0:4, region = letters[1:4])))
+    x <- initialModel(spec, y = y, weights = weights)
+    expect_identical(x@ASigma, x@priorsBetas[[4]]@ATau)
+    expect_identical(x@sigmaMax, x@priorsBetas[[4]]@tauMax)
+    expect_identical(x@nuSigma, x@priorsBetas[[4]]@nuTau)
 })
 
 test_that("initialModel creates object of class PoissonVaryingUseExp from valid inputs", {
@@ -1030,6 +1073,19 @@ test_that("initialModel creates object of class PoissonVaryingUseExp from valid 
     expect_identical(x@sigma, new("Scale", sigma))
     expect_identical(x@maxAttempt, 100L)
     expect_identical(x@nFailedPropTheta, new("Counter", 0L))
+    ## saturated model
+    exposure <- Counts(array(rpois(n = 20, lambda = 20),
+                             dim = c(5, 4),
+                             dimnames = list(age = 0:4, region = letters[1:4])))
+    y <- Counts(array(rpois(n = 20, lambda = 0.3 * exposure),
+                      dim = c(5, 4),
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    spec <- Model(y ~ Poisson(mean ~ age * region),
+                  age:region ~ Exch(error = Error(scale = HalfT(df = 3, scale = 0.1, max = 0.6))))
+    x <- initialModel(spec, y = y, exposure = exposure)
+    expect_identical(x@ASigma, x@priorsBetas[[4]]@ATau)
+    expect_identical(x@sigmaMax, x@priorsBetas[[4]]@tauMax)
+    expect_identical(x@nuSigma, x@priorsBetas[[4]]@nuTau)
 })
 
 test_that("initialModel creates object of class PoissonVaryingNotUseExp from valid inputs", {
@@ -1099,6 +1155,16 @@ test_that("initialModel creates object of class PoissonVaryingNotUseExp from val
     expect_identical(x@tolerance, 1e-5)
     expect_identical(x@maxAttempt, 100L)
     expect_identical(x@nFailedPropTheta, new("Counter", 0L))
+    ## saturated model
+    y <- Counts(array(rpois(n = 20, lambda = 10),
+                      dim = c(5, 4),
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    spec <- Model(y ~ Poisson(mean ~ age * region),
+                  age:region ~ Exch(error = Error(scale = HalfT(df = 3, scale = 0.1, max = 0.6))))
+    x <- initialModel(spec, y = y, exposure = NULL)
+    expect_identical(x@ASigma, x@priorsBetas[[4]]@ATau)
+    expect_identical(x@sigmaMax, x@priorsBetas[[4]]@tauMax)
+    expect_identical(x@nuSigma, x@priorsBetas[[4]]@nuTau)
 })
 
 

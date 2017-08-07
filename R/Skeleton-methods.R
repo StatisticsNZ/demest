@@ -900,7 +900,7 @@ setMethod("needToCenter",
 ## HAS_TESTS
 setMethod("needToCenter",
           signature(object = "SkeletonTrendDLM"),
-          function(object) FALSE)
+          function(object) TRUE)
 
 ## HAS_TESTS
 setMethod("needToCenter",

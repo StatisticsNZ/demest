@@ -18,7 +18,8 @@ test_that("generator function and initialPrior work with ExchFixed", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = NULL,
-                          sY = 50)
+                          sY = 50,
+                          isSaturated = FALSE)
     expect_is(prior, "ExchFixed")
     expect_identical(prior@J, new("Length", 1L))
     expect_identical(prior@tau, new("Scale", 500))
@@ -33,7 +34,8 @@ test_that("generator function and initialPrior work with ExchFixed", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     expect_is(prior, "ExchFixed")
     expect_identical(prior@J, new("Length", 2L))
     expect_identical(prior@tau, new("Scale", 1.0))
@@ -44,7 +46,8 @@ test_that("generator function and initialPrior work with ExchFixed", {
     expect_error(initialPrior(spec,
                               beta = beta,
                               metadata = NULL,
-                              sY = 50),
+                              sY = 50,
+                              isSaturated = FALSE),
                  "'metadata' is NULL but 'J' is greater than 1")
     ## has metadata but J == 1
     spec <- ExchFixed()
@@ -57,7 +60,8 @@ test_that("generator function and initialPrior work with ExchFixed", {
     expect_error(initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL),
+                              sY = NULL,
+                              isSaturated = FALSE),
                  "'metadata' is not NULL but 'J' is less than or equal to 1")
 })
 
@@ -75,7 +79,8 @@ test_that("generator function and initialPrior work with ExchNormZero", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     expect_is(prior, "ExchNormZero")
     expect_identical(prior@J, new("Length", 10L))
     expect_identical(prior@ATau, new("Scale", 1.0))
@@ -94,7 +99,8 @@ test_that("generator function and initialPrior work with ExchNormZero", {
                           beta = beta,
                           metadata = metadata,
                           sY = 1000,
-                          multScale = 1)
+                          multScale = 1,
+                          isSaturated = FALSE)
     expect_is(prior, "ExchNormZero")
     expect_identical(prior@J, new("Length", 20L))
     expect_identical(prior@ATau, new("Scale", 500))
@@ -113,7 +119,8 @@ test_that("generator function and initialPrior work with ExchNormZero", {
                           beta = beta,
                           metadata = metadata,
                           sY = 1000,
-                          multScale = 1)
+                          multScale = 1,
+                          isSaturated = FALSE)
     expect_is(prior, "ExchNormZero")
     expect_identical(prior@ATau, new("Scale", 10))
     expect_identical(prior@nuTau, new("DegreesFreedom", 1))
@@ -130,7 +137,8 @@ test_that("generator function and initialPrior work with ExchNormZero", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          multScale = 1)
+                          multScale = 1,
+                          isSaturated = FALSE)
     expect_is(prior, "ExchNormZero")
     expect_identical(prior@ATau, new("Scale", 0.5))
     expect_identical(prior@nuTau, new("DegreesFreedom", 7))
@@ -151,7 +159,8 @@ test_that("generator function and initialPrior work with ExchRobustZero", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          multScale = 1)
+                          multScale = 1,
+                          isSaturated = FALSE)
     expect_is(prior, "ExchRobustZero")
     expect_identical(prior@J, new("Length", 10L))
     expect_identical(prior@ATau, new("Scale", 1.0))
@@ -181,13 +190,22 @@ test_that("generator function and initialPrior work with ExchNormCov", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          multScale = 1)
+                          multScale = 1,
+                          isSaturated = FALSE)
     expect_is(prior, "ExchNormCov")
     expect_identical(prior@J, new("Length", 20L))
     expect_identical(prior@ATau, new("Scale", 0.5))
     expect_identical(prior@nuTau, new("DegreesFreedom", 7.0))
     expect_identical(prior@contrastsArg, contrastsArg)
     expect_identical(prior@formula, formula)
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          multScale = 1,
+                          isSaturated = TRUE)
+    expect_is(prior, "ExchNormCov")
+    expect_identical(prior@isSaturated, new("LogicalFlag", TRUE))
 })
 
 test_that("generator function and initialPrior work with ExchRobustCov", {
@@ -213,7 +231,8 @@ test_that("generator function and initialPrior work with ExchRobustCov", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          multScale = 1)
+                          multScale = 1,
+                          isSaturated = FALSE)
     expect_is(prior, "ExchRobustCov")
     expect_identical(prior@J, new("Length", 20L))
     expect_identical(prior@ATau, new("Scale", 0.5))
@@ -236,7 +255,8 @@ test_that("generator function and initialPrior work with DLMNoTrendNormZeroNoSea
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     expect_is(prior, "DLMNoTrendNormZeroNoSeason")
 })
 
@@ -254,14 +274,16 @@ test_that("generator function and initialPrior work with DLMWithTrendNormZeroNoS
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          multScale = 1)
+                          multScale = 1,
+                          isSaturated = FALSE)
     expect_is(prior, "DLMWithTrendNormZeroNoSeason")
     spec <- DLM(trend = Trend(initial = Initial(mean = 0.02, sd = 0.05)))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          multScale = 1)
+                          multScale = 1,
+                          isSaturated = FALSE)
     expect_identical(prior@m0WithTrend[[1]], c(0, 0.02))
     expect_identical(prior@CWithTrend[[1]], diag(c(100, 0.05^2)))
 })
@@ -280,7 +302,8 @@ test_that("generator function and initialPrior work with DLMNoTrendNormZeroWithS
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          multScale = 1)
+                          multScale = 1,
+                          isSaturated = FALSE)
     expect_is(prior, "DLMNoTrendNormZeroWithSeason")
 })
 
@@ -298,7 +321,8 @@ test_that("generator function and initialPrior work with DLMWithTrendNormZeroWit
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          multScale = 1)
+                          multScale = 1,
+                          isSaturated = FALSE)
     expect_is(prior, "DLMWithTrendNormZeroWithSeason")
 })
 
@@ -326,7 +350,8 @@ test_that("generator function and initialPrior work with DLMNoTrendNormZeroNoSea
                           beta = beta,
                           metadata = metadata,
                           sY = 200,
-                          multScale = 1)
+                          multScale = 1,
+                          isSaturated = FALSE)
     expect_is(prior, "DLMNoTrendNormCovNoSeason")
 })
 
@@ -353,7 +378,8 @@ test_that("generator function and initialPrior work with DLMWithTrendNormCovNoSe
                           beta = beta,
                           metadata = metadata,
                           sY = 200,
-                          multScale = 1)
+                          multScale = 1,
+                          isSaturated = FALSE)
     expect_is(prior, "DLMWithTrendNormCovNoSeason")
 })
 
@@ -382,7 +408,8 @@ test_that("generator function and initialPrior work with DLMNoTrendNormCovWithSe
                           beta = beta,
                           metadata = metadata,
                           sY = 200,
-                          multScale = 1)
+                          multScale = 1,
+                          isSaturated = FALSE)
     expect_is(prior, "DLMNoTrendNormCovWithSeason")
 })
 
@@ -410,7 +437,8 @@ test_that("generator function and initialPrior work with DLMWithTrendNormCovWith
                           beta = beta,
                           metadata = metadata,
                           sY = 200,
-                          multScale = 1)
+                          multScale = 1,
+                          isSaturated = FALSE)
     expect_is(prior, "DLMWithTrendNormCovWithSeason")
 })
 
@@ -429,7 +457,8 @@ test_that("generator function and initialPrior work with DLMNoTrendRobustZeroNoS
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          multScale = 1)
+                          multScale = 1,
+                          isSaturated = FALSE)
     expect_is(prior, "DLMNoTrendRobustZeroNoSeason")
 })
 
@@ -447,7 +476,8 @@ test_that("generator function and initialPrior work with DLMWithTrendRobustZeroN
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          multScale = 1)
+                          multScale = 1,
+                          isSaturated = FALSE)
     expect_is(prior, "DLMWithTrendRobustZeroNoSeason")
 })
 
@@ -467,7 +497,8 @@ test_that("generator function and initialPrior work with DLMNoTrendRobustZeroWit
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          multScale = 1)
+                          multScale = 1,
+                          isSaturated = FALSE)
     expect_is(prior, "DLMNoTrendRobustZeroWithSeason")
 })
 
@@ -486,7 +517,8 @@ test_that("generator function and initialPrior work with DLMWithTrendRobustZeroW
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          multScale = 1)
+                          multScale = 1,
+                          isSaturated = FALSE)
     expect_is(prior, "DLMWithTrendRobustZeroWithSeason")
 })
 
@@ -515,7 +547,8 @@ test_that("generator function and initialPrior work with DLMNoTrendRobustZeroNoS
                           beta = beta,
                           metadata = metadata,
                           sY = 200,
-                          multScale = 1)
+                          multScale = 1,
+                          isSaturated = FALSE)
     expect_is(prior, "DLMNoTrendRobustCovNoSeason")
 })
 
@@ -543,7 +576,8 @@ test_that("generator function and initialPrior work with DLMWithTrendRobustCovNo
                           beta = beta,
                           metadata = metadata,
                           sY = 200,
-                          multScale = 1)
+                          multScale = 1,
+                          isSaturated = FALSE)
     expect_is(prior, "DLMWithTrendRobustCovNoSeason")
 })
 
@@ -573,8 +607,18 @@ test_that("generator function and initialPrior work with DLMNoTrendRobustCovWith
                           beta = beta,
                           metadata = metadata,
                           sY = 200,
-                          multScale = 1)
+                          multScale = 1,
+                          isSaturated = FALSE)
     expect_is(prior, "DLMNoTrendRobustCovWithSeason")
+    expect_identical(prior@isSaturated, new("LogicalFlag", FALSE))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = 200,
+                          multScale = 1,
+                          isSaturated = TRUE)
+    expect_is(prior, "DLMNoTrendRobustCovWithSeason")
+    expect_identical(prior@isSaturated, new("LogicalFlag", TRUE))
 })
 
 test_that("generator function and initialPrior work with DLMWithTrendRobustCovWithSeason", {
@@ -602,7 +646,8 @@ test_that("generator function and initialPrior work with DLMWithTrendRobustCovWi
                           beta = beta,
                           metadata = metadata,
                           sY = 200,
-                          multScale = 1)
+                          multScale = 1,
+                          isSaturated = FALSE)
     expect_is(prior, "DLMWithTrendRobustCovWithSeason")
 })
 
@@ -619,7 +664,8 @@ test_that("generator function and initialPrior work with KnownCertain", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = 50)
+                          sY = 50,
+                          isSaturated = FALSE)
     expect_is(prior, "KnownCertain")
     expect_identical(prior@J, new("Length", 4))
     ## 'mean' is "Values"
@@ -644,7 +690,8 @@ test_that("generator function and initialPrior work with KnownCertain", {
     expect_error(initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = 50),
+                          sY = 50,
+                          isSaturated = FALSE),
                  "metadata for 'Known' prior for 'age' not compatible with metadata for 'y'")    
 })
 
@@ -664,7 +711,8 @@ test_that("generator function and initialPrior work with KnownUncertain", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = 50)
+                          sY = 50,
+                          isSaturated = FALSE)
     expect_is(prior, "KnownUncertain")
     expect_identical(prior@J, new("Length", 4))
     ## 'sd' is numeric
@@ -681,7 +729,8 @@ test_that("generator function and initialPrior work with KnownUncertain", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = 50)
+                          sY = 50,
+                          isSaturated = FALSE)
     expect_is(prior, "KnownUncertain")
     expect_identical(prior@J, new("Length", 4))
     ## 'sd' is compatible with 'mean'
@@ -738,7 +787,8 @@ test_that("generator function and initialPrior work with MixNormZero", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          multScale = 1)
+                          multScale = 1,
+                          isSaturated = FALSE)
     expect_is(prior, "MixNormZero")
     ## nondefault
     spec <- Mix(along = "age",
@@ -754,7 +804,8 @@ test_that("generator function and initialPrior work with MixNormZero", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          multScale = 1)
+                          multScale = 1,
+                          isSaturated = FALSE)
     expect_identical(prior@iAlong, 3L)
     expect_identical(prior@AVectorsMix, new("Scale", 0.5))
     expect_identical(prior@nuVectorsMix, new("DegreesFreedom", 4))
@@ -786,7 +837,8 @@ test_that("initialPriorPredict works with ExchFixed", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          multScale = 1)
+                          multScale = 1,
+                          isSaturated = FALSE)
     expect_is(prior, "ExchFixed")
     metadata.new <- new("MetaData",
                         nms = "region",
@@ -802,7 +854,8 @@ test_that("initialPriorPredict works with ExchFixed", {
                                  beta = beta.new,
                                  metadata = metadata.new,
                                  sY = NULL,
-                                 multScale = 1)
+                                 multScale = 1,
+                                 isSaturated = FALSE)
     ans.expected@tau <- prior@tau
     expect_identical(ans.obtained, ans.expected)
 })
@@ -823,7 +876,8 @@ test_that("initialPriorPredict workw with ExchNormZero", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          multScale = 1)
+                          multScale = 1,
+                          isSaturated = FALSE)
     expect_is(prior, "ExchNormZero")
     metadata.new <- new("MetaData",
                         nms = "region",
@@ -839,7 +893,8 @@ test_that("initialPriorPredict workw with ExchNormZero", {
                                  beta = beta.new,
                                  metadata = metadata.new,
                                  sY = NULL,
-                                 multScale = 1)
+                                 multScale = 1,
+                                 isSaturated = FALSE)
     ans.expected@tau <- prior@tau
     expect_identical(ans.obtained, ans.expected)
 })
@@ -858,7 +913,8 @@ test_that("initialPriorPredict works with ExchRobustZero", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          multScale = 1)
+                          multScale = 1,
+                          isSaturated = FALSE)
     expect_is(prior, "ExchRobustZero")
     metadata.new <- new("MetaData",
                         nms = "region",
@@ -901,7 +957,8 @@ test_that("initialPriorPredict works with ExchNormCov", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          multScale = 1)
+                          multScale = 1,
+                          isSaturated = FALSE)
     expect_is(prior, "ExchNormCov")
     metadata.new <- new("MetaData",
                         nms = c("region", "sex"),
@@ -953,7 +1010,8 @@ test_that("initialPriorPredict works with ExchRobustCov", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          multScale = 1)
+                          multScale = 1,
+                          isSaturated = FALSE)
     expect_is(prior, "ExchRobustCov")
     metadata.new <- new("MetaData",
                         nms = c("region", "sex"),
@@ -1000,7 +1058,8 @@ test_that("initialPriorPredict works with DLMNoTrendNormZeroNoSeason", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          multScale = 1)
+                          multScale = 1,
+                          isSaturated = FALSE)
     expect_is(prior, "DLMNoTrendNormZeroNoSeason")
     metadata.new <- new("MetaData",
                         nms = "time",
@@ -1036,7 +1095,8 @@ test_that("initialPriorPredict works with DLMWithTrendNormZeroNoSeason", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          multScale = 1)
+                          multScale = 1,
+                          isSaturated = FALSE)
     expect_is(prior, "DLMWithTrendNormZeroNoSeason")
     metadata.new <- new("MetaData",
                         nms = "time",
@@ -1073,7 +1133,8 @@ test_that("initialPriorPredict works with DLMNoTrendNormZeroWithSeason", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          multScale = 1)
+                          multScale = 1,
+                          isSaturated = FALSE)
     expect_is(prior, "DLMNoTrendNormZeroWithSeason")
     metadata.new <- new("MetaData",
                         nms = "time",
@@ -1111,7 +1172,8 @@ test_that("initialPriorPredict works with DLMWithTrendNormZeroWithSeason", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          multScale = 1)
+                          multScale = 1,
+                          isSaturated = FALSE)
     expect_is(prior, "DLMWithTrendNormZeroWithSeason")
     metadata.new <- new("MetaData",
                         nms = "time",
@@ -1155,7 +1217,8 @@ test_that("initialPriorPredict works with DLMNoTrendNormCovNoSeason", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          multScale = 1)
+                          multScale = 1,
+                          isSaturated = FALSE)
     expect_is(prior, "DLMNoTrendNormCovNoSeason")
     data.new <- data.frame(time = 2011:2015,
                            income = rnorm(5))
@@ -1197,7 +1260,8 @@ test_that("initialPriorPredict works with DLMWithTrendNormCovNoSeason", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          multScale = 1)
+                          multScale = 1,
+                          isSaturated = FALSE)
     expect_is(prior, "DLMWithTrendNormCovNoSeason")
     data.new <- data.frame(time = 2011:2015,
                            income = rnorm(5))
@@ -1241,7 +1305,8 @@ test_that("initialPriorPredict works with DLMNoTrendNormCovWithSeason", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          multScale = 1)
+                          multScale = 1,
+                          isSaturated = FALSE)
     expect_is(prior, "DLMNoTrendNormCovWithSeason")
     data.new <- data.frame(time = 2011:2015,
                            income = rnorm(5))
@@ -1286,7 +1351,8 @@ test_that("initialPriorPredict works with DLMWithTrendNormCovWithSeason", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          multScale = 1)
+                          multScale = 1,
+                          isSaturated = FALSE)
     expect_is(prior, "DLMWithTrendNormCovWithSeason")
     data.new <- data.frame(time = 2011:2015,
                            income = rnorm(5))
@@ -1330,7 +1396,8 @@ test_that("initialPriorPredict works with DLMNoTrendRobustZeroNoSeason", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          multScale = 1)
+                          multScale = 1,
+                          isSaturated = FALSE)
     expect_is(prior, "DLMNoTrendRobustZeroNoSeason")
     metadata.new <- new("MetaData",
                         nms = "time",
@@ -1366,7 +1433,8 @@ test_that("initialPriorPredict works with DLMWithTrendRobustZeroNoSeason", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          multScale = 1)
+                          multScale = 1,
+                          isSaturated = FALSE)
     expect_is(prior, "DLMWithTrendRobustZeroNoSeason")
     metadata.new <- new("MetaData",
                         nms = "time",
@@ -1404,7 +1472,8 @@ test_that("initialPriorPredict works with DLMNoTrendRobustZeroWithSeason", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          multScale = 1)
+                          multScale = 1,
+                          isSaturated = FALSE)
     expect_is(prior, "DLMNoTrendRobustZeroWithSeason")
     metadata.new <- new("MetaData",
                         nms = "time",
@@ -1443,7 +1512,8 @@ test_that("initialPriorPredict works with DLMWithTrendRobustZeroWithSeason", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          multScale = 1)
+                          multScale = 1,
+                          isSaturated = FALSE)
     expect_is(prior, "DLMWithTrendRobustZeroWithSeason")
     metadata.new <- new("MetaData",
                         nms = "time",
@@ -1488,7 +1558,8 @@ test_that("initialPriorPredict works with DLMNoTrendRobustCovNoSeason", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          multScale = 1)
+                          multScale = 1,
+                          isSaturated = FALSE)
     expect_is(prior, "DLMNoTrendRobustCovNoSeason")
     data.new <- data.frame(time = 2011:2015,
                            income = rnorm(5))
@@ -1531,7 +1602,8 @@ test_that("initialPriorPredict works with DLMWithTrendRobustCovNoSeason", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          multScale = 1)
+                          multScale = 1,
+                          isSaturated = FALSE)
     expect_is(prior, "DLMWithTrendRobustCovNoSeason")
     data.new <- data.frame(time = 2011:2015,
                            income = rnorm(5))
@@ -1576,7 +1648,8 @@ test_that("initialPriorPredict works with DLMNoTrendRobustCovWithSeason", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          multScale = 1)
+                          multScale = 1,
+                          isSaturated = FALSE)
     expect_is(prior, "DLMNoTrendRobustCovWithSeason")
     data.new <- data.frame(time = 2011:2015,
                            income = rnorm(5))
@@ -1622,7 +1695,8 @@ test_that("initialPriorPredict works with DLMWithTrendRobustCovWithSeason", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          multScale = 1)
+                          multScale = 1,
+                          isSaturated = FALSE)
     expect_is(prior, "DLMWithTrendRobustCovWithSeason")
     data.new <- data.frame(time = 2011:2015,
                            income = rnorm(5))
@@ -1667,7 +1741,8 @@ test_that("initialPriorPredict works with MixNormZeroPredict", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          multScale = 1)
+                          multScale = 1,
+                          isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = c("time", "reg", "age"),
                         dimtypes = c("time", "state", "age"),
@@ -1683,6 +1758,7 @@ test_that("initialPriorPredict works with MixNormZeroPredict", {
 
 test_that("initialPriorPredict works with KnownCertain", {
     initialPrior <- demest:::initialPrior
+    initialPriorPredict <- demest:::initialPriorPredict
     mean <- ValuesOne(1:10, labels = 0:9, name = "time", dimscale = "Intervals")
     spec <- Known(mean)
     expect_is(spec, "SpecKnownCertain")
@@ -1694,7 +1770,8 @@ test_that("initialPriorPredict works with KnownCertain", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -1719,6 +1796,7 @@ test_that("initialPriorPredict works with KnownCertain", {
 
 test_that("initialPriorPredict works with KnownUncertain", {
     initialPrior <- demest:::initialPrior
+    initialPriorPredict <- demest:::initialPriorPredict
     mean <- ValuesOne(1:10, labels = 0:9, name = "time", dimscale = "Intervals")
     spec <- Known(mean, sd = 1)
     expect_is(spec, "SpecKnownUncertain")
@@ -1730,7 +1808,8 @@ test_that("initialPriorPredict works with KnownUncertain", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -1768,7 +1847,8 @@ test_that("generator function and initialPrior work with Zero", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = 50)
+                          sY = 50,
+                          isSaturated = FALSE)
     expect_is(prior, "Zero")
 })
 

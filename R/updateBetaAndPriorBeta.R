@@ -18,13 +18,18 @@ setMethod("updateBetaAndPriorBeta",
               }
               else {
                   J <- prior@J@.Data
-                  tau <- prior@tau@.Data
-                  prec.data <- n / sigma^2 # vector
-                  prec.prior <- 1 / tau^2
-                  var <- 1 / (prec.data + prec.prior) 
-                  mean <- prec.data * vbar * var # vector
-                  sd <- sqrt(var) # vector
-                  beta <- stats::rnorm(n = J, mean = mean, sd = sd)
+                  is.saturated <- prior@isSaturated@.Data
+                  if (is.saturated)
+                      beta <- rep(0, times = J)
+                  else {
+                      tau <- prior@tau@.Data
+                      prec.data <- n / sigma^2 # vector
+                      prec.prior <- 1 / tau^2
+                      var <- 1 / (prec.data + prec.prior) 
+                      mean <- prec.data * vbar * var # vector
+                      sd <- sqrt(var) # vector
+                      beta <- stats::rnorm(n = J, mean = mean, sd = sd)
+                  }
                   list(beta, prior)
               }
           })
@@ -48,17 +53,23 @@ setMethod("updateBetaAndPriorBeta",
                       .Call(updateBetaAndPriorBeta_R, prior, vbar, n, sigma)
               }
               else {
-                  beta <- updateBeta(prior = prior,
-                                     vbar = vbar,
-                                     n  = n,
-                                     sigma = sigma)
-                  prior <- updateTauNorm(prior = prior,
-                                         beta = beta)
+                  J <- prior@J@.Data
+                  is.saturated <- prior@isSaturated@.Data
+                  if (is.saturated) {
+                      beta <- rep(0, times = J)
+                      prior@tau@.Data <- sigma
+                  }
+                  else {
+                      beta <- updateBeta(prior = prior,
+                                         vbar = vbar,
+                                         n  = n,
+                                         sigma = sigma)
+                      prior <- updateTauNorm(prior = prior,
+                                             beta = beta)
+                  }
                   list(beta, prior)
               }
           })
-
-
 
 ## TRANSLATED
 ## HAS_TESTS
@@ -87,7 +98,6 @@ setMethod("updateBetaAndPriorBeta",
               }
           })
 
-
 ## TRANSLATED
 ## HAS_TESTS
 setMethod("updateBetaAndPriorBeta",
@@ -104,15 +114,24 @@ setMethod("updateBetaAndPriorBeta",
                       .Call(updateBetaAndPriorBeta_R, prior, vbar, n, sigma)
               }
               else {
-                  beta <- updateBeta(prior = prior,
-                                     vbar = vbar,
-                                     n = n,
-                                     sigma = sigma)
-                  prior <- updateEta(prior = prior,
-                                     beta = beta)
-                  prior <- updateUEtaCoef(prior)
-                  prior <- updateTauNorm(prior = prior,
+                  is.saturated <- prior@isSaturated@.Data
+                  if (is.saturated) {
+                      prior@tau@.Data <- sigma
+                      prior <- updateEta(prior = prior,
+                                         beta = vbar)
+                      beta <- betaHat(prior)
+                  }
+                  else {
+                      beta <- updateBeta(prior = prior,
+                                         vbar = vbar,
+                                         n = n,
+                                         sigma = sigma)
+                      prior <- updateEta(prior = prior,
                                          beta = beta)
+                      prior <- updateTauNorm(prior = prior,
+                                             beta = beta)
+                  }
+                  prior <- updateUEtaCoef(prior)
                   list(beta, prior)
               }
           })
@@ -168,16 +187,25 @@ setMethod("updateBetaAndPriorBeta",
                             prior, vbar, n, sigma)
               }
               else {
-                  beta <- updateBeta(prior = prior,
-                                     vbar = vbar,
-                                     n = n,
-                                     sigma = sigma)
-                  prior <- updateAlphaDLMNoTrend(prior = prior,
-                                                 betaTilde = beta)
+                  is.saturated <- prior@isSaturated@.Data
+                  if (is.saturated) {
+                      prior <- updateAlphaDLMNoTrend(prior = prior,
+                                                     betaTilde = vbar)
+                      beta <- betaHat(prior)
+                      prior@tau@.Data <- sigma
+                  }
+                  else {
+                      beta <- updateBeta(prior = prior,
+                                         vbar = vbar,
+                                         n = n,
+                                         sigma = sigma)
+                      prior <- updateAlphaDLMNoTrend(prior = prior,
+                                                     betaTilde = beta)
+                      prior <- updateTauNorm(prior = prior,
+                                             beta = beta)
+                  }
                   prior <- updatePhi(prior = prior,
                                      withTrend = FALSE)
-                  prior <- updateTauNorm(prior = prior,
-                                         beta = beta)
                   prior <- updateOmegaAlpha(prior = prior,
                                             withTrend = FALSE)
                   list(beta, prior)
@@ -202,16 +230,25 @@ setMethod("updateBetaAndPriorBeta",
                             prior, vbar, n, sigma)
               }
               else {
-                  beta <- updateBeta(prior = prior,
-                                     vbar = vbar,
-                                     n = n,
-                                     sigma = sigma)
-                  prior <- updateAlphaDeltaDLMWithTrend(prior = prior,
-                                                        betaTilde = beta)
+                  is.saturated <- prior@isSaturated@.Data 
+                  if (is.saturated) {
+                      prior <- updateAlphaDeltaDLMWithTrend(prior = prior,
+                                                            betaTilde = vbar)
+                      beta <- betaHat(prior)
+                      prior@tau@.Data <- sigma
+                  }
+                  else {
+                      beta <- updateBeta(prior = prior,
+                                         vbar = vbar,
+                                         n = n,
+                                         sigma = sigma)
+                      prior <- updateAlphaDeltaDLMWithTrend(prior = prior,
+                                                            betaTilde = beta)
+                      prior <- updateTauNorm(prior = prior,
+                                             beta = beta)
+                  }
                   prior <- updatePhi(prior = prior,
                                      withTrend = TRUE)
-                  prior <- updateTauNorm(prior = prior,
-                                         beta = beta)
                   prior <- updateOmegaAlpha(prior = prior,
                                             withTrend = TRUE)
                   prior <- updateOmegaDelta(prior = prior)
@@ -240,20 +277,33 @@ setMethod("updateBetaAndPriorBeta",
                             prior, vbar, n, sigma)
               }
               else {
-                  beta <- updateBeta(prior = prior,
-                                     vbar = vbar,
-                                     n = n,
-                                     sigma = sigma)
-                  beta.tilde <- beta - betaHatSeason(prior)
-                  prior <- updateAlphaDLMNoTrend(prior = prior,
-                                                 betaTilde = beta.tilde)
-                  beta.tilde <- beta - betaHatAlphaDLM(prior)
-                  prior <- updateSeason(prior = prior,
-                                        betaTilde = beta.tilde)
+                  is.saturated <- prior@isSaturated@.Data 
+                  if (is.saturated) {
+                      beta.tilde <- vbar - betaHatSeason(prior)
+                      prior <- updateAlphaDLMNoTrend(prior = prior,
+                                                     betaTilde = beta.tilde)
+                      beta.tilde <- vbar - betaHatAlphaDLM(prior)
+                      prior <- updateSeason(prior = prior,
+                                            betaTilde = beta.tilde)
+                      beta <- betaHat(prior)
+                      prior@tau@.Data <- sigma
+                  }
+                  else {
+                      beta <- updateBeta(prior = prior,
+                                         vbar = vbar,
+                                         n = n,
+                                         sigma = sigma)
+                      beta.tilde <- beta - betaHatSeason(prior)
+                      prior <- updateAlphaDLMNoTrend(prior = prior,
+                                                     betaTilde = beta.tilde)
+                      beta.tilde <- beta - betaHatAlphaDLM(prior)
+                      prior <- updateSeason(prior = prior,
+                                            betaTilde = beta.tilde)
+                      prior <- updateTauNorm(prior = prior,
+                                             beta = beta)
+                  }
                   prior <- updatePhi(prior = prior,
                                      withTrend = FALSE)
-                  prior <- updateTauNorm(prior = prior,
-                                         beta = beta)
                   prior <- updateOmegaAlpha(prior = prior,
                                             withTrend = FALSE)
                   prior <- updateOmegaSeason(prior = prior)
@@ -279,20 +329,33 @@ setMethod("updateBetaAndPriorBeta",
                             prior, vbar, n, sigma)
               }
               else {
-                  beta <- updateBeta(prior = prior,
-                                     vbar = vbar,
-                                     n = n,
-                                     sigma = sigma)
-                  beta.tilde <- beta - betaHatSeason(prior)
-                  prior <- updateAlphaDeltaDLMWithTrend(prior = prior,
-                                                        betaTilde = beta.tilde)
-                  beta.tilde <- beta - betaHatAlphaDLM(prior)
-                  prior <- updateSeason(prior = prior,
-                                        betaTilde = beta.tilde)
+                  is.saturated <- prior@isSaturated@.Data 
+                  if (is.saturated) {
+                      beta.tilde <- vbar - betaHatSeason(prior)
+                      prior <- updateAlphaDeltaDLMWithTrend(prior = prior,
+                                                            betaTilde = beta.tilde)
+                      beta.tilde <- vbar - betaHatAlphaDLM(prior)
+                      prior <- updateSeason(prior = prior,
+                                            betaTilde = beta.tilde)
+                      beta <- betaHat(prior)
+                      prior@tau@.Data <- sigma
+                  }
+                  else {
+                      beta <- updateBeta(prior = prior,
+                                         vbar = vbar,
+                                         n = n,
+                                         sigma = sigma)
+                      beta.tilde <- beta - betaHatSeason(prior)
+                      prior <- updateAlphaDeltaDLMWithTrend(prior = prior,
+                                                            betaTilde = beta.tilde)
+                      beta.tilde <- beta - betaHatAlphaDLM(prior)
+                      prior <- updateSeason(prior = prior,
+                                            betaTilde = beta.tilde)
+                      prior <- updateTauNorm(prior = prior,
+                                             beta = beta)
+                  }
                   prior <- updatePhi(prior = prior,
                                      withTrend = TRUE)
-                  prior <- updateTauNorm(prior = prior,
-                                         beta = beta)
                   prior <- updateOmegaAlpha(prior = prior,
                                             withTrend = TRUE)
                   prior <- updateOmegaDelta(prior = prior)
@@ -303,7 +366,6 @@ setMethod("updateBetaAndPriorBeta",
                   list(beta, prior)
               }
           })
-
 
 ## Norm, Cov
 
@@ -325,21 +387,34 @@ setMethod("updateBetaAndPriorBeta",
                             prior, vbar, n, sigma)
               }
               else {
-                  beta <- updateBeta(prior = prior,
-                                     vbar = vbar,
-                                     n = n,
-                                     sigma = sigma)
-                  beta.tilde <- beta - betaHatCovariates(prior)
-                  prior <- updateAlphaDLMNoTrend(prior = prior,
-                                                 betaTilde = beta.tilde)
-                  beta.tilde <- beta - betaHatAlphaDLM(prior)
-                  prior <- updateEta(prior = prior,
-                                     beta = beta.tilde)
+                  is.saturated <- prior@isSaturated@.Data 
+                  if (is.saturated) {
+                      beta.tilde <- vbar - betaHatCovariates(prior)
+                      prior <- updateAlphaDLMNoTrend(prior = prior,
+                                                     betaTilde = beta.tilde)
+                      beta.tilde <- vbar - betaHatAlphaDLM(prior)
+                      prior <- updateEta(prior = prior,
+                                         beta = beta.tilde)
+                      beta <- betaHat(prior)
+                      prior@tau@.Data <- sigma
+                  }
+                  else {
+                      beta <- updateBeta(prior = prior,
+                                         vbar = vbar,
+                                         n = n,
+                                         sigma = sigma)
+                      beta.tilde <- beta - betaHatCovariates(prior)
+                      prior <- updateAlphaDLMNoTrend(prior = prior,
+                                                     betaTilde = beta.tilde)
+                      beta.tilde <- beta - betaHatAlphaDLM(prior)
+                      prior <- updateEta(prior = prior,
+                                         beta = beta.tilde)
+                      prior <- updateTauNorm(prior = prior,
+                                             beta = beta)
+                  }
                   prior <- updateUEtaCoef(prior)
                   prior <- updatePhi(prior = prior,
                                      withTrend = FALSE)
-                  prior <- updateTauNorm(prior = prior,
-                                         beta = beta)
                   prior <- updateOmegaAlpha(prior = prior,
                                             withTrend = FALSE)
                   list(beta, prior)
@@ -364,21 +439,34 @@ setMethod("updateBetaAndPriorBeta",
                             prior, vbar, n, sigma)
               }
               else {
-                  beta <- updateBeta(prior = prior,
-                                     vbar = vbar,
-                                     n = n,
-                                     sigma = sigma)
-                  beta.tilde <- beta - betaHatCovariates(prior)
-                  prior <- updateAlphaDeltaDLMWithTrend(prior = prior,
-                                                        betaTilde = beta.tilde)
-                  beta.tilde <- beta - betaHatAlphaDLM(prior)
-                  prior <- updateEta(prior = prior,
-                                     beta = beta.tilde)
+                  is.saturated <- prior@isSaturated@.Data 
+                  if (is.saturated) {
+                      beta.tilde <- vbar - betaHatCovariates(prior)
+                      prior <- updateAlphaDeltaDLMWithTrend(prior = prior,
+                                                            betaTilde = beta.tilde)
+                      beta.tilde <- vbar - betaHatAlphaDLM(prior)
+                      prior <- updateEta(prior = prior,
+                                         beta = beta.tilde)
+                      beta <- betaHat(prior)
+                      prior@tau@.Data <- sigma
+                  }
+                  else {
+                      beta <- updateBeta(prior = prior,
+                                         vbar = vbar,
+                                         n = n,
+                                         sigma = sigma)
+                      beta.tilde <- beta - betaHatCovariates(prior)
+                      prior <- updateAlphaDeltaDLMWithTrend(prior = prior,
+                                                            betaTilde = beta.tilde)
+                      beta.tilde <- beta - betaHatAlphaDLM(prior)
+                      prior <- updateEta(prior = prior,
+                                         beta = beta.tilde)
+                      prior <- updateTauNorm(prior = prior,
+                                             beta = beta)
+                  }                  
                   prior <- updateUEtaCoef(prior)
                   prior <- updatePhi(prior = prior,
                                      withTrend = TRUE)
-                  prior <- updateTauNorm(prior = prior,
-                                         beta = beta)
                   prior <- updateOmegaAlpha(prior = prior,
                                             withTrend = TRUE)
                   prior <- updateOmegaDelta(prior = prior)
@@ -407,24 +495,40 @@ setMethod("updateBetaAndPriorBeta",
                             prior, vbar, n, sigma)
               }
               else {
-                  beta <- updateBeta(prior = prior,
-                                     vbar = vbar,
-                                     n = n,
-                                     sigma = sigma)
-                  beta.tilde <- beta - betaHatSeason(prior) - betaHatCovariates(prior)
-                  prior <- updateAlphaDLMNoTrend(prior = prior,
-                                                 betaTilde = beta.tilde)
-                  beta.tilde <- beta - betaHatAlphaDLM(prior) - betaHatCovariates(prior)
-                  prior <- updateSeason(prior = prior,
-                                        betaTilde = beta.tilde)
-                  beta.tilde <- beta - betaHatAlphaDLM(prior) - betaHatSeason(prior) 
-                  prior <- updateEta(prior = prior,
-                                     beta = beta.tilde)
+                  is.saturated <- prior@isSaturated@.Data 
+                  if (is.saturated) {
+                      beta.tilde <- vbar - betaHatSeason(prior) - betaHatCovariates(prior)
+                      prior <- updateAlphaDLMNoTrend(prior = prior,
+                                                     betaTilde = beta.tilde)
+                      beta.tilde <- vbar - betaHatAlphaDLM(prior) - betaHatCovariates(prior)
+                      prior <- updateSeason(prior = prior,
+                                            betaTilde = beta.tilde)
+                      beta.tilde <- vbar - betaHatAlphaDLM(prior) - betaHatSeason(prior) 
+                      prior <- updateEta(prior = prior,
+                                         beta = beta.tilde)
+                      beta <- betaHat(prior)
+                      prior@tau@.Data <- sigma
+                  }
+                  else {
+                      beta <- updateBeta(prior = prior,
+                                         vbar = vbar,
+                                         n = n,
+                                         sigma = sigma)
+                      beta.tilde <- beta - betaHatSeason(prior) - betaHatCovariates(prior)
+                      prior <- updateAlphaDLMNoTrend(prior = prior,
+                                                     betaTilde = beta.tilde)
+                      beta.tilde <- beta - betaHatAlphaDLM(prior) - betaHatCovariates(prior)
+                      prior <- updateSeason(prior = prior,
+                                            betaTilde = beta.tilde)
+                      beta.tilde <- beta - betaHatAlphaDLM(prior) - betaHatSeason(prior) 
+                      prior <- updateEta(prior = prior,
+                                         beta = beta.tilde)
+                      prior <- updateTauNorm(prior = prior,
+                                             beta = beta)
+                  }
                   prior <- updateUEtaCoef(prior)
                   prior <- updatePhi(prior = prior,
                                      withTrend = FALSE)
-                  prior <- updateTauNorm(prior = prior,
-                                         beta = beta)
                   prior <- updateOmegaAlpha(prior = prior,
                                             withTrend = FALSE)
                   prior <- updateOmegaSeason(prior = prior)
@@ -450,24 +554,40 @@ setMethod("updateBetaAndPriorBeta",
                             prior, vbar, n, sigma)
               }
               else {
-                  beta <- updateBeta(prior = prior,
-                                     vbar = vbar,
-                                     n = n,
-                                     sigma = sigma)
-                  beta.tilde <- beta - betaHatSeason(prior) - betaHatCovariates(prior)
-                  prior <- updateAlphaDeltaDLMWithTrend(prior = prior,
-                                                        betaTilde = beta.tilde)
-                  beta.tilde <- beta - betaHatAlphaDLM(prior) - betaHatCovariates(prior)
-                  prior <- updateSeason(prior = prior,
-                                        betaTilde = beta.tilde)
-                  beta.tilde <- beta - betaHatAlphaDLM(prior) - betaHatSeason(prior)                  
-                  prior <- updateEta(prior = prior,
-                                     beta = beta.tilde)
+                  is.saturated <- prior@isSaturated@.Data 
+                  if (is.saturated) {
+                      beta.tilde <- vbar - betaHatSeason(prior) - betaHatCovariates(prior)
+                      prior <- updateAlphaDeltaDLMWithTrend(prior = prior,
+                                                            betaTilde = beta.tilde)
+                      beta.tilde <- vbar - betaHatAlphaDLM(prior) - betaHatCovariates(prior)
+                      prior <- updateSeason(prior = prior,
+                                            betaTilde = beta.tilde)
+                      beta.tilde <- vbar - betaHatAlphaDLM(prior) - betaHatSeason(prior) 
+                      prior <- updateEta(prior = prior,
+                                         beta = beta.tilde)
+                      beta <- betaHat(prior)
+                      prior@tau@.Data <- sigma
+                  }
+                  else {
+                      beta <- updateBeta(prior = prior,
+                                         vbar = vbar,
+                                         n = n,
+                                         sigma = sigma)
+                      beta.tilde <- beta - betaHatSeason(prior) - betaHatCovariates(prior)
+                      prior <- updateAlphaDeltaDLMWithTrend(prior = prior,
+                                                            betaTilde = beta.tilde)
+                      beta.tilde <- beta - betaHatAlphaDLM(prior) - betaHatCovariates(prior)
+                      prior <- updateSeason(prior = prior,
+                                            betaTilde = beta.tilde)
+                      beta.tilde <- beta - betaHatAlphaDLM(prior) - betaHatSeason(prior)                  
+                      prior <- updateEta(prior = prior,
+                                         beta = beta.tilde)
+                      prior <- updateTauNorm(prior = prior,
+                                             beta = beta)
+                  }
                   prior <- updateUEtaCoef(prior)
                   prior <- updatePhi(prior = prior,
                                      withTrend = TRUE)
-                  prior <- updateTauNorm(prior = prior,
-                                         beta = beta)
                   prior <- updateOmegaAlpha(prior = prior,
                                             withTrend = TRUE)
                   prior <- updateOmegaDelta(prior = prior)
@@ -902,18 +1022,26 @@ setMethod("updateBetaAndPriorBeta",
                             prior, vbar, n, sigma)
               }
               else {
-                  ## beta
-                  ## THIS IS WRONG
-                  beta <- updateBeta(prior = prior,
-                                     vbar = vbar,
-                                     n = n,
-                                     sigma = sigma)
-                  ## tau
-                  prior <- updateTauNorm(prior = prior,
-                                         beta = beta) # sigma-delta
+                  is.saturated <- prior@isSaturated@.Data 
+                  if (is.saturated) {
+                      ## tau
+                      prior@tau@.Data <- sigma
+                      beta.tilde <- vbar
+                  }
+                  else {
+                      ## beta
+                      beta <- updateBeta(prior = prior,
+                                         vbar = vbar,
+                                         n = n,
+                                         sigma = sigma)
+                      ## tau
+                      prior <- updateTauNorm(prior = prior,
+                                             beta = beta) # sigma-delta
+                      beta.tilde <- beta
+                  }
                   ## vectors
                   prior <- updateVectorsMixAndProdVectorsMix(prior = prior,
-                                                             betaTilde = beta) # psi
+                                                             betaTilde = beta.tilde) # psi
                   prior <- updateOmegaVectorsMix(prior) # sigma-e
                   ## weights
                   prior <- updateLatentComponentWeightMix(prior) # z
@@ -924,12 +1052,14 @@ setMethod("updateBetaAndPriorBeta",
                   prior <- updateOmegaLevelComponentWeightMix(prior) # sigma-eta 
                   prior <- updateIndexClassMaxPossibleMix(prior) # k-tilde
                   prior <- updateIndexClassMix(prior = prior,
-                                               betaTilde = beta) # k
+                                               betaTilde = beta.tilde) # k
                   prior <- updateIndexClassMaxUsedMix(prior) # k-star; deterministic
                   prior <- updateLevelComponentWeightMix(prior) # alpha
                   prior <- updateMeanLevelComponentWeightMix(prior) # mu
                   prior <- updatePhiMix(prior) # phi
                   prior <- updateAlphaMix(prior)
+                  if (is.saturated)
+                      beta <- betaHat(prior)
                   ## return
                   list(beta, prior)
               }

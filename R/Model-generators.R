@@ -505,10 +505,6 @@ setMethod("addAg",
 
 ## initialModel ############################################################################
 
-## Assume that 'y', 'exposure' (if any), and 'weights' (if any)
-## are valid by the time they reach 'initialModel'.
-
-
 ## HAS_TESTS
 setMethod("initialModel",
           signature(object = "SpecBinomialVarying",
@@ -549,6 +545,7 @@ setMethod("initialModel",
               sigma <- stats::runif(n = 1L,
                                     min = 0,
                                     max = min(nu, sigma.max@.Data))
+              sigma <- methods::new("Scale", sigma)
               theta <- stats::rbeta(n = length(y),
                                     shape1 = m * (nu / sigma^2 - 1) + y.tmp,
                                     shape2 = (1 - m) * (nu / sigma^2 - 1) + exposure.tmp - y.tmp)
@@ -569,7 +566,6 @@ setMethod("initialModel",
               theta <- array(theta, dim = dim(y), dimnames = dimnames(y))
               logit.theta <- log(theta / (1 - theta))
               betas <- makeLinearBetas(theta = logit.theta, formula = formula.mu)
-              checkNumberElementsBetas(betas = betas, y = y)
               theta <- as.numeric(theta)
               names.betas <- names(betas)
               margins <- makeMargins(betas = betas, y = y)
@@ -579,6 +575,15 @@ setMethod("initialModel",
                                          margins = margins,
                                          y = y,
                                          sY = NULL)
+              is.saturated <- sapply(priors.betas, function(x) x@isSaturated@.Data)
+              if (any(is.saturated)) {
+                  i.saturated <- which(is.saturated)
+                  prior.saturated <- priors.betas[[i.saturated]]
+                  A.sigma <- prior.saturated@ATau
+                  nu.sigma <- prior.saturated@nuTau
+                  sigma.max <- prior.saturated@tauMax
+                  sigma <- prior.saturated@tau
+              }
               betas <- unname(lapply(betas, as.numeric))
               betas <- jitterBetas(betas)
               iterator.betas <- BetaIterator(dim = dim, margins = margins)
@@ -593,7 +598,7 @@ setMethod("initialModel",
                                     scaleThetaMultiplier = scale.theta.multiplier,
                                     nAcceptTheta = methods::new("Counter", 0L),
                                     nFailedPropTheta = methods::new("Counter", 0L),
-                                    sigma = methods::new("Scale", sigma),
+                                    sigma = sigma,
                                     sigmaMax = sigma.max,
                                     lower = lower,
                                     upper = upper,
@@ -651,6 +656,7 @@ setMethod("initialModel",
               sigma <- stats::runif(n = 1L,
                                     min = 0,
                                     max = min(A.sigma@.Data, sigma.max@.Data))
+              sigma <- methods::new("Scale", sigma)
               y.bar <- mean(y, na.rm = TRUE)
               mean <- 0.5 * y.bar + 0.5 * y
               mean[is.na(y)] <- y.bar
@@ -665,7 +671,6 @@ setMethod("initialModel",
                                       useC = TRUE)
               theta <- array(theta, dim = dim(y), dimnames = dimnames(y))
               betas <- makeLinearBetas(theta = theta, formula = formula.mu)
-              checkNumberElementsBetas(betas = betas, y = y)
               theta <- as.numeric(theta)
               names.betas <- names(betas)
               margins <- makeMargins(betas = betas, y = y)
@@ -675,6 +680,15 @@ setMethod("initialModel",
                                          margins = margins,
                                          y = y,
                                          sY = sY)
+              is.saturated <- sapply(priors.betas, function(x) x@isSaturated@.Data)
+              if (any(is.saturated)) {
+                  i.saturated <- which(is.saturated)
+                  prior.saturated <- priors.betas[[i.saturated]]
+                  A.sigma <- prior.saturated@ATau
+                  nu.sigma <- prior.saturated@nuTau
+                  sigma.max <- prior.saturated@tauMax
+                  sigma <- prior.saturated@tau
+              }
               betas <- unname(lapply(betas, as.numeric))
               betas <- jitterBetas(betas)
               iterator.betas <- BetaIterator(dim = dim, margins = margins)
@@ -694,7 +708,7 @@ setMethod("initialModel",
                                     nAcceptTheta = methods::new("Counter", 0L),
                                     nFailedPropTheta = methods::new("Counter", 0L),
                                     maxAttempt = max.attempt,
-                                    sigma = methods::new("Scale", sigma),
+                                    sigma = sigma,
                                     sigmaMax = sigma.max,
                                     ASigma = A.sigma,
                                     nuSigma = nu.sigma,
@@ -757,6 +771,7 @@ setMethod("initialModel",
               sigma <- stats::runif(n = 1L,
                                     min = 0,
                                     max = min(A.sigma@.Data, sigma.max@.Data))
+              sigma <- methods::new("Scale", sigma)
               y.bar <- mean(y, na.rm = TRUE)
               mean <- 0.5 * y.bar + 0.5 * y
               mean[is.na(y)] <- y.bar
@@ -771,7 +786,6 @@ setMethod("initialModel",
                                       useC = TRUE)
               theta <- array(theta, dim = dim(y), dimnames = dimnames(y))
               betas <- makeLinearBetas(theta = theta, formula = formula.mu)
-              checkNumberElementsBetas(betas = betas, y = y)
               theta <- as.numeric(theta)
               names.betas <- names(betas)
               margins <- makeMargins(betas = betas, y = y)
@@ -781,6 +795,15 @@ setMethod("initialModel",
                                          margins = margins,
                                          y = y,
                                          sY = sY)
+              is.saturated <- sapply(priors.betas, function(x) x@isSaturated@.Data)
+              if (any(is.saturated)) {
+                  i.saturated <- which(is.saturated)
+                  prior.saturated <- priors.betas[[i.saturated]]
+                  A.sigma <- prior.saturated@ATau
+                  nu.sigma <- prior.saturated@nuTau
+                  sigma.max <- prior.saturated@tauMax
+                  sigma <- prior.saturated@tau
+              }
               betas <- unname(lapply(betas, as.numeric))
               betas <- jitterBetas(betas)
               iterator.betas <- BetaIterator(dim = dim, margins = margins)
@@ -803,7 +826,7 @@ setMethod("initialModel",
                                     nAcceptTheta = methods::new("Counter", 0L),
                                     nFailedPropTheta = methods::new("Counter", 0L),
                                     maxAttempt = max.attempt,
-                                    sigma = methods::new("Scale", sigma),
+                                    sigma = sigma,
                                     sigmaMax = sigma.max,
                                     ASigma = A.sigma,
                                     nuSigma = nu.sigma,
@@ -877,6 +900,7 @@ setMethod("initialModel",
               sigma <- stats::runif(n = 1L,
                                     min = 0,
                                     max = min(A.sigma@.Data, sigma.max@.Data))
+              sigma <- methods::new("Scale", sigma)
               ## need to avoid having all 'theta' equalling lower or upper bound
               is.too.low <- theta < lower
               n.too.low <- sum(is.too.low)
@@ -896,7 +920,6 @@ setMethod("initialModel",
                   betas <- MASS::loglm(formula.mu, data = theta)$param
                   betas <- convertToFormulaOrder(betas = betas, formulaMu = formula.mu)
               }
-              checkNumberElementsBetas(betas = betas, y = y)
               theta <- as.numeric(theta)
               names.betas <- names(betas)
               margins <- makeMargins(betas = betas, y = y)
@@ -906,6 +929,15 @@ setMethod("initialModel",
                                          margins = margins,
                                          y = y,
                                          sY = sY)
+              is.saturated <- sapply(priors.betas, function(x) x@isSaturated@.Data)
+              if (any(is.saturated)) {
+                  i.saturated <- which(is.saturated)
+                  prior.saturated <- priors.betas[[i.saturated]]
+                  A.sigma <- prior.saturated@ATau
+                  nu.sigma <- prior.saturated@nuTau
+                  sigma.max <- prior.saturated@tauMax
+                  sigma <- prior.saturated@tau
+              }
               betas <- unname(lapply(betas, as.numeric))
               betas <- jitterBetas(betas)
               iterator.betas <- BetaIterator(dim = dim, margins = margins)
@@ -925,7 +957,7 @@ setMethod("initialModel",
                                     nAcceptTheta = methods::new("Counter", 0L),
                                     nFailedPropTheta = methods::new("Counter", 0L),
                                     maxAttempt = max.attempt,
-                                    sigma = methods::new("Scale", sigma),
+                                    sigma = sigma,
                                     sigmaMax = sigma.max,
                                     ASigma = A.sigma,
                                     nuSigma = nu.sigma,

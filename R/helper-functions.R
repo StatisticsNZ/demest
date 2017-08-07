@@ -774,7 +774,7 @@ initialCovPredict <- function(prior, data, metadata) {
 }
 
 ## HAS_TESTS
-initialDLMAll <- function(object, beta, metadata, sY, ...) {
+initialDLMAll <- function(object, beta, metadata, sY, isSaturated, ...) {
     AAlpha <- object@AAlpha
     ATau <- object@ATau
     along <- object@along
@@ -832,10 +832,12 @@ initialDLMAll <- function(object, beta, metadata, sY, ...) {
                    phiKnown = phiKnown,
                    minPhi = minPhi,
                    maxPhi = maxPhi)                             
+    isSaturated <- new("LogicalFlag", isSaturated)
     list(AAlpha = AAlpha,
          ATau = ATau,
          alphaDLM = alphaDLM,
          iAlong = iAlong,
+         isSaturated = isSaturated,
          iteratorState = iteratorState,
          iteratorV = iteratorV,
          J = J,
@@ -1138,7 +1140,7 @@ initialDLMSeasonPredict <- function(prior, metadata) {
 }
 
 ## HAS_TESTS
-initialMixAll <- function(object, beta, metadata, sY, ...) {
+initialMixAll <- function(object, beta, metadata, sY, isSaturated, ...) {
     AComponentWeightMix <- object@AComponentWeightMix
     ALevelComponentWeightMix <- object@ALevelComponentWeightMix
     ATau <- object@ATau
@@ -1301,6 +1303,8 @@ initialMixAll <- function(object, beta, metadata, sY, ...) {
     ## indexClassProbMix
     indexClassProbMix <- rep(0, times = indexClassMaxMix@.Data)
     indexClassProbMix <- new("ParameterVector", indexClassProbMix)
+    ## isSaturated
+    isSaturated <- new("LogicalFlag", isSaturated)
     ## foundIndexClassMaxPossibleMix
     foundIndexClassMaxPossibleMix <- new("LogicalFlag", TRUE)
     ## sumsWeightsMix
@@ -1360,6 +1364,7 @@ initialMixAll <- function(object, beta, metadata, sY, ...) {
          indexClassMaxUsedMix = indexClassMaxUsedMix,
          indexClassMix = indexClassMix,
          indexClassProbMix = indexClassProbMix,
+         isSaturated = isSaturated,
          iteratorProdVectorMix = iteratorProdVectorMix,
          iteratorsDimsMix = iteratorsDimsMix,
          J = J,
@@ -2892,16 +2897,6 @@ checkNamesDatasets <- function(datasets) {
 }
 
 ## HAS_TESTS
-checkNumberElementsBetas <- function(betas, y) {
-    n.elements.betas <- sum(sapply(betas, length))
-    n.elements.y <- length(y)
-    if (n.elements.betas >= n.elements.y)
-        stop(gettextf("terms predicting cell means have a combined total of %d elements but data only has %d elements : try a model with fewer terms",
-                      n.elements.betas, n.elements.y))
-    NULL
-}
-
-## HAS_TESTS
 checkObservation <- function(observation, needsNonDefaultSeriesArg = FALSE) {
     ## 'observation' is a list
     if (!is.list(observation))
@@ -3336,6 +3331,7 @@ makePriors <- function(betas, specs, namesSpecs, margins, y, sY) {
     ans <- vector(mode = "list", length = n.beta)
     names.betas <- names(betas)
     dim.y <- dim(y)
+    s <- seq_along(dim.y)
     metadata.y <- y@metadata
     for (i in seq_len(n.beta)) {
         beta <- betas[[i]]
@@ -3350,6 +3346,7 @@ makePriors <- function(betas, specs, namesSpecs, margins, y, sY) {
         else
             metadata <- metadata.y[margin]
         is.intercept <- i == 1L
+        is.saturated <- identical(sort(margin), s)
         if (is.intercept)
             spec <- ExchFixed()
         else {
@@ -3363,7 +3360,8 @@ makePriors <- function(betas, specs, namesSpecs, margins, y, sY) {
         ans[[i]] <- initialPrior(object = spec,
                                  beta = beta,
                                  metadata = metadata,
-                                 sY = sY)
+                                 sY = sY,
+                                 isSaturated = is.saturated)
     }
     ans
 }
@@ -4818,46 +4816,6 @@ makeLifeExpBirth <- function(mx, nx, ax, iAge0, nAge,
     }
 }
 
-## ## TRANSLATED
-## ## HAS_TESTS
-## makeVBar <- function(object, iBeta, g, useC = FALSE) {
-##     ## object
-##     stopifnot(methods::is(object, "Varying"))
-##     stopifnot(methods::validObject(object))
-##     ## iBeta
-##     stopifnot(is.integer(iBeta))
-##     stopifnot(identical(length(iBeta), 1L))
-##     stopifnot(!is.na(iBeta))
-##     stopifnot(iBeta %in% seq_along(object@betas))
-##     ## g
-##     stopifnot(is.function(g))
-##     if (useC) {
-##         .Call(makeVBar_R, object, iBeta) ## g not passed
-##     }
-##     else {
-##         theta <- object@theta
-##         betas <- object@betas
-##         iterator <- object@iteratorBetas
-##         beta <- betas[[iBeta]]
-##         iterator <- resetB(iterator)
-##         ans <- rep(0, times = length(beta))
-##         i.other.betas <- seq_along(betas)[-iBeta]
-##         for (i.mu in seq_along(theta)) {
-##             indices <- iterator@indices
-##             pos.ans <- indices[iBeta]
-##             ans[pos.ans] <- ans[pos.ans] + g(theta[i.mu])
-##             for (i.other.beta in i.other.betas) {
-##                 other.beta <- betas[[i.other.beta]]
-##                 pos.other.beta <- indices[i.other.beta]
-##                 ans[pos.ans] <- ans[pos.ans] - other.beta[pos.other.beta]
-##             }
-##             iterator <- advanceB(iterator)
-##         }
-##         ans <- ans * length(ans) / length(theta)
-##         ans
-##     }
-## }
-
 ## TRANSLATED
 ## HAS_TESTS
 makeVBarAndN <- function(object, iBeta, g, useC = FALSE) {
@@ -5155,83 +5113,6 @@ checkDataPredict <- function(data) {
     NULL
 }
 
-
-## ## HAS_TESTS
-## initialModelPredictHelper <- function(model, along, labels, n, offsetModel,
-##                                       covariates) {
-##     theta.old <- model@theta
-##     metadata.first <- model@metadataY
-##     betas <- model@betas
-##     priors.betas <- model@priorsBetas
-##     names.betas <- model@namesBetas
-##     margins <- model@margins
-##     dims <- model@dims
-##     i.method.model.first <- model@iMethodModel
-##     n.beta <- length(betas)
-##     metadata.pred <- makeMetadataPredict(metadata = metadata.first,
-##                                          along = along,
-##                                          labels = labels,
-##                                          n = n)
-##     theta <- rep(mean(theta.old), times = prod(dim(metadata.pred)))
-##     cell.in.lik <- rep(FALSE, times = prod(dim(metadata.pred)))
-##     beta.is.predicted <- logical(length = n.beta)
-##     for (i in seq_len(n.beta)) {
-##         margin <- margins[[i]]
-##         prior <- priors.betas[[i]]
-##         beta.is.estimated <- betaIsEstimated(prior)
-##         beta.is.predicted[i] <- (along %in% margin) && beta.is.estimated
-##         if (beta.is.predicted[[i]]) {
-##             metadata.pred.i <- metadata.pred[margin]
-##             dim.i <- dim(metadata.pred.i)
-##             J <- prod(dim.i)
-##             covariates.i <- covariates[[names.betas[i]]]
-##             dims[[i]] <- dim.i
-##             betas[[i]] <- rep(0, length = J)
-##             along.margin <- match(along, margin)
-##             priors.betas[[i]] <- initialPriorPredict(prior = prior,
-##                                                      data = covariates.i,
-##                                                      metadata = metadata.pred.i,
-##                                                      name = names.betas[i],
-##                                                      along = along.margin)
-##         }
-##         else {
-##             J <- length(betas[[i]])
-##             J <- methods::new("Length", J)
-##             priors.betas[[i]] <- methods::new("TimeInvariant", J = J)
-##         }
-##     }
-##     names.predicted <- names.betas[beta.is.predicted]
-##     names.covariates <- names(covariates)
-##     for (name in names.covariates) {
-##         if (!(name %in% names.betas))
-##             stop(gettextf("'%s' includes data for '%s', but '%s' is not a term in the model",
-##                           "covariates", name, name))
-##         if (!name %in% names.predicted)
-##             stop(gettextf("'%s' includes data for '%s', but '%s' is not predicted",
-##                           "covariates", name, name))
-##     }
-##     dim <- dim(metadata.pred)
-##     iterator.betas <- BetaIterator(dim = dim, margins = margins)
-##     offsets.betas <- makeOffsetsBetas(model, offsetModel = offsetModel)
-##     offsets.priors.betas <- makeOffsetsPriorsBetas(model, offsetModel = offsetModel)
-##     offsets.sigma <- makeOffsetsSigma(model, offsetModel = offsetModel)
-##     i.method.model <- i.method.model.first + 100L
-##     list(theta = theta,
-##          metadataY = metadata.pred,
-##          cellInLik = cell.in.lik,
-##          betas = betas,
-##          priorsBetas = priors.betas,
-##          iteratorBetas = iterator.betas,
-##          dims = dims,
-##          betaIsPredicted = beta.is.predicted,
-##          offsetsBetas = offsets.betas,
-##          offsetsPriorsBetas = offsets.priors.betas,
-##          offsetsSigma = offsets.sigma,
-##          iMethodModel = i.method.model)         
-## }    
-
-
-
 ## HAS_TESTS
 initialModelPredictHelper <- function(model, along, labels, n, offsetModel,
                                       covariates) {
@@ -5272,7 +5153,10 @@ initialModelPredictHelper <- function(model, along, labels, n, offsetModel,
         else {
             J <- length(betas[[i]])
             J <- methods::new("Length", J)
-            priors.betas[[i]] <- methods::new("TimeInvariant", J = J)
+            isSaturated <- new("LogicalFlag", FALSE)
+            priors.betas[[i]] <- methods::new("TimeInvariant",
+                                              J = J,
+                                              isSaturated = isSaturated)
         }
     }
     names.predicted <- names.betas[beta.is.predicted]
@@ -6752,14 +6636,40 @@ changeInPos <- function(object) {
         0L
 }
 
+## ## HAS_TESTS
+## indicesShow <- function(iterator, nSeason = NULL) {
+##     if (!methods::is(iterator, "AlongIterator"))
+##         stop(gettextf("'%s' has class \"%s\"",
+##                       "iterator", class(iterator)))
+##     n.within <- iterator@nWithin
+##     n.between <- iterator@nBetween
+##     n.indices <- length(iterator@indices)
+##     n <- n.within * n.between
+##     ans <- vector(mode = "list", length = n)
+##     iterator <- resetA(iterator)
+##     for (i in seq_len(n)) {
+##         indices <- iterator@indices
+##         indices <- indices[-1]
+##         if (!is.null(nSeason))
+##             indices <- (indices - 1L) * nSeason + 1L
+##         ans[[i]] <- indices
+##         iterator <- advanceA(iterator, useC = TRUE)
+##     }
+##     ans <- unlist(ans)
+##     ans <- sort(ans)
+##     ans
+## }
+
+
 ## HAS_TESTS
-indicesShow <- function(iterator, nSeason = NULL) {
+indicesShow <- function(iterator, nSeason = NULL, dim, iAlong) {
     if (!methods::is(iterator, "AlongIterator"))
         stop(gettextf("'%s' has class \"%s\"",
                       "iterator", class(iterator)))
     n.within <- iterator@nWithin
     n.between <- iterator@nBetween
     n.indices <- length(iterator@indices)
+    n.dim <- length(dim)
     n <- n.within * n.between
     ans <- vector(mode = "list", length = n)
     iterator <- resetA(iterator)
@@ -6773,7 +6683,40 @@ indicesShow <- function(iterator, nSeason = NULL) {
     }
     ans <- unlist(ans)
     ans <- sort(ans)
+    if (n.dim > 1L) {
+        ans <- array(ans, dim = dim)
+        for (i in seq_len(n.dim)) {
+            if (i != i.along) {
+                not.first.element <- slice.index(ans, MARGIN = i) != 1L
+                ans <- ans & not.first.element
+            }
+        }
+    }
     ans
+}
+
+## HAS_TESTS
+makeMetadataStateDLM <- function(metadata, iAlong) {
+    dim <- dim(metadata)
+    n.dim <- length(dim)
+    if (n.dim == 1L)
+        return(metadata)
+    indices <- lapply(dim, seq_len)
+    dims <- seq_along(dim)
+    dim.after <- dim
+    for (i in seq_along(dim)) {
+        if (i != iAlong) {
+            indices[[i]] <- indices[[i]] - 1L
+            dim.after[i] <- dim.after[i] - 1L
+        }
+    }
+    transform <- methods::new("CollapseTransform",
+                              indices = indices,
+                              dims = dims,
+                              dimBefore = dim,
+                              dimAfter = dim.after)
+    dembase::collapse(metadata,
+                      transform = transform)
 }
 
 ## HAS_TESTS
@@ -7431,7 +7374,7 @@ printLevelTrendEqns <- function(object, isMain, hasTrend) {
     }
     if (show.damp) {
         if (phi.known)
-            cat("damp =",
+            cat("            damp =",
                 format(phi, digits = 4),
                 "\n")
         else {
@@ -7800,11 +7743,21 @@ printSDAg <- function(object) {
 }
 
 printSDEqns <- function(object) {
-    nu <- object@nuSigma@.Data
-    A <- object@ASigma@.Data
-    max <- object@sigmaMax@.Data
-    cat("              sd ~ trunc-half-t(", nu, ", ", sep = "")
-    cat(squaredOrNA(A), ", ", format(max, digits = 4), ")\n", sep = "")
+    if (.hasSlot(object, "priorsBetas")) {
+        priors <- object@priorsBetas
+        is.saturated <- any(sapply(priors, function(x) x@isSaturated@.Data))
+    }
+    else
+        is.saturated <- FALSE
+    if (is.saturated)
+        invisible()
+    else {
+        nu <- object@nuSigma@.Data
+        A <- object@ASigma@.Data
+        max <- object@sigmaMax@.Data
+        cat("              sd ~ trunc-half-t(", nu, ", ", sep = "")
+        cat(squaredOrNA(A), ", ", format(max, digits = 4), ")\n", sep = "")
+    }
 }
 
 printSeasonEqns <- function(object, isMain) {
@@ -8413,6 +8366,17 @@ giveListElementsLongNames <- function(object, names = NULL) {
             names(object)[i] <- combined.name
     }
     object
+}
+
+
+isSaturated <- function(object) {
+    if (!methods::is(object, "Varying"))
+        stop(gettextf("'%s' has class \"%s\"",
+                      "object", class(object)))
+    priors <- object@priorsBetas
+    isSat <- function(x) x@isSaturated@.Data
+    is.sat <- sapply(priors, isSat)
+    any(is.sat)
 }
 
 ## HAS_TESTS

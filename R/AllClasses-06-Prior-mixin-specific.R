@@ -657,6 +657,19 @@ setClass("InfantMixin",
 
 setClass("IsRobustMixin",
          slots = c(isRobust = "LogicalFlag"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             isRobust <- object@isRobust@.Data
+             isSaturated <- object@isSaturated@.Data
+             ## if robust, is not saturated
+             if (isRobust && isSaturated)
+                 return(gettextf("prior is robust but '%s' is %s",
+                                 "isSaturated", "TRUE"))
+             TRUE
+         })
+
+setClass("IsSaturatedMixin",
+         slots = c(isSaturated = "LogicalFlag"),
          contains = "VIRTUAL")
 
 setClass("IteratorProdVectorMix",

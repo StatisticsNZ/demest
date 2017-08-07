@@ -8,6 +8,69 @@ test.extended <- TRUE
 
 ## estimateModel ##################################################################
 
+library(tidyverse)
+births <- demdata::iceland.births %>%
+    Counts(dimscales = c(year = "Intervals")) %>%
+    subarray(age > 15 & age < 45) %>%
+    collapseIntervals(dimension = "age", width = 5)
+expose <- demdata::iceland.popn %>%
+    Counts(dimscales = c(year = "Intervals")) %>%
+    subarray(age > 15 & age < 45) %>%
+    collapseIntervals(dimension = "age", width = 5) %>%
+    subarray(sex == "Females")
+model <- Model(y ~ Poisson(mean ~ age * year),
+               age ~ DLM(level = Level(scale = HalfT(df = 30, mult = 0.25)),
+                         trend = NULL,
+                         damp = NULL,
+                         error = Error(scale = HalfT(df = 30, mult = 0.25))),
+               year ~ DLM(level = Level(scale = HalfT(scale = 0.2)),
+                          trend = Trend(scale = HalfT(scale = 0.2)),
+                          damp = NULL,
+                          error = Error(scale = HalfT(scale = 0.2))),
+               age:year ~ DLM(level = Level(scale = HalfT(scale = 0.2, df = 30)),
+                              trend = Trend(scale = HalfT(scale = 0.2, df = 30)),
+                              damp = NULL,
+                              error = Error(scale = HalfT(scale = 0.2))))
+filename <- tempfile()
+estimateModel(model,
+              y = births,
+              exposure = expose,
+              filename = filename,
+              nBurnin = 10000,
+              nSim = 10000,
+              nThin = 25,
+              nChain = 4)
+fetchSummary(filename)
+filename.pred <- tempfile()
+predictModel(filenameEst = filename, filenamePred = filename.pred, n = 25)
+rates <- fetchBoth(filenameEst = filename, filenamePred = filename.pred,
+                   where = c("model", "like", "rate"))
+dplot(~ year | age, data = rates, midpoints = "year")
+
+dplot(~ year , data = 5 * as(rates, "Counts"), midpoints = "year")
+
+
+year <- fetchBoth(filenameEst = filename, filenamePred = filename.pred,
+                   where = c("model", "pr", "year"))
+dplot(~ year, data = year)
+
+age.year <- fetchBoth(filenameEst = filename, filenamePred = filename.pred,
+                   where = c("model", "pr", "age:year"))
+dplot(~ year | age, data = age.year)
+
+year.level <- fetchBoth(filenameEst = filename, filenamePred = filename.pred,
+                   where = c("model", "hy", "year", "level"))
+dplot(~ year, data = year.level)
+
+age.year.level <- fetchBoth(filenameEst = filename, filenamePred = filename.pred,
+                   where = c("model", "hy", "age:year", "level"))
+dplot(~ year | age, data = age.year.level)
+
+age.year.trend <- fetchBoth(filenameEst = filename, filenamePred = filename.pred,
+                   where = c("model", "hy", "age:year", "trend"))
+dplot(~ year | age, data = age.year.trend)
+
+
 ## ## Poisson fixed, no exposure
 ## mu <- rnorm(1, mean = 10, sd = 2)
 ## sigma <- runif(1, min = 0.1, max = 0.4)

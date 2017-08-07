@@ -5,7 +5,7 @@ n.test <- 5
 test.identity <- FALSE
 test.extended <- TRUE
 
-test_that("updateBetaAndPriorBeta works with ExchFixed", {
+test_that("updateBetaAndPriorBeta works with ExchFixed - not saturated", {
     updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
@@ -19,7 +19,8 @@ test_that("updateBetaAndPriorBeta works with ExchFixed", {
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL)
+                               sY = NULL,
+                               isSaturated = FALSE)
         expect_is(prior0, "ExchFixed")
         vbar <- rnorm(2)
         n <- rep(10L, 2)
@@ -40,7 +41,7 @@ test_that("updateBetaAndPriorBeta works with ExchFixed", {
     }
 })
 
-test_that("R and C versions of updateBetaAndPriorBeta give same answer with ExchFixed", {
+test_that("R and C versions of updateBetaAndPriorBeta give same answer with ExchFixed - not saturated", {
     updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
@@ -54,7 +55,8 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with Exch
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL)
+                               sY = NULL,
+                               isSaturated = FALSE)
         expect_is(prior0, "ExchFixed")
         vbar <- rnorm(2)
         n <- rep(10L, 2)
@@ -78,7 +80,7 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with Exch
     }
 })
 
-test_that("updateBetaAndPriorBeta works with ExchNormZero", {
+test_that("updateBetaAndPriorBeta works with ExchNormZero - not saturated", {
     updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
@@ -93,7 +95,8 @@ test_that("updateBetaAndPriorBeta works with ExchNormZero", {
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL)
+                               sY = NULL,
+                               isSaturated = FALSE)
         expect_is(prior0, "ExchNormZero")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -121,7 +124,8 @@ test_that("updateBetaAndPriorBeta works with ExchNormZero", {
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL)
+                               sY = NULL,
+                               isSaturated = FALSE)
         expect_is(prior0, "ExchNormZero")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -141,7 +145,7 @@ test_that("updateBetaAndPriorBeta works with ExchNormZero", {
     }
 })
 
-test_that("R and C versions of updateBetaAndPriorBeta give same ansewr with ExchNormZero", {
+test_that("R and C versions of updateBetaAndPriorBeta give same ansewr with ExchNormZero - not saturated", {
     updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
@@ -156,7 +160,8 @@ test_that("R and C versions of updateBetaAndPriorBeta give same ansewr with Exch
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL)
+                               sY = NULL,
+                               isSaturated = FALSE)
         expect_is(prior0, "ExchNormZero")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -188,7 +193,8 @@ test_that("R and C versions of updateBetaAndPriorBeta give same ansewr with Exch
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL)
+                               sY = NULL,
+                               isSaturated = FALSE)
         expect_is(prior0, "ExchNormZero")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -212,6 +218,145 @@ test_that("R and C versions of updateBetaAndPriorBeta give same ansewr with Exch
     }
 })
 
+test_that("updateBetaAndPriorBeta works with ExchNormZero - is saturated", {
+    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+    initialPrior <- demest:::initialPrior
+    for (seed in seq_len(n.test)) {
+        ## no max
+        set.seed(seed)
+        spec <- Exch()
+        beta0 <- rnorm(10)
+        metadata <- new("MetaData",
+                        nms = "region",
+                        dimtypes = "state",
+                        DimScales = list(new("Categories", dimvalues = letters[1:10])))
+        prior0 <- initialPrior(spec,
+                               beta = beta0,
+                               metadata = metadata,
+                               sY = NULL,
+                               isSaturated = TRUE)
+        expect_is(prior0, "ExchNormZero")
+        vbar <- rnorm(10)
+        n <- rep(5L, 10)
+        sigma <- runif(1)
+        set.seed(seed)
+        l <- updateBetaAndPriorBeta(prior0,
+                                    vbar = vbar,
+                                    n = n,
+                                    sigma = sigma)
+        beta1 <- l[[1]]
+        prior1 <- l[[2]]
+        expect_is(prior1, "ExchNormZero")
+        expect_equal(beta1, rep(0, 10))
+        expect_identical(prior1@tau@.Data, sigma)
+        expect_identical(prior1@J, prior0@J)
+        expect_identical(prior1@ATau, prior0@ATau)
+        expect_identical(prior1@nuTau, prior0@nuTau)
+        ## with max
+        set.seed(seed)
+        spec <- Exch(error = Error(scale = HalfT(max = 0.5)))
+        beta0 <- rnorm(10)
+        metadata <- new("MetaData",
+                        nms = "region",
+                        dimtypes = "state",
+                        DimScales = list(new("Categories", dimvalues = letters[1:10])))
+        prior0 <- initialPrior(spec,
+                               beta = beta0,
+                               metadata = metadata,
+                               sY = NULL,
+                               isSaturated = TRUE)
+        expect_is(prior0, "ExchNormZero")
+        vbar <- rnorm(10)
+        n <- rep(5L, 10)
+        sigma <- runif(1, max = 0.5)
+        set.seed(seed)
+        l <- updateBetaAndPriorBeta(prior0,
+                                    vbar = vbar,
+                                    n = n,
+                                    sigma = sigma)
+        beta1 <- l[[1]]
+        prior1 <- l[[2]]
+        expect_is(prior1, "ExchNormZero")
+        expect_equal(beta1, rep(0, 10))
+        expect_identical(prior1@tau@.Data, sigma)
+        expect_identical(prior1@J, prior0@J)
+        expect_identical(prior1@ATau, prior0@ATau)
+        expect_identical(prior1@nuTau, prior0@nuTau)
+    }
+})
+
+test_that("R and C versions of updateBetaAndPriorBeta give same answer with ExchNormZero - is saturated", {
+    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+    initialPrior <- demest:::initialPrior
+    for (seed in seq_len(n.test)) {
+        ## no max
+        set.seed(seed)
+        spec <- Exch()
+        beta0 <- rnorm(10)
+        metadata <- new("MetaData",
+                        nms = "region",
+                        dimtypes = "state",
+                        DimScales = list(new("Categories", dimvalues = letters[1:10])))
+        prior0 <- initialPrior(spec,
+                               beta = beta0,
+                               metadata = metadata,
+                               sY = NULL,
+                               isSaturated = TRUE)
+        expect_is(prior0, "ExchNormZero")
+        vbar <- rnorm(10)
+        n <- rep(5L, 10)
+        sigma <- runif(1)
+        set.seed(seed)
+        ans.R <- updateBetaAndPriorBeta(prior0,
+                                        vbar = vbar,
+                                        n = n,
+                                        sigma = sigma, 
+                                        useC = FALSE)
+        set.seed(seed)
+        ans.C <- updateBetaAndPriorBeta(prior0,
+                                        vbar = vbar,
+                                        n = n,
+                                        sigma = sigma, 
+                                        useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+        ## with max
+        set.seed(seed)
+        spec <- Exch(error = Error(scale = HalfT(max = 0.5)))
+        beta0 <- rnorm(10)
+        metadata <- new("MetaData",
+                        nms = "region",
+                        dimtypes = "state",
+                        DimScales = list(new("Categories", dimvalues = letters[1:10])))
+        prior0 <- initialPrior(spec,
+                               beta = beta0,
+                               metadata = metadata,
+                               sY = NULL,
+                               isSaturated = TRUE)
+        expect_is(prior0, "ExchNormZero")
+        vbar <- rnorm(10)
+        n <- rep(5L, 10)
+        sigma <- runif(1)
+        set.seed(seed)
+        ans.R <- updateBetaAndPriorBeta(prior0,
+                                        vbar = vbar,
+                                        n = n,
+                                        sigma = sigma, 
+                                        useC = FALSE)
+        set.seed(seed)
+        ans.C <- updateBetaAndPriorBeta(prior0,
+                                        vbar = vbar,
+                                        n = n,
+                                        sigma = sigma, 
+                                        useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
 
 test_that("updateBetaAndPriorBeta works with ExchRobustZero", {
     updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
@@ -227,7 +372,8 @@ test_that("updateBetaAndPriorBeta works with ExchRobustZero", {
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL)
+                               sY = NULL,
+                               isSaturated = FALSE)
         expect_is(prior0, "ExchRobustZero")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -264,7 +410,8 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with Exch
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL)
+                               sY = NULL,
+                               isSaturated = FALSE)
         expect_is(prior0, "ExchRobustZero")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -288,7 +435,7 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with Exch
     }
 })
 
-test_that("updateBetaAndPriorBeta works with ExchNormCov", {
+test_that("updateBetaAndPriorBeta works with ExchNormCov - not saturated", {
     updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
@@ -297,7 +444,7 @@ test_that("updateBetaAndPriorBeta works with ExchNormCov", {
                            sex = rep(c("f", "m"), each = 10),
                            income = rnorm(20),
                            cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
-        formula <- mean ~ income * cat
+        formula <- mean ~ income + cat
         contrastsArg <- list(cat = diag(3))
         covariates <- Covariates(formula = formula,
                                  data = data,
@@ -311,7 +458,8 @@ test_that("updateBetaAndPriorBeta works with ExchNormCov", {
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL)
+                               sY = NULL,
+                               isSaturated = FALSE)
         expect_is(prior0, "ExchNormCov")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -340,7 +488,7 @@ test_that("updateBetaAndPriorBeta works with ExchNormCov", {
     }
 })
 
-test_that("R and C versions of updateBetaAndPriorBeta give same answer with ExchNormCov", {
+test_that("R and C versions of updateBetaAndPriorBeta give same answer with ExchNormCov - not saturated", {
     updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
@@ -349,7 +497,7 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with Exch
                            sex = rep(c("f", "m"), each = 10),
                            income = rnorm(20),
                            cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
-        formula <- mean ~ income * cat
+        formula <- mean ~ income + cat
         contrastsArg <- list(cat = diag(3))
         covariates <- Covariates(formula = formula,
                                  data = data,
@@ -363,7 +511,8 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with Exch
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL)
+                               sY = NULL,
+                               isSaturated = FALSE)
         expect_is(prior0, "ExchNormCov")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -384,6 +533,60 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with Exch
             expect_identical(ans.R, ans.C)
         else
             expect_equal(ans.R, ans.C)
+    }
+})
+
+test_that("updateBetaAndPriorBeta works with ExchNormCov - is saturated", {
+    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+    initialPrior <- demest:::initialPrior
+    betaHat <- demest:::betaHat
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        data <- data.frame(region = rep(letters[1:10], times = 2),
+                           sex = rep(c("f", "m"), each = 10),
+                           income = rnorm(20),
+                           cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+        formula <- mean ~ income * cat
+        contrastsArg <- list(cat = diag(3))
+        covariates <- Covariates(formula = formula,
+                                 data = data,
+                                 contrastsArg = contrastsArg)
+        spec <- Exch(covariates = covariates)
+        beta0 <- rnorm(10)
+        metadata <- new("MetaData",
+                        nms = "region",
+                        dimtypes = "state",
+                        DimScales = list(new("Categories", dimvalues = letters[1:10])))
+        prior0 <- initialPrior(spec,
+                               beta = beta0,
+                               metadata = metadata,
+                               sY = NULL,
+                               isSaturated = TRUE)
+        expect_is(prior0, "ExchNormCov")
+        vbar <- rnorm(10)
+        n <- rep(5L, 10)
+        sigma <- runif(1)
+        set.seed(seed)
+        l <- updateBetaAndPriorBeta(prior0,
+                                    vbar = vbar,
+                                    n = n,
+                                    sigma = sigma)
+        beta1 <- l[[1]]
+        prior1 <- l[[2]]
+        expect_is(prior1, "ExchNormCov")
+        ## beta
+        expect_equal(beta1, betaHat(prior1))
+        ## basic
+        expect_identical(prior1@J, prior0@J)
+        expect_identical(prior1@ATau, prior0@ATau)
+        expect_identical(prior1@nuTau, prior0@nuTau)
+        expect_identical(prior1@tau@.Data, sigma)
+        ## covariates
+        expect_identical(prior1@P, prior0@P)
+        expect_identical(prior1@AEtaIntercept, prior0@AEtaIntercept)
+        expect_identical(prior1@AEtaCoef, prior0@AEtaCoef)
+        expect_true(all(prior1@UEtaCoef != prior0@UEtaCoef))
+        expect_identical(prior1@Z, prior0@Z)
     }
 })
 
@@ -412,7 +615,8 @@ test_that("updateBetaAndPriorBeta works with ExchRobustCov", {
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL)
+                               sY = NULL,
+                               isSaturated = FALSE)
         expect_is(prior0, "ExchRobustCov")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -469,7 +673,8 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with Exch
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL)
+                               sY = NULL,
+                               isSaturated = FALSE)
         expect_is(prior0, "ExchRobustCov")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -495,7 +700,7 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with Exch
 
 ## DLM - Norm, Zero
 
-test_that("updateBetaAndPriorBeta works with DLMNoTrendNormZeroNoSeason", {
+test_that("updateBetaAndPriorBeta works with DLMNoTrendNormZeroNoSeason - is not saturated", {
     updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
@@ -510,7 +715,8 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendNormZeroNoSeason", {
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL)
+                               sY = NULL,
+                               isSaturated = FALSE)
         expect_is(prior0, "DLMNoTrendNormZeroNoSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -545,7 +751,7 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendNormZeroNoSeason", {
     expect_true(phi.updated)
 })
 
-test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTrendNormZeroNoSeason", {
+test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTrendNormZeroNoSeason - is not saturated", {
     updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
@@ -559,7 +765,8 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTre
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL)
+                               sY = NULL,
+                               isSaturated = FALSE)
         expect_is(prior0, "DLMNoTrendNormZeroNoSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -583,7 +790,98 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTre
     }
 })
 
-test_that("updateBetaAndPriorBeta works with DLMWithTrendNormZeroNoSeason", {
+test_that("updateBetaAndPriorBeta works with DLMNoTrendNormZeroNoSeason - is saturated", {
+    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+    initialPrior <- demest:::initialPrior
+    betaHat <- demest:::betaHat
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        spec <- DLM(trend = NULL,
+                    damp = Damp(min = 0.1, max = 0.8))
+        beta0 <- rnorm(10)
+        metadata <- new("MetaData",
+                        nms = "time",
+                        dimtypes = "time",
+                        DimScales = list(new("Points", dimvalues = 1:10)))
+        prior0 <- initialPrior(spec,
+                               beta = beta0,
+                               metadata = metadata,
+                               sY = NULL,
+                               isSaturated = TRUE)
+        expect_is(prior0, "DLMNoTrendNormZeroNoSeason")
+        vbar <- rnorm(10)
+        n <- rep(5L, 10)
+        sigma <- runif(1)
+        set.seed(seed)
+        l <- updateBetaAndPriorBeta(prior0,
+                                    vbar = vbar,
+                                    n = n,
+                                    sigma = sigma)
+        beta1 <- l[[1]]
+        prior1 <- l[[2]]
+        expect_is(prior1, "DLMNoTrendNormZeroNoSeason")
+        phi.updated <- FALSE
+        if (!phi.updated)
+            phi.updated <- prior1@phi != prior0@phi
+        ## beta
+        expect_equal(beta1, betaHat(prior1))
+        ## basic
+        expect_identical(prior1@J, prior0@J)
+        expect_identical(prior1@ATau, prior0@ATau)
+        expect_identical(prior1@nuTau, prior0@nuTau)
+        expect_true(prior1@tau@.Data != prior0@tau@.Data)
+        ## DLM
+        expect_identical(prior1@AAlpha, prior0@AAlpha)
+        expect_identical(prior1@K, prior0@K)
+        expect_identical(prior1@L, prior0@L)
+        expect_identical(prior1@nuAlpha, prior0@nuAlpha)
+        expect_identical(prior1@phiKnown, prior0@phiKnown)
+        expect_identical(prior1@minPhi, prior0@minPhi)
+        expect_identical(prior1@maxPhi, prior0@maxPhi)
+    }
+    expect_true(phi.updated)
+})
+
+test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTrendNormZeroNoSeason - is saturated", {
+    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+    initialPrior <- demest:::initialPrior
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        spec <- DLM(trend = NULL)
+        beta0 <- rnorm(10)
+        metadata <- new("MetaData",
+                        nms = "time",
+                        dimtypes = "time",
+                        DimScales = list(new("Points", dimvalues = 1:10)))
+        prior0 <- initialPrior(spec,
+                               beta = beta0,
+                               metadata = metadata,
+                               sY = NULL,
+                               isSaturated = TRUE)
+        expect_is(prior0, "DLMNoTrendNormZeroNoSeason")
+        vbar <- rnorm(10)
+        n <- rep(5L, 10)
+        sigma <- runif(1)
+        set.seed(seed)
+        ans.R <- updateBetaAndPriorBeta(prior0,
+                                        vbar = vbar,
+                                        n = n,
+                                        sigma = sigma, 
+                                        useC = FALSE)
+        set.seed(seed)
+        ans.C <- updateBetaAndPriorBeta(prior0,
+                                        vbar = vbar,
+                                        n = n,
+                                        sigma = sigma, 
+                                        useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
+
+test_that("updateBetaAndPriorBeta works with DLMWithTrendNormZeroNoSeason - is not saturated", {
     updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
@@ -597,7 +895,8 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendNormZeroNoSeason", {
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL)
+                               sY = NULL,
+                               isSaturated = FALSE)
         expect_is(prior0, "DLMWithTrendNormZeroNoSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -641,7 +940,7 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendNormZeroNoSeason", {
     expect_true(phi.updated)
 })
 
-test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithTrendNormZeroNoSeason", {
+test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithTrendNormZeroNoSeason - is not saturated", {
     updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
@@ -655,7 +954,8 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithT
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL)
+                               sY = NULL,
+                               isSaturated = FALSE)
         expect_is(prior0, "DLMWithTrendNormZeroNoSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -679,7 +979,106 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithT
     }
 })
 
-test_that("updateBetaAndPriorBeta works with DLMNoTrendNormZeroWithSeason", {
+test_that("updateBetaAndPriorBeta works with DLMWithTrendNormZeroNoSeason - is saturated", {
+    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+    initialPrior <- demest:::initialPrior
+    betaHat <- demest:::betaHat
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        spec <- DLM(damp = Damp(min = 0, max = 1))
+        beta0 <- rnorm(10)
+        metadata <- new("MetaData",
+                        nms = "time",
+                        dimtypes = "time",
+                        DimScales = list(new("Points", dimvalues = 1:10)))
+        prior0 <- initialPrior(spec,
+                               beta = beta0,
+                               metadata = metadata,
+                               sY = NULL,
+                               isSaturated = TRUE)
+        expect_is(prior0, "DLMWithTrendNormZeroNoSeason")
+        vbar <- rnorm(10)
+        n <- rep(5L, 10)
+        sigma <- runif(1)
+        set.seed(seed)
+        l <- updateBetaAndPriorBeta(prior0,
+                                    vbar = vbar,
+                                    n = n,
+                                    sigma = sigma)
+        beta1 <- l[[1]]
+        prior1 <- l[[2]]
+        expect_is(prior1, "DLMWithTrendNormZeroNoSeason")
+        phi.updated <- FALSE
+        if (!phi.updated)
+            phi.updated <- prior1@phi != prior0@phi
+        ## beta
+        expect_equal(beta1, betaHat(prior1))
+        ## basic
+        expect_identical(prior1@J, prior0@J)
+        expect_identical(prior1@ATau, prior0@ATau)
+        expect_identical(prior1@nuTau, prior0@nuTau)
+        expect_true(prior1@tau@.Data != prior0@tau@.Data)
+        ## DLM
+        expect_identical(prior1@AAlpha, prior0@AAlpha)
+        expect_true(all(prior1@alphaDLM != prior0@alphaDLM))
+        expect_identical(prior1@K, prior0@K)
+        expect_identical(prior1@L, prior0@L)
+        expect_identical(prior1@nuAlpha, prior0@nuAlpha)
+        expect_true(prior1@omegaAlpha != prior0@omegaAlpha)
+        expect_identical(prior1@phiKnown, prior0@phiKnown)
+        expect_identical(prior1@minPhi, prior0@minPhi)
+        expect_identical(prior1@maxPhi, prior0@maxPhi)
+        ## Trend
+        expect_identical(prior1@ADelta, prior0@ADelta)
+        expect_true(all(prior1@deltaDLM != prior0@deltaDLM))
+        expect_identical(prior1@nuDelta, prior0@nuDelta)
+        expect_true(prior1@omegaDelta != prior0@omegaDelta)
+        expect_false(identical(prior1@WSqrt, prior0@WSqrt))
+        expect_false(identical(prior1@WSqrtInvG, prior0@WSqrtInvG))
+    }
+    expect_true(phi.updated)
+})
+
+test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithTrendNormZeroNoSeason - is saturated", {
+    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+    initialPrior <- demest:::initialPrior
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        spec <- DLM()
+        beta0 <- rnorm(10)
+        metadata <- new("MetaData",
+                        nms = "time",
+                        dimtypes = "time",
+                        DimScales = list(new("Points", dimvalues = 1:10)))
+        prior0 <- initialPrior(spec,
+                               beta = beta0,
+                               metadata = metadata,
+                               sY = NULL,
+                               isSaturated = TRUE)
+        expect_is(prior0, "DLMWithTrendNormZeroNoSeason")
+        vbar <- rnorm(10)
+        n <- rep(5L, 10)
+        sigma <- runif(1)
+        set.seed(seed)
+        ans.R <- updateBetaAndPriorBeta(prior0,
+                                        vbar = vbar,
+                                        n = n,
+                                        sigma = sigma, 
+                                        useC = FALSE)
+        set.seed(seed)
+        ans.C <- updateBetaAndPriorBeta(prior0,
+                                        vbar = vbar,
+                                        n = n,
+                                        sigma = sigma, 
+                                        useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
+
+test_that("updateBetaAndPriorBeta works with DLMNoTrendNormZeroWithSeason - is not saturated", {
     updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
@@ -693,7 +1092,8 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendNormZeroWithSeason", {
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL)
+                               sY = NULL,
+                               isSaturated = FALSE)
         expect_is(prior0, "DLMNoTrendNormZeroWithSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -738,7 +1138,7 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendNormZeroWithSeason", {
     }
 })
 
-test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTrendNormZeroWithSeason", {
+test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTrendNormZeroWithSeason - is not saturated", {
     updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
@@ -752,7 +1152,8 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTre
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL)
+                               sY = NULL,
+                               isSaturated = FALSE)
         expect_is(prior0, "DLMNoTrendNormZeroWithSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -776,7 +1177,108 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTre
     }
 })
 
-test_that("updateBetaAndPriorBeta works with DLMWithTrendNormZeroWithSeason", {
+test_that("updateBetaAndPriorBeta works with DLMNoTrendNormZeroWithSeason - is saturated", {
+    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+    initialPrior <- demest:::initialPrior
+    betaHat <- demest:::betaHat
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        spec <- DLM(trend = NULL, season = Season(n = 2))
+        beta0 <- rnorm(10)
+        metadata <- new("MetaData",
+                        nms = "time",
+                        dimtypes = "time",
+                        DimScales = list(new("Points", dimvalues = 1:10)))
+        prior0 <- initialPrior(spec,
+                               beta = beta0,
+                               metadata = metadata,
+                               sY = NULL,
+                               isSaturated = TRUE)
+        expect_is(prior0, "DLMNoTrendNormZeroWithSeason")
+        vbar <- rnorm(10)
+        n <- rep(5L, 10)
+        sigma <- runif(1)
+        set.seed(seed)
+        l <- updateBetaAndPriorBeta(prior0,
+                                    vbar = vbar,
+                                    n = n,
+                                    sigma = sigma)
+        beta1 <- l[[1]]
+        prior1 <- l[[2]]
+        for (i in 1:5) {
+            l <- updateBetaAndPriorBeta(prior1,
+                                    vbar = vbar,
+                                    n = n,
+                                    sigma = sigma)
+            beta1 <- l[[1]]
+            prior1 <- l[[2]]
+        }
+        expect_is(prior1, "DLMNoTrendNormZeroWithSeason")
+        ## beta
+        expect_equal(beta1, betaHat(prior1))
+        ## basic
+        expect_identical(prior1@J, prior0@J)
+        expect_identical(prior1@ATau, prior0@ATau)
+        expect_identical(prior1@nuTau, prior0@nuTau)
+        expect_true(prior1@tau@.Data != prior0@tau@.Data)
+        ## DLM
+        expect_identical(prior1@AAlpha, prior0@AAlpha)
+        expect_true(all(prior1@alphaDLM != prior0@alphaDLM))
+        expect_identical(prior1@K, prior0@K)
+        expect_identical(prior1@L, prior0@L)
+        expect_identical(prior1@nuAlpha, prior0@nuAlpha)
+        expect_true(prior1@phi != prior0@phi)
+        expect_identical(prior1@phiKnown, prior0@phiKnown)
+        expect_identical(prior1@minPhi, prior0@minPhi)
+        expect_identical(prior1@maxPhi, prior0@maxPhi)
+        ## season
+        expect_identical(prior1@ASeason, prior0@ASeason)
+        expect_true(all(unlist(prior1@s@.Data) != unlist(prior0@s@.Data)))
+        expect_identical(prior1@nSeason, prior0@nSeason)
+        expect_identical(prior1@nuSeason, prior0@nuSeason)
+    }
+})
+
+test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTrendNormZeroWithSeason - is saturated", {
+    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+    initialPrior <- demest:::initialPrior
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        spec <- DLM(trend = NULL, season = Season(n = 2))
+        beta0 <- rnorm(10)
+        metadata <- new("MetaData",
+                        nms = "time",
+                        dimtypes = "time",
+                        DimScales = list(new("Points", dimvalues = 1:10)))
+        prior0 <- initialPrior(spec,
+                               beta = beta0,
+                               metadata = metadata,
+                               sY = NULL,
+                               isSaturated = TRUE)
+        expect_is(prior0, "DLMNoTrendNormZeroWithSeason")
+        vbar <- rnorm(10)
+        n <- rep(5L, 10)
+        sigma <- runif(1)
+        set.seed(seed)
+        ans.R <- updateBetaAndPriorBeta(prior0,
+                                        vbar = vbar,
+                                        n = n,
+                                        sigma = sigma, 
+                                        useC = FALSE)
+        set.seed(seed)
+        ans.C <- updateBetaAndPriorBeta(prior0,
+                                        vbar = vbar,
+                                        n = n,
+                                        sigma = sigma, 
+                                        useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
+
+test_that("updateBetaAndPriorBeta works with DLMWithTrendNormZeroWithSeason - is not saturated", {
     updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
@@ -790,7 +1292,8 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendNormZeroWithSeason", {
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL)
+                               sY = NULL,
+                               isSaturated = FALSE)
         expect_is(prior0, "DLMWithTrendNormZeroWithSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -851,7 +1354,7 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendNormZeroWithSeason", {
     }
 })
 
-test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithTrendNormZeroWithSeason", {
+test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithTrendNormZeroWithSeason - is not saturated", {
     updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
@@ -865,7 +1368,118 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithT
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL)
+                               sY = NULL,
+                               isSaturated = FALSE)
+        expect_is(prior0, "DLMWithTrendNormZeroWithSeason")
+        vbar <- rnorm(10)
+        n <- rep(5L, 10)
+        sigma <- runif(1)
+        set.seed(seed)
+        ans.R <- updateBetaAndPriorBeta(prior0,
+                                        vbar = vbar,
+                                        n = n,
+                                        sigma = sigma, 
+                                        useC = FALSE)
+        set.seed(seed)
+        ans.C <- updateBetaAndPriorBeta(prior0,
+                                        vbar = vbar,
+                                        n = n,
+                                        sigma = sigma, 
+                                        useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
+
+test_that("updateBetaAndPriorBeta works with DLMWithTrendNormZeroWithSeason - is saturated", {
+    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+    initialPrior <- demest:::initialPrior
+    betaHat <- demest:::betaHat
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        spec <- DLM(season = Season(n = 2))
+        beta0 <- rnorm(10)
+        metadata <- new("MetaData",
+                        nms = "time",
+                        dimtypes = "time",
+                        DimScales = list(new("Points", dimvalues = 1:10)))
+        prior0 <- initialPrior(spec,
+                               beta = beta0,
+                               metadata = metadata,
+                               sY = NULL,
+                               isSaturated = TRUE)
+        expect_is(prior0, "DLMWithTrendNormZeroWithSeason")
+        vbar <- rnorm(10)
+        n <- rep(5L, 10)
+        sigma <- runif(1)
+        set.seed(seed)
+        l <- updateBetaAndPriorBeta(prior0,
+                                    vbar = vbar,
+                                    n = n,
+                                    sigma = sigma)
+        beta1 <- l[[1]]
+        prior1 <- l[[2]]
+        for (i in 1:5) {
+            l <- updateBetaAndPriorBeta(prior1,
+                                        vbar = vbar,
+                                        n = n,
+                                        sigma = sigma)
+            beta1 <- l[[1]]
+            prior1 <- l[[2]]
+        }
+        expect_is(prior1, "DLMWithTrendNormZeroWithSeason")
+        ## beta
+        expect_equal(beta1, betaHat(prior1))
+        ## basic
+        expect_identical(prior1@J, prior0@J)
+        expect_identical(prior1@ATau, prior0@ATau)
+        expect_identical(prior1@nuTau, prior0@nuTau)
+        expect_true(prior1@tau@.Data != prior0@tau@.Data)
+        ## DLM
+        expect_identical(prior1@AAlpha, prior0@AAlpha)
+        expect_true(all(prior1@alphaDLM != prior0@alphaDLM))
+        expect_identical(prior1@K, prior0@K)
+        expect_identical(prior1@L, prior0@L)
+        expect_identical(prior1@nuAlpha, prior0@nuAlpha)
+        expect_true(prior1@omegaAlpha != prior0@omegaAlpha)
+        expect_true(prior1@phi != prior0@phi)
+        expect_identical(prior1@phiKnown, prior0@phiKnown)
+        expect_identical(prior1@minPhi, prior0@minPhi)
+        expect_identical(prior1@maxPhi, prior0@maxPhi)
+        ## trend
+        expect_identical(prior1@ADelta, prior0@ADelta)
+        expect_true(all(prior1@deltaDLM != prior0@deltaDLM))
+        expect_false(identical(prior1@GWithTrend, prior0@GWithTrend))
+        expect_identical(prior1@nuDelta, prior0@nuDelta)
+        expect_true(prior1@omegaDelta != prior0@omegaDelta)
+        expect_false(identical(prior1@WSqrt, prior0@WSqrt))
+        expect_false(identical(prior1@WSqrtInvG, prior0@WSqrtInvG))
+        ## season
+        expect_identical(prior1@ASeason, prior0@ASeason)
+        expect_true(all(unlist(prior1@s@.Data) != unlist(prior0@s@.Data)))
+        expect_identical(prior1@nSeason, prior0@nSeason)
+        expect_identical(prior1@nuSeason, prior0@nuSeason)
+    }
+})
+
+test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithTrendNormZeroWithSeason - is saturated", {
+    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+    initialPrior <- demest:::initialPrior
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        spec <- DLM(season = Season(n = 2))
+        beta0 <- rnorm(10)
+        metadata <- new("MetaData",
+                        nms = "time",
+                        dimtypes = "time",
+                        DimScales = list(new("Points", dimvalues = 1:10)))
+        prior0 <- initialPrior(spec,
+                               beta = beta0,
+                               metadata = metadata,
+                               sY = NULL,
+                               isSaturated = TRUE)
         expect_is(prior0, "DLMWithTrendNormZeroWithSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -891,11 +1505,9 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithT
 
 
 
-
-
 ## DLM - Norm, Cov
 
-test_that("updateBetaAndPriorBeta works with DLMNoTrendNormCovNoSeason", {
+test_that("updateBetaAndPriorBeta works with DLMNoTrendNormCovNoSeason - is not saturated", {
     updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
     initialPrior <- demest:::initialPrior
     updated.phi <- FALSE
@@ -921,7 +1533,8 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendNormCovNoSeason", {
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL)
+                               sY = NULL,
+                               isSaturated = FALSE)
         expect_is(prior0, "DLMNoTrendNormCovNoSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -963,7 +1576,7 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendNormCovNoSeason", {
     expect_true(updated.phi)
 })
 
-test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMNoTrendNormCovNoSeason", {
+test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMNoTrendNormCovNoSeason - is not saturated", {
     updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
@@ -987,7 +1600,8 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMN
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL)
+                               sY = NULL,
+                               isSaturated = FALSE)
         expect_is(prior0, "DLMNoTrendNormCovNoSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -1020,7 +1634,135 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMN
     }
 })
 
-test_that("updateBetaAndPriorBeta works with DLMWithTrendNormCovNoSeason", {
+test_that("updateBetaAndPriorBeta works with DLMNoTrendNormCovNoSeason - is saturated", {
+    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+    initialPrior <- demest:::initialPrior
+    betaHat <- demest:::betaHat
+    updated.phi <- FALSE
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        data <- data.frame(time = rep(1:10, times = 2),
+                           sex = rep(c("f", "m"), each = 10),
+                           income = rnorm(20),
+                           cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+        formula <- mean ~ income * cat
+        contrastsArg <- list(cat = diag(3))
+        covariates <- Covariates(formula = formula,
+                                 data = data,
+                                 contrastsArg = contrastsArg)
+        spec <- DLM(trend = NULL,
+                    damp = Damp(min = 0),
+                    covariates = covariates)
+        beta0 <- rnorm(10)
+        metadata <- new("MetaData",
+                        nms = "time",
+                        dimtypes = "time",
+                        DimScales = list(new("Points", dimvalues = 1:10)))
+        prior0 <- initialPrior(spec,
+                               beta = beta0,
+                               metadata = metadata,
+                               sY = NULL,
+                               isSaturated = TRUE)
+        expect_is(prior0, "DLMNoTrendNormCovNoSeason")
+        vbar <- rnorm(10)
+        n <- rep(5L, 10)
+        sigma <- runif(1)
+        set.seed(seed)
+        l <- updateBetaAndPriorBeta(prior0,
+                                    vbar = vbar,
+                                    n = n,
+                                    sigma = sigma)
+        beta1 <- l[[1]]
+        prior1 <- l[[2]]
+        expect_is(prior1, "DLMNoTrendNormCovNoSeason")
+        if (!updated.phi && prior1@phi != prior0@phi)
+            updated.phi <- TRUE
+        ## beta
+        expect_equal(beta1, betaHat(prior1))
+        ## basic
+        expect_identical(prior1@J, prior0@J)
+        expect_identical(prior1@ATau, prior0@ATau)
+        expect_identical(prior1@nuTau, prior0@nuTau)
+        expect_true(prior1@tau@.Data != prior0@tau@.Data)
+        ## DLM
+        expect_identical(prior1@AAlpha, prior0@AAlpha)
+        expect_true(all(prior1@alphaDLM != prior0@alphaDLM))
+        expect_identical(prior1@K, prior0@K)
+        expect_identical(prior1@L, prior0@L)
+        expect_identical(prior1@nuAlpha, prior0@nuAlpha)
+        expect_true(prior1@omegaAlpha != prior0@omegaAlpha)
+        expect_identical(prior1@phiKnown, prior0@phiKnown)
+        expect_identical(prior1@minPhi, prior0@minPhi)
+        expect_identical(prior1@maxPhi, prior0@maxPhi)
+        ## covariates
+        expect_identical(prior1@P, prior0@P)
+        expect_identical(prior1@AEtaIntercept, prior0@AEtaIntercept)
+        expect_identical(prior1@AEtaCoef, prior0@AEtaCoef)
+        expect_true(all(prior1@UEtaCoef != prior0@UEtaCoef))
+        expect_identical(prior1@Z, prior0@Z)
+    }
+    expect_true(updated.phi)
+})
+
+test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMNoTrendNormCovNoSeason - is saturated", {
+    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+    initialPrior <- demest:::initialPrior
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        data <- data.frame(time = rep(1:10, times = 2),
+                           sex = rep(c("f", "m"), each = 10),
+                           income = rnorm(20),
+                           cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+        formula <- mean ~ income * cat
+        contrastsArg <- list(cat = diag(3))
+        covariates <- Covariates(formula = formula,
+                                 data = data,
+                                 contrastsArg = contrastsArg)
+        spec <- DLM(trend = NULL,
+                    covariates = covariates)
+        beta0 <- rnorm(10)
+        metadata <- new("MetaData",
+                        nms = "time",
+                        dimtypes = "time",
+                        DimScales = list(new("Points", dimvalues = 1:10)))
+        prior0 <- initialPrior(spec,
+                               beta = beta0,
+                               metadata = metadata,
+                               sY = NULL,
+                               isSaturated = TRUE)
+        expect_is(prior0, "DLMNoTrendNormCovNoSeason")
+        vbar <- rnorm(10)
+        n <- rep(5L, 10)
+        sigma <- runif(1)
+        set.seed(seed)
+        ans.R <- updateBetaAndPriorBeta(prior0,
+                                        vbar = vbar,
+                                        n = n,
+                                        sigma = sigma, 
+                                        useC = FALSE)
+        set.seed(seed)
+        ans.C.specific <- updateBetaAndPriorBeta(prior0,
+                                                 vbar = vbar,
+                                                 n = n,
+                                                 sigma = sigma, 
+                                                 useC = TRUE,
+                                                 useSpecific = TRUE)
+        set.seed(seed)
+        ans.C.generic <- updateBetaAndPriorBeta(prior0,
+                                                vbar = vbar,
+                                                n = n,
+                                                sigma = sigma, 
+                                                useC = TRUE,
+                                                useSpecific = FALSE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C.specific)
+        else
+            expect_equal(ans.R, ans.C.specific)
+        expect_identical(ans.C.specific, ans.C.generic)
+    }
+})
+
+test_that("updateBetaAndPriorBeta works with DLMWithTrendNormCovNoSeason - is not saturated", {
     updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
@@ -1043,7 +1785,8 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendNormCovNoSeason", {
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL)
+                               sY = NULL,
+                               isSaturated = FALSE)
         expect_is(prior0, "DLMWithTrendNormCovNoSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -1060,13 +1803,7 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendNormCovNoSeason", {
                                     vbar = vbar,
                                     n = n,
                                     sigma = sigma)
-            prior1 <- l[[2]]
-        }
-        for (i in 1:5) {
-            l <- updateBetaAndPriorBeta(prior1,
-                                    vbar = vbar,
-                                    n = n,
-                                    sigma = sigma)
+            beta1 <- l[[1]]
             prior1 <- l[[2]]
         }
         expect_is(prior1, "DLMWithTrendNormCovNoSeason")
@@ -1105,7 +1842,7 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendNormCovNoSeason", {
     }
 })
 
-test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMWithTrendNormCovNoSeason", {
+test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMWithTrendNormCovNoSeason - is not saturated", {
     updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
@@ -1128,7 +1865,8 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMW
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL)
+                               sY = NULL,
+                               isSaturated = FALSE)
         expect_is(prior0, "DLMWithTrendNormCovNoSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -1161,7 +1899,145 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMW
     }
 })
 
-test_that("updateBetaAndPriorBeta works with DLMNoTrendNormCovWithSeason", {
+test_that("updateBetaAndPriorBeta works with DLMWithTrendNormCovNoSeason - is saturated", {
+    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+    initialPrior <- demest:::initialPrior
+    betaHat <- demest:::betaHat
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        data <- data.frame(time = rep(1:10, times = 2),
+                           sex = rep(c("f", "m"), each = 10),
+                           income = rnorm(20),
+                           cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+        formula <- mean ~ income * cat
+        contrastsArg <- list(cat = diag(3))
+        covariates <- Covariates(formula = formula,
+                                 data = data,
+                                 contrastsArg = contrastsArg)
+        spec <- DLM(covariates = covariates)
+        beta0 <- rnorm(10)
+        metadata <- new("MetaData",
+                        nms = "time",
+                        dimtypes = "time",
+                        DimScales = list(new("Points", dimvalues = 1:10)))
+        prior0 <- initialPrior(spec,
+                               beta = beta0,
+                               metadata = metadata,
+                               sY = NULL,
+                               isSaturated = TRUE)
+        expect_is(prior0, "DLMWithTrendNormCovNoSeason")
+        vbar <- rnorm(10)
+        n <- rep(5L, 10)
+        sigma <- runif(1)
+        set.seed(seed)
+        l <- updateBetaAndPriorBeta(prior0,
+                                    vbar = vbar,
+                                    n = n,
+                                    sigma = sigma)
+        beta1 <- l[[1]]
+        prior1 <- l[[2]]
+        for (i in 1:5) {
+            l <- updateBetaAndPriorBeta(prior1,
+                                    vbar = vbar,
+                                    n = n,
+                                    sigma = sigma)
+            beta1 <- l[[1]]
+            prior1 <- l[[2]]
+        }
+        expect_is(prior1, "DLMWithTrendNormCovNoSeason")
+        ## beta
+        expect_equal(beta1, betaHat(prior1))
+        ## basic
+        expect_identical(prior1@J, prior0@J)
+        expect_identical(prior1@ATau, prior0@ATau)
+        expect_identical(prior1@nuTau, prior0@nuTau)
+        expect_true(prior1@tau@.Data != prior0@tau@.Data)
+        ## DLM
+        expect_identical(prior1@AAlpha, prior0@AAlpha)
+        expect_true(all(prior1@alphaDLM != prior0@alphaDLM))
+        expect_identical(prior1@K, prior0@K)
+        expect_identical(prior1@L, prior0@L)
+        expect_identical(prior1@nuAlpha, prior0@nuAlpha)
+        expect_true(prior1@omegaAlpha != prior0@omegaAlpha)
+        expect_true(prior1@phi != prior0@phi)
+        expect_identical(prior1@phiKnown, prior0@phiKnown)
+        expect_identical(prior1@minPhi, prior0@minPhi)
+        expect_identical(prior1@maxPhi, prior0@maxPhi)
+        ## Trend
+        expect_identical(prior1@ADelta, prior0@ADelta)
+        expect_true(all(prior1@deltaDLM != prior0@deltaDLM))
+        expect_false(identical(prior1@GWithTrend, prior0@GWithTrend))
+        expect_identical(prior1@nuDelta, prior0@nuDelta)
+        expect_true(prior1@omegaDelta != prior0@omegaDelta)
+        expect_false(identical(prior1@WSqrt, prior0@WSqrt))
+        expect_false(identical(prior1@WSqrtInvG, prior0@WSqrtInvG))
+        ## covariates
+        expect_identical(prior1@P, prior0@P)
+        expect_identical(prior1@AEtaIntercept, prior0@AEtaIntercept)
+        expect_identical(prior1@AEtaCoef, prior0@AEtaCoef)
+        expect_true(all(prior1@UEtaCoef != prior0@UEtaCoef))
+        expect_identical(prior1@Z, prior0@Z)
+    }
+})
+
+test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMWithTrendNormCovNoSeason - is saturated", {
+    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+    initialPrior <- demest:::initialPrior
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        data <- data.frame(time = rep(1:10, times = 2),
+                           sex = rep(c("f", "m"), each = 10),
+                           income = rnorm(20),
+                           cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+        formula <- mean ~ income * cat
+        contrastsArg <- list(cat = diag(3))
+        covariates <- Covariates(formula = formula,
+                                 data = data,
+                                 contrastsArg = contrastsArg)
+        spec <- DLM(covariates = covariates)
+        beta0 <- rnorm(10)
+        metadata <- new("MetaData",
+                        nms = "time",
+                        dimtypes = "time",
+                        DimScales = list(new("Points", dimvalues = 1:10)))
+        prior0 <- initialPrior(spec,
+                               beta = beta0,
+                               metadata = metadata,
+                               sY = NULL,
+                               isSaturated = TRUE)
+        expect_is(prior0, "DLMWithTrendNormCovNoSeason")
+        vbar <- rnorm(10)
+        n <- rep(5L, 10)
+        sigma <- runif(1)
+        set.seed(seed)
+        ans.R <- updateBetaAndPriorBeta(prior0,
+                                        vbar = vbar,
+                                        n = n,
+                                        sigma = sigma, 
+                                        useC = FALSE)
+        set.seed(seed)
+        ans.C.specific <- updateBetaAndPriorBeta(prior0,
+                                                 vbar = vbar,
+                                                 n = n,
+                                                 sigma = sigma, 
+                                                 useC = TRUE,
+                                                 useSpecific = TRUE)
+        set.seed(seed)
+        ans.C.generic <- updateBetaAndPriorBeta(prior0,
+                                                vbar = vbar,
+                                                n = n,
+                                                sigma = sigma, 
+                                                useC = TRUE,
+                                                useSpecific = FALSE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C.specific)
+        else
+            expect_equal(ans.R, ans.C.specific)
+        expect_identical(ans.C.specific, ans.C.generic)
+    }
+})
+
+test_that("updateBetaAndPriorBeta works with DLMNoTrendNormCovWithSeason - is not saturated", {
     updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
     initialPrior <- demest:::initialPrior
     updated.phi <- FALSE
@@ -1187,7 +2063,8 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendNormCovWithSeason", {
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL)
+                               sY = NULL,
+                               isSaturated = FALSE)
         expect_is(prior0, "DLMNoTrendNormCovWithSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -1234,7 +2111,7 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendNormCovWithSeason", {
     expect_true(updated.phi)
 })
 
-test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMNoTrendNormCovWithSeason", {
+test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMNoTrendNormCovWithSeason - is not saturated", {
     updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
@@ -1259,7 +2136,8 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMN
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL)
+                               sY = NULL,
+                               isSaturated = FALSE)
         expect_is(prior0, "DLMNoTrendNormCovWithSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -1292,7 +2170,142 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMN
     }
 })
 
-test_that("updateBetaAndPriorBeta works with DLMWithTrendNormCovWithSeason", {
+test_that("updateBetaAndPriorBeta works with DLMNoTrendNormCovWithSeason - is saturated", {
+    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+    initialPrior <- demest:::initialPrior
+    betaHat <- demest:::betaHat
+    updated.phi <- FALSE
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        data <- data.frame(time = rep(1:10, times = 2),
+                           sex = rep(c("f", "m"), each = 10),
+                           income = rnorm(20),
+                           cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+        formula <- mean ~ income * cat
+        contrastsArg <- list(cat = diag(3))
+        covariates <- Covariates(formula = formula,
+                                 data = data,
+                                 contrastsArg = contrastsArg)
+        spec <- DLM(trend = NULL,
+                    covariates = covariates,
+                    season = Season(n = 2))
+        beta0 <- rnorm(10)
+        metadata <- new("MetaData",
+                        nms = "time",
+                        dimtypes = "time",
+                        DimScales = list(new("Points", dimvalues = 1:10)))
+        prior0 <- initialPrior(spec,
+                               beta = beta0,
+                               metadata = metadata,
+                               sY = NULL,
+                               isSaturated = TRUE)
+        expect_is(prior0, "DLMNoTrendNormCovWithSeason")
+        vbar <- rnorm(10)
+        n <- rep(5L, 10)
+        sigma <- runif(1)
+        set.seed(seed)
+        l <- updateBetaAndPriorBeta(prior0,
+                                    vbar = vbar,
+                                    n = n,
+                                    sigma = sigma)
+        beta1 <- l[[1]]
+        prior1 <- l[[2]]
+        expect_is(prior1, "DLMNoTrendNormCovWithSeason")
+        if (!updated.phi && (prior1@phi != prior0@phi))
+            updated.phi <- TRUE
+        ## beta
+        expect_equal(beta1, betaHat(prior1))
+        ## basic
+        expect_identical(prior1@J, prior0@J)
+        expect_identical(prior1@ATau, prior0@ATau)
+        expect_identical(prior1@nuTau, prior0@nuTau)
+        expect_true(prior1@tau@.Data != prior0@tau@.Data)
+        ## DLM
+        expect_identical(prior1@AAlpha, prior0@AAlpha)
+        expect_true(all(prior1@alphaDLM != prior0@alphaDLM))
+        expect_identical(prior1@K, prior0@K)
+        expect_identical(prior1@L, prior0@L)
+        expect_identical(prior1@nuAlpha, prior0@nuAlpha)
+        expect_true(prior1@omegaAlpha != prior0@omegaAlpha)
+        expect_identical(prior1@phiKnown, prior0@phiKnown)
+        expect_identical(prior1@minPhi, prior0@minPhi)
+        expect_identical(prior1@maxPhi, prior0@maxPhi)
+        ## covariates
+        expect_identical(prior1@P, prior0@P)
+        expect_identical(prior1@AEtaIntercept, prior0@AEtaIntercept)
+        expect_identical(prior1@AEtaCoef, prior0@AEtaCoef)
+        expect_true(all(prior1@UEtaCoef != prior0@UEtaCoef))
+        expect_identical(prior1@Z, prior0@Z)
+        ## season
+        expect_identical(prior1@ASeason, prior0@ASeason)
+        expect_true(all(unlist(prior1@s@.Data) != unlist(prior0@s@.Data)))
+        expect_identical(prior1@nSeason, prior0@nSeason)
+        expect_identical(prior1@nuSeason, prior0@nuSeason)
+    }
+    expect_true(updated.phi)
+})
+
+test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMNoTrendNormCovWithSeason - is saturated", {
+    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+    initialPrior <- demest:::initialPrior
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        data <- data.frame(time = rep(1:10, times = 2),
+                           sex = rep(c("f", "m"), each = 10),
+                           income = rnorm(20),
+                           cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+        formula <- mean ~ income * cat
+        contrastsArg <- list(cat = diag(3))
+        covariates <- Covariates(formula = formula,
+                                 data = data,
+                                 contrastsArg = contrastsArg)
+        spec <- DLM(trend = NULL,
+                    covariates = covariates,
+                    season = Season(n = 2))
+        beta0 <- rnorm(10)
+        metadata <- new("MetaData",
+                        nms = "time",
+                        dimtypes = "time",
+                        DimScales = list(new("Points", dimvalues = 1:10)))
+        prior0 <- initialPrior(spec,
+                               beta = beta0,
+                               metadata = metadata,
+                               sY = NULL,
+                               isSaturated = TRUE)
+        expect_is(prior0, "DLMNoTrendNormCovWithSeason")
+        vbar <- rnorm(10)
+        n <- rep(5L, 10)
+        sigma <- runif(1)
+        set.seed(seed)
+        ans.R <- updateBetaAndPriorBeta(prior0,
+                                        vbar = vbar,
+                                        n = n,
+                                        sigma = sigma, 
+                                        useC = FALSE)
+        set.seed(seed)
+        ans.C.specific <- updateBetaAndPriorBeta(prior0,
+                                                 vbar = vbar,
+                                                 n = n,
+                                                 sigma = sigma, 
+                                                 useC = TRUE,
+                                                 useSpecific = TRUE)
+        set.seed(seed)
+        ans.C.generic <- updateBetaAndPriorBeta(prior0,
+                                                vbar = vbar,
+                                                n = n,
+                                                sigma = sigma, 
+                                                useC = TRUE,
+                                                useSpecific = FALSE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C.specific)
+        else
+            expect_equal(ans.R, ans.C.specific)
+        expect_identical(ans.C.specific, ans.C.generic)
+    }
+})
+
+
+test_that("updateBetaAndPriorBeta works with DLMWithTrendNormCovWithSeason - is not saturated", {
     updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
@@ -1317,7 +2330,8 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendNormCovWithSeason", {
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL)
+                               sY = NULL,
+                               isSaturated = FALSE)
         expect_is(prior0, "DLMWithTrendNormCovWithSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -1370,7 +2384,7 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendNormCovWithSeason", {
     }
 })
 
-test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMWithTrendNormCovWithSeason", {
+test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMWithTrendNormCovWithSeason - is not saturated", {
     updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
@@ -1395,7 +2409,8 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMW
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL)
+                               sY = NULL,
+                               isSaturated = FALSE)
         expect_is(prior0, "DLMWithTrendNormCovWithSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -1427,6 +2442,147 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMW
         expect_identical(ans.C.specific, ans.C.generic)
     }
 })
+
+test_that("updateBetaAndPriorBeta works with DLMWithTrendNormCovWithSeason - is saturated", {
+    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+    initialPrior <- demest:::initialPrior
+    betaHat <- demest:::betaHat
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        data <- data.frame(time = rep(1:10, times = 2),
+                           sex = rep(c("f", "m"), each = 10),
+                           income = rnorm(20),
+                           cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+        formula <- mean ~ income * cat
+        contrastsArg <- list(cat = diag(3))
+        covariates <- Covariates(formula = formula,
+                                 data = data,
+                                 contrastsArg = contrastsArg)
+        season <- Season(n = 2)
+        spec <- DLM(covariates = covariates,
+                    season = season)
+        beta0 <- rnorm(10)
+        metadata <- new("MetaData",
+                        nms = "time",
+                        dimtypes = "time",
+                        DimScales = list(new("Points", dimvalues = 1:10)))
+        prior0 <- initialPrior(spec,
+                               beta = beta0,
+                               metadata = metadata,
+                               sY = NULL,
+                               isSaturated = TRUE)
+        expect_is(prior0, "DLMWithTrendNormCovWithSeason")
+        vbar <- rnorm(10)
+        n <- rep(5L, 10)
+        sigma <- runif(1)
+        set.seed(seed)
+        l <- updateBetaAndPriorBeta(prior0,
+                                    vbar = vbar,
+                                    n = n,
+                                    sigma = sigma)
+        beta1 <- l[[1]]
+        prior1 <- l[[2]]
+        expect_is(prior1, "DLMWithTrendNormCovWithSeason")
+        ## beta
+        expect_equal(beta1, betaHat(prior1))
+        ## basic
+        expect_identical(prior1@J, prior0@J)
+        expect_identical(prior1@ATau, prior0@ATau)
+        expect_identical(prior1@nuTau, prior0@nuTau)
+        expect_true(prior1@tau@.Data != prior0@tau@.Data)
+        ## DLM
+        expect_identical(prior1@AAlpha, prior0@AAlpha)
+        expect_true(all(prior1@alphaDLM != prior0@alphaDLM))
+        expect_identical(prior1@K, prior0@K)
+        expect_identical(prior1@L, prior0@L)
+        expect_identical(prior1@nuAlpha, prior0@nuAlpha)
+        expect_true(prior1@omegaAlpha != prior0@omegaAlpha)
+        expect_true(prior1@phi != prior0@phi)
+        expect_identical(prior1@phiKnown, prior0@phiKnown)
+        expect_identical(prior1@minPhi, prior0@minPhi)
+        expect_identical(prior1@maxPhi, prior0@maxPhi)
+        ## Trend
+        expect_identical(prior1@ADelta, prior0@ADelta)
+        expect_true(all(prior1@deltaDLM != prior0@deltaDLM))
+        expect_false(identical(prior1@GWithTrend, prior0@GWithTrend))
+        expect_identical(prior1@nuDelta, prior0@nuDelta)
+        expect_true(prior1@omegaDelta != prior0@omegaDelta)
+        expect_false(identical(prior1@WSqrt, prior0@WSqrt))
+        expect_false(identical(prior1@WSqrtInvG, prior0@WSqrtInvG))
+        ## covariates
+        expect_identical(prior1@P, prior0@P)
+        expect_identical(prior1@AEtaIntercept, prior0@AEtaIntercept)
+        expect_identical(prior1@AEtaCoef, prior0@AEtaCoef)
+        expect_true(all(prior1@UEtaCoef != prior0@UEtaCoef))
+        expect_identical(prior1@Z, prior0@Z)
+        ## season
+        expect_identical(prior1@ASeason, prior0@ASeason)
+        expect_true(all(unlist(prior1@s@.Data) != unlist(prior0@s@.Data)))
+        expect_identical(prior1@nSeason, prior0@nSeason)
+        expect_identical(prior1@nuSeason, prior0@nuSeason)
+    }
+})
+
+test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMWithTrendNormCovWithSeason - is saturated", {
+    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+    initialPrior <- demest:::initialPrior
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        data <- data.frame(time = rep(1:10, times = 2),
+                           sex = rep(c("f", "m"), each = 10),
+                           income = rnorm(20),
+                           cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+        formula <- mean ~ income * cat
+        contrastsArg <- list(cat = diag(3))
+        season <- Season(n = 2)
+        covariates <- Covariates(formula = formula,
+                                 data = data,
+                                 contrastsArg = contrastsArg)
+        spec <- DLM(season = season,
+                    covariates = covariates)
+        beta0 <- rnorm(10)
+        metadata <- new("MetaData",
+                        nms = "time",
+                        dimtypes = "time",
+                        DimScales = list(new("Points", dimvalues = 1:10)))
+        prior0 <- initialPrior(spec,
+                               beta = beta0,
+                               metadata = metadata,
+                               sY = NULL,
+                               isSaturated = TRUE)
+        expect_is(prior0, "DLMWithTrendNormCovWithSeason")
+        vbar <- rnorm(10)
+        n <- rep(5L, 10)
+        sigma <- runif(1)
+        set.seed(seed)
+        ans.R <- updateBetaAndPriorBeta(prior0,
+                                        vbar = vbar,
+                                        n = n,
+                                        sigma = sigma, 
+                                        useC = FALSE)
+        set.seed(seed)
+        ans.C.specific <- updateBetaAndPriorBeta(prior0,
+                                                 vbar = vbar,
+                                                 n = n,
+                                                 sigma = sigma, 
+                                                 useC = TRUE,
+                                                 useSpecific = TRUE)
+        set.seed(seed)
+        ans.C.generic <- updateBetaAndPriorBeta(prior0,
+                                                vbar = vbar,
+                                                n = n,
+                                                sigma = sigma, 
+                                                useC = TRUE,
+                                                useSpecific = FALSE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C.specific)
+        else
+            expect_equal(ans.R, ans.C.specific)
+        expect_identical(ans.C.specific, ans.C.generic)
+    }
+})
+
+
 
 
 ## DLM - Robust, Zero
@@ -2482,8 +3638,7 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with Know
 ## Mix #################################################################################
 
 
-
-test_that("updateBetaAndPriorBeta updates correct slots with MixNormZero", {
+test_that("updateBetaAndPriorBeta updates correct slots with MixNormZero - is not saturated", {
     updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
     initialPrior <- demest:::initialPrior
     set.seed(1)
@@ -2499,7 +3654,8 @@ test_that("updateBetaAndPriorBeta updates correct slots with MixNormZero", {
                            beta = beta0,
                            metadata = metadata,
                            sY = NULL,
-                           multScale = 1)
+                           multScale = 1,
+                           isSaturated = FALSE)
     vbar <- rnorm(200)
     n <- rep(5L, 200)
     sigma <- runif(1)
@@ -2566,7 +3722,7 @@ test_that("updateBetaAndPriorBeta updates correct slots with MixNormZero", {
     expect_true(all(alphaMix0 != alphaMix1))
 })
 
-test_that("updateBetaAndPriorBeta updates correct slots with MixNormZero", {
+test_that("R and C versions of updateBetaAndPriorBeta give same answer with MixNormZero - is not saturated", {
     updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
@@ -2583,7 +3739,134 @@ test_that("updateBetaAndPriorBeta updates correct slots with MixNormZero", {
                                beta = beta0,
                                metadata = metadata,
                                sY = NULL,
-                               multScale = 1)
+                               multScale = 1,
+                               isSaturated = FALSE)
+        vbar <- rnorm(200)
+        n <- rep(5L, 200)
+        sigma <- runif(1)
+        set.seed(seed + 1)
+        ans.R <- updateBetaAndPriorBeta(prior = prior0,
+                                        vbar = vbar,
+                                        n = n,
+                                        sigma = sigma,
+                                        useC = FALSE)
+        set.seed(seed + 1)
+        ans.C <- updateBetaAndPriorBeta(prior = prior0,
+                                        vbar = vbar,
+                                        n = n,
+                                        sigma = sigma,
+                                        useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
+
+test_that("updateBetaAndPriorBeta updates correct slots with MixNormZero - is saturated", {
+    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+    initialPrior <- demest:::initialPrior
+    betaHat <- demest:::betaHat
+    set.seed(1)
+    beta0 <- rnorm(200)
+    metadata <- new("MetaData",
+                    nms = c("reg", "time", "age"),
+                    dimtypes = c("state", "time", "age"),
+                    DimScales = list(new("Categories", dimvalues = c("a", "b")),
+                                     new("Points", dimvalues = 2001:2010),
+                                     new("Intervals", dimvalues = as.numeric(0:10))))
+    spec <- Mix(weights = Weights(mean = -10))
+    prior0 <- initialPrior(spec,
+                           beta = beta0,
+                           metadata = metadata,
+                           sY = NULL,
+                           multScale = 1,
+                           isSaturated = TRUE)
+    vbar <- rnorm(200)
+    n <- rep(5L, 200)
+    sigma <- runif(1)
+    l <- updateBetaAndPriorBeta(prior = prior0,
+                                vbar = vbar,
+                                n = n,
+                                sigma = sigma)
+    beta1 <- l[[1]]
+    prior1 <- l[[2]]
+    expect_is(prior1, "MixNormZero")
+    ## beta
+    expect_equal(beta1, betaHat(prior1))
+    ## u
+    u0 <- prior0@latentWeightMix@.Data
+    u1 <- prior1@latentWeightMix@.Data
+    expect_true(all(u0 != u1))
+    ## k
+    k0 <- prior0@indexClassMix
+    k1 <- prior1@indexClassMix
+    expect_true(!all(k0 == k1))
+    ## z 
+    z0 <- prior0@latentComponentWeightMix@.Data
+    z1 <- prior1@latentComponentWeightMix@.Data
+    expect_true(!all(z0 == z1))
+    ## W
+    W0 <- prior0@componentWeightMix@.Data
+    W1 <- prior1@componentWeightMix@.Data
+    expect_true(all(W0 != W1))
+    ## v
+    v0 <- prior0@weightMix@.Data
+    v1 <- prior1@weightMix@.Data
+    expect_true(all(v0 != v1))
+    ## psi
+    psi0 <- unlist(prior0@vectorsMix)
+    psi1 <- unlist(prior1@vectorsMix)
+    expect_true(!all(psi0 == psi1))
+    ## sigma_delta
+    sdelta0 <- prior0@tau@.Data
+    sdelta1 <- prior1@tau@.Data
+    expect_true(sdelta0 != sdelta1)
+    ## sigma_e
+    se0 <- prior0@omegaVectorsMix@.Data
+    se1 <- prior1@omegaVectorsMix@.Data
+    expect_true(se0 != se1)
+    ## sigma_epsilon
+    sepsilon0 <- prior0@omegaComponentWeightMix@.Data
+    sepsilon1 <- prior1@omegaComponentWeightMix@.Data
+    expect_true(sepsilon0 != sepsilon1)
+    ## sigma_eta
+    seta0 <- prior0@omegaLevelComponentWeightMix@.Data
+    seta1 <- prior1@omegaLevelComponentWeightMix@.Data
+    expect_true(seta0 != seta1)
+    ## mu
+    mu0 <- prior0@meanLevelComponentWeightMix@.Data
+    mu1 <- prior1@meanLevelComponentWeightMix@.Data
+    expect_true(mu0 != mu1)
+    ## alpha
+    alpha0 <- prior0@levelComponentWeightMix@.Data
+    alpha1 <- prior1@levelComponentWeightMix@.Data
+    expect_true(all(alpha0 != alpha1))
+    ## alphaMix
+    alphaMix0 <- prior0@alphaMix@.Data
+    alphaMix1 <- prior1@alphaMix@.Data
+    expect_true(all(alphaMix0 != alphaMix1))
+})
+
+test_that("R and C versions of updateBetaAndPriorBeta give same answer with MixNormZero - is saturated", {
+    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+    initialPrior <- demest:::initialPrior
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        metadata <- new("MetaData",
+                        nms = c("reg", "time", "age"),
+                        dimtypes = c("state", "time", "age"),
+                        DimScales = list(new("Categories", dimvalues = c("a", "b")),
+                                         new("Points", dimvalues = 2001:2010),
+                                         new("Intervals", dimvalues = as.numeric(0:10))))
+        spec <- Mix(weights = Weights(mean = -10))
+        beta0 <- rnorm(200)
+        prior0 <- initialPrior(spec,
+                               beta = beta0,
+                               metadata = metadata,
+                               sY = NULL,
+                               multScale = 1,
+                               isSaturated = TRUE)
         vbar <- rnorm(200)
         n <- rep(5L, 200)
         sigma <- runif(1)

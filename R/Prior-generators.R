@@ -9,7 +9,7 @@
 ## intercept
 setMethod("initialPrior",
           signature(object = "SpecExchFixed", metadata = "NULL"),
-          function(object, beta, metadata, sY, ...) {
+          function(object, beta, metadata, sY, isSaturated, ...) {
               tau <- object@tau
               J <- makeJ(beta)
               if (J > 1L)
@@ -17,15 +17,20 @@ setMethod("initialPrior",
                                 "metadata", "NULL", "J", 1L))
               tau <- makeTauExchFixedIntercept(tau = tau,
                                                sY = sY)
+              if (isSaturated)
+                  stop(gettextf("using \"%s\" prior for highest-order term in saturated model",
+                                "ExchFixed"))
+              isSaturated <- new("LogicalFlag", isSaturated)
               methods::new("ExchFixed",
                            J = J,
-                           tau = tau)
+                           tau = tau,
+                           isSaturated = isSaturated)
           })
 
 ## non-intercept
 setMethod("initialPrior",
           signature(object = "SpecExchFixed"),
-          function(object, beta, metadata, sY, ...) {
+          function(object, beta, metadata, sY, isSaturated, ...) {
               tau <- object@tau
               multTau <- object@multTau
               J <- makeJ(beta)
@@ -35,14 +40,19 @@ setMethod("initialPrior",
               tau <- makeTauExchFixedNonIntercept(tau = tau,
                                                   sY = sY,
                                                   mult = multTau)
+              if (isSaturated)
+                  stop(gettextf("using \"%s\" prior for highest-order term in saturated model",
+                                "ExchFixed"))
+              isSaturated <- new("LogicalFlag", isSaturated)
               methods::new("ExchFixed",
+                           isSaturated = isSaturated,
                            J = J,
                            tau = tau)
           })
 
 setMethod("initialPrior",
           signature(object = "SpecExchNormZero"),
-          function(object, beta, metadata, sY, ...) {
+          function(object, beta, metadata, sY, isSaturated, ...) {
               ATau <- object@ATau
               multTau <- object@multTau
               nuTau <- object@nuTau
@@ -58,8 +68,10 @@ setMethod("initialPrior",
               tau <- makeScale(A = ATau,
                                nu = nuTau,
                                scaleMax = tauMax)
+              isSaturated <- new("LogicalFlag", isSaturated)
               methods::new("ExchNormZero",
                            ATau = ATau,
+                           isSaturated = isSaturated,
                            J = J,
                            nuTau = nuTau,
                            tau = tau,
@@ -68,7 +80,7 @@ setMethod("initialPrior",
 
 setMethod("initialPrior",
           signature(object = "SpecExchRobustZero"),
-          function(object, beta, metadata, sY, ...) {
+          function(object, beta, metadata, sY, isSaturated, ...) {
               ATau <- object@ATau
               multTau <- object@multTau
               nuBeta <- object@nuBeta
@@ -86,8 +98,13 @@ setMethod("initialPrior",
               tau <- makeScale(A = ATau,
                                nu = nuTau,
                                scaleMax = tauMax)
+              if (isSaturated)
+                  stop(gettextf("using prior with '%s = %s' for highest-order term in saturated model",
+                                "robust", "TRUE"))
+              isSaturated <- new("LogicalFlag", isSaturated)
               methods::new("ExchRobustZero",
                            ATau = ATau,
+                           isSaturated = isSaturated,
                            J = J,
                            nuBeta = nuBeta,
                            nuTau = nuTau,
@@ -98,7 +115,7 @@ setMethod("initialPrior",
 
 setMethod("initialPrior",
           signature(object = "SpecExchNormCov"),
-          function(object, beta, metadata, sY, ...) {
+          function(object, beta, metadata, sY, isSaturated, ...) {
               ATau <- object@ATau
               multTau <- object@multTau
               nuTau <- object@nuTau
@@ -118,6 +135,7 @@ setMethod("initialPrior",
                                   beta = beta,
                                   metadata = metadata,
                                   sY = sY)
+              isSaturated <- new("LogicalFlag", isSaturated)
               methods::new("ExchNormCov",
                            AEtaCoef = l.cov$AEtaCoef,
                            AEtaIntercept = l.cov$AEtaIntercept,
@@ -126,6 +144,7 @@ setMethod("initialPrior",
                            eta = l.cov$eta,
                            formula = l.cov$formula,
                            infant = l.cov$infant,
+                           isSaturated = isSaturated,
                            J = J,
                            nuEtaCoef = l.cov$nuEtaCoef,
                            nuTau = nuTau,
@@ -138,7 +157,7 @@ setMethod("initialPrior",
 
 setMethod("initialPrior",
           signature(object = "SpecExchRobustCov"),
-          function(object, beta, metadata, sY, ...) {
+          function(object, beta, metadata, sY, isSaturated, ...) {
               ATau <- object@ATau
               multTau <- object@multTau
               nuBeta <- object@nuBeta
@@ -160,35 +179,41 @@ setMethod("initialPrior",
                                   metadata = metadata,
                                   sY = sY)
               UBeta <- makeU(nu = nuBeta, A = ATau, n = J)
+              if (isSaturated)
+                  stop(gettextf("using prior with '%s = %s' for highest-order term in saturated model",
+                                "robust", "TRUE"))
+              isSaturated <- new("LogicalFlag", isSaturated)
               methods::new("ExchRobustCov",
-                  AEtaCoef = l.cov$AEtaCoef,
-                  AEtaIntercept = l.cov$AEtaIntercept,
-                  ATau = ATau,
-                  contrastsArg = l.cov$contrastsArg,
-                  eta = l.cov$eta,
-                  formula = l.cov$formula,
-                  infant = l.cov$infant,
-                  J = J,
-                  nuBeta = nuBeta,
-                  nuEtaCoef = l.cov$nuEtaCoef,
-                  nuTau = nuTau,
-                  P = l.cov$P,
-                  tau = tau,
-                  tauMax = tauMax,
-                  UBeta = UBeta,
-                  UEtaCoef = l.cov$UEtaCoef,
-                  Z = l.cov$Z)
+                           AEtaCoef = l.cov$AEtaCoef,
+                           AEtaIntercept = l.cov$AEtaIntercept,
+                           ATau = ATau,
+                           contrastsArg = l.cov$contrastsArg,
+                           eta = l.cov$eta,
+                           formula = l.cov$formula,
+                           infant = l.cov$infant,
+                           isSaturated = isSaturated,
+                           J = J,
+                           nuBeta = nuBeta,
+                           nuEtaCoef = l.cov$nuEtaCoef,
+                           nuTau = nuTau,
+                           P = l.cov$P,
+                           tau = tau,
+                           tauMax = tauMax,
+                           UBeta = UBeta,
+                           UEtaCoef = l.cov$UEtaCoef,
+                           Z = l.cov$Z)
           })
 
 ## DLM - Norm, Zero
 
 setMethod("initialPrior",
           signature(object = "SpecDLMNoTrendNormZeroNoSeason"),
-          function(object, beta, metadata, sY, ...) {
+          function(object, beta, metadata, sY, isSaturated, ...) {
               l.all <- initialDLMAll(object = object,
                                      beta = beta,
                                      metadata = metadata,
-                                     sY = sY)
+                                     sY = sY,
+                                     isSaturated = isSaturated)
               l.no.trend <- initialDLMNoTrend(object = object,
                                               metadata = metadata,
                                               sY = sY)
@@ -199,6 +224,7 @@ setMethod("initialPrior",
                            alphaDLM = l.all$alphaDLM,
                            CNoTrend = l.no.trend$CNoTrend,
                            iAlong = l.all$iAlong,
+                           isSaturated = l.all$isSaturated,
                            J = l.all$J,
                            K = l.all$K,
                            L = l.all$L,
@@ -224,11 +250,12 @@ setMethod("initialPrior",
 
 setMethod("initialPrior",
           signature(object = "SpecDLMWithTrendNormZeroNoSeason"),
-          function(object, beta, metadata, sY, ...) {
+          function(object, beta, metadata, sY, isSaturated, ...) {
               l.all <- initialDLMAll(object = object,
                                      beta = beta,
                                      metadata = metadata,
-                                     sY = sY)
+                                     sY = sY,
+                                     isSaturated = isSaturated)
               l.with.trend <- initialDLMWithTrend(object = object,
                                                   beta = beta,
                                                   metadata = metadata,
@@ -249,6 +276,7 @@ setMethod("initialPrior",
                            GWithTrend = l.with.trend$GWithTrend,
                            hasLevel = l.with.trend$hasLevel,
                            iAlong = l.all$iAlong,
+                           isSaturated = l.all$isSaturated,
                            iteratorState = l.all$iteratorState,
                            iteratorV = l.all$iteratorV,
                            J = l.all$J,
@@ -282,11 +310,12 @@ setMethod("initialPrior",
 
 setMethod("initialPrior",
           signature(object = "SpecDLMNoTrendNormZeroWithSeason"),
-          function(object, beta, metadata, sY, ...) {
+          function(object, beta, metadata, sY, isSaturated, ...) {
               l.all <- initialDLMAll(object = object,
                                      beta = beta,
                                      metadata = metadata,
-                                     sY = sY)
+                                     sY = sY,
+                                     isSaturated = isSaturated)
               l.no.trend <- initialDLMNoTrend(object = object,
                                               metadata = metadata,
                                               sY = sY)
@@ -304,6 +333,7 @@ setMethod("initialPrior",
                            CNoTrend = l.no.trend$CNoTrend,
                            CSeason = l.season$CSeason,
                            iAlong = l.all$iAlong,
+                           isSaturated = l.all$isSaturated,
                            iteratorState = l.all$iteratorState,
                            iteratorV = l.all$iteratorV,
                            J = l.all$J,
@@ -337,11 +367,12 @@ setMethod("initialPrior",
 
 setMethod("initialPrior",
           signature(object = "SpecDLMWithTrendNormZeroWithSeason"),
-          function(object, beta, metadata, sY, ...) {
+          function(object, beta, metadata, sY, isSaturated, ...) {
               l.all <- initialDLMAll(object = object,
                                      beta = beta,
                                      metadata = metadata,
-                                     sY = sY)
+                                     sY = sY,
+                                     isSaturated = isSaturated)
               l.with.trend <- initialDLMWithTrend(object = object,
                                                   beta = beta,
                                                   metadata = metadata,
@@ -369,6 +400,7 @@ setMethod("initialPrior",
                            GWithTrend = l.with.trend$GWithTrend,
                            hasLevel = l.with.trend$hasLevel,
                            iAlong = l.all$iAlong,
+                           isSaturated = l.all$isSaturated,
                            iteratorState = l.all$iteratorState,
                            iteratorV = l.all$iteratorV,
                            J = l.all$J,
@@ -413,11 +445,12 @@ setMethod("initialPrior",
 
 setMethod("initialPrior",
           signature(object = "SpecDLMNoTrendNormCovNoSeason"),
-          function(object, beta, metadata, sY, ...) {
+          function(object, beta, metadata, sY, isSaturated, ...) {
               l.all <- initialDLMAll(object = object,
                                      beta = beta,
                                      metadata = metadata,
-                                     sY = sY)
+                                     sY = sY,
+                                     isSaturated = isSaturated)
               l.no.trend <- initialDLMNoTrend(object = object,
                                               metadata = metadata,
                                               sY = sY)
@@ -438,6 +471,7 @@ setMethod("initialPrior",
                            formula = l.cov$formula,
                            iAlong = l.all$iAlong,
                            infant = l.cov$infant,
+                           isSaturated = l.all$isSaturated,
                            iteratorState = l.all$iteratorState,
                            iteratorV = l.all$iteratorV,
                            J = l.all$J,
@@ -467,11 +501,12 @@ setMethod("initialPrior",
 
 setMethod("initialPrior",
           signature(object = "SpecDLMWithTrendNormCovNoSeason"),
-          function(object, beta, metadata, sY, ...) {
+          function(object, beta, metadata, sY, isSaturated, ...) {
               l.all <- initialDLMAll(object = object,
                                      beta = beta,
                                      metadata = metadata,
-                                     sY = sY)
+                                     sY = sY,
+                                     isSaturated = isSaturated)
               l.with.trend <- initialDLMWithTrend(object = object,
                                                   beta = beta,
                                                   metadata = metadata,
@@ -502,6 +537,7 @@ setMethod("initialPrior",
                            hasLevel = l.with.trend$hasLevel,
                            iAlong = l.all$iAlong,
                            infant = l.cov$infant,
+                           isSaturated = l.all$isSaturated,
                            iteratorState = l.all$iteratorState,
                            iteratorV = l.all$iteratorV,
                            J = l.all$J,
@@ -539,11 +575,12 @@ setMethod("initialPrior",
 
 setMethod("initialPrior",
           signature(object = "SpecDLMNoTrendNormCovWithSeason"),
-          function(object, beta, metadata, sY, ...) {
+          function(object, beta, metadata, sY, isSaturated, ...) {
               l.all <- initialDLMAll(object = object,
                                      beta = beta,
                                      metadata = metadata,
-                                     sY = sY)
+                                     sY = sY,
+                                     isSaturated = isSaturated)
               l.no.trend <- initialDLMNoTrend(object = object,
                                               metadata = metadata,
                                               sY = sY)
@@ -571,6 +608,7 @@ setMethod("initialPrior",
                            formula = l.cov$formula,
                            iAlong = l.all$iAlong,
                            infant = l.cov$infant,
+                           isSaturated = l.all$isSaturated,
                            iteratorState = l.all$iteratorState,
                            iteratorV = l.all$iteratorV,
                            J = l.all$J,
@@ -609,11 +647,12 @@ setMethod("initialPrior",
 
 setMethod("initialPrior",
           signature(object = "SpecDLMWithTrendNormCovWithSeason"),
-          function(object, beta, metadata, sY, ...) {
+          function(object, beta, metadata, sY, isSaturated, ...) {
               l.all <- initialDLMAll(object = object,
                                      beta = beta,
                                      metadata = metadata,
-                                     sY = sY)
+                                     sY = sY,
+                                     isSaturated = isSaturated)
               l.with.trend <- initialDLMWithTrend(object = object,
                                                   beta = beta,
                                                   metadata = metadata,
@@ -651,6 +690,7 @@ setMethod("initialPrior",
                            hasLevel = l.with.trend$hasLevel,
                            iAlong = l.all$iAlong,
                            infant = l.cov$infant,
+                           isSaturated = l.all$isSaturated,
                            iteratorState = l.all$iteratorState,
                            iteratorV = l.all$iteratorV,
                            J = l.all$J,
@@ -699,11 +739,15 @@ setMethod("initialPrior",
 
 setMethod("initialPrior",
           signature(object = "SpecDLMNoTrendRobustZeroNoSeason"),
-          function(object, beta, metadata, sY, ...) {
+          function(object, beta, metadata, sY, isSaturated, ...) {
+              if (isSaturated)
+                  stop(gettextf("using prior with '%s = %s' for highest-order term in saturated model",
+                                "robust", "TRUE"))
               l.all <- initialDLMAll(object = object,
                                      beta = beta,
                                      metadata = metadata,
-                                     sY = sY)
+                                     sY = sY,
+                                     isSaturated = isSaturated)
               l.no.trend <- initialDLMNoTrend(object = object,
                                               metadata = metadata,
                                               sY = sY)
@@ -716,6 +760,7 @@ setMethod("initialPrior",
                            alphaDLM = l.all$alphaDLM,
                            CNoTrend = l.no.trend$CNoTrend,
                            iAlong = l.all$iAlong,
+                           isSaturated = l.all$isSaturated,
                            iteratorState = l.all$iteratorState,
                            iteratorV = l.all$iteratorV,
                            J = l.all$J,
@@ -743,11 +788,15 @@ setMethod("initialPrior",
 
 setMethod("initialPrior",
           signature(object = "SpecDLMWithTrendRobustZeroNoSeason"),
-          function(object, beta, metadata, sY, ...) {
+          function(object, beta, metadata, sY, isSaturated, ...) {
+              if (isSaturated)
+                  stop(gettextf("using prior with '%s = %s' for highest-order term in saturated model",
+                                "robust", "TRUE"))
               l.all <- initialDLMAll(object = object,
                                      beta = beta,
                                      metadata = metadata,
-                                     sY = sY)
+                                     sY = sY,
+                                     isSaturated = isSaturated)
               l.with.trend <- initialDLMWithTrend(object = object,
                                                   beta = beta,
                                                   metadata = metadata,
@@ -770,6 +819,7 @@ setMethod("initialPrior",
                            GWithTrend = l.with.trend$GWithTrend, 
                            hasLevel = l.with.trend$hasLevel,
                            iAlong = l.all$iAlong,
+                           isSaturated = l.all$isSaturated,
                            iteratorState = l.all$iteratorState,
                            iteratorV = l.all$iteratorV,
                            J = l.all$J,
@@ -805,11 +855,15 @@ setMethod("initialPrior",
 
 setMethod("initialPrior",
           signature(object = "SpecDLMNoTrendRobustZeroWithSeason"),
-          function(object, beta, metadata, sY, ...) {
+          function(object, beta, metadata, sY, isSaturated, ...) {
+              if (isSaturated)
+                  stop(gettextf("using prior with '%s = %s' for highest-order term in saturated model",
+                                "robust", "TRUE"))
               l.all <- initialDLMAll(object = object,
                                      beta = beta,
                                      metadata = metadata,
-                                     sY = sY)
+                                     sY = sY,
+                                     isSaturated = isSaturated)
               l.no.trend <- initialDLMNoTrend(object = object,
                                               metadata = metadata,
                                               sY = sY)
@@ -829,6 +883,7 @@ setMethod("initialPrior",
                            CNoTrend = l.no.trend$CNoTrend,
                            CSeason = l.season$CSeason,
                            iAlong = l.all$iAlong,
+                           isSaturated = l.all$isSaturated,
                            iteratorState = l.all$iteratorState,
                            iteratorV = l.all$iteratorV,
                            J = l.all$J,
@@ -864,11 +919,15 @@ setMethod("initialPrior",
 
 setMethod("initialPrior",
           signature(object = "SpecDLMWithTrendRobustZeroWithSeason"),
-          function(object, beta, metadata, sY, ...) {
+          function(object, beta, metadata, sY, isSaturated, ...) {
+              if (isSaturated)
+                  stop(gettextf("using prior with '%s = %s' for highest-order term in saturated model",
+                                "robust", "TRUE"))
               l.all <- initialDLMAll(object = object,
                                      beta = beta,
                                      metadata = metadata,
-                                     sY = sY)
+                                     sY = sY,
+                                     isSaturated = isSaturated)
               l.with.trend <- initialDLMWithTrend(object = object,
                                                   beta = beta,
                                                   metadata = metadata,
@@ -898,6 +957,7 @@ setMethod("initialPrior",
                            GWithTrend = l.with.trend$GWithTrend,
                            hasLevel = l.with.trend$hasLevel,
                            iAlong = l.all$iAlong,
+                           isSaturated = l.all$isSaturated,
                            iteratorState = l.all$iteratorState,
                            iteratorV = l.all$iteratorV,
                            J = l.all$J,
@@ -944,11 +1004,15 @@ setMethod("initialPrior",
 
 setMethod("initialPrior",
           signature(object = "SpecDLMNoTrendRobustCovNoSeason"),
-          function(object, beta, metadata, sY, ...) {
+          function(object, beta, metadata, sY, isSaturated, ...) {
+              if (isSaturated)
+                  stop(gettextf("using prior with '%s = %s' for highest-order term in saturated model",
+                                "robust", "TRUE"))
               l.all <- initialDLMAll(object = object,
                                      beta = beta,
                                      metadata = metadata,
-                                     sY = sY)
+                                     sY = sY,
+                                     isSaturated = isSaturated)
               l.no.trend <- initialDLMNoTrend(object = object,
                                               metadata = metadata,
                                               sY = sY)
@@ -971,6 +1035,7 @@ setMethod("initialPrior",
                            formula = l.cov$formula,
                            iAlong = l.all$iAlong,
                            infant = l.cov$infant,
+                           isSaturated = l.all$isSaturated,
                            iteratorState = l.all$iteratorState,
                            iteratorV = l.all$iteratorV,
                            J = l.all$J,
@@ -1002,11 +1067,15 @@ setMethod("initialPrior",
 
 setMethod("initialPrior",
           signature(object = "SpecDLMWithTrendRobustCovNoSeason"),
-          function(object, beta, metadata, sY, ...) {
+          function(object, beta, metadata, sY, isSaturated, ...) {
+              if (isSaturated)
+                  stop(gettextf("using prior with '%s = %s' for highest-order term in saturated model",
+                                "robust", "TRUE"))
               l.all <- initialDLMAll(object = object,
                                      beta = beta,
                                      metadata = metadata,
-                                     sY = sY)
+                                     sY = sY,
+                                     isSaturated = isSaturated)
               l.with.trend <- initialDLMWithTrend(object = object,
                                                   beta = beta,
                                                   metadata = metadata,
@@ -1039,6 +1108,7 @@ setMethod("initialPrior",
                            hasLevel = l.with.trend$hasLevel,
                            iAlong = l.all$iAlong,
                            infant = l.cov$infant,
+                           isSaturated = l.all$isSaturated,
                            iteratorState = l.all$iteratorState,
                            iteratorV = l.all$iteratorV,
                            J = l.all$J,
@@ -1078,11 +1148,15 @@ setMethod("initialPrior",
 
 setMethod("initialPrior",
           signature(object = "SpecDLMNoTrendRobustCovWithSeason"),
-          function(object, beta, metadata, sY, ...) {
+          function(object, beta, metadata, sY, isSaturated, ...) {
+              if (isSaturated)
+                  stop(gettextf("using prior with '%s = %s' for highest-order term in saturated model",
+                                "robust", "TRUE"))
               l.all <- initialDLMAll(object = object,
                                      beta = beta,
                                      metadata = metadata,
-                                     sY = sY)
+                                     sY = sY,
+                                     isSaturated = isSaturated)
               l.no.trend <- initialDLMNoTrend(object = object,
                                               metadata = metadata,
                                               sY = sY)
@@ -1112,6 +1186,7 @@ setMethod("initialPrior",
                            formula = l.cov$formula,
                            iAlong = l.all$iAlong,
                            infant = l.cov$infant,
+                           isSaturated = l.all$isSaturated,
                            iteratorState = l.all$iteratorState,
                            iteratorV = l.all$iteratorV,
                            J = l.all$J,
@@ -1151,11 +1226,15 @@ setMethod("initialPrior",
 
 setMethod("initialPrior",
           signature(object = "SpecDLMWithTrendRobustCovWithSeason"),
-          function(object, beta, metadata, sY, ...) {
+          function(object, beta, metadata, sY, isSaturated, ...) {
+              if (isSaturated)
+                  stop(gettextf("using prior with '%s = %s' for highest-order term in saturated model",
+                                "robust", "TRUE"))
               l.all <- initialDLMAll(object = object,
                                      beta = beta,
                                      metadata = metadata,
-                                     sY = sY)
+                                     sY = sY,
+                                     isSaturated = isSaturated)
               l.with.trend <- initialDLMWithTrend(object = object,
                                                   beta = beta,
                                                   metadata = metadata,
@@ -1195,6 +1274,7 @@ setMethod("initialPrior",
                            hasLevel = l.with.trend$hasLevel,
                            iAlong = l.all$iAlong,
                            infant = l.cov$infant,
+                           isSaturated = l.all$isSaturated,
                            iteratorState = l.all$iteratorState,
                            iteratorV = l.all$iteratorV,
                            J = l.all$J,
@@ -1245,7 +1325,7 @@ setMethod("initialPrior",
 
 setMethod("initialPrior",
           signature(object = "SpecKnown"),
-          function(object, beta, metadata, sY, ...) {
+          function(object, beta, metadata, sY, isSaturated, ...) {
               alpha.all <- object@alphaKnown@.Data
               metadata.all <- object@metadata
               J <- makeJ(beta)
@@ -1268,18 +1348,23 @@ setMethod("initialPrior",
                                 "Known", paste(names(metadata), collapse = ":"), "y", alpha$message))
               alpha <- as.numeric(alpha)
               alphaKnown <- new("ParameterVector", alpha)
+              if (isSaturated)
+                  stop(gettextf("using \"%s\" prior for highest-order term in saturated model",
+                                "Known"))
+              isSaturated <- new("LogicalFlag", isSaturated)
               if (methods::is(object, "SpecKnownCertain")) {
                   methods::new("KnownCertain",
                                alphaKnown = alphaKnown,
                                alphaKnownAll = object@alphaKnown,
                                J = J,
+                               isSaturated = isSaturated,
                                metadataAll = object@metadata)
               }
               else {
                   A.all <- object@AKnownVec@.Data
                   .Data.A.all <- array(A.all,
-                                   dim = dim(metadata.all),
-                                   dimnames = dimnames(metadata.all))
+                                       dim = dim(metadata.all),
+                                       dimnames = dimnames(metadata.all))
                   A <- methods::new("Values",
                                     .Data = .Data.A.all,
                                     metadata = metadata.all)
@@ -1291,6 +1376,7 @@ setMethod("initialPrior",
                                AKnownAllVec = object@AKnownVec,
                                alphaKnown = alphaKnown,
                                alphaKnownAll = object@alphaKnown,
+                               isSaturated = isSaturated,
                                J = J,
                                metadataAll = object@metadata)
               }
@@ -1301,7 +1387,7 @@ setMethod("initialPrior",
 ## NOT FINISHED!!
 setMethod("initialPrior",
           signature(object = "SpecMoveNormZero"),
-          function(object, beta, metadata, sY, ...) {
+          function(object, beta, metadata, sY, isSaturated, ...) {
               classes <- object@classes
               AMove <- object@AMove
               ATau <- object@ATau
@@ -1330,11 +1416,13 @@ setMethod("initialPrior",
               tau <- makeScale(A = ATau,
                                nu = nuTau,
                                scaleMax = tauMax)
+              isSaturated <- new("LogicalFlag", isSaturated)
               methods::new("MoveNormZero",
                            alphaMove = alphaMove,
                            AMove = AMove,
                            ATau = ATau,
                            indexClassAlpha = indexClassAlpha,
+                           isSaturated = isSaturated,
                            J = J,
                            nElementClassAlpha = nElementClassAlpha,
                            nuTau = nuTau,
@@ -1347,11 +1435,12 @@ setMethod("initialPrior",
 
 setMethod("initialPrior",
           signature(object = "SpecMixNormZero"),
-          function(object, beta, metadata, sY, ...) {
+          function(object, beta, metadata, sY, isSaturated, ...) {
               l.all <- initialMixAll(object = object,
                                      beta = beta,
                                      metadata = metadata,
-                                     sY = sY)
+                                     sY = sY,
+                                     isSaturated = isSaturated)
               methods::new("MixNormZero",
                            AComponentWeightMix = l.all$AComponentWeightMix,
                            ALevelComponentWeightMix = l.all$ALevelComponentWeightMix,
@@ -1369,6 +1458,7 @@ setMethod("initialPrior",
                            indexClassMaxUsedMix = l.all$indexClassMaxUsedMix,
                            indexClassMix = l.all$indexClassMix,
                            indexClassProbMix = l.all$indexClassProbMix,
+                           isSaturated = l.all$isSaturated,
                            iteratorsDimsMix = l.all$iteratorsDimsMix,
                            iteratorProdVectorMix = l.all$iteratorProdVectorMix,
                            J = l.all$J,
@@ -1409,10 +1499,15 @@ setMethod("initialPrior",
 
 setMethod("initialPrior",
           signature(object = "SpecZero"),
-          function(object, beta, metadata, sY, ...) {
+          function(object, beta, metadata, sY, isSaturated, ...) {
               J <- makeJ(beta)
-              new("Zero",
-                  J = J)
+              if (isSaturated)
+                  stop(gettextf("using \"%s\" prior for highest-order term in saturated model",
+                                "Zero"))
+              isSaturated <- new("LogicalFlag", isSaturated)
+              methods::new("Zero",
+                           isSaturated = isSaturated,
+                           J = J)
           })
 
 
@@ -1429,6 +1524,7 @@ setMethod("initialPriorPredict",
                                 name))
               J <- makeJPredict(metadata)
               methods::new("ExchFixed",
+                           isSaturated = prior@isSaturated,
                            J = J,
                            tau = prior@tau)
           })
@@ -1446,6 +1542,7 @@ setMethod("initialPriorPredict",
               J <- makeJPredict(metadata)
               methods::new("ExchNormZero",
                            ATau = prior@ATau,
+                           isSaturated = prior@isSaturated,
                            J = J,
                            nuTau = prior@nuTau,
                            tau = prior@tau,
@@ -1465,6 +1562,7 @@ setMethod("initialPriorPredict",
               UBeta <- makeU(nu = nu, A = A, n = J)
               methods::new("ExchRobustZero",
                            ATau = prior@ATau,
+                           isSaturated = prior@isSaturated,
                            J = J,
                            nuBeta = prior@nuBeta,
                            nuTau = prior@nuTau,
@@ -1497,6 +1595,7 @@ setMethod("initialPriorPredict",
                            eta = prior@eta,
                            formula = formula,
                            infant = infant,
+                           isSaturated = prior@isSaturated,
                            J = J,
                            nuEtaCoef = prior@nuEtaCoef,
                            nuTau = prior@nuTau,
@@ -1535,6 +1634,7 @@ setMethod("initialPriorPredict",
                            eta = prior@eta,
                            formula = prior@formula,
                            infant = infant,
+                           isSaturated = prior@isSaturated,
                            J = J,
                            nuBeta = prior@nuBeta,
                            nuEtaCoef = prior@nuEtaCoef,
@@ -1570,6 +1670,7 @@ setMethod("initialPriorPredict",
                            alphaDLM = l.all$alphaDLM,
                            CNoTrend = l.no.trend$CNoTrend,
                            iAlong = prior@iAlong,
+                           isSaturated = prior@isSaturated,
                            J = l.all$J,
                            JOld = l.all$JOld,
                            K = l.all$K,
@@ -1621,6 +1722,7 @@ setMethod("initialPriorPredict",
                            GWithTrend = prior@GWithTrend,
                            hasLevel = prior@hasLevel,
                            iAlong = prior@iAlong,
+                           isSaturated = prior@isSaturated,
                            iteratorState = l.all$iteratorState,
                            iteratorStateOld = l.all$iteratorStateOld,
                            iteratorV = l.all$iteratorV,
@@ -1679,6 +1781,7 @@ setMethod("initialPriorPredict",
                            CNoTrend = l.no.trend$CNoTrend,
                            CSeason = l.season$CSeason,
                            iAlong = prior@iAlong,
+                           isSaturated = prior@isSaturated,
                            iteratorState = l.all$iteratorState,
                            iteratorStateOld = l.all$iteratorStateOld,
                            iteratorV = l.all$iteratorV,
@@ -1743,6 +1846,7 @@ setMethod("initialPriorPredict",
                            GWithTrend = prior@GWithTrend,
                            hasLevel = prior@hasLevel,
                            iAlong = prior@iAlong,
+                           isSaturated = prior@isSaturated,
                            iteratorState = l.all$iteratorState,
                            iteratorStateOld = l.all$iteratorStateOld,
                            iteratorV = l.all$iteratorV,
@@ -1815,6 +1919,7 @@ setMethod("initialPriorPredict",
                            formula = prior@formula,
                            iAlong = prior@iAlong,
                            infant = prior@infant,
+                           isSaturated = prior@isSaturated,
                            iteratorState = l.all$iteratorState,
                            iteratorStateOld = l.all$iteratorStateOld,
                            iteratorV = l.all$iteratorV,
@@ -1879,6 +1984,7 @@ setMethod("initialPriorPredict",
                            hasLevel = prior@hasLevel,
                            iAlong = prior@iAlong,
                            infant = prior@infant,
+                           isSaturated = prior@isSaturated,
                            iteratorState = l.all$iteratorState,
                            iteratorStateOld = l.all$iteratorStateOld,
                            iteratorV = l.all$iteratorV,
@@ -1949,6 +2055,7 @@ setMethod("initialPriorPredict",
                            formula = prior@formula,
                            iAlong = prior@iAlong,
                            infant = prior@infant,
+                           isSaturated = prior@isSaturated,
                            iteratorState = l.all$iteratorState,
                            iteratorStateOld = l.all$iteratorStateOld,
                            iteratorV = l.all$iteratorV,
@@ -2026,6 +2133,7 @@ setMethod("initialPriorPredict",
                            hasLevel = prior@hasLevel,
                            iAlong = prior@iAlong,
                            infant = prior@infant,
+                           isSaturated = prior@isSaturated,
                            iteratorState = l.all$iteratorState,
                            iteratorStateOld = l.all$iteratorStateOld,
                            iteratorV = l.all$iteratorV,
@@ -2099,6 +2207,7 @@ setMethod("initialPriorPredict",
                            JOld = l.all$JOld,
                            K = l.all$K,
                            L = l.all$L,
+                           isSaturated = prior@isSaturated,
                            iteratorState = l.all$iteratorState,
                            iteratorStateOld = l.all$iteratorStateOld,
                            iteratorV = l.all$iteratorV,
@@ -2150,6 +2259,7 @@ setMethod("initialPriorPredict",
                            GWithTrend = prior@GWithTrend,
                            hasLevel = prior@hasLevel,
                            iAlong = prior@iAlong,
+                           isSaturated = prior@isSaturated,
                            iteratorState = l.all$iteratorState,
                            iteratorStateOld = l.all$iteratorStateOld,
                            iteratorV = l.all$iteratorV,
@@ -2211,6 +2321,7 @@ setMethod("initialPriorPredict",
                            CNoTrend = l.no.trend$CNoTrend,
                            CSeason = l.season$CSeason,
                            iAlong = prior@iAlong,
+                           isSaturated = prior@isSaturated,
                            iteratorState = l.all$iteratorState,
                            iteratorStateOld = l.all$iteratorStateOld,
                            iteratorV = l.all$iteratorV,
@@ -2279,6 +2390,7 @@ setMethod("initialPriorPredict",
                            GWithTrend = prior@GWithTrend,
                            hasLevel = prior@hasLevel,
                            iAlong = prior@iAlong,
+                           isSaturated = prior@isSaturated,
                            iteratorState = l.all$iteratorState,
                            iteratorStateOld = l.all$iteratorStateOld,
                            iteratorV = l.all$iteratorV,
@@ -2356,6 +2468,7 @@ setMethod("initialPriorPredict",
                            formula = prior@formula,
                            iAlong = prior@iAlong,
                            infant = prior@infant,
+                           isSaturated = prior@isSaturated,
                            iteratorState = l.all$iteratorState,
                            iteratorStateOld = l.all$iteratorStateOld,
                            iteratorV = l.all$iteratorV,
@@ -2424,6 +2537,7 @@ setMethod("initialPriorPredict",
                            hasLevel = prior@hasLevel,
                            iAlong = prior@iAlong,
                            infant = prior@infant,
+                           isSaturated = prior@isSaturated,
                            iteratorState = l.all$iteratorState,
                            iteratorStateOld = l.all$iteratorStateOld,
                            iteratorV = l.all$iteratorV,
@@ -2498,6 +2612,7 @@ setMethod("initialPriorPredict",
                            formula = prior@formula,
                            iAlong = prior@iAlong,
                            infant = prior@infant,
+                           isSaturated = prior@isSaturated,
                            iteratorState = l.all$iteratorState,
                            iteratorStateOld = l.all$iteratorStateOld,
                            iteratorV = l.all$iteratorV,
@@ -2579,6 +2694,7 @@ setMethod("initialPriorPredict",
                            hasLevel = prior@hasLevel,
                            iAlong = prior@iAlong,
                            infant = prior@infant,
+                           isSaturated = prior@isSaturated,
                            iteratorState = l.all$iteratorState,
                            iteratorStateOld = l.all$iteratorStateOld,
                            iteratorV = l.all$iteratorV,
@@ -2679,6 +2795,7 @@ setMethod("initialPriorPredict",
                                AKnownAllVec = prior@AKnownAllVec,
                                alphaKnown = alphaKnown,
                                alphaKnownAll = prior@alphaKnownAll,
+                               isSaturated = prior@isSaturated,
                                J = J,
                                metadataAll = prior@metadataAll)
               }
@@ -2712,6 +2829,7 @@ setMethod("initialPriorPredict",
                            indexClassMaxUsedMix = prior@indexClassMaxUsedMix,
                            indexClassMix = l.all$indexClassMix,
                            indexClassProbMix = prior@indexClassProbMix,
+                           isSaturated = prior@isSaturated,
                            iteratorsDimsMix = l.all$iteratorsDimsMix,
                            iteratorProdVectorMix = l.all$iteratorProdVectorMix,
                            J = l.all$J,
@@ -2763,6 +2881,7 @@ setMethod("initialPriorPredict",
                   stop(gettextf("covariate data supplied for prior for '%s', but prior does not use covariates",
                                 name))
               J <- makeJPredict(metadata)
-              new("Zero",
-                  J = J)
+              methods::new("Zero",
+                           isSaturated = prior@isSaturated,
+                           J = J)
           })

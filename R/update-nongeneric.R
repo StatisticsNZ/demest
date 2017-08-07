@@ -512,8 +512,7 @@ updateBeta <- function(prior, vbar, n, sigma, useC = FALSE) {
         sd <- sqrt(var)
         stats::rnorm(n = J, mean = mean, sd = sd)
     }
-}  
-
+}
 
 ## TRANSLATED
 ## HAS_TESTS
@@ -1857,6 +1856,7 @@ updateWeightMix <- function(prior, useC = FALSE) {
 
 
 ## UPDATING MODELS ##################################################################
+
 
 ## TRANSLATED
 ## HAS_TESTS

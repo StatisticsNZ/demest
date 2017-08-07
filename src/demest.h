@@ -208,6 +208,7 @@ SEXP
   UBeta_sym,
   nuBeta_sym,
   isRobust_sym,
+  isSaturated_sym,
   mNoTrend_sym,
   m0NoTrend_sym,
   CNoTrend_sym,

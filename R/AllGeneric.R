@@ -260,7 +260,7 @@ setGeneric("initialModelPredict",
            standardGeneric("initialModelPredict"))
 
 setGeneric("initialPrior",
-           function(object, beta, metadata, sY, ...)
+           function(object, beta, metadata, sY, isSaturated, ...)
                standardGeneric("initialPrior"))
 
 setGeneric("initialPriorPredict",

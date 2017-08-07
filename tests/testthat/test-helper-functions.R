@@ -455,7 +455,8 @@ test_that("initialDLMAll works", {
     l <- initialDLMAll(spec,
                        beta = beta,
                        metadata = metadata,
-                       sY = NULL)
+                       sY = NULL,
+                       isSaturated = FALSE)
     expect_identical(l$AAlpha, new("Scale", 1.0))
     expect_identical(l$ATau, new("Scale", 1.0))
     expect_identical(length(l$alphaDLM), 11L)
@@ -487,7 +488,8 @@ test_that("initialDLMAll works", {
     l <- initialDLMAll(spec,
                        beta = beta,
                        metadata = metadata,
-                       sY = 100)
+                       sY = 100,
+                       isSaturated = TRUE)
     expect_identical(l$ATau, new("Scale", 100))
     expect_identical(l$AAlpha, new("Scale", 100))
     expect_identical(l$omegaAlphaMax, new("Scale", qhalft(0.999, 7, 100)))
@@ -504,7 +506,8 @@ test_that("initialDLMAll works", {
     l <- initialDLMAll(spec,
                        beta = beta,
                        metadata = metadata,
-                       sY = NULL)
+                       sY = NULL,
+                       isSaturated = TRUE)
     expect_identical(l$ATau, new("Scale", 0.5))
     expect_identical(l$AAlpha, new("Scale", 0.5))
     expect_identical(l$omegaAlphaMax, new("Scale", qhalft(0.999, 7, 0.5)))
@@ -525,7 +528,8 @@ test_that("initialDLMAllPredict works", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = TRUE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -554,7 +558,8 @@ test_that("initialDLMAllPredict works", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = TRUE)
     expect_is(prior, "DLMWithTrendNormZeroNoSeason")
     metadata.new <- new("MetaData",
                         nms = c("region", "time"),
@@ -613,7 +618,8 @@ test_that("initialDLMNoTrendPredict works", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = TRUE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -637,7 +643,8 @@ test_that("initialDLMNoTrendPredict works", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     expect_is(prior, "DLMNoTrendNormZeroNoSeason")
     metadata.new <- new("MetaData",
                         nms = c("region", "time"),
@@ -668,7 +675,8 @@ test_that("initialDLMWithTrend works", {
     lAll <- initialDLMAll(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = TRUE)
     l <- initialDLMWithTrend(spec,
                              beta = beta,
                              metadata = metadata,
@@ -736,7 +744,8 @@ test_that("initialDLMWithTrend works", {
     lAll <- initialDLMAll(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = TRUE)
     l <- initialDLMWithTrend(spec,
                              beta = beta,
                              metadata = metadata,
@@ -760,7 +769,8 @@ test_that("initialDLMWithTrendPredict works", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = TRUE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -788,7 +798,8 @@ test_that("initialDLMWithTrendPredict works", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = TRUE)
     expect_is(prior, "DLMWithTrendNormZeroNoSeason")
     metadata.new <- new("MetaData",
                         nms = c("region", "time"),
@@ -864,7 +875,8 @@ test_that("initialDLMSeasonPredict works", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = TRUE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -885,17 +897,18 @@ test_that("initialDLMSeasonPredict works", {
                     nms = c("region", "time"),
                     dimtypes = c("state", "time"),
                     DimScales = list(new("Categories", dimvalues = letters[1:5]),
-                        new("Points", dimvalues = 1:10)))
+                                     new("Points", dimvalues = 1:10)))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = TRUE)
     expect_is(prior, "DLMWithTrendNormZeroWithSeason")
     metadata.new <- new("MetaData",
                         nms = c("region", "time"),
                         dimtypes = c("state", "time"),
                         DimScales = list(new("Categories", dimvalues = letters[1:5]),
-                            new("Points", dimvalues = 11:15)))
+                                         new("Points", dimvalues = 11:15)))
     beta.new <- rnorm(25)
     l <- initialDLMSeasonPredict(prior = prior,
                                  metadata = metadata.new)
@@ -924,7 +937,8 @@ test_that("initialMixAll works", {
     l <- initialMixAll(spec,
                        beta = beta,
                        metadata = metadata,
-                       sY = NULL)
+                       sY = NULL,
+                       isSaturated = TRUE)
     stopifnot(identical(l$AComponentWeightMix, new("Scale", 0.5)))
     stopifnot(identical(l$ALevelComponentWeightMix, new("Scale", 0.25)))
     stopifnot(identical(l$ATau, new("Scale", 0.25)))
@@ -1011,7 +1025,8 @@ test_that("initialMixAllPredict works", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = TRUE)
     metadata.new <- new("MetaData",
                         nms = c("age", "sex", "time"),
                         dimtypes = c("age", "sex", "time"),
@@ -1073,7 +1088,8 @@ test_that("initialRobust works", {
     lAll <- initialDLMAll(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     set.seed(1)
     l <- initialRobust(spec,
                        lAll = lAll)
@@ -1097,7 +1113,8 @@ test_that("initialRobustPredict works", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time", 
                         dimtypes = "time", 
@@ -1250,7 +1267,8 @@ test_that("initialCovPredict works", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = TRUE)
     data.new <- data.frame(time = seq(2055, 2080, 5),
                            sex = rep(c("f", "m"), each = 6),
                            income = rnorm(12),
@@ -2325,16 +2343,6 @@ test_that("defaultPrior throws appropriate errors", {
                  "length of 'beta' for \"region\" \\[2\\] not equal to product of dimensions \\[3\\]")
 })
 
-test_that("checkNumberElementsBetas works", {
-    checkNumberElementsBetas <- demest:::checkNumberElementsBetas
-    y <- Counts(array(1:6, dim = c(3, 2), dimnames = list(age = 0:2, sex = c("f", "m"))))
-    betas <- list(rnorm(1))
-    expect_identical(checkNumberElementsBetas(betas, y), NULL)
-    betas <- list(rnorm(1), rnorm(2), rnorm(3), rnorm(6))
-    expect_error(checkNumberElementsBetas(betas, y),
-                 "terms predicting cell means have a combined total of 12 elements but data only has 6 elements : try a model with fewer terms")
-})
-
 test_that("checkObservation works", {
     checkObservation <- demest:::checkObservation
     x <- list(Model(tax ~ Poisson(mean ~ age),
@@ -3250,15 +3258,18 @@ test_that("makePriors works when given valid inputs", {
     ans.expected <- list(initialPrior(ExchFixed(),
                                       beta = betas[[1]],
                                       metadata = NULL,
-                                      sY = sY),
+                                      sY = sY,
+                                      isSaturated = FALSE),
                          initialPrior(DLM(trend = NULL),
                                       beta = betas[[2]],
                                       metadata = y@metadata[1],
-                                      sY = sY),
+                                      sY = sY,
+                                      isSaturated = FALSE),
                          initialPrior(Exch(),
                                       beta = betas[[3]],
                                       metadata = y@metadata[2],
-                                      sY = sY))
+                                      sY = sY,
+                                      isSaturated = FALSE))
     expect_identical(ans.obtained, ans.expected)
     ## main effects, order of formula different from y
     betas <- list("(Intercept)" = rnorm(1),
@@ -3281,15 +3292,18 @@ test_that("makePriors works when given valid inputs", {
     ans.expected <- list(initialPrior(ExchFixed(),
                                       beta = betas[[1]],
                                       metadata = NULL,
-                                      sY = NULL),
+                                      sY = NULL,
+                                      isSaturated = FALSE),
                          initialPrior(Exch(),
                                       beta = betas[[2]],
                                       metadata = y@metadata[2],
-                                      sY = NULL),
+                                      sY = NULL,
+                                      isSaturated = FALSE),
                          initialPrior(DLM(),
                                       beta = betas[[3]],
                                       metadata = y@metadata[1],
-                                      sY = NULL))
+                                      sY = NULL,
+                                      isSaturated = FALSE))
     expect_identical(ans.obtained, ans.expected)
     ## intercept only
     betas <- list("(Intercept)" = rnorm(1))
@@ -3310,7 +3324,8 @@ test_that("makePriors works when given valid inputs", {
     ans.expected <- list(initialPrior(ExchFixed(),
                                       beta = betas[[1]],
                                       metadata = NULL,
-                                      sY = sY))
+                                      sY = sY,
+                                      isSaturated = FALSE))
     expect_identical(ans.obtained, ans.expected)
     ## single dimension only
     betas <- list("(Intercept)" = rnorm(1),
@@ -3332,11 +3347,13 @@ test_that("makePriors works when given valid inputs", {
     ans.expected <- list(initialPrior(ExchFixed(),
                                       beta = betas[[1]],
                                       metadata = NULL,
-                                      sY = NULL),
+                                      sY = NULL,
+                                      isSaturated = FALSE),
                          initialPrior(Exch(),
                                       beta = betas[[2]],
                                       metadata = y@metadata[2],
-                                      sY = NULL))
+                                      sY = NULL,
+                                      isSaturated = FALSE))
     expect_identical(ans.obtained, ans.expected)
     ## orig-dest dimensions
     betas <- list("(Intercept)" = rnorm(1),
@@ -3373,23 +3390,69 @@ test_that("makePriors works when given valid inputs", {
     ans.expected <- list(initialPrior(ExchFixed(),
                                       beta = betas[[1]],
                                       metadata = NULL,
-                                      sY = NULL),
+                                      sY = NULL,
+                                      isSaturated = FALSE),
                          initialPrior(DLM(trend = NULL),
                                       beta = betas[[2]],
                                       metadata = y@metadata[1],
-                                      sY = NULL),
+                                      sY = NULL,
+                                      isSaturated = FALSE),
                          initialPrior(Exch(),
                                       beta = betas[[3]],
                                       metadata = metadata.reg.main,
-                                      sY = NULL),
+                                      sY = NULL,
+                                      isSaturated = FALSE),
                          initialPrior(Exch(),
                                       beta = betas[[4]],
                                       metadata = metadata.reg.main,
-                                      sY = NULL),
+                                      sY = NULL,
+                                      isSaturated = FALSE),
                          initialPrior(Exch(),
                                       beta = betas[[5]],
                                       metadata = metadata.reg.inter,
-                                      sY = NULL))
+                                      sY = NULL,
+                                      isSaturated = FALSE))
+    expect_identical(ans.obtained, ans.expected)
+    ## saturated model
+    betas <- list("(Intercept)" = rnorm(1),
+                  age = rnorm(5),
+                  region = rnorm(4),
+                  "age:region" = rnorm(20))
+    specs <- list(DLM(trend = NULL))
+    namesSpecs <- "age"
+    margins <- list(0L, 1L, 2L, 1:2)
+    y <- Counts(array(rpois(n = 20, lambda = 20),
+                      dim = c(5, 4),
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    sY <- sd(y)
+    set.seed(1)
+    ans.obtained <- makePriors(betas = betas,
+                               specs = specs,
+                               namesSpecs = namesSpecs,
+                               margins = margins,
+                               y = y,
+                               sY = sY)
+    set.seed(1)
+    ans.expected <- list(initialPrior(ExchFixed(),
+                                      beta = betas[[1]],
+                                      metadata = NULL,
+                                      sY = sY,
+                                      isSaturated = FALSE),
+                         initialPrior(DLM(trend = NULL),
+                                      beta = betas[[2]],
+                                      metadata = y@metadata[1],
+                                      sY = sY,
+                                      isSaturated = FALSE),
+                         initialPrior(Exch(),
+                                      beta = betas[[3]],
+                                      metadata = y@metadata[2],
+                                      sY = sY,
+                                      isSaturated = FALSE),
+                         initialPrior(Exch(),
+                                      beta = betas[[4]],
+                                      metadata = y@metadata,
+                                      sY = sY,
+                                      isSaturated = TRUE))
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -4424,7 +4487,8 @@ test_that("betaHat gives valid answer with prior of class Exch - no covariates",
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     ans.obtained <- betaHat(prior)
     ans.expected <- rep(0, 10)
     expect_identical(ans.obtained, ans.expected)
@@ -4442,7 +4506,8 @@ test_that("R and C versions of betaHat give same answer with prior of class Exch
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     ans.R <- betaHat(prior, useC = FALSE)
     ans.C <- betaHat(prior, useC = TRUE)
     expect_identical(ans.R, ans.C)
@@ -4461,7 +4526,8 @@ test_that("betaHat gives valid answer with prior of class Exch - with covariates
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     ans.obtained <- betaHat(prior)
     ans.expected <- unname(drop(prior@Z %*% prior@eta@.Data))
     expect_identical(ans.obtained, ans.expected)
@@ -4480,7 +4546,8 @@ test_that("R and C versions of betaHat give same answer with prior of class Exch
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     ans.R <- betaHat(prior, useC = FALSE)
     ans.C <- betaHat(prior, useC = TRUE)
     if (test.identity)
@@ -4501,7 +4568,8 @@ test_that("betaHat gives valid answer with prior of class DLM - no season", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     ans.obtained <- betaHat(prior)
     ans.expected <- prior@alphaDLM@.Data[-1]
     expect_identical(ans.obtained, ans.expected)
@@ -4519,7 +4587,8 @@ test_that("R and C versions of betaHat give same answer with prior of class DLM 
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     ans.R <- betaHat(prior, useC = FALSE)
     ans.C <- betaHat(prior, useC = TRUE)
     if (test.identity)
@@ -4540,7 +4609,8 @@ test_that("betaHat gives valid answer with prior of class DLM - with season", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     ans.obtained <- betaHat(prior)
     ans.expected <- prior@alphaDLM@.Data[-1] + sapply(prior@s@.Data[-1], function(x) x[1])
     expect_identical(ans.obtained, ans.expected)
@@ -4558,7 +4628,8 @@ test_that("R and C versions of betaHat give same answer with prior of class DLM 
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     ans.R <- betaHat(prior, useC = FALSE)
     ans.C <- betaHat(prior, useC = TRUE)
     if (test.identity)
@@ -4579,10 +4650,11 @@ test_that("betaHat gives valid answer with prior of class Mix", {
                                      new("Intervals", dimvalues = as.numeric(0:10))))
     spec <- Mix()
     prior <- initialPrior(spec,
-                              beta = beta,
-                              metadata = metadata,
-                              sY = NULL,
-                          multScale = 1)
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          multScale = 1,
+                          isSaturated = FALSE)
     ans.obtained <- betaHat(prior)
     ans.expected <- prior@alphaMix@.Data
     expect_identical(ans.obtained, ans.expected)
@@ -4600,10 +4672,11 @@ test_that("R and C versions of betaHat give same answer with prior of class Mix"
                                      new("Intervals", dimvalues = as.numeric(0:10))))
     spec <- Mix()
     prior <- initialPrior(spec,
-                              beta = beta,
-                              metadata = metadata,
-                              sY = NULL,
-                          multScale = 1)
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          multScale = 1,
+                          isSaturated = FALSE)
     ans.R <- betaHat(prior, useC = FALSE)
     ans.C <- betaHat(prior, useC = TRUE)
     expect_identical(ans.R, ans.C)
@@ -4622,7 +4695,8 @@ test_that("betaHatAlphaDLM works", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     ans.obtained <- betaHatAlphaDLM(prior)
     ans.expected <- as.numeric(matrix(prior@alphaDLM, nr = 2)[,-1])
     expect_identical(ans.obtained, ans.expected)
@@ -4641,7 +4715,8 @@ test_that("R and C versions of betaHatAlphaDLM give same answer", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     ans.R <- betaHatAlphaDLM(prior, useC = FALSE)
     ans.C <- betaHatAlphaDLM(prior, useC = TRUE)
     expect_identical(ans.R, ans.C)
@@ -4663,7 +4738,8 @@ test_that("betaHatCovariates works", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     ans.obtained <- betaHatCovariates(prior)
     ans.expected <- unname(drop(prior@Z %*% prior@eta@.Data))
     expect_identical(ans.obtained, ans.expected)
@@ -4685,7 +4761,8 @@ test_that("R and C versions of betaHatCovariates give same answer", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     ans.R <- betaHatCovariates(prior, useC = FALSE)
     ans.C <- betaHatCovariates(prior, useC = TRUE)
     expect_identical(ans.R, ans.C)
@@ -4704,7 +4781,8 @@ test_that("betaHatSeason works", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     ans.obtained <- betaHatSeason(prior)
     ans.expected <- as.numeric(matrix(sapply(prior@s, function(x) x[1]), nr = 2)[,-1])
     expect_identical(ans.obtained, ans.expected)
@@ -4723,7 +4801,8 @@ test_that("R and C versions of betaHatSeason give same answer", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     ans.R <- betaHatSeason(prior, useC = FALSE)
     ans.C <- betaHatSeason(prior, useC = TRUE)
     expect_identical(ans.R, ans.C)
@@ -5363,7 +5442,8 @@ test_that("getV gives valid answer with prior of class NormMixin", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     ans.obtained <- getV(prior)
     ans.expected <- rep(prior@tau@.Data^2, 10)
     expect_identical(ans.obtained, ans.expected)
@@ -5381,7 +5461,8 @@ test_that("R and C versions of getV give same answer with prior of class NormMix
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     ans.R <- getV(prior, useC = FALSE)
     ans.C <- getV(prior, useC = TRUE)
     if (test.identity)
@@ -5402,7 +5483,8 @@ test_that("getV gives valid answer with prior of class RobustMixin", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     ans.obtained <- getV(prior)
     ans.expected <- prior@UBeta@.Data
     expect_identical(ans.obtained, ans.expected)
@@ -5420,7 +5502,8 @@ test_that("R and C versions of getV give same answer with prior of class RobustM
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     ans.R <- getV(prior, useC = FALSE)
     ans.C <- getV(prior, useC = TRUE)
     if (test.identity)
@@ -5507,263 +5590,6 @@ test_that("R and C versions of makeLifeExpBirth give same answer", {
     else
         expect_equal(ans.R, ans.C)
 })
-
-
-## makeVBar #####################################################################
-
-
-test_that("makeVBar gives valid answer with PoissonVaryingNotUseExp, main effects model, terms in order", {
-    makeVBar <- demest:::makeVBar
-    initialModel <- demest:::initialModel
-    y <- Counts(array(rpois(n = 20, lambda = 10),
-                      dim = c(5, 4),
-                      dimnames = list(age = 0:4, region = letters[1:4])))
-    spec <- Model(y ~ Poisson(mean ~ age + region))
-    x <- initialModel(spec, y = y, exposure = NULL)
-    ## iBeta = 1L
-    ans.obtained <- makeVBar(x, iBeta = 1L, g = log)
-    other.betas <- x@betas[[2]] + rep(x@betas[[3]], each = 5)
-    g.theta <- log(x@theta)
-    ans.expected <- sum(g.theta - other.betas) / length(x@theta)
-    expect_equal(ans.obtained, ans.expected)
-    ## iBeta = 2L
-    ans.obtained <- makeVBar(x, iBeta = 2L, g = log)
-    other.betas <- x@betas[[1]] + rep(x@betas[[3]], each = 5)
-    g.theta <- log(x@theta)
-    ans <- g.theta - other.betas
-    ans.expected <- rowMeans(matrix(ans, nrow = 5))
-    expect_equal(ans.obtained, ans.expected)
-    ## iBeta = 3L
-    ans.obtained <- makeVBar(x, iBeta = 3L, g = log)
-    other.betas <- x@betas[[1]] + x@betas[[2]]
-    g.theta <- log(x@theta)
-    ans.expected <- g.theta - other.betas
-    ans.expected <- colMeans(matrix(ans.expected, nrow = 5))
-    expect_equal(ans.obtained, ans.expected)
-})
-
-test_that("makeVBar gives valid answer with PoissonVaryingNotUseExp, intercept only", {
-    makeVBar <- demest:::makeVBar
-    initialModel <- demest:::initialModel
-    y <- Counts(array(rpois(n = 20, lambda = 10),
-                      dim = c(5, 4),
-                      dimnames = list(age = 0:4, region = letters[1:4])))
-    spec <- Model(y ~ Poisson(mean ~ 1))
-    x <- initialModel(spec, y = y, exposure = NULL)
-    ans.obtained <- makeVBar(x, iBeta = 1L, g = log)
-    g.theta <- log(x@theta)
-    ans.expected <- mean(g.theta)
-    expect_equal(ans.obtained, ans.expected)
-})
-
-test_that("makeVBar gives valid answer with Binomial, terms out of order", {
-    ## dim = c(2, 3, 4), margins = list(0L, 3:2, 2L, 3L)
-    makeVBar <- demest:::makeVBar
-    initialModel <- demest:::initialModel
-    logit <- function(p) log(p / (1 - p))
-    exposure <- Counts(array(rpois(n = 24, lambda = 10),
-                             dim = 2:4,
-                             dimnames = list(sex = c("f", "m"),
-                                 age = c("0-4", "5-9", "10+"),
-                                 region = letters[1:4])))
-    y <- Counts(array(rbinom(n = 24, prob = 0.5, size = exposure),
-                dim = dim(exposure),
-                dimnames = dimnames(exposure)))
-    spec <- Model(y ~ Binomial(mean ~ age:region + region + age))
-    x <- initialModel(spec, y = y, exposure = exposure)
-    ## iBeta = 1L
-    ans.obtained <- makeVBar(x, iBeta = 1L, g = logit)
-    other.betas <- (rep(t(matrix(x@betas[[4]], nrow = 4)), each = 2)
-                    + rep(x@betas[[3]], each = 2)
-                    + rep(x@betas[[2]], each = 6))
-    g.theta <- logit(x@theta)
-    ans.expected <- mean(g.theta - other.betas)
-    expect_equal(ans.obtained, ans.expected)
-    ## iBeta = 2L
-    ans.obtained <- makeVBar(x, iBeta = 2L, g = logit)
-    other.betas <- (x@betas[[1]]
-                    + rep(x@betas[[3]], each = 2)
-                    + rep(x@betas[[4]], each = 2))
-    g.theta <- logit(x@theta)
-    ans.expected <- g.theta - other.betas
-    ans.expected <- matrix(ans.expected, nrow = 6)
-    ans.expected <- colMeans(ans.expected)
-    expect_equal(ans.obtained, ans.expected)
-    ## iBeta = 3L
-    ans.obtained <- makeVBar(x, iBeta = 3L, g = logit)
-    other.betas <- (x@betas[[1]]
-                    + rep(x@betas[[2]], each = 6)
-                    + rep(x@betas[[4]], each = 2))
-    g.theta <- logit(x@theta)
-    ans.expected <- g.theta - other.betas
-    ans.expected <- array(ans.expected, dim = 2:4)
-    ans.expected <- apply(ans.expected, 2, mean)
-    expect_equal(ans.obtained, ans.expected)
-    ## iBeta = 4L
-    ans.obtained <- makeVBar(x, iBeta = 4L, g = logit)
-    other.betas <- (x@betas[[1]]
-                    + rep(x@betas[[2]], each = 6)
-                    + rep(x@betas[[3]], each = 2))
-    g.theta <- logit(x@theta)
-    ans.expected <- g.theta - other.betas
-    ans.expected <- array(ans.expected, dim = 2:4)
-    ans.expected <- apply(ans.expected, 2:3, mean)
-    ans.expected <- as.numeric(ans.expected)
-    expect_equal(ans.obtained, ans.expected)
-})
-
-test_that("makeVBar gives valid answer with Normal, main effects", {
-    makeVBar <- demest:::makeVBar
-    initialModel <- demest:::initialModel
-    y <- Counts(array(rnorm(n = 24),
-                      dim = 2:4,
-                      dimnames = list(sex = c("f", "m"),
-                          age = c("0-4", "5-9", "10+"),
-                          region = letters[1:4])))
-    weights <- Counts(array(1,
-                            dim = 2:4,
-                            dimnames = list(sex = c("f", "m"),
-                                age = c("0-4", "5-9", "10+"),
-                                region = letters[1:4])))
-    spec <- Model(y ~ Normal(mean ~ sex + age))
-    x <- initialModel(spec, y = y, weights = weights)
-    identity <- function(x) x
-    ## iBeta = 1L
-    ans.obtained <- makeVBar(x, iBeta = 1L, g = identity)
-    other.betas <- rep(x@betas[[2]], times = 12) + rep(x@betas[[3]], each = 2)
-    g.theta <- x@theta
-    ans.expected <- mean(g.theta - other.betas)
-    expect_equal(ans.obtained, ans.expected)
-    ## iBeta = 2L
-    ans.obtained <- makeVBar(x, iBeta = 2L, g = identity)
-    other.betas <- rep(x@betas[[1]], times = 24) + rep(x@betas[[3]], each = 2)
-    g.theta <- x@theta
-    ans.expected <- g.theta - other.betas
-    ans.expected <- matrix(ans.expected, nrow = 2)
-    ans.expected <- rowMeans(ans.expected)
-    expect_equal(ans.obtained, ans.expected)
-    ## iBeta = 3L
-    ans.obtained <- makeVBar(x, iBeta = 3L, g = identity)
-    other.betas <- rep(x@betas[[1]], times = 24) + x@betas[[2]]
-    g.theta <- x@theta
-    ans.expected <- g.theta - other.betas
-    ans.expected <- array(ans.expected, dim = 2:4)
-    ans.expected <- apply(ans.expected, 2, mean)
-    expect_equal(ans.obtained, ans.expected)
-})
-
-test_that("R and C versions of makeVBar give same answer with PoissonVaryingNotUseExp, main effects, terms in order", {
-    makeVBar <- demest:::makeVBar
-    initialModel <- demest:::initialModel  
-    for (seed in seq_len(n.test)) {
-        set.seed(seed+1)
-        y <- Counts(array(rpois(n = 20, lambda = 10),
-                          dim = c(5, 4),
-                          dimnames = list(age = 0:4, region = letters[1:4])))
-        spec <- Model(y ~ Poisson(mean ~ age + region))
-        x <- initialModel(spec, y = y, exposure = NULL)
-        save_x <- x
-        for (iBeta in seq.int(from = 1, to = 3)) {
-            ans.R <- makeVBar(x, iBeta = iBeta, g = log, useC = FALSE)
-            ans.C <- makeVBar(x, iBeta = iBeta, g = log, useC = TRUE)
-            expect_identical(x, save_x)
-            if (test.identity)
-                expect_identical(ans.R, ans.C)
-            else
-                expect_equal(ans.R, ans.C)
-        }
-    }
-})
-
-## tests equal but not identical
-test_that("R and C versions of makeVBar give same answer with Poisson, intercept only", {
-    makeVBar <- demest:::makeVBar
-    initialModel <- demest:::initialModel  
-    for (seed in seq_len(n.test)) {
-        set.seed(seed+1)
-        y <- Counts(array(rpois(n = 20, lambda = 10),
-                          dim = c(5, 4),
-                          dimnames = list(age = 0:4, region = letters[1:4])))
-        spec <- Model(y ~ Poisson(mean ~ 1))
-        x <- initialModel(spec, y = y, exposure = NULL)
-        save_x <- x
-        iBeta <- 1L
-        ans.R <- makeVBar(x, iBeta = iBeta, g = log, useC = FALSE)
-        ans.C <- makeVBar(x, iBeta = iBeta, g = log, useC = TRUE)
-        expect_identical(x, save_x)
-        if (test.identity)
-            expect_identical(ans.R, ans.C)
-        else
-            expect_equal(ans.R, ans.C)
-    }
-})
-
-## tests equal but not identical
-test_that("R and C versions of makeVBar give same answer with Binomial, terms out of order", {
-    makeVBar <- demest:::makeVBar
-    initialModel <- demest:::initialModel
-    for (seed in seq_len(n.test)) {
-        set.seed(seed+1)
-        logit <- function(p) log(p / (1 - p))
-        exposure <- Counts(array(rpois(n = 24, lambda = 10),
-                                 dim = 2:4,
-                                 dimnames = list(sex = c("f", "m"),
-                                     age = c("0-4", "5-9", "10+"),
-                                     region = letters[1:4])))
-        y <- Counts(array(rbinom(n = 24, prob = 0.5, size = exposure),
-                          dim = dim(exposure),
-                          dimnames = dimnames(exposure)))
-        spec <- Model(y ~ Binomial(mean ~ age:region + region + age))
-        x <- initialModel(spec, y = y, exposure = exposure)
-        save_x <- x
-        for (iBeta in seq.int(from = 1, to = 4)) {
-            ans.R <- makeVBar(x, iBeta = iBeta, g = logit, useC = FALSE)
-            ans.C <- makeVBar(x, iBeta = iBeta, g = logit, useC = TRUE)
-            expect_identical(x, save_x)
-            if (test.identity)
-                expect_identical(ans.R, ans.C)
-            else
-                expect_equal(ans.R, ans.C)
-        }
-    }
-})
-
-## tests equal but not identical
-test_that("R and C versions of makeVBar give same answer with Normal, main effect only", {
-    makeVBar <- demest:::makeVBar
-    initialModel <- demest:::initialModel
-    for (seed in seq_len(n.test)) {
-        set.seed(seed+1)
-        identity <- function(x) x
-        y <- Counts(array(rnorm(n = 24),
-                          dim = 2:4,
-                          dimnames = list(sex = c("f", "m"),
-                              age = c("0-4", "5-9", "10+"),
-                              region = letters[1:4])))
-        weights <- Counts(array(1,
-                                dim = 2:4,
-                                dimnames = list(sex = c("f", "m"),
-                                    age = c("0-4", "5-9", "10+"),
-                                    region = letters[1:4])))
-        spec <- Model(y ~ Normal(mean ~ sex + age))
-        x <- initialModel(spec, y = y, weights = weights)
-        save_x <- x
-        for (iBeta in seq.int(from = 1, to = 2)) {
-            ans.R <- makeVBar(x, iBeta = iBeta, g = identity, useC = FALSE)
-            ans.C <- makeVBar(x, iBeta = iBeta, g = identity, useC = TRUE)
-            expect_identical(x, save_x)
-            if (test.identity)
-                expect_identical(ans.R, ans.C)
-            else
-                expect_equal(ans.R, ans.C)
-        }
-    }
-})
-
-
-
-
-
 
 
 ## makeVBarAndN #####################################################################
@@ -6645,7 +6471,8 @@ test_that("lengthValues works", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     ans.obtained <- lengthValues(prior)
     ans.expected <- 1L
     expect_identical(ans.obtained, ans.expected)
@@ -6659,7 +6486,8 @@ test_that("lengthValues works", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     ans.obtained <- lengthValues(prior)
     ans.expected <- 1L
     expect_identical(ans.obtained, ans.expected)
@@ -6674,7 +6502,8 @@ test_that("lengthValues works", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     ans.obtained <- lengthValues(prior)
     ans.expected <- 11L + 11L + 4L*11L + 4L + 1L
     expect_identical(ans.obtained, ans.expected)
@@ -6845,7 +6674,8 @@ test_that("predictAlphaDLMNoTrend works", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     prior@alphaDLM@.Data[1] <- rnorm(1)
     set.seed(1)
     ans.obtained <- predictAlphaDLMNoTrend(prior)
@@ -6874,7 +6704,8 @@ test_that("R and C versions of predictAlphaDLMNoTrend give same answer", {
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
         set.seed(seed+1)
         ans.R <- predictAlphaDLMNoTrend(prior, useC = FALSE)
         set.seed(seed+1)
@@ -6899,7 +6730,8 @@ test_that("predictAlphaDeltaDLMWithTrend works", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     prior@alphaDLM@.Data[1] <- rnorm(1)
     prior@deltaDLM@.Data[1] <- rnorm(1)
     set.seed(1)
@@ -6927,7 +6759,8 @@ test_that("predictAlphaDeltaDLMWithTrend works", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     prior@alphaDLM@.Data[1] <- rnorm(1)
     prior@deltaDLM@.Data[1] <- rnorm(1)
     set.seed(1)
@@ -6959,7 +6792,8 @@ test_that("R and C versions of predictAlphaDeltaDLMWithTrend give same answer", 
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
         set.seed(seed+1)
         ans.R <- predictAlphaDeltaDLMWithTrend(prior, useC = FALSE)
         set.seed(seed+1)
@@ -6981,7 +6815,8 @@ test_that("R and C versions of predictAlphaDeltaDLMWithTrend give same answer", 
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
         set.seed(seed+1)
         ans.R <- predictAlphaDeltaDLMWithTrend(prior, useC = FALSE)
         set.seed(seed+1)
@@ -7006,7 +6841,8 @@ test_that("predictBeta gives valid answer", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     set.seed(1)
     ans.obtained <- predictBeta(prior)
     set.seed(1)
@@ -7022,7 +6858,8 @@ test_that("predictBeta gives valid answer", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     set.seed(1)
     ans.obtained <- predictBeta(prior)
     set.seed(1)
@@ -7039,7 +6876,8 @@ test_that("predictBeta gives valid answer", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     set.seed(1)
     ans.obtained <- predictBeta(prior)
     set.seed(1)
@@ -7056,7 +6894,8 @@ test_that("predictBeta gives valid answer", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     set.seed(1)
     ans.obtained <- predictBeta(prior)
     set.seed(1)
@@ -7072,7 +6911,8 @@ test_that("predictBeta gives valid answer", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     set.seed(1)
     ans.obtained <- predictBeta(prior)
     set.seed(1)
@@ -7088,7 +6928,8 @@ test_that("predictBeta gives valid answer", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     set.seed(1)
     ans.obtained <- predictBeta(prior)
     set.seed(1)
@@ -7111,7 +6952,8 @@ test_that("R and C versions of predictBeta give same answer", {
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
         set.seed(seed + 1)
         ans.R <- predictBeta(prior, useC = FALSE)
         set.seed(seed + 1)
@@ -7130,7 +6972,8 @@ test_that("R and C versions of predictBeta give same answer", {
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
         set.seed(1)
         ans.R <- predictBeta(prior, useC = FALSE)
         set.seed(1)
@@ -7147,7 +6990,8 @@ test_that("R and C versions of predictBeta give same answer", {
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
         set.seed(1)
         ans.R <- predictBeta(prior, useC = FALSE)
         set.seed(1)
@@ -7164,7 +7008,8 @@ test_that("R and C versions of predictBeta give same answer", {
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
         set.seed(1)
         ans.R <- predictBeta(prior, useC = FALSE)
         set.seed(1)
@@ -7180,7 +7025,8 @@ test_that("R and C versions of predictBeta give same answer", {
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
         set.seed(seed + 1)
         ans.R <- predictBeta(prior, useC = FALSE)
         set.seed(seed + 1)
@@ -7199,7 +7045,8 @@ test_that("R and C versions of predictBeta give same answer", {
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
         set.seed(seed + 1)
         ans.R <- predictBeta(prior, useC = FALSE)
         set.seed(seed + 1)
@@ -7312,7 +7159,8 @@ test_that("predictComponentWeightMix works", {
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              multScale = 1)
+                              multScale = 1,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = c("time", "reg", "age"),
                         dimtypes = c("time", "state", "age"),
@@ -7366,7 +7214,9 @@ test_that("R and C versions of predictComponentWeightMix give same answer", {
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              multScale = 1)
+                              multScale = 1,
+                              isSaturated = FALSE
+                              )
     metadata.new <- new("MetaData",
                         nms = c("time", "reg", "age"),
                         dimtypes = c("time", "state", "age"),
@@ -7411,7 +7261,8 @@ test_that("predictIndexClassMix works", {
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              multScale = 1)
+                              multScale = 1,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = c("time", "reg", "age"),
                         dimtypes = c("time", "state", "age"),
@@ -7450,7 +7301,9 @@ test_that("R and C versions of predictIndexClassMix give same answer", {
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              multScale = 1)
+                              multScale = 1,
+                              isSaturated = FALSE
+                              )
     metadata.new <- new("MetaData",
                         nms = c("time", "reg", "age"),
                         dimtypes = c("time", "state", "age"),
@@ -7495,7 +7348,8 @@ test_that("predictLevelComponentWeightMix works", {
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              multScale = 1)
+                              multScale = 1,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = c("time", "reg", "age"),
                         dimtypes = c("time", "state", "age"),
@@ -7550,7 +7404,8 @@ test_that("R and C versions of predictLevelComponentWeightMix give same answer",
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              multScale = 1)
+                              multScale = 1,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = c("time", "reg", "age"),
                         dimtypes = c("time", "state", "age"),
@@ -7749,7 +7604,8 @@ test_that("predictSeason works", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     prior@s@.Data[[1]] <- rnorm(4)
     set.seed(1)
     ans.obtained <- predictSeason(prior)
@@ -7776,7 +7632,8 @@ test_that("R and C versions of predictSeason give same answer", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     prior@s@.Data[[1]] <- rnorm(4)
     set.seed(1)
     ans.R <- predictSeason(prior, useC = FALSE)
@@ -7802,7 +7659,8 @@ test_that("predictUBeta gives valid answer", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     set.seed(1)
     ans.obtained <- predictUBeta(prior)
     set.seed(1)
@@ -7825,7 +7683,8 @@ test_that("R and C versions of predictUBeta give same answer", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     set.seed(1)
     ans.R <- predictUBeta(prior, useC = FALSE)
     set.seed(1)
@@ -10347,6 +10206,27 @@ test_that("indicesShow works - nSeason is non-NULL", {
     expect_identical(ans.obtained, ans.expected)
 })
 
+test_that("makeMetadataStateDLM works", {
+    makeMetadataStateDLM <- demest:::makeMetadataStateDLM
+    metadata <- new("MetaData",
+                    nms = c("time", "sex", "age"),
+                    dimtypes = c("time", "sex", "age"),
+                    DimScales = list(new("Points", dimvalues = 2001:2010),
+                                     new("Sexes", dimvalues = c("Female", "Male")),
+                                     new("Intervals", dimvalues = as.numeric(0:10))))
+    iAlong <- 1L
+    ans.obtained <- makeMetadataStateDLM(metadata = metadata,
+                                         iAlong = iAlong)
+    ans.expected <- new("MetaData",
+                        nms = c("time", "sex", "age"),
+                        dimtypes = c("time", "sex", "age"),
+                        DimScales = list(new("Points", dimvalues = 2001:2010),
+                                         new("Sexes", dimvalues = "Male"),
+                                         new("Intervals", dimvalues = as.numeric(1:10))))
+    expect_identical(ans.obtained, ans.expected)
+})
+
+
 test_that("makeMetadataVectorsMix works", {
     makeMetadataVectorsMix <- demest:::makeMetadataVectorsMix
     metadata <- new("MetaData",
@@ -11570,6 +11450,26 @@ test_that("giveListElementsLongNames works", {
                "'object' has class \"character\"")
 })
 
+test_that("isSaturated works", {
+    isSaturated <- demest:::isSaturated
+    initialModel <- demest:::initialModel
+    exposure <- Counts(array(as.integer(rpois(n = 20, lambda = 10)),
+                             dim = 5:4,
+                             dimnames = list(age = 0:4, region = letters[1:4])))
+    y <- Counts(array(as.integer(rbinom(n = 20, size = exposure, prob = 0.1)),
+                      dim = 5:4,
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    spec <- Model(y ~ Binomial(mean ~ region))
+    x <- initialModel(spec, y = y, exposure = exposure)
+    ans.obtained <- isSaturated(x)
+    expect_false(ans.obtained)
+    spec <- Model(y ~ Binomial(mean ~ age * region))
+    x <- initialModel(spec, y = y, exposure = exposure)
+    ans.obtained <- isSaturated(x)
+    expect_true(ans.obtained)
+})
+
+
 test_that("isTimeVarying works", {
     isTimeVarying <- demest:::isTimeVarying
     expose <- Counts(array(as.numeric(rpois(n = 24, lambda = 10)),
@@ -11881,7 +11781,7 @@ test_that("seasonalNormalizingFactor works", {
                                              nSeason = nSeason,
                                              iAlong = iAlong,
                                              nIteration = nIteration,
-                                              metadata = metadata)
+                                             metadata = metadata)
     ans.expected <- colMeans(season)
     ans.expected <- ans.expected[-1,]
     ans.expected <- as.numeric(ans.expected)

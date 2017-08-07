@@ -350,17 +350,7 @@ setClass("SkeletonStateDLM",
 ## HAS_TESTS
 ## HAS_FETCH
 setClass("SkeletonTrendDLM",
-         contains = "SkeletonStateDLM",
-         validity = function(object) {
-             metadata <- object@metadata
-             indicesShow <- object@indicesShow
-             ## dim(metadata) consistent with 'indicesShow'
-             if (!isTRUE(all.equal(prod(dim(metadata)),
-                                   length(indicesShow))))
-                 return(gettextf("'%s' and '%s' inconsistent",
-                                 "metadata", "indicesShow"))
-             TRUE
-         })
+         contains = "SkeletonStateDLM")
 
 ## HAS_TESTS
 ## HAS_FETCH
