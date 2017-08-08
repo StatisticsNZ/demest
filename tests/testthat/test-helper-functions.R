@@ -10136,35 +10136,40 @@ test_that("changeInPos works", {
 test_that("indicesShow works - nSeason is NULL", {
     indicesShow <- demest:::indicesShow
     AlongIterator <- demest:::AlongIterator
+    ## dim = 5, along = 1
+    iterator <- AlongIterator(dim = 5L, iAlong = 1L)
+    ans.obtained <- indicesShow(iterator, dim = 5L, iAlong = 1L)
+    ans.expected <- 2:5
+    expect_identical(ans.obtained, ans.expected)
     ## dim = 3:4, along = 1
     iterator <- AlongIterator(dim = 3:4, iAlong = 1L)
-    ans.obtained <- indicesShow(iterator)
-    ans.expected <- c(2:3, 5:6, 8:9, 11:12)
+    ans.obtained <- indicesShow(iterator, dim = 3:4, iAlong = 1L)
+    ans.expected <- c(5:6, 8:9, 11:12)
     expect_identical(ans.obtained, ans.expected)
     ## dim = 3:4, along = 2
     iterator <- AlongIterator(dim = 3:4, iAlong = 2L)
-    ans.obtained <- indicesShow(iterator)
-    ans.expected <- 4:12
+    ans.obtained <- indicesShow(iterator, dim = 3:4, iAlong = 2L)
+    ans.expected <- c(5L, 6L, 8L, 9L, 11L, 12L)
     expect_identical(ans.obtained, ans.expected)
     ## dim = 10, along = 1
     iterator <- AlongIterator(dim = 10L, iAlong = 1L)
-    ans.obtained <- indicesShow(iterator)
+    ans.obtained <- indicesShow(iterator, dim = 10L, iAlong = 1L)
     ans.expected <- 2:10
     expect_identical(ans.obtained, ans.expected)
     ## dim = 2:4, along = 1
     iterator <- AlongIterator(dim = 2:4, iAlong = 1L)
-    ans.obtained <- indicesShow(iterator)
-    ans.expected <- seq.int(from = 2L, to = 24L, by = 2L)
+    ans.obtained <- indicesShow(iterator, dim = 2:4, iAlong = 1L)
+    ans.expected <- c(10L, 12L, 16L, 18L, 22L, 24L)
     expect_identical(ans.obtained, ans.expected)
     ## dim = 2:4, along = 2
     iterator <- AlongIterator(dim = 2:4, iAlong = 2L)
-    ans.obtained <- indicesShow(iterator)
-    ans.expected <- c(3:6, 9:12, 15:18, 21:24)
+    ans.obtained <- indicesShow(iterator, dim = 2:4, iAlong = 2L)
+    ans.expected <- c(10L, 12L, 16L, 18L, 22L, 24L)
     expect_identical(ans.obtained, ans.expected)
     ## dim = 2:4, along = 3
     iterator <- AlongIterator(dim = 2:4, iAlong = 3L)
-    ans.obtained <- indicesShow(iterator)
-    ans.expected <- 7:24
+    ans.obtained <- indicesShow(iterator, dim = 2:4, iAlong = 3L)
+    ans.expected <- c(10L, 12L, 16L, 18L, 22L, 24L)
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -10173,36 +10178,33 @@ test_that("indicesShow works - nSeason is non-NULL", {
     AlongIterator <- demest:::AlongIterator
     ## dim = 3:4, along = 1, nSeason = 2
     iterator <- AlongIterator(dim = 3:4, iAlong = 1L)
-    ans.obtained <- indicesShow(iterator, nSeason = 2L)
-    ans.expected <- c(3L, 5L, 9L, 11L, 15L, 17L, 21L, 23L)
+    ans.obtained <- indicesShow(iterator, nSeason = 2L, dim = 3:4, iAlong = 1L)
+    ans.expected <- c(9L, 11L, 15L, 17L, 21L, 23L)
     expect_identical(ans.obtained, ans.expected)
     ## dim = 3:4, along = 2, nSeason = 2
     iterator <- AlongIterator(dim = 3:4, iAlong = 2L)
-    ans.obtained <- indicesShow(iterator, nSeason = 2L)
-    ans.expected <- seq.int(7L, 23L, 2L)
+    ans.obtained <- indicesShow(iterator, nSeason = 2L, dim = 3:4, iAlong = 2L)
+    ans.expected <- c(9L, 11L, 15L, 17L, 21L, 23L)
     expect_identical(ans.obtained, ans.expected)
     ## dim = 10, along = 1, nSeason = 12
     iterator <- AlongIterator(dim = 10L, iAlong = 1L)
-    ans.obtained <- indicesShow(iterator, nSeason = 12L)
+    ans.obtained <- indicesShow(iterator, nSeason = 12L, dim = 10L, iAlong = 1L)
     ans.expected <- seq.int(13L, 109L, 12L)
     expect_identical(ans.obtained, ans.expected)
     ## dim = 2:4, along = 1, nSeason = 4
     iterator <- AlongIterator(dim = 2:4, iAlong = 1L)
-    ans.obtained <- indicesShow(iterator, nSeason = 4L)
-    ans.expected <- seq.int(from = 5L, to = 96L, by = 8L)
+    ans.obtained <- indicesShow(iterator, nSeason = 4L, dim = 2:4, iAlong = 1L)
+    ans.expected <- c(37L, 45L, 61L, 69L, 85L, 93L)
     expect_identical(ans.obtained, ans.expected)
     ## dim = 2:4, along = 2, nSeason = 4
     iterator <- AlongIterator(dim = 2:4, iAlong = 2L)
-    ans.obtained <- indicesShow(iterator, nSeason = 4L)
-    ans.expected <- c(9L, 13L, 17L, 21L,
-                      33L, 37L, 41L, 45L,
-                      57L, 61L, 65L, 69L,
-                      81L, 85L, 89L, 93L)
+    ans.obtained <- indicesShow(iterator, nSeason = 4L, dim = 2:4, iAlong = 2L)
+    ans.expected <- c(37L, 45L, 61L, 69L, 85L, 93L)
     expect_identical(ans.obtained, ans.expected)
     ## dim = 2:4, along = 3
     iterator <- AlongIterator(dim = 2:4, iAlong = 3L)
-    ans.obtained <- indicesShow(iterator, nSeason = 4L)
-    ans.expected <- seq.int(25L, 93L, 4L)
+    ans.obtained <- indicesShow(iterator, nSeason = 4L, dim = 2:4, iAlong = 3L)
+    ans.expected <- c(37L, 45L, 61L, 69L, 85L, 93L)
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -10333,8 +10335,8 @@ test_that("makeOutputPriorScale works", {
     expect_identical(ans.obtained, ans.expected)
 })
 
-test_that("makeOutputLevelDLM works", {
-    makeOutputLevelDLM <- demest:::makeOutputLevelDLM
+test_that("makeOutputStateDLM works with Level", {
+    makeOutputStateDLM <- demest:::makeOutputStateDLM
     AlongIterator <- demest:::AlongIterator
     ## nSeason == 1
     metadata <- new("MetaData",
@@ -10342,20 +10344,15 @@ test_that("makeOutputLevelDLM works", {
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 1:10)))
     iterator <- AlongIterator(dim = 11L, iAlong = 1L)
-    ans.obtained <- makeOutputLevelDLM(iterator = iterator,
+    ans.obtained <- makeOutputStateDLM(iterator = iterator,
                                        metadata = metadata,
-                                       nSeason = 1L,
+                                       nSeason = NULL,
                                        iAlong = 1L,
-                                       pos = 3L,
-                                       firstSeason = 0L)
-    ans.expected <- new("SkeletonLevelDLM",
+                                       pos = 3L)
+    ans.expected <- new("SkeletonStateDLM",
                         metadata = metadata,
                         first = 3L,
                         last = 13L,
-                        firstSeason = 0L,
-                        lastSeason = 0L,
-                        iAlong = 1L,
-                        nSeason = 1L,
                         indicesShow = 2:11)
     expect_identical(ans.obtained, ans.expected)
     ## nSeason > 1
@@ -10364,43 +10361,12 @@ test_that("makeOutputLevelDLM works", {
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 1:10)))
     iterator <- AlongIterator(dim = 11L, iAlong = 1L)
-    ans.obtained <- makeOutputLevelDLM(iterator = iterator,
+    ans.obtained <- makeOutputStateDLM(iterator = iterator,
                                        metadata = metadata,
-                                       nSeason = 4L,
+                                       nSeason = NULL,
                                        iAlong = 1L,
-                                       pos = 3L,
-                                       firstSeason = 50L)
-    ans.expected <- new("SkeletonLevelDLM",
-                        metadata = metadata,
-                        first = 3L,
-                        last = 13L,
-                        firstSeason = 50L,
-                        lastSeason = 50L + 44L - 1L,
-                        iAlong = 1L,
-                        nSeason = 4L,
-                        indicesShow = 2:11)
-    expect_identical(ans.obtained, ans.expected)
-    expect_error(makeOutputLevelDLM(iterator = iterator,
-                                    metadata = metadata,
-                                    nSeason = 1L,
-                                    iAlong = 1L,
-                                    pos = 3L,
-                                    firstSeason = 50L),
-                 "'nSeason' equals 1 but 'firstSeason' does not equal 0")
-})
-
-test_that("makeOutputTrendDLM works", {
-    makeOutputTrendDLM <- demest:::makeOutputTrendDLM
-    AlongIterator <- demest:::AlongIterator
-    metadata <- new("MetaData",
-                    nms = "time",
-                    dimtypes = "time",
-                    DimScales = list(new("Points", dimvalues = 1:10)))
-    iterator <- AlongIterator(dim = 11L, iAlong = 1L)
-    ans.obtained <- makeOutputTrendDLM(iterator = iterator,
-                                       metadata = metadata,
                                        pos = 3L)
-    ans.expected <- new("SkeletonTrendDLM",
+    ans.expected <- new("SkeletonStateDLM",
                         metadata = metadata,
                         first = 3L,
                         last = 13L,
@@ -10408,25 +10374,43 @@ test_that("makeOutputTrendDLM works", {
     expect_identical(ans.obtained, ans.expected)
 })
 
-test_that("makeOutputSeasonDLM works", {
-    makeOutputSeasonDLM <- demest:::makeOutputSeasonDLM
+test_that("makeOutputStateDLM works with Trend", {
+    makeOutputStateDLM <- demest:::makeOutputStateDLM
     AlongIterator <- demest:::AlongIterator
     metadata <- new("MetaData",
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 1:10)))
     iterator <- AlongIterator(dim = 11L, iAlong = 1L)
-    ans.obtained <- makeOutputSeasonDLM(iterator = iterator,
+    ans.obtained <- makeOutputStateDLM(iterator = iterator,
+                                       metadata = metadata,
+                                       nSeason = NULL,
+                                       pos = 3L)
+    ans.expected <- new("SkeletonStateDLM",
+                        metadata = metadata,
+                        first = 3L,
+                        last = 13L,
+                        indicesShow = 2:11)
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("makeOutputStateDLM works with Season", {
+    makeOutputStateDLM <- demest:::makeOutputStateDLM
+    AlongIterator <- demest:::AlongIterator
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 1:10)))
+    iterator <- AlongIterator(dim = 11L, iAlong = 1L)
+    ans.obtained <- makeOutputStateDLM(iterator = iterator,
                                         metadata = metadata,
                                         nSeason = 4L,
                                         iAlong = 1L,
                                         pos = 3L)
-    ans.expected <- new("SkeletonSeasonDLM",
+    ans.expected <- new("SkeletonStateDLM",
                         metadata = metadata,
                         first = 3L,
                         last = 46L,
-                        iAlong = 1L,
-                        nSeason = 4L,
                         indicesShow = seq.int(5L, 41L, 4L))
     expect_identical(ans.obtained, ans.expected)
 })

@@ -484,7 +484,7 @@ test_that("fetchResults works with object of class SkeletonCovariates", {
 })
 
 
-test_that("fetchResults works with object of class SkeletonLevelDLM - has season term", {
+test_that("fetchResults works with object of class SkeletonStateDLM - Level", {
     fetchResults <- demest:::fetchResults
     sweepAllMargins <- demest:::sweepAllMargins
     metadata <- new("MetaData",
@@ -492,14 +492,10 @@ test_that("fetchResults works with object of class SkeletonLevelDLM - has season
                     dimtypes = c("state", "time"),
                     DimScales = list(new("Categories", dimvalues = c("a", "b", "c")),
                                      new("Points", dimvalues = as.numeric(1:10))))
-    object <- new("SkeletonLevelDLM",
+    object <- new("SkeletonStateDLM",
                   metadata = metadata,
                   first = 11L,
                   last = 43L,
-                  nSeason = 2L,
-                  firstSeason = 51L,
-                  lastSeason = 51L + 66L - 1L,
-                  iAlong = 2L,
                   indicesShow = 4:33)
     nameObject <- "obj"
     filename <- tempfile()
@@ -511,25 +507,6 @@ test_that("fetchResults works with object of class SkeletonLevelDLM - has season
     writeBin(results, con)
     writeBin(as.double(1:2000), con)
     close(con)
-    ## (i) shift = TRUE
-    ans.obtained <- fetchResults(object = object,
-                                 nameObject = "obj",
-                                 filename = filename,
-                                 iterations = 1:10,
-                                 nIteration = 10L,
-                                 shift = TRUE,
-                                 lengthIter = 200L)
-    ans.expected <- 14:43 + rep(0:9, each = 30) * 200
-    norm.fac <- seq(from = 57.5, by = 2, to = 115.5) + rep(0:9, each = 30) * 200
-    ans.expected <- ans.expected + norm.fac
-    ans.expected <- Values(array(ans.expected,
-                                 dim = c(3, 10, 10),
-                                 dimnames = list(region = c("a", "b", "c"),
-                                     time = 1:10,
-                                     iteration = 1:10)),
-                           dimscales = c(time = "Points"))
-    expect_identical(ans.obtained, ans.expected)
-    ## (ii) shift = FALSE
     ans.obtained <- fetchResults(object = object,
                                  nameObject = "obj",
                                  filename = filename,
@@ -545,76 +522,16 @@ test_that("fetchResults works with object of class SkeletonLevelDLM - has season
                                      iteration = 1:10)),
                            dimscales = c(time = "Points"))
     expect_identical(ans.obtained, ans.expected)
-})
-
-test_that("fetchResults works with object of class SkeletonLevelDLM - no season term", {
-    fetchResults <- demest:::fetchResults
-    sweepAllMargins <- demest:::sweepAllMargins
-    metadata <- new("MetaData",
-                    nms = c("region", "time"),
-                    dimtypes = c("state", "time"),
-                    DimScales = list(new("Categories", dimvalues = c("a", "b", "c")),
-                                     new("Points", dimvalues = as.numeric(1:10))))
-    object <- new("SkeletonLevelDLM",
-                  metadata = metadata,
-                  first = 11L,
-                  last = 43L,
-                  nSeason = 1L,
-                  firstSeason = 0L,
-                  lastSeason = 0L,
-                  iAlong = 2L,
-                  indicesShow = 4:33)
-    nameObject <- "obj"
-    filename <- tempfile()
-    con <- file(filename, "wb")
-    results <- new("ResultsModelEst")
-    results <- serialize(results, connection = NULL)
-    size.results <- length(results)
-    writeBin(size.results, con)
-    writeBin(results, con)
-    writeBin(as.double(1:2000), con)
-    close(con)
-    ## (i) shift = TRUE
-    ans.obtained <- fetchResults(object = object,
-                                 nameObject = "obj",
-                                 filename = filename,
-                                 iterations = 1:10,
-                                 nIteration = 10L,
-                                 shift = TRUE,
-                                 lengthIter = 200L)
-    ans.expected <- 14:43 + rep((0:9) * 200.0, each = 30)
-    ans.expected <- Values(array(ans.expected,
-                                 dim = c(3, 10, 10),
-                                 dimnames = list(region = c("a", "b", "c"),
-                                     time = 1:10,
-                                     iteration = 1:10)),
-                           dimscales = c(time = "Points"))
-    expect_identical(ans.obtained, ans.expected)
-    ## (ii) shift = FALSE
-    ans.obtained <- fetchResults(object = object,
-                                 nameObject = "obj",
-                                 filename = filename,
-                                 iterations = 1:10,
-                                 nIteration = 10L,
-                                 shift = FALSE,
-                                 lengthIter = 200L)
-    ans.expected <- 14:43 + rep((0:9) * 200.0, each = 30)
-    ans.expected <- Values(array(ans.expected,
-                                 dim = c(3, 10, 10),
-                                 dimnames = list(region = c("a", "b", "c"),
-                                     time = 1:10,
-                                     iteration = 1:10)),
-                           dimscales = c(time = "Points"))
 })
     
-test_that("fetchResults works with object of class SkeletonTrendDLM", {
+test_that("fetchResults works with object of class SkeletonStateDLM - Trend", {
     fetchResults <- demest:::fetchResults
     metadata <- new("MetaData",
                     nms = c("region", "time"),
                     dimtypes = c("state", "time"),
                     DimScales = list(new("Categories", dimvalues = c("a", "b", "c")),
                                      new("Points", dimvalues = as.numeric(1:10))))
-    object <- new("SkeletonTrendDLM",
+    object <- new("SkeletonStateDLM",
                   metadata = metadata,
                   first = 41L,
                   last = 73L,
@@ -645,7 +562,7 @@ test_that("fetchResults works with object of class SkeletonTrendDLM", {
     expect_identical(ans.obtained, ans.expected)
 })
 
-test_that("fetchResults works with object of class SkeletonSeasonDLM", {
+test_that("fetchResults works with object of class SkeletonStateDLM - Season", {
     fetchResults <- demest:::fetchResults
     sweepAllMargins <- demest:::sweepAllMargins
     metadata <- new("MetaData",
@@ -653,12 +570,10 @@ test_that("fetchResults works with object of class SkeletonSeasonDLM", {
                     dimtypes = c("state", "time"),
                     DimScales = list(new("Categories", dimvalues = c("a", "b", "c")),
                                      new("Points", dimvalues = as.numeric(1:10))))
-    object <- new("SkeletonSeasonDLM",
+    object <- new("SkeletonStateDLM",
                   metadata = metadata,
                   first = 11L,
                   last = 76L,
-                  nSeason = new("Length", 2L),
-                  iAlong = 2L,
                   indicesShow = c(seq.int(from = 7L, by = 2L, to = 65L)))
     nameObject <- "obj"
     filename <- tempfile()
@@ -670,7 +585,6 @@ test_that("fetchResults works with object of class SkeletonSeasonDLM", {
     writeBin(results, con)
     writeBin(as.double(1:1000), con)
     close(con)
-    ## (i) shift = FALSE
     ans.obtained <- fetchResults(object = object,
                                  nameObject = "obj",
                                  filename = filename,
@@ -680,23 +594,6 @@ test_that("fetchResults works with object of class SkeletonSeasonDLM", {
                                  lengthIter = 100L)
     ans.expected <- seq(from = 17L, by = 2L, to = 75L) + rep((0:9) * 100.0, each = 30)
     norm.fac <- seq(from = 57.5, by = 2, to = 115.5) + rep(0:9, each = 30) * 200
-    ans.expected <- Values(array(ans.expected,
-                                 dim = c(3, 10, 10),
-                                 dimnames = list(region = c("a", "b", "c"),
-                                     time = 1:10,
-                                     iteration = 1:10)),
-                           dimscales = c(time = "Points"))
-    expect_identical(ans.obtained, ans.expected)
-    ## (ii) shift = TRUE
-    ans.obtained <- fetchResults(object = object,
-                                 nameObject = "obj",
-                                 filename = filename,
-                                 iterations = 1:10,
-                                 nIteration = 10L,
-                                 shift = TRUE,
-                                 lengthIter = 100L)
-    ans.expected <- seq(from = 17L, by = 2L, to = 75L) + rep((0:9) * 100.0, each = 30)
-    ans.expected <- rep(-0.5, times = length(ans.expected))
     ans.expected <- Values(array(ans.expected,
                                  dim = c(3, 10, 10),
                                  dimnames = list(region = c("a", "b", "c"),
@@ -1487,22 +1384,3 @@ test_that("SkeletonBetaTerm method for needToCenter works", {
     object <- new("SkeletonBetaTerm")
     expect_true(needToCenter(object))
 })
-
-test_that("SkeletonLevelDLM method for needToCenter works", {
-    needToCenter <- demest:::needToCenter
-    object <- new("SkeletonLevelDLM")
-    expect_true(needToCenter(object))
-})
-
-test_that("SkeletonTrendDLM method for needToCenter works", {
-    needToCenter <- demest:::needToCenter
-    object <- new("SkeletonTrendDLM")
-    expect_false(needToCenter(object))
-})
-
-test_that("SkeletonSeasonDLM method for needToCenter works", {
-    needToCenter <- demest:::needToCenter
-    object <- new("SkeletonSeasonDLM")
-    expect_true(needToCenter(object))
-})
-

@@ -331,85 +331,11 @@ setClass("SkeletonCovariates",
          })
 
 ## HAS_TESTS
+## HAS_FETCH
 setClass("SkeletonStateDLM",
          slots = c(metadata = "MetaData"),
-         contains = c("VIRTUAL",
-             "SkeletonMany",
-             "SkeletonIndicesShow"),
-         validity = function(object) {
-             metadata <- object@metadata
-             indicesShow <- object@indicesShow
-             ## dim(metadata) consistent with 'indicesShow'
-             if (!isTRUE(all.equal(prod(dim(metadata)),
-                                   length(indicesShow))))
-                 return(gettextf("'%s' and '%s' inconsistent",
-                                 "metadata", "indicesShow"))
-             TRUE
-         })
-
-## HAS_TESTS
-## HAS_FETCH
-setClass("SkeletonTrendDLM",
-         contains = "SkeletonStateDLM")
-
-## HAS_TESTS
-## HAS_FETCH
-setClass("SkeletonLevelDLM",
-         slots = c(nSeason = "integer",
-             firstSeason = "integer",
-             lastSeason = "integer"),
-         contains = c("SkeletonStateDLM",
-             "IAlongMixin"),
-         validity = function(object) {
-             firstSeason <- object@firstSeason
-             lastSeason <- object@lastSeason
-             iAlong <- object@iAlong
-             nSeason <- object@nSeason
-             metadata <- object@metadata
-             if (identical(nSeason, 1L)) {
-                 ## if nSeason is 1L, firstSeason and lastSeason are both 0L...
-                 for (name in c("firstSeason", "lastSeason")) {
-                     value <- slot(object, name)
-                     if (!identical(value, 0L))
-                         return(gettextf("'%s' equals %d but '%s' does not equal %d",
-                                         "nSeason", 1L, name, 0L))
-                 }
-             }
-             else {
-                 ## ... otherwise 'firstSeason', 'lastSeason', 'iAlong', 'metadata', 'nSeason' consistent
-                 diff.obtained <- lastSeason - firstSeason
-                 dim <- dim(metadata)
-                 dim[iAlong] <- dim[iAlong] + 1L
-                 diff.expected <- as.integer(prod(dim) * nSeason) - 1L
-                 if (!identical(diff.obtained, diff.expected))
-                     return(gettextf("'%s', '%s', '%s', '%s', and '%s' inconsistent",
-                                     "firstSeason", "lastSeason", "iAlong", "metadata", "nSeason"))
-             }
-             TRUE
-         })
-
-## HAS_TESTS
-## HAS_FETCH
-setClass("SkeletonSeasonDLM",
-         slots = c(nSeason = "integer"),
-         contains = c("SkeletonStateDLM",
-             "IAlongMixin"),
-         validity = function(object) {
-             first <- object@first
-             last <- object@last
-             iAlong <- object@iAlong
-             nSeason <- object@nSeason
-             metadata <- object@metadata
-             ## 'first', 'last', 'iAlong', 'metadata', 'nSeason' consistent
-             diff.obtained <- last - first
-             dim <- dim(metadata)
-             dim[iAlong] <- dim[iAlong] + 1L
-             diff.expected <- as.integer(prod(dim) * nSeason) - 1L
-             if (!identical(diff.obtained, diff.expected))
-                 return(gettextf("'%s', '%s', '%s', '%s', and '%s' inconsistent",
-                                 "first", "last", "iAlong", "metadata", "nSeason"))
-             TRUE
-         })
+         contains = c("SkeletonMany",
+                      "SkeletonIndicesShow"))
 
 ## HAS_TESTS
 ## HAS_FETCH

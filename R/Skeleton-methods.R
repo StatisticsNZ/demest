@@ -264,7 +264,7 @@ setMethod("fetchResults",
 
 ## HAS_TESTS
 setMethod("fetchResults",
-          signature(object = "SkeletonTrendDLM"),
+          signature(object = "SkeletonStateDLM"),
           function(object, nameObject, filename, iterations,
                    nIteration, lengthIter, shift = TRUE,
                    impute = FALSE) {
@@ -285,98 +285,6 @@ setMethod("fetchResults",
               .Data <- .Data[indices, ]
               .Data <- array(.Data, dim = dim(metadata), dimnames = dimnames(metadata))
               methods::new("Values", .Data = .Data, metadata = metadata)
-          })
-
-## HAS_TESTS
-setMethod("fetchResults",
-          signature(object = "SkeletonLevelDLM"),
-          function(object, nameObject, filename, iterations,
-                   nIteration, lengthIter, shift = TRUE,
-                   impute = FALSE) {
-              first <- object@first
-              last <- object@last
-              metadata <- object@metadata
-              indices <- object@indicesShow
-              n.season <- object@nSeason
-              has.season <- n.season > 1L
-              if (has.season) {
-                  first.season <- object@firstSeason
-                  last.season <- object@lastSeason
-                  i.along <- object@iAlong
-              }
-              if (is.null(iterations))
-                  iterations <- seq_len(nIteration)
-              n.iter <- length(iterations)
-              metadata.iter <- dembase::addIterationsToMetadata(object = metadata,
-                                                                iterations = iterations)
-              .Data <- getDataFromFile(filename = filename,
-                                       first = first,
-                                       last = last,
-                                       lengthIter = lengthIter,
-                                       iterations = iterations)
-              .Data <- matrix(.Data, ncol = n.iter)
-              .Data <- .Data[indices, ]
-              .Data <- array(.Data,
-                             dim = dim(metadata.iter),
-                             dimnames = dimnames(metadata.iter))
-              ans <- methods::new("Values",
-                                  .Data = .Data,
-                                  metadata = metadata.iter)
-              if (shift && has.season) {
-                  .Data.season <- getDataFromFile(filename = filename,
-                                                  first = first.season,
-                                                  last = last.season,
-                                                  lengthIter = lengthIter,
-                                                  iterations = iterations)
-                  norm.fac <- seasonalNormalizingFactor(season = .Data.season,
-                                                        nSeason = n.season,
-                                                        iAlong = i.along,
-                                                        nIteration = n.iter,
-                                                        metadata = metadata)
-                  ans <- ans + norm.fac
-              }
-              ans
-          })
-
-## HAS_TESTS
-setMethod("fetchResults",
-          signature(object = "SkeletonSeasonDLM"),
-          function(object, nameObject, filename, iterations,
-                   nIteration, lengthIter, shift = TRUE,
-                   impute = FALSE) {
-              first <- object@first
-              last <- object@last
-              metadata <- object@metadata
-              n.season <- object@nSeason
-              i.along <- object@iAlong
-              indices <- object@indicesShow
-              if (is.null(iterations))
-                  iterations <- seq_len(nIteration)
-              n.iter <- length(iterations)
-              metadata.iter <- dembase::addIterationsToMetadata(object = metadata,
-                                                                iterations = iterations)
-              .Data.all <- getDataFromFile(filename = filename,
-                                           first = first,
-                                           last = last,
-                                           lengthIter = lengthIter,
-                                           iterations = iterations)
-              .Data.all <- matrix(.Data.all, ncol = n.iter)
-              .Data.first <- .Data.all[indices, ]
-              .Data.first <- array(.Data.first,
-                                   dim = dim(metadata.iter),
-                                   dimnames = dimnames(metadata.iter))
-              ans <- methods::new("Values",
-                                  .Data = .Data.first,
-                                  metadata = metadata.iter)
-              if (shift) {
-                  norm.fac <- seasonalNormalizingFactor(season = .Data.all,
-                                                        nSeason = n.season,
-                                                        iAlong = i.along,
-                                                        nIteration = n.iter,
-                                                        metadata = metadata)
-                  ans <- ans - norm.fac
-              }
-              ans
           })
 
 ## HAS_TESTS
@@ -891,19 +799,3 @@ setMethod("needToCenter",
 setMethod("needToCenter",
           signature(object = "SkeletonBetaTerm"),
           function(object) TRUE)
-
-## HAS_TESTS
-setMethod("needToCenter",
-          signature(object = "SkeletonLevelDLM"),
-          function(object) TRUE)
-
-## HAS_TESTS
-setMethod("needToCenter",
-          signature(object = "SkeletonTrendDLM"),
-          function(object) TRUE)
-
-## HAS_TESTS
-setMethod("needToCenter",
-          signature(object = "SkeletonSeasonDLM"),
-          function(object) TRUE)
-

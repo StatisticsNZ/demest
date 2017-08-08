@@ -6636,32 +6636,9 @@ changeInPos <- function(object) {
         0L
 }
 
-## ## HAS_TESTS
-## indicesShow <- function(iterator, nSeason = NULL) {
-##     if (!methods::is(iterator, "AlongIterator"))
-##         stop(gettextf("'%s' has class \"%s\"",
-##                       "iterator", class(iterator)))
-##     n.within <- iterator@nWithin
-##     n.between <- iterator@nBetween
-##     n.indices <- length(iterator@indices)
-##     n <- n.within * n.between
-##     ans <- vector(mode = "list", length = n)
-##     iterator <- resetA(iterator)
-##     for (i in seq_len(n)) {
-##         indices <- iterator@indices
-##         indices <- indices[-1]
-##         if (!is.null(nSeason))
-##             indices <- (indices - 1L) * nSeason + 1L
-##         ans[[i]] <- indices
-##         iterator <- advanceA(iterator, useC = TRUE)
-##     }
-##     ans <- unlist(ans)
-##     ans <- sort(ans)
-##     ans
-## }
-
-
 ## HAS_TESTS
+## 'dim' includes first element of 'along' dimension,
+## but does not include 'season' dimension
 indicesShow <- function(iterator, nSeason = NULL, dim, iAlong) {
     if (!methods::is(iterator, "AlongIterator"))
         stop(gettextf("'%s' has class \"%s\"",
@@ -6684,11 +6661,22 @@ indicesShow <- function(iterator, nSeason = NULL, dim, iAlong) {
     ans <- unlist(ans)
     ans <- sort(ans)
     if (n.dim > 1L) {
-        ans <- array(ans, dim = dim)
-        for (i in seq_len(n.dim)) {
-            if (i != i.along) {
-                not.first.element <- slice.index(ans, MARGIN = i) != 1L
-                ans <- ans & not.first.element
+        if (is.null(nSeason)) {
+            ind <- array(seq_len(prod(dim)), dim = dim)
+            for (i in seq_len(n.dim)) {
+                if (i != iAlong) {
+                    exclude <- ind[slice.index(ind, MARGIN = i) == 1L]
+                    ans <- setdiff(ans, exclude)
+                }
+            }
+        }
+        else {
+            ind <- array(seq_len(prod(c(nSeason, dim))), dim = c(nSeason, dim))
+            for (i in seq_len(n.dim)) {
+                if (i != iAlong) {
+                    exclude <- ind[slice.index(ind, MARGIN = i + 1L) == 1L]
+                    ans <- setdiff(ans, exclude)
+                }
             }
         }
     }
@@ -6804,70 +6792,27 @@ makeOutputPriorScale <- function(pos) {
 }
 
 ## HAS_TESTS
-makeOutputLevelDLM <- function(iterator, metadata, nSeason, iAlong, pos, firstSeason) {
+makeOutputStateDLM <- function(iterator, metadata, nSeason, iAlong, pos) {
     indices <- iterator@indices
     n.within <- iterator@nWithin
     n.between <- iterator@nBetween
-    length <- length(indices) * n.within * n.between
+    if (is.null(nSeason))
+        length <- length(indices) * n.within * n.between
+    else
+        length <- length(indices) * n.within * n.between * nSeason
     first <- pos
     last <- pos + length - 1L
-    indices.show <- indicesShow(iterator,
-                                nSeason = NULL)
-    has.season.effect <- nSeason > 1L
-    if (has.season.effect) {
-        length.season <- length * nSeason
-        last.season <- firstSeason + length.season - 1L
-    }
-    else {
-        if (!identical(firstSeason, 0L))
-            stop(gettextf("'%s' equals %d but '%s' does not equal %d",
-                          "nSeason", 1L, "firstSeason", 0L))
-        last.season <- 0L
-    }
-    methods::new("SkeletonLevelDLM",
-                 first = first,
-                 last = last,
-                 firstSeason = firstSeason,
-                 lastSeason = last.season,
-                 indicesShow = indices.show,
-                 iAlong = iAlong,
-                 nSeason = nSeason,
-                 metadata = metadata)
-}
-
-## HAS_TESTS
-makeOutputTrendDLM <- function(iterator, metadata, pos) {
-    indices <- iterator@indices
-    n.within <- iterator@nWithin
-    n.between <- iterator@nBetween
-    length <- length(indices) * n.within * n.between
-    first <- pos
-    last <- pos + length - 1L
-    indices.show <- indicesShow(iterator,
-                                nSeason = NULL)
-    methods::new("SkeletonTrendDLM",
+    dim <- dim(metadata)
+    indices.show <- indicesShow(iterator = iterator,
+                                nSeason = nSeason,
+                                dim = dim,
+                                iAlong = iAlong)
+    metadata <- makeMetadataStateDLM(metadata = metadata,
+                                     iAlong = iAlong)
+    methods::new("SkeletonStateDLM",
                  first = first,
                  last = last,
                  indicesShow = indices.show,
-                 metadata = metadata)
-}
-
-## HAS_TESTS
-makeOutputSeasonDLM <- function(iterator, metadata, nSeason, iAlong, pos) {
-    indices <- iterator@indices
-    n.within <- iterator@nWithin
-    n.between <- iterator@nBetween
-    length <- length(indices) * n.within * n.between * nSeason
-    first <- pos
-    last <- pos + length - 1L
-    indices.show <- indicesShow(iterator,
-                                nSeason = nSeason)
-    methods::new("SkeletonSeasonDLM",
-                 first = first,
-                 last = last,
-                 indicesShow = indices.show,
-                 iAlong = iAlong,
-                 nSeason = nSeason,
                  metadata = metadata)
 }
 
