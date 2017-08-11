@@ -1903,9 +1903,7 @@ makeCNoTrend <- function(K, C0 = NULL, sY) {
                      1.0,
                      simplify = FALSE)
     if (is.null(C0)) {
-        A0 <- makeAIntercept(A = NA, sY = sY)
-        A0 <- as.double(A0)
-        C0 <- A0^2
+        C0 <- 0
     }
     ans[[1L]] <- C0
     methods::new("FFBSList", ans)
@@ -1927,10 +1925,7 @@ makeCSeason <- function(K, nSeason, ASeason, C0 = NULL) {
 ## NO_TESTS
 makeCWithTrend <- function(K, C0 = NULL, sY, ADelta0, hasLevel = TRUE) {
     if (is.null(C0)) {
-        if (hasLevel)
-            AAlpha <- makeAIntercept(A = NA, sY = sY)
-        else
-            AAlpha <- 0
+        AAlpha <- 0
         ADelta <- ADelta0@.Data
         C0 <- c(AAlpha^2, ADelta^2)
         C0 <- diag(C0,
@@ -6803,6 +6798,7 @@ makeOutputStateDLM <- function(iterator, metadata, nSeason, iAlong, pos) {
     first <- pos
     last <- pos + length - 1L
     dim <- dim(metadata)
+    dim[iAlong] <- dim[iAlong] + 1L
     indices.show <- indicesShow(iterator = iterator,
                                 nSeason = nSeason,
                                 dim = dim,
@@ -7091,11 +7087,11 @@ printDLMEqns <- function(object, name, order, hasTrend, hasSeason, hasCovariates
         name <- "parameter"
     if (is.main) {
         name <- sprintf("%13s", name, sep = "")
-        cat(name, "[j] ~ level[j] + ", sep = "")
+        cat(name, "[j] = level[j] + ", sep = "")
     }
     else {
         name <- sprintf("%11s", name, sep = "")
-        cat(name, "[k,l] ~ level[k,l] + ", sep = "")
+        cat(name, "[k,l] = level[k,l] + ", sep = "")
     }                  
     if (hasSeason) {
         if (is.main)

@@ -1470,7 +1470,7 @@ test_that("addAgNormal works", {
                                 aggregate = aggregate,
                                 defaultWeights = exposure)
     transform <- makeCollapseTransformExtra(makeTransform(x = y, y = value, subset = T))
-    value.ag <- collapse(x@theta * exposure, transform = transform) / exposure
+    value.ag <- dembase::collapse(x@theta * exposure, transform = transform) / exposure
     ans.expected <- list(value = new("ParameterVector", as.double(value.ag)),
                          mean = new("ParameterVector", c(0.1, 0.2, 0.3)),
                          scale = new("Scale", 0.1),
@@ -1534,7 +1534,7 @@ test_that("addAgPoisson works", {
                                 aggregate = aggregate,
                                 defaultWeights = exposure)
     transform <- makeCollapseTransformExtra(makeTransform(x = y, y = value, subset = T))
-    value.ag <- collapse(x@theta * exposure, transform = transform) / exposure
+    value.ag <- dembase::collapse(x@theta * exposure, transform = transform) / exposure
     ans.expected <- list(value = new("ParameterVector", as.double(value.ag)),
                          mean = new("ParameterVector", c(0.1, 0.2, 0.3)),
                          scale = new("Scale", 0.1),
@@ -1544,7 +1544,7 @@ test_that("addAgPoisson works", {
                              thetaObj = y / y,
                              transform = transform,
                              values = value),
-                         exposure = new("ScaleVec", as.numeric(collapse(exposure, transform = transform))),
+                         exposure = new("ScaleVec", as.numeric(dembase::collapse(exposure, transform = transform))),
                          transform = transform,
                          metadata = value@metadata,
                          mu = rep(0, 20),
@@ -2639,13 +2639,13 @@ test_that("initialObservation works", {
     set.seed(100)
     ans.expected <- list(initialModel(observation[[1]],
                                       y = datasets[[1]],
-                                      exposure = collapse(y, transforms[[1]])),
+                                      exposure = dembase::collapse(y, transforms[[1]])),
                          initialModel(observation[[2]],
                                       y = datasets[[2]],
-                                      exposure = collapse(y, transforms[[2]])),
+                                      exposure = dembase::collapse(y, transforms[[2]])),
                          initialModel(observation[[3]],
                                       y = datasets[[3]],
-                                      exposure = collapse(y, transforms[[3]])))
+                                      exposure = dembase::collapse(y, transforms[[3]])))
     if (test.identity)
         expect_identical(ans.obtained, ans.expected)
     else
@@ -6422,7 +6422,8 @@ test_that("initialModelPredictHelper works", {
                                  new("Categories", dimvalues = as.character(1:4)))),
                          cellInLik = rep(FALSE, 16),
                          betas = list(mod@betas[[1]], rep(0, 4), mod@betas[[3]]),
-                         priorsBetas = list(new("TimeInvariant", J = new("Length", 1L)),
+                         priorsBetas = list(new("TimeInvariant", J = new("Length", 1L),
+                                                isSaturated = new("LogicalFlag", FALSE)),
                              initialPriorPredict(prior = mod@priorsBetas[[2]],
                                                  data = NULL,
                                                  metadata = new("MetaData",
@@ -6433,7 +6434,8 @@ test_that("initialModelPredictHelper works", {
                                                              as.numeric(2005:2009)))),
                                                  name = "time",
                                                  along = 1L),
-                             new("TimeInvariant", J = new("Length", 4L))),
+                             new("TimeInvariant", J = new("Length", 4L),
+                             isSaturated = new("LogicalFlag", FALSE))),
                          iteratorBetas = BetaIterator(dim = c(4L, 4L),
                              margins = c(0L, 1L, 2L)),
                          dims = list(0L, 4L, 4L),
@@ -8419,7 +8421,7 @@ test_that("R version of diffLogLik works", {
                                                              subset = TRUE))
         observation[[i]] <- initialModel(Model(y ~ Poisson(mean ~ 1)),
                                          y = datasets[[i]],
-                                         exposure = collapse(y, transforms[[i]]))
+                                         exposure = dembase::collapse(y, transforms[[i]]))
     }
     ## indicesY has length 1 and cell from y has corresponding cell in datasets
     indicesY <- 1L
@@ -8612,7 +8614,7 @@ test_that("R and C versions of diffLogLik give same answer, part 1", {
                                                              subset = TRUE))
         observation[[i]] <- initialModel(Model(y ~ Poisson(mean ~ 1)),
                                          y = datasets[[i]],
-                                         exposure = collapse(y, transforms[[i]]))
+                                         exposure = dembase::collapse(y, transforms[[i]]))
     }
     ## indicesY has length 1
     for (i in seq_along(y)) {
@@ -8720,7 +8722,7 @@ test_that("R and C versions of diffLogLik give same answer, part 2", {
                                                              subset = TRUE))
         observation[[i]] <- initialModel(Model(y ~ Poisson(mean ~ 1)),
                                          y = datasets[[i]],
-                                         exposure = collapse(y, transforms[[i]]))
+                                         exposure = dembase::collapse(y, transforms[[i]]))
     }
     ## indicesY has length 1 and proposal has 0 likelihood
     indicesY <- 3L
@@ -10371,6 +10373,28 @@ test_that("makeOutputStateDLM works with Level", {
                         first = 3L,
                         last = 13L,
                         indicesShow = 2:11)
+    expect_identical(ans.obtained, ans.expected)
+    ## two dimensions
+    metadata <- new("MetaData",
+                    nms = c("sex", "time"),
+                    dimtypes = c("sex", "time"),
+                    DimScales = list(new("Sexes", dimvalues = c("Female", "Male")),
+                                     new("Points", dimvalues = 1:10)))
+    iterator <- AlongIterator(dim = c(2L, 11L), iAlong = 2L)
+    ans.obtained <- makeOutputStateDLM(iterator = iterator,
+                                       metadata = metadata,
+                                       nSeason = NULL,
+                                       iAlong = 2L,
+                                       pos = 3L)
+    ans.expected <- new("SkeletonStateDLM",
+                        metadata = new("MetaData",
+                                       nms = c("sex", "time"),
+                                       dimtypes = c("sex", "time"),
+                                       DimScales = list(new("Sexes", dimvalues = "Male"),
+                                                        new("Points", dimvalues = 1:10))),
+                        first = 3L,
+                        last = 24L,
+                        indicesShow = seq(from = 4L, to = 22L, by = 2L))
     expect_identical(ans.obtained, ans.expected)
 })
 

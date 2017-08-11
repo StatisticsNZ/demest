@@ -799,3 +799,4 @@ setMethod("needToCenter",
 setMethod("needToCenter",
           signature(object = "SkeletonBetaTerm"),
           function(object) TRUE)
+

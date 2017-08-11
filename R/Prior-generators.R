@@ -2776,6 +2776,7 @@ setMethod("initialPriorPredict",
                   methods::new("KnownCertain",
                                alphaKnown = alphaKnown,
                                alphaKnownAll = prior@alphaKnownAll,
+                               isSaturated = prior@isSaturated,
                                J = J,
                                metadataAll = prior@metadataAll)
               }

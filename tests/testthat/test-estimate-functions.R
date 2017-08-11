@@ -59,16 +59,69 @@ age.year <- fetchBoth(filenameEst = filename, filenamePred = filename.pred,
 dplot(~ year | age, data = age.year)
 
 year.level <- fetchBoth(filenameEst = filename, filenamePred = filename.pred,
-                   where = c("model", "hy", "year", "level"))
-dplot(~ year, data = year.level)
+                        where = c("model", "hy", "year", "level"))
+dplot(~ year, data = year.level, midpoints = "year")
+
+year.trend <- fetchBoth(filenameEst = filename, filenamePred = filename.pred,
+                        where = c("model", "hy", "year", "trend"))
+dplot(~ year, data = year.trend)
 
 age.year.level <- fetchBoth(filenameEst = filename, filenamePred = filename.pred,
                    where = c("model", "hy", "age:year", "level"))
-dplot(~ year | age, data = age.year.level)
+dplot(~ year | age, data = age.year.level, midpoints = "year")
 
 age.year.trend <- fetchBoth(filenameEst = filename, filenamePred = filename.pred,
+                            where = c("model", "hy", "age:year", "trend"))
+dplot(~ year | age, data = age.year.trend)
+
+
+age.year.level <- fetch(filename,
+                   where = c("model", "hy", "age:year", "level"))
+dplot(~ year | age, data = age.year.level)
+
+
+age.year.trend <- fetch(filename,
                    where = c("model", "hy", "age:year", "trend"))
 dplot(~ year | age, data = age.year.trend)
+
+plot(fetchMCMC(filename, c("mod", "hy", "age", "level")), sm = F, ask = T)
+
+plot(fetchMCMC(filename, c("mod", "hy", "year", "scaleLevel")), sm = F, ask = T)
+
+plot(fetchMCMC(filename, c("mod", "hy", "age:year", "scaleErr")), sm = F, ask = T)
+
+plot(fetchMCMC(filename, c("mod", "hy", "year", "scaleTrend")), sm = F, ask = T)
+
+
+
+
+model <- Model(y ~ Poisson(mean ~ age * year),
+               age ~ DLM(level = Level(scale = HalfT(df = 30, mult = 0.25)),
+                         trend = NULL,
+                         damp = NULL,
+                         error = Error(scale = HalfT(df = 30, mult = 0.25))),
+               year ~ DLM(damp = NULL),
+               age:year ~ DLM(level = Level(scale = HalfT(scale = 0.2, df = 30)),
+                              trend = NULL,
+                              damp = NULL,
+                              error = Error(scale = HalfT(scale = 0.2))))
+filename <- tempfile()
+estimateModel(model,
+              y = births,
+              exposure = expose,
+              filename = filename,
+              nBurnin = 500,
+              nSim = 500,
+              nThin = 5,
+              nChain = 4)
+fetchSummary(filename)
+filename.pred <- tempfile()
+predictModel(filenameEst = filename, filenamePred = filename.pred, n = 25)
+rates <- fetchBoth(filenameEst = filename, filenamePred = filename.pred,
+                   where = c("model", "like", "rate"))
+dplot(~ year | age, data = rates, midpoints = "year")
+
+
 
 
 ## ## Poisson fixed, no exposure

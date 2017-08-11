@@ -372,7 +372,7 @@ test_that("updateAlphaMix gives valid answer", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL,
+                          sY = NULL, isSaturated = FALSE,
                           multScale = 1)
     beta.tilde <- rnorm(200)
     prior <- updateVectorsMixAndProdVectorsMix(prior = prior,
@@ -404,7 +404,7 @@ test_that("R and C versions of updateAlphaMix give same answer", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL,
+                          sY = NULL, isSaturated = FALSE,
                           multScale = 1)
     beta.tilde <- rnorm(200)
     prior <- updateVectorsMixAndProdVectorsMix(prior = prior,
@@ -463,7 +463,7 @@ if (test.extended) {
         for (sim in 1:1000) {
             beta <- rnorm(n = 40, mean = rep(1:10, each = 4))
             betaTilde <- rnorm(n = 40, mean = rep(1:10, each = 4))
-            prior <- initialPrior(spec, beta = beta, metadata = metadata, sY = NULL)
+            prior <- initialPrior(spec, beta = beta, metadata = metadata, sY = NULL, isSaturated = FALSE)
             set.seed(1 + sim)
             ans.obtained <- updateAlphaDeltaDLMWithTrend(prior = prior,
                                                          betaTilde = betaTilde,
@@ -511,7 +511,7 @@ test_that("R and C versions of updateAlphaDeltaDLMWithTrend give same answer wit
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL,
+                              sY = NULL, isSaturated = FALSE,
                               multScale = 1)
         set.seed(seed)
         ans.R <- updateAlphaDeltaDLMWithTrend(prior = prior,
@@ -537,7 +537,7 @@ test_that("R and C versions of updateAlphaDeltaDLMWithTrend give same answer wit
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL,
+                              sY = NULL, isSaturated = FALSE,
                               multScale = 1)
         set.seed(seed)
         ans.R <- updateAlphaDeltaDLMWithTrend(prior = prior,
@@ -566,7 +566,7 @@ test_that("R and C versions of updateAlphaDeltaDLMWithTrend give same answer wit
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL,
+                              sY = NULL, isSaturated = FALSE,
                               multScale = 1)
         set.seed(seed)
         ans.R <- updateAlphaDeltaDLMWithTrend(prior = prior,
@@ -686,7 +686,7 @@ test_that("R and C versions of updateAlphaDeltaDLMWithTrend give same answer wit
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL,
+                              sY = NULL, isSaturated = FALSE,
                               multScale = 1)
         set.seed(seed)
         ans.R <- updateAlphaDeltaDLMWithTrend(prior = prior,
@@ -712,7 +712,7 @@ test_that("R and C versions of updateAlphaDeltaDLMWithTrend give same answer wit
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL,
+                              sY = NULL, isSaturated = FALSE,
                               multScale = 1)
         set.seed(seed)
         ans.R <- updateAlphaDeltaDLMWithTrend(prior = prior,
@@ -741,7 +741,7 @@ test_that("R and C versions of updateAlphaDeltaDLMWithTrend give same answer wit
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL,
+                              sY = NULL, isSaturated = FALSE,
                               multScale = 1)
         set.seed(seed)
         ans.R <- updateAlphaDeltaDLMWithTrend(prior = prior,
@@ -797,7 +797,7 @@ test_that("updateAlphaDLMNoTrend gives valid answer", {
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL,
+                              sY = NULL, isSaturated = FALSE,
                               multScale = 1)
         set.seed(seed)
         ans.obtained <- updateAlphaDLMNoTrend(prior = prior,
@@ -831,7 +831,7 @@ test_that("updateAlphaDLMNoTrend gives valid answer", {
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL,
+                              sY = NULL, isSaturated = FALSE,
                               multScale = 1)
         set.seed(seed)
         ans.obtained <- updateAlphaDLMNoTrend(prior = prior,
@@ -864,7 +864,7 @@ test_that("updateAlphaDLMNoTrend gives valid answer", {
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL,
+                              sY = NULL, isSaturated = FALSE,
                               multScale = 1)
         set.seed(seed)
         ans.obtained <- updateAlphaDLMNoTrend(prior = prior,
@@ -909,7 +909,7 @@ test_that("R and C versions of updateAlphaDLMNoTrend give same answer", {
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL,
+                              sY = NULL, isSaturated = FALSE,
                               multScale = 1)
         set.seed(seed)
         ans.R <- updateAlphaDLMNoTrend(prior = prior,
@@ -934,7 +934,7 @@ test_that("R and C versions of updateAlphaDLMNoTrend give same answer", {
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL,
+                              sY = NULL, isSaturated = FALSE,
                               multScale = 1)
         set.seed(seed)
         ans.R <- updateAlphaDLMNoTrend(prior = prior,
@@ -962,7 +962,7 @@ test_that("R and C versions of updateAlphaDLMNoTrend give same answer", {
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL,
+                              sY = NULL, isSaturated = FALSE,
                               multScale = 1)
         set.seed(seed)
         ans.R <- updateAlphaDLMNoTrend(prior = prior,
@@ -992,7 +992,9 @@ test_that("updateBeta gives valid answer", {
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, multScale = 1)
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              multScale = 1)
         vbar <- rnorm(10)
         n <- c(4L, rep(5L, 9))
         sigma <- runif(1)
@@ -1027,7 +1029,9 @@ test_that("R and C versions of updateBeta give same answer", {
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, multScale = 1)
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              multScale = 1)
         vbar <- rnorm(10)
         n <- c(rep(5L, 8), 3L, 4L)
         sigma <- runif(1)
@@ -1054,7 +1058,7 @@ test_that("updateBetasAndPriorsBetas works", {
     initialModel <- demest:::initialModel
     updateBetasAndPriorsBetas <- demest:::updateBetasAndPriorsBetas
     updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
-    makeVBar <- demest:::makeVBar
+    makeVBarAndN <- demest:::makeVBarAndN
     exposure <- Counts(array(rpois(n = 40, lambda = 20),
                              dim = c(5, 2, 4),
                              dimnames = list(age = c("0-4", "5-9", "10-14", "15-19", "20+"),
@@ -1070,7 +1074,7 @@ test_that("updateBetasAndPriorsBetas works", {
     set.seed(1)
     ans.expected <- model
     for (i in 1:5) {
-        vbar <- makeVBar(ans.expected, iBeta = i, g = log)
+        vbar <- makeVBarAndN(ans.expected, iBeta = i, g = log)[[1]]
         l <- updateBetaAndPriorBeta(prior = ans.expected@priorsBetas[[i]],
                                     vbar = vbar,
                                     n = rep(length(y) %/% length(vbar), length(vbar)),
@@ -1149,7 +1153,7 @@ test_that("updateComponentWeightMix gives valid answer", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL,
+                          sY = NULL, isSaturated = FALSE,
                           multScale = 1)
     set.seed(2)
     ans.obtained <- updateComponentWeightMix(prior)
@@ -1205,7 +1209,7 @@ test_that("R and C versions of updateComponentWeightMix give same answer", {
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL,
+                              sY = NULL, isSaturated = FALSE,
                               multScale = 1)
         set.seed(seed+1)
         ans.R <- updateComponentWeightMix(prior, useC = FALSE)
@@ -1240,7 +1244,9 @@ test_that("updateEta gives valid answer", {
         prior0 <- initialPrior(spec,
                                beta = beta,
                                metadata = metadata,
-                               sY = NULL, multScale = 1)
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              multScale = 1)
         expect_is(prior0, "ExchNormCov")
         beta <- rnorm(10)
         set.seed(seed)
@@ -1284,7 +1290,9 @@ test_that("R and C versions of updateEta give same answer", {
         prior0 <- initialPrior(spec,
                                beta = beta,
                                metadata = metadata,
-                               sY = NULL, multScale = 1)
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              multScale = 1)
         expect_is(prior0, "ExchNormCov")
         beta <- rnorm(10)
         set.seed(seed)
@@ -1310,7 +1318,9 @@ test_that("updateGWithTrend works", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL, multScale = 1)
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              multScale = 1)
     expect_is(prior, "DLMWithTrendNormZeroNoSeason")
     prior@phi <- runif(1, 0.8, 0.98)
     ans.obtained <- updateGWithTrend(prior)
@@ -1331,7 +1341,7 @@ test_that("R and C versions of updateGWithTrend give same answer", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL, multScale = 1)
+                          sY = NULL, isSaturated = FALSE, multScale = 1)
     expect_is(prior, "DLMWithTrendNormZeroNoSeason")
     prior@phi <- runif(1, 0.8, 0.98)
     ans.R <- updateGWithTrend(prior, useC = FALSE)
@@ -1353,7 +1363,7 @@ test_that("updateIndexClassMix gives valid answer", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL,
+                          sY = NULL, isSaturated = FALSE,
                           multScale = 1)
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -1382,7 +1392,7 @@ test_that("R and C versions of updateIndexClassMix give same answer", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL,
+                          sY = NULL, isSaturated = FALSE,
                           multScale = 1)
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -1413,7 +1423,7 @@ test_that("updateIndexClassMaxPossibleMix gives valid answer", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL,
+                          sY = NULL, isSaturated = FALSE,
                           multScale = 1)
     found <- 0L
     for (seed in seq_len(n.test)) {
@@ -1455,7 +1465,7 @@ test_that("R and C versions of updateIndexClassMaxPossibleMix give same answer",
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL,
+                          sY = NULL, isSaturated = FALSE,
                           multScale = 1)
     found <- 0L
     nochanges <- 0L
@@ -1492,7 +1502,7 @@ test_that("updateIndexClassMaxUsedMix gives valid answer", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL,
+                          sY = NULL, isSaturated = FALSE,
                           multScale = 1)
     max.old <- prior@indexClassMaxUsedMix@.Data ## 10
     max.new <- max.old - 2L
@@ -1515,7 +1525,7 @@ test_that("R and C versions of updateIndexClassMaxUsedMix give same answer", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL,
+                          sY = NULL, isSaturated = FALSE,
                           multScale = 1)
     max.old <- prior@indexClassMaxUsedMix@.Data ## 10
     max.new <- max.old - 2L
@@ -1539,7 +1549,7 @@ test_that("updateLatentWeightMix gives valid answer", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL,
+                          sY = NULL, isSaturated = FALSE,
                           multScale = 1)
     set.seed(2)
     ans.obtained <- updateLatentWeightMix(prior)
@@ -1568,7 +1578,7 @@ test_that("R and C versions of updateLatentWeightMix give same answer", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL,
+                          sY = NULL, isSaturated = FALSE,
                           multScale = 1)
     set.seed(2)
     ans.R <- updateLatentWeightMix(prior, useC = FALSE)
@@ -1594,7 +1604,7 @@ test_that("updateLatentComponentWeightMix gives valid answer", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL,
+                          sY = NULL, isSaturated = FALSE,
                           multScale = 1)
     set.seed(2)
     ans.obtained <- updateLatentComponentWeightMix(prior)
@@ -1626,7 +1636,7 @@ test_that("R and C versions of updateLatentComponentWeightMix give same answer",
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL,
+                          sY = NULL, isSaturated = FALSE,
                           multScale = 1)
     set.seed(2)
     ans.R <- updateLatentComponentWeightMix(prior, useC = FALSE)
@@ -1652,7 +1662,7 @@ test_that("updateLevelComponentWeightMix gives valid answer", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL,
+                          sY = NULL, isSaturated = FALSE,
                           multScale = 1)
     prior@indexClassMaxPossibleMix@.Data <- 8L
     prior@indexClassMix[prior@indexClassMix > 8L] <- 8L
@@ -1738,7 +1748,7 @@ test_that("R and C versions of updateLevelComponentWeightMix give same answer", 
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL,
+                              sY = NULL, isSaturated = FALSE,
                               multScale = 1)
         max.val <- sample(7:10, 1)
         prior@indexClassMaxUsedMix@.Data <- max.val
@@ -1768,7 +1778,7 @@ test_that("updateMeanLevelComponentWeightMix gives valid answer", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL,
+                          sY = NULL, isSaturated = FALSE,
                           multScale = 1)
     set.seed(1)
     ans.obtained <- updateMeanLevelComponentWeightMix(prior)
@@ -1811,7 +1821,7 @@ test_that("R and C versions of updateMeanLevelComponentWeightMix give same answe
         prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL,
+                          sY = NULL, isSaturated = FALSE,
                           multScale = 1)
         set.seed(seed+1)
         ans.R <- updateMeanLevelComponentWeightMix(prior, useC = FALSE)
@@ -1841,7 +1851,7 @@ test_that("updateOmegaAlpha works", {
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL,
+                              sY = NULL, isSaturated = FALSE,
                               multScale = 1)
         expect_is(prior, "DLMWithTrendNormZeroNoSeason")
         prior <- updateAlphaDeltaDLMWithTrend(prior = prior,
@@ -1873,7 +1883,7 @@ test_that("updateOmegaAlpha works", {
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL,
+                              sY = NULL, isSaturated = FALSE,
                               multScale = 1)
         expect_is(prior, "DLMWithTrendNormZeroNoSeason")
         prior <- updateAlphaDeltaDLMWithTrend(prior = prior,
@@ -1891,7 +1901,7 @@ test_that("updateOmegaAlpha works", {
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, multScale = 1)
+                              sY = NULL, isSaturated = FALSE, multScale = 1)
         expect_is(prior, "DLMNoTrendNormZeroNoSeason")
         prior <- updateAlphaDLMNoTrend(prior = prior,
                                        betaTilde = beta)
@@ -1931,7 +1941,7 @@ test_that("R and C versions of updateOmegaAlpha give same answer", {
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL,
+                              sY = NULL, isSaturated = FALSE,
                               multScale = 1)
         prior <- updateAlphaDeltaDLMWithTrend(prior = prior,
                                               betaTilde = beta)
@@ -1953,7 +1963,7 @@ test_that("R and C versions of updateOmegaAlpha give same answer", {
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL,
+                              sY = NULL, isSaturated = FALSE,
                               multScale = 1)
         expect_is(prior, "DLMWithTrendNormZeroNoSeason")
         prior <- updateAlphaDeltaDLMWithTrend(prior = prior,
@@ -1971,7 +1981,7 @@ test_that("R and C versions of updateOmegaAlpha give same answer", {
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, multScale = 1)
+                              sY = NULL, isSaturated = FALSE, multScale = 1)
         prior <- updateAlphaDLMNoTrend(prior = prior,
                                        betaTilde = beta)
         expect_is(prior, "DLMNoTrendNormZeroNoSeason")
@@ -2002,7 +2012,7 @@ test_that("updateOmegaComponentWeightMix gives valid answer", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL,
+                          sY = NULL, isSaturated = FALSE,
                           multScale = 1)
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -2053,7 +2063,7 @@ test_that("R and C versions of updateOmegaComponentWeightMix give same answer", 
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL,
+                          sY = NULL, isSaturated = FALSE,
                           multScale = 1)
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -2082,7 +2092,7 @@ test_that("updateOmegaDelta works", {
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL,
+                              sY = NULL, isSaturated = FALSE,
                               multScale = 1)
         expect_is(prior, "DLMWithTrendNormZeroNoSeason")
         prior <- updateAlphaDeltaDLMWithTrend(prior = prior,
@@ -2121,7 +2131,7 @@ test_that("R and C versions of updateOmegaDelta give same answer", {
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL,
+                              sY = NULL, isSaturated = FALSE,
                               multScale = 1)
         expect_is(prior, "DLMWithTrendNormZeroNoSeason")
         prior <- updateAlphaDeltaDLMWithTrend(prior = prior,
@@ -2153,7 +2163,7 @@ test_that("updateOmegaLevelComponentWeightMix gives valid answer", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL,
+                          sY = NULL, isSaturated = FALSE,
                           multScale = 1)
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -2205,7 +2215,7 @@ test_that("R and C versions of updateOmegaLevelComponentWeightMix give same answ
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL,
+                          sY = NULL, isSaturated = FALSE,
                           multScale = 1)
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -2235,7 +2245,7 @@ test_that("updateOmegaSeason works", {
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL,
+                              sY = NULL, isSaturated = FALSE,
                               multScale = 1)
         expect_is(prior, "DLMWithTrendNormZeroWithSeason")
         prior <- updateAlphaDeltaDLMWithTrend(prior = prior,
@@ -2280,7 +2290,7 @@ test_that("R and C versions of updateOmegaSeason give same answer", {
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, multScale = 1)
+                              sY = NULL, isSaturated = FALSE, multScale = 1)
         expect_is(prior, "DLMWithTrendNormZeroWithSeason")
         prior <- updateAlphaDeltaDLMWithTrend(prior = prior,
                                               betaTilde = beta)
@@ -2313,7 +2323,7 @@ test_that("updateOmegaVectorsMix gives valid answer", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL,
+                          sY = NULL, isSaturated = FALSE,
                           multScale = 1)
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -2358,7 +2368,7 @@ test_that("R and C versions of updateOmegaVectorsMix give same answer", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL,
+                          sY = NULL, isSaturated = FALSE,
                           multScale = 1)
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -2391,7 +2401,7 @@ test_that("updatePhi works", {
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, multScale = 1)
+                              sY = NULL, isSaturated = FALSE, multScale = 1)
         expect_is(prior, "DLMWithTrendNormZeroNoSeason")
         prior <- updateAlphaDeltaDLMWithTrend(prior, betaTilde = beta, useC = TRUE)
         set.seed(seed)
@@ -2427,7 +2437,7 @@ test_that("updatePhi works", {
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL,
+                              sY = NULL, isSaturated = FALSE,
                               multScale = 1)
         expect_is(prior, "DLMNoTrendNormZeroNoSeason")
         prior <- updateAlphaDLMNoTrend(prior, betaTilde = beta, useC = TRUE)
@@ -2446,7 +2456,7 @@ test_that("updatePhi works", {
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL,
+                              sY = NULL, isSaturated = FALSE,
                               multScale = 1)
         expect_is(prior, "DLMNoTrendNormZeroNoSeason")
         prior <- updateAlphaDLMNoTrend(prior, betaTilde = beta, useC = TRUE)
@@ -2498,7 +2508,7 @@ test_that("R and C versions of updatePhi give same answer", {
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, multScale = 1)
+                              sY = NULL, isSaturated = FALSE, multScale = 1)
         expect_is(prior, "DLMWithTrendNormZeroNoSeason")
         prior <- updateAlphaDeltaDLMWithTrend(prior = prior,
                                               betaTilde = beta)
@@ -2522,7 +2532,7 @@ test_that("R and C versions of updatePhi give same answer", {
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, multScale = 1)
+                              sY = NULL, isSaturated = FALSE, multScale = 1)
         expect_is(prior, "DLMNoTrendNormZeroNoSeason")
         prior <- updateAlphaDLMNoTrend(prior = prior,
                                        betaTilde = beta)
@@ -2544,7 +2554,7 @@ test_that("R and C versions of updatePhi give same answer", {
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, multScale = 1)
+                              sY = NULL, isSaturated = FALSE, multScale = 1)
         expect_is(prior, "DLMNoTrendNormZeroNoSeason")
         prior <- updateAlphaDLMNoTrend(prior = prior,
                                        betaTilde = beta)
@@ -2579,7 +2589,7 @@ test_that("updatePhiMix gives valid answer", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL,
+                          sY = NULL, isSaturated = FALSE,
                           multScale = 1)
     updated <- 0L
     for (seed in seq_len(n.test)) {
@@ -2604,7 +2614,7 @@ test_that("R and C versions of updatePhiMix give same answer", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL,
+                          sY = NULL, isSaturated = FALSE,
                           multScale = 1)
     updated <- 0L
     for (seed in seq_len(n.test)) {
@@ -2668,7 +2678,7 @@ test_that("updateSeason gives valid answer", {
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL,
+                              sY = NULL, isSaturated = FALSE,
                               multScale = 1)
         set.seed(seed)
         ans.obtained <- updateSeason(prior = prior,
@@ -2702,7 +2712,7 @@ test_that("updateSeason gives valid answer", {
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL,
+                              sY = NULL, isSaturated = FALSE,
                               multScale = 1)
         set.seed(seed)
         ans.obtained <- updateSeason(prior = prior,
@@ -2734,7 +2744,7 @@ test_that("updateSeason gives valid answer", {
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL,
+                              sY = NULL, isSaturated = FALSE,
                               multScale = 1)
         set.seed(seed)
         ans.obtained <- updateSeason(prior = prior,
@@ -2779,7 +2789,7 @@ test_that("R and C versions of updateSeason give same answer", {
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL,
+                              sY = NULL, isSaturated = FALSE,
                               multScale = 1)
         set.seed(seed)
         ans.R <- updateSeason(prior = prior, betaTilde = beta, useC = FALSE)
@@ -2800,7 +2810,7 @@ test_that("R and C versions of updateSeason give same answer", {
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL,
+                              sY = NULL, isSaturated = FALSE,
                               multScale = 1)
         set.seed(seed)
         ans.R <- updateSeason(prior = prior, betaTilde = beta, useC = FALSE)
@@ -2824,7 +2834,7 @@ test_that("R and C versions of updateSeason give same answer", {
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL,
+                              sY = NULL, isSaturated = FALSE,
                               multScale = 1)
         set.seed(seed)
         ans.R <- updateSeason(prior = prior, betaTilde = beta, useC = FALSE)
@@ -2860,7 +2870,7 @@ test_that("updateTauNorm gives valid answer", {
         prior0 <- initialPrior(spec,
                                beta = beta,
                                metadata = metadata,
-                               sY = NULL, multScale = 1)
+                               sY = NULL, isSaturated = FALSE, multScale = 1)
         expect_is(prior0, "ExchNormCov")
         beta <- rnorm(10)
         set.seed(seed)
@@ -2904,7 +2914,7 @@ test_that("R and C versions of updateTauNorm give same answer", {
         prior0 <- initialPrior(spec,
                                beta = beta,
                                metadata = metadata,
-                               sY = NULL, multScale = 1)
+                               sY = NULL, isSaturated = FALSE, multScale = 1)
         expect_is(prior0, "ExchNormCov")
         beta <- rnorm(10)
         set.seed(seed)
@@ -2944,7 +2954,7 @@ test_that("updateTauRobust gives valid answer", {
         prior0 <- initialPrior(spec,
                                beta = beta,
                                metadata = metadata,
-                               sY = NULL,
+                               sY = NULL, isSaturated = FALSE,
                                multScale = 1)
         expect_is(prior0, "ExchRobustCov")
         beta <- rnorm(10)
@@ -2993,7 +3003,7 @@ test_that("R and C versions of updateTauRobust give same answer", {
         prior0 <- initialPrior(spec,
                                beta = beta,
                                metadata = metadata,
-                               sY = NULL, multScale = 1)
+                               sY = NULL, isSaturated = FALSE, multScale = 1)
         expect_is(prior0, "ExchRobustCov")
         beta <- rnorm(10)
         set.seed(seed)
@@ -3030,7 +3040,7 @@ test_that("updateUBeta gives valid answer", {
         prior0 <- initialPrior(spec,
                                beta = beta,
                                metadata = metadata,
-                               sY = NULL, multScale = 1)
+                               sY = NULL, isSaturated = FALSE, multScale = 1)
         expect_is(prior0, "ExchRobustCov")
         beta <- rnorm(10)
         set.seed(seed)
@@ -3072,7 +3082,7 @@ test_that("R and C versions of updateUBeta give same answer", {
         prior0 <- initialPrior(spec,
                                beta = beta,
                                metadata = metadata,
-                               sY = NULL, multScale = 1)
+                               sY = NULL, isSaturated = FALSE, multScale = 1)
         expect_is(prior0, "ExchRobustCov")
         beta <- rnorm(10)
         set.seed(seed)
@@ -3109,7 +3119,7 @@ test_that("updateUEtaCoef gives valid answer", {
         prior0 <- initialPrior(spec,
                                beta = beta,
                                metadata = metadata,
-                               sY = NULL, multScale = 1)
+                               sY = NULL, isSaturated = FALSE, multScale = 1)
         expect_is(prior0, "ExchRobustCov")
         beta <- rnorm(10)
         set.seed(seed)
@@ -3150,7 +3160,7 @@ test_that("R and C versions of updateUEtaCoef give same answer", {
         prior0 <- initialPrior(spec,
                                beta = beta,
                                metadata = metadata,
-                               sY = NULL, multScale = 1)
+                               sY = NULL, isSaturated = FALSE, multScale = 1)
         expect_is(prior0, "ExchRobustCov")
         beta <- rnorm(10)
         set.seed(seed)
@@ -3179,7 +3189,7 @@ test_that("updateVectorsMixAndProdVectorsMix gives valid answer", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL,
+                          sY = NULL, isSaturated = FALSE,
                           multScale = 1)
     beta.tilde <- rnorm(200)
     set.seed(2)
@@ -3266,7 +3276,7 @@ test_that("R and C versions of updateVectorsMixAndProdVectorsMix give same answe
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL,
+                          sY = NULL, isSaturated = FALSE,
                           multScale = 1)
     beta.tilde <- rnorm(200)
     set.seed(2)
@@ -3298,7 +3308,7 @@ test_that("R and C versions of updateVectorsMixAndProdVectorsMix give same answe
 ##     prior <- initialPrior(spec,
 ##                           beta = beta,
 ##                           metadata = metadata,
-##                           sY = NULL,
+##                           sY = NULL, isSaturated = FALSE,
 ##                           multScale = 1)
 ##     beta.tilde <- rnorm(200)
 ##     set.seed(2)
@@ -3326,7 +3336,7 @@ test_that("updateWSqrt works", {
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, multScale = 1)
+                              sY = NULL, isSaturated = FALSE, multScale = 1)
         expect_is(prior, "DLMWithTrendNormZeroNoSeason")
         prior@omegaAlpha@.Data <- runif(1, 0.1, 1)
         prior@omegaDelta@.Data <- runif(1, 0.1, 1)
@@ -3354,7 +3364,7 @@ test_that("R and C versions of updateWSqrt give same answer", {
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, multScale = 1)
+                              sY = NULL, isSaturated = FALSE, multScale = 1)
         expect_is(prior, "DLMWithTrendNormZeroNoSeason")
         prior@omegaAlpha@.Data <- runif(1, 0.1, 1)
         prior@omegaDelta@.Data <- runif(1, 0.1, 1)
@@ -3380,7 +3390,7 @@ test_that("updateWSqrtInvG works", {
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, multScale = 1)
+                              sY = NULL, isSaturated = FALSE, multScale = 1)
         expect_is(prior, "DLMWithTrendNormZeroNoSeason")
         prior@omegaAlpha@.Data <- runif(1, 0.1, 1)
         prior@omegaDelta@.Data <- runif(1, 0.1, 1)
@@ -3408,7 +3418,7 @@ test_that("R and C versions of updateWSqrtInvG give same answer", {
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, multScale = 1)
+                              sY = NULL, isSaturated = FALSE, multScale = 1)
         expect_is(prior, "DLMWithTrendNormZeroNoSeason")
         prior@omegaAlpha@.Data <- runif(1, 0.1, 1)
         prior@omegaDelta@.Data <- runif(1, 0.1, 1)
@@ -3435,7 +3445,7 @@ test_that("updateWeightMix gives valid answer", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL,
+                          sY = NULL, isSaturated = FALSE,
                           multScale = 1)
     ## deterministic, so no seed required
     ans.obtained <- updateWeightMix(prior)
@@ -3468,7 +3478,7 @@ test_that("R and C versions of updateWeightMix give same answer", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL,
+                          sY = NULL, isSaturated = FALSE,
                           multScale = 1)
     ## deterministic, so no seed required
     ans.R <- updateWeightMix(prior, useC = FALSE)
@@ -8144,7 +8154,7 @@ test_that("R version of updateCountsPoissonNotUseExp works with no subtotals", {
                                                                         subset = TRUE))
             observation[[i]] <- initialModel(Model(y ~ Poisson(mean ~ 1)),
                                              y = datasets[[i]],
-                                             exposure = collapse(y, transforms[[i]]))
+                                             exposure = dembase::collapse(y, transforms[[i]]))
         }
         set.seed(seed)
         ans.obtained <- updateCountsPoissonNotUseExp(y = y,
@@ -8220,7 +8230,7 @@ test_that("R and C versions of updateCountsPoissonNotUseExp with no subtotals gi
                                                                     subset = TRUE))
         observation[[i]] <- initialModel(Model(y ~ Poisson(mean ~ 1)),
                                          y = datasets[[i]],
-                                         exposure = collapse(y, transforms[[i]]))
+                                         exposure = dembase::collapse(y, transforms[[i]]))
     }
     set.seed(100)
     ans.R <- updateCountsPoissonNotUseExp(y = y,
@@ -8263,7 +8273,7 @@ test_that("R version of updateCountsPoissonNotUseExp works with subtotals made f
                                   multiplierBefore = c(1L, 6L),
                                   multiplierAfter = 1L,
                                   invIndices = list(list(1:6), list(1L, 2L, 3L)))
-        subtotals <- collapse(y, transform = transformSubtotals)
+        subtotals <- dembase::collapse(y, transform = transformSubtotals)
         y <- new("CountsWithSubtotalsInternal",
                  y,
                  subtotals = as.integer(subtotals),
@@ -8285,7 +8295,7 @@ test_that("R version of updateCountsPoissonNotUseExp works with subtotals made f
                                                                         subset = TRUE))
             observation[[i]] <- initialModel(Model(y ~ Poisson(mean ~ 1)),
                                              y = datasets[[i]],
-                                             exposure = collapse(y, transforms[[i]]))
+                                             exposure = dembase::collapse(y, transforms[[i]]))
         }
         set.seed(seed)
         ans.obtained <- updateCountsPoissonNotUseExp(y = y,
@@ -8349,7 +8359,7 @@ test_that("R and C versions of updateCountsPoissonNotUseExp give same answer wit
                                   multiplierBefore = c(1L, 6L),
                                   multiplierAfter = 1L,
                                   invIndices = list(list(1:6), list(1L, 2L, 3L)))
-        subtotals <- collapse(y, transform = transformSubtotals)
+        subtotals <- dembase::collapse(y, transform = transformSubtotals)
         y <- new("CountsWithSubtotalsInternal",
                  y,
                  subtotals = as.integer(subtotals),
@@ -8371,7 +8381,7 @@ test_that("R and C versions of updateCountsPoissonNotUseExp give same answer wit
                                                                         subset = TRUE))
             observation[[i]] <- initialModel(Model(y ~ Poisson(mean ~ 1)),
                                              y = datasets[[i]],
-                                             exposure = collapse(y, transforms[[i]]))
+                                             exposure = dembase::collapse(y, transforms[[i]]))
         }
         set.seed(seed)
         ans.R <- updateCountsPoissonNotUseExp(y = y,
@@ -8430,7 +8440,7 @@ test_that("R version of updateCountsPoissonUseExp works with no subtotals", {
                                                                         subset = TRUE))
             observation[[i]] <- initialModel(Model(y ~ Poisson(mean ~ 1)),
                                              y = datasets[[i]],
-                                             exposure = collapse(y, transforms[[i]]))
+                                             exposure = dembase::collapse(y, transforms[[i]]))
         }
         set.seed(seed)
         ans.obtained <- updateCountsPoissonUseExp(y = y,
@@ -8491,7 +8501,7 @@ test_that("R and C versions of updateCountsPoissonUseExp give same answer with n
                                                                         subset = TRUE))
             observation[[i]] <- initialModel(Model(y ~ Poisson(mean ~ 1)),
                                              y = datasets[[i]],
-                                             exposure = collapse(y, transforms[[i]]))
+                                             exposure = dembase::collapse(y, transforms[[i]]))
         }
         set.seed(seed)
         ans.R <- updateCountsPoissonUseExp(y = y,
@@ -8540,7 +8550,7 @@ test_that("R version of updateCountsPoissonUseExp works with subtotals made from
                                   multiplierBefore = c(1L, 6L),
                                   multiplierAfter = 1L,
                                   invIndices = list(list(1:6), list(1L, 2L, 3L)))
-        subtotals <- collapse(y, transform = transformSubtotals)
+        subtotals <- dembase::collapse(y, transform = transformSubtotals)
         y <- new("CountsWithSubtotalsInternal",
                  y,
                  subtotals = as.integer(subtotals),
@@ -8563,7 +8573,7 @@ test_that("R version of updateCountsPoissonUseExp works with subtotals made from
                                                                         subset = TRUE))
             observation[[i]] <- initialModel(Model(y ~ Poisson(mean ~ 1)),
                                              y = datasets[[i]],
-                                             exposure = collapse(y, transforms[[i]]))
+                                             exposure = dembase::collapse(y, transforms[[i]]))
         }
         set.seed(seed)
         ans.obtained <- updateCountsPoissonUseExp(y = y,
@@ -8631,7 +8641,7 @@ test_that("R and C versions of updateCountsPoissonUseExp give same answer with s
                                   multiplierBefore = c(1L, 6L),
                                   multiplierAfter = 1L,
                                   invIndices = list(list(1:6), list(1L, 2L, 3L)))
-        subtotals <- collapse(y, transform = transformSubtotals)
+        subtotals <- dembase::collapse(y, transform = transformSubtotals)
         y <- new("CountsWithSubtotalsInternal",
                  y,
                  subtotals = as.integer(subtotals),
@@ -8654,7 +8664,7 @@ test_that("R and C versions of updateCountsPoissonUseExp give same answer with s
                                                                         subset = TRUE))
             observation[[i]] <- initialModel(Model(y ~ Poisson(mean ~ 1)),
                                              y = datasets[[i]],
-                                             exposure = collapse(y, transforms[[i]]))
+                                             exposure = dembase::collapse(y, transforms[[i]]))
         }
         set.seed(seed)
         ans.R <- updateCountsPoissonUseExp(y = y,
@@ -8711,7 +8721,7 @@ test_that("R version of updateCountsBinomial works", {
                                                                         subset = TRUE))
             observation[[i]] <- initialModel(Model(y ~ Poisson(mean ~ 1)),
                                              y = datasets[[i]],
-                                             exposure = collapse(y, transforms[[i]]))
+                                             exposure = dembase::collapse(y, transforms[[i]]))
         }
         set.seed(seed)
         ans.obtained <- updateCountsBinomial(y = y,
@@ -8772,7 +8782,7 @@ test_that("R and C versions of updateCountsBinomial give same answer", {
                                                                         subset = TRUE))
             observation[[i]] <- initialModel(Model(y ~ Poisson(mean ~ 1)),
                                              y = datasets[[i]],
-                                             exposure = collapse(y, transforms[[i]]))
+                                             exposure = dembase::collapse(y, transforms[[i]]))
         }
         set.seed(seed)
         ans.R <- updateCountsBinomial(y = y,
@@ -8826,10 +8836,10 @@ test_that("R version of updateObservationCounts works", {
         transforms <- lapply(transforms, makeCollapseTransformExtra)
         observation <- list(initialModel(Model(y ~ Poisson(mean ~ 1)),
                                          y = datasets[[1]],
-                                         exposure = toDouble(collapse(y, transforms[[1]]))),
+                                         exposure = toDouble(dembase::collapse(y, transforms[[1]]))),
                             initialModel(Model(y ~ Binomial(mean ~ 1)),
                                          y = datasets[[2]],
-                                         exposure = toDouble(collapse(y, transforms[[2]]))))
+                                         exposure = toDouble(dembase::collapse(y, transforms[[2]]))))
         set.seed(seed + 1)
         ans.obtained <- updateObservationCounts(y = y,
                                                 observation = observation,
@@ -8839,11 +8849,11 @@ test_that("R version of updateObservationCounts works", {
         ans.expected <- observation
         ans.expected[[1]] <- updateModelUseExp(ans.expected[[1]],
                                                y = datasets[[1]],
-                                               exposure = toDouble(collapse(y,
+                                               exposure = toDouble(dembase::collapse(y,
                                                    transform = transforms[[1]])))
         ans.expected[[2]] <- updateModelUseExp(ans.expected[[2]],
                                                y = datasets[[2]],
-                                               exposure = collapse(y,
+                                               exposure = dembase::collapse(y,
                                                    transform = transforms[[2]]))
         if (test.identity)
             expect_identical(ans.obtained, ans.expected)
@@ -8876,10 +8886,10 @@ test_that("R and C versions of updateObservationCounts give same answer", {
         transforms <- lapply(transforms, makeCollapseTransformExtra)
         observation <- list(initialModel(Model(y ~ Poisson(mean ~ 1)),
                                          y = datasets[[1]],
-                                         exposure = toDouble(collapse(y, transforms[[1]]))),
+                                         exposure = toDouble(dembase::collapse(y, transforms[[1]]))),
                             initialModel(Model(y ~ Binomial(mean ~ 1)),
                                          y = datasets[[2]],
-                                         exposure = toDouble(collapse(y, transforms[[2]]))))
+                                         exposure = toDouble(dembase::collapse(y, transforms[[2]]))))
         set.seed(seed + 1)
         ans.R <- updateObservationCounts(y = y,
                                          observation = observation,
@@ -8922,7 +8932,7 @@ test_that("R version of updateObservationCounts works with aggregate data model"
         observation <- list(initialModel(Model(y ~ Poisson(mean ~ 1),
                                                aggregate = aggregate),
                                          y = datasets[[1]],
-                                         exposure = toDouble(collapse(y, transform))))
+                                         exposure = toDouble(dembase::collapse(y, transform))))
         set.seed(seed + 1)
         ans.obtained <- updateObservationCounts(y = y,
                                                 observation = observation,
@@ -8931,7 +8941,7 @@ test_that("R version of updateObservationCounts works with aggregate data model"
         set.seed(seed + 1)
         ans.expected <- list(updateModelUseExp(observation[[1]],
                                                y = datasets[[1]],
-                                               exposure = toDouble(collapse(y,
+                                               exposure = toDouble(dembase::collapse(y,
                                                    transform))))
         if (test.identity)
             expect_identical(ans.obtained, ans.expected)
@@ -8963,7 +8973,7 @@ test_that("R and C versions of updateObservationCounts give same answer with agg
         observation <- list(initialModel(Model(y ~ Poisson(mean ~ 1),
                                                            aggregate = aggregate),
                                          y = datasets[[1]],
-                                         exposure = toDouble(collapse(y, transform))))
+                                         exposure = toDouble(dembase::collapse(y, transform))))
         set.seed(seed + 1)
         ans.R <- updateObservationCounts(y = y,
                                          observation = observation,

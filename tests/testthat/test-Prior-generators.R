@@ -616,9 +616,9 @@ test_that("generator function and initialPrior work with DLMNoTrendRobustCovWith
                           metadata = metadata,
                           sY = 200,
                           multScale = 1,
-                          isSaturated = TRUE)
+                          isSaturated = FALSE)
     expect_is(prior, "DLMNoTrendRobustCovWithSeason")
-    expect_identical(prior@isSaturated, new("LogicalFlag", TRUE))
+    expect_identical(prior@isSaturated, new("LogicalFlag", FALSE))
 })
 
 test_that("generator function and initialPrior work with DLMWithTrendRobustCovWithSeason", {

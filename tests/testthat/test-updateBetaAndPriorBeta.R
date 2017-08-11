@@ -2603,7 +2603,7 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendRobustZeroNoSeason", {
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL)
+                               sY = NULL, isSaturated = FALSE)
         expect_is(prior0, "DLMNoTrendRobustZeroNoSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -2657,7 +2657,7 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTre
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL)
+                               sY = NULL, isSaturated = FALSE)
         expect_is(prior0, "DLMNoTrendRobustZeroNoSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -2697,7 +2697,7 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendRobustZeroNoSeason", {
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL)
+                               sY = NULL, isSaturated = FALSE)
         expect_is(prior0, "DLMWithTrendRobustZeroNoSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -2757,7 +2757,7 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithT
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL)
+                               sY = NULL, isSaturated = FALSE)
         expect_is(prior0, "DLMWithTrendRobustZeroNoSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -2795,7 +2795,7 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendRobustZeroWithSeason", {
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL)
+                               sY = NULL, isSaturated = FALSE)
         expect_is(prior0, "DLMNoTrendRobustZeroWithSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -2858,7 +2858,7 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTre
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL)
+                               sY = NULL, isSaturated = FALSE)
         expect_is(prior0, "DLMNoTrendRobustZeroWithSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -2896,7 +2896,7 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendRobustZeroWithSeason", 
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL)
+                               sY = NULL, isSaturated = FALSE)
         expect_is(prior0, "DLMWithTrendRobustZeroWithSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -2957,7 +2957,7 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithT
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL)
+                               sY = NULL, isSaturated = FALSE)
         expect_is(prior0, "DLMWithTrendRobustZeroWithSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -3008,7 +3008,7 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendRobustCovNoSeason", {
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL)
+                               sY = NULL, isSaturated = FALSE)
         expect_is(prior0, "DLMNoTrendRobustCovNoSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -3075,7 +3075,7 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTre
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL)
+                               sY = NULL, isSaturated = FALSE)
         expect_is(prior0, "DLMNoTrendRobustCovNoSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -3124,7 +3124,7 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendRobustCovNoSeason", {
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL)
+                               sY = NULL, isSaturated = FALSE)
         expect_is(prior0, "DLMWithTrendRobustCovNoSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -3199,7 +3199,7 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithT
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL)
+                               sY = NULL, isSaturated = FALSE)
         expect_is(prior0, "DLMWithTrendRobustCovNoSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -3249,7 +3249,7 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendRobustCovWithSeason", {
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL)
+                               sY = NULL, isSaturated = FALSE)
         expect_is(prior0, "DLMNoTrendRobustCovWithSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -3324,7 +3324,7 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTre
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL)
+                               sY = NULL, isSaturated = FALSE)
         expect_is(prior0, "DLMNoTrendRobustCovWithSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -3375,7 +3375,7 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendRobustCovWithSeason", {
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL)
+                               sY = NULL, isSaturated = FALSE)
         expect_is(prior0, "DLMWithTrendRobustCovWithSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -3457,7 +3457,7 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithT
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL)
+                               sY = NULL, isSaturated = FALSE)
         expect_is(prior0, "DLMWithTrendRobustCovWithSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -3499,7 +3499,7 @@ test_that("updateBetaAndPriorBeta works with KnownCertain", {
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL)
+                               sY = NULL, isSaturated = FALSE)
         expect_is(prior0, "KnownCertain")
         vbar <- rnorm(2)
         n <- 9:10
@@ -3533,7 +3533,7 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with Know
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL)
+                               sY = NULL, isSaturated = FALSE)
         expect_is(prior0, "KnownCertain")
         vbar <- rnorm(2)
         n <- 9:10
@@ -3572,7 +3572,7 @@ test_that("updateBetaAndPriorBeta works with KnownUncertain", {
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL)
+                               sY = NULL, isSaturated = FALSE)
         expect_is(prior0, "KnownUncertain")
         vbar <- rnorm(2)
         n <- 9:10
@@ -3609,7 +3609,7 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with Know
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL)
+                               sY = NULL, isSaturated = FALSE)
         expect_is(prior0, "KnownUncertain")
         vbar <- rnorm(2)
         n <- 9:10
@@ -3906,7 +3906,7 @@ test_that("updateBetaAndPriorBeta works with Zero", {
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL)
+                               sY = NULL, isSaturated = FALSE)
         expect_is(prior0, "Zero")
         vbar <- rnorm(2)
         n <- 9:10
@@ -3939,7 +3939,7 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with Zero
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL)
+                               sY = NULL, isSaturated = FALSE)
         expect_is(prior0, "Zero")
         vbar <- rnorm(2)
         n <- 9:10

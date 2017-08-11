@@ -345,8 +345,8 @@ test_that("validity tests for SkeletonCovariates inherited from SkeletonCovariat
                  "'metadata', 'first', and 'last' inconsistent")
 })
 
-test_that("can create valid object of class SkeletonTrendDLM", {
-    x <- new("SkeletonTrendDLM",
+test_that("can create valid object of class SkeletonStateDLM", {
+    x <- new("SkeletonStateDLM",
              first = 40L,
              last = 50L,
              metadata = new("MetaData",
@@ -355,7 +355,7 @@ test_that("can create valid object of class SkeletonTrendDLM", {
                  DimScales = list(new("Points", dimvalues = 1:10))),
              indicesShow = 2:11)
     expect_true(validObject(x))
-    x <- new("SkeletonTrendDLM",
+    x <- new("SkeletonStateDLM",
              first = 40L,
              last = 61L,
              metadata = new("MetaData",
@@ -367,8 +367,8 @@ test_that("can create valid object of class SkeletonTrendDLM", {
     expect_true(validObject(x))
 })
 
-test_that("validity tests for SkeletonTrendDLM inherited from SkeletonIndicesShow work", {
-    x <- new("SkeletonTrendDLM",
+test_that("validity tests for SkeletonStateDLM inherited from SkeletonIndicesShow work", {
+    x <- new("SkeletonStateDLM",
              first = 40L,
              last = 50L,
              metadata = new("MetaData",
@@ -392,155 +392,6 @@ test_that("validity tests for SkeletonTrendDLM inherited from SkeletonIndicesSho
     x.wrong@indicesShow[1] <- -1L
     expect_error(validObject(x.wrong),
                  "'indicesShow' has elements outside valid range")
-})
-
-test_that("validity tests for SkeletonTrendDLM inherited from SkeletonStateDLM work", {
-    x <- new("SkeletonTrendDLM",
-             first = 40L,
-             last = 50L,
-             metadata = new("MetaData",
-                 nms = "time",
-                 dimtypes = "time",
-                 DimScales = list(new("Points", dimvalues = 1:10))),
-             indicesShow = 2:11)
-    expect_true(validObject(x))
-    ## dim(metadata) consistent with 'indicesShow'
-    x.wrong <- x
-    x.wrong@indicesShow <- x.wrong@indicesShow[1:9]
-    expect_error(validObject(x.wrong),
-                 "'metadata' and 'indicesShow' inconsistent")
-})
-
-test_that("can create valid object of class SkeletonLevelDLM", {
-    ## does not have season term - main effect
-    x <- new("SkeletonLevelDLM",
-             first = 40L,
-             last = 50L,
-             firstSeason = 0L,
-             lastSeason = 0L,
-             iAlong = 1L,
-             nSeason = 1L,
-             metadata = new("MetaData",
-                 nms = "time",
-                 dimtypes = "time",
-                 DimScales = list(new("Points", dimvalues = 1:10))),
-             indicesShow = 2:11)
-    ## does not have season term - interaction
-    expect_true(validObject(x))
-    x <- new("SkeletonLevelDLM",
-             first = 40L,
-             last = 61L,
-             iAlong = 2L,
-             nSeason = 1L,
-             firstSeason = 0L,
-             lastSeason = 0L,
-             metadata = new("MetaData",
-                 nms = c("sex", "time"),
-                 dimtypes = c("state", "time"),
-                 DimScales = list(new("Categories", dimvalues = c("f", "m")),
-                     new("Points", dimvalues = 1:10))),
-             indicesShow = 3:22)
-    expect_true(validObject(x))
-    ## has season term - main effect
-    x <- new("SkeletonLevelDLM",
-             first = 40L,
-             last = 50L,
-             firstSeason = 80L,
-             lastSeason = 123L,
-             iAlong = 1L,
-             nSeason = 4L,
-             metadata = new("MetaData",
-                 nms = "time",
-                 dimtypes = "time",
-                 DimScales = list(new("Points", dimvalues = 1:10))),
-             indicesShow = 2:11)
-    ## has season term - interaction
-    expect_true(validObject(x))
-    x <- new("SkeletonLevelDLM",
-             first = 40L,
-             last = 61L,
-             iAlong = 2L,
-             nSeason = 12L,
-             firstSeason = 100L,
-             lastSeason = 100L + as.integer(12L * 2L * 11L) - 1L,
-             metadata = new("MetaData",
-                 nms = c("sex", "time"),
-                 dimtypes = c("state", "time"),
-                 DimScales = list(new("Categories", dimvalues = c("f", "m")),
-                     new("Points", dimvalues = 1:10))),
-             indicesShow = 3:22)
-    expect_true(validObject(x))
-})
-
-test_that("validity tests for SkeletonLevelDLM inherited from SkeletonLevelDLM work", {
-    x <- new("SkeletonLevelDLM",
-             first = 40L,
-             last = 61L,
-             iAlong = 2L,
-             nSeason = new("Length", 12L),
-             firstSeason = 100L,
-             lastSeason = 100L + as.integer(12L * 2L * 11L) - 1L,
-             metadata = new("MetaData",
-                 nms = c("sex", "time"),
-                 dimtypes = c("state", "time"),
-                 DimScales = list(new("Categories", dimvalues = c("f", "m")),
-                     new("Points", dimvalues = 1:10))),
-             indicesShow = 3:22)
-    ## if nSeason is 1L, firstSeason and lastSeason are both 0L...
-    x.wrong <- x
-    x.wrong@nSeason <- 1L
-    expect_error(validObject(x.wrong),
-                 "'nSeason' equals 1 but 'firstSeason' does not equal 0")
-    ## ... otherwise 'firstSeason', 'lastSeason', 'iAlong', 'metadata', 'nSeason' consistent
-    x.wrong <- x
-    x.wrong@lastSeason <- x.wrong@lastSeason + 1L
-    expect_error(validObject(x.wrong),
-                 "'firstSeason', 'lastSeason', 'iAlong', 'metadata', and 'nSeason' inconsistent")
-})
-
-test_that("can create valid object of class SkeletonSeasonDLM", {
-    x <- new("SkeletonSeasonDLM",
-             first = 40L,
-             last = 83L,
-             iAlong = 1L,
-             nSeason = new("Length", 4L),
-             metadata = new("MetaData",
-                 nms = "time",
-                 dimtypes = "time",
-                 DimScales = list(new("Points", dimvalues = 1:10))),
-             indicesShow = 2:11)
-    expect_true(validObject(x))
-    x <- new("SkeletonSeasonDLM",
-             first = 40L,
-             last = 303L,
-             iAlong = 2L,
-             nSeason = new("Length", 12L),
-             metadata = new("MetaData",
-                 nms = c("sex", "time"),
-                 dimtypes = c("state", "time"),
-                 DimScales = list(new("Categories", dimvalues = c("f", "m")),
-                     new("Points", dimvalues = 1:10))),
-             indicesShow = seq.int(25L, 253L, 12L))
-    expect_true(validObject(x))
-})
-
-test_that("tests for SkeletonSeasonDLM inherited from SkeletonSeasonDLM work", {
-    x <- new("SkeletonSeasonDLM",
-             first = 40L,
-             last = 303L,
-             iAlong = 2L,
-             nSeason = new("Length", 12L),
-             metadata = new("MetaData",
-                 nms = c("sex", "time"),
-                 dimtypes = c("state", "time"),
-                 DimScales = list(new("Categories", dimvalues = c("f", "m")),
-                     new("Points", dimvalues = 1:10))),
-             indicesShow = seq.int(25L, 253L, 12L))
-    ## 'firstSeason', 'lastSeason', 'iAlong', 'metadata', 'nSeason' consistent
-    x.wrong <- x
-    x.wrong@last <- x.wrong@last + 1L
-    expect_error(validObject(x.wrong),
-                 "'first', 'last', 'iAlong', 'metadata', and 'nSeason' inconsistent")
 })
 
 test_that("can create valid object of class SkeletonAccept", {

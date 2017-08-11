@@ -327,10 +327,8 @@ updateAlphaDeltaDLMWithTrend <- function(prior, betaTilde, useC = FALSE) {
         UR <- prior@UR@.Data  # list length K
         DR.inv <- prior@DRInv@.Data
         has.level <- prior@hasLevel@.Data 
-        if (!has.level) {
-            phi <- prior@phi ## scalar 
-            omega.delta <- prior@omegaDelta@.Data ## scalar
-        }
+        phi <- prior@phi ## scalar 
+        omega.delta <- prior@omegaDelta@.Data ## scalar
         v <- getV(prior) ## numeric length KL
         iterator.ad <- prior@iteratorState
         iterator.v <- prior@iteratorV
@@ -395,16 +393,23 @@ updateAlphaDeltaDLMWithTrend <- function(prior, betaTilde, useC = FALSE) {
                         R.inv <- (UR[[i + 1L]] %*% DR.inv[[i + 1L]]
                             %*% DR.inv[[i + 1L]] %*% t(UR[[i + 1L]]))
                         B <- C[[i + 1L]] %*% t(G) %*% R.inv
-                        M.C.star <- rbind(W.sqrt.inv.G,
-                                          DC.inv[[i + 1L]] %*% t(UC[[i + 1L]]))
-                        svd.C.star <- svd(M.C.star, nu = 0)
-                        UC.star <- svd.C.star$v
-                        DC.star <- 1 / svd.C.star$d
-                        DC.star[is.infinite(DC.star)] <- 0
-                        DC.star <- diag(DC.star, nrow = 2L)
+                        if ((i == 0L) && is.infinite(DC.inv[[1L]][1L])) {
+                            C.star.22 <- (C[[1L]][4L]
+                                - C[[1L]][4L]^2 * (R.inv[1L] + phi * (R.inv[2L] + R.inv[3L]) + phi^2 * R.inv[4L]))
+                            sqrt.C.star <- matrix(c(0, 0, 0, sqrt(C.star.22)), nrow = 2L)
+                        }
+                        else {
+                            M.C.star <- rbind(W.sqrt.inv.G,
+                                              DC.inv[[i + 1L]] %*% t(UC[[i + 1L]]))
+                            svd.C.star <- svd(M.C.star, nu = 0)
+                            UC.star <- svd.C.star$v
+                            DC.star <- 1 / svd.C.star$d
+                            DC.star[is.infinite(DC.star)] <- 0
+                            DC.star <- diag(DC.star, nrow = 2L)
+                            sqrt.C.star <- UC.star %*% DC.star
+                        }
                         theta.prev <- c(alpha[indices.ad[i + 2L]], delta[indices.ad[i + 2L]])
                         m.star <- m[[i + 1L]] + drop(B %*% (theta.prev - a[[i + 1L]]))
-                        sqrt.C.star <- UC.star %*% DC.star
                         z <- stats::rnorm(n = 2L)
                         theta.curr <- m.star + drop(sqrt.C.star %*% z)
                         alpha[indices.ad[i + 1L]] <- theta.curr[1L]
@@ -420,8 +425,6 @@ updateAlphaDeltaDLMWithTrend <- function(prior, betaTilde, useC = FALSE) {
         prior
     }
 }
-
-
 
 ## TRANSLATED
 ## HAS_TESTS
@@ -1066,6 +1069,7 @@ updateOmegaAlpha <- function(prior, withTrend, useC = FALSE) {
         iterator <- prior@iteratorState
         iterator <- resetA(iterator)
         V <- 0
+        n <- 0L
         for (l in seq_len(L)) {
             if (update.series[l]) {
                 indices <- iterator@indices
@@ -1076,6 +1080,7 @@ updateOmegaAlpha <- function(prior, withTrend, useC = FALSE) {
                         V <- V + (alpha[k.curr] - alpha[k.prev] - delta[k.prev])^2
                     else
                         V <- V + (alpha[k.curr] - phi * alpha[k.prev])^2
+                    n <- n + 1L
                 }
             }
             iterator <- advanceA(iterator)
@@ -1084,7 +1089,7 @@ updateOmegaAlpha <- function(prior, withTrend, useC = FALSE) {
                               A = A,
                               nu = nu,
                               V = V,
-                              n = J,
+                              n = n,
                               max = omegaMax)
         successfully.updated <- omega > 0
         if (successfully.updated)
@@ -1146,7 +1151,7 @@ updateOmegaDelta <- function(prior, useC = FALSE) {
         J <- prior@J@.Data
         K <- prior@K@.Data
         L <- prior@L@.Data
-        update.series <- prior@updateSeriesDLM # logical length L ## NEW
+        update.series <- prior@updateSeriesDLM 
         delta <- prior@deltaDLM@.Data
         phi <- prior@phi
         omega <- prior@omegaDelta@.Data
@@ -1156,22 +1161,24 @@ updateOmegaDelta <- function(prior, useC = FALSE) {
         iterator <- prior@iteratorState
         iterator <- resetA(iterator)
         V <- 0
+        n <- 0L
         for (l in seq_len(L)) {
-            if (update.series[l]) { ## NEW
+            if (update.series[l]) {
                 indices <- iterator@indices
                 for (i in seq_len(K)) {
                     k.curr <- indices[i + 1]
                     k.prev <- indices[i]
                     V <- V + (delta[k.curr] - phi * delta[k.prev])^2
+                    n <- n + 1L
                 }
-            } ## NEW
+            }
             iterator <- advanceA(iterator)
         }
         omega <- updateSDNorm(sigma = omega,
                               A = A,
                               nu = nu,
                               V = V,
-                              n = J,
+                              n = n,
                               max = omegaMax)
         successfully.updated <- omega > 0
         if (successfully.updated)

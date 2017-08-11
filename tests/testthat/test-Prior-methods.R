@@ -9,13 +9,15 @@ test.extended <- TRUE
 
 test_that("betaIsEstimated works in default case", {
     betaIsEstimated <- demest:::betaIsEstimated
-    x <- new("ExchFixed")
+    x <- new("ExchFixed",
+             isSaturated = new("LogicalFlag", FALSE))
     expect_true(betaIsEstimated(x))
 })
 
 test_that("betaIsEstimated works with Zero prior", {
     betaIsEstimated <- demest:::betaIsEstimated
-    x <- new("Zero")
+    x <- new("Zero",
+             isSaturated = new("LogicalFlag", FALSE))
     expect_false(betaIsEstimated(x))
 })
 
@@ -35,7 +37,8 @@ test_that("fakeBeta works with ExchFixed", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     set.seed(1)
     ans.obtained <- fakeBeta(object = prior,
                              metadata = metadata)
@@ -54,7 +57,8 @@ test_that("fakeBeta works with ExchFixed", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     set.seed(1)
     ans.obtained <- fakeBeta(object = prior, metadata = metadata)
     set.seed(1)
@@ -79,7 +83,8 @@ test_that("fakeBeta works with ExchNormZero", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     set.seed(1)
     ans.obtained <- fakeBeta(object = prior,
                              metadata = metadata)
@@ -98,7 +103,8 @@ test_that("fakeBeta works with ExchNormZero", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     set.seed(1)
     ans.obtained <- fakeBeta(object = prior, metadata = metadata)
     set.seed(1)
@@ -127,7 +133,8 @@ test_that("makeOutputPrior works with ExchFixed", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = sY)
+                          sY = sY,
+                          isSaturated = FALSE)
     ans.obtained <- makeOutputPrior(prior)
     ans.expected <- list(scaleError = prior@tau@.Data)
     expect_identical(ans.obtained, ans.expected)
@@ -149,7 +156,8 @@ test_that("makeOutputPrior works with ExchNormZero", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     ans.obtained <- makeOutputPrior(prior = prior,
                                     metadata = metadata,
                                     pos = 3L)
@@ -173,7 +181,8 @@ test_that("makeOutputPrior works with ExchCovZero", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     ans.obtained <- makeOutputPrior(prior = prior,
                                     metadata = metadata,
                                     pos = 3L)
@@ -202,7 +211,8 @@ test_that("makeOutputPrior works with ExchRobustZero", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     ans.obtained <- makeOutputPrior(prior = prior,
                                     metadata = metadata,
                                     pos = 3L)
@@ -227,7 +237,8 @@ test_that("makeOutputPrior works with ExchRobustCov", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     ans.obtained <- makeOutputPrior(prior = prior,
                                     metadata = metadata,
                                     pos = 3L)
@@ -1403,7 +1414,8 @@ test_that("predictPrior works with ExchNormZero", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     ans.obtained <- predictPrior(prior)
     ans.expected <- prior
     expect_identical(ans.obtained, ans.expected)
@@ -1421,7 +1433,8 @@ test_that("R and C versions of predictPrior give same answer with ExchNormZero",
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     ans.R <- predictPrior(prior, useC = FALSE)
     ans.C.generic <- predictPrior(prior, useC = TRUE, useSpecific = FALSE)
     ans.C.specific <- predictPrior(prior, useC = TRUE, useSpecific = TRUE)
@@ -1442,7 +1455,8 @@ test_that("predictPrior works with ExchRobustZero", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     expect_is(prior, "ExchRobustZero")
     set.seed(1)
     ans.obtained <- predictPrior(prior)
@@ -1464,7 +1478,8 @@ test_that("R and C versions of predictPrior give same answer with ExchRobustZero
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     expect_is(prior, "ExchRobustZero")
     set.seed(1)
     ans.R <- predictPrior(prior, useC = FALSE)
@@ -1500,7 +1515,8 @@ test_that("predictPrior works with ExchNormCov", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     ans.obtained <- predictPrior(prior)
     ans.expected <- prior
     expect_identical(ans.obtained, ans.expected)
@@ -1527,7 +1543,8 @@ test_that("R and C versions of predictPrior give same answer with ExchNormCov", 
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     ans.R <- predictPrior(prior, useC = FALSE)
     ans.C.generic <- predictPrior(prior, useC = TRUE, useSpecific = FALSE)
     ans.C.specific <- predictPrior(prior, useC = TRUE, useSpecific = TRUE)
@@ -1557,7 +1574,8 @@ test_that("predictPrior works with ExchRobustCov", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     set.seed(1)
     ans.obtained <- predictPrior(prior)
     set.seed(1)
@@ -1586,7 +1604,8 @@ test_that("R and C versions of predictPrior give same answer with ExchRobustCov"
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     set.seed(1)
     ans.R <- predictPrior(prior, useC = FALSE)
     set.seed(1)
@@ -1617,7 +1636,8 @@ test_that("predictPrior works with DLMNoTrendNormZeroNoSeason", {
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata.old,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -1648,7 +1668,8 @@ test_that("R and C versions of predictPrior give same answer with DLMNoTrendNorm
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata.old,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -1686,7 +1707,8 @@ test_that("predictPrior works with DLMWithTrendNormZeroNoSeason", {
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata.old,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -1717,7 +1739,8 @@ test_that("R and C versions of predictPrior give same answer with DLMWithTrendNo
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata.old,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -1756,7 +1779,8 @@ test_that("predictPrior works with DLMNoTrendNormZeroWithSeason", {
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata.old,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -1788,7 +1812,8 @@ test_that("R and C versions of predictPrior give same answer with DLMNoTrendNorm
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata.old,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -1827,7 +1852,8 @@ test_that("predictPrior works with DLMWithTrendNormZeroWithSeason", {
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata.old,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -1859,7 +1885,8 @@ test_that("R and C versions of predictPrior give same answer with DLMWithTrendNo
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata.old,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -1906,7 +1933,8 @@ test_that("predictPrior works with DLMNoTrendNormCovNoSeason", {
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -1945,7 +1973,8 @@ test_that("R and C versions of predictPrior give same answer with DLMNoTrendNorm
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -1990,7 +2019,8 @@ test_that("predictPrior works with DLMWithTrendNormCovNoSeason", {
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -2028,7 +2058,8 @@ test_that("R and C versions of predictPrior give same answer with DLMWithTrendNo
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -2077,7 +2108,8 @@ test_that("predictPrior works with DLMNoTrendNormCovWithSeason", {
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata.old,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     data.new <- data.frame(time = 2011:2015,
                            income = rnorm(5))
     metadata.new <- new("MetaData",
@@ -2119,7 +2151,8 @@ test_that("R and C versions of predictPrior give same answer with DLMNoTrendNorm
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata.old,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -2167,7 +2200,8 @@ test_that("predictPrior works with DLMWithTrendNormCovWithSeason", {
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata.old,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -2209,7 +2243,8 @@ test_that("R and C versions of predictPrior give same answer with DLMWithTrendNo
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata.old,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     data.new <- data.frame(time = 2011:2015,
                            income = rnorm(5))
     metadata.new <- new("MetaData",
@@ -2254,7 +2289,8 @@ test_that("predictPrior works with DLMNoTrendRobustZeroNoSeason", {
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata.old,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -2287,7 +2323,8 @@ test_that("R and C versions of predictPrior give same answer with DLMNoTrendRobu
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata.old,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -2327,7 +2364,8 @@ test_that("predictPrior works with DLMWithTrendRobustZeroNoSeason", {
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata.old,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -2360,7 +2398,8 @@ test_that("R and C versions of predictPrior give same answer with DLMWithTrendRo
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata.old,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -2401,7 +2440,8 @@ test_that("predictPrior works with DLMNoTrendRobustZeroWithSeason", {
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata.old,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -2435,7 +2475,8 @@ test_that("R and C versions of predictPrior give same answer with DLMNoTrendRobu
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata.old,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -2476,7 +2517,8 @@ test_that("predictPrior works with DLMWithTrendRobustZeroWithSeason", {
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata.old,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -2510,7 +2552,8 @@ test_that("R and C versions of predictPrior give same answer with DLMWithTrendRo
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata.old,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -2560,7 +2603,8 @@ test_that("predictPrior works with DLMNoTrendRobustCovNoSeason", {
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -2602,7 +2646,8 @@ test_that("R and C versions of predictPrior give same answer with DLMNoTrendRobu
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -2650,7 +2695,8 @@ test_that("predictPrior works with DLMWithTrendRobustCovNoSeason", {
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -2691,7 +2737,8 @@ test_that("R and C versions of predictPrior give same answer with DLMWithTrendRo
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -2743,7 +2790,8 @@ test_that("predictPrior works with DLMNoTrendRobustCovWithSeason", {
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata.old,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     data.new <- data.frame(time = 2011:2015,
                            income = rnorm(5))
     metadata.new <- new("MetaData",
@@ -2788,7 +2836,8 @@ test_that("R and C versions of predictPrior give same answer with DLMNoTrendRobu
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata.old,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -2839,7 +2888,8 @@ test_that("predictPrior works with DLMWithTrendRobustCovWithSeason", {
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata.old,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -2884,7 +2934,8 @@ test_that("R and C versions of predictPrior give same answer with DLMWithTrendRo
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata.old,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     data.new <- data.frame(time = 2011:2015,
                            income = rnorm(5))
     metadata.new <- new("MetaData",
@@ -2923,7 +2974,8 @@ test_that("predictPrior works with KnownCertain", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     ans.obtained <- predictPrior(prior)
     ans.expected <- prior
     expect_identical(ans.obtained, ans.expected)
@@ -2942,7 +2994,8 @@ test_that("R and C versions of predictPrior give same answer with KnownCertain",
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     ans.R <- predictPrior(prior, useC = FALSE)
     ans.C.generic <- predictPrior(prior, useC = TRUE, useSpecific = FALSE)
     ans.C.specific <- predictPrior(prior, useC = TRUE, useSpecific = TRUE)
@@ -2963,7 +3016,8 @@ test_that("predictPrior works with KnownUncertain", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     ans.obtained <- predictPrior(prior)
     ans.expected <- prior
     expect_identical(ans.obtained, ans.expected)
@@ -2982,7 +3036,8 @@ test_that("R and C versions of predictPrior give same answer with KnownUncertain
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     ans.R <- predictPrior(prior, useC = FALSE)
     ans.C.generic <- predictPrior(prior, useC = TRUE, useSpecific = FALSE)
     ans.C.specific <- predictPrior(prior, useC = TRUE, useSpecific = TRUE)
@@ -3009,7 +3064,8 @@ test_that("predictPrior works with MixNormZero", {
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              multScale = 1)
+                              multScale = 1,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = c("time", "reg", "age"),
                         dimtypes = c("time", "state", "age"),
@@ -3050,7 +3106,8 @@ test_that("R and C versions of predictPrior give same answer MixNormZero", {
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              multScale = 1)
+                              multScale = 1,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = c("time", "reg", "age"),
                         dimtypes = c("time", "state", "age"),
@@ -3089,7 +3146,8 @@ test_that("predictPrior works with Zero", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     ans.obtained <- predictPrior(prior)
     ans.expected <- prior
     expect_identical(ans.obtained, ans.expected)
@@ -3107,7 +3165,8 @@ test_that("R and C versions of predictPrior give same answer with Zero", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     ans.R <- predictPrior(prior, useC = FALSE)
     ans.C.generic <- predictPrior(prior, useC = TRUE, useSpecific = FALSE)
     ans.C.specific <- predictPrior(prior, useC = TRUE, useSpecific = TRUE)
@@ -3133,7 +3192,8 @@ test_that("transferParamPrior works with ExchNormZero", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     values <- runif(1)
     ans.obtained <- transferParamPrior(prior = prior,
                                        values = values)
@@ -3154,7 +3214,8 @@ test_that("R and C versions of transferParamPrior give same answer with ExchNorm
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     values <- runif(1)
     ans.R <- transferParamPrior(prior = prior,
                                 values = values,
@@ -3192,7 +3253,8 @@ test_that("transferParamPrior works with ExchNormCov", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     values <- c(rnorm(8), runif(1))
     ans.obtained <- transferParamPrior(prior = prior,
                                        values = values)
@@ -3223,7 +3285,8 @@ test_that("R and C versions of transferParamPrior give same answer with ExchNorm
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     values <- c(rnorm(8), runif(1))
     ans.R <- transferParamPrior(prior = prior,
                                 values = values,
@@ -3252,7 +3315,8 @@ test_that("transferParamPrior works with ExchRobustZero", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     values <- runif(1)
     ans.obtained <- transferParamPrior(prior = prior,
                                        values = values)
@@ -3273,7 +3337,8 @@ test_that("R and C versions of transferParamPrior give same answer with ExchRobu
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     values <- runif(1)
     ans.R <- transferParamPrior(prior = prior,
                                 values = values,
@@ -3311,7 +3376,8 @@ test_that("transferParamPrior works with ExchRobustCov", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     values <- runif(9)
     ans.obtained <- transferParamPrior(prior = prior,
                                        values = values)
@@ -3343,7 +3409,8 @@ test_that("R and C versions of transferParamPrior give same answer with ExchRobu
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL)
+                          sY = NULL,
+                          isSaturated = FALSE)
     values <- runif(9)
     ans.R <- transferParamPrior(prior = prior,
                                 values = values,
@@ -3378,7 +3445,8 @@ test_that("transferParamPrior works with DLMNoTrendNormZeroNoSeason", {
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -3414,7 +3482,8 @@ test_that("R and C versions of transferParamPrior give same answer with DLMNoTre
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -3455,7 +3524,8 @@ test_that("transferParamPrior works with DLMWithTrendNormZeroNoSeason", {
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -3493,7 +3563,8 @@ test_that("R and C versions of transferParamPrior give same answer with DLMWithT
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -3534,7 +3605,8 @@ test_that("transferParamPrior works with DLMNoTrendNormZeroWithSeason", {
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -3572,7 +3644,8 @@ test_that("R and C versions of transferParamPrior give same answer with DLMNoTre
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -3613,7 +3686,8 @@ test_that("transferParamPrior works with DLMWithTrendNormZeroWithSeason", {
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -3653,7 +3727,8 @@ test_that("R and C versions of transferParamPrior give same answer with DLMWithT
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -3703,7 +3778,8 @@ test_that("transferParamPrior works with DLMNoTrendNormCovNoSeason", {
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -3747,7 +3823,8 @@ test_that("R and C versions of transferParamPrior give same answer with DLMNoTre
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -3795,7 +3872,8 @@ test_that("transferParamPrior works with DLMWithTrendNormCovNoSeason", {
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -3840,7 +3918,8 @@ test_that("R and C versions of transferParamPrior give same answer with DLMWithT
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL)
+                              sY = NULL,
+                          isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -3890,7 +3969,8 @@ test_that("transferParamPrior works with DLMNoTrendNormCovWithSeason", {
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -3938,7 +4018,8 @@ test_that("R and C versions of transferParamPrior give same answer with DLMNoTre
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -3987,7 +4068,8 @@ test_that("transferParamPrior works with DLMWithTrendNormCovWithSeason", {
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -4036,7 +4118,8 @@ test_that("R and C versions of transferParamPrior give same answer with DLMWithT
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -4082,7 +4165,8 @@ test_that("transferParamPrior works with DLMNoTrendRobustZeroNoSeason", {
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -4118,7 +4202,8 @@ test_that("R and C versions of transferParamPrior give same answer with DLMNoTre
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -4159,7 +4244,8 @@ test_that("transferParamPrior works with DLMWithTrendRobustZeroNoSeason", {
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -4197,7 +4283,8 @@ test_that("R and C versions of transferParamPrior give same answer with DLMWithT
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -4238,7 +4325,8 @@ test_that("transferParamPrior works with DLMNoTrendRobustZeroWithSeason", {
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -4276,7 +4364,8 @@ test_that("R and C versions of transferParamPrior give same answer with DLMNoTre
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -4317,7 +4406,8 @@ test_that("transferParamPrior works with DLMWithTrendRobustZeroWithSeason", {
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -4357,7 +4447,8 @@ test_that("R and C versions of transferParamPrior give same answer with DLMWithT
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -4408,7 +4499,8 @@ test_that("transferParamPrior works with DLMNoTrendRobustCovNoSeason", {
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -4453,7 +4545,8 @@ test_that("R and C versions of transferParamPrior give same answer with DLMNoTre
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -4502,7 +4595,8 @@ test_that("transferParamPrior works with DLMWithTrendRobustCovNoSeason", {
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -4548,7 +4642,8 @@ test_that("R and C versions of transferParamPrior give same answer with DLMWithT
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -4599,7 +4694,8 @@ test_that("transferParamPrior works with DLMNoTrendRobustCovWithSeason", {
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -4648,7 +4744,8 @@ test_that("R and C versions of transferParamPrior give same answer with DLMNoTre
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -4698,7 +4795,8 @@ test_that("transferParamPrior works with DLMWithTrendRobustCovWithSeason", {
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -4748,7 +4846,8 @@ test_that("R and C versions of transferParamPrior give same answer with DLMWithT
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL)
+                              sY = NULL,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -4795,6 +4894,7 @@ test_that("transferParamPrior works with MixNormZeroPredict", {
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
+                              isSaturated = FALSE,
                               multScale = 1)
     metadata.new <- new("MetaData",
                         nms = c("time", "reg", "age"),
@@ -4853,7 +4953,8 @@ test_that("R and C versions of transferParamPrior give same answer with MixNormZ
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              multScale = 1)
+                              multScale = 1,
+                              isSaturated = FALSE)
     metadata.new <- new("MetaData",
                         nms = c("time", "reg", "age"),
                         dimtypes = c("time", "state", "age"),
