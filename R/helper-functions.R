@@ -1903,7 +1903,9 @@ makeCNoTrend <- function(K, C0 = NULL, sY) {
                      1.0,
                      simplify = FALSE)
     if (is.null(C0)) {
-        C0 <- 0
+        A0 <- makeAIntercept(A = NA, sY = sY)
+        A0 <- as.double(A0)
+        C0 <- A0^2
     }
     ans[[1L]] <- C0
     methods::new("FFBSList", ans)
@@ -1925,7 +1927,10 @@ makeCSeason <- function(K, nSeason, ASeason, C0 = NULL) {
 ## NO_TESTS
 makeCWithTrend <- function(K, C0 = NULL, sY, ADelta0, hasLevel = TRUE) {
     if (is.null(C0)) {
-        AAlpha <- 0
+        if (hasLevel)
+            AAlpha <- makeAIntercept(A = NA, sY = sY)
+        else
+            AAlpha <- 0
         ADelta <- ADelta0@.Data
         C0 <- c(AAlpha^2, ADelta^2)
         C0 <- diag(C0,
@@ -6787,7 +6792,7 @@ makeOutputPriorScale <- function(pos) {
 }
 
 ## HAS_TESTS
-makeOutputStateDLM <- function(iterator, metadata, nSeason, iAlong, pos) {
+makeOutputStateDLM <- function(iterator, metadata, nSeason, iAlong, pos, isTrend) {
     indices <- iterator@indices
     n.within <- iterator@nWithin
     n.between <- iterator@nBetween
@@ -6805,12 +6810,15 @@ makeOutputStateDLM <- function(iterator, metadata, nSeason, iAlong, pos) {
                                 iAlong = iAlong)
     metadata <- makeMetadataStateDLM(metadata = metadata,
                                      iAlong = iAlong)
-    methods::new("SkeletonStateDLM",
+    class <- if (isTrend) "SkeletonTrendDLM" else "SkeletonStateDLM"
+    methods::new(class,
                  first = first,
                  last = last,
+                 iAlong = iAlong,
                  indicesShow = indices.show,
                  metadata = metadata)
 }
+
 
 ## HAS_TESTS
 makeResultsFile <- function(filename, results, tempfiles) {

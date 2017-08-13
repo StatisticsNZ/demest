@@ -3014,8 +3014,10 @@ updateWSqrt(SEXP prior_R)
     double omegaAlpha = *REAL(GET_SLOT(prior_R, omegaAlpha_sym));
     double omegaDelta = *REAL(GET_SLOT(prior_R, omegaDelta_sym));
     
-    WSqrt[0] = omegaAlpha*omegaAlpha;
-    WSqrt[3] = omegaDelta*omegaDelta;
+    /* WSqrt[0] = omegaAlpha*omegaAlpha; */
+    /* WSqrt[3] = omegaDelta*omegaDelta; */
+    WSqrt[0] = omegaAlpha;
+    WSqrt[3] = omegaDelta;
 }
 
 void

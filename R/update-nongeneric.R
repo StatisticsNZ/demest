@@ -1799,8 +1799,8 @@ updateWSqrt <- function(prior, useC = FALSE) {
         WSqrt <- prior@WSqrt@.Data
         omegaAlpha <- prior@omegaAlpha@.Data
         omegaDelta <- prior@omegaDelta@.Data
-        WSqrt[1L] <- omegaAlpha^2
-        WSqrt[4L] <- omegaDelta^2
+        WSqrt[1L] <- omegaAlpha
+        WSqrt[4L] <- omegaDelta
         prior@WSqrt@.Data <- WSqrt
         prior
     }

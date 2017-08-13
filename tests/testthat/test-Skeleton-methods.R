@@ -494,6 +494,7 @@ test_that("fetchResults works with object of class SkeletonStateDLM - Level", {
                                      new("Points", dimvalues = as.numeric(1:10))))
     object <- new("SkeletonStateDLM",
                   metadata = metadata,
+                  iAlong = 1L,
                   first = 11L,
                   last = 43L,
                   indicesShow = 4:33)
@@ -531,8 +532,9 @@ test_that("fetchResults works with object of class SkeletonStateDLM - Trend", {
                     dimtypes = c("state", "time"),
                     DimScales = list(new("Categories", dimvalues = c("a", "b", "c")),
                                      new("Points", dimvalues = as.numeric(1:10))))
-    object <- new("SkeletonStateDLM",
+    object <- new("SkeletonTrendDLM",
                   metadata = metadata,
+                  iAlong = 1L,
                   first = 41L,
                   last = 73L,
                   indicesShow = c(2:11, 13:22, 24:33))
@@ -574,6 +576,7 @@ test_that("fetchResults works with object of class SkeletonStateDLM - Season", {
                   metadata = metadata,
                   first = 11L,
                   last = 76L,
+                  iAlong = 1L,
                   indicesShow = c(seq.int(from = 7L, by = 2L, to = 65L)))
     nameObject <- "obj"
     filename <- tempfile()
@@ -1384,3 +1387,45 @@ test_that("SkeletonBetaTerm method for needToCenter works", {
     object <- new("SkeletonBetaTerm")
     expect_true(needToCenter(object))
 })
+
+test_that("SkeletonStateDLM method for needToCenter works", {
+    needToCenter <- demest:::needToCenter
+    object <- new("SkeletonStateDLM")
+    expect_true(needToCenter(object))
+})
+
+test_that("SkeletonTrendDLM method for needToCenter works", {
+    needToCenter <- demest:::needToCenter
+    object <- new("SkeletonTrendDLM")
+    expect_false(needToCenter(object))
+})
+
+
+
+## needToCenterExceptAlong ##############################################################
+
+test_that("default method for needToCenterExceptAlong works", {
+    needToCenterExceptAlong <- demest:::needToCenterExceptAlong
+    object <- new("SkeletonManyValues")
+    expect_false(needToCenterExceptAlong(object))
+})
+
+test_that("SkeletonBetaTerm method for needToCenterExceptAlong works", {
+    needToCenterExceptAlong <- demest:::needToCenterExceptAlong
+    object <- new("SkeletonBetaTerm")
+    expect_false(needToCenterExceptAlong(object))
+})
+
+test_that("SkeletonStateDLM method for needToCenterExceptAlong works", {
+    needToCenterExceptAlong <- demest:::needToCenterExceptAlong
+    object <- new("SkeletonStateDLM")
+    expect_false(needToCenterExceptAlong(object))
+})
+
+test_that("SkeletonTrendDLM method for needToCenterExceptAlong works", {
+    needToCenterExceptAlong <- demest:::needToCenterExceptAlong
+    object <- new("SkeletonTrendDLM")
+    expect_true(needToCenterExceptAlong(object))
+})
+
+

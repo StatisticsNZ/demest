@@ -3342,8 +3342,8 @@ test_that("updateWSqrt works", {
         prior@omegaDelta@.Data <- runif(1, 0.1, 1)
         ans.obtained <- updateWSqrt(prior)
         ans.expected <- prior
-        ans.expected@WSqrt@.Data[c(1, 4)] <- c(ans.expected@omegaAlpha@.Data^2,
-                                               ans.expected@omegaDelta@.Data^2)
+        ans.expected@WSqrt@.Data[c(1, 4)] <- c(ans.expected@omegaAlpha@.Data,
+                                               ans.expected@omegaDelta@.Data)
         if (test.identity)
             expect_identical(ans.obtained, ans.expected)
         else

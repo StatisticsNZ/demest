@@ -10350,9 +10350,11 @@ test_that("makeOutputStateDLM works with Level", {
                                        metadata = metadata,
                                        nSeason = NULL,
                                        iAlong = 1L,
-                                       pos = 3L)
+                                       pos = 3L,
+                                       isTrend = FALSE)
     ans.expected <- new("SkeletonStateDLM",
                         metadata = metadata,
+                        iAlong = 1L,
                         first = 3L,
                         last = 13L,
                         indicesShow = 2:11)
@@ -10367,9 +10369,11 @@ test_that("makeOutputStateDLM works with Level", {
                                        metadata = metadata,
                                        nSeason = NULL,
                                        iAlong = 1L,
-                                       pos = 3L)
+                                       pos = 3L,
+                                       isTrend = FALSE)
     ans.expected <- new("SkeletonStateDLM",
                         metadata = metadata,
+                        iAlong = 1L,
                         first = 3L,
                         last = 13L,
                         indicesShow = 2:11)
@@ -10385,7 +10389,8 @@ test_that("makeOutputStateDLM works with Level", {
                                        metadata = metadata,
                                        nSeason = NULL,
                                        iAlong = 2L,
-                                       pos = 3L)
+                                       pos = 3L,
+                                       isTrend = FALSE)
     ans.expected <- new("SkeletonStateDLM",
                         metadata = new("MetaData",
                                        nms = c("sex", "time"),
@@ -10394,6 +10399,7 @@ test_that("makeOutputStateDLM works with Level", {
                                                         new("Points", dimvalues = 1:10))),
                         first = 3L,
                         last = 24L,
+                        iAlong = 2L,
                         indicesShow = seq(from = 4L, to = 22L, by = 2L))
     expect_identical(ans.obtained, ans.expected)
 })
@@ -10409,11 +10415,14 @@ test_that("makeOutputStateDLM works with Trend", {
     ans.obtained <- makeOutputStateDLM(iterator = iterator,
                                        metadata = metadata,
                                        nSeason = NULL,
-                                       pos = 3L)
-    ans.expected <- new("SkeletonStateDLM",
+                                       iAlong = 1L,
+                                       pos = 3L,
+                                       isTrend = TRUE)
+    ans.expected <- new("SkeletonTrendDLM",
                         metadata = metadata,
                         first = 3L,
                         last = 13L,
+                        iAlong = 1L,
                         indicesShow = 2:11)
     expect_identical(ans.obtained, ans.expected)
 })
@@ -10427,14 +10436,16 @@ test_that("makeOutputStateDLM works with Season", {
                     DimScales = list(new("Points", dimvalues = 1:10)))
     iterator <- AlongIterator(dim = 11L, iAlong = 1L)
     ans.obtained <- makeOutputStateDLM(iterator = iterator,
-                                        metadata = metadata,
-                                        nSeason = 4L,
-                                        iAlong = 1L,
-                                        pos = 3L)
+                                       metadata = metadata,
+                                       nSeason = 4L,
+                                       iAlong = 1L,
+                                       pos = 3L,
+                                       isTrend = FALSE)
     ans.expected <- new("SkeletonStateDLM",
                         metadata = metadata,
                         first = 3L,
                         last = 46L,
+                        iAlong = 1L,
                         indicesShow = seq.int(5L, 41L, 4L))
     expect_identical(ans.obtained, ans.expected)
 })

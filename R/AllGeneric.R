@@ -298,6 +298,9 @@ setGeneric("makeOutputPrior",
 setGeneric("needToCenter",
            function(object) FALSE)
 
+setGeneric("needToCenterExceptAlong",
+          function(object) FALSE)
+
 setGeneric("predictBeta",
            function(prior, J, useC = FALSE, useSpecific = FALSE)
                standardGeneric("predictBeta"))
@@ -357,7 +360,11 @@ setGeneric("stringScaleTheta",
 
 setGeneric("sweepAllMargins",
            function(object)
-           standardGeneric("sweepAllMargins"))
+               standardGeneric("sweepAllMargins"))
+
+setGeneric("sweepExceptAlong",
+           function(object, iAlong)
+           standardGeneric("sweepExceptAlong"))
 
 setGeneric("summaryDataset",
            function(object)

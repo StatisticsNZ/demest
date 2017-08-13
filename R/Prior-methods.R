@@ -167,7 +167,8 @@ setMethod("makeOutputPrior",
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
-                                          pos = pos)
+                                          pos = pos,
+                                          isTrend = FALSE)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -195,7 +196,8 @@ setMethod("makeOutputPrior",
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
-                                          pos = pos)
+                                          pos = pos,
+                                          isTrend = FALSE)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -203,7 +205,8 @@ setMethod("makeOutputPrior",
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
-                                          pos = pos)
+                                          pos = pos,
+                                          isTrend = TRUE)
               pos <- pos + (K + 1L) * L
               scaleTrend <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -233,7 +236,8 @@ setMethod("makeOutputPrior",
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
-                                          pos = pos)
+                                          pos = pos,
+                                          isTrend = FALSE)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -243,7 +247,8 @@ setMethod("makeOutputPrior",
                                            metadata = metadata,
                                            nSeason = nSeason,
                                            iAlong = iAlong,
-                                           pos = pos)
+                                           pos = pos,
+                                           isTrend = FALSE)
               pos <- pos + (K + 1L) * L * nSeason
               scaleSeason <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -272,7 +277,8 @@ setMethod("makeOutputPrior",
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
-                                          pos = pos)
+                                          pos = pos,
+                                          isTrend = FALSE)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -280,7 +286,8 @@ setMethod("makeOutputPrior",
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
-                                          pos = pos)
+                                          pos = pos,
+                                          isTrend = TRUE)
               pos <- pos + (K + 1L) * L
               scaleTrend <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -290,7 +297,8 @@ setMethod("makeOutputPrior",
                                            metadata = metadata,
                                            nSeason = nSeason,
                                            iAlong = iAlong,
-                                           pos = pos)
+                                           pos = pos,
+                                           isTrend = FALSE)
               pos <- pos + (K + 1L) * L * nSeason
               scaleSeason <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -324,7 +332,8 @@ setMethod("makeOutputPrior",
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
-                                          pos = pos)
+                                          pos = pos,
+                                          isTrend = FALSE)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -358,7 +367,8 @@ setMethod("makeOutputPrior",
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
-                                          pos = pos)
+                                          pos = pos,
+                                          isTrend = FALSE)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -366,7 +376,8 @@ setMethod("makeOutputPrior",
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
-                                          pos = pos)
+                                          pos = pos,
+                                          isTrend = TRUE)
               pos <- pos + (K + 1L) * L
               scaleTrend <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -402,7 +413,8 @@ setMethod("makeOutputPrior",
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
-                                          pos = pos)
+                                          pos = pos,
+                                          isTrend = FALSE)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -412,7 +424,8 @@ setMethod("makeOutputPrior",
                                            metadata = metadata,
                                            nSeason = nSeason,
                                            iAlong = iAlong,
-                                           pos = pos)
+                                           pos = pos,
+                                           isTrend = FALSE)
               pos <- pos + (K + 1L) * L * nSeason
               scaleSeason <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -447,7 +460,8 @@ setMethod("makeOutputPrior",
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
-                                          pos = pos)
+                                          pos = pos,
+                                          isTrend = FALSE)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -455,7 +469,8 @@ setMethod("makeOutputPrior",
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
-                                          pos = pos)
+                                          pos = pos,
+                                          isTrend = TRUE)
               pos <- pos + (K + 1L) * L
               scaleTrend <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -465,7 +480,8 @@ setMethod("makeOutputPrior",
                                            metadata = metadata,
                                            nSeason = nSeason,
                                            iAlong = iAlong,
-                                           pos = pos)
+                                           pos = pos,
+                                           isTrend = FALSE)
               pos <- pos + (K + 1L) * L * nSeason
               scaleSeason <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -500,7 +516,8 @@ setMethod("makeOutputPrior",
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
-                                          pos = pos)
+                                          pos = pos,
+                                          isTrend = FALSE)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -527,7 +544,8 @@ setMethod("makeOutputPrior",
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
-                                          pos = pos)
+                                          pos = pos,
+                                          isTrend = FALSE)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -535,7 +553,8 @@ setMethod("makeOutputPrior",
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
-                                          pos = pos)
+                                          pos = pos,
+                                          isTrend = TRUE)
               pos <- pos + (K + 1L) * L
               scaleTrend <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -564,7 +583,8 @@ setMethod("makeOutputPrior",
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
-                                          pos = pos)
+                                          pos = pos,
+                                          isTrend = FALSE)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -574,7 +594,8 @@ setMethod("makeOutputPrior",
                                            metadata = metadata,
                                            nSeason = nSeason,
                                            iAlong = iAlong,
-                                           pos = pos)
+                                           pos = pos,
+                                           isTrend = FALSE)
               pos <- pos + (K + 1L) * L * nSeason
               scaleSeason <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -602,7 +623,8 @@ setMethod("makeOutputPrior",
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
-                                          pos = pos)
+                                          pos = pos,
+                                          isTrend = FALSE)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -610,7 +632,8 @@ setMethod("makeOutputPrior",
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
-                                          pos = pos)
+                                          pos = pos,
+                                          isTrend = TRUE)
               pos <- pos + (K + 1L) * L
               scaleTrend <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -620,7 +643,8 @@ setMethod("makeOutputPrior",
                                            metadata = metadata,
                                            nSeason = nSeason,
                                            iAlong = iAlong,
-                                           pos = pos)
+                                           pos = pos,
+                                           isTrend = FALSE)
               pos <- pos + (K + 1L) * L * nSeason
               scaleSeason <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -653,7 +677,8 @@ setMethod("makeOutputPrior",
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
-                                          pos = pos)
+                                          pos = pos,
+                                          isTrend = FALSE)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -686,7 +711,8 @@ setMethod("makeOutputPrior",
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
-                                          pos = pos)
+                                          pos = pos,
+                                          isTrend = FALSE)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -694,7 +720,8 @@ setMethod("makeOutputPrior",
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
-                                          pos = pos)
+                                          pos = pos,
+                                          isTrend = TRUE)
               pos <- pos + (K + 1L) * L
               scaleTrend <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -729,7 +756,8 @@ setMethod("makeOutputPrior",
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
-                                          pos = pos)
+                                          pos = pos,
+                                          isTrend = FALSE)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -739,7 +767,8 @@ setMethod("makeOutputPrior",
                                            metadata = metadata,
                                            nSeason = nSeason,
                                            iAlong = iAlong,
-                                           pos = pos)
+                                           pos = pos,
+                                           isTrend = FALSE)
               pos <- pos + (K + 1L) * L * nSeason
               scaleSeason <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -773,7 +802,8 @@ setMethod("makeOutputPrior",
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
-                                          pos = pos)
+                                          pos = pos,
+                                          isTrend = FALSE)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -781,7 +811,8 @@ setMethod("makeOutputPrior",
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
-                                          pos = pos)
+                                          pos = pos,
+                                          isTrend = TRUE)
               pos <- pos + (K + 1L) * L
               scaleTrend <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -791,7 +822,8 @@ setMethod("makeOutputPrior",
                                            metadata = metadata,
                                            nSeason = nSeason,
                                            iAlong = iAlong,
-                                           pos = pos)
+                                           pos = pos,
+                                           isTrend = FALSE)
               pos <- pos + (K + 1L) * L * nSeason
               scaleSeason <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L

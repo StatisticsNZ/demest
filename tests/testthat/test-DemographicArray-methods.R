@@ -567,6 +567,13 @@ test_that("sweepAllMargins works with Values - has iteration dimension", {
     ans.obtained <- sweepAllMargins(x)
     ans.expected <- x - rowMeans(x)
     expect_equal(ans.obtained, ans.expected)
+    ## dim = c(5, 10)
+    x <- Values(array(rnorm(50),
+                      dim = c(5, 10),
+                      dimnames = list(region = 1:5, iteration = 1:10)))
+    ans.obtained <- sweepAllMargins(x)
+    ans.expected <- x - rep(colMeans(x), each = 5)
+    expect_equal(ans.obtained, ans.expected)
     ## dim = c(10, 10, 5)
     x <- Values(array(rnorm(500),
                       dim = c(10, 10, 5),
@@ -598,3 +605,32 @@ test_that("sweepAllMargins works with Values - has iteration dimension", {
                       dimnames = list(iteration = 1:50)))
     expect_identical(sweepAllMargins(x), x)
 })
+
+test_that("sweepExceptAlong works", {
+    sweepExceptAlong <- demest:::sweepExceptAlong
+    ## dim = c(10, 5)
+    x <- Values(array(rnorm(50),
+                      dim = c(10, 5),
+                      dimnames = list(age = 0:9, region = 1:5)),
+                dimscales = c(age = "Intervals"))
+    ans.obtained <- sweepExceptAlong(x, iAlong = 1L)
+    ans.expected <- x - rowMeans(x)
+    expect_equal(ans.obtained, ans.expected)
+    ## dim = 10
+    x <- Values(array(rnorm(50),
+                      dim = 50,
+                      dimnames = list(time = 1:50)),
+                dimscales = c(time = "Intervals"))
+    ans.obtained <- sweepExceptAlong(x, iAlong = 1L)
+    expect_equal(ans.obtained, x)
+    ## dim = c(10, 10, 5)
+    x <- Values(array(rnorm(500),
+                      dim = c(10, 10, 5),
+                      dimnames = list(iteration = 1:10, time = 1:10, region = 1:5)),
+                dimscales = c(time = "Intervals"))
+    ans.obtained <- sweepExceptAlong(x, iAlong = 2L)
+    means <- apply(as(x, "array"), 1:2, mean)
+    ans.expected <- x - as.numeric(means)
+    expect_equal(ans.obtained, ans.expected)
+})
+

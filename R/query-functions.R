@@ -189,6 +189,12 @@ fetch <- function(filename, where = character(), iterations = NULL,
         need.to.center <- needToCenter(skeleton)
         if (need.to.center)
             ans <- sweepAllMargins(ans)
+        need.to.center.except.along <- needToCenterExceptAlong(skeleton)
+        if (need.to.center.except.along) {
+            iAlong <- skeleton@iAlong
+            ans <- sweepExceptAlong(object = ans,
+                                    iAlong = iAlong)
+        }
     }
     ans
 }
@@ -346,6 +352,12 @@ fetchBoth <- function(filenameEst, filenamePred, where, iterations = NULL,
         need.to.center <- needToCenter(skeleton)
         if (need.to.center)
             ans <- sweepAllMargins(ans)
+        need.to.center.except.along <- needToCenterExceptAlong(skeleton)
+        if (need.to.center.except.along) {
+            iAlong <- skeleton@iAlong
+            ans <- sweepExceptAlong(object = ans,
+                                    iAlong = iAlong)
+        }
     }
     ans
 }

@@ -349,20 +349,22 @@ test_that("can create valid object of class SkeletonStateDLM", {
     x <- new("SkeletonStateDLM",
              first = 40L,
              last = 50L,
+             iAlong = 1L,
              metadata = new("MetaData",
-                 nms = "time",
-                 dimtypes = "time",
-                 DimScales = list(new("Points", dimvalues = 1:10))),
+                            nms = "time",
+                            dimtypes = "time",
+                            DimScales = list(new("Points", dimvalues = 1:10))),
              indicesShow = 2:11)
     expect_true(validObject(x))
     x <- new("SkeletonStateDLM",
              first = 40L,
              last = 61L,
+             iAlong = 2L,
              metadata = new("MetaData",
-                 nms = c("sex", "time"),
-                 dimtypes = c("state", "time"),
-                 DimScales = list(new("Categories", dimvalues = c("f", "m")),
-                     new("Points", dimvalues = 1:10))),
+                            nms = c("sex", "time"),
+                            dimtypes = c("state", "time"),
+                            DimScales = list(new("Categories", dimvalues = c("f", "m")),
+                                             new("Points", dimvalues = 1:10))),
              indicesShow = c(2:11, 13:22))
     expect_true(validObject(x))
 })
@@ -371,6 +373,7 @@ test_that("validity tests for SkeletonStateDLM inherited from SkeletonIndicesSho
     x <- new("SkeletonStateDLM",
              first = 40L,
              last = 50L,
+             iAlong = 1L,
              metadata = new("MetaData",
                  nms = "time",
                  dimtypes = "time",

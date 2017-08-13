@@ -792,11 +792,25 @@ setMethod("fetchResults",
 
 ## HAS_TESTS
 setMethod("needToCenter",
-          signature(object = "SkeletonBetaIntercept"),
-          function(object) FALSE)
+          signature(object = "SkeletonBetaTerm"),
+          function(object) TRUE)
 
 ## HAS_TESTS
 setMethod("needToCenter",
-          signature(object = "SkeletonBetaTerm"),
+          signature(object = "SkeletonStateDLM"),
+          function(object) TRUE)
+
+## HAS_TESTS
+setMethod("needToCenter",
+          signature(object = "SkeletonTrendDLM"),
+          function(object) FALSE)
+
+
+
+## needToCenterExceptAlong ####################################################
+
+## HAS_TESTS
+setMethod("needToCenterExceptAlong",
+          signature(object = "SkeletonTrendDLM"),
           function(object) TRUE)
 

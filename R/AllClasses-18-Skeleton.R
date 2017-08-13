@@ -335,7 +335,12 @@ setClass("SkeletonCovariates",
 setClass("SkeletonStateDLM",
          slots = c(metadata = "MetaData"),
          contains = c("SkeletonMany",
-                      "SkeletonIndicesShow"))
+                      "SkeletonIndicesShow",
+                      "IAlongMixin"))
+
+## HAS_FETCH
+setClass("SkeletonTrendDLM",
+         contains = "SkeletonStateDLM")
 
 ## HAS_TESTS
 ## HAS_FETCH
