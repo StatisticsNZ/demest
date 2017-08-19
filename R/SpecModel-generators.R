@@ -181,11 +181,11 @@ Normal <- function(formula, sd = NULL, priorSD = HalfT()) {
 #' @examples
 #' mean <- Values(array(c(0.95, 0.96, 0.95, 0.94),
 #'                      dim = c(2, 2),
-#'                      dimnames = list(age = c("0-39", "40"),
+#'                      dimnames = list(age = c("0-39", "40+"),
 #'                                      sex = c("Female", "Male"))))
 #' sd <- Values(array(c(0.05, 0.08, 0.05, 0.04),
 #'                    dim = c(2, 2),
-#'                    dimnames = list(age = c("0-39", "40"),
+#'                    dimnames = list(age = c("0-39", "40+"),
 #'                                    sex = c("Female", "Male"))))
 #' NormalFixed(mean = mean, sd = sd)
 #' NormalFixed(mean = mean, sd = 0.1)

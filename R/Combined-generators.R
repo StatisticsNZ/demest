@@ -263,23 +263,23 @@ setMethod("initialCombinedCounts",
               if (has.exposure) {
                   model <- initialModel(object, y = y, exposure = exposure)
                   methods::new("CombinedCountsPoissonHasExp",
-                      model = model,
-                      y = y,
-                      exposure = exposure,
-                      observation = observation,
-                      datasets = datasets,
-                      namesDatasets = namesDatasets,
-                      transforms = transforms)
+                               model = model,
+                               y = y,
+                               exposure = exposure,
+                               observation = observation,
+                               datasets = datasets,
+                               namesDatasets = namesDatasets,
+                               transforms = transforms)
               }
               else {
                   model <- initialModel(object, y = y, exposure = exposure)
                   methods::new("CombinedCountsPoissonNotHasExp",
-                      model = model,
-                      y = y,
-                      observation = observation,
-                      datasets = datasets,
-                      namesDatasets = namesDatasets,
-                      transforms = transforms)
+                               model = model,
+                               y = y,
+                               observation = observation,
+                               datasets = datasets,
+                               namesDatasets = namesDatasets,
+                               transforms = transforms)
               }
           })
 
