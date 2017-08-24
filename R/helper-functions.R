@@ -7029,16 +7029,19 @@ printBinomialModEqns <- function(object) {
     upper <- object@upper
     names <- object@namesBetas
     series <- call$series
-    has.series <- !is.null(series)
     name.y <- deparse(call$formula[[2L]])
+    if (is.null(series)) {
+        if (identical(name.y, "y"))
+            exposure <- "exposure"
+        else
+            exposure <- "y"
+    }
+    else
+        exposure <- series
     name.y <- sprintf("%13s", name.y)
     lower <- invlogit1(lower)
     upper <- invlogit1(upper)
     terms <- expandTermsMod(names)
-    if (has.series)
-        exposure <- series
-    else
-        exposure <- "exposure"
     cat(name.y, "[i] ~ binomial(", exposure, "[i], prob[i])", sep = "")
     if ((0 < lower) || (upper < 1))
         cat(",  ", format(lower, digits = 4), "< prob[i] <", format(upper, digits = 4))
@@ -7435,6 +7438,26 @@ printNormalFixedLikEqns <- function(object) {
     cat("            y[i] ~ Normal(mean[i], sd[i])\n")
 }
 
+printNormalFixedModEqns <- function(object) {
+    call <- object@call
+    uses.exposure <- methods::is(object, "UseExposure")
+    series <- call$series
+    name.y <- deparse(call$formula[[2L]])
+    if (is.null(series)) {
+        if (identical(name.y, "y"))
+            exposure <- "exposure"
+        else
+            exposure <- "y"
+    }
+    else
+        exposure <- series
+    name.y <- sprintf("%13s", name.y)
+    if (uses.exposure)
+        cat(name.y, "[i] ~ NormalFixed(", exposure, "[i] * mean[i], sqrt(", exposure, "[i]) * sd[i])\n", sep = "")
+    else
+        cat(name.y, "Normal(mean[i], sd[i])\n", sep = "")
+}
+
 printNormalFixedSpecEqns <- function(object) {
     series <- object@series@.Data
     call <- object@call
@@ -7552,17 +7575,20 @@ printPoissonBinomialLikEqns <- function(object) {
     cat("y[i] ~ Poisson-binomial(exposure[i], prob[i])\n")
 }
 
-printPoissonBinomialSpecEqns <- function(object) {
+printPoissonBinomialModEqns <- function(object) {
     call <- object@call
     prob <- object@prob
     series <- call$series
-    has.series <- !is.null(series)
     name.y <- deparse(call$formula[[2L]])
-    name.y <- sprintf("%13s", nameY)
-    if (has.series)
-        exposure <- series        
+    if (is.null(series)) {
+        if (identical(name.y, "y"))
+            exposure <- "exposure"
+        else
+            exposure <- "y"
+    }
     else
-        exposure <- "exposure"
+        exposure <- series
+    name.y <- sprintf("%13s", name.y)
     cat(name.y, "[i] ~ Poisson-binomial(", exposure, "[i], prob[i])\n", sep = "")
 }
 
@@ -7596,17 +7622,20 @@ printPoissonModEqns <- function(object) {
     names <- object@namesBetas
     uses.exposure <- methods::is(object, "UseExposure")
     series <- call$series
-    has.series <- !is.null(series)
     name.y <- deparse(call$formula[[2L]])
+    if (is.null(series)) {
+        if (identical(name.y, "y"))
+            exposure <- "exposure"
+        else
+            exposure <- "y"
+    }
+    else
+        exposure <- series
     name.y <- sprintf("%13s", name.y)
     lower <- exp(lower)
     upper <- exp(upper)
     terms <- expandTermsMod(names)
     if (uses.exposure) {
-        if (has.series)
-            exposure <- series
-        else
-            exposure <- "exposure"
         cat(name.y, "[i] ~ Poisson(rate[i] * ", exposure, "[i])", sep = "")
         if (lower > 0 || is.finite(upper))
             cat(",  ", format(lower, digits = 4), "< rate[i] <", format(upper, digits = 4))
@@ -7621,7 +7650,6 @@ printPoissonModEqns <- function(object) {
         cat("   log(count[i]) ~ N(", terms, ", sd^2)\n", sep = "")
     }
 }
-
 
 printPoissonSpecEqns <- function(object) {
     formulaMu <- object@formulaMu

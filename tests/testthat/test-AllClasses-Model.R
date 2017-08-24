@@ -1005,16 +1005,6 @@ test_that("tests for NormalFixedNotUseExp inherited from NormalFixed work", {
     x.wrong@sd@.Data <- x.wrong@sd@.Data[-1]
     expect_error(validObject(x.wrong),
                  "'mean' and 'metadataY' inconsistent")
-    ## 'meanAll' is at least as long as 'mean'
-    x.wrong <- x
-    x.wrong@mean@.Data <- rep(x.wrong@mean@.Data, 2)
-    x.wrong@sd@.Data <- rep(x.wrong@sd@.Data, 2)
-    x.wrong@metadataY <- new("MetaData",
-                             nms = "age",
-                             dimtypes = "age",
-                             DimScales = list(new("Intervals", dimvalues = 0:20)))
-    expect_error(validObject(x.wrong),
-                 "'meanAll' is shorter than 'mean'")
 })
 
 test_that("tests for NormalFixedNotUseExp inherited from MeanSDMetadataAllMixin work", {

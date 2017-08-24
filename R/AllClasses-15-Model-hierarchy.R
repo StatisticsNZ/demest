@@ -61,10 +61,10 @@ setClass("NormalFixed",
              if (!identical(length(mean), as.integer(prod(dim(metadataY)))))
                  return(gettextf("'%s' and '%s' inconsistent",
                                  "mean", "metadataY"))
-             ## 'meanAll' is at least as long as 'mean'
-             if (length(meanAll) < length(mean))
-                 return(gettextf("'%s' is shorter than '%s'",
-                                 "meanAll", "mean"))
+             ## ## 'meanAll' is at least as long as 'mean'
+             ## if (length(meanAll) < length(mean))
+             ##     return(gettextf("'%s' is shorter than '%s'",
+             ##                     "meanAll", "mean"))
              TRUE
          })
 

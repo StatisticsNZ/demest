@@ -113,7 +113,7 @@ resetB <- function(object, useC = FALSE) {
 advanceCAP <- function(object, useC = FALSE) {
     stopifnot(methods::is(object, "CohortIteratorAccessionPopulation"))
     if (useC) {
-        .Call(advanceCAP_R, object) ## NAME CHANGED
+        .Call(advanceCAP_R, object)
     }
     else {
         i <- object@i

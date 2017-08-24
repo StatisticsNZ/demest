@@ -88,10 +88,10 @@ setMethod("CohortIterator",
               i.triangle <- match("triangle", dimtypes, nomatch = 0L)
               i.dest <- grep("child", dimtypes)
               makeIteratorCODPCP(dim = dim,
-                               iTime = i.time,
-                               iAge = i.age,
-                               iTriangle = i.triangle,
-                               iMultiple = i.dest)
+                                 iTime = i.time,
+                                 iAge = i.age,
+                                 iTriangle = i.triangle,
+                                 iMultiple = i.dest)
           })
 
 ## HAS_TESTS

@@ -344,7 +344,7 @@ NormalFixed <- function(mean, sd) {
 #' @param aggregate An object of class \code{\linkS4class{SpecAggregate}}.
 #'
 #' @examples
-#' ## model were all hyper-priors follow defaults
+#' ## model where all hyper-priors follow defaults
 #' Model(y ~ Poisson(mean ~ age * sex + age * time))
 #'
 #' ## override default hyper-prior for age effect

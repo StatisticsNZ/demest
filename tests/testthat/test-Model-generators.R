@@ -1228,12 +1228,6 @@ test_that("initialModel throws appropriate errors with NormalFixedUseExp", {
     spec <- Model(y ~ NormalFixed(mean = mean.wrong, sd = 0.1))
     expect_error(initialModel(spec, y = y, exposure = exposure),
                  "'mean' from NormalFixed model not compatible with data :")
-    mean.wrong <- Values(array(runif(n = 5),
-                               dim = 5,
-                               dimnames = list(age = 0:4)))
-    spec <- Model(y ~ NormalFixed(mean = mean.wrong, sd = 0.1))
-    expect_error(initialModel(spec, y = y, exposure = exposure),
-                 "'mean' from NormalFixed model not compatible with data :")
 })
 
 test_that("initialModel creates object of class NormalFixedNotUseExp from valid inputs", {

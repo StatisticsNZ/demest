@@ -1033,15 +1033,15 @@ setMethod("initialModel",
               if (methods::is(mean, "error"))
                   stop(gettextf("'%s' from %s model not compatible with data : %s",
                                 "mean", "NormalFixed", mean$message))
-              ## check that don't need to expand 'mean' to make compatible with 'y'
-              value <- tryCatch(makeCompatible(x = as(mean.before.subset, "Counts"),
-                                               y = y,
-                                               subset = TRUE,
-                                               check = TRUE),
-                                error = function(e) e)
-              if (methods::is(value, "error"))
-                  stop(gettextf("'%s' from %s model not compatible with data : %s",
-                                "mean", "NormalFixed", value$message))
+              ## ## check that don't need to expand 'mean' to make compatible with 'y'
+              ## value <- tryCatch(makeCompatible(x = as(mean.before.subset, "Counts"),
+              ##                                  y = y,
+              ##                                  subset = TRUE,
+              ##                                  check = TRUE),
+              ##                   error = function(e) e)
+              ## if (methods::is(value, "error"))
+              ##     stop(gettextf("'%s' from %s model not compatible with data : %s",
+              ##                   "mean", "NormalFixed", value$message))
               sd <- makeCompatible(x = sd.before.subset,
                                    y = y,
                                    subset = TRUE,

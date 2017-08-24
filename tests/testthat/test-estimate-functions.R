@@ -577,7 +577,6 @@
 ##                      nChain = 2L, nThin = 200)
 
 
-## library(DemographicEstimation); library(testthat); test.identity <- F; n.test <- 5; options(warn = 2)
 ## filename1 <- tempfile()
 ## filename2 <- tempfile()
 ## lambda <- exp(outer(outer(rnorm(n = 10,
@@ -596,25 +595,35 @@
 ##                    dimnames = list(age = 0:9, region = 1:5)))
 ## d2[c(2, 4)] <- NA
 ## d3 <- collapseDimension(y, dim = "region")
-## observation <- list(Model(d1 ~ Binomial(prob = 0.7, jump = 0.01)),
-##                     Model(d2 ~ Poisson(mean ~ region,
-##                                        jump = 0.2,
-##                                        lower = 0.1,
-##                                        upper = 3)),
-##                     Model(d3 ~ PoissonBinomial(prob = 0.95)))
+## d4 <- Counts(array(rpois(n = length(y),
+##                          lambda = y * 1.1),
+##                    dim = dim(y),
+##                    dimnames = dimnames(y)))
+## mean.agesex <- Values(array(1.1,
+##                      dim = c(10, 2),
+##                      dimnames = list(age = 0:9, sex = c("f", "m"))))
+## observation <- list(Model(d1 ~ Binomial(mean ~ age)),
+##                     Model(d2 ~ Poisson(mean ~ region),
+##                           jump = 0.2,
+##                           lower = 0.1,
+##                           upper = 3),
+##                     Model(d3 ~ PoissonBinomial(prob = 0.95)),
+##                     x <- Model(d4 ~ NormalFixed(mean = mean.agesex, sd = 0.1)))
 ## set.seed(1)
-## res1 <- estimateCounts(model = Model(y ~ Poisson(mean ~ age + sex + region,
-##                       exposure = FALSE, lower = 2,
-##                       jump = 0.3),
-##                       age ~ Exch()),
-##                       y = y,
-##                       observation = observation,
-##                       datasets = list(d1 = d1, d2 = d2, d3 = d3),
-##                       nBurnin = 50,
-##                       nSim = 10,
-##                       nThin = 2,
-##                       nChain = 2,
-##                       filename = filename1)
+## estimateCounts(Model(y ~ Poisson(mean ~ age + sex + region),
+##                      age ~ Exch(),
+##                      lower = 2,
+##                      jump = 0.3),
+##                y = y,
+##                observation = observation,
+##                datasets = list(d1 = d1, d2 = d2, d3 = d3, d4 = d4),
+##                nBurnin = 50,
+##                nSim = 10,
+##                nThin = 2,
+##                nChain = 2,
+##                filename = filename1)
+
+
 ## res2 <- continueEstimation(res1, nBurnin = 10, nSim = 20)
 ## set.seed(1)
 ## res3 <- estimateCounts(model = Model(y ~ Poisson(mean ~ age + sex + region,

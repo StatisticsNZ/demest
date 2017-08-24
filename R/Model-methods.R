@@ -1354,8 +1354,15 @@ setMethod("showModelHelper",
 setMethod("showModelHelper",
           signature(object = "PoissonBinomialMixture"),
           function(object) {
-              printPoissonBinomialLikEqns(object)
+              printPoissonBinomialModEqns(object)
           })
+
+setMethod("showModelHelper",
+          signature(object = "NormalFixed"),
+          function(object) {
+              printNormalFixedModEqns(object)
+          })
+
 
 
 ## transferParamModel ################################################################

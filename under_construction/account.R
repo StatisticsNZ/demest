@@ -1,7 +1,7 @@
          
 ## identical for transition
 setMethod("updateCombined",
-          signature(object = "CombinedAccountMovements"),
+          signature(object = "CombinedAccount"),
           function(object, nUpdate = 1L, useC = FALSE, useSpecific = FALSE) {
               ## object
               stopifnot(methods::validObject(object))
@@ -28,18 +28,18 @@ setMethod("updateCombined",
 
 ## identical for transition
 setMethod("updateAccount",
-          signature(object = "CombinedAccountMovements"),
+          signature(object = "CombinedAccount"),
           function(object, useC = FALSE) {
               stopifnot(validObject(object))
               if (useC) {
                   if (useSpecific)
-                      .Call(updateAccount_CombinedAccountMovements_R, object)
+                      .Call(updateAccount_CombinedAccount_R, object)
                   else
                       .Call(updateAccount_R, object)
               }
               else {
-                  n.cell <- object@account@nCellAccount@.Data
-                  for (i in seq_len(n.cell)) {
+                  n.cell.account <- object@account@nCellAccount@.Data
+                  for (i in seq_len(n.cell.account)) {
                       object <- updateProposalAccount(object)
                       generated.new.proposal <- object@generatedNewProposal@.Data
                       if (generated.new.proposal) {
@@ -58,34 +58,6 @@ setMethod("updateAccount",
           })
 
 
-## identical for transitions
-setMethod("updateAccount",
-          signature(object = "CombinedAccountMovementsOneIter"),
-          function(object, useC = FALSE) {
-              stopifnot(is(object, "CombinedAccountMovementsOneIter"))
-              if (useC) {
-                  if (useSpecific)
-                      .Call(updateAccount_CombinedAccountMovementsOneIter_R, object)
-                  else
-                      .Call(updateAccount_R, object)
-              }
-              else {
-                  n.cell <- object@account@nCellAccount@.Data
-                  for (i in seq_len(n.cell)) {
-                      object <- updateProposalAccount(object)
-                      generated.new.proposal <- object@generatedNewProposal@.Data
-                      if (generated.new.proposal) {
-                          log.r <- diffLogDensAccount(object)
-                          accept <- (log.r > 0) || (runif(n = 1L) < exp(log.r))
-                          if (accept)
-                              object <- updateValuesAccount(object)
-                      }
-                  }
-              }
-              object
-          })
-
-## identical for one iter
 setMethod("updateProposalAccount",
           signature(object = "CombinedAccountMovements"),
           function(object, useC = FALSE) {
@@ -105,12 +77,15 @@ setMethod("updateProposalAccount",
                   }
                   else {
                       cum.prob <- object@cumProbComp
+                      i.births <- object@iBirths
                       i.orig.dest <- object@iOrigDest
                       i.pool <- object@iPool
                       i.net <- object@iNet
                       i.comp <- rcateg1(cum.prob)
                       object@iComp <- i.comp
-                      if (i.comp == i.orig.dest)
+                      if (i.comp = i.births)
+                          updateProposalAccountMoveBirths(object)
+                      else if (i.comp == i.orig.dest)
                           updateProposalAccountMoveOrigDest(object)
                       else if (i.comp == i.pool)
                           updateProposalAccountMovePool(object)
@@ -122,10 +97,8 @@ setMethod("updateProposalAccount",
               }
           })
 
-
-
 updateProposalAccountBirths <- function(combined, useC = FALSE) {
-    stopifnot(is(combined, "CombinedAccountMove"))
+    stopifnot(is(combined, "CombinedAccountMovements"))
     if (useC) {
         .Call(updateProposalAccountMoveOrigDest_R, combined)
     }
@@ -134,7 +107,6 @@ updateProposalAccountBirths <- function(combined, useC = FALSE) {
         population <- account@population
         i.comp <- combined@iComp
         component <- account@components[[i.comp]]
-        is.increment <- combined@isIncrement[i.comp]
         has.age <- combined@hasAge
         if (has.age) {
             accession <- combined@accession
@@ -149,15 +121,10 @@ updateProposalAccountBirths <- function(combined, useC = FALSE) {
             mapping.to.exposure <- combined@mappingsToExposure[[i.comp]]
         }
         description.comp <- combined@descriptionsComp[[i.comp]]
-        sys.mod.popn <- combined@system[[1L]]
-        sys.mod.comp <- combined@system[[i.comp + 1L]]
+        sys.mod.popn <- combined@systemModels[[1L]]
+        sys.mod.comp <- combined@systemModels[[i.comp + 1L]]
         theta.popn <- sys.mod.popn@theta
         theta.comp <- sys.mod.comp@theta
-        is.net.entries <- combined@isNetEntries[[i.comp]]
-        if (is.net.entries) {
-            varsigma.comp <- sys.mod.comp@varsigma
-            w.comp <- sys.mod.comp@w
-        }
         max.attempt <- combined@maxAttempt
         i.cell <- chooseICellComp(description.comp)
         i.exp.first <- getIExpFirstFromBirths(i = i.cell,
@@ -184,37 +151,19 @@ updateProposalAccountBirths <- function(combined, useC = FALSE) {
             }
         }
         val.curr <- component[i.cell]
-        if (is.increment) {
-            lower <- val.curr - min.val
-            upper <- NA_integer_
+        lower <- val.curr - min.val
+        upper <- NA_integer_
+        theta.cell <- theta.comp[i.cell]
+        if (uses.exposure) {
+            exposure.cell <- exposure[i.exposure]
+            lambda <- theta.cell * exposure.cell
         }
-        else {
-            lower <- NA_integer_
-            upper <- val.curr + min.val
-        }
-        if (is.net.entries) {
-            mean <- theta.comp[i.cell]
-            w.cell <- w.comp[i.cell]
-            sd <- varsigma.comp / w.cell
-            val.prop <- rnormIntTrunc1(mean = mean,
-                                       sd = sd,
-                                       lower = lower,
-                                       upper = upper,
-                                       maxAttempt = max.attempt)
-        }
-        else {
-            theta.cell <- theta.comp[i.cell]
-            if (uses.exposure) {
-                exposure.cell <- exposure[i.exposure]
-                lambda <- theta.cell * exposure.cell
-            }
-            else
-                lambda <- theta.cell
-            val.prop <- rpoisTrunc1(lambda = lambda,
-                                    lower = lower,
-                                    upper = upper,
-                                    maxAttempt = max.attempt)
-        }
+        else
+            lambda <- theta.cell
+        val.prop <- rpoisTrunc1(lambda = lambda,
+                                lower = lower,
+                                upper = upper,
+                                maxAttempt = max.attempt)
         found.value <- !is.na(val.prop)
         if (found.value) {
             diff.prop <- val.prop - val.curr
@@ -268,7 +217,7 @@ updateProposalAccountBirths <- function(combined, useC = FALSE) {
 
 
 updateProposalAccountMoveOrigDest <- function(combined, useC = FALSE) {
-    stopifnot(is(combined, "CombinedAccountMove"))
+    stopifnot(is(combined, "CombinedAccountMovements"))
     if (useC) {
         .Call(updateProposalAccountMoveOrigDest_R, combined)
     }
@@ -291,8 +240,8 @@ updateProposalAccountMoveOrigDest <- function(combined, useC = FALSE) {
         description.comp <- combined@descriptionsComp[[i.comp]]
         mapping.exposure <- combined@mappingsToExposure[[i.comp]]
         iterator.popn <- combined@iteratorPopn                     
-        sys.mod.popn <- combined@system[[1L]]
-        sys.mod.comp <- combined@system[[i.comp + 1L]]
+        sys.mod.popn <- combined@systemModels[[1L]]
+        sys.mod.comp <- combined@systemModels[[i.comp + 1L]]
         theta.popn <- sys.mod.popn@theta
         theta.comp <- sys.mod.comp@theta
         max.attempt <- combined@maxAttempt
@@ -403,7 +352,7 @@ updateProposalAccountMoveOrigDest <- function(combined, useC = FALSE) {
 }
 
 updateProposalAccountMovePool <- function(combined) {
-    stopifnot(is(combined, "CombinedAccountMove"))
+    stopifnot(is(combined, "CombinedAccountMovements"))
     if (useC) {
         .Call(updateProposalAccountMovePool_R, combined)
     }
@@ -425,8 +374,8 @@ updateProposalAccountMovePool <- function(combined) {
         mapping.exposure <- combined@mappingsToExposure[[i.comp]]
         description.comp <- combined@descriptionsComp[[i.comp]]
         iterator.popn <- combined@iteratorPopn
-        sys.mod.popn <- combined@system[[1L]]
-        sys.mod.comp <- combined@system[[i.comp + 1L]]
+        sys.mod.popn <- combined@systemModels[[1L]]
+        sys.mod.comp <- combined@systemModels[[i.comp + 1L]]
         theta.popn <- sys.mod.popn@theta
         theta.comp <- sys.mod.comp@theta
         max.attempt <- combined@maxAttempt
@@ -543,7 +492,7 @@ updateProposalAccountMovePool <- function(combined) {
 }
 
 updateProposalAccountMoveNet <- function(combined) {
-    stopifnot(is(combined, "CombinedAccountMove"))
+    stopifnot(is(combined, "CombinedAccountMovements"))
     if (useC) {
         .Call(updateProposalAccountMoveNet_R, combined)
     }
@@ -561,8 +510,8 @@ updateProposalAccountMoveNet <- function(combined) {
         mapping.to.popn <- combined@mappingsToPopn[[i.comp]]
         description.comp <- combined@descriptionsComp[[i.comp]]
         iterator.popn <- combined@iteratorPopn
-        sys.mod.popn <- combined@system[[1L]]
-        sys.mod.comp <- combined@system[[i.comp + 1L]]
+        sys.mod.popn <- combined@systemModels[[1L]]
+        sys.mod.comp <- combined@systemModels[[i.comp + 1L]]
         theta.popn <- sys.mod.popn@theta
         theta.comp <- sys.mod.comp@theta
         varsigma.comp <- sys.mod.comp@varsigma
@@ -666,7 +615,7 @@ updateProposalAccountMoveNet <- function(combined) {
 }
 
 updateProposalAccountMoveComp <- function(combined) {
-    stopifnot(is(combined, "CombinedAccountMove"))
+    stopifnot(is(combined, "CombinedAccountMovements"))
     if (useC) {
         .Call(updateProposalAccountMoveComp_R, combined)
     }
@@ -690,12 +639,13 @@ updateProposalAccountMoveComp <- function(combined) {
             mapping.to.exposure <- combined@mappingsToExposure[[i.comp]]
         }
         description.comp <- combined@descriptionsComp[[i.comp]]
-        sys.mod.popn <- combined@system[[1L]]
-        sys.mod.comp <- combined@system[[i.comp + 1L]]
+        sys.mod.popn <- combined@systemModels[[1L]]
+        sys.mod.comp <- combined@systemModels[[i.comp + 1L]]
         theta.popn <- sys.mod.popn@theta
         theta.comp <- sys.mod.comp@theta
-        is.net.entries <- combined@isNetEntries[[i.comp]]
-        if (is.net.entries) {
+        i.net <- combined@iNet
+        is.net <- i.comp == i.net
+        if (is.net) {
             varsigma.comp <- sys.mod.comp@varsigma
             w.comp <- sys.mod.comp@w
         }
@@ -810,7 +760,7 @@ updateProposalAccountMoveComp <- function(combined) {
 ## LOG LIKELIHOOOD #########################################################
 
 diffLogLikAccountMove <- function(combined) {
-    stopifnot(is(combined, "CombinedAccountMove"))
+    stopifnot(is(combined, "CombinedAccountMovements"))
     if (useC) {
         .Call(diffLogLikAccountMove_R, combined)
     }
@@ -833,7 +783,7 @@ diffLogLikAccountMove <- function(combined) {
 }
 
 diffLogLikAccountMovePopn <- function(combined, useC = FALSE) {
-    stopifnot(is(combined, "CombinedAccountMove"))
+    stopifnot(is(combined, "CombinedAccountMovements"))
     if (useC) {
         .Call(diffLogLikAccountMovePopn_R, combined)
     }
@@ -859,7 +809,7 @@ diffLogLikAccountMovePopn <- function(combined, useC = FALSE) {
 }
 
 diffLogLikAccountMoveOrigDest <- function(combined, useC = TRUE) {
-    stopifnot(is(combined, "CombinedAccountMove"))
+    stopifnot(is(combined, "CombinedAccountMovements"))
     if (useC) {
         .Call(diffLogLikAccountMoveOrigDest_R, combined)
     }
@@ -902,7 +852,7 @@ diffLogLikAccountMoveOrigDest <- function(combined, useC = TRUE) {
 
 
 diffLogLikAccountMovePool <- function(combined, useC = FALSE) {
-    stopifnot(is(combined, "CombinedAccountMove"))
+    stopifnot(is(combined, "CombinedAccountMovements"))
     if (useC) {
         .Call(diffLogLikAccountMovePool_R, combined)
     }
@@ -948,7 +898,7 @@ diffLogLikAccountMovePool <- function(combined, useC = FALSE) {
 
 
 diffLogLikAccountMoveNet <- function(combined, useC = FALSE) {
-    stopifnot(is(combined, "CombinedAccountMove"))
+    stopifnot(is(combined, "CombinedAccountMovements"))
     if (useC) {
         .Call(diffLogLikAccountMoveNet_R, combined)
     }
@@ -994,7 +944,7 @@ diffLogLikAccountMoveNet <- function(combined, useC = FALSE) {
 
 
 diffLogLikAccountMoveComp <- function(combined, useC = FALSE) {
-    stopifnot(is(combined, "CombinedAccountMove"))
+    stopifnot(is(combined, "CombinedAccountMovements"))
     if (useC) {
         .Call(diffLogLikAccountMoveComp_R, combined)
     }
@@ -1508,7 +1458,7 @@ diffLogLikCellOneDataset <- function(diff, iCell, component,
 ## LOG DENSITY ################################################################
 
 diffLogDensAccountMove <- function(combined, useC = FALSE) {
-    stopifnot(is(combined, "CombinedAccountMove"))
+    stopifnot(is(combined, "CombinedAccountMovements"))
     if (useC) {
         .Call(diffLogDensAccountMove_R, combined)
     }
@@ -1545,7 +1495,7 @@ diffLogDensAccountMove <- function(combined, useC = FALSE) {
 }
 
 diffLogDensPopn <- function(combined, useC = FALSE) {
-    stopifnot(is(combined, "CombinedAccountMove"))
+    stopifnot(is(combined, "CombinedAccountMovements"))
     if (useC) {
         .Call(diffLogDensAccountMove_R, combined)
     }
@@ -1553,7 +1503,7 @@ diffLogDensPopn <- function(combined, useC = FALSE) {
         account <- combined@account
         population <- account@population
         iterator <- combined@iteratorPopn
-        theta <- combined@system@model@theta
+        theta <- combined@systemModels@model@theta
         i.popn <- combined@iPopn
         i.popn.oth <- combined@iPopnOth
         diff <- combined@diffProp
@@ -1634,7 +1584,7 @@ diffLogDensPopnOneCohort <- function(diff, population, i, iterator, theta) {
 }
 
 diffLogDensJumpOrigDest <- function(combined, useC = FALSE) {
-    stopifnot(is(combined, "CombinedAccountMove"))
+    stopifnot(is(combined, "CombinedAccountMovements"))
     if (useC) {
         .Call(diffLogDensJumpOrigDest_R, combined)
     }
@@ -1642,8 +1592,8 @@ diffLogDensJumpOrigDest <- function(combined, useC = FALSE) {
         i.comp <- combined@iComp
         account <- combined@account
         component <- account@components[[i.comp]]
-        system <- combined@system
-        sys.mod <- system[[i.comp + 1L]]
+        systemModels <- combined@systemModels
+        sys.mod <- systemModels[[i.comp + 1L]]
         theta <- sys.mod@theta
         expose <- combined@exposure
         expected.expose <- combined@expectedExposure
@@ -1673,7 +1623,7 @@ diffLogDensJumpOrigDest <- function(combined, useC = FALSE) {
 }
 
 diffLogDensJumpPoolWithExpose <- function(combined, useC = FALSE) {
-    stopifnot(is(combined, "CombinedAccountMove"))
+    stopifnot(is(combined, "CombinedAccountMovements"))
     if (useC) {
         .Call(diffLogDensJumpPoolWithExpose_R, combined)
     }
@@ -1681,8 +1631,8 @@ diffLogDensJumpPoolWithExpose <- function(combined, useC = FALSE) {
         i.comp <- combined@iComp
         account <- combined@account
         component <- account@components[[i.comp]]
-        system <- combined@system
-        sys.mod <- system[[i.comp + 1L]]
+        systemModels <- combined@systemModels
+        sys.mod <- systemModels[[i.comp + 1L]]
         theta <- sys.mod@theta
         expose <- combined@exposure
         expected.expose <- combined@expectedExposure
@@ -1725,7 +1675,7 @@ diffLogDensJumpPoolWithExpose <- function(combined, useC = FALSE) {
 }
 
 diffLogDensJumpPoolNoExpose <- function(combined, useC = FALSE) {
-    stopifnot(is(combined, "CombinedAccountMove"))
+    stopifnot(is(combined, "CombinedAccountMovements"))
     if (useC) {
         .Call(diffLogDensJumpPoolNoExpose_R, combined)
     }
@@ -1733,8 +1683,8 @@ diffLogDensJumpPoolNoExpose <- function(combined, useC = FALSE) {
         i.comp <- combined@iComp
         account <- combined@account
         component <- account@components[[i.comp]]
-        system <- combined@system
-        sys.mod <- system[[i.comp + 1L]]
+        systemModels <- combined@systemModels
+        sys.mod <- systemModels[[i.comp + 1L]]
         theta <- sys.mod@theta
         expose <- combined@exposure
         i.cell.in <- combined@iCellOther
@@ -1757,7 +1707,7 @@ diffLogDensJumpPoolNoExpose <- function(combined, useC = FALSE) {
 }
 
 diffLogDensJumpNet <- function(combined, useC = FALSE) {
-    stopifnot(is(combined, "CombinedAccountMove"))
+    stopifnot(is(combined, "CombinedAccountMovements"))
     if (useC) {
         .Call(diffLogDensJumpNet_R, combined)
     }
@@ -1765,8 +1715,8 @@ diffLogDensJumpNet <- function(combined, useC = FALSE) {
         i.comp <- combined@iComp
         account <- combined@account
         component <- account@components[[i.comp]]
-        system <- combined@system
-        sys.mod <- system[[i.comp + 1L]]
+        systemModels <- combined@systemModels
+        sys.mod <- systemModels[[i.comp + 1L]]
         theta <- sys.mod@theta
         varsigma <- sys.mod@varsigma
         w <- sys.mod@w
@@ -1784,7 +1734,7 @@ diffLogDensJumpNet <- function(combined, useC = FALSE) {
 
 
 diffLogDensJumpComp <- function(combined, useC = FALSE) {
-    stopifnot(is(combined, "CombinedAccountMove"))
+    stopifnot(is(combined, "CombinedAccountMovements"))
     if (useC) {
         .Call(diffLogDensJumpAccountMoveComp_R, combined)
     }
@@ -1792,8 +1742,8 @@ diffLogDensJumpComp <- function(combined, useC = FALSE) {
         i.comp <- combined@iComp
         account <- combined@account
         component <- account@components[[i.comp]]
-        system <- combined@system
-        sys.mod <- system[[i.comp + 1L]]
+        systemModels <- combined@systemModels
+        sys.mod <- systemModels[[i.comp + 1L]]
         theta <- sys.mod@theta
         expose <- combined@exposure
         expected.expose <- combined@expectedExposure
@@ -1827,7 +1777,7 @@ diffLogDensJumpComp <- function(combined, useC = FALSE) {
 }
 
 diffLogDensExpOrigDestPool <- function(combined, useC = FALSE) {
-    stopifnot(is(combined, "CombinedAccountMove"))
+    stopifnot(is(combined, "CombinedAccountMovements"))
     if (useC) {
         .Call(diffLogDensExpOrigDestPool_R, combined)
     }
@@ -1842,12 +1792,12 @@ diffLogDensExpOrigDestPool <- function(combined, useC = FALSE) {
         i.exp.dest <- combined@iExpFirstOth
         iterator.exposure <- combined@iteratorExposure
         diff <- combined@diffProp
-        system <- combined@system
+        systemModels <- combined@systemModels
         ans <- 0
         for (i in seq_along(components)) {
             if (uses.exposure[i]) {
                 component <- components[[i]]
-                theta <- system[[i + 1L]]@theta
+                theta <- systemModels[[i + 1L]]@theta
                 iterator.comp <- iterators.comp[[i]]
                 mapping <- mappings[[i]]
                 i.cell.orig <- getICellCompFromExp(mapping = mapping,
@@ -1882,7 +1832,7 @@ diffLogDensExpOrigDestPool <- function(combined, useC = FALSE) {
 }
 
 diffLogDensExpNet <- function(combined, useC = FALSE) {
-    stopifnot(is(combined, "CombinedAccountMove"))
+    stopifnot(is(combined, "CombinedAccountMovements"))
     if (useC) {
         .Call(diffLogDensExpNet_R, combined)
     }
@@ -1897,12 +1847,12 @@ diffLogDensExpNet <- function(combined, useC = FALSE) {
         i.exp.2 <- combined@iExpFirstOth
         iterator.exposure <- combined@iteratorExposure
         diff <- combined@diffProp
-        system <- combined@system
+        systemModels <- combined@systemModels
         ans <- 0
         for (i in seq_along(components)) {
             if (uses.exposure[i]) {
                 component <- components[[i]]
-                theta <- system[[i + 1L]]@theta
+                theta <- systemModels[[i + 1L]]@theta
                 iterator.comp <- iterators.comp[[i]]
                 mapping <- mappings[[i]]
                 i.cell.1 <- getICellCompFromExp(mapping = mapping, i = i.exp.1)
@@ -1935,7 +1885,7 @@ diffLogDensExpNet <- function(combined, useC = FALSE) {
 }
 
 diffLogDensExpComp <- function(combined, useC = FALSE) {
-    stopifnot(is(combined, "CombinedAccountMove"))
+    stopifnot(is(combined, "CombinedAccountMovements"))
     if (useC) {
         .Call(diffLogDensExpComp_R, combined)
     }
@@ -1952,14 +1902,14 @@ diffLogDensExpComp <- function(combined, useC = FALSE) {
         i.comp <- combined@iComp
         i.orig.dest <- combined@iOrigDest
         i.pool <- combined@iPool
-        system <- combined@system
+        systemModels <- combined@systemModels
         ans <- 0
         if (is.increment[i.comp])
             diff <- -diff
         for (i in seq_along(components)) {
             if (uses.exposure[i]) {
                 component <- components[[i]]
-                theta <- system[[i + 1L]]@theta
+                theta <- systemModels[[i + 1L]]@theta
                 iterator.comp <- iterators.comp[[i]]
                 mapping <- mappings[[i]]
                 if (i.comp == i.orig.dest) {
@@ -2482,17 +2432,17 @@ updateSubsequentAccession <- function(combined) {
 
 
 updateSystem <- function(combined) {
-    system <- combined@system
+    systemModels <- combined@systemModels
     account <- combined@account
     population <- account@population
     components <- account@components
     mappings <- combined@mappingsToPopn
     has.age <- combined@hasAge
-    model.popn <- system[[1L]]
+    model.popn <- systemModels[[1L]]
     model.popn <- updateModelNotUseExp(model.popn, y = population)
-    system[[1L]] <- model.popn
+    systemModels[[1L]] <- model.popn
     for (i in seq_along(component)) {
-        model.comp <- system[[i + 1L]]
+        model.comp <- systemModels[[i + 1L]]
         component <- components[[i]]
         mapping <- mappings[[i]]
         uses.expose <- !is.null(transform)
@@ -2510,9 +2460,9 @@ updateSystem <- function(combined) {
         else
             model.comp <- updateModelNotUseExp(model = model.comp,
                                                y = component)
-        system[[i + 1L]] <- model.comp
+        systemModels[[i + 1L]] <- model.comp
     }
-    combined@system <- system
+    combined@systemModels <- systemModels
     combined
 }
 
@@ -2527,10 +2477,11 @@ updateObservation <- function(combined) {
         model <- observation[[i]]
         dataset <- datasets[[i]]
         transform <- transforms[[i]]
-        if (i == 1L)
+        series.index <- series.indices[i]
+        if (series.index == 0L)
             series <- population
         else
-            series <- components[[i + 1L]]
+            series <- components[[series.index]]
         series.collapsed <- collapse(series, transform = transform)
         if (is(model, "Poisson"))
             series.collapsed <- toDouble(series.collapsed)
@@ -2626,11 +2577,160 @@ rnormIntTrunc1 <- function(mean, sd, lower, upper, maxAttempt, useC = FALSE) {
 
 
 
+setMethod("initialCombinedAccount",
+          signature(account = "Movements",
+                    systemModels = "list",
+                    seriesIndices = "integer",
+                    observationModels = "list",
+                    datasets = "list",
+                    namesDatasets = "character",
+                    transforms = "list"),
+          function(account, systemModels, seriesIndices, observationModels,
+                   datasets, namesDatasets, transforms) {
+              population <- account@population
+              components <- account@components
+              n.popn <- length(population)
+              n.components <- sapply(components, length)
+              n.cell.account <- n.popn + sum(n.components)
+              prob.popn <- n.popn / (n.popn + sum(n.components))
+              cum.prob.popn <- cumsum(n.components) / sum(n.components)
+              i.births <- which(sapply(components, methods::is, "Births"))
+              i.orig.dest <- which(sapply(components, methods::is, "HasOrigDest"))
+              i.pool <- which(sapply(components, methods::is, "Pool"))
+              i.net <- which(sapply(components, methods::is, "Net"))
+              accession <- dembase::accession(population,
+                                              births = FALSE)
+              exposure <- dembase::exposure(population,
+                                            triangles = TRUE)
+              iterator.acc <- CohortIterator(accession)
+              iterator.popn <- CohortIterator(population)
+              mappings.from.exp <- lapply(components, function(x) Mapping(exposure, x))
+              mappings.to.acc <- lapply(components, function(x) Mapping(x, accession))
+              mappings.to.exp <- lapply(components, function(x) Mapping(x, exposure))
+              mappings.to.popn <- lapply(components, function(x) Mapping(x, population))
+              for (i in seq_along(systemModels)) {
+                  if (i == 1L)
+                      series <- population
+                  else
+                      series <- components[[i - 1L]]
+                  if (uses.exposure[i])
+                      systemModels[[i]] <- initialModel(model,
+                                                        y = series,
+                                                        exposure = exposure)
+                  else
+                      systemModels[[i]] <- initialModel(model,
+                                                        y = series,
+                                                        exposure = NULL)
+              }
+              for (i in seq_along(observationModels)) {
+                  series.index <- seriesIndices[i]
+                  if (series.index == 0L)
+                      series <- population
+                  else
+                      series <- components[[series.index]]
+                  series.collapsed <- dembase::collapse(series, transform = transforms[[i]])
+                  model <- observationModels[[i]]
+                  if (methods::is(model, "Poisson"))
+                      series.collapsed <- dembase::toDouble(series.collapsed)
+                  dataset <- datasets[[i]]
+                  observationModels[[i]] <- initialModel(model,
+                                                         y = dataset,
+                                                         exposure = series.collapsed)
+              }
+              methods::new("CombinedAccountMovements",
+                           accession = accession,
+                           exposure = exposure,
+                           generatedNewProposal = FALSE,
+                           iBirths = i.births,
+                           iNet = i.net,
+                           iOrigDest = i.orig.dest,
+                           iPool = i.pool,
+                           iteratorAcc = iterator.acc,
+                           iteratorPopn = iterator.popn,
+                           mappingsFromExp = mappings.from.exp,
+                           mappingsToAcc = mappings.to.acc,
+                           mappingsToExp = mappings.to.exp,
+                           mappingsToPopn = mappings.to.popn,
+                           nCellAccount = n.cell.account,
+                           namesDatasets = namesDatasets,
+                           observationModels = observationModels,
+                           systemModels = systemModels,
+                           transforms = transforms)
+              }
+          })
 
 
 
-
-
-
-
-
+estimateAccount <- function(y, systemModels, observation, datasets, filename = NULL,
+                            nBurnin = 1000, nSim = 1000, nChain = 4, nThin = 1,
+                            parallel = TRUE, nUpdateMax = 200,
+                            verbose = FALSE, useC = TRUE) {
+    call <- match.call()
+    methods::validObject(y)
+    checkSystem(systemModels)
+    systemModels <- alignSystemToAccount(systemModels = systemModels,
+                                   account = account)
+    checkObservation(observation, needsNonDefaultSeriesArg = TRUE)
+    checkNamesDatasets(datasets)
+    datasets <- alignDatasetsToObservation(datasets = datasets,
+                                           observation = observation)
+    ## check datasets after aligning to avoid checking datasets that are not needed
+    datasets <- checkAndTidyDatasets(datasets)
+    transforms <- makeTransformsYToDatasets(y = y, nameY = "y", datasets = datasets)
+    namesDatasets <- names(datasets)
+    names(datasets) <- NULL
+    mcmc.args <- makeMCMCArgs(nBurnin = nBurnin,
+                              nSim = nSim,
+                              nChain = nChain,
+                              nThin = nThin)
+    if (is.null(filename))
+        filename <- tempfile()
+    else
+        checkFilename(filename)
+    control.args <- makeControlArgs(call = call,
+                                    parallel = parallel)
+    combineds <- replicate(n = mcmc.args$nChain,
+                           initialCombinedAccount(account = account,
+                                                  systemModels = systemModels,
+                                                  observation = observation,
+                                                  datasets = datasets,
+                                                  namesDatasets = namesDatasets,
+                                                  transforms = transforms))
+    parallel <- control.args$parallel
+    tempfile <- paste(filename, seq_len(mcmc.args$nChain), sep = "_")
+    MoreArgs <- c(list(seed = NULL),
+                  mcmc.args,
+                  control.args,
+                  list(continuing = FALSE))
+    if (parallel) {
+        cl <- parallel::makeCluster(getOption("cl.cores", default = mcmc.args$nChain))
+        parallel::clusterSetRNGStream(cl)
+        final.combineds <- parallel::clusterMap(cl = cl,
+                                      fun = estimateOneChain,
+                                      tempfile = tempfiles,
+                                      combined = combineds,
+                                      MoreArgs = MoreArgs,
+                                      SIMPLIFY = FALSE,
+                                      USE.NAMES = FALSE)
+        seed <- parallel::clusterCall(cl, function() .Random.seed)
+        parallel::stopCluster(cl)
+    }
+    else {
+        final.combineds <- mapply(estimateOneChain,
+                                  tempfile = tempfiles,
+                                  combined = combineds,
+                                  MoreArgs = MoreArgs,
+                                  SIMPLIFY = FALSE,
+                                  USE.NAMES = FALSE)
+        seed <- list(.Random.seed)
+    }
+    control.args$lengthIter <- length(extractValues(final.combineds[[1L]]))
+    results <- makeResultsAccount(finalCombineds = final.combineds,
+                                  mcmcArgs = mcmc.args,
+                                  controlArgs = control.args,
+                                  seed = seed)
+    makeResultsFile(filename = control.args$filename,
+                    results = results,
+                    tempfiles = tempfiles)
+    finalMessage(filename = filename, verbose = verbose)
+}

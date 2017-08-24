@@ -285,7 +285,6 @@ setClass("MappingMixinOrigDest",
              TRUE
          })
 
-
 ## Mappings to population
 
 setClass("MappingToPopn",
