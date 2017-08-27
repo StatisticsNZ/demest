@@ -246,18 +246,18 @@ setMethod("initialCombinedCounts",
           signature(object = "SpecPoissonVarying",
                     y = "Counts",
                     exposure = "ANY",
-                    observation = "list",
+                    observationModels = "list",
                     datasets = "list",
                     namesDatasets = "character",
                     transforms = "list"),
-          function(object, y, exposure, observation, datasets,
+          function(object, y, exposure, observationModels, datasets,
                    namesDatasets, transforms) {
               y <- imputeCountsInternal(y)
-              for (i in seq_along(observation)) {
+              for (i in seq_along(observationModels)) {
                   y.collapsed <- dembase::collapse(y, transform = transforms[[i]])
-                  observation[[i]] <- initialModel(observation[[i]],
-                                                   y = datasets[[i]],
-                                                   exposure = y.collapsed)
+                  observationModels[[i]] <- initialModel(observationModels[[i]],
+                                                         y = datasets[[i]],
+                                                         exposure = y.collapsed)
               }
               has.exposure <- !is.null(exposure)
               if (has.exposure) {
@@ -266,7 +266,7 @@ setMethod("initialCombinedCounts",
                                model = model,
                                y = y,
                                exposure = exposure,
-                               observation = observation,
+                               observationModels = observationModels,
                                datasets = datasets,
                                namesDatasets = namesDatasets,
                                transforms = transforms)
@@ -276,7 +276,7 @@ setMethod("initialCombinedCounts",
                   methods::new("CombinedCountsPoissonNotHasExp",
                                model = model,
                                y = y,
-                               observation = observation,
+                               observationModels = observationModels,
                                datasets = datasets,
                                namesDatasets = namesDatasets,
                                transforms = transforms)
@@ -288,11 +288,11 @@ setMethod("initialCombinedCounts",
           signature(object = "SpecBinomialVarying",
                     y = "Counts",
                     exposure = "ANY",
-                    observation = "list",
+                    observationModels = "list",
                     datasets = "list",
                     namesDatasets = "character",
                     transforms = "list"),
-          function(object, y, exposure, observation, datasets,
+          function(object, y, exposure, observationModels, datasets,
                    namesDatasets, transforms) {
               if (is.null(exposure))
                   stop(gettextf("binomial model, but no '%s' argument supplied",
@@ -301,9 +301,9 @@ setMethod("initialCombinedCounts",
               if (any(y[!is.na(y)] > exposure[!is.na(y)]))
                   stop(gettextf("'%s' greater than '%s'",
                                 "y", "exposure"))
-              for (i in seq_along(observation)) {
+              for (i in seq_along(observationModels)) {
                   y.collapsed <- dembase::collapse(y, transform = transforms[[i]])
-                  observation[[i]] <- initialModel(observation[[i]],
+                  observationModels[[i]] <- initialModel(observationModels[[i]],
                                                    y = datasets[[i]],
                                                    exposure = y.collapsed)
               }
@@ -312,15 +312,152 @@ setMethod("initialCombinedCounts",
                            model = model,
                            y = y,
                            exposure = exposure,
-                           observation = observation,
+                           observationModels = observationModels,
                            datasets = datasets,
                            namesDatasets = namesDatasets,
                            transforms = transforms)
           })
 
 
-
-
-
-
 ## COMBINED ACCOUNT ###################################################################
+
+setMethod("initialCombinedAccount",
+          signature(account = "Movements",
+                    systemModels = "list",
+                    seriesIndices = "integer",
+                    observationModels = "list",
+                    datasets = "list",
+                    namesDatasets = "character",
+                    transforms = "list"),
+          function(account, systemModels, seriesIndices, observationModels,
+                   datasets, namesDatasets, transforms) {
+              population <- account@population
+              components <- account@components
+              has.age <- "age" %in% dimtypes(population, use.names = FALSE)
+              n.popn <- length(population)
+              n.components <- sapply(components, length)
+              n.cell.account <- n.popn + sum(n.components)
+              prob.popn <- n.popn / (n.popn + sum(n.components))
+              cum.prob.popn <- cumsum(n.components) / sum(n.components)
+              is.births <- sapply(components, methods::is, "Births")
+              is.orig.dest <- sapply(components, methods::is, "HasOrigDest")
+              is.pool <- sapply(components, methods::is, "Pool")
+              is.net <- sapply(components, methods::is, "Net")
+              i.births <- if (any(is.births)) which(is.births) else 0L
+              i.orig.dest <- if (any(is.orig.dest)) which(is.orig.dest) else 0L
+              i.pool <- if (any(is.pool)) which(is.pool) else 0L
+              i.net <- if (any(is.net)) which(is.net) else 0L
+              if (has.age) {
+                  accession <- dembase::accession(account,
+                                                  births = FALSE)
+                  acccession <- dembase::Accession(accession)
+                  iterator.acc <- CohortIterator(accession)
+                  mappings.to.acc <- lapply(components, function(x) Mapping(x, accession))
+              }
+              exposure <- dembase::exposure(population,
+                                            triangles = has.age)
+              exposure <- dembase::Exposure(exposure)
+              is.increment <- sapply(components, dembase::isPositiveIncrement)
+              iterator.popn <- CohortIterator(population)
+              mappings.from.exp <- lapply(components, function(x) Mapping(exposure, x))
+              mappings.to.exp <- lapply(components, function(x) Mapping(x, exposure))
+              mappings.to.popn <- lapply(components, function(x) Mapping(x, population))
+              model.uses.exposure <- sapply(systemModels, methods::is, "UseExposure")
+              for (i in seq_along(systemModels)) {
+                  series <- if (i == 1L) population else components[[i - 1L]]
+                  expose <- if (model.uses.exposure[i]) exposure else NULL
+                  systemModels[[i]] <- initialModel(systemModels[[i]],
+                                                    y = series,
+                                                    exposure = expose)
+              }
+              for (i in seq_along(observationModels)) {
+                  series.index <- seriesIndices[i]
+                  series <- if (series.index == 0L) population else components[[series.index]]
+                  series.collapsed <- dembase::collapse(series, transform = transforms[[i]])
+                  model <- observationModels[[i]]
+                  if (methods::is(model, "Poisson"))
+                      series.collapsed <- dembase::toDouble(series.collapsed)
+                  dataset <- datasets[[i]]
+                  observationModels[[i]] <- initialModel(model,
+                                                         y = dataset,
+                                                         exposure = series.collapsed)
+              }
+              if (has.age) {
+                  methods::new("CombinedAccountMovementsHasAge",
+                               accession = accession,
+                               account = account,
+                               cumProbPopn = cum.prob.popn,
+                               datasets = datasets,
+                               diffProp = NA_integer_,
+                               exposure = exposure,
+                               generatedNewProposal = new("LogicalFlag", FALSE),
+                               hasAge = new("LogicalFlag", TRUE),
+                               iAccNext = NA_integer_,
+                               iAccNextOther = NA_integer_,
+                               iBirths = i.births,
+                               iCell = NA_integer_,
+                               iCellOther = NA_integer_,
+                               iComp = 0L,
+                               iExpFirst = NA_integer_,
+                               iExpFirstOther = NA_integer_,
+                               iExposure = NA_integer_,
+                               iExposureOther = NA_integer_,
+                               iNet = i.net,
+                               iOrigDest = i.orig.dest,
+                               iPopnNext = NA_integer_,
+                               iPopnNextOther = NA_integer_,
+                               iPool = i.pool,
+                               isIncrement = is.increment,
+                               isLowerTriangle = new("LogicalFlag", FALSE),
+                               iteratorAcc = iterator.acc,
+                               iteratorPopn = iterator.popn,
+                               mappingsFromExp = mappings.from.exp,
+                               mappingsToAcc = mappings.to.acc,
+                               mappingsToExp = mappings.to.exp,
+                               mappingsToPopn = mappings.to.popn,
+                               modelUsesExposure = model.uses.exposure,
+                               namesDatasets = namesDatasets,                           
+                               nCellAccount = n.cell.account,
+                               observationModels = observationModels,
+                               probPopn = prob.popn,
+                               seriesIndices = seriesIndices,
+                               systemModels = systemModels,
+                               transforms = transforms)
+              }
+              else {
+                  methods::new("CombinedAccountMovements",
+                               account = account,
+                               cumProbPopn = cum.prob.popn,
+                               datasets = datasets,
+                               diffProp = NA_integer_,
+                               exposure = exposure,
+                               generatedNewProposal = new("LogicalFlag", FALSE),
+                               hasAge = new("LogicalFlag", FALSE),
+                               iBirths = i.births,
+                               iCell = NA_integer_,
+                               iCellOther = NA_integer_,
+                               iComp = 0L,
+                               iExpFirst = NA_integer_,
+                               iExpFirstOther = NA_integer_,
+                               iExposure = NA_integer_,
+                               iExposureOther = NA_integer_,
+                               iNet = i.net,
+                               iOrigDest = i.orig.dest,
+                               iPopnNext = NA_integer_,
+                               iPopnNextOther = NA_integer_,
+                               iPool = i.pool,
+                               isIncrement = is.increment,
+                               iteratorPopn = iterator.popn,
+                               mappingsFromExp = mappings.from.exp,
+                               mappingsToExp = mappings.to.exp,
+                               mappingsToPopn = mappings.to.popn,
+                               modelUsesExposure = model.uses.exposure,
+                               namesDatasets = namesDatasets,                           
+                               nCellAccount = n.cell.account,
+                               observationModels = observationModels,
+                               probPopn = prob.popn,
+                               seriesIndices = seriesIndices,
+                               systemModels = systemModels,
+                               transforms = transforms)
+              }
+          })

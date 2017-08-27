@@ -185,7 +185,8 @@ estimateModel <- function(model, y, exposure = NULL, weights = NULL,
                             size = 1)   # seed has previously been set
                                         # this must be done BEFORE call to makeCluster!
         cl <- parallel::makeCluster(getOption("cl.cores",
-                                              default = mcmc.args$nChain))
+                                              default = mcmc.args$nChain),
+                                    type = "FORK")
         parallel::clusterSetRNGStream(cl,
                                       iseed = pseed)
         final.combineds <- parallel::clusterMap(cl = cl,

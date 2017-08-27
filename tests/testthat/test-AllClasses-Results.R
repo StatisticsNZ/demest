@@ -397,15 +397,15 @@ test_that("can create valid object of class ResultsCountsEst", {
     pos <- pos + changeInPos(model)
     y <- Skeleton(y.data, first = pos)
     pos <- pos + changeInPos(y)
-    obs1 <- makeOutputModel(final[[1]]@observation[[1]],
+    obs1 <- makeOutputModel(final[[1]]@observationModels[[1]],
                             pos = pos,
                             mcmc = mcmc)
     pos <- pos + changeInPos(obs1)
-    obs2 <- makeOutputModel(final[[1]]@observation[[2]],
+    obs2 <- makeOutputModel(final[[1]]@observationModels[[2]],
                             pos = pos,
                             mcmc = mcmc)
     pos <- pos + changeInPos(obs2)
-    observation <- list(census = obs1, tax = obs2)
+    observationModels <- list(census = obs1, tax = obs2)
     datasets <- replace(datasets.data,
                         list = 2,
                         values = list(new("SkeletonMissingDatasetPoisson",
@@ -419,7 +419,7 @@ test_that("can create valid object of class ResultsCountsEst", {
     x <- new("ResultsCountsEst",
              model = model,
              y = y,
-             observation = observation,
+             observationModels = observationModels,
              datasets = datasets,
              mcmc = mcmc,
              control = control,
@@ -462,7 +462,7 @@ test_that("validity tests for ResultsCountsEst inherited from ResultsCountsEst w
                                            time = 2000:2003)),
                                  dimscales = c(time = "Intervals")))
     namesDatasets <- c("census", "tax")
-    observation.spec <- list(Model(census ~ PoissonBinomial(prob = 0.98)),
+    observationModels.spec <- list(Model(census ~ PoissonBinomial(prob = 0.98)),
                              Model(tax ~ Poisson(mean ~ age)))
     transforms <- list(makeTransform(x = y.data,
                                      y = datasets.data[[1]],
@@ -475,7 +475,7 @@ test_that("validity tests for ResultsCountsEst inherited from ResultsCountsEst w
                        initialCombinedCounts(object = spec,
                                              y = y.data,
                                              exposure = NULL,
-                                             observation = observation.spec,
+                                             observationModels = observationModels.spec,
                                              datasets = datasets.data,
                                              namesDatasets = namesDatasets,
                                              transforms = transforms))
@@ -484,15 +484,15 @@ test_that("validity tests for ResultsCountsEst inherited from ResultsCountsEst w
     pos <- pos + changeInPos(model)
     y <- Skeleton(y.data, first = pos)
     pos <- pos + changeInPos(y)
-    obs1 <- makeOutputModel(final[[1]]@observation[[1]],
+    obs1 <- makeOutputModel(final[[1]]@observationModels[[1]],
                             pos = pos,
                             mcmc = mcmc)
     pos <- pos + changeInPos(obs1)
-    obs2 <- makeOutputModel(final[[1]]@observation[[2]],
+    obs2 <- makeOutputModel(final[[1]]@observationModels[[2]],
                             pos = pos,
                             mcmc = mcmc)
     pos <- pos + changeInPos(obs2)
-    observation <- list(census = obs1, tax = obs2)
+    observationModels <- list(census = obs1, tax = obs2)
     datasets <- replace(datasets.data,
                         list = 2,
                         values = list(new("SkeletonMissingDatasetPoisson",
@@ -506,7 +506,7 @@ test_that("validity tests for ResultsCountsEst inherited from ResultsCountsEst w
     x <- new("ResultsCountsEst",
              model = model,
              y = y,
-             observation = observation,
+             observationModels = observationModels,
              datasets = datasets,
              mcmc = mcmc,
              control = control,
@@ -517,23 +517,23 @@ test_that("validity tests for ResultsCountsEst inherited from ResultsCountsEst w
     x.wrong@model <- list()
     expect_error(validObject(x.wrong),
                  "'nSim' is not 0 but 'model' is an empty list")
-    ## observation is empty iff nSim is 0
+    ## observationModels is empty iff nSim is 0
     x.wrong <- x
-    x.wrong@observation <- list()
+    x.wrong@observationModels <- list()
     expect_error(validObject(x.wrong),
-                 "'nSim' is not 0 but 'observation' is an empty list")
+                 "'nSim' is not 0 but 'observationModels' is an empty list")
     ## all elements of 'final' have class "CombinedCounts"
     ## [can't figure out way of testing this without raising other errors]
-    ## all elements of 'observation' have class "list"
+    ## all elements of 'observationModels' have class "list"
     x.wrong <- x
-    x.wrong@observation[[1]] <- "wrong"
+    x.wrong@observationModels[[1]] <- "wrong"
     expect_error(validObject(x.wrong),
-                 "'observation' has elements not of class \"list\"")
-    ## 'observation' has names
+                 "'observationModels' has elements not of class \"list\"")
+    ## 'observationModels' has names
     x.wrong <- x
-    names(x.wrong@observation) <- NULL
+    names(x.wrong@observationModels) <- NULL
     expect_error(validObject(x.wrong),
-                 "'observation' does not have names")
+                 "'observationModels' does not have names")
     ## all elements of 'datasets' have class "Counts" or "SkeletonMissingDataset"
     x.wrong <- x
     x.wrong@datasets[[1]] <- "wrong"
@@ -544,11 +544,11 @@ test_that("validity tests for ResultsCountsEst inherited from ResultsCountsEst w
     x.wrong@datasets[[1]][1] <- NA
     expect_error(validObject(x.wrong),
                  "'datasets' has elements of class \"Counts\" with missing values")
-    ## 'observation' and 'datasets' have same names
+    ## 'observationModels' and 'datasets' have same names
     x.wrong <- x
     names(x.wrong@datasets)[1] <- "wrong"
     expect_error(validObject(x.wrong),
-                 "'observation' and 'datasets' have different names")
+                 "'observationModels' and 'datasets' have different names")
 })
 
 test_that("can create valid object of class ResultsCountsExposureEst", {
@@ -590,7 +590,7 @@ test_that("can create valid object of class ResultsCountsExposureEst", {
                                            time = 2000:2003)),
                                  dimscales = c(time = "Intervals")))
     namesDatasets <- c("census", "tax")
-    observation.spec <- list(Model(census ~ PoissonBinomial(prob = 0.98)),
+    observationModels.spec <- list(Model(census ~ PoissonBinomial(prob = 0.98)),
                              Model(tax ~ Poisson(mean ~ age)))
     transforms <- list(makeTransform(x = y.data,
                                      y = datasets.data[[1]],
@@ -603,7 +603,7 @@ test_that("can create valid object of class ResultsCountsExposureEst", {
                        initialCombinedCounts(object = spec,
                                              y = y.data,
                                              exposure = exposure,
-                                             observation = observation.spec,
+                                             observationModels = observationModels.spec,
                                              datasets = datasets.data,
                                              namesDatasets = namesDatasets,
                                              transforms = transforms))
@@ -612,15 +612,15 @@ test_that("can create valid object of class ResultsCountsExposureEst", {
     pos <- pos + changeInPos(model)
     y <- Skeleton(y.data, first = pos)
     pos <- pos + changeInPos(y)
-    obs1 <- makeOutputModel(final[[1]]@observation[[1]],
+    obs1 <- makeOutputModel(final[[1]]@observationModels[[1]],
                             pos = pos,
                             mcmc = mcmc)
     pos <- pos + changeInPos(obs1)
-    obs2 <- makeOutputModel(final[[1]]@observation[[2]],
+    obs2 <- makeOutputModel(final[[1]]@observationModels[[2]],
                             pos = pos,
                             mcmc = mcmc)
     pos <- pos + changeInPos(obs2)
-    observation <- list(census = obs1, tax = obs2)
+    observationModels <- list(census = obs1, tax = obs2)
     datasets <- datasets.data
     names(datasets) <- c("census", "tax")
     control$lengthIter <- pos - 1L
@@ -628,7 +628,7 @@ test_that("can create valid object of class ResultsCountsExposureEst", {
              model = model,
              y = y,
              exposure = exposure,
-             observation = observation,
+             observationModels = observationModels,
              datasets = datasets,
              mcmc = mcmc,
              control = control,

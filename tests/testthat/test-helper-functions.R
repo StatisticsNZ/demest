@@ -11667,8 +11667,8 @@ test_that("makeMetropolis works with ResultsCounts", {
                                autocorr = c(makeAutocorr(fetchMCMC(filename, c("model", "likelihood", "count"))),
                                    makeAutocorr(fetchMCMC(filename, c("observation", "d1", "likelihood", "prob"))),
                                    makeAutocorr(fetchMCMC(filename, c("observation", "d2", "likelihood", "rate")))))
-    rownames(ans.expected) <- c("model.likelihood.count", "observation.d1.likelihood.prob",
-                                "observation.d2.likelihood.rate")
+    rownames(ans.expected) <- c("model.likelihood.count", "observationModels.d1.likelihood.prob",
+                                "observationModels.d2.likelihood.rate")
     expect_identical(ans.obtained, ans.expected)
 })
 

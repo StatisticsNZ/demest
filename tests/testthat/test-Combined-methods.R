@@ -657,8 +657,8 @@ test_that("updateCombined method for CombinedCountsPoissonNotHasExp updates corr
                       dim = c(6, 2),
                       dimnames = list(age = 0:5, sex = c("f", "m"))))
     model <- Model(y ~ Poisson(mean ~ age))
-    observation <- list(Model(register ~ PoissonBinomial(prob = 0.98)),
-                        Model(tax ~ Binomial(mean ~ 1)))
+    observationModels <- list(Model(register ~ PoissonBinomial(prob = 0.98)),
+                              Model(tax ~ Binomial(mean ~ 1)))
     datasets <- list(Counts(array(c(0L, 2:12), dim = c(6, 2),
                                   dimnames = list(age = 0:5, sex = c("f", "m")))),
                          Counts(array(c(1:5, NA), dim = 6, dimnames = list(age = 0:5))))
@@ -669,12 +669,12 @@ test_that("updateCombined method for CombinedCountsPoissonNotHasExp updates corr
     x0 <- initialCombinedCounts(model,
                                y = y,
                                exposure = NULL,
-                               observation = observation,
+                               observationModels = observationModels,
                                datasets = datasets,
                                namesDatasets = namesDatasets,
                                transforms = transforms)
     x1 <- updateCombined(x0)
-    for (name in c("model", "y", "observation")) {
+    for (name in c("model", "y", "observationModels")) {
         expect_false(identical(slot(x1, name), slot(x0, name)))
     }
     for (name in c("namesDatasets", "datasets", "transforms", "iMethodCombined", "slotsToExtract"))
@@ -691,7 +691,7 @@ test_that("R, specific C, and generic C versions of updateCombined method for Co
                       dim = c(6, 2),
                       dimnames = list(age = 0:5, sex = c("f", "m"))))
     model <- Model(y ~ Poisson(mean ~ age))
-    observation <- list(Model(register ~ PoissonBinomial(prob = 0.98)),
+    observationModels <- list(Model(register ~ PoissonBinomial(prob = 0.98)),
                         Model(tax ~ Binomial(mean ~ 1)))
     datasets <- list(Counts(array(c(0L, 2:12), dim = c(6, 2),
                                   dimnames = list(age = 0:5, sex = c("f", "m")))),
@@ -703,7 +703,7 @@ test_that("R, specific C, and generic C versions of updateCombined method for Co
     x0 <- initialCombinedCounts(model,
                                y = y,
                                exposure = NULL,
-                               observation = observation,
+                               observationModels = observationModels,
                                datasets = datasets,
                                namesDatasets = namesDatasets,
                                transforms = transforms)
@@ -732,7 +732,7 @@ test_that("updateCombined method for CombinedCountsPoissonHasExp updates correct
                       dim = c(6, 2),
                       dimnames = list(age = 0:5, sex = c("f", "m"))))
     model <- Model(y ~ Poisson(mean ~ age))
-    observation <- list(Model(register ~ PoissonBinomial(prob = 0.98)),
+    observationModels <- list(Model(register ~ PoissonBinomial(prob = 0.98)),
                         Model(tax ~ Binomial(mean ~ 1)))
     datasets <- list(Counts(array(c(0L, 2:12), dim = c(6, 2),
                                   dimnames = list(age = 0:5, sex = c("f", "m")))),
@@ -744,12 +744,12 @@ test_that("updateCombined method for CombinedCountsPoissonHasExp updates correct
     x0 <- initialCombinedCounts(model,
                                y = y,
                                exposure = exposure,
-                               observation = observation,
+                               observationModels = observationModels,
                                datasets = datasets,
                                namesDatasets = namesDatasets,
                                transforms = transforms)
     x1 <- updateCombined(x0)
-    for (name in c("model", "y", "observation")) {
+    for (name in c("model", "y", "observationModels")) {
         expect_false(identical(slot(x1, name), slot(x0, name)))
     }
     for (name in c("namesDatasets", "datasets", "exposure", "transforms", "iMethodCombined", "slotsToExtract"))
@@ -769,7 +769,7 @@ test_that("R, specific C, and generic C versions of updateCombined method for Co
                       dim = c(6, 2),
                       dimnames = list(age = 0:5, sex = c("f", "m"))))
     model <- Model(y ~ Poisson(mean ~ age))
-    observation <- list(Model(register ~ PoissonBinomial(prob = 0.98)),
+    observationModels <- list(Model(register ~ PoissonBinomial(prob = 0.98)),
                         Model(tax ~ Binomial(mean ~ 1)))
     datasets <- list(Counts(array(c(0L, 2:12), dim = c(6, 2),
                                   dimnames = list(age = 0:5, sex = c("f", "m")))),
@@ -781,7 +781,7 @@ test_that("R, specific C, and generic C versions of updateCombined method for Co
     x0 <- initialCombinedCounts(model,
                                y = y,
                                exposure = exposure,
-                               observation = observation,
+                               observationModels = observationModels,
                                datasets = datasets,
                                namesDatasets = namesDatasets,
                                transforms = transforms)
@@ -808,7 +808,7 @@ test_that("updateCombined method for CombinedCountsBinomial updates correct slot
                       dimnames = list(age = 0:5, sex = c("f", "m"))))
     exposure <- y + y
     model <- Model(y ~ Binomial(mean ~ age))
-    observation <- list(Model(register ~ PoissonBinomial(prob = 0.98)),
+    observationModels <- list(Model(register ~ PoissonBinomial(prob = 0.98)),
                         Model(tax ~ Binomial(mean ~ 1)))
     datasets <- list(Counts(array(c(0L, 2:12), dim = c(6, 2),
                                   dimnames = list(age = 0:5, sex = c("f", "m")))),
@@ -820,14 +820,14 @@ test_that("updateCombined method for CombinedCountsBinomial updates correct slot
     x0 <- initialCombinedCounts(model,
                                y = y,
                                exposure = exposure,
-                               observation = observation,
+                               observationModels = observationModels,
                                datasets = datasets,
                                namesDatasets = namesDatasets,
                                transforms = transforms)
     x1 <- updateCombined(x0)
     for (i in 1:5)
         x1 <- updateCombined(x1)
-    for (name in c("model", "y", "observation")) {
+    for (name in c("model", "y", "observationModels")) {
         expect_false(identical(slot(x1, name), slot(x0, name)))
     }
     for (name in c("namesDatasets", "datasets", "exposure", "transforms", "iMethodCombined", "slotsToExtract"))
@@ -845,7 +845,7 @@ test_that("R, specific C, and generic C versions of updateCombined method for Co
                       dimnames = list(age = 0:5, sex = c("f", "m"))))
     exposure <- y + y
     model <- Model(y ~ Binomial(mean ~ age))
-    observation <- list(Model(register ~ PoissonBinomial(prob = 0.98)),
+    observationModels <- list(Model(register ~ PoissonBinomial(prob = 0.98)),
                         Model(tax ~ Binomial(mean ~ 1)))
     datasets <- list(Counts(array(c(0L, 2:12), dim = c(6, 2),
                                   dimnames = list(age = 0:5, sex = c("f", "m")))),
@@ -857,7 +857,7 @@ test_that("R, specific C, and generic C versions of updateCombined method for Co
     x0 <- initialCombinedCounts(model,
                                y = y,
                                exposure = exposure,
-                               observation = observation,
+                               observationModels = observationModels,
                                datasets = datasets,
                                namesDatasets = namesDatasets,
                                transforms = transforms)

@@ -870,9 +870,9 @@ setMethod("initialModel",
               metadataY <- y@metadata
               dim <- dim(y)
               has.exposure <- !is.null(exposure)
-              y.missing <- is.na(y)
-              mean.y.obs <- mean(y[!y.missing])
-              shape <- ifelse(y.missing, mean.y.obs, 0.5 * mean.y.obs + 0.5 * y)
+              y.missing <- is.na(y@.Data)
+              mean.y.obs <- mean(y@.Data[!y.missing])
+              shape <- ifelse(y.missing, mean.y.obs, 0.5 * mean.y.obs + 0.5 * y@.Data)
               if (has.exposure) {
                   mean.expose.obs <- mean(exposure[!y.missing])
                   rate <- ifelse(y.missing, mean.expose.obs, 0.5 * mean.expose.obs + 0.5 * exposure)
@@ -1033,15 +1033,6 @@ setMethod("initialModel",
               if (methods::is(mean, "error"))
                   stop(gettextf("'%s' from %s model not compatible with data : %s",
                                 "mean", "NormalFixed", mean$message))
-              ## ## check that don't need to expand 'mean' to make compatible with 'y'
-              ## value <- tryCatch(makeCompatible(x = as(mean.before.subset, "Counts"),
-              ##                                  y = y,
-              ##                                  subset = TRUE,
-              ##                                  check = TRUE),
-              ##                   error = function(e) e)
-              ## if (methods::is(value, "error"))
-              ##     stop(gettextf("'%s' from %s model not compatible with data : %s",
-              ##                   "mean", "NormalFixed", value$message))
               sd <- makeCompatible(x = sd.before.subset,
                                    y = y,
                                    subset = TRUE,

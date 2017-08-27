@@ -6151,7 +6151,7 @@ sweepMargins <- function(x, margins) {
 
 ## TRANSLATED
 ## HAS_TESTS
-diffLogLik <- function(yProp, y, indicesY, observation,
+diffLogLik <- function(yProp, y, indicesY, observationModels,
                        datasets, transforms, useC = FALSE) {
     ## yProp
     stopifnot(is.integer(yProp))
@@ -6166,10 +6166,10 @@ diffLogLik <- function(yProp, y, indicesY, observation,
     stopifnot(is.integer(indicesY))
     stopifnot(!any(is.na(indicesY)))
     stopifnot(all(indicesY >= 1L))
-    ## observation
-    stopifnot(is.list(observation))
-    stopifnot(all(sapply(observation, methods::is, "Model")))
-    stopifnot(all(sapply(observation, methods::is, "UseExposure")))
+    ## observationModels
+    stopifnot(is.list(observationModels))
+    stopifnot(all(sapply(observationModels, methods::is, "Model")))
+    stopifnot(all(sapply(observationModels, methods::is, "UseExposure")))
     ## datasets
     stopifnot(is.list(datasets))
     stopifnot(all(sapply(datasets, methods::is, "Counts")))
@@ -6185,15 +6185,15 @@ diffLogLik <- function(yProp, y, indicesY, observation,
     ## y and transforms
     for (i in seq_along(transforms))
         stopifnot(identical(transforms[[i]]@dimBefore, dim(y)))
-    ## observation and datasets
-    stopifnot(identical(length(observation), length(datasets)))
-    ## observation and transforms
-    stopifnot(identical(length(observation), length(transforms)))
+    ## observationModels and datasets
+    stopifnot(identical(length(observationModels), length(datasets)))
+    ## observationModels and transforms
+    stopifnot(identical(length(observationModels), length(transforms)))
     ## datasets and transforms
     for (i in seq_along(datasets))
         stopifnot(identical(transforms[[i]]@dimAfter, dim(datasets[[i]])))
     if (useC) {
-        .Call(diffLogLik_R, yProp, y, indicesY, observation,
+        .Call(diffLogLik_R, yProp, y, indicesY, observationModels,
               datasets, transforms)
     }
     else {
@@ -6214,7 +6214,7 @@ diffLogLik <- function(yProp, y, indicesY, observation,
                         ## THE FOLLOWING LINE AND THE TEST FOR CELL OBSERVED ARE NEW
                         cell.observed <- !is.na(dataset[i.cell.dataset])
                         if (cell.observed) {
-                            model <- observation[[i.dataset]]
+                            model <- observationModels[[i.dataset]]
                             i.contrib.to.cell <- dembase::getIShared(i = i.cell.y, transform = transform)
                             collapsed.y.curr <- sum(y[i.contrib.to.cell])
                             diff.prop.curr <- yProp[i.element.indices.y] - y[i.cell.y]
@@ -6915,7 +6915,7 @@ makeResultsCounts <- function(finalCombineds, mcmcArgs, controlArgs, seed) {
     combined <- finalCombineds[[1L]]
     model <- combined@model
     y <- combined@y
-    observation <- combined@observation
+    observationModels <- combined@observationModels
     datasets <- combined@datasets
     names.datasets <- combined@namesDatasets
     transforms <- combined@transforms
@@ -6934,25 +6934,25 @@ makeResultsCounts <- function(finalCombineds, mcmcArgs, controlArgs, seed) {
     has.exposure <- methods::is(combined, "HasExposure")
     if (has.exposure)
         exposure <- combined@exposure
-    output.observation <- vector(mode = "list", length = length(observation))
+    output.observationModels <- vector(mode = "list", length = length(observationModels))
     if (n.sim > 0L) {
-        for (i in seq_along(observation)) {
-            output.observation[[i]] <- makeOutputModel(model = observation[[i]],
+        for (i in seq_along(observationModels)) {
+            output.observationModels[[i]] <- makeOutputModel(model = observationModels[[i]],
                                                        pos = pos,
                                                        mcmc = mcmc)
-            pos <- pos + changeInPos(output.observation[[i]])
+            pos <- pos + changeInPos(output.observationModels[[i]])
         }
         for (i in seq_along(datasets)) {
             if (any(is.na(datasets[[i]])))
                 datasets[[i]] <-
                     SkeletonMissingDataset(object = datasets[[i]],
-                                           model = observation[[i]],
-                                           outputModel = output.observation[[i]],
+                                           model = observationModels[[i]],
+                                           outputModel = output.observationModels[[i]],
                                            transformComponent = transforms[[i]],
                                            skeletonComponent = output.y)
         }
     }
-    names(output.observation) <- names.datasets
+    names(output.observationModels) <- names.datasets
     names(datasets) <- names.datasets
     final <- finalCombineds
     names(final) <- paste("chain", seq_along(final), sep = "")
@@ -6961,7 +6961,7 @@ makeResultsCounts <- function(finalCombineds, mcmcArgs, controlArgs, seed) {
             model = output.model,
             y = output.y,
             exposure = exposure,
-            observation = output.observation,
+            observationModels = output.observationModels,
             datasets = datasets,
             mcmc = mcmc,
             control = controlArgs,
@@ -6972,7 +6972,7 @@ makeResultsCounts <- function(finalCombineds, mcmcArgs, controlArgs, seed) {
         methods::new("ResultsCountsEst",
             model = output.model,
             y = output.y,
-            observation = output.observation,
+            observationModels = output.observationModels,
             datasets = datasets,
             mcmc = mcmc,
             control = controlArgs,

@@ -192,18 +192,18 @@ setClass("SummaryResultsCounts",
              metropolis = "dataframeOrNULL",
              model = "SummaryModel",
              y = "SummarySeries",
-             observation = "list",
+             observationModels = "list",
              datasets = "list",
              namesDatasets = "character"),
          contains = "SummaryResults",
          validity = function(object) {
-             observation <- object@observation
+             observationModels <- object@observationModels
              datasets <- object@datasets
              namesDatasets <- object@namesDatasets
-             ## all elements of 'observation' have class "SummaryModel"
-             if (!all(sapply(observation, is, "SummaryModel")))
+             ## all elements of 'observationModels' have class "SummaryModel"
+             if (!all(sapply(observationModels, is, "SummaryModel")))
                  return(gettextf("'%s' has elements not of class \"%s\"",
-                                 "observation", "SummaryModel"))
+                                 "observationModels", "SummaryModel"))
              ## all elements of 'datasets' have class "SummaryDataset"
              if (!all(sapply(datasets, is, "SummaryDataset")))
                  return(gettextf("'%s' has elements not of class \"%s\"",

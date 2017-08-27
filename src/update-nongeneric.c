@@ -7162,13 +7162,13 @@ updateVarsigma(SEXP object, SEXP y_R)
 
 
 void
-updateCountsPoissonNotUseExp(SEXP y_R, SEXP model_R, SEXP observation_R,
+updateCountsPoissonNotUseExp(SEXP y_R, SEXP model_R, SEXP observationModels_R,
                             SEXP datasets_R, SEXP transforms_R)
 {
     #ifdef DEBUGGING
     PrintValue(y_R);
     PrintValue(model_R);
-    PrintValue(observation_R);
+    PrintValue(observationModels_R);
     PrintValue(datasets_R);
     PrintValue(transforms_R);
     PrintValue(GET_SLOT(model_R, theta_sym));
@@ -7262,7 +7262,7 @@ updateCountsPoissonNotUseExp(SEXP y_R, SEXP model_R, SEXP observation_R,
         }
 
         double diffLL = diffLogLik(yProp, y_R, indices, nInd,
-                observation_R, datasets_R, transforms_R);
+                observationModels_R, datasets_R, transforms_R);
 
         #ifdef DEBUGGING
         PrintValue(ScalarInteger(900));
@@ -7322,7 +7322,7 @@ updateCountsPoissonNotUseExp(SEXP y_R, SEXP model_R, SEXP observation_R,
 /* ONLY tested without subtotals*/
 void
 updateCountsPoissonUseExp(SEXP y_R, SEXP model_R,
-                        SEXP exposure_R, SEXP observation_R,
+                        SEXP exposure_R, SEXP observationModels_R,
                         SEXP datasets_R, SEXP transforms_R)
 {
     double *theta = REAL(GET_SLOT(model_R, theta_sym));
@@ -7378,7 +7378,7 @@ updateCountsPoissonUseExp(SEXP y_R, SEXP model_R,
         }
 
         double diffLL = diffLogLik(yProp, y_R, indices, nInd,
-                observation_R, datasets_R, transforms_R);
+                observationModels_R, datasets_R, transforms_R);
 
 
         if (!( diffLL < 0.0) || ( runif(0.0, 1.0) < exp(diffLL) )) {
@@ -7394,7 +7394,7 @@ updateCountsPoissonUseExp(SEXP y_R, SEXP model_R,
 }
 
 /*    .Call(updateCountsBinomial_R, y, model, exposure,
-              observation, datasets, transforms)
+              observationModels, datasets, transforms)
               * else {
         theta <- model@theta
         for (i in seq_along(y)) {
@@ -7403,7 +7403,7 @@ updateCountsPoissonUseExp(SEXP y_R, SEXP model_R,
             diff.log.lik <- diffLogLik(yProp = y.prop,
                                        y = y,
                                        indicesY = i,
-                                       observation = observation,
+                                       observationModels = observationModels,
                                        datasets = datasets,
                                        transforms = transforms)
             accept <- (diff.log.lik >= 0) || (runif(n = 1L) < exp(diff.log.lik))
@@ -7416,7 +7416,7 @@ updateCountsPoissonUseExp(SEXP y_R, SEXP model_R,
 
 void
 updateCountsBinomial(SEXP y_R, SEXP model_R,
-             SEXP exposure_R, SEXP observation_R,
+             SEXP exposure_R, SEXP observationModels_R,
              SEXP datasets_R, SEXP transforms_R)
 {
 
@@ -7434,7 +7434,7 @@ updateCountsBinomial(SEXP y_R, SEXP model_R,
         
         double diffLL = diffLogLik(&yProp, y_R, 
                     &ir, 1, 
-                observation_R, datasets_R, transforms_R);
+                observationModels_R, datasets_R, transforms_R);
     
     
         int accept =  ( !( diffLL < 0.0) 
@@ -7447,14 +7447,14 @@ updateCountsBinomial(SEXP y_R, SEXP model_R,
 }
 
 void 
-updateObservationCounts(SEXP y_R, SEXP observation_R, 
+updateObservationCounts(SEXP y_R, SEXP observationModels_R, 
                         SEXP datasets_R, SEXP transforms_R)
 {
-    int nObs = LENGTH(observation_R);
+    int nObs = LENGTH(observationModels_R);
     
     for (int i = 0; i < nObs; ++i) {
         
-        SEXP model_R = VECTOR_ELT(observation_R, i);
+        SEXP model_R = VECTOR_ELT(observationModels_R, i);
         SEXP dataset_R = VECTOR_ELT(datasets_R, i);
         SEXP transform_R = VECTOR_ELT(transforms_R, i);
         

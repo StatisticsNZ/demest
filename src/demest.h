@@ -115,7 +115,7 @@ SEXP
   model_sym,
   exposure_sym,
   y_sym,
-  observation_sym,
+  observationModels_sym,
   datasets_sym,
   transforms_sym,
   
