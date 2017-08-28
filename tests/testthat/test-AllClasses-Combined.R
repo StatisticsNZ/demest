@@ -1301,8 +1301,7 @@ test_that("validity tests inherited for CombinedCountsPoissonNotHasExp inherited
                                    multiplierBefore = c(1L, 4L),
                                    multiplierAfter = c(1L, 4L),
                                    invIndices = list(list(1L, 2L, 3L, 4L), list(1L, 2L)))
-    expect_error(validObject(x.wrong),
-                 "elements of 'transforms' do not all have same 'dimBefore'")
+    expect_error(validObject(x.wrong))
     ## 'transforms' does not have names
     x.wrong <- x
     names(x.wrong@transforms) <- "wrong"

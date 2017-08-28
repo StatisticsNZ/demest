@@ -99,7 +99,7 @@ truncated \code{\link[=halft-distn]{half-t}} distribution with \code{df}
 degrees of freedom, scale \code{s^2}, and maximum value \code{max}.
 }
 \examples{
-## model were all hyper-priors follow defaults
+## model where all hyper-priors follow defaults
 Model(y ~ Poisson(mean ~ age * sex + age * time))
 
 ## override default hyper-prior for age effect

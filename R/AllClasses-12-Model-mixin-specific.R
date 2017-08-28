@@ -631,6 +631,10 @@ setClass("Theta",
              TRUE
          })
 
+setClass("UseExposeMixin",
+         slots = c(useExpose = "LogicalFlag"),
+         contains = "VIRTUAL")
+
 ## NO_TESTS
 setClass("VarsigmaMixin",
          slots = c(varsigma = "Scale"),

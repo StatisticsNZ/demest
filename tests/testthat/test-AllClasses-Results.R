@@ -21,7 +21,7 @@ test_that("can create valid object of class ResultsModelEst", {
                       dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000:2003)),
                 dimscales = c(time = "Intervals"))
     y[1] <- NA
-    spec <- Model(y ~ Poisson(mean ~ sex * age + time))
+    spec <- Model(y ~ Poisson(mean ~ sex * age + time, useExpose = FALSE))
     final <- replicate(n = 3,
                        initialCombinedModel(spec, y = y, exposure = NULL, weights = NULL))
     control <- list(call = call,
@@ -48,7 +48,7 @@ test_that("validity tests for ResultsModelEst inherited from Results work", {
     filename <- "filename"
     mcmc <- c(nBurnin = 1000L, nSim = 1000L, nChain = 3L, nThin = 10L,
               nIteration = 300L)
-    spec <- Model(y ~ Poisson(mean ~ sex * age + time))
+    spec <- Model(y ~ Poisson(mean ~ sex * age + time, useExpose = FALSE))
     seed <- list(c(407L, 1:6), c(407L, 6:1), c(407L, 3:8))
     y <- Counts(array(as.integer(rpois(n = 24, lambda = 20)),
                       dim = 2:4,
@@ -122,7 +122,7 @@ test_that("validity tests for ResultsModelEst inherited from ResultsEst work", {
     filename <- "filename"
     mcmc <- c(nBurnin = 1000L, nSim = 1000L, nChain = 3L, nThin = 10L,
               nIteration = 300L)
-    spec <- Model(y ~ Poisson(mean ~ sex * age + time))
+    spec <- Model(y ~ Poisson(mean ~ sex * age + time, useExpose = FALSE))
     seed <- list(c(407L, 1:6), c(407L, 6:1), c(407L, 3:8))
     y <- Counts(array(as.integer(rpois(n = 24, lambda = 20)),
                       dim = 2:4,
@@ -205,7 +205,7 @@ test_that("validity tests for ResultsModelEst inherited from ResultsModelEst wor
                       dim = 2:4,
                       dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000:2003)),
                 dimscales = c(time = "Intervals"))
-    spec <- Model(y ~ Poisson(mean ~ sex * age + time))
+    spec <- Model(y ~ Poisson(mean ~ sex * age + time, useExpose = FALSE))
     final <- replicate(n = 3,
                        initialCombinedModel(spec, y = y, exposure = NULL, weights = NULL))
     control <- list(call = call,
@@ -288,7 +288,7 @@ test_that("can create valid object of class ResultsModelPred", {
                       dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000:2003)),
                 dimscales = c(time = "Intervals"))
     y[1] <- NA
-    spec <- Model(y ~ Poisson(mean ~ sex * age + time))
+    spec <- Model(y ~ Poisson(mean ~ sex * age + time, useExpose = FALSE))
     final <- replicate(n = 3,
                        initialCombinedModel(spec, y = y, exposure = NULL, weights = NULL))
     control <- list(call = call,
@@ -320,7 +320,7 @@ test_that("validity tests for ResultsModelPred inherited from ResultsModelPred w
                       dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000:2003)),
                 dimscales = c(time = "Intervals"))
     y[1] <- NA
-    spec <- Model(y ~ Poisson(mean ~ sex * age + time))
+    spec <- Model(y ~ Poisson(mean ~ sex * age + time, useExpose = FALSE))
     final <- replicate(n = 3,
                        initialCombinedModel(spec, y = y, exposure = NULL, weights = NULL))
     control <- list(call = call,
@@ -364,7 +364,7 @@ test_that("can create valid object of class ResultsCountsEst", {
                                age = 0:2,
                                time = 2000:2003)),
                      dimscales = c(time = "Intervals"))
-    spec <- Model(y ~ Poisson(mean ~ sex * age + time))
+    spec <- Model(y ~ Poisson(mean ~ sex * age + time, useExpose = FALSE))
     datasets.data <- list(Counts(array(1:6, dim = c(2, 3, 1),
                                        dimnames = list(sex = c("f", "m"),
                                            age = 0:2,
@@ -451,7 +451,7 @@ test_that("validity tests for ResultsCountsEst inherited from ResultsCountsEst w
                                age = 0:2,
                                time = 2000:2003)),
                      dimscales = c(time = "Intervals"))
-    spec <- Model(y ~ Poisson(mean ~ sex * age + time))
+    spec <- Model(y ~ Poisson(mean ~ sex * age + time, useExpose = FALSE))
     datasets.data <- list(Counts(array(1:6, dim = c(2, 3, 1),
                                        dimnames = list(sex = c("f", "m"),
                                            age = 0:2,

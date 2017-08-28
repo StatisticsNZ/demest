@@ -362,7 +362,7 @@ setMethod("initialCombinedAccount",
               mappings.from.exp <- lapply(components, function(x) Mapping(exposure, x))
               mappings.to.exp <- lapply(components, function(x) Mapping(x, exposure))
               mappings.to.popn <- lapply(components, function(x) Mapping(x, population))
-              model.uses.exposure <- sapply(systemModels, methods::is, "UseExposure")
+              model.uses.exposure <- sapply(systemModels, function(x) x@useExpose@.Data)
               for (i in seq_along(systemModels)) {
                   series <- if (i == 1L) population else components[[i - 1L]]
                   expose <- if (model.uses.exposure[i]) exposure else NULL

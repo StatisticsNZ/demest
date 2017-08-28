@@ -131,7 +131,7 @@ test_that("initialCombinedModel gives apprioriate warning with class SpecNormal"
 
 test_that("initialCombinedModel creates object of class CombinedModelPoisson from valid inputs", {
     initialCombinedModel <- demest:::initialCombinedModel
-    spec <- Model(y ~ Poisson(mean ~ sex + time))
+    spec <- Model(y ~ Poisson(mean ~ sex + time, useExpose = FALSE))
     y <- Counts(array(as.integer(rbinom(n = 12, size = 10, prob = 0.8)),
                              dim = c(2, 6),
                       dimnames = list(sex = c("f", "m"), time = 2000:2005)),
@@ -141,7 +141,7 @@ test_that("initialCombinedModel creates object of class CombinedModelPoisson fro
     expect_is(x, "CombinedModelPoissonNotHasExp")
     expect_is(x@model, "PoissonVaryingNotUseExp")
     ## y has NA
-    spec <- Model(y ~ Poisson(mean ~ sex + time))
+    spec <- Model(y ~ Poisson(mean ~ sex + time, useExpose = FALSE))
     exposure <- Counts(array(as.numeric(rpois(n = 12, lambda = 100)),
                              dim = c(2, 6),
                              dimnames = list(sex = c("f", "m"), time = 2000:2005)),
@@ -228,7 +228,7 @@ test_that("test that initialCombinedModelPredict works with with CombinedModelPo
                       dim = c(2, 3, 5),
                       dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000:2004)),
                 dimscales = c(time = "Intervals"))
-    spec <- Model(y ~ Poisson(mean ~ age + time))
+    spec <- Model(y ~ Poisson(mean ~ age + time, useExpose = FALSE))
     combined <- initialCombinedModel(spec, y = y, exposure = NULL, weights = NULL)
     ans <- initialCombinedModelPredict(combined = combined,
                                        along = 3L,
@@ -305,7 +305,7 @@ test_that("initialCombinedCounts creates object of class CombinedCountsPoissonNo
     initialCombinedCounts <- demest:::initialCombinedCounts
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     ## no subtotals
-    object <- Model(y ~ Poisson(mean ~ age * sex))
+    object <- Model(y ~ Poisson(mean ~ age * sex, useExpose = FALSE))
     y <- Counts(array(c(1:23, NA),
                       dim = 2:4,
                       dimnames = list(sex = c("f", "m"), region = 1:3, age = 0:3)))
@@ -332,7 +332,7 @@ test_that("initialCombinedCounts creates object of class CombinedCountsPoissonNo
     expect_is(x, "CombinedCountsPoissonNotHasExp")
     expect_true(!any(is.na(x@y)))
     ## with subtotals
-    object <- Model(y ~ Poisson(mean ~ age * sex))
+    object <- Model(y ~ Poisson(mean ~ age * sex, useExpose = FALSE))
     y <- Counts(array(c(1:18, rep(NA, 6)),
                       dim = 2:4,
                       dimnames = list(sex = c("f", "m"), region = 1:3, age = 0:3)))
@@ -504,105 +504,26 @@ test_that("initialCombinedCounts throws appropriate errors with CombinedCountsBi
 
 ## CombinedAccount ##########################################################################
 
-## test_that("initialCombinedAccount creates object of class CombinedAccountMovements from valid inputs", {
-##     initialCombinedAccount <- demest:::initialCombinedAccount
-##     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
-##     ## no age, single dimension
-##     population <- CountsOne(values = seq(100, 200, 10),
-##                             labels = seq(2000, 2100, 10),
-##                             name = "time")
-##     births <- CountsOne(values = rpois(n = 10, lambda = 15),
-##                         labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
-##                         name = "time")
-##     deaths <- CountsOne(values = rpois(n = 10, lambda = 5),
-##                         labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
-##                         name = "time")
-##     account <- Movements(population = population,
-##                          births = births,
-##                          exits = list(deaths = deaths))
-##     account <- makeConsistent(account)
-##     systemModels <- list(Model(population ~ Poisson(mean ~ time)),
-##                          Model(births ~ Poisson(mean ~ 1)),
-##                          Model(deaths ~ Poisson(mean ~ 1)))
-##     seriesIndices <- c(2L, 0L)
-##     observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
-##                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
-##     datasets <- list(Counts(array(7L,
-##                                   dim = 10,
-##                                   dimnames = list(time = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-")))),
-##                      Counts(array(seq.int(110L, 210L, 10L),
-##                                   dim = 11,
-##                                   dimnames = list(time = seq(2000, 2100, 10)))))
-##     namesDatasets <- c("tax", "census")
-##     transforms <- list(makeTransform(x = deaths, y = datasets[[1]], subset = TRUE),
-##                        makeTransform(x = population, y = datasets[[2]], subset = TRUE))
-##     transforms <- lapply(transforms, makeCollapseTransformExtra)
-##     x <- initialCombinedAccount(account = account,
-##                                 systemModels = systemModels,
-##                                 seriesIndices = seriesIndices,
-##                                 observationModels = observationModels,
-##                                 datasets = datasets,
-##                                 namesDatasets = namesDatasets,
-##                                 transforms = transforms)
-##     expect_true(validObject(x))
-##     expect_is(x, "CombinedAccountMovements")
-##     ## with age and internal
-##     population <- Counts(array(rpois(n = 90, lambda = 100),
-##                                dim = c(3, 2, 4, 3),
-##                                dimnames = list(age = c("0-4", "5-9", "10+"),
-##                                                sex = c("f", "m"),
-##                                                reg = 1:4,
-##                                                time = c(2000, 2005, 2010))))
-##     births <- Counts(array(rpois(n = 90, lambda = 5),
-##                            dim = c(1, 2, 5, 2),
-##                            dimnames = list(age = "5-9",
-##                                            sex = c("m", "f"),
-##                                            reg = 1:5,
-##                                            time = c("2001-2005", "2006-2010"))))
-##     internal <- Counts(array(rpois(n = 300, lambda = 10),
-##                              dim = c(3, 2, 5, 5, 2),
-##                              dimnames = list(age = c("0-4", "5-9", "10+"),
-##                                              sex = c("m", "f"),
-##                                              reg_orig = 1:5,
-##                                              reg_dest = 1:5,
-##                                              time = c("2001-2005", "2006-2010"))))
-##     deaths <- Counts(array(rpois(n = 72, lambda = 10),
-##                            dim = c(3, 2, 4, 3),
-##                            dimnames = list(age = c("0-4", "5-9", "10+"),
-##                                            sex = c("m", "f"),
-##                                            reg = 4:1,
-##                                            time = c("2001-2005", "2006-2010", "2011-2015"))))
-##     immigration <- Counts(array(rpois(n = 72, lambda = 5),
-##                                 dim = c(3, 2, 4, 2),
-##                                 dimnames = list(age = c("0-4", "5-9", "10+"),
-##                                                 sex = c("m", "f"),
-##                                                 reg = 1:4,
-##                                                 time = c("2001-2005", "2006-2010"))))
-##     emigration <- Counts(array(rpois(n = 72, lambda = 5),
-##                                dim = c(3, 2, 4, 2),
-##                                dimnames = list(age = c("0-4", "5-9", "10+"),
-##                                                sex = c("m", "f"),
-##                                                reg = 1:4,
-##                                                time = c("2001-2005", "2006-2010"))))
-##     reclassification <- Counts(array(c(1, -1),
-##                                      dim = c(3, 2, 2, 4),
-##                                      dimnames = list(age = c("0-4", "5-9", "10+"),
-##                                                      sex = c("m", "f"),
-##                                                      time = c("2001-2005", "2006-2010"),
-##                                                      reg = 1:4)))
-##     account <- Movements(population = population,
-##                          births = births,
-##                          internal = internal,
-##                          entries = list(immigration = immigration),
-##                          exits = list(deaths = deaths, emigration = emigration),
-##                          net = list(reclassification = reclassification))
-##     account <- makeConsistent(account)
-##     systemModels <- list(Model(population ~ Poisson(mean ~ age + sex + reg + time)),
-##                          Model(births ~ Poisson(mean ~ 1)),
-##                          Model(deaths ~ Poisson(mean ~ 1)),
-##                          Model(internal ~ Poisson(mean ~ reg_orig + reg_dest)),
-##                          Model(entries ~ Poisson(mean ~ age)),
-                         
+test_that("initialCombinedAccount creates object of class CombinedAccountMovements from valid inputs", {
+    initialCombinedAccount <- demest:::initialCombinedAccount
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    ## no age, single dimension
+    population <- CountsOne(values = seq(100, 200, 10),
+                            labels = seq(2000, 2100, 10),
+                            name = "time")
+    births <- CountsOne(values = rpois(n = 10, lambda = 15),
+                        labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
+                        name = "time")
+    deaths <- CountsOne(values = rpois(n = 10, lambda = 5),
+                        labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
+                        name = "time")
+    account <- Movements(population = population,
+                         births = births,
+                         exits = list(deaths = deaths))
+    account <- makeConsistent(account)
+    systemModels <- list(Model(population ~ Poisson(mean ~ time, useExpose = FALSE)),
+                         Model(births ~ Poisson(mean ~ 1)),
+                         Model(deaths ~ Poisson(mean ~ 1)))
     seriesIndices <- c(2L, 0L)
     observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
@@ -625,6 +546,86 @@ test_that("initialCombinedCounts throws appropriate errors with CombinedCountsBi
                                 transforms = transforms)
     expect_true(validObject(x))
     expect_is(x, "CombinedAccountMovements")
+    expect_identical(x@modelUsesExposure, c(FALSE, TRUE, TRUE))
+    ## with age and internal
+    ## population <- Counts(array(rpois(n = 90, lambda = 100),
+    ##                            dim = c(3, 2, 4, 3),
+    ##                            dimnames = list(age = c("0-4", "5-9", "10+"),
+    ##                                            sex = c("f", "m"),
+    ##                                            reg = 1:4,
+    ##                                            time = c(2000, 2005, 2010))))
+    ## births <- Counts(array(rpois(n = 90, lambda = 5),
+    ##                        dim = c(1, 2, 5, 2),
+    ##                        dimnames = list(age = "5-9",
+    ##                                        sex = c("m", "f"),
+    ##                                        reg = 1:5,
+    ##                                        time = c("2001-2005", "2006-2010"))))
+    ## internal <- Counts(array(rpois(n = 300, lambda = 10),
+    ##                          dim = c(3, 2, 5, 5, 2),
+    ##                          dimnames = list(age = c("0-4", "5-9", "10+"),
+    ##                                          sex = c("m", "f"),
+    ##                                          reg_orig = 1:5,
+    ##                                          reg_dest = 1:5,
+    ##                                          time = c("2001-2005", "2006-2010"))))
+    ## deaths <- Counts(array(rpois(n = 72, lambda = 10),
+    ##                        dim = c(3, 2, 4, 3),
+    ##                        dimnames = list(age = c("0-4", "5-9", "10+"),
+    ##                                        sex = c("m", "f"),
+    ##                                        reg = 4:1,
+    ##                                        time = c("2001-2005", "2006-2010", "2011-2015"))))
+    ## immigration <- Counts(array(rpois(n = 72, lambda = 5),
+    ##                             dim = c(3, 2, 4, 2),
+    ##                             dimnames = list(age = c("0-4", "5-9", "10+"),
+    ##                                             sex = c("m", "f"),
+    ##                                             reg = 1:4,
+    ##                                             time = c("2001-2005", "2006-2010"))))
+    ## emigration <- Counts(array(rpois(n = 72, lambda = 5),
+    ##                            dim = c(3, 2, 4, 2),
+    ##                            dimnames = list(age = c("0-4", "5-9", "10+"),
+    ##                                            sex = c("m", "f"),
+    ##                                            reg = 1:4,
+    ##                                            time = c("2001-2005", "2006-2010"))))
+    ## reclassification <- Counts(array(c(1, -1),
+    ##                                  dim = c(3, 2, 2, 4),
+    ##                                  dimnames = list(age = c("0-4", "5-9", "10+"),
+    ##                                                  sex = c("m", "f"),
+    ##                                                  time = c("2001-2005", "2006-2010"),
+    ##                                                  reg = 1:4)))
+    ## account <- Movements(population = population,
+    ##                      births = births,
+    ##                      internal = internal,
+    ##                      entries = list(immigration = immigration),
+    ##                      exits = list(deaths = deaths, emigration = emigration),
+    ##                      net = list(reclassification = reclassification))
+    ## account <- makeConsistent(account)
+    ## systemModels <- list(Model(population ~ Poisson(mean ~ age + sex + reg + time, useExpose = FALSE)),
+    ##                      Model(births ~ Poisson(mean ~ 1)),
+    ##                      Model(deaths ~ Poisson(mean ~ 1)),
+    ##                      Model(internal ~ Poisson(mean ~ reg_orig + reg_dest)),
+    ##                      Model(entries ~ Poisson(mean ~ age)),
+                         
+    ## seriesIndices <- c(2L, 0L)
+    ## observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
+    ##                           Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
+    ## datasets <- list(Counts(array(7L,
+    ##                               dim = 10,
+    ##                               dimnames = list(time = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-")))),
+    ##                  Counts(array(seq.int(110L, 210L, 10L),
+    ##                               dim = 11,
+    ##                               dimnames = list(time = seq(2000, 2100, 10)))))
+    ## namesDatasets <- c("tax", "census")
+    ## transforms <- list(makeTransform(x = deaths, y = datasets[[1]], subset = TRUE),
+    ##                    makeTransform(x = population, y = datasets[[2]], subset = TRUE))
+    ## transforms <- lapply(transforms, makeCollapseTransformExtra)
+    ## x <- initialCombinedAccount(account = account,
+    ##                             systemModels = systemModels,
+    ##                             seriesIndices = seriesIndices,
+    ##                             observationModels = observationModels,
+    ##                             datasets = datasets,
+    ##                             namesDatasets = namesDatasets,
+    ##                             transforms = transforms)
+    ## expect_true(validObject(x))
+    ## expect_is(x, "CombinedAccountMovements")
 })
 
 

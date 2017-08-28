@@ -130,7 +130,7 @@ test_that("test that predictCombined gives valid answer with CombinedModelPoisso
                       dim = c(2, 3, 5),
                       dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000:2004)),
                 dimscales = c(time = "Intervals"))
-    spec <- Model(y ~ Poisson(mean ~ age + time))
+    spec <- Model(y ~ Poisson(mean ~ age + time, useExpose = FALSE))
     combined.est <- initialCombinedModel(spec, y = y, exposure = NULL, weights = NULL)
     combined.pred <- initialCombinedModelPredict(combined = combined.est,
                                                  along = 3L,
@@ -176,7 +176,7 @@ test_that("R, C.specific, and C.generic versions of predictCombined give same an
                       dim = c(2, 3, 5),
                       dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000:2004)),
                 dimscales = c(time = "Intervals"))
-    spec <- Model(y ~ Poisson(mean ~ age + time))
+    spec <- Model(y ~ Poisson(mean ~ age + time, useExpose = FALSE))
     combined.est <- initialCombinedModel(spec, y = y, exposure = NULL, weights = NULL)
     combined.pred <- initialCombinedModelPredict(combined = combined.est,
                                                  along = 3L,
@@ -504,7 +504,7 @@ test_that("updateCombined updates appropriate slots with CombinedModelPoissonNot
                       dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000:2003)),
                 dimscales = c(age = "Intervals", time = "Intervals"))
     y[1] <- NA
-    spec <- Model(y ~ Poisson(mean ~ sex * age + time))
+    spec <- Model(y ~ Poisson(mean ~ sex * age + time, useExpose = FALSE))
     x0 <- initialCombinedModel(spec, y = y, exposure = NULL, weights = NULL)
     x1 <- updateCombined(x0)
     for (name in "model")
@@ -524,7 +524,7 @@ test_that("R, specific C, and generic C versions of updateCombined give same ans
                       dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000:2003)),
                 dimscales = c(time = "Intervals"))
     y[1] <- NA
-    spec <- Model(y ~ Poisson(mean ~ sex * age + time))
+    spec <- Model(y ~ Poisson(mean ~ sex * age + time, useExpose = FALSE))
     x <- initialCombinedModel(spec, y = y, exposure = NULL, weights = NULL)
     set.seed(seed + 1)
     ans.R <- updateCombined(x, useC = FALSE)
@@ -656,7 +656,7 @@ test_that("updateCombined method for CombinedCountsPoissonNotHasExp updates corr
     y <- Counts(array(c(1:11, 20L),
                       dim = c(6, 2),
                       dimnames = list(age = 0:5, sex = c("f", "m"))))
-    model <- Model(y ~ Poisson(mean ~ age))
+    model <- Model(y ~ Poisson(mean ~ age, useExpose = FALSE))
     observationModels <- list(Model(register ~ PoissonBinomial(prob = 0.98)),
                               Model(tax ~ Binomial(mean ~ 1)))
     datasets <- list(Counts(array(c(0L, 2:12), dim = c(6, 2),
@@ -690,7 +690,7 @@ test_that("R, specific C, and generic C versions of updateCombined method for Co
     y <- Counts(array(c(1:11, 20L),
                       dim = c(6, 2),
                       dimnames = list(age = 0:5, sex = c("f", "m"))))
-    model <- Model(y ~ Poisson(mean ~ age))
+    model <- Model(y ~ Poisson(mean ~ age, useExpose = FALSE))
     observationModels <- list(Model(register ~ PoissonBinomial(prob = 0.98)),
                         Model(tax ~ Binomial(mean ~ 1)))
     datasets <- list(Counts(array(c(0L, 2:12), dim = c(6, 2),

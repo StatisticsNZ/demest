@@ -2902,16 +2902,16 @@ checkObservation <- function(observation, needsNonDefaultSeriesArg = FALSE) {
     if (!is.list(observation))
         stop(gettextf("'%s' has class \"%s\"",
                       "observation", class(observation)))
-    ## 'observation' has at least one element
-    if (identical(length(observation), 0L))
-        stop(gettextf("'%s' has length %d",
-                      "observation", 0L))
     for (i in seq_along(observation)) {
         obs <- observation[[i]]
         ## all elements have class "SpecModel"
         if (!methods::is(obs, "SpecModel"))
             stop(gettextf("element %d of '%s' has class \"%s\"",
                           i, "observation", class(obs)))
+        ## element uses exposure
+        if (!obs@useExpose@.Data)
+            stop(gettextf("model %d of '%s' does not use exposure",
+                          i, "observation"))
         ## element has name
         if (is.na(obs@nameY@.Data) || !nzchar(obs@nameY@.Data))
             stop(gettextf("element %d of '%s' has no name for response variable",
@@ -7433,9 +7433,11 @@ printMixEqns <- function(object, name, hasCovariates) {
 }
 
 printNormalFixedLikEqns <- function(object) {
-    cat("            y[i] ~ Normal(exposure[i] * mean[i], sqrt(exposure[i]) * sd[i])\n")
-    cat("                 -------- or --------\n")
-    cat("            y[i] ~ Normal(mean[i], sd[i])\n")
+    useExpose <- object@useExpose@.Data
+    if (useExpose)
+        cat("            y[i] ~ Normal(exposure[i] * mean[i], sqrt(exposure[i]) * sd[i])\n")
+    else
+        cat("            y[i] ~ Normal(mean[i], sd[i])\n")
 }
 
 printNormalFixedModEqns <- function(object) {
@@ -7462,18 +7464,19 @@ printNormalFixedSpecEqns <- function(object) {
     series <- object@series@.Data
     call <- object@call
     nameY <- object@nameY
+    useExpose <- object@useExpose@.Data
     has.series <- !is.na(series)
     name.y <- deparse(call$formula[[2L]])
     name.y <- sprintf("%13s", nameY)
-    if (has.series)
-        exposure <- series        
-    else
-        exposure <- "exposure"
-    cat(name.y, "[i] ~ Normal(", exposure, "[i] * mean[i], sqrt(", exposure, "[i]) * sd[i])\n", sep = "")
-    if (!has.series) {
-        cat("                 -------- or --------\n")
-        cat("            y[i] ~ Normal(mean[i], sd[i])\n")
+    if (useExpose) {
+        if (has.series)
+            exposure <- series        
+        else
+            exposure <- "exposure"
+        cat(name.y, "[i] ~ Normal(", exposure, "[i] * mean[i], sqrt(", exposure, "[i]) * sd[i])\n", sep = "")
     }
+    else
+        cat("            y[i] ~ Normal(mean[i], sd[i])\n")
 }
 
 printNormalVarsigmaKnownLikEqns <- function(object) {
@@ -7607,12 +7610,16 @@ printPoissonBinomialSpecEqns <- function(object) {
 
 printPoissonLikEqns <- function(object) {
     formulaMu <- object@formulaMu
+    useExpose <- object@useExpose@.Data
     terms <- expandTermsSpec(formulaMu)
-    cat("            y[i] ~ Poisson(rate[i] * exposure[i])\n")
-    cat("    log(rate[i]) ~ N(", terms, ", sd^2)\n", sep = "")
-    cat("                 -------- or --------\n")
-    cat("            y[i] ~ Poisson(count[i])\n")
-    cat("   log(count[i]) ~ N(", terms, ", sd^2)\n", sep = "")
+    if (useExpose) {
+        cat("            y[i] ~ Poisson(rate[i] * exposure[i])\n")
+        cat("    log(rate[i]) ~ N(", terms, ", sd^2)\n", sep = "")
+    }
+    else {
+        cat("            y[i] ~ Poisson(count[i])\n")
+        cat("   log(count[i]) ~ N(", terms, ", sd^2)\n", sep = "")
+    }
 }
 
 printPoissonModEqns <- function(object) {
@@ -7657,20 +7664,22 @@ printPoissonSpecEqns <- function(object) {
     series <- object@series@.Data
     lower <- object@lower
     upper <- object@upper
+    useExpose <- object@useExpose@.Data
     has.series <- !is.na(series)
     name.y <- sprintf("%13s", nameY)
-    if (has.series)
-        exposure <- series
-    else
-        exposure <- "exposure"
     terms <- expandTermsSpec(formulaMu)
-    cat(name.y, "[i] ~ Poisson(rate[i] * ", exposure, "[i])", sep = "")
-    if (lower > 0 || is.finite(upper))
-        cat(",  ", format(lower, digits = 4), "< rate[i] <", format(upper, digits = 4))
-    cat("\n")
-    cat("    log(rate[i]) ~ N(", terms, ", sd^2)\n", sep = "")
-    if (!has.series) {
-        cat("                 -------- or --------\n")
+    if (useExpose) {
+        if (has.series)
+            exposure <- series
+        else
+            exposure <- "exposure"
+        cat(name.y, "[i] ~ Poisson(rate[i] * ", exposure, "[i])", sep = "")
+        if (lower > 0 || is.finite(upper))
+            cat(",  ", format(lower, digits = 4), "< rate[i] <", format(upper, digits = 4))
+        cat("\n")
+        cat("    log(rate[i]) ~ N(", terms, ", sd^2)\n", sep = "")
+    }
+    else {
         cat("            y[i] ~ Poisson(count[i])")
         if (lower > 0 || is.finite(upper))
             cat(",  ", format(lower, digits = 4), "< count[i] <", format(upper, digits = 4))

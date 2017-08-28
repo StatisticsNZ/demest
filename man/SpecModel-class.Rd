@@ -121,6 +121,8 @@ subsetting.}
 \item{\code{metadata}}{Metadata for \code{mean} and \code{sd}.}
 
 \item{\code{metadataAll}}{Metadata for \code{meanAll} and \code{sdAll}.}
+
+\item{\code{useExpose}}{Whether the model includes and exposure term.}
 }}
 
 \section{Warning}{

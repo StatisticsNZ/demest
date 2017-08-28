@@ -5,7 +5,7 @@
 \title{Specify a model based on a normal distribution with known
 means and standard deviations.}
 \usage{
-NormalFixed(mean, sd)
+NormalFixed(mean, sd, useExpose = TRUE)
 }
 \arguments{
 \item{mean}{An object of class \code{\link[dembase:Values-class]{Values}}
@@ -15,6 +15,9 @@ holding means.}
 of class \code{\link[dembase:Values-class]{Values}}, or it can be
 a single number, in which case it is applied to all
 elements of \code{mean}.}
+
+\item{useExpose}{Whether the model includes an
+exposure term. Defaults to \code{TRUE}.}
 }
 \value{
 An object of class \code{\linkS4class{SpecLikelihoodNormalFixed}}.
@@ -45,14 +48,15 @@ in 2020.
 \examples{
 mean <- Values(array(c(0.95, 0.96, 0.95, 0.94),
                      dim = c(2, 2),
-                     dimnames = list(age = c("0-39", "40"),
+                     dimnames = list(age = c("0-39", "40+"),
                                      sex = c("Female", "Male"))))
 sd <- Values(array(c(0.05, 0.08, 0.05, 0.04),
                    dim = c(2, 2),
-                   dimnames = list(age = c("0-39", "40"),
+                   dimnames = list(age = c("0-39", "40+"),
                                    sex = c("Female", "Male"))))
 NormalFixed(mean = mean, sd = sd)
 NormalFixed(mean = mean, sd = 0.1)
+NormalFixed(mean = mean, sd = 0.1, useExpose = FALSE)
 }
 \seealso{
 \code{NormalFixed} is typically used as

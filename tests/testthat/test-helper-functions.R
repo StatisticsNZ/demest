@@ -2352,14 +2352,17 @@ test_that("checkObservation works", {
     ## 'observation' is a list
     expect_error(checkObservation("wrong"),
                  "'observation' has class \"character\"")
-    ## 'observation' has at least one element
-    expect_error(checkObservation(list()),
-                 "'observation' has length 0")
     ## all elements have class "SpecModel"
     x.wrong <- x
     x.wrong[[2]] <- "wrong"
     expect_error(checkObservation(x.wrong),
                  "element 2 of 'observation' has class \"character\"")
+    ## all elements use exposure
+    x.wrong <- x
+    x.wrong[[1]] <- Model(tax ~ Poisson(mean ~ age, useExpose = FALSE),
+                          age ~ Exch(error = Error(robust = TRUE)))
+    expect_error(checkObservation(x.wrong),
+                 "model 1 of 'observation' does not use exposure")
     ## element has name
     x.wrong <- x
     x.wrong[[1]]@nameY@.Data <- as.character(NA)
@@ -5600,7 +5603,7 @@ test_that("makeVBarAndN gives valid answer with PoissonVaryingNotUseExp, main ef
     y <- Counts(array(rpois(n = 20, lambda = 10),
                       dim = c(5, 4),
                       dimnames = list(age = 0:4, region = letters[1:4])))
-    spec <- Model(y ~ Poisson(mean ~ age + region))
+    spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE))
     x <- initialModel(spec, y = y, exposure = NULL)
     ## iBeta = 1L
     ans.obtained <- makeVBarAndN(x, iBeta = 1L, g = log)
@@ -5636,7 +5639,7 @@ test_that("R and C versions of makeVBarAndN give same answer with PoissonVarying
         y <- Counts(array(rpois(n = 20, lambda = 10),
                           dim = c(5, 4),
                           dimnames = list(age = 0:4, region = letters[1:4])))
-        spec <- Model(y ~ Poisson(mean ~ age + region))
+        spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE))
         x <- initialModel(spec, y = y, exposure = NULL)
         save_x <- x
         for (iBeta in seq.int(from = 1, to = 3)) {
@@ -5658,7 +5661,7 @@ test_that("makeVBarAndN gives valid answer with PoissonVaryingNotUseExp, main ef
                       dim = c(5, 4),
                       dimnames = list(age = 0:4, region = letters[1:4])))
     y[1] <- NA
-    spec <- Model(y ~ Poisson(mean ~ age + region))
+    spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE))
     x <- initialModel(spec, y = y, exposure = NULL)
     ## iBeta = 1L
     ans.obtained <- makeVBarAndN(x, iBeta = 1L, g = log)
@@ -5702,7 +5705,7 @@ test_that("R and C versions of makeVBarAndN give same answer with PoissonVarying
                           dim = c(5, 4),
                           dimnames = list(age = 0:4, region = letters[1:4])))
         y[10] <- NA
-        spec <- Model(y ~ Poisson(mean ~ age + region))
+        spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE))
         x <- initialModel(spec, y = y, exposure = NULL)
         save_x <- x
         for (iBeta in seq.int(from = 1, to = 3)) {
@@ -5724,7 +5727,7 @@ test_that("makeVBarAndN gives valid answer with PoissonVaryingNotUseExp, interce
                       dim = c(5, 4),
                       dimnames = list(age = 0:4, region = letters[1:4])))
     y[3] <- NA
-    spec <- Model(y ~ Poisson(mean ~ 1))
+    spec <- Model(y ~ Poisson(mean ~ 1, useExpose = FALSE))
     x <- initialModel(spec, y = y, exposure = NULL)
     ans.obtained <- makeVBarAndN(x, iBeta = 1L, g = log)
     g.theta <- log(x@theta)
@@ -5854,7 +5857,7 @@ test_that("R and C versions of makeVBarAndN give same answer with Poisson, inter
                           dim = c(5, 4),
                           dimnames = list(age = 0:4, region = letters[1:4])))
         y[c(1, 3, 5)] <- NA
-        spec <- Model(y ~ Poisson(mean ~ 1))
+        spec <- Model(y ~ Poisson(mean ~ 1, useExpose = FALSE))
         x <- initialModel(spec, y = y, exposure = NULL)
         save_x <- x
         iBeta <- 1L
@@ -6638,7 +6641,7 @@ test_that("makeOffsetsSigma works", {
     y <- Counts(array(as.integer(rpois(n = 20, lambda = 30)),
                       dim = c(2, 10),
                       dimnames = list(sex = c("f", "m"), age = 0:9)))
-    spec <- Model(y ~ Poisson(mean ~ sex + age))
+    spec <- Model(y ~ Poisson(mean ~ sex + age, useExpose = FALSE))
     model <- initialModel(spec, y = y, exposure = NULL)
     ans.obtained <- makeOffsetsSigma(model, offsetModel = 1L)
     offset <- 20L + 1L + 1L + sum(sapply(model@betas, length)) + 1L
@@ -10645,7 +10648,7 @@ test_that("makeResultsCounts works with no exposure", {
                       dim = 2:4,
                       dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000:2003)),
                 dimscales = c(time = "Intervals"))
-    spec <- Model(y ~ Poisson(mean ~ sex + age + time))
+    spec <- Model(y ~ Poisson(mean ~ sex + age + time, useExpose = FALSE))
     datasets <- list(Counts(array(c(2:12, NA),
                                   dim = c(3, 4),
                                   dimnames = list(age = 0:2, time = 2000:2003)),
@@ -11641,7 +11644,7 @@ test_that("makeMetropolis works with ResultsCounts", {
                        dimnames = list(age = 0:9, region = 1:5)))
     d3 <- collapseDimension(y, dim = "region")
     filename <- tempfile()
-    estimateCounts(model = Model(y ~ Poisson(mean ~ age + sex + region),
+    estimateCounts(model = Model(y ~ Poisson(mean ~ age + sex + region, useExpose = FALSE),
                        jump = 0.3,
                        age ~ Exch()),
                    y = y,

@@ -72,7 +72,7 @@ test_that("addAg works with PoissonVaryingNotUseExp and SpecAgPlaceholder", {
     y <- Counts(array(rpois(n = 20, lambda = 20),
                       dim = c(5, 4),
                       dimnames = list(age = 0:4, region = letters[1:4])))
-    spec <- Model(y ~ Poisson(mean ~ age + region))
+    spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE))
     set.seed(1)
     model <- initialModel(spec, y = y, exposure = NULL)
     ans.obtained <- addAg(model = model,
@@ -179,7 +179,7 @@ test_that("addAg works with PoissonVaryingNotUseExp and SpecAgCertain", {
     defaultWeights <- Counts(array(1,
                                    dim = c(5, 4),
                                    dimnames = list(age = 0:4, region = letters[1:4])))
-    spec <- Model(y ~ Poisson(mean ~ age + region))
+    spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE))
     set.seed(1)
     model <- initialModel(spec, y = y, exposure = NULL)
     aggregate <- AgCertain(value = 0.3)
@@ -296,7 +296,7 @@ test_that("addAg works with PoissonVaryingNotUseExp and SpecAgNormal", {
     defaultWeights <- Counts(array(1,
                                    dim = c(5, 4),
                                    dimnames = list(age = 0:4, region = letters[1:4])))
-    spec <- Model(y ~ Poisson(mean ~ age + region))
+    spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE))
     set.seed(1)
     model <- initialModel(spec, y = y, exposure = NULL)
     aggregate <- AgNormal(value = 0.3, sd = 0.2)
@@ -366,7 +366,7 @@ test_that("addAg works with PoissonVaryingNotUseExp and SpecAgPoisson", {
     defaultWeights <- Counts(array(1,
                                    dim = c(5, 4),
                                    dimnames = list(age = 0:4, region = letters[1:4])))
-    spec <- Model(y ~ Poisson(mean ~ age + region))
+    spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE))
     set.seed(1)
     model <- initialModel(spec, y = y, exposure = NULL)
     aggregate <- AgPoisson(value = 0.3)
@@ -486,7 +486,7 @@ test_that("addAg works with PoissonVaryingUseExp and SpecAgFun", {
                                    dim = c(5, 4),
                                    dimnames = list(age = 0:4, region = letters[1:4])),
                              dimscales = c(age = "Intervals"))
-    spec <- Model(y ~ Poisson(mean ~ age + region))
+    spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE))
     set.seed(1)
     model <- initialModel(spec, y = y, exposure = NULL)
     aggregate <- AgFun(value = 0.3, sd = 0.2, FUN = function(x, weights) 1)
@@ -526,10 +526,6 @@ test_that("addAg works with PoissonVaryingUseExp and SpecAgFun", {
 
 
 ## initialModel - Varying ##################################################################
-
-
-## NEED TO ADD TESTS FOR WHEN MODEL IS SATURATED
-
 
 test_that("initialModel creates object of class BinomialVarying from valid inputs", {
     initialModel <- demest:::initialModel
@@ -1086,6 +1082,16 @@ test_that("initialModel creates object of class PoissonVaryingUseExp from valid 
     expect_identical(x@ASigma, x@priorsBetas[[4]]@ATau)
     expect_identical(x@sigmaMax, x@priorsBetas[[4]]@tauMax)
     expect_identical(x@nuSigma, x@priorsBetas[[4]]@nuTau)
+    ## must have exposure
+    exposure <- Counts(array(rpois(n = 20, lambda = 20),
+                             dim = c(5, 4),
+                             dimnames = list(age = 0:4, region = letters[1:4])))
+    y <- Counts(array(rpois(n = 20, lambda = 0.3 * exposure),
+                      dim = c(5, 4),
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    spec <- Model(y ~ Poisson(mean ~ age * region))
+    expect_error(initialModel(spec, y = y, exposure = NULL),
+                 "model 'y ~ Poisson\\(mean ~ age \\* region\\)' uses exposure, but no 'exposure' argument supplied")
 })
 
 test_that("initialModel creates object of class PoissonVaryingNotUseExp from valid inputs", {
@@ -1095,7 +1101,7 @@ test_that("initialModel creates object of class PoissonVaryingNotUseExp from val
     y <- Counts(array(rpois(n = 20, lambda = 10),
                       dim = c(5, 4),
                       dimnames = list(age = 0:4, region = letters[1:4])))
-    spec <- Model(y ~ Poisson(mean ~ age + region),
+    spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE),
                   priorSD = HalfT(df = 6, max = 10))
     set.seed(1)
     x <- initialModel(spec, y = y, exposure = NULL)
@@ -1119,7 +1125,7 @@ test_that("initialModel creates object of class PoissonVaryingNotUseExp from val
     y <- Counts(array(rpois(n = 20, lambda = 10),
                       dim = c(5, 4),
                       dimnames = list(age = 0:4, region = letters[1:4])))
-    spec <- Model(y ~ Poisson(mean ~ 1))
+    spec <- Model(y ~ Poisson(mean ~ 1, useExpose = FALSE))
     set.seed(1)
     x <- initialModel(spec, y = y, exposure = NULL)
     set.seed(1)
@@ -1136,7 +1142,7 @@ test_that("initialModel creates object of class PoissonVaryingNotUseExp from val
                       dim = c(5, 4),
                       dimnames = list(age = 0:4, region = letters[1:4])))
     y[1:5] <- NA
-    spec <- Model(y ~ Poisson(mean ~ age + region))
+    spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE))
     set.seed(1)
     x <- initialModel(spec, y = y, exposure = NULL)
     set.seed(1)
@@ -1159,12 +1165,22 @@ test_that("initialModel creates object of class PoissonVaryingNotUseExp from val
     y <- Counts(array(rpois(n = 20, lambda = 10),
                       dim = c(5, 4),
                       dimnames = list(age = 0:4, region = letters[1:4])))
-    spec <- Model(y ~ Poisson(mean ~ age * region),
+    spec <- Model(y ~ Poisson(mean ~ age * region, useExpose = FALSE),
                   age:region ~ Exch(error = Error(scale = HalfT(df = 3, scale = 0.1, max = 0.6))))
     x <- initialModel(spec, y = y, exposure = NULL)
     expect_identical(x@ASigma, x@priorsBetas[[4]]@ATau)
     expect_identical(x@sigmaMax, x@priorsBetas[[4]]@tauMax)
     expect_identical(x@nuSigma, x@priorsBetas[[4]]@nuTau)
+    ## must not have exposure
+    exposure <- Counts(array(rpois(n = 20, lambda = 20),
+                             dim = c(5, 4),
+                             dimnames = list(age = 0:4, region = letters[1:4])))
+    y <- Counts(array(rpois(n = 20, lambda = 0.3 * exposure),
+                      dim = c(5, 4),
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    spec <- Model(y ~ Poisson(mean ~ age * region, useExpose = FALSE))
+    expect_error(initialModel(spec, y = y, exposure = exposure),
+                 "exposure' argument supplied, but model 'y ~ Poisson\\(mean ~ age \\* region, useExpose = FALSE\\)' does not use exposure")
 })
 
 
@@ -1228,6 +1244,18 @@ test_that("initialModel throws appropriate errors with NormalFixedUseExp", {
     spec <- Model(y ~ NormalFixed(mean = mean.wrong, sd = 0.1))
     expect_error(initialModel(spec, y = y, exposure = exposure),
                  "'mean' from NormalFixed model not compatible with data :")
+    mean <- Values(array(runif(n = 25),
+                         dim = c(5, 5),
+                         dimnames = list(age = 0:4, region = letters[1:5])))
+    exposure <- Counts(array(rpois(n = 20, lambda = 20),
+                             dim = c(5, 4),
+                             dimnames = list(age = 0:4, region = letters[1:4])))
+    y <- Counts(array(rpois(n = 20, lambda = 0.3 * exposure),
+                      dim = c(5, 4),
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    spec <- Model(y ~ NormalFixed(mean = mean, sd = 0.1))
+    expect_error(initialModel(spec, y = y, exposure = NULL),
+                 "model 'y ~ NormalFixed\\(mean = mean, sd = 0\\.1\\)' uses exposure, but no 'exposure' argument supplied")
 })
 
 test_that("initialModel creates object of class NormalFixedNotUseExp from valid inputs", {
@@ -1238,10 +1266,10 @@ test_that("initialModel creates object of class NormalFixedNotUseExp from valid 
     y <- Counts(array(rpois(n = 20, lambda = 10),
                       dim = c(5, 4),
                       dimnames = list(age = 0:4, region = letters[1:4])))
-    spec <- Model(y ~ NormalFixed(mean = mean, sd = 0.1))
+    spec <- Model(y ~ NormalFixed(mean = mean, sd = 0.1, useExpose = FALSE))
     ans.obtained <- initialModel(spec, y = y, exposure = NULL)
     ans.expected <- new("NormalFixedNotUseExp",
-                        call = call("Model", formula = y ~ NormalFixed(mean = mean, sd = 0.1)),
+                        call = call("Model", formula = y ~ NormalFixed(mean = mean, sd = 0.1, useExpose = FALSE)),
                         mean = new("ParameterVector", mean@.Data[1:20]),
                         sd = new("ScaleVec", rep(0.1, 20)),
                         metadataY = y@metadata,
@@ -1249,6 +1277,15 @@ test_that("initialModel creates object of class NormalFixedNotUseExp from valid 
                         sdAll = new("ScaleVec", rep(0.1, 25)),
                         metadataAll = mean@metadata)
     expect_equal(ans.obtained, ans.expected)
+    exposure <- Counts(array(rpois(n = 20, lambda = 20),
+                             dim = c(5, 4),
+                             dimnames = list(age = 0:4, region = letters[1:4])))
+    y <- Counts(array(rpois(n = 20, lambda = 0.3 * exposure),
+                      dim = c(5, 4),
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    spec <- Model(y ~ NormalFixed(mean = mean, sd = 0.1, useExpose = FALSE))
+    expect_error(initialModel(spec, y = y, exposure = exposure),
+                 "'exposure' argument supplied, but model 'y ~ NormalFixed\\(mean = mean, sd = 0.1, useExpose = FALSE\\)' does not use exposure")
 })
 
 
@@ -1422,7 +1459,7 @@ test_that("initialModel works with PoissonVaryingNotUseExp and AgCertain", {
                       dimnames = list(age = 0:4, region = letters[1:4])))
     ## scalar
     aggregate <- AgCertain(value = 0.4)
-    spec <- Model(y ~ Poisson(mean ~ age + region),
+    spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE),
                   upper = 3,
                   aggregate = aggregate)
     x <- initialModel(spec, y = y, exposure = NULL)
@@ -1433,7 +1470,7 @@ test_that("initialModel works with PoissonVaryingNotUseExp and AgCertain", {
                           dim = 3,
                           dimnames = list(region = c("a", "b", "c"))))
     aggregate <- AgCertain(value = value)
-    spec <- Model(y ~ Poisson(mean ~ age + region),
+    spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE),
                   aggregate = aggregate)
     x <- initialModel(spec, y = y, exposure = NULL)
     expect_true(validObject(x))
@@ -1447,7 +1484,7 @@ test_that("initialModel works with PoissonVaryingNotUseExp and AgNormal", {
                       dimnames = list(age = 0:4, region = letters[1:4])))
     ## scalar
     aggregate <- AgNormal(value = 0.4, sd = 0.1)
-    spec <- Model(y ~ Poisson(mean ~ age + region),
+    spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE),
                   aggregate = aggregate)
     x <- initialModel(spec, y = y, exposure = NULL)
     expect_true(validObject(x))
@@ -1455,7 +1492,7 @@ test_that("initialModel works with PoissonVaryingNotUseExp and AgNormal", {
     ## Values
     value <- Values(array(c(0.2, 0.3, 0.4), dim = 3, dimnames = list(region = c("a", "b", "c"))))
     aggregate <- AgNormal(value = value, sd = sqrt(value))
-    spec <- Model(y ~ Poisson(mean ~ age + region),
+    spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE),
                   aggregate = aggregate)
     x <- initialModel(spec, y = y, exposure = NULL)
     expect_true(validObject(x))
@@ -1521,7 +1558,7 @@ test_that("initialModel works with PoissonVaryingNotUseExp and AgPoisson", {
                       dimnames = list(age = 0:4, region = letters[1:4])))
     ## scalar
     aggregate <- AgPoisson(value = 0.4)
-    spec <- Model(y ~ Poisson(mean ~ age + region),
+    spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE),
                   aggregate = aggregate)
     x <- initialModel(spec, y = y, exposure = NULL)
     expect_true(validObject(x))
@@ -1529,7 +1566,7 @@ test_that("initialModel works with PoissonVaryingNotUseExp and AgPoisson", {
     ## Values
     value <- Values(array(c(0.2, 0.3, 0.4), dim = 3, dimnames = list(region = c("a", "b", "c"))))
     aggregate <- AgPoisson(value = value)
-    spec <- Model(y ~ Poisson(mean ~ age + region),
+    spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE),
                   aggregate = aggregate)
     x <- initialModel(spec, y = y, exposure = NULL)
     expect_true(validObject(x))
@@ -1774,7 +1811,7 @@ test_that("initialModelPredict works with PoissonVaryingNotUseExpPredict - with 
                             dimscales = c(time = "Intervals"))
     ## AgCertain with no weights
     aggregate <- AgCertain(value = 0.5, weights = weights.bench)
-    spec <- Model(y ~ Poisson(mean ~ time + region))
+    spec <- Model(y ~ Poisson(mean ~ time + region, useExpose = FALSE))
     mod.est <- initialModel(spec, y = y, exposure = NULL)
     x <- initialModelPredict(mod.est,
                              along = 1L,
@@ -1790,7 +1827,7 @@ test_that("initialModelPredict works with PoissonVaryingNotUseExpPredict - with 
     expect_true(all(x@weightAg == 1))
     ## AgNormal
     aggregate <- AgNormal(value = 0.5, sd = 1, weights = weights.bench)
-    spec <- Model(y ~ Poisson(mean ~ time + region))
+    spec <- Model(y ~ Poisson(mean ~ time + region, useExpose = FALSE))
     mod.est <- initialModel(spec, y = y, exposure = NULL)
     x <- initialModelPredict(mod.est,
                              along = 1L,
@@ -1866,7 +1903,7 @@ test_that("initialModelPredict works with NormFixedNotUseExp", {
     mean <- Values(array(rnorm(n = 40),
                          dim = c(10, 4),
                          dimnames = list(age = 0:9, region = letters[1:4])))
-    spec <- Model(y ~ NormalFixed(mean = mean, sd = sqrt(abs(mean))))
+    spec <- Model(y ~ NormalFixed(mean = mean, sd = sqrt(abs(mean)), useExpose = FALSE))
     model <- initialModel(spec, y = y, exposure = NULL)
     ans <- initialModelPredict(model,
                                along = 1L,
