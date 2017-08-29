@@ -1387,19 +1387,11 @@ test_that("makeOutputPrior works with MixNormZero", {
                        dimtypes = c("time", "state"),
                        DimScales = list(new("Points", dimvalues = 2001:2010),
                                         new("Categories", dimvalues = as.character(1:10))))
-    ans.expected <- list(components = Skeleton(metadata = metadata.vec,
-                                               first = 101L),
-                         scaleComponents = Skeleton(first = 301L),
-                         weights = Skeleton(metadata = metadata.wt,
-                                            first = 302L),
-                         level1AR = Skeleton(metadata = metadata.wt,
-                                             first = 402L),
-                         scale1AR = Skeleton(first = 502L),
-                         level2AR = Skeleton(metadata = metadata.wt,
-                                             first = 503L),
-                         meanAR = Skeleton(first = 603L),
-                         coefAR = Skeleton(first = 604L),
-                         scale2AR = Skeleton(first = 605L),
+    ans.expected <- list(scaleComponents = Skeleton(first = 301L),
+                         scale1 = Skeleton(first = 502L),
+                         scale2 = Skeleton(first = 605L),
+                         mean = Skeleton(first = 603L),
+                         damp = Skeleton(first = 604L),
                          scaleError = Skeleton(first = 606L))
     expect_identical(ans.obtained, ans.expected)
 })
