@@ -362,12 +362,13 @@ setClass("Weights",
                       "MultLevelComponentWeightMixMixin",
                       "NuComponentWeightMixMixin",
                       "NuLevelComponentWeightMixMixin",
+                      "PhiKnownMixin",
+                      "PhiMinMaxMixin",
                       "PriorMeanLevelComponentWeightMixMixin",
                       "PriorSDLevelComponentWeightMixMixin",
+                      "Shape1Shape2PhiMixin",
                       "SpecAComponentWeightMixMixin",
                       "SpecALevelComponentWeightMixMixin",
                       "SpecOmegaComponentWeightMaxMixMixin",
-                      "SpecOmegaLevelComponentWeightMaxMixMixin"))
-
-         
-         
+                      "SpecOmegaLevelComponentWeightMaxMixMixin",
+                      "SpecPhiMixin"))

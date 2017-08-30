@@ -5406,15 +5406,11 @@ test_that("whereEstimated works", {
                        "scaleError"))
     x <- new("MixNormZero")
     expect_identical(whereEstimated(x),
-                     c("components",
-                       "scaleComponents",
-                       "weights",
-                       "level1AR",
-                       "scale1AR",
-                       "level2AR",
-                       "meanAR",
-                       "coefAR",
-                       "scale2AR",
+                     c("scaleComponents",
+                       "scale1",
+                       "scale2",
+                       "mean",
+                       "damp",
                        "scaleError"))
     x <- new("Zero")
     expect_identical(whereEstimated(x),

@@ -854,7 +854,7 @@ listContents <- function(filename, where = character(), max = NULL) {
 #' \code{\link{fetch}}.
 #' 
 #' @examples
-#' births <- demdata::nz.births
+#' births <- demdata::nz.births.reg
 #' popn <- demdata::nz.popn.reg
 #' births <- Counts(births, dimscales = c(year = "Intervals"))
 #' popn <- Counts(popn, dimscales = c(year = "Intervals"))

@@ -1149,7 +1149,7 @@ test_that("updateComponentWeightMix gives valid answer", {
                     DimScales = list(new("Categories", dimvalues = c("a", "b")),
                                      new("Points", dimvalues = 2001:2010),
                                      new("Intervals", dimvalues = as.numeric(0:10))))
-    spec <- Mix(weights = Weights(scale2AR = HalfT(mult = 2)))
+    spec <- Mix(weights = Weights(scale2 = HalfT(mult = 2)))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
@@ -1205,7 +1205,7 @@ test_that("R and C versions of updateComponentWeightMix give same answer", {
                         DimScales = list(new("Categories", dimvalues = c("a", "b")),
                                          new("Points", dimvalues = 2001:2010),
                                          new("Intervals", dimvalues = as.numeric(0:10))))
-        spec <- Mix(weights = Weights(scale2AR = HalfT(mult = 2)))
+        spec <- Mix(weights = Weights(scale2 = HalfT(mult = 2)))
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
@@ -2610,7 +2610,26 @@ test_that("R and C versions of updatePhiMix give same answer", {
                     dimtypes = c("state", "time"),
                     DimScales = list(new("Categories", dimvalues = letters[1:20]),
                                      new("Points", dimvalues = 2001:2010)))
-    spec <- Mix(weights = Weights(mean = -20))
+    spec <- Mix()
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL, isSaturated = FALSE,
+                          multScale = 1)
+    updated <- 0L
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.R <- updatePhiMix(prior, useC = FALSE)
+        set.seed(seed)
+        ans.C <- updatePhiMix(prior, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+        updated <- updated + as.integer(ans.R@phiMix != prior@phiMix)
+    }
+    expect_true(updated > 0L)
+    spec <- Mix(weights = Weights(damp = Damp(min = 0.9, shape1 = 5, shape2 = 1)))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,

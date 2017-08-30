@@ -4,24 +4,22 @@
 \alias{Weights}
 \title{Specify priors for the weights in a Mix prior.}
 \usage{
-Weights(mean = 0, sd = 1, scale1AR = HalfT(), scale2AR = HalfT(),
-  minAR2 = -4, maxAR2 = 4)
+Weights(mean = 0, sd = 1, damp = Damp(), scale1 = HalfT(),
+  scale2 = HalfT())
 }
 \arguments{
-\item{mean}{The mean of the prior for \code{meanAR}. Defaults to 0.}
+\item{mean}{The mean of the prior for \code{mean}. Defaults to 0.}
 
-\item{sd}{The standard deviation of the prior for \code{meanAR}.
+\item{sd}{The standard deviation of the prior for \code{mean}.
 Defaults to 1.}
 
-\item{minAR2}{Minimum value that \code{levelAR2} can take. Defaults to -4.}
+\item{damp}{An object of class \code{\linkS4class{Damp}}.}
 
-\item{maxAR2}{Maximum value that \code{levelAR2} can take. Defaults to 4.}
+\item{scale1}{An object of class \code{\linkS4class{HalfT}} defining
+the prior for \code{error1}.}
 
-\item{scaleAR1}{An object of class \code{\linkS4class{HalfT}} defining
-the prior for \code{errorAR1}.}
-
-\item{scaleAR2}{An object of class \code{\linkS4class{HalfT}} defining
-the prior for \code{errorAR2}.}
+\item{scale2}{An object of class \code{\linkS4class{HalfT}} defining
+the prior for \code{error2}.}
 }
 \value{
 An object of class \code{\linkS4class{Weights}}.
@@ -39,23 +37,18 @@ each component is governed by an auto-regressive time series model.
 Specifically, transformed values of the weights are modelled
 using
 
-\code{levelAR1[k,h] = levelAR2[k,h] + errorAR1[k,h]}
+\code{level1[k,h] = level2[k,h] + error1[k,h]}
 
-\code{levelAR2[k,h] = meanAR + dampAR * level2AR[k-1,h] + error2AR[k,h]}
+\code{level2[k,h] = mean + damp * level2[k-1,h] + error2[k,h]}
 
-\code{meanAR} has a normal prior.
+\code{mean} has a normal prior.
 
-\code{dampAR} has the boundary-avoiding prior described in
+\code{damp} has the boundary-avoiding prior described in
 Gelman et al (2004) p316-317.  This prior is equivalent to assuming
-a Beta(2, 2) prior on the transformed parameter (\code{dampAR}+0.5)/2.
+a Beta(2, 2) prior on the transformed parameter (\code{damp}+0.5)/2.
 
-\code{errorAR1} and \code{errorAR2} both have half-t priors. These
+\code{error1} and \code{error2} both have half-t priors. These
 priors have the defaults described in \code{\link{HalfT}}.
-
-To avoid numerical problems, \code{levelAR2} is confined to the
-interval (\code{minAR2}, \code{maxAR2}). Users can override the
-default values, including setting them to \code{-Inf} and \code{Inf}.
-USER-SUPPLIED VALUES CURRENTLY IGNORED.
 }
 \seealso{
 Mixture priors are specified using \code{\link{Mix}}.

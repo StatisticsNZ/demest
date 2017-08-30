@@ -2577,145 +2577,77 @@ updatePhi(SEXP prior_R, int isWithTrend)
 }
 
 
-/* void */
-/* updatePhi(SEXP prior_R, int isWithTrend) */
-/* { */
-
-/*     int isPhiKnown = *LOGICAL(GET_SLOT(prior_R, phiKnown_sym)); */
-    
-/*     if (!isPhiKnown) { */
-/*         int K = *INTEGER(GET_SLOT(prior_R, K_sym)); */
-/*         int L = *INTEGER(GET_SLOT(prior_R, L_sym)); */
-        
-/*         int * updateSeries = LOGICAL(GET_SLOT(prior_R, updateSeriesDLM_sym)); */
-        
-/*         double *state = NULL; */
-/*         double omega = 0; */
-        
-/*         if (isWithTrend) { */
-/*             state = REAL(GET_SLOT(prior_R, deltaDLM_sym)); /\* vector, length (K+1)L *\/ */
-/*             omega = *REAL(GET_SLOT(prior_R, omegaDelta_sym)); */
-/*         } */
-/*         else { */
-/*             state = REAL(GET_SLOT(prior_R, alphaDLM_sym)); /\* vector, length (K+1)L *\/ */
-/*             omega = *REAL(GET_SLOT(prior_R, omegaAlpha_sym)); */
-/*         } */
-        
-/*         double minPhi = *REAL(GET_SLOT(prior_R, minPhi_sym)); */
-/*         double maxPhi = *REAL(GET_SLOT(prior_R, maxPhi_sym)); */
-        
-/*         SEXP iterator_R = GET_SLOT(prior_R, iteratorState_sym); */
-        
-/*         resetA(iterator_R); */
-/*         int *indices = INTEGER(GET_SLOT(iterator_R, indices_sym));  */
-
-/*         double numerator = 0; */
-/*         double denominator = 0; */
-
-/*         for (int l = 0; l < L; ++l) { */
-            
-/*             if (updateSeries[l]) { */
-
-/*                 for (int i = 0; i < K; ++i) { */
-/*                     int k_curr = indices[i + 1] - 1; /\* C style indices *\/ */
-/*                     int k_prev = indices[i] - 1; */
-                    
-/*                     double state_k_prev = state[k_prev]; */
-/*                     numerator += state[k_curr] * state_k_prev; */
-/*                     denominator += state_k_prev * state_k_prev; */
-/*                 } */
-            
-/*             } /\* end if (updateSeries[l]) *\/ */
-            
-/*             advanceA(iterator_R);  */
-/*         } */
-        
-/*         double mean = numerator/denominator; */
-/*         double sd = omega/sqrt(denominator); */
-        
-/*         int foundValue = 0; */
-/*         int nAttempts = 0; */
-        
-/*         double phiProp = 0; */
-        
-/*         while (!foundValue && (nAttempts < K_MAX_ATTEMPTS)) { */
-
-/*             ++nAttempts; */
-           
-/*             phiProp = rnorm(mean, sd); */
-/*             foundValue = (!(phiProp < minPhi) && !(phiProp > maxPhi)); */
-/*         } */
-
-/*         if(foundValue) { */
-/*             SET_DOUBLESCALE_SLOT(prior_R, phi_sym, phiProp); */
-/*         } */
-/*     }/\* end !isPhiKnown *\/ */
-    
-/*     /\* prior unchanged if phi known or !foundValue *\/ */
-/* } */
-
-
-
-
 void
 updatePhiMix(SEXP prior_R)
 
 {
-    double phiCurr = *REAL(GET_SLOT(prior_R, phiMix_sym));
+    int isPhiKnown = *LOGICAL(GET_SLOT(prior_R, phiKnown_sym));
     
-    double *level = REAL(GET_SLOT(prior_R, levelComponentWeightMix_sym));
-    double meanLevel = *REAL(GET_SLOT(prior_R, meanLevelComponentWeightMix_sym));
-    
-    int indexClassMaxUsed = *INTEGER(GET_SLOT(prior_R, indexClassMaxUsedMix_sym));
-    
-    double omega = *REAL(GET_SLOT(prior_R, omegaLevelComponentWeightMix_sym));
-    
-    int *dimBeta = INTEGER(GET_SLOT(prior_R, dimBeta_sym));  
-    int iAlong_r = *INTEGER(GET_SLOT(prior_R, iAlong_sym));  
-    int iAlong_c = iAlong_r -1;
-    int nAlong = dimBeta[iAlong_c];
-    
-    double tolerance = *REAL(GET_SLOT(prior_R, tolerance_sym));
-    
-    double phiMax = modePhiMix(level, meanLevel, nAlong,
-              indexClassMaxUsed, omega, tolerance);
-    
-    double logPostPhiFirst = logPostPhiFirstOrderMix(phiMax, level, meanLevel,
-                                    nAlong, indexClassMaxUsed, omega);
+    if (!isPhiKnown) {
 
-    double logPostPhiSecond = logPostPhiSecondOrderMix(phiMax, level, meanLevel,
-                                    nAlong, indexClassMaxUsed, omega);
+	double phiCurr = *REAL(GET_SLOT(prior_R, phiMix_sym));
     
-    double varProp = -1/logPostPhiSecond;
-    double meanProp = phiMax + varProp * logPostPhiFirst;
-    double sdProp = sqrt(varProp);
-    
-    /* double phiProp = rtnorm1(meanProp, sdProp, -1, 1); */
-    double phiProp = rtnorm1(meanProp, sdProp, 0.9, 1);
+        double minPhi = *REAL(GET_SLOT(prior_R, minPhi_sym));
+        double maxPhi = *REAL(GET_SLOT(prior_R, maxPhi_sym));
 
-    double logLikProp = logPostPhiMix(phiProp, level, meanLevel,
-                                nAlong, indexClassMaxUsed, omega);
-    
-    double logLikCurr = logPostPhiMix(phiCurr, level, meanLevel,
-                                nAlong, indexClassMaxUsed, omega);
+        double shape1 = *REAL(GET_SLOT(prior_R, shape1Phi_sym));
+        double shape2 = *REAL(GET_SLOT(prior_R, shape2Phi_sym));
 
-    double logDensProp = log1p(phiProp) + log1p(-phiProp);
-    double logDensCurr = log1p(phiCurr) + log1p(-phiCurr);  
+	double *level = REAL(GET_SLOT(prior_R, levelComponentWeightMix_sym));
+	double meanLevel = *REAL(GET_SLOT(prior_R, meanLevelComponentWeightMix_sym));
     
-    double logPropProp = dnorm(phiProp, meanProp, sdProp, USE_LOG);
-    double logPropCurr = dnorm(phiCurr, meanProp, sdProp, USE_LOG);
+	int indexClassMaxUsed = *INTEGER(GET_SLOT(prior_R, indexClassMaxUsedMix_sym));
     
-    double logDiff = logLikProp - logLikCurr +
-                    logDensProp - logDensCurr +
-                        logPropCurr - logPropProp;
+	double omega = *REAL(GET_SLOT(prior_R, omegaLevelComponentWeightMix_sym));
     
-    int accept = (!(logDiff < 0) || (runif(0, 1) < exp(logDiff)));  
-    if (accept) {
-        SET_DOUBLESCALE_SLOT(prior_R, phiMix_sym, phiProp);
+	int *dimBeta = INTEGER(GET_SLOT(prior_R, dimBeta_sym));  
+	int iAlong_r = *INTEGER(GET_SLOT(prior_R, iAlong_sym));  
+	int iAlong_c = iAlong_r -1;
+	int nAlong = dimBeta[iAlong_c];
+    
+	double tolerance = *REAL(GET_SLOT(prior_R, tolerance_sym));
+    
+	double phiMax = modePhiMix(level, meanLevel, nAlong,
+				   indexClassMaxUsed, omega, tolerance);
+    
+	double logPostPhiFirst = logPostPhiFirstOrderMix(phiMax, level, meanLevel,
+							 nAlong, indexClassMaxUsed, omega);
+
+	double logPostPhiSecond = logPostPhiSecondOrderMix(phiMax, level, meanLevel,
+							   nAlong, indexClassMaxUsed, omega);
+    
+	double varProp = -1/logPostPhiSecond;
+	double meanProp = phiMax + varProp * logPostPhiFirst;
+	double sdProp = sqrt(varProp);
+    
+	double phiProp = rtnorm1(meanProp, sdProp, minPhi, maxPhi);
+
+	double logLikProp = logPostPhiMix(phiProp, level, meanLevel,
+					  nAlong, indexClassMaxUsed, omega);
+    
+	double logLikCurr = logPostPhiMix(phiCurr, level, meanLevel,
+					  nAlong, indexClassMaxUsed, omega);
+
+	double phiPropTr = (phiProp - minPhi) / (maxPhi - minPhi);
+	double phiCurrTr = (phiCurr - minPhi) / (maxPhi - minPhi);
+
+	double logDensProp = dbeta(phiPropTr, shape1, shape2, USE_LOG);
+	double logDensCurr = dbeta(phiCurrTr, shape1, shape2, USE_LOG);
+
+	double logPropProp = dnorm(phiProp, meanProp, sdProp, USE_LOG);
+	double logPropCurr = dnorm(phiCurr, meanProp, sdProp, USE_LOG);
+    
+	double logDiff = logLikProp - logLikCurr +
+	    logDensProp - logDensCurr +
+	    logPropCurr - logPropProp;
+    
+	int accept = (!(logDiff < 0) || (runif(0, 1) < exp(logDiff)));  
+	if (accept) {
+	    SET_DOUBLESCALE_SLOT(prior_R, phiMix_sym, phiProp);
+	}
+
     }
 }
-
-
 
 void
 updateSeason(SEXP prior_R, double *betaTilde, int J)
