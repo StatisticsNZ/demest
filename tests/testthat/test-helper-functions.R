@@ -512,6 +512,19 @@ test_that("initialDLMAll works", {
     expect_identical(l$AAlpha, new("Scale", 0.5))
     expect_identical(l$omegaAlphaMax, new("Scale", qhalft(0.999, 7, 0.5)))
     expect_identical(l$tauMax, new("Scale", qhalft(0.999, 7, 0.5)))
+    ## hasLevel is FALSE
+    spec <- DLM(level = NULL)
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 2001:2010)))
+    l <- initialDLMAll(spec,
+                       beta = beta,
+                       metadata = metadata,
+                       sY = NULL,
+                       isSaturated = FALSE)
+    expect_identical(l$omegaAlpha@.Data, 0)
 })
 
 test_that("initialDLMAllPredict works", {
@@ -752,7 +765,7 @@ test_that("initialDLMWithTrend works", {
                              sY = NULL,
                              lAll = lAll)
     expect_identical(l$hasLevel, new("LogicalFlag", FALSE))
-    expect_true(is.infinite(l$DCInv[[1]][1]))
+    expect_true(is.finite(l$DCInv[[1]][1]))
 })
 
 test_that("initialDLMWithTrendPredict works", {

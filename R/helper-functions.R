@@ -790,6 +790,7 @@ initialDLMAll <- function(object, beta, metadata, sY, isSaturated, ...) {
     shape1Phi <- object@shape1Phi
     shape2Phi <- object@shape2Phi
     tauMax <- object@tauMax
+    has.trend <- methods::is(object, "SpecWithTrendMixin")
     dim <- dim(metadata)
     J <- makeJ(beta)
     ATau <- makeAHalfT(A = ATau,
@@ -822,10 +823,13 @@ initialDLMAll <- function(object, beta, metadata, sY, isSaturated, ...) {
                          mult = multAlpha)
     omegaAlphaMax <- makeScaleMax(scaleMax = omegaAlphaMax,
                                   A = AAlpha,
-                                  nu = nuAlpha)        
-    omegaAlpha <- makeScale(A = AAlpha,
-                            nu = nuAlpha,
-                            scaleMax = omegaAlphaMax)
+                                  nu = nuAlpha)
+    if (has.trend && !object@hasLevel)
+        omegaAlpha <- methods::new("Scale", 0)
+    else
+        omegaAlpha <- makeScale(A = AAlpha,
+                                nu = nuAlpha,
+                                scaleMax = omegaAlphaMax)
     alphaDLM <- makeStateDLM(K = K,
                              L = L)
     phi <- makePhi(phi = phi,

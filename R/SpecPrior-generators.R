@@ -255,8 +255,8 @@ Covariates <- function(formula = NULL, data = NULL, infant = FALSE,
         if (!infant)
             stop(gettextf("'%s' and '%s' not supplied, and '%s' is %s",
                           "formula", "data", "infant", "FALSE"))
-        data <- methods::new(("data.frame")
-        formula <- methods::new(("formula")
+        data <- methods::new("data.frame")
+        formula <- methods::new("formula")
     }
     if (!methods::is(intercept, "Norm"))
         stop(gettextf("'%s' has class \"%s\"",
@@ -268,7 +268,7 @@ Covariates <- function(formula = NULL, data = NULL, infant = FALSE,
     AEtaCoef <- coef@A
     multEtaCoef <- coef@mult
     nuEtaCoef <- coef@nu
-    infant <- methods::new(("LogicalFlag", infant)
+    infant <- methods::new("LogicalFlag", infant)
     methods::new("Covariates",
                  AEtaCoef = AEtaCoef,
                  AEtaIntercept = AEtaIntercept,
@@ -391,8 +391,8 @@ Damp <- function(coef = NULL, shape1 = 2, shape2 = 2, min = 0.8, max = 1) {
                              name = "shape2")
         shape1 <- as.double(shape1)
         shape2 <- as.double(shape2)
-        shape1 <- methods::new(("Scale", shape1)
-        shape2 <- methods::new(("Scale", shape2)
+        shape1 <- methods::new("Scale", shape1)
+        shape2 <- methods::new("Scale", shape2)
         min.max <- checkAndTidyPhiMinMax(min = min, max = max)
         methods::new("DampUnknown",
                      minPhi = min.max[1L],
@@ -597,7 +597,7 @@ DLM <- function(along = NULL, level = Level(), trend = Trend(),
                           "level", class(level)))
         }
     }
-    has.level <- methods::new(("LogicalFlag", has.level)
+    has.level <- methods::new("LogicalFlag", has.level)
     ## trend
     if (methods::is(trend, "Trend")) {
         has.trend <- TRUE
@@ -631,8 +631,8 @@ DLM <- function(along = NULL, level = Level(), trend = Trend(),
     if (phiKnown) {
         minPhi <- 0
         maxPhi <- 1
-        shape1Phi <- methods::new(("Scale", 1)
-        shape2Phi <- methods::new(("Scale", 1)
+        shape1Phi <- methods::new("Scale", 1)
+        shape2Phi <- methods::new("Scale", 1)
         phi <- damp@phi
     }
     else {
@@ -1619,9 +1619,9 @@ Known <- function(mean, sd = 0) {
         stop(gettextf("'%s' has length %d",
                       "mean", length(mean)))
     alphaKnown <- as.double(mean)
-    alphaKnown <- methods::new(("ParameterVector", alphaKnown)
+    alphaKnown <- methods::new("ParameterVector", alphaKnown)
     if (identical(sd, 0)) {
-        methods::new(("SpecKnownCertain",
+        methods::new("SpecKnownCertain",
             alphaKnown = alphaKnown,
             metadata = metadata)
     }
@@ -1663,8 +1663,8 @@ Known <- function(mean, sd = 0) {
             stop(gettextf("'%s' has class \"%s\"",
                           "sd", class(sd)))
         }
-        sd <- methods::new(("ScaleVec", sd)
-        methods::new(("SpecKnownUncertain",
+        sd <- methods::new("ScaleVec", sd)
+        methods::new("SpecKnownUncertain",
             alphaKnown = alphaKnown,
             AKnownVec = sd,
             metadata = metadata)
@@ -2152,8 +2152,8 @@ Weights <- function(mean = 0, sd = 1, damp = Damp(), scale1 = HalfT(), scale2 = 
     if (phiKnown) {
         minPhi <- 0
         maxPhi <- 1
-        shape1Phi <- methods::new(("Scale", 1)
-        shape2Phi <- methods::new(("Scale", 1)
+        shape1Phi <- methods::new("Scale", 1)
+        shape2Phi <- methods::new("Scale", 1)
         phi <- damp@phi
         if (isTRUE(all.equal(phi, 1)))
             stop(gettextf("'%s' equals %d",
@@ -2232,5 +2232,5 @@ Weights <- function(mean = 0, sd = 1, damp = Damp(), scale1 = HalfT(), scale2 = 
 #' Zero()
 #' @export  
 Zero <- function() {
-    methods::new(("SpecZero")
+    methods::new("SpecZero")
 }

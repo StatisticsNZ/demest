@@ -488,8 +488,8 @@ if (test.extended) {
         delta.obtained <- apply(delta.obtained, 1:2, sum)/1000
         alpha.expected <- apply(alpha.expected, 1:2, sum)/1000
         delta.expected <- apply(delta.expected, 1:2, sum)/1000
-        expect_equal(alpha.obtained[,-1], alpha.expected[,-1], tol = 0.03)
-        expect_equal(delta.obtained[,-1], delta.expected[,-1], tol = 0.03)
+        expect_equal(alpha.obtained[-1,-1], alpha.expected[-1,-1], tol = 0.03)
+        expect_equal(delta.obtained[-1,-1], delta.expected[-1,-1], tol = 0.03)
     })
 }
 
@@ -590,6 +590,8 @@ if (test.extended) {
             a <- replicate(n = K, c(0, 0), simplify = FALSE)
             R <- replicate(n = K, diag(2), simplify = FALSE)
             G <- matrix(c(1, 0, 1, phi), nr = 2)
+            AA <- matrix(c(1, 1, 0, 1), nr = 2)
+            X <- matrix(c(0, 0, 0, phi^2/omegaDelta^2), nr = 2)
             for (k in seq_len(K)) {
                 a[[k]] <- drop(G %*% m[[k]])
                 R[[k]] <- G %*% C[[k]] %*% t(G) + matrix(c(omegaAlpha^2, 0, 0, omegaDelta^2), nr = 2)
@@ -604,25 +606,24 @@ if (test.extended) {
             z <- rnorm(2)
             alphaDelta[[K+1]] <- m[[K+1]] + drop(C.sqrt %*% z)
             for (k in seq(from = K-1, to = 0)) {
-                if (k > 0L) {
-                    C.inv <- solve(C[[k+1L]])
-                    V <- 1/(phi^2/omegaDelta + (C.inv[1] - C.inv[2]) + (C.inv[4] - C.inv[3]))
-                    delta.hat <- (phi * alphaDelta[[k+2]][2] / phi
-                        + (C.inv[1] - C.inv[3]) * (alphaDelta[[k+2]][1] - m[[k+1]][1])
-                        + (C.inv[4] - C.inv[2]) * m[[k+1]][2]) * V
-                    alphaDelta[[k+1]][2] <- rnorm(n = 1, mean = delta.hat, sd = sqrt(V))
-                    alphaDelta[[k+1]][1] <- alphaDelta[[k+2]][1] - alphaDelta[[k+1]][2]
-                }
-                else {
-                    alphaDelta[[1]][1] <- 0
-                    alphaDelta[[1]][2] <- alphaDelta[[2]][1]
-                }
+                C.inv <- solve(C[[k+1]])
+                sigma <- solve(C.inv + X)
+                mu <- sigma %*% (C.inv %*% m[[k+1]] + c(0, phi * alphaDelta[[k+2]][2] / omegaDelta^2))
+                mu.star <- AA %*% mu
+                sigma.star <- (AA %*% sigma) %*% t(AA)
+                rho <- sigma.star[2] / sqrt(sigma.star[1] * sigma.star[4])
+                mean.alpha <- mu.star[1] + rho * sqrt(sigma.star[1]) * (alphaDelta[[k+2]][1] - mu.star[2]) / sqrt(sigma.star[4])
+                var.alpha <- (1 - rho^2) * sigma.star[1]
+                alpha <- rnorm(n = 1, mean = mean.alpha, sd = sqrt(var.alpha))
+                delta <- alphaDelta[[k+2]][1] - alpha
+                alphaDelta[[k+1]] <- c(alpha, delta)
             }
             alphaDelta
         }
-        updateAlphaDeltaDLMWithTrend <- demest:::updateAlphaDeltaDLMWithTrend
+        ## updateAlphaDeltaDLMWithTrend <- demest:::updateAlphaDeltaDLMWithTrend
         initialPrior <- demest:::initialPrior
         ## dim = c(4, 10); along = 2
+        n.sim <- 1000
         spec <- DLM(level = NULL)
         metadata <- new("MetaData",
                         nms = c("region", "time"),
@@ -630,15 +631,17 @@ if (test.extended) {
                         DimScales = list(new("Categories",
                                              dimvalues = c("a", "b", "c", "d")),
                                          new("Points", dimvalues = 1:10)))
-        alpha.obtained <- array(dim = c(4, 11, 1000))
-        delta.obtained <- array(dim = c(4, 11, 1000))
-        alpha.expected <- array(0, dim = c(4, 11, 1000))
-        delta.expected <- array(0, dim = c(4, 11, 1000))
+        alpha.obtained <- array(dim = c(4, 11, n.sim))
+        delta.obtained <- array(dim = c(4, 11, n.sim))
+        alpha.expected <- array(0, dim = c(4, 11, n.sim))
+        delta.expected <- array(0, dim = c(4, 11, n.sim))
         set.seed(1)
-        for (sim in 1:1000) {
+        for (sim in 1:n.sim) {
             beta <- rnorm(n = 40, mean = rep(1:10, each = 4))
             betaTilde <- rnorm(n = 40, mean = rep(1:10, each = 4))
-            prior <- initialPrior(spec, beta = beta, metadata = metadata, sY = NULL)
+            prior <- initialPrior(spec, beta = beta, metadata = metadata, sY = NULL,
+                                  isSaturated = FALSE)
+            prior@omegaAlpha@.Data <- 0
             set.seed(1 + sim)
             ans.obtained <- updateAlphaDeltaDLMWithTrend(prior = prior,
                                                          betaTilde = betaTilde,
@@ -658,13 +661,13 @@ if (test.extended) {
                 alpha.expected[i,,sim] <- sapply(ans, function(x) x[1])
                 delta.expected[i,,sim] <- sapply(ans, function(x) x[2])
             }
-        }
-        alpha.obtained <- apply(alpha.obtained, 1:2, sum)/1000
-        delta.obtained <- apply(delta.obtained, 1:2, sum)/1000
-        alpha.expected <- apply(alpha.expected, 1:2, sum)/1000
-        delta.expected <- apply(delta.expected, 1:2, sum)/1000
-        expect_equal(alpha.obtained[,-1], alpha.expected[,-1], tol = 0.03)
-        expect_equal(delta.obtained[,-1], delta.expected[,-1], tol = 0.03)
+        }        
+        alpha.obtained.mean <- apply(alpha.obtained, 1:2, sum)/n.sim
+        delta.obtained.mean <- apply(delta.obtained, 1:2, sum)/n.sim
+        alpha.expected.mean <- apply(alpha.expected, 1:2, sum)/n.sim
+        delta.expected.mean <- apply(delta.expected, 1:2, sum)/n.sim
+        expect_equal(alpha.obtained.mean[-1,-1], alpha.expected.mean[-1,-1], tol = 0.03)
+        expect_equal(delta.obtained.mean[-1,-1], delta.expected.mean[-1,-1], tol = 0.03)        
     })
 }
 
