@@ -532,12 +532,13 @@ test_that("fetchResults works with object of class SkeletonStateDLM - Trend", {
                     dimtypes = c("state", "time"),
                     DimScales = list(new("Categories", dimvalues = c("a", "b", "c")),
                                      new("Points", dimvalues = as.numeric(1:10))))
-    object <- new("SkeletonTrendDLM",
+    object <- new("SkeletonStateDLM",
                   metadata = metadata,
                   iAlong = 1L,
                   first = 41L,
                   last = 73L,
-                  indicesShow = c(2:11, 13:22, 24:33))
+                  indicesShow = c(2:11, 13:22, 24:33),
+                  subtractAlpha0 = new("LogicalFlag", FALSE))
     nameObject <- "obj"
     filename <- tempfile()
     con <- file(filename, "wb")
@@ -1391,41 +1392,33 @@ test_that("SkeletonBetaTerm method for needToCenter works", {
 test_that("SkeletonStateDLM method for needToCenter works", {
     needToCenter <- demest:::needToCenter
     object <- new("SkeletonStateDLM")
-    expect_true(needToCenter(object))
-})
-
-test_that("SkeletonTrendDLM method for needToCenter works", {
-    needToCenter <- demest:::needToCenter
-    object <- new("SkeletonTrendDLM")
     expect_false(needToCenter(object))
 })
 
 
 
-## needToCenterExceptAlong ##############################################################
+## needToSubtractAlpha0 ##############################################################
 
-test_that("default method for needToCenterExceptAlong works", {
-    needToCenterExceptAlong <- demest:::needToCenterExceptAlong
+test_that("default method for needToSubtractAlpha0 works", {
+    needToSubtractAlpha0 <- demest:::needToSubtractAlpha0
     object <- new("SkeletonManyValues")
-    expect_false(needToCenterExceptAlong(object))
+    expect_false(needToSubtractAlpha0(object))
 })
 
-test_that("SkeletonBetaTerm method for needToCenterExceptAlong works", {
-    needToCenterExceptAlong <- demest:::needToCenterExceptAlong
+test_that("SkeletonBetaTerm method for needToSubtractAlpha0 works", {
+    needToSubtractAlpha0 <- demest:::needToSubtractAlpha0
     object <- new("SkeletonBetaTerm")
-    expect_false(needToCenterExceptAlong(object))
+    expect_false(needToSubtractAlpha0(object))
 })
 
-test_that("SkeletonStateDLM method for needToCenterExceptAlong works", {
-    needToCenterExceptAlong <- demest:::needToCenterExceptAlong
+test_that("SkeletonStateDLM method for needToSubtractAlpha0 works", {
+    needToSubtractAlpha0 <- demest:::needToSubtractAlpha0
     object <- new("SkeletonStateDLM")
-    expect_false(needToCenterExceptAlong(object))
-})
-
-test_that("SkeletonTrendDLM method for needToCenterExceptAlong works", {
-    needToCenterExceptAlong <- demest:::needToCenterExceptAlong
-    object <- new("SkeletonTrendDLM")
-    expect_true(needToCenterExceptAlong(object))
+    object@subtactAlpha0 <- new("LogicalFlag", FALSE)
+    expect_false(needToSubtractAlpha0(object))
+    object <- new("SkeletonStateDLM")
+    object@subtactAlpha0 <- new("LogicalFlag", TRUE)
+    expect_true(needToSubtractAlpha0(object))
 })
 
 

@@ -6849,7 +6849,8 @@ makeOutputPriorScale <- function(pos) {
 }
 
 ## HAS_TESTS
-makeOutputStateDLM <- function(iterator, metadata, nSeason, iAlong, pos, isTrend) {
+makeOutputStateDLM <- function(iterator, metadata, nSeason, iAlong, pos, isTrend,
+                               phi, phiKnown) {
     indices <- iterator@indices
     n.within <- iterator@nWithin
     n.between <- iterator@nBetween
@@ -6867,13 +6868,18 @@ makeOutputStateDLM <- function(iterator, metadata, nSeason, iAlong, pos, isTrend
                                 iAlong = iAlong)
     metadata <- makeMetadataStateDLM(metadata = metadata,
                                      iAlong = iAlong)
-    class <- if (isTrend) "SkeletonTrendDLM" else "SkeletonStateDLM"
-    methods::new(class,
+    if (isTrend)
+        subtractAlpha0 <- FALSE
+    else
+        subtractAlpha0 <- phiKnown && isTRUE(all.equal(phi, 1))
+    subtractAlpha0 <- methods::new("LogicalFlag", subtractAlpha0)
+    methods::new("SkeletonStateDLM",
                  first = first,
                  last = last,
                  iAlong = iAlong,
                  indicesShow = indices.show,
-                 metadata = metadata)
+                 metadata = metadata,
+                 subtractAlpha0 = subtractAlpha0)
 }
 
 

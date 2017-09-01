@@ -163,12 +163,16 @@ setMethod("makeOutputPrior",
               L <- prior@L@.Data
               iAlong <- prior@iAlong
               iterator <- prior@iteratorState
+              phi <- prior@phi
+              phiKnown <- prior@phiKnown@.Data
               level <- makeOutputStateDLM(iterator = iterator,
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
                                           pos = pos,
-                                          isTrend = FALSE)
+                                          isTrend = FALSE,
+                                          phi = phi,
+                                          phiKnown = phiKnown)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -192,12 +196,16 @@ setMethod("makeOutputPrior",
               iAlong <- prior@iAlong
               iterator <- prior@iteratorState
               has.level <- prior@hasLevel@.Data
+              phi <- prior@phi
+              phiKnown <- prior@phiKnown@.Data
               level <- makeOutputStateDLM(iterator = iterator,
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
                                           pos = pos,
-                                          isTrend = FALSE)
+                                          isTrend = FALSE,
+                                          phi = phi,
+                                          phiKnown = phiKnown)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -206,7 +214,9 @@ setMethod("makeOutputPrior",
                                           nSeason = NULL,
                                           iAlong = iAlong,
                                           pos = pos,
-                                          isTrend = TRUE)
+                                          isTrend = TRUE,
+                                          phi = phi,
+                                          phiKnown = phiKnown)
               pos <- pos + (K + 1L) * L
               scaleTrend <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -232,12 +242,16 @@ setMethod("makeOutputPrior",
               nSeason <- prior@nSeason@.Data
               iAlong <- prior@iAlong
               iterator <- prior@iteratorState
+              phi <- prior@phi
+              phiKnown <- prior@phiKnown@.Data
               level <- makeOutputStateDLM(iterator = iterator,
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
                                           pos = pos,
-                                          isTrend = FALSE)
+                                          isTrend = FALSE,
+                                          phi = phi,
+                                          phiKnown = phiKnown)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -248,7 +262,9 @@ setMethod("makeOutputPrior",
                                            nSeason = nSeason,
                                            iAlong = iAlong,
                                            pos = pos,
-                                           isTrend = FALSE)
+                                           isTrend = FALSE,
+                                           phi = phi,
+                                           phiKnown = phiKnown)
               pos <- pos + (K + 1L) * L * nSeason
               scaleSeason <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -273,12 +289,16 @@ setMethod("makeOutputPrior",
               iAlong <- prior@iAlong
               iterator <- prior@iteratorState
               has.level <- prior@hasLevel@.Data
+              phi <- prior@phi
+              phiKnown <- prior@phiKnown@.Data
               level <- makeOutputStateDLM(iterator = iterator,
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
                                           pos = pos,
-                                          isTrend = FALSE)
+                                          isTrend = FALSE,
+                                          phi = phi,
+                                          phiKnown = phiKnown)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -287,7 +307,9 @@ setMethod("makeOutputPrior",
                                           nSeason = NULL,
                                           iAlong = iAlong,
                                           pos = pos,
-                                          isTrend = TRUE)
+                                          isTrend = TRUE,
+                                          phi = phi,
+                                          phiKnown = phiKnown)
               pos <- pos + (K + 1L) * L
               scaleTrend <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -298,7 +320,9 @@ setMethod("makeOutputPrior",
                                            nSeason = nSeason,
                                            iAlong = iAlong,
                                            pos = pos,
-                                           isTrend = FALSE)
+                                           isTrend = FALSE,
+                                           phi = phi,
+                                           phiKnown = phiKnown)
               pos <- pos + (K + 1L) * L * nSeason
               scaleSeason <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -328,12 +352,16 @@ setMethod("makeOutputPrior",
               Z <- prior@Z
               iAlong <- prior@iAlong
               iterator <- prior@iteratorState
+              phi <- prior@phi
+              phiKnown <- prior@phiKnown@.Data
               level <- makeOutputStateDLM(iterator = iterator,
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
                                           pos = pos,
-                                          isTrend = FALSE)
+                                          isTrend = FALSE,
+                                          phi = phi,
+                                          phiKnown = phiKnown)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -363,12 +391,16 @@ setMethod("makeOutputPrior",
               iAlong <- prior@iAlong
               iterator <- prior@iteratorState
               has.level <- prior@hasLevel@.Data
+              phi <- prior@phi
+              phiKnown <- prior@phiKnown@.Data
               level <- makeOutputStateDLM(iterator = iterator,
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
                                           pos = pos,
-                                          isTrend = FALSE)
+                                          isTrend = FALSE,
+                                          phi = phi,
+                                          phiKnown = phiKnown)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -377,7 +409,9 @@ setMethod("makeOutputPrior",
                                           nSeason = NULL,
                                           iAlong = iAlong,
                                           pos = pos,
-                                          isTrend = TRUE)
+                                          isTrend = TRUE,
+                                          phi = phi,
+                                          phiKnown = phiKnown)
               pos <- pos + (K + 1L) * L
               scaleTrend <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -409,12 +443,16 @@ setMethod("makeOutputPrior",
               iAlong <- prior@iAlong
               nSeason <- prior@nSeason@.Data
               iterator <- prior@iteratorState
+              phi <- prior@phi
+              phiKnown <- prior@phiKnown@.Data
               level <- makeOutputStateDLM(iterator = iterator,
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
                                           pos = pos,
-                                          isTrend = FALSE)
+                                          isTrend = FALSE,
+                                          phi = phi,
+                                          phiKnown = phiKnown)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -425,7 +463,9 @@ setMethod("makeOutputPrior",
                                            nSeason = nSeason,
                                            iAlong = iAlong,
                                            pos = pos,
-                                           isTrend = FALSE)
+                                           isTrend = FALSE,
+                                           phi = phi,
+                                           phiKnown = phiKnown)
               pos <- pos + (K + 1L) * L * nSeason
               scaleSeason <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -456,12 +496,16 @@ setMethod("makeOutputPrior",
               nSeason <- prior@nSeason@.Data
               iterator <- prior@iteratorState
               has.level <- prior@hasLevel@.Data
+              phi <- prior@phi
+              phiKnown <- prior@phiKnown@.Data
               level <- makeOutputStateDLM(iterator = iterator,
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
                                           pos = pos,
-                                          isTrend = FALSE)
+                                          isTrend = FALSE,
+                                          phi = phi,
+                                          phiKnown = phiKnown)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -470,7 +514,9 @@ setMethod("makeOutputPrior",
                                           nSeason = NULL,
                                           iAlong = iAlong,
                                           pos = pos,
-                                          isTrend = TRUE)
+                                          isTrend = TRUE,
+                                          phi = phi,
+                                          phiKnown = phiKnown)
               pos <- pos + (K + 1L) * L
               scaleTrend <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -481,7 +527,9 @@ setMethod("makeOutputPrior",
                                            nSeason = nSeason,
                                            iAlong = iAlong,
                                            pos = pos,
-                                           isTrend = FALSE)
+                                           isTrend = FALSE,
+                                           phi = phi,
+                                           phiKnown = phiKnown)
               pos <- pos + (K + 1L) * L * nSeason
               scaleSeason <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -512,12 +560,16 @@ setMethod("makeOutputPrior",
               L <- prior@L@.Data
               iAlong <- prior@iAlong
               iterator <- prior@iteratorState
+              phi <- prior@phi
+              phiKnown <- prior@phiKnown@.Data
               level <- makeOutputStateDLM(iterator = iterator,
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
                                           pos = pos,
-                                          isTrend = FALSE)
+                                          isTrend = FALSE,
+                                          phi = phi,
+                                          phiKnown = phiKnown)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -540,12 +592,16 @@ setMethod("makeOutputPrior",
               iAlong <- prior@iAlong
               iterator <- prior@iteratorState
               has.level <- prior@hasLevel@.Data
+              phi <- prior@phi
+              phiKnown <- prior@phiKnown@.Data
               level <- makeOutputStateDLM(iterator = iterator,
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
                                           pos = pos,
-                                          isTrend = FALSE)
+                                          isTrend = FALSE,
+                                          phi = phi,
+                                          phiKnown = phiKnown)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -554,7 +610,9 @@ setMethod("makeOutputPrior",
                                           nSeason = NULL,
                                           iAlong = iAlong,
                                           pos = pos,
-                                          isTrend = TRUE)
+                                          isTrend = TRUE,
+                                          phi = phi,
+                                          phiKnown = phiKnown)
               pos <- pos + (K + 1L) * L
               scaleTrend <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -579,12 +637,16 @@ setMethod("makeOutputPrior",
               iAlong <- prior@iAlong
               nSeason <- prior@nSeason@.Data
               iterator <- prior@iteratorState
+              phi <- prior@phi
+              phiKnown <- prior@phiKnown@.Data
               level <- makeOutputStateDLM(iterator = iterator,
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
                                           pos = pos,
-                                          isTrend = FALSE)
+                                          isTrend = FALSE,
+                                          phi = phi,
+                                          phiKnown = phiKnown)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -595,7 +657,9 @@ setMethod("makeOutputPrior",
                                            nSeason = nSeason,
                                            iAlong = iAlong,
                                            pos = pos,
-                                           isTrend = FALSE)
+                                           isTrend = FALSE,
+                                           phi = phi,
+                                           phiKnown = phiKnown)
               pos <- pos + (K + 1L) * L * nSeason
               scaleSeason <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -619,12 +683,16 @@ setMethod("makeOutputPrior",
               nSeason <- prior@nSeason@.Data
               iterator <- prior@iteratorState
               has.level <- prior@hasLevel@.Data
+              phi <- prior@phi
+              phiKnown <- prior@phiKnown@.Data
               level <- makeOutputStateDLM(iterator = iterator,
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
                                           pos = pos,
-                                          isTrend = FALSE)
+                                          isTrend = FALSE,
+                                          phi = phi,
+                                          phiKnown = phiKnown)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -633,7 +701,9 @@ setMethod("makeOutputPrior",
                                           nSeason = NULL,
                                           iAlong = iAlong,
                                           pos = pos,
-                                          isTrend = TRUE)
+                                          isTrend = TRUE,
+                                          phi = phi,
+                                          phiKnown = phiKnown)
               pos <- pos + (K + 1L) * L
               scaleTrend <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -644,7 +714,9 @@ setMethod("makeOutputPrior",
                                            nSeason = nSeason,
                                            iAlong = iAlong,
                                            pos = pos,
-                                           isTrend = FALSE)
+                                           isTrend = FALSE,
+                                           phi = phi,
+                                           phiKnown = phiKnown)
               pos <- pos + (K + 1L) * L * nSeason
               scaleSeason <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -673,12 +745,16 @@ setMethod("makeOutputPrior",
               Z <- prior@Z
               iAlong <- prior@iAlong
               iterator <- prior@iteratorState
+              phi <- prior@phi
+              phiKnown <- prior@phiKnown@.Data
               level <- makeOutputStateDLM(iterator = iterator,
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
                                           pos = pos,
-                                          isTrend = FALSE)
+                                          isTrend = FALSE,
+                                          phi = phi,
+                                          phiKnown = phiKnown)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -707,12 +783,16 @@ setMethod("makeOutputPrior",
               iAlong <- prior@iAlong
               iterator <- prior@iteratorState
               has.level <- prior@hasLevel@.Data
+              phi <- prior@phi
+              phiKnown <- prior@phiKnown@.Data
               level <- makeOutputStateDLM(iterator = iterator,
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
                                           pos = pos,
-                                          isTrend = FALSE)
+                                          isTrend = FALSE,
+                                          phi = phi,
+                                          phiKnown = phiKnown)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -721,7 +801,9 @@ setMethod("makeOutputPrior",
                                           nSeason = NULL,
                                           iAlong = iAlong,
                                           pos = pos,
-                                          isTrend = TRUE)
+                                          isTrend = TRUE,
+                                          phi = phi,
+                                          phiKnown = phiKnown)
               pos <- pos + (K + 1L) * L
               scaleTrend <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -752,12 +834,16 @@ setMethod("makeOutputPrior",
               iAlong <- prior@iAlong
               nSeason <- prior@nSeason@.Data
               iterator <- prior@iteratorState
+              phi <- prior@phi
+              phiKnown <- prior@phiKnown@.Data
               level <- makeOutputStateDLM(iterator = iterator,
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
                                           pos = pos,
-                                          isTrend = FALSE)
+                                          isTrend = FALSE,
+                                          phi = phi,
+                                          phiKnown = phiKnown)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -768,7 +854,9 @@ setMethod("makeOutputPrior",
                                            nSeason = nSeason,
                                            iAlong = iAlong,
                                            pos = pos,
-                                           isTrend = FALSE)
+                                           isTrend = FALSE,
+                                           phi = phi,
+                                           phiKnown = phiKnown)
               pos <- pos + (K + 1L) * L * nSeason
               scaleSeason <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -798,12 +886,16 @@ setMethod("makeOutputPrior",
               iAlong <- prior@iAlong
               iterator <- prior@iteratorState
               has.level <- prior@hasLevel@.Data
+              phi <- prior@phi
+              phiKnown <- prior@phiKnown@.Data
               level <- makeOutputStateDLM(iterator = iterator,
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
                                           pos = pos,
-                                          isTrend = FALSE)
+                                          isTrend = FALSE,
+                                          phi = phi,
+                                          phiKnown = phiKnown)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -812,7 +904,9 @@ setMethod("makeOutputPrior",
                                           nSeason = NULL,
                                           iAlong = iAlong,
                                           pos = pos,
-                                          isTrend = TRUE)
+                                          isTrend = TRUE,
+                                          phi = phi,
+                                          phiKnown = phiKnown)
               pos <- pos + (K + 1L) * L
               scaleTrend <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -823,7 +917,9 @@ setMethod("makeOutputPrior",
                                            nSeason = nSeason,
                                            iAlong = iAlong,
                                            pos = pos,
-                                           isTrend = FALSE)
+                                           isTrend = FALSE,
+                                           phi = phi,
+                                           phiKnown = phiKnown)
               pos <- pos + (K + 1L) * L * nSeason
               scaleSeason <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -894,19 +990,33 @@ setMethod("makeOutputPrior",
               n.beta.no.along <- prior@nBetaNoAlongMix
               index.class.max <- prior@indexClassMaxMix@.Data
               n.along <- dim.beta[iAlong]
+              metadata.vectors <- makeMetadataVectorsMix(metadata = metadata,
+                                                         iAlong = iAlong,
+                                                         indexClassMax = index.class.max)
+              metadata.weights <- makeMetadataWeightsMix(metadata = metadata,
+                                                         iAlong = iAlong,
+                                                         indexClassMax = index.class.max)
               ## prodVectorsMix
+              components <- Skeleton(metadata = metadata.vectors,
+                                     first = pos)
               pos <- pos + n.beta.no.along * index.class.max
               ## omegaVectorsMix
               scaleComponents <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
               ## weightMix
+              weights <- Skeleton(metadata = metadata.weights,
+                                  first = pos)
               pos <- pos + n.along * index.class.max
               ## componentWeightMix
+              level1 <- Skeleton(metadata = metadata.weights,
+                                   first = pos)
               pos <- pos + n.along * index.class.max
               ## omegaComponentWeightMix
               scale1 <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
               ## levelComponentWeightMix
+              level2 <- Skeleton(metadata = metadata.weights,
+                                   first = pos)
               pos <- pos + n.along * index.class.max
               ## meanLevelComponentWeightMix
               mean <- Skeleton(first = pos)
@@ -920,13 +1030,18 @@ setMethod("makeOutputPrior",
               ## tau
               scaleError <- makeOutputPriorScale(pos = pos)
               ## return
-              list(scaleComponents = scaleComponents,
+              list(components = components,
+                   scaleComponents = scaleComponents,
+                   weights = weights,
+                   level1 = level1,
                    scale1 = scale1,
-                   scale2 = scale2,
+                   level2 = level2,
                    mean = mean,
                    damp = damp,
+                   scale2 = scale2,
                    scaleError = scaleError)
           })
+
 
 ## NO_TESTS
 setMethod("makeOutputPrior",
@@ -2783,9 +2898,9 @@ setMethod("whereEstimated",
           function(object) {
               c("scaleComponents",
                 "scale1",
-                "scale2",
                 "mean",
                 "damp",
+                "scale2",
                 "scaleError")
           })
 
