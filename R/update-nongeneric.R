@@ -372,20 +372,35 @@ updateAlphaDeltaDLMWithTrend <- function(prior, betaTilde, useC = FALSE) {
                 ## backward smooth
                 for (i in seq.int(from = K - 1L, to = 0L)) {
                     if (!has.level) {
-                        if ((i == 0L) && is.infinite(DC.inv[[1L]][1L])) {
-                            delta.curr <- alpha[indices.ad[2L]]
-                        }
-                        else  {
-                            C.inv <- UC[[i + 1L]] %*% DC.inv[[i + 1L]] %*% DC.inv[[i + 1L]] %*% t(UC[[i + 1L]])
-                            var.delta <- 1 / (phi^2 / omega.delta + C.inv[1L] - 2 * C.inv[2L] + C.inv[4L])
-                            mean.delta <- (phi * delta[indices.ad[i + 2L]] / omega.delta
-                                + (C.inv[1L] - C.inv[2L]) * (alpha[indices.ad[i + 2L]] - m[[i + 1L]][1L])
-                                + (C.inv[4L] - C.inv[2L]) * m[[i + 1L]][2L]) * var.delta
-                            delta.curr <- stats::rnorm(n = 1L,
-                                                       mean = mean.delta,
-                                                       sd = sqrt(var.delta))
-                        }
-                        alpha.curr <- alpha[indices.ad[i + 2L]] - delta.curr
+                        C.inv <- UC[[i + 1L]] %*% DC.inv[[i + 1L]] %*% DC.inv[[i + 1L]] %*% t(UC[[i + 1L]])
+                        sigma.inv.1 <- C.inv[1L]
+                        sigma.inv.2 <- C.inv[2L]
+                        sigma.inv.3 <- C.inv[3L]
+                        sigma.inv.4 <- C.inv[4L] + phi^2 / omega.delta^2
+                        determinant <- sigma.inv.1 * sigma.inv.4 - sigma.inv.2 * sigma.inv.3
+                        sigma.1 <- sigma.inv.4 / determinant
+                        sigma.2 <- -1 * sigma.inv.3 / determinant
+                        sigma.3 <- -1 * sigma.inv.2 / determinant
+                        sigma.4 <- sigma.inv.1 / determinant
+                        mu.inner.1 <- C.inv[1L] * m[[i + 1L]][1L] + C.inv[3L] * m[[i + 1L]][2L]
+                        mu.inner.2 <- (C.inv[2L] * m[[i + 1L]][1L] + C.inv[4L] * m[[i + 1L]][2L]
+                            + phi * delta[indices.ad[i + 2L]] / omega.delta^2)
+                        mu.1 <- sigma.1 * mu.inner.1 + sigma.3 * mu.inner.2
+                        mu.2 <- sigma.2 * mu.inner.1 + sigma.4 * mu.inner.2
+                        mu.star.1 <- mu.1
+                        mu.star.2 <- mu.1 + mu.2
+                        sigma.star.1 <- sigma.1
+                        sigma.star.2 <- sigma.1 + sigma.2
+                        sigma.star.3 <- sigma.1 + sigma.3
+                        sigma.star.4 <- sigma.1 + sigma.2 + sigma.3 + sigma.4
+                        rho.star.sq <- sigma.star.2 * sigma.star.3 / (sigma.star.1 * sigma.star.4)
+                        mean.alpha <- (mu.star.1 + sqrt(rho.star.sq * sigma.star.1 / sigma.star.4)
+                            * (alpha[indices.ad[i + 2L]] - mu.star.2))
+                        var.alpha <- (1 - rho.star.sq) * sigma.star.1
+                        alpha.curr <- stats::rnorm(n = 1L,
+                                                   mean = mean.alpha,
+                                                   sd = sqrt(var.alpha))
+                        delta.curr <- alpha[indices.ad[i + 2L]] - alpha.curr
                         alpha[indices.ad[i + 1L]] <- alpha.curr
                         delta[indices.ad[i + 1L]] <- delta.curr
                     }
@@ -393,21 +408,14 @@ updateAlphaDeltaDLMWithTrend <- function(prior, betaTilde, useC = FALSE) {
                         R.inv <- (UR[[i + 1L]] %*% DR.inv[[i + 1L]]
                             %*% DR.inv[[i + 1L]] %*% t(UR[[i + 1L]]))
                         B <- C[[i + 1L]] %*% t(G) %*% R.inv
-                        if ((i == 0L) && is.infinite(DC.inv[[1L]][1L])) {
-                            C.star.22 <- (C[[1L]][4L]
-                                - C[[1L]][4L]^2 * (R.inv[1L] + phi * (R.inv[2L] + R.inv[3L]) + phi^2 * R.inv[4L]))
-                            sqrt.C.star <- matrix(c(0, 0, 0, sqrt(C.star.22)), nrow = 2L)
-                        }
-                        else {
-                            M.C.star <- rbind(W.sqrt.inv.G,
-                                              DC.inv[[i + 1L]] %*% t(UC[[i + 1L]]))
-                            svd.C.star <- svd(M.C.star, nu = 0)
-                            UC.star <- svd.C.star$v
-                            DC.star <- 1 / svd.C.star$d
-                            DC.star[is.infinite(DC.star)] <- 0
-                            DC.star <- diag(DC.star, nrow = 2L)
-                            sqrt.C.star <- UC.star %*% DC.star
-                        }
+                        M.C.star <- rbind(W.sqrt.inv.G,
+                                          DC.inv[[i + 1L]] %*% t(UC[[i + 1L]]))
+                        svd.C.star <- svd(M.C.star, nu = 0)
+                        UC.star <- svd.C.star$v
+                        DC.star <- 1 / svd.C.star$d
+                        DC.star[is.infinite(DC.star)] <- 0
+                        DC.star <- diag(DC.star, nrow = 2L)
+                        sqrt.C.star <- UC.star %*% DC.star
                         theta.prev <- c(alpha[indices.ad[i + 2L]], delta[indices.ad[i + 2L]])
                         m.star <- m[[i + 1L]] + drop(B %*% (theta.prev - a[[i + 1L]]))
                         z <- stats::rnorm(n = 2L)
@@ -552,7 +560,7 @@ updateBetasAndPriorsBetas <- function(object, g, useC = FALSE) {
 ## 'W' in notes
 updateComponentWeightMix <- function(prior, useC = FALSE) {
     stopifnot(methods::is(prior, "Mix"))
-    stopifnot(validObject(prior))
+    stopifnot(methods::validObject(prior))
     if (useC) {
         .Call(updateComponentWeightMix_R, prior)
     }
@@ -662,7 +670,7 @@ updateGWithTrend <- function(prior, useC = FALSE) {
 ## 'k-tilde' in notes
 updateIndexClassMaxPossibleMix <- function(prior, useC = FALSE) {
     stopifnot(methods::is(prior, "Mix"))
-    stopifnot(validObject(prior))
+    stopifnot(methods::validObject(prior))
     if (useC) {
         .Call(updateIndexClassMaxPossibleMix_R, prior)
     }
@@ -721,7 +729,7 @@ updateIndexClassMaxUsedMix <- function(prior, useC = FALSE) {
 updateIndexClassMix <- function(prior, betaTilde, useC = FALSE) {
     ## 'prior'
     stopifnot(methods::is(prior, "Mix"))
-    stopifnot(validObject(prior))
+    stopifnot(methods::validObject(prior))
     ## 'betaTilde'
     stopifnot(is.double(betaTilde))
     stopifnot(!any(is.na(betaTilde)))
@@ -820,7 +828,7 @@ updateIndexClassMix <- function(prior, betaTilde, useC = FALSE) {
 ## 'z' in notes
 updateLatentComponentWeightMix <- function(prior, useC = FALSE) {
     stopifnot(methods::is(prior, "Mix"))
-    stopifnot(validObject(prior))
+    stopifnot(methods::validObject(prior))
     if (useC) {
         .Call(updateLatentComponentWeightMix_R, prior)
     }
@@ -869,7 +877,7 @@ updateLatentComponentWeightMix <- function(prior, useC = FALSE) {
 ## 'u' in notes
 updateLatentWeightMix <- function(prior, useC = FALSE) {
     stopifnot(methods::is(prior, "Mix"))
-    stopifnot(validObject(prior))
+    stopifnot(methods::validObject(prior))
     if (useC) {
         .Call(updateLatentWeightMix_R, prior)
     }
@@ -889,9 +897,9 @@ updateLatentWeightMix <- function(prior, useC = FALSE) {
                 i.class <- index.class[i.beta]
                 i.w <- (i.class - 1L) * n.along + i.along
                 weight.i.w <- weight[i.w]
-                latent.weight[i.beta] <- runif(n = 1L,
-                                               min = 0,
-                                               max = weight.i.w)
+                latent.weight[i.beta] <- stats::runif(n = 1L,
+                                                      min = 0,
+                                                      max = weight.i.w)
             }
             iterator.beta <- advanceS(iterator.beta)
         }
@@ -968,16 +976,16 @@ updateLevelComponentWeightMix <- function(prior, useC = FALSE) {
             for (i.class in seq.int(from = index.class.max.poss + 1L,
                                     to = index.class.max)) {
                 i.wt <- (i.class - 1L) * n.along + 1L
-                level[i.wt] <- rnorm(n = 1L,
-                                     mean = prior.mean.first,
-                                     sd = prior.sd.first)
+                level[i.wt] <- stats::rnorm(n = 1L,
+                                            mean = prior.mean.first,
+                                            sd = prior.sd.first)
                 for (i.along in seq.int(from = 2L, to = n.along)) {
                     i.wt.curr <- (i.class - 1L) * n.along + i.along
                     i.wt.prev <- i.wt.curr - 1L
                     mean <- mean.level + phi * level[i.wt.prev]
-                    level[i.wt.curr] <- rnorm(n = 1L,
-                                              mean = mean,
-                                              sd = omega.level)
+                    level[i.wt.curr] <- stats::rnorm(n = 1L,
+                                                     mean = mean,
+                                                     sd = omega.level)
                 }
             }
         }
@@ -1103,7 +1111,7 @@ updateOmegaAlpha <- function(prior, withTrend, useC = FALSE) {
 ## 'sigma_epsilon'
 updateOmegaComponentWeightMix <- function(prior, useC = FALSE) {
     stopifnot(methods::is(prior, "Mix"))
-    stopifnot(validObject(prior))
+    stopifnot(methods::validObject(prior))
     if (useC) {
         .Call(updateOmegaComponentWeightMix_R, prior)
     }
@@ -1192,7 +1200,7 @@ updateOmegaDelta <- function(prior, useC = FALSE) {
 ## 'sigma_eta'
 updateOmegaLevelComponentWeightMix <- function(prior, useC = FALSE) {
     stopifnot(methods::is(prior, "Mix"))
-    stopifnot(validObject(prior))
+    stopifnot(methods::validObject(prior))
     if (useC) {
         .Call(updateOmegaLevelComponentWeightMix_R, prior)
     }
@@ -1285,7 +1293,7 @@ updateOmegaSeason <- function(prior, useC = FALSE) {
 ## 'sigma_e' in notes
 updateOmegaVectorsMix <- function(prior, useC = FALSE) {
     stopifnot(methods::is(prior, "Mix"))
-    stopifnot(validObject(prior))
+    stopifnot(methods::validObject(prior))
     if (useC) {
         .Call(updateOmegaVectorsMix_R, prior)
     }
@@ -1410,7 +1418,14 @@ updatePhiMix <- function(prior, useC = FALSE) {
         .Call(updatePhiMix_R, prior)
     }
     else {
+        phi.known <- prior@phiKnown@.Data
+        if (phi.known)
+            return(prior)
         phi.curr <- prior@phiMix
+        min.phi <- prior@minPhi@.Data
+        max.phi <- prior@maxPhi@.Data
+        shape1 <- prior@shape1Phi@.Data
+        shape2 <- prior@shape2Phi@.Data
         level <- prior@levelComponentWeightMix@.Data # alpha; n.along * index.class.max
         mean.level <- prior@meanLevelComponentWeightMix@.Data # mu; 1
         index.class.max.used <- prior@indexClassMaxUsedMix@.Data # k-star; 1
@@ -1444,8 +1459,8 @@ updatePhiMix <- function(prior, useC = FALSE) {
         sd.prop <- sqrt(var.prop)
         phi.prop <- rtnorm1(mean = mean.prop,
                             sd = sd.prop,
-                            lower = -1,
-                            upper = 1)
+                            lower = min.phi,
+                            upper = max.phi)
         log.lik.prop <- logPostPhiMix(phi = phi.prop,
                                       level = level,
                                       meanLevel = mean.level,
@@ -1458,8 +1473,16 @@ updatePhiMix <- function(prior, useC = FALSE) {
                                       nAlong = n.along,
                                       indexClassMaxMix = index.class.max.used,
                                       omega = omega)
-        log.dens.prop <- log1p(phi.prop) + log1p(-phi.prop)
-        log.dens.curr <- log1p(phi.curr) + log1p(-phi.curr)
+        phi.prop.tr <- (phi.prop - min.phi) / (max.phi - min.phi)
+        phi.curr.tr <- (phi.curr - min.phi) / (max.phi - min.phi)
+        log.dens.prop <- stats::dbeta(x = phi.prop.tr,
+                                      shape1 = shape1,
+                                      shape2 = shape2,
+                                      log = TRUE)
+        log.dens.curr <- stats::dbeta(x = phi.curr.tr,
+                                      shape1 = shape1,
+                                      shape2 = shape2,
+                                      log = TRUE)
         log.prop.prop <- stats::dnorm(x = phi.prop,
                                       mean = mean.prop,
                                       sd = sd.prop,
@@ -1683,7 +1706,7 @@ updateUEtaCoef <- function(prior, useC = FALSE) {
 updateVectorsMixAndProdVectorsMix <- function(prior, betaTilde, useC = FALSE) {
     ## 'prior'
     stopifnot(methods::is(prior, "Mix"))
-    stopifnot(validObject(prior))
+    stopifnot(methods::validObject(prior))
     ## 'betaTilde'
     stopifnot(is.double(betaTilde))
     stopifnot(!any(is.na(betaTilde)))
@@ -1832,7 +1855,7 @@ updateWSqrtInvG <- function(prior, useC = FALSE) {
 ## 'v' in notes. Function is deterministic
 updateWeightMix <- function(prior, useC = FALSE) {
     stopifnot(methods::is(prior, "Mix"))
-    stopifnot(validObject(prior))
+    stopifnot(methods::validObject(prior))
     if (useC) {
         .Call(updateWeightMix_R, prior)
     }

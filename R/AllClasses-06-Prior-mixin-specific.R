@@ -478,30 +478,36 @@ setClass("HasCovariatesMixin",
          slots = c(hasCovariates = "LogicalFlag"),
          contains = "VIRTUAL")
 
+
 setClass("HasLevelMixin",
          slots = c(hasLevel = "LogicalFlag"),
-         contains = "VIRTUAL",
-         validity = function(object) {
-             hasLevel <- object@hasLevel@.Data
-             CWithTrend <- object@CWithTrend@.Data
-             DC <- object@DC@.Data
-             DCInv <- object@DCInv@.Data
-             if (!hasLevel) {
-                 ## first element of CWithTrend starts with 0
-                 if (!isTRUE(all.equal(CWithTrend[[1L]][1L], 0)))
-                     return(gettextf("'%s' is %s but first element of first element of '%s' is not %d",
-                                     "hasLevel", "FALSE", "CWithTrend", 0L))
-                 ## first element of DC starts with 0
-                 if (!isTRUE(all.equal(DC[[1L]][1L], 0)))
-                     return(gettextf("'%s' is %s but first element of first element of '%s' is not %d",
-                                     "hasLevel", "FALSE", "DC", 0L))
-                 ## first element of first element of DCInv is infinite
-                 if (is.finite(DCInv[[1L]][1L]))
-                     return(gettextf("'%s' is %s but first element of first element of '%s' is finite",
-                                     "hasLevel", "FALSE", "DCInv"))
-             }
-             TRUE
-         })             
+         contains = "VIRTUAL")
+
+
+## setClass("HasLevelMixin",
+##          slots = c(hasLevel = "LogicalFlag"),
+##          contains = "VIRTUAL",
+##          validity = function(object) {
+##              hasLevel <- object@hasLevel@.Data
+##              CWithTrend <- object@CWithTrend@.Data
+##              DC <- object@DC@.Data
+##              DCInv <- object@DCInv@.Data
+##              if (!hasLevel) {
+##                  ## first element of CWithTrend starts with 0
+##                  if (!isTRUE(all.equal(CWithTrend[[1L]][1L], 0)))
+##                      return(gettextf("'%s' is %s but first element of first element of '%s' is not %d",
+##                                      "hasLevel", "FALSE", "CWithTrend", 0L))
+##                  ## first element of DC starts with 0
+##                  if (!isTRUE(all.equal(DC[[1L]][1L], 0)))
+##                      return(gettextf("'%s' is %s but first element of first element of '%s' is not %d",
+##                                      "hasLevel", "FALSE", "DC", 0L))
+##                  ## first element of first element of DCInv is infinite
+##                  if (is.finite(DCInv[[1L]][1L]))
+##                      return(gettextf("'%s' is %s but first element of first element of '%s' is finite",
+##                                      "hasLevel", "FALSE", "DCInv"))
+##              }
+##              TRUE
+##          })             
 
 setClass("HasSeasonMixin",
          slots = c(hasSeason = "LogicalFlag"),
@@ -1334,13 +1340,13 @@ setClass("PhiMixMixin",
              if (is.na(phiMix))
                  return(gettext("'%s' is missing",
                                 "phiMix"))
-             ## 'phiMix' is greater than or equal to -1
-             if (phiMix < -1)
-                 return(gettext("'%s' is less than %d",
-                                "phiMix", -1L))
-             ## 'phiMix' is less than or equal to 1
-             if (phiMix > 1)
-                 return(gettext("'%s' is greater than %d",
+             ## 'phiMix' is greater 0
+             if (phiMix <= 0)
+                 return(gettext("'%s' is less than or equal to %d",
+                                "phiMix", 0L))
+             ## 'phiMix' is less than 1
+             if (phiMix >= 1)
+                 return(gettext("'%s' is greater than or equal to %d",
                                 "phiMix", 1L))
              TRUE
          })
@@ -1619,6 +1625,9 @@ setClass("SpecTauMixin",
 setClass("SpecTauMaxMixin",
          slots = c(tauMax = "SpecScale"),
          contains = "VIRTUAL")
+
+setClass("SubtractAlpha0Mixin",
+         slots = c(subtractAlpha0 = "LogicalFlag"))
 
 setClass("SumsWeightsMixMixin",
          slots = c(sumsWeightsMix = "UnitIntervalVec"),

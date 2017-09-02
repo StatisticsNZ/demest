@@ -23,12 +23,12 @@ updateProposalAccountMovePopn <- function(combined, useC = FALSE) {
         max.attempt <- combined@maxAttempt
         i.cell <- chooseICellPopn(description.popn)
         i.exp.comp.first <- getIExpFirstFromPopn(i = i.cell,
-                                                     description = description)
+                                                 description = description)
         i.popn.next <- getIPopnNextFromPopn(i = i.cell,
                                             description = description.popn)
         min.val <- getMinValCohort(i = i.popn.next,
                                    series = population,
-                                   iter = iterator.popn)
+                                   iterator = iterator.popn)
         if (has.age) {
             i.acc.next <- getIAccNextFromPopn(i = i.cell,
                                               description = description.popn)
@@ -36,7 +36,7 @@ updateProposalAccountMovePopn <- function(combined, useC = FALSE) {
             if (has.later.accession) {
                 min.acc <- getMinValCohort(i = i.acc.next,
                                            series = accession,
-                                           iter = iterator.acc)
+                                           iterator = iterator.acc)
                 min.val <- min(min.val, min.acc)
             }
         }

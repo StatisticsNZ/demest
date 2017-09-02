@@ -587,12 +587,43 @@ setMethod("show",
               nuLevel <- object@nuLevelComponentWeightMix@.Data
               ALevel <- object@ALevelComponentWeightMix@.Data
               maxLevel <- object@omegaLevelComponentWeightMaxMix@.Data
-              cat("  meanAR ~ N(", mean, ", ", squaredOrNA(sd), ")\n", sep = "")
-              cat("scaleAR1 ~ trunc-half-t(", nuComp, ", ", sep = "")
+              cat("         mean ~ N(", mean, ", ", squaredOrNA(sd), ")\n", sep = "")
+              cat("       scale1 ~ trunc-half-t(", nuComp, ", ", sep = "")
               cat(squaredOrNA(AComp), ", ", maxComp, ")\n", sep = "")
-              cat("scaleAR2 ~ trunc-half-t(", nuLevel, ", ", sep = "")
+              cat("       scale2 ~ trunc-half-t(", nuLevel, ", ", sep = "")
               cat(squaredOrNA(ALevel), ", ", maxLevel, ")\n", sep = "")
+              phi <- object@phi
+              phi.known <- object@phiKnown
+              min.phi <- object@minPhi
+              max.phi <- object@maxPhi
+              shape1 <- object@shape1Phi@.Data
+              shape2 <- object@shape2Phi@.Data
+              if (phi.known)
+                  cat("         damp =",
+                      format(phi, digits = 4),
+                      "\n")
+              else {
+                  cat("dampTransform = (damp-",
+                      format(min.phi, digits = 4),
+                      ")/(",
+                      format(max.phi, digits = 4),
+                      "-",
+                      format(min.phi, digits = 4),
+                      ")\n",
+                      sep = "")
+                  cat("dampTransform ~ Beta(",
+                      format(shape1, digits = 4),
+                      ",",
+                      format(shape2, digits = 4),
+                      ")\n",
+                      sep = "")
+              }
           })
+
+
+
+
+
 
 #' @rdname show-methods
 #' @export

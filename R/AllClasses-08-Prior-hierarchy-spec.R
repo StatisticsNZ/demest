@@ -351,8 +351,9 @@ setClass("SpecICAR",
 #' \code{SpecKnown} object.  The slots are not part of
 #' the API of the package, and may change in future.
 #' 
-#' @slot tau alphaKnown Mean values
-#' @slot multTau Multiplier applied to default value for \code{tau}.
+#' @slot alphaKnown Mean values.
+#' @slot AKnownVec Standard deviations.
+#' @slot metadata Metadata for mean values and standard deviations.
 #'
 #' @seealso
 #' Object of class \code{SpecExchFixed} should be generated
@@ -450,7 +451,16 @@ setClass("SpecMoveRobustCov",
 #' for \code{omegalevelComponentWeightMaxMix}.
 #' @slot omegaVectorsMix Upper limit for truncated half-t prior
 #' for \code{omegaVectorsMix}.
-#'
+#' @slot phi Damping parameter.
+#' @slot phiKnown Whether the damping parameter is known.
+#' or is estimated from the data.
+#' @slot minPhi Minimum value for the damping parameter.
+#' @slot maxPhi Maximum value for the damping parameter.
+#' @slot shape1Phi First 'sample size' parameter in beta
+#' prior for damping parameter.
+#' @slot shape2Phi Second 'sample size' parameter in beta
+#' prior for damping parameter.
+#' 
 #' @seealso Objects of class \code{SpecMix} are generated using function
 #' \code{\link{Mix}}.
 #' 
@@ -468,14 +478,18 @@ setClass("SpecMix",
                       "NuComponentWeightMixMixin",
                       "NuLevelComponentWeightMixMixin",
                       "NuVectorsMixMixin",
+                      "PhiKnownMixin",
+                      "PhiMinMaxMixin",
                       "PriorMeanLevelComponentWeightMixMixin",
                       "PriorSDLevelComponentWeightMixMixin",
+                      "Shape1Shape2PhiMixin",
                       "SpecAComponentWeightMixMixin",
                       "SpecALevelComponentWeightMixMixin",
                       "SpecAVectorsMixMixin",
                       "SpecOmegaComponentWeightMaxMixMixin",
                       "SpecOmegaLevelComponentWeightMaxMixMixin",
-                      "SpecOmegaVectorsMaxMixMixin"))
+                      "SpecOmegaVectorsMaxMixMixin",
+                      "SpecPhiMixin"))
 
 setClass("SpecMixNormZero",
          contains = c("SpecMix",

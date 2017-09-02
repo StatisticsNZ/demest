@@ -795,8 +795,8 @@ test_that("generator function and initialPrior work with MixNormZero", {
                 components = Components(scale = HalfT(df = 4, scale = 0.5)),
                 weights = Weights(mean = 0.5,
                                   sd = 0.5,
-                                  scale1AR = HalfT(scale = 0.4),
-                                  scale2AR = HalfT(mult = 0.5)),
+                                  scale1 = HalfT(scale = 0.4),
+                                  scale2 = HalfT(mult = 0.5)),
                 error = Error(scale = HalfT(df = 6)),
                 maxComponents = 11)
     beta <- rnorm(200)

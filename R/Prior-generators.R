@@ -20,7 +20,7 @@ setMethod("initialPrior",
               if (isSaturated)
                   stop(gettextf("using \"%s\" prior for highest-order term in saturated model",
                                 "ExchFixed"))
-              isSaturated <- new("LogicalFlag", isSaturated)
+              isSaturated <- methods::new("LogicalFlag", isSaturated)
               methods::new("ExchFixed",
                            J = J,
                            tau = tau,
@@ -43,7 +43,7 @@ setMethod("initialPrior",
               if (isSaturated)
                   stop(gettextf("using \"%s\" prior for highest-order term in saturated model",
                                 "ExchFixed"))
-              isSaturated <- new("LogicalFlag", isSaturated)
+              isSaturated <- methods::new("LogicalFlag", isSaturated)
               methods::new("ExchFixed",
                            isSaturated = isSaturated,
                            J = J,
@@ -68,7 +68,7 @@ setMethod("initialPrior",
               tau <- makeScale(A = ATau,
                                nu = nuTau,
                                scaleMax = tauMax)
-              isSaturated <- new("LogicalFlag", isSaturated)
+              isSaturated <- methods::new("LogicalFlag", isSaturated)
               methods::new("ExchNormZero",
                            ATau = ATau,
                            isSaturated = isSaturated,
@@ -101,7 +101,7 @@ setMethod("initialPrior",
               if (isSaturated)
                   stop(gettextf("using prior with '%s = %s' for highest-order term in saturated model",
                                 "robust", "TRUE"))
-              isSaturated <- new("LogicalFlag", isSaturated)
+              isSaturated <- methods::new("LogicalFlag", isSaturated)
               methods::new("ExchRobustZero",
                            ATau = ATau,
                            isSaturated = isSaturated,
@@ -135,7 +135,7 @@ setMethod("initialPrior",
                                   beta = beta,
                                   metadata = metadata,
                                   sY = sY)
-              isSaturated <- new("LogicalFlag", isSaturated)
+              isSaturated <- methods::new("LogicalFlag", isSaturated)
               methods::new("ExchNormCov",
                            AEtaCoef = l.cov$AEtaCoef,
                            AEtaIntercept = l.cov$AEtaIntercept,
@@ -182,7 +182,7 @@ setMethod("initialPrior",
               if (isSaturated)
                   stop(gettextf("using prior with '%s = %s' for highest-order term in saturated model",
                                 "robust", "TRUE"))
-              isSaturated <- new("LogicalFlag", isSaturated)
+              isSaturated <- methods::new("LogicalFlag", isSaturated)
               methods::new("ExchRobustCov",
                            AEtaCoef = l.cov$AEtaCoef,
                            AEtaIntercept = l.cov$AEtaIntercept,
@@ -1347,11 +1347,11 @@ setMethod("initialPrior",
                   stop(gettextf("metadata for '%s' prior for '%s' not compatible with metadata for '%s' : %s",
                                 "Known", paste(names(metadata), collapse = ":"), "y", alpha$message))
               alpha <- as.numeric(alpha)
-              alphaKnown <- new("ParameterVector", alpha)
+              alphaKnown <- methods::new("ParameterVector", alpha)
               if (isSaturated)
                   stop(gettextf("using \"%s\" prior for highest-order term in saturated model",
                                 "Known"))
-              isSaturated <- new("LogicalFlag", isSaturated)
+              isSaturated <- methods::new("LogicalFlag", isSaturated)
               if (methods::is(object, "SpecKnownCertain")) {
                   methods::new("KnownCertain",
                                alphaKnown = alphaKnown,
@@ -1370,7 +1370,7 @@ setMethod("initialPrior",
                                     metadata = metadata.all)
                   A <- dembase::makeCompatible(x = A, y = beta, subset = TRUE)
                   A <- as.numeric(A)
-                  AKnownVec <- new("ScaleVec", A)
+                  AKnownVec <- methods::new("ScaleVec", A)
                   methods::new("KnownUncertain",
                                AKnownVec = AKnownVec,
                                AKnownAllVec = object@AKnownVec,
@@ -1416,7 +1416,7 @@ setMethod("initialPrior",
               tau <- makeScale(A = ATau,
                                nu = nuTau,
                                scaleMax = tauMax)
-              isSaturated <- new("LogicalFlag", isSaturated)
+              isSaturated <- methods::new("LogicalFlag", isSaturated)
               methods::new("MoveNormZero",
                            alphaMove = alphaMove,
                            AMove = AMove,
@@ -1465,10 +1465,12 @@ setMethod("initialPrior",
                            latentComponentWeightMix = l.all$latentComponentWeightMix,
                            latentWeightMix = l.all$latentWeightMix,
                            levelComponentWeightMix = l.all$levelComponentWeightMix,
-                           meanLevelComponentWeightMix = l.all$meanLevelComponentWeightMix,
                            mMix = l.all$mMix,
                            maxLevelComponentWeight = l.all$maxLevelComponentWeight,
+                           maxPhi = l.all$maxPhi,
+                           meanLevelComponentWeightMix = l.all$meanLevelComponentWeightMix,
                            minLevelComponentWeight = l.all$minLevelComponentWeight,
+                           minPhi = l.all$minPhi,
                            nBetaNoAlongMix = l.all$nBetaNoAlongMix,
                            nuComponentWeightMix = l.all$nuComponentWeightMix,
                            nuLevelComponentWeightMix = l.all$nuLevelComponentWeightMix,
@@ -1481,12 +1483,15 @@ setMethod("initialPrior",
                            omegaVectorsMaxMix = l.all$omegaVectorsMaxMix,
                            omegaVectorsMix = l.all$omegaVectorsMaxMix,
                            phiMix = l.all$phiMix,
+                           phiKnown = l.all$phiKnown,
                            posProdVectors1Mix = l.all$posProdVectors1Mix,
                            posProdVectors2Mix = l.all$posProdVectors2Mix,
                            priorMeanLevelComponentWeightMix = l.all$priorMeanLevelComponentWeightMix,
                            priorSDLevelComponentWeightMix = l.all$priorSDLevelComponentWeightMix,
                            prodVectorsMix = l.all$prodVectorsMix,
                            RMix = l.all$RMix,
+                           shape1Phi = l.all$shape1Phi,
+                           shape2Phi = l.all$shape2Phi,
                            sumsWeightsMix = l.all$sumsWeightsMix,
                            tau = l.all$tau,
                            tauMax = l.all$tauMax,
@@ -1504,7 +1509,7 @@ setMethod("initialPrior",
               if (isSaturated)
                   stop(gettextf("using \"%s\" prior for highest-order term in saturated model",
                                 "Zero"))
-              isSaturated <- new("LogicalFlag", isSaturated)
+              isSaturated <- methods::new("LogicalFlag", isSaturated)
               methods::new("Zero",
                            isSaturated = isSaturated,
                            J = J)
@@ -2771,7 +2776,7 @@ setMethod("initialPriorPredict",
                   stop(gettextf("metadata for '%s' prior for '%s' not compatible with metadata for '%s' : %s",
                                 "Known", paste(names(metadata), collapse = ":"), "y", alpha$message))
               alpha <- as.numeric(alpha)
-              alphaKnown <- new("ParameterVector", alpha)
+              alphaKnown <- methods::new("ParameterVector", alpha)
               if (methods::is(prior, "KnownCertain")) {
                   methods::new("KnownCertain",
                                alphaKnown = alphaKnown,
@@ -2790,7 +2795,7 @@ setMethod("initialPriorPredict",
                                     metadata = metadata.all)
                   A <- dembase::makeCompatible(x = A, y = beta, subset = TRUE)
                   A <- as.numeric(A)
-                  AKnownVec <- new("ScaleVec", A)
+                  AKnownVec <- methods::new("ScaleVec", A)
                   methods::new("KnownUncertain",
                                AKnownVec = AKnownVec,
                                AKnownAllVec = prior@AKnownAllVec,
@@ -2843,6 +2848,8 @@ setMethod("initialPriorPredict",
                            mMix = l.all$mMix,
                            maxLevelComponentWeight = prior@maxLevelComponentWeight,
                            minLevelComponentWeight = prior@minLevelComponentWeight,
+                           maxPhi = prior@maxPhi,
+                           minPhi = prior@minPhi,
                            nBetaNoAlongMix = prior@nBetaNoAlongMix,
                            nuComponentWeightMix = prior@nuComponentWeightMix,
                            nuLevelComponentWeightMix = prior@nuLevelComponentWeightMix,
@@ -2855,12 +2862,15 @@ setMethod("initialPriorPredict",
                            omegaVectorsMaxMix = prior@omegaVectorsMaxMix,
                            omegaVectorsMix = prior@omegaVectorsMaxMix,
                            phiMix = prior@phiMix,
+                           phiKnown = prior@phiKnown,
                            posProdVectors1Mix = l.all$posProdVectors1Mix,
                            posProdVectors2Mix = l.all$posProdVectors2Mix,
                            priorMeanLevelComponentWeightMix = prior@priorMeanLevelComponentWeightMix,
                            priorSDLevelComponentWeightMix = prior@priorSDLevelComponentWeightMix,
                            prodVectorsMix = prior@prodVectorsMix,
                            RMix = l.all$RMix,
+                           shape1Phi = prior@shape1Phi,
+                           shape2Phi = prior@shape2Phi,
                            sumsWeightsMix = l.all$sumsWeightsMix,
                            tau = prior@tau,
                            tauMax = prior@tauMax,

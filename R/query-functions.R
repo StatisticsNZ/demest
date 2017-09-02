@@ -189,11 +189,11 @@ fetch <- function(filename, where = character(), iterations = NULL,
         need.to.center <- needToCenter(skeleton)
         if (need.to.center)
             ans <- sweepAllMargins(ans)
-        need.to.center.except.along <- needToCenterExceptAlong(skeleton)
-        if (need.to.center.except.along) {
+        need.to.subtract.alpha0 <- needToSubtractAlpha0(skeleton)
+        if (need.to.subtract.alpha0) {
             iAlong <- skeleton@iAlong
-            ans <- sweepExceptAlong(object = ans,
-                                    iAlong = iAlong)
+            ans <- subtractAlpha0(object = ans,
+                                  iAlong = iAlong)
         }
     }
     ans
@@ -352,11 +352,11 @@ fetchBoth <- function(filenameEst, filenamePred, where, iterations = NULL,
         need.to.center <- needToCenter(skeleton)
         if (need.to.center)
             ans <- sweepAllMargins(ans)
-        need.to.center.except.along <- needToCenterExceptAlong(skeleton)
-        if (need.to.center.except.along) {
+        need.to.subtract.alpha0 <- needToSubtractAlpha0(skeleton)
+        if (need.to.subtract.alpha0) {
             iAlong <- skeleton@iAlong
-            ans <- sweepExceptAlong(object = ans,
-                                    iAlong = iAlong)
+            ans <- subtractAlpha0(object = ans,
+                                  iAlong = iAlong)
         }
     }
     ans
@@ -854,7 +854,7 @@ listContents <- function(filename, where = character(), max = NULL) {
 #' \code{\link{fetch}}.
 #' 
 #' @examples
-#' births <- demdata::nz.births
+#' births <- demdata::nz.births.reg
 #' popn <- demdata::nz.popn.reg
 #' births <- Counts(births, dimscales = c(year = "Intervals"))
 #' popn <- Counts(popn, dimscales = c(year = "Intervals"))

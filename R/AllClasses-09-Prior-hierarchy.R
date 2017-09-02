@@ -94,12 +94,15 @@ setClass("Mix",
                       "OmegaLevelComponentWeightMixMixin",
                       "OmegaVectorsMaxMixMixin",
                       "OmegaVectorsMixMixin",
+                      "PhiKnownMixin",
+                      "PhiMinMaxMixin",
                       "PhiMixMixin",
                       "PosProdVectorsMixMixin",
                       "PriorMeanLevelComponentWeightMixMixin",
                       "PriorSDLevelComponentWeightMixMixin",
                       "ProdVectorsMixMixin",
                       "RMixMixin",
+                      "Shape1Shape2PhiMixin",
                       "SumsWeightsMixMixin",
                       "ToleranceMixin",
                       "VectorsMixMixin",
@@ -109,6 +112,10 @@ setClass("Mix",
              ## at least 2 dimensions
              TRUE
          })
+
+
+
+
 
 setClass("Move",
          contains = c("VIRTUAL",

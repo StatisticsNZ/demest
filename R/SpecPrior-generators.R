@@ -255,8 +255,8 @@ Covariates <- function(formula = NULL, data = NULL, infant = FALSE,
         if (!infant)
             stop(gettextf("'%s' and '%s' not supplied, and '%s' is %s",
                           "formula", "data", "infant", "FALSE"))
-        data <- new("data.frame")
-        formula <- new("formula")
+        data <- methods::new("data.frame")
+        formula <- methods::new("formula")
     }
     if (!methods::is(intercept, "Norm"))
         stop(gettextf("'%s' has class \"%s\"",
@@ -268,7 +268,7 @@ Covariates <- function(formula = NULL, data = NULL, infant = FALSE,
     AEtaCoef <- coef@A
     multEtaCoef <- coef@mult
     nuEtaCoef <- coef@nu
-    infant <- new("LogicalFlag", infant)
+    infant <- methods::new("LogicalFlag", infant)
     methods::new("Covariates",
                  AEtaCoef = AEtaCoef,
                  AEtaIntercept = AEtaIntercept,
@@ -391,8 +391,8 @@ Damp <- function(coef = NULL, shape1 = 2, shape2 = 2, min = 0.8, max = 1) {
                              name = "shape2")
         shape1 <- as.double(shape1)
         shape2 <- as.double(shape2)
-        shape1 <- new("Scale", shape1)
-        shape2 <- new("Scale", shape2)
+        shape1 <- methods::new("Scale", shape1)
+        shape2 <- methods::new("Scale", shape2)
         min.max <- checkAndTidyPhiMinMax(min = min, max = max)
         methods::new("DampUnknown",
                      minPhi = min.max[1L],
@@ -597,7 +597,7 @@ DLM <- function(along = NULL, level = Level(), trend = Trend(),
                           "level", class(level)))
         }
     }
-    has.level <- new("LogicalFlag", has.level)
+    has.level <- methods::new("LogicalFlag", has.level)
     ## trend
     if (methods::is(trend, "Trend")) {
         has.trend <- TRUE
@@ -631,8 +631,8 @@ DLM <- function(along = NULL, level = Level(), trend = Trend(),
     if (phiKnown) {
         minPhi <- 0
         maxPhi <- 1
-        shape1Phi <- new("Scale", 1)
-        shape2Phi <- new("Scale", 1)
+        shape1Phi <- methods::new("Scale", 1)
+        shape2Phi <- methods::new("Scale", 1)
         phi <- damp@phi
     }
     else {
@@ -1619,9 +1619,9 @@ Known <- function(mean, sd = 0) {
         stop(gettextf("'%s' has length %d",
                       "mean", length(mean)))
     alphaKnown <- as.double(mean)
-    alphaKnown <- new("ParameterVector", alphaKnown)
+    alphaKnown <- methods::new("ParameterVector", alphaKnown)
     if (identical(sd, 0)) {
-        new("SpecKnownCertain",
+        methods::new("SpecKnownCertain",
             alphaKnown = alphaKnown,
             metadata = metadata)
     }
@@ -1663,8 +1663,8 @@ Known <- function(mean, sd = 0) {
             stop(gettextf("'%s' has class \"%s\"",
                           "sd", class(sd)))
         }
-        sd <- new("ScaleVec", sd)
-        new("SpecKnownUncertain",
+        sd <- methods::new("ScaleVec", sd)
+        methods::new("SpecKnownUncertain",
             alphaKnown = alphaKnown,
             AKnownVec = sd,
             metadata = metadata)
@@ -1763,14 +1763,20 @@ Mix <- function(along = NULL,
     ALevelComponentWeightMix <- weights@ALevelComponentWeightMix
     minLevelComponentWeight <- weights@minLevelComponentWeight
     maxLevelComponentWeight <- weights@maxLevelComponentWeight
+    maxPhi <- weights@maxPhi
+    minPhi <- weights@minPhi
     multComponentWeightMix <- weights@multComponentWeightMix
     multLevelComponentWeightMix <- weights@multLevelComponentWeightMix
     nuComponentWeightMix <- weights@nuComponentWeightMix
     nuLevelComponentWeightMix <- weights@nuLevelComponentWeightMix
     omegaComponentWeightMaxMix <- weights@omegaComponentWeightMaxMix
     omegaLevelComponentWeightMaxMix <- weights@omegaLevelComponentWeightMaxMix
+    phi <- weights@phi
+    phiKnown <- weights@phiKnown
     priorMeanLevelComponentWeightMix <- weights@priorMeanLevelComponentWeightMix
     priorSDLevelComponentWeightMix <- weights@priorSDLevelComponentWeightMix
+    shape1Phi <- weights@shape1Phi
+    shape2Phi <- weights@shape2Phi
     ## covariates
     has.covariates <- !is.null(covariates)
     if (has.covariates) {
@@ -1810,6 +1816,8 @@ Mix <- function(along = NULL,
                      indexClassMaxMix = indexClassMaxMix,
                      minLevelComponentWeight = minLevelComponentWeight,
                      maxLevelComponentWeight = maxLevelComponentWeight,
+                     minPhi = minPhi,
+                     maxPhi = maxPhi,
                      multComponentWeightMix = multComponentWeightMix,
                      multLevelComponentWeightMix = multLevelComponentWeightMix,
                      multTau = multTau,
@@ -1820,13 +1828,17 @@ Mix <- function(along = NULL,
                      nuVectorsMix = nuVectorsMix,
                      omegaComponentWeightMaxMix = omegaComponentWeightMaxMix,
                      omegaLevelComponentWeightMaxMix = omegaLevelComponentWeightMaxMix,
-                     priorMeanLevelComponentWeightMix = priorMeanLevelComponentWeightMix,
                      omegaVectorsMaxMix = omegaVectorsMaxMix,
+                     phi = phi,
+                     phiKnown = phiKnown,
+                     priorMeanLevelComponentWeightMix = priorMeanLevelComponentWeightMix,
                      priorSDLevelComponentWeightMix = priorSDLevelComponentWeightMix,
+                     shape1Phi = shape1Phi,
+                     shape2Phi = shape2Phi,
                      tauMax = tauMax)
     }
     else
-        NULL
+        stop("Mix prior with covariates and/or robust errors not implemented yet")
 }
 
 Move <- function(classes, covariates = NULL, error = Error()) {
@@ -2085,33 +2097,28 @@ Trend <- function(initial = Initial(), scale = HalfT()) {
 #' Specifically, transformed values of the weights are modelled
 #' using
 #'
-#'   \code{levelAR1[k,h] = levelAR2[k,h] + errorAR1[k,h]}
+#'   \code{level1[k,h] = level2[k,h] + error1[k,h]}
 #' 
-#'   \code{levelAR2[k,h] = meanAR + dampAR * level2AR[k-1,h] + error2AR[k,h]}
+#'   \code{level2[k,h] = mean + damp * level2[k-1,h] + error2[k,h]}
 #'
-#' \code{meanAR} has a normal prior.
+#' \code{mean} has a normal prior.
 #'
-#' \code{dampAR} has the boundary-avoiding prior described in
+#' \code{damp} has the boundary-avoiding prior described in
 #' Gelman et al (2004) p316-317.  This prior is equivalent to assuming
-#' a Beta(2, 2) prior on the transformed parameter (\code{dampAR}+0.5)/2.
+#' a Beta(2, 2) prior on the transformed parameter (\code{damp}+0.5)/2.
 #'
-#' \code{errorAR1} and \code{errorAR2} both have half-t priors. These
+#' \code{error1} and \code{error2} both have half-t priors. These
 #' priors have the defaults described in \code{\link{HalfT}}.
 #'
-#' To avoid numerical problems, \code{levelAR2} is confined to the
-#' interval (\code{minAR2}, \code{maxAR2}). Users can override the
-#' default values, including setting them to \code{-Inf} and \code{Inf}.
-#' USER-SUPPLIED VALUES CURRENTLY IGNORED.
-#' 
-#' @param mean The mean of the prior for \code{meanAR}. Defaults to 0.
-#' @param sd The standard deviation of the prior for \code{meanAR}.
+#' @inheritParams DLM
+#' @param mean The mean of the prior for \code{mean}. Defaults to 0.
+#' @param sd The standard deviation of the prior for \code{mean}.
 #' Defaults to 1.
-#' @param scaleAR1 An object of class \code{\linkS4class{HalfT}} defining
-#' the prior for \code{errorAR1}.
-#' @param scaleAR2 An object of class \code{\linkS4class{HalfT}} defining
-#' the prior for \code{errorAR2}.
-#' @param minAR2 Minimum value that \code{levelAR2} can take. Defaults to -4.
-#' @param maxAR2 Maximum value that \code{levelAR2} can take. Defaults to 4.
+#' @param damp An object of class \code{\linkS4class{Damp}}. 
+#' @param scale1 An object of class \code{\linkS4class{HalfT}} defining
+#' the prior for \code{error1}.
+#' @param scale2 An object of class \code{\linkS4class{HalfT}} defining
+#' the prior for \code{error2}.
 #'
 #' @return An object of class \code{\linkS4class{Weights}}.
 #' 
@@ -2120,8 +2127,8 @@ Trend <- function(initial = Initial(), scale = HalfT()) {
 #' \code{\link{Weights}}.
 #' 
 #' @export
-Weights <- function(mean = 0, sd = 1, scale1AR = HalfT(), scale2AR = HalfT(),
-                    minAR2 = -4, maxAR2 = 4) {
+Weights <- function(mean = 0, sd = 1, damp = Damp(), scale1 = HalfT(), scale2 = HalfT()) {
+    minAR2 <- -4; maxAR2 <- 4 # no longer letting users specify
     priorMeanLevelComponentWeightMix <- checkAndTidyMeanOrProb(object = mean,
                                                                name = "mean")
     checkPositiveNumeric(x = sd,
@@ -2131,39 +2138,76 @@ Weights <- function(mean = 0, sd = 1, scale1AR = HalfT(), scale2AR = HalfT(),
     priorSDLevelComponentWeightMix <- as.double(sd)
     priorSDLevelComponentWeightMix <- methods::new("Scale",
                                                    priorSDLevelComponentWeightMix)
-    if (!methods::is(scale1AR, "HalfT"))
+    if (!methods::is(scale1, "HalfT"))
         stop(gettextf("'%s' has class \"%s\"",
-                      "scale1AR", class(scale1AR)))
-    if (!methods::is(scale2AR, "HalfT"))
+                      "scale1", class(scale1)))
+    if (!methods::is(scale2, "HalfT"))
         stop(gettextf("'%s' has class \"%s\"",
-                      "scale2AR", class(scale2AR)))
+                      "scale2", class(scale2)))
+    if (!methods::is(damp, "Damp")) {
+        stop(gettextf("'%s' has class \"%s\"",
+                      "damp", class(damp)))
+    }
+    phiKnown <- methods::is(damp, "DampKnown")
+    if (phiKnown) {
+        minPhi <- 0
+        maxPhi <- 1
+        shape1Phi <- methods::new("Scale", 1)
+        shape2Phi <- methods::new("Scale", 1)
+        phi <- damp@phi
+        if (isTRUE(all.equal(phi, 1)))
+            stop(gettextf("'%s' equals %d",
+                          "damp", 1L))
+    }
+    else {
+        minPhi <- damp@minPhi
+        maxPhi <- damp@maxPhi
+        shape1Phi <- damp@shape1Phi
+        shape2Phi <- damp@shape2Phi
+        phi <- as.double(NA)
+    }
+    phiKnown <- methods::new("LogicalFlag", phiKnown)
     l <- checkAndTidyLevelComponentWeightMinMax(minAR2 = minAR2,
                                                 maxAR2 = maxAR2)
     minLevelComponentWeight <- l$minLevelComponentWeight
     maxLevelComponentWeight <- l$maxLevelComponentWeight
     maxAR2 <- l$maxAR2
-    AComponentWeightMix <- scale1AR@A
-    ALevelComponentWeightMix <- scale2AR@A
-    multComponentWeightMix <- scale1AR@mult
-    multLevelComponentWeightMix <- scale2AR@mult
-    nuComponentWeightMix <- scale1AR@nu
-    nuLevelComponentWeightMix <- scale2AR@nu
-    omegaComponentWeightMaxMix <- scale1AR@scaleMax
-    omegaLevelComponentWeightMaxMix <- scale2AR@scaleMax
+    AComponentWeightMix <- scale1@A
+    ALevelComponentWeightMix <- scale2@A
+    multComponentWeightMix <- scale1@mult
+    multLevelComponentWeightMix <- scale2@mult
+    nuComponentWeightMix <- scale1@nu
+    nuLevelComponentWeightMix <- scale2@nu
+    omegaComponentWeightMaxMix <- scale1@scaleMax
+    omegaLevelComponentWeightMaxMix <- scale2@scaleMax
     methods::new("Weights",
                  AComponentWeightMix = AComponentWeightMix,
                  ALevelComponentWeightMix = ALevelComponentWeightMix,
                  maxLevelComponentWeight = maxLevelComponentWeight,
+                 maxPhi = maxPhi,
                  minLevelComponentWeight = minLevelComponentWeight,
+                 minPhi = minPhi,
                  multComponentWeightMix = multComponentWeightMix,
                  multLevelComponentWeightMix = multLevelComponentWeightMix,
                  nuComponentWeightMix = nuComponentWeightMix,
                  nuLevelComponentWeightMix = nuLevelComponentWeightMix,
                  omegaComponentWeightMaxMix = omegaComponentWeightMaxMix,
                  omegaLevelComponentWeightMaxMix = omegaLevelComponentWeightMaxMix,
+                 phi = phi,
+                 phiKnown = phiKnown,
                  priorMeanLevelComponentWeightMix = priorMeanLevelComponentWeightMix,
-                 priorSDLevelComponentWeightMix = priorSDLevelComponentWeightMix)
+                 priorSDLevelComponentWeightMix = priorSDLevelComponentWeightMix,
+                 shape1Phi = shape1Phi,
+                 shape2Phi = shape2Phi)
 }
+
+
+
+
+
+
+
+
 
 #' Specify a prior that sets all terms to zero.
 #'
@@ -2188,5 +2232,5 @@ Weights <- function(mean = 0, sd = 1, scale1AR = HalfT(), scale2AR = HalfT(),
 #' Zero()
 #' @export  
 Zero <- function() {
-    new("SpecZero")
+    methods::new("SpecZero")
 }

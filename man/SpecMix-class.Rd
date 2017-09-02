@@ -65,6 +65,21 @@ for \code{omegalevelComponentWeightMaxMix}.}
 
 \item{\code{omegaVectorsMix}}{Upper limit for truncated half-t prior
 for \code{omegaVectorsMix}.}
+
+\item{\code{phi}}{Damping parameter.}
+
+\item{\code{phiKnown}}{Whether the damping parameter is known.
+or is estimated from the data.}
+
+\item{\code{minPhi}}{Minimum value for the damping parameter.}
+
+\item{\code{maxPhi}}{Maximum value for the damping parameter.}
+
+\item{\code{shape1Phi}}{First 'sample size' parameter in beta
+prior for damping parameter.}
+
+\item{\code{shape2Phi}}{Second 'sample size' parameter in beta
+prior for damping parameter.}
 }}
 
 \section{Warning}{

@@ -13,20 +13,61 @@
 ## births <- demdata::iceland.births %>%
 ##     Counts(dimscales = c(year = "Intervals")) %>%
 ##     subarray(age > 15 & age < 45) %>%
-##     collapseIntervals(dimension = "age", width = 5)
+##     collapseIntervals(dimension = "age", width = 5) %>%
+##     collapseDimension(dimension = "age")
 ## expose <- demdata::iceland.popn %>%
 ##     Counts(dimscales = c(year = "Intervals", age = "Intervals")) %>%
 ##     subarray(age > 15 & age < 45) %>%
 ##     subarray(year < 2015) %>%
 ##     collapseIntervals(dimension = "age", width = 5) %>%
 ##     subarray(sex == "Females")
-## model <- Model(y ~ Poisson(mean ~ age * year),
-##                age ~ Zero(),
-##                year ~ Zero(),
-##                age:year ~ DLM(level = Level(scale = HalfT(scale = 0.05, max = 0.1, df = 30)),
-##                               trend = Trend(scale = HalfT(scale = 0.05, max = 0.1, df = 30)),
-##                               error = Error(scale = HalfT(scale = 0.05, max = 0.1, df = 30)),
-##                               damp = Damp(min = 0.9, max = 0.98)))
+
+## model.with.level <- Model(y ~ Poisson(mean ~ year),
+##                           year ~ DLM(damp = NULL),
+##                           jump = 0.05)
+## model.without.level <- Model(y ~ Poisson(mean ~ year),
+##                           year ~ DLM(level = NULL, damp = NULL),
+##                           jump = 0.05)
+## filename.with.level.est <- "deleteme.with.level.est"
+## filename.without.level.est <- "deleteme.without.level.est"
+## estimateModel(model.with.level,
+##               y = births,
+##               exposure = expose,
+##               filename = filename.with.level.est,
+##               nBurnin = 5000,
+##               nSim = 5000,
+##               nThin = 20,
+##               nChain = 4)
+## estimateModel(model.without.level,
+##               y = births,
+##               exposure = expose,
+##               filename = filename.without.level.est,
+##               nBurnin = 5000,
+##               nSim = 5000,
+##               nThin = 20,
+##               nChain = 4)
+## fetchSummary(filename.with.level.est)
+## fetchSummary(filename.without.level.est)
+## filename.with.level.pred <- "deleteme.with.level.pred"
+## filename.without.level.pred <- "deleteme.without.level.pred"
+## predictModel(filenameEst = filename.with.level.est, filenamePred = filename.with.level.pred, n = 25)
+## predictModel(filenameEst = filename.without.level.est, filenamePred = filename.without.level.pred, n = 25)
+## rates.with.level <- fetchBoth(filenameEst = filename.with.level.est, filenamePred = filename.with.level.pred,
+##                               where = c("model", "like", "rate"))
+## rates.without.level <- fetchBoth(filenameEst = filename.without.level.est, filenamePred = filename.without.level.pred,
+##                                  where = c("model", "like", "rate"))
+## p.with <- dplot(~ year, data = rates.with.level, midpoints = "year")
+## p.without <- dplot(~ year, data = rates.without.level, midpoints = "year")
+
+
+
+## ## model <- Model(y ~ Poisson(mean ~ age * year),
+## ##                age ~ Zero(),
+## ##                year ~ Zero(),
+## ##                age:year ~ DLM(level = Level(scale = HalfT(scale = 0.05, max = 0.1, df = 30)),
+## ##                               trend = Trend(scale = HalfT(scale = 0.05, max = 0.1, df = 30)),
+## ##                               error = Error(scale = HalfT(scale = 0.05, max = 0.1, df = 30)),
+## ##                               damp = Damp(min = 0.9, max = 0.98)))
 ## filename.est <- "deleteme.est"
 ## estimateModel(model,
 ##               y = births,
@@ -34,14 +75,34 @@
 ##               filename = filename.est,
 ##               nBurnin = 5000,
 ##               nSim = 5000,
-##               nThin = 10,
+##               nThin = 20,
 ##               nChain = 4)
 ## fetchSummary(filename.est)
 ## filename.pred <- "deleteme.pred"
 ## predictModel(filenameEst = filename.est, filenamePred = filename.pred, n = 25)
 ## rates <- fetchBoth(filenameEst = filename.est, filenamePred = filename.pred,
 ##                    where = c("model", "like", "rate"))
-## dplot(~ year | age, data = rates, midpoints = "year")
+## dplot(~ year, data = rates, midpoints = "year")
+
+
+## year.level.with.level <- fetchBoth(filenameEst = filename.with.level.est, filenamePred = filename.with.level.pred,
+##                         where = c("model", "hy", "year", "level"))
+## dplot(exp(value) ~ year, data = year.level.with.level, midpoints = "year")
+
+## year.level.without.level <- fetchBoth(filenameEst = filename.without.level.est, filenamePred = filename.without.level.pred,
+##                         where = c("model", "hy", "year", "level"))
+## dplot(~ year, data = year.level.without.level, midpoints = "year", prob = 0.5)
+
+
+## year.trend.with.level <- fetchBoth(filenameEst = filename.with.level.est, filenamePred = filename.with.level.pred,
+##                         where = c("model", "hy", "year", "trend"))
+## dplot(~ year, data = year.trend.with.level, midpoints = "year")
+
+## year.trend.without.level <- fetchBoth(filenameEst = filename.without.level.est, filenamePred = filename.without.level.pred,
+##                         where = c("model", "hy", "year", "trend"))
+## dplot(~ year, data = year.trend.without.level, midpoints = "year")
+
+
 
 ## dplot(~ year , data = 5 * as(rates, "Counts"), midpoints = "year")
 
@@ -71,6 +132,11 @@
 ## year.level <- fetchBoth(filenameEst = filename.est, filenamePred = filename.pred,
 ##                         where = c("model", "hy", "year", "level"))
 ## dplot(~ year, data = year.level, midpoints = "year")
+
+## year.trend <- fetchBoth(filenameEst = filename.est, filenamePred = filename.pred,
+##                         where = c("model", "hy", "year", "trend"))
+## dplot(~ year, data = year.trend, midpoints = "year")
+
 
 ## age <- fetch(filename.est,
 ##              where = c("model", "pr", "age"))

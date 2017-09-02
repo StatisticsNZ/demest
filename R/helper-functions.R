@@ -232,7 +232,7 @@ checkAndTidyIndexClassMaxMix <- function(maxComponents) {
     if (maxComponents < 2L)
         stop(gettextf("'%s' is less than %d",
                       "maxComponents", 2L))
-    new("Counter", maxComponents)    
+    methods::new("Counter", maxComponents)    
 }
 
 checkAndTidyLevelComponentWeightMinMax <- function(minAR2, maxAR2) {
@@ -790,6 +790,7 @@ initialDLMAll <- function(object, beta, metadata, sY, isSaturated, ...) {
     shape1Phi <- object@shape1Phi
     shape2Phi <- object@shape2Phi
     tauMax <- object@tauMax
+    has.trend <- methods::is(object, "SpecWithTrendMixin")
     dim <- dim(metadata)
     J <- makeJ(beta)
     ATau <- makeAHalfT(A = ATau,
@@ -822,17 +823,20 @@ initialDLMAll <- function(object, beta, metadata, sY, isSaturated, ...) {
                          mult = multAlpha)
     omegaAlphaMax <- makeScaleMax(scaleMax = omegaAlphaMax,
                                   A = AAlpha,
-                                  nu = nuAlpha)        
-    omegaAlpha <- makeScale(A = AAlpha,
-                            nu = nuAlpha,
-                            scaleMax = omegaAlphaMax)
+                                  nu = nuAlpha)
+    if (has.trend && !object@hasLevel)
+        omegaAlpha <- methods::new("Scale", 0)
+    else
+        omegaAlpha <- makeScale(A = AAlpha,
+                                nu = nuAlpha,
+                                scaleMax = omegaAlphaMax)
     alphaDLM <- makeStateDLM(K = K,
                              L = L)
     phi <- makePhi(phi = phi,
                    phiKnown = phiKnown,
                    minPhi = minPhi,
                    maxPhi = maxPhi)                             
-    isSaturated <- new("LogicalFlag", isSaturated)
+    isSaturated <- methods::new("LogicalFlag", isSaturated)
     list(AAlpha = AAlpha,
          ATau = ATau,
          alphaDLM = alphaDLM,
@@ -1147,6 +1151,8 @@ initialMixAll <- function(object, beta, metadata, sY, isSaturated, ...) {
     AVectorsMix <- object@AVectorsMix
     along <- object@along
     indexClassMaxMix <- object@indexClassMaxMix
+    minPhi <- object@minPhi
+    maxPhi <- object@maxPhi
     minLevelComponentWeight <- object@minLevelComponentWeight
     maxLevelComponentWeight <- object@maxLevelComponentWeight
     multComponentWeightMix <- object@multComponentWeightMix
@@ -1160,8 +1166,12 @@ initialMixAll <- function(object, beta, metadata, sY, isSaturated, ...) {
     omegaComponentWeightMaxMix <- object@omegaComponentWeightMaxMix
     omegaLevelComponentWeightMaxMix <- object@omegaLevelComponentWeightMaxMix
     omegaVectorsMaxMix <- object@omegaVectorsMaxMix
+    phi <- object@phi
+    phiKnown <- object@phiKnown
     priorMeanLevelComponentWeightMix <- object@priorMeanLevelComponentWeightMix
     priorSDLevelComponentWeightMix <- object@priorSDLevelComponentWeightMix
+    shape1Phi <- object@shape1Phi
+    shape2Phi <- object@shape2Phi
     tauMax <- object@tauMax
     ## AComponentWeightMix, omegaComponentWeightMaxMix, omegaComponentWeight
     AComponentWeightMix <-
@@ -1257,9 +1267,10 @@ initialMixAll <- function(object, beta, metadata, sY, isSaturated, ...) {
         makeIteratorProdVectorMix(dimBeta = dimBeta,
                                   iAlong = iAlong)
     ## phiMix
-    phiMix <- stats::runif(n = 1L,
-                           min = 0.8,
-                           max = 0.98)
+    phiMix <- makePhi(phi = phi,
+                      phiKnown = phiKnown,
+                      minPhi = minPhi,
+                      maxPhi = maxPhi)
     ## meanLevelComponentWeightMix
     meanLevelComponentWeightMix <-
         makeMeanLevelComponentWeightMix(priorMean = priorMeanLevelComponentWeightMix,
@@ -1296,20 +1307,20 @@ initialMixAll <- function(object, beta, metadata, sY, isSaturated, ...) {
                                        weightMix = weightMix)
     ## indexClassMaxPossibleMix
     indexClassMaxPossibleMix <- max(indexClassMix)
-    indexClassMaxPossibleMix <- new("Counter", indexClassMaxPossibleMix)
+    indexClassMaxPossibleMix <- methods::new("Counter", indexClassMaxPossibleMix)
     ## indexClassMaxUsedMix
     indexClassMaxUsedMix <- max(indexClassMix)
-    indexClassMaxUsedMix <- new("Counter", indexClassMaxUsedMix)
+    indexClassMaxUsedMix <- methods::new("Counter", indexClassMaxUsedMix)
     ## indexClassProbMix
     indexClassProbMix <- rep(0, times = indexClassMaxMix@.Data)
-    indexClassProbMix <- new("ParameterVector", indexClassProbMix)
+    indexClassProbMix <- methods::new("ParameterVector", indexClassProbMix)
     ## isSaturated
-    isSaturated <- new("LogicalFlag", isSaturated)
+    isSaturated <- methods::new("LogicalFlag", isSaturated)
     ## foundIndexClassMaxPossibleMix
-    foundIndexClassMaxPossibleMix <- new("LogicalFlag", TRUE)
+    foundIndexClassMaxPossibleMix <- methods::new("LogicalFlag", TRUE)
     ## sumsWeightsMix
     sumsWeightsMix <- rep(0, times = dimBeta[iAlong])
-    sumsWeightsMix <- new("UnitIntervalVec", sumsWeightsMix)
+    sumsWeightsMix <- methods::new("UnitIntervalVec", sumsWeightsMix)
     ## latentComponentWeightMix
     latentComponentWeightMix <-
         makeLatentComponentWeightMix(dimBeta = dimBeta,
@@ -1332,15 +1343,15 @@ initialMixAll <- function(object, beta, metadata, sY, isSaturated, ...) {
     CMix <- rep(1, times = n.along)
     aMix <- rep(0, times = n.along - 1L)
     RMix <- rep(1, times = n.along - 1L)
-    mMix <- new("ParameterVector", mMix)
-    CMix <- new("ParameterVector", CMix)
-    aMix <- new("ParameterVector", aMix)
-    RMix <- new("ParameterVector", RMix)
+    mMix <- methods::new("ParameterVector", mMix)
+    CMix <- methods::new("ParameterVector", CMix)
+    aMix <- methods::new("ParameterVector", aMix)
+    RMix <- methods::new("ParameterVector", RMix)
     ## yXMix, XXMix
     yXMix <- rep(0, times = indexClassMaxMix@.Data)
     XXMix <- rep(0, times = indexClassMaxMix@.Data)
-    yXMix <- new("ParameterVector", yXMix)
-    XXMix <- new("ParameterVector", XXMix)
+    yXMix <- methods::new("ParameterVector", yXMix)
+    XXMix <- methods::new("ParameterVector", XXMix)
     ## alphaMix
     alphaMix <- makeAlphaMix(prodVectorsMix = prodVectorsMix,
                              indexClassMix = indexClassMix,
@@ -1373,7 +1384,9 @@ initialMixAll <- function(object, beta, metadata, sY, isSaturated, ...) {
          levelComponentWeightMix = levelComponentWeightMix,
          mMix = mMix,
          maxLevelComponentWeight = maxLevelComponentWeight,
+         maxPhi = maxPhi,
          minLevelComponentWeight = minLevelComponentWeight,
+         minPhi = minPhi,
          nBetaNoAlongMix = nBetaNoAlongMix,
          nuComponentWeightMix = nuComponentWeightMix,
          nuLevelComponentWeightMix = nuLevelComponentWeightMix,
@@ -1387,6 +1400,9 @@ initialMixAll <- function(object, beta, metadata, sY, isSaturated, ...) {
          omegaVectorsMix = omegaVectorsMix,
          meanLevelComponentWeightMix = meanLevelComponentWeightMix,
          phiMix = phiMix,
+         phiKnown = phiKnown,
+         shape1Phi = shape1Phi,
+         shape2Phi = shape2Phi,
          posProdVectors1Mix = posProdVectors1Mix,
          posProdVectors2Mix = posProdVectors2Mix,
          priorMeanLevelComponentWeightMix = priorMeanLevelComponentWeightMix,
@@ -1727,7 +1743,7 @@ makeLatentComponentWeightMix <- function(dimBeta, iAlong, indexClassMix,
                                   useC = TRUE)
     }
     ans <- as.double(ans)
-    new("ParameterVector", ans)
+    methods::new("ParameterVector", ans)
 }
     
 ## NO_TESTS
@@ -1885,6 +1901,7 @@ makeMWithTrend <- function(K, m0 = NULL) {
     methods::new("FFBSList", ans)
 }
 
+
 ## NO_TESTS
 makeM0WithTrend <- function(L, meanDelta0 = NULL) {
     if (is.null(meanDelta0))
@@ -1924,13 +1941,53 @@ makeCSeason <- function(K, nSeason, ASeason, C0 = NULL) {
     methods::new("FFBSList", ans)
 }
 
+## ## NO_TESTS
+## makeCWithTrend <- function(K, C0 = NULL, sY, ADelta0, hasLevel = TRUE) {
+##     if (is.null(C0)) {
+##         ## if (hasLevel)
+##         ##     AAlpha <- makeAIntercept(A = NA, sY = sY)
+##         ## else
+##         AAlpha <- 0
+##         ADelta <- ADelta0@.Data
+##         C0 <- c(AAlpha^2, ADelta^2)
+##         C0 <- diag(C0,
+##                    nrow = 2L,
+##                    ncol = 2L)
+##     }
+##     head <- list(C0)
+##     tail <- replicate(n = K,
+##                       diag(2L),
+##                       simplify = FALSE)
+##     ans <- c(head, tail)
+##     methods::new("FFBSList", ans)
+## }
+
+
+## ## NO_TESTS
+## makeCWithTrend <- function(K, C0 = NULL, sY, ADelta0, hasLevel = TRUE) {
+##     if (is.null(C0)) {
+##         if (hasLevel)
+##             AAlpha <- makeAIntercept(A = NA, sY = sY)
+##         else
+##             AAlpha <- 0
+##         ADelta <- ADelta0@.Data
+##         C0 <- c(AAlpha^2, ADelta^2)
+##         C0 <- diag(C0,
+##                    nrow = 2L,
+##                    ncol = 2L)
+##     }
+##     head <- list(C0)
+##     tail <- replicate(n = K,
+##                       diag(2L),
+##                       simplify = FALSE)
+##     ans <- c(head, tail)
+##     methods::new("FFBSList", ans)
+## }
+
 ## NO_TESTS
 makeCWithTrend <- function(K, C0 = NULL, sY, ADelta0, hasLevel = TRUE) {
     if (is.null(C0)) {
-        if (hasLevel)
-            AAlpha <- makeAIntercept(A = NA, sY = sY)
-        else
-            AAlpha <- 0
+        AAlpha <- makeAIntercept(A = NA, sY = sY)
         ADelta <- ADelta0@.Data
         C0 <- c(AAlpha^2, ADelta^2)
         C0 <- diag(C0,
@@ -2127,7 +2184,7 @@ makeZ <- function(formula, data, metadata, contrastsArg, infant) {
             name.infant <- names(data)[length(data)]
             formula <- deparse(formula)
             formula <- paste(formula, name.infant, sep = " + ")
-            formula <- as.formula(formula)
+            formula <- stats::as.formula(formula)
         }
     }
     ## make required response
@@ -2754,7 +2811,7 @@ checkAxAg <- function(ax, value) {
         if (!methods::is(value, "DemographicArray"))
             stop(gettextf("'%s' is not a demographic array, but '%s' has more than one dimension",
                           "value", "ax"))
-        metadata.ax.no.age <- new("MetaData",
+        metadata.ax.no.age <- methods::new("MetaData",
                                   nms = names[-i.age],
                                   dimtypes = dimtypes[-i.age],
                                   DimScales = DimScales[-i.age])
@@ -3119,10 +3176,10 @@ makeCellInLikHelper <- function(transform, y) {
     for (i in seq_along(y)) {
         is.missing <- is.na(y[i])
         if (is.missing) {
-            i.after <- dembase:::getIAfter(i = i,
-                                           transform = transform,
-                                           check = FALSE,
-                                           useC = TRUE)
+            i.after <- dembase::getIAfter(i = i,
+                                          transform = transform,
+                                          check = FALSE,
+                                          useC = TRUE)
             contributes <- i.after > 0L
             ans[i] <- contributes
         }
@@ -5153,7 +5210,7 @@ initialModelPredictHelper <- function(model, along, labels, n, offsetModel,
         else {
             J <- length(betas[[i]])
             J <- methods::new("Length", J)
-            isSaturated <- new("LogicalFlag", FALSE)
+            isSaturated <- methods::new("LogicalFlag", FALSE)
             priors.betas[[i]] <- methods::new("TimeInvariant",
                                               J = J,
                                               isSaturated = isSaturated)
@@ -5579,9 +5636,9 @@ predictLevelComponentWeightMix <- function(prior, useC = FALSE) {
             i.wt <- (i.class - 1L) * n.along + 1L
             level.prev <- level.old[i.class]
             mean <- mean.level + phi * level.prev
-            level[i.wt] <- rnorm(n = 1L,
-                                 mean = mean,
-                                 sd = omega)
+            level[i.wt] <- stats::rnorm(n = 1L,
+                                        mean = mean,
+                                        sd = omega)
             for (i.along in seq.int(from = 2L, to = n.along)) {
                 i.wt.curr <- (i.class - 1L) * n.along + i.along
                 i.wt.prev <- i.wt.curr - 1L
@@ -6385,7 +6442,7 @@ logLikelihood_NormalFixedUseExp <- function(model, count, dataset, i, useC = FAL
         sd <- model@sd@.Data[i]
         mean <- count * mean
         sd <- sqrt(count) * sd
-        dnorm(x = x, mean = mean, sd = sd, log = TRUE)
+        stats::dnorm(x = x, mean = mean, sd = sd, log = TRUE)
     }
 }
 
@@ -6792,7 +6849,8 @@ makeOutputPriorScale <- function(pos) {
 }
 
 ## HAS_TESTS
-makeOutputStateDLM <- function(iterator, metadata, nSeason, iAlong, pos, isTrend) {
+makeOutputStateDLM <- function(iterator, metadata, nSeason, iAlong, pos, isTrend,
+                               phi, phiKnown) {
     indices <- iterator@indices
     n.within <- iterator@nWithin
     n.between <- iterator@nBetween
@@ -6810,13 +6868,18 @@ makeOutputStateDLM <- function(iterator, metadata, nSeason, iAlong, pos, isTrend
                                 iAlong = iAlong)
     metadata <- makeMetadataStateDLM(metadata = metadata,
                                      iAlong = iAlong)
-    class <- if (isTrend) "SkeletonTrendDLM" else "SkeletonStateDLM"
-    methods::new(class,
+    if (isTrend)
+        subtractAlpha0 <- FALSE
+    else
+        subtractAlpha0 <- phiKnown && isTRUE(all.equal(phi, 1))
+    subtractAlpha0 <- methods::new("LogicalFlag", subtractAlpha0)
+    methods::new("SkeletonStateDLM",
                  first = first,
                  last = last,
                  iAlong = iAlong,
                  indicesShow = indices.show,
-                 metadata = metadata)
+                 metadata = metadata,
+                 subtractAlpha0 = subtractAlpha0)
 }
 
 
@@ -7377,7 +7440,6 @@ printLevelTrendEqns <- function(object, isMain, hasTrend) {
             sep = "")
     }
 }
-
 printMixEqns <- function(object, name, hasCovariates) {
     AVectors <- object@AVectorsMix@.Data
     nuVectors <- object@nuVectorsMix@.Data
@@ -7390,6 +7452,12 @@ printMixEqns <- function(object, name, hasCovariates) {
     ALevelComponentWeight <- object@ALevelComponentWeightMix@.Data
     nuLevelComponentWeight <- object@nuLevelComponentWeightMix@.Data
     omegaLevelComponentWeightMax <- object@omegaLevelComponentWeightMaxMix@.Data
+    phi <- object@phi
+    phi.known <- object@phiKnown
+    min.phi <- object@minPhi
+    max.phi <- object@maxPhi
+    shape1 <- object@shape1Phi@.Data
+    shape2 <- object@shape2Phi@.Data
     if (is.null(name))
         name <- "parameter"
     name <- sprintf("%11s", name, sep = "")
@@ -7404,22 +7472,41 @@ printMixEqns <- function(object, name, hasCovariates) {
         format(omegaVectorsMax, digits = 4),
         ")\n",
         sep = "")
-    cat("     weight[k,h] = g(levelAR1[k,1], ..., levelAR1[k,h])\n")
-    cat("   levelAR1[k,h] = levelAR2[k,h] + errorAR1[k,h]\n")
-    cat("   levelAR2[k,h] = meanAR + dampAR * level2AR[k-1,h] + error2AR[k,h]\n")
-    cat("   levelAR2[1,h] ~ N(", priorMean, "/(1-dampAR), ", sep = "")
-    cat(priorSD, "/sqrt(1-dampAR^2))\n", sep = "")
-    cat("          meanAR ~ N(", priorMean, ", ", squaredOrNA(priorSD), ")\n", sep = "")
-    cat("  (dampAR+0.5)/2 ~ Beta(2, 2)\n")
-    cat("        errorAR1 ~ N(0, scaleAR1^2)\n")
-    cat("        errorAR2 ~ N(0, scaleAR2^2)\n")
-    cat("        scaleAR1 ~ trunc-half-t(", nuComponentWeight, ", ", sep = "")
+    cat("     weight[k,h] = g(level1[k,1], ..., level1[k,h])\n")
+    cat("     level1[k,h] = level2[k,h] + error1[k,h]\n")
+    cat("     level2[k,h] = mean + damp * level2[k-1,h] + error2[k,h]\n")
+    cat("     level2[1,h] ~ N(", priorMean, "/(1-damp), ", sep = "")
+    cat(priorSD, "/sqrt(1-damp^2))\n", sep = "")
+    cat("            mean ~ N(", priorMean, ", ", squaredOrNA(priorSD), ")\n", sep = "")
+    if (phi.known)
+        cat("            damp =",
+            format(phi, digits = 4),
+            "\n")
+    else {
+        cat("   dampTransform = (damp-",
+            format(min.phi, digits = 4),
+            ")/(",
+            format(max.phi, digits = 4),
+            "-",
+            format(min.phi, digits = 4),
+            ")\n",
+            sep = "")
+        cat("   dampTransform ~ Beta(",
+            format(shape1, digits = 4),
+            ",",
+            format(shape2, digits = 4),
+            ")\n",
+            sep = "")
+    }
+    cat("          error1 ~ N(0, scale1^2)\n")
+    cat("          error2 ~ N(0, scale2^2)\n")
+    cat("          scale1 ~ trunc-half-t(", nuComponentWeight, ", ", sep = "")
     cat(squaredOrNA(AComponentWeight),
         ", ",
         format(omegaComponentWeightMax, digits = 4),
         ")\n",
         sep = "")
-    cat("        scaleAR2 ~ trunc-half-t(", nuLevelComponentWeight, ", ", sep = "")
+    cat("          scale2 ~ trunc-half-t(", nuLevelComponentWeight, ", ", sep = "")
     cat(squaredOrNA(ALevelComponentWeight),
         ", ",
         format(omegaLevelComponentWeightMax, digits = 4),
@@ -7729,7 +7816,7 @@ printSDAg <- function(object) {
 }
 
 printSDEqns <- function(object) {
-    if (.hasSlot(object, "priorsBetas")) {
+    if (methods::.hasSlot(object, "priorsBetas")) {
         priors <- object@priorsBetas
         is.saturated <- any(sapply(priors, function(x) x@isSaturated@.Data))
     }

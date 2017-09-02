@@ -469,10 +469,10 @@ setMethod("sweepAllMargins",
           })
 
 
-## sweepExceptAlong ###############################################################
+## subtractAlpha0 ###############################################################
 
 ## NO_TESTS
-setMethod("sweepExceptAlong",
+setMethod("subtractAlpha0",
           signature(object = "Values"),
           function(object, iAlong) {
               .Data <- object@.Data
@@ -486,24 +486,13 @@ setMethod("sweepExceptAlong",
                   stop(gettextf("'%s' has dimension with dimtype \"%s\"",
                                 "object", "quantile"))
               n <- length(dim)
-              if (n > 1L) {
-                  i.iter <- match("iteration", dimtypes, nomatch = 0L)
+              if (n == 1L)
+                  .Data <- .Data - mean(.Data)
+              else {
                   s <- seq_len(n)
-                  has.iter <- i.iter > 0L
-                  if (has.iter) {
-                      if (n > 2L) {
-                          s <- s[-c(iAlong, i.iter)]
-                          margins <- utils::combn(s, m = n - 3L, simplify = FALSE)
-                          margins <- lapply(margins, function(x) c(i.iter, iAlong, x))
-                          .Data <- sweepMargins(.Data, margins = margins)                          
-                      }
-                  }
-                  else {
-                      s <- s[-iAlong]
-                      margins <- utils::combn(s, m = n - 2L, simplify = FALSE)
-                      margins <- lapply(margins, function(x) c(iAlong, x))
-                      .Data <- sweepMargins(.Data, margins = margins)
-                  }
+                  margin <- s[-iAlong]
+                  margins <- list(margin)
+                  .Data <- sweepMargins(.Data, margins = margins)
               }
               methods::new("Values", .Data = .Data, metadata = metadata)
           })

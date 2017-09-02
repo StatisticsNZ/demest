@@ -336,11 +336,8 @@ setClass("SkeletonStateDLM",
          slots = c(metadata = "MetaData"),
          contains = c("SkeletonMany",
                       "SkeletonIndicesShow",
-                      "IAlongMixin"))
-
-## HAS_FETCH
-setClass("SkeletonTrendDLM",
-         contains = "SkeletonStateDLM")
+                      "IAlongMixin",
+                      "SubtractAlpha0Mixin"))
 
 ## HAS_TESTS
 ## HAS_FETCH

@@ -188,9 +188,9 @@ setClass("Scale",
              ## 'object' is not missing
              if (is.na(object))
                  return(gettext("missing"))
-             ## 'object is positive
-             if (object <= 0)
-                 return(gettextf("non-positive"))
+             ## 'object is non-negative
+             if (object < 0)
+                 return(gettextf("negative"))
              TRUE
          })
 
@@ -204,9 +204,9 @@ setClass("ScaleVec",
              ## 'object' has no missing values
              if (any(is.na(object)))
                  return(gettext("missing values"))
-             ## 'object' all positive
-             if (any(object <= 0))
-                 return(gettextf("non-positive values"))
+             ## 'object' all non-negative
+             if (any(object < 0))
+                 return(gettextf("negative values"))
              TRUE
          })
 
@@ -234,8 +234,8 @@ setClass("SpecScale",
              if (!is.double(object))
                  return(gettextf("does not have type \"%s\"",
                                  "double"))
-             ## if 'object' is not missing, 'object is positive
-             if (!is.na(object) && (object <= 0))
+             ## if 'object' is not missing, 'object is non-negative
+             if (!is.na(object) && (object < 0))
                  return(gettextf("non-positive"))
              TRUE
          })

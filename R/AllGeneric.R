@@ -303,7 +303,7 @@ setGeneric("makeOutputPrior",
 setGeneric("needToCenter",
            function(object) FALSE)
 
-setGeneric("needToCenterExceptAlong",
+setGeneric("needToSubtractAlpha0",
           function(object) FALSE)
 
 setGeneric("predictBeta",
@@ -367,9 +367,9 @@ setGeneric("sweepAllMargins",
            function(object)
                standardGeneric("sweepAllMargins"))
 
-setGeneric("sweepExceptAlong",
+setGeneric("subtractAlpha0",
            function(object, iAlong)
-           standardGeneric("sweepExceptAlong"))
+           standardGeneric("subtractAlpha0"))
 
 setGeneric("summaryDataset",
            function(object)
