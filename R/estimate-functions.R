@@ -105,6 +105,9 @@
 #' @param nUpdateMax Maximum number of iterations completed before releasing
 #' memory.  If running out of memory, setting a lower value than the default
 #' may help.
+#' @param outfile Where to direct the ‘stdout’ and ‘stderr’ connection
+#' output from the workers when parallel processing.  Passed to function
+#' \code{[parallel]{makeCluster}}.
 #' @param verbose Logical.  If \code{TRUE} (the default) a message is
 #' printed at the end of the calculations.
 #' @param useC Logical.  If \code{TRUE} (the default), the calculations
@@ -141,8 +144,8 @@
 #' @export
 estimateModel <- function(model, y, exposure = NULL, weights = NULL,
                           filename = NULL, nBurnin = 1000, nSim = 1000,
-                          nChain = 4, nThin = 1, parallel = TRUE,
-                          nUpdateMax = 200, verbose = TRUE, useC = TRUE) {
+                          nChain = 4, nThin = 1, parallel = TRUE, outfile = "",
+                          nUpdateMax = 50, verbose = TRUE, useC = TRUE) {
     call <- match.call()
     methods::validObject(model)
     mcmc.args <- makeMCMCArgs(nBurnin = nBurnin,
@@ -185,7 +188,8 @@ estimateModel <- function(model, y, exposure = NULL, weights = NULL,
                             size = 1)   # seed has previously been set
                                         # this must be done BEFORE call to makeCluster!
         cl <- parallel::makeCluster(getOption("cl.cores",
-                                              default = mcmc.args$nChain))
+                                              default = mcmc.args$nChain),
+                                    outfile = outfile)
         parallel::clusterSetRNGStream(cl,
                                       iseed = pseed)
         final.combineds <- parallel::clusterMap(cl = cl,
@@ -253,7 +257,7 @@ estimateModel <- function(model, y, exposure = NULL, weights = NULL,
 #' @export
 predictModel <- function(filenameEst, filenamePred, along = NULL, labels = NULL, n = NULL,
                          data = NULL, aggregate = NULL, lower = NULL,
-                         upper = NULL, nBurnin = 0L,  parallel = TRUE,
+                         upper = NULL, nBurnin = 0L,  parallel = TRUE, outfile = "",
                          verbose = FALSE, useC = TRUE) {
     if (!identical(nBurnin, 0L))
         stop("'nBurnin' must currently be 0L")
@@ -306,7 +310,8 @@ predictModel <- function(filenameEst, filenamePred, along = NULL, labels = NULL,
     tempfiles.pred <- paste(filenamePred, seq_len(mcmc.args.pred[["nChain"]]), sep = "_")
     n.iter.chain <- mcmc.args.first[["nIteration"]] / mcmc.args.first[["nChain"]]
     if (parallel) {
-        cl <- parallel::makeCluster(getOption("cl.cores", default = mcmc.args.pred$nChain))
+        cl <- parallel::makeCluster(getOption("cl.cores", default = mcmc.args.pred$nChain),
+                                    outfile = outfile)
         parallel::clusterSetRNGStream(cl)
         final.combineds <- parallel::clusterMap(cl = cl,
                                                 fun = predictOneChain,
@@ -405,7 +410,7 @@ predictModel <- function(filenameEst, filenamePred, along = NULL, labels = NULL,
 estimateCounts <- function(model, y, exposure = NULL, observation,
                            datasets, filename = NULL, nBurnin = 1000,
                            nSim = 1000, nChain = 5, nThin = 1,
-                           parallel = TRUE, nUpdateMax = 200,
+                           parallel = TRUE, outfile = "", nUpdateMax = 50,
                            verbose = FALSE, useC = TRUE) {
     call <- match.call()
     methods::validObject(model)
@@ -451,7 +456,8 @@ estimateCounts <- function(model, y, exposure = NULL, observation,
                   list(continuing = FALSE,
                        useC = useC))
     if (parallel) {
-        cl <- parallel::makeCluster(getOption("cl.cores", default = mcmc.args$nChain))
+        cl <- parallel::makeCluster(getOption("cl.cores", default = mcmc.args$nChain),
+                                    outfile = outfile)
         parallel::clusterSetRNGStream(cl)
         final.combineds <- parallel::clusterMap(cl = cl,
                                                 fun = estimateOneChain,
@@ -492,7 +498,7 @@ estimateCounts <- function(model, y, exposure = NULL, observation,
 #' @export
 predictCounts <- function(filenameEst, filenamePred, along = NULL, labels = NULL, n = NULL,
                           data = NULL, aggregate = NULL, lower = NULL,
-                          upper = NULL, nBurnin = 0L,  parallel = TRUE,
+                          upper = NULL, nBurnin = 0L,  parallel = TRUE, outfile = "",
                           verbose = FALSE, useC = TRUE) {
     stop("not written yet")
 }
@@ -519,7 +525,7 @@ predictCounts <- function(filenameEst, filenamePred, along = NULL, labels = NULL
 #' @export
 estimateAccount <- function(y, system, observation, datasets, filename = NULL,
                             nBurnin = 1000, nSim = 1000, nChain = 4, nThin = 1,
-                            parallel = TRUE, nUpdateMax = 200,
+                            parallel = TRUE, outfile = "", nUpdateMax = 50,
                             verbose = FALSE, useC = TRUE) {
     stop("not written yet")
 }
@@ -534,7 +540,7 @@ estimateAccount <- function(y, system, observation, datasets, filename = NULL,
 #' @export
 predictAccount <- function(filenameEst, filenamePred, along = NULL, labels = NULL, n = NULL,
                            data = NULL, aggregate = NULL, lower = NULL,
-                           upper = NULL, nBurnin = 0L,  parallel = TRUE,
+                           upper = NULL, nBurnin = 0L,  parallel = TRUE, outfile = "",
                            verbose = FALSE, useC = TRUE) {
     stop("not written yet")
 }
@@ -684,7 +690,8 @@ predictAccount <- function(filenameEst, filenamePred, along = NULL, labels = NUL
 #' fetchSummary(filename.discard.original) # see 'nBurnin' and 'nSim'
 #' 
 #' @export
-continueEstimation <- function(filename, nBurnin = 0, nSim = 1000, verbose = FALSE, useC = TRUE) {
+continueEstimation <- function(filename, nBurnin = 0, nSim = 1000, outfile = "",
+                               verbose = FALSE, useC = TRUE) {
     object <- fetchResultsObject(filename)
     if (methods::is(object, "CombinedCounts"))
         stop("sorry - method for estimateCounts not written yet!")
@@ -701,7 +708,8 @@ continueEstimation <- function(filename, nBurnin = 0, nSim = 1000, verbose = FAL
     MoreArgs <- c(mcmc.args.new, control.args, list(continuing = TRUE, useC = useC))
     if (control.args$parallel) {
         cl <- parallel::makeCluster(getOption("cl.cores",
-                                              default = mcmc.args.new$nChain))
+                                              default = mcmc.args.new$nChain),
+                                    outfile = outfile)
         parallel::clusterSetRNGStream(cl)
         final.combineds <- parallel::clusterMap(cl = cl,
                                                 fun = estimateOneChain,

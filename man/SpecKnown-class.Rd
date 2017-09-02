@@ -14,9 +14,11 @@ for function \code{\link{Known}}.
 \section{Slots}{
 
 \describe{
-\item{\code{tau}}{alphaKnown Mean values}
+\item{\code{alphaKnown}}{Mean values.}
 
-\item{\code{multTau}}{Multiplier applied to default value for \code{tau}.}
+\item{\code{AKnownVec}}{Standard deviations.}
+
+\item{\code{metadata}}{Metadata for mean values and standard deviations.}
 }}
 
 \section{Warning}{

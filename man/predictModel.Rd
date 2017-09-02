@@ -6,7 +6,8 @@
 \usage{
 predictModel(filenameEst, filenamePred, along = NULL, labels = NULL,
   n = NULL, data = NULL, aggregate = NULL, lower = NULL, upper = NULL,
-  nBurnin = 0L, parallel = TRUE, verbose = FALSE, useC = TRUE)
+  nBurnin = 0L, parallel = TRUE, outfile = "", verbose = FALSE,
+  useC = TRUE)
 }
 \arguments{
 \item{filenameEst}{Filename used to \code{\link{estimateModel}}.}
@@ -35,6 +36,10 @@ rate, probabilities, or means.}
 
 \item{parallel}{Logical.  If \code{TRUE} (the default), parallel processing
 is used.}
+
+\item{outfile}{Where to direct the ‘stdout’ and ‘stderr’ connection
+output from the workers when parallel processing.  Passed to function
+\code{[parallel]{makeCluster}}.}
 
 \item{verbose}{Logical.  If \code{TRUE} (the default) a message is
 printed at the end of the calculations.}

@@ -38,7 +38,7 @@ truncated \code{\link[=halft-distn]{half-t}} distribution with \code{df}
 degrees of freedom, scale \code{s^2}, and maximum value \code{max}.
 }
 \examples{
-births <- demdata::nz.births
+births <- demdata::nz.births.reg
 popn <- demdata::nz.popn.reg
 births <- Counts(births, dimscales = c(year = "Intervals"))
 popn <- Counts(popn, dimscales = c(year = "Intervals"))

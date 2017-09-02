@@ -4,8 +4,8 @@
 \alias{continueEstimation}
 \title{Add extra iterations to burnin or output.}
 \usage{
-continueEstimation(filename, nBurnin = 0, nSim = 1000, verbose = FALSE,
-  useC = TRUE)
+continueEstimation(filename, nBurnin = 0, nSim = 1000, outfile = "",
+  verbose = FALSE, useC = TRUE)
 }
 \arguments{
 \item{filename}{The filename used by the original call.}
@@ -13,6 +13,10 @@ continueEstimation(filename, nBurnin = 0, nSim = 1000, verbose = FALSE,
 \item{nBurnin}{Number of iteration discarded before recording begins.}
 
 \item{nSim}{Number of additional iterations.}
+
+\item{outfile}{Where to direct the ‘stdout’ and ‘stderr’ connection
+output from the workers when parallel processing.  Passed to function
+\code{[parallel]{makeCluster}}.}
 
 \item{verbose}{Logical.  If \code{TRUE} (the default) a message is
 printed at the end of the calculations.}
