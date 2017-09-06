@@ -21,7 +21,7 @@ setClass("AccountMixin",
 
 setClass("MovementsAgeMixin",
          contains = c("VIRTUAL",
-                      "Accession",
+                      "AccessionMixin",
                       "IAccNextMixin",
                       "IsLowerTriangleMixin",
                       "IteratorAccMixin",

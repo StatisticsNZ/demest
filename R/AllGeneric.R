@@ -237,7 +237,8 @@ setGeneric("hasEstimated",
            standardGeneric("hasEstimated"))
 
 setGeneric("initialCombinedAccount",
-           function(account, systemModels, seriesIndices, observationModels,
+           function(account, systemModels, systemWeights,
+                    observationModels, seriesIndices, 
                     datasets, namesDatasets, transforms)
            standardGeneric("initialCombinedAccount"))
 

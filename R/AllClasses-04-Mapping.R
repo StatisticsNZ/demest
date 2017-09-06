@@ -112,15 +112,19 @@ setClass("MappingMixinAge",
                          return(gettextf("'%s' is non-positive",
                                          name))
                  }
-                 ## if hasAge: stepAge not in stepShared
+                 ## if hasAge: stepAge not in stepShared, apart from 1
                  for (type in c("Current", "Target")) {
                      name.age <- sprintf("stepAge%s", type)
                      name.shared.vec <- sprintf("stepShared%sVec", type)
                      step.age <- methods::slot(object, name.age)
                      step.shared.vec <- methods::slot(object, name.shared.vec)
-                     if (step.age %in% step.shared.vec)
-                         stop(gettextf("overlap between '%s' and '%s'",
-                                       name.age, name.shared.vec))
+                     step.age.not.1 <- setdiff(step.age, 1L)
+                     step.shared.vec.not.1 <- setdiff(step.shared.vec, 1L)
+                     if ((length(step.age.not.1) > 0L) && (length(step.shared.vec.not.1) > 0L)) {
+                         if (step.age.not.1 %in% step.shared.vec.not.1)
+                             stop(gettextf("overlap between '%s' and '%s'",
+                                           name.age, name.shared.vec))
+                     }
                  }
              }
              else {
@@ -232,7 +236,7 @@ setClass("MappingMixinNAgeTarget",
                  return(gettextf("'%s' does not have length %d",
                                  "nAgeTarget", 1L))
              ## nAgeTarget positive if not missing
-             if (!is.na(nAgeTarget) && nAgeTarget <= 1L)
+             if (!is.na(nAgeTarget) && nAgeTarget <= 0L)
                  return(gettextf("'%s' is non-positive",
                                  "nAgeTarget"))
              TRUE

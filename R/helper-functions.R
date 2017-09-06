@@ -7440,6 +7440,8 @@ printLevelTrendEqns <- function(object, isMain, hasTrend) {
             sep = "")
     }
 }
+
+
 printMixEqns <- function(object, name, hasCovariates) {
     AVectors <- object@AVectorsMix@.Data
     nuVectors <- object@nuVectorsMix@.Data
@@ -7452,7 +7454,7 @@ printMixEqns <- function(object, name, hasCovariates) {
     ALevelComponentWeight <- object@ALevelComponentWeightMix@.Data
     nuLevelComponentWeight <- object@nuLevelComponentWeightMix@.Data
     omegaLevelComponentWeightMax <- object@omegaLevelComponentWeightMaxMix@.Data
-    phi <- object@phi
+    phi <- object@phiMix
     phi.known <- object@phiKnown
     min.phi <- object@minPhi
     max.phi <- object@maxPhi

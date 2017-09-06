@@ -43,13 +43,13 @@ setClass("AccessionMixin",
                      dv.acc <- DS.acc@dimvalues
                      dv.popn <- DS.popn@dimvalues
                      n.dv.popn <- length(dv.popn)
-                     valid <- isTRUE(all.equal(dv.acc, dv.popn[c(-1L -n)]))
+                     valid <- isTRUE(all.equal(dv.acc, dv.popn[-c(1L, n.dv.popn)]))
                  }
                  else
                      valid <- isTRUE(all.equal(DS.acc, DS.popn))
                  if (!valid)
                      return(gettextf("'%s' and '%s' have inconsistent %s for dimension \"%s\" with %s \"%s\"",
-                                     "accession", "population", "dimscales", names.acc[i], "dimtype", dimtype[i]))
+                                     "accession", "population", "dimscales", names.acc[i], "dimtype", dimtypes.acc[i]))
              }
              TRUE
          })
@@ -145,7 +145,9 @@ setClass("ExposureMixin",
              ## function on 'population'
              exposure.calc <- dembase::exposure(population,
                                                 triangles = hasAge)
-             exposure.calc <- dembase::Exposure(exposure.calc)
+             exposure.calc <- new("Exposure",
+                                  .Data = exposure.calc@.Data,
+                                  metadata = exposure.calc@metadata)
              if (!isTRUE(all.equal(exposure, exposure.calc)))
                  return(gettextf("'%s' and '%s' inconsistent",
                                  "exposure", "population"))
@@ -778,25 +780,25 @@ setClass("SystemMovementsMixin",
              account <- object@account
              components <- account@components
              namesComponents <- account@namesComponents
-             ## if a component does not have class "Net",
+             ## if a component does not have class "NetMovements",
              ## then the system model has class "Poisson"
              for (i in seq_along(components)) {
                  model <- systemModels[[i + 1L]]
                  component <- components[[i]]
                  name <- namesComponents[i]
-                 if (!methods::is(component, "Net") && !methods::is(model, "Poisson"))
+                 if (!methods::is(component, "NetMovements") && !methods::is(model, "Poisson"))
                      return(gettextf("'%s' has class \"%s\" but its system model does not have class \"%s\"",
                                      name, class(component), "Poisson"))
              }
-             ## a system model has class "Normal" iff the corresponding component has class "Net"
-             is.net <- sapply(components, methods::is, "Net")
+             ## a system model has class "Normal" iff the corresponding component has class "NetMovements"
+             is.net <- sapply(components, methods::is, "NetMovements")
              is.normal <- sapply(systemModels[-1L], methods::is, "Normal")
              if (any(is.net & !is.normal))                 
                  return(gettextf("component has class \"%s\" but corresponding system model does not have class \"%s\"",
-                                 "Net", "Normal"))
+                                 "NetMovements", "Normal"))
              if (any(is.normal & !is.net))                 
                  return(gettextf("system model has class \"%s\" but correspondening component does not have class \"%s\"",
-                                 "Normal", "Net"))
+                                 "Normal", "NetMovements"))
              TRUE
          })
 

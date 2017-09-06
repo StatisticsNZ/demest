@@ -5430,7 +5430,7 @@ test_that("updateTheta_PoissonVaryingNotUseExp gives valid answer", {
         y[1:12] <- NA
         subtotals <- Counts(array(30L, dim = 1, dimnames = list(age = "0-4")))
         y <- attachSubtotals(y, subtotals = subtotals)
-        spec <- Model(y ~ Poisson(mean ~ sex + age))
+        spec <- Model(y ~ Poisson(mean ~ sex + age, useExpose = FALSE))
         model <- initialModel(spec, y = y, exposure = NULL)
         set.seed(seed + 1)
         ans.obtained <- updateTheta_PoissonVaryingNotUseExp(model, y = y)
@@ -5487,7 +5487,7 @@ test_that("updateTheta_PoissonVaryingNotUseExp gives valid answer", {
                                        dimension = "sex")
         y[c(1:8, 11:12)] <- NA
         y <- attachSubtotals(y, subtotals = subtotals)
-        spec <- Model(y ~ Poisson(mean ~ sex + age))
+        spec <- Model(y ~ Poisson(mean ~ sex + age, useExpose = FALSE))
         model <- initialModel(spec, y = y, exposure = NULL)
         set.seed(seed + 1)
         ans.obtained <- updateTheta_PoissonVaryingNotUseExp(model, y = y)
@@ -5550,7 +5550,7 @@ test_that("updateTheta_PoissonVaryingNotUseExp gives valid answer", {
         y[1:12] <- NA
         subtotals <- Counts(array(30L, dim = 1, dimnames = list(age = "0-4")))
         y <- attachSubtotals(y, subtotals = subtotals)
-        spec <- Model(y ~ Poisson(mean ~ sex + age), lower = 10, upper = 30)
+        spec <- Model(y ~ Poisson(mean ~ sex + age, useExpose = FALSE), lower = 10, upper = 30)
         model <- initialModel(spec, y = y, exposure = NULL)
         set.seed(seed + 1)
         ans.obtained <- updateTheta_PoissonVaryingNotUseExp(model, y = y)
@@ -5602,7 +5602,7 @@ test_that("R and C versions of updateTheta_PoissonVaryingNotUseExp give same ans
         y[1:12] <- NA
         subtotals <- Counts(array(30L, dim = 1, dimnames = list(age = "0-4")))
         y <- attachSubtotals(y, subtotals = subtotals)
-        spec <- Model(y ~ Poisson(mean ~ sex + age))
+        spec <- Model(y ~ Poisson(mean ~ sex + age, useExpose = FALSE))
         model <- initialModel(spec, y = y, exposure = NULL)
         set.seed(seed + 1)
         ans.R <- updateTheta_PoissonVaryingNotUseExp(model, y = y, useC = FALSE)
@@ -5627,7 +5627,7 @@ test_that("R and C versions of updateTheta_PoissonVaryingNotUseExp give same ans
                                        dimension = "sex")
         y[c(1:8, 11:12)] <- NA
         y <- attachSubtotals(y, subtotals = subtotals)
-        spec <- Model(y ~ Poisson(mean ~ sex + age))
+        spec <- Model(y ~ Poisson(mean ~ sex + age, useExpose = FALSE))
         model <- initialModel(spec, y = y, exposure = NULL)
         set.seed(seed + 1)
         ans.R <- updateTheta_PoissonVaryingNotUseExp(model, y = y, useC = FALSE)
@@ -5646,7 +5646,7 @@ test_that("R and C versions of updateTheta_PoissonVaryingNotUseExp give same ans
         y[1:12] <- NA
         subtotals <- Counts(array(30L, dim = 1, dimnames = list(age = "0-4")))
         y <- attachSubtotals(y, subtotals = subtotals)
-        spec <- Model(y ~ Poisson(mean ~ sex + age), lower = 10, upper = 30)
+        spec <- Model(y ~ Poisson(mean ~ sex + age, useExpose = FALSE), lower = 10, upper = 30)
         model <- initialModel(spec, y = y, exposure = NULL)
         set.seed(seed + 1)
         ans.R <- updateTheta_PoissonVaryingNotUseExp(model, y = y, useC = FALSE)

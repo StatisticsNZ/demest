@@ -1096,8 +1096,8 @@ setMethod("Mapping",
                                          c(i.time.births, i.parent))
               if (has.age) {
                   i.age.births <- match("age", dimtypes.births)
-                  i.triangle.exp <- match("triangle", dimtypes.exp, nomatch = 0L)
-                  i.triangle.births <- match("triangle", dimtypes.births, nomatch = 0L)
+                  i.triangle.exp <- match("triangle", dimtypes.exp)
+                  i.triangle.births <- match("triangle", dimtypes.births)
                   n.age.exp <- dim.exp[i.age.exp]
                   n.age.births <- dim.births[i.age.births]
                   step.age.exp <- 1L

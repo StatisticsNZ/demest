@@ -324,12 +324,14 @@ setMethod("initialCombinedCounts",
 setMethod("initialCombinedAccount",
           signature(account = "Movements",
                     systemModels = "list",
-                    seriesIndices = "integer",
+                    systemWeights = "list",
                     observationModels = "list",
+                    seriesIndices = "integer",
                     datasets = "list",
                     namesDatasets = "character",
                     transforms = "list"),
-          function(account, systemModels, seriesIndices, observationModels,
+          function(account, systemModels, systemWeights,
+                   observationModels, seriesIndices, 
                    datasets, namesDatasets, transforms) {
               population <- account@population
               components <- account@components
@@ -350,13 +352,20 @@ setMethod("initialCombinedAccount",
               if (has.age) {
                   accession <- dembase::accession(account,
                                                   births = FALSE)
-                  acccession <- dembase::Accession(accession)
+                  accession <- new("Accession",
+                                   .Data = accession@.Data,
+                                   metadata = accession@metadata)
                   iterator.acc <- CohortIterator(accession)
                   mappings.to.acc <- lapply(components, function(x) Mapping(x, accession))
               }
               exposure <- dembase::exposure(population,
                                             triangles = has.age)
-              exposure <- dembase::Exposure(exposure)
+              exposure <- new("Exposure",
+                              .Data = exposure@.Data,
+                              metadata = exposure@metadata)
+              population <- methods::new("Population",
+                                         .Data = population@.Data,
+                                         metadata = population@metadata)
               is.increment <- sapply(components, dembase::isPositiveIncrement)
               iterator.popn <- CohortIterator(population)
               mappings.from.exp <- lapply(components, function(x) Mapping(exposure, x))
@@ -365,10 +374,44 @@ setMethod("initialCombinedAccount",
               model.uses.exposure <- sapply(systemModels, function(x) x@useExpose@.Data)
               for (i in seq_along(systemModels)) {
                   series <- if (i == 1L) population else components[[i - 1L]]
-                  expose <- if (model.uses.exposure[i]) exposure else NULL
-                  systemModels[[i]] <- initialModel(systemModels[[i]],
-                                                    y = series,
-                                                    exposure = expose)
+                  if (model.uses.exposure[i]) {
+                      if (is(series, "Births"))
+                          expose <- exposureBirths(object = population,
+                                                   births = series,
+                                                   triangles = has.age)
+                      else {
+                          expose <- exposure
+                          if (is(series, "HasOrigDest")) {
+                              names.series <- names(series)
+                              dimtypes.series <- dimtypes(series, use.names = FALSE)
+                              i.orig.vec <- grep("origin", dimtypes.series)
+                              for (i.orig in i.orig.vec) {
+                                  name.series <- names.series[i.orig]
+                                  name.expose <- sub("_orig$", "", name.series)
+                                  expose <- addPair(expose,
+                                                    base = name.expose)
+                              }
+                          }
+                      }
+                      expose <- makeCompatible(x = expose,
+                                               y = series,
+                                               subset = TRUE)
+                      systemModels[[i]] <- initialModel(systemModels[[i]],
+                                                        y = series,
+                                                        exposure = expose)
+                  }
+                  else {
+                      weights <- systemWeights[[i]]
+                      if (is.null(weights))
+                          systemModels[[i]] <- initialModel(systemModels[[i]],
+                                                            y = series,
+                                                            exposure = NULL)
+                      else {
+                          systemModels[[i]] <- initialModel(systemModels[[i]],
+                                                            y = series,
+                                                            weights = weights)
+                      }
+                  }
               }
               for (i in seq_along(observationModels)) {
                   series.index <- seriesIndices[i]

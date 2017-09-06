@@ -1414,10 +1414,10 @@ test_that("SkeletonBetaTerm method for needToSubtractAlpha0 works", {
 test_that("SkeletonStateDLM method for needToSubtractAlpha0 works", {
     needToSubtractAlpha0 <- demest:::needToSubtractAlpha0
     object <- new("SkeletonStateDLM")
-    object@subtactAlpha0 <- new("LogicalFlag", FALSE)
+    object@subtractAlpha0 <- new("LogicalFlag", FALSE)
     expect_false(needToSubtractAlpha0(object))
     object <- new("SkeletonStateDLM")
-    object@subtactAlpha0 <- new("LogicalFlag", TRUE)
+    object@subtractAlpha0 <- new("LogicalFlag", TRUE)
     expect_true(needToSubtractAlpha0(object))
 })
 
