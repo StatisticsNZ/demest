@@ -368,7 +368,7 @@ setGeneric("subtractAlpha0",
 
 setGeneric("summaryDataset",
            function(object)
-               standardGeneric("summaryDataset"))
+               standardGeneric("smmuaryDataset"))
 
 setGeneric("transferParamModel",
           function(model, filename, lengthIter, iteration, useC = FALSE, useSpecific = FALSE)
