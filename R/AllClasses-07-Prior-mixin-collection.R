@@ -57,7 +57,8 @@ setClass("NoTrendMixin",
              "CNoTrendMixin",
              "MNoTrendMixin",
              "M0NoTrendMixin",
-             "RNoTrendMixin"))
+             "RNoTrendMixin",
+             "ToleranceMixin"))
 
 setClass("RobustMixin",
          contains = c("VIRTUAL",

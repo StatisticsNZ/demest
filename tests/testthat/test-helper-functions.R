@@ -459,7 +459,7 @@ test_that("initialDLMAll works", {
                        isSaturated = FALSE)
     expect_identical(l$AAlpha, new("Scale", 1.0))
     expect_identical(l$ATau, new("Scale", 1.0))
-    expect_identical(length(l$alphaDLM), 11L)
+    expect_identical(l$alphaDLM, new("ParameterVector", rep(0, 11L)))
     expect_identical(l$iAlong, 1L)
     expect_identical(l$iteratorState@indices, 1:11)
     expect_identical(l$iteratorV@indices, 1:10)
@@ -615,6 +615,17 @@ test_that("initialDLMNoTrend works", {
     expect_true(all(sapply(l$mNoTrend, length) == 1L))
     expect_true(all(sapply(l$m0NoTrend, length) == 1L))
     expect_true(all(sapply(l$RNoTrend, length) == 1L))
+    expect_identical(l$CNoTrend[1L], 1)
+    ## phi is 1, known
+    spec <- DLM(trend = NULL, damp = NULL)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 2001:2010)))
+    l <- initialDLMNoTrend(spec,
+                           metadata = metadata,
+                           sY = NULL)
+    expect_identical(l$CNoTrend[[1L]], 0)
 })
 
 test_that("initialDLMNoTrendPredict works", {
@@ -698,6 +709,7 @@ test_that("initialDLMWithTrend works", {
     expect_identical(l$ADelta, new("Scale", 1.0))
     expect_identical(length(l$aWithTrend), 10L)
     expect_identical(length(l$CWithTrend), 11L)
+    expect_identical(l$CWithTrend[[1]], matrix(c(0, 0, 0, 1), nr = 2))
     expect_identical(length(l$DC), 11L)
     expect_identical(length(l$DCInv), 11L)
     expect_identical(length(l$DRInv), 10L)
@@ -716,6 +728,7 @@ test_that("initialDLMWithTrend works", {
     expect_true(all(sapply(l$CWithTrend, length) == 4L))
     expect_true(all(sapply(l$DC, length) == 4L))
     expect_true(all(sapply(l$DCInv, length) == 4L))
+    expect_identical(l$DCInv[[1]], matrix(c(Inf, 0, 0, 1), nr = 2))
     expect_true(all(sapply(l$DRInv, length) == 4L))        
     expect_true(all(sapply(l$mWithTrend, length) == 2L))
     expect_true(all(sapply(l$m0WithTrend, length) == 2L))
@@ -740,10 +753,10 @@ test_that("initialDLMWithTrend works", {
                              metadata = metadata,
                              sY = NULL,
                              lAll = lAll)
-    expect_equal(l$CWithTrend[[1]], diag(c(100, 0.01)))
+    expect_equal(l$CWithTrend[[1]], diag(c(0, 0.01)))
     expect_identical(l$UC[[1]], diag(2))
-    expect_identical(l$DC[[1]], diag(c(10, 0.1)))
-    expect_identical(l$DCInv[[1]], diag(c(0.1, 10)))
+    expect_identical(l$DC[[1]], diag(c(0, 0.1)))
+    expect_identical(l$DCInv[[1]], diag(c(Inf, 10)))
     expect_identical(l$m0WithTrend[[1]], c(0, 0.05))
     expect_identical(l$ADelta0, new("Scale", 0.1))
     expect_identical(l$meanDelta0, new("Parameter", 0.05))
@@ -765,7 +778,7 @@ test_that("initialDLMWithTrend works", {
                              sY = NULL,
                              lAll = lAll)
     expect_identical(l$hasLevel, new("LogicalFlag", FALSE))
-    expect_true(is.finite(l$DCInv[[1]][1]))
+    expect_true(is.infinite(l$DCInv[[1]][1]))
 })
 
 test_that("initialDLMWithTrendPredict works", {

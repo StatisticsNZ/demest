@@ -445,7 +445,7 @@ if (test.extended) {
             }
             alphaDelta
         }
-        updateAlphaDeltaDLMWithTrend <- demest:::updateAlphaDeltaDLMWithTrend
+        ## updateAlphaDeltaDLMWithTrend <- demest:::updateAlphaDeltaDLMWithTrend
         initialPrior <- demest:::initialPrior
         ## dim = c(4, 10); along = 2
         spec <- DLM()
@@ -605,7 +605,7 @@ if (test.extended) {
             C.sqrt <- s$u %*% diag(sqrt(s$d))
             z <- rnorm(2)
             alphaDelta[[K+1]] <- m[[K+1]] + drop(C.sqrt %*% z)
-            for (k in seq(from = K-1, to = 0)) {
+            for (k in seq(from = K-1, to = 1)) {
                 C.inv <- solve(C[[k+1]])
                 sigma <- solve(C.inv + X)
                 mu <- sigma %*% (C.inv %*% m[[k+1]] + c(0, phi * alphaDelta[[k+2]][2] / omegaDelta^2))
@@ -618,6 +618,7 @@ if (test.extended) {
                 delta <- alphaDelta[[k+2]][1] - alpha
                 alphaDelta[[k+1]] <- c(alpha, delta)
             }
+            alphaDelta[[1]][2] <- alphaDelta[[2]][1]
             alphaDelta
         }
         ## updateAlphaDeltaDLMWithTrend <- demest:::updateAlphaDeltaDLMWithTrend
@@ -761,7 +762,7 @@ test_that("R and C versions of updateAlphaDeltaDLMWithTrend give same answer wit
     }
 })
 
-test_that("updateAlphaDLMNoTrend gives valid answer", {
+test_that("updateAlphaDLMNoTrend gives valid answer - phi < 1", {
     ffbs <- function(beta, alpha, m, C, phi, tau, omega) {
         K <- length(alpha) - 1L
         a <- numeric(K)
@@ -895,7 +896,7 @@ test_that("updateAlphaDLMNoTrend gives valid answer", {
     }
 })
 
-test_that("R and C versions of updateAlphaDLMNoTrend give same answer", {
+test_that("R and C versions of updateAlphaDLMNoTrend give same answer - phi < 1", {
     updateAlphaDLMNoTrend <- demest:::updateAlphaDLMNoTrend
     initialPrior <- demest:::initialPrior
     ## dim = c(4, 10); along = 2
@@ -953,6 +954,227 @@ test_that("R and C versions of updateAlphaDLMNoTrend give same answer", {
             expect_equal(ans.R, ans.C)
         ## dim = c(6, 6, 10); along = 2
         spec <- DLM(trend = NULL)
+        metadata <- new("MetaData",
+                        nms = c("region", "time", "age"),
+                        dimtypes = c("state", "time", "age"),
+                        DimScales = list(new("Categories",
+                            dimvalues = c("a", "b", "c", "d", "e", "f")),
+                            new("Points", dimvalues = 1:6),
+                            new("Intervals", dimvalues = 0:10)))
+        set.seed(seed)
+        beta <- rnorm(360)
+        prior <- initialPrior(spec,
+                              beta = beta,
+                              metadata = metadata,
+                              sY = NULL, isSaturated = FALSE,
+                              multScale = 1)
+        set.seed(seed)
+        ans.R <- updateAlphaDLMNoTrend(prior = prior,
+                                       betaTilde = beta,
+                                       useC = FALSE)
+        set.seed(seed)
+        ans.C <- updateAlphaDLMNoTrend(prior = prior,
+                                       betaTilde = beta,
+                                       useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
+
+test_that("updateAlphaDLMNoTrend gives valid answer - phi == 1", {
+    ffbs <- function(beta, alpha, m, C, phi, tau, omega) {
+        K <- length(alpha) - 1L
+        a <- numeric(K)
+        R <- numeric(K)
+        for (k in seq_len(K)) {
+            a[k] <- phi * m[[k]]
+            R[k] <- phi^2 * C[[k]] + omega^2
+            q <- R[k] + tau^2
+            e <- beta[k] - a[k]
+            A <- R[k] / q
+            m[[k+1]] <- a[k] + A * e
+            C[[k+1]] <- R[k] - A^2 * q
+        }
+        alpha[K+1] <- rnorm(n = 1, mean = m[[K+1]], sd = sqrt(C[[K+1]]))
+        for (k in seq(from = K, to = 1)) {
+            B <- C[[k]] * phi / R[k]
+            mean <- m[[k]] + B * (alpha[k+1] - a[k])
+            var <- C[[k]] - B^2 * R[k]
+            alpha[k] <- rnorm(n = 1, mean = mean, sd = sqrt(var))
+        }
+        alpha
+    }
+    updateAlphaDLMNoTrend <- demest:::updateAlphaDLMNoTrend
+    initialPrior <- demest:::initialPrior
+    ## dim = c(4, 10); along = 2
+    for (seed in seq_len(n.test)) {
+        spec <- DLM(trend = NULL, damp = NULL)
+        metadata <- new("MetaData",
+                        nms = c("region", "time"),
+                        dimtypes = c("state", "time"),
+                        DimScales = list(new("Categories",
+                            dimvalues = c("a", "b", "c", "d")),
+                            new("Points", dimvalues = 1:10)))
+        set.seed(seed)
+        beta <- rnorm(40)
+        prior <- initialPrior(spec,
+                              beta = beta,
+                              metadata = metadata,
+                              sY = NULL, isSaturated = FALSE,
+                              multScale = 1)
+        set.seed(seed)
+        ans.obtained <- updateAlphaDLMNoTrend(prior = prior,
+                                              betaTilde = beta)
+        ans.expected <- prior
+        alpha <- matrix(0, nr = 4, ncol = 11)
+        set.seed(seed)
+        for (i in 2:4) {
+            ans <- ffbs(beta = matrix(beta, nr = 4)[i,],
+                        alpha = matrix(prior@alphaDLM, nr = 4)[i,],
+                        m = prior@mNoTrend@.Data,
+                        C = prior@CNoTrend@.Data,
+                        phi = prior@phi,
+                        tau = prior@tau@.Data,
+                        omega = prior@omegaAlpha@.Data)
+            alpha[i,] <- ans
+        }
+        ans.expected@alphaDLM@.Data <- as.numeric(alpha)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+        ## dim = 5; along = 1
+        spec <- DLM(trend = NULL, damp = NULL)
+        metadata <- new("MetaData",
+                        nms = "age",
+                        dimtypes = "age",
+                        DimScales = list(new("Intervals", dimvalues = 0:5)))
+        set.seed(seed)
+        beta <- rnorm(5)
+        prior <- initialPrior(spec,
+                              beta = beta,
+                              metadata = metadata,
+                              sY = NULL, isSaturated = FALSE,
+                              multScale = 1)
+        set.seed(seed)
+        ans.obtained <- updateAlphaDLMNoTrend(prior = prior,
+                                              beta = beta)
+        ans.expected <- prior
+        set.seed(seed)
+        ans <- ffbs(beta = beta,
+                    alpha = prior@alphaDLM@.Data,
+                    m = prior@mNoTrend@.Data,
+                    C = prior@CNoTrend@.Data,
+                    phi = prior@phi,
+                    tau = prior@tau@.Data,
+                    omega = prior@omegaAlpha@.Data)
+        ans.expected@alphaDLM@.Data <- as.double(ans)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+        ## dim = c(6, 6, 10); along = 2
+        spec <- DLM(trend = NULL, damp = NULL)
+        metadata <- new("MetaData",
+                        nms = c("region", "time", "age"),
+                        dimtypes = c("state", "time", "age"),
+                        DimScales = list(new("Categories",
+                            dimvalues = c("a", "b", "c", "d", "e", "f")),
+                            new("Points", dimvalues = 1:6),
+                            new("Intervals", dimvalues = 0:10)))
+        set.seed(seed)
+        beta <- rnorm(360)
+        prior <- initialPrior(spec,
+                              beta = beta,
+                              metadata = metadata,
+                              sY = NULL, isSaturated = FALSE,
+                              multScale = 1)
+        set.seed(seed)
+        ans.obtained <- updateAlphaDLMNoTrend(prior = prior,
+                                              beta = beta)
+        ans.expected <- prior
+        alpha <- array(0, dim = c(6, 7, 10))
+        set.seed(seed)
+        for (j in 2:10) {
+            for (i in 2:6) {
+                ans <- ffbs(beta = array(beta, dim = c(6, 6, 10))[i, , j],
+                            alpha = array(prior@alphaDLM@.Data, dim = c(6, 7, 10))[i, , j],
+                            m = prior@mNoTrend@.Data,
+                            C = prior@CNoTrend@.Data,
+                            phi = prior@phi,
+                            tau = prior@tau@.Data,
+                            omega = prior@omegaAlpha@.Data)
+                alpha[i, , j] <- ans
+            }
+        }
+        ans.expected@alphaDLM@.Data <- as.numeric(alpha)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of updateAlphaDLMNoTrend give same answer - phi == 1", {
+    updateAlphaDLMNoTrend <- demest:::updateAlphaDLMNoTrend
+    initialPrior <- demest:::initialPrior
+    ## dim = c(4, 10); along = 2
+    for (seed in seq_len(n.test)) {
+        spec <- DLM(trend = NULL, damp = NULL)
+        metadata <- new("MetaData",
+                        nms = c("region", "time"),
+                        dimtypes = c("state", "time"),
+                        DimScales = list(new("Categories",
+                            dimvalues = c("a", "b", "c", "d")),
+                            new("Points", dimvalues = 1:10)))
+        set.seed(seed)
+        beta <- rnorm(40)
+        prior <- initialPrior(spec,
+                              beta = beta,
+                              metadata = metadata,
+                              sY = NULL, isSaturated = FALSE,
+                              multScale = 1)
+        set.seed(seed)
+        ans.R <- updateAlphaDLMNoTrend(prior = prior,
+                                       betaTilde = beta,
+                                       useC = FALSE)
+        set.seed(seed)
+        ans.C <- updateAlphaDLMNoTrend(prior = prior,
+                                       betaTilde = beta,
+                                       useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+        ## dim = 5; along = 1
+        spec <- DLM(trend = NULL, damp = NULL)
+        metadata <- new("MetaData",
+                        nms = "age",
+                        dimtypes = "age",
+                        DimScales = list(new("Intervals", dimvalues = 0:5)))
+        set.seed(seed)
+        beta <- rnorm(5)
+        prior <- initialPrior(spec,
+                              beta = beta,
+                              metadata = metadata,
+                              sY = NULL, isSaturated = FALSE,
+                              multScale = 1)
+        set.seed(seed)
+        ans.R <- updateAlphaDLMNoTrend(prior = prior,
+                                       betaTilde = beta,
+                                       useC = FALSE)
+        set.seed(seed)
+        ans.C <- updateAlphaDLMNoTrend(prior = prior,
+                                       betaTilde = beta,
+                                       useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+        ## dim = c(6, 6, 10); along = 2
+        spec <- DLM(trend = NULL, damp = NULL)
         metadata <- new("MetaData",
                         nms = c("region", "time", "age"),
                         dimtypes = c("state", "time", "age"),
