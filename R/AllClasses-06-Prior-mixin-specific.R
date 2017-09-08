@@ -1626,9 +1626,6 @@ setClass("SpecTauMaxMixin",
          slots = c(tauMax = "SpecScale"),
          contains = "VIRTUAL")
 
-setClass("SubtractAlpha0Mixin",
-         slots = c(subtractAlpha0 = "LogicalFlag"))
-
 setClass("SumsWeightsMixMixin",
          slots = c(sumsWeightsMix = "UnitIntervalVec"),
          contains = "VIRTUAL",

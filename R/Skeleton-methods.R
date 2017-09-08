@@ -794,10 +794,3 @@ setMethod("fetchResults",
 setMethod("needToCenter",
           signature(object = "SkeletonBetaTerm"),
           function(object) TRUE)
-
-## needToSubtractAlpha0 #######################################################
-
-## NO_TESTS
-setMethod("needToSubtractAlpha0",
-          signature(object = "SkeletonStateDLM"),
-          function(object) object@subtractAlpha0@.Data)

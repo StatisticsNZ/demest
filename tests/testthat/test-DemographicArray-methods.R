@@ -606,31 +606,3 @@ test_that("sweepAllMargins works with Values - has iteration dimension", {
     expect_identical(sweepAllMargins(x), x)
 })
 
-test_that("subtractAlpha0 works", {
-    subtractAlpha0 <- demest:::subtractAlpha0
-    ## dim = c(10, 5)
-    x <- Values(array(rnorm(50),
-                      dim = c(10, 5),
-                      dimnames = list(age = 0:9, region = 1:5)),
-                dimscales = c(age = "Intervals"))
-    ans.obtained <- subtractAlpha0(x, iAlong = 1L)
-    ans.expected <- x - rep(colMeans(x), each = 10)
-    expect_equal(ans.obtained, ans.expected)
-    ## dim = 10
-    x <- Values(array(rnorm(50),
-                      dim = 50,
-                      dimnames = list(time = 1:50)),
-                dimscales = c(time = "Intervals"))
-    ans.obtained <- subtractAlpha0(x, iAlong = 1L)
-    ans.expected <- x - mean(x)
-    expect_equal(ans.obtained, ans.expected)
-    ## dim = c(10, 10, 5)
-    x <- Values(array(rnorm(500),
-                      dim = c(10, 10, 5),
-                      dimnames = list(iteration = 1:10, time = 1:10, region = 1:5)),
-                dimscales = c(time = "Intervals"))
-    ans.obtained <- subtractAlpha0(x, iAlong = 2L)
-    means <- apply(ans.obtained, c(1, 3), mean)
-    expect_equal(as.numeric(means), rep(0, times = length(means)))
-})
-

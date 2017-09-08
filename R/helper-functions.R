@@ -6832,18 +6832,12 @@ makeOutputStateDLM <- function(iterator, metadata, nSeason, iAlong, pos, isTrend
                                 iAlong = iAlong)
     metadata <- makeMetadataStateDLM(metadata = metadata,
                                      iAlong = iAlong)
-    if (isTrend)
-        subtractAlpha0 <- FALSE
-    else
-        subtractAlpha0 <- phiKnown && isTRUE(all.equal(phi, 1))
-    subtractAlpha0 <- methods::new("LogicalFlag", subtractAlpha0)
     methods::new("SkeletonStateDLM",
                  first = first,
                  last = last,
                  iAlong = iAlong,
                  indicesShow = indices.show,
-                 metadata = metadata,
-                 subtractAlpha0 = subtractAlpha0)
+                 metadata = metadata)
 }
 
 
@@ -7739,7 +7733,7 @@ printPriorsEqns <- function(object) {
     prior.intercept <- priors[[1L]]
     printPriorIntercept(prior.intercept)
     n <- length(priors)
-    if (n > 2L) {
+    if (n >= 2L) {
         cat("\n")
         for (i in seq.int(from = 2L, to = n)) {
             prior <- priors[[i]]

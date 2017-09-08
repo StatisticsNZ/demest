@@ -298,9 +298,6 @@ setGeneric("makeOutputPrior",
 setGeneric("needToCenter",
            function(object) FALSE)
 
-setGeneric("needToSubtractAlpha0",
-          function(object) FALSE)
-
 setGeneric("predictBeta",
            function(prior, J, useC = FALSE, useSpecific = FALSE)
                standardGeneric("predictBeta"))
@@ -368,7 +365,7 @@ setGeneric("subtractAlpha0",
 
 setGeneric("summaryDataset",
            function(object)
-               standardGeneric("smmuaryDataset"))
+               standardGeneric("summaryDataset"))
 
 setGeneric("transferParamModel",
           function(model, filename, lengthIter, iteration, useC = FALSE, useSpecific = FALSE)

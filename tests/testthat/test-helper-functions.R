@@ -615,7 +615,7 @@ test_that("initialDLMNoTrend works", {
     expect_true(all(sapply(l$mNoTrend, length) == 1L))
     expect_true(all(sapply(l$m0NoTrend, length) == 1L))
     expect_true(all(sapply(l$RNoTrend, length) == 1L))
-    expect_identical(l$CNoTrend[1L], 1)
+    expect_identical(l$CNoTrend[[1L]], 100)
     ## phi is 1, known
     spec <- DLM(trend = NULL, damp = NULL)
     metadata <- new("MetaData",
@@ -10385,8 +10385,7 @@ test_that("makeOutputStateDLM works with Level", {
                         iAlong = 1L,
                         first = 3L,
                         last = 13L,
-                        indicesShow = 2:11,
-                        subtractAlpha0 = new("LogicalFlag", TRUE))
+                        indicesShow = 2:11)
     expect_identical(ans.obtained, ans.expected)
     ## nSeason == 1, phi = 1
     metadata <- new("MetaData",
@@ -10407,8 +10406,7 @@ test_that("makeOutputStateDLM works with Level", {
                         iAlong = 1L,
                         first = 3L,
                         last = 13L,
-                        indicesShow = 2:11,
-                        subtractAlpha0 = new("LogicalFlag", FALSE))
+                        indicesShow = 2:11)
     expect_identical(ans.obtained, ans.expected)
     ## nSeason > 1
     metadata <- new("MetaData",
@@ -10429,8 +10427,7 @@ test_that("makeOutputStateDLM works with Level", {
                         iAlong = 1L,
                         first = 3L,
                         last = 13L,
-                        indicesShow = 2:11,
-                        subtractAlpha0 = new("LogicalFlag", FALSE))
+                        indicesShow = 2:11)
     expect_identical(ans.obtained, ans.expected)
     ## two dimensions
     metadata <- new("MetaData",
@@ -10456,8 +10453,7 @@ test_that("makeOutputStateDLM works with Level", {
                         first = 3L,
                         last = 24L,
                         iAlong = 2L,
-                        indicesShow = seq(from = 4L, to = 22L, by = 2L),
-                        subtractAlpha0 = new("LogicalFlag", FALSE))
+                        indicesShow = seq(from = 4L, to = 22L, by = 2L))
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -10482,8 +10478,7 @@ test_that("makeOutputStateDLM works with Trend", {
                         first = 3L,
                         last = 13L,
                         iAlong = 1L,
-                        indicesShow = 2:11,
-                        subtractAlpha0 = new("LogicalFlag", FALSE))
+                        indicesShow = 2:11)
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -10508,8 +10503,7 @@ test_that("makeOutputStateDLM works with Season", {
                         first = 3L,
                         last = 46L,
                         iAlong = 1L,
-                        indicesShow = seq.int(5L, 41L, 4L),
-                        subtractAlpha0 = new("LogicalFlag", TRUE))
+                        indicesShow = seq.int(5L, 41L, 4L))
     expect_identical(ans.obtained, ans.expected)
 })
 

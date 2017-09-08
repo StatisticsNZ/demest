@@ -30,13 +30,11 @@
 ##               y = births,
 ##               exposure = expose,
 ##               filename = filename.est,
-##               nBurnin = 10000,
-##               nSim = 10000,
-##               nThin = 25,
+##               nBurnin = 1000,
+##               nSim = 1000,
+##               nThin = 5,
 ##               nChain = 4)
 ## fetchSummary(filename.est)
-## round(collapseIterations(subarray(fetch(filename.est, c("model", "prior", "year")), year > 2012),
-##                          prob = c(0.025, 0.5, 0.975)), 4)
 
 
 

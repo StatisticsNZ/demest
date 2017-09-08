@@ -285,7 +285,7 @@ test_that("generator function and initialPrior work with DLMWithTrendNormZeroNoS
                           multScale = 1,
                           isSaturated = FALSE)
     expect_identical(prior@m0WithTrend[[1]], c(0, 0.02))
-    expect_identical(prior@CWithTrend[[1]], diag(c(100, 0.05^2)))
+    expect_identical(prior@CWithTrend[[1]], diag(c(0, 0.05^2)))
 })
 
 test_that("generator function and initialPrior work with DLMNoTrendNormZeroWithSeason", {

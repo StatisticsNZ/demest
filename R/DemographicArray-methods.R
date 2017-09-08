@@ -468,32 +468,3 @@ setMethod("sweepAllMargins",
               methods::new("Values", .Data = .Data, metadata = metadata)
           })
 
-
-## subtractAlpha0 ###############################################################
-
-## NO_TESTS
-setMethod("subtractAlpha0",
-          signature(object = "Values"),
-          function(object, iAlong) {
-              .Data <- object@.Data
-              metadata <- object@metadata
-              dim <- dim(object)
-              dimtypes <- dembase::dimtypes(object, use.names = FALSE)
-              if (length(object) == 0L)
-                  stop(gettextf("'%s' has length %d",
-                                "object", 0L))
-              if ("quantile" %in% dimtypes)
-                  stop(gettextf("'%s' has dimension with dimtype \"%s\"",
-                                "object", "quantile"))
-              n <- length(dim)
-              if (n == 1L)
-                  .Data <- .Data - mean(.Data)
-              else {
-                  s <- seq_len(n)
-                  margin <- s[-iAlong]
-                  margins <- list(margin)
-                  .Data <- sweepMargins(.Data, margins = margins)
-              }
-              methods::new("Values", .Data = .Data, metadata = metadata)
-          })
-

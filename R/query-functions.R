@@ -346,7 +346,6 @@ fetchBoth <- function(filenameEst, filenamePred, where, iterations = NULL,
         need.to.center <- needToCenter(skeleton)
         if (need.to.center)
             ans <- sweepAllMargins(ans)
-        }
     }
     ans
 }
