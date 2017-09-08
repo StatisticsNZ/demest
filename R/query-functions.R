@@ -189,12 +189,6 @@ fetch <- function(filename, where = character(), iterations = NULL,
         need.to.center <- needToCenter(skeleton)
         if (need.to.center)
             ans <- sweepAllMargins(ans)
-        need.to.subtract.alpha0 <- needToSubtractAlpha0(skeleton)
-        if (need.to.subtract.alpha0) {
-            iAlong <- skeleton@iAlong
-            ans <- subtractAlpha0(object = ans,
-                                  iAlong = iAlong)
-        }
     }
     ans
 }
@@ -352,12 +346,6 @@ fetchBoth <- function(filenameEst, filenamePred, where, iterations = NULL,
         need.to.center <- needToCenter(skeleton)
         if (need.to.center)
             ans <- sweepAllMargins(ans)
-        need.to.subtract.alpha0 <- needToSubtractAlpha0(skeleton)
-        if (need.to.subtract.alpha0) {
-            iAlong <- skeleton@iAlong
-            ans <- subtractAlpha0(object = ans,
-                                  iAlong = iAlong)
-        }
     }
     ans
 }

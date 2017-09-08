@@ -304,9 +304,6 @@ setGeneric("makeOutputPrior",
 setGeneric("needToCenter",
            function(object) FALSE)
 
-setGeneric("needToSubtractAlpha0",
-          function(object) FALSE)
-
 setGeneric("predictBeta",
            function(prior, J, useC = FALSE, useSpecific = FALSE)
                standardGeneric("predictBeta"))

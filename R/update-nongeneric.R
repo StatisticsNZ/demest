@@ -327,7 +327,8 @@ updateAlphaDeltaDLMWithTrend <- function(prior, betaTilde, useC = FALSE) {
         UR <- prior@UR@.Data  # list length K
         DR.inv <- prior@DRInv@.Data
         has.level <- prior@hasLevel@.Data 
-        phi <- prior@phi ## scalar 
+        phi <- prior@phi ## scalar
+        omega.alpha <- prior@omegaAlpha@.Data ## scalar
         omega.delta <- prior@omegaDelta@.Data ## scalar
         v <- getV(prior) ## numeric length KL
         iterator.ad <- prior@iteratorState
@@ -372,56 +373,75 @@ updateAlphaDeltaDLMWithTrend <- function(prior, betaTilde, useC = FALSE) {
                 ## backward smooth
                 for (i in seq.int(from = K - 1L, to = 0L)) {
                     if (!has.level) {
-                        C.inv <- UC[[i + 1L]] %*% DC.inv[[i + 1L]] %*% DC.inv[[i + 1L]] %*% t(UC[[i + 1L]])
-                        sigma.inv.1 <- C.inv[1L]
-                        sigma.inv.2 <- C.inv[2L]
-                        sigma.inv.3 <- C.inv[3L]
-                        sigma.inv.4 <- C.inv[4L] + phi^2 / omega.delta^2
-                        determinant <- sigma.inv.1 * sigma.inv.4 - sigma.inv.2 * sigma.inv.3
-                        sigma.1 <- sigma.inv.4 / determinant
-                        sigma.2 <- -1 * sigma.inv.3 / determinant
-                        sigma.3 <- -1 * sigma.inv.2 / determinant
-                        sigma.4 <- sigma.inv.1 / determinant
-                        mu.inner.1 <- C.inv[1L] * m[[i + 1L]][1L] + C.inv[3L] * m[[i + 1L]][2L]
-                        mu.inner.2 <- (C.inv[2L] * m[[i + 1L]][1L] + C.inv[4L] * m[[i + 1L]][2L]
-                            + phi * delta[indices.ad[i + 2L]] / omega.delta^2)
-                        mu.1 <- sigma.1 * mu.inner.1 + sigma.3 * mu.inner.2
-                        mu.2 <- sigma.2 * mu.inner.1 + sigma.4 * mu.inner.2
-                        mu.star.1 <- mu.1
-                        mu.star.2 <- mu.1 + mu.2
-                        sigma.star.1 <- sigma.1
-                        sigma.star.2 <- sigma.1 + sigma.2
-                        sigma.star.3 <- sigma.1 + sigma.3
-                        sigma.star.4 <- sigma.1 + sigma.2 + sigma.3 + sigma.4
-                        rho.star.sq <- sigma.star.2 * sigma.star.3 / (sigma.star.1 * sigma.star.4)
-                        mean.alpha <- (mu.star.1 + sqrt(rho.star.sq * sigma.star.1 / sigma.star.4)
-                            * (alpha[indices.ad[i + 2L]] - mu.star.2))
-                        var.alpha <- (1 - rho.star.sq) * sigma.star.1
-                        alpha.curr <- stats::rnorm(n = 1L,
-                                                   mean = mean.alpha,
-                                                   sd = sqrt(var.alpha))
-                        delta.curr <- alpha[indices.ad[i + 2L]] - alpha.curr
-                        alpha[indices.ad[i + 1L]] <- alpha.curr
-                        delta[indices.ad[i + 1L]] <- delta.curr
+                        if ((i == 0L) && is.infinite(DC.inv[[1L]][1L])) {
+                            delta[indices.ad[1L]] <- alpha[indices.ad[2L]]
+                        }
+                        else  {
+                            C.inv <- UC[[i + 1L]] %*% DC.inv[[i + 1L]] %*% DC.inv[[i + 1L]] %*% t(UC[[i + 1L]])
+                            sigma.inv.1 <- C.inv[1L]
+                            sigma.inv.2 <- C.inv[2L]
+                            sigma.inv.3 <- C.inv[3L]
+                            sigma.inv.4 <- C.inv[4L] + phi^2 / omega.delta^2
+                            determinant <- sigma.inv.1 * sigma.inv.4 - sigma.inv.2 * sigma.inv.3
+                            sigma.1 <- sigma.inv.4 / determinant
+                            sigma.2 <- -1 * sigma.inv.3 / determinant
+                            sigma.3 <- -1 * sigma.inv.2 / determinant
+                            sigma.4 <- sigma.inv.1 / determinant
+                            mu.inner.1 <- C.inv[1L] * m[[i + 1L]][1L] + C.inv[3L] * m[[i + 1L]][2L]
+                            mu.inner.2 <- (C.inv[2L] * m[[i + 1L]][1L] + C.inv[4L] * m[[i + 1L]][2L]
+                                + phi * delta[indices.ad[i + 2L]] / omega.delta^2)
+                            mu.1 <- sigma.1 * mu.inner.1 + sigma.3 * mu.inner.2
+                            mu.2 <- sigma.2 * mu.inner.1 + sigma.4 * mu.inner.2
+                            mu.star.1 <- mu.1
+                            mu.star.2 <- mu.1 + mu.2
+                            sigma.star.1 <- sigma.1
+                            sigma.star.2 <- sigma.1 + sigma.2
+                            sigma.star.3 <- sigma.1 + sigma.3
+                            sigma.star.4 <- sigma.1 + sigma.2 + sigma.3 + sigma.4
+                            rho.star.sq <- sigma.star.2 * sigma.star.3 / (sigma.star.1 * sigma.star.4)
+                            mean.alpha <- (mu.star.1 + sqrt(rho.star.sq * sigma.star.1 / sigma.star.4)
+                                * (alpha[indices.ad[i + 2L]] - mu.star.2))
+                            var.alpha <- (1 - rho.star.sq) * sigma.star.1
+                            alpha.curr <- stats::rnorm(n = 1L,
+                                                       mean = mean.alpha,
+                                                       sd = sqrt(var.alpha))
+                            delta.curr <- alpha[indices.ad[i + 2L]] - alpha.curr
+                            alpha[indices.ad[i + 1L]] <- alpha.curr
+                            delta[indices.ad[i + 1L]] <- delta.curr
+                        }
                     }
                     else {
-                        R.inv <- (UR[[i + 1L]] %*% DR.inv[[i + 1L]]
-                            %*% DR.inv[[i + 1L]] %*% t(UR[[i + 1L]]))
-                        B <- C[[i + 1L]] %*% t(G) %*% R.inv
-                        M.C.star <- rbind(W.sqrt.inv.G,
-                                          DC.inv[[i + 1L]] %*% t(UC[[i + 1L]]))
-                        svd.C.star <- svd(M.C.star, nu = 0)
-                        UC.star <- svd.C.star$v
-                        DC.star <- 1 / svd.C.star$d
-                        DC.star[is.infinite(DC.star)] <- 0
-                        DC.star <- diag(DC.star, nrow = 2L)
-                        sqrt.C.star <- UC.star %*% DC.star
-                        theta.prev <- c(alpha[indices.ad[i + 2L]], delta[indices.ad[i + 2L]])
-                        m.star <- m[[i + 1L]] + drop(B %*% (theta.prev - a[[i + 1L]]))
-                        z <- stats::rnorm(n = 2L)
-                        theta.curr <- m.star + drop(sqrt.C.star %*% z)
-                        alpha[indices.ad[i + 1L]] <- theta.curr[1L]
-                        delta[indices.ad[i + 1L]] <- theta.curr[2L]
+                        if ((i == 0L) && is.infinite(DC.inv[[1L]][1L])) {
+                            prec.delta.0 <- DC.inv[[1L]][4L] 
+                            prec.alpha <- 1 / omega.alpha^2
+                            prec.delta.1 <- phi^2 / omega.delta^2
+                            var.delta.curr <- 1 / (prec.delta.0 + prec.alpha + prec.delta.1)
+                            mean.delta.curr <- var.delta.curr * (prec.delta.0 * m[[1L]][2L] + prec.alpha * alpha[indices.ad[2L]]
+                                + prec.delta.1 * delta[indices.ad[2L]] / phi)
+                            delta.curr <- rnorm(n = 1L,
+                                                mean = mean.delta.curr,
+                                                sd = sqrt(var.delta.curr))
+                            delta[indices.ad[1L]] <- delta.curr
+                        }
+                        else {
+                            R.inv <- (UR[[i + 1L]] %*% DR.inv[[i + 1L]]
+                                %*% DR.inv[[i + 1L]] %*% t(UR[[i + 1L]]))
+                            B <- C[[i + 1L]] %*% t(G) %*% R.inv
+                            M.C.star <- rbind(W.sqrt.inv.G,
+                                              DC.inv[[i + 1L]] %*% t(UC[[i + 1L]]))
+                            svd.C.star <- svd(M.C.star, nu = 0)
+                            UC.star <- svd.C.star$v
+                            DC.star <- 1 / svd.C.star$d
+                            DC.star[is.infinite(DC.star)] <- 0
+                            DC.star <- diag(DC.star, nrow = 2L)
+                            sqrt.C.star <- UC.star %*% DC.star
+                            theta.prev <- c(alpha[indices.ad[i + 2L]], delta[indices.ad[i + 2L]])
+                            m.star <- m[[i + 1L]] + drop(B %*% (theta.prev - a[[i + 1L]]))
+                            z <- stats::rnorm(n = 2L)
+                            theta.curr <- m.star + drop(sqrt.C.star %*% z)
+                            alpha[indices.ad[i + 1L]] <- theta.curr[1L]
+                            delta[indices.ad[i + 1L]] <- theta.curr[2L]
+                        }
                     }
                 }
             }
@@ -462,6 +482,9 @@ updateAlphaDLMNoTrend <- function(prior, betaTilde, useC = FALSE) {
         omega <- prior@omegaAlpha@.Data
         omega.sq <- omega^2
         v <- getV(prior)              # numeric vector length KL
+        tolerance <- prior@tolerance@.Data
+        phi.known <- prior@phiKnown@.Data
+        non.stationary <- phi.known && (phi > 1 - tolerance)
         iterator.a <- prior@iteratorState
         iterator.v <- prior@iteratorV
         iterator.a <- resetA(iterator.a)
@@ -485,14 +508,14 @@ updateAlphaDLMNoTrend <- function(prior, betaTilde, useC = FALSE) {
                 alpha[indices.a[K + 1L]] <- stats::rnorm(n = 1L,
                                                          mean = m[[K + 1L]], 
                                                          sd = sqrt(C[[K + 1L]]))
-                ## backward smooth
-                for (i in seq.int(from = K - 1L, to = 0L)) {
+                ## backward sample
+                for (i in seq.int(from = K - 1L, to = non.stationary)) { # if nonstationary, alpha0 = 0
                     B <- C[[i + 1L]] * phi / R[[i + 1L]]
                     m.star <- m[[i + 1L]] + B * (alpha[indices.a[i + 2L]] - a[[i + 1L]])
                     C.star <- C[[i + 1L]] - B^2 * R[[i + 1L]]
                     alpha[indices.a[i + 1L]] <- stats::rnorm(n = 1L, mean = m.star, sd = sqrt(C.star))
                 }
-            } ## NEW
+            }
             iterator.a <- advanceA(iterator.a)
             iterator.v <- advanceA(iterator.v)
         }

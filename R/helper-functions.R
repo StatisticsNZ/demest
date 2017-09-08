@@ -904,6 +904,8 @@ initialDLMAllPredict <- function(prior, metadata, name, along) {
 ## HAS_TESTS
 initialDLMNoTrend <- function(object, metadata, sY) {
     along <- object@along
+    phi <- object@phi
+    phiKnown <- object@phiKnown@.Data
     dim <- dim(metadata)
     if (is.na(along))
         along <- NULL
@@ -914,7 +916,10 @@ initialDLMNoTrend <- function(object, metadata, sY) {
     L <- makeL(dim = dim, iAlong = i.along)
     mNoTrend <- makeMNoTrend(K = K)
     m0NoTrend <- makeM0NoTrend(L = L)
-    CNoTrend <- makeCNoTrend(K = K, sY = sY)
+    CNoTrend <- makeCNoTrend(K = K,
+                             sY = sY,
+                             phi = phi,
+                             phiKnown = phiKnown)
     aNoTrend <- makeANoTrend(K = K)
     RNoTrend <- makeRNoTrend(K = K)
     list(aNoTrend = aNoTrend,
@@ -1915,14 +1920,19 @@ makeM0WithTrend <- function(L, meanDelta0 = NULL) {
 }
 
 ## NO_TESTS
-makeCNoTrend <- function(K, C0 = NULL, sY) {
+makeCNoTrend <- function(K, C0 = NULL, sY, phi, phiKnown) {
     ans <- replicate(n = K + 1L,
                      1.0,
                      simplify = FALSE)
     if (is.null(C0)) {
-        A0 <- makeAIntercept(A = NA, sY = sY)
-        A0 <- as.double(A0)
-        C0 <- A0^2
+        phi.is.one <- phiKnown && isTRUE(all.equal(phi, 1))
+        if (phi.is.one)
+            C0 <- 0
+        else {
+            A0 <- makeAIntercept(A = NA, sY = sY)
+            A0 <- as.double(A0)
+            C0 <- A0^2
+        }
     }
     ans[[1L]] <- C0
     methods::new("FFBSList", ans)
@@ -1941,53 +1951,10 @@ makeCSeason <- function(K, nSeason, ASeason, C0 = NULL) {
     methods::new("FFBSList", ans)
 }
 
-## ## NO_TESTS
-## makeCWithTrend <- function(K, C0 = NULL, sY, ADelta0, hasLevel = TRUE) {
-##     if (is.null(C0)) {
-##         ## if (hasLevel)
-##         ##     AAlpha <- makeAIntercept(A = NA, sY = sY)
-##         ## else
-##         AAlpha <- 0
-##         ADelta <- ADelta0@.Data
-##         C0 <- c(AAlpha^2, ADelta^2)
-##         C0 <- diag(C0,
-##                    nrow = 2L,
-##                    ncol = 2L)
-##     }
-##     head <- list(C0)
-##     tail <- replicate(n = K,
-##                       diag(2L),
-##                       simplify = FALSE)
-##     ans <- c(head, tail)
-##     methods::new("FFBSList", ans)
-## }
-
-
-## ## NO_TESTS
-## makeCWithTrend <- function(K, C0 = NULL, sY, ADelta0, hasLevel = TRUE) {
-##     if (is.null(C0)) {
-##         if (hasLevel)
-##             AAlpha <- makeAIntercept(A = NA, sY = sY)
-##         else
-##             AAlpha <- 0
-##         ADelta <- ADelta0@.Data
-##         C0 <- c(AAlpha^2, ADelta^2)
-##         C0 <- diag(C0,
-##                    nrow = 2L,
-##                    ncol = 2L)
-##     }
-##     head <- list(C0)
-##     tail <- replicate(n = K,
-##                       diag(2L),
-##                       simplify = FALSE)
-##     ans <- c(head, tail)
-##     methods::new("FFBSList", ans)
-## }
-
 ## NO_TESTS
 makeCWithTrend <- function(K, C0 = NULL, sY, ADelta0, hasLevel = TRUE) {
     if (is.null(C0)) {
-        AAlpha <- makeAIntercept(A = NA, sY = sY)
+        AAlpha <- 0
         ADelta <- ADelta0@.Data
         C0 <- c(AAlpha^2, ADelta^2)
         C0 <- diag(C0,
@@ -2127,11 +2094,8 @@ makeStateDLM <- function(K, L) {
 makePhi <- function(phi, phiKnown, minPhi, maxPhi) {
     if (phiKnown)
         phi
-    else {
-        min <- max(minPhi, 0.8)
-        max <- min(maxPhi, 0.98)
-        stats::runif(n = 1L, min = min, max = max)
-    }
+    else
+        stats::runif(n = 1L, min = minPhi, max = maxPhi)
 }
 
 ## NO_TESTS
@@ -6868,18 +6832,12 @@ makeOutputStateDLM <- function(iterator, metadata, nSeason, iAlong, pos, isTrend
                                 iAlong = iAlong)
     metadata <- makeMetadataStateDLM(metadata = metadata,
                                      iAlong = iAlong)
-    if (isTrend)
-        subtractAlpha0 <- FALSE
-    else
-        subtractAlpha0 <- phiKnown && isTRUE(all.equal(phi, 1))
-    subtractAlpha0 <- methods::new("LogicalFlag", subtractAlpha0)
     methods::new("SkeletonStateDLM",
                  first = first,
                  last = last,
                  iAlong = iAlong,
                  indicesShow = indices.show,
-                 metadata = metadata,
-                 subtractAlpha0 = subtractAlpha0)
+                 metadata = metadata)
 }
 
 
@@ -7786,7 +7744,7 @@ printPriorsEqns <- function(object) {
     prior.intercept <- priors[[1L]]
     printPriorIntercept(prior.intercept)
     n <- length(priors)
-    if (n > 2L) {
+    if (n >= 2L) {
         cat("\n")
         for (i in seq.int(from = 2L, to = n)) {
             prior <- priors[[i]]

@@ -21,73 +21,60 @@
 ##     subarray(year < 2015) %>%
 ##     collapseIntervals(dimension = "age", width = 5) %>%
 ##     subarray(sex == "Females")
-
-## model.with.level <- Model(y ~ Poisson(mean ~ year),
-##                           year ~ DLM(damp = NULL),
-##                           jump = 0.05)
-## model.without.level <- Model(y ~ Poisson(mean ~ year),
-##                           year ~ DLM(level = NULL, damp = NULL),
-##                           jump = 0.05)
-## filename.with.level.est <- "deleteme.with.level.est"
-## filename.without.level.est <- "deleteme.without.level.est"
-## estimateModel(model.with.level,
-##               y = births,
-##               exposure = expose,
-##               filename = filename.with.level.est,
-##               nBurnin = 5000,
-##               nSim = 5000,
-##               nThin = 20,
-##               nChain = 4)
-## estimateModel(model.without.level,
-##               y = births,
-##               exposure = expose,
-##               filename = filename.without.level.est,
-##               nBurnin = 5000,
-##               nSim = 5000,
-##               nThin = 20,
-##               nChain = 4)
-## fetchSummary(filename.with.level.est)
-## fetchSummary(filename.without.level.est)
-## filename.with.level.pred <- "deleteme.with.level.pred"
-## filename.without.level.pred <- "deleteme.without.level.pred"
-## predictModel(filenameEst = filename.with.level.est, filenamePred = filename.with.level.pred, n = 25)
-## predictModel(filenameEst = filename.without.level.est, filenamePred = filename.without.level.pred, n = 25)
-## rates.with.level <- fetchBoth(filenameEst = filename.with.level.est, filenamePred = filename.with.level.pred,
-##                               where = c("model", "like", "rate"))
-## rates.without.level <- fetchBoth(filenameEst = filename.without.level.est, filenamePred = filename.without.level.pred,
-##                                  where = c("model", "like", "rate"))
-## p.with <- dplot(~ year, data = rates.with.level, midpoints = "year")
-## p.without <- dplot(~ year, data = rates.without.level, midpoints = "year")
-
-
-
-## ## model <- Model(y ~ Poisson(mean ~ age * year),
-## ##                age ~ Zero(),
-## ##                year ~ Zero(),
-## ##                age:year ~ DLM(level = Level(scale = HalfT(scale = 0.05, max = 0.1, df = 30)),
-## ##                               trend = Trend(scale = HalfT(scale = 0.05, max = 0.1, df = 30)),
-## ##                               error = Error(scale = HalfT(scale = 0.05, max = 0.1, df = 30)),
-## ##                               damp = Damp(min = 0.9, max = 0.98)))
+## model <- Model(y ~ Poisson(mean ~ year),
+##                year ~ DLM(level = NULL),
+##                jump = 0.03)
 ## filename.est <- "deleteme.est"
+## filename.pred <- "deleteme.pred"
 ## estimateModel(model,
 ##               y = births,
 ##               exposure = expose,
 ##               filename = filename.est,
-##               nBurnin = 5000,
-##               nSim = 5000,
-##               nThin = 20,
+##               nBurnin = 1000,
+##               nSim = 1000,
+##               nThin = 5,
 ##               nChain = 4)
 ## fetchSummary(filename.est)
-## filename.pred <- "deleteme.pred"
-## predictModel(filenameEst = filename.est, filenamePred = filename.pred, n = 25)
+
+
+
 ## rates <- fetchBoth(filenameEst = filename.est, filenamePred = filename.pred,
-##                    where = c("model", "like", "rate"))
-## dplot(~ year, data = rates, midpoints = "year")
+##                    where = c("model", "likelihood", "rate"))
+## dplot( ~ year, data = rates)
+
+## year <- fetch(filename = filename.est,
+##               where = c("model", "prior", "year"), norm = F)
+## dplot( ~ year, data = year, main = "norm = F")
+## quartz()
+## year <- fetch(filename = filename.est,
+##               where = c("model", "prior", "year"), norm = T)
+## dplot( ~ year, data = year, main = "norm = T")
 
 
-## year.level.with.level <- fetchBoth(filenameEst = filename.with.level.est, filenamePred = filename.with.level.pred,
+
+## year <- fetchBoth(filenameEst = filename.est, filenamePred = filename.pred,
+##                   where = c("model", "prior", "year"), norm = F)
+## dplot( ~ year, data = year, main = "norm = F", ylim = c(-2, 1))
+## quartz()
+## year <- fetchBoth(filenameEst = filename.est, filenamePred = filename.pred,
+##                   where = c("model", "prior", "year"), norm = T)
+## dplot( ~ year, data = year, main = "norm = T", ylim = c(-2, 1))
+
+
+
+## year <- fetchBoth(filenameEst = filename.est, filenamePred = filename.pred,
+##                   where = c("model", "prior", "year"), norm = T)
+## dplot( ~ year, data = year)
+
+## year.level <- fetchBoth(filenameEst = filename.est, filenamePred = filename.pred,
 ##                         where = c("model", "hy", "year", "level"))
-## dplot(exp(value) ~ year, data = year.level.with.level, midpoints = "year")
+## dplot( ~ year, data = year.level)
+
+## year.trend <- fetchBoth(filenameEst = filename.est, filenamePred = filename.pred,
+##                         where = c("model", "hy", "year", "trend"),
+##                         norm = F)
+## dplot( ~ year, data = year.trend, midpoints = "year")
+
 
 ## year.level.without.level <- fetchBoth(filenameEst = filename.without.level.est, filenamePred = filename.without.level.pred,
 ##                         where = c("model", "hy", "year", "level"))

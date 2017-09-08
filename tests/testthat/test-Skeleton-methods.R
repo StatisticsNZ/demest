@@ -537,8 +537,7 @@ test_that("fetchResults works with object of class SkeletonStateDLM - Trend", {
                   iAlong = 1L,
                   first = 41L,
                   last = 73L,
-                  indicesShow = c(2:11, 13:22, 24:33),
-                  subtractAlpha0 = new("LogicalFlag", FALSE))
+                  indicesShow = c(2:11, 13:22, 24:33))
     nameObject <- "obj"
     filename <- tempfile()
     con <- file(filename, "wb")
@@ -1393,32 +1392,6 @@ test_that("SkeletonStateDLM method for needToCenter works", {
     needToCenter <- demest:::needToCenter
     object <- new("SkeletonStateDLM")
     expect_false(needToCenter(object))
-})
-
-
-
-## needToSubtractAlpha0 ##############################################################
-
-test_that("default method for needToSubtractAlpha0 works", {
-    needToSubtractAlpha0 <- demest:::needToSubtractAlpha0
-    object <- new("SkeletonManyValues")
-    expect_false(needToSubtractAlpha0(object))
-})
-
-test_that("SkeletonBetaTerm method for needToSubtractAlpha0 works", {
-    needToSubtractAlpha0 <- demest:::needToSubtractAlpha0
-    object <- new("SkeletonBetaTerm")
-    expect_false(needToSubtractAlpha0(object))
-})
-
-test_that("SkeletonStateDLM method for needToSubtractAlpha0 works", {
-    needToSubtractAlpha0 <- demest:::needToSubtractAlpha0
-    object <- new("SkeletonStateDLM")
-    object@subtractAlpha0 <- new("LogicalFlag", FALSE)
-    expect_false(needToSubtractAlpha0(object))
-    object <- new("SkeletonStateDLM")
-    object@subtractAlpha0 <- new("LogicalFlag", TRUE)
-    expect_true(needToSubtractAlpha0(object))
 })
 
 
