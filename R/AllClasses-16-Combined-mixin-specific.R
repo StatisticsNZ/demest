@@ -117,6 +117,35 @@ setClass("DatasetsMixin",
          })
 
 ## NO_TESTS
+setClass("DescriptionsMixin",
+         slots = c(descriptions = "list"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             descriptions <- object@descriptions
+             components <- object@account@components
+             ## 'descriptions' has length equal to length of 'components' plus 1
+             if (!identical(length(descriptions), length(components) + 1L))
+                 return(gettextf("lengths of '%s' and '%s' inconsistent",
+                                 "descriptions", "components"))
+             ## first element has class "DescriptionPopn"
+             if (!methods::is(descriptions[[1L]], "DescriptionPopn"))
+                 return(gettextf("first element of '%s' does not have class \"%s\"",
+                                 "descriptions", "DescriptionPopn"))
+             ## remaining elements has class "DescriptionComp"
+             if (!all(sapply(descriptions[-1L], methods::is, "DescriptionComp")))
+                 return(gettextf("first element of '%s' does not have class \"%s\"",
+                                 "descriptions", "DescriptionComp"))
+             ## element has class "DescriptionPoool" iff corresponding
+             ## element of 'components' has class InternalMovementsPool",
+             is.desc.pool <- sapply(descriptions[-1], methods::is, "DescriptionPool")
+             is.pool <- sapply(components, methods::is, "InternalMovementsPool")
+             if (!identical(is.desc.pool, is.pool))
+                 return(gettextf("elements of '%s' must have class \"%s\" iff correspondening element of '%s' has class \"%s\"",
+                                 "descriptions", "DescriptionPool", "components", "InternalMovementsPool"))             
+             TRUE
+         })
+
+## NO_TESTS
 setClass("DiffPropMixin",
          slots = c(diffProp = "integer"),
          contains = "VIRTUAL",

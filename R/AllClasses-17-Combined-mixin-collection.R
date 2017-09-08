@@ -2,6 +2,7 @@
 setClass("AccountMixin",
          contains = c("VIRTUAL",
                       "CumProbPopnMixin",
+                      "DescriptionsMixin",
                       "DiffPropMixin",
                       "ExposureMixin",
                       "GeneratedNewProposalMixin",

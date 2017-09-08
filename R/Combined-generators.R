@@ -368,6 +368,7 @@ setMethod("initialCombinedAccount",
                                          metadata = population@metadata)
               is.increment <- sapply(components, dembase::isPositiveIncrement)
               iterator.popn <- CohortIterator(population)
+              descriptions <- lapply(c(list(population), components), Description)
               mappings.from.exp <- lapply(components, function(x) Mapping(exposure, x))
               mappings.to.exp <- lapply(components, function(x) Mapping(x, exposure))
               mappings.to.popn <- lapply(components, function(x) Mapping(x, population))
@@ -431,6 +432,7 @@ setMethod("initialCombinedAccount",
                                account = account,
                                cumProbPopn = cum.prob.popn,
                                datasets = datasets,
+                               descriptions = descriptions,
                                diffProp = NA_integer_,
                                exposure = exposure,
                                generatedNewProposal = new("LogicalFlag", FALSE),
@@ -472,6 +474,7 @@ setMethod("initialCombinedAccount",
                                account = account,
                                cumProbPopn = cum.prob.popn,
                                datasets = datasets,
+                               descriptions = descriptions,
                                diffProp = NA_integer_,
                                exposure = exposure,
                                generatedNewProposal = new("LogicalFlag", FALSE),

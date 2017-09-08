@@ -4,14 +4,14 @@
 
 
 updateProposalAccountMovePopn <- function(combined, useC = FALSE) {
-    stopifnot(is(combined, "CombinedAccountMove"))
+    stopifnot(is(combined, "CombinedAccountMovements"))
     if (useC) {
         .Call(updateProposalAccountMovePopn_R, combined)
     }
     else {
         account <- combined@account
         population <- account@population
-        has.age <- combined@hasAge
+        has.age <- combined@hasAge@.Data
         if (has.age) {
             accession <- combined@accession
             iterator.acc <- combined@iteratorAcc
