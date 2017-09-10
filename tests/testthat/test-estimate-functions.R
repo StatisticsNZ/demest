@@ -320,7 +320,8 @@
 ##                   dim = 2:4,
 ##                   dimnames = list(sex = c("f", "m"),
 ##                       age = 0:2,
-##                       time = 2000:2003)))
+##                       time = 2000:2003)),
+##             dimscales = c(time = "Points"))
 ## set.seed(1)
 ## estimateModel(Model(y ~ Poisson(mean ~ age),
 ##                     age ~ Exch()),
@@ -330,15 +331,16 @@
 ##               nSim = 1000,
 ##               nChain = 2,
 ##               nThin = 2)
-## ans2 <- continueEstimation(ans1, nSim = 50)
+## continueEstimation(filename1, nSim = 50)
 ## set.seed(1)
-## ans3 <- estimateModel(Model(y ~ Poisson(mean ~ age, exposure = FALSE)),
+## estimateModel(Model(y ~ Poisson(mean ~ age)),
 ##                       y = y,
 ##                       filename = filename2,
 ##                       nBurnin = 20,
 ##                       nSim = 50,
 ##                       nChain = 2,
 ##                       nThin = 2)
+
 ## slots.same <- setdiff(slotNames(class(ans2)), "control")
 ## for (name in slots.same) {
 ##     expect_identical(slot(ans2, name), slot(ans3, name))

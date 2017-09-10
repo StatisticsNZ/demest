@@ -723,10 +723,10 @@ continueEstimation <- function(filename, nBurnin = 0, nSim = 1000, outfile = NUL
     if (control.args$parallel) {
         if (is.null(outfile)) ## passing 'outfile' as an argument always causes redirection
             cl <- parallel::makeCluster(getOption("cl.cores",
-                                                  default = mcmc.args$nChain))
+                                                  default = mcmc.args.new$nChain))
         else
             cl <- parallel::makeCluster(getOption("cl.cores",
-                                                  default = mcmc.args$nChain),
+                                                  default = mcmc.args.new$nChain),
                                         outfile = outfile)
         parallel::clusterSetRNGStream(cl)
         final.combineds <- parallel::clusterMap(cl = cl,
