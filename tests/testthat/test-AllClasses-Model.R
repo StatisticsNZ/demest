@@ -252,6 +252,36 @@ test_that("validity tests for PoissonVaryingNotUseExp inherited from LowerUpper 
     x.wrong@tolerance <- -0.00001
     expect_error(validObject(x.wrong),
                  "'tolerance' is negative")
+})
+
+test_that("validity tests for PoissonVaryingNotUseExp inherited from MaxAttemptMixin work", {
+    BetaIterator <- demest:::BetaIterator
+    x <- new("PoissonVaryingNotUseExp",
+             theta = rgamma(n = 20, shape = 5, rate = 5),
+             metadataY = new("MetaData",
+                             nms = c("age", "region"),
+                             dimtypes = c("age", "state"),
+                             DimScales = list(new("Intervals", dimvalues = 0:5),
+                                              new("Categories", dimvalues = c("a", "b", "c", "d")))),
+             cellInLik = rep(TRUE, 20),
+             scaleTheta = new("Scale", 0.1),
+             scaleThetaMultiplier = new("Scale", 1),
+             nAcceptTheta = new("Counter", 0L),
+             sigma = new("Scale", 1),
+             sigmaMax = new("Scale", 5),
+             ASigma = new("Scale", 10),
+             lower = -Inf,
+             upper = Inf,
+             maxAttempt = 100L,
+             nFailedPropTheta = new("Counter", 0L),
+             betas = list(5, rnorm(5), rnorm(4)),
+             namesBetas = c("(Intercept)", "age", "region"),
+             margins = list(0L, 1L, 2L),
+             priorsBetas = list(new("ExchFixed"),
+                                new("ExchNormZero", J = new("Length", 5L), tauMax = new("Scale", 5)),
+                                new("ExchNormZero", J = new("Length", 4L), tauMax = new("Scale", 5))),
+             iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
+             dims = list(0L, 5L, 4L))
     ## 'maxAttempt' has length 1
     x.wrong <- x
     x.wrong@maxAttempt <- c(100L, 100L)

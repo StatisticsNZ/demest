@@ -17,6 +17,7 @@ setClass("AccountMixin",
                       "MappingsFromExpMixin",
                       "MappingsToExpMixin",
                       "MappingsToPopnMixin",
+                      "MaxAttemptMixin",
                       "NCellAccountMixin",
                       "ProbPopnMixin"))
 

@@ -2,7 +2,6 @@
 
 ## updating proposals #############################################################
 
-
 updateProposalAccountMovePopn <- function(combined, useC = FALSE) {
     stopifnot(is(combined, "CombinedAccountMovements"))
     if (useC) {
@@ -16,22 +15,21 @@ updateProposalAccountMovePopn <- function(combined, useC = FALSE) {
             accession <- combined@accession
             iterator.acc <- combined@iteratorAcc
         }
-        description <- combined@descriptionPopn
+        description <- combined@descriptions[[1L]]
         iterator.popn <- combined@iteratorPopn
-        sys.mod.popn <- combined@system[[1L]]
-        theta.popn <- sys.mod.popn@theta
+        theta <- combined@systemModels[[1L]]@theta
         max.attempt <- combined@maxAttempt
-        i.cell <- chooseICellPopn(description.popn)
+        i.cell <- chooseICellPopn(description)
         i.exp.comp.first <- getIExpFirstFromPopn(i = i.cell,
                                                  description = description)
         i.popn.next <- getIPopnNextFromPopn(i = i.cell,
-                                            description = description.popn)
+                                            description = description)
         min.val <- getMinValCohort(i = i.popn.next,
                                    series = population,
                                    iterator = iterator.popn)
         if (has.age) {
             i.acc.next <- getIAccNextFromPopn(i = i.cell,
-                                              description = description.popn)
+                                              description = description)
             has.later.accession <- i.acc.next > 0L
             if (has.later.accession) {
                 min.acc <- getMinValCohort(i = i.acc.next,
@@ -58,16 +56,12 @@ updateProposalAccountMovePopn <- function(combined, useC = FALSE) {
         if (generated.new.proposal) {
             combined@iCell <- i.cell
             combined@iCellOther <- NA_integer_
-            combined@isLowerTriangle <- NA
             combined@iPopnNext <- i.popn.next
             combined@iPopnNextOther <- NA_integer_
             if (has.age) {
                 combined@iAccNext <- i.acc.next
                 combined@iAccNextOther <- NA_integer_
-            }
-            else {
-                combined@iAccNext <- NA_integer_
-                combined@iAccNextOther <- NA_integer_
+                combined@isLowerTriangle <- NA
             }
             combined@iExposure <- NA_integer_
             combined@iExposureOther <- NA_integer_
@@ -78,11 +72,13 @@ updateProposalAccountMovePopn <- function(combined, useC = FALSE) {
         else {
             combined@iCell <- NA_integer_
             combined@iCellOther <- NA_integer_
-            combined@isLowerTriangle <- NA
             combined@iPopnNext <- NA_integer_
             combined@iPopnNextOther <- NA_integer_
-            combined@iAccNext <- NA_integer_
-            combined@iAccNextOther <- NA_integer_
+            if (has.age) {
+                combined@iAccNext <- NA_integer_
+                combined@iAccNextOther <- NA_integer_
+                combined@isLowerTriangle <- NA
+            }
             combined@iExposure <- NA_integer_
             combined@iExposureOther <- NA_integer_
             combined@iExpFirst <- NA_integer_

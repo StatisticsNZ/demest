@@ -228,11 +228,9 @@ setClass("IMethodModel",
 ## HAS_TESTS
 setClass("LowerUpperMixin",
          slots = c(lower = "numeric",
-                        upper = "numeric",
-                        tolerance = "numeric",
-                        maxAttempt = "integer"),
-         prototype = prototype(maxAttempt = 100L,
-             tolerance = 1e-5),
+                   upper = "numeric",
+                   tolerance = "numeric"),
+         prototype = prototype(tolerance = 1e-5),
          contains = "VIRTUAL",
          validity = function(object) {
              lower <- object@lower
@@ -262,6 +260,28 @@ setClass("LowerUpperMixin",
              if (tolerance < 0)
                  return(gettextf("'%s' is negative",
                                  "tolerance"))
+             ## 'maxAttempt' has length 1
+             if (!identical(length(maxAttempt), 1L))
+                 return(gettextf("'%s' does not have length %d",
+                                 "maxAttempt", 1L))
+             ## 'maxAttempt' is not missing
+             if (is.na(maxAttempt))
+                 return(gettextf("'%s' is missing",
+                                 "maxAttempt"))
+             ## 'maxAttempt' is positive
+             if (maxAttempt < 1L)
+                 return(gettextf("'%s' is less than %d",
+                                 "maxAttempt", 1L))
+             TRUE
+         })
+
+## HAS_TESTS
+setClass("MaxAttemptMixin",
+         slots = c(maxAttempt = "integer"),
+         prototype = prototype(maxAttempt = 100L),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             maxAttempt <- object@maxAttempt
              ## 'maxAttempt' has length 1
              if (!identical(length(maxAttempt), 1L))
                  return(gettextf("'%s' does not have length %d",

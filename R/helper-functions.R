@@ -9087,14 +9087,59 @@ getIExpFirstFromPopn <- function(i, description, useC = FALSE) {
         n.time.popn <- description@nTime
         step.time <- description@stepTime
         length.popn <- description@length
-        n.time.tri <- n.time.popn - 1L
-        length.lower.tri <- (length.popn * n.time.tri) %/% n.time.popn
-        i.time <- (i - 1L) %/% (n.time.popn * step.time)
-        remainder <- (i - 1L) %% (n.time.popn * step.time) + 1L
-        index.upper.tri <- i.time * n.time.tri * step.time + remainder
-        length.lower.tri + index.upper.tri
+        has.age <- description@hasAge ## new
+        i.nontime <- (i - 1L) %/% (n.time.popn * step.time) ## moved
+        remainder <- (i - 1L) %% (n.time.popn * step.time) + 1L ## moved
+        n.time.exp <- n.time.popn - 1L
+        index.exp <- i.nontime * n.time.exp * step.time + remainder
+        if (has.age) { ## new
+            length.lower.tri <- (length.popn %/% n.time.popn) * n.time.exp
+            length.lower.tri + index.exp
+        }
+        else ## new
+            index.exp
     }
 }
+
+
+## ## TRANSLATED
+## ## HAS_TESTS (JAH added R vs C test 18/6/2017)
+## ## Assumes that the Lexis triangle dimension is the
+## ## last dimension in 'exposure'.
+## ## We only ever update population values for the beginning
+## ## of the first period.
+## getIExpFirstFromPopn <- function(i, description, useC = FALSE) {
+##     ## 'i'
+##     stopifnot(is.integer(i))
+##     stopifnot(identical(length(i), 1L))
+##     stopifnot(!is.na(i))
+##     stopifnot(i >= 1L)
+##     ## 'description'
+##     stopifnot(methods::is(description, "DescriptionPopn"))
+##     ## 'i' and 'description'
+##     stopifnot(i <= description@length)
+##     stopifnot((((i - 1L) %/% description@stepTime) %% description@nTime) == 0L) # first time point
+##     if (useC) {
+##         .Call(getIExpFirstFromPopn_R, i, description)
+##     }
+##     else {
+##         has.age <- description@hasAge
+##         if (!has.age)
+##             i
+##         else {
+##             n.time.popn <- description@nTime
+##             step.time.popn <- description@stepTime
+##             length.popn <- description@length
+##             n.time.tri <- n.time.popn - 1L
+##             step.time.exp <- (step.time.popn %/% n.time.popn) * n.time.tri
+##             length.lower.tri <- (length.popn %/% n.time.popn) * n.time.tri
+##             (i - 1L) % + length.lower.tri
+##         }
+##     }
+## }
+
+
+
 
 ## TRANSLATED
 ## HAS_TESTS
