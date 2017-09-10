@@ -469,12 +469,28 @@ setClass("IsIncrementMixin",
          })
 
 setClass("IsLowerTriangleMixin",
-         slots = c(isLowerTriangle = "LogicalFlag"))
+         slots = c(isLowerTriangle = "logical"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             isLowerTriangle <- object@isLowerTriangle
+             hasAge <- object@hasAge@.Data
+             ## 'isLowerTriangle' has length 1
+             if (!identical(length(isLowerTriangle), 1L))
+                 return(gettextf("'%s' does not have length %d",
+                                 "lowerTriangle", 1L))
+             ## 'isLowerTriangle' is missing if 'hasAge' is FALSE
+             if (!hasAge && !is.na(isLowerTriangle))
+                 return(gettextf("'%s' is %s but '%s' is not missing",
+                                 "hasAge", "FALSE", "lowerTriangle"))
+             TRUE
+         })
 
 setClass("IteratorAccMixin",
+         contains = "VIRTUAL",
          slots = c(iteratorAcc = "CohortIteratorAccessionPopulation"))
          
 setClass("IteratorPopnMixin",
+         contains = "VIRTUAL",
          slots = c(iteratorPopn = "CohortIteratorAccessionPopulation"))
 
 ## NO_TESTS

@@ -12242,7 +12242,6 @@ test_that("R and C versions of chooseICellPopn give same answer", {
     expect_identical(ans.R, ans.C)
 })
     
-
 test_that("getIAccNextFromPopn works", {
     getIAccNextFromPopn <- demest:::getIAccNextFromPopn
     Description <- demest:::Description
@@ -12252,17 +12251,25 @@ test_that("getIAccNextFromPopn works", {
                                dim = c(3, 2),
                                dimnames = list(time = c(2000, 2010, 2020),
                                    age = c("0-9", "10+"))))
-    ## accession <- Counts(array(1:4,
-    ##                           dim = c(2, 2),
-    ##                            dimnames = list(time = c("2001-2010", "2011-2020"),
-    ##                                age = c("0-9", "10+"))))
+    accession <- Counts(array(1:2,
+                              dim = c(2, 1),
+                               dimnames = list(time = c("2001-2010", "2011-2020"),
+                                   age = "10")))
     population <- Population(population)
     description <- Description(population)
+    ans.obtained <- getIAccNextFromPopn(description, i = 1L)
+    ans.expected <- 1L
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- getIAccNextFromPopn(description, i = 2L)
+    ans.expected <- 2L
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- getIAccNextFromPopn(description, i = 3L)
+    ans.expected <- 0L
     ans.obtained <- getIAccNextFromPopn(description, i = 4L)
-    ans.expected <- 3L
+    ans.expected <- 0L
     expect_identical(ans.obtained, ans.expected)
     ans.obtained <- getIAccNextFromPopn(description, i = 5L)
-    ans.expected <- 4L
+    ans.expected <- 0L
     expect_identical(ans.obtained, ans.expected)
     ans.obtained <- getIAccNextFromPopn(description, i = 3L)
     ans.expected <- 0L
@@ -12272,22 +12279,37 @@ test_that("getIAccNextFromPopn works", {
                                dim = c(3, 3),
                                dimnames = list(age = c("0-9", "10-19", "20+"),
                                    time = c(2000, 2010, 2020))))
-    ## accession <- Counts(array(1:6,
-    ##                            dim = c(3, 2),
-    ##                            dimnames = list(reg = c("0-9", "10-19", "20+"),
-    ##                                time = c("2001-2010", "2011-2020"))))
+    accession <- Counts(array(1:4,
+                               dim = c(2, 2),
+                               dimnames = list(reg = c("10", "20"),
+                                   time = c("2001-2010", "2011-2020"))))
     population <- Population(population)
     description <- Description(population)
     ans.obtained <- getIAccNextFromPopn(description, i = 1L)
+    ans.expected <- 1L
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- getIAccNextFromPopn(description, i = 2L)
     ans.expected <- 2L
     expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- getIAccNextFromPopn(description, i = 5L)
-    ans.expected <- 6L
-    expect_identical(ans.obtained, ans.expected)
     ans.obtained <- getIAccNextFromPopn(description, i = 3L)
+    ans.expected <- 0L
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- getIAccNextFromPopn(description, i = 4L)
     ans.expected <- 3L
     expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- getIAccNextFromPopn(description, i = 5L)
+    ans.expected <- 4L
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- getIAccNextFromPopn(description, i = 6L)
+    ans.expected <- 0L
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- getIAccNextFromPopn(description, i = 7L)
+    ans.expected <- 0L
+    expect_identical(ans.obtained, ans.expected)
     ans.obtained <- getIAccNextFromPopn(description, i = 8L)
+    ans.expected <- 0L
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- getIAccNextFromPopn(description, i = 9L)
     ans.expected <- 0L
     expect_identical(ans.obtained, ans.expected)
     ## time is second dimension of three
@@ -12296,28 +12318,23 @@ test_that("getIAccNextFromPopn works", {
                                dimnames = list(reg = c("a", "b", "c"),
                                    time = c(2000, 2010, 2020),
                                    age = c("0-9", "10+"))))
-    accession <- Counts(array(1:12,
-                               dim = c(3, 2, 2),
+    accession <- Counts(array(1:6,
+                               dim = c(3, 2, 1),
                                dimnames = list(reg = c("a", "b", "c"),
                                    time = c("2001-2010", "2011-2020"),
-                                   age = c("0-9", "10+"))))
+                                   age = "10")))
     population <- Population(population)
     description <- Description(population)
-    ans.obtained <- getIAccNextFromPopn(description, i = 1L)
-    ans.expected <- 7L
-    expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- getIAccNextFromPopn(description, i = 5L)
-    ans.expected <- 11L
-    expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- getIAccNextFromPopn(description, i = 3L)
-    ans.expected <- 9L
-    expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- getIAccNextFromPopn(description, i = 8L)
-    ans.expected <- 0L
-    expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- getIAccNextFromPopn(description, i = 10L)
-    ans.expected <- 7L
-    expect_identical(ans.obtained, ans.expected)
+    for (i in 1:6) {
+        ans.obtained <- getIAccNextFromPopn(description, i = i)
+        ans.expected <- i
+        expect_identical(ans.obtained, ans.expected)
+    }
+    for (i in 7:18) {
+        ans.obtained <- getIAccNextFromPopn(description, i = i)
+        ans.expected <- 0L
+        expect_identical(ans.obtained, ans.expected)
+    }
 })
 
 test_that("R and C versions of getIAccNextFromPopn give same answer", {
@@ -12328,77 +12345,43 @@ test_that("R and C versions of getIAccNextFromPopn give same answer", {
     population <- Counts(array(1:6,
                                dim = c(3, 2),
                                dimnames = list(time = c(2000, 2010, 2020),
-                                   age = c("0-9", "10+"))))
-    ## accession <- Counts(array(1:4,
-    ##                           dim = c(2, 2),
-    ##                            dimnames = list(time = c("2001-2010", "2011-2020"),
-    ##                                age = c("0-9", "10+"))))
+                                               age = c("0-9", "10+"))))
     population <- Population(population)
     description <- Description(population)
-    ans.R <- getIAccNextFromPopn(description, i = 4L, useC = FALSE)
-    ans.C <- getIAccNextFromPopn(description, i = 4L, useC = TRUE)
-    expect_identical(ans.R, ans.C)
-    ans.R <- getIAccNextFromPopn(description, i = 5L, useC = FALSE)
-    ans.C <- getIAccNextFromPopn(description, i = 5L, useC = TRUE)
-    expect_identical(ans.R, ans.C)
-    ans.R <- getIAccNextFromPopn(description, i = 3L, useC = FALSE)
-    ans.C <- getIAccNextFromPopn(description, i = 3L, useC = TRUE)
-    expect_identical(ans.R, ans.C)
+    for (i in 1:6) {
+        ans.R <- getIAccNextFromPopn(description, i = i, useC = FALSE)
+        ans.C <- getIAccNextFromPopn(description, i = i, useC = TRUE)
+        expect_identical(ans.R, ans.C)
+    }
     ## time is second dimension of two
     population <- Counts(array(1:9,
                                dim = c(3, 3),
                                dimnames = list(age = c("0-9", "10-19", "20+"),
-                                   time = c(2000, 2010, 2020))))
-    ## accession <- Counts(array(1:6,
-    ##                            dim = c(3, 2),
-    ##                            dimnames = list(reg = c("0-9", "10-19", "20+"),
-    ##                                time = c("2001-2010", "2011-2020"))))
+                                               time = c(2000, 2010, 2020))))
     population <- Population(population)
     description <- Description(population)
-    ans.R <- getIAccNextFromPopn(description, i = 1L, useC = FALSE)
-    ans.C <- getIAccNextFromPopn(description, i = 1L, useC = TRUE)
-    expect_identical(ans.R, ans.C)
-    ans.R <- getIAccNextFromPopn(description, i = 5L, useC = FALSE)
-    ans.C <- getIAccNextFromPopn(description, i = 5L, useC = TRUE)
-    expect_identical(ans.R, ans.C)
-    ans.R <- getIAccNextFromPopn(description, i = 3L, useC = FALSE)
-    ans.C <- getIAccNextFromPopn(description, i = 3L, useC = TRUE)
-    expect_identical(ans.R, ans.C)
-    ans.R <- getIAccNextFromPopn(description, i = 8L, useC = FALSE)
-    ans.C <- getIAccNextFromPopn(description, i = 8L, useC = TRUE)
-    expect_identical(ans.R, ans.C)
+    for (i in 1:9) {
+        ans.R <- getIAccNextFromPopn(description, i = i, useC = FALSE)
+        ans.C <- getIAccNextFromPopn(description, i = i, useC = TRUE)
+        expect_identical(ans.R, ans.C)
+    }
     ## time is second dimension of three
     population <- Counts(array(1:18,
                                dim = c(3, 3, 2),
                                dimnames = list(reg = c("a", "b", "c"),
-                                   time = c(2000, 2010, 2020),
-                                   age = c("0-9", "10+"))))
-    ## accession <- Counts(array(1:12,
-    ##                            dim = c(3, 2, 2),
-    ##                            dimnames = list(reg = c("a", "b", "c"),
-    ##                                time = c("2001-2010", "2011-2020"),
-    ##                                age = c("0-9", "10+"))))
+                                               time = c(2000, 2010, 2020),
+                                               age = c("0-9", "10+"))))
     population <- Population(population)
     description <- Description(population)
-    ans.R <- getIAccNextFromPopn(description, i = 1L, useC = FALSE)
-    ans.C <- getIAccNextFromPopn(description, i = 1L, useC = TRUE)
-    expect_identical(ans.R, ans.C)
-    ans.R <- getIAccNextFromPopn(description, i = 5L, useC = FALSE)
-    ans.C <- getIAccNextFromPopn(description, i = 5L, useC = TRUE)
-    expect_identical(ans.R, ans.C)
-    ans.R <- getIAccNextFromPopn(description, i = 3L, useC = FALSE)
-    ans.C <- getIAccNextFromPopn(description, i = 3L, useC = TRUE)
-    expect_identical(ans.R, ans.C)
-    ans.R <- getIAccNextFromPopn(description, i = 8L, useC = FALSE)
-    ans.C <- getIAccNextFromPopn(description, i = 8L, useC = TRUE)
-    expect_identical(ans.R, ans.C)
-    ans.R <- getIAccNextFromPopn(description, i = 10L, useC = FALSE)
-    ans.C <- getIAccNextFromPopn(description, i = 10L, useC = TRUE)
-    expect_identical(ans.R, ans.C)
+    for (i in 1:18) {
+        ans.R <- getIAccNextFromPopn(description, i = i, useC = FALSE)
+        ans.C <- getIAccNextFromPopn(description, i = i, useC = TRUE)
+        expect_identical(ans.R, ans.C)
+    }
 })
 
 test_that("getIExpFirstFromPopn works - with age", {
-    ## getIExpFirstFromPopn <- demest:::getIExpFirstFromPopn
+    getIExpFirstFromPopn <- demest:::getIExpFirstFromPopn
     exposureWithTriangles <- dembase:::exposureWithTriangles
     Description <- demest:::Description
     Population <- dembase:::Population
@@ -12509,8 +12492,7 @@ test_that("R and C versions of getIExpFirstFromPopn give same answer - with age"
     description <- Description(population)
     ans.R <- getIExpFirstFromPopn(description, i = 1L, useC = FALSE)
     ans.C <- getIExpFirstFromPopn(description, i = 1L, useC = TRUE)
-    expect_identical(ans.R, ans.C)
-    
+    expect_identical(ans.R, ans.C)    
     ans.R <- getIExpFirstFromPopn(description, i = 2L, useC = FALSE)
     ans.C <- getIExpFirstFromPopn(description, i = 2L, useC = TRUE)
     expect_identical(ans.R, ans.C)
@@ -12529,7 +12511,7 @@ test_that("R and C versions of getIExpFirstFromPopn give same answer - with age"
 })
 
 test_that("getIExpFirstFromPopn works - no age", {
-    ## getIExpFirstFromPopn <- demest:::getIExpFirstFromPopn
+    getIExpFirstFromPopn <- demest:::getIExpFirstFromPopn
     exposureNoTriangles <- dembase:::exposureNoTriangles
     Description <- demest:::Description
     Population <- dembase:::Population
@@ -12569,7 +12551,7 @@ test_that("getIExpFirstFromPopn works - no age", {
                                dim = c(3, 3, 2),
                                dimnames = list(reg = c("a", "b", "c"),
                                    time = c(2000, 2010, 2020),
-                                   age = c("0-9", "10+"))))
+                                   sex = c("m", "f"))))
     exposure <- exposureNoTriangles(population)
     population <- Population(population)
     description <- Description(population)
@@ -12593,7 +12575,70 @@ test_that("getIExpFirstFromPopn works - no age", {
     expect_identical(ans.obtained, ans.expected)
 })
 
-
+test_that("R and C versions of getIExpFirstFromPopn give same answer - with age", {
+    getIExpFirstFromPopn <- demest:::getIExpFirstFromPopn
+    exposureNoTriangles <- dembase:::exposureNoTriangles
+    Description <- demest:::Description
+    Population <- dembase:::Population
+    ## time is first dimension of two
+    population <- Counts(array(1:6,
+                               dim = c(3, 2),
+                               dimnames = list(time = c(2000, 2010, 2020),
+                                               reg = c("a", "b"))))
+    exposure <- exposureNoTriangles(population)
+    population <- Population(population)
+    description <- Description(population)
+    ans.R <- getIExpFirstFromPopn(description, i = 1L, useC = FALSE)
+    ans.C <- getIExpFirstFromPopn(description, i = 1L, useC = TRUE)
+    expect_identical(ans.R, ans.C)
+    ans.R <- getIExpFirstFromPopn(description, i = 4L, useC = FALSE)
+    ans.C <- getIExpFirstFromPopn(description, i = 4L, useC = TRUE)
+    expect_identical(ans.R, ans.C)
+    ## time is second dimension of two
+    population <- Counts(array(1:9,
+                               dim = c(3, 3),
+                               dimnames = list(reg = c("a", "b", "c"),
+                                               time = c(2000, 2010, 2020))))
+    exposure <- exposureNoTriangles(population)
+    population <- Population(population)
+    description <- Description(population)
+    ans.R <- getIExpFirstFromPopn(description, i = 1L, useC = FALSE)
+    ans.C <- getIExpFirstFromPopn(description, i = 1L, useC = TRUE)
+    expect_identical(ans.R, ans.C)
+    ans.R <- getIExpFirstFromPopn(description, i = 2L, useC = FALSE)
+    ans.C <- getIExpFirstFromPopn(description, i = 2L, useC = TRUE)
+    expect_identical(ans.R, ans.C)
+    ans.R <- getIExpFirstFromPopn(description, i = 3L, useC = FALSE)
+    ans.C <- getIExpFirstFromPopn(description, i = 3L, useC = TRUE)
+    expect_identical(ans.R, ans.C)
+    ## time is second dimension of three
+    population <- Counts(array(1:18,
+                               dim = c(3, 3, 2),
+                               dimnames = list(reg = c("a", "b", "c"),
+                                   time = c(2000, 2010, 2020),
+                                   sex = c("m", "f"))))
+    exposure <- exposureNoTriangles(population)
+    population <- Population(population)
+    description <- Description(population)
+    ans.R <- getIExpFirstFromPopn(description, i = 1L, useC = FALSE)
+    ans.C <- getIExpFirstFromPopn(description, i = 1L, useC = TRUE)
+    expect_identical(ans.R, ans.C)    
+    ans.R <- getIExpFirstFromPopn(description, i = 2L, useC = FALSE)
+    ans.C <- getIExpFirstFromPopn(description, i = 2L, useC = TRUE)
+    expect_identical(ans.R, ans.C)
+    ans.R <- getIExpFirstFromPopn(description, i = 3L, useC = FALSE)
+    ans.C <- getIExpFirstFromPopn(description, i = 3L, useC = TRUE)
+    expect_identical(ans.R, ans.C)
+    ans.R <- getIExpFirstFromPopn(description, i = 10L, useC = FALSE)
+    ans.C <- getIExpFirstFromPopn(description, i = 10L, useC = TRUE)
+    expect_identical(ans.R, ans.C)
+    ans.R <- getIExpFirstFromPopn(description, i = 11L, useC = FALSE)
+    ans.C <- getIExpFirstFromPopn(description, i = 11L, useC = TRUE)
+    expect_identical(ans.R, ans.C)
+    ans.R <- getIExpFirstFromPopn(description, i = 12L, useC = FALSE)
+    ans.C <- getIExpFirstFromPopn(description, i = 12L, useC = TRUE)
+    expect_identical(ans.R, ans.C)
+})
 
 test_that("getIPopnNextFromPopn works", {
     getIPopnNextFromPopn <- demest:::getIPopnNextFromPopn

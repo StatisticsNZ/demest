@@ -9017,6 +9017,53 @@ chooseICellPopn <- function(description, useC = FALSE) {
     }
 }
 
+## ## TRANSLATED
+## ## HAS_TESTS
+## ## Assumes that population and accession have identical dimensions,
+## ## except that time dimension for accession is one shorter than
+## ## time dimension for population
+## getIAccNextFromPopn <- function(i, description, useC = FALSE) {
+##     ## 'i'
+##     stopifnot(is.integer(i))
+##     stopifnot(identical(length(i), 1L))
+##     stopifnot(!is.na(i))
+##     stopifnot(i >= 1L)
+##     ## 'description'
+##     stopifnot(methods::is(description, "DescriptionPopn"))
+##     stopifnot(description@hasAge)
+##     ## 'i' and 'description'
+##     stopifnot(i <= description@length)
+##     if (useC) {
+##         .Call(getIAccNextFromPopn_R, i, description)
+##     }
+##     else {            
+##         step.time <- description@stepTime
+##         n.time.popn <- description@nTime
+##         step.age.popn <- description@stepAge
+##         n.age <- description@nAge
+##         n.time.acc <- n.time.popn - 1L
+##         i.time <- (((i - 1L) %/% step.time) %% n.time.popn) + 1L ## R-style
+##         if (i.time < n.time.popn) {
+##             i.acc <- (((i - i.time) %/% (step.time * n.time.popn)) * (step.time * n.time.acc)
+##                       + ((i - i.time) %% (step.time * n.time.popn))
+##                       + i.time) ## R-style
+##             i.age <- (((i - 1L) %/% step.age.popn) %% n.age) + 1L ## R-style
+##             if (i.age < n.age) {
+##                 if (step.age.popn < step.time)
+##                     step.age.acc <- step.age.popn
+##                 else
+##                     step.age.acc <- (step.age.popn * n.time.acc) %/% n.time.popn
+##                 i.acc + step.age.acc
+##             }
+##             else
+##                 i.acc
+##         }
+##         else
+##             0L
+##     }
+## }
+
+
 ## TRANSLATED
 ## HAS_TESTS
 ## Assumes that population and accession have identical dimensions,
@@ -9037,31 +9084,36 @@ getIAccNextFromPopn <- function(i, description, useC = FALSE) {
         .Call(getIAccNextFromPopn_R, i, description)
     }
     else {            
-        step.time <- description@stepTime
         n.time.popn <- description@nTime
+        n.age.popn <- description@nAge
+        step.time.popn <- description@stepTime
         step.age.popn <- description@stepAge
-        n.age <- description@nAge
         n.time.acc <- n.time.popn - 1L
-        i.time <- (((i - 1L) %/% step.time) %% n.time.popn) + 1L ## R-style
-        if (i.time < n.time.popn) {
-            i.acc <- (((i - i.time) %/% (step.time * n.time.popn)) * (step.time * n.time.acc)
-                      + ((i - i.time) %% (step.time * n.time.popn))
-                      + i.time) ## R-style
-            i.age <- (((i - 1L) %/% step.age.popn) %% n.age) + 1L ## R-style
-            if (i.age < n.age) {
-                if (step.age.popn < step.time)
+        n.age.acc <- n.age.popn - 1L
+        i.time.popn <- (((i - 1L) %/% step.time.popn) %% n.time.popn) + 1L ## R-style
+        if (i.time.popn < n.time.popn) {
+            i.age.popn <- (((i - 1L) %/% step.age.popn) %% n.age.popn) + 1L ## R-style
+            if (i.age.popn < n.age.popn) {
+                ## adjust for loss of one time period
+                i.acc <- (((i - 1L) %/% (step.time.popn * n.time.popn)) * (step.time.popn * n.time.acc)
+                    + ((i - 1L) %% (step.time.popn * n.time.popn))) + 1L
+                ## adjust for loss of one age group
+                if (step.time.popn > step.age.popn)
                     step.age.acc <- step.age.popn
                 else
-                    step.age.acc <- (step.age.popn * n.time.acc) %/% n.time.popn
-                i.acc + step.age.acc
+                    step.age.acc <- (step.age.popn %/% n.time.popn) * n.time.acc
+                i.acc <- (((i.acc - 1L) %/% (step.age.acc * n.age.popn)) * (step.age.acc * n.age.acc)
+                    + ((i.acc - 1L) %% (step.age.acc * n.age.popn))) + 1L
+                i.acc
             }
             else
-                i.acc
+                0L
         }
         else
             0L
     }
 }
+
 
 ## TRANSLATED
 ## HAS_TESTS (JAH added R vs C test 18/6/2017)
@@ -9100,46 +9152,6 @@ getIExpFirstFromPopn <- function(i, description, useC = FALSE) {
             index.exp
     }
 }
-
-
-## ## TRANSLATED
-## ## HAS_TESTS (JAH added R vs C test 18/6/2017)
-## ## Assumes that the Lexis triangle dimension is the
-## ## last dimension in 'exposure'.
-## ## We only ever update population values for the beginning
-## ## of the first period.
-## getIExpFirstFromPopn <- function(i, description, useC = FALSE) {
-##     ## 'i'
-##     stopifnot(is.integer(i))
-##     stopifnot(identical(length(i), 1L))
-##     stopifnot(!is.na(i))
-##     stopifnot(i >= 1L)
-##     ## 'description'
-##     stopifnot(methods::is(description, "DescriptionPopn"))
-##     ## 'i' and 'description'
-##     stopifnot(i <= description@length)
-##     stopifnot((((i - 1L) %/% description@stepTime) %% description@nTime) == 0L) # first time point
-##     if (useC) {
-##         .Call(getIExpFirstFromPopn_R, i, description)
-##     }
-##     else {
-##         has.age <- description@hasAge
-##         if (!has.age)
-##             i
-##         else {
-##             n.time.popn <- description@nTime
-##             step.time.popn <- description@stepTime
-##             length.popn <- description@length
-##             n.time.tri <- n.time.popn - 1L
-##             step.time.exp <- (step.time.popn %/% n.time.popn) * n.time.tri
-##             length.lower.tri <- (length.popn %/% n.time.popn) * n.time.tri
-##             (i - 1L) % + length.lower.tri
-##         }
-##     }
-## }
-
-
-
 
 ## TRANSLATED
 ## HAS_TESTS
