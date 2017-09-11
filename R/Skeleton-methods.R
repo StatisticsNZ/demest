@@ -282,9 +282,10 @@ setMethod("fetchResults",
                                        lengthIter = lengthIter,
                                        iterations = iterations)
               .Data <- matrix(.Data, ncol = n.iter)
-              .Data <- .Data[indices, ]
-              .Data <- array(.Data, dim = dim(metadata), dimnames = dimnames(metadata))
-              methods::new("Values", .Data = .Data, metadata = metadata)
+              ## .Data <- .Data[indices, ]
+              ## .Data <- array(.Data, dim = dim(metadata), dimnames = dimnames(metadata))
+              ## methods::new("Values", .Data = .Data, metadata = metadata)
+              .Data
           })
 
 ## HAS_TESTS
