@@ -6688,26 +6688,26 @@ indicesShow <- function(iterator, nSeason = NULL, dim, iAlong) {
     }
     ans <- unlist(ans)
     ans <- sort(ans)
-    if (n.dim > 1L) {
-        if (is.null(nSeason)) {
-            ind <- array(seq_len(prod(dim)), dim = dim)
-            for (i in seq_len(n.dim)) {
-                if (i != iAlong) {
-                    exclude <- ind[slice.index(ind, MARGIN = i) == 1L]
-                    ans <- setdiff(ans, exclude)
-                }
-            }
-        }
-        else {
-            ind <- array(seq_len(prod(c(nSeason, dim))), dim = c(nSeason, dim))
-            for (i in seq_len(n.dim)) {
-                if (i != iAlong) {
-                    exclude <- ind[slice.index(ind, MARGIN = i + 1L) == 1L]
-                    ans <- setdiff(ans, exclude)
-                }
-            }
-        }
-    }
+    ## if (n.dim > 1L) {
+    ##     if (is.null(nSeason)) {
+    ##         ind <- array(seq_len(prod(dim)), dim = dim)
+    ##         for (i in seq_len(n.dim)) {
+    ##             if (i != iAlong) {
+    ##                 exclude <- ind[slice.index(ind, MARGIN = i) == 1L]
+    ##                 ans <- setdiff(ans, exclude)
+    ##             }
+    ##         }
+    ##     }
+    ##     else {
+    ##         ind <- array(seq_len(prod(c(nSeason, dim))), dim = c(nSeason, dim))
+    ##         for (i in seq_len(n.dim)) {
+    ##             if (i != iAlong) {
+    ##                 exclude <- ind[slice.index(ind, MARGIN = i + 1L) == 1L]
+    ##                 ans <- setdiff(ans, exclude)
+    ##             }
+    ##         }
+    ##     }
+    ## }
     ans
 }
 
@@ -6837,8 +6837,6 @@ makeOutputStateDLM <- function(iterator, metadata, nSeason, iAlong, pos, isTrend
                                 nSeason = nSeason,
                                 dim = dim,
                                 iAlong = iAlong)
-    metadata <- makeMetadataStateDLM(metadata = metadata,
-                                     iAlong = iAlong)
     methods::new("SkeletonStateDLM",
                  first = first,
                  last = last,
@@ -6846,6 +6844,36 @@ makeOutputStateDLM <- function(iterator, metadata, nSeason, iAlong, pos, isTrend
                  indicesShow = indices.show,
                  metadata = metadata)
 }
+
+
+## ## HAS_TESTS
+## makeOutputStateDLM <- function(iterator, metadata, nSeason, iAlong, pos, isTrend,
+##                                phi, phiKnown) {
+##     indices <- iterator@indices
+##     n.within <- iterator@nWithin
+##     n.between <- iterator@nBetween
+##     if (is.null(nSeason))
+##         length <- length(indices) * n.within * n.between
+##     else
+##         length <- length(indices) * n.within * n.between * nSeason
+##     first <- pos
+##     last <- pos + length - 1L
+##     dim <- dim(metadata)
+##     dim[iAlong] <- dim[iAlong] + 1L
+##     indices.show <- indicesShow(iterator = iterator,
+##                                 nSeason = nSeason,
+##                                 dim = dim,
+##                                 iAlong = iAlong)
+##     metadata <- makeMetadataStateDLM(metadata = metadata,
+##                                      iAlong = iAlong)
+##     methods::new("SkeletonStateDLM",
+##                  first = first,
+##                  last = last,
+##                  iAlong = iAlong,
+##                  indicesShow = indices.show,
+##                  metadata = metadata)
+## }
+
 
 
 ## HAS_TESTS
