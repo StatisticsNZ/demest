@@ -1,4 +1,7 @@
 
+backward smoothing for trend model not correct when doing prediction - does not handle known alpha0, delta0 correctly.
+
+
 finish predict versions of Aggregate models
 
 continueEstimation version of estimateCounts
@@ -34,7 +37,6 @@ Tests for makeOutputModel for PoissonVaryingUseExpPredict
 
 Tests for makeResultsModel for CombinedModelNotHasY
 
-A 'Zero' prior, which sets all values equal to zero
 
 allow 'mean' or 'sd' to be a single number in Known
 

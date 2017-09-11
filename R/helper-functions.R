@@ -907,6 +907,7 @@ initialDLMNoTrend <- function(object, metadata, sY) {
     phi <- object@phi
     phiKnown <- object@phiKnown@.Data
     dim <- dim(metadata)
+    is.main.effect <- identical(length(dim), 1L)
     if (is.na(along))
         along <- NULL
     i.along <- dembase::checkAndTidyAlong(along = along,
@@ -919,7 +920,8 @@ initialDLMNoTrend <- function(object, metadata, sY) {
     CNoTrend <- makeCNoTrend(K = K,
                              sY = sY,
                              phi = phi,
-                             phiKnown = phiKnown)
+                             phiKnown = phiKnown,
+                             isMainEffect = is.main.effect)
     aNoTrend <- makeANoTrend(K = K)
     RNoTrend <- makeRNoTrend(K = K)
     list(aNoTrend = aNoTrend,
@@ -963,6 +965,7 @@ initialDLMWithTrend <- function(object, beta, metadata, sY, lAll) {
     nuDelta <- object@nuDelta
     omegaDeltaMax <- object@omegaDeltaMax
     dim <- dim(metadata)
+    is.main.effect <- identical(length(dim), 1L)
     J <- makeJ(beta)
     ADelta <- makeAHalfT(A = ADelta,
                          metadata = metadata,
@@ -995,7 +998,8 @@ initialDLMWithTrend <- function(object, beta, metadata, sY, lAll) {
     CWithTrend <- makeCWithTrend(K = K,
                                  sY = sY,
                                  ADelta0 = ADelta0,
-                                 hasLevel = hasLevel)
+                                 hasLevel = hasLevel,
+                                 isMainEffect = is.main.effect)
     aWithTrend <- makeAWithTrend(K = K)
     RWithTrend <- makeRWithTrend(K = K)
     UC <- makeUC(K)
@@ -1920,13 +1924,13 @@ makeM0WithTrend <- function(L, meanDelta0 = NULL) {
 }
 
 ## NO_TESTS
-makeCNoTrend <- function(K, C0 = NULL, sY, phi, phiKnown) {
+makeCNoTrend <- function(K, C0 = NULL, sY, phi, phiKnown, isMainEffect) {
     ans <- replicate(n = K + 1L,
                      1.0,
                      simplify = FALSE)
     if (is.null(C0)) {
         phi.is.one <- phiKnown && isTRUE(all.equal(phi, 1))
-        if (phi.is.one)
+        if (phi.is.one && isMainEffect)
             C0 <- 0
         else {
             A0 <- makeAIntercept(A = NA, sY = sY)
@@ -1952,9 +1956,12 @@ makeCSeason <- function(K, nSeason, ASeason, C0 = NULL) {
 }
 
 ## NO_TESTS
-makeCWithTrend <- function(K, C0 = NULL, sY, ADelta0, hasLevel = TRUE) {
+makeCWithTrend <- function(K, C0 = NULL, sY, ADelta0, hasLevel = TRUE, isMainEffect) {
     if (is.null(C0)) {
-        AAlpha <- 0
+        if (isMainEffect)
+            AAlpha <- 0
+        else
+            AAlpha <- makeAIntercept(A = NA, sY = sY)
         ADelta <- ADelta0@.Data
         C0 <- c(AAlpha^2, ADelta^2)
         C0 <- diag(C0,
@@ -9263,20 +9270,20 @@ makeIteratorCODPCP <- function(dim, iTime, iAge, iTriangle, iMultiple) {
     i.vec <- i + increment
     finished <- n.time == 1L
     methods::new("CohortIteratorOrigDestParChPool",
-        i = i,
-        nTime = n.time,
-        stepTime = step.time,
-        iTime = 1L,
-        hasAge = has.age,
-        nAge = n.age,
-        stepAge = step.age,
-        iAge = i.age,
-        stepTriangle = step.triangle,
-        iTriangle = i.triangle,
-        iVec = i.vec,
-        lengthVec = length.vec,
-        increment = increment,
-        finished = finished)
+                 i = i,
+                 nTime = n.time,
+                 stepTime = step.time,
+                 iTime = 1L,
+                 hasAge = has.age,
+                 nAge = n.age,
+                 stepAge = step.age,
+                 iAge = i.age,
+                 stepTriangle = step.triangle,
+                 iTriangle = i.triangle,
+                 iVec = i.vec,
+                 lengthVec = length.vec,
+                 increment = increment,
+                 finished = finished)
 }
 
 
