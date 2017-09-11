@@ -9191,7 +9191,7 @@ getIPopnNextFromPopn <- function(i, description, useC = FALSE) {
 
 ## TRANSLATED
 ## HAS_TESTS
-getMinValCohort <- function(i, series, iterator, useC = FALSE) {  
+getMinValCohortAccession <- function(i, series, iterator, useC = FALSE) {  
     ## 'i'
     stopifnot(is.integer(i))
     stopifnot(identical(length(i), 1L))
@@ -9201,17 +9201,17 @@ getMinValCohort <- function(i, series, iterator, useC = FALSE) {
     stopifnot(is.integer(series))
     stopifnot(!any(is.na(series)))
     ## 'iterator'
-    stopifnot(methods::is(iterator, "CohortIteratorAccessionPopulation"))
+    stopifnot(methods::is(iterator, "CohortIteratorAccession"))
     ## 'i' and 'series'
     stopifnot(i <= length(series))
     if (useC) {
-        .Call(getMinValCohort_R, i, series, iterator)
+        .Call(getMinValCohortAccession_R, i, series, iterator)
     }
     else {              
         ans <- series[i]
-        iterator <- resetCAP(iterator, i = i)  
+        iterator <- resetCA(iterator, i = i)  
         while (!iterator@finished) {
-            iterator <- advanceCAP(iterator)
+            iterator <- advanceCA(iterator)
             i <- iterator@i
             ans <- min(series[i], ans)
         }
@@ -9219,8 +9219,40 @@ getMinValCohort <- function(i, series, iterator, useC = FALSE) {
     }
 }
 
+
+## TRANSLATED
 ## HAS_TESTS
-makeIteratorCAP <- function(dim, iTime, iAge) {
+getMinValCohortPopulation <- function(i, series, iterator, useC = FALSE) {  
+    ## 'i'
+    stopifnot(is.integer(i))
+    stopifnot(identical(length(i), 1L))
+    stopifnot(!is.na(i))
+    stopifnot(i >= 1L)
+    ## 'series'
+    stopifnot(is.integer(series))
+    stopifnot(!any(is.na(series)))
+    ## 'iterator'
+    stopifnot(methods::is(iterator, "CohortIteratorPopulation"))
+    ## 'i' and 'series'
+    stopifnot(i <= length(series))
+    if (useC) {
+        .Call(getMinValCohortPopulation_R, i, series, iterator)
+    }
+    else {              
+        ans <- series[i]
+        iterator <- resetCP(iterator, i = i)  
+        while (!iterator@finished) {
+            iterator <- advanceCP(iterator)
+            i <- iterator@i
+            ans <- min(series[i], ans)
+        }
+        ans
+    }
+}
+
+
+## HAS_TESTS
+makeIteratorCAP <- function(dim, iTime, iAge, accession) {
     n.time <- dim[iTime]
     step.time <- 1L
     for (d in seq_len(iTime - 1L))
@@ -9239,16 +9271,17 @@ makeIteratorCAP <- function(dim, iTime, iAge) {
         i.age <- as.integer(NA)
     }
     finished <- n.time == 1L
-    methods::new("CohortIteratorAccessionPopulation",
-        i = 1L,
-        nTime = n.time,
-        stepTime = step.time,
-        iTime = 1L,
-        hasAge = has.age,
-        nAge = n.age,
-        stepAge = step.age,
-        iAge = i.age,
-        finished = finished)
+    class <- if (accession) "CohortIteratorAccession" else "CohortIteratorPopulation"
+    methods::new(class,
+                 i = 1L,
+                 nTime = n.time,
+                 stepTime = step.time,
+                 iTime = 1L,
+                 hasAge = has.age,
+                 nAge = n.age,
+                 stepAge = step.age,
+                 iAge = i.age,
+                 finished = finished)
 }
 
 ## HAS_TESTS

@@ -487,11 +487,11 @@ setClass("IsLowerTriangleMixin",
 
 setClass("IteratorAccMixin",
          contains = "VIRTUAL",
-         slots = c(iteratorAcc = "CohortIteratorAccessionPopulation"))
+         slots = c(iteratorAcc = "CohortIteratorAccession"))
          
 setClass("IteratorPopnMixin",
          contains = "VIRTUAL",
-         slots = c(iteratorPopn = "CohortIteratorAccessionPopulation"))
+         slots = c(iteratorPopn = "CohortIteratorPopulation"))
 
 ## NO_TESTS
 setClass("MappingsFromExpMixin",

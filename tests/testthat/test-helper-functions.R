@@ -12782,8 +12782,60 @@ test_that("R and C versions of getIPopnNextFromPopn give same answer", {
     expect_identical(ans.R, ans.C)
 })
 
-test_that("getMinValCohort gives valid answer", {
-    getMinValCohort <- demest:::getMinValCohort
+test_that("getMinValCohortAccession gives valid answer", {
+    getMinValCohortAccession <- demest:::getMinValCohortAccession
+    CohortIterator <- demest:::CohortIterator
+    Accession <- dembase:::Accession
+    accession <- Counts(array(12:1,
+                           dim = c(4, 3),
+                               dimnames = list(age = c("5", "10", "15", "20"),
+                                 time = c(2000, 2005, 2010))))
+    accession <- Accession(accession)
+    iter <- CohortIterator(accession)
+    ans.obtained <- getMinValCohortAccession(i = 2L, series = accession, iter = iter)
+    ans.expected <- 1L
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- getMinValCohortAccession(i = 3L, series = accession, iter = iter)
+    ans.expected <- 5L
+    expect_identical(ans.obtained, ans.expected)
+    accession <- Counts(array(12:1,
+                              dim = c(3, 4),
+                               dimnames = list(time = c(2000, 2005, 2010),
+                                   age = c("5", "10", "15", "20"))))
+    accession <- Accession(accession)
+    iter <- CohortIterator(accession)
+    ans.obtained <- getMinValCohortAccession(i = 5L, series = accession, iter = iter)
+    ans.expected <- 4L
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- getMinValCohortAccession(i = 12L, series = accession, iter = iter)
+    ans.expected <- 1L
+    expect_identical(ans.obtained, ans.expected)
+    accession <- Counts(array(60:1,
+                               dim = 5:3,
+                               dimnames = list(region = 1:5,
+                                   time = c(2001, 2006, 2011, 2016),
+                                   age = c("5", "10", "15"))))
+    accession <- Accession(accession)
+    iter <- CohortIterator(accession)
+    ans.obtained <- getMinValCohortAccession(i = 7L, series = population, iter = iter)
+    ans.expected <- 4L
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- getMinValCohortAccession(i = 45L, series = population, iter = iter)
+    ans.expected <- 1L
+    expect_identical(ans.obtained, ans.expected)
+    population <- Counts(array(5:2,
+                               dim = 4L,
+                               dimnames = list(time = c(0, 10, 20, 30))))
+    accession <- Accession(accession)
+    iter <- CohortIterator(population)
+    ans.obtained <- getMinValCohortAccession(i = 1L, series = population, iter = iter)
+    ans.expected <- 2L
+    expect_identical(ans.obtained, ans.expected)
+})
+
+
+test_that("getMinValCohortPopulation gives valid answer", {
+    getMinValCohortPopulation <- demest:::getMinValCohortPopulation
     CohortIterator <- demest:::CohortIterator
     Population <- dembase:::Population
     population <- Counts(array(1:12,
@@ -12792,7 +12844,7 @@ test_that("getMinValCohort gives valid answer", {
                                  time = c(2000, 2005, 2010))))
     population <- Population(population)
     iter <- CohortIterator(population)
-    ans.obtained <- getMinValCohort(i = 2L, series = population, iter = iter)
+    ans.obtained <- getMinValCohortPopulation(i = 2L, series = population, iter = iter)
     ans.expected <- 2L
     expect_identical(ans.obtained, ans.expected)
     population <- Counts(array(12:1,
@@ -12801,10 +12853,10 @@ test_that("getMinValCohort gives valid answer", {
                                    time = c(2000, 2005, 2010))))
     population <- Population(population)
     iter <- CohortIterator(population)
-    ans.obtained <- getMinValCohort(i = 5L, series = population, iter = iter)
+    ans.obtained <- getMinValCohortPopulation(i = 5L, series = population, iter = iter)
     ans.expected <- 3L
     expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- getMinValCohort(i = 4L, series = population, iter = iter)
+    ans.obtained <- getMinValCohortPopulation(i = 4L, series = population, iter = iter)
     ans.expected <- 1L
     expect_identical(ans.obtained, ans.expected)
     population <- Counts(array(12:1,
@@ -12812,9 +12864,9 @@ test_that("getMinValCohort gives valid answer", {
                                dimnames = list(region = 1:4, time = c(2000, 2005, 2010))))
     population <- Population(population)
     iter <- CohortIterator(population)
-    ans.obtained <- getMinValCohort(i = 1L, series = population, iter = iter)
+    ans.obtained <- getMinValCohortPopulation(i = 1L, series = population, iter = iter)
     ans.expected <- 4L
-    ans.obtained <- getMinValCohort(i = 7L, series = population, iter = iter)
+    ans.obtained <- getMinValCohortPopulation(i = 7L, series = population, iter = iter)
     ans.expected <- 2L
     population <- Counts(array(60:1,
                                dim = 5:3,
@@ -12823,10 +12875,10 @@ test_that("getMinValCohort gives valid answer", {
                                    age = c("0-4", "5-9", "10+"))))
     population <- Population(population)
     iter <- CohortIterator(population)
-    ans.obtained <- getMinValCohort(i = 7L, series = population, iter = iter)
+    ans.obtained <- getMinValCohortPopulation(i = 7L, series = population, iter = iter)
     ans.expected <- 4L
     expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- getMinValCohort(i = 45L, series = population, iter = iter)
+    ans.obtained <- getMinValCohortPopulation(i = 45L, series = population, iter = iter)
     ans.expected <- 1L
     expect_identical(ans.obtained, ans.expected)
     population <- Counts(array(5:2,
@@ -12834,10 +12886,11 @@ test_that("getMinValCohort gives valid answer", {
                                dimnames = list(time = c(0, 10, 20, 30))))
     population <- Population(population)
     iter <- CohortIterator(population)
-    ans.obtained <- getMinValCohort(i = 1L, series = population, iter = iter)
+    ans.obtained <- getMinValCohortPopulation(i = 1L, series = population, iter = iter)
     ans.expected <- 2L
     expect_identical(ans.obtained, ans.expected)
 })
+
 
 ## test_that("R and C versions of getMinValCohort give same answer", {
 ##     getMinValCohort <- demest:::getMinValCohort
@@ -12883,11 +12936,11 @@ test_that("getMinValCohort gives valid answer", {
 ##     }
 ## })
 
-test_that("makeIteratorCAP creates objects from valid inputs", {
+test_that("makeIteratorCAP creates objects from valid inputs - Accession", {
     makeIteratorCAP <- demest:::makeIteratorCAP
     ## dim = 3:4, iAge = 1L, iTime = 2L
-    ans.obtained <- makeIteratorCAP(dim = 3:4, iTime = 1L, iAge = 2L)
-    ans.expected <- new("CohortIteratorAccessionPopulation",
+    ans.obtained <- makeIteratorCAP(dim = 3:4, iTime = 1L, iAge = 2L, accession = TRUE)
+    ans.expected <- new("CohortIteratorAccession",
                         i = 1L,
                         nTime = 3L,
                         stepTime = 1L,
@@ -12899,8 +12952,8 @@ test_that("makeIteratorCAP creates objects from valid inputs", {
                         finished = FALSE)
     expect_identical(ans.obtained, ans.expected)
     ## dim = 3:4, iAge = 2L, iTime = 1L 
-    ans.obtained <- makeIteratorCAP(dim = 3:4, iTime = 1L, iAge = 2L)
-    ans.expected <- new("CohortIteratorAccessionPopulation",
+    ans.obtained <- makeIteratorCAP(dim = 3:4, iTime = 1L, iAge = 2L, accession = TRUE)
+    ans.expected <- new("CohortIteratorAccession",
                         i = 1L,
                         nTime = 3L,
                         stepTime = 1L,
@@ -12912,8 +12965,8 @@ test_that("makeIteratorCAP creates objects from valid inputs", {
                         finished = FALSE)
     expect_identical(ans.obtained, ans.expected)
     ## dim = 3:4, iAge = 0L, iTime = 2L 
-    ans.obtained <- makeIteratorCAP(dim = 3:4, iTime = 2L, iAge = 0L)
-    ans.expected <- new("CohortIteratorAccessionPopulation",
+    ans.obtained <- makeIteratorCAP(dim = 3:4, iTime = 2L, iAge = 0L, accession = TRUE)
+    ans.expected <- new("CohortIteratorAccession",
                         i = 1L,
                         nTime = 4L,
                         stepTime = 3L,
@@ -12925,8 +12978,8 @@ test_that("makeIteratorCAP creates objects from valid inputs", {
                         finished = FALSE)
     expect_identical(ans.obtained, ans.expected)
     ## dim = 2:5, iTime = 4L, iAge = 3L
-    ans.obtained <- makeIteratorCAP(dim = 2:5, iTime = 4L, iAge = 3L)
-    ans.expected <- new("CohortIteratorAccessionPopulation",
+    ans.obtained <- makeIteratorCAP(dim = 2:5, iTime = 4L, iAge = 3L, accession = TRUE)
+    ans.expected <- new("CohortIteratorAccession",
                         i = 1L,
                         nTime = 5L,
                         stepTime = 24L,
@@ -12938,6 +12991,63 @@ test_that("makeIteratorCAP creates objects from valid inputs", {
                         finished = FALSE)
     expect_identical(ans.obtained, ans.expected)
 })
+
+test_that("makeIteratorCAP creates objects from valid inputs - Population", {
+    makeIteratorCAP <- demest:::makeIteratorCAP
+    ## dim = 3:4, iAge = 1L, iTime = 2L
+    ans.obtained <- makeIteratorCAP(dim = 3:4, iTime = 1L, iAge = 2L, accession = FALSE)
+    ans.expected <- new("CohortIteratorPopulation",
+                        i = 1L,
+                        nTime = 3L,
+                        stepTime = 1L,
+                        iTime = 1L,
+                        hasAge = TRUE,
+                        nAge = 4L,
+                        stepAge = 3L,
+                        iAge = 1L,
+                        finished = FALSE)
+    expect_identical(ans.obtained, ans.expected)
+    ## dim = 3:4, iAge = 2L, iTime = 1L 
+    ans.obtained <- makeIteratorCAP(dim = 3:4, iTime = 1L, iAge = 2L, accession = FALSE)
+    ans.expected <- new("CohortIteratorPopulation",
+                        i = 1L,
+                        nTime = 3L,
+                        stepTime = 1L,
+                        iTime = 1L,
+                        hasAge = TRUE,
+                        nAge = 4L,
+                        stepAge = 3L,
+                        iAge = 1L,
+                        finished = FALSE)
+    expect_identical(ans.obtained, ans.expected)
+    ## dim = 3:4, iAge = 0L, iTime = 2L 
+    ans.obtained <- makeIteratorCAP(dim = 3:4, iTime = 2L, iAge = 0L, accession = FALSE)
+    ans.expected <- new("CohortIteratorPopulation",
+                        i = 1L,
+                        nTime = 4L,
+                        stepTime = 3L,
+                        iTime = 1L,
+                        hasAge = FALSE,
+                        nAge = as.integer(NA),
+                        stepAge = as.integer(NA),
+                        iAge = as.integer(NA),
+                        finished = FALSE)
+    expect_identical(ans.obtained, ans.expected)
+    ## dim = 2:5, iTime = 4L, iAge = 3L
+    ans.obtained <- makeIteratorCAP(dim = 2:5, iTime = 4L, iAge = 3L, accession = FALSE)
+    ans.expected <- new("CohortIteratorPopulation",
+                        i = 1L,
+                        nTime = 5L,
+                        stepTime = 24L,
+                        iTime = 1L,
+                        hasAge = TRUE,
+                        nAge = 4L,
+                        stepAge = 6L,
+                        iAge = 1L,
+                        finished = FALSE)
+    expect_identical(ans.obtained, ans.expected)
+})
+
 
 test_that("makeIteratorCC creates objects from valid inputs", {
     makeIteratorCC <- demest:::makeIteratorCC 

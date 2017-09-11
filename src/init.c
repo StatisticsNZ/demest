@@ -858,28 +858,52 @@ MAPPING_GET_IVEC_WRAPPER(getIExpFirstFromOrigDest);
 MAPPING_GET_I_WRAPPER(getICellCompFromExp);
 MAPPING_GET_I_WRAPPER(getICellBirthsFromExp);
 
-/* one off wrapper for getMinValCohort */
-SEXP getMinValCohort_R(SEXP i_R, SEXP series_R, SEXP iterator_R)
+/* one off wrapper for getMinValCohortAccession */
+SEXP getMinValCohortAccession_R(SEXP i_R, SEXP series_R, SEXP iterator_R)
 {
     int i = *INTEGER(i_R);
     
-    SEXP dup_R; /* iter_R is reset and advanced in getMinValCohort */
+    SEXP dup_R; /* iter_R is reset and advanced in getMinValCohortAccession */
     PROTECT(dup_R = duplicate(iterator_R));
     
-    int ans = getMinValCohort(i, series_R, dup_R);
+    int ans = getMinValCohortAccession(i, series_R, dup_R);
     UNPROTECT(1);     
     return ScalarInteger(ans);
 }
 
+/* one off wrapper for getMinValCohortPopulation */
+SEXP getMinValCohortPopulation_R(SEXP i_R, SEXP series_R, SEXP iterator_R)
+{
+    int i = *INTEGER(i_R);
+    
+    SEXP dup_R; /* iter_R is reset and advanced in getMinValCohortPopulation */
+    PROTECT(dup_R = duplicate(iterator_R));
+    
+    int ans = getMinValCohortPopulation(i, series_R, dup_R);
+    UNPROTECT(1);     
+    return ScalarInteger(ans);
+}
 
-/* one off wrapper for resetCAP */
-SEXP resetCAP_R(SEXP iterator_R, SEXP i_R)
+/* one off wrapper for resetCA */
+SEXP resetCA_R(SEXP iterator_R, SEXP i_R)
 {
     int i = *INTEGER(i_R);
     
     SEXP ans_R; 
     PROTECT(ans_R = duplicate(iterator_R));
-    resetCAP(ans_R, i);
+    resetCA(ans_R, i);
+    UNPROTECT(1);
+    return ans_R;
+}
+
+/* one off wrapper for resetCP */
+SEXP resetCP_R(SEXP iterator_R, SEXP i_R)
+{
+    int i = *INTEGER(i_R);
+    
+    SEXP ans_R; 
+    PROTECT(ans_R = duplicate(iterator_R));
+    resetCP(ans_R, i);
     UNPROTECT(1);
     return ans_R;
 }
@@ -1030,7 +1054,8 @@ UPDATEOBJECT_NOPRNG_WRAPPER_R(advanceM);
 UPDATEOBJECT_NOPRNG_WRAPPER_R(resetM);
 UPDATEOBJECT_NOPRNG_WRAPPER_R(advanceS);
 UPDATEOBJECT_NOPRNG_WRAPPER_R(resetS);
-UPDATEOBJECT_NOPRNG_WRAPPER_R(advanceCAP);
+UPDATEOBJECT_NOPRNG_WRAPPER_R(advanceCA);
+UPDATEOBJECT_NOPRNG_WRAPPER_R(advanceCP);
 UPDATEOBJECT_NOPRNG_WRAPPER_R(advanceCC);
 
 
@@ -1425,9 +1450,11 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(resetM_R, 1),
   CALLDEF(advanceS_R, 1),
   CALLDEF(resetS_R, 1),
-  CALLDEF(advanceCAP_R, 1),
+  CALLDEF(advanceCA_R, 1),
+  CALLDEF(advanceCP_R, 1),
   CALLDEF(advanceCC_R, 1),
-  CALLDEF(resetCAP_R, 2),
+  CALLDEF(resetCA_R, 2),
+  CALLDEF(resetCP_R, 2),
   CALLDEF(resetCC_R, 2),
   CALLDEF(resetCODPCP_R, 2),
 
@@ -1564,7 +1591,8 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(getIAccNextFromPopn_R, 2),
   CALLDEF(getIPopnNextFromPopn_R, 2),
   CALLDEF(getIExpFirstFromPopn_R, 2),
-  CALLDEF(getMinValCohort_R, 3),
+  CALLDEF(getMinValCohortAccession_R, 3),
+  CALLDEF(getMinValCohortPopulation_R, 3),
 
   /* mapping functions */
   CALLDEF(getIPopnNextFromComp_R, 2),

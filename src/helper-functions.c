@@ -3373,20 +3373,45 @@ getIPopnNextFromPopn(int i, SEXP description_R)
 }
 
 int
-getMinValCohort(int i, SEXP series_R, SEXP iterator_R)
+getMinValCohortAccession(int i, SEXP series_R, SEXP iterator_R)
 {
     int *series = INTEGER(series_R);
     
     int ans = series[i-1];
     
-    resetCAP(iterator_R, i);
+    resetCA(iterator_R, i);
     
     int *finished = INTEGER(GET_SLOT(iterator_R, finished_sym));
     int *iPtr = INTEGER(GET_SLOT(iterator_R, i_sym));
     
     while(!(*finished)) {
         
-        advanceCAP(iterator_R);
+        advanceCA(iterator_R);
+        int check = series[*iPtr - 1];
+        
+        if (check < ans) {
+            ans = check;
+        }
+    }
+    
+    return ans;
+}
+
+int
+getMinValCohortPopulation(int i, SEXP series_R, SEXP iterator_R)
+{
+    int *series = INTEGER(series_R);
+    
+    int ans = series[i-1];
+    
+    resetCP(iterator_R, i);
+    
+    int *finished = INTEGER(GET_SLOT(iterator_R, finished_sym));
+    int *iPtr = INTEGER(GET_SLOT(iterator_R, i_sym));
+    
+    while(!(*finished)) {
+        
+        advanceCP(iterator_R);
         int check = series[*iPtr - 1];
         
         if (check < ans) {
