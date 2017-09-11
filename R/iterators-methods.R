@@ -267,7 +267,7 @@ resetCA <- function(object, i, useC = FALSE) {
     stopifnot(!is.na(i))
     stopifnot(i >= 1L)
     if (useC) {
-        .Call(resetCAP_R, object, i)
+        .Call(resetAP_R, object, i)
     }
     else {
         step.time <- object@stepTime
@@ -280,6 +280,8 @@ resetCA <- function(object, i, useC = FALSE) {
             i.age <- (((i - 1L) %/% step.age) %% n.age) + 1L # R-style
         }
         finished <- i.time >= n.time
+        if (!finished && has.age)
+            finished <- i.age >= n.age
         object@i <- i
         object@iTime <- i.time
         if (has.age)
@@ -301,7 +303,7 @@ resetCP <- function(object, i, useC = FALSE) {
     stopifnot(!is.na(i))
     stopifnot(i >= 1L)
     if (useC) {
-        .Call(resetCAP_R, object, i)
+        .Call(resetCP_R, object, i)
     }
     else {
         step.time <- object@stepTime
@@ -314,8 +316,6 @@ resetCP <- function(object, i, useC = FALSE) {
             i.age <- (((i - 1L) %/% step.age) %% n.age) + 1L # R-style
         }
         finished <- (i.time >= n.time)
-        if (!finished && has.age)
-            finished <- i.age >= n.age
         object@i <- i
         object@iTime <- i.time
         if (has.age)
