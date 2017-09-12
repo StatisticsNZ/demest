@@ -788,8 +788,6 @@ updateAlphaDLMNoTrend(SEXP prior_R, double *betaTilde, int J)
     getV_Internal(v, prior_R, J);
     
     double tolerance = *REAL(GET_SLOT(prior_R, tolerance_sym));
-    int isPhiKnown = *LOGICAL(GET_SLOT(prior_R, phiKnown_sym));
-    int nonStationary = isPhiKnown & (phi > (1 - tolerance));
 
     SEXP iterator_a_R = GET_SLOT(prior_R, iteratorState_sym);
     SEXP iterator_v_R = GET_SLOT(prior_R, iteratorV_sym);
@@ -831,13 +829,15 @@ updateAlphaDLMNoTrend(SEXP prior_R, double *betaTilde, int J)
 	alpha[index_a] = last_alpha;
 
 	/* backward sample */
-	for (int i = K-1; i >= nonStationary; --i) { /* if nonstationary, alpha0 = 0 */
-	    double B = C[i] * phi / R[i];
-	    double mStar = m[i] + B * (last_alpha - a[i]);
-	    double CStar = C[i] - B*B*R[i];
-	    index_a = indices_a[i] - 1;
-	    last_alpha = rnorm( mStar, sqrt(CStar) );
-	    alpha[index_a] = last_alpha;
+	for (int i = K-1; i >= 0; --i) {
+	    if ((i > 0) || (C[0] > tolerance)) {
+		double B = C[i] * phi / R[i];
+		double mStar = m[i] + B * (last_alpha - a[i]);
+		double CStar = C[i] - B*B*R[i];
+		index_a = indices_a[i] - 1;
+		last_alpha = rnorm( mStar, sqrt(CStar) );
+		alpha[index_a] = last_alpha;
+	    }
 	}
         
         advanceA(iterator_a_R);

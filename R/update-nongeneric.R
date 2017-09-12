@@ -479,8 +479,6 @@ updateAlphaDLMNoTrend <- function(prior, betaTilde, useC = FALSE) {
         omega.sq <- omega^2
         v <- getV(prior)              # numeric vector length KL
         tolerance <- prior@tolerance@.Data
-        phi.known <- prior@phiKnown@.Data
-        ## non.stationary <- phi.known && (phi > 1 - tolerance)
         iterator.a <- prior@iteratorState
         iterator.v <- prior@iteratorV
         iterator.a <- resetA(iterator.a)
