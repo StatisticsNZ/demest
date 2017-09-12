@@ -117,27 +117,19 @@ advanceCA <- function(object, useC = FALSE) {
     else {
         i <- object@i
         step.time <- object@stepTime
+        step.age <- object@stepAge
         n.time <- object@nTime
+        n.age <- object@nAge
         i.time <- object@iTime
-        has.age <- object@hasAge
+        i.age <- object@iAge
         i.time <- i.time + 1L
         i <- i + step.time
-        if (has.age) {
-            step.age <- object@stepAge
-            n.age <- object@nAge
-            i.age <- object@iAge
-            if (i.age < n.age) {
-                i.age <- i.age + 1L
-                i <- i + step.age
-            }
-        }
-        finished <- (i.time >= n.time)
-        if (!finished && has.age)
-            finished <- i.age >= n.age
+        i.age <- i.age + 1L
+        i <- i + step.age
+        finished <- (i.time >= n.time) | (i.age >= n.age)
         object@i <- i
         object@iTime <- i.time
-        if (has.age)
-            object@iAge <- i.age
+        object@iAge <- i.age
         object@finished <- finished
         object
     }
@@ -267,25 +259,20 @@ resetCA <- function(object, i, useC = FALSE) {
     stopifnot(!is.na(i))
     stopifnot(i >= 1L)
     if (useC) {
-        .Call(resetAP_R, object, i)
+        .Call(resetCA_R, object, i)
     }
     else {
         step.time <- object@stepTime
+        step.age <- object@stepAge
         n.time <- object@nTime
+        n.age <- object@nAge
         has.age <- object@hasAge
         i.time <- (((i - 1L) %/% step.time) %% n.time) + 1L # R-style
-        if (has.age) {
-            step.age <- object@stepAge
-            n.age <- object@nAge
-            i.age <- (((i - 1L) %/% step.age) %% n.age) + 1L # R-style
-        }
-        finished <- i.time >= n.time
-        if (!finished && has.age)
-            finished <- i.age >= n.age
+        i.age <- (((i - 1L) %/% step.age) %% n.age) + 1L # R-style
+        finished <- (i.time >= n.time) | (i.age >= n.age)
         object@i <- i
         object@iTime <- i.time
-        if (has.age)
-            object@iAge <- i.age
+        object@iAge <- i.age
         object@finished <- finished
         object
     }

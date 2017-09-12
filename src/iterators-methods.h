@@ -24,6 +24,14 @@
     /* reset dims iterator */
     void resetD(SEXP iterator_R);
 
+    void advanceCP(SEXP iterator_R);
+
+    void advanceCA(SEXP iterator_R);
+
+    void resetCA(SEXP iterator_R, int i);
+
+    void resetCP(SEXP iterator_R, int i);
+
     
 
 #endif

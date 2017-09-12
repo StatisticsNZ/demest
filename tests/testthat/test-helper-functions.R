@@ -12870,23 +12870,6 @@ test_that("R and C versions of getMinValCohortAccession give same answer", {
 
 test_that("getMinValCohortAccessionPopulation gives valid answer", {
     getMinValCohortAccessionPopulation <- demest:::getMinValCohort
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Population
     CohortIterator <- demest:::CohortIterator
     Population <- dembase:::Population
     population <- Counts(array(1:12,
@@ -12954,8 +12937,8 @@ test_that("R and C versions of getMinValCohortPopulation give same answer", {
     population <- Population(population)
     iter <- CohortIterator(population)
     for (i in 1:12) {
-        ans.R <- getMinValCohort(i = i, series = population, iter = iter, useC = FALSE)
-        ans.C <- getMinValCohort(i = i, series = population, iter = iter, useC = TRUE)
+        ans.R <- getMinValCohortPopulation(i = i, series = population, iter = iter, useC = FALSE)
+        ans.C <- getMinValCohortPopulation(i = i, series = population, iter = iter, useC = TRUE)
         expect_identical(ans.R, ans.C)
     }
     population <- Counts(array(12:1,
@@ -12965,8 +12948,8 @@ test_that("R and C versions of getMinValCohortPopulation give same answer", {
     population <- Population(population)
     iter <- CohortIterator(population)
     for (i in 1:12) {
-        ans.R <- getMinValCohort(i = i, series = population, iter = iter, useC = FALSE)
-        ans.C <- getMinValCohort(i = i, series = population, iter = iter, useC = TRUE)
+        ans.R <- getMinValCohortPopulation(i = i, series = population, iter = iter, useC = FALSE)
+        ans.C <- getMinValCohortPopulation(i = i, series = population, iter = iter, useC = TRUE)
         expect_identical(ans.R, ans.C)
     }
     population <- Counts(array(12:1,
@@ -12975,8 +12958,8 @@ test_that("R and C versions of getMinValCohortPopulation give same answer", {
     population <- Population(population)
     iter <- CohortIterator(population)
     for (i in 1:12) {
-        ans.R <- getMinValCohort(i = i, series = population, iter = iter, useC = FALSE)
-        ans.C <- getMinValCohort(i = i, series = population, iter = iter, useC = TRUE)
+        ans.R <- getMinValCohortPopulation(i = i, series = population, iter = iter, useC = FALSE)
+        ans.C <- getMinValCohortPopulation(i = i, series = population, iter = iter, useC = TRUE)
         expect_identical(ans.R, ans.C)
     }
     population <- Counts(array(60:1,
@@ -12987,8 +12970,8 @@ test_that("R and C versions of getMinValCohortPopulation give same answer", {
     population <- Population(population)
     iter <- CohortIterator(population)
     for (i in 1:60) {
-        ans.R <- getMinValCohort(i = i, series = population, iter = iter, useC = FALSE)
-        ans.C <- getMinValCohort(i = i, series = population, iter = iter, useC = TRUE)
+        ans.R <- getMinValCohortPopulation(i = i, series = population, iter = iter, useC = FALSE)
+        ans.C <- getMinValCohortPopulation(i = i, series = population, iter = iter, useC = TRUE)
         expect_identical(ans.R, ans.C)
     }
 })

@@ -250,34 +250,23 @@ advanceCA(SEXP iterator_R)
 {
     int i = *INTEGER(GET_SLOT(iterator_R, i_sym));
     int stepTime = *INTEGER(GET_SLOT(iterator_R, stepTime_sym));
+    int stepAge = *INTEGER(GET_SLOT(iterator_R, stepAge_sym));
     int nTime = *INTEGER(GET_SLOT(iterator_R, nTime_sym));
+    int nAge = *INTEGER(GET_SLOT(iterator_R, nAge_sym));
     int iTime = *INTEGER(GET_SLOT(iterator_R, iTime_sym));
-    int hasAge = *INTEGER(GET_SLOT(iterator_R, hasAge_sym));
-    int iAge;
-    int nAge;
+    int iAge = *INTEGER(GET_SLOT(iterator_R, iAge_sym));
     
     ++iTime;
     i += stepTime;    
         
-    if (hasAge) {
-        int stepAge = *INTEGER(GET_SLOT(iterator_R, stepAge_sym));
-        nAge = *INTEGER(GET_SLOT(iterator_R, nAge_sym));
-        iAge = *INTEGER(GET_SLOT(iterator_R, iAge_sym));
-        
-        if (iAge < nAge) {
-            ++iAge;
-            i += stepAge;
-        }
-        SET_SLOT(iterator_R, iAge_sym, ScalarInteger(iAge));
-    }
+    ++iAge;
+    i += stepAge;
+
+    int finished = (iTime >= nTime) | (iAge >= nAge);
     
+    SET_SLOT(iterator_R, iAge_sym, ScalarInteger(iAge));
     SET_SLOT(iterator_R, i_sym, ScalarInteger(i));
     SET_SLOT(iterator_R, iTime_sym, ScalarInteger(iTime));
-    
-    int finished = (iTime >= nTime);
-    if (!finished & hasAge)
-	finished = (iAge >= nAge);
-    
     SET_SLOT(iterator_R, finished_sym, ScalarLogical(finished));
 }
 
@@ -375,28 +364,17 @@ void
 resetCA(SEXP iterator_R, int i)
 {
     int stepTime = *INTEGER(GET_SLOT(iterator_R, stepTime_sym));
+    int stepAge = *INTEGER(GET_SLOT(iterator_R, stepAge_sym));
     int nTime = *INTEGER(GET_SLOT(iterator_R, nTime_sym));
-    int hasAge = *INTEGER(GET_SLOT(iterator_R, hasAge_sym));
-    int nAge;
-    
+    int nAge = *INTEGER(GET_SLOT(iterator_R, nAge_sym));    
     int iTime_R = (((i - 1) / stepTime) % nTime) + 1; /* R-style */
-    int iAge_R;
-    
-    if (hasAge) {
-    
-        int stepAge = *INTEGER(GET_SLOT(iterator_R, stepAge_sym));
-        nAge = *INTEGER(GET_SLOT(iterator_R, nAge_sym));
-        iAge_R = (((i - 1) / stepAge) % nAge) + 1; /* R-style */
-        SET_SLOT(iterator_R, iAge_sym, ScalarInteger(iAge_R));
-    }
-    
-    SET_SLOT(iterator_R, i_sym, ScalarInteger(i));
+    int iAge_R = (((i - 1) / stepAge) % nAge) + 1; /* R-style */
+
     SET_SLOT(iterator_R, iTime_sym, ScalarInteger(iTime_R));
+    SET_SLOT(iterator_R, iAge_sym, ScalarInteger(iAge_R));
+    SET_SLOT(iterator_R, i_sym, ScalarInteger(i));
     
-    int finished = (iTime_R >= nTime);
-    if (!finished & hasAge)
-	finished = (iAge_R >= nAge);
-    
+    int finished = (iTime_R >= nTime) | (iAge_R >= nAge);
     SET_SLOT(iterator_R, finished_sym, ScalarLogical(finished));
 }
 
@@ -411,7 +389,6 @@ resetCP(SEXP iterator_R, int i)
     int iTime_R = (((i - 1) / stepTime) % nTime) + 1; /* R-style */
     
     if (hasAge) {
-    
         int stepAge = *INTEGER(GET_SLOT(iterator_R, stepAge_sym));
         int nAge = *INTEGER(GET_SLOT(iterator_R, nAge_sym));
         int iAge_R = (((i - 1) / stepAge) % nAge) + 1; /* R-style */
