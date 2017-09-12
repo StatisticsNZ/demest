@@ -262,7 +262,7 @@ advanceCA(SEXP iterator_R)
     ++iAge;
     i += stepAge;
 
-    int finished = (iTime >= nTime) | (iAge >= nAge);
+    int finished = (iTime >= nTime) || (iAge >= nAge);
     
     SET_SLOT(iterator_R, iAge_sym, ScalarInteger(iAge));
     SET_SLOT(iterator_R, i_sym, ScalarInteger(i));
@@ -374,7 +374,7 @@ resetCA(SEXP iterator_R, int i)
     SET_SLOT(iterator_R, iAge_sym, ScalarInteger(iAge_R));
     SET_SLOT(iterator_R, i_sym, ScalarInteger(i));
     
-    int finished = (iTime_R >= nTime) | (iAge_R >= nAge);
+    int finished = (iTime_R >= nTime) || (iAge_R >= nAge);
     SET_SLOT(iterator_R, finished_sym, ScalarLogical(finished));
 }
 
