@@ -1958,9 +1958,9 @@ makeCSeason <- function(K, nSeason, ASeason, C0 = NULL) {
 ## NO_TESTS
 makeCWithTrend <- function(K, C0 = NULL, sY, ADelta0, hasLevel = TRUE, isMainEffect) {
     if (is.null(C0)) {
-        if (isMainEffect)
-            AAlpha <- 0
-        else
+        ## if (isMainEffect)
+        ##     AAlpha <- 0
+        ## else
             AAlpha <- makeAIntercept(A = NA, sY = sY)
         ADelta <- ADelta0@.Data
         C0 <- c(AAlpha^2, ADelta^2)
