@@ -4,7 +4,7 @@
 \alias{continueEstimation}
 \title{Add extra iterations to burnin or output.}
 \usage{
-continueEstimation(filename, nBurnin = 0, nSim = 1000, outfile = "",
+continueEstimation(filename, nBurnin = 0, nSim = 1000, outfile = NULL,
   verbose = FALSE, useC = TRUE)
 }
 \arguments{

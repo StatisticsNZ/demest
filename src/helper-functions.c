@@ -3383,12 +3383,20 @@ getMinValCohortAccession(int i, SEXP series_R, SEXP iterator_R)
     
     int *finished = INTEGER(GET_SLOT(iterator_R, finished_sym));
     int *iPtr = INTEGER(GET_SLOT(iterator_R, i_sym));
+
+    printf("finished: %d", *finished);
+    printf("iPtr: %d", *iPtr);
     
     while(!(*finished)) {
         
         advanceCA(iterator_R);
         int check = series[*iPtr - 1];
-        
+
+    printf("finished: %d", *finished);
+    printf("iPtr: %d", *iPtr);
+    printf("check: %d", check);
+
+	
         if (check < ans) {
             ans = check;
         }

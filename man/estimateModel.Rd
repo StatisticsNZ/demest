@@ -6,7 +6,7 @@
 \usage{
 estimateModel(model, y, exposure = NULL, weights = NULL, filename = NULL,
   nBurnin = 1000, nSim = 1000, nChain = 4, nThin = 1, parallel = TRUE,
-  outfile = "", nUpdateMax = 50, verbose = TRUE, useC = TRUE)
+  outfile = NULL, nUpdateMax = 50, verbose = TRUE, useC = TRUE)
 }
 \arguments{
 \item{model}{An object of class \code{\linkS4class{SpecModel}},
