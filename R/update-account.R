@@ -2,6 +2,7 @@
 
 ## updating proposals #############################################################
 
+## HAS_TESTS
 updateProposalAccountMovePopn <- function(combined, useC = FALSE) {
     stopifnot(is(combined, "CombinedAccountMovements"))
     if (useC) {
@@ -24,17 +25,17 @@ updateProposalAccountMovePopn <- function(combined, useC = FALSE) {
                                                  description = description)
         i.popn.next <- getIPopnNextFromPopn(i = i.cell,
                                             description = description)
-        min.val <- getMinValCohort(i = i.popn.next,
-                                   series = population,
-                                   iterator = iterator.popn)
+        min.val <- getMinValCohortPopulation(i = i.popn.next,
+                                             series = population,
+                                             iterator = iterator.popn)
         if (has.age) {
             i.acc.next <- getIAccNextFromPopn(i = i.cell,
                                               description = description)
             has.later.accession <- i.acc.next > 0L
             if (has.later.accession) {
-                min.acc <- getMinValCohort(i = i.acc.next,
-                                           series = accession,
-                                           iterator = iterator.acc)
+                min.acc <- getMinValCohortAccession(i = i.acc.next,
+                                                    series = accession,
+                                                    iterator = iterator.acc)
                 min.val <- min(min.val, min.acc)
             }
         }
@@ -88,3 +89,63 @@ updateProposalAccountMovePopn <- function(combined, useC = FALSE) {
         combined
     }
 }
+
+
+## Calculating log-likelihood #################################################
+
+## HAS_TESTS
+diffLogLikPopnOneCell <- function(iAfter, nContribute, diff, population,
+                                  model, dataset, transform, useC = FALSE) {
+    ## iAfter
+    stopifnot(identical(length(iAfter), 1L))
+    stopifnot(is.integer(iAfter))
+    stopifnot(!is.na(iAfter))
+    stopifnot(iAfter > 0L)
+    ## nContribute
+    stopifnot(identical(length(nContribute), 1L))
+    stopifnot(is.integer(nContribute))
+    stopifnot(!is.na(nContribute))
+    stopifnot(nContribute > 0L)
+    ## diff
+    stopifnot(identical(length(diff), 1L))
+    stopifnot(is.integer(diff))
+    stopifnot(!is.na(diff))
+    ## population
+    stopifnot(is(population, "Population"))
+    ## model
+    stopifnot(is(model, "Model"))
+    ## dataset
+    stopifnot(is(dataset, "Counts"))
+    stopifnot(is.integer(dataset))
+    ## transform
+    stopifnot(is(transform, "CollapseTransformExtra"))
+    if (useC) {
+        .Call(diffLogLikPopnOneCell_R,
+              iAfter, nContribute, diff, population,
+              model, dataset, transform)
+    }
+    else {
+        cell.has.no.data <- is.na(dataset@.Data[iAfter])
+        if (cell.has.no.data)
+            return(0)
+        vec.i.before <- dembase::getIBefore(i = iAfter,
+                                            transform = transform)
+        total.popn.curr <- 0L
+        for (i.before in  vec.i.before)
+            total.popn.curr <- total.popn.curr + population[i.before]
+        total.popn.prop <- total.popn.curr + nContribute * diff
+        log.lik.prop <- logLikelihood(model = model,
+                                      count = total.popn.prop,
+                                      dataset = dataset,
+                                      i = iAfter)
+        if (is.infinite(log.lik.prop))
+            return(log.lik.prop)
+        log.lik.curr <- logLikelihood(model = model,
+                                      count = total.popn.curr,
+                                      dataset = dataset,
+                                      i = iAfter)
+        log.lik.prop - log.lik.curr
+    }
+}
+
+

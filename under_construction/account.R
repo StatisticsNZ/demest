@@ -129,8 +129,6 @@ updateProposalAccountBirths <- function(combined, useC = FALSE) {
         i.cell <- chooseICellComp(description.comp)
         i.exp.first <- getIExpFirstFromBirths(i = i.cell,
                                               mapping = mapping.exposure)
-        is.lower.triangle <- isLowerTriangle(i = i.cell,
-                                             description = description.comp)
         if (uses.exposure)
             i.exposure <- getIExposure(i = i.cell,
                                        mapping = mapping.to.exposure)
@@ -149,6 +147,8 @@ updateProposalAccountBirths <- function(combined, useC = FALSE) {
                                            iter = iterator.acc)
                 min.val <- min(min.val, min.acc)
             }
+            is.lower.triangle <- isLowerTriangle(i = i.cell,
+                                                 description = description.comp)
         }
         val.curr <- component[i.cell]
         lower <- val.curr - min.val
@@ -174,16 +174,12 @@ updateProposalAccountBirths <- function(combined, useC = FALSE) {
         if (generated.new.proposal) {
             combined@iCell <- i.cell
             combined@iCellOther <- NA_integer_
-            combined@isLowerTriangle <- is.lower.triangle
             combined@iPopnNext <- i.popn.next
             combined@iPopnNextOther <- NA_integer_
             if (uses.age) {
                 combined@iAccNext <- i.acc.next
                 combined@iAccNextOther <- NA_integer_
-            }
-            else {
-                combined@iAccNext <- NA_integer_
-                combined@iAccNextOther <- NA_integer_
+                combined@isLowerTriangle <- is.lower.triangle
             }
             if (uses.exposure) {
                 combined@iExposure <- i.exposure
@@ -200,11 +196,13 @@ updateProposalAccountBirths <- function(combined, useC = FALSE) {
         else {
             combined@iCell <- NA_integer_
             combined@iCellOther <- NA_integer_
-            combined@isLowerTriangle <- NA
             combined@iPopnNext <- NA_integer_
             combined@iPopnNextOther <- NA_integer_
-            combined@iAccNext <- NA_integer_
-            combined@iAccNextOther <- NA_integer_
+            if (uses.age) {
+                combined@iAccNext <- NA_integer_
+                combined@iAccNextOther <- NA_integer_
+                combined@isLowerTriangle <- NA
+            }
             combined@iExposure <- NA_integer_
             combined@iExposureOther <- NA_integer_
             combined@iExpFirst <- NA_integer_
@@ -1146,7 +1144,7 @@ diffLogLikPopnOneDataset <- function(diff, iFirst, iterator, population,
     stopifnot(!is.na(iFirst))
     stopifnot(iFirst > 0L)
     ## iterator
-    stopifnot(is(iterator, "CohortIteratorAccessionPopulation"))
+    stopifnot(is(iterator, "CohortIteratorPopulation"))
     ## model
     stopifnot(is(model, "Model"))
     ## dataset
@@ -1158,93 +1156,36 @@ diffLogLikPopnOneDataset <- function(diff, iFirst, iterator, population,
               model, dataset, transform)
     }
     else {
-        iterator <- resetCAP(iterator, i = iFirst)
-        i.after <- getIAfter(i = i.before, transform = transform)
-        if (iterator@finished) {
-            diffLogLikPopnOneCell(iAfter = i.after,
-                                  nContribute = 1L,
-                                  diff = diff,
-                                  transform = transform,
-                                  population = population,
-                                  model = model,
-                                  dataset = dataset)
-        }
-        else {
-            i.after.old <- i.after
-            n.contribute <- 1L
-            ans <- 0
-            while (!iterator@finished) {
-                iterator <- advanceCAP(iterator)
-                i.before <- iterator@i
-                i.after <- getIAfter(i = i.before, transform = transform)
-                if (i.after == i.after.old) {
-                    n.contribute <- n.contribute + 1L
-                }
-                else {
-                    ans <- ans + diffLogLikPopnOneCell(iAfter = i.after.old,
-                                                       nContribute = nContribute,
-                                                       diff = diff,
-                                                       transform = transform,
-                                                       population = population,
-                                                       model = model,
-                                                       dataset = dataset)
-                    i.after.old <- i.after
-                }
+        iterator <- resetCP(iterator, i = iFirst)
+        i.after <- getIAfter(i = iFirst, transform = transform)
+        ans <- 0
+        n.contribute <- 1L
+        while (!iterator@finished) {
+            iterator <- advanceCP(iterator)
+            i.before <- iterator@i
+            i.after.next <- getIAfter(i = i.before, transform = transform)
+            if (i.after.next == i.after)
+                n.contribute <- n.contribute + 1L
+            else {
+                ans <- ans + diffLogLikPopnOneCell(iAfter = i.after,
+                                                   nContribute = n.contribute,
+                                                   diff = diff,
+                                                   transform = transform,
+                                                   population = population,
+                                                   model = model,
+                                                   dataset = dataset)
+                i.after <- i.after.next
+                n.contribute <- 1L
             }
-            ans
         }
-    }
-}
-
-diffLogLikPopnOneCell <- function(iAfter, nContribute, diff, population
-                                  model, dataset, transform, useC = FALSE) {
-    ## iAfter
-    stopifnot(identical(length(iAfter), 1L))
-    stopifnot(is.integer(iAfter))
-    stopifnot(!is.na(iAfter))
-    stopifnot(iAfter > 0L)
-    ## nContribute
-    stopifnot(identical(length(nContribute), 1L))
-    stopifnot(is.integer(nContribute))
-    stopifnot(!is.na(nContribute))
-    stopifnot(nContribute > 0L)
-    ## diff
-    stopifnot(identical(length(diff), 1L))
-    stopifnot(is.integer(diff))
-    stopifnot(!is.na(diff))
-    ## population
-    stopifnot(is(population, "Population"))
-    ## model
-    stopifnot(is(model, "Model"))
-    ## dataset
-    stopifnot(is(dataset, "Counts"))
-    ## transform
-    stopifnot(is(transform, "CollapseTransformExtra"))
-    if (useC) {
-        .Call(diffLogLikPopnOneCell_R,
-              iAfter, nContribute, diff, population,
-              model, dataset, transform)
-    }
-    else {
-        cell.is.observed <- !is.na(dataset@.Data[iAfter])
-        if (!cell.is.observed)
-            return(0)
-        vec.i.shared <- getIShared(i = iAfter, transform = transform)
-        total.popn.curr <- 0L
-        for (i.shared in  vec.i.shared)
-            total.popn.curr <- total.popn.curr + population[i.shared]
-        total.popn.prop <- total.popn.curr + nContribute * diff
-        log.lik.prop <- likeLikelihood(model = model,
-                                       count = total.popn.prop,
-                                       dataset = dataset,
-                                       i = i.after)
-        if (is.infinite(log.lik.prop))
-            return(log.lik.prop)
-        log.lik.curr <- logLikelihood(model = model,
-                                      count = total.popn.curr,
-                                      dataset = dataset,
-                                      i = i.after)
-        log.lik.prop - log.lik.curr
+        ans <- ans + diffLogLikPopnOneCell(iAfter = i.after,
+                                           nContribute = n.contribute,
+                                           diff = diff,
+                                           transform = transform,
+                                           population = population,
+                                           model = model,
+                                           dataset = dataset)
+        ans
     }
 }
 
@@ -2494,9 +2435,19 @@ updateObservation <- function(combined) {
 
 ## HELPER FUNCTIONS ################################################
 
-
+## assume triangle dimension is last dimension
 isLowerTriangle <- function(i, description) {
     stopifnot(is(description, "DescriptionComp"))
+    stopifnot(description@hasAge)
+    if (useC) {
+        .Call(isLowerTriangle_R, i, description)
+    }
+    else {
+        step.triangle <- object@stepTriangle
+        n.triangle <- 2L
+        i.triangle <- ((i - 1L) %/% step.triangle) %% n.triangle ## C-style
+        i.triangle == 0L
+    }
 }
 
 
