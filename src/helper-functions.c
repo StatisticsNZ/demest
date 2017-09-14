@@ -1570,9 +1570,9 @@ getVBarAndN(double *vbar, int *n_vec,
     /* } */
 
     for (int i = 0; i < len_vbar; ++i) {
-	if (n_vec[i] > 0L) { 	/* added by JB 2017-07-08 */
-	    vbar[i] /= n_vec[i];
-	}
+    if (n_vec[i] > 0L) {    /* added by JB 2017-07-08 */
+        vbar[i] /= n_vec[i];
+    }
     }
 
 }
@@ -1738,7 +1738,7 @@ predictAlphaDLMNoTrend(SEXP prior_R)
 void
 predictAlphaDeltaDLMWithTrend(SEXP prior_R)
 {
-	int K = *INTEGER(GET_SLOT(prior_R, K_sym));
+    int K = *INTEGER(GET_SLOT(prior_R, K_sym));
     int L = *INTEGER(GET_SLOT(prior_R, L_sym));
     
     double *alpha = REAL(GET_SLOT(prior_R, alphaDLM_sym)); /* vector, length (K+1)L */
@@ -1759,8 +1759,8 @@ predictAlphaDeltaDLMWithTrend(SEXP prior_R)
     for (int l = 0; l < L; ++l) {
         
         for (int i = 0; i < K; ++i) {
-			
-			int k_curr = indices[i+1] - 1;
+            
+            int k_curr = indices[i+1] - 1;
             int k_prev = indices[i] - 1;
             
             double delta_k_prev = delta[k_prev];
@@ -1770,11 +1770,11 @@ predictAlphaDeltaDLMWithTrend(SEXP prior_R)
             
             double meanAlpha = alpha[k_prev] + delta_k_prev;
             if (hasLevel) {
-				alpha[k_curr] = rnorm(meanAlpha, omegaAlpha);
-			}
-			else {
-				alpha[k_curr] = meanAlpha;
-			}
+                alpha[k_curr] = rnorm(meanAlpha, omegaAlpha);
+            }
+            else {
+                alpha[k_curr] = meanAlpha;
+            }
         }
             
         advanceA(iterator_R);
@@ -3390,17 +3390,19 @@ getMinValCohort(int i, SEXP series_R, SEXP iterator_R)
     
     resetCAP(iterator_R, i);
     
-    int *finished = INTEGER(GET_SLOT(iterator_R, finished_sym));
-    int *iPtr = INTEGER(GET_SLOT(iterator_R, i_sym));
+    int finished = *INTEGER(GET_SLOT(iterator_R, finished_sym));
     
-    while(!(*finished)) {
+    while(!(finished)) {
         
         advanceCAP(iterator_R);
-        int check = series[*iPtr - 1];
+        i = *INTEGER(GET_SLOT(iterator_R, i_sym));
+        int check = series[i - 1];
         
         if (check < ans) {
             ans = check;
         }
+        finished = *INTEGER(GET_SLOT(iterator_R, finished_sym));
+        
     }
     
     return ans;
