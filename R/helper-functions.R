@@ -6800,13 +6800,13 @@ makeOutputPriorCoef <- function(Z, pos) {
     dimvalues <- names.eta[-1L] # omit intercept
     DimScales <- list(methods::new("Categories", dimvalues = dimvalues))
     metadata <- methods::new("MetaData",
-                    nms = "coef",
-                    dimtypes = "state",
-                    DimScales = DimScales)
+                             nms = "coef",
+                             dimtypes = "state",
+                             DimScales = DimScales)
     methods::new("SkeletonCovariates",
-        first = first,
-        last = last,
-        metadata = metadata)
+                 first = first,
+                 last = last,
+                 metadata = metadata)
 }
 
 ## NO_TESTS
@@ -8338,11 +8338,11 @@ getDataFromFile <- function(filename, first, last, lengthIter,
         ans <- double(length = n.iter * length.data)
         con <- file(filename, open = "rb")
         on.exit(close(con))
-        ## find out size of results object - stored in first position ## NEW
-        size.results <- readBin(con = con, what = "integer", n = 1L)  ## NEW
-        ## skip over results object ## NEW
-        for (j in seq_len(size.results))  ## NEW
-            readBin(con = con, what = "raw", n = 1L)  ## NEW
+        ## find out size of results object - stored in first position
+        size.results <- readBin(con = con, what = "integer", n = 1L)
+        ## skip over results object
+        for (j in seq_len(size.results))
+            readBin(con = con, what = "raw", n = 1L)
         ## go to start of first iteration
         n.skip <- iterations[1L] - 1L
         for (i in seq_len(n.skip))
