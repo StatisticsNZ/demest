@@ -12241,6 +12241,41 @@ test_that("R and C versions of chooseICellPopn give same answer", {
     ans.C <- chooseICellPopn(description, useC = TRUE)
     expect_identical(ans.R, ans.C)
 })
+
+test_that("isLowerTriangle works", {
+    isLowerTriangle <- demest:::isLowerTriangle
+    Description <- demest:::Description
+    object <- Counts(array(1:12,
+                           dim = c(3, 2, 2),
+                           dimnames = list(time = c("2001-2010", "2011-2020", "2021-2030"),
+                               age = c("0-9", "10+"),
+                               triangle = c("TL", "TU"))))
+    object <- new("EntriesMovements",
+                  .Data = object@.Data,
+                  metadata = object@metadata)
+    description <- Description(object)
+    for (i in 1:6)
+        expect_true(isLowerTriangle(i = i, description = description))
+    for (i in 7:12)
+        expect_false(isLowerTriangle(i = i, description = description))
+})
+
+test_that("R and C versions of isLowerTriangle give same answer", {
+    isLowerTriangle <- demest:::isLowerTriangle
+    Description <- demest:::Description
+    object <- Counts(array(1:12,
+                           dim = c(3, 2, 2),
+                           dimnames = list(time = c("2001-2010", "2011-2020", "2021-2030"),
+                               age = c("0-9", "10+"),
+                               triangle = c("TL", "TU"))))
+    object <- new("EntriesMovements",
+                  .Data = object@.Data,
+                  metadata = object@metadata)
+    description <- Description(object)
+    for (i in 1:12)
+        expect_identical(isLowerTriangle(i = i, description = description, useC = FALSE),
+                         isLowerTriangle(i = i, description = description, useC = TRUE))
+})
     
 test_that("getIAccNextFromPopn works", {
     getIAccNextFromPopn <- demest:::getIAccNextFromPopn

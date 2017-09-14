@@ -9017,52 +9017,20 @@ chooseICellPopn <- function(description, useC = FALSE) {
     }
 }
 
-## ## TRANSLATED
-## ## HAS_TESTS
-## ## Assumes that population and accession have identical dimensions,
-## ## except that time dimension for accession is one shorter than
-## ## time dimension for population
-## getIAccNextFromPopn <- function(i, description, useC = FALSE) {
-##     ## 'i'
-##     stopifnot(is.integer(i))
-##     stopifnot(identical(length(i), 1L))
-##     stopifnot(!is.na(i))
-##     stopifnot(i >= 1L)
-##     ## 'description'
-##     stopifnot(methods::is(description, "DescriptionPopn"))
-##     stopifnot(description@hasAge)
-##     ## 'i' and 'description'
-##     stopifnot(i <= description@length)
-##     if (useC) {
-##         .Call(getIAccNextFromPopn_R, i, description)
-##     }
-##     else {            
-##         step.time <- description@stepTime
-##         n.time.popn <- description@nTime
-##         step.age.popn <- description@stepAge
-##         n.age <- description@nAge
-##         n.time.acc <- n.time.popn - 1L
-##         i.time <- (((i - 1L) %/% step.time) %% n.time.popn) + 1L ## R-style
-##         if (i.time < n.time.popn) {
-##             i.acc <- (((i - i.time) %/% (step.time * n.time.popn)) * (step.time * n.time.acc)
-##                       + ((i - i.time) %% (step.time * n.time.popn))
-##                       + i.time) ## R-style
-##             i.age <- (((i - 1L) %/% step.age.popn) %% n.age) + 1L ## R-style
-##             if (i.age < n.age) {
-##                 if (step.age.popn < step.time)
-##                     step.age.acc <- step.age.popn
-##                 else
-##                     step.age.acc <- (step.age.popn * n.time.acc) %/% n.time.popn
-##                 i.acc + step.age.acc
-##             }
-##             else
-##                 i.acc
-##         }
-##         else
-##             0L
-##     }
-## }
-
+## READY_TO_TRANSLATE
+## HAS_TESTS
+isLowerTriangle <- function(i, description, useC = FALSE) {
+    stopifnot(is(description, "DescriptionComp"))
+    stopifnot(description@hasAge)
+    if (useC) {
+        .Call(isLowerTriangle_R, i, description)
+    }
+    else {
+        step.triangle <- description@stepTriangle
+        i.triangle <- ((i - 1L) %/% step.triangle) %% 2L ## C-style
+        i.triangle == 0L
+    }
+}
 
 ## TRANSLATED
 ## HAS_TESTS
@@ -9113,7 +9081,6 @@ getIAccNextFromPopn <- function(i, description, useC = FALSE) {
             0L
     }
 }
-
 
 ## TRANSLATED
 ## HAS_TESTS (JAH added R vs C test 18/6/2017)
