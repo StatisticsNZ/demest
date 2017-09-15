@@ -12903,8 +12903,8 @@ test_that("R and C versions of getMinValCohortAccession give same answer", {
     }
 })
 
-test_that("getMinValCohortAccessionPopulation gives valid answer", {
-    getMinValCohortAccessionPopulation <- demest:::getMinValCohort
+test_that("getMinValCohortPopulation gives valid answer", {
+    getMinValCohortPopulation <- demest:::getMinValCohortPopulation
     CohortIterator <- demest:::CohortIterator
     Population <- dembase:::Population
     population <- Counts(array(1:12,

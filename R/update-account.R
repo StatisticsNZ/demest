@@ -91,6 +91,148 @@ updateProposalAccountMovePopn <- function(combined, useC = FALSE) {
 }
 
 
+updateProposalAccountMoveComp <- function(combined) {
+    stopifnot(is(combined, "CombinedAccountMovements"))
+    if (useC) {
+        .Call(updateProposalAccountMoveComp_R, combined)
+    }
+    else {
+        account <- combined@account
+        population <- account@population
+        i.comp <- combined@iComp
+        component <- account@components[[i.comp]]
+        is.increment <- combined@isIncrement[[i.comp]]
+        has.age <- combined@hasAge
+        if (has.age) {
+            accession <- combined@accession
+            iterator.acc <- combined@iteratorAcc
+            mapping.to.acc <- combined@mappingsToAcc[[i.comp]]
+        }        
+        mapping.to.popn <- combined@mappingsToPopn[[i.comp]]
+        iterator.popn <- combined@iteratorPopn
+        uses.exposure <- combined@modelUsesExposure[[i.comp]]
+        if (uses.exposure) {
+            exposure <- combined@exposure
+            mapping.to.exp <- combined@mappingsToExp[[i.comp]]
+        }
+        description <- combined@descriptions[[i.comp + 1L]]
+        sys.mod.popn <- combined@systemModels[[1L]]
+        sys.mod.comp <- combined@systemModels[[i.comp + 1L]]
+        theta.popn <- sys.mod.popn@theta
+        theta.comp <- sys.mod.comp@theta
+        is.net <- combined@isNet[i.comp]
+        if (is.net) {
+            varsigma.comp <- sys.mod.comp@varsigma
+            w.comp <- sys.mod.comp@w
+        }
+        max.attempt <- combined@maxAttempt
+        i.cell <- chooseICellComp(description)
+        i.exp.first <- getIExpFirstFromComp(i = i.cell,
+                                            mapping = mapping.to.exp)
+        is.lower.triangle <- isLowerTriangle(i = i.cell,
+                                             description = description)
+        if (uses.exposure)
+            i.exposure <- getIExposure(i = i.cell,
+                                       mapping = mapping.to.exposure)
+        i.popn.next <- getIPopnNextFromComp(i = i.cell,
+                                            mapping = mapping.to.popn)
+        min.val <- getMinValCohortPopulation(i = i.popn.next,
+                                             series = population,
+                                             iterator = iterator.popn)
+        if (has.age) {
+            i.acc.next <- getIAccNextFromComp(i = i.cell,
+                                              mapping = mapping.to.acc)
+            has.later.accession <- i.acc.next > 0L
+            if (has.later.accession) {
+                min.acc <- getMinValCohortAccession(i = i.acc.next,
+                                                    series = accession,
+                                                    iterator = iterator.acc)
+                min.val <- min(min.val, min.acc)
+            }
+        }
+        val.curr <- component[i.cell]
+        if (is.increment) {
+            lower <- val.curr - min.val
+            upper <- NA_integer_
+        }
+        else {
+            lower <- NA_integer_
+            upper <- val.curr + min.val
+        }
+        if (is.net) {
+            mean <- theta.comp[i.cell]
+            w.cell <- w.comp[i.cell]
+            sd <- varsigma.comp / w.cell
+            val.prop <- rnormIntTrunc1(mean = mean,
+                                       sd = sd,
+                                       lower = lower,
+                                       upper = upper,
+                                       maxAttempt = max.attempt)
+        }
+        else {
+            theta.cell <- theta.comp[i.cell]
+            if (uses.exposure) {
+                exposure.cell <- exposure[i.exposure]
+                lambda <- theta.cell * exposure.cell
+            }
+            else
+                lambda <- theta.cell
+            val.prop <- rpoisTrunc1(lambda = lambda,
+                                    lower = lower,
+                                    upper = upper,
+                                    maxAttempt = max.attempt)
+        }
+        found.value <- !is.na(val.prop)
+        if (found.value) {
+            diff.prop <- val.prop - val.curr
+            generated.new.proposal <- diff.prop != 0L
+        }
+        else
+            generated.new.proposal <- FALSE
+        if (generated.new.proposal) {
+            combined@iCell <- i.cell
+            combined@iCellOther <- NA_integer_
+            combined@iPopnNext <- i.popn.next
+            combined@iPopnNextOther <- NA_integer_
+            if (has.age) {
+                combined@iAccNext <- i.acc.next
+                combined@iAccNextOther <- NA_integer_
+                combined@isLowerTriangle <- is.lower.triangle
+            }
+            if (uses.exposure) {
+                combined@iExposure <- i.exposure
+                combined@iExposureOther <- NA_integer_
+            }
+            else {
+                combined@iExposure <- NA_integer_
+                combined@iExposureOther <- NA_integer_
+            }
+            combined@iExpFirst <- i.exp.first
+            combined@iExpFirstOther <- NA_integer_
+            combined@diffProp <- diff.prop
+        }
+        else {
+            combined@iCell <- NA_integer_
+            combined@iCellOther <- NA_integer_
+            combined@iPopnNext <- NA_integer_
+            combined@iPopnNextOther <- NA_integer_
+            if (has.age) {
+                combined@iAccNext <- NA_integer_
+                combined@iAccNextOther <- NA_integer_
+                combined@isLowerTriangle <- NA
+            }
+            combined@iExposure <- NA_integer_
+            combined@iExposureOther <- NA_integer_
+            combined@iExpFirst <- NA_integer_
+            combined@iExpFirstOther <- NA_integer_
+            combined@diffProp <- NA_integer_
+        }
+        combined
+    }
+}
+
+
+
 ## Calculating log-likelihood #################################################
 
 ## HAS_TESTS

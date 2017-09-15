@@ -290,38 +290,38 @@ setClass("ICellMixin",
 setClass("ICompMixin",
          slots = c(iComp = "integer",
                    iBirths = "integer",
-                   iNet = "integer",
+                   iIntNet = "integer",
                    iOrigDest = "integer",
                    iPool = "integer"),
          contains = "VIRTUAL",
          validity = function(object) {
              iBirths <- object@iBirths
-             iNet <- object@iNet
              iOrigDest <- object@iOrigDest
              iPool <- object@iPool
+             iIntNet <- object@iIntNet
              components <- object@account@components
              s <- c(0L, seq_along(components))
-             for (name in c("iComp", "iBirths", "iNet", "iOrigDest", "iPool")) {
+             for (name in c("iComp", "iBirths", "iIntNet", "iOrigDest", "iPool")) {
                  value <- slot(object, name)
-                 ## 'iComp', 'iBirths', 'iNet', iOrigDest', 'iPool' has  length 1
+                 ## 'iComp', 'iBirths', iOrigDest', 'iPool' 'iIntNet' has  length 1
                  if (!identical(length(value), 1L))
                      return(gettextf("'%s' does not have length %d",
                                      name, 1L))
-                 ## 'iComp', 'iBirths', 'iNet', iOrigDest', 'iPool' is not missing
+                 ## 'iComp', 'iBirths', 'iOrigDest', 'iPool', 'iIntNet' is not missing
                  if (is.na(value))
                      return(gettextf("'%s' is missing",
                                      name))
-                 ## if 'iComp', 'iBirths', 'iNet', iOrigDest', 'iPool' is not 0, it is the index of a component
+                 ## if 'iComp', 'iBirths', iOrigDest', 'iPool', 'iIntNet' is not 0, it is the index of a component
                  if ((value != 0L) && !(value %in% s))
                      return(gettextf("'%s' does not index a component",
                                      name))
              }
-             ## 'iBirths', 'iNet', iOrigDest', 'iPool' do not overlap, except at 0L
-             indices <- c(iBirths, iNet, iOrigDest, iPool)
+             ## 'iBirths', 'iIntNet', iOrigDest', 'iPool' do not overlap, except at 0L
+             indices <- c(iBirths, iIntNet, iOrigDest, iPool)
              indices.nonzero <- indices[indices != 0L]
              if (any(duplicated(indices.nonzero)))
                  return(gettextf("'%s', '%s', '%s', '%s' overlap",
-                                 "iBirths", "iNet", "iOrigDest", "iPool"))
+                                 "iBirths", "iIntNet", "iOrigDest", "iPool"))
              TRUE
          })
 
@@ -484,6 +484,27 @@ setClass("IsLowerTriangleMixin",
                                  "hasAge", "FALSE", "lowerTriangle"))
              TRUE
          })
+
+setClass("IsNetMixin",
+         contains = "VIRTUAL",
+         slots = c(isNet = "logical"),
+         validity = function(object) {
+             isNet <- object@isNet
+             components <- object@account@components
+             if (!identical(length(isNet), length(components)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "isNet", "components"))
+             if (any(is.na(isNet)))
+                 return(gettextf("'%s' has missing values",
+                                 "isNet"))
+             is.net.move <- sapply(components, methods::is, "NetMovements")
+             is.int.net <- sapply(components, methods::is, "InternalMovementsNet")
+             if (!identical(isNet, is.net.move | is.int.net))
+                 return(gettextf("'%s' and '%s' inconsistent",
+                                 "isNet", "components"))
+             TRUE
+         })
+
 
 setClass("IteratorAccMixin",
          contains = "VIRTUAL",
@@ -825,25 +846,24 @@ setClass("SystemMovementsMixin",
              account <- object@account
              components <- account@components
              namesComponents <- account@namesComponents
-             ## if a component does not have class "NetMovements",
-             ## then the system model has class "Poisson"
              for (i in seq_along(components)) {
                  model <- systemModels[[i + 1L]]
                  component <- components[[i]]
                  name <- namesComponents[i]
-                 if (!methods::is(component, "NetMovements") && !methods::is(model, "Poisson"))
-                     return(gettextf("'%s' has class \"%s\" but its system model does not have class \"%s\"",
-                                     name, class(component), "Poisson"))
+                 is.net <- (methods::is(component, "NetMovements")
+                     || methods::is(component, "InternalMovementsNet"))
+                 is.poisson <- methods::is(model, "Poisson")
+                 is.normal <- methods::is(model, "Normal")
+                 ## if a component has class "NetMovements" or "InternalNetMigration",
+                 ## then its system model has class "Normal"
+                 if (is.net && !is.normal)
+                     return(gettextf("component has class \"%s\" but corresponding system model does not have class \"%s\"",
+                                     class(component), "Normal"))
+                 ## otherwise its system model most have class "Poisson"
+                 if (!is.net && !is.poisson)
+                     return(gettextf("component has class \"%s\" but corresponding system model does not have class \"%s\"",
+                                     class(component), "Poisson"))
              }
-             ## a system model has class "Normal" iff the corresponding component has class "NetMovements"
-             is.net <- sapply(components, methods::is, "NetMovements")
-             is.normal <- sapply(systemModels[-1L], methods::is, "Normal")
-             if (any(is.net & !is.normal))                 
-                 return(gettextf("component has class \"%s\" but corresponding system model does not have class \"%s\"",
-                                 "NetMovements", "Normal"))
-             if (any(is.normal & !is.net))                 
-                 return(gettextf("system model has class \"%s\" but correspondening component does not have class \"%s\"",
-                                 "Normal", "NetMovements"))
              TRUE
          })
 

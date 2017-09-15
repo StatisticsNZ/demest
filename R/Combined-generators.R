@@ -344,11 +344,13 @@ setMethod("initialCombinedAccount",
               is.births <- sapply(components, methods::is, "Births")
               is.orig.dest <- sapply(components, methods::is, "HasOrigDest")
               is.pool <- sapply(components, methods::is, "Pool")
-              is.net <- sapply(components, methods::is, "Net")
+              is.int.net <- sapply(components, methods::is, "InternalMovementsNet")
+              is.net.move <- sapply(components, methods::is, "NetMovements")
               i.births <- if (any(is.births)) which(is.births) else 0L
               i.orig.dest <- if (any(is.orig.dest)) which(is.orig.dest) else 0L
               i.pool <- if (any(is.pool)) which(is.pool) else 0L
-              i.net <- if (any(is.net)) which(is.net) else 0L
+              i.int.net <- if (any(is.int.net)) which(is.int.net) else 0L
+              is.net <- is.int.net | is.net.move
               if (has.age) {
                   accession <- dembase::accession(account,
                                                   births = FALSE)
@@ -447,13 +449,14 @@ setMethod("initialCombinedAccount",
                                iExpFirstOther = NA_integer_,
                                iExposure = NA_integer_,
                                iExposureOther = NA_integer_,
-                               iNet = i.net,
+                               iIntNet = i.int.net,
                                iOrigDest = i.orig.dest,
                                iPopnNext = NA_integer_,
                                iPopnNextOther = NA_integer_,
                                iPool = i.pool,
                                isIncrement = is.increment,
                                isLowerTriangle = new("LogicalFlag", FALSE),
+                               isNet = is.net,
                                iteratorAcc = iterator.acc,
                                iteratorPopn = iterator.popn,
                                mappingsFromExp = mappings.from.exp,
@@ -487,12 +490,13 @@ setMethod("initialCombinedAccount",
                                iExpFirstOther = NA_integer_,
                                iExposure = NA_integer_,
                                iExposureOther = NA_integer_,
-                               iNet = i.net,
+                               iIntNet = i.int.net,
                                iOrigDest = i.orig.dest,
                                iPopnNext = NA_integer_,
                                iPopnNextOther = NA_integer_,
                                iPool = i.pool,
                                isIncrement = is.increment,
+                               isNet = is.net,
                                iteratorPopn = iterator.popn,
                                mappingsFromExp = mappings.from.exp,
                                mappingsToExp = mappings.to.exp,

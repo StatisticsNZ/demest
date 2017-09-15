@@ -3381,25 +3381,19 @@ getMinValCohortAccession(int i, SEXP series_R, SEXP iterator_R)
     
     resetCA(iterator_R, i);
     
-    int *finished = INTEGER(GET_SLOT(iterator_R, finished_sym));
-    int *iPtr = INTEGER(GET_SLOT(iterator_R, i_sym));
+    int finished = *INTEGER(GET_SLOT(iterator_R, finished_sym));
 
-    printf("finished: %d", *finished);
-    printf("iPtr: %d", *iPtr);
-    
-    while(!(*finished)) {
+    while(!(finished)) {
         
         advanceCA(iterator_R);
-        int check = series[*iPtr - 1];
-
-    printf("finished: %d", *finished);
-    printf("iPtr: %d", *iPtr);
-    printf("check: %d", check);
-
+	i = *INTEGER(GET_SLOT(iterator_R, i_sym));
+        int check = series[i - 1];
 	
         if (check < ans) {
             ans = check;
         }
+	finished = *INTEGER(GET_SLOT(iterator_R, finished_sym));
+
     }
     
     return ans;
@@ -3414,17 +3408,19 @@ getMinValCohortPopulation(int i, SEXP series_R, SEXP iterator_R)
     
     resetCP(iterator_R, i);
     
-    int *finished = INTEGER(GET_SLOT(iterator_R, finished_sym));
-    int *iPtr = INTEGER(GET_SLOT(iterator_R, i_sym));
+    int finished = *INTEGER(GET_SLOT(iterator_R, finished_sym));
     
-    while(!(*finished)) {
+    while(!(finished)) {
         
         advanceCP(iterator_R);
-        int check = series[*iPtr - 1];
+	i = *INTEGER(GET_SLOT(iterator_R, i_sym));
+        int check = series[i - 1];
         
         if (check < ans) {
             ans = check;
         }
+	finished = *INTEGER(GET_SLOT(iterator_R, finished_sym));
+	
     }
     
     return ans;

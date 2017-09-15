@@ -367,6 +367,7 @@ resetCA(SEXP iterator_R, int i)
     int stepAge = *INTEGER(GET_SLOT(iterator_R, stepAge_sym));
     int nTime = *INTEGER(GET_SLOT(iterator_R, nTime_sym));
     int nAge = *INTEGER(GET_SLOT(iterator_R, nAge_sym));    
+
     int iTime_R = (((i - 1) / stepTime) % nTime) + 1; /* R-style */
     int iAge_R = (((i - 1) / stepAge) % nAge) + 1; /* R-style */
 
