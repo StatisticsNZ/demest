@@ -156,7 +156,7 @@ setClass("DiffPropMixin",
                  return(gettextf("'%s' does not have length %d",
                                  "diffProp", 1L))
              ## if 'diffProp' not missing, is not equal to 0
-             if (!is.na(diffProp) && (value == 0L))
+             if (!is.na(diffProp) && (diffProp == 0L))
                  return(gettextf("'%s' equals %d",
                                  name, 0L))
              TRUE
@@ -255,8 +255,9 @@ setClass("IAccNextMixin",
                  ## equal to length of 'accession'
                  if (!is.na(value)) {
                      n.accession <- length(accession)
-                     return(gettextf("'%s' is greater than the length of '%s'",
-                                     name, "accession"))
+                     if (value > n.accession)
+                         return(gettextf("'%s' is greater than the length of '%s'",
+                                         name, "accession"))
                  }
              }
              ## if 'iAccNext' and 'iAccNextOther' not missing, they have different values
@@ -355,7 +356,7 @@ setClass("IExpFirstMixin",
                                          name, "exposure"))
                      ## if 'iExpFirst', 'iExpFirstOther' not missing,
                      ## 'iExposure' and 'iExposureOther' also not missing
-                     name.i.exp <- if (name == "iExpFirstFirst") "iExposure" else "iExposureOther"
+                     name.i.exp <- if (name == "iExpFirst") "iExposure" else "iExposureOther"
                      val.i.exp <- slot(object, name.i.exp)
                      if (is.na(val.i.exp))
                          return(gettextf("'%s' is missing but '%s' is not missing",
@@ -390,10 +391,10 @@ setClass("IExposureMixin",
                  if (!identical(length(value), 1L))
                      return(gettextf("'%s' does not have length %d",
                                      name, 1L))
-                 ## if 'iExposure', 'iExposureOther' not missing, they are greater than or equal to 1L
-                 if (!is.na(value) && (value < 1L))
+                 ## if 'iExposure', 'iExposureOther' not missing, they are greater than or equal to 0L
+                 if (!is.na(value) && (value < 0L))
                      return(gettextf("'%s' is less than %d",
-                                     name, 1L))
+                                     name, 0L))
                  ## if 'iExposure', 'iExposureOther' not missing, they are less than or
                  ## equal to length of 'exposure'
                  if (!is.na(value)) {
@@ -404,8 +405,9 @@ setClass("IExposureMixin",
                                          name, "exposure"))
                  }
              }
-             ## if 'iExposure' and 'iExposureOther' not missing, they have different values
-             if (!is.na(iExposure) && !is.na(iExposureOther) && (iExposure == iExposureOther))
+             ## if 'iExposure' and 'iExposureOther' not missing or 0L, they have different values
+             if (!is.na(iExposure) && !is.na(iExposureOther) && (iExposure == iExposureOther)
+                 && (iExposure != 0L))
                  return(gettextf("'%s' equals '%s'",
                                  "iExposure", "iExposureOther"))
              TRUE

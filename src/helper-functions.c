@@ -419,6 +419,9 @@ double getRtnorm1_x(double bnd1, double bnd2)
 int
 rpoisTrunc1(double lambda, int lower, int upper, int maxAttempt)
 {
+    if (lower == NA_INTEGER)
+	lower = 0;
+
     int finite_upper = ( (upper == NA_INTEGER) ? 0 : 1);
     
     int retValue = NA_INTEGER;

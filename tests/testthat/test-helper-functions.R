@@ -4202,6 +4202,100 @@ test_that("R and C versions of rnormTruncated give same answer", {
     }
 })
 
+if (test.extended) {
+    test_that("rnormIntTrunc1 gives valid answer", {
+        rnormIntTrunc1 <- demest:::rnormIntTrunc1
+        for (seed in seq_len(n.test)) {
+            ## limits non-finite
+            for (i in seq(100, 200, 10)) {
+                mean <- as.double(i)
+                sd <-  sqrt(i)
+                set.seed(seed + 1)
+                ans.obtained <- rnormIntTrunc1(mean = mean, sd = sd)
+                set.seed(seed + 1)
+                ans.expected <- rnorm(n = 1L, mean = mean, sd = sd)
+                expect_equal(ans.obtained, ans.expected, tol = 0.01)
+            }
+            ## all within range
+            for (i in seq_len(10)) {
+                ans <- rnormIntTrunc1(mean = 0, sd = 50, lower = -200L, upper = 200L)
+                expect_true(ans >= -200L)
+                expect_true(ans <= 200L)
+            }
+            ## check distribution
+            ans <- numeric(10000)
+            for (i in seq_len(10000))
+                ans[i] <- rnormIntTrunc1(sd = 100000, lower = 0L)
+            true_mean <- 100000/(sqrt(2*pi))/(0.5)
+            expect_equal(mean(ans), true_mean, tol = 0.02)
+            ans <- numeric(10000)
+            for (i in seq_len(10000))
+                ans[i] <- rnormIntTrunc1(sd = 100000, upper = 0L)
+            expect_equal(mean(ans), -true_mean, tol = 0.02)
+        }
+    })
+}
+
+test_that("R and C versions of rnormIntTrunc1 give same answer", {
+    rnormIntTrunc1 <- demest:::rnormIntTrunc1
+    for (seed in seq_len(n.test)) {
+        ## no limits
+        for (i in seq(100, 200, 10)) {
+            mean <- as.double(i)
+            sd <-  sqrt(i)
+            set.seed(seed + 1)
+            ans.R <- rnormIntTrunc1(mean = mean, sd = sd)
+            set.seed(seed + 1)
+            ans.C <- rnormIntTrunc1(mean = mean, sd = sd)
+            if (test.identity)
+                expect_identical(ans.R, ans.C)
+            else
+                expect_equal(ans.R, ans.C)
+        }
+        ## upper limit
+        for (i in seq(100, 200, 10)) {
+            mean <- as.double(i)
+            sd <-  sqrt(i)
+            set.seed(seed + 1)
+            ans.R <- rnormIntTrunc1(mean = mean, sd = sd, upper = i)
+            set.seed(seed + 1)
+            ans.C <- rnormIntTrunc1(mean = mean, sd = sd, upper = i)
+            if (test.identity)
+                expect_identical(ans.R, ans.C)
+            else
+                expect_equal(ans.R, ans.C)
+        }
+        ## lower limit
+        for (i in seq(100, 200, 10)) {
+            mean <- as.double(i)
+            sd <-  sqrt(i)
+            set.seed(seed + 1)
+            ans.R <- rnormIntTrunc1(mean = mean, sd = sd, lower = -1L * i)
+            set.seed(seed + 1)
+            ans.C <- rnormIntTrunc1(mean = mean, sd = sd, lower = -1L * i)
+            if (test.identity)
+                expect_identical(ans.R, ans.C)
+            else
+                expect_equal(ans.R, ans.C)
+        }
+        ## lower and upper limits
+        for (i in seq(100, 200, 10)) {
+            mean <- as.double(i)
+            sd <-  sqrt(i)
+            set.seed(seed + 1)
+            ans.R <- rnormIntTrunc1(mean = mean, sd = sd, lower = -1L * i, upper = i)
+            set.seed(seed + 1)
+            ans.C <- rnormIntTrunc1(mean = mean, sd = sd, lower = -1L * i, upper = i)
+            if (test.identity)
+                expect_identical(ans.R, ans.C)
+            else
+                expect_equal(ans.R, ans.C)
+        }
+    }
+})
+
+
+
 test_that("rtnorm1 gives valid answer", {
     rtnorm1 <- demest:::rtnorm1
     for (seed in seq_len(n.test)) {
@@ -4305,6 +4399,14 @@ test_that("rpoisTrunc1 gives valid answer", {
         ans <- rpoisTrunc1(lambda = 1000, lower = -1L, upper = 0L,
                            maxAttempt = 1L)
         expect_identical(ans, NA_integer_)
+        ## lower is NA gives same answer as lower is 0
+        set.seed(seed + 1)
+        ans.obtained <- rpoisTrunc1(lambda = lambda, lower = NA_integer_,
+                                    upper = 100L, maxAttempt = 100L)
+        set.seed(seed + 1)
+        ans.expected <- rpoisTrunc1(lambda = lambda, lower = 0L,
+                                    upper = 100L, maxAttempt = 100L)
+        expect_identical(ans.obtained, ans.expected)
     }
 })
 
@@ -4323,6 +4425,13 @@ test_that("R and C versions of rpoisTrunc1 give same answer", {
                              maxAttempt = 10L, useC = FALSE)
         set.seed(seed + 1)
         ans.C <- rpoisTrunc1(lambda = lambda, lower = lower, upper = upper,
+                             maxAttempt = 10L, useC = TRUE)
+        expect_identical(ans.R, ans.C)
+        set.seed(seed + 1)
+        ans.R <- rpoisTrunc1(lambda = lambda, lower = NA_integer_, upper = upper,
+                             maxAttempt = 10L, useC = FALSE)
+        set.seed(seed + 1)
+        ans.C <- rpoisTrunc1(lambda = lambda, lower = NA_integer_, upper = upper,
                              maxAttempt = 10L, useC = TRUE)
         expect_identical(ans.R, ans.C)
     }

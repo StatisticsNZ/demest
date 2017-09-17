@@ -21,6 +21,7 @@ updateProposalAccountMovePopn <- function(combined, useC = FALSE) {
         theta <- combined@systemModels[[1L]]@theta
         max.attempt <- combined@maxAttempt
         i.cell <- chooseICellPopn(description)
+        i.exposure <- 0L
         i.exp.first <- getIExpFirstFromPopn(i = i.cell,
                                                  description = description)
         i.popn.next <- getIPopnNextFromPopn(i = i.cell,
@@ -64,7 +65,7 @@ updateProposalAccountMovePopn <- function(combined, useC = FALSE) {
                 combined@iAccNextOther <- NA_integer_
                 combined@isLowerTriangle <- NA
             }
-            combined@iExposure <- NA_integer_
+            combined@iExposure <- i.exposure
             combined@iExposureOther <- NA_integer_
             combined@iExpFirst <- i.exp.first
             combined@iExpFirstOther <- NA_integer_
@@ -90,8 +91,8 @@ updateProposalAccountMovePopn <- function(combined, useC = FALSE) {
     }
 }
 
-
-updateProposalAccountMoveComp <- function(combined) {
+## HAS_TESTS
+updateProposalAccountMoveComp <- function(combined, useC = FALSE) {
     stopifnot(is(combined, "CombinedAccountMovements"))
     if (useC) {
         .Call(updateProposalAccountMoveComp_R, combined)
@@ -102,7 +103,8 @@ updateProposalAccountMoveComp <- function(combined) {
         i.comp <- combined@iComp
         component <- account@components[[i.comp]]
         is.increment <- combined@isIncrement[[i.comp]]
-        has.age <- combined@hasAge
+        max.attempt <- combined@maxAttempt
+        has.age <- combined@hasAge@.Data
         if (has.age) {
             accession <- combined@accession
             iterator.acc <- combined@iteratorAcc
@@ -125,15 +127,17 @@ updateProposalAccountMoveComp <- function(combined) {
             varsigma.comp <- sys.mod.comp@varsigma
             w.comp <- sys.mod.comp@w
         }
-        max.attempt <- combined@maxAttempt
         i.cell <- chooseICellComp(description)
+        if (has.age)
+            is.lower.triangle <- isLowerTriangle(i = i.cell,
+                                                 description = description)
         i.exp.first <- getIExpFirstFromComp(i = i.cell,
                                             mapping = mapping.to.exp)
-        is.lower.triangle <- isLowerTriangle(i = i.cell,
-                                             description = description)
         if (uses.exposure)
-            i.exposure <- getIExposure(i = i.cell,
-                                       mapping = mapping.to.exposure)
+            i.exposure <- getIExposureFromComp(i = i.cell,
+                                               mapping = mapping.to.exp)
+        else
+            i.exposure <- 0L
         i.popn.next <- getIPopnNextFromComp(i = i.cell,
                                             mapping = mapping.to.popn)
         min.val <- getMinValCohortPopulation(i = i.popn.next,
@@ -162,16 +166,26 @@ updateProposalAccountMoveComp <- function(combined) {
         if (is.net) {
             mean <- theta.comp[i.cell]
             w.cell <- w.comp[i.cell]
-            sd <- varsigma.comp / w.cell
+            sd <- varsigma.comp / sqrt(w.cell)
             val.prop <- rnormIntTrunc1(mean = mean,
                                        sd = sd,
                                        lower = lower,
-                                       upper = upper,
-                                       maxAttempt = max.attempt)
+                                       upper = upper)
         }
         else {
             theta.cell <- theta.comp[i.cell]
             if (uses.exposure) {
+
+
+
+
+
+
+
+
+
+
+
                 exposure.cell <- exposure[i.exposure]
                 lambda <- theta.cell * exposure.cell
             }
@@ -199,14 +213,8 @@ updateProposalAccountMoveComp <- function(combined) {
                 combined@iAccNextOther <- NA_integer_
                 combined@isLowerTriangle <- is.lower.triangle
             }
-            if (uses.exposure) {
-                combined@iExposure <- i.exposure
-                combined@iExposureOther <- NA_integer_
-            }
-            else {
-                combined@iExposure <- NA_integer_
-                combined@iExposureOther <- NA_integer_
-            }
+            combined@iExposure <- i.exposure
+            combined@iExposureOther <- NA_integer_
             combined@iExpFirst <- i.exp.first
             combined@iExpFirstOther <- NA_integer_
             combined@diffProp <- diff.prop
