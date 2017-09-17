@@ -714,6 +714,160 @@ test_that("R and C versions of diffLogLikPopnOneCell give same answer", {
         expect_equal(ans.R, ans.C)
 })
 
+
+test_that("diffLogLikCellOneDataset works", {
+    diffLogLikCellOneDataset <- demest:::diffLogLikCellOneDataset
+    initialModel <- demest:::initialModel
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    ## one to one
+    deaths <- Counts(array(rpois(n = 180, lambda = 100),
+                           dim = c(3, 2, 5, 3, 2),
+                           dimnames = list(age = c("0-4", "5-9", "10+"),
+                                         sex = c("f", "m"),
+                                         reg = 1:5,
+                                         time = c("2001-2005", "2006-2010", "2011-2015"),
+                                         triangle = c("TL", "TU"))))
+    deaths <- new("ExitsMovements",
+                  .Data = deaths@.Data,
+                  metadata = deaths@metadata)
+    dataset <- Counts(array(rpois(n = 180, lambda = deaths),
+                            dim = dim(deaths),
+                            dimnames = dimnames(deaths)))
+    spec <- Model(dataset ~ Poisson(mean ~ age + sex))
+    model <- initialModel(spec, y = dataset, exposure = deaths)
+    transform <- makeTransform(x = deaths, y = dataset, subset = TRUE)
+    transform <- makeCollapseTransformExtra(transform)
+    ans.obtained <- diffLogLikCellOneDataset(diff = 3L,
+                                             iCell = 5L,
+                                             component = deaths,
+                                             model = model,
+                                             dataset = dataset,
+                                             transform = transform)
+    ans.expected <- (dpois(x = dataset[[5L]], lambda = model@theta[5L] * (deaths[[5L]] + 3L), log = TRUE)
+        - dpois(x = dataset[[5L]], lambda = model@theta[5] * deaths[[5]], log = TRUE))
+    if (test.identity)
+        expect_identical(ans.obtained, ans.expected)
+    else {
+        expect_equal(ans.obtained, ans.expected)
+    }
+    ## many to one
+    deaths <- Counts(array(rpois(n = 180, lambda = 100),
+                           dim = c(3, 2, 5, 3, 2),
+                           dimnames = list(age = c("0-4", "5-9", "10+"),
+                                         sex = c("f", "m"),
+                                         reg = 1:5,
+                                         time = c("2001-2005", "2006-2010", "2011-2015"),
+                                         triangle = c("TL", "TU"))))
+    deaths <- new("ExitsMovements",
+                  .Data = deaths@.Data,
+                  metadata = deaths@metadata)
+    dataset <- Counts(array(rpois(n = 180, lambda = deaths),
+                            dim = dim(deaths),
+                            dimnames = dimnames(deaths)))
+    dataset <- collapseDimension(dataset, dimension = "reg")
+    spec <- Model(dataset ~ Poisson(mean ~ age + sex))
+    deaths.collapsed <- makeCompatible(deaths, dataset)
+    model <- initialModel(spec, y = dataset, exposure = deaths.collapsed)
+    transform <- makeTransform(x = deaths, y = dataset, subset = TRUE)
+    transform <- dembase:::makeCollapseTransformExtra(transform)
+    ans.obtained <- diffLogLikCellOneDataset(diff = -10L,
+                                             iCell = 13L,
+                                             component = deaths,
+                                             model = model,
+                                             dataset = dataset,
+                                             transform = transform)
+    ans.expected <- dpois(x = dataset[[1]],
+                          lambda = model@theta[1] * (deaths.collapsed[[1]] - 10L),
+                          log = TRUE) -
+        dpois(x = dataset[[1]],
+              lambda = model@theta[1] * deaths.collapsed[[1]],
+              log = TRUE)
+    if (test.identity)
+        expect_identical(ans.obtained, ans.expected)
+    else
+        expect_equal(ans.obtained, ans.expected)
+})
+
+test_that("R and C versions of diffLogLikCellOneDataset give same answer", {
+    diffLogLikCellOneDataset <- demest:::diffLogLikCellOneDataset
+    initialModel <- demest:::initialModel
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    ## one to one
+    deaths <- Counts(array(rpois(n = 180, lambda = 100),
+                           dim = c(3, 2, 5, 3, 2),
+                           dimnames = list(age = c("0-4", "5-9", "10+"),
+                                           sex = c("f", "m"),
+                                           reg = 1:5,
+                                           time = c("2001-2005", "2006-2010", "2011-2015"),
+                                           triangle = c("TL", "TU"))))
+    deaths <- new("ExitsMovements",
+                  .Data = deaths@.Data,
+                  metadata = deaths@metadata)
+    dataset <- Counts(array(rpois(n = 180, lambda = deaths),
+                            dim = dim(deaths),
+                            dimnames = dimnames(deaths)))
+    spec <- Model(dataset ~ Poisson(mean ~ age + sex))
+    model <- initialModel(spec, y = dataset, exposure = deaths)
+    transform <- makeTransform(x = deaths, y = dataset, subset = TRUE)
+    transform <- makeCollapseTransformExtra(transform)
+    ans.R <- diffLogLikCellOneDataset(diff = 3L,
+                                      iCell = 5L,
+                                      component = deaths,
+                                      model = model,
+                                      dataset = dataset,
+                                      transform = transform,
+                                      useC = FALSE)
+    ans.C <- diffLogLikCellOneDataset(diff = 3L,
+                                      iCell = 5L,
+                                      component = deaths,
+                                      model = model,
+                                      dataset = dataset,
+                                      transform = transform,
+                                      useC = TRUE)
+    if (test.identity)
+        expect_identical(ans.R, ans.C)
+    else
+        expect_equal(ans.R, ans.C)
+    ## many to one
+    deaths <- Counts(array(rpois(n = 180, lambda = 100),
+                           dim = c(3, 2, 5, 3, 2),
+                           dimnames = list(age = c("0-4", "5-9", "10+"),
+                                           sex = c("f", "m"),
+                                           reg = 1:5,
+                                           time = c("2001-2005", "2006-2010", "2011-2015"),
+                                           triangle = c("TL", "TU"))))
+    deaths <- new("ExitsMovements",
+                  .Data = deaths@.Data,
+                  metadata = deaths@metadata)
+    dataset <- Counts(array(rpois(n = 180, lambda = deaths),
+                            dim = dim(deaths),
+                            dimnames = dimnames(deaths)))
+    dataset <- collapseDimension(dataset, dimension = "reg")
+    spec <- Model(dataset ~ Poisson(mean ~ age + sex))
+    deaths.collapsed <- makeCompatible(deaths, dataset)
+    model <- initialModel(spec, y = dataset, exposure = deaths.collapsed)
+    transform <- makeTransform(x = deaths, y = dataset, subset = TRUE)
+    transform <- dembase:::makeCollapseTransformExtra(transform)
+    ans.R <- diffLogLikCellOneDataset(diff = -10L,
+                                      iCell = 13L,
+                                      component = deaths,
+                                      model = model,
+                                      dataset = dataset,
+                                      transform = transform,
+                                      useC = FALSE)
+    ans.C <- diffLogLikCellOneDataset(diff = -10L,
+                                      iCell = 13L,
+                                      component = deaths,
+                                      model = model,
+                                      dataset = dataset,
+                                      transform = transform,
+                                      useC = TRUE)
+    if (test.identity)
+        expect_identical(ans.R, ans.C)
+    else
+        expect_equal(ans.R, ans.C)
+})
+
 test_that("diffLogLikPopnOneDataset works", {
     diffLogLikPopnOneDataset <- demest:::diffLogLikPopnOneDataset
     diffLogLikPopnOneCell <- demest:::diffLogLikPopnOneCell

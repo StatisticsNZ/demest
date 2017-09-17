@@ -1,4 +1,5 @@
-         
+
+
 ## identical for transition
 setMethod("updateCombined",
           signature(object = "CombinedAccount"),
@@ -1051,53 +1052,6 @@ diffLogLikCellsPoolNet <- function(diff, iComp, iCellOut, iCellIn,
             }
         }
         ans
-    }
-}
-
-diffLogLikCellOneDataset <- function(diff, iCell, component,
-                                     model, dataset, transform) {
-    ## diff
-    stopifnot(identical(length(diff), 1L))
-    stopifnot(is.integer(diff))
-    stopifnot(!is.na(diff))
-    ## iCell
-    stopifnot(identical(length(iCell), 1L))
-    stopifnot(is.integer(iCell))
-    stopifnot(!is.na(iCell))
-    stopifnot(iCell >= 0L)
-    ## component
-    stopifnot(is(component, "Component"))
-    ## iterator
-    stopifnot(is(iterator, "CohortIteratorAccessionPopulation"))
-    ## model
-    stopifnot(is(model, "Model"))
-    ## dataset
-    stopifnot(is(dataset, "Counts"))
-    ## transform
-    stopifnot(is(transform, "CollapseTransformExtra"))
-    if (useC) {
-        .Call(diffLogLikCellOneDataset_R, diff, iCell, component,
-              model, dataset, transform)
-    }
-    else {
-        i.after <- getIAfter(iCell, transform = transform)
-        cell.is.observed <- !is.na(dataset@.Data[i.after])
-        if (!cell.is.observed)
-            return(0)
-        i.shared <- getIShared(iCell, transform = transform)
-        total.comp.curr <- sum(component[i.shared])
-        total.comp.prop <- total.comp.curr + diff
-        log.lik.prop <- logLikelihood(model = model,
-                                      count = total.comp.prop,
-                                      dataset = dataset,
-                                      i = i.after)
-        if (is.infinite(log.lik.prop))
-            return(log.lik.prop)
-        log.lik.curr <- logLikelihood(model = model,
-                                      count = total.comp.curr,
-                                      dataset = dataset,
-                                      i = i.after)
-        log.lik.prop - log.lik.curr
     }
 }
         

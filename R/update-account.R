@@ -175,17 +175,6 @@ updateProposalAccountMoveComp <- function(combined, useC = FALSE) {
         else {
             theta.cell <- theta.comp[i.cell]
             if (uses.exposure) {
-
-
-
-
-
-
-
-
-
-
-
                 exposure.cell <- exposure[i.exposure]
                 lambda <- theta.cell * exposure.cell
             }
@@ -292,6 +281,57 @@ diffLogLikPopnOneCell <- function(iAfter, diff, population, model,
         log.lik.prop - log.lik.curr
     }
 }
+
+## HAS_TESTS
+diffLogLikCellOneDataset <- function(diff, iCell, component,
+                                     model, dataset, transform,
+                                     useC = FALSE) {
+    ## diff
+    stopifnot(identical(length(diff), 1L))
+    stopifnot(is.integer(diff))
+    stopifnot(!is.na(diff))
+    ## iCell
+    stopifnot(identical(length(iCell), 1L))
+    stopifnot(is.integer(iCell))
+    stopifnot(!is.na(iCell))
+    stopifnot(iCell >= 0L)
+    ## component
+    stopifnot(is(component, "Component"))
+    ## model
+    stopifnot(is(model, "Model"))
+    ## dataset
+    stopifnot(is(dataset, "Counts"))
+    ## transform
+    stopifnot(is(transform, "CollapseTransformExtra"))
+    if (useC) {
+        .Call(diffLogLikCellOneDataset_R, diff, iCell, component,
+              model, dataset, transform)
+    }
+    else {
+        i.after <- getIAfter(i = iCell,
+                             transform = transform)
+        cell.has.no.data <- is.na(dataset@.Data[i.after])
+        if (cell.has.no.data)
+            return(0)
+        i.before <- getIBefore(i = i.after,
+                               transform = transform)
+        total.comp.curr <- sum(component[i.before])
+        total.comp.prop <- total.comp.curr + diff
+        log.lik.prop <- logLikelihood(model = model,
+                                      count = total.comp.prop,
+                                      dataset = dataset,
+                                      i = i.after)
+        if (is.infinite(log.lik.prop))
+            return(log.lik.prop)
+        log.lik.curr <- logLikelihood(model = model,
+                                      count = total.comp.curr,
+                                      dataset = dataset,
+                                      i = i.after)
+        log.lik.prop - log.lik.curr
+    }
+}
+
+
 
 ## HAS_TESTS
 ## Time dimension for population has dimscale "Points", so can't be collapsed.
@@ -444,3 +484,4 @@ diffLogLikAccountMovePopn <- function(combined, useC = FALSE) {
                        transforms = transforms)
     }
 }
+
