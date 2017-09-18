@@ -1009,6 +1009,7 @@ test_that("R and C versions of diffLogLikPopnOneDataset give same answer", {
 })
 
 test_that("diffLogLikPopn works", {
+    diffLogLikPopn <- demest:::diffLogLikPopn
     diffLogLikPopnOneDataset <- demest:::diffLogLikPopnOneDataset
     diffLogLikPopnOneCell <- demest:::diffLogLikPopnOneCell
     initialModel <- demest:::initialModel
@@ -1115,6 +1116,7 @@ test_that("diffLogLikPopn works", {
 })
 
 test_that("R and C versions of diffLogLikPopn give same answer", {
+    diffLogLikPopn <- demest:::diffLogLikPopn
     diffLogLikPopnOneDataset <- demest:::diffLogLikPopnOneDataset
     diffLogLikPopnOneCell <- demest:::diffLogLikPopnOneCell
     initialModel <- demest:::initialModel
@@ -1218,6 +1220,7 @@ test_that("R and C versions of diffLogLikPopn give same answer", {
 
 test_that("diffLogLikAccountMovePopn works", {
     diffLogLikAccountMovePopn <- demest:::diffLogLikAccountMovePopn
+    updateProposalAccountMovePopn <- demest:::updateProposalAccountMovePopn
     initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     population <- CountsOne(values = seq(100, 200, 10),
@@ -1267,6 +1270,7 @@ test_that("R and C versions of diffLogLikAccountMovePopn give same answer", {
     diffLogLikAccountMovePopn <- demest:::diffLogLikAccountMovePopn
     initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    updateProposalAccountMovePopn <- demest:::updateProposalAccountMovePopn
     population <- CountsOne(values = seq(100, 200, 10),
                             labels = seq(2000, 2100, 10),
                             name = "time")
