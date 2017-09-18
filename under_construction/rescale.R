@@ -950,8 +950,7 @@ readStateDLMFromFile <- function(skeleton, filename, iterations,
                                  nIteration, lengthIter, only0) {
     first <- skeleton@first
     last <- skeleton@last
-    metadata <- skeleton@metadata
-    indices <- object@indices0
+    indices0 <- object@indices0
     if (is.null(iterations))
         iterations <- seq_len(nIteration)
     n.iter <- length(iterations)
@@ -963,8 +962,10 @@ readStateDLMFromFile <- function(skeleton, filename, iterations,
     .Data <- matrix(.Data, ncol = n.iter)
     if (only0) {
         .Data <- .Data[indices0, ]
-        metadata <- metadata[-iAlong]
+        metadata <- skeleton@metadata[-iAlong]
     }
+    else
+        metadata <- skeleton@metadataIncl0
     metadata <- dembase::addIterationsToMetadata(metadata, iterations = iterations)
     .Data <- array(.Data, dim = dim(metadata), dimnames = dimnames(metadata))
     methods::new("Values", .Data = .Data, metadata = metadata)

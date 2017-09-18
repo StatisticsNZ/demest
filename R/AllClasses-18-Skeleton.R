@@ -26,6 +26,34 @@ setClass("SkeletonMetadata",
          })
 
 ## HAS_TESTS
+setClass("SkeletonMetadataIncl0",
+         slots = c(metadataIncl0 = "MetaData"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             metadataIncl0 <- object@metadataIncl0
+             metadata <- object@metadata
+             iAlong <- object@iAlong
+             dimtypes <- dembase::dimtypes(metadataIncl0, use.names = FALSE)
+             ## 'metadata' does not have iteration or quantile dimensions
+             for (dimtype in c("iteration", "quantile"))
+                 if (dimtype %in% dimtypes)
+                     return(gettextf("'%s' has dimension with dimtype \"%s\"",
+                                     "metadata", dimtype))
+             ## along dimension has dimtype "state"
+             if (dimtypes[iAlong] != "state")
+                 return(gettextf("\"%s\" dimension does not have dimtype \"%s\"",
+                                 "along", "state"))
+             ## along dimension one element longer than for normal metadata
+             dim.normal <- dim(metadata)
+             dim.incl0 <- dim(metadataIncl0)
+             if (!identical(dim.incl0[iAlong], dim.normal[iAlong] + 1L))
+                 return(gettextf("\"%s\" of '%s' should be one element longer than \"%s\" dimension of '%s'",
+                                 "along", "metadataIncl0", "along", "metadata"))
+             TRUE
+         })
+
+
+## HAS_TESTS
 setClass("SkeletonFirst",
          slots = c(first = "integer"),
          contains = "VIRTUAL",
@@ -71,6 +99,31 @@ setClass("SkeletonMany",
              TRUE
          })
 
+## NO_TESTS
+setClass("SkeletonIndices0",
+         slots = c(indices0 = "integer"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             indices0 <- object@indices0
+             first <- object@first
+             last <- object@last
+             ## 'indices0' has no missing values
+             if (any(is.na(indices0)))
+                 return(gettextf("'%s' has missing values",
+                               "indices0"))
+             ## 'indices0' has not duplicates
+             if (any(duplicated(indices0)))
+                 return(gettextf("'%s' has duplicates",
+                               "indices0"))
+             ## 'indices0' within valid range
+             valid.range <- seq_len(last - first + 1L)
+             if (!all(indices0 %in% valid.range))
+                 return(gettextf("'%s' has elements outside valid range",
+                                 "indices0"))
+             TRUE
+         })
+
+
 ## HAS_TESTS
 setClass("SkeletonIndicesShow",
          slots = c(indicesShow = "integer"),
@@ -94,6 +147,7 @@ setClass("SkeletonIndicesShow",
                                  "indicesShow"))
              TRUE
          })            
+
 
 ## HAS_TESTS
 setClass("SkeletonOffsetsHigher",
@@ -333,9 +387,11 @@ setClass("SkeletonCovariates",
 ## HAS_TESTS
 ## HAS_FETCH
 setClass("SkeletonStateDLM",
-         slots = c(metadata = "MetaData"),
          contains = c("SkeletonMany",
+                      "SkeletonIndices0",
                       "SkeletonIndicesShow",
+                      "SkeletonMetadata",
+                      "SkeletonMetadataIncl0",
                       "IAlongMixin"))
 
 ## HAS_TESTS

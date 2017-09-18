@@ -354,6 +354,11 @@ test_that("can create valid object of class SkeletonStateDLM", {
                             nms = "time",
                             dimtypes = "time",
                             DimScales = list(new("Points", dimvalues = 1:10))),
+             metadataIncl0 = new("MetaData",
+                 nms = "time",
+                 dimtypes = "state",
+                 DimScales = list(new("Categories", dimvalues = as.character(1:11)))),
+             indices0 = 1L,
              indicesShow = 2:11)
     expect_true(validObject(x))
     x <- new("SkeletonStateDLM",
@@ -365,8 +370,47 @@ test_that("can create valid object of class SkeletonStateDLM", {
                             dimtypes = c("state", "time"),
                             DimScales = list(new("Categories", dimvalues = c("f", "m")),
                                              new("Points", dimvalues = 1:10))),
+             metadataIncl0 = new("MetaData",
+                 nms = c("sex", "time"),
+                 dimtypes = c("sex", "state"),
+                 DimScales = list(new("Sexes", dimvalues = c("f", "m")),
+                                  new("Categories", dimvalues = as.character(1:11)))),
+             indices0 = c(1L, 12L),
              indicesShow = c(2:11, 13:22))
     expect_true(validObject(x))
+})
+
+test_that("validity tests for SkeletonStateDLM inherited from SkeletonMetadataIncl0 work", {
+    x <- new("SkeletonStateDLM",
+             first = 40L,
+             last = 50L,
+             iAlong = 1L,
+             metadata = new("MetaData",
+                 nms = "time",
+                 dimtypes = "time",
+                 DimScales = list(new("Points", dimvalues = 1:10))),
+             metadataIncl0 = new("MetaData",
+                 nms = "time",
+                 dimtypes = "state",
+                 DimScales = list(new("Categories", dimvalues = as.character(1:11)))),
+             indices0 = 1L,
+             indicesShow = 2:11)
+    expect_true(validObject(x))
+    ## 'indices0' has no missing values
+    x.wrong <- x
+    x.wrong@indices0[1] <- NA
+    expect_error(validObject(x.wrong),
+                 "'indices0' has missing values")
+    ## 'indices0' has no duplicates
+    x.wrong <- x
+    x.wrong@indices0[2] <- x.wrong@indices0[1]
+    expect_error(validObject(x.wrong),
+                 "'indices0' has duplicates")
+    ## 'indices0' within valid range
+    x.wrong <- x
+    x.wrong@indices0[1] <- -1L
+    expect_error(validObject(x.wrong),
+                 "'indices0' has elements outside valid range")
 })
 
 test_that("validity tests for SkeletonStateDLM inherited from SkeletonIndicesShow work", {
@@ -378,6 +422,11 @@ test_that("validity tests for SkeletonStateDLM inherited from SkeletonIndicesSho
                  nms = "time",
                  dimtypes = "time",
                  DimScales = list(new("Points", dimvalues = 1:10))),
+             metadataIncl0 = new("MetaData",
+                 nms = "time",
+                 dimtypes = "state",
+                 DimScales = list(new("Categories", dimvalues = as.character(1:11)))),
+             indices0 = 1L,
              indicesShow = 2:11)
     expect_true(validObject(x))
     ## 'indicesShow' has no missing values
