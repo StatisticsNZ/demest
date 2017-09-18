@@ -7046,6 +7046,61 @@ makeResultsCounts <- function(finalCombineds, mcmcArgs, controlArgs, seed) {
 }
 
 
+
+writeStateDLMToFileHelper <- function(object, filename, nIteration, lengthIter,
+                                      isValueHere, useC = FALSE) {
+    ## object
+    stopifnot(methods::is(object, "Values"))
+    ## nIteration
+    stopifnot(is.integer(nIteration))
+    stopifnot(identical(length(nIteration), 1L))
+    stopifnot(!is.na(nIteration))
+    stopifnot(nIteration >= 1L)
+    ## lengthIter
+    stopifnot(is.integer(lengthIter))
+    stopifnot(identical(length(lengthIter), 1L))
+    stopifnot(!is.na(lengthIter))
+    stopifnot(lengthIter >= 1L)
+    ## isValueHere
+    stopifnot(is.logical(isValueHere))
+    stopifnot(!any(is.na(isValueHere)))
+    stopifnot(length(isValueHere) <= lengthIter)
+    if (useC) {
+        .Call(writeStateDLMToFileHelper_R, object, filename,
+              nIteration, lengthIter, isValueHere)
+    }
+    else {
+        ## the pointer used for reading and the pointer used for
+        ## writing are independent of each other, so we have to
+        ## move each separately via read or write operations
+        con <- file(filename, open = "r+b")
+        size.results <- readBin(con = con, what = "integer", n = 1L)
+        writeBin(size.results, con = con)
+        size.adj <- readBin(con = con, what = "integer", n = 1L)
+        writeBin(size.adj, con = con)
+        results <- readBin(con = con, what = "raw", n = size.results)
+        writeBin(results, con = con)
+        pos <- 1L
+        for (j in seq_len(nIteration)) {
+            for (i in seq_along(isValueHere)) {
+                if (isValueHere[i]) {
+                    val <- readBin(con = con, what = "double", n = 1L)
+                    writeBin(object@.Data[pos], con = con)
+                    pos <- pos + 1L
+                }
+                else {
+                    val <- readBin(con = con, what = "double", n = 1L)
+                    writeBin(val, con = con)
+                }
+            }
+        }
+        close(con)
+    }
+}
+
+
+
+
 ## PRINTING ##########################################################################
 
 expandTermsMod <- function(names) {
@@ -8358,11 +8413,11 @@ getDataFromFile <- function(filename, first, last, lengthIter,
         ans <- double(length = n.iter * length.data)
         con <- file(filename, open = "rb")
         on.exit(close(con))
-        ## find out size of results object - stored in first position ## NEW
-        size.results <- readBin(con = con, what = "integer", n = 1L)  ## NEW
-        ## skip over results object ## NEW
-        for (j in seq_len(size.results))  ## NEW
-            readBin(con = con, what = "raw", n = 1L)  ## NEW
+        ## find out size of results object - stored in first position
+        size.results <- readBin(con = con, what = "integer", n = 1L)
+        ## skip over results object
+        for (j in seq_len(size.results))
+            readBin(con = con, what = "raw", n = 1L)
         ## go to start of first iteration
         n.skip <- iterations[1L] - 1L
         for (i in seq_len(n.skip))
