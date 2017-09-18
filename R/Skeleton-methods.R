@@ -116,10 +116,10 @@ setMethod("fetchResults",
                   iterations <- seq_len(nIteration)
               n.iter <- length(iterations)
               metadata <- methods::new("MetaData",
-                              nms = "iteration",
-                              dimtypes = "iteration",
-                              DimScales = list(methods::new("Iterations",
-                                  dimvalues = iterations)))
+                                       nms = "iteration",
+                                       dimtypes = "iteration",
+                                       DimScales = list(methods::new("Iterations",
+                                                                     dimvalues = iterations)))
               .Data <- getDataFromFile(filename = filename,
                                        first = first,
                                        last = first,
