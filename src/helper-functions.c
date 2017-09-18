@@ -419,6 +419,9 @@ double getRtnorm1_x(double bnd1, double bnd2)
 int
 rpoisTrunc1(double lambda, int lower, int upper, int maxAttempt)
 {
+    if (lower == NA_INTEGER)
+	lower = 0;
+
     int finite_upper = ( (upper == NA_INTEGER) ? 0 : 1);
     
     int retValue = NA_INTEGER;
@@ -3295,43 +3298,30 @@ chooseICellPopn(SEXP description_R)
 int
 getIAccNextFromPopn(int i, SEXP description_R)
 {
-    int stepTime = *INTEGER(GET_SLOT(description_R, stepTime_sym));
     int nTimePopn = *INTEGER(GET_SLOT(description_R, nTime_sym));
+    int nAgePopn = *INTEGER(GET_SLOT(description_R, nAge_sym));
+    int stepTimePopn = *INTEGER(GET_SLOT(description_R, stepTime_sym));
     int stepAgePopn = *INTEGER(GET_SLOT(description_R, stepAge_sym));
-    int nAge = *INTEGER(GET_SLOT(description_R, nAge_sym));
-    
     int nTimeAcc = nTimePopn - 1;
-    int iTime_r = (((i - 1) / stepTime) % nTimePopn) + 1; /* R-style */
+    int nAgeAcc = nAgePopn - 1;
+
+    int iTime_r = (((i - 1) / stepTimePopn) % nTimePopn) + 1; /* R-style */
+    int iAge_r = (((i - 1) / stepAgePopn) % nAgePopn) + 1; /* R-style */
+    int iAcc = 0;
     
-    int iAccNext = 0;
-    
-    if (iTime_r < nTimePopn) {
-        int tTimePopn = stepTime * nTimePopn;
-        int diff = i - iTime_r; 
-        int tmp = diff / tTimePopn; /* integer div */
-        int iAcc = tmp * (stepTime * nTimeAcc) 
-            + (diff % tTimePopn)
-            + iTime_r;
-        
-        int iAge_r = (((i - 1) / stepAgePopn) % nAge) + 1; /* R-style */
-        
-        if (iAge_r < nAge) {
-            
-            int stepAgeAcc = stepAgePopn;
-            
-            if (stepAgePopn >= stepTime) {
-                stepAgeAcc = (stepAgeAcc * nTimeAcc) / nTimePopn;
-            }
-            
-            iAccNext = iAcc + stepAgeAcc;
-            
-        }
-        else {
-            iAccNext = iAcc;
-        }
+    if ((iTime_r < nTimePopn) && (iAge_r < nAgePopn)) {
+	iAcc = (((i - 1) / (stepTimePopn * nTimePopn)) * (stepTimePopn * nTimeAcc)
+		+ ((i - 1) % (stepTimePopn * nTimePopn))) + 1;
+	int stepAgeAcc;
+	if (stepTimePopn > stepAgePopn)
+	    stepAgeAcc = stepAgePopn;
+	else
+	    stepAgeAcc = (stepAgePopn / nTimePopn) * nTimeAcc;
+	iAcc = (((iAcc - 1) / (stepAgeAcc * nAgePopn)) * (stepAgeAcc * nAgeAcc)
+		+ ((iAcc - 1) % (stepAgeAcc * nAgePopn))) + 1;
     }
     
-    return iAccNext;
+    return iAcc;
 }
     
 int
@@ -3343,15 +3333,19 @@ getIExpFirstFromPopn(int i, SEXP description_R)
     
     int nTimePopnTimesStepTime = nTimePopn * stepTime;
     
-    int nTimeTri = nTimePopn - 1;
-    int lengthLowerTri = (lengthPopn * nTimeTri) / nTimePopn; /* integer div */
-    int iTime = (i - 1) / nTimePopnTimesStepTime; /* integer div */
-    int remainder = (i - 1) - iTime * nTimePopnTimesStepTime + 1;
-    int indexUpperTri = iTime * nTimeTri * stepTime + remainder;
-    
-    return (lengthLowerTri + indexUpperTri);
+    int nTimeExp = nTimePopn - 1;
+    int iNonTime = (i - 1) / nTimePopnTimesStepTime; /* integer div */
+    int remainder = (i - 1) - iNonTime * nTimePopnTimesStepTime + 1;
+    int indexExp = iNonTime * nTimeExp * stepTime + remainder;
+	
+    int hasAge = *INTEGER(GET_SLOT(description_R, hasAge_sym));
+    if (hasAge) {
+	int lengthLowerTri = (lengthPopn / nTimePopn) * nTimeExp; /* integer div */
+        return (lengthLowerTri + indexExp);
+    }
+    else
+	return indexExp;
 }
-    
     
 int
 getIPopnNextFromPopn(int i, SEXP description_R)
@@ -3382,27 +3376,55 @@ getIPopnNextFromPopn(int i, SEXP description_R)
 }
 
 int
-getMinValCohort(int i, SEXP series_R, SEXP iterator_R)
+getMinValCohortAccession(int i, SEXP series_R, SEXP iterator_R)
 {
     int *series = INTEGER(series_R);
     
     int ans = series[i-1];
     
-    resetCAP(iterator_R, i);
+    resetCA(iterator_R, i);
+    
+    int finished = *INTEGER(GET_SLOT(iterator_R, finished_sym));
+
+    while(!(finished)) {
+        
+        advanceCA(iterator_R);
+	i = *INTEGER(GET_SLOT(iterator_R, i_sym));
+        int check = series[i - 1];
+	
+        if (check < ans) {
+            ans = check;
+        }
+	finished = *INTEGER(GET_SLOT(iterator_R, finished_sym));
+
+    }
+    
+    return ans;
+}
+
+int
+getMinValCohortPopulation(int i, SEXP series_R, SEXP iterator_R)
+{
+    int *series = INTEGER(series_R);
+    
+    int ans = series[i-1];
+    
+    resetCP(iterator_R, i);
     
     int finished = *INTEGER(GET_SLOT(iterator_R, finished_sym));
     
     while(!(finished)) {
         
-        advanceCAP(iterator_R);
-        i = *INTEGER(GET_SLOT(iterator_R, i_sym));
+        advanceCP(iterator_R);
+	i = *INTEGER(GET_SLOT(iterator_R, i_sym));
+
         int check = series[i - 1];
         
         if (check < ans) {
             ans = check;
         }
-        finished = *INTEGER(GET_SLOT(iterator_R, finished_sym));
-        
+	finished = *INTEGER(GET_SLOT(iterator_R, finished_sym));
+	
     }
     
     return ans;

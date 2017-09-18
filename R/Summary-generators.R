@@ -78,7 +78,7 @@ setMethod("summary",
               final <- object@final[[1L]]
               model <- final@model
               y <- object@y
-              observation <- final@observation
+              observationModels <- final@observationModels
               datasets <- final@datasets
               names.datasets <- final@namesDatasets
               parameters <- makeParameters(object = object, filename = filename)
@@ -86,7 +86,7 @@ setMethod("summary",
               metropolis <- makeMetropolis(object = object, filename = filename)
               model.summary <- summary(model)
               y.summary <- summary(y)
-              observation.summary <- lapply(observation, summary)
+              observationModels.summary <- lapply(observationModels, summary)
               datasets.summary <- lapply(datasets, summaryDataset)
               methods::new("SummaryResultsCounts",
                            mcmc = mcmc,
@@ -95,7 +95,7 @@ setMethod("summary",
                            metropolis = metropolis,
                            model = model.summary,
                            y = y.summary,
-                           observation = observation.summary,
+                           observationModels = observationModels.summary,
                            datasets = datasets.summary,
                            namesDatasets = names.datasets)
           })

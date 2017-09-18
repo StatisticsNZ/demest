@@ -38,7 +38,7 @@ test_that("finiteSDObject works with ResultsCounts", {
                        dimnames = list(age = 0:9, region = 1:5)))
     d3 <- collapseDimension(y, dim = "region")
     filename <- tempfile()
-    estimateCounts(model = Model(y ~ Poisson(mean ~ age + sex + region),
+    estimateCounts(model = Model(y ~ Poisson(mean ~ age + sex + region, useExpose = FALSE),
                        jump = 0.3,
                        age ~ Exch()),
                    y = y,
@@ -57,8 +57,8 @@ test_that("finiteSDObject works with ResultsCounts", {
                              where = "model",
                              probs = c(0.025, 0.5, 0.975),
                              iterations = NULL),
-                         observation = list(d1 = NULL,
-                             d2 = finiteSDInner(model = obj@final[[1L]]@observation[[2]],
+                         observationModels = list(d1 = NULL,
+                             d2 = finiteSDInner(model = obj@final[[1L]]@observationModels[[2]],
                                  filename = filename,
                                  where = c("observation", "d2"),
                                  probs = c(0.025, 0.5, 0.975),
@@ -221,7 +221,7 @@ test_that("whereMetropStat works with ResultsCounts", {
                        dimnames = list(age = 0:9, region = 1:5)))
     d3 <- collapseDimension(y, dim = "region")
     filename <- tempfile()
-    estimateCounts(model = Model(y ~ Poisson(mean ~ age + sex + region),
+    estimateCounts(model = Model(y ~ Poisson(mean ~ age + sex + region, useExpose = FALSE),
                        jump = 0.3,
                        age ~ Exch()),
                    y = y,
@@ -237,17 +237,17 @@ test_that("whereMetropStat works with ResultsCounts", {
     expect_true(validObject(object))
     ans.obtained <- whereMetropStat(object, FUN = whereAcceptance)
     ans.expected <- list(c("model", "likelihood", "acceptCount"),
-                         c("observation", "d1", "likelihood", "acceptProb"),
-                         c("observation", "d2", "likelihood", "acceptRate"))
+                         c("observationModels", "d1", "likelihood", "acceptProb"),
+                         c("observationModels", "d2", "likelihood", "acceptRate"))
     expect_identical(ans.obtained, ans.expected)
     ans.obtained <- whereMetropStat(object, FUN = whereAutocorr)
     ans.expected <- list(c("model", "likelihood", "count"),
-                         c("observation", "d1", "likelihood", "prob"),
-                         c("observation", "d2", "likelihood", "rate"))
+                         c("observationModels", "d1", "likelihood", "prob"),
+                         c("observationModels", "d2", "likelihood", "rate"))
     expect_identical(ans.obtained, ans.expected)
     ans.obtained <- whereMetropStat(object, FUN = whereJump)
     ans.expected <- list(c("model", "likelihood", "jumpCount"),
-                         c("observation", "d1", "likelihood", "jumpProb"),
-                         c("observation", "d2", "likelihood", "jumpRate"))
+                         c("observationModels", "d1", "likelihood", "jumpProb"),
+                         c("observationModels", "d2", "likelihood", "jumpRate"))
     expect_identical(ans.obtained, ans.expected)
 })

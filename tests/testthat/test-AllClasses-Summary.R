@@ -215,7 +215,7 @@ test_that("can create valid object of class SummaryResultsCounts", {
              y = new("SummarySeries",
                  dimensions = c("age", "sex"),
                  nCell = 24L),
-             observation = list(new("SummaryModel",
+             observationModels = list(new("SummaryModel",
                  specification = "y ~ Poisson(mean = 1)",
                  dimensions = "age")),
              datasets = list(new("SummaryDataset",
@@ -230,11 +230,11 @@ test_that("can create valid object of class SummaryResultsCounts", {
              mcmc = c(nBurnin = 1000L, nSim = 1000L, nChain = 2L, nThin = 10L, nIteration = 200L),
              parameters = data.frame(matrix(rnorm(16), nc = 4),
                  row.names = c("model.likelihood.prob", "model.prior.sd",
-                     "observation.census.likelihood.mean",
-                     "observation.census.likelihood.sd")),
+                     "observationModels.census.likelihood.mean",
+                     "observationModels.census.likelihood.sd")),
              gelmanDiag = c("model.likelihood.prob" = 1, "model.prior.sd" = 1,
-                     "observation.census.likelihood.mean" = 1,
-                     "observation.census.likelihood.sd" = 1))
+                     "observationModels.census.likelihood.mean" = 1,
+                     "observationModels.census.likelihood.sd" = 1))
     expect_true(validObject(x))
 })
 

@@ -236,8 +236,14 @@ setGeneric("hasEstimated",
            function(object)
            standardGeneric("hasEstimated"))
 
+setGeneric("initialCombinedAccount",
+           function(account, systemModels, systemWeights,
+                    observationModels, seriesIndices, 
+                    datasets, namesDatasets, transforms)
+           standardGeneric("initialCombinedAccount"))
+
 setGeneric("initialCombinedCounts",
-           function(object, y, exposure, observation, datasets,
+           function(object, y, exposure, observationModels, datasets,
                     namesDatasets, transforms)
            standardGeneric("initialCombinedCounts"))
 

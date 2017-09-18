@@ -131,7 +131,7 @@ setMethod("show",
               parameters <- object@parameters
               model <- object@model
               y <- object@y
-              observation <- object@observation
+              observationModels <- object@observationModels
               datasets <- object@datasets
               namesDatasets <- object@namesDatasets
               cat(kDivider)
@@ -142,9 +142,9 @@ setMethod("show",
               print(y)
               cat(kDivider)
               cat("Observation models:\n")
-              for (i in seq_along(observation)) {
+              for (i in seq_along(observationModels)) {
                   cat("*", namesDatasets[i], "*\n", sep = "")
-                  print(observation[[i]])
+                  print(observationModels[[i]])
               }
               cat(kDivider)
               cat("Datasets:\n")

@@ -197,13 +197,13 @@ setClassUnion("ResultsModel",
 setClass("ResultsCountsEst",
          slots = c(model = "list",
                         y = "Skeleton",
-                        observation = "list",
+                        observationModels = "list",
                         datasets = "list"),
          contains = "ResultsEst",
          validity = function(object) {
              model <- object@model
              final <- object@final
-             observation <- object@observation
+             observationModels <- object@observationModels
              datasets <- object@datasets
              mcmc <- object@mcmc
              nSim <- mcmc[["nSim"]]
@@ -214,25 +214,25 @@ setClass("ResultsCountsEst",
              if (!identical(nSim, 0L) && identical(model, list()))
                  return(gettextf("'%s' is not 0 but '%s' is an empty list",
                                  "nSim", "model"))
-             ## observation is empty list iff nSim is 0
-             if (identical(nSim, 0L) && !identical(observation, list()))
+             ## observationModels is empty list iff nSim is 0
+             if (identical(nSim, 0L) && !identical(observationModels, list()))
                  return(gettextf("'%s' is 0 but '%s' is not an empty list",
-                                 "nSim", "observation"))
-             if (!identical(nSim, 0L) && identical(observation, list()))
+                                 "nSim", "observationModels"))
+             if (!identical(nSim, 0L) && identical(observationModels, list()))
                  return(gettextf("'%s' is not 0 but '%s' is an empty list",
-                                 "nSim", "observation"))
+                                 "nSim", "observationModels"))
              ## all elements of 'final' have class "CombinedCounts"
              if (!all(sapply(final, is, "CombinedCounts")))
                  return(gettextf("'%s' has elements not of class \"%s\"",
                                  "final", "CombinedCounts"))
-             ## all elements of 'observation' have class "list"
-             if (!all(sapply(observation, is.list)))
+             ## all elements of 'observationModels' have class "list"
+             if (!all(sapply(observationModels, is.list)))
                  return(gettextf("'%s' has elements not of class \"%s\"",
-                                 "observation", "list"))
-             ## 'observation' has names
-             if (is.null(names(observation)))
+                                 "observationModels", "list"))
+             ## 'observationModels' has names
+             if (is.null(names(observationModels)))
                  return(gettextf("'%s' does not have names",
-                                 "observation"))
+                                 "observationModels"))
              ## all elements of 'datasets' have class "Counts" or "SkeletonMissingDataset"
              is.counts <- sapply(datasets, is, "Counts")
              is.skeleton <- sapply(datasets, is, "SkeletonMissingDataset")
@@ -245,10 +245,10 @@ setClass("ResultsCountsEst",
              if (any(has.missing))
                  return(gettextf("'%s' has elements of class \"%s\" with missing values",
                                  "datasets", "Counts"))             
-             ## 'observation' and 'datasets' have same names
-             if (!identical(names(observation), names(datasets)))
+             ## 'observationModels' and 'datasets' have same names
+             if (!identical(names(observationModels), names(datasets)))
                  return(gettextf("'%s' and '%s' have different names",
-                                 "observation", "datasets"))
+                                 "observationModels", "datasets"))
              TRUE
          })
 
@@ -257,7 +257,7 @@ setClass("ResultsCountsExposureEst",
          slots = c(model = "list",
                         y = "Skeleton",
                         exposure = "Counts",
-                        observation = "list",
+                        observationModels = "list",
                         datasets = "list"),
          contains = "ResultsCountsEst",
          validity = function(object) {
@@ -274,6 +274,6 @@ setClass("ResultsCountsExposureEst",
 setClass("ResultsAccount",
          slots = c(counts = "list",
                         system = "list",
-                        observation = "list",
+                        observationModels = "list",
                         datasets = "list"))
 

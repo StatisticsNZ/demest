@@ -6,7 +6,7 @@
 \usage{
 estimateCounts(model, y, exposure = NULL, observation, datasets,
   filename = NULL, nBurnin = 1000, nSim = 1000, nChain = 5, nThin = 1,
-  parallel = TRUE, outfile = "", nUpdateMax = 50, verbose = FALSE,
+  parallel = TRUE, outfile = NULL, nUpdateMax = 50, verbose = FALSE,
   useC = TRUE)
 }
 \arguments{

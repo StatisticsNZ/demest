@@ -84,7 +84,7 @@ test_that("drawYNonSampled throws error with Poisson without exposure", {
                       dim = c(2, 5),
                       dimnames = list(sex = c("f", "m"), region = 1:5)))
     filename <- tempfile()
-    estimateModel(Model(y ~ Poisson(mean ~ region)),
+    estimateModel(Model(y ~ Poisson(mean ~ region, useExpose = FALSE)),
                          y = y,
                          nBurnin = 0,
                          nSim = 2,
@@ -440,7 +440,7 @@ test_that("makeCellInLik works with subtotals", {
     y[c(1:12, 20)] <- NA
     subtotals <- Counts(array(30L, dim = 1, dimnames = list(age = "0-4")))
     y <- attachSubtotals(y, subtotals = subtotals)
-    spec <- Model(y ~ Poisson(mean ~ sex + age))
+    spec <- Model(y ~ Poisson(mean ~ sex + age, useExpose = FALSE))
     model <- initialModel(spec, y = y, exposure = NULL)
     ans.obtained <- makeCellInLik(model,
                                   y = y)
@@ -459,7 +459,7 @@ test_that("makeCellInLik works with aggregate", {
     value <- ValuesOne(2:4, labels = 7:9, name = "age")
     sd <- sqrt(value)
     aggregate <- AgNormal(value = value, sd = sd)
-    spec <- Model(y ~ Poisson(mean ~ sex + age),
+    spec <- Model(y ~ Poisson(mean ~ sex + age, useExpose = FALSE),
                   aggregate = aggregate)
     model <- initialModel(spec, y = y, exposure = NULL)
     ans.obtained <- makeCellInLik(model = model,
@@ -1397,7 +1397,7 @@ test_that("makeOutputModel works with PoissonVarying - no aggregate", {
     y <- Counts(array(rpois(20, lambda  = 10),
                       dim = c(2, 10),
                       dimnames = list(sex = c("f", "m"), age = 0:9)))
-    spec <- Model(y ~ Poisson(mean ~ sex + age))
+    spec <- Model(y ~ Poisson(mean ~ sex + age, useExpose = FALSE))
     model <- initialModel(spec, y = y, exposure = NULL)
     metadata <- y@metadata
     pos <- 10L
@@ -1742,7 +1742,7 @@ test_that("makeOutputModel works with NormalFixed", {
     sd <- Values(array(runif(20),
                       dim = c(2, 10),
                       dimnames = list(sex = c("f", "m"), age = 0:9)))
-    spec <- Model(y ~ NormalFixed(mean = mean, sd = sd))
+    spec <- Model(y ~ NormalFixed(mean = mean, sd = sd, useExpose = FALSE))
     model <- initialModel(spec, y = y, exposure = NULL)
     metadata <- y@metadata
     pos <- 10L
@@ -1940,7 +1940,7 @@ test_that("predictModelNotUseExp gives valid answer with PoissonVaryingNotUseExp
         y.pred <- Counts(array(as.integer(NA),
                                dim = c(10, 4),
                                dimnames = list(age = 5:14, region = letters[1:4])))
-        spec <- Model(y ~ Poisson(mean ~ age + region))
+        spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE))
         model <- initialModel(spec, y = y.est, exposure = NULL)
         model <- initialModelPredict(model,
                                      along = 1L,
@@ -1973,7 +1973,7 @@ test_that("R, C-specific, and C-generic methods for predictModelNotUseExp give s
         y.pred <- Counts(array(as.integer(NA),
                                dim = c(10, 4),
                                dimnames = list(age = 5:14, region = letters[1:4])))
-        spec <- Model(y ~ Poisson(mean ~ age + region))
+        spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE))
         model <- initialModel(spec, y = y.est, exposure = NULL)
         model <- initialModelPredict(model,
                                      along = 1L,
@@ -2017,7 +2017,7 @@ test_that("predictModelNotUseExp gives valid answer with NormalFixed", {
     sd <- Values(array(runif(20),
                        dim = c(2, 10),
                        dimnames = list(sex = c("f", "m"), age = 0:9)))
-    spec <- Model(y ~ NormalFixed(mean = mean, sd = sd))
+    spec <- Model(y ~ NormalFixed(mean = mean, sd = sd, useExpose = FALSE))
     model <- initialModel(spec, y = y.est, exposure = NULL)
     model <- initialModelPredict(model,
                                  along = 2L,
@@ -2050,7 +2050,7 @@ test_that("R, C-specific, and C-generic methods for predictModelNotUseExp give s
     sd <- Values(array(runif(20),
                        dim = c(2, 10),
                        dimnames = list(sex = c("f", "m"), age = 0:9)))
-    spec <- Model(y ~ NormalFixed(mean = mean, sd = sd))
+    spec <- Model(y ~ NormalFixed(mean = mean, sd = sd, useExpose = FALSE))
     model <- initialModel(spec, y = y.est, exposure = NULL)
     model <- initialModelPredict(model,
                                  along = 2L,
@@ -2633,7 +2633,7 @@ test_that("transferParamModel gives valid answer with PoissonVaryingNotUseExpPre
     y <- Counts(array(as.integer(rpois(50, lambda = 20)),
                       dim = c(5, 10),
                       dimnames = list(age = 0:4, region = letters[1:10])))
-    spec <- Model(y ~ Poisson(mean ~ age + region))
+    spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE))
     x.old <- initialModel(spec, y = y, exposure = NULL)
     x.new <- initialModelPredict(x.old,
                                  along = 2L,
@@ -2680,7 +2680,7 @@ test_that("R, C-specific, and C-generic versions of transferParamModel give same
     y <- Counts(array(as.integer(rpois(50, lambda = 20)),
                       dim = c(5, 10),
                       dimnames = list(age = 0:4, region = letters[1:10])))
-    spec <- Model(y ~ Poisson(mean ~ age + region))
+    spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE))
     x.old <- initialModel(spec, y = y, exposure = NULL)
     x.new <- initialModelPredict(x.old,
                                  along = 2L,
@@ -3025,7 +3025,7 @@ test_that("transferParamModel gives valid answer with NormalFixedNotUseExpPredic
     sd <- Values(array(runif(20),
                        dim = c(2, 10),
                        dimnames = list(sex = c("f", "m"), age = 0:9)))
-    spec <- Model(y ~ NormalFixed(mean = mean, sd = sd))
+    spec <- Model(y ~ NormalFixed(mean = mean, sd = sd, useExpose = FALSE))
     model <- initialModel(spec, y = y.est, exposure = NULL)
     model <- initialModelPredict(model,
                                  along = 2L,
@@ -3059,7 +3059,7 @@ test_that("R, C-specific, and C-generic methods for transferParamModel give same
     sd <- Values(array(runif(20),
                        dim = c(2, 10),
                        dimnames = list(sex = c("f", "m"), age = 0:9)))
-    spec <- Model(y ~ NormalFixed(mean = mean, sd = sd))
+    spec <- Model(y ~ NormalFixed(mean = mean, sd = sd, useExpose = FALSE))
     model <- initialModel(spec, y = y.est, exposure = NULL)
     model <- initialModelPredict(model,
                                  along = 2L,
@@ -3327,7 +3327,7 @@ test_that("updateModelNotUseExp for PoissonVaryingNotUseExp updates the correct 
         y <- Counts(array(as.integer(rpois(n = 20, lambda = 20)),
                           dim = 5:4,
                           dimnames = list(age = 0:4, region = letters[1:4])))
-        spec <- Model(y ~ Poisson(mean ~ age + region),
+        spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE),
                       age ~ Exch())                      
         x0 <- initialModel(spec, y = y, exposure = NULL)
         set.seed(seed + 1)
@@ -3352,7 +3352,7 @@ test_that("R, generic C, and specific C versions updateModelNotUseExp method for
         y <- Counts(array(as.integer(rpois(n = 20, lambda = 20)),
                           dim = 5:4,
                           dimnames = list(age = 0:4, region = letters[1:4])))
-        spec <- Model(y ~ Poisson(mean ~ age + region),
+        spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE),
                       age ~ Exch())                      
         x <- initialModel(spec, y = y, exposure = NULL)
         set.seed(seed + 1)
@@ -3493,7 +3493,7 @@ test_that("updateModelNotUseExp for PoissonVaryingNotUseExpAgCertain updates the
         aggregate <- AgCertain(value = value)
         y <- as.integer(rpois(n = 20, lambda = 5))
         y <- Counts(array(y, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
-        spec <- Model(y ~ Poisson(mean ~ age + sex), aggregate = aggregate)
+        spec <- Model(y ~ Poisson(mean ~ age + sex, useExpose = FALSE), aggregate = aggregate)
         x0 <- initialModel(spec, y = y, exposure = NULL)
         x1 <- updateModelNotUseExp(x0, y = y, useC = FALSE)
         if (x1@nAcceptTheta > 0L)
@@ -3520,7 +3520,7 @@ test_that("R, generic C, and specific C versions updateModelNotUseExp method for
         aggregate <- AgCertain(value = value)
         y <- as.integer(rpois(n = 20, lambda = 10))
         y <- Counts(array(y, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
-        spec <- Model(y ~ Poisson(mean ~ age + sex), aggregate = aggregate)
+        spec <- Model(y ~ Poisson(mean ~ age + sex, useExpose = FALSE), aggregate = aggregate)
         x0 <- initialModel(spec, y = y, exposure = NULL)
         set.seed(seed + 1)
         x.R <- updateModelNotUseExp(x0, y = y, useC = FALSE)
@@ -3775,7 +3775,7 @@ test_that("updateModelNotUseExp for PoissonVaryingNotUseExpAgNormal updates the 
         aggregate <- AgNormal(value = value, sd = sqrt(value))
         y <- as.integer(rpois(n = 20, lambda = 5))
         y <- Counts(array(y, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
-        spec <- Model(y ~ Poisson(mean ~ age + sex), aggregate = aggregate)
+        spec <- Model(y ~ Poisson(mean ~ age + sex, useExpose = FALSE), aggregate = aggregate)
         x0 <- initialModel(spec, y = y, exposure = NULL)
         x1 <- updateModelNotUseExp(x0, y = y, useC = FALSE)
         if (x1@nAcceptTheta > 0L)
@@ -3802,7 +3802,7 @@ test_that("R, generic C, and specific C versions updateModelNotUseExp method for
         aggregate <- AgNormal(value = value, sd = sqrt(value))
         y <- as.integer(rpois(n = 20, lambda = 10))
         y <- Counts(array(y, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
-        spec <- Model(y ~ Poisson(mean ~ age + sex), aggregate = aggregate)
+        spec <- Model(y ~ Poisson(mean ~ age + sex, useExpose = FALSE), aggregate = aggregate)
         x0 <- initialModel(spec, y = y, exposure = NULL)
         set.seed(seed + 1)
         x.R <- updateModelNotUseExp(x0, y = y, useC = FALSE)
@@ -3830,7 +3830,7 @@ test_that("updateModelNotUseExp for PoissonVaryingNotUseExpAgFun updates the cor
                            FUN = function(x, weights) sum(x * weights) / sum(weights))
         y <- as.integer(rpois(n = 20, lambda = 5))
         y <- Counts(array(y, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
-        spec <- Model(y ~ Poisson(mean ~ age + sex), aggregate = aggregate)
+        spec <- Model(y ~ Poisson(mean ~ age + sex, useExpose = FALSE), aggregate = aggregate)
         x0 <- initialModel(spec, y = y, exposure = NULL)
         expect_is(x0, "PoissonVaryingNotUseExpAgFun")
         x1 <- updateModelNotUseExp(x0, y = y, useC = FALSE)
@@ -3860,7 +3860,7 @@ test_that("R, generic C, and specific C versions updateModelNotUseExp method for
                            FUN = function(x, weights) sum(x * weights) / sum(weights))
         y <- as.integer(rpois(n = 20, lambda = 10))
         y <- Counts(array(y, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
-        spec <- Model(y ~ Poisson(mean ~ age + sex), aggregate = aggregate)
+        spec <- Model(y ~ Poisson(mean ~ age + sex, useExpose = FALSE), aggregate = aggregate)
         x0 <- initialModel(spec, y = y, exposure = NULL)
         expect_is(x0, "PoissonVaryingNotUseExpAgFun")
         set.seed(seed + 1)
@@ -3888,7 +3888,7 @@ test_that("updateModelNotUseExp for PoissonVaryingNotUseExpAgPoisson updates the
         aggregate <- AgPoisson(value = value)
         y <- as.integer(rpois(n = 20, lambda = 5))
         y <- Counts(array(y, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
-        spec <- Model(y ~ Poisson(mean ~ age + sex), aggregate = aggregate)
+        spec <- Model(y ~ Poisson(mean ~ age + sex, useExpose = FALSE), aggregate = aggregate)
         x0 <- initialModel(spec, y = y, exposure = NULL)
         x1 <- updateModelNotUseExp(x0, y = y, useC = FALSE)
         if (x1@nAcceptTheta > 0L)
@@ -3915,7 +3915,7 @@ test_that("R, generic C, and specific C versions updateModelNotUseExp method for
         aggregate <- AgPoisson(value = value)
         y <- as.integer(rpois(n = 20, lambda = 10))
         y <- Counts(array(y, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
-        spec <- Model(y ~ Poisson(mean ~ age + sex), aggregate = aggregate)
+        spec <- Model(y ~ Poisson(mean ~ age + sex, useExpose = FALSE), aggregate = aggregate)
         x0 <- initialModel(spec, y = y, exposure = NULL)
         set.seed(seed + 1)
         x.R <- updateModelNotUseExp(x0, y = y, useC = FALSE)
@@ -3943,7 +3943,7 @@ test_that("updateModelNotUseExp for NormalFixedNotUseExp works", {
     sd <- Values(array(runif(20),
                        dim = c(2, 10),
                        dimnames = list(sex = c("f", "m"), age = 0:9)))
-    spec <- Model(y ~ NormalFixed(mean = mean, sd = sd))
+    spec <- Model(y ~ NormalFixed(mean = mean, sd = sd, useExpose = FALSE))
     model <- initialModel(spec, y = y, exposure = NULL)
     ans.obtained <- updateModelNotUseExp(model, y = y, useC = FALSE)
     ans.expected <- model
@@ -3962,7 +3962,7 @@ test_that("R, generic C, and specific C versions updateModelNotUseExp method for
     sd <- Values(array(runif(20),
                        dim = c(2, 10),
                        dimnames = list(sex = c("f", "m"), age = 0:9)))
-    spec <- Model(y ~ NormalFixed(mean = mean, sd = sd))
+    spec <- Model(y ~ NormalFixed(mean = mean, sd = sd, useExpose = FALSE))
     model <- initialModel(spec, y = y, exposure = NULL)
     ans.R <- updateModelNotUseExp(model, y = y, useC = FALSE)
     ans.C.generic <- updateModelNotUseExp(model, y = y, useC = TRUE, useSpecific = FALSE)
@@ -5134,7 +5134,7 @@ test_that("whereEstimated works with PoissonVaryingNotUseExp", {
                       dim = c(2, 10),
                       dimnames = list(sex = c("f", "m"), age = 0:9)))
     ## is not saturated
-    spec <- Model(y ~ Poisson(mean ~ sex + age),
+    spec <- Model(y ~ Poisson(mean ~ sex + age, useExpose = FALSE),
                   age ~ DLM(damp = NULL))
     model <- initialModel(spec, y = y, exposure = NULL)
     ans.obtained <- whereEstimated(model)
@@ -5150,7 +5150,7 @@ test_that("whereEstimated works with PoissonVaryingNotUseExp", {
                          c("hyper", "age", "scaleError"))
     expect_identical(ans.obtained, ans.expected)
     ## is saturated
-    spec <- Model(y ~ Poisson(mean ~ sex * age),
+    spec <- Model(y ~ Poisson(mean ~ sex * age, useExpose = FALSE),
                   age ~ DLM(damp = NULL))
     model <- initialModel(spec, y = y, exposure = NULL)
     ans.obtained <- whereEstimated(model)
@@ -5202,7 +5202,7 @@ test_that("whereEstimated works with PoissonVaryingNotUseExpAgNormal", {
     value <- collapseDimension(y, dimension = "age") 
     sd <- sqrt(value) + 0.1
     aggregate <- AgNormal(value = value, sd = sd)
-    spec <- Model(y ~ Poisson(mean ~ sex + age),
+    spec <- Model(y ~ Poisson(mean ~ sex + age, useExpose = FALSE),
                   age ~ Exch(),
                   aggregate = aggregate)
     model <- initialModel(spec, y = y, exposure = NULL)

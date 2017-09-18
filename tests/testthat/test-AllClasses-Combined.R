@@ -1015,7 +1015,7 @@ test_that("can create valid object of class CombinedCountsPoissonNotHasExp", {
                      Counts(array(2L,
                                   dim = c(2, 2),
                                   dimnames = list(age = 0:1, sex = c("f", "m")))))
-    observation <- list(new("PoissonBinomialMixture", prob = 0.9, metadataY = datasets[[1]]@metadata),
+    observationModels <- list(new("PoissonBinomialMixture", prob = 0.9, metadataY = datasets[[1]]@metadata),
                         new("PoissonVaryingUseExp",
                             theta = rbeta(n = 4, shape1 = 5, shape2 = 5),
                             metadataY = y[1:2,]@metadata,
@@ -1060,7 +1060,7 @@ test_that("can create valid object of class CombinedCountsPoissonNotHasExp", {
     x <- new("CombinedCountsPoissonNotHasExp",
              y = y,
              model = model,
-             observation = observation,
+             observationModels = observationModels,
              datasets = datasets,
              namesDatasets = namesDatasets,
              transforms = transforms)
@@ -1099,7 +1099,7 @@ test_that("can create valid object of class CombinedCountsPoissonNotHasExp", {
                      Counts(array(2L,
                                   dim = c(2, 2),
                                   dimnames = list(age = 0:1, sex = c("f", "m")))))
-    observation <- list(new("PoissonBinomialMixture", prob = 0.9, metadataY = datasets[[1]]@metadata),
+    observationModels <- list(new("PoissonBinomialMixture", prob = 0.9, metadataY = datasets[[1]]@metadata),
                         new("PoissonVaryingUseExp",
                             theta = rbeta(n = 4, shape1 = 5, shape2 = 5),
                             metadataY = y[1:2,]@metadata,
@@ -1144,14 +1144,14 @@ test_that("can create valid object of class CombinedCountsPoissonNotHasExp", {
     x <- new("CombinedCountsPoissonNotHasExp",
              y = y,
              model = model,
-             observation = observation,
+             observationModels = observationModels,
              datasets = datasets,
              namesDatasets = namesDatasets,
              transforms = transforms)
     expect_true(validObject(x))
 })
 
-test_that("validity tests inherited for CombinedCountsPoissonNotHasExp inherited from Observation work", {
+test_that("validity tests inherited for CombinedCountsPoissonNotHasExp inherited from ObservationModels work", {
     BetaIterator <- demest:::BetaIterator
     y <- Counts(array(1:6,
                       dim = c(3, 2),
@@ -1186,7 +1186,7 @@ test_that("validity tests inherited for CombinedCountsPoissonNotHasExp inherited
                      Counts(array(2L,
                                   dim = c(2, 2),
                                   dimnames = list(age = 0:1, sex = c("f", "m")))))
-    observation <- list(new("PoissonBinomialMixture", prob = 0.9, metadataY = datasets[[1]]@metadata),
+    observationModels <- list(new("PoissonBinomialMixture", prob = 0.9, metadataY = datasets[[1]]@metadata),
                         new("PoissonVaryingUseExp",
                             theta = rbeta(n = 4, shape1 = 5, shape2 = 5),
                             metadataY = y[1:2,]@metadata,
@@ -1231,34 +1231,29 @@ test_that("validity tests inherited for CombinedCountsPoissonNotHasExp inherited
     x <- new("CombinedCountsPoissonNotHasExp",
              y = y,
              model = model,
-             observation = observation,
+             observationModels = observationModels,
              datasets = datasets,
              namesDatasets = namesDatasets,
              transforms = transforms)
     expect_true(validObject(x))
-    ## 'observation' has at least one element
+    ## all elements of 'observationModels' have class "Model"
     x.wrong <- x
-    x.wrong@observation <- list()
+    x.wrong@observationModels[[1]] <- "wrong"
     expect_error(validObject(x.wrong),
-                 "'observation' has length 0")
-    ## all elements of 'observation' have class "Model"
+                 "'observationModels' has elements not of class \"Model\"")
+    ## all elements of 'observationModels' have class "UseExposure"
     x.wrong <- x
-    x.wrong@observation[[1]] <- "wrong"
+    x.wrong@observationModels[[1]] <- new("PoissonVaryingNotUseExp")
     expect_error(validObject(x.wrong),
-                 "'observation' has elements not of class \"Model\"")
-    ## all elements of 'observation' have class "UseExposure"
+                 "'observationModels' has elements not of class \"UseExposure\"")
+    ## 'observationModels' does not have names
     x.wrong <- x
-    x.wrong@observation[[1]] <- new("PoissonVaryingNotUseExp")
+    names(x.wrong@observationModels)[1] <- "a"
     expect_error(validObject(x.wrong),
-                 "'observation' has elements not of class \"UseExposure\"")
-    ## 'observation' does not have names
-    x.wrong <- x
-    names(x.wrong@observation)[1] <- "a"
-    expect_error(validObject(x.wrong),
-                 "'observation' has names")
+                 "'observationModels' has names")
     ## all elements of 'datasets' have class "Counts"
     x.wrong <- x
-    x.wrong@datasets[[1]] <- "wrong"
+    x.wrong@datasets[[1]] <- as(x.wrong@datasets[[1]], "Values")
     expect_error(validObject(x.wrong),
                  "'datasets' has elements not of class \"Counts\"")
     ## all elements of 'datasets' have type "integer"
@@ -1306,28 +1301,26 @@ test_that("validity tests inherited for CombinedCountsPoissonNotHasExp inherited
                                    multiplierBefore = c(1L, 4L),
                                    multiplierAfter = c(1L, 4L),
                                    invIndices = list(list(1L, 2L, 3L, 4L), list(1L, 2L)))
-    expect_error(validObject(x.wrong),
-                 "elements of 'transforms' do not all have same 'dimBefore'")
+    expect_error(validObject(x.wrong))
     ## 'transforms' does not have names
     x.wrong <- x
     names(x.wrong@transforms) <- "wrong"
     expect_error(validObject(x.wrong),
                  "'transforms' has names")
-    ## 'observation' and 'datasets' have same length
+    ## 'observationModels' and 'datasets' have same length
     x.wrong <- x
     x.wrong@datasets <- x.wrong@datasets[-1]
-    expect_error(validObject(x.wrong),
-                 "'observation' and 'datasets' have different lengths")
-    ## 'observation' and 'namesDatasets' have same length
+    expect_error(validObject(x.wrong))
+    ## 'observationModels' and 'namesDatasets' have same length
     x.wrong <- x
     x.wrong@namesDatasets <- x.wrong@namesDatasets[-1]
     expect_error(validObject(x.wrong),
-                 "'observation' and 'namesDatasets' have different lengths")
-    ## 'observation' and 'transforms' have same length
+                 "'observationModels' and 'namesDatasets' have different lengths")
+    ## 'observationModels' and 'transforms' have same length
     x.wrong <- x
     x.wrong@transforms <- x.wrong@transforms[-1]
     expect_error(validObject(x.wrong),
-                 "'observation' and 'transforms' have different lengths")
+                 "'observationModels' and 'transforms' have different lengths")
     ## 'transforms' and 'dimAfter' consistent with datasets
     x.wrong <- x
     x.wrong@transforms[[1]] <- new("CollapseTransformExtra",
@@ -1379,7 +1372,7 @@ test_that("can create valid object of class CombinedCountsPoissonHasExp", {
                      Counts(array(2L,
                                   dim = c(2, 2),
                                   dimnames = list(age = 0:1, sex = c("f", "m")))))
-    observation <- list(new("PoissonBinomialMixture", prob = 0.9, metadataY = datasets[[1]]@metadata),
+    observationModels <- list(new("PoissonBinomialMixture", prob = 0.9, metadataY = datasets[[1]]@metadata),
                         new("PoissonVaryingUseExp",
                             theta = rbeta(n = 4, shape1 = 5, shape2 = 5),
                             metadataY = y[1:2,]@metadata,
@@ -1425,7 +1418,7 @@ test_that("can create valid object of class CombinedCountsPoissonHasExp", {
              y = y,
              exposure = exposure,
              model = model,
-             observation = observation,
+             observationModels = observationModels,
              datasets = datasets,
              namesDatasets = namesDatasets,
              transforms = transforms)
@@ -1436,7 +1429,7 @@ test_that("can create valid object of class CombinedCountsPoissonHasExp", {
              y = y,
              exposure = exposure,
              model = model,
-             observation = observation,
+             observationModels = observationModels,
              datasets = datasets,
              namesDatasets = namesDatasets,
              transforms = transforms)
@@ -1479,7 +1472,7 @@ test_that("validity tests for CombinedCountsPoissonHasExp inherited from Combine
                      Counts(array(2L,
                                   dim = c(2, 2),
                                   dimnames = list(age = 0:1, sex = c("f", "m")))))
-    observation <- list(new("PoissonBinomialMixture", prob = 0.9, metadataY = datasets[[1]]@metadata),
+    observationModels <- list(new("PoissonBinomialMixture", prob = 0.9, metadataY = datasets[[1]]@metadata),
                         new("PoissonVaryingUseExp",
                             theta = rbeta(n = 4, shape1 = 5, shape2 = 5),
                             metadataY = y[1:2,]@metadata,
@@ -1525,7 +1518,7 @@ test_that("validity tests for CombinedCountsPoissonHasExp inherited from Combine
              y = y,
              exposure = exposure,
              model = model,
-             observation = observation,
+             observationModels = observationModels,
              datasets = datasets,
              namesDatasets = namesDatasets,
              transforms = transforms)
@@ -1574,7 +1567,7 @@ test_that("can create valid object of class CombinedCountsBinomial", {
                      Counts(array(2L,
                                   dim = c(2, 2),
                                   dimnames = list(age = 0:1, sex = c("f", "m")))))
-    observation <- list(new("PoissonBinomialMixture", prob = 0.9, metadataY = datasets[[1]]@metadata),
+    observationModels <- list(new("PoissonBinomialMixture", prob = 0.9, metadataY = datasets[[1]]@metadata),
                         new("PoissonVaryingUseExp",
                             theta = rbeta(n = 4, shape1 = 5, shape2 = 5),
                             metadataY = y[1:2,]@metadata,
@@ -1620,7 +1613,7 @@ test_that("can create valid object of class CombinedCountsBinomial", {
              y = y,
              exposure = exposure,
              model = model,
-             observation = observation,
+             observationModels = observationModels,
              datasets = datasets,
              namesDatasets = namesDatasets,
              transforms = transforms)
@@ -1631,7 +1624,7 @@ test_that("can create valid object of class CombinedCountsBinomial", {
              y = y,
              exposure = exposure,
              model = model,
-             observation = observation,
+             observationModels = observationModels,
              datasets = datasets,
              namesDatasets = namesDatasets,
              transforms = transforms)

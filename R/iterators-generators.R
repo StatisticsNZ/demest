@@ -74,7 +74,8 @@ setMethod("CohortIterator",
               i.age <- match("age", dimtypes)
               makeIteratorCAP(dim = dim,
                               iTime = i.time,
-                              iAge = i.age)
+                              iAge = i.age,
+                              accession = TRUE)
           })
 
 ## HAS_TESTS
@@ -151,7 +152,10 @@ setMethod("CohortIterator",
               dimtypes <- dembase::dimtypes(object, use.names = FALSE)
               i.time <- match("time", dimtypes)
               i.age <- match("age", dimtypes, nomatch = 0L)
-              makeIteratorCAP(dim = dim, iTime = i.time, iAge = i.age)
+              makeIteratorCAP(dim = dim,
+                              iTime = i.time,
+                              iAge = i.age,
+                              accession = FALSE)
           })
 
 ## HAS_TESTS

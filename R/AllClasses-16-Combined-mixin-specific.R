@@ -1,0 +1,949 @@
+
+## NO_TESTS
+setClass("AccessionMixin",
+         slot = c(accession = "Accession"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             hasAge <- object@hasAge@.Data
+             accession <- object@accession
+             population <- object@account@population
+             .Data.acc <- accession@.Data
+             names.acc <- names(accession)
+             names.popn <- names(population)
+             dimtypes.acc <- dimtypes(accession, use.names = FALSE)
+             dimtypes.popn <- dimtypes(population, use.names = FALSE)
+             DimScales.acc <- DimScales(accession, use.names = FALSE)
+             DimScales.popn <- DimScales(population, use.names = FALSE)
+             ## 'accession' has no missing values
+             if (any(is.na(.Data.acc)))
+                 return(gettextf("'%s' has missing values",
+                                 "accession"))
+             ## 'accession' has same names as 'population'
+             if (!identical(names.acc, names.popn))
+                 return(gettextf("'%s' and '%s' have different names",
+                                 "accession", "population"))
+             ## 'accession' has same dimtypes as 'population'
+             if (!identical(dimtypes.acc, dimtypes.popn))
+                 return(gettextf("'%s' and '%s' have different dimtypes",
+                                 "accession", "population"))
+             ## 'accession' has same DimScales as 'population',
+             ## except for "time" dimension, where have same dimvalues,
+             ## and "age" dimension, where accession does not start at age 0
+             ## (otherwise have different mappings to accession,
+             ## depending on whether account includes births)
+             for (i in seq_along(DimScales.acc)) {
+                 DS.acc <- DimScales.acc[[i]]
+                 DS.popn <- DimScales.popn[[i]]
+                 if (dimtypes.acc[i] == "time") {
+                     dv.acc <- DS.acc@dimvalues
+                     dv.popn <- DS.popn@dimvalues
+                     valid <- isTRUE(all.equal(dv.acc, dv.popn))
+                 }
+                 else if (dimtypes.acc[i] == "age") {
+                     dv.acc <- DS.acc@dimvalues
+                     dv.popn <- DS.popn@dimvalues
+                     n.dv.popn <- length(dv.popn)
+                     valid <- isTRUE(all.equal(dv.acc, dv.popn[-c(1L, n.dv.popn)]))
+                 }
+                 else
+                     valid <- isTRUE(all.equal(DS.acc, DS.popn))
+                 if (!valid)
+                     return(gettextf("'%s' and '%s' have inconsistent %s for dimension \"%s\" with %s \"%s\"",
+                                     "accession", "population", "dimscales", names.acc[i], "dimtype", dimtypes.acc[i]))
+             }
+             TRUE
+         })
+
+
+## NO_TESTS
+setClass("CumProbPopnMixin",
+         slots = c(cumProbPopn = "numeric"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             cumProbPopn <- object@cumProbPopn
+             components <- object@account@components
+             ## 'cumProbPopn' and 'components' have same length
+             if (!identical(length(cumProbPopn), length(components)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "cumProbPopn", "components"))
+             ## 'cumProbPopn' has no missing values
+             if (any(is.na(cumProbPopn)))
+                 return(gettextf("'%s' has missing values",
+                                 "cumProbPopn"))
+             ## 'cumProbPopn' is double
+             if (!is.double(cumProbPopn))
+                 return(gettextf("'%s' does not have type \"%s\"",
+                                 "cumProbPopn", "double"))
+             ## 'cumProbPopn' is between 0 and 1
+             if (any((cumProbPopn < 0) || (cumProbPopn > 1)))
+                 return(gettextf("'%s' has values between %d and %d",
+                                 "cumProbPopn", 0L, 1L))
+             ## 'cumProbPopn' strictly increasing
+             if (any(diff(cumProbPopn) <= 0))
+                 return(gettextf("'%s' not strictly increasing",
+                                 "cumProbPopn"))
+             TRUE
+         })
+
+## HAS_TESTS
+setClass("DatasetsMixin",
+         slots = c(datasets = "list"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             datasets <- object@datasets
+             observationModels <- object@observationModels
+             hasNegative <- function(x) any(x[!is.na(x)] < 0)
+             ## all elements of 'datasets' have class "Counts"
+             if (!all(sapply(datasets, is, "Counts")))
+                 return(gettextf("'%s' has elements not of class \"%s\"",
+                                 "datasets", "Counts"))
+             ## all elements of 'datasets' have type "integer"
+             if (!all(sapply(datasets, is.integer)))
+                 return(gettextf("'%s' has elements not of type \"%s\"",
+                                 "datasets", "integer"))
+             ## all elements of "datasets' are non-negative
+             if (any(sapply(datasets, hasNegative)))
+                 return(gettextf("'%s' has elements with negative values",
+                                 "datasets"))
+             ## 'datasets' does not have names
+             if (!is.null(names(datasets)))
+                 return(gettextf("'%s' has names",
+                                 "datasets"))
+             ## 'observationModels' and 'datasets' have same length
+             if (!identical(length(observationModels), length(datasets)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "observationModels", "datasets"))
+             TRUE
+         })
+
+## NO_TESTS
+setClass("DescriptionsMixin",
+         slots = c(descriptions = "list"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             descriptions <- object@descriptions
+             components <- object@account@components
+             ## 'descriptions' has length equal to length of 'components' plus 1
+             if (!identical(length(descriptions), length(components) + 1L))
+                 return(gettextf("lengths of '%s' and '%s' inconsistent",
+                                 "descriptions", "components"))
+             ## first element has class "DescriptionPopn"
+             if (!methods::is(descriptions[[1L]], "DescriptionPopn"))
+                 return(gettextf("first element of '%s' does not have class \"%s\"",
+                                 "descriptions", "DescriptionPopn"))
+             ## remaining elements has class "DescriptionComp"
+             if (!all(sapply(descriptions[-1L], methods::is, "DescriptionComp")))
+                 return(gettextf("first element of '%s' does not have class \"%s\"",
+                                 "descriptions", "DescriptionComp"))
+             ## element has class "DescriptionPoool" iff corresponding
+             ## element of 'components' has class InternalMovementsPool",
+             is.desc.pool <- sapply(descriptions[-1], methods::is, "DescriptionPool")
+             is.pool <- sapply(components, methods::is, "InternalMovementsPool")
+             if (!identical(is.desc.pool, is.pool))
+                 return(gettextf("elements of '%s' must have class \"%s\" iff correspondening element of '%s' has class \"%s\"",
+                                 "descriptions", "DescriptionPool", "components", "InternalMovementsPool"))             
+             TRUE
+         })
+
+## NO_TESTS
+setClass("DiffPropMixin",
+         slots = c(diffProp = "integer"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             diffProp <- object@diffProp
+             ## 'diffProp' has length 1
+             if (!identical(length(diffProp), 1L))
+                 return(gettextf("'%s' does not have length %d",
+                                 "diffProp", 1L))
+             ## if 'diffProp' not missing, is not equal to 0
+             if (!is.na(diffProp) && (diffProp == 0L))
+                 return(gettextf("'%s' equals %d",
+                                 name, 0L))
+             TRUE
+         })
+
+## NO_TESTS
+setClass("ExposureMixin",
+         slots = c(exposure = "Exposure"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             exposure <- object@exposure
+             population <- object@account@population
+             hasAge <- object@hasAge@.Data
+             ## 'exposure' object equals result of calling 'exposure'
+             ## function on 'population'
+             exposure.calc <- dembase::exposure(population,
+                                                triangles = hasAge)
+             exposure.calc <- new("Exposure",
+                                  .Data = exposure.calc@.Data,
+                                  metadata = exposure.calc@metadata)
+             if (!isTRUE(all.equal(exposure, exposure.calc)))
+                 return(gettextf("'%s' and '%s' inconsistent",
+                                 "exposure", "population"))
+             TRUE
+         })
+
+setClass("GeneratedNewProposalMixin",
+         slots = c(generatedNewProposal = "LogicalFlag"),
+         contains = "VIRTUAL")
+
+## NO_TESTS
+setClass("HasAgeMixin",
+         slots = c(hasAge = "LogicalFlag"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             hasAge <- object@hasAge@.Data
+             population <- object@account@population
+             popn.has.age <- "age" %in% dimtypes(population, use.names = FALSE)
+             if (!identical(hasAge, popn.has.age))
+                 return(gettextf("'%s' and '%s' not consistent",
+                                 "hasAge", "population"))
+             TRUE
+         })                 
+
+## HAS_TESTS
+setClass("HasExposure",
+         slots = c(exposure = "Counts"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             model <- object@model
+             y <- object@y
+             exposure <- object@exposure
+             ## 'exposure' is missing only if 'y' is
+             if (any(is.na(exposure) > is.na(y)))
+                 return(gettextf("'%s' has missing values where '%s' does not",
+                                 "exposure", "y"))
+             ## 'exposure' non-negative
+             if (any(exposure < 0, na.rm = TRUE))
+                 return(gettextf("'%s' has negative values",
+                                 "exposure"))
+             ## 'exposure' and 'y' have identical metadata
+             if (!identical(exposure@metadata, y@metadata))
+                 return(gettextf("'%s' and '%s' have different metadata",
+                                 "exposure", "y"))
+             ## y is 0 if exposure is 0
+             if (any((y[!is.na(y)] > 0) & (exposure[!is.na(y)] == 0)))
+                 return(gettextf("%s but %s for some cells",
+                                 "y > 0", "exposure == 0"))
+             ## 'model' has class "UseExposure"
+             if (!methods::is(model, "UseExposure"))
+                 return(gettextf("'%s' has class \"%s\"",
+                                 "model", class(model)))
+             TRUE
+         })
+
+## NO_TESTS
+setClass("IAccNextMixin",
+         slots = c(iAccNext = "integer",
+                   iAccNextOther = "integer"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             iAccNext <- object@iAccNext
+             iAccNextOther <- object@iAccNextOther
+             accession <- object@accession
+             for (name in c("iAccNext", "iAccNextOther")) {
+                 value <- slot(object, name)
+                 ## 'iAccNext', 'iAccNextOther' have length 1
+                 if (!identical(length(value), 1L))
+                     return(gettextf("'%s' does not have length %d",
+                                     name, 1L))
+                 ## if 'iAccNext', 'iAccNextOther' not missing, they are greater than or equal to 0L
+                 if (!is.na(value) && (value < 0L))
+                     return(gettextf("'%s' is less than %d",
+                                     name, 1L))
+                 ## if 'iAccNext', 'iAccNextOther' not missing, they are less than or
+                 ## equal to length of 'accession'
+                 if (!is.na(value)) {
+                     n.accession <- length(accession)
+                     if (value > n.accession)
+                         return(gettextf("'%s' is greater than the length of '%s'",
+                                         name, "accession"))
+                 }
+             }
+             ## if 'iAccNext' and 'iAccNextOther' not missing, they have different values
+             if (!is.na(iAccNext) && !is.na(iAccNextOther) && (iAccNext == iAccNextOther))
+                 return(gettextf("'%s' equals '%s'",
+                                 "iAccNext", "iAccNextOther"))
+             TRUE
+         })
+
+## NO_TESTS
+setClass("ICellMixin",
+         slots = c(iCell = "integer",
+                   iCellOther = "integer"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             for (name in c("iCell", "iCellOther")) {
+                 value <- slot(object, name)
+                 ## 'iCell', 'iCellOther' have length 1
+                 if (!identical(length(value), 1L))
+                     return(gettextf("'%s' does not have length %d",
+                                     name, 1L))
+                 ## if 'iCell', 'iCellOther' not missing, they are greater than or equal to 1
+                 if (!is.na(value) && (value < 1L))
+                     return(gettextf("'%s' is less than %d",
+                                     name, 1L))
+             }
+             TRUE
+         })
+
+## NO_TESTS
+setClass("ICompMixin",
+         slots = c(iComp = "integer",
+                   iBirths = "integer",
+                   iIntNet = "integer",
+                   iOrigDest = "integer",
+                   iPool = "integer"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             iBirths <- object@iBirths
+             iOrigDest <- object@iOrigDest
+             iPool <- object@iPool
+             iIntNet <- object@iIntNet
+             components <- object@account@components
+             s <- c(0L, seq_along(components))
+             for (name in c("iComp", "iBirths", "iIntNet", "iOrigDest", "iPool")) {
+                 value <- slot(object, name)
+                 ## 'iComp', 'iBirths', iOrigDest', 'iPool' 'iIntNet' has  length 1
+                 if (!identical(length(value), 1L))
+                     return(gettextf("'%s' does not have length %d",
+                                     name, 1L))
+                 ## 'iComp', 'iBirths', 'iOrigDest', 'iPool', 'iIntNet' is not missing
+                 if (is.na(value))
+                     return(gettextf("'%s' is missing",
+                                     name))
+                 ## if 'iComp', 'iBirths', iOrigDest', 'iPool', 'iIntNet' is not 0, it is the index of a component
+                 if ((value != 0L) && !(value %in% s))
+                     return(gettextf("'%s' does not index a component",
+                                     name))
+             }
+             ## 'iBirths', 'iIntNet', iOrigDest', 'iPool' do not overlap, except at 0L
+             indices <- c(iBirths, iIntNet, iOrigDest, iPool)
+             indices.nonzero <- indices[indices != 0L]
+             if (any(duplicated(indices.nonzero)))
+                 return(gettextf("'%s', '%s', '%s', '%s' overlap",
+                                 "iBirths", "iIntNet", "iOrigDest", "iPool"))
+             TRUE
+         })
+
+## NO_TESTS
+## the index of the first cell in 'exposure' that
+## will change if the cell being updated is changed
+setClass("IExpFirstMixin",
+         slots = c(iExpFirst = "integer",
+                   iExpFirstOther = "integer"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             iExpFirst <- object@iExpFirst
+             iExpFirstOther <- object@iExpFirstOther
+             for (name in c("iExpFirst", "iExpFirstOther")) {
+                 value <- slot(object, name)
+                 ## 'iExpFirst', 'iExpFirstOther' have length 1
+                 if (!identical(length(value), 1L))
+                     return(gettextf("'%s' does not have length %d",
+                                     name, 1L))
+                 ## if 'iExpFirst', 'iExpFirstOther' not missing, they are greater than or equal to 1L
+                 if (!is.na(value) && (value < 1L))
+                     return(gettextf("'%s' is less than %d",
+                                     name, 1L))
+                 if (!is.na(value)) {
+                     ## if 'iExpFirst', 'iExpFirstOther' not missing, they are less than or
+                     ## equal to length of 'exposure'
+                     exposure <- object@exposure
+                     n.exposure <- length(exposure)
+                     if (value > n.exposure)
+                         return(gettextf("'%s' is greater than the length of '%s'",
+                                         name, "exposure"))
+                     ## if 'iExpFirst', 'iExpFirstOther' not missing,
+                     ## 'iExposure' and 'iExposureOther' also not missing
+                     name.i.exp <- if (name == "iExpFirst") "iExposure" else "iExposureOther"
+                     val.i.exp <- slot(object, name.i.exp)
+                     if (is.na(val.i.exp))
+                         return(gettextf("'%s' is missing but '%s' is not missing",
+                                         name.i.exp, name))
+                     ## 'iExpFirst' >= 'iExposure' and 'iExpFirstOther' >= 'iExposureOther'
+                     if (value < val.i.exp)
+                         return(gettextf("'%s' less than '%s'",
+                                         name, name.i.exp))
+                 }
+             }
+             ## if 'iExpFirst' and 'iExpFirstOther' not missing, they have different values
+             if (!is.na(iExpFirst) && !is.na(iExpFirstOther) && (iExpFirst == iExpFirstOther))
+                 return(gettextf("'%s' equals '%s'",
+                                 "iExpFirst", "iExpFirstOther"))
+             TRUE
+         })
+
+## NO_TESTS
+## The index of the cell in 'exposure' that appears in the likelihood for
+## the cell being updated.  iExposure is 0L if the model for the cell being
+## updated does not include exposure.
+setClass("IExposureMixin",
+         slots = c(iExposure = "integer",
+                   iExposureOther = "integer"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             iExposure <- object@iExposure
+             iExposureOther <- object@iExposureOther
+             for (name in c("iExposure", "iExposureOther")) {
+                 value <- slot(object, name)
+                 ## 'iExposure', 'iExposureOther' have length 1
+                 if (!identical(length(value), 1L))
+                     return(gettextf("'%s' does not have length %d",
+                                     name, 1L))
+                 ## if 'iExposure', 'iExposureOther' not missing, they are greater than or equal to 0L
+                 if (!is.na(value) && (value < 0L))
+                     return(gettextf("'%s' is less than %d",
+                                     name, 0L))
+                 ## if 'iExposure', 'iExposureOther' not missing, they are less than or
+                 ## equal to length of 'exposure'
+                 if (!is.na(value)) {
+                     exposure <- object@exposure
+                     n.exposure <- length(exposure)
+                     if (value > n.exposure)
+                         return(gettextf("'%s' is greater than the length of '%s'",
+                                         name, "exposure"))
+                 }
+             }
+             ## if 'iExposure' and 'iExposureOther' not missing or 0L, they have different values
+             if (!is.na(iExposure) && !is.na(iExposureOther) && (iExposure == iExposureOther)
+                 && (iExposure != 0L))
+                 return(gettextf("'%s' equals '%s'",
+                                 "iExposure", "iExposureOther"))
+             TRUE
+         })
+
+setClass("IMethodCombined",
+         slots = c(iMethodCombined = "integer"),
+         contains = "VIRTUAL")
+
+## NO_TESTS
+setClass("IPopnNextMixin",
+         slots = c(iPopnNext = "integer",
+                   iPopnNextOther = "integer"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             iPopnNext <- object@iPopnNext
+             iPopnNextOther <- object@iPopnNextOther
+             population <- object@account@population
+             n.population <- length(population)
+             for (name in c("iPopnNext", "iPopnNextOther")) {
+                 value <- slot(object, name)
+                 ## 'iPopnNext', 'iPopnNextOther' have length 1
+                 if (!identical(length(value), 1L))
+                     return(gettextf("'%s' does not have length %d",
+                                     name, 1L))
+                 ## if 'iPopnNext', 'iPopnNextOther' not missing, they are greater than or equal to 0L
+                 if (!is.na(value) && (value < 0L))
+                     return(gettextf("'%s' is less than %d",
+                                     name, 1L))
+                 ## if 'iPopnNext', 'iPopnNextOther' not missing, they are less than or
+                 ## equal to length of 'population'
+                 if (!is.na(value) && (value > n.population))
+                     return(gettextf("'%s' is greater than the length of '%s'",
+                                     name, "population"))
+             }
+             ## if 'iPopnNext' and 'iPopnNextOther' not missing and not both equal to 0, they have different values
+             if (!is.na(iPopnNext) && !is.na(iPopnNextOther) && (iPopnNext == iPopnNextOther)) {
+                 if (iPopnNext != 0L)
+                     return(gettextf("'%s' equals '%s'",
+                                     "iPopnNext", "iPopnNextOther"))
+             }
+             TRUE
+         })
+
+## NO_TESTS
+setClass("IsIncrementMixin",
+         slots = c(isIncrement = "logical"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             isIncrement <- object@isIncrement
+             components <- object@account@components
+             ## 'isIncrement' has no missing values
+             if (any(is.na(isIncrement)))
+                 return(gettextf("'%s' has missing values",
+                                 "isIncrement"))
+             ## 'isIncrement' has same length as 'components'
+             if (!identical(length(isIncrement), length(components)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "isIncrement", "components"))
+             TRUE
+         })
+
+setClass("IsLowerTriangleMixin",
+         slots = c(isLowerTriangle = "logical"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             isLowerTriangle <- object@isLowerTriangle
+             hasAge <- object@hasAge@.Data
+             ## 'isLowerTriangle' has length 1
+             if (!identical(length(isLowerTriangle), 1L))
+                 return(gettextf("'%s' does not have length %d",
+                                 "lowerTriangle", 1L))
+             ## 'isLowerTriangle' is missing if 'hasAge' is FALSE
+             if (!hasAge && !is.na(isLowerTriangle))
+                 return(gettextf("'%s' is %s but '%s' is not missing",
+                                 "hasAge", "FALSE", "lowerTriangle"))
+             TRUE
+         })
+
+setClass("IsNetMixin",
+         contains = "VIRTUAL",
+         slots = c(isNet = "logical"),
+         validity = function(object) {
+             isNet <- object@isNet
+             components <- object@account@components
+             if (!identical(length(isNet), length(components)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "isNet", "components"))
+             if (any(is.na(isNet)))
+                 return(gettextf("'%s' has missing values",
+                                 "isNet"))
+             is.net.move <- sapply(components, methods::is, "NetMovements")
+             is.int.net <- sapply(components, methods::is, "InternalMovementsNet")
+             if (!identical(isNet, is.net.move | is.int.net))
+                 return(gettextf("'%s' and '%s' inconsistent",
+                                 "isNet", "components"))
+             TRUE
+         })
+
+
+setClass("IteratorAccMixin",
+         contains = "VIRTUAL",
+         slots = c(iteratorAcc = "CohortIteratorAccession"))
+         
+setClass("IteratorPopnMixin",
+         contains = "VIRTUAL",
+         slots = c(iteratorPopn = "CohortIteratorPopulation"))
+
+## NO_TESTS
+setClass("MappingsFromExpMixin",
+         slots = c(mappingsFromExp = "list"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             mappingsFromExp <- object@mappingsFromExp
+             components <- object@account@components
+             ## all elements have class "MappingFromExp"
+             if (!all(sapply(mappingsFromExp, methods::is, "MappingFromExp")))
+                 return(gettextf("'%s' has elements not of class \"%s\"",
+                                 "mappingsFromExp", "MappingFromExp"))
+             ## has same length as 'components'
+             if (!identical(length(mappingsFromExp), length(components)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "mappingsFromExp", "components"))
+             ## element has class "MappingExpToBirths" iff corresponding
+             ## element of 'components' has class "Births",
+             is.mapping.births <- sapply(mappingsFromExp, methods::is, "MappingExpToBirths")
+             is.births <- sapply(components, methods::is, "Births")
+             if (!identical(is.mapping.births, is.births))
+                 return(gettextf("elements of '%s' must have class \"%s\" iff correspondening element of '%s' has class \"%s\"",
+                                 "mappingsFromExp", "MappingExpToBirths", "components", "Births"))             
+             TRUE
+         })
+
+## NO_TESTS
+setClass("MappingsToAccMixin",
+         slots = c(mappingsToAcc = "list"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             mappingsToAcc <- object@mappingsToAcc
+             components <- object@account@components
+             ## all elements have class "MappingToAcc"
+             if (!all(sapply(mappingsToAcc, methods::is, "MappingToAcc")))
+                 return(gettextf("'%s' has elements not of class \"%s\"",
+                                 "mappingsToAcc", "MappingToAcc"))
+             ## has same length as 'components'
+             if (!identical(length(mappingsToAcc), length(components)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "mappingsToAcc", "components"))
+             ## element has class "MappingOrigDestToAcc" iff corresponding
+             ## element of 'components' has class "HasOrigDest",
+             is.mapping.orig.dest <- sapply(mappingsToAcc, methods::is, "MappingOrigDestToAcc")
+             is.has.orig.dest <- sapply(components, methods::is, "HasOrigDest")
+             if (!identical(is.mapping.orig.dest, is.has.orig.dest))
+                 return(gettextf("elements of '%s' must have class \"%s\" iff correspondening element of '%s' has class \"%s\"",
+                                 "mappingsToAcc", "MappingOrigDestToAcc", "components", "HasOrigDest"))             
+             TRUE
+         })
+
+## NO_TESTS
+setClass("MappingsToExpMixin",
+         slots = c(mappingsToExp = "list"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             mappingsToExp <- object@mappingsToExp
+             components <- object@account@components
+             ## all elements have class "MappingToExp"
+             if (!all(sapply(mappingsToExp, methods::is, "MappingToExp")))
+                 return(gettextf("'%s' has elements not of class \"%s\"",
+                                 "mappingsToExp", "MappingToExp"))
+             ## has same length as 'components'
+             if (!identical(length(mappingsToExp), length(components)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "mappingsToExp", "components"))
+             ## element has class "MappingBirthsToExp" iff corresponding
+             ## element of 'components' has class "Births",
+             is.mapping.births <- sapply(mappingsToExp, methods::is, "MappingBirthsToExp")
+             is.births <- sapply(components, methods::is, "Births")
+             if (!identical(is.mapping.births, is.births))
+                 return(gettextf("elements of '%s' must have class \"%s\" iff correspondening element of '%s' has class \"%s\"",
+                                 "mappingsToExp", "MappingBirthsToExp", "components", "Births"))             
+             ## element has class "MappingOrigDestToExp" iff corresponding
+             ## element of 'components' has class "HasOrigDest",
+             is.mapping.orig.dest <- sapply(mappingsToExp, methods::is, "MappingOrigDestToExp")
+             is.has.orig.dest <- sapply(components, methods::is, "HasOrigDest")
+             if (!identical(is.mapping.orig.dest, is.has.orig.dest))
+                 return(gettextf("elements of '%s' must have class \"%s\" iff correspondening element of '%s' has class \"%s\"",
+                                 "mappingsToExp", "MappingOrigDestToExp", "components", "HasOrigDest"))             
+             TRUE
+         })
+
+## NO_TESTS
+setClass("MappingsToPopnMixin",
+         slots = c(mappingsToPopn = "list"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             mappingsToPopn <- object@mappingsToPopn
+             components <- object@account@components
+             ## all elements have class "MappingToPopn"
+             if (!all(sapply(mappingsToPopn, methods::is, "MappingToPopn")))
+                 return(gettextf("'%s' has elements not of class \"%s\"",
+                                 "mappingsToPopn", "MappingToPopn"))
+             ## has same length as 'components'
+             if (!identical(length(mappingsToPopn), length(components)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "mappingsToPopn", "components"))
+             ## element has class "MappingOrigDestToPopn" iff corresponding
+             ## element of 'components' has class "HasOrigDest",
+             is.mapping.orig.dest <- sapply(mappingsToPopn, methods::is, "MappingOrigDestToPopn")
+             is.has.orig.dest <- sapply(components, methods::is, "HasOrigDest")
+             if (!identical(is.mapping.orig.dest, is.has.orig.dest))
+                 return(gettextf("elements of '%s' must have class \"%s\" iff correspondening element of '%s' has class \"%s\"",
+                                 "mappingsToPopn", "MappingOrigDestToPopn", "components", "HasOrigDest"))             
+             TRUE
+         })
+
+## NO_TESTS
+setClass("ModelUsesExposureMixin",
+         slots = c(modelUsesExposure = "logical"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             modelUsesExposure <- object@modelUsesExposure
+             systemModels <- object@systemModels
+             namesComponents <- object@account@namesComponents
+             ## 'modelUsesExposure' has no missing values
+             if (any(is.na(modelUsesExposure)))
+                 return(gettextf("'%s' has missing values",
+                                 "modelUsesExposure"))
+             ## 'modelUsesExposure' has same length as 'systemModels'
+             if (!identical(length(modelUsesExposure), length(systemModels)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "modelUsesExposure", "systemModels"))
+             ## first model (for population) does not use exposure
+             if (modelUsesExposure[[1L]])
+                 return(gettextf("system model for '%s' uses exposure",
+                                 "population"))
+             ## if a model has class "Normal", the corresponding
+             ## element of modelUsesExposure is FALSE
+             for (i in seq_along(namesComponents)) {
+                 model <- systemModels[[i + 1L]]
+                 if (methods::is(model, "Normal") && modelUsesExposure[i + 1L])
+                     return(gettextf("system model for '%s' uses exposure but has class \"%s\"",
+                                     name, "Normal"))
+             }
+             TRUE
+         })
+
+## HAS_TESTS
+setClass("NamesDatasetsMixin",
+         slots = c(namesDatasets = "character"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             namesDatasets <- object@namesDatasets
+             observationModels <- object@observationModels
+             hasMissing <- function(x) any(is.na(x))
+             ## 'namesDatasets' has no missing values
+             if (hasMissing(namesDatasets))
+                 return(gettextf("'%s' has missing values",
+                                 "namesDatasets"))
+             ## 'namesDatasets' has no blanks
+             if (!all(nzchar(namesDatasets)))
+                 return(gettextf("'%s' has blanks",
+                                 "namesDatasets"))
+             ## 'namesDatasets' has no duplicates
+             if (any(duplicated(namesDatasets)))
+                 return(gettextf("'%s' has duplicates",
+                                 "namesDatasets"))
+             ## 'observationModels' and 'namesDatasets' have same length
+             if (!identical(length(observationModels), length(namesDatasets)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "observationModels", "namesDatasets"))
+             TRUE
+         })
+
+## NO_TESTS
+setClass("NCellAccountMixin",
+         slots = c(nCellAccount = "integer"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             nCellAccount <- object@nCellAccount
+             population <- object@account@population
+             components <- object@account@components
+             ## 'nCellAccount' has length 1
+             if (!identical(length(nCellAccount), 1L))
+                 return(gettextf("'%s' does not have length %d",
+                                 "nCellAccount", 1L))
+             ## 'nCellAccount' is not missing
+             if (is.na(nCellAccount))
+                 return(gettextf("'%s' is missing",
+                                 "nCellAccount"))
+             ## 'nCellAccount' equals sum of length of population plus components
+             length.popn <- length(population)
+             length.components <- sum(sapply(components, length))
+             if (!identical(nCellAccount, length.popn + length.components))
+                 return(gettextf("'%s' does not equal length of population plus lengths of components",
+                                 "nCellAccount"))
+             TRUE
+         })
+
+## HAS_TESTS
+setClass("NotHasExposure",
+         contains = "VIRTUAL",
+         validity = function(object) {
+             model <- object@model
+             ## 'model' has class "NotUseExposure"
+             if (!methods::is(model, "NotUseExposure"))
+                 return(gettextf("'%s' has class \"%s\"",
+                                 "model", class(model)))
+             TRUE
+         })
+
+## HAS_TESTS
+setClass("NotHasSubtotals",
+         contains = "VIRTUAL",
+         validity = function(object) {
+             model <- object@model
+             y <- object@y
+             if (methods::is(y, "HasSubtotals"))
+                 return(gettextf("'%s' has class \"%s\" but '%s' has subtotals",
+                                 "model", class(model), "y"))
+             TRUE
+         })
+
+## HAS_TESTS
+setClass("ObservationModelsMixin",
+         slots = c(observationModels = "list"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             observationModels <- object@observationModels
+             ## all elements of 'observationModels' have class "Model"
+             if (!all(sapply(observationModels, methods::is, "Model")))
+                 return(gettextf("'%s' has elements not of class \"%s\"",
+                                 "observationModels", "Model"))
+             ## all elements of 'observationModels' have class "UseExposure"
+             if (!all(sapply(observationModels, methods::is, "UseExposure")))
+                 return(gettextf("'%s' has elements not of class \"%s\"",
+                                 "observationModels", "UseExposure"))
+             ## 'observationModels' does not have names
+             if (!is.null(names(observationModels)))
+                 return(gettextf("'%s' has names",
+                                 "observationModels"))
+             TRUE
+         })
+
+## NO_TESTS
+setClass("ProbPopnMixin",
+         slots = c(probPopn = "numeric"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             probPopn <- object@probPopn
+             ## 'probPopn' has length 1
+             if (!identical(length(probPopn), 1L))
+                 return(gettextf("'%s' does not have length %d",
+                                 "probPopn", 1L))
+             ## 'probPopn' is not missing
+             if (is.na(probPopn))
+                 return(gettextf("'%s' is missing",
+                                 "probPopn"))
+             ## 'probPopn' is double
+             if (!is.double(probPopn))
+                 return(gettextf("'%s' does not have type \"%s\"",
+                                 "probPopn", "double"))
+             ## 'probPopn' is between 0 and 1
+             if ((probPopn < 0) || (probPopn > 1))
+                 return(gettextf("'%s' is not between %d and %d",
+                                 "probPopn", 0L, 1L))
+             TRUE
+         })
+
+## NO_TESTS
+## 'seriesIndices' is a mapping from observationModels models
+## to demographic series.  'seriesIndices' equals 0L when
+## the observationModels model maps back to population
+setClass("SeriesIndicesMixin",
+         slots = c(seriesIndices = "integer"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             seriesIndices <- object@seriesIndices
+             observationModels <- object@observationModels
+             components <- object@account@components
+             ## 'seriesIndices' does not have missing values
+             if (any(is.na(seriesIndices)))
+                 return(gettextf("'%s' has missing values",
+                                 "seriesIndices"))
+             ## 'seriesIndices' has same length as 'observationModels'
+             if (!identical(length(observationModels), length(seriesIndices)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "observationModels", "seriesIndices"))
+             ## elements of 'seriesIndices' inside valid range
+             valid.range <- c(0L, seq_along(components))
+             if (!all(seriesIndices %in% valid.range))
+                 return(gettextf("'%s' outside valid range",
+                                 "seriesIndices"))
+             TRUE
+         })
+
+## NO_TESTS
+setClass("SystemModelsMixin",
+         slots = c(systemModels = "list"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             systemModels <- object@systemModels
+             population <- object@account@population
+             components <- object@account@components
+             namesComponents <- object@account@namesComponents
+             ## all elements of 'systemModels' have class "Model"
+             if (!all(sapply(systemModels, methods::is, "Model")))
+                 return(gettextf("'%s' has elements not of class \"%s\"",
+                                 "systemModels", "model"))
+             ## 'systemModels' has one more element than 'components'
+             ## (extra is model for 'population')
+             if (!identical(length(systemModels), length(components) + 1L))
+                 return(gettextf("'%s' and '%s' have inconsistent lengths",
+                                 "systemModels", "components"))
+             ## first system model (for 'population') is a Poisson model
+             if (!methods::is(systemModels[[1L]], "Poisson"))
+                 return(gettextf("system model for '%s' has class \"%s\"",
+                                 "population", class(systemModels[[1L]])))
+             ## 'theta' for first system model has same length as 'population'
+             if (!identical(length(systemModels[[1L]]@theta), length(population)))
+                 return(gettextf("'%s' for system model for '%s' has wrong length",
+                                 "theta", "population"))
+             ## 'theta' for system model has same length as corresponding element of 'components'
+             for (i in seq_along(components)) {
+                 model <- systemModels[[i + 1L]]
+                 component <- components[[i]]
+                 name <- namesComponents[i]
+                 if (!identical(length(model@theta), length(component)))
+                     return(gettextf("'%s' for system model for '%s' has wrong length",
+                                     "theta", name))                 
+             }
+             TRUE
+         })
+
+setClass("SystemMovementsMixin",
+         contains = "VIRTUAL",
+         validity = function(object) {
+             systemModels <- object@systemModels
+             account <- object@account
+             components <- account@components
+             namesComponents <- account@namesComponents
+             for (i in seq_along(components)) {
+                 model <- systemModels[[i + 1L]]
+                 component <- components[[i]]
+                 name <- namesComponents[i]
+                 is.net <- (methods::is(component, "NetMovements")
+                     || methods::is(component, "InternalMovementsNet"))
+                 is.poisson <- methods::is(model, "Poisson")
+                 is.normal <- methods::is(model, "Normal")
+                 ## if a component has class "NetMovements" or "InternalNetMigration",
+                 ## then its system model has class "Normal"
+                 if (is.net && !is.normal)
+                     return(gettextf("component has class \"%s\" but corresponding system model does not have class \"%s\"",
+                                     class(component), "Normal"))
+                 ## otherwise its system model most have class "Poisson"
+                 if (!is.net && !is.poisson)
+                     return(gettextf("component has class \"%s\" but corresponding system model does not have class \"%s\"",
+                                     class(component), "Poisson"))
+             }
+             TRUE
+         })
+
+## HAS_TESTS
+setClass("TransformsMixin",
+         slots = c(transforms = "list"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             transforms <- object@transforms
+             observationModels <- object@observationModels
+             datasets <- object@datasets
+             namesDatasets <- object@namesDatasets
+             dimBefore <- function(x) x@dimBefore
+             ## all elements of 'transforms' have class "CollapseTransformExtra"
+             if (!all(sapply(transforms, is, "CollapseTransformExtra")))
+                 return(gettextf("'%s' has elements not of class \"%s\"",
+                                 "transforms", "CollapseTransformExtra"))
+             ## 'transforms' does not have names
+             if (!is.null(names(transforms)))
+                 return(gettextf("'%s' has names",
+                                 "transforms"))
+             ## 'observationModels' and 'transforms' have same length
+             if (!identical(length(observationModels), length(transforms)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "observationModels", "transforms"))
+             ## 'transforms' have 'dimAfter' consistent with datasets
+             for (i in seq_along(datasets)) {
+                 if (!identical(dim(datasets[[i]]), transforms[[i]]@dimAfter))
+                     return(gettextf("'%s' and '%s' for \"%s\" inconsistent",
+                                     "dataset", "transform", namesDatasets[i]))
+             }
+             TRUE
+         })
+
+## HAS_TESTS
+setClass("Y",
+         slots = c(y = "DemographicArray"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             y <- object@y
+             if (!is.null(y)) {
+                 ## 'y' does not have iteration dimension
+                 if (any(dembase::dimtypes(y) == "iteration"))
+                     return(gettextf("'%s' has dimension with dimtype \"%s\"",
+                                     "y", "iteration"))
+                 ## 'y' does not have quantile dimension
+                 if (any(dembase::dimtypes(y) == "quantile"))
+                     return(gettextf("'%s' has dimension with dimtype \"%s\"",
+                                     "y", "quantile"))
+             }
+             TRUE
+         })
+
+## HAS_TESTS
+setClass("YCounts",
+         contains = c("Y", "VIRTUAL"),
+         validity = function(object) {
+             y <- object@y
+             ## 'y' has class "Counts"
+             if (!methods::is(y, "Counts"))
+                 return(gettextf("'%s' has class \"%s\"",
+                                 "y", class(y)))
+             ## 'y' has type "integer"
+             if (!is.integer(y))
+                 return(gettextf("'%s' does not have type \"%s\"",
+                                 "y", "integer"))
+             TRUE
+         })
+
+## HAS_TESTS
+setClass("YNonNegativeCounts",
+         contains = c("YCounts", "VIRTUAL"),
+         validity = function(object) {
+             y <- object@y
+             ## 'y' non-negative
+             if (any(y < 0L, na.rm = TRUE))
+                 return(gettextf("'%s' has negative values",
+                                 "y"))
+             TRUE
+         })
+

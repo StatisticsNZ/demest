@@ -105,15 +105,44 @@ resetB <- function(object, useC = FALSE) {
 
 ## CohortIterators ###########################################################
 
+## TRANSLATED
+## HAS_TESTS
+## It is the caller's responsibility to make
+## sure that the iterator has not finished
+advanceCA <- function(object, useC = FALSE) {
+    stopifnot(methods::is(object, "CohortIteratorAccession"))
+    if (useC) {
+        .Call(advanceCA_R, object)
+    }
+    else {
+        i <- object@i
+        step.time <- object@stepTime
+        step.age <- object@stepAge
+        n.time <- object@nTime
+        n.age <- object@nAge
+        i.time <- object@iTime
+        i.age <- object@iAge
+        i.time <- i.time + 1L
+        i <- i + step.time
+        i.age <- i.age + 1L
+        i <- i + step.age
+        finished <- (i.time >= n.time) | (i.age >= n.age)
+        object@i <- i
+        object@iTime <- i.time
+        object@iAge <- i.age
+        object@finished <- finished
+        object
+    }
+}
 
 ## TRANSLATED
 ## HAS_TESTS
 ## It is the caller's responsibility to make
 ## sure that the iterator has not finished
-advanceCAP <- function(object, useC = FALSE) {
-    stopifnot(methods::is(object, "CohortIteratorAccessionPopulation"))
+advanceCP <- function(object, useC = FALSE) {
+    stopifnot(methods::is(object, "CohortIteratorPopulation"))
     if (useC) {
-        .Call(advanceCAP_R, object)
+        .Call(advanceCP_R, object)
     }
     else {
         i <- object@i
@@ -141,6 +170,7 @@ advanceCAP <- function(object, useC = FALSE) {
         object
     }
 }
+
 
 ## TRANSLATED
 ## HAS_TESTS
@@ -220,16 +250,47 @@ advanceCC <- function(object, useC = FALSE) {
 
 ## TRANSLATED
 ## HAS_TESTS
-resetCAP <- function(object, i, useC = FALSE) {
+resetCA <- function(object, i, useC = FALSE) {
     ## 'object'
-    stopifnot(methods::is(object, "CohortIteratorAccessionPopulation"))
+    stopifnot(methods::is(object, "CohortIteratorAccession"))
     ## 'i'
     stopifnot(is.integer(i))
     stopifnot(identical(length(i), 1L))
     stopifnot(!is.na(i))
     stopifnot(i >= 1L)
     if (useC) {
-        .Call(resetCAP_R, object, i)  ## NAME CHANGED
+        .Call(resetCA_R, object, i)
+    }
+    else {
+        step.time <- object@stepTime
+        step.age <- object@stepAge
+        n.time <- object@nTime
+        n.age <- object@nAge
+        has.age <- object@hasAge
+        i.time <- (((i - 1L) %/% step.time) %% n.time) + 1L # R-style
+        i.age <- (((i - 1L) %/% step.age) %% n.age) + 1L # R-style
+        finished <- (i.time >= n.time) | (i.age >= n.age)
+        object@i <- i
+        object@iTime <- i.time
+        object@iAge <- i.age
+        object@finished <- finished
+        object
+    }
+}
+
+
+## TRANSLATED
+## HAS_TESTS
+resetCP <- function(object, i, useC = FALSE) {
+    ## 'object'
+    stopifnot(methods::is(object, "CohortIteratorPopulation"))
+    ## 'i'
+    stopifnot(is.integer(i))
+    stopifnot(identical(length(i), 1L))
+    stopifnot(!is.na(i))
+    stopifnot(i >= 1L)
+    if (useC) {
+        .Call(resetCP_R, object, i)
     }
     else {
         step.time <- object@stepTime
@@ -241,7 +302,7 @@ resetCAP <- function(object, i, useC = FALSE) {
             n.age <- object@nAge
             i.age <- (((i - 1L) %/% step.age) %% n.age) + 1L # R-style
         }
-        finished <- i.time >= n.time
+        finished <- (i.time >= n.time)
         object@i <- i
         object@iTime <- i.time
         if (has.age)
@@ -250,6 +311,7 @@ resetCAP <- function(object, i, useC = FALSE) {
         object
     }
 }
+
 
 ## TRANSLATED
 ## HAS_TESTS

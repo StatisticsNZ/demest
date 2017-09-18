@@ -24,6 +24,4 @@
     /* reset dims iterator */
     void resetD(SEXP iterator_R);
 
-    
-
 #endif

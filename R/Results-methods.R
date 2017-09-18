@@ -23,25 +23,25 @@ setMethod("finiteSDObject",
                   return(NULL)
               combined <- object@final[[1L]]
               model <- combined@model
-              observation <- combined@observation
+              observationModels <- combined@observationModels
               names.datasets <- combined@namesDatasets
               ans.model <- finiteSDInner(filename = filename,
                                          model = model,
                                          where = "model",
                                          probs = probs,
                                          iterations = iterations)
-              ans.observation <- vector(mode = "list", length = length(observation))
-              names(ans.observation) <- names.datasets
-              for (i in seq_along(ans.observation)) {
-                  where <- c("observation", names.datasets[i])
-                  ans.observation[i] <- list(finiteSDInner(filename = filename,
-                                                           model = observation[[i]],
+              ans.observationModels <- vector(mode = "list", length = length(observationModels))
+              names(ans.observationModels) <- names.datasets
+              for (i in seq_along(ans.observationModels)) {
+                  where <- c("observationModels", names.datasets[i])
+                  ans.observationModels[i] <- list(finiteSDInner(filename = filename,
+                                                           model = observationModels[[i]],
                                                            where = where,
                                                            probs = probs,
                                                            iterations = iterations))
               }
               list(model = ans.model,
-                   observation = ans.observation)
+                   observationModels = ans.observationModels)
           })
     
 ## HAS_TESTS
@@ -66,19 +66,19 @@ setMethod("showModelHelper",
           function(object) {
               final <- object@final[[1L]]
               model <- final@model
-              observation <- final@observation
+              observationModels <- final@observationModels
               names.datasets <- final@namesDatasets
               kDivider <- paste(paste(rep("-", times = 50), collapse = ""), "\n", collapse = "")
               cat(kDivider)
               cat("model:\n\n")
               showModelHelper(model)
               cat(kDivider)
-              n.dataset <- length(observation)
+              n.dataset <- length(observationModels)
               cat("Observation models:\n\n")
               for (i in seq_len(n.dataset)) {
                   cat(names.datasets[i], ":\n", sep = "")
-                  obs <- observation[[i]]
-                  showModelHelper(observation[[i]])
+                  obs <- observationModels[[i]]
+                  showModelHelper(observationModels[[i]])
                   if (i < n.dataset)
                       cat("\n")
               }
@@ -112,7 +112,7 @@ setMethod("whereMetropStat",
           function(object, FUN) {
               final <- object@final[[1L]]
               model <- final@model
-              observation <- final@observation
+              observationModels <- final@observationModels
               names.datasets <- final@namesDatasets
               ans.model <- FUN(model)
               if (identical(ans.model, list(NULL)))
@@ -121,21 +121,21 @@ setMethod("whereMetropStat",
                   for (i in seq_along(ans.model))
                       ans.model[[i]] <- c("model", ans.model[[i]])
               }
-              ans.observation <- lapply(observation, FUN)
-              is.null <- sapply(ans.observation,
+              ans.observationModels <- lapply(observationModels, FUN)
+              is.null <- sapply(ans.observationModels,
                                 function(x) identical(x, list(NULL)))
               if (all(is.null))
-                  ans.observation <- NULL
+                  ans.observationModels <- NULL
               else {
-                  ans.observation <- ans.observation[!is.null]
+                  ans.observationModels <- ans.observationModels[!is.null]
                   names <- names.datasets[!is.null]
-                  times <- sapply(ans.observation, length)
+                  times <- sapply(ans.observationModels, length)
                   names <- rep(names, times = times)
-                  ans.observation <- unlist(ans.observation, recursive = FALSE)
-                  for (i in seq_along(ans.observation))
-                      ans.observation[[i]] <- c("observation",
+                  ans.observationModels <- unlist(ans.observationModels, recursive = FALSE)
+                  for (i in seq_along(ans.observationModels))
+                      ans.observationModels[[i]] <- c("observationModels",
                                                 names[i],
-                                                ans.observation[[i]])
+                                                ans.observationModels[[i]])
               }
-              c(ans.model, ans.observation)
+              c(ans.model, ans.observationModels)
           })

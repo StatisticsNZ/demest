@@ -60,7 +60,7 @@ test_that("BetaIterator creates objects from valid inputs", {
     expect_identical(x.obtained, x.expected)
 })
 
-test_that("ComponentIterator works with Accession", {
+test_that("CohortIterator works with Accession", {
     CohortIterator <- demest:::CohortIterator
     Accession <- dembase:::Accession
     accession <- Counts(array(1L,
@@ -70,7 +70,7 @@ test_that("ComponentIterator works with Accession", {
                                 time = c("2001-2005", "2006-2010"))))
     accession <- Accession(accession = accession)
     ans.obtained <- CohortIterator(accession)
-    ans.expected <- new("CohortIteratorAccessionPopulation",
+    ans.expected <- new("CohortIteratorAccession",
                         i = 1L,
                         nTime = 2L,
                         stepTime = 9L,
@@ -231,7 +231,7 @@ test_that("ComponentIterator works with ordinary component", {
     expect_identical(ans.obtained, ans.expected)
 })
 
-test_that("ComponentIterator works with population", {
+test_that("CohortIterator works with Population", {
     CohortIterator <- demest:::CohortIterator
     Population <- dembase:::Population
     population <- Counts(array(1L,
@@ -242,7 +242,7 @@ test_that("ComponentIterator works with population", {
     set.seed(1)
     population <- Population(population)
     ans.obtained <- CohortIterator(population)
-    ans.expected <- new("CohortIteratorAccessionPopulation",
+    ans.expected <- new("CohortIteratorPopulation",
                         i = 1L,
                         nTime = 3L,
                         stepTime = 9L,
