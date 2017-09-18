@@ -1219,6 +1219,7 @@ test_that("R and C versions of diffLogLikPopn give same answer", {
 })
 
 test_that("diffLogLikAccountMovePopn works", {
+    set.seed(1)
     diffLogLikAccountMovePopn <- demest:::diffLogLikAccountMovePopn
     updateProposalAccountMovePopn <- demest:::updateProposalAccountMovePopn
     initialCombinedAccount <- demest:::initialCombinedAccount
@@ -1261,7 +1262,9 @@ test_that("diffLogLikAccountMovePopn works", {
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
-    x <- updateProposalAccountMovePopn(x)
+    while (!x@generatedNewProposal@.Data) {
+        x <- updateProposalAccountMovePopn(x)
+    }
     x <- diffLogLikAccountMovePopn(x)
     expect_true(validObject(x))
 })
@@ -1309,7 +1312,9 @@ test_that("R and C versions of diffLogLikAccountMovePopn give same answer", {
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
-    x <- updateProposalAccountMovePopn(x)
+    while (!x@generatedNewProposal@.Data) {
+        x <- updateProposalAccountMovePopn(x)
+    }
     ans.R <- diffLogLikAccountMovePopn(x, useC = FALSE)
     ans.C <- diffLogLikAccountMovePopn(x, useC = TRUE)
     if (test.identity)

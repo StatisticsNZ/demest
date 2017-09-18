@@ -53,9 +53,8 @@ updateProposalAccountMovePopn <- function(combined, useC = FALSE) {
             diff.prop <- val.prop - val.curr
             generated.new.proposal <- diff.prop != 0L
         }
-        else
-            generated.new.proposal <- FALSE
         if (generated.new.proposal) {
+            combined@generatedNewProposal@.Data <- TRUE
             combined@iCell <- i.cell
             combined@iCellOther <- NA_integer_
             combined@iPopnNext <- i.popn.next
@@ -72,6 +71,7 @@ updateProposalAccountMovePopn <- function(combined, useC = FALSE) {
             combined@diffProp <- diff.prop
         }
         else {
+            combined@generatedNewProposal@.Data <- FALSE
             combined@iCell <- NA_integer_
             combined@iCellOther <- NA_integer_
             combined@iPopnNext <- NA_integer_
@@ -190,9 +190,8 @@ updateProposalAccountMoveComp <- function(combined, useC = FALSE) {
             diff.prop <- val.prop - val.curr
             generated.new.proposal <- diff.prop != 0L
         }
-        else
-            generated.new.proposal <- FALSE
         if (generated.new.proposal) {
+            combined@generatedNewProposal@.Data <- TRUE
             combined@iCell <- i.cell
             combined@iCellOther <- NA_integer_
             combined@iPopnNext <- i.popn.next
@@ -209,6 +208,7 @@ updateProposalAccountMoveComp <- function(combined, useC = FALSE) {
             combined@diffProp <- diff.prop
         }
         else {
+            combined@generatedNewProposal@.Data <- FALSE
             combined@iCell <- NA_integer_
             combined@iCellOther <- NA_integer_
             combined@iPopnNext <- NA_integer_
