@@ -101,6 +101,13 @@ setMethod("rescalePriors",
 rescalePriorsHelper <- function(priors, margins, skeletonsBetas skeletonsPriors,
                                 adjustments, prefixAdjustments,
                                 filename, nIteration, lengthIter) {
+    for (i in seq_along(priors)) {
+        rescaleSeason(prior = priors[[i]],
+                      skeleton = skeletonsPriors[[i]],
+                      filename = filename,
+                      nIteration = nIteration,
+                      lengthIter = lengthIter)
+    }
     pairs.terms <- makePairsTerms(margins)
     for (pair.terms in pairs.terms) {
         i.higher <- pair.terms[1L]
@@ -140,6 +147,51 @@ rescalePriorsHelper <- function(priors, margins, skeletonsBetas skeletonsPriors,
                               lengthIter = lengthIter)        
     }
 }
+
+
+
+
+setGeneric("rescaleSeason",
+           function(prior, skeleton, filename, nIteration, lengthIter) {
+               NULL
+           })
+
+setMethod("rescaleSeason",
+          signature(prior = "Season"),
+          function(prior, skeleton, filename, nIteration, lengthIter) {
+              skeleton.level <- skeleton$level
+              skeleton.season <- skeleton$season
+              season <- readStateDLMFromFile(object = skeleton.season,
+                                             filename = filename,
+                                             iterations = NULL,
+                                             nIteration = nIteration,
+                                             lengthIter = lengthIter,
+                                             only0 = FALSE)
+              season.0 <- readStateDLMFromFile(skeleton = skeleton.season,
+                                               filename = filename,
+                                               iterations = NULL,
+                                               nIteration = nIteration,
+                                               lengthIter = lengthIter,
+                                               only0 = TRUE)
+              means <- collapseDimension(season.0,
+                                         dimension = i.along,
+                                         weights = 1)
+              season <- season - means
+              level <- level + means
+              overwriteValuesOnFile(object = level,
+                                    skeleton = skeleton.level,
+                                    filename = filename,
+                                    nIteration = nIteration,
+                                    lengthIter = lengthIter)
+              overwriteValuesOnFile(object = level,
+                                    skeleton = skeleton.season,
+                                    filename = filename,
+                                    nIteration = nIteration,
+                                    lengthIter = lengthIter)
+              NULL
+          })
+
+
 
 
 
@@ -219,9 +271,6 @@ setMethod("rescalePairPriors",
               metadata.high <- skeletonBetaHigh@metadata
               metadata.low <- skeletonBetaLow@metadata
               skeleton.level.low <- skeletonsPriorLow$level
-              has.season <- priorLow@hasSeason@.Data
-              if (has.season)
-                  skeleton.season.low <- skeletonPriorLow$season
               has.trend.low <- methods::is(priorLow, "WithTrendMixin")
               level.non.stationary <- has.trend.low || (phi.known.low && isTRUE(all.equal(phi.low, 1)))
               if (!level.non.stationary)
@@ -246,105 +295,7 @@ setMethod("rescalePairPriors",
                                                 iterations = NULL,
                                                 nIteration = nIteration
                                                 lengthIter = lengthIter,
-                                                what = "all")
-              if (has.season) {
-                  season.low <- readSeasonDLMFromFile(object = skeleton.season.low,
-                                                      filename = filename,
-                                                      iterations = NULL,
-                                                      nIteration = nIteration,
-                                                      lengthIter = lengthIter,
-                                                      only0 = FALSE)
-                  season.0.low <- readSeasonDLMFromFile(skeleton = skeleton.season.low,
-                                                        filename = filename,
-                                                        iterations = NULL,
-                                                        nIteration = nIteration,
-                                                        lengthIter = lengthIter,
-                                                        only0 = TRUE)
-              }
-              names.high.only <- setdiff(names.high, names.low)
-              means.shared <- collapseDimension(beta.high,
-                                                dimension = names.high.only,
-                                                weights = 1)
-              if (has.season)
-                  means.shared.season <- collapseDimension(season.0.low,
-                                                           dimension = i.along.low,
-                                                           weights = 1)
-              rescaleAndWriteBetas(high = beta.high,
-                                   low = beta.low,
-                                   adj = means.shared,
-                                   skeletonHigh = skeletonBetaHigh,
-                                   skeletonLow = skeletonBetaLow,
-                                   filename = filename,
-                                   nIteration = nIteration,
-                                   lengthIter = lengthIter)
-              recordAdjustments(priorHigh = priorHigh,
-                                priorLow = priorLow,
-                                namesHigh = names.high,
-                                namesLow = names.low,
-                                adj = means.shared,
-                                adjustments = adjustments,
-                                prefixAdjustments = prefixAdjustments)
-              level.low <- level.low + means.shared
-              if (has.season) {
-                  season.low <- season.low - means.shared.season
-                  level.low <- level.low + means.shared.season
-              }
-              writeStateDLMToFile(object = level.low,
-                                  skeleton = skeleton.level.low,
-                                  filename = filename,
-                                  nIteration = nIteration,
-                                  lengthIter = lengthIter,
-                                  what = "all")
-              if (has.season)
-                  writeSeasonDLMToFile(object = level.low,
-                                       skeleton = skeleton.season.low,
-                                       filename = filename,
-                                       nIteration = nIteration,
-                                       lengthIter = lengthIter,
-                                       only0 = FALSE)
-              NULL
-          })
-
-
-setMethod("rescalePairPriors",
-          signature(priorHigh = "Exchangeable",
-                    priorLow = "DLM"),
-          function(priorHigh, priorLow,
-                   skeletonBetaHigh, skeletonBetaLow,
-                   skeletonsPriorHigh, skeletonsPriorLow,
-                   adjustments, prefixAdjustments,
-                   filename, nIteration, lengthIter) {
-              i.along.low <- priorLow@iAlong
-              phi.low <- priorLow@phi
-              phi.known.low <- priorLow@phiKnown@.Data
-              metadata.high <- skeletonBetaHigh@metadata
-              metadata.low <- skeletonBetaLow@metadata
-              skeleton.level.low <- skeletonsPriorLow$level
-              has.trend.low <- methods::is(priorLow, "WithTrendMixin")
-              level.non.stationary <- has.trend.low || (phi.known.low && isTRUE(all.equal(phi.low, 1)))
-              if (!level.non.stationary)
-                  return(NULL)
-              names.high <- names(metadata.high)
-              names.low <- names(metadata.low)
-              names.low <- names.low[-i.along.low]
-              if (!all(names.low %in% names.high))
-                  return(NULL)
-              beta.high <- fetchResults(object = skeletonBetaHigh,
-                                        filename = filename,
-                                        iterations = NULL,
-                                        nIteration = nIteration
-                                        lengthIter = lengthIter)
-              beta.low <- fetchResults(object = skeletonBetaLow,
-                                       filename = filename,
-                                       iterations = NULL,
-                                       nIteration = nIteration
-                                       lengthIter = lengthIter)
-              level.low <- readStateDLMFromFile(skeleton = skeleton.level.low,
-                                                filename = filename,
-                                                iterations = NULL,
-                                                nIteration = nIteration
-                                                lengthIter = lengthIter,
-                                                what = "all")
+                                                only0 = FALSE)
               names.high.only <- setdiff(names.high, names.low)
               means.shared <- collapseDimension(beta.high,
                                                 dimension = names.high.only,
@@ -365,14 +316,15 @@ setMethod("rescalePairPriors",
                                 adjustments = adjustments,
                                 prefixAdjustments = prefixAdjustments)
               level.low <- level.low + means.shared
-              writeStateDLMToFile(object = level.low,
-                                  skeleton = skeleton.level.low,
-                                  filename = filename,
-                                  nIteration = nIteration,
-                                  lengthIter = lengthIter,
-                                  what = "all")
+              overwriteValuesOnFile(object = level.low,
+                                    skeleton = skeleton.level.low,
+                                    filename = filename,
+                                    nIteration = nIteration,
+                                    lengthIter = lengthIter)
               NULL
           })
+
+
 
 setMethod("rescalePairPriors",
           signature(priorHigh = "DLM",
@@ -412,13 +364,13 @@ setMethod("rescalePairPriors",
                                                    iterations = NULL,
                                                    nIteration = nIteration,
                                                    lengthIter = lengthIter,
-                                                   what = "only0")
+                                                   only0 = TRUE)
               level.high <- readStateDLMFromFile(object = skeleton.level.high,
                                                  filename = filename,
                                                  iterations = NULL,
                                                  nIteration = nIteration,
                                                  lengthIter = lengthIter,
-                                                 what = "all")
+                                                 only0 = FALSE)
               names.high.only <- setdiff(names.high, names.low)
               means.shared <- collapseDimension(level.0.high,
                                                 dimension = names.high.only,
@@ -439,12 +391,11 @@ setMethod("rescalePairPriors",
                                 adjustments = adjustments,
                                 prefixAdjustments = prefixAdjustments)
               level.high <- level.high - level.0.high
-              writeStateDLMToFile(object = level.high,
-                                  skeleton = skeleton.level.high,
-                                  filename = filename,
-                                  nIteration = nIteration,
-                                  lengthIter = lengthIter,
-                                  what = "all")
+              overwriteValuesOnFile(object = level.high,
+                                    skeleton = skeleton.level.high,
+                                    filename = filename,
+                                    nIteration = nIteration,
+                                    lengthIter = lengthIter)
               NULL
           })
 
@@ -513,50 +464,50 @@ setMethod("rescalePairPriors",
                                                  iterations = NULL,
                                                  nIteration = nIteration
                                                  lengthIter = lengthIter,
-                                                 what = "all")
+                                                 only0 = FALSE)
               level.low <- readStateDLMFromFile(object = skeleton.level.low,
                                                 filename = filename,
                                                 iterations = NULL,
                                                 nIteration = nIteration,
                                                 lengthIter = lengthIter,
-                                                what = "all")
+                                                only0 = FALSE)
               level.0.high <- readStateDLMFromFile(skeleton = skeleton.level.high,
                                                    filename = filename,
                                                    iterations = NULL,
                                                    nIteration = nIteration,
                                                    lengthIter = lengthIter,
-                                                   what = "only0")
+                                                   only0 = TRUE)
               level.0.low <- readStateDLMFromFile(skeleton = skeleton.level.low,
                                                   filename = filename,
                                                   iterations = NULL,
                                                   nIteration = nIteration
                                                   lengthIter = lengthIter,
-                                                  what = "only0")
+                                                  only0 = TRUE)
               if (trend.non.stationary.high && trend.non.stationary.low) {
                   trend.high <- readStateDLMFromFile(object = skeleton.trend.high,
                                                      filename = filename,
                                                      iterations = NULL,
                                                      nIteration = nIteration
                                                      lengthIter = lengthIter,
-                                                     what = "all")
+                                                     only0 = FALSE)
                   trend.low <- readStateDLMFromFile(object = skeleton.trend.low,
                                                     filename = filename,
                                                     iterations = NULL,
                                                     nIteration = nIteration,
                                                     lengthIter = lengthIter,
-                                                    what = "all")
+                                                    only0 = FALSE)
                   trend.0.high <- readStateDLMFromFile(skeleton = skeleton.trend.high,
                                                        filename = filename,
                                                        iterations = NULL,
                                                        nIteration = nIteration,
                                                        lengthIter = lengthIter,
-                                                       what = "only0")
+                                                       only0 = TRUE)
                   trend.0.low <- readStateDLMFromFile(skeleton = skeleton.trend.low,
                                                       filename = filename,
                                                       iterations = NULL,
                                                       nIteration = nIteration
                                                       lengthIter = lengthIter,
-                                                      what = "only0")
+                                                      only0 = TRUE)
               }
               ## calculate adjustments for levels
               names.high.only <- setdiff(names.high, names.low)
@@ -575,18 +526,16 @@ setMethod("rescalePairPriors",
               ## adjust level and record
               level.high <- level.high - means.shared.level
               level.low <- level.high + means.shared.level
-              writeStateDLMToFile(object = level.high,
-                                  skeleton = skeleton.level.high,
-                                  filename = filename,
-                                  nIteration = nIteration,
-                                  lengthIter = lengthIter,
-                                  what = "all")
-              writeStateDLMToFile(object = level.low,
-                                  skeleton = skeleton.level.low,
-                                  filename = filename,
-                                  nIteration = nIteration,
-                                  lengthIter = lengthIter,
-                                  what = "all")
+              overwriteValuesOnFile(object = level.high,
+                                    skeleton = skeleton.level.high,
+                                    filename = filename,
+                                    nIteration = nIteration,
+                                    lengthIter = lengthIter)
+              overwriteValuesOnFile(object = level.low,
+                                    skeleton = skeleton.level.low,
+                                    filename = filename,
+                                    nIteration = nIteration,
+                                    lengthIter = lengthIter)
               ## if necessary, adjust trend and record
               if (trend.non.stationary.high && trend.non.stationary.low) {
                   means.shared.trend <- collapseDimension(trend.0.high,
@@ -594,18 +543,16 @@ setMethod("rescalePairPriors",
                                                           weights = 1)
                   trend.high <- trend.high - means.shared.trend
                   trend.low <- trend.high + means.shared.trend
-                  writeStateDLMToFile(object = trend.high,
-                                      skeleton = skeleton.trend.high,
-                                      filename = filename,
-                                      nIteration = nIteration,
-                                      lengthIter = lengthIter,
-                                      what = "all")
-                  writeStateDLMToFile(object = trend.low,
-                                      skeleton = skeleton.trend.low,
-                                      filename = filename,
-                                      nIteration = nIteration,
-                                      lengthIter = lengthIter,
-                                      what = "all")
+                  overwriteValuesOnFile(object = trend.high,
+                                        skeleton = skeleton.trend.high,
+                                        filename = filename,
+                                        nIteration = nIteration,
+                                        lengthIter = lengthIter)
+                  overwriteValuesOnFile(object = trend.low,
+                                        skeleton = skeleton.trend.low,
+                                        filename = filename,
+                                        nIteration = nIteration,
+                                        lengthIter = lengthIter)
               }
               NULL
           })
@@ -669,11 +616,11 @@ setMethod("rescalePriorIntercept",
                                                  nIteration = nIteration
                                                  lengthIter = lengthIter)
                   beta.intercept <- beta.intercept + coef.intercept
-                  writeBetaToFile(object = beta.intercept,
-                                  skeleton = skeletonBetaIntercept,
-                                  filename = filename,
-                                  nIteration = nIteration,
-                                  lengthIter = lengthIter)
+                  overwriteValuesOnFile(object = beta.intercept,
+                                        skeleton = skeletonBetaIntercept,
+                                        filename = filename,
+                                        nIteration = nIteration,
+                                        lengthIter = lengthIter)
               }
               NULL
           })
@@ -709,13 +656,13 @@ setMethod("rescalePriorIntercept",
                                                  iterations = NULL,
                                                  nIteration = nIteration,
                                                  lengthIter = lengthIter,
-                                                 what = "all")
+                                                 only0 = FALSE)
               level.0.term <- readStateDLMFromFile(skeleton = skeleton.level.term,
                                                    filename = filename,
                                                    iterations = NULL,
                                                    nIteration = nIteration,
                                                    lengthIter = lengthIter,
-                                                   what = "only0")
+                                                   only0 = TRUE)
               mean.level.0 <- mean(level.0.term)
               rescaleAndWriteBetas(high = beta.term,
                                    low = beta.intercept,
@@ -726,12 +673,11 @@ setMethod("rescalePriorIntercept",
                                    nIteration = nIteration,
                                    lengthIter = lengthIter)
               level.term <- level.term - mean.level.0
-              writeStateDLMToFile(object = level.term,
-                                  skeleton = skeleton.level.term,
-                                  filename = filename,
-                                  nIteration = nIteration,
-                                  lengthIter = lengthIter,
-                                  what = "all")
+              overwriteValuesOnFile(object = level.term,
+                                    skeleton = skeleton.level.term,
+                                    filename = filename,
+                                    nIteration = nIteration,
+                                    lengthIter = lengthIter)
               if (has.covariates) {
                   skeleton.covariates <- skeletonBetaTerm$coef
                   ## don't bother adjusting betaTerm, since do
@@ -747,11 +693,11 @@ setMethod("rescalePriorIntercept",
                                                  nIteration = nIteration
                                                  lengthIter = lengthIter)
                   beta.intercept <- beta.intercept + coef.intercept
-                  writeBetaToFile(object = beta.intercept,
-                                  skeleton = skeletonBetaIntercept,
-                                  filename = filename,
-                                  nIteration = nIteration,
-                                  lengthIter = lengthIter)
+                  overwriteValuesOnFile(object = beta.intercept,
+                                        skeleton = skeletonBetaIntercept,
+                                        filename = filename,
+                                        nIteration = nIteration,
+                                        lengthIter = lengthIter)
               }
               NULL
           })
@@ -777,105 +723,6 @@ setMethod("rescalePred",
 
 
 ## also makeResultsObj
-
-## REMOVE SHIFT ARGUMENT FROM FETCH ETC.
-
-fetchBoth <- function(filenameEst, filenamePred, where, iterations = NULL,
-                      normalize = TRUE, impute = FALSE) {
-    ## preparation and checking
-    results.est <- fetchResultsObject(filenameEst)
-    nIteration <- results.est@mcmc["nIteration"]
-    lengthIterEst <- results.est@control$lengthIter
-    adjustments <- fetchAdjustments(filenameEst)
-    listsAsSingleItems <- listsAsSingleItems()
-    if (identical(length(where), 0L))
-        stop(gettextf("'%s' has length %d",
-                      "where", 0L))
-    if (any(is.na(where)))
-        stop(gettextf("'%s' has missing values",
-                      "where"))
-    where <- as.character(where)
-    if (!is.null(iterations)) {
-        if (identical(length(iterations), 0L))
-            stop(gettextf("'%s' has length %d",
-                          "iterations", 0L))
-        if (!is.numeric(iterations))
-            stop(gettextf("'%s' does not have type \"%s\"",
-                          "iterations", "numeric"))
-        if (any(is.na(iterations)))
-            stop(gettextf("'%s' has missing values",
-                          "iterations"))
-        if (!all(round(iterations) == iterations))
-            stop(gettextf("'%s' has non-integer values",
-                          "iterations"))
-        if (min(iterations) < 1L)
-            stop(gettextf("'%s' has values less than %d",
-                          "iterations", 1L))
-        if (max(iterations) > nIteration)
-            stop(gettextf("maximum value for '%s' argument [%s] exceeds number of iterations [%d]",
-                          "iterations", max(iterations), nIteration))
-        if (any(duplicated(iterations)))
-            stop(gettextf("'%s' has duplicates",
-                          "iterations"))
-        iterations <- as.integer(iterations)
-        iterations <- sort(iterations)
-    }
-    if (identical(dembase::nIteration(results.est), 0L))
-        return(NULL)
-    choices <- methods::slotNames(results.est)
-    name <- where[1L]
-    i <- charmatch(name, choices, nomatch = -1L)
-    if (i == -1L)
-        raiseNotFoundError(target = name, choices = choices)
-    if (i == 0L)
-        raiseMultipleMatchesError(target = name, choices = choices)
-    name <- choices[i] ## in case of partial match
-    ## extract reults
-    is.time.varying <- isTimeVarying(filenameEst = filenameEst,
-                                     filenamePred = filenamePred,
-                                     where = where)
-    if (is.time.varying) {
-        results.pred <- fetchResultsObject(filenamePred)
-        lengthIterPred <- results.pred@control$lengthIter
-        est <- fetchInner(object = methods::slot(results.est, name),
-                          nameObject = name,
-                          where = where[-1L],
-                          iterations = iterations,
-                          filename = filenameEst,
-                          lengthIter = lengthIterEst,
-                          nIteration = nIteration,
-                          listsAsSingleItems = listsAsSingleItems,
-                          shift = normalize,
-                          impute = impute)
-        pred <- fetchInner(object = methods::slot(results.pred, name),
-                           nameObject = name,
-                           where = where[-1L],
-                           iterations = iterations,
-                           filename = filenamePred,
-                           lengthIter = lengthIterPred,
-                           nIteration = nIteration,
-                           listsAsSingleItems = listsAsSingleItems,
-                           shift = normalize,
-                           impute = impute)
-        skeleton <- fetchSkeleton(results.est, where = where)
-        pred <- rescalePred(pred = pred,
-                            skeleton = skeleton,
-                            adjustments = adjustments,
-                            where = where)
-    }
-    else {
-        ans <- fetchInner(object = methods::slot(results.est, name),
-                          nameObject = name,
-                          where = where[-1L],
-                          iterations = iterations,
-                          filename = filenameEst,
-                          lengthIter = lengthIterEst,
-                          nIteration = nIteration,
-                          listsAsSingleItems = listsAsSingleItems,
-                          impute = impute)
-    }
-    ans
-}
 
 
 

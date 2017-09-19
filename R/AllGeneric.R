@@ -217,8 +217,7 @@ setGeneric("fakeBeta",
 
 setGeneric("fetchResults",
            function(object, nameObject, filename, iterations,
-                    nIteration, lengthIter, shift = TRUE,
-                    impute = FALSE) {
+                    nIteration, lengthIter, impute = FALSE) {
                object
            })
 

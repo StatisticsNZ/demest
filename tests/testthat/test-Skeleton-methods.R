@@ -163,8 +163,7 @@ test_that("fetchResults works with object of class SkeletonManyValues", {
 test_that("fetchResults works with object of class SkeletonBetaIntercept", {
     fetchResults <- demest:::fetchResults
     object <- new("SkeletonBetaIntercept",
-                  first = 3L,
-                  offsetsHigher = list(new("Offsets", c(6L, 11L))))
+                  first = 3L)
     nameObject <- "obj"
     filename <- tempfile()
     con <- file(filename, "wb")
@@ -175,35 +174,17 @@ test_that("fetchResults works with object of class SkeletonBetaIntercept", {
     writeBin(results, con)
     writeBin(as.double(1:1000), con)
     close(con)
-    ## normalize = TRUE
     ans.obtained <- fetchResults(object = object,
                                  nameObject = "obj",
                                  filename = filename,
                                  iterations = 1:10,
                                  nIteration = 10L,
-                                 shift = TRUE,
                                  lengthIter = 100L)
     beta <- 3 + (0:9) * 100
     higher <- 6:11 + rep((0:9) * 100, each = 6)
     higher <- matrix(higher, nrow = 6)
     higher <- colMeans(higher)
     beta <- beta + higher
-    metadata <- new("MetaData",
-                    nms = "iteration",
-                    dimtypes = "iteration",
-                    DimScales = list(new("Iterations", dimvalues = 1:10)))
-    .Data = array(beta, dim = dim(metadata), dimnames = dimnames(metadata))
-    ans.expected <- new("Values", .Data = .Data, metadata = metadata)
-    expect_identical(ans.obtained, ans.expected)
-    ## shift = FALSE
-    ans.obtained <- fetchResults(object = object,
-                                 nameObject = "obj",
-                                 filename = filename,
-                                 iterations = 1:10,
-                                 nIteration = 10L,
-                                 shift = FALSE,
-                                 lengthIter = 100L)
-    beta <- 3 + (0:9) * 100
     metadata <- new("MetaData",
                     nms = "iteration",
                     dimtypes = "iteration",
@@ -223,13 +204,7 @@ test_that("fetchResults works with object of class SkeletonBetaTerm", {
     object <- new("SkeletonBetaTerm",
                   metadata = metadata,
                   first = 3L,
-                  last = 5L,
-                  offsetsHigher = list(new("Offsets", c(6L, 11L))),
-                  transformsHigher = list(new("CollapseTransform",
-                      indices = list(c(1L, 1L), 1:3),
-                      dims = c(0L, 1L),
-                      dimBefore = c(2L, 3L),
-                      dimAfter = 3L)))
+                  last = 5L)
     nameObject <- "obj"
     filename <- tempfile()
     con <- file(filename, "wb")
@@ -240,13 +215,11 @@ test_that("fetchResults works with object of class SkeletonBetaTerm", {
     writeBin(results, con)
     writeBin(as.double(1:1000), con)
     close(con)
-    ## shift = TRUE
     ans.obtained <- fetchResults(object = object,
                                  nameObject = "obj",
                                  filename = filename,
                                  iterations = 1:10,
                                  nIteration = 10L,
-                                 shift = TRUE,
                                  lengthIter = 100L)
     beta <- 3:5 + rep((0:9) * 100, each = 3)
     higher <- 6:11 + rep((0:9) * 100, each = 6)
@@ -254,23 +227,6 @@ test_that("fetchResults works with object of class SkeletonBetaTerm", {
     higher <- apply(higher, 2:3, mean)
     beta <- beta + higher
       metadata <- new("MetaData",
-        nms = c("region", "iteration"),
-        dimtypes = c("state", "iteration"),
-        DimScales = list(new("Categories", dimvalues = c("a", "b", "c")),
-            new("Iterations", dimvalues = 1:10)))
-    .Data = array(beta, dim = dim(metadata), dimnames = dimnames(metadata))
-    ans.expected <- new("Values", .Data = .Data, metadata = metadata)
-    expect_identical(ans.obtained, ans.expected)
-    ## shift = FALSE
-    ans.obtained <- fetchResults(object = object,
-                                 nameObject = "obj",
-                                 filename = filename,
-                                 iterations = 1:10,
-                                 nIteration = 10L,
-                                 shift = FALSE,
-                                 lengthIter = 100L)
-    beta <- 3:5 + rep((0:9) * 100, each = 3)
-    metadata <- new("MetaData",
         nms = c("region", "iteration"),
         dimtypes = c("state", "iteration"),
         DimScales = list(new("Categories", dimvalues = c("a", "b", "c")),
@@ -318,43 +274,23 @@ test_that("fetchResults works with object of class SkeletonMu", {
                                  nIteration = 10L,
                                  lengthIter = 100L)
     obj.intercept <- new("SkeletonBetaIntercept",
-                         first = 11L,
-                         offsetsHigher = list(new("Offsets", c(12L, 14L)),
-                             new("Offsets", c(15L, 17L)),
-                             new("Offsets", c(18L, 19L)),
-                             new("Offsets", c(20L, 25L))))
+                         first = 11L)
     obj.region <- new("SkeletonBetaTerm",
                       metadata = metadata[1],
                       first = 12L,
-                      last = 14L,
-                      offsetsHigher = list(),
-                      transformsHigher = list())
+                      last = 14L)
     obj.age <- new("SkeletonBetaTerm",
                    metadata = metadata[2],
                    first = 15L,
-                   last = 17L,
-                   offsetsHigher = list(new("Offsets", c(20L, 25L))),
-                   transformsHigher = list(new("CollapseTransform",
-                       indices = list(1:3, c(1L, 1L)),
-                       dims = c(1L, 0L),
-                       dimBefore = c(3L, 2L),
-                       dimAfter = 3L)))
+                   last = 17L)
     obj.sex <- new("SkeletonBetaTerm",
                    metadata = metadata[3],
                    first = 18L,
-                   last = 19L,
-                   offsetsHigher = list(new("Offsets", c(20L, 25L))),
-                   transformsHigher = list(new("CollapseTransform",
-                       indices = list(c(1L, 1L, 1L), 1:2),
-                       dims = c(0L, 1L),
-                       dimBefore = c(3L, 2L),
-                       dimAfter = 2L)))
+                   last = 19L)
     obj.age.sex <- new("SkeletonBetaTerm",
                        metadata = metadata[2:3],
                        first = 20L,
-                       last = 25L,
-                       offsetsHigher = list(),
-                       transformsHigher = list())
+                       last = 25L)
     intercept <- fetchResults(object = obj.intercept,
                               nameObject = "obj",
                               filename = filename,
@@ -417,14 +353,11 @@ test_that("fetchResults works with object of class SkeletonMu", {
                                  nIteration = 10L,
                                  lengthIter = 100L)
     obj.intercept <- new("SkeletonBetaIntercept",
-                         first = 11L,
-                         offsetsHigher = list(new("Offsets", c(12L, 14L))))
+                         first = 11L)
     obj.age <- new("SkeletonBetaTerm",
                    metadata = metadata[2],
                    first = 12L,
-                   last = 14L,
-                   offsetsHigher = list(),
-                   transformsHigher = list())
+                   last = 14L)
     intercept <- fetchResults(object = obj.intercept,
                               nameObject = "obj",
                               filename = filename,
@@ -513,7 +446,6 @@ test_that("fetchResults works with object of class SkeletonStateDLM - Level", {
                                  filename = filename,
                                  iterations = 1:10,
                                  nIteration = 10L,
-                                 shift = FALSE,
                                  lengthIter = 200L)
     ans.expected <- 14:43 + rep(0:9, each = 30) * 200
     ans.expected <- Values(array(ans.expected,
@@ -593,7 +525,6 @@ test_that("fetchResults works with object of class SkeletonStateDLM - Season", {
                                  filename = filename,
                                  iterations = 1:10,
                                  nIteration = 10L,
-                                 shift = FALSE,
                                  lengthIter = 100L)
     ans.expected <- seq(from = 17L, by = 2L, to = 75L) + rep((0:9) * 100.0, each = 30)
     norm.fac <- seq(from = 57.5, by = 2, to = 115.5) + rep(0:9, each = 30) * 200

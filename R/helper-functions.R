@@ -8198,7 +8198,7 @@ fetchResultsObject <- function(filename) {
 ## HAS_TESTS
 fetchInner <- function(object, nameObject, where, iterations,
                        filename, lengthIter, nIteration,
-                       listsAsSingleItems, shift = TRUE,
+                       listsAsSingleItems, 
                        impute = FALSE) {
     n.where <- length(where)
     if (n.where == 0L) {
@@ -8217,7 +8217,6 @@ fetchInner <- function(object, nameObject, where, iterations,
                          iterations = iterations,
                          nIteration = nIteration,
                          lengthIter = lengthIter,
-                         shift = shift,
                          impute = impute)
     }
     else {
@@ -8235,7 +8234,6 @@ fetchInner <- function(object, nameObject, where, iterations,
                        lengthIter = lengthIter,
                        nIteration = nIteration,
                        listsAsSingleItems = listsAsSingleItems,
-                       shift = shift,
                        impute = impute)
             }
             else if (i == 0L)

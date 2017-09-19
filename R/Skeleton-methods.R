@@ -20,7 +20,7 @@ setMethod("classY",
 setMethod("fetchResults",
           signature(object = "SkeletonOneCounts"),
           function(object, nameObject, filename, iterations,
-                   nIteration, lengthIter, shift = TRUE,
+                   nIteration, lengthIter,
                    impute = FALSE) {
               first <- object@first
               last <- first
@@ -43,7 +43,7 @@ setMethod("fetchResults",
 setMethod("fetchResults",
           signature(object = "SkeletonOneValues"),
           function(object, nameObject, filename, iterations,
-                   nIteration, lengthIter, shift = TRUE,
+                   nIteration, lengthIter,
                    impute = FALSE) {
               first <- object@first
               last <- first
@@ -66,7 +66,7 @@ setMethod("fetchResults",
 setMethod("fetchResults",
           signature(object = "SkeletonManyCounts"),
           function(object, nameObject, filename, iterations,
-                   nIteration, lengthIter, shift = TRUE,
+                   nIteration, lengthIter,
                    impute = FALSE) {
               first <- object@first
               last <- object@last
@@ -87,7 +87,7 @@ setMethod("fetchResults",
 setMethod("fetchResults",
           signature(object = "SkeletonManyValues"),
           function(object, nameObject, filename, iterations,
-                   nIteration, lengthIter, shift = TRUE,
+                   nIteration, lengthIter,
                    impute = FALSE) {
               first <- object@first
               last <- object@last
@@ -108,10 +108,9 @@ setMethod("fetchResults",
 setMethod("fetchResults",
           signature(object = "SkeletonBetaIntercept"),
           function(object, nameObject, filename, iterations,
-                   nIteration, lengthIter, shift = TRUE,
+                   nIteration, lengthIter,
                    impute = FALSE) {
               first <- object@first
-              offsets.higher <- object@offsetsHigher
               if (is.null(iterations))
                   iterations <- seq_len(nIteration)
               n.iter <- length(iterations)
@@ -125,20 +124,6 @@ setMethod("fetchResults",
                                        last = first,
                                        lengthIter = lengthIter,
                                        iterations = iterations)
-              if (shift) {
-                  n <- length(offsets.higher)
-                  for (i in seq_len(n)) {
-                      offsets.high <- offsets.higher[[i]]
-                      high <- getDataFromFile(filename = filename,
-                                              first = offsets.high[1L],
-                                              last = offsets.high[2L],
-                                              lengthIter = lengthIter,
-                                              iterations = iterations)
-                      high <- matrix(high, ncol = n.iter)
-                      high <- colMeans(high)
-                      .Data <- .Data + high
-                  }
-              }
               .Data <- array(.Data,
                              dim = dim(metadata),
                              dimnames = dimnames(metadata))
@@ -151,12 +136,11 @@ setMethod("fetchResults",
 setMethod("fetchResults",
           signature(object = "SkeletonBetaTerm"),
           function(object, nameObject, filename, iterations,
-                   nIteration, lengthIter, shift = TRUE,
+                   nIteration, lengthIter,
                    impute = FALSE) {
               first <- object@first
               last <- object@last
               metadata <- object@metadata
-              offsets.higher <- object@offsetsHigher
               transforms.higher <- object@transformsHigher
               if (is.null(iterations))
                   iterations <- seq_len(nIteration)
@@ -168,26 +152,6 @@ setMethod("fetchResults",
                                        last = last,
                                        lengthIter = lengthIter,
                                        iterations = iterations)
-              if (shift) {
-                  n <- length(offsets.higher)
-                  for (i in seq_len(n)) {
-                      offsets.high <- offsets.higher[[i]]
-                      transform.high <- transforms.higher[[i]]
-                      transform.high <- addIterationsToTransform(transform.high,
-                                                                 nIter = n.iter)
-                      dim.high <- transform.high@dimBefore
-                      high <- getDataFromFile(filename = filename,
-                                              first = offsets.high[1L],
-                                              last = offsets.high[2L],
-                                              lengthIter = lengthIter,
-                                              iterations = iterations)
-                      high <- array(high, dim = dim.high)
-                      high <- dembase::collapse(high, transform = transform.high)
-                      n <- prod(transform.high@dimBefore) / prod(transform.high@dimAfter)
-                      high <- high / n 
-                      .Data <- .Data + high
-                  }
-              }
               .Data <- array(.Data,
                              dim = dim(metadata),
                              dimnames = dimnames(metadata))
@@ -200,7 +164,7 @@ setMethod("fetchResults",
 setMethod("fetchResults",
           signature(object = "SkeletonMu"),
           function(object, nameObject, filename, iterations,
-                   nIteration, lengthIter, shift = TRUE,
+                   nIteration, lengthIter,
                    impute = FALSE) {
               metadata <- object@metadata
               margins <- object@margins
@@ -243,7 +207,7 @@ setMethod("fetchResults",
 setMethod("fetchResults",
           signature(object = "SkeletonCovariates"),
           function(object, nameObject, filename, iterations,
-                   nIteration, lengthIter, shift = TRUE,
+                   nIteration, lengthIter,
                    impute = FALSE) {
               first <- object@first
               last <- object@last
@@ -266,7 +230,7 @@ setMethod("fetchResults",
 setMethod("fetchResults",
           signature(object = "SkeletonStateDLM"),
           function(object, nameObject, filename, iterations,
-                   nIteration, lengthIter, shift = TRUE,
+                   nIteration, lengthIter,
                    impute = FALSE) {
               first <- object@first
               last <- object@last
@@ -291,7 +255,7 @@ setMethod("fetchResults",
 setMethod("fetchResults",
           signature(object = "SkeletonAccept"),
           function(object, nameObject, filename, iterations,
-                   nIteration, lengthIter, shift = TRUE,
+                   nIteration, lengthIter,
                    impute = FALSE) {
               first <- object@first
               i.first.in.chain <- object@iFirstInChain
@@ -312,7 +276,7 @@ setMethod("fetchResults",
 setMethod("fetchResults",
           signature(object = "SkeletonNAccept"),
           function(object, nameObject, filename, iterations,
-                   nIteration, lengthIter, shift = TRUE,
+                   nIteration, lengthIter,
                    impute = FALSE) {
               first <- object@first
               i.first.in.chain <- object@iFirstInChain
@@ -337,7 +301,7 @@ setMethod("fetchResults",
 setMethod("fetchResults",
           signature(object = "SkeletonMissingDataNormalVarsigmaKnown"),
           function(object, nameObject, filename, iterations,
-                   nIteration, lengthIter, shift = TRUE,
+                   nIteration, lengthIter,
                    impute = FALSE) {
               data <- object@data
               if (impute) {
@@ -371,7 +335,7 @@ setMethod("fetchResults",
 setMethod("fetchResults",
           signature(object = "SkeletonMissingDataNormalVarsigmaUnknown"),
           function(object, nameObject, filename, iterations,
-                   nIteration, lengthIter, shift = TRUE,
+                   nIteration, lengthIter,
                    impute = FALSE) {
               data <- object@data
               if (impute) {
@@ -411,7 +375,7 @@ setMethod("fetchResults",
 setMethod("fetchResults",
           signature(object = "SkeletonMissingDataPoissonNotUseExp"),
           function(object, nameObject, filename, iterations,
-                   nIteration, lengthIter, shift = TRUE,
+                   nIteration, lengthIter,
                    impute = FALSE) {
               data <- object@data
               if (impute) {
@@ -441,7 +405,7 @@ setMethod("fetchResults",
 setMethod("fetchResults",
           signature(object = "SkeletonMissingDataPoissonNotUseExpSubtotals"),
           function(object, nameObject, filename, iterations,
-                   nIteration, lengthIter, shift = TRUE,
+                   nIteration, lengthIter,
                    impute = FALSE) {
               data <- object@data
               if (impute) {
@@ -489,7 +453,7 @@ setMethod("fetchResults",
 setMethod("fetchResults",
           signature(object = "SkeletonMissingDataPoissonUseExp"),
           function(object, nameObject, filename, iterations,
-                   nIteration, lengthIter, shift = TRUE,
+                   nIteration, lengthIter,
                    impute = FALSE) {
               data <- object@data
               if (impute) {
@@ -522,7 +486,7 @@ setMethod("fetchResults",
 setMethod("fetchResults",
           signature(object = "SkeletonMissingDataPoissonUseExpSubtotals"),
           function(object, nameObject, filename, iterations,
-                   nIteration, lengthIter, shift = TRUE,
+                   nIteration, lengthIter,
                    impute = FALSE) {
               data <- object@data
               if (impute) {
@@ -573,7 +537,7 @@ setMethod("fetchResults",
 setMethod("fetchResults",
           signature(object = "SkeletonMissingDataBinomial"),
           function(object, nameObject, filename, iterations,
-                   nIteration, lengthIter, shift = TRUE,
+                   nIteration, lengthIter,
                    impute = FALSE) {
               data <- object@data
               if (impute) {
@@ -608,7 +572,7 @@ setMethod("fetchResults",
 setMethod("fetchResults",
           signature(object = "SkeletonMissingDatasetPoisson"),
           function(object, nameObject, filename, iterations,
-                   nIteration, lengthIter, shift = TRUE,
+                   nIteration, lengthIter,
                    impute = FALSE) {
               data <- object@data
               if (impute) {
@@ -650,7 +614,7 @@ setMethod("fetchResults",
 setMethod("fetchResults",
           signature(object = "SkeletonMissingDatasetPoissonSubtotals"),
           function(object, nameObject, filename, iterations,
-                   nIteration, lengthIter, shift = TRUE,
+                   nIteration, lengthIter,
                    impute = FALSE) {
               data <- object@data
               if (impute) {
@@ -709,7 +673,7 @@ setMethod("fetchResults",
 setMethod("fetchResults",
           signature(object = "SkeletonMissingDatasetBinomial"),
           function(object, nameObject, filename, iterations,
-                   nIteration, lengthIter, shift = TRUE,
+                   nIteration, lengthIter,
                    impute = FALSE) {
               data <- object@data
               if (impute) {
@@ -752,7 +716,7 @@ setMethod("fetchResults",
 setMethod("fetchResults",
           signature(object = "SkeletonMissingDatasetPoissonBinomial"),
           function(object, nameObject, filename, iterations,
-                   nIteration, lengthIter, shift = TRUE,
+                   nIteration, lengthIter,
                    impute = FALSE) {
               data <- object@data
               if (impute) {
