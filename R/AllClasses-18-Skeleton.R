@@ -148,33 +148,6 @@ setClass("SkeletonIndicesShow",
              TRUE
          })            
 
-
-## HAS_TESTS
-setClass("SkeletonOffsetsHigher",
-         slots = c(offsetsHigher = "list"),
-         contains = "VIRTUAL",
-         validity = function(object) {
-             offsetsHigher <- object@offsetsHigher
-             ## all elements of 'offsetsHigher' have class "Offsets"
-             if (!all(sapply(offsetsHigher, is, "Offsets")))
-                 return(gettextf("'%s' has elements not of class \"%s\"",
-                                 "offsetsHigher", "Offsets"))
-             TRUE
-         })
-
-## HAS_TESTS
-setClass("SkeletonTransformsHigher",
-         slots = c(transformsHigher = "list"),
-         contains = "VIRTUAL",
-         validity = function(object) {
-             transformsHigher <- object@transformsHigher
-             ## all elements of 'transformsHigher' have class "CollapseTransform"
-             if (!all(sapply(transformsHigher, is, "CollapseTransform")))
-                 return(gettextf("'%s' has elements not of class \"%s\"",
-                                 "transformsHigher", "CollapseTransform"))
-             TRUE
-         })
-
 ## HAS_TESTS
 setClass("SkeletonOffsetsTheta",
          slots = c(offsetsTheta = "Offsets"),
@@ -319,25 +292,12 @@ setClass("SkeletonManyValues",
 ## HAS_TESTS
 ## HAS_FETCH
 setClass("SkeletonBetaIntercept",
-         contains = c("SkeletonOneValues",
-             "SkeletonOffsetsHigher"))
-
+         contains = "SkeletonOneValues")
 
 ## HAS_TESTS
 ## HAS_FETCH
 setClass("SkeletonBetaTerm",
-         contains = c("SkeletonManyValues",
-             "SkeletonOffsetsHigher",
-             "SkeletonTransformsHigher"),
-         validity = function(object) {
-             offsetsHigher <- object@offsetsHigher
-             transformsHigher <- object@transformsHigher
-             ## 'offsetsHigher' and 'transformsHigher' have same length
-             if (!identical(length(offsetsHigher), length(transformsHigher)))
-                 return(gettextf("'%s' and '%s' have different lengths",
-                                 "offsetsHigher", "transformsHigher"))
-             TRUE
-         })
+         contains = "SkeletonManyValues")
 
 ## HAS_TESTS
 ## HAS_FETCH

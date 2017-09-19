@@ -138,28 +138,13 @@ test_that("validity tests for SkeletonManyValues inherited from SkeletonManyValu
 test_that("can create valid object of class SkeletonBetaIntercept", {
     ## One higher term
     x <- new("SkeletonBetaIntercept",
-             first = 2L,
-             offsetsHigher = list(new("Offsets", c(6L, 13L))))
+             first = 2L)
     ## No higher terms
     x <- new("SkeletonBetaIntercept",
-             first = 2L,
-             offsetsHigher = list())
+             first = 2L)
     ## Two higher terms
     x <- new("SkeletonBetaIntercept",
-             first = 2L,
-             offsetsHigher = list(new("Offsets", c(6L, 13L)),
-                 new("Offsets", c(14L, 33L))))
-})
-
-test_that("validity tests for SkeletonBetaIntercept inherited from SkeletonOffsetsHigher work", {
-    x <- new("SkeletonBetaIntercept",
-             first = 2L,
-             offsetsHigher = list(new("Offsets", c(6L, 13L))))
-    ## all elements of 'offsetsHigher' have class "Offsets"
-    x.wrong <- x
-    x.wrong@offsetsHigher[[1]] <- "wrong"
-    expect_error(validObject(x.wrong),
-                 "'offsetsHigher' has elements not of class \"Offsets\"")
+             first = 2L)
 })
 
 test_that("can create valid object of class SkeletonBetaTerm", {
@@ -169,82 +154,21 @@ test_that("can create valid object of class SkeletonBetaTerm", {
              last = 5L,
              metadata = new("MetaData", nms = "region", dimtypes = "state",
                  DimScales = list(new("Categories",
-                     dimvalues = c("a", "b", "c", "d")))),
-             offsetsHigher = list(new("Offsets", c(6L, 13L))),
-             transformsHigher = list(new("CollapseTransform",
-                 indices = list(c(1L, 1L), 1:4),
-                 dims = c(0L, 1L),
-                 dimBefore = c(2L, 4L),
-                 dimAfter = 4L)))
+                     dimvalues = c("a", "b", "c", "d")))))
     ## No higher terms
     x <- new("SkeletonBetaTerm",
              first = 2L,
              last = 5L,
              metadata = new("MetaData", nms = "region", dimtypes = "state",
                  DimScales = list(new("Categories",
-                     dimvalues = c("a", "b", "c", "d")))),
-             offsetsHigher = list(),
-             transformsHigher = list())
+                     dimvalues = c("a", "b", "c", "d")))))
     ## Two higher terms
     x <- new("SkeletonBetaTerm",
              first = 2L,
              last = 5L,
              metadata = new("MetaData", nms = "region", dimtypes = "state",
                  DimScales = list(new("Categories",
-                     dimvalues = c("a", "b", "c", "d")))),
-             offsetsHigher = list(new("Offsets", c(6L, 13L)),
-                 new("Offsets", c(14L, 33L))),
-             transformsHigher = list(new("CollapseTransform",
-                 indices = list(c(1L, 1L), 1:4),
-                 dims = c(0L, 1L),
-                 dimBefore = c(2L, 4L),
-                 dimAfter = 4L),
-                 new("CollapseTransform",
-                     indices = list(1:4, rep(1L, 5)),
-                     dims = c(1L, 0L),
-                     dimBefore = c(4L, 5L),
-                     dimAfter = 4L)))
-})
-
-test_that("validity tests for SkeletonBetaTerm inherited from SkeletonTransformsHigher work", {
-    x <- new("SkeletonBetaTerm",
-             first = 2L,
-             last = 5L,
-             metadata = new("MetaData", nms = "region", dimtypes = "state",
-                 DimScales = list(new("Categories",
-                     dimvalues = c("a", "b", "c", "d")))),
-             offsetsHigher = list(new("Offsets", c(6L, 13L))),
-             transformsHigher = list(new("CollapseTransform",
-                 indices = list(c(1L, 1L), 1:4),
-                 dims = c(0L, 1L),
-                 dimBefore = c(2L, 4L),
-                 dimAfter = 4L)))
-    ## all elements of 'transformsHigher' have class "CollapseTransform"
-    x.wrong <- x
-    x.wrong@transformsHigher[[1]] <- "wrong"
-    expect_error(validObject(x.wrong),
-                 "'transformsHigher' has elements not of class \"CollapseTransform\"")
-})
-
-
-test_that("validity tests for SkeletonBetaTerm inherited from SkeletonBetaTerm work", {
-    x <- new("SkeletonBetaTerm",
-             first = 2L,
-             last = 5L,
-             metadata = new("MetaData", nms = "region", dimtypes = "state",
-                 DimScales = list(new("Categories",
-                     dimvalues = c("a", "b", "c", "d")))),
-             offsetsHigher = list(new("Offsets", c(6L, 13L))),
-             transformsHigher = list(new("CollapseTransform",
-                 indices = list(c(1L, 1L), 1:4),
-                 dims = c(0L, 1L),
-                 dimBefore = c(2L, 4L),
-                 dimAfter = 4L)))
-    ## 'offsetsHigher' and 'transformsHigher' have same length
-    x.wrong <- x
-    x.wrong@transformsHigher <- list()
-    expect_error(validObject(x.wrong),
-                 "'offsetsHigher' and 'transformsHigher' have different lengths")
+                     dimvalues = c("a", "b", "c", "d")))))
 })
 
 test_that("can create valid object of class SkeletonMu", {

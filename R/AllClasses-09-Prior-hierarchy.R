@@ -162,6 +162,9 @@ setClass("ExchFixed",
          })
 
 
+setClassUnion("Exchangeable",
+              members = c("Exch", "ExchFixed"))
+
 ## Exch
 
 setClass("ExchNormZero",

@@ -56,100 +56,48 @@ test_that("Skeleton creates valid object of class SkeletonManyValues from object
 
 test_that("SkeletonBetaIntercept creates valid object of class SkeletonBetaIntercept", {
     SkeletonBetaIntercept <- demest:::SkeletonBetaIntercept
-    ## one dimensional - two higher terms
-    ans.obtained <- SkeletonBetaIntercept(betas = list(rnorm(1), rnorm(4), rnorm(10)),
-                                     first = 10L)
+    ans.obtained <- SkeletonBetaIntercept(first = 10L)
     ans.expected <- new("SkeletonBetaIntercept",
-                        first = 10L,
-                        offsetsHigher = list(new("Offsets", c(11L, 14L)),
-                            new("Offsets", c(15L, 24L))))
-    expect_identical(ans.obtained, ans.expected)
-    ## two dimensional - one higher term
-    ans.obtained <- SkeletonBetaIntercept(betas = list(rnorm(1), rnorm(30)),
-                                     first = 10L)
-    ans.expected <- new("SkeletonBetaIntercept",
-                        first = 10L,
-                        offsetsHigher = list(new("Offsets", c(11L, 40L))))
-    expect_identical(ans.obtained, ans.expected)
-    ## two dimensional - no higher terms
-    ans.obtained <- SkeletonBetaIntercept(betas = list(rnorm(1)),
-                                     first = 10L)
-    ans.expected <- new("SkeletonBetaIntercept",
-                        first = 10L,
-                        offsetsHigher = list())
+                        first = 10L)
     expect_identical(ans.obtained, ans.expected)
 })
 
 test_that("SkeletonBetaTerm creates valid object of class SkeletonBetaTerm", {
     SkeletonBetaTerm <- demest:::SkeletonBetaTerm
-    ## one dimensional - two higher terms
     metadata <- new("MetaData",
                     nms = "age",
                     dimtypes = "age",
                     DimScales = list(new("Intervals", dimvalues = c(0, 5, 10))))
-    ans.obtained <- SkeletonBetaTerm(betas = list(rnorm(2), rnorm(4), rnorm(10)),
-                                     dims = list(2L, c(2L, 2L), c(5L, 2L)),
-                                     margins = list(3L, c(1L, 3L), c(2L, 3L)),
-                                       first = 10L,
+    ans.obtained <- SkeletonBetaTerm(first = 10L,
                                      metadata = metadata)
     ans.expected <- new("SkeletonBetaTerm",
                         first = 10L,
                         last = 11L,
-                        metadata = metadata,
-                          offsetsHigher = list(new("Offsets", c(12L, 15L)),
-                            new("Offsets", c(16L, 25L))),
-                        transformsHigher = list(
-                            new("CollapseTransform",
-                                indices = list(c(1L, 1L), 1:2),
-                                dims = c(0L, 1L),
-                                dimBefore = c(2L, 2L),
-                                dimAfter = 2L),
-                            new("CollapseTransform",
-                                indices = list(rep(1L, 5), 1:2),
-                                dims = c(0L, 1L),
-                                dimBefore = c(5L, 2L),
-                                dimAfter = 2L)))
+                        metadata = metadata)
     expect_identical(ans.obtained, ans.expected)
-    ## two dimensional - one higher term
     metadata <- new("MetaData",
                     nms = c("age", "region"),
                     dimtypes = c("age", "state"),
                     DimScales = list(new("Intervals", dimvalues = c(0, 5, 10, 15)),
                         new("Categories", dimvalues = letters[1:5])))
-    ans.obtained <- SkeletonBetaTerm(betas = list(rnorm(15), rnorm(30)),
-                                     dims = list(c(3L, 5L), c(3L, 2L, 5L)),
-                                     margins = list(c(1L, 3L), 1:3),
-                                     first = 10L,
+    ans.obtained <- SkeletonBetaTerm(first = 10L,
                                      metadata = metadata)
     ans.expected <- new("SkeletonBetaTerm",
                         first = 10L,
                         last = 24L,
-                        metadata = metadata,
-                        offsetsHigher = list(new("Offsets", c(25L, 54L))),
-                        transformsHigher = list(
-                            new("CollapseTransform",
-                                indices = list(1:3, c(1L, 1L), 1:5),
-                                dims = c(1L, 0L, 2L),
-                                dimBefore = c(3L, 2L, 5L),
-                                dimAfter = c(3L, 5L))))
+                        metadata = metadata)
     expect_identical(ans.obtained, ans.expected)
-    ## two dimensional - no higher terms
     metadata <- new("MetaData",
                     nms = c("age", "region"),
                     dimtypes = c("age", "state"),
                     DimScales = list(new("Intervals", dimvalues = c(0, 5, 10, 15)),
                         new("Categories", dimvalues = letters[1:5])))
-    ans.obtained <- SkeletonBetaTerm(betas = list(rnorm(15)),
-                                     dims = list(c(3L, 5L)),
-                                     margins = list(c(1L, 3L)),
-                                     first = 10L,
+    ans.obtained <- SkeletonBetaTerm(first = 10L,
                                      metadata = metadata)
     ans.expected <- new("SkeletonBetaTerm",
                         first = 10L,
                         last = 24L,
-                        metadata = metadata,
-                        offsetsHigher = list(),
-                        transformsHigher = list())
+                        metadata = metadata)
     expect_identical(ans.obtained, ans.expected)
 })
 

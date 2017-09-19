@@ -62,70 +62,25 @@ SkeletonMu <- function(betas, margins, first, metadata) {
         offsets[[i]] <- methods::new("Offsets", c(first, last))
     }
     methods::new("SkeletonMu",
-        margins = margins,
-        metadata = metadata,
-        offsets = offsets)
+                 margins = margins,
+                 metadata = metadata,
+                 offsets = offsets)
 }
 
 ## HAS_TESTS
-SkeletonBetaIntercept <- function(betas, first) {
-    n <- length(betas)
-    offsets.higher <- vector(mode = "list", length = n - 1L)
-    pos <- first + 1L
-    for (i in seq_len(n - 1L)) {
-        first.other <- pos
-        pos <- pos + length(betas[[i + 1L]])
-        last.other <- pos - 1L
-        offsets.higher[[i]] <- methods::new("Offsets", c(first.other, last.other))
-    }
+SkeletonBetaIntercept <- function(first) {
     methods::new("SkeletonBetaIntercept",
-        first = first,
-        offsetsHigher = offsets.higher)
+                 first = first)
 }
 
 ## HAS_TESTS
-SkeletonBetaTerm <- function(betas, margins, dims, first, metadata) {
-    n <- length(betas)
-    pos <- first + length(betas[[1L]])
-    last <- pos - 1L
-    margin <- margins[[1L]]
-    dim <- dims[[1L]]
-    offsets.higher <- vector(mode = "list", length = n - 1L)
-    transforms.higher <- vector(mode = "list", length = n - 1L)
-    for (i in seq_len(n - 1L)) {
-        first.other <- pos
-        pos <- pos + length(betas[[i + 1L]])
-        last.other <- pos - 1L
-        margin.other <- margins[[i + 1L]]
-        is.higher <- all(margin %in% margin.other)
-        if (is.higher) {
-            offsets.higher[[i]] <- methods::new("Offsets", c(first.other, last.other))
-            dims.transform <- match(margin.other, margin, nomatch = 0L)
-            dim.other <- dims[[i + 1L]]
-            indices.transform <- lapply(dim.other, seq_len)
-            for (j in seq_along(indices.transform)) {
-                if (dims.transform[j] == 0L)
-                    indices.transform[[j]] <- rep(1L, times = dim.other[j])
-            }
-            transform <- methods::new("CollapseTransform",
-                             indices = indices.transform,
-                             dims = dims.transform,
-                             dimBefore = dim.other,
-                             dimAfter = dim)
-            transforms.higher[[i]] <- transform
-        }
-    }
-    non.null <- !sapply(offsets.higher, is.null)
-    offsets.higher <- offsets.higher[non.null]
-    transforms.higher <- transforms.higher[non.null]
+SkeletonBetaTerm <- function(first, metadata) {
+    last <- first + as.integer(prod(dim(metadata))) - 1L
     methods::new("SkeletonBetaTerm",
-        first = first,
-        last = last,
-        metadata = metadata,
-        offsetsHigher = offsets.higher,
-        transformsHigher = transforms.higher)
+                 first = first,
+                 last = last,
+                 metadata = metadata)
 }
-
 
 ## HAS_TESTS
 setMethod("SkeletonAccept",
@@ -139,8 +94,8 @@ setMethod("SkeletonAccept",
                                       to = nIteration)
               i.first.in.chain <- as.integer(i.first.in.chain)
               methods::new("SkeletonAccept",
-                  first = first,
-                  iFirstInChain = i.first.in.chain)
+                           first = first,
+                           iFirstInChain = i.first.in.chain)
           })
 
 ## HAS_TESTS

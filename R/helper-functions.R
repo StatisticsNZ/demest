@@ -6664,7 +6664,20 @@ changeInPos <- function(object) {
         0L
 }
 
-## NO_TESTS
+## HAS_TESTS
+fetchAdjustments <- function(filename, nIteration, lengthIter) {
+    con <- file(filename, open = "rb")
+    on.exit(close(con))
+    size.results <- readBin(con = con, what = "integer", n = 1L)
+    size.adjustments <- readBin(con = con, what = "integer", n = 1L)
+    readBin(con = con, what = "raw", n = size.results)
+    size.data <- nIteration * lengthIter
+    readBin(con = con, what = "double", n = size.data)
+    ans <- readBin(con = con, what = "raw", n = size.adjustments)
+    unserialize(ans)
+}
+
+## HAS_TESTS
 ## 'dim' includes first element of 'along' dimension,
 ## but does not include 'season' dimension
 indices0 <- function(iterator, nSeason = NULL, dim, iAlong) {
@@ -6854,36 +6867,29 @@ makeOutputStateDLM <- function(iterator, metadata, nSeason, iAlong, pos, isTrend
                  metadataIncl0 = metadata.incl.0)
 }
 
-
-## ## HAS_TESTS
-## makeOutputStateDLM <- function(iterator, metadata, nSeason, iAlong, pos, isTrend,
-##                                phi, phiKnown) {
-##     indices <- iterator@indices
-##     n.within <- iterator@nWithin
-##     n.between <- iterator@nBetween
-##     if (is.null(nSeason))
-##         length <- length(indices) * n.within * n.between
-##     else
-##         length <- length(indices) * n.within * n.between * nSeason
-##     first <- pos
-##     last <- pos + length - 1L
-##     dim <- dim(metadata)
-##     dim[iAlong] <- dim[iAlong] + 1L
-##     indices.show <- indicesShow(iterator = iterator,
-##                                 nSeason = nSeason,
-##                                 dim = dim,
-##                                 iAlong = iAlong)
-##     metadata <- makeMetadataStateDLM(metadata = metadata,
-##                                      iAlong = iAlong)
-##     methods::new("SkeletonStateDLM",
-##                  first = first,
-##                  last = last,
-##                  iAlong = iAlong,
-##                  indicesShow = indices.show,
-##                  metadata = metadata)
-## }
-
-
+## HAS_TESTS
+makePairsTerms <- function(margins) {
+    margins <- margins[-1L] # intercept
+    n <- length(margins)
+    ans <- vector(mode = "list", length = n * (n - 1L) / 2L)
+    i <- 1L
+    for (j in seq.int(from = n, to = 2L)) {
+        for (k in seq.int(from = j - 1L, to = 1L)) {
+            first <- margins[[j]]
+            second <- margins[[k]]
+            first.is.higher.order <- length(first) > length(second)
+            first.and.second.share.term <- any(second %in% first)
+            if (first.is.higher.order && first.and.second.share.term)
+                ans[[i]] <- c(j, k)
+            else
+                ans[[i]] <- NULL
+            i <- i + 1L
+        }
+    }
+    is.null <- sapply(ans, is.null)
+    ans <- ans[!is.null]
+    ans
+}
 
 ## HAS_TESTS
 makeResultsFile <- function(filename, results, tempfiles) {
@@ -7046,7 +7052,7 @@ makeResultsCounts <- function(finalCombineds, mcmcArgs, controlArgs, seed) {
 }
 
 
-
+## HAS_TESTS
 readStateDLMFromFile <- function(skeleton, filename, iterations,
                                  nIteration, lengthIter, only0) {
     first <- skeleton@first
@@ -7070,6 +7076,32 @@ readStateDLMFromFile <- function(skeleton, filename, iterations,
     metadata <- dembase::addIterationsToMetadata(metadata, iterations = iterations)
     .Data <- array(.Data, dim = dim(metadata), dimnames = dimnames(metadata))
     methods::new("Values", .Data = .Data, metadata = metadata)
+}
+
+
+## HAS_TESTS
+recordAdjustments <- function(priorHigh, priorLow, namesHigh, namesLow,
+                              adj, adjustments, prefixAdjustments) {
+    prefix.adjustments <- paste(prefixAdjustments, "prior", sep = ".")
+    if (methods::is(priorHigh, "Exchangeable")) {
+        name.high <- paste(namesHigh, collapse = ":")
+        name.high <- paste(prefix.adjustments, name.high, sep = ".")
+        already.has.high <- !is.null(adjustments[[name.high]])
+        if (already.has.high)
+            adjustments[[name.high]] <- adjustments[[name.high]] - adj
+        else
+            adjustments[[name.high]] <- -1 * adj
+    }
+    if (methods::is(priorLow, "Exchangeable")) {
+        name.low <- paste(namesLow, collapse = ":")
+        name.low <- paste(prefix.adjustments, name.low, sep = ".")
+        already.has.low <- !is.null(adjustments[[name.low]])
+        if (already.has.low)
+            adjustments[[name.low]] <- adjustments[[name.low]] + adj
+        else
+            adjustments[[name.low]] <- adj
+    }
+    NULL
 }
 
 

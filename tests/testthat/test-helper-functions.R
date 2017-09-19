@@ -10161,6 +10161,31 @@ test_that("changeInPos works", {
     expect_identical(changeInPos(1:5), 0L)
 })
 
+test_that("fetchAdjustments works", {
+    ## fetchAdjustments <- demest:::fetchAdjustments
+    filename <- tempfile()
+    con <- file(filename, open = "wb")
+    results <- new("ResultsModelEst")
+    results <- serialize(results, connection = NULL)
+    adjustments <- new.env(hash = TRUE)
+    adjustments[["model.prior.intercept"]] <- 1
+    adjustments.serialized <- serialize(adjustments, connection = NULL)
+    writeBin(length(results), con = con) # size results
+    writeBin(length(adjustments.serialized), con = con) # size adjustments
+    writeBin(results, con = con)
+    data <- as.double(1:200)
+    writeBin(data, con = con)
+    writeBin(adjustments.serialized, con = con)
+    close(con)
+    nIteration <- 20L
+    lengthIter <- 10L
+    ans.obtained <- fetchAdjustments(filename = filename,
+                                     nIteration = nIteration,
+                                     lengthIter = lengthIter)
+    ans.expected <- adjustments
+    expect_equal(ans.obtained, ans.expected)
+})
+
 test_that("indices0 works - nSeason is NULL", {
     indices0 <- demest:::indices0
     AlongIterator <- demest:::AlongIterator
@@ -10614,6 +10639,21 @@ test_that("makeOutputStateDLM works with Season", {
     expect_identical(ans.obtained, ans.expected)
 })
 
+test_that("makePairsTerms works", {
+    ## makePairsTerms <- demest:::makePairsTerms
+    margins <- list(0L, 1L, 2L, 1:2)
+    ans.obtained <- makePairsTerms(margins)
+    ans.expected <- list(3:2, c(3L, 1L))
+    expect_identical(ans.obtained, ans.expected)
+    margins <- list(0L, 1L, 2L, 3L, 1:2, c(1L, 3L), 2:3, 1:3)
+    ans.obtained <- makePairsTerms(margins)
+    ans.expected <- list(7:6, c(7L, 5L), c(7L, 4L), c(7L, 3L), c(7L, 2L), c(7L, 1L),
+                         c(6L, 3L), c(6L, 2L),
+                         c(5L, 3L), c(5L, 1L),
+                         c(4L, 2L), c(4L, 1L))
+    expect_identical(ans.obtained, ans.expected)
+})
+
 test_that("makeResultsFile works", {
     makeResultsFile <- demest:::makeResultsFile
     ## files are 500 char long
@@ -10941,6 +10981,64 @@ test_that("readStateDLMFromFile works", {
                                                  iteration = 1:20)),
                            dimtypes = c(time = "state"))
     expect_identical(ans.obtained, ans.expected)
+})
+
+
+test_that("recordAdjustments works", {
+    ## recordAdjustments <- demest:::recordAdjustments
+    ## both priors Exchangeable; nothing in 'adjustments'
+    priorHigh <- new("ExchNormZero")
+    priorLow <- new("ExchNormZero")
+    namesHigh <- c("country", "sex")
+    namesLow <- "country"
+    adj <- ValuesOne(as.numeric(1:3), labels = letters[1:3], name = "country")
+    adjustments <- new.env(hash = TRUE)
+    prefixAdjustments <- "model"    
+    recordAdjustments(priorHigh = priorHigh,
+                      priorLow = priorLow,
+                      namesHigh = namesHigh,
+                      namesLow = namesLow,
+                      adj = adj,
+                      adjustments = adjustments,
+                      prefixAdjustments = prefixAdjustments)
+    expect_identical(adjustments[["model.prior.country:sex"]], -1 * adj)
+    expect_identical(adjustments[["model.prior.country"]], adj)
+    ## neither priors Exchangeable; nothing in 'adjustments'
+    priorHigh <- new("DLMNoTrendNormZeroNoSeason")
+    priorLow <- new("DLMNoTrendNormZeroNoSeason")
+    namesHigh <- c("country", "sex")
+    namesLow <- "country"
+    adj <- ValuesOne(as.numeric(1:3), labels = letters[1:3], name = "country")
+    adjustments <- new.env(hash = TRUE)
+    prefixAdjustments <- "model"    
+    recordAdjustments(priorHigh = priorHigh,
+                      priorLow = priorLow,
+                      namesHigh = namesHigh,
+                      namesLow = namesLow,
+                      adj = adj,
+                      adjustments = adjustments,
+                      prefixAdjustments = prefixAdjustments)
+    expect_null(adjustments[["model.prior.country:sex"]])
+    expect_null(adjustments[["model.prior.country"]])
+    ## second term Exchangeable; something in 'adjustments'
+    priorHigh <- new("DLMNoTrendNormZeroNoSeason")
+    priorLow <- new("ExchNormZero")
+    namesHigh <- c("country", "sex")
+    namesLow <- "country"
+    adj <- ValuesOne(as.numeric(1:3), labels = letters[1:3], name = "country")
+    adjustments <- new.env(hash = TRUE)
+    adjustments[["model.prior.country:sex"]] <- 1
+    adjustments[["model.prior.country"]] <- 1
+    prefixAdjustments <- "model"    
+    recordAdjustments(priorHigh = priorHigh,
+                      priorLow = priorLow,
+                      namesHigh = namesHigh,
+                      namesLow = namesLow,
+                      adj = adj,
+                      adjustments = adjustments,
+                      prefixAdjustments = prefixAdjustments)
+    expect_identical(adjustments[["model.prior.country:sex"]], 1)
+    expect_identical(adjustments[["model.prior.country"]], 1 + adj)
 })
 
 

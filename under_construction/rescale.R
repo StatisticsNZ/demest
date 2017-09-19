@@ -141,44 +141,6 @@ rescalePriorsHelper <- function(priors, margins, skeletonsBetas skeletonsPriors,
     }
 }
 
-makePairsTerms <- function(margins) {
-    margins <- margins[-1L] # intercept
-    n <- length(margins)
-    ans <- vector(mode = "list", length = n * (n - 1L) / 2L)
-    i <- 1L
-    for (j in seq.int(from = n, to = 2L)) {
-        for (k in seq.int(from = j - 1L, to = 1L)) {
-            first <- margins[[j]]
-            second <- margins[[k]]
-            first.is.higher.order <- length(first) > length(second)
-            first.and.second.share.term <- any(second %in% first)
-            if (first.is.higher.order && first.and.second.share.term)
-                ans[[i]] <- c(j, k)
-            else
-                ans[[i]] <- NULL
-            i <- i + 1L
-        }
-    }
-    is.null <- sapply(ans, is.null)
-    ans <- ans[!is.null]
-    ans
-}
-
-
-test_that("makePairsTerms works", {
-    ## makePairsTerms <- demest:::makePairsTerms
-    margins <- list(0L, 1L, 2L, 1:2)
-    ans.obtained <- makePairsTerms(margins)
-    ans.expected <- list(3:2, c(3L, 1L))
-    expect_identical(ans.obtained, ans.expected)
-    margins <- list(0L, 1L, 2L, 3L, 1:2, c(1L, 3L), 2:3, 1:3)
-    ans.obtained <- makePairsTerms(margins)
-    ans.expected <- list(7:6, c(7L, 5L), c(7L, 4L), c(7L, 3L), c(7L, 2L), c(7L, 1L),
-                         c(6L, 3L), c(6L, 2L),
-                         c(5L, 3L), c(5L, 1L),
-                         c(4L, 2L), c(4L, 1L))
-    expect_identical(ans.obtained, ans.expected)
-})
 
 
 setGeneric("rescalePairPriors",
@@ -190,8 +152,6 @@ setGeneric("rescalePairPriors",
           })
 
 
-setClassUnion("Exchangeable",
-              members = c("Exch", "ExchFixed"))
               
 setMethod("rescalePairPriors",
           signature(priorHigh = "Exchangeable",
@@ -694,30 +654,6 @@ setMethod("rescalePriorIntercept",
           })
 
 
-readCoefInterceptFromFile <- function(skeleton, filename, iterations,
-                                      nIteration, lengthIter) {
-    first <- skeleton@first
-    if (is.null(iterations))
-        iterations <- seq_len(nIteration)
-    n.iter <- length(iterations)
-    .Data <- getDataFromFile(filename = filename,
-                             first = first,
-                             last = first,
-                             lengthIter = lengthIter,
-                             iterations = iterations)
-    metadata <- methods::new("MetaData",
-                             nms = "iteration",
-                             dimtypes = "iteration",
-                             DimScales = list(methods::new("Iterations",
-                                                           dimvalues = iterations)))
-    .Data <- array(.Data,
-                   dim = dim(metadata),
-                   dimnames = dimnames(metadata))
-    methods::new("Values",
-                 .Data = .Data,
-                 metadata = metadata)
-}
-
 
 setGeneric("rescalePred",
            function(pred, skeleton, adjustments, where) {
@@ -736,18 +672,6 @@ setMethod("rescalePred",
                   pred + adj
           })
 
-
-fetchAdjustments <- function(filename, nIteration, lengthIter) {
-    con <- file(filename, open = "rb")
-    on.exit(close(con))
-    size.results <- readBin(con = con, what = "integer", n = 1L)
-    size.adjustments <- readBin(con = con, what = "integer", n = 1L)
-    size.data <- nIteration * lengthIter
-    n <- size.results + size.data
-    readBin(con = con, what = "raw", n = n)
-    adjustments <- readBin(con = con, what = "raw", n = size.adjustments)
-    unserialize(adjustments)
-}
 
 ## also makeResultsObj
 
@@ -852,6 +776,8 @@ fetchBoth <- function(filenameEst, filenamePred, where, iterations = NULL,
 
 
 
+## do in master ####################
+
 
 rescaleAndWriteBetas <- function(high, low, adj, skeletonHigh, skeletonLow,
                                  filename, nIteration, lengthIter) {
@@ -872,98 +798,26 @@ rescaleAndWriteBetas <- function(high, low, adj, skeletonHigh, skeletonLow,
 
 
 
-recordAdjustments <- function(priorHigh, priorLow, namesHigh, namesLow,
-                              adj, adjustments, prefixAdjustments) {
-    prefix.adjustments <- paste(prefixAdjustments, "prior", sep = ".")
-    if (methods::is(priorHigh, "Exchangeable")) {
-        name.high <- paste(namesHigh, collapse = ":")
-        name.high <- paste(prefixAdjustments, name.high, sep = ".")
-        already.has.high <- !is.null(adjustments[[name.high]])
-        if (already.has.high)
-            adjustments[[name.high]] <- adjustments[[name.high]] - adj
-        else
-            adjustments[[name.high]] <- -1 * adj
-    }
-    if (methods::is(priorLow, "Exchangeable")) {
-        name.low <- paste(namesLow, collapse = ":")
-        name.low <- paste(prefixAdjustments, name.low, sep = ".")
-        already.has.low <- !is.null(adjustments[[name.low]])
-        if (already.has.low)
-            adjustments[[name.low]] <- adjustments[[name.low]] + adj
-        else
-            adjustments[[name.low]] <- adj
-    }
-    NULL
-}
-    
-
-writeBetaToFile <- function(object, skeleton, filename,
-                            nIteration, lengthIter,
-                            useC = TRUE) {
-    ## object
-    stopifnot(methods::is(object, "Values"))
-    ## skeleton
-    stopifnot(methods::is(skeleton, "SkeletonStateDLM"))
-    ## nIteration
-    stopifnot(is.integer(nIteration))
-    stopifnot(identical(nIteration), 1L)
-    stopifnot(!is.na(nIteration))
-    stopifnot(nIteration >= 1L)
-    ## lengthIter
-    stopifnot(is.integer(lengthIter))
-    stopifnot(identical(lengthIter), 1L)
-    stopifnot(!is.na(lengthIter))
-    stopifnot(lengthIter >= 1L)
-    if (useC) {
-        .Call(writeBetaToFile_R, object, skeleton,
-              filename, nIteration, lengthIter)
-    }
-    else {
-        con <- file(filename, open = "rb")
-        on.exit(close(con))
-        size.results <- readBin(con = con, what = "integer", n = 1L)
-        readBin(con, what = "integer", n = 1L) # skip over size.adjustments
-        readBin(con = con, what = "raw", n = size.results) ## skip over results
-        pos <- 1L ## position within object
-        for (i.iter in seq_len(nIteration)) {
-            ## skip over positions in line of file before start of data
-            for (i.col in seq_len(first - 1L))
-                readBin(con = con, what = "double", n = 1L)
-            ## write values
-            for (i.col in seq.int(from = first, to = last)) {
-                writeBin(object[pos], con = con, what = "double", n = 1L)
-                pos <- pos + 1L
-            }
-            ## skip remaining positions in line of file, if any
-            if (last < lengthIter) {
-                for (i.col in seq.int(from = last + 1L, to = lengthIter))
-                    readBin(con = con, what = "double", n = 1L)
-            }
-        }
-    }
-}
-
-
-
-
-writeStateDLMToFile <- function(object, skeleton, filename, nIteration, lengthIter,
-                                what = c("all", "non0", "only0"), useC = TRUE) {
-    first <- object@first
-    last <- object@last
-    indices0 <- object@indices0
-    what <- match.arg(what)
-    s <- seq.int(from = first, to = last)
-    if (what == "all")
-        value.here <- rep(TRUE, times = last - first + 1L)
-    else if (what == "non0") {
-        value.here <- !(indices0 %in% s)
-    }
-    else
-        value.here <- indices0 %in% s
-    writeStateDLMToFileHelper(object = object,
-                              filename = filename,
-                              nIteration = nIteration,
-                              lengthIter = lengthIter,
-                              valueHere = valueHere,
-                              useC = useC)
+readCoefInterceptFromFile <- function(skeleton, filename, iterations,
+                                      nIteration, lengthIter) {
+    first <- skeleton@first
+    if (is.null(iterations))
+        iterations <- seq_len(nIteration)
+    n.iter <- length(iterations)
+    .Data <- getDataFromFile(filename = filename,
+                             first = first,
+                             last = first,
+                             lengthIter = lengthIter,
+                             iterations = iterations)
+    metadata <- methods::new("MetaData",
+                             nms = "iteration",
+                             dimtypes = "iteration",
+                             DimScales = list(methods::new("Iterations",
+                                                           dimvalues = iterations)))
+    .Data <- array(.Data,
+                   dim = dim(metadata),
+                   dimnames = dimnames(metadata))
+    methods::new("Values",
+                 .Data = .Data,
+                 metadata = metadata)
 }
