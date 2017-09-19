@@ -10902,6 +10902,92 @@ test_that("makeResultsCounts works with exposure", {
     expect_is(ans, "ResultsCountsExposureEst")
 })
 
+test_that("R version of writeBetaFile works", {
+    writeBetaToFile <- demest:::writeBetaToFile
+    filename <- tempfile()
+    con <- file(filename, open = "wb")
+    results <- new("ResultsModelEst")
+    results <- serialize(results, connection = NULL)
+    writeBin(length(results), con = con) # size results
+    writeBin(10L, con = con) # size adjustments
+    writeBin(results, con = con)
+    original <- as.double(1:200)
+    writeBin(original, con = con)
+    close(con)
+    object <- Values(array(as.double(1001:1100),
+                           dim = c(5, 20),
+                           dimnames = list(reg = 1:5, iter = 1:20)))
+    nIteration <- 20L
+    lengthIter <- 10L
+    metadata <- new("MetaData",
+                    nms = "age",
+                    dimtypes = "age",
+                    DimScales = list(new("Intervals", dimvalues = 0:5)))
+    skeleton <- new("SkeletonManyValues",
+                    first = 6L,
+                    last = 10L,
+                    metadata = metadata)
+    writeBetaToFile(object = object,
+                    skeleton = skeleton,
+                    filename = filename,
+                    nIteration = nIteration,
+                    lengthIter = lengthIter,
+                    useC = FALSE)
+    con <- file(filename, open = "rb")
+    readBin(con = con, what = "integer", n = 2L)
+    readBin(con = con, what = "raw", n = length(results))
+    ans.obtained <- readBin(con = con, what = "double", n = 200L)
+    close(con)
+    ans.expected <- matrix(original, nr = 10)
+    ans.expected[6:10, ] <- object@.Data
+    ans.expected <- as.double(ans.expected)
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("C version of writeBetaFile works", {
+    writeBetaToFile <- demest:::writeBetaToFile
+    filename <- tempfile()
+    con <- file(filename, open = "wb")
+    results <- new("ResultsModelEst")
+    results <- serialize(results, connection = NULL)
+    writeBin(length(results), con = con) # size results
+    writeBin(10L, con = con) # size adjustments
+    writeBin(results, con = con)
+    original <- as.double(1:200)
+    writeBin(original, con = con)
+    close(con)
+    object <- Values(array(as.double(1001:1100),
+                           dim = c(5, 20),
+                           dimnames = list(reg = 1:5, iter = 1:20)))
+    nIteration <- 20L
+    lengthIter <- 10L
+    metadata <- new("MetaData",
+                    nms = "age",
+                    dimtypes = "age",
+                    DimScales = list(new("Intervals", dimvalues = 0:5)))
+    skeleton <- new("SkeletonManyValues",
+                    first = 6L,
+                    last = 10L,
+                    metadata = metadata)
+    writeBetaToFile(object = object,
+                    skeleton = skeleton,
+                    filename = filename,
+                    nIteration = nIteration,
+                    lengthIter = lengthIter,
+                    useC = TRUE)
+    con <- file(filename, open = "rb")
+    readBin(con = con, what = "integer", n = 2L)
+    readBin(con = con, what = "raw", n = length(results))
+    ans.obtained <- readBin(con = con, what = "double", n = 200L)
+    close(con)
+    ans.expected <- matrix(original, nr = 10)
+    ans.expected[6:10, ] <- object@.Data
+    ans.expected <- as.double(ans.expected)
+    expect_identical(ans.obtained, ans.expected)
+})
+
+
+
 
 test_that("R version of writeStateDLMToFileHelper works", {
     writeStateDLMToFileHelper <- demest:::writeStateDLMToFileHelper

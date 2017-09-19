@@ -7045,8 +7045,8 @@ makeResultsCounts <- function(finalCombineds, mcmcArgs, controlArgs, seed) {
             final = final)
 }
 
-
-
+## READY_TO_TRANSLATE
+## HAS_TESTS
 writeStateDLMToFileHelper <- function(object, filename, nIteration, lengthIter,
                                       isValueHere, useC = FALSE) {
     ## object
@@ -7070,7 +7070,10 @@ writeStateDLMToFileHelper <- function(object, filename, nIteration, lengthIter,
               nIteration, lengthIter, isValueHere)
     }
     else {
-        ## the pointer used for reading and the pointer used for
+        ## Based on the warnings in the help for 'seek' about using
+        ## 'seek' with Windows, we have avoided it, and
+        ## used writeBin and readBin instead.
+        ## The pointer used for reading and the pointer used for
         ## writing are independent of each other, so we have to
         ## move each separately via read or write operations
         con <- file(filename, open = "r+b")
@@ -7098,8 +7101,90 @@ writeStateDLMToFileHelper <- function(object, filename, nIteration, lengthIter,
     }
 }
 
+## READY_TO_TRANSLATE
+## HAS_TESTS
+writeBetaToFile <- function(object, skeleton, filename,
+                            nIteration, lengthIter,
+                            useC = TRUE) {
+    ## object
+    stopifnot(methods::is(object, "Values"))
+    ## skeleton
+    stopifnot(methods::is(skeleton, "SkeletonManyValues"))
+    ## nIteration
+    stopifnot(is.integer(nIteration))
+    stopifnot(identical(length(nIteration), 1L))
+    stopifnot(!is.na(nIteration))
+    stopifnot(nIteration >= 1L)
+    ## lengthIter
+    stopifnot(is.integer(lengthIter))
+    stopifnot(identical(length(lengthIter), 1L))
+    stopifnot(!is.na(lengthIter))
+    stopifnot(lengthIter >= 1L)
+    if (useC) {
+        .Call(writeBetaToFile_R, object, skeleton,
+              filename, nIteration, lengthIter)
+    }
+    else {
+        ## Based on the warnings in the help for 'seek' about using
+        ## 'seek' with Windows, we have avoided it, and
+        ## used writeBin and readBin instead.
+        ## The pointer used for reading and the pointer used for
+        ## writing are independent of each other, so we have to
+        ## move each separately via read or write operations
+        first <- skeleton@first
+        last <- skeleton@last
+        con <- file(filename, open = "r+b")
+        on.exit(close(con))
+        size.results <- readBin(con = con, what = "integer", n = 1L)
+        writeBin(size.results, con = con)
+        size.adj <- readBin(con = con, what = "integer", n = 1L)
+        writeBin(size.adj, con = con)
+        results <- readBin(con = con, what = "raw", n = size.results)
+        writeBin(results, con = con)
+        pos <- 1L ## position within object
+        for (i.iter in seq_len(nIteration)) {
+            ## skip over values in file before start of data
+            before.first <- readBin(con = con, what = "double", n = first - 1L)
+            writeBin(before.first, con = con)
+            ## write values
+            for (i.col in seq.int(from = first, to = last)) {
+                readBin(con = con, what = "double", n = 1L) # discard value
+                writeBin(object[pos], con = con)
+                pos <- pos + 1L
+            }
+            ## skip remaining positions in line of file, if any
+            if (last < lengthIter) {
+                after.last <- readBin(con = con, what = "double", n = lengthIter - last)
+                writeBin(after.last, con = con)
+            }
+        }
+    }
+}
 
 
+
+
+writeStateDLMToFile <- function(object, skeleton, filename, nIteration, lengthIter,
+                                what = c("all", "non0", "only0"), useC = TRUE) {
+    first <- object@first
+    last <- object@last
+    indices0 <- object@indices0
+    what <- match.arg(what)
+    s <- seq.int(from = first, to = last)
+    if (what == "all")
+        value.here <- rep(TRUE, times = last - first + 1L)
+    else if (what == "non0") {
+        value.here <- !(indices0 %in% s)
+    }
+    else
+        value.here <- indices0 %in% s
+    writeStateDLMToFileHelper(object = object,
+                              filename = filename,
+                              nIteration = nIteration,
+                              lengthIter = lengthIter,
+                              valueHere = valueHere,
+                              useC = useC)
+}
 
 ## PRINTING ##########################################################################
 
