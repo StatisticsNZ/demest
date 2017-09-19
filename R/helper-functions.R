@@ -7081,81 +7081,24 @@ rescaleAndWriteBetas <- function(high, low, adj, skeletonHigh, skeletonLow,
                                  filename, nIteration, lengthIter) {
     high <- high - adj
     low <- low + adj
-    writeBetaToFile(object = high,
-                    skeleton = skeletonHigh,
-                    filename = filename,
-                    nIteration = nIteration,
-                    lengthIter = lengthIter)
-    writeBetaToFile(object = low,
-                    skeleton = skeletonLow,
-                    filename = filename,
-                    nIteration = nIteration,
-                    lengthIter = lengthIter)
+    overwriteValuesOnFile(object = high,
+                          skeleton = skeletonHigh,
+                          filename = filename,
+                          nIteration = nIteration,
+                          lengthIter = lengthIter)
+    overwriteValuesOnFile(object = low,
+                          skeleton = skeletonLow,
+                          filename = filename,
+                          nIteration = nIteration,
+                          lengthIter = lengthIter)
     NULL
 }
 
-
 ## READY_TO_TRANSLATE
 ## HAS_TESTS
-writeStateDLMToFileHelper <- function(object, filename, nIteration, lengthIter,
-                                      isValueHere, useC = FALSE) {
-    ## object
-    stopifnot(methods::is(object, "Values"))
-    ## nIteration
-    stopifnot(is.integer(nIteration))
-    stopifnot(identical(length(nIteration), 1L))
-    stopifnot(!is.na(nIteration))
-    stopifnot(nIteration >= 1L)
-    ## lengthIter
-    stopifnot(is.integer(lengthIter))
-    stopifnot(identical(length(lengthIter), 1L))
-    stopifnot(!is.na(lengthIter))
-    stopifnot(lengthIter >= 1L)
-    ## isValueHere
-    stopifnot(is.logical(isValueHere))
-    stopifnot(!any(is.na(isValueHere)))
-    stopifnot(length(isValueHere) <= lengthIter)
-    if (useC) {
-        .Call(writeStateDLMToFileHelper_R, object, filename,
-              nIteration, lengthIter, isValueHere)
-    }
-    else {
-        ## Based on the warnings in the help for 'seek' about using
-        ## 'seek' with Windows, we have avoided it, and
-        ## used writeBin and readBin instead.
-        ## The pointer used for reading and the pointer used for
-        ## writing are independent of each other, so we have to
-        ## move each separately via read or write operations
-        con <- file(filename, open = "r+b")
-        size.results <- readBin(con = con, what = "integer", n = 1L)
-        writeBin(size.results, con = con)
-        size.adj <- readBin(con = con, what = "integer", n = 1L)
-        writeBin(size.adj, con = con)
-        results <- readBin(con = con, what = "raw", n = size.results)
-        writeBin(results, con = con)
-        pos <- 1L
-        for (j in seq_len(nIteration)) {
-            for (i in seq_along(isValueHere)) {
-                if (isValueHere[i]) {
-                    val <- readBin(con = con, what = "double", n = 1L)
-                    writeBin(object@.Data[pos], con = con)
-                    pos <- pos + 1L
-                }
-                else {
-                    val <- readBin(con = con, what = "double", n = 1L)
-                    writeBin(val, con = con)
-                }
-            }
-        }
-        close(con)
-    }
-}
-
-## READY_TO_TRANSLATE
-## HAS_TESTS
-writeBetaToFile <- function(object, skeleton, filename,
-                            nIteration, lengthIter,
-                            useC = TRUE) {
+overwriteValuesOnFile <- function(object, skeleton, filename,
+                                  nIteration, lengthIter,
+                                  useC = TRUE) {
     ## object
     stopifnot(methods::is(object, "Values"))
     ## skeleton
@@ -7171,7 +7114,7 @@ writeBetaToFile <- function(object, skeleton, filename,
     stopifnot(!is.na(lengthIter))
     stopifnot(lengthIter >= 1L)
     if (useC) {
-        .Call(writeBetaToFile_R, object, skeleton,
+        .Call(overwriteValuesOnFile_R, object, skeleton,
               filename, nIteration, lengthIter)
     }
     else {
@@ -7211,30 +7154,6 @@ writeBetaToFile <- function(object, skeleton, filename,
     }
 }
 
-
-
-
-writeStateDLMToFile <- function(object, skeleton, filename, nIteration, lengthIter,
-                                what = c("all", "non0", "only0"), useC = TRUE) {
-    first <- object@first
-    last <- object@last
-    indices0 <- object@indices0
-    what <- match.arg(what)
-    s <- seq.int(from = first, to = last)
-    if (what == "all")
-        value.here <- rep(TRUE, times = last - first + 1L)
-    else if (what == "non0") {
-        value.here <- !(indices0 %in% s)
-    }
-    else
-        value.here <- indices0 %in% s
-    writeStateDLMToFileHelper(object = object,
-                              filename = filename,
-                              nIteration = nIteration,
-                              lengthIter = lengthIter,
-                              valueHere = valueHere,
-                              useC = useC)
-}
 
 ## PRINTING ##########################################################################
 
