@@ -10897,6 +10897,52 @@ test_that("makeResultsCounts works with exposure", {
     expect_is(ans, "ResultsCountsExposureEst")
 })
 
+test_that("readStateDLMFromFile works", {
+    readStateDLMFromFile <- demest:::readStateDLMFromFile
+    makeOutputStateDLM <- demest:::makeOutputStateDLM
+    AlongIterator <- demest:::AlongIterator
+    filename <- tempfile()
+    con <- file(filename, open = "wb")
+    results <- new("ResultsModelEst")
+    results <- serialize(results, connection = NULL)
+    writeBin(length(results), con = con) # size results
+    writeBin(10L, con = con) # size adjustments
+    writeBin(results, con = con)
+    original <- as.double(1:1000)
+    writeBin(original, con = con)
+    close(con)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 1:10)))
+    iterator <- AlongIterator(dim = 11L, iAlong = 1L)
+    skeleton <- makeOutputStateDLM(iterator = iterator,
+                                   metadata = metadata,
+                                   nSeason = 1L,
+                                   iAlong = 1L,
+                                   pos = 11L,
+                                   isTrend = FALSE,
+                                   phi = 1,
+                                   phiKnown = TRUE)
+    nIteration <- 20L
+    lengthIter <- 50L
+    ## only0 is FALSE
+    ans.obtained <- readStateDLMFromFile(skeleton = skeleton,
+                                         filename = filename,
+                                         iterations = NULL,
+                                         nIteration = nIteration,
+                                         lengthIter = lengthIter,
+                                         only0 = FALSE)
+    ans.expected <- matrix(original, nrow = lengthIter)
+    ans.expected <- ans.expected[11:21, ]
+    ans.expected <- Values(array(ans.expected,
+                                 dim = c(11, nIteration),
+                                 dimnames = list(time = 1:11,
+                                                 iteration = 1:20)),
+                           dimtypes = c(time = "state"))
+    expect_identical(ans.obtained, ans.expected)
+})
+
 
 ## INSPECT RESULTS ###################################################################
 
@@ -11469,6 +11515,7 @@ test_that("getDataFromFile gives valid answer", {
     filename <- tempfile()
     con <- file(filename, open = "wb")
     writeBin(size.results, con = con)
+    writeBin(10L, con = con)
     writeBin(results, con = con)
     writeBin(data, con = con)
     close(con)
@@ -11509,6 +11556,7 @@ test_that("R and C versions of getDataFromFile give same answer", {
     filename <- tempfile()
     con <- file(filename, open = "wb")
     writeBin(size.results, con = con)
+    writeBin(10L, con)
     writeBin(results, con = con)
     writeBin(data, con = con)
     close(con)
@@ -11543,6 +11591,7 @@ if (test.extended) {
     filename <- tempfile()
     con <- file(filename, open = "wb")
     writeBin(size.results, con = con)
+    writeBin(10L, con = con)
     writeBin(results, con = con)
     writeBin(data, con = con)
     close(con)

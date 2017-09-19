@@ -3046,6 +3046,9 @@ SEXP getDataFromFile_R(SEXP filename_R,
         error("could not successfully read file %s", filename); 
     }
     
+    /* skip over size of adjustments */
+    fseek (fp , sizeof(int) , SEEK_CUR ); /* added by JB 2017-09-19 */
+
     /* skip sizeResultsBytes bytes from current pos*/
     fseek (fp , sizeResultsBytes , SEEK_CUR );
     

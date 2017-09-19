@@ -749,7 +749,6 @@ fetchAdjustments <- function(filename, nIteration, lengthIter) {
     unserialize(adjustments)
 }
 
-## NEED TO REWRITE getDataFromFile and getOneIterFromFile
 ## also makeResultsObj
 
 ## REMOVE SHIFT ARGUMENT FROM FETCH ETC.
@@ -924,9 +923,8 @@ writeBetaToFile <- function(object, skeleton, filename,
         on.exit(close(con))
         size.results <- readBin(con = con, what = "integer", n = 1L)
         readBin(con, what = "integer", n = 1L) # skip over size.adjustments
-        for (i.res in seq_len(size.results))
-            readBin(con = con, what = "raw", n = 1L)
-        pos <- 1L ## positition within object
+        readBin(con = con, what = "raw", n = size.results) ## skip over results
+        pos <- 1L ## position within object
         for (i.iter in seq_len(nIteration)) {
             ## skip over positions in line of file before start of data
             for (i.col in seq_len(first - 1L))
@@ -945,31 +943,6 @@ writeBetaToFile <- function(object, skeleton, filename,
     }
 }
 
-
-readStateDLMFromFile <- function(skeleton, filename, iterations,
-                                 nIteration, lengthIter, only0) {
-    first <- skeleton@first
-    last <- skeleton@last
-    indices0 <- object@indices0
-    if (is.null(iterations))
-        iterations <- seq_len(nIteration)
-    n.iter <- length(iterations)
-    .Data <- getDataFromFile(filename = filename,
-                             first = first,
-                             last = last,
-                             lengthIter = lengthIter,
-                             iterations = iterations)
-    .Data <- matrix(.Data, ncol = n.iter)
-    if (only0) {
-        .Data <- .Data[indices0, ]
-        metadata <- skeleton@metadata[-iAlong]
-    }
-    else
-        metadata <- skeleton@metadataIncl0
-    metadata <- dembase::addIterationsToMetadata(metadata, iterations = iterations)
-    .Data <- array(.Data, dim = dim(metadata), dimnames = dimnames(metadata))
-    methods::new("Values", .Data = .Data, metadata = metadata)
-})
 
 
 

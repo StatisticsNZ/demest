@@ -7046,6 +7046,34 @@ makeResultsCounts <- function(finalCombineds, mcmcArgs, controlArgs, seed) {
 }
 
 
+
+readStateDLMFromFile <- function(skeleton, filename, iterations,
+                                 nIteration, lengthIter, only0) {
+    first <- skeleton@first
+    last <- skeleton@last
+    indices0 <- skeleton@indices0
+    if (is.null(iterations))
+        iterations <- seq_len(nIteration)
+    n.iter <- length(iterations)
+    .Data <- getDataFromFile(filename = filename,
+                             first = first,
+                             last = last,
+                             lengthIter = lengthIter,
+                             iterations = iterations)
+    .Data <- matrix(.Data, ncol = n.iter)
+    if (only0) {
+        .Data <- .Data[indices0, ]
+        metadata <- skeleton@metadata[-iAlong]
+    }
+    else
+        metadata <- skeleton@metadataIncl0
+    metadata <- dembase::addIterationsToMetadata(metadata, iterations = iterations)
+    .Data <- array(.Data, dim = dim(metadata), dimnames = dimnames(metadata))
+    methods::new("Values", .Data = .Data, metadata = metadata)
+}
+
+
+
 ## PRINTING ##########################################################################
 
 expandTermsMod <- function(names) {
@@ -8349,6 +8377,8 @@ getDataFromFile <- function(filename, first, last, lengthIter,
         on.exit(close(con))
         ## find out size of results object - stored in first position
         size.results <- readBin(con = con, what = "integer", n = 1L)
+        ## skip over size of adjustments
+        readBin(con = con, what = "integer", n = 1L)
         ## skip over results object
         for (j in seq_len(size.results))
             readBin(con = con, what = "raw", n = 1L)
