@@ -6885,6 +6885,36 @@ makeOutputStateDLM <- function(iterator, metadata, nSeason, iAlong, pos, isTrend
 }
 
 
+
+
+
+readCoefInterceptFromFile <- function(skeleton, filename, iterations,
+                                      nIteration, lengthIter) {
+    first <- skeleton@first
+    if (is.null(iterations))
+        iterations <- seq_len(nIteration)
+    n.iter <- length(iterations)
+    .Data <- getDataFromFile(filename = filename,
+                             first = first,
+                             last = first,
+                             lengthIter = lengthIter,
+                             iterations = iterations)
+    metadata <- methods::new("MetaData",
+                             nms = "iteration",
+                             dimtypes = "iteration",
+                             DimScales = list(methods::new("Iterations",
+                                                           dimvalues = iterations)))
+    .Data <- array(.Data,
+                   dim = dim(metadata),
+                   dimnames = dimnames(metadata))
+    methods::new("Values",
+                 .Data = .Data,
+                 metadata = metadata)
+}
+
+
+
+
 ## HAS_TESTS
 makeResultsFile <- function(filename, results, tempfiles) {
     kLength <- 10000
@@ -7044,6 +7074,26 @@ makeResultsCounts <- function(finalCombineds, mcmcArgs, controlArgs, seed) {
             seed = seed,
             final = final)
 }
+
+
+
+rescaleAndWriteBetas <- function(high, low, adj, skeletonHigh, skeletonLow,
+                                 filename, nIteration, lengthIter) {
+    high <- high - adj
+    low <- low + adj
+    writeBetaToFile(object = high,
+                    skeleton = skeletonHigh,
+                    filename = filename,
+                    nIteration = nIteration,
+                    lengthIter = lengthIter)
+    writeBetaToFile(object = low,
+                    skeleton = skeletonLow,
+                    filename = filename,
+                    nIteration = nIteration,
+                    lengthIter = lengthIter)
+    NULL
+}
+
 
 ## READY_TO_TRANSLATE
 ## HAS_TESTS
