@@ -199,9 +199,112 @@ setMethod("rescalePairPriors",
           })
 
 
+
 ## need to add argument to fetchResults - along0 = FALSE
 ## add similar argument to writeTermToFile
 ## adjust SkeletonStateDLM accordingly
+
+
+setMethod("rescalePairPriors",
+          signature(priorHigh = "Exchangeable",
+                    priorLow = "DLM"),
+          function(priorHigh, priorLow,
+                   skeletonBetaHigh, skeletonBetaLow,
+                   skeletonsPriorHigh, skeletonsPriorLow,
+                   adjustments, prefixAdjustments,
+                   filename, nIteration, lengthIter) {
+              i.along.low <- priorLow@iAlong
+              phi.low <- priorLow@phi
+              phi.known.low <- priorLow@phiKnown@.Data
+              metadata.high <- skeletonBetaHigh@metadata
+              metadata.low <- skeletonBetaLow@metadata
+              skeleton.level.low <- skeletonsPriorLow$level
+              has.season <- priorLow@hasSeason@.Data
+              if (has.season)
+                  skeleton.season.low <- skeletonPriorLow$season
+              has.trend.low <- methods::is(priorLow, "WithTrendMixin")
+              level.non.stationary <- has.trend.low || (phi.known.low && isTRUE(all.equal(phi.low, 1)))
+              if (!level.non.stationary)
+                  return(NULL)
+              names.high <- names(metadata.high)
+              names.low <- names(metadata.low)
+              names.low <- names.low[-i.along.low]
+              if (!all(names.low %in% names.high))
+                  return(NULL)
+              beta.high <- fetchResults(object = skeletonBetaHigh,
+                                        filename = filename,
+                                        iterations = NULL,
+                                        nIteration = nIteration
+                                        lengthIter = lengthIter)
+              beta.low <- fetchResults(object = skeletonBetaLow,
+                                       filename = filename,
+                                       iterations = NULL,
+                                       nIteration = nIteration
+                                       lengthIter = lengthIter)
+              level.low <- readStateDLMFromFile(skeleton = skeleton.level.low,
+                                                filename = filename,
+                                                iterations = NULL,
+                                                nIteration = nIteration
+                                                lengthIter = lengthIter,
+                                                what = "all")
+              if (has.season) {
+                  season.low <- readSeasonDLMFromFile(object = skeleton.season.low,
+                                                      filename = filename,
+                                                      iterations = NULL,
+                                                      nIteration = nIteration,
+                                                      lengthIter = lengthIter,
+                                                      only0 = FALSE)
+                  season.0.low <- readSeasonDLMFromFile(skeleton = skeleton.season.low,
+                                                        filename = filename,
+                                                        iterations = NULL,
+                                                        nIteration = nIteration,
+                                                        lengthIter = lengthIter,
+                                                        only0 = TRUE)
+              }
+              names.high.only <- setdiff(names.high, names.low)
+              means.shared <- collapseDimension(beta.high,
+                                                dimension = names.high.only,
+                                                weights = 1)
+              if (has.season)
+                  means.shared.season <- collapseDimension(season.0.low,
+                                                           dimension = i.along.low,
+                                                           weights = 1)
+              rescaleAndWriteBetas(high = beta.high,
+                                   low = beta.low,
+                                   adj = means.shared,
+                                   skeletonHigh = skeletonBetaHigh,
+                                   skeletonLow = skeletonBetaLow,
+                                   filename = filename,
+                                   nIteration = nIteration,
+                                   lengthIter = lengthIter)
+              recordAdjustments(priorHigh = priorHigh,
+                                priorLow = priorLow,
+                                namesHigh = names.high,
+                                namesLow = names.low,
+                                adj = means.shared,
+                                adjustments = adjustments,
+                                prefixAdjustments = prefixAdjustments)
+              level.low <- level.low + means.shared
+              if (has.season) {
+                  season.low <- season.low - means.shared.season
+                  level.low <- level.low + means.shared.season
+              }
+              writeStateDLMToFile(object = level.low,
+                                  skeleton = skeleton.level.low,
+                                  filename = filename,
+                                  nIteration = nIteration,
+                                  lengthIter = lengthIter,
+                                  what = "all")
+              if (has.season)
+                  writeSeasonDLMToFile(object = level.low,
+                                       skeleton = skeleton.season.low,
+                                       filename = filename,
+                                       nIteration = nIteration,
+                                       lengthIter = lengthIter,
+                                       only0 = FALSE)
+              NULL
+          })
+
 
 setMethod("rescalePairPriors",
           signature(priorHigh = "Exchangeable",
