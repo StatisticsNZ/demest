@@ -303,7 +303,12 @@ SEXP
   updateSeriesDLM_sym,
   
   alphaKnown_sym,
-  AKnownVec_sym;  
+  AKnownVec_sym,  
+  
+  /* skeleton */
+  first_sym,
+  last_sym;
+  
   
 /* Priors-methods */
 
@@ -783,6 +788,9 @@ SEXP getOneIterFromFile_R(SEXP filename_R,
 SEXP getDataFromFile_R(SEXP filename_R, 
                         SEXP first_R, SEXP last_R, 
                         SEXP lengthIter_R, SEXP iterations_R);
+
+SEXP overwriteValuesOnFile_R(SEXP object_R, SEXP skeleton_R,
+              SEXP filename_R, SEXP nIteration_R, SEXP lengthIter_R);
 
 /* description helpers */
 int chooseICellComp(SEXP description_R);

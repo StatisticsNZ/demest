@@ -1583,6 +1583,7 @@ R_CallMethodDef callMethods[] = {
   
   CALLDEF(getOneIterFromFile_R, 5),
   CALLDEF(getDataFromFile_R, 5),
+  CALLDEF(overwriteValuesOnFile_R, 5),
   
   /* description helpers */
   CALLDEF(chooseICellComp_R, 1),
@@ -1971,6 +1972,9 @@ R_init_demest(DllInfo *info)
   ADD_SYM(updateSeriesDLM);
   ADD_SYM(alphaKnown);
   ADD_SYM(AKnownVec);
+  /* skeleton */
+  ADD_SYM(first);
+  ADD_SYM(last);
   
 #undef ADD_SYM
 

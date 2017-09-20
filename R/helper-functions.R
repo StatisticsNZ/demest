@@ -7094,7 +7094,7 @@ rescaleAndWriteBetas <- function(high, low, adj, skeletonHigh, skeletonLow,
     NULL
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 overwriteValuesOnFile <- function(object, skeleton, filename,
                                   nIteration, lengthIter,
