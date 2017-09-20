@@ -2930,16 +2930,16 @@ checkObservation <- function(observation, needsNonDefaultSeriesArg = FALSE) {
     if (!is.list(observation))
         stop(gettextf("'%s' has class \"%s\"",
                       "observation", class(observation)))
-    ## 'observation' has at least one element
-    if (identical(length(observation), 0L))
-        stop(gettextf("'%s' has length %d",
-                      "observation", 0L))
     for (i in seq_along(observation)) {
         obs <- observation[[i]]
         ## all elements have class "SpecModel"
         if (!methods::is(obs, "SpecModel"))
             stop(gettextf("element %d of '%s' has class \"%s\"",
                           i, "observation", class(obs)))
+        ## element uses exposure
+        if (!obs@useExpose@.Data)
+            stop(gettextf("model %d of '%s' does not use exposure",
+                          i, "observation"))
         ## element has name
         if (is.na(obs@nameY@.Data) || !nzchar(obs@nameY@.Data))
             stop(gettextf("element %d of '%s' has no name for response variable",
@@ -4030,6 +4030,49 @@ rnormTruncated <- function(n, mean, sd, lower, upper, tolerance = 1e-5, maxAttem
     }
 }
 
+## READY_TO_TRANSLATE
+## HAS_TESTS
+## Returns draw from truncated integer-only normal distribution (achieved by rounding).
+rnormIntTrunc1 <- function(mean = 0, sd = 1, lower = NA_integer_, upper = NA_integer_, useC = FALSE) {
+    ## mean
+    stopifnot(is.double(mean))
+    stopifnot(identical(length(mean), 1L))
+    stopifnot(!is.na(mean))
+    ## sd
+    stopifnot(is.double(sd))
+    stopifnot(identical(length(sd), 1L))
+    stopifnot(!is.na(sd))
+    stopifnot(sd > 0)
+    ## lower
+    stopifnot(is.integer(lower))
+    stopifnot(identical(length(lower), 1L))
+    ## upper
+    stopifnot(is.integer(upper))
+    stopifnot(identical(length(upper), 1L))
+    ## lower and upper
+    stopifnot(is.na(lower) || is.na(upper) || (lower <= upper))
+    if (useC) {
+        .Call(rnormIntTrunc1_R, mean, sd, lower, upper)
+    }
+    else {
+        if (!is.na(lower) && !is.na(upper) && (lower == upper))
+            return(lower)
+        lower <- if (is.na(lower)) -Inf else as.double(lower)
+        upper <- if (is.na(upper)) Inf else as.double(upper)
+        ans <- rtnorm1(mean = mean,
+                       sd = sd,
+                       lower = lower,
+                       upper = upper)
+        ans <- as.integer(ans + 0.5)
+        if (ans < lower)
+            ans <- lower
+        if (ans > upper)
+            ans <- upper
+        ans
+    }
+}
+
+
 ## TRANSLATED
 ## HAS_TESTS
 ## modified from code in package 'TruncatedNormal'.
@@ -4119,7 +4162,6 @@ rpoisTrunc1 <- function(lambda, lower, upper, maxAttempt, useC = FALSE) {
     ## lower
     stopifnot(is.integer(lower))
     stopifnot(identical(length(lower), 1L))
-    stopifnot(!is.na(lower))
     ## upper
     stopifnot(is.integer(upper))
     stopifnot(identical(length(upper), 1L))
@@ -4129,11 +4171,13 @@ rpoisTrunc1 <- function(lambda, lower, upper, maxAttempt, useC = FALSE) {
     stopifnot(!is.na(maxAttempt))
     stopifnot(maxAttempt > 0L)
     ## lower, upper
-    stopifnot(is.na(upper) || (lower <= upper))
+    stopifnot(is.na(lower) || is.na(upper) || (lower <= upper))
     if (useC) {
         .Call(rpoisTrunc1_R, lambda, lower, upper, maxAttempt)
     }
     else {
+        if (is.na(lower))
+            lower <- 0L
         finite.upper <- !is.na(upper)
         if (finite.upper && (lower == upper))
             return(lower)
@@ -6179,7 +6223,7 @@ sweepMargins <- function(x, margins) {
 
 ## TRANSLATED
 ## HAS_TESTS
-diffLogLik <- function(yProp, y, indicesY, observation,
+diffLogLik <- function(yProp, y, indicesY, observationModels,
                        datasets, transforms, useC = FALSE) {
     ## yProp
     stopifnot(is.integer(yProp))
@@ -6194,10 +6238,10 @@ diffLogLik <- function(yProp, y, indicesY, observation,
     stopifnot(is.integer(indicesY))
     stopifnot(!any(is.na(indicesY)))
     stopifnot(all(indicesY >= 1L))
-    ## observation
-    stopifnot(is.list(observation))
-    stopifnot(all(sapply(observation, methods::is, "Model")))
-    stopifnot(all(sapply(observation, methods::is, "UseExposure")))
+    ## observationModels
+    stopifnot(is.list(observationModels))
+    stopifnot(all(sapply(observationModels, methods::is, "Model")))
+    stopifnot(all(sapply(observationModels, methods::is, "UseExposure")))
     ## datasets
     stopifnot(is.list(datasets))
     stopifnot(all(sapply(datasets, methods::is, "Counts")))
@@ -6213,15 +6257,15 @@ diffLogLik <- function(yProp, y, indicesY, observation,
     ## y and transforms
     for (i in seq_along(transforms))
         stopifnot(identical(transforms[[i]]@dimBefore, dim(y)))
-    ## observation and datasets
-    stopifnot(identical(length(observation), length(datasets)))
-    ## observation and transforms
-    stopifnot(identical(length(observation), length(transforms)))
+    ## observationModels and datasets
+    stopifnot(identical(length(observationModels), length(datasets)))
+    ## observationModels and transforms
+    stopifnot(identical(length(observationModels), length(transforms)))
     ## datasets and transforms
     for (i in seq_along(datasets))
         stopifnot(identical(transforms[[i]]@dimAfter, dim(datasets[[i]])))
     if (useC) {
-        .Call(diffLogLik_R, yProp, y, indicesY, observation,
+        .Call(diffLogLik_R, yProp, y, indicesY, observationModels,
               datasets, transforms)
     }
     else {
@@ -6242,7 +6286,7 @@ diffLogLik <- function(yProp, y, indicesY, observation,
                         ## THE FOLLOWING LINE AND THE TEST FOR CELL OBSERVED ARE NEW
                         cell.observed <- !is.na(dataset[i.cell.dataset])
                         if (cell.observed) {
-                            model <- observation[[i.dataset]]
+                            model <- observationModels[[i.dataset]]
                             i.contrib.to.cell <- dembase::getIShared(i = i.cell.y, transform = transform)
                             collapsed.y.curr <- sum(y[i.contrib.to.cell])
                             diff.prop.curr <- yProp[i.element.indices.y] - y[i.cell.y]
@@ -6986,7 +7030,7 @@ makeResultsCounts <- function(finalCombineds, mcmcArgs, controlArgs, seed) {
     combined <- finalCombineds[[1L]]
     model <- combined@model
     y <- combined@y
-    observation <- combined@observation
+    observationModels <- combined@observationModels
     datasets <- combined@datasets
     names.datasets <- combined@namesDatasets
     transforms <- combined@transforms
@@ -7005,25 +7049,25 @@ makeResultsCounts <- function(finalCombineds, mcmcArgs, controlArgs, seed) {
     has.exposure <- methods::is(combined, "HasExposure")
     if (has.exposure)
         exposure <- combined@exposure
-    output.observation <- vector(mode = "list", length = length(observation))
+    output.observationModels <- vector(mode = "list", length = length(observationModels))
     if (n.sim > 0L) {
-        for (i in seq_along(observation)) {
-            output.observation[[i]] <- makeOutputModel(model = observation[[i]],
+        for (i in seq_along(observationModels)) {
+            output.observationModels[[i]] <- makeOutputModel(model = observationModels[[i]],
                                                        pos = pos,
                                                        mcmc = mcmc)
-            pos <- pos + changeInPos(output.observation[[i]])
+            pos <- pos + changeInPos(output.observationModels[[i]])
         }
         for (i in seq_along(datasets)) {
             if (any(is.na(datasets[[i]])))
                 datasets[[i]] <-
                     SkeletonMissingDataset(object = datasets[[i]],
-                                           model = observation[[i]],
-                                           outputModel = output.observation[[i]],
+                                           model = observationModels[[i]],
+                                           outputModel = output.observationModels[[i]],
                                            transformComponent = transforms[[i]],
                                            skeletonComponent = output.y)
         }
     }
-    names(output.observation) <- names.datasets
+    names(output.observationModels) <- names.datasets
     names(datasets) <- names.datasets
     final <- finalCombineds
     names(final) <- paste("chain", seq_along(final), sep = "")
@@ -7032,7 +7076,7 @@ makeResultsCounts <- function(finalCombineds, mcmcArgs, controlArgs, seed) {
             model = output.model,
             y = output.y,
             exposure = exposure,
-            observation = output.observation,
+            observationModels = output.observationModels,
             datasets = datasets,
             mcmc = mcmc,
             control = controlArgs,
@@ -7043,12 +7087,113 @@ makeResultsCounts <- function(finalCombineds, mcmcArgs, controlArgs, seed) {
         methods::new("ResultsCountsEst",
             model = output.model,
             y = output.y,
-            observation = output.observation,
+            observationModels = output.observationModels,
             datasets = datasets,
             mcmc = mcmc,
             control = controlArgs,
             seed = seed,
             final = final)
+}
+
+## HAS_TESTS
+readCoefInterceptFromFile <- function(skeleton, filename,
+                                      nIteration, lengthIter) {
+    first <- skeleton@first
+    iterations <- seq_len(nIteration)
+    .Data <- getDataFromFile(filename = filename,
+                             first = first,
+                             last = first,
+                             lengthIter = lengthIter,
+                             iterations = iterations)
+    metadata <- methods::new("MetaData",
+                             nms = "iteration",
+                             dimtypes = "iteration",
+                             DimScales = list(methods::new("Iterations",
+                                                           dimvalues = iterations)))
+    .Data <- array(.Data,
+                   dim = dim(metadata),
+                   dimnames = dimnames(metadata))
+    methods::new("Values",
+                 .Data = .Data,
+                 metadata = metadata)
+}
+
+## HAS_TESTS
+rescaleAndWriteBetas <- function(high, low, adj, skeletonHigh, skeletonLow,
+                                 filename, nIteration, lengthIter) {
+    high <- high - adj
+    low <- low + adj
+    overwriteValuesOnFile(object = high,
+                          skeleton = skeletonHigh,
+                          filename = filename,
+                          nIteration = nIteration,
+                          lengthIter = lengthIter)
+    overwriteValuesOnFile(object = low,
+                          skeleton = skeletonLow,
+                          filename = filename,
+                          nIteration = nIteration,
+                          lengthIter = lengthIter)
+    NULL
+}
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+overwriteValuesOnFile <- function(object, skeleton, filename,
+                                  nIteration, lengthIter,
+                                  useC = FALSE) {
+    ## object
+    stopifnot(methods::is(object, "Values"))
+    ## skeleton
+    stopifnot(methods::is(skeleton, "SkeletonManyValues"))
+    ## nIteration
+    stopifnot(is.integer(nIteration))
+    stopifnot(identical(length(nIteration), 1L))
+    stopifnot(!is.na(nIteration))
+    stopifnot(nIteration >= 1L)
+    ## lengthIter
+    stopifnot(is.integer(lengthIter))
+    stopifnot(identical(length(lengthIter), 1L))
+    stopifnot(!is.na(lengthIter))
+    stopifnot(lengthIter >= 1L)
+    if (useC) {
+        .Call(overwriteValuesOnFile_R, object, skeleton,
+              filename, nIteration, lengthIter)
+    }
+    else {
+        ## Based on the warnings in the help for 'seek' about using
+        ## 'seek' with Windows, we have avoided it, and
+        ## used writeBin and readBin instead.
+        ## The pointer used for reading and the pointer used for
+        ## writing are independent of each other, so we have to
+        ## move each separately via read or write operations
+        first <- skeleton@first
+        last <- skeleton@last
+        con <- file(filename, open = "r+b")
+        on.exit(close(con))
+        size.results <- readBin(con = con, what = "integer", n = 1L)
+        writeBin(size.results, con = con)
+        size.adj <- readBin(con = con, what = "integer", n = 1L)
+        writeBin(size.adj, con = con)
+        results <- readBin(con = con, what = "raw", n = size.results)
+        writeBin(results, con = con)
+        pos <- 1L ## position within object
+        for (i.iter in seq_len(nIteration)) {
+            ## skip over values in file before start of data
+            before.first <- readBin(con = con, what = "double", n = first - 1L)
+            writeBin(before.first, con = con)
+            ## write values
+            for (i.col in seq.int(from = first, to = last)) {
+                readBin(con = con, what = "double", n = 1L) # discard value
+                writeBin(object[pos], con = con)
+                pos <- pos + 1L
+            }
+            ## skip remaining positions in line of file, if any
+            if (last < lengthIter) {
+                after.last <- readBin(con = con, what = "double", n = lengthIter - last)
+                writeBin(after.last, con = con)
+            }
+        }
+    }
 }
 
 
@@ -7502,6 +7647,8 @@ printLevelTrendEqns <- function(object, isMain, hasTrend) {
             sep = "")
     }
 }
+
+
 printMixEqns <- function(object, name, hasCovariates) {
     AVectors <- object@AVectorsMix@.Data
     nuVectors <- object@nuVectorsMix@.Data
@@ -7514,7 +7661,7 @@ printMixEqns <- function(object, name, hasCovariates) {
     ALevelComponentWeight <- object@ALevelComponentWeightMix@.Data
     nuLevelComponentWeight <- object@nuLevelComponentWeightMix@.Data
     omegaLevelComponentWeightMax <- object@omegaLevelComponentWeightMaxMix@.Data
-    phi <- object@phi
+    phi <- object@phiMix
     phi.known <- object@phiKnown
     min.phi <- object@minPhi
     max.phi <- object@maxPhi
@@ -7582,9 +7729,11 @@ printMixEqns <- function(object, name, hasCovariates) {
 }
 
 printNormalFixedLikEqns <- function(object) {
-    cat("            y[i] ~ Normal(exposure[i] * mean[i], sqrt(exposure[i]) * sd[i])\n")
-    cat("                 -------- or --------\n")
-    cat("            y[i] ~ Normal(mean[i], sd[i])\n")
+    useExpose <- object@useExpose@.Data
+    if (useExpose)
+        cat("            y[i] ~ Normal(exposure[i] * mean[i], sqrt(exposure[i]) * sd[i])\n")
+    else
+        cat("            y[i] ~ Normal(mean[i], sd[i])\n")
 }
 
 printNormalFixedModEqns <- function(object) {
@@ -7611,18 +7760,19 @@ printNormalFixedSpecEqns <- function(object) {
     series <- object@series@.Data
     call <- object@call
     nameY <- object@nameY
+    useExpose <- object@useExpose@.Data
     has.series <- !is.na(series)
     name.y <- deparse(call$formula[[2L]])
     name.y <- sprintf("%13s", nameY)
-    if (has.series)
-        exposure <- series        
-    else
-        exposure <- "exposure"
-    cat(name.y, "[i] ~ Normal(", exposure, "[i] * mean[i], sqrt(", exposure, "[i]) * sd[i])\n", sep = "")
-    if (!has.series) {
-        cat("                 -------- or --------\n")
-        cat("            y[i] ~ Normal(mean[i], sd[i])\n")
+    if (useExpose) {
+        if (has.series)
+            exposure <- series        
+        else
+            exposure <- "exposure"
+        cat(name.y, "[i] ~ Normal(", exposure, "[i] * mean[i], sqrt(", exposure, "[i]) * sd[i])\n", sep = "")
     }
+    else
+        cat("            y[i] ~ Normal(mean[i], sd[i])\n")
 }
 
 printNormalVarsigmaKnownLikEqns <- function(object) {
@@ -7756,12 +7906,16 @@ printPoissonBinomialSpecEqns <- function(object) {
 
 printPoissonLikEqns <- function(object) {
     formulaMu <- object@formulaMu
+    useExpose <- object@useExpose@.Data
     terms <- expandTermsSpec(formulaMu)
-    cat("            y[i] ~ Poisson(rate[i] * exposure[i])\n")
-    cat("    log(rate[i]) ~ N(", terms, ", sd^2)\n", sep = "")
-    cat("                 -------- or --------\n")
-    cat("            y[i] ~ Poisson(count[i])\n")
-    cat("   log(count[i]) ~ N(", terms, ", sd^2)\n", sep = "")
+    if (useExpose) {
+        cat("            y[i] ~ Poisson(rate[i] * exposure[i])\n")
+        cat("    log(rate[i]) ~ N(", terms, ", sd^2)\n", sep = "")
+    }
+    else {
+        cat("            y[i] ~ Poisson(count[i])\n")
+        cat("   log(count[i]) ~ N(", terms, ", sd^2)\n", sep = "")
+    }
 }
 
 printPoissonModEqns <- function(object) {
@@ -7806,20 +7960,22 @@ printPoissonSpecEqns <- function(object) {
     series <- object@series@.Data
     lower <- object@lower
     upper <- object@upper
+    useExpose <- object@useExpose@.Data
     has.series <- !is.na(series)
     name.y <- sprintf("%13s", nameY)
-    if (has.series)
-        exposure <- series
-    else
-        exposure <- "exposure"
     terms <- expandTermsSpec(formulaMu)
-    cat(name.y, "[i] ~ Poisson(rate[i] * ", exposure, "[i])", sep = "")
-    if (lower > 0 || is.finite(upper))
-        cat(",  ", format(lower, digits = 4), "< rate[i] <", format(upper, digits = 4))
-    cat("\n")
-    cat("    log(rate[i]) ~ N(", terms, ", sd^2)\n", sep = "")
-    if (!has.series) {
-        cat("                 -------- or --------\n")
+    if (useExpose) {
+        if (has.series)
+            exposure <- series
+        else
+            exposure <- "exposure"
+        cat(name.y, "[i] ~ Poisson(rate[i] * ", exposure, "[i])", sep = "")
+        if (lower > 0 || is.finite(upper))
+            cat(",  ", format(lower, digits = 4), "< rate[i] <", format(upper, digits = 4))
+        cat("\n")
+        cat("    log(rate[i]) ~ N(", terms, ", sd^2)\n", sep = "")
+    }
+    else {
         cat("            y[i] ~ Poisson(count[i])")
         if (lower > 0 || is.finite(upper))
             cat(",  ", format(lower, digits = 4), "< count[i] <", format(upper, digits = 4))
@@ -8407,8 +8563,11 @@ getDataFromFile <- function(filename, first, last, lengthIter,
         on.exit(close(con))
         ## find out size of results object - stored in first position
         size.results <- readBin(con = con, what = "integer", n = 1L)
+<<<<<<< HEAD
         ## skip over size of adjustments
         readBin(con = con, what = "integer", n = 1L)
+=======
+>>>>>>> master
         ## skip over results object
         for (j in seq_len(size.results))
             readBin(con = con, what = "raw", n = 1L)
@@ -9110,6 +9269,21 @@ chooseICellPopn <- function(description, useC = FALSE) {
     }
 }
 
+## READY_TO_TRANSLATE
+## HAS_TESTS
+isLowerTriangle <- function(i, description, useC = FALSE) {
+    stopifnot(is(description, "DescriptionComp"))
+    stopifnot(description@hasAge)
+    if (useC) {
+        .Call(isLowerTriangle_R, i, description)
+    }
+    else {
+        step.triangle <- description@stepTriangle
+        i.triangle <- ((i - 1L) %/% step.triangle) %% 2L ## C-style
+        i.triangle == 0L
+    }
+}
+
 ## TRANSLATED
 ## HAS_TESTS
 ## Assumes that population and accession have identical dimensions,
@@ -9130,26 +9304,30 @@ getIAccNextFromPopn <- function(i, description, useC = FALSE) {
         .Call(getIAccNextFromPopn_R, i, description)
     }
     else {            
-        step.time <- description@stepTime
         n.time.popn <- description@nTime
+        n.age.popn <- description@nAge
+        step.time.popn <- description@stepTime
         step.age.popn <- description@stepAge
-        n.age <- description@nAge
         n.time.acc <- n.time.popn - 1L
-        i.time <- (((i - 1L) %/% step.time) %% n.time.popn) + 1L ## R-style
-        if (i.time < n.time.popn) {
-            i.acc <- (((i - i.time) %/% (step.time * n.time.popn)) * (step.time * n.time.acc)
-                      + ((i - i.time) %% (step.time * n.time.popn))
-                      + i.time) ## R-style
-            i.age <- (((i - 1L) %/% step.age.popn) %% n.age) + 1L ## R-style
-            if (i.age < n.age) {
-                if (step.age.popn < step.time)
+        n.age.acc <- n.age.popn - 1L
+        i.time.popn <- (((i - 1L) %/% step.time.popn) %% n.time.popn) + 1L ## R-style
+        if (i.time.popn < n.time.popn) {
+            i.age.popn <- (((i - 1L) %/% step.age.popn) %% n.age.popn) + 1L ## R-style
+            if (i.age.popn < n.age.popn) {
+                ## adjust for loss of one time period
+                i.acc <- (((i - 1L) %/% (step.time.popn * n.time.popn)) * (step.time.popn * n.time.acc)
+                    + ((i - 1L) %% (step.time.popn * n.time.popn))) + 1L
+                ## adjust for loss of one age group
+                if (step.time.popn > step.age.popn)
                     step.age.acc <- step.age.popn
                 else
-                    step.age.acc <- (step.age.popn * n.time.acc) %/% n.time.popn
-                i.acc + step.age.acc
+                    step.age.acc <- (step.age.popn %/% n.time.popn) * n.time.acc
+                i.acc <- (((i.acc - 1L) %/% (step.age.acc * n.age.popn)) * (step.age.acc * n.age.acc)
+                    + ((i.acc - 1L) %% (step.age.acc * n.age.popn))) + 1L
+                i.acc
             }
             else
-                i.acc
+                0L
         }
         else
             0L
@@ -9180,12 +9358,17 @@ getIExpFirstFromPopn <- function(i, description, useC = FALSE) {
         n.time.popn <- description@nTime
         step.time <- description@stepTime
         length.popn <- description@length
-        n.time.tri <- n.time.popn - 1L
-        length.lower.tri <- (length.popn * n.time.tri) %/% n.time.popn
-        i.time <- (i - 1L) %/% (n.time.popn * step.time)
-        remainder <- (i - 1L) %% (n.time.popn * step.time) + 1L
-        index.upper.tri <- i.time * n.time.tri * step.time + remainder
-        length.lower.tri + index.upper.tri
+        has.age <- description@hasAge ## new
+        i.nontime <- (i - 1L) %/% (n.time.popn * step.time) ## moved
+        remainder <- (i - 1L) %% (n.time.popn * step.time) + 1L ## moved
+        n.time.exp <- n.time.popn - 1L
+        index.exp <- i.nontime * n.time.exp * step.time + remainder
+        if (has.age) { ## new
+            length.lower.tri <- (length.popn %/% n.time.popn) * n.time.exp
+            length.lower.tri + index.exp
+        }
+        else ## new
+            index.exp
     }
 }
 
@@ -9227,7 +9410,7 @@ getIPopnNextFromPopn <- function(i, description, useC = FALSE) {
 
 ## TRANSLATED
 ## HAS_TESTS
-getMinValCohort <- function(i, series, iterator, useC = FALSE) {  
+getMinValCohortAccession <- function(i, series, iterator, useC = FALSE) {  
     ## 'i'
     stopifnot(is.integer(i))
     stopifnot(identical(length(i), 1L))
@@ -9237,17 +9420,17 @@ getMinValCohort <- function(i, series, iterator, useC = FALSE) {
     stopifnot(is.integer(series))
     stopifnot(!any(is.na(series)))
     ## 'iterator'
-    stopifnot(methods::is(iterator, "CohortIteratorAccessionPopulation"))
+    stopifnot(methods::is(iterator, "CohortIteratorAccession"))
     ## 'i' and 'series'
     stopifnot(i <= length(series))
     if (useC) {
-        .Call(getMinValCohort_R, i, series, iterator)
+        .Call(getMinValCohortAccession_R, i, series, iterator)
     }
     else {              
         ans <- series[i]
-        iterator <- resetCAP(iterator, i = i)  
+        iterator <- resetCA(iterator, i = i)  
         while (!iterator@finished) {
-            iterator <- advanceCAP(iterator)
+            iterator <- advanceCA(iterator)
             i <- iterator@i
             ans <- min(series[i], ans)
         }
@@ -9255,8 +9438,40 @@ getMinValCohort <- function(i, series, iterator, useC = FALSE) {
     }
 }
 
+
+## TRANSLATED
 ## HAS_TESTS
-makeIteratorCAP <- function(dim, iTime, iAge) {
+getMinValCohortPopulation <- function(i, series, iterator, useC = FALSE) {  
+    ## 'i'
+    stopifnot(is.integer(i))
+    stopifnot(identical(length(i), 1L))
+    stopifnot(!is.na(i))
+    stopifnot(i >= 1L)
+    ## 'series'
+    stopifnot(is.integer(series))
+    stopifnot(!any(is.na(series)))
+    ## 'iterator'
+    stopifnot(methods::is(iterator, "CohortIteratorPopulation"))
+    ## 'i' and 'series'
+    stopifnot(i <= length(series))
+    if (useC) {
+        .Call(getMinValCohortPopulation_R, i, series, iterator)
+    }
+    else {              
+        ans <- series[i]
+        iterator <- resetCP(iterator, i = i)  
+        while (!iterator@finished) {
+            iterator <- advanceCP(iterator)
+            i <- iterator@i
+            ans <- min(series[i], ans)
+        }
+        ans
+    }
+}
+
+
+## HAS_TESTS
+makeIteratorCAP <- function(dim, iTime, iAge, accession) {
     n.time <- dim[iTime]
     step.time <- 1L
     for (d in seq_len(iTime - 1L))
@@ -9275,16 +9490,17 @@ makeIteratorCAP <- function(dim, iTime, iAge) {
         i.age <- as.integer(NA)
     }
     finished <- n.time == 1L
-    methods::new("CohortIteratorAccessionPopulation",
-        i = 1L,
-        nTime = n.time,
-        stepTime = step.time,
-        iTime = 1L,
-        hasAge = has.age,
-        nAge = n.age,
-        stepAge = step.age,
-        iAge = i.age,
-        finished = finished)
+    class <- if (accession) "CohortIteratorAccession" else "CohortIteratorPopulation"
+    methods::new(class,
+                 i = 1L,
+                 nTime = n.time,
+                 stepTime = step.time,
+                 iTime = 1L,
+                 hasAge = has.age,
+                 nAge = n.age,
+                 stepAge = step.age,
+                 iAge = i.age,
+                 finished = finished)
 }
 
 ## HAS_TESTS

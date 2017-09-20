@@ -864,15 +864,22 @@ setMethod("initialModel",
               nu.sigma <- object@nuSigma
               A.sigma <- object@ASigma@.Data
               sigma.max <- object@sigmaMax@.Data
+              use.expose <- object@useExpose@.Data
               aggregate <- object@aggregate
               checkTermsFromFormulaFound(y = y, formula = formula.mu)
               checkLengthDimInFormula(y = y, formula = formula.mu)
               metadataY <- y@metadata
               dim <- dim(y)
               has.exposure <- !is.null(exposure)
-              y.missing <- is.na(y)
-              mean.y.obs <- mean(y[!y.missing])
-              shape <- ifelse(y.missing, mean.y.obs, 0.5 * mean.y.obs + 0.5 * y)
+              if (has.exposure && !use.expose)
+                  stop(gettextf("'%s' argument supplied, but model '%s' does not use exposure",
+                                "exposure", deparse(call[[2L]])))
+              if (!has.exposure && use.expose)
+                  stop(gettextf("model '%s' uses exposure, but no '%s' argument supplied",
+                                deparse(call[[2L]]), "exposure"))
+              y.missing <- is.na(y@.Data)
+              mean.y.obs <- mean(y@.Data[!y.missing])
+              shape <- ifelse(y.missing, mean.y.obs, 0.5 * mean.y.obs + 0.5 * y@.Data)
               if (has.exposure) {
                   mean.expose.obs <- mean(exposure[!y.missing])
                   rate <- ifelse(y.missing, mean.expose.obs, 0.5 * mean.expose.obs + 0.5 * exposure)
@@ -1013,6 +1020,7 @@ setMethod("initialModel",
               sdAll <- object@sd
               metadataAll <- object@metadata
               metadataY <- y@metadata
+              use.expose <- object@useExpose@.Data
               .Data.mean <- array(meanAll@.Data,
                                   dim = dim(metadataAll),
                                   dimnames = dimnames(metadataAll))
@@ -1033,15 +1041,6 @@ setMethod("initialModel",
               if (methods::is(mean, "error"))
                   stop(gettextf("'%s' from %s model not compatible with data : %s",
                                 "mean", "NormalFixed", mean$message))
-              ## ## check that don't need to expand 'mean' to make compatible with 'y'
-              ## value <- tryCatch(makeCompatible(x = as(mean.before.subset, "Counts"),
-              ##                                  y = y,
-              ##                                  subset = TRUE,
-              ##                                  check = TRUE),
-              ##                   error = function(e) e)
-              ## if (methods::is(value, "error"))
-              ##     stop(gettextf("'%s' from %s model not compatible with data : %s",
-              ##                   "mean", "NormalFixed", value$message))
               sd <- makeCompatible(x = sd.before.subset,
                                    y = y,
                                    subset = TRUE,
@@ -1049,6 +1048,12 @@ setMethod("initialModel",
               mean <- new("ParameterVector", mean@.Data)
               sd <- new("ScaleVec", sd@.Data)
               has.exposure <- !is.null(exposure)
+              if (has.exposure && !use.expose)
+                  stop(gettextf("'%s' argument supplied, but model '%s' does not use exposure",
+                                "exposure", deparse(call[[2L]])))
+              if (!has.exposure && use.expose)
+                  stop(gettextf("model '%s' uses exposure, but no '%s' argument supplied",
+                                deparse(call[[2L]]), "exposure"))
               if (has.exposure)
                   class <- "NormalFixedUseExp"
               else

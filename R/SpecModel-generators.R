@@ -64,6 +64,8 @@
 #' @param priorSD An object of class \code{HalfT} specifying
 #' a non-default prior for the standard deviation in the
 #' likelihood for the normal model.
+#' @param useExpose Whether the model includes an
+#' exposure term. Defaults to \code{TRUE}.
 #'
 #' @return An object of class \code{\linkS4class{SpecLikelihood}}.
 #'
@@ -74,7 +76,10 @@
 #' @examples
 #' ## age effect, sex effect, age-sex interaction,
 #' ## and time effect
-## Poisson(mean ~ age * sex + time)
+#' Poisson(mean ~ age * sex + time)
+#'
+#' ## same model, but without exposure term
+#' Poisson(mean ~ age * sex + time, useExpose = FALSE)
 #'
 #' ## use formula notation to specify second-order interactions
 #' Binomial(mean ~ (age + sex + region)^2)
@@ -94,11 +99,14 @@ NULL
 ## HAS_TESTS
 #' @rdname likelihood
 #' @export
-Poisson <- function(formula) {
+Poisson <- function(formula, useExpose = TRUE) {
     checkFormulaMu(formula)
     checkForMarginalTerms(formula)
+    useExpose <- checkAndTidyLogicalFlag(x = useExpose,
+                                         name = "useExpose")
     methods::new("SpecLikelihoodPoisson",
-                 formulaMu = formula)
+                 formulaMu = formula,
+                 useExpose = useExpose)
 }
 
 ## HAS_TESTS
@@ -164,6 +172,7 @@ Normal <- function(formula, sd = NULL, priorSD = HalfT()) {
 #' For instance cell \eqn{i} might be 30-34 year old females
 #' in 2020.
 #'
+#' @inheritParams likelihood
 #' @param mean An object of class \code{\link[dembase:Values-class]{Values}}
 #' holding means.
 #' @param sd The standard deviation of the means. \code{sd} can be an object
@@ -189,8 +198,9 @@ Normal <- function(formula, sd = NULL, priorSD = HalfT()) {
 #'                                    sex = c("Female", "Male"))))
 #' NormalFixed(mean = mean, sd = sd)
 #' NormalFixed(mean = mean, sd = 0.1)
+#' NormalFixed(mean = mean, sd = 0.1, useExpose = FALSE)
 #' @export
-NormalFixed <- function(mean, sd) {
+NormalFixed <- function(mean, sd, useExpose = TRUE) {
     ## 'mean' is "Values"
     if (!methods::is(mean, "Values"))
         stop(gettextf("'%s' has class \"%s\"",
@@ -252,10 +262,13 @@ NormalFixed <- function(mean, sd) {
                       "sd", class(sd)))
     }
     sd <- new("ScaleVec", sd)
+    useExpose <- checkAndTidyLogicalFlag(x = useExpose,
+                                         name = "useExpose")
     new("SpecLikelihoodNormalFixed",
         mean = mean.param,
         sd = sd,
-        metadata = metadata)
+        metadata = metadata,
+        useExpose = useExpose)
 }
 
 
@@ -640,6 +653,7 @@ setMethod("SpecModel",
           function(specInner, call, nameY, dots, lower, upper,
                    priorSD, jump, series, aggregate) {
               formula.mu <- specInner@formulaMu
+              useExpose <- specInner@useExpose
               specs.priors <- makeSpecsPriors(dots)
               names.specs.priors <- makeNamesSpecsPriors(dots)
               if (is.null(lower))
@@ -686,6 +700,7 @@ setMethod("SpecModel",
                            series = series,
                            sigmaMax = sigma.max,
                            upper = upper,
+                           useExpose = useExpose,
                            aggregate = aggregate)
           })
 
@@ -720,6 +735,7 @@ setMethod("SpecModel",
               mean <- specInner@mean
               sd <- specInner@sd
               metadata <- specInner@metadata
+              useExpose <- specInner@useExpose
               if (length(dots) > 0L)
                   stop(gettextf("priors specified, but distribution is %s",
                                 "NormalFixed"))
@@ -736,7 +752,8 @@ setMethod("SpecModel",
                            series = series,
                            mean = mean,
                            sd = sd,
-                           metadata = metadata)
+                           metadata = metadata,
+                           useExpose = useExpose)
           })
 
 

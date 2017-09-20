@@ -246,7 +246,34 @@ resetD(SEXP iterator_R)
 
 /* advance cohort iterator */
 void
-advanceCAP(SEXP iterator_R)
+advanceCA(SEXP iterator_R)
+{
+    int i = *INTEGER(GET_SLOT(iterator_R, i_sym));
+    int stepTime = *INTEGER(GET_SLOT(iterator_R, stepTime_sym));
+    int stepAge = *INTEGER(GET_SLOT(iterator_R, stepAge_sym));
+    int nTime = *INTEGER(GET_SLOT(iterator_R, nTime_sym));
+    int nAge = *INTEGER(GET_SLOT(iterator_R, nAge_sym));
+    int iTime = *INTEGER(GET_SLOT(iterator_R, iTime_sym));
+    int iAge = *INTEGER(GET_SLOT(iterator_R, iAge_sym));
+    
+    ++iTime;
+    i += stepTime;    
+        
+    ++iAge;
+    i += stepAge;
+
+    int finished = (iTime >= nTime) || (iAge >= nAge);
+    
+    SET_SLOT(iterator_R, iAge_sym, ScalarInteger(iAge));
+    SET_SLOT(iterator_R, i_sym, ScalarInteger(i));
+    SET_SLOT(iterator_R, iTime_sym, ScalarInteger(iTime));
+    SET_SLOT(iterator_R, finished_sym, ScalarLogical(finished));
+}
+
+
+/* advance cohort iterator */
+void
+advanceCP(SEXP iterator_R)
 {
     int i = *INTEGER(GET_SLOT(iterator_R, i_sym));
     int stepTime = *INTEGER(GET_SLOT(iterator_R, stepTime_sym));
@@ -276,6 +303,8 @@ advanceCAP(SEXP iterator_R)
     int finished = (iTime >= nTime);
     SET_SLOT(iterator_R, finished_sym, ScalarLogical(finished));
 }
+
+
 
 void
 advanceCC(SEXP iterator_R)
@@ -330,10 +359,29 @@ advanceCC(SEXP iterator_R)
     SET_SLOT(iterator_R, finished_sym, ScalarLogical(finished));
 }
 
+/* reset cohort iterator */
+void
+resetCA(SEXP iterator_R, int i)
+{
+    int stepTime = *INTEGER(GET_SLOT(iterator_R, stepTime_sym));
+    int stepAge = *INTEGER(GET_SLOT(iterator_R, stepAge_sym));
+    int nTime = *INTEGER(GET_SLOT(iterator_R, nTime_sym));
+    int nAge = *INTEGER(GET_SLOT(iterator_R, nAge_sym));    
+
+    int iTime_R = (((i - 1) / stepTime) % nTime) + 1; /* R-style */
+    int iAge_R = (((i - 1) / stepAge) % nAge) + 1; /* R-style */
+
+    SET_SLOT(iterator_R, iTime_sym, ScalarInteger(iTime_R));
+    SET_SLOT(iterator_R, iAge_sym, ScalarInteger(iAge_R));
+    SET_SLOT(iterator_R, i_sym, ScalarInteger(i));
+    
+    int finished = (iTime_R >= nTime) || (iAge_R >= nAge);
+    SET_SLOT(iterator_R, finished_sym, ScalarLogical(finished));
+}
 
 /* reset cohort iterator */
 void
-resetCAP(SEXP iterator_R, int i)
+resetCP(SEXP iterator_R, int i)
 {
     int stepTime = *INTEGER(GET_SLOT(iterator_R, stepTime_sym));
     int nTime = *INTEGER(GET_SLOT(iterator_R, nTime_sym));
@@ -342,7 +390,6 @@ resetCAP(SEXP iterator_R, int i)
     int iTime_R = (((i - 1) / stepTime) % nTime) + 1; /* R-style */
     
     if (hasAge) {
-    
         int stepAge = *INTEGER(GET_SLOT(iterator_R, stepAge_sym));
         int nAge = *INTEGER(GET_SLOT(iterator_R, nAge_sym));
         int iAge_R = (((i - 1) / stepAge) % nAge) + 1; /* R-style */
@@ -355,6 +402,7 @@ resetCAP(SEXP iterator_R, int i)
     int finished = (iTime_R >= nTime);
     SET_SLOT(iterator_R, finished_sym, ScalarLogical(finished));
 }
+
 
 void
 resetCC(SEXP iterator_R, int i)

@@ -3745,7 +3745,7 @@ test_that("updateSigma_Varying gives valid answer", {
         y <- Counts(array(rpois(n = 20, lambda = 30),
                           dim = 5:4,
                           dimnames = list(age = 0:4, region = letters[1:4])))
-        spec <- Model(y ~ Poisson(mean ~ age + region),
+        spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE),
                       age ~ Exch())
         x <- initialModel(spec, y = y, exposure = NULL)
         set.seed(seed + 1)
@@ -3780,7 +3780,7 @@ test_that("R and C versions of updateSigma_Varying give same answer", {
         y <- Counts(array(rpois(n = 20, lambda = 30),
                           dim = 5:4,
                           dimnames = list(age = 0:4, region = letters[1:4])))
-        spec <- Model(y ~ Poisson(mean ~ age + region),
+        spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE),
                       age ~ Exch())
         x <- initialModel(spec, y = y, exposure = NULL)
         set.seed(seed + 1)
@@ -5577,7 +5577,7 @@ test_that("updateTheta_PoissonVaryingNotUseExp gives valid answer", {
         y <- Counts(array(as.integer(rpois(n = 20, lambda = 30)),
                           dim = c(2, 10),
                           dimnames = list(sex = c("f", "m"), age = 0:9)))
-        spec <- Model(y ~ Poisson(mean ~ sex + age))
+        spec <- Model(y ~ Poisson(mean ~ sex + age, useExpose = FALSE))
         model <- initialModel(spec, y = y, exposure = NULL)
         set.seed(seed + 1)
         ans.obtained <- updateTheta_PoissonVaryingNotUseExp(model, y = y)
@@ -5613,7 +5613,7 @@ test_that("updateTheta_PoissonVaryingNotUseExp gives valid answer", {
                           dim = c(2, 10),
                           dimnames = list(sex = c("f", "m"), age = 0:9)))
         y[1:5] <- NA
-        spec <- Model(y ~ Poisson(mean ~ sex + age))
+        spec <- Model(y ~ Poisson(mean ~ sex + age, useExpose = FALSE))
         model <- initialModel(spec, y = y, exposure = NULL)
         set.seed(seed + 1)
         ans.obtained <- updateTheta_PoissonVaryingNotUseExp(model, y = y)
@@ -5652,7 +5652,7 @@ test_that("updateTheta_PoissonVaryingNotUseExp gives valid answer", {
         y[1:12] <- NA
         subtotals <- Counts(array(30L, dim = 1, dimnames = list(age = "0-4")))
         y <- attachSubtotals(y, subtotals = subtotals)
-        spec <- Model(y ~ Poisson(mean ~ sex + age))
+        spec <- Model(y ~ Poisson(mean ~ sex + age, useExpose = FALSE))
         model <- initialModel(spec, y = y, exposure = NULL)
         set.seed(seed + 1)
         ans.obtained <- updateTheta_PoissonVaryingNotUseExp(model, y = y)
@@ -5709,7 +5709,7 @@ test_that("updateTheta_PoissonVaryingNotUseExp gives valid answer", {
                                        dimension = "sex")
         y[c(1:8, 11:12)] <- NA
         y <- attachSubtotals(y, subtotals = subtotals)
-        spec <- Model(y ~ Poisson(mean ~ sex + age))
+        spec <- Model(y ~ Poisson(mean ~ sex + age, useExpose = FALSE))
         model <- initialModel(spec, y = y, exposure = NULL)
         set.seed(seed + 1)
         ans.obtained <- updateTheta_PoissonVaryingNotUseExp(model, y = y)
@@ -5772,7 +5772,7 @@ test_that("updateTheta_PoissonVaryingNotUseExp gives valid answer", {
         y[1:12] <- NA
         subtotals <- Counts(array(30L, dim = 1, dimnames = list(age = "0-4")))
         y <- attachSubtotals(y, subtotals = subtotals)
-        spec <- Model(y ~ Poisson(mean ~ sex + age), lower = 10, upper = 30)
+        spec <- Model(y ~ Poisson(mean ~ sex + age, useExpose = FALSE), lower = 10, upper = 30)
         model <- initialModel(spec, y = y, exposure = NULL)
         set.seed(seed + 1)
         ans.obtained <- updateTheta_PoissonVaryingNotUseExp(model, y = y)
@@ -5788,7 +5788,7 @@ test_that("R and C versions of updateTheta_PoissonVaryingNotUseExp give same ans
         y <- Counts(array(as.integer(rpois(n = 20, lambda = 30)),
                           dim = c(2, 10),
                           dimnames = list(sex = c("f", "m"), age = 0:9)))
-        spec <- Model(y ~ Poisson(mean ~ sex + age))
+        spec <- Model(y ~ Poisson(mean ~ sex + age, useExpose = FALSE))
         model <- initialModel(spec, y = y, exposure = NULL)
         set.seed(seed + 1)
         ans.R <- updateTheta_PoissonVaryingNotUseExp(model, y = y, useC = FALSE)
@@ -5805,7 +5805,7 @@ test_that("R and C versions of updateTheta_PoissonVaryingNotUseExp give same ans
                           dim = c(2, 10),
                           dimnames = list(sex = c("f", "m"), age = 0:9)))
         y[1:5] <- NA
-        spec <- Model(y ~ Poisson(mean ~ sex + age))
+        spec <- Model(y ~ Poisson(mean ~ sex + age, useExpose = FALSE))
         model <- initialModel(spec, y = y, exposure = NULL)
         set.seed(seed + 1)
         ans.R <- updateTheta_PoissonVaryingNotUseExp(model, y = y, useC = FALSE)
@@ -5824,7 +5824,7 @@ test_that("R and C versions of updateTheta_PoissonVaryingNotUseExp give same ans
         y[1:12] <- NA
         subtotals <- Counts(array(30L, dim = 1, dimnames = list(age = "0-4")))
         y <- attachSubtotals(y, subtotals = subtotals)
-        spec <- Model(y ~ Poisson(mean ~ sex + age))
+        spec <- Model(y ~ Poisson(mean ~ sex + age, useExpose = FALSE))
         model <- initialModel(spec, y = y, exposure = NULL)
         set.seed(seed + 1)
         ans.R <- updateTheta_PoissonVaryingNotUseExp(model, y = y, useC = FALSE)
@@ -5849,7 +5849,7 @@ test_that("R and C versions of updateTheta_PoissonVaryingNotUseExp give same ans
                                        dimension = "sex")
         y[c(1:8, 11:12)] <- NA
         y <- attachSubtotals(y, subtotals = subtotals)
-        spec <- Model(y ~ Poisson(mean ~ sex + age))
+        spec <- Model(y ~ Poisson(mean ~ sex + age, useExpose = FALSE))
         model <- initialModel(spec, y = y, exposure = NULL)
         set.seed(seed + 1)
         ans.R <- updateTheta_PoissonVaryingNotUseExp(model, y = y, useC = FALSE)
@@ -5868,7 +5868,7 @@ test_that("R and C versions of updateTheta_PoissonVaryingNotUseExp give same ans
         y[1:12] <- NA
         subtotals <- Counts(array(30L, dim = 1, dimnames = list(age = "0-4")))
         y <- attachSubtotals(y, subtotals = subtotals)
-        spec <- Model(y ~ Poisson(mean ~ sex + age), lower = 10, upper = 30)
+        spec <- Model(y ~ Poisson(mean ~ sex + age, useExpose = FALSE), lower = 10, upper = 30)
         model <- initialModel(spec, y = y, exposure = NULL)
         set.seed(seed + 1)
         ans.R <- updateTheta_PoissonVaryingNotUseExp(model, y = y, useC = FALSE)
@@ -6252,7 +6252,7 @@ test_that("updateTheta_PoissonVaryingNotUseExpAgCertain gives valid answer - sin
         aggregate <- AgCertain(value = 400)
         y <- as.integer(rpois(n = 20, lambda = 20))
         y <- Counts(array(y, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
-        spec <- Model(y ~ Poisson(mean ~ age + sex), aggregate = aggregate)
+        spec <- Model(y ~ Poisson(mean ~ age + sex, useExpose = FALSE), aggregate = aggregate)
         x0 <- initialModel(spec, y = y, exposure = NULL)
         x1 <- updateTheta_PoissonVaryingNotUseExpAgCertain(x0, y = y)
         expect_true(validObject(x1))
@@ -6271,7 +6271,7 @@ test_that("updateTheta_PoissonVaryingNotUseExpAgCertain gives valid answer - sin
         y <- as.integer(rpois(n = 20, lambda = 20))
         y <- Counts(array(y, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
         y[1:5] <- NA
-        spec <- Model(y ~ Poisson(mean ~ age + sex), aggregate = aggregate)
+        spec <- Model(y ~ Poisson(mean ~ age + sex, useExpose = FALSE), aggregate = aggregate)
         x0 <- initialModel(spec, y = y, exposure = NULL)
         x1 <- updateTheta_PoissonVaryingNotUseExpAgCertain(x0, y = y)
         expect_true(validObject(x1))
@@ -6296,7 +6296,7 @@ test_that("R and C versions of updateTheta_PoissonVaryingNotUseExpAgCertain same
         aggregate <- AgCertain(value = 400)
         y <- as.integer(rpois(n = 20, lambda = 20))
         y <- Counts(array(y, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
-        spec <- Model(y ~ Poisson(mean ~ age + sex), aggregate = aggregate)
+        spec <- Model(y ~ Poisson(mean ~ age + sex, useExpose = FALSE), aggregate = aggregate)
         x0 <- initialModel(spec, y = y, exposure = NULL)
         set.seed(seed + 1)
         x.R <- updateTheta_PoissonVaryingNotUseExpAgCertain(x0, y = y, useC = FALSE)
@@ -6317,7 +6317,7 @@ test_that("R and C versions of updateTheta_PoissonVaryingNotUseExpAgCertain same
         y <- as.integer(rpois(n = 20, lambda = 20))
         y <- Counts(array(y, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
         y[1:5] <- NA
-        spec <- Model(y ~ Poisson(mean ~ age + sex), aggregate = aggregate)
+        spec <- Model(y ~ Poisson(mean ~ age + sex, useExpose = FALSE), aggregate = aggregate)
         x0 <- initialModel(spec, y = y, exposure = NULL)
         set.seed(seed + 1)
         x.R <- updateTheta_PoissonVaryingNotUseExpAgCertain(x0, y = y, useC = FALSE)
@@ -6345,7 +6345,7 @@ test_that("updateTheta_PoissonVaryingNotUseExpAgCertain gives valid answer - mul
         y <- as.integer(rpois(n = 20, lambda = 20))
         y <- Counts(array(y, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
         y[1:3] <- NA
-        spec <- Model(y ~ Poisson(mean ~ age + sex), aggregate = aggregate)
+        spec <- Model(y ~ Poisson(mean ~ age + sex, useExpose = FALSE), aggregate = aggregate)
         x0 <- initialModel(spec, y = y, exposure = NULL)
         x1 <- updateTheta_PoissonVaryingNotUseExpAgCertain(x0, y = y)
         expect_true(validObject(x1))
@@ -6371,7 +6371,7 @@ test_that("R and C versions of updateTheta_PoissonVaryingNotUseExpAgCertain same
         y <- as.integer(rpois(n = 20, lambda = 20))
         y <- Counts(array(y, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
         y[1:3] <- NA
-        spec <- Model(y ~ Poisson(mean ~ age + sex), aggregate = aggregate)
+        spec <- Model(y ~ Poisson(mean ~ age + sex, useExpose = FALSE), aggregate = aggregate)
         x0 <- initialModel(spec, y = y, exposure = NULL)
         set.seed(seed + 1)
         x.R <- updateTheta_PoissonVaryingNotUseExpAgCertain(x0, y = y, useC = FALSE)
@@ -6403,7 +6403,7 @@ test_that("updateTheta_PoissonVaryingNotUseExpAgCertain gives valid answer - som
         y <- as.integer(rpois(n = 20, lambda = 20))
         y <- Counts(array(y, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
         y[1:3] <- NA
-        spec <- Model(y ~ Poisson(mean ~ age + sex), aggregate = aggregate)
+        spec <- Model(y ~ Poisson(mean ~ age + sex, useExpose = FALSE), aggregate = aggregate)
         x0 <- initialModel(spec, y = y, exposure = NULL)
         x1 <- updateTheta_PoissonVaryingNotUseExpAgCertain(x0, y = y)
         expect_true(validObject(x1))
@@ -6433,7 +6433,7 @@ test_that("R and C versions of updateTheta_PoissonVaryingNotUseExpAgCertain same
         y <- as.integer(rpois(n = 20, lambda = 20))
         y <- Counts(array(y, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
         y[1:3] <- NA
-        spec <- Model(y ~ Poisson(mean ~ age + sex), aggregate = aggregate)
+        spec <- Model(y ~ Poisson(mean ~ age + sex, useExpose = FALSE), aggregate = aggregate)
         x0 <- initialModel(spec, y = y, exposure = NULL)
         set.seed(seed + 1)
         x.R <- updateTheta_PoissonVaryingNotUseExpAgCertain(x0, y = y, useC = FALSE)
@@ -6698,7 +6698,7 @@ test_that("updateThetaAndValueAgNormal_PoissonNotUseExp gives valid answer - sin
         aggregate <- AgNormal(value = 20, sd = 1, jump = 0.001)
         y <- as.integer(rpois(n = 20, lambda = 20))
         y <- Counts(array(y, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
-        spec <- Model(y ~ Poisson(mean ~ age + sex), aggregate = aggregate)
+        spec <- Model(y ~ Poisson(mean ~ age + sex, useExpose = FALSE), aggregate = aggregate)
         x0 <- initialModel(spec, y = y, exposure = NULL)
         x1 <- updateThetaAndValueAgNormal_PoissonNotUseExp(x0, y = y)
         expect_true(validObject(x1))
@@ -6719,7 +6719,7 @@ test_that("updateThetaAndValueAgNormal_PoissonNotUseExp gives valid answer - sin
         y <- as.integer(rpois(n = 20, lambda = 20))
         y <- Counts(array(y, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
         y[1:5] <- NA
-        spec <- Model(y ~ Poisson(mean ~ age + sex), aggregate = aggregate)
+        spec <- Model(y ~ Poisson(mean ~ age + sex, useExpose = FALSE), aggregate = aggregate)
         x0 <- initialModel(spec, y = y, exposure = NULL)
         x1 <- updateThetaAndValueAgNormal_PoissonNotUseExp(x0, y = y)
         expect_true(validObject(x1))
@@ -6744,7 +6744,7 @@ test_that("R and C versions of updateThetaAndValueAgNormal_PoissonNotUseExp same
         aggregate <- AgNormal(value = 20, sd = 2)
         y <- as.integer(rpois(n = 20, lambda = 20))
         y <- Counts(array(y, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
-        spec <- Model(y ~ Poisson(mean ~ age + sex), aggregate = aggregate)
+        spec <- Model(y ~ Poisson(mean ~ age + sex, useExpose = FALSE), aggregate = aggregate)
         x0 <- initialModel(spec, y = y, exposure = NULL)
         set.seed(seed + 1)
         x.R <- updateThetaAndValueAgNormal_PoissonNotUseExp(x0, y = y, useC = FALSE)
@@ -6767,7 +6767,7 @@ test_that("R and C versions of updateThetaAndValueAgNormal_PoissonNotUseExp same
         y <- as.integer(rpois(n = 20, lambda = 20))
         y <- Counts(array(y, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
         y[1:5] <- NA
-        spec <- Model(y ~ Poisson(mean ~ age + sex), aggregate = aggregate)
+        spec <- Model(y ~ Poisson(mean ~ age + sex, useExpose = FALSE), aggregate = aggregate)
         x0 <- initialModel(spec, y = y, exposure = NULL)
         set.seed(seed + 1)
         x.R <- updateThetaAndValueAgNormal_PoissonNotUseExp(x0, y = y, useC = FALSE)
@@ -6795,7 +6795,7 @@ test_that("updateThetaAndValueAgNormal_PoissonNotUseExp gives valid answer - mul
         aggregate <- AgNormal(value = value, sd = sqrt(value), jump = 0.001)
         y <- as.integer(rpois(n = 20, lambda = 20))
         y <- Counts(array(y, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
-        spec <- Model(y ~ Poisson(mean ~ age + sex), jump = 0.001, aggregate = aggregate)
+        spec <- Model(y ~ Poisson(mean ~ age + sex, useExpose = FALSE), jump = 0.001, aggregate = aggregate)
         x0 <- initialModel(spec, y = y, exposure = NULL)
         x1 <- updateThetaAndValueAgNormal_PoissonNotUseExp(x0, y = y)
         expect_true(validObject(x1))
@@ -6818,7 +6818,7 @@ test_that("updateThetaAndValueAgNormal_PoissonNotUseExp gives valid answer - mul
         y <- as.integer(rpois(n = 20, lambda = 20))
         y <- Counts(array(y, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
         y[1:5] <- NA
-        spec <- Model(y ~ Poisson(mean ~ age + sex), jump = 0.001, aggregate = aggregate)
+        spec <- Model(y ~ Poisson(mean ~ age + sex, useExpose = FALSE), jump = 0.001, aggregate = aggregate)
         x0 <- initialModel(spec, y = y, exposure = NULL)
         x1 <- updateThetaAndValueAgNormal_PoissonNotUseExp(x0, y = y)
         expect_true(validObject(x1))
@@ -6845,7 +6845,7 @@ test_that("R and C versions of updateThetaAndValueAgNormal_PoissonNotUseExp same
         aggregate <- AgNormal(value = value, sd = sqrt(value), jump = 0.01)
         y <- as.integer(rpois(n = 20, lambda = 20))
         y <- Counts(array(y, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
-        spec <- Model(y ~ Poisson(mean ~ age + sex), jump = 0.1, aggregate = aggregate)
+        spec <- Model(y ~ Poisson(mean ~ age + sex, useExpose = FALSE), jump = 0.1, aggregate = aggregate)
         x0 <- initialModel(spec, y = y, exposure = NULL)
         set.seed(seed + 1)
         x.R <- updateThetaAndValueAgNormal_PoissonNotUseExp(x0, y = y, useC = FALSE)
@@ -6866,7 +6866,7 @@ test_that("R and C versions of updateThetaAndValueAgNormal_PoissonNotUseExp same
         aggregate <- AgNormal(value = value, sd = sqrt(value), jump = 0.01)
         y <- as.integer(rpois(n = 20, lambda = 20))
         y <- Counts(array(y, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
-        spec <- Model(y ~ Poisson(mean ~ age + sex), jump = 0.1, aggregate = aggregate)
+        spec <- Model(y ~ Poisson(mean ~ age + sex, useExpose = FALSE), jump = 0.1, aggregate = aggregate)
         x0 <- initialModel(spec, y = y, exposure = NULL)
         set.seed(seed + 1)
         x.R <- updateThetaAndValueAgNormal_PoissonNotUseExp(x0, y = y, useC = FALSE)
@@ -6895,7 +6895,7 @@ test_that("updateThetaAndValueAgPoisson_PoissonNotUseExp gives valid answer - si
         aggregate <- AgPoisson(value = 20, jump = 0.001)
         y <- as.integer(rpois(n = 20, lambda = 20))
         y <- Counts(array(y, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
-        spec <- Model(y ~ Poisson(mean ~ age + sex), aggregate = aggregate)
+        spec <- Model(y ~ Poisson(mean ~ age + sex, useExpose = FALSE), aggregate = aggregate)
         x0 <- initialModel(spec, y = y, exposure = NULL)
         x1 <- updateThetaAndValueAgPoisson_PoissonNotUseExp(x0, y = y)
         expect_true(validObject(x1))
@@ -6916,7 +6916,7 @@ test_that("updateThetaAndValueAgPoisson_PoissonNotUseExp gives valid answer - si
         y <- as.integer(rpois(n = 20, lambda = 20))
         y <- Counts(array(y, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
         y[1:5] <- NA
-        spec <- Model(y ~ Poisson(mean ~ age + sex), aggregate = aggregate)
+        spec <- Model(y ~ Poisson(mean ~ age + sex, useExpose = FALSE), aggregate = aggregate)
         x0 <- initialModel(spec, y = y, exposure = NULL)
         x1 <- updateThetaAndValueAgPoisson_PoissonNotUseExp(x0, y = y)
         expect_true(validObject(x1))
@@ -6941,7 +6941,7 @@ test_that("R and C versions of updateThetaAndValueAgPoisson_PoissonNotUseExp sam
         aggregate <- AgPoisson(value = 20)
         y <- as.integer(rpois(n = 20, lambda = 20))
         y <- Counts(array(y, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
-        spec <- Model(y ~ Poisson(mean ~ age + sex), aggregate = aggregate)
+        spec <- Model(y ~ Poisson(mean ~ age + sex, useExpose = FALSE), aggregate = aggregate)
         x0 <- initialModel(spec, y = y, exposure = NULL)
         set.seed(seed + 1)
         x.R <- updateThetaAndValueAgPoisson_PoissonNotUseExp(x0, y = y, useC = FALSE)
@@ -6964,7 +6964,7 @@ test_that("R and C versions of updateThetaAndValueAgPoisson_PoissonNotUseExp sam
         y <- as.integer(rpois(n = 20, lambda = 20))
         y <- Counts(array(y, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
         y[1:5] <- NA
-        spec <- Model(y ~ Poisson(mean ~ age + sex), aggregate = aggregate)
+        spec <- Model(y ~ Poisson(mean ~ age + sex, useExpose = FALSE), aggregate = aggregate)
         x0 <- initialModel(spec, y = y, exposure = NULL)
         set.seed(seed + 1)
         x.R <- updateThetaAndValueAgPoisson_PoissonNotUseExp(x0, y = y, useC = FALSE)
@@ -6992,7 +6992,7 @@ test_that("updateThetaAndValueAgPoisson_PoissonNotUseExp gives valid answer - mu
         aggregate <- AgPoisson(value = value, jump = 0.001)
         y <- as.integer(rpois(n = 20, lambda = 20))
         y <- Counts(array(y, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
-        spec <- Model(y ~ Poisson(mean ~ age + sex), jump = 0.001, aggregate = aggregate)
+        spec <- Model(y ~ Poisson(mean ~ age + sex, useExpose = FALSE), jump = 0.001, aggregate = aggregate)
         x0 <- initialModel(spec, y = y, exposure = NULL)
         x1 <- updateThetaAndValueAgPoisson_PoissonNotUseExp(x0, y = y)
         expect_true(validObject(x1))
@@ -7015,7 +7015,7 @@ test_that("updateThetaAndValueAgPoisson_PoissonNotUseExp gives valid answer - mu
         y <- as.integer(rpois(n = 20, lambda = 20))
         y <- Counts(array(y, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
         y[1:5] <- NA
-        spec <- Model(y ~ Poisson(mean ~ age + sex), jump = 0.001, aggregate = aggregate)
+        spec <- Model(y ~ Poisson(mean ~ age + sex, useExpose = FALSE), jump = 0.001, aggregate = aggregate)
         x0 <- initialModel(spec, y = y, exposure = NULL)
         x1 <- updateThetaAndValueAgPoisson_PoissonNotUseExp(x0, y = y)
         expect_true(validObject(x1))
@@ -7042,7 +7042,7 @@ test_that("R and C versions of updateThetaAndValueAgPoisson_PoissonNotUseExp sam
         aggregate <- AgPoisson(value = value, jump = 0.01)
         y <- as.integer(rpois(n = 20, lambda = 20))
         y <- Counts(array(y, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
-        spec <- Model(y ~ Poisson(mean ~ age + sex), jump = 0.1, aggregate = aggregate)
+        spec <- Model(y ~ Poisson(mean ~ age + sex, useExpose = FALSE), jump = 0.1, aggregate = aggregate)
         x0 <- initialModel(spec, y = y, exposure = NULL)
         set.seed(seed + 1)
         x.R <- updateThetaAndValueAgPoisson_PoissonNotUseExp(x0, y = y, useC = FALSE)
@@ -7063,7 +7063,7 @@ test_that("R and C versions of updateThetaAndValueAgPoisson_PoissonNotUseExp sam
         aggregate <- AgPoisson(value = value, jump = 0.01)
         y <- as.integer(rpois(n = 20, lambda = 20))
         y <- Counts(array(y, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
-        spec <- Model(y ~ Poisson(mean ~ age + sex), jump = 0.1, aggregate = aggregate)
+        spec <- Model(y ~ Poisson(mean ~ age + sex, useExpose = FALSE), jump = 0.1, aggregate = aggregate)
         x0 <- initialModel(spec, y = y, exposure = NULL)
         set.seed(seed + 1)
         x.R <- updateThetaAndValueAgPoisson_PoissonNotUseExp(x0, y = y, useC = FALSE)
@@ -7097,7 +7097,7 @@ test_that("updateThetaAndValueAgFun_PoissonNotUseExp gives valid answer - single
         y <- as.integer(rpois(n = 20, lambda = theta))
         y <- Counts(array(y, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)),
                     dimscales = c(age = "Intervals"))
-        spec <- Model(y ~ Poisson(mean ~ age + sex), aggregate = aggregate)
+        spec <- Model(y ~ Poisson(mean ~ age + sex, useExpose = FALSE), aggregate = aggregate)
         x0 <- initialModel(spec, y = y, exposure = NULL)
         expect_is(x0, "PoissonVaryingNotUseExpAgFun")
         x1 <- updateThetaAndValueAgFun_PoissonNotUseExp(x0, y = y)
@@ -7122,7 +7122,7 @@ test_that("updateThetaAndValueAgFun_PoissonNotUseExp gives valid answer - single
         y <- Counts(array(y, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)),
                     dimscales = c(age = "Intervals"))
         y[1:5] <- NA
-        spec <- Model(y ~ Poisson(mean ~ age + sex), aggregate = aggregate)
+        spec <- Model(y ~ Poisson(mean ~ age + sex, useExpose = FALSE), aggregate = aggregate)
         x0 <- initialModel(spec, y = y, exposure = NULL)
         x1 <- updateThetaAndValueAgFun_PoissonNotUseExp(x0, y = y)
         expect_true(validObject(x1))
@@ -7150,7 +7150,7 @@ test_that("R and C versions of updateThetaAndValueAgFun_PoissonNotUseExp same an
         y <- as.integer(rpois(n = 20, lambda = theta))
         y <- Counts(array(y, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)),
                     dimscales = c(age = "Intervals"))
-        spec <- Model(y ~ Poisson(mean ~ age + sex), aggregate = aggregate)
+        spec <- Model(y ~ Poisson(mean ~ age + sex, useExpose = FALSE), aggregate = aggregate)
         x0 <- initialModel(spec, y = y, exposure = NULL)
         set.seed(seed + 1)
         x.R <- updateThetaAndValueAgFun_PoissonNotUseExp(x0, y = y, useC = FALSE)
@@ -7175,7 +7175,7 @@ test_that("R and C versions of updateThetaAndValueAgFun_PoissonNotUseExp same an
         y <- as.integer(rpois(n = 20, lambda = theta))
         y <- Counts(array(y, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
         y[1:5] <- NA
-        spec <- Model(y ~ Poisson(mean ~ age + sex), aggregate = aggregate)
+        spec <- Model(y ~ Poisson(mean ~ age + sex, useExpose = FALSE), aggregate = aggregate)
         x0 <- initialModel(spec, y = y, exposure = NULL)
         set.seed(seed + 1)
         x.R <- updateThetaAndValueAgFun_PoissonNotUseExp(x0, y = y, useC = FALSE)
@@ -7206,7 +7206,7 @@ test_that("updateThetaAndValueAgFun_PoissonNotUseExp gives valid answer - multip
         y <- as.integer(rpois(n = 20, lambda = theta))
         y <- Counts(array(y, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)),
                     dimscales = c(age = "Intervals"))
-        spec <- Model(y ~ Poisson(mean ~ age + sex), jump = 0.001, aggregate = aggregate)
+        spec <- Model(y ~ Poisson(mean ~ age + sex, useExpose = FALSE), jump = 0.001, aggregate = aggregate)
         x0 <- initialModel(spec, y = y, exposure = NULL)
         x1 <- updateThetaAndValueAgFun_PoissonNotUseExp(x0, y = y)
         expect_true(validObject(x1))
@@ -7231,7 +7231,7 @@ test_that("updateThetaAndValueAgFun_PoissonNotUseExp gives valid answer - multip
         y <- Counts(array(y, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)),
                     dimscales = c(age = "Intervals"))
         y[1:5] <- NA
-        spec <- Model(y ~ Poisson(mean ~ age + sex), jump = 0.001, aggregate = aggregate)
+        spec <- Model(y ~ Poisson(mean ~ age + sex, useExpose = FALSE), jump = 0.001, aggregate = aggregate)
         x0 <- initialModel(spec, y = y, exposure = NULL)
         x1 <- updateThetaAndValueAgFun_PoissonNotUseExp(x0, y = y)
         expect_true(validObject(x1))
@@ -7260,7 +7260,7 @@ test_that("R and C versions of updateThetaAndValueAgFun_PoissonNotUseExp same an
         theta <- rbeta(n = 20, shape1 = 20, shape2 = 5)
         y <- as.integer(rpois(n = 20, lambda = theta))
         y <- Counts(array(y, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
-        spec <- Model(y ~ Poisson(mean ~ age + sex), jump = 0.1, aggregate = aggregate)
+        spec <- Model(y ~ Poisson(mean ~ age + sex, useExpose = FALSE), jump = 0.1, aggregate = aggregate)
         x0 <- initialModel(spec, y = y, exposure = NULL)
         set.seed(seed + 1)
         x.R <- updateThetaAndValueAgFun_PoissonNotUseExp(x0, y = y, useC = FALSE)
@@ -7285,7 +7285,7 @@ test_that("R and C versions of updateThetaAndValueAgFun_PoissonNotUseExp same an
         y <- as.integer(rpois(n = 20, lambda = theta))
         y <- Counts(array(y, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)),
                     dimscales = c(age = "Intervals"))
-        spec <- Model(y ~ Poisson(mean ~ age + sex), jump = 0.1, aggregate = aggregate)
+        spec <- Model(y ~ Poisson(mean ~ age + sex, useExpose = FALSE), jump = 0.1, aggregate = aggregate)
         x0 <- initialModel(spec, y = y, exposure = NULL)
         set.seed(seed + 1)
         x.R <- updateThetaAndValueAgFun_PoissonNotUseExp(x0, y = y, useC = FALSE)
@@ -8382,7 +8382,7 @@ test_that("R version of updateCountsPoissonNotUseExp works with no subtotals", {
         y <- Counts(array(as.integer(rpois(24, lambda = 10)),
                           dim = c(6, 4),
                           dimnames = list(age = 0:5, reg = letters[1:4])))
-        model <- initialModel(Model(y ~ Poisson(mean ~ reg + age)),
+        model <- initialModel(Model(y ~ Poisson(mean ~ reg + age, useExpose = FALSE)),
                               y = y, exposure = NULL)
         datasets <- list(Counts(array(as.integer(rpois(3, lambda = 20)),
                                       dim = 3,
@@ -8458,7 +8458,7 @@ test_that("R and C versions of updateCountsPoissonNotUseExp with no subtotals gi
     y <- Counts(array(as.integer(rpois(24, lambda = 10)),
                       dim = c(6, 4),
                       dimnames = list(age = 0:5, reg = letters[1:4])))
-    model <- initialModel(Model(y ~ Poisson(mean ~ reg + age)),
+    model <- initialModel(Model(y ~ Poisson(mean ~ reg + age, useExpose = FALSE)),
                           y = y, exposure = NULL)
     datasets <- list(Counts(array(as.integer(rpois(3, lambda = 20)),
                                   dim = 3,
@@ -8523,7 +8523,7 @@ test_that("R version of updateCountsPoissonNotUseExp works with subtotals made f
                  subtotals = as.integer(subtotals),
                  metadataSubtotals = subtotals@metadata,
                  transformSubtotals = transformSubtotals)
-        model <- initialModel(Model(y ~ Poisson(mean ~ reg + age)),
+        model <- initialModel(Model(y ~ Poisson(mean ~ reg + age, useExpose = FALSE)),
                               y = y, exposure = NULL)
         datasets <- list(Counts(array(as.integer(rpois(3, lambda = 20)),
                                       dim = 3,
@@ -8609,7 +8609,7 @@ test_that("R and C versions of updateCountsPoissonNotUseExp give same answer wit
                  subtotals = as.integer(subtotals),
                  metadataSubtotals = subtotals@metadata,
                  transformSubtotals = transformSubtotals)
-        model <- initialModel(Model(y ~ Poisson(mean ~ reg + age)),
+        model <- initialModel(Model(y ~ Poisson(mean ~ reg + age, useExpose = FALSE)),
                               y = y, exposure = NULL)
         datasets <- list(Counts(array(as.integer(rpois(3, lambda = 20)),
                                       dim = 3,
@@ -9065,7 +9065,7 @@ test_that("R version of updateObservationCounts works", {
         y <- Counts(array(as.integer(rpois(30, lambda = 10)),
                           dim = c(6, 5),
                           dimnames = list(age = 0:5, reg = letters[1:5])))
-        spec <- Model(y ~ Poisson(mean ~ reg + age))
+        spec <- Model(y ~ Poisson(mean ~ reg + age, useExpose = FALSE))
         model <- initialModel(spec, y = y, exposure = NULL)
         datasets <- list(Counts(array(as.integer(rpois(4, lambda = 10)),
                                       dim = 4,
@@ -9115,7 +9115,7 @@ test_that("R and C versions of updateObservationCounts give same answer", {
         y <- Counts(array(as.integer(rpois(30, lambda = 10)),
                           dim = c(6, 5),
                           dimnames = list(age = 0:5, reg = letters[1:5])))
-        spec <- Model(y ~ Poisson(mean ~ reg + age))
+        spec <- Model(y ~ Poisson(mean ~ reg + age, useExpose = FALSE))
         model <- initialModel(spec, y = y, exposure = NULL)
         datasets <- list(Counts(array(as.integer(rpois(4, lambda = 10)),
                                       dim = 4,
@@ -9164,7 +9164,7 @@ test_that("R version of updateObservationCounts works with aggregate data model"
         y <- Counts(array(as.integer(rpois(30, lambda = 10)),
                           dim = c(6, 5),
                           dimnames = list(age = 0:5, reg = letters[1:5])))
-        model <- initialModel(Model(y ~ Poisson(mean ~ reg + age)),
+        model <- initialModel(Model(y ~ Poisson(mean ~ reg + age, useExpose = FALSE)),
                               y = y, exposure = NULL)
         datasets <- list(Counts(array(as.integer(rpois(4, lambda = 20)),
                                       dim = 4,
@@ -9205,7 +9205,7 @@ test_that("R and C versions of updateObservationCounts give same answer with agg
         y <- Counts(array(as.integer(rpois(30, lambda = 10)),
                           dim = c(6, 5),
                           dimnames = list(age = 0:5, reg = letters[1:5])))
-        model <- initialModel(Model(y ~ Poisson(mean ~ reg + age)),
+        model <- initialModel(Model(y ~ Poisson(mean ~ reg + age, useExpose = FALSE)),
                               y = y, exposure = NULL)
         datasets <- list(Counts(array(as.integer(rpois(4, lambda = 20)),
                                       dim = 4,

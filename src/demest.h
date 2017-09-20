@@ -115,7 +115,7 @@ SEXP
   model_sym,
   exposure_sym,
   y_sym,
-  observation_sym,
+  observationModels_sym,
   datasets_sym,
   transforms_sym,
   
@@ -531,9 +531,11 @@ void advanceM(SEXP object_R);
 void resetM(SEXP object_R);
 void advanceS(SEXP object_R);
 void resetS(SEXP object_R);
-void advanceCAP(SEXP iterator_R);
+void advanceCA(SEXP iterator_R);
+void advanceCP(SEXP iterator_R);
 void advanceCC(SEXP iterator_R);
-void resetCAP(SEXP iterator_R, int i);
+void resetCA(SEXP iterator_R, int i);
+void resetCP(SEXP iterator_R, int i);
 void resetCC(SEXP iterator_R, int i);
 void resetCODPCP(SEXP iterator_R, int i);
 
@@ -789,7 +791,8 @@ int chooseICellPopn(SEXP description_R);
 int getIAccNextFromPopn(int i, SEXP description_R);
 int getIPopnNextFromPopn(int i, SEXP description_R);
 int getIExpFirstFromPopn(int i, SEXP description_R);
-int getMinValCohort(int i, SEXP series_R, SEXP iterator_R);
+int getMinValCohortAccession(int i, SEXP series_R, SEXP iterator_R);
+int getMinValCohortPopulation(int i, SEXP series_R, SEXP iterator_R);
 
 /* mapping functions */
 int getIPopnNextFromComp(int i, SEXP mapping_R);

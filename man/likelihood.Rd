@@ -10,7 +10,7 @@
 \alias{Normal}
 \title{Specify first two levels of hierarchical model.}
 \usage{
-Poisson(formula)
+Poisson(formula, useExpose = TRUE)
 
 Binomial(formula)
 
@@ -20,6 +20,9 @@ Normal(formula, sd = NULL, priorSD = HalfT())
 \item{formula}{A \code{\link[stats]{formula}} with response
 \code{mean} and names of dimensions of demographic
 series or dataset being modelled.}
+
+\item{useExpose}{Whether the model includes an
+exposure term. Defaults to \code{TRUE}.}
 
 \item{sd}{Standard deviation in the likelihood for the
 normal model.  If a value is not supplied,
@@ -91,6 +94,10 @@ functions \code{\link{estimateModel}},
 \examples{
 ## age effect, sex effect, age-sex interaction,
 ## and time effect
+Poisson(mean ~ age * sex + time)
+
+## same model, but without exposure term
+Poisson(mean ~ age * sex + time, useExpose = FALSE)
 
 ## use formula notation to specify second-order interactions
 Binomial(mean ~ (age + sex + region)^2)

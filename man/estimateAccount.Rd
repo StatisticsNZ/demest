@@ -6,7 +6,7 @@
 \usage{
 estimateAccount(y, system, observation, datasets, filename = NULL,
   nBurnin = 1000, nSim = 1000, nChain = 4, nThin = 1, parallel = TRUE,
-  outfile = "", nUpdateMax = 50, verbose = FALSE, useC = TRUE)
+  outfile = NULL, nUpdateMax = 50, verbose = FALSE, useC = TRUE)
 }
 \arguments{
 \item{y}{An object of class

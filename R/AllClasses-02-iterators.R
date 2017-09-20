@@ -206,8 +206,13 @@ setClass("CohortIterator",
          })
 
 ## HAS_TESTS
-setClass("CohortIteratorAccessionPopulation",
+setClass("CohortIteratorAccession",
          contains = "CohortIterator")
+
+## HAS_TESTS
+setClass("CohortIteratorPopulation",
+         contains = "CohortIterator")
+
 
 ## HAS_TESTS
 setClass("CohortIteratorComponent",

@@ -151,11 +151,11 @@ setClass("CombinedModelPoissonHasExp",
 
 setClass("CombinedCounts",
          slots = c(model = "Model"),
-         prototype = prototype(slotsToExtract = c("model", "y", "observation")),
+         prototype = prototype(slotsToExtract = c("model", "y", "observationModels")),
          contains = c("VIRTUAL",
                       "Combined",
                       "YNonNegativeCounts",
-                      "Observation"))
+                      "ObservationMixin"))
 
 ## HAS_TESTS
 setClass("CombinedCountsPoissonNotHasExp",
@@ -183,4 +183,35 @@ setClass("CombinedCountsBinomial",
          contains = c("CombinedCounts",
                       "CombinedBinomial",
                       "HasExposure"))
+
+setClass("CombinedAccount",
+         contains = c("VIRTUAL",
+                      "AccountMixin",
+                      "SystemMixin",
+                      "ObservationMixin",
+                      "SeriesIndicesMixin"),
+         validity = function(object) {
+             systemModels <- object@systemModels
+             observationModels <- object@observationModels
+             ## 'observationModels' has length 0 iff 'systemModels' consists
+             ## entirely of models with class "SingleIter"
+             obs.length.0 <- identical(length(observationModels), 0L)
+             sys.all.single <- all(sapply(systemModels, methods::is, "SingleIter"))
+             if (!identical(obs.length.0, sys.all.single))
+                 return(gettextf("'%s' should have length %d iff '%s' consists entirely of models with class \"%s\"",
+                                 "observationModels", 0L, "systemModels", "SingleIter"))
+             TRUE
+         })
+                               
+setClass("CombinedAccountMovements",
+         prototype = prototype(iMethodCombined = 9L),
+         slots = c(account = "Movements"),
+         contains = c("CombinedAccount",
+                      "SystemMovementsMixin"))
+
+setClass("CombinedAccountMovementsHasAge",
+         prototype = prototype(iMethodCombined = 10L),
+         contains = c("CombinedAccountMovements",
+                      "MovementsAgeMixin"))
+
 

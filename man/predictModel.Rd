@@ -6,7 +6,7 @@
 \usage{
 predictModel(filenameEst, filenamePred, along = NULL, labels = NULL,
   n = NULL, data = NULL, aggregate = NULL, lower = NULL, upper = NULL,
-  nBurnin = 0L, parallel = TRUE, outfile = "", verbose = FALSE,
+  nBurnin = 0L, parallel = TRUE, outfile = NULL, verbose = FALSE,
   useC = TRUE)
 }
 \arguments{

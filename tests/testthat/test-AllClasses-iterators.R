@@ -137,8 +137,8 @@ test_that("validity tests for BetaIterator inherited from BetaIterator work", {
                  "each element of 'strideLengths' should have same length as 'dimIterators'")
 })
 
-test_that("can create valid object of class CohortIteratorAccessionPopulation", {
-    x <- new("CohortIteratorAccessionPopulation",
+test_that("can create valid object of class CohortIteratorAccession", {
+    x <- new("CohortIteratorAccession",
              i = 1L,
              nTime = 3L,
              stepTime = 4L,
@@ -149,7 +149,7 @@ test_that("can create valid object of class CohortIteratorAccessionPopulation", 
              iAge = 1L,
              finished = FALSE)
     expect_true(validObject(x))
-    x <- new("CohortIteratorAccessionPopulation",
+    x <- new("CohortIteratorAccession",
              i = 29L,
              nTime = 5L,
              stepTime = 1L,
@@ -160,7 +160,7 @@ test_that("can create valid object of class CohortIteratorAccessionPopulation", 
              iAge = 2L,
              finished = FALSE)
     expect_true(validObject(x))
-    x <- new("CohortIteratorAccessionPopulation",
+    x <- new("CohortIteratorAccession",
              i = 29L,
              nTime = 5L,
              stepTime = 1L,
@@ -173,8 +173,46 @@ test_that("can create valid object of class CohortIteratorAccessionPopulation", 
     expect_true(validObject(x))
 })
 
-test_that("validity tests for CohortIteratorAccessionPopulation inherited from CohortIterator work", {
-    x <- new("CohortIteratorAccessionPopulation",
+
+test_that("can create valid object of class CohortIteratorPopulation", {
+    x <- new("CohortIteratorPopulation",
+             i = 1L,
+             nTime = 3L,
+             stepTime = 4L,
+             iTime = 1L,
+             hasAge = TRUE,
+             nAge = 4L,
+             stepAge = 1L,
+             iAge = 1L,
+             finished = FALSE)
+    expect_true(validObject(x))
+    x <- new("CohortIteratorPopulation",
+             i = 29L,
+             nTime = 5L,
+             stepTime = 1L,
+             iTime = 4L,
+             hasAge = TRUE,
+             nAge = 3L,
+             stepAge = 20L,
+             iAge = 2L,
+             finished = FALSE)
+    expect_true(validObject(x))
+    x <- new("CohortIteratorPopulation",
+             i = 29L,
+             nTime = 5L,
+             stepTime = 1L,
+             iTime = 4L,
+             hasAge = FALSE,
+             nAge = as.integer(NA),
+             stepAge = as.integer(NA),
+             iAge = as.integer(NA),
+             finished = FALSE)
+    expect_true(validObject(x))
+})
+
+
+test_that("validity tests for CohortIteratorAccession inherited from CohortIterator work", {
+    x <- new("CohortIteratorAccession",
              i = 1L,
              nTime = 3L,
              stepTime = 4L,

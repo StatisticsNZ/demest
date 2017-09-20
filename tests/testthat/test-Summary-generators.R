@@ -43,7 +43,7 @@ test_that("summary works with ResultsModelEst", {
                       dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000:2003)),
                 dimscales = c(age = "Intervals", time = "Intervals"))
     filename <- tempfile()
-    estimateModel(Model(y ~ Poisson(mean ~ sex)),
+    estimateModel(Model(y ~ Poisson(mean ~ sex, useExpose = FALSE)),
                   y = y,
                   filename = filename,
                   nBurnin = 2,
@@ -73,7 +73,7 @@ test_that("summary works with ResultsModelPred", {
                 dimscales = c(time = "Intervals"))
     filename.est <- tempfile()
     filename.pred <- tempfile()
-    estimateModel(Model(y ~ Poisson(mean ~ sex)),
+    estimateModel(Model(y ~ Poisson(mean ~ sex, useExpose = FALSE)),
                   y = y,
                   filename = filename.est,
                   nBurnin = 2,
@@ -111,7 +111,7 @@ test_that("summary works with object of class ResultsCountsEst", {
                        dimnames = list(age = 0:9, region = 1:5)))
     d2[1] <- NA
     d3 <- collapseDimension(y, dim = "region")
-    model <- Model(y ~ Poisson(mean ~ age + sex + region),
+    model <- Model(y ~ Poisson(mean ~ age + sex + region, useExpose = FALSE),
                    jump = 0.3)
     observation <- list(Model(d1 ~ Binomial(mean ~ 1), jump = 0.03),
                         Model(d2 ~ Poisson(mean ~ region), jump = 0.2),
@@ -136,10 +136,10 @@ test_that("summary works with object of class ResultsCountsEst", {
                         metropolis = makeMetropolis(object, filename),
                         model = summary(object@final[[1]]@model),
                         y = summary(object@y),
-                        observation = list(
-                            summary(object@final[[1]]@observation[[1]]),
-                            summary(object@final[[1]]@observation[[2]]),
-                            summary(object@final[[1]]@observation[[3]])),
+                        observationModels = list(
+                            summary(object@final[[1]]@observationModels[[1]]),
+                            summary(object@final[[1]]@observationModels[[2]]),
+                            summary(object@final[[1]]@observationModels[[3]])),
                         datasets = list(
                             summaryDataset(d1),
                             summaryDataset(d2),

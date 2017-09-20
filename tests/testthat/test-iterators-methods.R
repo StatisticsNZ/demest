@@ -353,12 +353,12 @@ test_that("R and C versions of resetB give same answer", {
 })
 
 
-## CohortIteratorAccessionPopulation
+## CohortIteratorAccession
 
-test_that("advanceCAP gives valid answer", {
-    advanceCAP <- demest:::advanceCAP
+test_that("advanceCA gives valid answer", {
+    advanceCA <- demest:::advanceCA
     ## dim = 3:4, iAge = 2L, iTime = 1L
-    x <- new("CohortIteratorAccessionPopulation",
+    x <- new("CohortIteratorAccession",
              i = 4L,
              nTime = 3L,
              stepTime = 1L,
@@ -368,8 +368,8 @@ test_that("advanceCAP gives valid answer", {
              stepAge = 3L,
              iAge = 2L,
              finished = FALSE)
-    ans.obtained <- advanceCAP(x)
-    ans.expected <- new("CohortIteratorAccessionPopulation",
+    ans.obtained <- advanceCA(x)
+    ans.expected <- new("CohortIteratorAccession",
                         i = 8L,
                         nTime = 3L,
                         stepTime = 1L,
@@ -380,19 +380,19 @@ test_that("advanceCAP gives valid answer", {
                         iAge = 3L,
                         finished = FALSE)
     expect_identical(ans.obtained, ans.expected)
-    ## dim = 3:4, iAge = 1L, iTime = 2L
-    x <- new("CohortIteratorAccessionPopulation",
-             i = 9L,
+    ## dim = 3:4, iAge = 3L, iTime = 3L
+    x <- new("CohortIteratorAccession",
+             i = 8L,
              nTime = 4L,
              stepTime = 3L,
              iTime = 3L,
              hasAge = TRUE,
              nAge = 3L,
              stepAge = 1L,
-             iAge = 3L,
+             iAge = 2L,
              finished = FALSE)
-    ans.obtained <- advanceCAP(x)
-    ans.expected <- new("CohortIteratorAccessionPopulation",
+    ans.obtained <- advanceCA(x)
+    ans.expected <- new("CohortIteratorAccession",
                         i = 12L,
                         nTime = 4L,
                         stepTime = 3L,
@@ -403,31 +403,8 @@ test_that("advanceCAP gives valid answer", {
                         iAge = 3L,
                         finished = TRUE)
     expect_identical(ans.obtained, ans.expected)
-    ## dim = 3:4, iAge = 0L, iTime = 2L 
-    x <- new("CohortIteratorAccessionPopulation",
-             i = 3L,
-             nTime = 4L,
-             stepTime = 3L,
-             iTime = 1L,
-             hasAge = FALSE,
-             nAge = as.integer(NA),
-             stepAge = as.integer(NA),
-             iAge = as.integer(NA),
-             finished = FALSE)
-    ans.obtained <- advanceCAP(x)
-    ans.expected <- new("CohortIteratorAccessionPopulation",
-                        i = 6L,
-                        nTime = 4L,
-                        stepTime = 3L,
-                        iTime = 2L,
-                        hasAge = FALSE,
-                        nAge = as.integer(NA),
-                        stepAge = as.integer(NA),
-                        iAge = as.integer(NA),
-                        finished = FALSE)
-    expect_identical(ans.obtained, ans.expected)
     ## dim = 2:5, iAge = 3L, iTime = 4L
-    x <- new("CohortIteratorAccessionPopulation",
+    x <- new("CohortIteratorAccession",
              i = 85L,
              nTime = 5L,
              stepTime = 24L,
@@ -437,8 +414,8 @@ test_that("advanceCAP gives valid answer", {
              stepAge = 6L,
              iAge = 3L,
              finished = FALSE)
-    ans.obtained <- advanceCAP(x)
-    ans.expected <- new("CohortIteratorAccessionPopulation",
+    ans.obtained <- advanceCA(x)
+    ans.expected <- new("CohortIteratorAccession",
                         i = 115L,
                         nTime = 5L,
                         stepTime = 24L,
@@ -451,10 +428,11 @@ test_that("advanceCAP gives valid answer", {
     expect_identical(ans.obtained, ans.expected)
 })
 
-test_that("R and C versions of advanceCAP give same answer", {
-    advanceCAP <- demest:::advanceCAP
+
+test_that("R and C versions of advanceCA give same answer", {
+    advanceCA <- demest:::advanceCA
     ## dim = 3:4, iAge = 2L, iTime = 1L
-    x <- new("CohortIteratorAccessionPopulation",
+    x <- new("CohortIteratorAccession",
              i = 4L,
              nTime = 3L,
              stepTime = 1L,
@@ -464,36 +442,25 @@ test_that("R and C versions of advanceCAP give same answer", {
              stepAge = 3L,
              iAge = 2L,
              finished = FALSE)
-    ans.R <- advanceCAP(x, useC = FALSE)
-    ans.C <- advanceCAP(x, useC = TRUE)
+    ans.R <- advanceCA(x, useC = FALSE)
+    ans.C <- advanceCA(x, useC = TRUE)
     expect_identical(ans.R, ans.C)
-    ## dim = 3:4, iAge = 1L, iTime = 2L
-    x <- new("CohortIteratorAccessionPopulation",
-             i = 9L,
+    ## dim = 3:4, iAge = 3L, iTime = 3L
+    x <- new("CohortIteratorAccession",
+             i = 8L,
              nTime = 4L,
              stepTime = 3L,
              iTime = 3L,
              hasAge = TRUE,
              nAge = 3L,
              stepAge = 1L,
-             iAge = 3L,
+             iAge = 2L,
              finished = FALSE)
-    ## dim = 3:4, iAge = 0L, iTime = 2L 
-    x <- new("CohortIteratorAccessionPopulation",
-             i = 3L,
-             nTime = 4L,
-             stepTime = 3L,
-             iTime = 1L,
-             hasAge = FALSE,
-             nAge = as.integer(NA),
-             stepAge = as.integer(NA),
-             iAge = as.integer(NA),
-             finished = FALSE)
-    ans.R <- advanceCAP(x, useC = FALSE)
-    ans.C <- advanceCAP(x, useC = TRUE)
+    ans.R <- advanceCA(x, useC = FALSE)
+    ans.C <- advanceCA(x, useC = TRUE)
     expect_identical(ans.R, ans.C)
     ## dim = 2:5, iAge = 3L, iTime = 4L
-    x <- new("CohortIteratorAccessionPopulation",
+    x <- new("CohortIteratorAccession",
              i = 85L,
              nTime = 5L,
              stepTime = 24L,
@@ -503,10 +470,167 @@ test_that("R and C versions of advanceCAP give same answer", {
              stepAge = 6L,
              iAge = 3L,
              finished = FALSE)
-    ans.R <- advanceCAP(x, useC = FALSE)
-    ans.C <- advanceCAP(x, useC = TRUE)
+    ans.R <- advanceCA(x, useC = FALSE)
+    ans.C <- advanceCA(x, useC = TRUE)
     expect_identical(ans.R, ans.C)
 })
+
+test_that("advanceCP gives valid answer", {
+    advanceCP <- demest:::advanceCP
+    ## dim = 3:4, iAge = 2L, iTime = 1L
+    x <- new("CohortIteratorPopulation",
+             i = 4L,
+             nTime = 3L,
+             stepTime = 1L,
+             iTime = 1L,
+             hasAge = TRUE,
+             nAge = 4L,
+             stepAge = 3L,
+             iAge = 2L,
+             finished = FALSE)
+    ans.obtained <- advanceCP(x)
+    ans.expected <- new("CohortIteratorPopulation",
+                        i = 8L,
+                        nTime = 3L,
+                        stepTime = 1L,
+                        iTime = 2L,
+                        hasAge = TRUE,
+                        nAge = 4L,
+                        stepAge = 3L,
+                        iAge = 3L,
+                        finished = FALSE)
+    expect_identical(ans.obtained, ans.expected)
+    ## dim = 3:4, iAge = 1L, iTime = 2L
+    x <- new("CohortIteratorPopulation",
+             i = 9L,
+             nTime = 4L,
+             stepTime = 3L,
+             iTime = 3L,
+             hasAge = TRUE,
+             nAge = 3L,
+             stepAge = 1L,
+             iAge = 3L,
+             finished = FALSE)
+    ans.obtained <- advanceCP(x)
+    ans.expected <- new("CohortIteratorPopulation",
+                        i = 12L,
+                        nTime = 4L,
+                        stepTime = 3L,
+                        iTime = 4L,
+                        hasAge = TRUE,
+                        nAge = 3L,
+                        stepAge = 1L,
+                        iAge = 3L,
+                        finished = TRUE)
+    expect_identical(ans.obtained, ans.expected)
+    ## dim = 3:4, iAge = 0L, iTime = 2L 
+    x <- new("CohortIteratorPopulation",
+             i = 3L,
+             nTime = 4L,
+             stepTime = 3L,
+             iTime = 1L,
+             hasAge = FALSE,
+             nAge = as.integer(NA),
+             stepAge = as.integer(NA),
+             iAge = as.integer(NA),
+             finished = FALSE)
+    ans.obtained <- advanceCP(x)
+    ans.expected <- new("CohortIteratorPopulation",
+                        i = 6L,
+                        nTime = 4L,
+                        stepTime = 3L,
+                        iTime = 2L,
+                        hasAge = FALSE,
+                        nAge = as.integer(NA),
+                        stepAge = as.integer(NA),
+                        iAge = as.integer(NA),
+                        finished = FALSE)
+    expect_identical(ans.obtained, ans.expected)
+    ## dim = 2:5, iAge = 3L, iTime = 4L
+    x <- new("CohortIteratorPopulation",
+             i = 85L,
+             nTime = 5L,
+             stepTime = 24L,
+             iTime = 4L,
+             hasAge = TRUE,
+             nAge = 4L,
+             stepAge = 6L,
+             iAge = 3L,
+             finished = FALSE)
+    ans.obtained <- advanceCP(x)
+    ans.expected <- new("CohortIteratorPopulation",
+                        i = 115L,
+                        nTime = 5L,
+                        stepTime = 24L,
+                        iTime = 5L,
+                        hasAge = TRUE,
+                        nAge = 4L,
+                        stepAge = 6L,
+                        iAge = 4L,
+                        finished = TRUE)
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("R and C versions of advanceCP give same answer", {
+    advanceCP <- demest:::advanceCP
+    ## dim = 3:4, iAge = 2L, iTime = 1L
+    x <- new("CohortIteratorPopulation",
+             i = 4L,
+             nTime = 3L,
+             stepTime = 1L,
+             iTime = 1L,
+             hasAge = TRUE,
+             nAge = 4L,
+             stepAge = 3L,
+             iAge = 2L,
+             finished = FALSE)
+    ans.R <- advanceCP(x, useC = FALSE)
+    ans.C <- advanceCP(x, useC = TRUE)
+    expect_identical(ans.R, ans.C)
+    ## dim = 3:4, iAge = 1L, iTime = 2L
+    x <- new("CohortIteratorPopulation",
+             i = 9L,
+             nTime = 4L,
+             stepTime = 3L,
+             iTime = 3L,
+             hasAge = TRUE,
+             nAge = 3L,
+             stepAge = 1L,
+             iAge = 3L,
+             finished = FALSE)
+    ans.R <- advanceCP(x, useC = FALSE)
+    ans.C <- advanceCP(x, useC = TRUE)
+    expect_identical(ans.R, ans.C)
+    ## dim = 3:4, iAge = 0L, iTime = 2L 
+    x <- new("CohortIteratorPopulation",
+             i = 3L,
+             nTime = 4L,
+             stepTime = 3L,
+             iTime = 1L,
+             hasAge = FALSE,
+             nAge = as.integer(NA),
+             stepAge = as.integer(NA),
+             iAge = as.integer(NA),
+             finished = FALSE)
+    ans.R <- advanceCP(x, useC = FALSE)
+    ans.C <- advanceCP(x, useC = TRUE)
+    expect_identical(ans.R, ans.C)
+    ## dim = 2:5, iAge = 3L, iTime = 4L
+    x <- new("CohortIteratorPopulation",
+             i = 85L,
+             nTime = 5L,
+             stepTime = 24L,
+             iTime = 4L,
+             hasAge = TRUE,
+             nAge = 4L,
+             stepAge = 6L,
+             iAge = 3L,
+             finished = FALSE)
+    ans.R <- advanceCP(x, useC = FALSE)
+    ans.C <- advanceCP(x, useC = TRUE)
+    expect_identical(ans.R, ans.C)
+})
+
 
 test_that("advanceCC works", {
     advanceCC <- demest:::advanceCC
@@ -617,11 +741,10 @@ test_that("R and C versions of advanceCC give same answer", {
     }
 })
 
-
-test_that("resetCAP gives valid answer", {
-    resetCAP <- demest:::resetCAP
+test_that("resetCA gives valid answer", {
+    resetCA <- demest:::resetCA
     ## dim = 3:4, iAge = 2, iTime = 1
-    x <- new("CohortIteratorAccessionPopulation",
+    x <- new("CohortIteratorAccession",
              i = 4L,
              nTime = 3L,
              stepTime = 1L,
@@ -631,8 +754,8 @@ test_that("resetCAP gives valid answer", {
              stepAge = 3L,
              iAge = 1L,
              finished = FALSE)
-    ans.obtained <- resetCAP(x, i = 1L)
-    ans.expected <- new("CohortIteratorAccessionPopulation",
+    ans.obtained <- resetCA(x, i = 1L)
+    ans.expected <- new("CohortIteratorAccession",
                         i = 1L,
                         nTime = 3L,
                         stepTime = 1L,
@@ -643,8 +766,8 @@ test_that("resetCAP gives valid answer", {
                         iAge = 1L,
                         finished = FALSE)
     expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- resetCAP(x, i = 12L)
-    ans.expected <- new("CohortIteratorAccessionPopulation",
+    ans.obtained <- resetCA(x, i = 12L)
+    ans.expected <- new("CohortIteratorAccession",
                         i = 12L,
                         nTime = 3L,
                         stepTime = 1L,
@@ -656,7 +779,7 @@ test_that("resetCAP gives valid answer", {
                         finished = TRUE)
     expect_identical(ans.obtained, ans.expected)
     ## dim = 3:4, iAge = 2L, iTime = 1L 
-    x <- new("CohortIteratorAccessionPopulation",
+    x <- new("CohortIteratorAccession",
              i = 1L,
              nTime = 3L,
              stepTime = 1L,
@@ -666,8 +789,8 @@ test_that("resetCAP gives valid answer", {
              stepAge = 3L,
              iAge = 1L,
              finished = FALSE)
-    ans.obtained <- resetCAP(x, i = 7L)
-    ans.expected <- new("CohortIteratorAccessionPopulation",
+    ans.obtained <- resetCA(x, i = 7L)
+    ans.expected <- new("CohortIteratorAccession",
                         i = 7L,
                         nTime = 3L,
                         stepTime = 1L,
@@ -678,31 +801,8 @@ test_that("resetCAP gives valid answer", {
                         iAge = 3L,
                         finished = FALSE)
     expect_identical(ans.obtained, ans.expected)
-    ## dim = 3:4, iAge = 0L, iTime = 2L 
-    x <- new("CohortIteratorAccessionPopulation",
-             i = 10L,
-             nTime = 4L,
-             stepTime = 3L,
-             iTime = 4L,
-             hasAge = FALSE,
-             nAge = as.integer(NA),
-             stepAge = as.integer(NA),
-             iAge = as.integer(NA),
-             finished = TRUE)
-    ans.obtained <- resetCAP(x, i = 8L)
-    ans.expected <- new("CohortIteratorAccessionPopulation",
-                        i = 8L,
-                        nTime = 4L,
-                        stepTime = 3L,
-                        iTime = 3L,
-                        hasAge = FALSE,
-                        nAge = as.integer(NA),
-                        stepAge = as.integer(NA),
-                        iAge = as.integer(NA),
-                        finished = FALSE)
-    expect_identical(ans.obtained, ans.expected)
     ## dim = 2:5, iTime = 4L, iAge = 3L
-    x <- new("CohortIteratorAccessionPopulation",
+    x <- new("CohortIteratorAccession",
              i = 1L,
              nTime = 5L,
              stepTime = 24L,
@@ -712,8 +812,8 @@ test_that("resetCAP gives valid answer", {
              stepAge = 6L,
              iAge = 1L,
              finished = FALSE)
-    ans.obtained <- resetCAP(x, i = 3L)
-    ans.expected <- new("CohortIteratorAccessionPopulation",
+    ans.obtained <- resetCA(x, i = 3L)
+    ans.expected <- new("CohortIteratorAccession",
                         i = 3L,
                         nTime = 5L,
                         stepTime = 24L,
@@ -724,8 +824,8 @@ test_that("resetCAP gives valid answer", {
                         iAge = 1L,
                         finished = FALSE)
     expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- resetCAP(x, i = 39L)
-    ans.expected <- new("CohortIteratorAccessionPopulation",
+    ans.obtained <- resetCA(x, i = 39L)
+    ans.expected <- new("CohortIteratorAccession",
                         i = 39L,
                         nTime = 5L,
                         stepTime = 24L,
@@ -738,10 +838,10 @@ test_that("resetCAP gives valid answer", {
     expect_identical(ans.obtained, ans.expected)
 })
 
-test_that("R and C versions of resetCAP give same answer", {
-    resetCAP <- demest:::resetCAP
+test_that("R and C versions of resetCA give same answer", {
+    resetCA <- demest:::resetCA
     ## dim = 3:4, iAge = 2, iTime = 1
-    x <- new("CohortIteratorAccessionPopulation",
+    x <- new("CohortIteratorAccession",
              i = 4L,
              nTime = 3L,
              stepTime = 1L,
@@ -751,14 +851,14 @@ test_that("R and C versions of resetCAP give same answer", {
              stepAge = 3L,
              iAge = 1L,
              finished = FALSE)
-    ans.R <- resetCAP(x, i = 1L, useC = FALSE)
-    ans.C <- resetCAP(x, i = 1L, useC = TRUE)
+    ans.R <- resetCA(x, i = 1L, useC = FALSE)
+    ans.C <- resetCA(x, i = 1L, useC = TRUE)
     expect_identical(ans.R, ans.C)
-    ans.R <- resetCAP(x, i = 12L, useC = FALSE)
-    ans.C <- resetCAP(x, i = 12L, useC = TRUE)
+    ans.R <- resetCA(x, i = 12L, useC = FALSE)
+    ans.C <- resetCA(x, i = 12L, useC = TRUE)
     expect_identical(ans.R, ans.C)
     ## dim = 3:4, iAge = 2L, iTime = 1L 
-    x <- new("CohortIteratorAccessionPopulation",
+    x <- new("CohortIteratorAccession",
              i = 1L,
              nTime = 3L,
              stepTime = 1L,
@@ -768,25 +868,11 @@ test_that("R and C versions of resetCAP give same answer", {
              stepAge = 3L,
              iAge = 1L,
              finished = FALSE)
-    ans.R <- resetCAP(x, i = 7L, useC = FALSE)
-    ans.C <- resetCAP(x, i = 7L, useC = TRUE)
-    expect_identical(ans.R, ans.C)
-    ## dim = 3:4, iAge = 0L, iTime = 2L 
-    x <- new("CohortIteratorAccessionPopulation",
-             i = 10L,
-             nTime = 4L,
-             stepTime = 3L,
-             iTime = 4L,
-             hasAge = FALSE,
-             nAge = as.integer(NA),
-             stepAge = as.integer(NA),
-             iAge = as.integer(NA),
-             finished = TRUE)
-    ans.R <- resetCAP(x, i = 8L, useC = FALSE)
-    ans.C <- resetCAP(x, i = 8L, useC = TRUE)
+    ans.R <- resetCA(x, i = 7L, useC = FALSE)
+    ans.C <- resetCA(x, i = 7L, useC = TRUE)
     expect_identical(ans.R, ans.C)
     ## dim = 2:5, iTime = 4L, iAge = 3L
-    x <- new("CohortIteratorAccessionPopulation",
+    x <- new("CohortIteratorAccession",
              i = 1L,
              nTime = 5L,
              stepTime = 24L,
@@ -796,10 +882,10 @@ test_that("R and C versions of resetCAP give same answer", {
              stepAge = 6L,
              iAge = 1L,
              finished = FALSE)
-    ans.R <- resetCAP(x, i = 3L, useC = FALSE)
-    ans.C <- resetCAP(x, i = 3L, useC = TRUE)
+    ans.R <- resetCA(x, i = 3L, useC = FALSE)
+    ans.C <- resetCA(x, i = 3L, useC = TRUE)
     expect_identical(ans.R, ans.C)
-    ans.expected <- new("CohortIteratorAccessionPopulation",
+    ans.expected <- new("CohortIteratorAccession",
                         i = 39L,
                         nTime = 5L,
                         stepTime = 24L,
@@ -809,10 +895,207 @@ test_that("R and C versions of resetCAP give same answer", {
                         stepAge = 6L,
                         iAge = 3L,
                         finished = FALSE)
-    ans.R <- resetCAP(x, i = 39L, useC = FALSE)
-    ans.C <- resetCAP(x, i = 39L, useC = TRUE)
+    ans.R <- resetCA(x, i = 39L, useC = FALSE)
+    ans.C <- resetCA(x, i = 39L, useC = TRUE)
     expect_identical(ans.R, ans.C)
 })
+
+test_that("resetCP gives valid answer", {
+    resetCP <- demest:::resetCP
+    ## dim = 3:4, iAge = 2, iTime = 1
+    x <- new("CohortIteratorPopulation",
+             i = 4L,
+             nTime = 3L,
+             stepTime = 1L,
+             iTime = 1L,
+             hasAge = TRUE,
+             nAge = 4L,
+             stepAge = 3L,
+             iAge = 1L,
+             finished = FALSE)
+    ans.obtained <- resetCP(x, i = 1L)
+    ans.expected <- new("CohortIteratorPopulation",
+                        i = 1L,
+                        nTime = 3L,
+                        stepTime = 1L,
+                        iTime = 1L,
+                        hasAge = TRUE,
+                        nAge = 4L,
+                        stepAge = 3L,
+                        iAge = 1L,
+                        finished = FALSE)
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- resetCP(x, i = 12L)
+    ans.expected <- new("CohortIteratorPopulation",
+                        i = 12L,
+                        nTime = 3L,
+                        stepTime = 1L,
+                        iTime = 3L,
+                        hasAge = TRUE,
+                        nAge = 4L,
+                        stepAge = 3L,
+                        iAge = 4L,
+                        finished = TRUE)
+    expect_identical(ans.obtained, ans.expected)
+    ## dim = 3:4, iAge = 2L, iTime = 1L 
+    x <- new("CohortIteratorPopulation",
+             i = 1L,
+             nTime = 3L,
+             stepTime = 1L,
+             iTime = 1L,
+             hasAge = TRUE,
+             nAge = 4L,
+             stepAge = 3L,
+             iAge = 1L,
+             finished = FALSE)
+    ans.obtained <- resetCP(x, i = 7L)
+    ans.expected <- new("CohortIteratorPopulation",
+                        i = 7L,
+                        nTime = 3L,
+                        stepTime = 1L,
+                        iTime = 1L,
+                        hasAge = TRUE,
+                        nAge = 4L,
+                        stepAge = 3L,
+                        iAge = 3L,
+                        finished = FALSE)
+    expect_identical(ans.obtained, ans.expected)
+    ## dim = 3:4, iAge = 0L, iTime = 2L 
+    x <- new("CohortIteratorPopulation",
+             i = 10L,
+             nTime = 4L,
+             stepTime = 3L,
+             iTime = 4L,
+             hasAge = FALSE,
+             nAge = as.integer(NA),
+             stepAge = as.integer(NA),
+             iAge = as.integer(NA),
+             finished = TRUE)
+    ans.obtained <- resetCP(x, i = 8L)
+    ans.expected <- new("CohortIteratorPopulation",
+                        i = 8L,
+                        nTime = 4L,
+                        stepTime = 3L,
+                        iTime = 3L,
+                        hasAge = FALSE,
+                        nAge = as.integer(NA),
+                        stepAge = as.integer(NA),
+                        iAge = as.integer(NA),
+                        finished = FALSE)
+    expect_identical(ans.obtained, ans.expected)
+    ## dim = 2:5, iTime = 4L, iAge = 3L
+    x <- new("CohortIteratorPopulation",
+             i = 1L,
+             nTime = 5L,
+             stepTime = 24L,
+             iTime = 1L,
+             hasAge = TRUE,
+             nAge = 4L,
+             stepAge = 6L,
+             iAge = 1L,
+             finished = FALSE)
+    ans.obtained <- resetCP(x, i = 3L)
+    ans.expected <- new("CohortIteratorPopulation",
+                        i = 3L,
+                        nTime = 5L,
+                        stepTime = 24L,
+                        iTime = 1L,
+                        hasAge = TRUE,
+                        nAge = 4L,
+                        stepAge = 6L,
+                        iAge = 1L,
+                        finished = FALSE)
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- resetCP(x, i = 39L)
+    ans.expected <- new("CohortIteratorPopulation",
+                        i = 39L,
+                        nTime = 5L,
+                        stepTime = 24L,
+                        iTime = 2L,
+                        hasAge = TRUE,
+                        nAge = 4L,
+                        stepAge = 6L,
+                        iAge = 3L,
+                        finished = FALSE)
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("R and C versions of resetCP give same answer", {
+    resetCP <- demest:::resetCP
+    ## dim = 3:4, iAge = 2, iTime = 1
+    x <- new("CohortIteratorPopulation",
+             i = 4L,
+             nTime = 3L,
+             stepTime = 1L,
+             iTime = 1L,
+             hasAge = TRUE,
+             nAge = 4L,
+             stepAge = 3L,
+             iAge = 1L,
+             finished = FALSE)
+    ans.R <- resetCP(x, i = 1L, useC = FALSE)
+    ans.C <- resetCP(x, i = 1L, useC = TRUE)
+    expect_identical(ans.R, ans.C)
+    ans.R <- resetCP(x, i = 12L, useC = FALSE)
+    ans.C <- resetCP(x, i = 12L, useC = TRUE)
+    expect_identical(ans.R, ans.C)
+    ## dim = 3:4, iAge = 2L, iTime = 1L 
+    x <- new("CohortIteratorPopulation",
+             i = 1L,
+             nTime = 3L,
+             stepTime = 1L,
+             iTime = 1L,
+             hasAge = TRUE,
+             nAge = 4L,
+             stepAge = 3L,
+             iAge = 1L,
+             finished = FALSE)
+    ans.R <- resetCP(x, i = 7L, useC = FALSE)
+    ans.C <- resetCP(x, i = 7L, useC = TRUE)
+    expect_identical(ans.R, ans.C)
+    ## dim = 3:4, iAge = 0L, iTime = 2L 
+    x <- new("CohortIteratorPopulation",
+             i = 10L,
+             nTime = 4L,
+             stepTime = 3L,
+             iTime = 4L,
+             hasAge = FALSE,
+             nAge = as.integer(NA),
+             stepAge = as.integer(NA),
+             iAge = as.integer(NA),
+             finished = TRUE)
+    ans.R <- resetCP(x, i = 8L, useC = FALSE)
+    ans.C <- resetCP(x, i = 8L, useC = TRUE)
+    expect_identical(ans.R, ans.C)
+    ## dim = 2:5, iTime = 4L, iAge = 3L
+    x <- new("CohortIteratorPopulation",
+             i = 1L,
+             nTime = 5L,
+             stepTime = 24L,
+             iTime = 1L,
+             hasAge = TRUE,
+             nAge = 4L,
+             stepAge = 6L,
+             iAge = 1L,
+             finished = FALSE)
+    ans.R <- resetCP(x, i = 3L, useC = FALSE)
+    ans.C <- resetCP(x, i = 3L, useC = TRUE)
+    expect_identical(ans.R, ans.C)
+    ans.expected <- new("CohortIteratorPopulation",
+                        i = 39L,
+                        nTime = 5L,
+                        stepTime = 24L,
+                        iTime = 2L,
+                        hasAge = TRUE,
+                        nAge = 4L,
+                        stepAge = 6L,
+                        iAge = 3L,
+                        finished = FALSE)
+    ans.R <- resetCP(x, i = 39L, useC = FALSE)
+    ans.C <- resetCP(x, i = 39L, useC = TRUE)
+    expect_identical(ans.R, ans.C)
+})
+
 
 test_that("resetCC works", {
     resetCC <- demest:::resetCC

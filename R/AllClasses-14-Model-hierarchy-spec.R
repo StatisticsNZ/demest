@@ -35,7 +35,6 @@
 setClass("SpecLikelihood",
          contains = "VIRTUAL")
 
-
 #' @rdname SpecLikelihood-class
 #' @export
 setClass("SpecLikelihoodBinomial",
@@ -61,8 +60,10 @@ setClass("SpecLikelihoodNormalVarsigmaUnknown",
 #' @rdname SpecLikelihood-class
 #' @export
 setClass("SpecLikelihoodPoisson",
+         prototype = prototype(useExpose = new("LogicalFlag", TRUE)),
          contains = c("SpecLikelihood",
-             "FormulaMuMixin"))
+                      "FormulaMuMixin",
+                      "UseExposeMixin"))
 
 #' @rdname SpecLikelihood-class
 #' @export
@@ -73,7 +74,10 @@ setClass("SpecLikelihoodPoissonBinomialMixture",
 #' @rdname SpecLikelihood-class
 #' @export
 setClass("SpecLikelihoodNormalFixed",
-         contains = c("SpecLikelihood", "MeanSDMetadataMixin"))
+         prototype = prototype(useExpose = new("LogicalFlag", TRUE)),
+         contains = c("SpecLikelihood",
+                      "MeanSDMetadataMixin",
+                      "UseExposeMixin"))
 
 
 #' S4 classes to specify a model.
@@ -165,6 +169,7 @@ setClass("SpecLikelihoodNormalFixed",
 #' subsetting.
 #' @slot metadata Metadata for \code{mean} and \code{sd}.
 #' @slot metadataAll Metadata for \code{meanAll} and \code{sdAll}.
+#' @slot useExpose Whether the model includes and exposure term.
 #' 
 #' @seealso Object of class \code{SpecModel} are created
 #' by a call to function \code{\link{Model}}.
@@ -173,7 +178,8 @@ setClass("SpecLikelihoodNormalFixed",
 setClass("SpecModel",
          slots = c(call = "call"),
          contains = c("VIRTUAL",
-             "NameYMixin"))
+                      "NameYMixin",
+                      "UseExposeMixin"))
 
 
 setClass("SpecVarying",
@@ -184,6 +190,7 @@ setClass("SpecVarying",
              "SpecAggregateMixin",
              "FormulaMuMixin",
              "LowerUpperMixin",
+             "MaxAttemptMixin",
              "SpecSigmaMaxMixin",
              "SpecsPriorsMixin",
              "NuSigmaMixin",
@@ -194,6 +201,7 @@ setClass("SpecVarying",
 #' @rdname SpecModel-class
 #' @export
 setClass("SpecBinomialVarying",
+         prototype = prototype(useExpose = new("LogicalFlag", TRUE)),
          contains = c("SpecVarying",
              "SpecAgNotPoissonMixin"),
          validity = function(object) {
@@ -220,6 +228,7 @@ setClass("SpecNormalVarying",
 #' @rdname SpecModel-class
 #' @export
 setClass("SpecNormalVaryingVarsigmaUnknown",
+         prototype = prototype(useExpose = new("LogicalFlag", FALSE)),
          contains = c("SpecNormalVarying",
              "NuVarsigmaMixin",
              "SpecAVarsigmaMixin",
@@ -229,6 +238,7 @@ setClass("SpecNormalVaryingVarsigmaUnknown",
 #' @rdname SpecModel-class
 #' @export
 setClass("SpecNormalVaryingVarsigmaKnown",
+         prototype = prototype(useExpose = new("LogicalFlag", FALSE)),
          contains = c("SpecNormalVarying",
              "VarsigmaMixin"))
 
@@ -236,6 +246,7 @@ setClass("SpecNormalVaryingVarsigmaKnown",
 #' @rdname SpecModel-class
 #' @export
 setClass("SpecPoissonVarying",
+         prototype = prototype(useExpose = new("LogicalFlag", TRUE)),
          contains = "SpecVarying",
          validity = function(object) {
              lower <- object@lower
@@ -250,12 +261,14 @@ setClass("SpecPoissonVarying",
 #' @rdname SpecModel-class
 #' @export
 setClass("SpecPoissonBinomialMixture",
+         prototype = prototype(useExpose = new("LogicalFlag", TRUE)),
          contains = c("SpecModel", "Prob", "SpecSeriesMixin"))
 
 ## HAS_TESTS
 #' @rdname SpecModel-class
 #' @export
 setClass("SpecNormalFixed",
+         prototype = prototype(useExpose = new("LogicalFlag", TRUE)),
          contains = c("SpecModel", "MeanSDMetadataMixin",
                       "SpecSeriesMixin"))
 
