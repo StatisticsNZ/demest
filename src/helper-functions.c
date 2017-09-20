@@ -420,7 +420,7 @@ int
 rpoisTrunc1(double lambda, int lower, int upper, int maxAttempt)
 {
     if (lower == NA_INTEGER)
-	lower = 0;
+    lower = 0;
 
     int finite_upper = ( (upper == NA_INTEGER) ? 0 : 1);
     
@@ -3313,15 +3313,15 @@ getIAccNextFromPopn(int i, SEXP description_R)
     int iAcc = 0;
     
     if ((iTime_r < nTimePopn) && (iAge_r < nAgePopn)) {
-	iAcc = (((i - 1) / (stepTimePopn * nTimePopn)) * (stepTimePopn * nTimeAcc)
-		+ ((i - 1) % (stepTimePopn * nTimePopn))) + 1;
-	int stepAgeAcc;
-	if (stepTimePopn > stepAgePopn)
-	    stepAgeAcc = stepAgePopn;
-	else
-	    stepAgeAcc = (stepAgePopn / nTimePopn) * nTimeAcc;
-	iAcc = (((iAcc - 1) / (stepAgeAcc * nAgePopn)) * (stepAgeAcc * nAgeAcc)
-		+ ((iAcc - 1) % (stepAgeAcc * nAgePopn))) + 1;
+    iAcc = (((i - 1) / (stepTimePopn * nTimePopn)) * (stepTimePopn * nTimeAcc)
+        + ((i - 1) % (stepTimePopn * nTimePopn))) + 1;
+    int stepAgeAcc;
+    if (stepTimePopn > stepAgePopn)
+        stepAgeAcc = stepAgePopn;
+    else
+        stepAgeAcc = (stepAgePopn / nTimePopn) * nTimeAcc;
+    iAcc = (((iAcc - 1) / (stepAgeAcc * nAgePopn)) * (stepAgeAcc * nAgeAcc)
+        + ((iAcc - 1) % (stepAgeAcc * nAgePopn))) + 1;
     }
     
     return iAcc;
@@ -3340,14 +3340,14 @@ getIExpFirstFromPopn(int i, SEXP description_R)
     int iNonTime = (i - 1) / nTimePopnTimesStepTime; /* integer div */
     int remainder = (i - 1) - iNonTime * nTimePopnTimesStepTime + 1;
     int indexExp = iNonTime * nTimeExp * stepTime + remainder;
-	
+    
     int hasAge = *INTEGER(GET_SLOT(description_R, hasAge_sym));
     if (hasAge) {
-	int lengthLowerTri = (lengthPopn / nTimePopn) * nTimeExp; /* integer div */
+    int lengthLowerTri = (lengthPopn / nTimePopn) * nTimeExp; /* integer div */
         return (lengthLowerTri + indexExp);
     }
     else
-	return indexExp;
+    return indexExp;
 }
     
 int
@@ -3392,13 +3392,13 @@ getMinValCohortAccession(int i, SEXP series_R, SEXP iterator_R)
     while(!(finished)) {
         
         advanceCA(iterator_R);
-	i = *INTEGER(GET_SLOT(iterator_R, i_sym));
+    i = *INTEGER(GET_SLOT(iterator_R, i_sym));
         int check = series[i - 1];
-	
+    
         if (check < ans) {
             ans = check;
         }
-	finished = *INTEGER(GET_SLOT(iterator_R, finished_sym));
+    finished = *INTEGER(GET_SLOT(iterator_R, finished_sym));
 
     }
     
@@ -3419,16 +3419,96 @@ getMinValCohortPopulation(int i, SEXP series_R, SEXP iterator_R)
     while(!(finished)) {
         
         advanceCP(iterator_R);
-	i = *INTEGER(GET_SLOT(iterator_R, i_sym));
+        i = *INTEGER(GET_SLOT(iterator_R, i_sym));
 
         int check = series[i - 1];
         
         if (check < ans) {
             ans = check;
         }
-	finished = *INTEGER(GET_SLOT(iterator_R, finished_sym));
-	
+    finished = *INTEGER(GET_SLOT(iterator_R, finished_sym));
+    
     }
     
     return ans;
 }
+
+/*Need a file positioning op between input/output or output/input
+ * eg use dummy like fseek(pFile,0,SEEK_CUR) */
+SEXP
+overwriteValuesOnFile_R(SEXP object_R, SEXP skeleton_R,
+              SEXP filename_R, SEXP nIteration_R, SEXP lengthIter_R)
+{
+    
+    /* strings are character vectors, in this case just one element */
+    const char *filename = CHAR(STRING_ELT(filename_R,0)); 
+
+    FILE * fp = fopen(filename, "r+b"); /* binary mode, with updating */
+    /* can only open if exists */
+    
+    if (NULL == fp) {
+        error("could not open file %s", filename); /* terminates now */
+    }
+    
+    double *object = REAL(object_R);
+
+    int first = *INTEGER(GET_SLOT(skeleton_R, first_sym));
+    int last = *INTEGER(GET_SLOT(skeleton_R, last_sym));
+    
+    int lengthIter = *(INTEGER(lengthIter_R));
+    int nIter = *INTEGER(nIteration_R);
+
+    /* read the size of the results and adjustment from the file */
+    int sizeResults = 0;
+    size_t nRead1 = fread(&sizeResults, sizeof(int), 1, fp);
+    if (nRead1 < 1) {
+        error("could not successfully read file %s", filename); 
+    }
+    
+    int sizeAdj = 0;
+    size_t nRead2 = fread(&sizeAdj, sizeof(int), 1, fp);
+    if (nRead2 < 1) {
+        error("could not successfully read file %s", filename); 
+    }
+    
+    /* skip sizeResults bytes from current pos*/
+    fseek (fp , sizeResults, SEEK_CUR );
+    /* even if no results, this meets requirements to use file 
+     * a positioning operation between read and write */
+    
+    int pos = 0; /* position in object */
+    int nWrite = last - first + 1; /* number of values to write each time */
+    int nComplete = 0;
+    if (lengthIter > last) {
+        nComplete = lengthIter - last;
+    }
+
+    for (int iIter = 0; iIter < nIter; ++iIter) {
+        
+        if (ferror(fp)) {
+            error("error in file %s", filename); 
+        }
+        
+        /* skip first-1 values */
+        long skipBytes = (first - 1) * sizeof(double);
+        fseek (fp , skipBytes, SEEK_CUR );
+        
+        fwrite( &object[pos], sizeof(double), nWrite, fp );
+        fflush(fp); /* flush buffer - forces output to file */
+        if (ferror(fp)) {
+            error("could not write to file %s", filename); 
+        }
+        
+        pos += nWrite;
+        
+        long skipMoreBytes = (nComplete) * sizeof(double);
+        fseek (fp , skipMoreBytes, SEEK_CUR );
+        /* fseek always used, and may be a dummy fseek (fp , 0, SEEK_CUR ); */
+        
+    }
+    
+    fclose(fp); /* close the file */
+    
+    return R_NilValue;
+}
+
