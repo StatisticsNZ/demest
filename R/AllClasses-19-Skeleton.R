@@ -25,6 +25,12 @@ setClass("SkeletonMetadata",
              TRUE
          })
 
+
+setClass("SkeletonMetadata0",
+         slots = c(metadata0 = "MetaDataOrNULL"),
+         contains = "VIRTUAL")
+
+
 ## HAS_TESTS
 setClass("SkeletonMetadataIncl0",
          slots = c(metadataIncl0 = "MetaData"),
@@ -39,16 +45,6 @@ setClass("SkeletonMetadataIncl0",
                  if (dimtype %in% dimtypes)
                      return(gettextf("'%s' has dimension with dimtype \"%s\"",
                                      "metadata", dimtype))
-             ## along dimension has dimtype "state"
-             if (dimtypes[iAlong] != "state")
-                 return(gettextf("\"%s\" dimension does not have dimtype \"%s\"",
-                                 "along", "state"))
-             ## along dimension one element longer than for normal metadata
-             dim.normal <- dim(metadata)
-             dim.incl0 <- dim(metadataIncl0)
-             if (!identical(dim.incl0[iAlong], dim.normal[iAlong] + 1L))
-                 return(gettextf("\"%s\" of '%s' should be one element longer than \"%s\" dimension of '%s'",
-                                 "along", "metadataIncl0", "along", "metadata"))
              TRUE
          })
 
@@ -291,8 +287,27 @@ setClass("SkeletonManyValues",
 
 ## HAS_TESTS
 ## HAS_FETCH
+## include "last" slot because expected by functions such as 'overwriteValuesOnFile'
 setClass("SkeletonBetaIntercept",
-         contains = "SkeletonOneValues")
+         slots = c(last = "integer"),
+         contains = "SkeletonOneValues",
+         validity = function(object) {
+             first <- object@first
+             last <- object@last
+             ## 'last' has length 1
+                 if (!identical(length(last), 1L))
+                     return(gettextf("'%s' does not have length %d",
+                                     "last", 1L))
+             ## 'last' is not missing
+                 if (is.na(last))
+                     return(gettextf("'%s' is missing",
+                                     "last"))
+             ## 'last' == 'first'
+             if (last != first)
+                 return(gettextf("'%s' does not equal '%s'",
+                               "last", "first"))
+             TRUE
+         })
 
 ## HAS_TESTS
 ## HAS_FETCH
@@ -351,6 +366,7 @@ setClass("SkeletonStateDLM",
                       "SkeletonIndices0",
                       "SkeletonIndicesShow",
                       "SkeletonMetadata",
+                      "SkeletonMetadata0",
                       "SkeletonMetadataIncl0",
                       "IAlongMixin"))
 

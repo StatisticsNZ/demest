@@ -136,33 +136,33 @@ test_that("validity tests for SkeletonManyValues inherited from SkeletonManyValu
 })
 
 test_that("can create valid object of class SkeletonBetaIntercept", {
-    ## One higher term
     x <- new("SkeletonBetaIntercept",
-             first = 2L)
-    ## No higher terms
+             first = 2L,
+             last = 2L)
+})
+
+test_that("validity tests for SkeletonBetaIntercept inherited from SkeletonBetaIntercept work", {
     x <- new("SkeletonBetaIntercept",
-             first = 2L)
-    ## Two higher terms
-    x <- new("SkeletonBetaIntercept",
-             first = 2L)
+             first = 2L,
+             last = 2L)
+    ## 'last' has length 1
+    x.wrong <- x
+    x.wrong@last <- 5:6
+    expect_error(validObject(x.wrong),
+                 "'last' does not have length 1")
+    ## 'last' is not missing
+    x.wrong <- x
+    x.wrong@last <- as.integer(NA)
+    expect_error(validObject(x.wrong),
+                 "'last' is missing")
+    ## 'last' >= 'first'
+    x.wrong <- x
+    x.wrong@first <- 8L
+    expect_error(validObject(x.wrong),
+                 "'last' does not equal 'first'")
 })
 
 test_that("can create valid object of class SkeletonBetaTerm", {
-    ## One higher term
-    x <- new("SkeletonBetaTerm",
-             first = 2L,
-             last = 5L,
-             metadata = new("MetaData", nms = "region", dimtypes = "state",
-                 DimScales = list(new("Categories",
-                     dimvalues = c("a", "b", "c", "d")))))
-    ## No higher terms
-    x <- new("SkeletonBetaTerm",
-             first = 2L,
-             last = 5L,
-             metadata = new("MetaData", nms = "region", dimtypes = "state",
-                 DimScales = list(new("Categories",
-                     dimvalues = c("a", "b", "c", "d")))))
-    ## Two higher terms
     x <- new("SkeletonBetaTerm",
              first = 2L,
              last = 5L,

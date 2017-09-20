@@ -58,7 +58,8 @@ test_that("SkeletonBetaIntercept creates valid object of class SkeletonBetaInter
     SkeletonBetaIntercept <- demest:::SkeletonBetaIntercept
     ans.obtained <- SkeletonBetaIntercept(first = 10L)
     ans.expected <- new("SkeletonBetaIntercept",
-                        first = 10L)
+                        first = 10L,
+                        last = 10L)
     expect_identical(ans.obtained, ans.expected)
 })
 

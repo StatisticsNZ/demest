@@ -1618,8 +1618,107 @@ setMethod("printPriorIntercept",
           })
 
 
-## transferParamPrior #################################################################
+## rescalePairPriors ##################################################################
 
+setMethod("rescalePairPriors",
+          signature(priorHigh = "Exchangeable",
+                    priorLow = "Exchangeable"),
+          function(priorHigh, priorLow, skeletonBetaHigh, skeletonBetaLow,
+                   skeletonsPriorHigh, skeletonsPriorLow,
+                   adjustments, prefixAdjustments,
+                   filename, nIteration, lengthIter) {
+              browser()
+              metadata.high <- skeletonBetaHigh@metadata
+              metadata.low <- skeletonBetaLow@metadata
+              names.high <- names(metadata.high)
+              names.low <- names(metadata.low)
+              if (!all(names.low %in% names.high))
+                  return(NULL)
+              beta.high <- fetchResults(object = skeletonBetaHigh,
+                                        filename = filename,
+                                        iterations = NULL,
+                                        nIteration = nIteration,
+                                        lengthIter = lengthIter)
+              beta.low <- fetchResults(object = skeletonBetaLow,
+                                       filename = filename,
+                                       iterations = NULL,
+                                       nIteration = nIteration,
+                                       lengthIter = lengthIter)
+              names.high.only <- setdiff(names.high, names.low)
+              means.shared <- collapseDimension(beta.high,
+                                                dimension = names.high.only,
+                                                weights = 1)
+              rescaleAndWriteBetas(high = beta.high,
+                                   low = beta.low,
+                                   adj = means.shared,
+                                   skeletonHigh = skeletonBetaHigh,
+                                   skeletonLow = skeletonBetaHigh,
+                                   filename = filename,
+                                   nIteration = nIteration,
+                                   lengthIter = lengthIter)
+              recordAdjustments(priorHigh = priorHigh,
+                                priorLow = priorLow,
+                                namesHigh = names.high,
+                                namesLow = names.low,
+                                adj = means.shared,
+                                adjustments = adjustments,
+                                prefixAdjustments = prefixAdjustments)
+              NULL
+          })
+
+
+
+
+
+## rescaleSeason ######################################################################
+
+## HAS_TESTS
+setMethod("rescaleSeason",
+          signature(prior = "SeasonMixin"),
+          function(prior, skeleton, filename, nIteration, lengthIter) {
+              i.along <- prior@iAlong
+              skeleton.season <- skeleton$season
+              skeleton.level <- skeleton$level
+              season <- readStateDLMFromFile(skeleton = skeleton.season,
+                                             filename = filename,
+                                             iterations = NULL,
+                                             nIteration = nIteration,
+                                             lengthIter = lengthIter,
+                                             only0 = FALSE)
+              season.0 <- readStateDLMFromFile(skeleton = skeleton.season,
+                                               filename = filename,
+                                               iterations = NULL,
+                                               nIteration = nIteration,
+                                               lengthIter = lengthIter,
+                                               only0 = TRUE)
+              level <- readStateDLMFromFile(skeleton = skeleton.level,
+                                            filename = filename,
+                                            iterations = NULL,
+                                            nIteration = nIteration,
+                                            lengthIter = lengthIter,
+                                            only0 = FALSE)
+              means <- collapseDimension(season.0,
+                                         dimension = 1L,
+                                         weights = 1)
+              season <- season - means
+              level <- level + means
+              overwriteValuesOnFile(object = season,
+                                    skeleton = skeleton.season,
+                                    filename = filename,
+                                    nIteration = nIteration,
+                                    lengthIter = lengthIter)
+              overwriteValuesOnFile(object = level,
+                                    skeleton = skeleton.level,
+                                    filename = filename,
+                                    nIteration = nIteration,
+                                    lengthIter = lengthIter)
+              NULL
+          })
+
+
+
+
+## transferParamPrior #################################################################
 
 ## Exch
 

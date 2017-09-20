@@ -350,6 +350,19 @@ setGeneric("printSpecAgValEqns",
            function(object, aggregate)
                standardGeneric("printSpecAgValEqns"))
 
+setGeneric("rescalePairPriors",
+          function(priorHigh, priorLow, skeletonBetaHigh, skeletonBetaLow,
+                   skeletonsPriorHigh, skeletonsPriorLow,
+                   adjustments, prefixAdjustments,
+                   filename, nIteration, lengthIter) {
+              NULL
+          })
+
+setGeneric("rescaleSeason",
+           function(prior, skeleton, filename, nIteration, lengthIter) {
+               NULL
+           })
+
 setGeneric("showModelHelper",
            function(object)
                standardGeneric("showModelHelper"))

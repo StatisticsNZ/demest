@@ -3227,6 +3227,159 @@ test_that("R and C versions of predictPrior give same answer with Zero", {
 })
 
 
+## rescalePairPriors ##################################################################
+
+test_that("rescalePairPriors works with Exchangeable-Exchangeable", {
+
+    rescalePairPriors <- demest:::rescalePairPriors
+    makeOutputPrior <- demest:::makeOutputPrior
+    initialPrior <- demest:::initialPrior
+    SkeletonBetaTerm <- demest:::SkeletonBetaTerm    
+    spec.high <- Exch()
+    spec.low <- Exch()
+    beta.high <- rnorm(10)
+    beta.low <- rnorm(2)
+    metadata.high <- new("MetaData",
+                         nms = c("country", "sex"),
+                         dimtypes = c("state", "sex"),
+                         DimScales = list(new("Categories", dimvalues = letters[1:5]),
+                                          new("Sexes", dimvalues = c("F", "M"))))
+    metadata.low <- new("MetaData",
+                        nms = "sex",
+                        dimtypes = "sex",
+                        DimScales = list(new("Sexes", dimvalues = c("F", "M"))))
+    prior.high <- initialPrior(spec.high,
+                               beta = beta.high,
+                               metadata = metadata,
+                               sY = NULL,
+                               isSaturated = new("LogicalFlag", FALSE))
+    prior.low <- initialPrior(spec.low,
+                              beta = beta.low,
+                              metadata = metadata,
+                              sY = NULL,
+                              isSaturated = new("LogicalFlag", FALSE))
+    skeleton.beta.high <- SkeletonBetaTerm(first = 10L,
+                                           metadata = metadata.high)
+    skeleton.beta.low <- SkeletonBetaTerm(first = 30L,
+                                          metadata = metadata.low)
+    skeletons.prior.high <- makeOutputPrior(prior = prior.high,
+                                            metadata = metadata.high,
+                                            pos = 50L)
+    skeletons.prior.low <- makeOutputPrior(prior = prior.low,
+                                           metadata = metadata.low,
+                                           pos = 100L)
+    adjustments <- new.env(hash = TRUE)
+    prefix.adjustments <- "model"
+    nIteration <- 20L
+    lengthIter <- 100L
+    filename <- tempfile()
+    con <- file(filename, open = "wb")
+    results <- new("ResultsModelEst")
+    results <- serialize(results, connection = NULL)
+    writeBin(length(results), con = con) # size results
+    writeBin(10L, con = con) # size adjustments
+    writeBin(results, con = con)
+    data <- as.double(1:2000)
+    writeBin(data, con = con)
+    close(con)
+    rescalePairPriors(priorHigh = prior.high,
+                      priorLow = prior.low,
+                      skeletonBetaHigh = skeleton.beta.high,
+                      skeletonBetaLow = skeleton.beta.low,
+                      skeletonsPriorHigh = skeletons.prior.high,
+                      skeletonsPriorLow = skeletons.prior.low,
+                      adjustments = adjustments,
+                      prefixAdjustments = prefix.adjustments,
+                      filename = filename,
+                      nIteration = nIteration,
+                      lengthIter = lengthIter)
+    con <- file(filename, open = "rb")
+    lengths <- readBin(con = con, what = "integer", n = 2L)
+    results <- readBin(con = con, what = "raw", n = length(results))
+    output <- readBin(con = con, what = "double", n = 2000L)
+    close(con)
+    output <- matrix(output, nr = lengthIter)
+    data <- matrix(data, nr = lengthIter)
+    here.high <- seq(from = skeleton.beta.high@first, to = skeleton.beta.high@last)
+    here.low <- seq(from = skeleton.beta.low@first, to = skeleton.beta.low@last)
+    data.high <- data[here.high, ]
+    data.low <- data[here.low, ]
+    output.high <- output[here.high, ]
+    output.low <- output[here.low, ]
+    means <- array(output.high, dim = c(5, 2, 20))
+    means <- apply(means, 2:3, mean)
+    expect_equal(adjustments[["model.prior.age:sex"]], means)
+
+    
+    expect_equal(output.high, data.high - rep(means, each = 5))
+    expect_equal(output.low, data.low + means)
+    
+})
+
+
+
+## rescaleSeason ######################################################################
+
+test_that("rescaleSeason works with SeasonMixin", {
+    rescaleSeason <- demest:::rescaleSeason
+    makeOutputPrior <- demest:::makeOutputPrior
+    initialPrior <- demest:::initialPrior
+    Skeleton <- demest:::Skeleton
+    spec <- DLM(trend = NULL,
+                season = Season(n = 4))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 1:10)))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = new("LogicalFlag", FALSE))
+    prior@alphaDLM@.Data <- 1:11
+    for (i in 1:11)
+        prior@s@.Data[[i]] <- rnorm(4)
+    skeleton <- makeOutputPrior(prior = prior,
+                                metadata = metadata,
+                                pos = 3L)
+    nIteration <- 20L
+    lengthIter <- 100L
+    filename <- tempfile()
+    con <- file(filename, open = "wb")
+    results <- new("ResultsModelEst")
+    results <- serialize(results, connection = NULL)
+    writeBin(length(results), con = con) # size results
+    writeBin(10L, con = con) # size adjustments
+    writeBin(results, con = con)
+    data <- as.double(1:2000)
+    writeBin(data, con = con)
+    close(con)
+    rescaleSeason(prior = prior,
+                  skeleton = skeleton,
+                  filename = filename,
+                  nIteration = nIteration,
+                  lengthIter = lengthIter)
+    con <- file(filename, open = "rb")
+    lengths <- readBin(con = con, what = "integer", n = 2L)
+    results <- readBin(con = con, what = "raw", n = length(results))
+    output <- readBin(con = con, what = "double", n = 2000L)
+    close(con)
+    output <- matrix(output, nr = lengthIter)
+    data <- matrix(data, nr = lengthIter)
+    here0 <- seq(from = skeleton$season@first, length = 4)
+    mean0 <- data[here0, ]
+    mean0 <- apply(mean0, 2, mean)
+    here.level <- skeleton$level@first:skeleton$level@last
+    data.level <- data[here.level, ]
+    output.level <- output[here.level, ]
+    expect_equal(output.level, data.level + rep(mean0, each = 11))
+    here.season <- skeleton$season@first:skeleton$season@last
+    data.season <- data[here.season, ]
+    output.season <- output[here.season, ]
+    expect_equal(output.season, data.season - rep(mean0, each = 44))
+})
+
 
 ## transferParamPrior ################################################################
 

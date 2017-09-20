@@ -6737,9 +6737,13 @@ indices0 <- function(iterator, nSeason = NULL, dim, iAlong) {
     iterator <- resetA(iterator)
     for (i in seq_len(n)) {
         indices <- iterator@indices
-        indices <- indices[1L]
-        if (!is.null(nSeason))
-            indices <- (indices - 1L) * nSeason + 1L
+        if (is.null(nSeason))
+            indices <- indices[1L]
+        else {
+            from <- (indices[1L] - 1L) * nSeason + 1L
+            indices <- seq.int(from = from, length.out = nSeason)
+            indices <- as.integer(indices)
+        }
         ans[[i]] <- indices
         iterator <- advanceA(iterator, useC = TRUE)
     }
@@ -6777,7 +6781,43 @@ indicesShow <- function(iterator, nSeason = NULL, dim, iAlong) {
 }
 
 ## HAS_TESTS
-makeMetadataIncl0 <- function(metadata, iAlong) {
+makeMetadata0 <- function(metadata, iAlong, nSeason) {
+    dim <- dim(metadata)
+    names <- names(metadata)
+    dimtypes <- dimtypes(metadata, use.names = FALSE)
+    DimScales <- DimScales(metadata, use.names = FALSE)
+    if (!is.null(nSeason)) {
+        nm.season <- make.unique(c(names, "season"))[length(names) + 1L]
+        dimtype.season <- "state"
+        DimScale.season <- new("Categories", dimvalues = as.character(seq_len(nSeason)))
+    }
+    if (length(metadata) == 1L) {
+        if (is.null(nSeason))
+            NULL
+        else
+            new("MetaData",
+                nms = nm.season,
+                dimtypes = dimtype.season,
+                DimScales = list(DimScale.season))
+    }
+    else {
+        names <- names[-iAlong]
+        dimtypes <- dimtypes[-iAlong]
+        DimScales <- DimScales[-iAlong]
+        if (!is.null(nSeason)) {
+            names <- c(nm.season, names)
+            dimtypes <- c(dimtype.season, dimtypes)
+            DimScales <- c(list(DimScale.season), DimScales)
+        }
+        new("MetaData",
+            nms = names,
+            dimtypes = dimtypes,
+            DimScales = DimScales)
+    }
+}
+
+## HAS_TESTS
+makeMetadataIncl0 <- function(metadata, iAlong, nSeason) {
     dim <- dim(metadata)
     names <- names(metadata)
     dimtypes <- dimtypes(metadata, use.names = FALSE)
@@ -6786,6 +6826,13 @@ makeMetadataIncl0 <- function(metadata, iAlong) {
     dimvalues.along <- as.character(seq_len(dim[iAlong] + 1L))
     DimScale.along <- new("Categories", dimvalues = dimvalues.along)
     DimScales[[iAlong]] <- DimScale.along
+    if (!is.null(nSeason)) {
+        nm.season <- make.unique(c(names, "season"))[length(names) + 1L]
+        names <- c(nm.season, names)
+        dimtypes <- c("state", dimtypes)
+        DimScale.season <- new("Categories", dimvalues = as.character(seq_len(nSeason)))
+        DimScales <- c(list(DimScale.season), DimScales)
+    }
     new("MetaData",
         nms = names,
         dimtypes = dimtypes,
@@ -6899,8 +6946,12 @@ makeOutputStateDLM <- function(iterator, metadata, nSeason, iAlong, pos, isTrend
                                 nSeason = nSeason,
                                 dim = dim,
                                 iAlong = iAlong)
+    metadata0 <- makeMetadata0(metadata = metadata,
+                               iAlong = iAlong,
+                               nSeason = nSeason)
     metadata.incl.0 <- makeMetadataIncl0(metadata = metadata,
-                                         iAlong = iAlong)
+                                         iAlong = iAlong,
+                                         nSeason = nSeason)
     methods::new("SkeletonStateDLM",
                  first = first,
                  last = last,
@@ -6908,6 +6959,7 @@ makeOutputStateDLM <- function(iterator, metadata, nSeason, iAlong, pos, isTrend
                  indicesShow = indices.show,
                  indices0 = indices.0,
                  metadata = metadata,
+                 metadata0 = metadata0,
                  metadataIncl0 = metadata.incl.0)
 }
 
@@ -7144,7 +7196,7 @@ overwriteValuesOnFile <- function(object, skeleton, filename,
     ## object
     stopifnot(methods::is(object, "Values"))
     ## skeleton
-    stopifnot(methods::is(skeleton, "SkeletonManyValues"))
+    stopifnot(methods::is(skeleton, "Skeleton"))
     ## nIteration
     stopifnot(is.integer(nIteration))
     stopifnot(identical(length(nIteration), 1L))
@@ -7197,12 +7249,12 @@ overwriteValuesOnFile <- function(object, skeleton, filename,
 }
 
 
-## HAS_TESTS
+## NO_TESTS
 readStateDLMFromFile <- function(skeleton, filename, iterations,
                                  nIteration, lengthIter, only0) {
+    iAlong <- skeleton@iAlong
     first <- skeleton@first
     last <- skeleton@last
-    indices0 <- skeleton@indices0
     if (is.null(iterations))
         iterations <- seq_len(nIteration)
     n.iter <- length(iterations)
@@ -7213,12 +7265,22 @@ readStateDLMFromFile <- function(skeleton, filename, iterations,
                              iterations = iterations)
     .Data <- matrix(.Data, ncol = n.iter)
     if (only0) {
+        indices0 <- skeleton@indices0
+        metadata <- skeleton@metadata0
+        if (is.null(metadata)) {
+            metadata <- new("MetaData",
+                            nms = "iteration",
+                            dimtypes = "iteration",
+                            DimScales = list(new("Iterations", dimvalues = seq_len(nIteration))))
+        }
+        else
+            metadata <- dembase::addIterationsToMetadata(metadata, iterations = iterations)        
         .Data <- .Data[indices0, ]
-        metadata <- skeleton@metadata[-iAlong]
     }
-    else
+    else {
         metadata <- skeleton@metadataIncl0
-    metadata <- dembase::addIterationsToMetadata(metadata, iterations = iterations)
+        metadata <- dembase::addIterationsToMetadata(metadata, iterations = iterations)        
+    }
     .Data <- array(.Data, dim = dim(metadata), dimnames = dimnames(metadata))
     methods::new("Values", .Data = .Data, metadata = metadata)
 }
@@ -8563,11 +8625,8 @@ getDataFromFile <- function(filename, first, last, lengthIter,
         on.exit(close(con))
         ## find out size of results object - stored in first position
         size.results <- readBin(con = con, what = "integer", n = 1L)
-<<<<<<< HEAD
         ## skip over size of adjustments
         readBin(con = con, what = "integer", n = 1L)
-=======
->>>>>>> master
         ## skip over results object
         for (j in seq_len(size.results))
             readBin(con = con, what = "raw", n = 1L)

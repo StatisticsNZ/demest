@@ -27,7 +27,6 @@ rescalePriorsInFile <- function(filename) {
     results <- fetchResultsObject(filename)
     nIteration <- results@mcmc["nIteration"]
     lengthIter <- results@control$lengthIter
-<<<<<<< HEAD
     adjustments <- new.env(hash = TRUE) # modified in-place
     rescalePriors(results = results,
                   adjustments = adjustments,
@@ -38,17 +37,10 @@ rescalePriorsInFile <- function(filename) {
                          filename = filename,
                          nIteration = nIteration,
                          lengthIter = lengthIter)
-=======
-    rescalePriors(results = results,
-                  filename = filename,
-                  nIteration = nIteration,
-                  lengthIter = lengthIter)
->>>>>>> master
 }
 
 setMethod("rescalePriors",
           signature(results = "ResultsModelEst"),
-<<<<<<< HEAD
           function(results, adjustments, filename, nIteration, lengthIter) {
               priors <- results@final[[1L]]@model@priorsBetas
               margins <- results@final[[1L]]@model@margins
@@ -60,17 +52,6 @@ setMethod("rescalePriors",
                                   skeletonsPriors = skeletons.priors,
                                   adjustments = adjustments,
                                   prefixAdjustments = "model",
-=======
-          function(results, filename, nIteration, lengthIter) {
-              priors <- results@final[[1L]]@model@priorsBetas
-              skeletons.betas <- results@model$prior[seq_along(priors)]
-              skeletons.priors <- results@model$hyper
-              margins <- results@model@margins
-              rescalePriorsHelper(priors = priors,
-                                  skeletonsBetas = skeletons.betas,
-                                  skeletonsPriors = skeletons.priors,
-                                  margins = margins,
->>>>>>> master
                                   filename = filename,
                                   nIteration = nIteration,
                                   lengthIter = lengthIter)
@@ -78,7 +59,6 @@ setMethod("rescalePriors",
 
 
 setMethod("rescalePriors",
-<<<<<<< HEAD
           signature(results = "ResultsCountsEst"),
           function(results, adjustments, filename, nIteration, lengthIter) {
               priors <- results@final[[1L]]@model@priorsBetas
@@ -109,39 +89,10 @@ setMethod("rescalePriors",
                                           skeletonsPriors = skeletons.priors,
                                           adjustments = adjustments,
                                           prefixAdjustments = prefix.adjustments,
-=======
-          signature(results = "ResultsCounts"),
-          function(results, filename) {
-              final <- object@final[[1L]]
-              model <- final@model
-              observation <- final@observation
-              priors <- final@model@priorsBetas
-              skeletons.betas <- model$prior
-              skeletons.priors <- model$hyper
-              margins <- final@model@margins
-              rescalePriorsHelper(priors = priors,
-                                  skeletonsBetas = skeletons.betas,
-                                  skeletonsPriors = skeletons.priors,
-                                  margins = margins,
-                                  filename = filename,
-                                  nIteration = nIteration,
-                                  lengthIter = lengthIter)
-              for (i in seq_along(observation)) {
-                  if (methods::is(final@observation[[i]], "Varying")) {
-                      priors <- final@observation[[i]]@priorsBetas
-                      skeletons.betas <- observation[[i]]$prior
-                      skeletons.priors <- observation[[i]]$hyper
-                      margins <- finale@observation[[i]]@margins
-                      rescalePriorsHelper(priors = priors,
-                                          skeletonsBetas = skeletons.betas,
-                                          skeletonsPriors = skeletons.priors,
-                                          margins = margins,
->>>>>>> master
                                           filename = filename,
                                           nIteration = nIteration,
                                           lengthIter = lengthIter)
                   }
-<<<<<<< HEAD
               }
           })
 
@@ -157,37 +108,6 @@ rescalePriorsHelper <- function(priors, margins, skeletonsBetas skeletonsPriors,
                       nIteration = nIteration,
                       lengthIter = lengthIter)
     }
-=======
-              }                  
-          })
-
-makePairsTerms <- function(margins) {
-    margins <- margins[-1L] # intercept
-    n <- length(margins)
-    ans <- vector(mode = "list", length = n * (n - 1L) / 2L)
-    i <- 1L
-    for (j in seq.int(from = n, to = 2L)) {
-        for (k in seq.int(from = j - 1L, to = 1L)) {
-            first <- margins[[j]]
-            second <- margins[[k]]
-            first.is.higher.order <- length(first) > length(second)
-            first.and.second.share.term <- any(second %in% first)
-            if (first.is.higher.order && first.and.second.share.term)
-                ans[[i]] <- c(j, k)
-            else
-                ans[[i]] <- NULL
-            i <- i + 1L
-        }
-    }
-    is.null <- sapply(ans, is.null)
-    ans <- ans[!is.null]
-    ans
-}
-
-
-rescalePriorsHelper <- function(priors, skeletonsBetas skeletonsPriors, margins,
-                                filename, nIteration, lengthIter) {
->>>>>>> master
     pairs.terms <- makePairsTerms(margins)
     for (pair.terms in pairs.terms) {
         i.higher <- pair.terms[1L]
@@ -198,7 +118,6 @@ rescalePriorsHelper <- function(priors, skeletonsBetas skeletonsPriors, margins,
         skeleton.beta.lower <- skeletonsBetas[[i.lower]]
         skeletons.prior.higher <- skeletonsPriors[[i.higher]]
         skeletons.prior.lower <- skeletonsPriors[[i.lower]]
-<<<<<<< HEAD
         rescalePairPriors(priorHigh = prior.higher,
                           priorLow = prior.lower,
                           skeletonBetaHigh = skeleton.beta.higher,
@@ -207,23 +126,12 @@ rescalePriorsHelper <- function(priors, skeletonsBetas skeletonsPriors, margins,
                           skeletonsPriorLow = skeletons.prior.lower,
                           adjustments = adjustments,
                           prefixAdjustments = prefixAdjustments,
-=======
-        rescalePairPriors(priorHigher = prior.higher,
-                          priorLower = prior.lower,
-                          skeletonBetaHigher = skeleton.beta.higher,
-                          skeletonBetaLower = skeleton.beta.lower,
-                          skeletonsPriorHigher = skeletons.prior.higher,
-                          skeletonsPriorLower = skeletons.prior.lower,
->>>>>>> master
                           filename = filename,
                           nIteration = nIteration,
                           lengthIter = lengthIter)
     }
     skeletons.beta.intercept <- skeletonsBetas[[1L]]
-<<<<<<< HEAD
     adj <- 0
-=======
->>>>>>> master
     for (i in seq_along(priors[-1L])) {
         prior.term <- priors[[i]]
         skeleton.beta.term <- skeletonsBetas[[i]]
@@ -232,126 +140,15 @@ rescalePriorsHelper <- function(priors, skeletonsBetas skeletonsPriors, margins,
                               skeletonBetaTerm = skeleton.beta.term,
                               skeletonBetaIntercept = skeleton.beta.intercept,
                               skeletonsPriorTerm = skeletons.prior.term,
-<<<<<<< HEAD
                               adjustments = adjustments,
                               prefixAdjustments = prefixAdjustments,
-=======
->>>>>>> master
                               filename = filename,
                               nIteration = nIteration,
                               lengthIter = lengthIter)        
     }
 }
 
-<<<<<<< HEAD
-
-
-
-setGeneric("rescaleSeason",
-           function(prior, skeleton, filename, nIteration, lengthIter) {
-               NULL
-           })
-
-setMethod("rescaleSeason",
-          signature(prior = "Season"),
-          function(prior, skeleton, filename, nIteration, lengthIter) {
-              skeleton.level <- skeleton$level
-              skeleton.season <- skeleton$season
-              season <- readStateDLMFromFile(object = skeleton.season,
-                                             filename = filename,
-                                             iterations = NULL,
-                                             nIteration = nIteration,
-                                             lengthIter = lengthIter,
-                                             only0 = FALSE)
-              season.0 <- readStateDLMFromFile(skeleton = skeleton.season,
-                                               filename = filename,
-                                               iterations = NULL,
-                                               nIteration = nIteration,
-                                               lengthIter = lengthIter,
-                                               only0 = TRUE)
-              means <- collapseDimension(season.0,
-                                         dimension = i.along,
-                                         weights = 1)
-              season <- season - means
-              level <- level + means
-              overwriteValuesOnFile(object = level,
-                                    skeleton = skeleton.level,
-                                    filename = filename,
-                                    nIteration = nIteration,
-                                    lengthIter = lengthIter)
-              overwriteValuesOnFile(object = level,
-                                    skeleton = skeleton.season,
-                                    filename = filename,
-                                    nIteration = nIteration,
-                                    lengthIter = lengthIter)
-              NULL
-          })
-
-
-
-
-
-setGeneric("rescalePairPriors",
-          function(priorHigh, priorLow, skeletonBetaHigh, skeletonBetaLow,
-                   skeletonsPriorHigh, skeletonsPriorLow,
-                   adjustments, prefixAdjustments,
-                   filename, nIteration, lengthIter) {
-              NULL
-          })
-
-
               
-setMethod("rescalePairPriors",
-          signature(priorHigh = "Exchangeable",
-                    priorLow = "Exchangeable"),
-          function(priorHigh, priorLow, skeletonBetaHigh, skeletonBetaLow,
-                   skeletonsPriorHigh, skeletonsPriorLow,
-                   adjustments, prefixAdjustments,
-                   filename, nIteration, lengthIter) {
-              metadata.high <- skeletonBetaHigh@metadata
-              metadata.low <- skeletonBetaLow@metadata
-              names.high <- names(metadata.high)
-              names.low <- names(metadata.low)
-              if (!all(names.low %in% names.high))
-                  return(NULL)
-              beta.high <- fetchResults(object = skeletonBetaHigh,
-                                        filename = filename,
-                                        iterations = NULL,
-                                        nIteration = nIteration
-                                        lengthIter = lengthIter)
-              beta.low <- fetchResults(object = skeletonBetaLow,
-                                       filename = filename,
-                                       iterations = NULL,
-                                       nIteration = nIteration
-                                       lengthIter = lengthIter)
-              names.high.only <- setdiff(names.high, names.low)
-              means.shared <- collapseDimension(beta.high,
-                                                dimension = names.high.only,
-                                                weights = 1)
-              rescaleAndWriteBetas(high = beta.high,
-                                   low = beta.low,
-                                   adj = means.shared,
-                                   skeletonHigh = skeletonBetaHigh,
-                                   skeletonLow = skeletonBetaHigh,
-                                   filename = filename,
-                                   nIteration = nIteration,
-                                   lengthIter = lengthIter)
-              recordAdjustments(priorHigh = priorHigh,
-                                priorLow = priorLow,
-                                namesHigh = names.high,
-                                namesLow = names.low,
-                                adj = means.shared,
-                                adjustments = adjustments,
-                                prefixAdjustments = prefixAdjustments)
-              NULL
-          })
-
-
-
-## need to add argument to fetchResults - along0 = FALSE
-## add similar argument to writeTermToFile
-## adjust SkeletonStateDLM accordingly
-
 
 setMethod("rescalePairPriors",
           signature(priorHigh = "Exchangeable",
@@ -796,118 +593,10 @@ setMethod("rescalePriorIntercept",
                                         lengthIter = lengthIter)
               }
               NULL
-=======
-setMethod("rescalePairPriors",
-          signature(priorHigher = "ExchNormZero",
-                    priorLower = "ExchNormZero"),
-          function(priorHigher, priorLower, skeletonBetaHigher, skeletonBetaLower,
-                   skeletonsPriorHigher, skeletonsPriorLower, filename,
-                   nIteration, lengthIter) {
-              beta.higher <- fetchResults(object = skeletonBetaHigher,
-                                          filename = filename,
-                                          iterations = NULL,
-                                          nIteration = nIteration
-                                          lengthIter = lengthIter)
-              beta.lower <- fetchResults(object = skeletonBetaLower,
-                                         filename = filename,
-                                         iterations = NULL,
-                                         nIteration = nIteration
-                                         lengthIter = lengthIter)
-              means.shared.dims <- makeMeansSharedDims(betaHigher = beta.higher,
-                                                       betaLower = beta.lower)
-              beta.higher <- beta.higher - means.shared.dims
-              beta.lower <- beta.lower + means.shared.dims
-              writeToFile(object = beta.higher,
-                          skeleton = skeletonBetaHigher,
-                          filename = filename)
-              writeToFile(object = beta.lower,
-                          skeleton = skeletonBetaLower,
-                          filename = filename)
-          })
-
-
-## can we select the right method based only on the first term???
-
-setMethod("rescalePairPriors",
-          signature(priorHigher = "DLMNoTrendNormZeroNoSeason",
-                    priorLower = "ANY"), 
-          function(priorHigher, priorLower, skeletonBetaHigher, skeletonBetaLower,
-                   skeletonsPriorHigher, skeletonsPriorLower, filename,
-                   nIteration, lengthIter) {
-              phi <- priorHigher@phi
-              phi.known <- priorHigher@phiKnown@.Data
-              if ((phi < 1) || !phi.known)
-                  return(NULL)
-              beta.higher <- fetchResults(object = skeletonBetaHigher,
-                                          filename = filename,
-                                          iterations = NULL,
-                                          nIteration = nIteration
-                                          lengthIter = lengthIter)
-              beta.lower <- fetchResults(object = skeletonBetaLower,
-                                         filename = filename,
-                                         iterations = NULL,
-                                         nIteration = nIteration
-                                         lengthIter = lengthIter)
-              skeleton.level <- skeletonsPriorHigher$level
-              level.higher <- fetchResults(object = skeleton.level,
-                                           filename = filename,
-                                           iterations = NULL,
-                                           nIteration = nIteration
-                                           lengthIter = lengthIter)
-              alpha0.higher <- fetchAlpha0(object = skeleton.level,
-                                           filename = filename,
-                                           iterations = NULL,
-                                           nIteration = nIteration
-                                           lengthIter = lengthIter)
-              means.alpha0 <- makeMeansAlpha0(alpha0 = alpha0,
-                                              betaLower = beta.lower)
-              beta.higher <- beta.higher - means.alpha0
-              beta.lower <- beta.lower + means.alpha0
-              level.higher <- level.higher - means.alpha0
-              writeToFile(object = beta.higher,
-                          skeleton = skeletonBetaHigher,
-                          filename = filename)
-              writeToFile(object = beta.lower,
-                          skeleton = skeletonBetaLower,
-                          filename = filename)
-              writeToFile(object = level.higher,
-                          skeleton = skeleton.level,
-                          filename = filename)
-          })
-
-
-setMethod("rescalePairPriors",
-          signature(priorHigher = "ExchNormZero",
-                    priorLower = "ExchNormZero"),
-          function(priorHigher, priorLower, skeletonBetaHigher, skeletonBetaLower,
-                   skeletonsPriorHigher, skeletonsPriorLower, filename,
-                   nIteration, lengthIter) {
-              beta.higher <- fetchResults(object = skeletonBetaHigher,
-                                          filename = filename,
-                                          iterations = NULL,
-                                          nIteration = nIteration
-                                          lengthIter = lengthIter)
-              beta.lower <- fetchResults(object = skeletonBetaLower,
-                                         filename = filename,
-                                         iterations = NULL,
-                                         nIteration = nIteration
-                                         lengthIter = lengthIter)
-              means.shared.dims <- makeMeansSharedDims(betaHigher = beta.higher,
-                                                       betaLower = beta.lower)
-              beta.higher <- beta.higher - means.shared.dims
-              beta.lower <- beta.lower + means.shared.dims
-              writeToFile(object = beta.higher,
-                          skeleton = skeletonBetaHigher,
-                          filename = filename)
-              writeToFile(object = beta.lower,
-                          skeleton = skeletonBetaLower,
-                          filename = filename)
->>>>>>> master
           })
 
 
 
-<<<<<<< HEAD
 setGeneric("rescalePred",
            function(pred, skeleton, adjustments, where) {
                pred
@@ -927,9 +616,6 @@ setMethod("rescalePred",
 
 
 ## also makeResultsObj
-=======
-
->>>>>>> master
 
 
 

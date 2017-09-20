@@ -70,7 +70,8 @@ SkeletonMu <- function(betas, margins, first, metadata) {
 ## HAS_TESTS
 SkeletonBetaIntercept <- function(first) {
     methods::new("SkeletonBetaIntercept",
-                 first = first)
+                 first = first,
+                 last = first)
 }
 
 ## HAS_TESTS
