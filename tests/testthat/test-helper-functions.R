@@ -11049,15 +11049,8 @@ test_that("makeResultsCounts works with exposure", {
     expect_is(ans, "ResultsCountsExposureEst")
 })
 
-<<<<<<< HEAD
-test_that("readStateDLMFromFile works", {
-    readStateDLMFromFile <- demest:::readStateDLMFromFile
-    makeOutputStateDLM <- demest:::makeOutputStateDLM
-    AlongIterator <- demest:::AlongIterator
-=======
 test_that("readCoefInterceptFromFile works", {
     readCoefInterceptFromFile <- demest:::readCoefInterceptFromFile
->>>>>>> master
     filename <- tempfile()
     con <- file(filename, open = "wb")
     results <- new("ResultsModelEst")
@@ -11065,7 +11058,6 @@ test_that("readCoefInterceptFromFile works", {
     writeBin(length(results), con = con) # size results
     writeBin(10L, con = con) # size adjustments
     writeBin(results, con = con)
-<<<<<<< HEAD
     original <- as.double(1:1000)
     writeBin(original, con = con)
     close(con)
@@ -11098,7 +11090,6 @@ test_that("readCoefInterceptFromFile works", {
                                  dimnames = list(time = 1:11,
                                                  iteration = 1:20)),
                            dimtypes = c(time = "state"))
-=======
     data <- as.double(1:200)
     writeBin(data, con = con)
     close(con)
@@ -11253,12 +11244,10 @@ test_that("C version of overwriteValuesOnFile works", {
     ans.expected <- matrix(original, nr = 10)
     ans.expected[6:10, ] <- object@.Data
     ans.expected <- as.double(ans.expected)
->>>>>>> master
     expect_identical(ans.obtained, ans.expected)
 })
 
 
-<<<<<<< HEAD
 test_that("recordAdjustments works", {
     ## recordAdjustments <- demest:::recordAdjustments
     ## both priors Exchangeable; nothing in 'adjustments'
@@ -11315,8 +11304,6 @@ test_that("recordAdjustments works", {
     expect_identical(adjustments[["model.prior.country:sex"]], 1)
     expect_identical(adjustments[["model.prior.country"]], 1 + adj)
 })
-=======
->>>>>>> master
 
 
 ## INSPECT RESULTS ###################################################################
