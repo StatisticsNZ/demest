@@ -6884,37 +6884,6 @@ makeOutputStateDLM <- function(iterator, metadata, nSeason, iAlong, pos, isTrend
                  metadata = metadata)
 }
 
-
-
-
-
-readCoefInterceptFromFile <- function(skeleton, filename, iterations,
-                                      nIteration, lengthIter) {
-    first <- skeleton@first
-    if (is.null(iterations))
-        iterations <- seq_len(nIteration)
-    n.iter <- length(iterations)
-    .Data <- getDataFromFile(filename = filename,
-                             first = first,
-                             last = first,
-                             lengthIter = lengthIter,
-                             iterations = iterations)
-    metadata <- methods::new("MetaData",
-                             nms = "iteration",
-                             dimtypes = "iteration",
-                             DimScales = list(methods::new("Iterations",
-                                                           dimvalues = iterations)))
-    .Data <- array(.Data,
-                   dim = dim(metadata),
-                   dimnames = dimnames(metadata))
-    methods::new("Values",
-                 .Data = .Data,
-                 metadata = metadata)
-}
-
-
-
-
 ## HAS_TESTS
 makeResultsFile <- function(filename, results, tempfiles) {
     kLength <- 10000
@@ -7075,8 +7044,30 @@ makeResultsCounts <- function(finalCombineds, mcmcArgs, controlArgs, seed) {
             final = final)
 }
 
+## HAS_TESTS
+readCoefInterceptFromFile <- function(skeleton, filename,
+                                      nIteration, lengthIter) {
+    first <- skeleton@first
+    iterations <- seq_len(nIteration)
+    .Data <- getDataFromFile(filename = filename,
+                             first = first,
+                             last = first,
+                             lengthIter = lengthIter,
+                             iterations = iterations)
+    metadata <- methods::new("MetaData",
+                             nms = "iteration",
+                             dimtypes = "iteration",
+                             DimScales = list(methods::new("Iterations",
+                                                           dimvalues = iterations)))
+    .Data <- array(.Data,
+                   dim = dim(metadata),
+                   dimnames = dimnames(metadata))
+    methods::new("Values",
+                 .Data = .Data,
+                 metadata = metadata)
+}
 
-
+## HAS_TESTS
 rescaleAndWriteBetas <- function(high, low, adj, skeletonHigh, skeletonLow,
                                  filename, nIteration, lengthIter) {
     high <- high - adj
@@ -7098,7 +7089,7 @@ rescaleAndWriteBetas <- function(high, low, adj, skeletonHigh, skeletonLow,
 ## HAS_TESTS
 overwriteValuesOnFile <- function(object, skeleton, filename,
                                   nIteration, lengthIter,
-                                  useC = TRUE) {
+                                  useC = FALSE) {
     ## object
     stopifnot(methods::is(object, "Values"))
     ## skeleton

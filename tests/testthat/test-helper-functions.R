@@ -10902,6 +10902,88 @@ test_that("makeResultsCounts works with exposure", {
     expect_is(ans, "ResultsCountsExposureEst")
 })
 
+test_that("readCoefInterceptFromFile works", {
+    readCoefInterceptFromFile <- demest:::readCoefInterceptFromFile
+    filename <- tempfile()
+    con <- file(filename, open = "wb")
+    results <- new("ResultsModelEst")
+    results <- serialize(results, connection = NULL)
+    writeBin(length(results), con = con) # size results
+    writeBin(10L, con = con) # size adjustments
+    writeBin(results, con = con)
+    data <- as.double(1:200)
+    writeBin(data, con = con)
+    close(con)
+    skeleton <- new("SkeletonBetaIntercept",
+                    first = 5L)
+    nIteration <- 20L
+    lengthIter <- 10L
+    metadata <- new("MetaData",
+                    nms = "iteration",
+                    dimtypes = "iteration",
+                    DimScales = list(new("Iterations", dimvalues = 1:20)))
+    ans.obtained <- readCoefInterceptFromFile(skeleton = skeleton,
+                                              filename = filename,
+                                              nIteration = nIteration,
+                                              lengthIter = lengthIter)
+    ans.expected <- matrix(data, nrow = lengthIter)
+    ans.expected <- ans.expected[5, ]
+    ans.expected <- ValuesOne(ans.expected, labels = 1:20, name = "iteration")
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("rescaleAndWriteBetas works", {
+    rescaleAndWriteBetas <- demest:::rescaleAndWriteBetas
+    filename <- tempfile()
+    con <- file(filename, open = "wb")
+    results <- new("ResultsModelEst")
+    results <- serialize(results, connection = NULL)
+    writeBin(length(results), con = con) # size results
+    writeBin(10L, con = con) # size adjustments
+    writeBin(results, con = con)
+    data <- as.double(1:1000)
+    writeBin(data, con = con)
+    close(con)
+    high <- Values(array(1:60,
+                         dim = c(3, 20),
+                         dimnames = list(reg = 1:3, iteration = 1:20)))
+    low <- Values(array(1:20,
+                        dim = 20,
+                        dimnames = list(iteration = 1:20)))
+    adj <- Values(array(20:1,
+                        dim = 20,
+                        dimnames = list(iteration = 1:20)))
+    skeleton.high <- new("SkeletonBetaTerm",
+                         first = 2L,
+                         last = 4L,
+                         metadata = new("MetaData",
+                                        nms = "reg",
+                                        dimtypes = "state",
+                                        DimScales = list(new("Categories", dimvalues = c("a", "b", "c")))))
+    skeleton.low <- new("SkeletonBetaIntercept",
+                        first = 5L)
+    nIteration <- 20L
+    lengthIter <- 10L
+    rescaleAndWriteBetas(high = high,
+                         low = low,
+                         adj = adj,
+                         skeletonHigh = skeleton.high,
+                         skeletonLow = skeleton.low,
+                         filename = filename,
+                         nIteration = nIteration,
+                         lengthIter = lengthIter)
+    con <- file(filename, open = "rb")
+    length.results <- readBin(con, what = "integer", n = 1)
+    readBin(con, what = "integer", n = 1)
+    readBin(con, what = "raw", n = length.results)
+    output <- readBin(con, what = "double", n = 1000)
+    output <- matrix(output, nr = lengthIter)
+    expect_equal(as.numeric(output[2:4, ]), as.numeric(high.adj))
+    expect_equal(as.numeric(output[5, ]), as.numeric(low.adj))
+})
+
+stop("need to change default for overwriteValuesOnFile from useC = FALSE to useC = TRUE")
+
 test_that("R version of overwriteValuesOnFile works", {
     overwriteValuesOnFile <- demest:::overwriteValuesOnFile
     filename <- tempfile()
