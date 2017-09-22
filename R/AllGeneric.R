@@ -358,6 +358,18 @@ setGeneric("rescalePairPriors",
               NULL
           })
 
+setGeneric("rescalePriorIntercept",
+           function(priorTerm, priorIntercept,
+                    skeletonBetaTerm, skeletonBetaIntercept,
+                    skeletonsPriorTerm, adjustments, prefixAdjustments,
+                    filename, nIteration, lengthIter) {
+               NULL
+           })
+
+setGeneric("rescalePriors",
+           function(results, adjustments, filename, nIteration, lengthIter)
+               standardGeneric("rescalePriors"))
+
 setGeneric("rescaleSeason",
            function(prior, skeleton, filename, nIteration, lengthIter) {
                NULL

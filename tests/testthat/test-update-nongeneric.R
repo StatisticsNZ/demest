@@ -809,7 +809,7 @@ test_that("updateAlphaDLMNoTrend gives valid answer - phi < 1", {
         ans.expected <- prior
         alpha <- matrix(0, nr = 4, ncol = 11)
         set.seed(seed)
-        for (i in 2:4) {
+        for (i in 1:4) {
             ans <- ffbs(beta = matrix(beta, nr = 4)[i,],
                         alpha = matrix(prior@alphaDLM, nr = 4)[i,],
                         m = prior@mNoTrend@.Data,
@@ -876,8 +876,8 @@ test_that("updateAlphaDLMNoTrend gives valid answer - phi < 1", {
         ans.expected <- prior
         alpha <- array(0, dim = c(6, 7, 10))
         set.seed(seed)
-        for (j in 2:10) {
-            for (i in 2:6) {
+        for (j in 1:10) {
+            for (i in 1:6) {
                 ans <- ffbs(beta = array(beta, dim = c(6, 6, 10))[i, , j],
                             alpha = array(prior@alphaDLM@.Data, dim = c(6, 7, 10))[i, , j],
                             m = prior@mNoTrend@.Data,
@@ -1030,7 +1030,7 @@ test_that("updateAlphaDLMNoTrend gives valid answer - phi == 1", {
         ans.expected <- prior
         alpha <- matrix(0, nr = 4, ncol = 11)
         set.seed(seed)
-        for (i in 2:4) {
+        for (i in 1:4) {
             ans <- ffbs(beta = matrix(beta, nr = 4)[i,],
                         alpha = matrix(prior@alphaDLM, nr = 4)[i,],
                         m = prior@mNoTrend@.Data,
@@ -1097,8 +1097,8 @@ test_that("updateAlphaDLMNoTrend gives valid answer - phi == 1", {
         ans.expected <- prior
         alpha <- array(0, dim = c(6, 7, 10))
         set.seed(seed)
-        for (j in 2:10) {
-            for (i in 2:6) {
+        for (j in 1:10) {
+            for (i in 1:6) {
                 ans <- ffbs(beta = array(beta, dim = c(6, 6, 10))[i, , j],
                             alpha = array(prior@alphaDLM@.Data, dim = c(6, 7, 10))[i, , j],
                             m = prior@mNoTrend@.Data,

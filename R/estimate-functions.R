@@ -223,6 +223,7 @@ estimateModel <- function(model, y, exposure = NULL, weights = NULL,
     makeResultsFile(filename = filename,
                     results = results,
                     tempfiles = tempfiles)
+    rescaleInFile(filename)
     finalMessage(filename = filename,
                  verbose = verbose)
 }
@@ -500,6 +501,7 @@ estimateCounts <- function(model, y, exposure = NULL, observation,
     makeResultsFile(filename = filename,
                     results = results,
                     tempfiles = tempfiles)
+    rescaleInFile(filename)
     finalMessage(filename = filename, verbose = verbose)
 }
 
@@ -780,6 +782,7 @@ continueEstimation <- function(filename, nBurnin = 0, nSim = 1000, outfile = NUL
                         results = results,
                         tempfiles = tempfiles.new)
     }
+    rescaleInFile(filename)
     finalMessage(filename = filename, verbose = verbose)    
 }
 

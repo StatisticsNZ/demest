@@ -818,7 +818,8 @@ test_that("makeOutputModel works with NormalVaryingVarsigmaKnown - no aggregate"
                      first = 32L,
                      metadata = model@metadataY)
     betas <- list("(Intercept)" = new("SkeletonBetaIntercept",
-                      first = 32L),
+                                      first = 32L,
+                                      last = 32L),
                   sex = new("SkeletonBetaTerm",
                       first = 33L,
                       last = 34L,
@@ -878,7 +879,8 @@ test_that("makeOutputModel works with NormalVaryingVarsigmaKnown - AgCertain", {
                      first = 33L,
                      metadata = model@metadataY)
     betas <- list("(Intercept)" = new("SkeletonBetaIntercept",
-                      first = 33L),
+                                      first = 33L,
+                                      last = 33L),
                   sex = new("SkeletonBetaTerm",
                       first = 34L,
                       last = 35L,
@@ -943,7 +945,8 @@ test_that("makeOutputModel works with NormalVaryingVarsigmaKnown - AgNormal", {
                      first = 33L,
                      metadata = model@metadataY)
     betas <- list("(Intercept)" = new("SkeletonBetaIntercept",
-                      first = 33L),
+                                      first = 33L,
+                                      last = 33L),
                   sex = new("SkeletonBetaTerm",
                       first = 34L,
                       last = 35L,
@@ -1003,7 +1006,8 @@ test_that("makeOutputModel works with NormalVaryingVarsigmaUnknown - no aggregat
                      first = 32L,
                      metadata = model@metadataY)
     betas <- list("(Intercept)" = new("SkeletonBetaIntercept",
-                      first = 32L),
+                                      first = 32L,
+                                      last = 32L),
                   sex = new("SkeletonBetaTerm",
                       first = 33L,
                       last = 34L,
@@ -1065,7 +1069,8 @@ test_that("makeOutputModel works with NormalVaryingVarsigmaUnknown - AgCertain",
                      first = 33L,
                      metadata = model@metadataY)
     betas <- list("(Intercept)" = new("SkeletonBetaIntercept",
-                      first = 33L),
+                                      first = 33L,
+                                      last = 33L),
                   sex = new("SkeletonBetaTerm",
                       first = 34L,
                       last = 35L,
@@ -1133,7 +1138,8 @@ test_that("makeOutputModel works with NormalVaryingVarsigmaUnknown - AgNormal", 
                      first = 34L,
                      metadata = model@metadataY)
     betas <- list("(Intercept)" = new("SkeletonBetaIntercept",
-                      first = 34L),
+                                      first = 34L,
+                                      last = 34L),
                   sex = new("SkeletonBetaTerm",
                       first = 35L,
                       last = 36L,
@@ -1191,7 +1197,8 @@ test_that("makeOutputModel works with BinomialVarying - no aggregate", {
                      first = 32L,
                      metadata = model@metadataY)
     betas <- list("(Intercept)" = new("SkeletonBetaIntercept",
-                      first = 32L),
+                                      first = 32L,
+                                      last = 32L),
                   sex = new("SkeletonBetaTerm",
                       first = 33L,
                       last = 34L,
@@ -1247,7 +1254,8 @@ test_that("makeOutputModel works with BinomialVarying - AgCertain", {
                      first = 32L,
                      metadata = model@metadataY)
     betas <- list("(Intercept)" = new("SkeletonBetaIntercept",
-                      first = 32L),
+                                      first = 32L,
+                                      last = 32L),
                   sex = new("SkeletonBetaTerm",
                       first = 33L,
                       last = 34L,
@@ -1308,7 +1316,7 @@ test_that("makeOutputModel works with BinomialVarying - AgNormal", {
                      first = 33L,
                      metadata = model@metadataY)
     betas <- list("(Intercept)" = new("SkeletonBetaIntercept",
-                      first = 33L),
+                      first = 33L, last = 33L),
                   sex = new("SkeletonBetaTerm",
                       first = 34L,
                       last = 35L,
@@ -1363,7 +1371,7 @@ test_that("makeOutputModel works with PoissonVarying - no aggregate", {
                      first = 32L,
                      metadata = model@metadataY)
     betas <- list("(Intercept)" = new("SkeletonBetaIntercept",
-                      first = 32L),
+                      first = 32L, last = 32L),
                   sex = new("SkeletonBetaTerm",
                       first = 33L,
                       last = 34L,
@@ -1419,7 +1427,7 @@ test_that("makeOutputModel works with PoissonVaryingUseExp - AgCertain", {
                      first = 32L,
                      metadata = model@metadataY)
     betas <- list("(Intercept)" = new("SkeletonBetaIntercept",
-                      first = 32L),
+                      first = 32L, last = 32L),
                   sex = new("SkeletonBetaTerm",
                       first = 33L,
                       last = 34L,
@@ -1480,7 +1488,7 @@ test_that("makeOutputModel works with PoissonVaryingUseExp - AgNormal", {
                      first = 43L,
                      metadata = model@metadataY)
     betas <- list("(Intercept)" = new("SkeletonBetaIntercept",
-                      first = 43L),
+                      first = 43L, last = 43L),
                   sex = new("SkeletonBetaTerm",
                       first = 44L,
                       last = 45L,
@@ -1542,7 +1550,7 @@ test_that("makeOutputModel works with PoissonVaryingUseExp - AgFun", {
                      first = 43L,
                      metadata = model@metadataY)
     betas <- list("(Intercept)" = new("SkeletonBetaIntercept",
-                      first = 43L),
+                      first = 43L, last = 43L),
                   sex = new("SkeletonBetaTerm",
                       first = 44L,
                       last = 45L,
@@ -1603,7 +1611,7 @@ test_that("makeOutputModel works with PoissonVaryingUseExp - AgPoisson", {
                      first = 43L,
                      metadata = model@metadataY)
     betas <- list("(Intercept)" = new("SkeletonBetaIntercept",
-                      first = 43L),
+                      first = 43L, last = 43L),
                   sex = new("SkeletonBetaTerm",
                       first = 44L,
                       last = 45L,

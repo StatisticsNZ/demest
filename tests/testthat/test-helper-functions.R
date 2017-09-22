@@ -625,7 +625,7 @@ test_that("initialDLMNoTrend works", {
     l <- initialDLMNoTrend(spec,
                            metadata = metadata,
                            sY = NULL)
-    expect_identical(l$CNoTrend[[1L]], 0)
+    expect_identical(l$CNoTrend[[1L]], 100)
 })
 
 test_that("initialDLMNoTrendPredict works", {
@@ -709,7 +709,7 @@ test_that("initialDLMWithTrend works", {
     expect_identical(l$ADelta, new("Scale", 1.0))
     expect_identical(length(l$aWithTrend), 10L)
     expect_identical(length(l$CWithTrend), 11L)
-    expect_identical(l$CWithTrend[[1]], matrix(c(0, 0, 0, 1), nr = 2))
+    expect_identical(l$CWithTrend[[1]], matrix(c(100, 0, 0, 1), nr = 2))
     expect_identical(length(l$DC), 11L)
     expect_identical(length(l$DCInv), 11L)
     expect_identical(length(l$DRInv), 10L)
@@ -728,7 +728,7 @@ test_that("initialDLMWithTrend works", {
     expect_true(all(sapply(l$CWithTrend, length) == 4L))
     expect_true(all(sapply(l$DC, length) == 4L))
     expect_true(all(sapply(l$DCInv, length) == 4L))
-    expect_identical(l$DCInv[[1]], matrix(c(Inf, 0, 0, 1), nr = 2))
+    expect_identical(l$DCInv[[1]], matrix(c(0.1, 0, 0, 1), nr = 2))
     expect_true(all(sapply(l$DRInv, length) == 4L))        
     expect_true(all(sapply(l$mWithTrend, length) == 2L))
     expect_true(all(sapply(l$m0WithTrend, length) == 2L))
@@ -753,10 +753,10 @@ test_that("initialDLMWithTrend works", {
                              metadata = metadata,
                              sY = NULL,
                              lAll = lAll)
-    expect_equal(l$CWithTrend[[1]], diag(c(0, 0.01)))
+    expect_equal(l$CWithTrend[[1]], diag(c(100, 0.01)))
     expect_identical(l$UC[[1]], diag(2))
-    expect_identical(l$DC[[1]], diag(c(0, 0.1)))
-    expect_identical(l$DCInv[[1]], diag(c(Inf, 10)))
+    expect_identical(l$DC[[1]], diag(c(10, 0.1)))
+    expect_identical(l$DCInv[[1]], diag(c(0.1, 10)))
     expect_identical(l$m0WithTrend[[1]], c(0, 0.05))
     expect_identical(l$ADelta0, new("Scale", 0.1))
     expect_identical(l$meanDelta0, new("Parameter", 0.05))
@@ -778,7 +778,7 @@ test_that("initialDLMWithTrend works", {
                              sY = NULL,
                              lAll = lAll)
     expect_identical(l$hasLevel, new("LogicalFlag", FALSE))
-    expect_true(is.infinite(l$DCInv[[1]][1]))
+    expect_true(is.finite(l$DCInv[[1]][1]))
 })
 
 test_that("initialDLMWithTrendPredict works", {
@@ -7847,6 +7847,7 @@ test_that("splitFile works", {
     size.result <- length(results)
     con <- file(filename, "wb")
     writeBin(size.result, con = con)
+    writeBin(10L, con = con) # size adjustments
     writeBin(results, con = con)
     writeBin(vals, con = con)
     close(con)
@@ -10274,7 +10275,7 @@ test_that("changeInPos works", {
 })
 
 test_that("fetchAdjustments works", {
-    ## fetchAdjustments <- demest:::fetchAdjustments
+    fetchAdjustments <- demest:::fetchAdjustments
     filename <- tempfile()
     con <- file(filename, open = "wb")
     results <- new("ResultsModelEst")
@@ -10339,7 +10340,7 @@ test_that("indices0 works - nSeason is NULL", {
 })
 
 test_that("indices0 works - nSeason is non-NULL", {
-    ## indices0 <- demest:::indices0
+    indices0 <- demest:::indices0
     AlongIterator <- demest:::AlongIterator
     ## dim = 3:4, along = 1, nSeason = 2
     iterator <- AlongIterator(dim = 3:4, iAlong = 1L)
@@ -10449,7 +10450,7 @@ test_that("indicesShow works - nSeason is non-NULL", {
 })
 
 test_that("makeMetadata0 works", {
-    ## makeMetadata0 <- demest:::makeMetadata0
+    makeMetadata0 <- demest:::makeMetadata0
     ## length(metadata) > 1, nSeason is NULL
     metadata <- new("MetaData",
                     nms = c("time", "sex", "age"),
@@ -10820,17 +10821,29 @@ test_that("makeOutputStateDLM works with Season", {
 })
 
 test_that("makePairsTerms works", {
-    ## makePairsTerms <- demest:::makePairsTerms
+    makePairsTerms <- demest:::makePairsTerms
     margins <- list(0L, 1L, 2L, 1:2)
     ans.obtained <- makePairsTerms(margins)
-    ans.expected <- list(3:2, c(3L, 1L))
+    ans.expected <- list(4:3, c(4L, 2L))
     expect_identical(ans.obtained, ans.expected)
     margins <- list(0L, 1L, 2L, 3L, 1:2, c(1L, 3L), 2:3, 1:3)
     ans.obtained <- makePairsTerms(margins)
-    ans.expected <- list(7:6, c(7L, 5L), c(7L, 4L), c(7L, 3L), c(7L, 2L), c(7L, 1L),
-                         c(6L, 3L), c(6L, 2L),
-                         c(5L, 3L), c(5L, 1L),
-                         c(4L, 2L), c(4L, 1L))
+    ans.expected <- list(8:7, c(8L, 6L), c(8L, 5L), c(8L, 4L), c(8L, 3L), c(8L, 2L),
+                         c(7L, 4L), c(7L, 3L),
+                         c(6L, 4L), c(6L, 2L),
+                         c(5L, 3L), c(5L, 2L))
+    expect_identical(ans.obtained, ans.expected)
+    margins <- list(0L)
+    ans.obtained <- makePairsTerms(margins)
+    ans.expected <- list()
+    expect_identical(ans.obtained, ans.expected)
+    margins <- list(0L, 1L)
+    ans.obtained <- makePairsTerms(margins)
+    ans.expected <- list()
+    expect_identical(ans.obtained, ans.expected)
+    margins <- list(0L, 1L, 2L)
+    ans.obtained <- makePairsTerms(margins)
+    ans.expected <- list()
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -10844,6 +10857,7 @@ test_that("makeResultsFile works", {
     res.vec <- serialize(results, connection = NULL)
     size.res <- length(res.vec)
     writeBin(size.res, con = con)
+    writeBin(0L, con = con)
     writeBin(res.vec, con = con)
     close(con)
     for (i in 1:3) {
@@ -10855,6 +10869,8 @@ test_that("makeResultsFile works", {
     con <- file(filename, "rb")
     ans.length <- readBin(con, what = "integer", n = 1L)
     expect_identical(ans.length, size.res)
+    ans.adj <- readBin(con, what = "integer", n = 1L)
+    expect_identical(ans.adj, 0L)
     ans.res <- unserialize(connection = readBin(con, what = "raw", n = size.res))
     expect_identical(ans.res, results)
     ans.data <- readBin(con, what = "double", n = 1500)
@@ -11126,16 +11142,16 @@ test_that("rescaleAndWriteBetas works", {
     writeBin(length(results), con = con) # size results
     writeBin(10L, con = con) # size adjustments
     writeBin(results, con = con)
-    data <- as.double(1:1000)
+    data <- as.double(1:200)
     writeBin(data, con = con)
     close(con)
-    high <- Values(array(1:60,
+    high <- Values(array(as.double(1:60),
                          dim = c(3, 20),
                          dimnames = list(reg = 1:3, iteration = 1:20)))
-    low <- Values(array(1:20,
+    low <- Values(array(as.double(1:20),
                         dim = 20,
                         dimnames = list(iteration = 1:20)))
-    adj <- Values(array(20:1,
+    adj <- Values(array(as.double(20:1),
                         dim = 20,
                         dimnames = list(iteration = 1:20)))
     skeleton.high <- new("SkeletonBetaTerm",
@@ -11146,7 +11162,8 @@ test_that("rescaleAndWriteBetas works", {
                                         dimtypes = "state",
                                         DimScales = list(new("Categories", dimvalues = c("a", "b", "c")))))
     skeleton.low <- new("SkeletonBetaIntercept",
-                        first = 5L)
+                        first = 5L,
+                        last = 5L)
     nIteration <- 20L
     lengthIter <- 10L
     rescaleAndWriteBetas(high = high,
@@ -11163,61 +11180,49 @@ test_that("rescaleAndWriteBetas works", {
     readBin(con, what = "raw", n = length.results)
     output <- readBin(con, what = "double", n = 1000)
     output <- matrix(output, nr = lengthIter)
+    high.adj <- high - adj
+    low.adj <- low + adj
     expect_equal(as.numeric(output[2:4, ]), as.numeric(high.adj))
     expect_equal(as.numeric(output[5, ]), as.numeric(low.adj))
 })
 
-test_that("rescaleAndWriteBetas works", {
-    rescaleAndWriteBetas <- demest:::rescaleAndWriteBetas
+test_that("rescaleInFile works", {
+    rescaleInFile <- demest:::rescaleInFile
+    fetchResultsObject <- demest:::fetchResultsObject
+    exposure <- Counts(array(as.integer(rpois(n = 24, lambda = 10)),
+                             dim = 2:4,
+                             dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000:2003)),
+                       dimscales = c(time = "Intervals"))
+    y <- Counts(array(as.integer(rbinom(n = 24, size = exposure, prob = 0.8)),
+                      dim = 2:4,
+                      dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000:2003)),
+                dimscales = c(time = "Intervals"))
     filename <- tempfile()
-    con <- file(filename, open = "wb")
-    results <- new("ResultsModelEst")
-    results <- serialize(results, connection = NULL)
-    writeBin(length(results), con = con) # size results
-    writeBin(10L, con = con) # size adjustments
-    writeBin(results, con = con)
-    data <- as.double(1:1000)
-    writeBin(data, con = con)
-    close(con)
-    high <- Values(array(1:60,
-                         dim = c(3, 20),
-                         dimnames = list(reg = 1:3, iteration = 1:20)))
-    low <- Values(array(1:20,
-                        dim = 20,
-                        dimnames = list(iteration = 1:20)))
-    adj <- Values(array(20:1,
-                        dim = 20,
-                        dimnames = list(iteration = 1:20)))
-    skeleton.high <- new("SkeletonBetaTerm",
-                         first = 2L,
-                         last = 4L,
-                         metadata = new("MetaData",
-                                        nms = "reg",
-                                        dimtypes = "state",
-                                        DimScales = list(new("Categories", dimvalues = c("a", "b", "c")))))
-    skeleton.low <- new("SkeletonBetaIntercept",
-                        first = 5L)
-    nIteration <- 20L
-    lengthIter <- 10L
-    rescaleAndWriteBetas(high = high,
-                         low = low,
-                         adj = adj,
-                         skeletonHigh = skeleton.high,
-                         skeletonLow = skeleton.low,
-                         filename = filename,
-                         nIteration = nIteration,
-                         lengthIter = lengthIter)
+    estimateModel(Model(y ~ Binomial(mean ~ age + sex)),
+                  y = y,
+                  exposure = exposure,
+                  nBurnin = 0,
+                  nSim = 2,
+                  nThin = 1,
+                  nChain = 2,
+                  filename = filename)
+    rescaleInFile(filename)
+    results <- fetchResultsObject(filename)
+    nIteration <- results@mcmc[["nIteration"]]
+    lengthIter <- results@control$lengthIter
     con <- file(filename, open = "rb")
-    length.results <- readBin(con, what = "integer", n = 1)
-    readBin(con, what = "integer", n = 1)
-    readBin(con, what = "raw", n = length.results)
-    output <- readBin(con, what = "double", n = 1000)
-    output <- matrix(output, nr = lengthIter)
-    expect_equal(as.numeric(output[2:4, ]), as.numeric(high.adj))
-    expect_equal(as.numeric(output[5, ]), as.numeric(low.adj))
+    size.res <- readBin(con, what = "integer", n = 1L)
+    expect_identical(size.res, length(serialize(results, connection = NULL)))
+    size.adj <- readBin(con, what = "integer", n = 1L)
+    res <- readBin(con, what = "raw", n = size.res)
+    data <- readBin(con, what = "double", n = nIteration * lengthIter)
+    adj.ser <- readBin(con, what = "raw", n = size.adj)
+    adj <- unserialize(adj.ser)
+    expect_true(setequal(names(adj),
+                         c("model.prior.(Intercept)",
+                           "model.prior.age",
+                           "model.prior.sex")))
 })
-
-stop("need to change default for overwriteValuesOnFile from useC = FALSE to useC = TRUE")
 
 test_that("R version of overwriteValuesOnFile works", {
     overwriteValuesOnFile <- demest:::overwriteValuesOnFile
@@ -11263,49 +11268,51 @@ test_that("R version of overwriteValuesOnFile works", {
 
 test_that("C version of overwriteValuesOnFile works", {
     overwriteValuesOnFile <- demest:::overwriteValuesOnFile
-    filename <- tempfile()
-    con <- file(filename, open = "wb")
-    results <- new("ResultsModelEst")
-    results <- serialize(results, connection = NULL)
-    writeBin(length(results), con = con) # size results
-    writeBin(10L, con = con) # size adjustments
-    writeBin(results, con = con)
-    original <- as.double(1:200)
-    writeBin(original, con = con)
-    close(con)
-    object <- Values(array(as.double(1001:1100),
-                           dim = c(5, 20),
-                           dimnames = list(reg = 1:5, iter = 1:20)))
-    nIteration <- 20L
-    lengthIter <- 10L
-    metadata <- new("MetaData",
-                    nms = "age",
-                    dimtypes = "age",
-                    DimScales = list(new("Intervals", dimvalues = 0:5)))
-    skeleton <- new("SkeletonManyValues",
-                    first = 6L,
-                    last = 10L,
-                    metadata = metadata)
-    overwriteValuesOnFile(object = object,
-                    skeleton = skeleton,
-                    filename = filename,
-                    nIteration = nIteration,
-                    lengthIter = lengthIter,
-                    useC = TRUE)
-    con <- file(filename, open = "rb")
-    readBin(con = con, what = "integer", n = 2L)
-    readBin(con = con, what = "raw", n = length(results))
-    ans.obtained <- readBin(con = con, what = "double", n = 200L)
-    close(con)
-    ans.expected <- matrix(original, nr = 10)
-    ans.expected[6:10, ] <- object@.Data
-    ans.expected <- as.double(ans.expected)
-    expect_identical(ans.obtained, ans.expected)
+    for (range in list(c(6L, 10L), c(1L, 5L), c(2L, 6L))) {
+        filename <- tempfile()
+        con <- file(filename, open = "wb")
+        results <- new("ResultsModelEst")
+        results <- serialize(results, connection = NULL)
+        writeBin(length(results), con = con) # size results
+        writeBin(10L, con = con) # size adjustments
+        writeBin(results, con = con)
+        original <- as.double(1:200)
+        writeBin(original, con = con)
+        close(con)
+        object <- Values(array(as.double(1001:1100),
+                               dim = c(5, 20),
+                               dimnames = list(reg = 1:5, iter = 1:20)))
+        nIteration <- 20L
+        lengthIter <- 10L
+        metadata <- new("MetaData",
+                        nms = "age",
+                        dimtypes = "age",
+                        DimScales = list(new("Intervals", dimvalues = 0:5)))
+        skeleton <- new("SkeletonManyValues",
+                        first = range[1],
+                        last = range[2],
+                        metadata = metadata)
+        overwriteValuesOnFile(object = object,
+                              skeleton = skeleton,
+                              filename = filename,
+                              nIteration = nIteration,
+                              lengthIter = lengthIter,
+                              useC = TRUE)
+        con <- file(filename, open = "rb")
+        readBin(con = con, what = "integer", n = 2L)
+        readBin(con = con, what = "raw", n = length(results))
+        ans.obtained <- readBin(con = con, what = "double", n = 200L)
+        close(con)
+        ans.expected <- matrix(original, nr = 10)
+        ans.expected[seq(from = range[1], to = range[2]), ] <- object@.Data
+        ans.expected <- as.double(ans.expected)
+        expect_identical(ans.obtained, ans.expected)
+    }
 })
 
 
 test_that("recordAdjustments works", {
-    ## recordAdjustments <- demest:::recordAdjustments
+    recordAdjustments <- demest:::recordAdjustments
     ## both priors Exchangeable; nothing in 'adjustments'
     priorHigh <- new("ExchNormZero")
     priorLow <- new("ExchNormZero")
@@ -11360,6 +11367,102 @@ test_that("recordAdjustments works", {
     expect_identical(adjustments[["model.prior.country:sex"]], 1)
     expect_identical(adjustments[["model.prior.country"]], 1 + adj)
 })
+
+test_that("rescalePriorsHelper works with Exchangeable", {
+    rescalePriorsHelper <- demest:::rescalePriorsHelper
+
+    makeOutputPrior <- demest:::makeOutputPrior
+    initialPrior <- demest:::initialPrior
+    SkeletonBetaTerm <- demest:::SkeletonBetaTerm
+    SkeletonBetaIntercept <- demest:::SkeletonBetaIntercept
+    spec.int <- ExchFixed()
+    spec.country <- Exch()
+    spec.sex <- Exch()
+    spec.country.sex <- Exch()
+    beta.int <- rnorm(1)
+    beta.country <- rnorm(5)
+    beta.sex <- rnorm(2)
+    beta.country.sex <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = c("country", "sex"),
+                    dimtypes = c("state", "sex"),
+                    DimScales = list(new("Categories", dimvalues = letters[1:5]),
+                                     new("Sexes", dimvalues = c("F", "M"))))
+    prior.int <- initialPrior(spec.int,
+                              beta = beta.int,
+                              metadata = NULL,
+                              sY = NULL,
+                              isSaturated = new("LogicalFlag", FALSE))
+    prior.country <- initialPrior(spec.country,
+                                  beta = beta.country,
+                                  metadata = metadata[1],
+                                  sY = NULL,
+                                  isSaturated = new("LogicalFlag", FALSE))
+    prior.sex <- initialPrior(spec.sex,
+                              beta = beta.country,
+                              metadata = metadata[2],
+                              sY = NULL,
+                              isSaturated = new("LogicalFlag", FALSE))
+    prior.country.sex <- initialPrior(spec.country.sex,
+                                      beta = beta.country.sex,
+                                      metadata = metadata,
+                                      sY = NULL,
+                                      isSaturated = new("LogicalFlag", FALSE))
+    priors <- list(prior.int,
+                   prior.country,
+                   prior.sex,
+                   prior.country.sex)
+    margins <- list(0L, 1L, 2L, 1:2)
+    skeletonsBetas <- list(SkeletonBetaIntercept(first = 10L),
+                           SkeletonBetaTerm(first = 11L,
+                                            metadata = metadata[1L]),
+                           SkeletonBetaTerm(first = 16L,
+                                            metadata = metadata[2L]),
+                           SkeletonBetaTerm(first = 18L,
+                                            metadata = metadata))
+    skeletonsPriors <- list(makeOutputPrior(priors[[1]],
+                                            metadata = NULL,
+                                            pos = 28L),
+                            makeOutputPrior(priors[[2]],
+                                            metadata = metadata[1],
+                                            pos = 29L),
+                            makeOutputPrior(priors[[3]],
+                                            metadata = metadata[2],
+                                            pos = 30L),
+                            makeOutputPrior(priors[[4]],
+                                            metadata = metadata,
+                                            pos = 31L))
+    adjustments <- new.env(hash = TRUE)
+    prefixAdjustments <- "model"
+    nIteration <- 20L
+    lengthIter <- 100L
+    filename <- tempfile()
+    con <- file(filename, open = "wb")
+    results <- new("ResultsModelEst")
+    results <- serialize(results, connection = NULL)
+    writeBin(length(results), con = con) # size results
+    writeBin(10L, con = con) # size adjustments
+    writeBin(results, con = con)
+    data <- as.double(1:2000)
+    writeBin(data, con = con)
+    close(con)
+    prefix.adjustments <- "model"
+    rescalePriorsHelper(priors = priors,
+                        margins = margins,
+                        skeletonsBetas = skeletonsBetas,
+                        skeletonsPriors = skeletonsPriors,
+                        adjustments = adjustments,
+                        prefixAdjustments = prefix.adjustments,
+                        filename = filename,
+                        nIteration = nIteration,
+                        lengthIter = lengthIter)
+    expect_true(setequal(names(adjustments),
+                         paste("model.prior",
+                               c("(Intercept)", "country", "sex", "country:sex"),
+                               sep = ".")))
+               
+})
+
 
 
 ## INSPECT RESULTS ###################################################################
@@ -11822,6 +11925,7 @@ test_that("fetchResultsObject works", {
     res.vec <- serialize(results, connection = NULL)
     size.res <- length(res.vec)
     writeBin(size.res, con = con)
+    writeBin(0L, con = con)
     writeBin(res.vec, con = con)
     close(con)
     for (i in 1:3) {
@@ -11969,14 +12073,19 @@ test_that("R and C versions of getDataFromFile give same answer", {
     getDataFromFile <- demest:::getDataFromFile
     results <- new("ResultsModelEst")
     results <- serialize(results, connection = NULL)
+    adjustments <- new.env(hash = TRUE)
+    adjustments[["nm"]] <- 1
+    adjustments <- serialize(adjustments, connect = NULL)
     size.results <- length(results)
+    size.adjustments <- length(adjustments)
     data <- rnorm(n = 1000)
     filename <- tempfile()
     con <- file(filename, open = "wb")
     writeBin(size.results, con = con)
-    writeBin(10L, con)
+    writeBin(size.adjustments, con)
     writeBin(results, con = con)
     writeBin(data, con = con)
+    writeBin(adjustments, con = con)
     close(con)
     for (seed in seq_len(n.test)) {
         set.seed(seed)

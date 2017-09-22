@@ -54,6 +54,7 @@ test_that("fetchResults works with object of class SkeletonOneCounts", {
     filename <- tempfile()
     con <- file(filename, "wb")
     writeBin(size.results, con)
+    writeBin(10L, con)
     writeBin(results, con)
     writeBin(as.double(1:100), con)
     close(con)
@@ -79,6 +80,7 @@ test_that("fetchResults works with object of class SkeletonOneValues", {
     results <- serialize(results, connection = NULL)
     size.results <- length(results)
     writeBin(size.results, con)
+    writeBin(10L, con)
     writeBin(results, con)
     writeBin(as.double(1:100), con)
     close(con)
@@ -111,6 +113,7 @@ test_that("fetchResults works with object of class SkeletonManyCounts", {
     results <- serialize(results, connection = NULL)
     size.results <- length(results)
     writeBin(size.results, con)
+    writeBin(10L, con)
     writeBin(results, con)
     writeBin(as.double(1:100), con)
     close(con)
@@ -144,6 +147,7 @@ test_that("fetchResults works with object of class SkeletonManyValues", {
     results <- serialize(results, connection = NULL)
     size.results <- length(results)
     writeBin(size.results, con)
+    writeBin(10L, con)
     writeBin(results, con)
     writeBin(as.double(1:100), con)
     close(con)
@@ -163,7 +167,8 @@ test_that("fetchResults works with object of class SkeletonManyValues", {
 test_that("fetchResults works with object of class SkeletonBetaIntercept", {
     fetchResults <- demest:::fetchResults
     object <- new("SkeletonBetaIntercept",
-                  first = 3L)
+                  first = 3L,
+                  last = 3L)
     nameObject <- "obj"
     filename <- tempfile()
     con <- file(filename, "wb")
@@ -171,6 +176,7 @@ test_that("fetchResults works with object of class SkeletonBetaIntercept", {
     results <- serialize(results, connection = NULL)
     size.results <- length(results)
     writeBin(size.results, con)
+    writeBin(10L, con)
     writeBin(results, con)
     writeBin(as.double(1:1000), con)
     close(con)
@@ -181,10 +187,6 @@ test_that("fetchResults works with object of class SkeletonBetaIntercept", {
                                  nIteration = 10L,
                                  lengthIter = 100L)
     beta <- 3 + (0:9) * 100
-    higher <- 6:11 + rep((0:9) * 100, each = 6)
-    higher <- matrix(higher, nrow = 6)
-    higher <- colMeans(higher)
-    beta <- beta + higher
     metadata <- new("MetaData",
                     nms = "iteration",
                     dimtypes = "iteration",
@@ -212,6 +214,7 @@ test_that("fetchResults works with object of class SkeletonBetaTerm", {
     results <- serialize(results, connection = NULL)
     size.results <- length(results)
     writeBin(size.results, con)
+    writeBin(10L, con)
     writeBin(results, con)
     writeBin(as.double(1:1000), con)
     close(con)
@@ -222,10 +225,6 @@ test_that("fetchResults works with object of class SkeletonBetaTerm", {
                                  nIteration = 10L,
                                  lengthIter = 100L)
     beta <- 3:5 + rep((0:9) * 100, each = 3)
-    higher <- 6:11 + rep((0:9) * 100, each = 6)
-    higher <- array(higher, dim = c(2, 3, 10))
-    higher <- apply(higher, 2:3, mean)
-    beta <- beta + higher
       metadata <- new("MetaData",
         nms = c("region", "iteration"),
         dimtypes = c("state", "iteration"),
@@ -264,6 +263,7 @@ test_that("fetchResults works with object of class SkeletonMu", {
     results <- serialize(results, connection = NULL)
     size.results <- length(results)
     writeBin(size.results, con)
+    writeBin(10L, con)
     writeBin(results, con)
     writeBin(as.double(1:1000), con)
     close(con)
@@ -274,7 +274,8 @@ test_that("fetchResults works with object of class SkeletonMu", {
                                  nIteration = 10L,
                                  lengthIter = 100L)
     obj.intercept <- new("SkeletonBetaIntercept",
-                         first = 11L)
+                         first = 11L,
+                         last = 11L)
     obj.region <- new("SkeletonBetaTerm",
                       metadata = metadata[1],
                       first = 12L,
@@ -303,28 +304,24 @@ test_that("fetchResults works with object of class SkeletonMu", {
                            iterations = 1:10,
                            nIteration = 10L,
                            lengthIter = 100L)
-    region <- sweepAllMargins(region)
     age <- fetchResults(object = obj.age,
                         nameObject = "obj",
                         filename = filename,
                         iterations = 1:10,
                         nIteration = 10L,
                         lengthIter = 100L)
-    age <- sweepAllMargins(age)
     sex <- fetchResults(object = obj.sex,
                         nameObject = "obj",
                         filename = filename,
                         iterations = 1:10,
                         nIteration = 10L,
                         lengthIter = 100L)
-    sex <- sweepAllMargins(sex)
     age.sex <- fetchResults(object = obj.age.sex,
                             nameObject = "obj",
                             filename = filename,
                             iterations = 1:10,
                             nIteration = 10L,
                             lengthIter = 100L)
-    age.sex <- sweepAllMargins(age.sex)
     ans.expected <- intercept + region + age + sex + age.sex
     ans.expected <- aperm(ans.expected, perm = names(ans.obtained))
     expect_identical(ans.obtained, ans.expected)
@@ -343,6 +340,7 @@ test_that("fetchResults works with object of class SkeletonMu", {
     results <- serialize(results, connection = NULL)
     size.results <- length(results)
     writeBin(size.results, con)
+    writeBin(10L, con)
     writeBin(results, con)
     writeBin(as.double(1:1000), con)
     close(con)
@@ -353,7 +351,8 @@ test_that("fetchResults works with object of class SkeletonMu", {
                                  nIteration = 10L,
                                  lengthIter = 100L)
     obj.intercept <- new("SkeletonBetaIntercept",
-                         first = 11L)
+                         first = 11L,
+                         last = 11L)
     obj.age <- new("SkeletonBetaTerm",
                    metadata = metadata[2],
                    first = 12L,
@@ -370,7 +369,6 @@ test_that("fetchResults works with object of class SkeletonMu", {
                         iterations = 1:10,
                         nIteration = 10L,
                         lengthIter = 100L)
-    age <- sweepAllMargins(age)
     sex.region <- Values(array(0, ## used only to get metadata right
                                dim = c(3, 2, 10),
                                dimnames = list(region = c("a", "b", "c"),
@@ -400,6 +398,7 @@ test_that("fetchResults works with object of class SkeletonCovariates", {
     results <- serialize(results, connection = NULL)
     size.results <- length(results)
     writeBin(size.results, con)
+    writeBin(10L, con)
     writeBin(results, con)
     writeBin(as.double(1:1000), con)
     close(con)
@@ -438,6 +437,7 @@ test_that("fetchResults works with object of class SkeletonStateDLM - Level", {
     results <- serialize(results, connection = NULL)
     size.results <- length(results)
     writeBin(size.results, con)
+    writeBin(10L, con)
     writeBin(results, con)
     writeBin(as.double(1:2000), con)
     close(con)
@@ -477,6 +477,7 @@ test_that("fetchResults works with object of class SkeletonStateDLM - Trend", {
     results <- serialize(results, connection = NULL)
     size.results <- length(results)
     writeBin(size.results, con)
+    writeBin(10L, con)
     writeBin(results, con)
     writeBin(as.double(1:1000), con)
     close(con)
@@ -517,6 +518,7 @@ test_that("fetchResults works with object of class SkeletonStateDLM - Season", {
     results <- serialize(results, connection = NULL)
     size.results <- length(results)
     writeBin(size.results, con)
+    writeBin(10L, con)
     writeBin(results, con)
     writeBin(as.double(1:1000), con)
     close(con)
@@ -553,6 +555,7 @@ test_that("fetchResults works with object of class SkeletonAccept", {
     results <- serialize(results, connection = NULL)
     size.results <- length(results)
     writeBin(size.results, con)
+    writeBin(10L, con)
     writeBin(results, con)
     writeBin(data, con)
     close(con)
@@ -583,8 +586,10 @@ test_that("fetchResults works with object of class SkeletonNAccept", {
     results <- serialize(results, connection = NULL)
     size.results <- length(results)
     writeBin(size.results, con)
+    writeBin(10L, con)
     writeBin(results, con)
     writeBin(data, con)
+    writeBin(1, con)
     close(con)
     ans.obtained <- fetchResults(object = object,
                                  nameObject = "obj",
@@ -644,6 +649,7 @@ test_that("fetchResults works with object of class SkeletonMissingDataNormalVars
     results <- serialize(results, connection = NULL)
     size.results <- length(results)
     writeBin(size.results, con)
+    writeBin(10L, con)
     writeBin(results, con)
     writeBin(as.double(1:1000), con)
     close(con)
@@ -702,6 +708,7 @@ test_that("fetchResults works with object of class SkeletonMissingDataNormalVars
     results <- serialize(results, connection = NULL)
     size.results <- length(results)
     writeBin(size.results, con)
+    writeBin(10L, con)
     writeBin(results, con)
     writeBin(as.double(1:1000), con)
     close(con)
@@ -759,6 +766,7 @@ test_that("fetchResults works with object of class SkeletonMissingDataPoissonNot
     results <- serialize(results, connection = NULL)
     size.results <- length(results)
     writeBin(size.results, con)
+    writeBin(10L, con)
     writeBin(results, con)
     writeBin(as.double(1:1000), con)
     close(con)
@@ -817,6 +825,7 @@ test_that("fetchResults works with object of class SkeletonMissingDataPoissonNot
     results <- serialize(results, connection = NULL)
     size.results <- length(results)
     writeBin(size.results, con)
+    writeBin(10L, con)
     writeBin(results, con)
     writeBin(as.double(1:1000), con)
     close(con)
@@ -878,6 +887,7 @@ test_that("fetchResults works with object of class SkeletonMissingDataPoissonUse
     results <- serialize(results, connection = NULL)
     size.results <- length(results)
     writeBin(size.results, con)
+    writeBin(10L, con)
     writeBin(results, con)
     writeBin(as.double(1:1000), con)
     close(con)
@@ -941,6 +951,7 @@ test_that("fetchResults works with object of class SkeletonMissingDataPoissonUse
     results <- serialize(results, connection = NULL)
     size.results <- length(results)
     writeBin(size.results, con)
+    writeBin(10L, con)
     writeBin(results, con)
     writeBin(as.double(1:1000), con)
     close(con)
@@ -1003,6 +1014,7 @@ test_that("fetchResults works with object of class SkeletonMissingDataBinomial",
     results <- serialize(results, connection = NULL)
     size.results <- length(results)
     writeBin(size.results, con)
+    writeBin(10L, con)
     writeBin(results, con)
     writeBin(as.double(1:1000)/1000, con)
     close(con)
@@ -1066,6 +1078,7 @@ test_that("fetchResults works with object of class SkeletonMissingDatasetPoisson
     results <- serialize(results, connection = NULL)
     size.results <- length(results)
     writeBin(size.results, con)
+    writeBin(10L, con)
     writeBin(results, con)
     writeBin(as.double(1:1000), con)
     close(con)
@@ -1133,6 +1146,7 @@ test_that("fetchResults works with object of class SkeletonMissingDatasetPoisson
     results <- serialize(results, connection = NULL)
     size.results <- length(results)
     writeBin(size.results, con)
+    writeBin(10L, con)
     writeBin(results, con)
     writeBin(as.double(1:1000), con)
     close(con)
@@ -1200,6 +1214,7 @@ test_that("fetchResults works with object of class SkeletonMissingDatasetBinomia
     results <- serialize(results, connection = NULL)
     size.results <- length(results)
     writeBin(size.results, con)
+    writeBin(10L, con)
     writeBin(results, con)
     out <- matrix(1:1000, ncol = 10)
     out[21:26,] <- out[21:26,]/1000
@@ -1267,6 +1282,7 @@ test_that("fetchResults works with object of class SkeletonMissingDatasetPoisson
     results <- serialize(results, connection = NULL)
     size.results <- length(results)
     writeBin(size.results, con)
+    writeBin(10L, con)
     writeBin(results, con)
     writeBin(as.double(1:1000), con)
     close(con)

@@ -141,7 +141,6 @@ setMethod("fetchResults",
               first <- object@first
               last <- object@last
               metadata <- object@metadata
-              transforms.higher <- object@transformsHigher
               if (is.null(iterations))
                   iterations <- seq_len(nIteration)
               n.iter <- length(iterations)

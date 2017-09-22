@@ -1620,6 +1620,7 @@ setMethod("printPriorIntercept",
 
 ## rescalePairPriors ##################################################################
 
+## HAS_TESTS
 setMethod("rescalePairPriors",
           signature(priorHigh = "Exchangeable",
                     priorLow = "Exchangeable"),
@@ -1627,7 +1628,6 @@ setMethod("rescalePairPriors",
                    skeletonsPriorHigh, skeletonsPriorLow,
                    adjustments, prefixAdjustments,
                    filename, nIteration, lengthIter) {
-              browser()
               metadata.high <- skeletonBetaHigh@metadata
               metadata.low <- skeletonBetaLow@metadata
               names.high <- names(metadata.high)
@@ -1652,7 +1652,7 @@ setMethod("rescalePairPriors",
                                    low = beta.low,
                                    adj = means.shared,
                                    skeletonHigh = skeletonBetaHigh,
-                                   skeletonLow = skeletonBetaHigh,
+                                   skeletonLow = skeletonBetaLow,
                                    filename = filename,
                                    nIteration = nIteration,
                                    lengthIter = lengthIter)
@@ -1666,6 +1666,452 @@ setMethod("rescalePairPriors",
               NULL
           })
 
+## HAS_TESTS
+setMethod("rescalePairPriors",
+          signature(priorHigh = "Exchangeable",
+                    priorLow = "DLM"),
+          function(priorHigh, priorLow,
+                   skeletonBetaHigh, skeletonBetaLow,
+                   skeletonsPriorHigh, skeletonsPriorLow,
+                   adjustments, prefixAdjustments,
+                   filename, nIteration, lengthIter) {
+              i.along.low <- priorLow@iAlong
+              phi.low <- priorLow@phi
+              phi.known.low <- priorLow@phiKnown@.Data
+              metadata.high <- skeletonBetaHigh@metadata
+              metadata.low <- skeletonBetaLow@metadata
+              skeleton.level.low <- skeletonsPriorLow$level
+              has.trend.low <- methods::is(priorLow, "WithTrendMixin")
+              level.non.stationary <- has.trend.low || (phi.known.low && isTRUE(all.equal(phi.low, 1)))
+              if (!level.non.stationary)
+                  return(NULL)
+              names.high <- names(metadata.high)
+              names.low <- names(metadata.low)
+              names.low <- names.low[-i.along.low]
+              if (!all(names.low %in% names.high))
+                  return(NULL)
+              beta.high <- fetchResults(object = skeletonBetaHigh,
+                                        filename = filename,
+                                        iterations = NULL,
+                                        nIteration = nIteration,
+                                        lengthIter = lengthIter)
+              beta.low <- fetchResults(object = skeletonBetaLow,
+                                       filename = filename,
+                                       iterations = NULL,
+                                       nIteration = nIteration,
+                                       lengthIter = lengthIter)
+              level.low <- readStateDLMFromFile(skeleton = skeleton.level.low,
+                                                filename = filename,
+                                                iterations = NULL,
+                                                nIteration = nIteration,
+                                                lengthIter = lengthIter,
+                                                only0 = FALSE)
+              names.high.only <- setdiff(names.high, names.low)
+              means.shared <- collapseDimension(beta.high,
+                                                dimension = names.high.only,
+                                                weights = 1)
+              rescaleAndWriteBetas(high = beta.high,
+                                   low = beta.low,
+                                   adj = means.shared,
+                                   skeletonHigh = skeletonBetaHigh,
+                                   skeletonLow = skeletonBetaLow,
+                                   filename = filename,
+                                   nIteration = nIteration,
+                                   lengthIter = lengthIter)
+              recordAdjustments(priorHigh = priorHigh,
+                                priorLow = priorLow,
+                                namesHigh = names.high,
+                                namesLow = names.low,
+                                adj = means.shared,
+                                adjustments = adjustments,
+                                prefixAdjustments = prefixAdjustments)
+              level.low <- level.low + means.shared
+              overwriteValuesOnFile(object = level.low,
+                                    skeleton = skeleton.level.low,
+                                    filename = filename,
+                                    nIteration = nIteration,
+                                    lengthIter = lengthIter)
+              NULL
+          })
+
+
+setMethod("rescalePairPriors",
+          signature(priorHigh = "DLM",
+                    priorLow = "Exchangeable"),
+          function(priorHigh, priorLow,
+                   skeletonBetaHigh, skeletonBetaLow,
+                   skeletonsPriorHigh, skeletonsPriorLow,
+                   adjustments, prefixAdjustments,
+                   filename, nIteration, lengthIter) {
+              i.along.high <- priorHigh@iAlong
+              phi.high <- priorHigh@phi
+              phi.known.high <- priorHigh@phiKnown@.Data
+              metadata.high <- skeletonBetaHigh@metadata
+              metadata.low <- skeletonBetaLow@metadata
+              skeleton.level.high <- skeletonsPriorHigh$level
+              has.trend.high <- methods::is(priorHigh, "WithTrendMixin")
+              level.non.stationary <- has.trend.high || (phi.known.high && isTRUE(all.equal(phi.high, 1)))
+              if (!level.non.stationary)
+                  return(NULL)
+              names.high <- names(metadata.high)
+              names.low <- names(metadata.low)
+              names.high <- names.high[-i.along.high]
+              if (!all(names.low %in% names.high))
+                  return(NULL)
+              beta.high <- fetchResults(object = skeletonBetaHigh,
+                                        filename = filename,
+                                        iterations = NULL,
+                                        nIteration = nIteration,
+                                        lengthIter = lengthIter)
+              beta.low <- fetchResults(object = skeletonBetaLow,
+                                       filename = filename,
+                                       iterations = NULL,
+                                       nIteration = nIteration,
+                                       lengthIter = lengthIter)
+              level.0.high <- readStateDLMFromFile(skeleton = skeleton.level.high,
+                                                   filename = filename,
+                                                   iterations = NULL,
+                                                   nIteration = nIteration,
+                                                   lengthIter = lengthIter,
+                                                   only0 = TRUE)
+              level.high <- readStateDLMFromFile(skeleton = skeleton.level.high,
+                                                 filename = filename,
+                                                 iterations = NULL,
+                                                 nIteration = nIteration,
+                                                 lengthIter = lengthIter,
+                                                 only0 = FALSE)
+              names.high.only <- setdiff(names.high, names.low)
+              means.shared <- collapseDimension(level.0.high,
+                                                dimension = names.high.only,
+                                                weights = 1)
+              rescaleAndWriteBetas(high = beta.high,
+                                   low = beta.low,
+                                   adj = means.shared,
+                                   skeletonHigh = skeletonBetaHigh,
+                                   skeletonLow = skeletonBetaLow,
+                                   filename = filename,
+                                   nIteration = nIteration,
+                                   lengthIter = lengthIter)
+              recordAdjustments(priorHigh = priorHigh,
+                                priorLow = priorLow,
+                                namesHigh = names.high,
+                                namesLow = names.low,
+                                adj = means.shared,
+                                adjustments = adjustments,
+                                prefixAdjustments = prefixAdjustments)
+              level.high <- level.high - means.shared
+              overwriteValuesOnFile(object = level.high,
+                                    skeleton = skeleton.level.high,
+                                    filename = filename,
+                                    nIteration = nIteration,
+                                    lengthIter = lengthIter)
+              NULL
+          })
+
+## HAS_TESTS
+setMethod("rescalePairPriors",
+          signature(priorHigh = "DLM",
+                    priorLow = "DLM"),
+          function(priorHigh, priorLow,
+                   skeletonBetaHigh, skeletonBetaLow,
+                   skeletonsPriorHigh, skeletonsPriorLow,
+                   adjustments, prefixAdjustments,
+                   filename, nIteration, lengthIter) {
+              ## extract parameters
+              i.along.high <- priorHigh@iAlong
+              i.along.low <- priorLow@iAlong
+              phi.high <- priorHigh@phi
+              phi.low <- priorLow@phi
+              phi.known.high <- priorHigh@phiKnown@.Data
+              phi.known.low <- priorLow@phiKnown@.Data
+              metadata.high <- skeletonBetaHigh@metadata
+              metadata.low <- skeletonBetaLow@metadata
+              skeleton.level.high <- skeletonsPriorHigh$level
+              skeleton.level.low <- skeletonsPriorLow$level
+              has.trend.high <- methods::is(priorHigh, "WithTrendMixin")
+              has.trend.low <- methods::is(priorLow, "WithTrendMixin")
+              if (has.trend.high)
+                  skeleton.trend.high <- skeletonsPriorHigh$trend
+              if (has.trend.low)
+                  skeleton.trend.low <- skeletonsPriorLow$trend
+              ## if neither series non-stationary, no rescaling needed
+              if (has.trend.high) {
+                  level.non.stationary.high <- TRUE
+                  trend.non.stationary.high <- (phi.known.high && isTRUE(all.equal(phi.high, 1)))
+              }
+              else {
+                  level.non.stationary.high <- (phi.known.high && isTRUE(all.equal(phi.high, 1)))
+                  trend.non.stationary.high <- FALSE
+              }
+              if (has.trend.low) {
+                  level.non.stationary.low <- TRUE
+                  trend.non.stationary.low <- (phi.known.low && isTRUE(all.equal(phi.low, 1)))
+              }
+              else {
+                  level.non.stationary.low <- (phi.known.low && isTRUE(all.equal(phi.low, 1)))
+                  trend.non.stationary.low <- FALSE
+              }
+              at.least.one.level.is.stationary <- !level.non.stationary.high || !level.non.stationary.low
+              at.least.one.trend.is.stationary <- !trend.non.stationary.high || !trend.non.stationary.low
+              if (at.least.one.level.is.stationary && at.least.one.trend.is.stationary)
+                  return(NULL)
+              ## if lower-order term has dimension not in higher-order term, no rescaling
+              names.high <- names(metadata.high)
+              names.low <- names(metadata.low)
+              names.high <- names.high[-i.along.high]
+              names.low <- names.low[-i.along.low]
+              if (!all(names.low %in% names.high))
+                  return(NULL)
+              ## extract parameter estimates
+              beta.high <- fetchResults(object = skeletonBetaHigh,
+                                        filename = filename,
+                                        iterations = NULL,
+                                        nIteration = nIteration,
+                                        lengthIter = lengthIter)
+              beta.low <- fetchResults(object = skeletonBetaLow,
+                                       filename = filename,
+                                       iterations = NULL,
+                                       nIteration = nIteration,
+                                       lengthIter = lengthIter)
+              level.high <- readStateDLMFromFile(skeleton = skeleton.level.high,
+                                                 filename = filename,
+                                                 iterations = NULL,
+                                                 nIteration = nIteration,
+                                                 lengthIter = lengthIter,
+                                                 only0 = FALSE)
+              level.low <- readStateDLMFromFile(skeleton = skeleton.level.low,
+                                                filename = filename,
+                                                iterations = NULL,
+                                                nIteration = nIteration,
+                                                lengthIter = lengthIter,
+                                                only0 = FALSE)
+              level.0.high <- readStateDLMFromFile(skeleton = skeleton.level.high,
+                                                   filename = filename,
+                                                   iterations = NULL,
+                                                   nIteration = nIteration,
+                                                   lengthIter = lengthIter,
+                                                   only0 = TRUE)
+              level.0.low <- readStateDLMFromFile(skeleton = skeleton.level.low,
+                                                  filename = filename,
+                                                  iterations = NULL,
+                                                  nIteration = nIteration,
+                                                  lengthIter = lengthIter,
+                                                  only0 = TRUE)
+              if (trend.non.stationary.high && trend.non.stationary.low) {
+                  trend.high <- readStateDLMFromFile(skeleton = skeleton.trend.high,
+                                                     filename = filename,
+                                                     iterations = NULL,
+                                                     nIteration = nIteration,
+                                                     lengthIter = lengthIter,
+                                                     only0 = FALSE)
+                  trend.low <- readStateDLMFromFile(skeleton = skeleton.trend.low,
+                                                    filename = filename,
+                                                    iterations = NULL,
+                                                    nIteration = nIteration,
+                                                    lengthIter = lengthIter,
+                                                    only0 = FALSE)
+                  trend.0.high <- readStateDLMFromFile(skeleton = skeleton.trend.high,
+                                                       filename = filename,
+                                                       iterations = NULL,
+                                                       nIteration = nIteration,
+                                                       lengthIter = lengthIter,
+                                                       only0 = TRUE)
+                  trend.0.low <- readStateDLMFromFile(skeleton = skeleton.trend.low,
+                                                      filename = filename,
+                                                      iterations = NULL,
+                                                      nIteration = nIteration,
+                                                      lengthIter = lengthIter,
+                                                      only0 = TRUE)
+              }
+              ## calculate adjustments for levels
+              names.high.only <- setdiff(names.high, names.low)
+              means.shared.level <- collapseDimension(level.0.high,
+                                                      dimension = names.high.only,
+                                                      weights = 1)
+              ## rescale betas and record them
+              rescaleAndWriteBetas(high = beta.high,
+                                   low = beta.low,
+                                   adj = means.shared.level,
+                                   skeletonHigh = skeletonBetaHigh,
+                                   skeletonLow = skeletonBetaLow,
+                                   filename = filename,
+                                   nIteration = nIteration,
+                                   lengthIter = lengthIter)
+              ## adjust level and record
+              level.high <- level.high - means.shared.level
+              level.low <- level.low + means.shared.level
+              overwriteValuesOnFile(object = level.high,
+                                    skeleton = skeleton.level.high,
+                                    filename = filename,
+                                    nIteration = nIteration,
+                                    lengthIter = lengthIter)
+              overwriteValuesOnFile(object = level.low,
+                                    skeleton = skeleton.level.low,
+                                    filename = filename,
+                                    nIteration = nIteration,
+                                    lengthIter = lengthIter)
+              ## if necessary, adjust trend and record
+              if (trend.non.stationary.high && trend.non.stationary.low) {
+                  means.shared.trend <- collapseDimension(trend.0.high,
+                                                          dimension = names.high.only,
+                                                          weights = 1)
+                  trend.high <- trend.high - means.shared.trend
+                  trend.low <- trend.low + means.shared.trend
+                  overwriteValuesOnFile(object = trend.high,
+                                        skeleton = skeleton.trend.high,
+                                        filename = filename,
+                                        nIteration = nIteration,
+                                        lengthIter = lengthIter)
+                  overwriteValuesOnFile(object = trend.low,
+                                        skeleton = skeleton.trend.low,
+                                        filename = filename,
+                                        nIteration = nIteration,
+                                        lengthIter = lengthIter)
+              }
+              NULL
+          })
+
+
+## rescalePriorIntercept ##############################################################
+
+## HAS_TESTS
+setMethod("rescalePriorIntercept",
+          signature(priorTerm = "Exchangeable"),
+          function(priorTerm, priorIntercept, skeletonBetaTerm,
+                   skeletonBetaIntercept, skeletonsPriorTerm,
+                   adjustments, prefixAdjustments,
+                   filename, nIteration, lengthIter) {
+              metadata.term <- skeletonBetaTerm@metadata
+              has.covariates <- (methods::.hasSlot(priorTerm, "hasCovariates")
+                  && priorTerm@hasCovariates@.Data)
+              names.term <- names(metadata.term)
+              name.intercept <- "(Intercept)"
+              beta.term <- fetchResults(object = skeletonBetaTerm,
+                                        filename = filename,
+                                        iterations = NULL,
+                                        nIteration = nIteration,
+                                        lengthIter = lengthIter)
+              beta.intercept <- fetchResults(object = skeletonBetaIntercept,
+                                             filename = filename,
+                                             iterations = NULL,
+                                             nIteration = nIteration,
+                                             lengthIter = lengthIter)
+              mean.beta <- mean(beta.term)
+              rescaleAndWriteBetas(high = beta.term,
+                                   low = beta.intercept,
+                                   adj = mean.beta,
+                                   skeletonHigh = skeletonBetaTerm,
+                                   skeletonLow = skeletonBetaIntercept,
+                                   filename = filename,
+                                   nIteration = nIteration,
+                                   lengthIter = lengthIter)
+              recordAdjustments(priorHigh = priorTerm,
+                                priorLow = priorIntercept,
+                                namesHigh = names.term,
+                                namesLow = name.intercept,
+                                adj = mean.beta,
+                                adjustments = adjustments,
+                                prefixAdjustments = prefixAdjustments)
+              if (has.covariates) {
+                  skeleton.covariates <- skeletonsPriorTerm$coef
+                  ## don't bother adjusting betaTerm, since do
+                  ## not report intercept for covariates
+                  coef.intercept <- readCoefInterceptFromFile(skeleton = skeleton.covariates,
+                                                              filename = filename,
+                                                              nIteration = nIteration,
+                                                              lengthIter = lengthIter)
+                  beta.intercept <- fetchResults(object = skeletonBetaIntercept,
+                                                 filename = filename,
+                                                 iterations = NULL,
+                                                 nIteration = nIteration,
+                                                 lengthIter = lengthIter)
+                  beta.intercept <- beta.intercept + coef.intercept
+                  overwriteValuesOnFile(object = beta.intercept,
+                                        skeleton = skeletonBetaIntercept,
+                                        filename = filename,
+                                        nIteration = nIteration,
+                                        lengthIter = lengthIter)
+              }
+              NULL
+          })
+
+## HAS_TESTS
+setMethod("rescalePriorIntercept",
+          signature(priorTerm = "DLM"),
+          function(priorTerm, priorIntercept, skeletonBetaTerm,
+                   skeletonBetaIntercept, skeletonsPriorTerm,
+                   adjustments, prefixAdjustments,
+                   filename, nIteration, lengthIter) {
+              phi.term <- priorTerm@phi
+              phi.known.term <- priorTerm@phiKnown@.Data
+              metadata.term <- skeletonBetaTerm@metadata
+              has.covariates <- (methods::.hasSlot(priorTerm, "hasCovariates")
+                  && priorTerm@hasCovariates@.Data)
+              skeleton.level.term <- skeletonsPriorTerm$level
+              has.trend.term <- methods::is(priorTerm, "WithTrendMixin")
+              non.stationary <- has.trend.term || (phi.known.term && isTRUE(all.equal(phi.term, 1)))
+              if (non.stationary) {
+                  names.term <- names(metadata.term)
+                  beta.term <- fetchResults(object = skeletonBetaTerm,
+                                            filename = filename,
+                                            iterations = NULL,
+                                            nIteration = nIteration,
+                                            lengthIter = lengthIter)
+                  beta.intercept <- fetchResults(object = skeletonBetaIntercept,
+                                                 filename = filename,
+                                                 iterations = NULL,
+                                                 nIteration = nIteration,
+                                                 lengthIter = lengthIter)
+                  level.term <- readStateDLMFromFile(skeleton = skeleton.level.term,
+                                                     filename = filename,
+                                                     iterations = NULL,
+                                                     nIteration = nIteration,
+                                                     lengthIter = lengthIter,
+                                                     only0 = FALSE)
+                  level.0.term <- readStateDLMFromFile(skeleton = skeleton.level.term,
+                                                       filename = filename,
+                                                       iterations = NULL,
+                                                       nIteration = nIteration,
+                                                       lengthIter = lengthIter,
+                                                       only0 = TRUE)
+                  mean.level.0 <- mean(level.0.term)
+                  rescaleAndWriteBetas(high = beta.term,
+                                       low = beta.intercept,
+                                       adj = mean.level.0,
+                                       skeletonHigh = skeletonBetaTerm,
+                                       skeletonLow = skeletonBetaIntercept,
+                                       filename = filename,
+                                       nIteration = nIteration,
+                                       lengthIter = lengthIter)
+                  level.term <- level.term - mean.level.0
+                  overwriteValuesOnFile(object = level.term,
+                                        skeleton = skeleton.level.term,
+                                        filename = filename,
+                                        nIteration = nIteration,
+                                        lengthIter = lengthIter)
+              }
+              if (has.covariates) {
+                  skeleton.covariates <- skeletonsPriorTerm$coef
+                  ## don't bother adjusting betaTerm, since do
+                  ## not report intercept for covariates
+                  coef.intercept <- readCoefInterceptFromFile(skeleton = skeleton.covariates,
+                                                              filename = filename,
+                                                              nIteration = nIteration,
+                                                              lengthIter = lengthIter)
+                  beta.intercept <- fetchResults(object = skeletonBetaIntercept,
+                                                 filename = filename,
+                                                 iterations = NULL,
+                                                 nIteration = nIteration,
+                                                 lengthIter = lengthIter)
+                  beta.intercept <- beta.intercept + coef.intercept
+                  overwriteValuesOnFile(object = beta.intercept,
+                                        skeleton = skeletonBetaIntercept,
+                                        filename = filename,
+                                        nIteration = nIteration,
+                                        lengthIter = lengthIter)
+              }
+              NULL
+          })
 
 
 

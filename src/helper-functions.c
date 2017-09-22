@@ -3041,16 +3041,21 @@ SEXP getDataFromFile_R(SEXP filename_R,
     rewind (fp); /* return to start of file */
     
     int sizeResultsBytes = 0;
+    int sizeAdjustmentsBytes = 0;
     
-    /* read the size of the results file - presumably in bytes?? */
-    size_t nRead1 = fread(&sizeResultsBytes, sizeof(int), 1, fp);
-    
-    if (nRead1 < 1) {
+    /* read the size of the results object */
+    size_t nReadRes = fread(&sizeResultsBytes, sizeof(int), 1, fp);
+
+    if (nReadRes < 1) {
         error("could not successfully read file %s", filename); 
     }
-    
-    /* skip over size of adjustments */
-    fseek (fp , sizeof(int) , SEEK_CUR ); /* added by JB 2017-09-19 */
+
+    /* read the size of the adjustments */
+    size_t nReadAdj = fread(&sizeAdjustmentsBytes, sizeof(int), 1, fp);
+
+    if (nReadAdj < 1) {
+        error("could not successfully read file %s", filename); 
+    }
 
     /* skip sizeResultsBytes bytes from current pos*/
     fseek (fp , sizeResultsBytes , SEEK_CUR );
@@ -3064,7 +3069,7 @@ SEXP getDataFromFile_R(SEXP filename_R,
     fseek (fp , skipBytes , SEEK_CUR );
 
     /* work out how many doubles to read and allocate a buffer */
-    long nDoubleRead = (size - sizeof(int) - sizeResultsBytes - skipBytes)
+    long nDoubleRead = (size - sizeof(int) - sizeResultsBytes - sizeAdjustmentsBytes - skipBytes)
                         /sizeof(double);
 
     double *buffer = (double*)R_alloc(nDoubleRead, sizeof(double));
@@ -3105,6 +3110,103 @@ SEXP getDataFromFile_R(SEXP filename_R,
     return ans_R;
 }
 #endif
+
+/* #if(1) */
+/* SEXP getDataFromFile_R(SEXP filename_R,  */
+/*                         SEXP first_R, SEXP last_R,  */
+/*                         SEXP lengthIter_R, SEXP iterations_R) */
+/* { */
+
+/*     /\* strings are character vectors, in this case just one element *\/ */
+/*     const char *filename = CHAR(STRING_ELT(filename_R,0));  */
+
+/*     FILE * fp = fopen(filename, "rb"); /\* binary mode *\/ */
+
+/*     if (NULL == fp) { */
+/*         error("could not open file %s", filename); /\* terminates now *\/ */
+/*     } */
+
+/*     int first = *(INTEGER(first_R)); */
+/*     int last = *(INTEGER(last_R)); */
+/*     int lengthIter = *(INTEGER(lengthIter_R)); */
+/*     int n_iter = LENGTH(iterations_R); */
+/*     int *iterations = INTEGER(iterations_R); */
+
+/*     int length_data = last - first + 1; */
+/*     int length_gap = lengthIter - length_data; */
+
+/*     /\* find size of file in total *\/ */
+/*     fseek(fp, 0, SEEK_END); */
+
+/*     long size = ftell(fp); /\* Bytes in file*\/ */
+    
+/*     rewind (fp); /\* return to start of file *\/ */
+    
+/*     int sizeResultsBytes = 0; */
+    
+/*     /\* read the size of the results file - presumably in bytes?? *\/ */
+/*     size_t nRead1 = fread(&sizeResultsBytes, sizeof(int), 1, fp); */
+
+/*     if (nRead1 < 1) { */
+/*         error("could not successfully read file %s", filename);  */
+/*     } */
+    
+/*     /\* skip over size of adjustments *\/ */
+/*     fseek (fp , sizeof(int) , SEEK_CUR ); /\* added by JB 2017-09-19 *\/ */
+
+/*     /\* skip sizeResultsBytes bytes from current pos*\/ */
+/*     fseek (fp , sizeResultsBytes , SEEK_CUR ); */
+    
+/*     int n_skip = iterations[0] - 1; /\* iterations to skip *\/ */
+
+/*     /\* skip n_skip iterations of length lengthIter, and first -1 values *\/ */
+/*     long skipBytes = (n_skip * lengthIter + first - 1) * sizeof(double); */
+
+/*     /\* position this far into file, in bytes, from current pos *\/ */
+/*     fseek (fp , skipBytes , SEEK_CUR ); */
+
+/*     /\* work out how many doubles to read and allocate a buffer *\/ */
+/*     long nDoubleRead = (size - sizeof(int) - sizeResultsBytes - skipBytes) */
+/*                         /sizeof(double); */
+
+/*     double *buffer = (double*)R_alloc(nDoubleRead, sizeof(double)); */
+/*     size_t nRead2 = fread(buffer, sizeof(double), nDoubleRead, fp); */
+
+/*     if (nRead2 != nDoubleRead) { */
+/*         error("could not successfully read file %s", filename);  */
+/*     } */
+
+/*     fclose(fp); /\* close the file *\/ */
+
+/*     SEXP ans_R; */
+/*     PROTECT(ans_R = allocVector(REALSXP, n_iter*length_data)); */
+/*     double *ans = REAL(ans_R); */
+
+/*     /\* transfer length_data values to ans *\/     */
+/*     memcpy(ans, buffer, length_data*sizeof(double)); */
+
+/*     double *bufferPtr = buffer;    */
+/*     double *ansPtr = ans;    */
+
+/*     for (int i = 1; i < n_iter; ++i) { */
+/*         /\* move to end of last block in ans *\/ */
+/*         ansPtr += length_data; */
+/*         /\* calculations for start of next block of data *\/ */
+/*         n_skip = iterations[i] - iterations[i-1] - 1; */
+
+/*         /\* position of start of next block in buffer*\/ */
+/*         bufferPtr += length_data + n_skip * lengthIter + length_gap; */
+
+/*         /\* transfer length_data values to ans *\/     */
+/*         memcpy(ansPtr, bufferPtr, length_data*sizeof(double)); */
+/*     } */
+
+/*     //free(buffer); */
+/*     UNPROTECT(1); /\* ans_R *\/ */
+
+/*     return ans_R; */
+/* } */
+/* #endif */
 
 
 

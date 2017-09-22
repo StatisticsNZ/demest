@@ -1,6 +1,4 @@
 
-## Internal functions for extracting information via a Results object
-
 ## HAS_TESTS
 setMethod("finiteSDObject",
           signature(object = "ResultsModelEst"),
@@ -51,6 +49,66 @@ setMethod("nIteration",
               mcmc <- object@mcmc
               mcmc[["nIteration"]]
           })          
+
+## HAS_TESTS
+setMethod("rescalePriors",
+          signature(results = "ResultsModelEst"),
+          function(results, adjustments, filename, nIteration, lengthIter) {
+              priors <- results@final[[1L]]@model@priorsBetas
+              margins <- results@final[[1L]]@model@margins
+              skeletons.betas <- results@model$prior[seq_along(priors)] # omit mean, sd
+              skeletons.priors <- results@model$hyper
+              rescalePriorsHelper(priors = priors,
+                                  margins = margins,
+                                  skeletonsBetas = skeletons.betas,
+                                  skeletonsPriors = skeletons.priors,
+                                  adjustments = adjustments,
+                                  prefixAdjustments = "model",
+                                  filename = filename,
+                                  nIteration = nIteration,
+                                  lengthIter = lengthIter)
+          })
+
+## HAS_TESTS
+setMethod("rescalePriors",
+          signature(results = "ResultsCountsEst"),
+          function(results, adjustments, filename, nIteration, lengthIter) {
+              priors <- results@final[[1L]]@model@priorsBetas
+              margins <- results@final[[1L]]@model@margins
+              skeletons.betas <- results@model$prior[seq_along(priors)]
+              skeletons.priors <- results@model$hyper
+              prefix.adjustments <- "model"
+              rescalePriorsHelper(priors = priors,
+                                  margins = margins,
+                                  skeletonsBetas = skeletons.betas,
+                                  skeletonsPriors = skeletons.priors,
+                                  adjustments = adjustments,
+                                  prefixAdjustments = prefix.adjustments,
+                                  filename = filename,
+                                  nIteration = nIteration,
+                                  lengthIter = lengthIter)
+              for (i in seq_along(results@final[[1L]]@observationModels)) {
+                  if (methods::is(results@final[[1L]]@observationModels[[i]], "Varying")) {
+                      priors <- results@final[[1L]]@observationModels[[i]]@priorsBetas
+                      margins <- results@final[[1L]]@observationModels[[i]]@margins
+                      skeletons.betas <- results@observationModels[[i]]$prior[seq_along(priors)]
+                      skeletons.priors <- results@observationModels[[i]]$hyper
+                      name.dataset <- results@final[[1L]]@namesDatasets[i]
+                      prefix.adjustments <- paste("observation", name.dataset, sep = ".")
+                      rescalePriorsHelper(priors = priors,
+                                          margins = margins,
+                                          skeletonsBetas = skeletons.betas,
+                                          skeletonsPriors = skeletons.priors,
+                                          adjustments = adjustments,
+                                          prefixAdjustments = prefix.adjustments,
+                                          filename = filename,
+                                          nIteration = nIteration,
+                                          lengthIter = lengthIter)
+                  }
+              }
+          })
+
+
 
 ## NO_TESTS
 setMethod("showModelHelper",
