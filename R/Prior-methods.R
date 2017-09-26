@@ -1830,30 +1830,21 @@ setMethod("rescalePairPriors",
               skeleton.level.low <- skeletonsPriorLow$level
               has.trend.high <- methods::is(priorHigh, "WithTrendMixin")
               has.trend.low <- methods::is(priorLow, "WithTrendMixin")
-              if (has.trend.high)
-                  skeleton.trend.high <- skeletonsPriorHigh$trend
-              if (has.trend.low)
-                  skeleton.trend.low <- skeletonsPriorLow$trend
               ## if neither series non-stationary, no rescaling needed
               if (has.trend.high) {
                   level.non.stationary.high <- TRUE
-                  trend.non.stationary.high <- (phi.known.high && isTRUE(all.equal(phi.high, 1)))
               }
               else {
                   level.non.stationary.high <- (phi.known.high && isTRUE(all.equal(phi.high, 1)))
-                  trend.non.stationary.high <- FALSE
               }
               if (has.trend.low) {
                   level.non.stationary.low <- TRUE
-                  trend.non.stationary.low <- (phi.known.low && isTRUE(all.equal(phi.low, 1)))
               }
               else {
                   level.non.stationary.low <- (phi.known.low && isTRUE(all.equal(phi.low, 1)))
-                  trend.non.stationary.low <- FALSE
               }
               at.least.one.level.is.stationary <- !level.non.stationary.high || !level.non.stationary.low
-              at.least.one.trend.is.stationary <- !trend.non.stationary.high || !trend.non.stationary.low
-              if (at.least.one.level.is.stationary && at.least.one.trend.is.stationary)
+              if (at.least.one.level.is.stationary)
                   return(NULL)
               ## if lower-order term has dimension not in higher-order term, no rescaling
               names.high <- names(metadata.high)
@@ -1897,32 +1888,6 @@ setMethod("rescalePairPriors",
                                                   nIteration = nIteration,
                                                   lengthIter = lengthIter,
                                                   only0 = TRUE)
-              if (trend.non.stationary.high && trend.non.stationary.low) {
-                  trend.high <- readStateDLMFromFile(skeleton = skeleton.trend.high,
-                                                     filename = filename,
-                                                     iterations = NULL,
-                                                     nIteration = nIteration,
-                                                     lengthIter = lengthIter,
-                                                     only0 = FALSE)
-                  trend.low <- readStateDLMFromFile(skeleton = skeleton.trend.low,
-                                                    filename = filename,
-                                                    iterations = NULL,
-                                                    nIteration = nIteration,
-                                                    lengthIter = lengthIter,
-                                                    only0 = FALSE)
-                  trend.0.high <- readStateDLMFromFile(skeleton = skeleton.trend.high,
-                                                       filename = filename,
-                                                       iterations = NULL,
-                                                       nIteration = nIteration,
-                                                       lengthIter = lengthIter,
-                                                       only0 = TRUE)
-                  trend.0.low <- readStateDLMFromFile(skeleton = skeleton.trend.low,
-                                                      filename = filename,
-                                                      iterations = NULL,
-                                                      nIteration = nIteration,
-                                                      lengthIter = lengthIter,
-                                                      only0 = TRUE)
-              }
               ## calculate adjustments for levels
               names.high.only <- setdiff(names.high, names.low)
               means.shared.level <- collapseDimension(level.0.high,
@@ -1950,24 +1915,6 @@ setMethod("rescalePairPriors",
                                     filename = filename,
                                     nIteration = nIteration,
                                     lengthIter = lengthIter)
-              ## if necessary, adjust trend and record
-              if (trend.non.stationary.high && trend.non.stationary.low) {
-                  means.shared.trend <- collapseDimension(trend.0.high,
-                                                          dimension = names.high.only,
-                                                          weights = 1)
-                  trend.high <- trend.high - means.shared.trend
-                  trend.low <- trend.low + means.shared.trend
-                  overwriteValuesOnFile(object = trend.high,
-                                        skeleton = skeleton.trend.high,
-                                        filename = filename,
-                                        nIteration = nIteration,
-                                        lengthIter = lengthIter)
-                  overwriteValuesOnFile(object = trend.low,
-                                        skeleton = skeleton.trend.low,
-                                        filename = filename,
-                                        nIteration = nIteration,
-                                        lengthIter = lengthIter)
-              }
               NULL
           })
 
