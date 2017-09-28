@@ -3838,6 +3838,117 @@ test_that("rescalePairPriors works with DLM-Exchangeable", {
 })
 
 
+
+## rescalePred ###################################################################
+
+
+test_that("rescalePred works with Zero", {
+    rescalePred <- demest:::rescalePred
+    makeOutputPrior <- demest:::makeOutputPrior
+    initialPrior <- demest:::initialPrior
+    SkeletonBetaTerm <- demest:::SkeletonBetaTerm
+    spec <- Zero()
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = c("country", "sex"),
+                    dimtypes = c("state", "sex"),
+                    DimScales = list(new("Categories", dimvalues = letters[1:5]),
+                                     new("Sexes", dimvalues = c("F", "M"))))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = new("LogicalFlag", FALSE))
+    skeleton <- SkeletonBetaTerm(first = 10L,
+                                 metadata = metadata)
+    nIteration <- 20L
+    lengthIter <- 100L
+    adjustment <- NULL
+    filename <- tempfile()
+    con <- file(filename, open = "wb")
+    results <- new("ResultsModelEst")
+    results <- serialize(results, connection = NULL)
+    writeBin(length(results), con = con) # size results
+    writeBin(10L, con = con) # size adjustments
+    writeBin(results, con = con)
+    data <- as.double(1:2000)
+    writeBin(data, con = con)
+    close(con)
+    rescalePred(prior = prior,
+                skeleton = skeleton,
+                adjustment = adjustment,
+                filename = filename,
+                nIteration = 20L,
+                lengthIter = 100L)
+    con <- file(filename, open = "rb")
+    lengths <- readBin(con = con, what = "integer", n = 2L)
+    results <- readBin(con = con, what = "raw", n = length(results))
+    output <- readBin(con = con, what = "double", n = 2000L)
+    close(con)
+    output <- matrix(output, nr = lengthIter)
+    data <- matrix(data, nr = lengthIter)
+    ans.obtained <- output[10:19, ]
+    ans.expected <- data[10:19,]
+    expect_equal(ans.obtained, ans.expected)
+})
+
+
+
+test_that("rescalePred works with Exchangeable", {
+    rescalePred <- demest:::rescalePred
+    makeOutputPrior <- demest:::makeOutputPrior
+    initialPrior <- demest:::initialPrior
+    SkeletonBetaTerm <- demest:::SkeletonBetaTerm
+    spec <- Exch()
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = c("country", "sex"),
+                    dimtypes = c("state", "sex"),
+                    DimScales = list(new("Categories", dimvalues = letters[1:5]),
+                                     new("Sexes", dimvalues = c("F", "M"))))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = new("LogicalFlag", FALSE))
+    skeleton <- SkeletonBetaTerm(first = 10L,
+                                 metadata = metadata)
+    nIteration <- 20L
+    lengthIter <- 100L
+    adjustment <- Values(array(rnorm(n = 10 * 20),
+                               dim = c(5, 2, 20),
+                               dimnames = list(country = letters[1:5],
+                                               sex = c("F", "M"),
+                                               iteration = 1:20)))
+    filename <- tempfile()
+    con <- file(filename, open = "wb")
+    results <- new("ResultsModelEst")
+    results <- serialize(results, connection = NULL)
+    writeBin(length(results), con = con) # size results
+    writeBin(10L, con = con) # size adjustments
+    writeBin(results, con = con)
+    data <- as.double(1:2000)
+    writeBin(data, con = con)
+    close(con)
+    rescalePred(prior = prior,
+                skeleton = skeleton,
+                adjustment = adjustment,
+                filename = filename,
+                nIteration = 20L,
+                lengthIter = 100L)
+    con <- file(filename, open = "rb")
+    lengths <- readBin(con = con, what = "integer", n = 2L)
+    results <- readBin(con = con, what = "raw", n = length(results))
+    output <- readBin(con = con, what = "double", n = 2000L)
+    close(con)
+    output <- matrix(output, nr = lengthIter)
+    data <- matrix(data, nr = lengthIter)
+    ans.obtained <- output[10:19, ]
+    ans.expected <- data[10:19,] + as.numeric(adjustment)
+    expect_equal(ans.obtained, ans.expected)
+})
+
+
 ## rescalePriorIntercept ##############################################################
 
 test_that("rescalePriorIntercept works with Exchangeable", {

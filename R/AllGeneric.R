@@ -358,6 +358,12 @@ setGeneric("rescalePairPriors",
               NULL
           })
 
+setGeneric("rescalePred",
+          function(prior, skeleton, adjustment,
+                   filename, nIteration, lengthIter) {
+               NULL
+           })
+
 setGeneric("rescalePriorIntercept",
            function(priorTerm, priorIntercept,
                     skeletonBetaTerm, skeletonBetaIntercept,

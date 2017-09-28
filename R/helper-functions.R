@@ -7242,6 +7242,26 @@ rescaleAndWriteBetas <- function(high, low, adj, skeletonHigh, skeletonLow,
 }
 
 
+rescaleBetasPredHelper <- function(priorsBetas, namesBetas, skeletonsBetas,
+                                   adjustments, prefixAdjustments,
+                                   filename, nIteration, lengthIter) {
+    for (i in seq_along(priorsBetas)) {
+        prior <- priorsBetas[[i]]
+        name <- namesBetas[i]
+        skeleton <- skeletonsBetas[[i]]
+        name.adj <- paste(prefixAdjustments, "prior", name, sep = ".")
+        adjustment <- adjustments[[name.adj]]
+        rescalePred(prior = prior,
+                    skeleton = skeleton,
+                    adjustment = adjustment,
+                    filename = filename,
+                    nIteration = nIteration,
+                    lengthIter = lengthIter)
+    }
+}
+
+
+
 ## HAS_TESTS
 rescaleInFile <- function(filename) {
     results <- fetchResultsObject(filename)

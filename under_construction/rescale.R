@@ -47,46 +47,5 @@ setMethod("rescaleBetasPred",
 
 
 
-rescaleBetasPredHelper <- function(priorsBetas, namesBetas, skeletonsBetas,
-                                   adjustments, prefixAdjustments,
-                                   filename, nIteration, lengthIter) {
-    for (i in seq_along(priorsBetas)) {
-        prior <- priorsBetas[[i]]
-        name <- namesBetas[i]
-        skeleton <- skeletonsBetas[[i]]
-        name.adj <- paste(prefixAdjustments, "prior", name, sep = ".")
-        adjustment <- adjustments[[name]]
-        rescaleBetaPred(prior = prior,
-                        skeleton = skeleton,
-                        adjustment = adjustment,
-                        filename = filename,
-                        nIteration = nIteration,
-                        lengthIter = lengthIter)
-    }
-}
 
-
-setGeneric("rescalePred",
-          function(prior, skeleton, adjustment,
-                   filename, nIteration, lengthIter) {
-               NULL
-           })
-
-
-setMethod("rescalePred",
-          signature(prior = "Exchangeable"),
-          function(prior, skeleton, adjustment,
-                   filename, nIteration, lengthIter) {
-              beta <- fetchResults(object = skeleton,
-                                   filename = filename,
-                                   iterations = NULL,
-                                   nIteration = nIteration,
-                                   lengthIter = lengthIter)
-              beta <- beta + adjustment
-              overwriteValuesOnFile(object = beta,
-                                    skeleton = skeleton,
-                                    filename = filename,
-                                    nIteration = nIteration,
-                                    lengthIter = lengthIter)
-          })
 

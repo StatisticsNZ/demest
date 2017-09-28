@@ -1831,18 +1831,14 @@ setMethod("rescalePairPriors",
               has.trend.high <- methods::is(priorHigh, "WithTrendMixin")
               has.trend.low <- methods::is(priorLow, "WithTrendMixin")
               ## if neither series non-stationary, no rescaling needed
-              if (has.trend.high) {
+              if (has.trend.high)
                   level.non.stationary.high <- TRUE
-              }
-              else {
+              else
                   level.non.stationary.high <- (phi.known.high && isTRUE(all.equal(phi.high, 1)))
-              }
-              if (has.trend.low) {
+              if (has.trend.low)
                   level.non.stationary.low <- TRUE
-              }
-              else {
+              else
                   level.non.stationary.low <- (phi.known.low && isTRUE(all.equal(phi.low, 1)))
-              }
               at.least.one.level.is.stationary <- !level.non.stationary.high || !level.non.stationary.low
               if (at.least.one.level.is.stationary)
                   return(NULL)
@@ -1917,6 +1913,27 @@ setMethod("rescalePairPriors",
                                     lengthIter = lengthIter)
               NULL
           })
+
+
+## rescalePred ########################################################################
+
+setMethod("rescalePred",
+          signature(prior = "Exchangeable"),
+          function(prior, skeleton, adjustment,
+                   filename, nIteration, lengthIter) {
+              beta <- fetchResults(object = skeleton,
+                                   filename = filename,
+                                   iterations = NULL,
+                                   nIteration = nIteration,
+                                   lengthIter = lengthIter)
+              beta <- beta + adjustment
+              overwriteValuesOnFile(object = beta,
+                                    skeleton = skeleton,
+                                    filename = filename,
+                                    nIteration = nIteration,
+                                    lengthIter = lengthIter)
+          })
+
 
 
 ## rescalePriorIntercept ##############################################################

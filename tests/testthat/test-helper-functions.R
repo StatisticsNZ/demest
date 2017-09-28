@@ -11186,6 +11186,63 @@ test_that("rescaleAndWriteBetas works", {
     expect_equal(as.numeric(output[5, ]), as.numeric(low.adj))
 })
 
+
+test_that("rescaleBetasPredHelper works", {
+    rescaleBetasPredHelper <- demest:::rescaleBetasPredHelper
+    fetchResultsObject <- demest:::fetchResultsObject
+    exposure <- Counts(array(as.integer(rpois(n = 24, lambda = 10)),
+                             dim = 2:4,
+                             dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000:2003)),
+                       dimscales = c(time = "Intervals"))
+    y <- Counts(array(as.integer(rbinom(n = 24, size = exposure, prob = 0.8)),
+                      dim = 2:4,
+                      dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000:2003)),
+                dimscales = c(time = "Intervals"))
+    filename <- tempfile()
+    estimateModel(Model(y ~ Binomial(mean ~ age + sex),
+                        age ~ Exch()),
+                  y = y,
+                  exposure = exposure,
+                  nBurnin = 5,
+                  nSim = 10,
+                  nThin = 1,
+                  nChain = 2,
+                  filename = filename)
+    results <- fetchResultsObject(filename)
+    priorsBetas <- results@final[[1]]@model@priorsBetas
+    namesBetas <- results@final[[1]]@model@namesBetas
+    skeletonsBetas <- results@model$prior[seq_along(namesBetas)]
+    nIteration <- results@mcmc[["nIteration"]]
+    lengthIter <- results@control$lengthIter
+    con <- file(filename, open = "rb")
+    size.res <- readBin(con, what = "integer", n = 1L)
+    size.adj <- readBin(con, what = "integer", n = 1L)
+    res <- readBin(con, what = "raw", n = size.res)
+    data <- readBin(con, what = "double", n = nIteration * lengthIter)
+    adj.ser <- readBin(con, what = "raw", n = size.adj)
+    adjustments <- unserialize(adj.ser)
+    betas0 <- lapply(namesBetas,
+                     function(x) fetch(filename, c("model", "prior", x)))
+    rescaleBetasPredHelper(priorsBetas = priorsBetas,
+                           namesBetas = namesBetas,
+                           skeletonsBetas = skeletonsBetas,
+                           adjustments = adjustments,
+                           prefixAdjustments = "model",
+                           filename = filename,
+                           nIteration = nIteration,
+                           lengthIter = lengthIter)
+    for (i in seq_along(betas0)) {
+        name <- namesBetas[i]
+        beta1 <- fetch(filename,
+                       where = c("model", "prior", namesBetas[i]))
+        name.adj <- paste("model.prior", name, sep = ".")
+        expect_equal(beta1, betas0[i] + adjustments[[name.adj]])
+    }
+})
+
+
+
+
 test_that("rescaleInFile works", {
     rescaleInFile <- demest:::rescaleInFile
     fetchResultsObject <- demest:::fetchResultsObject
