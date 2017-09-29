@@ -7241,7 +7241,7 @@ rescaleAndWriteBetas <- function(high, low, adj, skeletonHigh, skeletonLow,
     NULL
 }
 
-
+## HAS_TESTS
 rescaleBetasPredHelper <- function(priorsBetas, namesBetas, skeletonsBetas,
                                    adjustments, prefixAdjustments,
                                    filename, nIteration, lengthIter) {
@@ -7259,8 +7259,6 @@ rescaleBetasPredHelper <- function(priorsBetas, namesBetas, skeletonsBetas,
                     lengthIter = lengthIter)
     }
 }
-
-
 
 ## HAS_TESTS
 rescaleInFile <- function(filename) {
@@ -7289,6 +7287,47 @@ rescaleInFile <- function(filename) {
         writeBin(line, con = con)
     }
     writeBin(adjustments.serialized, con = con)    
+    NULL
+}
+
+## HAS_TESTS
+rescaleInFilePred <- function(filenameEst, filenamePred) {
+    ## get 'adjustments' from filenameEst
+    results.est <- fetchResultsObject(filenameEst)
+    results.pred <- fetchResultsObject(filenamePred)
+    nIteration.est <- results.est@mcmc["nIteration"]
+    nIteration.pred <- results.pred@mcmc["nIteration"]
+    lengthIter.est <- results.est@control$lengthIter
+    lengthIter.pred <- results.pred@control$lengthIter
+    con.est <- file(filenameEst, open = "rb")
+    size.results.est <- readBin(con = con.est, what = "integer", n = 1L)
+    size.adjustments <- readBin(con = con.est, what = "integer", n = 1L)
+    readBin(con = con.est, what = "raw", n = size.results.est)
+    for (i in seq_len(nIteration.est))
+        readBin(con = con.est, what = "double", n = lengthIter.est)
+    adjustments.serialized <- readBin(con = con.est, what = "raw", n = size.adjustments)
+    close(con.est)
+    adjustments <- unserialize(adjustments.serialized)
+    ## rescale
+    rescaleBetasPred(results = results.pred,
+                     adjustments = adjustments,
+                     filename = filenamePred,
+                     nIteration = nIteration.pred,
+                     lengthIter = lengthIter.pred)
+    ## add 'adjustments' to filenamePred
+    con.pred <- file(filenamePred, open = "r+b")
+    on.exit(close(con.pred))
+    size.results.pred <- readBin(con = con.pred, what = "integer", n = 1L)
+    writeBin(size.results.pred, con = con.pred)
+    readBin(con.pred, what = "integer", n = 1L)
+    writeBin(size.adjustments, con = con.pred)
+    results.pred.serialized <- readBin(con.pred, what = "raw", n = size.results.pred)
+    writeBin(results.pred.serialized, con = con.pred)
+    for (i in seq_len(nIteration.pred)) {
+        line <- readBin(con.pred, what = "double", n = lengthIter.pred)
+        writeBin(line, con = con.pred)
+    }
+    writeBin(adjustments.serialized, con = con.pred)    
     NULL
 }
 

@@ -11179,13 +11179,13 @@ test_that("rescaleAndWriteBetas works", {
     readBin(con, what = "integer", n = 1)
     readBin(con, what = "raw", n = length.results)
     output <- readBin(con, what = "double", n = 1000)
+    close(con)
     output <- matrix(output, nr = lengthIter)
     high.adj <- high - adj
     low.adj <- low + adj
     expect_equal(as.numeric(output[2:4, ]), as.numeric(high.adj))
     expect_equal(as.numeric(output[5, ]), as.numeric(low.adj))
 })
-
 
 test_that("rescaleBetasPredHelper works", {
     rescaleBetasPredHelper <- demest:::rescaleBetasPredHelper
@@ -11220,6 +11220,7 @@ test_that("rescaleBetasPredHelper works", {
     res <- readBin(con, what = "raw", n = size.res)
     data <- readBin(con, what = "double", n = nIteration * lengthIter)
     adj.ser <- readBin(con, what = "raw", n = size.adj)
+    close(con)
     adjustments <- unserialize(adj.ser)
     betas0 <- lapply(namesBetas,
                      function(x) fetch(filename, c("model", "prior", x)))
@@ -11234,14 +11235,76 @@ test_that("rescaleBetasPredHelper works", {
     for (i in seq_along(betas0)) {
         name <- namesBetas[i]
         beta1 <- fetch(filename,
-                       where = c("model", "prior", namesBetas[i]))
+                       where = c("model", "prior", name))
         name.adj <- paste("model.prior", name, sep = ".")
-        expect_equal(beta1, betas0[i] + adjustments[[name.adj]])
+        expect_equal(beta1, betas0[[i]] + adjustments[[name.adj]])
     }
 })
 
-
-
+test_that("rescaleInFilePred works", {
+    rescaleInFilePred <- demest:::rescaleInFilePred
+    fetchResultsObject <- demest:::fetchResultsObject
+    exposure <- Counts(array(as.integer(rpois(n = 24, lambda = 10)),
+                             dim = 2:4,
+                             dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000:2003)),
+                       dimscales = c(time = "Intervals"))
+    y <- Counts(array(as.integer(rbinom(n = 24, size = exposure, prob = 0.8)),
+                      dim = 2:4,
+                      dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000:2003)),
+                dimscales = c(time = "Intervals"))
+    filename.est <- tempfile()
+    filename.pred <- tempfile()
+    estimateModel(Model(y ~ Binomial(mean ~ age + sex + time),
+                        time ~ Exch()),
+                  y = y,
+                  exposure = exposure,
+                  nBurnin = 2,
+                  nSim = 5,
+                  nThin = 1,
+                  nChain = 2,
+                  filename = filename.est)
+    predictModel(filenameEst = filename.est,
+                 filenamePred = filename.pred,
+                 n = 5)    
+    results.est <- fetchResultsObject(filename.est)
+    results.pred <- fetchResultsObject(filename.pred)
+    nIteration.est <- results.est@mcmc["nIteration"]
+    nIteration.pred <- results.pred@mcmc["nIteration"]
+    lengthIter.est <- results.est@control$lengthIter
+    lengthIter.pred <- results.pred@control$lengthIter
+    namesBetas <- results.pred@final[[1]]@model@namesBetas
+    betas0 <- lapply(namesBetas,
+                     function(x) fetch(filename.pred, c("model", "prior", x)))
+    rescaleInFilePred(filenameEst = filename.est,
+                      filenamePred = filename.pred)
+    con <- file(filename.est, open = "rb")
+    size.res <- readBin(con, what = "integer", n = 1L)
+    size.adj <- readBin(con, what = "integer", n = 1L)
+    res <- readBin(con, what = "raw", n = size.res)
+    data <- readBin(con, what = "double", n = nIteration.est * lengthIter.est)
+    adj.ser.est <- readBin(con, what = "raw", n = size.adj)
+    adjustments.est <- unserialize(adj.ser.est)
+    close(con)
+    con <- file(filename.pred, open = "rb")
+    size.res <- readBin(con, what = "integer", n = 1L)
+    size.adj <- readBin(con, what = "integer", n = 1L)
+    res <- readBin(con, what = "raw", n = size.res)
+    data <- readBin(con, what = "double", n = nIteration.pred * lengthIter.pred)
+    adj.ser.pred <- readBin(con, what = "raw", n = size.adj)
+    adjustments.pred <- unserialize(adj.ser.pred)
+    close(con)
+    expect_equal(adjustments.pred, adjustments.est)
+    for (i in seq_along(betas0)) {
+        name <- namesBetas[i]
+        beta1 <- fetch(filename.pred,
+                       where = c("model", "prior", name))
+        name.adj <- paste("model.prior", name, sep = ".")
+        if (name == "time")
+            expect_equal(beta1, betas0[[i]] + adjustments.pred[[name.adj]])
+        else
+            expect_equal(beta1, betas0[[i]])
+    }
+})
 
 test_that("rescaleInFile works", {
     rescaleInFile <- demest:::rescaleInFile
@@ -11274,6 +11337,7 @@ test_that("rescaleInFile works", {
     res <- readBin(con, what = "raw", n = size.res)
     data <- readBin(con, what = "double", n = nIteration * lengthIter)
     adj.ser <- readBin(con, what = "raw", n = size.adj)
+    close(con)
     adj <- unserialize(adj.ser)
     expect_true(setequal(names(adj),
                          c("model.prior.(Intercept)",
@@ -12508,13 +12572,12 @@ test_that("makeMCMCBetas works", {
                    new("ExchNormCov"))
     names <- c("(Intercept)", "a", "b")
     ans.obtained <- makeMCMCBetas(priors = priors, names = names)
-    ans.expected <- list(c("prior", "(Intercept)"),
-                         c("prior", "b"))
+    ans.expected <- list()
     expect_identical(ans.obtained, ans.expected)
     priors <- list(new("ExchFixed"))
     names <- "(Intercept)"
     ans.obtained <- makeMCMCBetas(priors = priors, names = names)
-    ans.expected <- list(c("prior", "(Intercept)"))
+    ans.expected <- list()
     expect_identical(ans.obtained, ans.expected)
 })
 

@@ -31,9 +31,9 @@
 ##               y = births,
 ##               exposure = expose,
 ##               filename = filename.est,
-##               nBurnin = 100000,
-##               nSim = 100000,
-##               nThin = 400,
+##               nBurnin = 100,
+##               nSim = 100,
+##               nThin = 4,
 ##               nChain = 4)
 ## fetchSummary(filename.est)
 

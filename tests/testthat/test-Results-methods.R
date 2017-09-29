@@ -94,6 +94,65 @@ test_that("nIteration works with BinomialVarying", {
     expect_identical(ans.obtained, ans.expected)
 })
 
+test_that("rescaleBetasPred works", {
+    rescaleBetasPred <- demest:::rescaleBetasPred
+    fetchResultsObject <- demest:::fetchResultsObject
+    exposure <- Counts(array(as.integer(rpois(n = 24, lambda = 10)),
+                             dim = 2:4,
+                             dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000:2003)),
+                       dimscales = c(time = "Intervals"))
+    y <- Counts(array(as.integer(rbinom(n = 24, size = exposure, prob = 0.8)),
+                      dim = 2:4,
+                      dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000:2003)),
+                dimscales = c(time = "Intervals"))
+    filename.est <- tempfile()
+    filename.pred <- tempfile()
+    estimateModel(Model(y ~ Binomial(mean ~ age + sex + time),
+                        time ~ Exch()),
+                  y = y,
+                  exposure = exposure,
+                  nBurnin = 2,
+                  nSim = 5,
+                  nThin = 1,
+                  nChain = 2,
+                  filename = filename.est)
+    predictModel(filenameEst = filename.est,
+                 filenamePred = filename.pred,
+                 n = 5)    
+    results.est <- fetchResultsObject(filename.est)
+    results.pred <- fetchResultsObject(filename.pred)
+    nIteration.est <- results.est@mcmc[["nIteration"]]
+    lengthIter.est <- results.est@control$lengthIter
+    nIteration.pred <- results.pred@mcmc[["nIteration"]]
+    lengthIter.pred <- results.pred@control$lengthIter
+    namesBetas <- results.pred@final[[1]]@model@namesBetas
+    con <- file(filename.est, open = "rb")
+    size.res <- readBin(con, what = "integer", n = 1L)
+    size.adj <- readBin(con, what = "integer", n = 1L)
+    res <- readBin(con, what = "raw", n = size.res)
+    data <- readBin(con, what = "double", n = nIteration.est * lengthIter.est)
+    adj.ser <- readBin(con, what = "raw", n = size.adj)
+    adjustments <- unserialize(adj.ser)
+    close(con)
+    betas0 <- lapply(namesBetas,
+                     function(x) fetch(filename.pred, c("model", "prior", x)))
+    rescaleBetasPred(results = results.pred, 
+                     adjustments = adjustments,
+                     filename = filename.pred,
+                     nIteration = nIteration.pred,
+                     lengthIter = lengthIter.pred)
+    for (i in seq_along(betas0)) {
+        name <- namesBetas[i]
+        beta1 <- fetch(filename.pred,
+                       where = c("model", "prior", name))
+        name.adj <- paste("model.prior", name, sep = ".")
+        if (name == "time")
+            expect_equal(beta1, betas0[[i]] + adjustments[[name.adj]])
+        else
+            expect_equal(beta1, betas0[[i]])
+    }
+})
+
 test_that("rescalePriors works with BinomialVarying", {
     rescalePriors <- demest:::rescalePriors
     fetchResultsObject <- demest:::fetchResultsObject

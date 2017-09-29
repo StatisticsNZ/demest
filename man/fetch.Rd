@@ -4,8 +4,7 @@
 \alias{fetch}
 \title{Extract estimates from model output.}
 \usage{
-fetch(filename, where = character(), iterations = NULL, normalize = TRUE,
-  impute = FALSE)
+fetch(filename, where = character(), iterations = NULL, impute = FALSE)
 }
 \arguments{
 \item{filename}{The filename used by the estimate function.}
@@ -15,9 +14,6 @@ extracted.}
 
 \item{iterations}{A vector of positive integers giving the iterations to be
 extracted if an item has multiple iterations.}
-
-\item{normalize}{Logical. Whether to centre estimates of main effects and
-interactions from hierarchical models.  Defaults to \code{TRUE}.}
 
 \item{impute}{Logical. Whether to impute missing values.}
 }
@@ -46,18 +42,6 @@ it is still best to use the full names in production code.)
 Using the \code{iterations} to select a subset of iterations can be useful
 if the object being extracted is large relative to memory or if calculations
 are running slowly.
-
-In the hierarchical models specified by functions such as
-\code{\link{Poisson}}, \code{\link{Binomial}}, and \code{\link{Normal}},
-main effects and interactions are only
-weakly identified, in that adding a given quantity to the intercept term
-and subtracting it from the remaining terms would yield the same likelihood.
-The weak identification helps speed convergence.  However, to obtain
-interpretable parameter estimates, it is necessary to impose some
-constraints.  If \code{normalize} is \code{TRUE} (the default), all main
-effects are constrained to sum to 0, as are all margins in interactions.
-For example, in a two-way interaction, the row sums and column sums will
-all be 0.
 
 Where possible, \code{\link{estimateModel}}, \code{\link{estimateCounts}},
 and \code{\link{estimateAccount}} avoid imputing missing values during
@@ -104,21 +88,6 @@ fetch(filename,
 fetch(filename,
       where = c("model", "prior", "(Intercept)"),
       iterations = seq(from = 5, by = 5, to = 40))
-
-## normalised vs normalised age effects
-age.sex.norm <- fetch(filename,
-                      where = c("model", "prior", "age:sex"),
-                      iterations = 1)
-age.sex.unnorm <- fetch(filename,
-                        where = c("model", "prior", "age:sex"),
-                        normalize = FALSE,
-                        iterations = 1)
-age.sex.norm <- drop(age.sex.norm) # drop 'iterations' dimension
-age.sex.unnorm <- drop(age.sex.unnorm) 
-rowSums(age.sex.norm)
-rowSums(age.sex.unnorm)
-colSums(age.sex.norm)
-colSums(age.sex.unnorm)
 }
 \references{
 The weak identification of main effects and interactions is discussed in

@@ -33,14 +33,14 @@ test_that("fetchMCMC works with BinomialVarying", {
                                         sample = NULL, nChain = 2L, nThin = 1L)
     model.prior.sex <-  MCMCDemographic(fetch(filename, c("model", "prior", "sex")),
                                         sample = NULL, nChain = 2L, nThin = 1L)
+    model.prior.mean <- MCMCDemographic(fetch(filename, c("model", "prior", "mean")),
+                                      sample = NULL, nChain = 2L, nThin = 1L)
     model.prior.sd <- MCMCDemographic(fetch(filename, c("model", "prior", "sd")),
                                       sample = NULL, nChain = 2L, nThin = 1L)
     model.hyper.age.scaleError <- MCMCDemographic(fetch(filename, c("model", "hyper", "age", "scaleError")),
                                                   sample = NULL, nChain = 2L, nThin = 1L)
     ans.expected <- list(model.likelihood.prob = model.likelihood.prob,
-                         "model.prior.(Intercept)" = model.prior.Intercept,
-                         model.prior.age = model.prior.age,
-                         model.prior.sex = model.prior.sex,
+                         "model.prior.mean" = model.prior.mean,
                          model.prior.sd = model.prior.sd,
                          model.hyper.age.scaleError = model.hyper.age.scaleError)
     expect_identical(ans.obtained, ans.expected)
@@ -56,14 +56,14 @@ test_that("fetchMCMC works with BinomialVarying", {
                                         sample = NULL, nChain = 2L, nThin = 2L)
     model.prior.sex <-  MCMCDemographic(fetch(filename, c("model", "prior", "sex")),
                                         sample = NULL, nChain = 2L, nThin = 2L)
+    model.prior.mean <-  MCMCDemographic(fetch(filename, c("model", "prior", "mean")),
+                                              sample = NULL, nChain = 2L, nThin = 2L)
     model.prior.sd <- MCMCDemographic(fetch(filename, c("model", "prior", "sd")),
                                       sample = NULL, nChain = 2L, nThin = 2L)
     model.hyper.age.scaleError <- MCMCDemographic(fetch(filename, c("model", "hyper", "age", "scaleError")),
                                                   sample = NULL, nChain = 2L, nThin = 2L)
     ans.expected <- list(model.likelihood.prob = model.likelihood.prob,
-                         "model.prior.(Intercept)" = model.prior.Intercept,
-                         model.prior.age = model.prior.age,
-                         model.prior.sex = model.prior.sex,
+                         model.prior.mean = model.prior.mean,
                          model.prior.sd = model.prior.sd,
                          model.hyper.age.scaleError = model.hyper.age.scaleError)
     expect_identical(ans.obtained, ans.expected)

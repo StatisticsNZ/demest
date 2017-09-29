@@ -51,6 +51,23 @@ setMethod("nIteration",
           })          
 
 ## HAS_TESTS
+setMethod("rescaleBetasPred",
+          signature(results = "ResultsModelPred"),
+          function(results, adjustments, filename, nIteration, lengthIter) {
+              priorsBetas <- results@final[[1L]]@model@priorsBetas
+              namesBetas <- results@final[[1L]]@model@namesBetas
+              skeletonsBetas <- results@model$prior[seq_along(priorsBetas)] # omit mean, sd
+              rescaleBetasPredHelper(priorsBetas = priorsBetas,
+                                     namesBetas = namesBetas,
+                                     skeletonsBetas = skeletonsBetas,
+                                     adjustments = adjustments,
+                                     prefixAdjustments = "model",
+                                     filename = filename,
+                                     nIteration = nIteration,
+                                     lengthIter = lengthIter)
+          })
+
+## HAS_TESTS
 setMethod("rescalePriors",
           signature(results = "ResultsModelEst"),
           function(results, adjustments, filename, nIteration, lengthIter) {

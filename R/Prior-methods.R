@@ -4,7 +4,7 @@
 setMethod("betaIsEstimated",
     signature(prior = "Prior"),
     function(prior) {
-        TRUE
+        FALSE
     })
 
 ## HAS_TESTS
@@ -3194,8 +3194,7 @@ setMethod("whereEstimated",
 setMethod("whereEstimated",
           signature(object = "DLMNoTrendNormZeroNoSeason"),
           function(object) {
-              c("level",
-                "scaleLevel",
+              c("scaleLevel",
                 if (object@phiKnown) NULL else "damp",
                 "scaleError")
           })
@@ -3204,9 +3203,7 @@ setMethod("whereEstimated",
 setMethod("whereEstimated",
           signature(object = "DLMWithTrendNormZeroNoSeason"),
           function(object) {
-              c("level",
-                if (object@hasLevel@.Data) "scaleLevel" else NULL,
-                "trend",
+              c(if (object@hasLevel@.Data) "scaleLevel" else NULL,
                 "scaleTrend",
                 if (object@phiKnown) NULL else "damp",
                 "scaleError")
@@ -3216,10 +3213,8 @@ setMethod("whereEstimated",
 setMethod("whereEstimated",
           signature(object = "DLMNoTrendNormZeroWithSeason"),
           function(object) {
-              c("level",
-                "scaleLevel",
+              c("scaleLevel",
                 if (object@phiKnown) NULL else "damp",
-                "season",
                 "scaleSeason",
                 "scaleError")
           })
@@ -3228,12 +3223,9 @@ setMethod("whereEstimated",
 setMethod("whereEstimated",
           signature(object = "DLMWithTrendNormZeroWithSeason"),
           function(object) {
-              c("level",
-                if (object@hasLevel@.Data) "scaleLevel" else NULL,
-                "trend",
+              c(if (object@hasLevel@.Data) "scaleLevel" else NULL,
                 "scaleTrend",
                 if (object@phiKnown) NULL else "damp",
-                "season",
                 "scaleSeason",
                 "scaleError")
           })
@@ -3245,8 +3237,7 @@ setMethod("whereEstimated",
 setMethod("whereEstimated",
           signature(object = "DLMNoTrendNormCovNoSeason"),
           function(object) {
-              c("level",
-                "scaleLevel",
+              c("scaleLevel",
                 if (object@phiKnown) NULL else "damp",
                 "coef",
                 "scaleError")
@@ -3256,9 +3247,7 @@ setMethod("whereEstimated",
 setMethod("whereEstimated",
           signature(object = "DLMWithTrendNormCovNoSeason"),
           function(object) {
-              c("level",
-                if (object@hasLevel@.Data) "scaleLevel" else NULL,
-                "trend",
+              c(if (object@hasLevel@.Data) "scaleLevel" else NULL,
                 "scaleTrend",
                 if (object@phiKnown) NULL else "damp",
                 "coef",
@@ -3269,10 +3258,8 @@ setMethod("whereEstimated",
 setMethod("whereEstimated",
           signature(object = "DLMNoTrendNormCovWithSeason"),
           function(object) {
-              c("level",
-                "scaleLevel",
+              c("scaleLevel",
                 if (object@phiKnown) NULL else "damp",
-                "season",
                 "scaleSeason",
                 "coef",
                 "scaleError")
@@ -3282,12 +3269,9 @@ setMethod("whereEstimated",
 setMethod("whereEstimated",
           signature(object = "DLMWithTrendNormCovWithSeason"),
           function(object) {
-              c("level",
-                if (object@hasLevel@.Data) "scaleLevel" else NULL,
-                "trend",
+              c(if (object@hasLevel@.Data) "scaleLevel" else NULL,
                 "scaleTrend",
                 if (object@phiKnown) NULL else "damp",
-                "season",
                 "scaleSeason",
                 "coef",
                 "scaleError")
@@ -3300,8 +3284,7 @@ setMethod("whereEstimated",
 setMethod("whereEstimated",
           signature(object = "DLMNoTrendRobustZeroNoSeason"),
           function(object) {
-              c("level",
-                "scaleLevel",
+              c("scaleLevel",
                 if (object@phiKnown) NULL else "damp",
                 "scaleError")
           })
@@ -3310,9 +3293,7 @@ setMethod("whereEstimated",
 setMethod("whereEstimated",
           signature(object = "DLMWithTrendRobustZeroNoSeason"),
           function(object) {
-              c("level",
-                if (object@hasLevel@.Data) "scaleLevel" else NULL,
-                "trend",
+              c(if (object@hasLevel@.Data) "scaleLevel" else NULL,
                 "scaleTrend",
                 if (object@phiKnown) NULL else "damp",
                 "scaleError")
@@ -3322,10 +3303,8 @@ setMethod("whereEstimated",
 setMethod("whereEstimated",
           signature(object = "DLMNoTrendRobustZeroWithSeason"),
           function(object) {
-              c("level",
-                "scaleLevel",
+              c("scaleLevel",
                 if (object@phiKnown) NULL else "damp",
-                "season",
                 "scaleSeason",
                 "scaleError")
           })
@@ -3334,12 +3313,9 @@ setMethod("whereEstimated",
 setMethod("whereEstimated",
           signature(object = "DLMWithTrendRobustZeroWithSeason"),
           function(object) {
-              c("level",
-                if (object@hasLevel@.Data) "scaleLevel" else NULL,
-                "trend",
+              c(if (object@hasLevel@.Data) "scaleLevel" else NULL,
                 "scaleTrend",
                 if (object@phiKnown) NULL else "damp",
-                "season",
                 "scaleSeason",
                 "scaleError")
           })
@@ -3351,8 +3327,7 @@ setMethod("whereEstimated",
 setMethod("whereEstimated",
           signature(object = "DLMNoTrendRobustCovNoSeason"),
           function(object) {
-              c("level",
-                "scaleLevel",
+              c("scaleLevel",
                 if (object@phiKnown) NULL else "damp",
                 "coef",
                 "scaleError")
@@ -3362,9 +3337,7 @@ setMethod("whereEstimated",
 setMethod("whereEstimated",
           signature(object = "DLMWithTrendRobustCovNoSeason"),
           function(object) {
-              c("level",
-                if (object@hasLevel@.Data) "scaleLevel" else NULL,
-                "trend",
+              c(if (object@hasLevel@.Data) "scaleLevel" else NULL,
                 "scaleTrend",
                 if (object@phiKnown) NULL else "damp",
                 "coef",
@@ -3375,10 +3348,8 @@ setMethod("whereEstimated",
 setMethod("whereEstimated",
           signature(object = "DLMNoTrendRobustCovWithSeason"),
           function(object) {
-              c("level",
-                "scaleLevel",
+              c("scaleLevel",
                 if (object@phiKnown) NULL else "damp",
-                "season",
                 "scaleSeason",
                 "coef",
                 "scaleError")
@@ -3388,12 +3359,9 @@ setMethod("whereEstimated",
 setMethod("whereEstimated",
           signature(object = "DLMWithTrendRobustCovWithSeason"),
           function(object) {
-              c("level",
-                if (object@hasLevel@.Data) "scaleLevel" else NULL,
-                "trend",
+              c(if (object@hasLevel@.Data) "scaleLevel" else NULL,
                 "scaleTrend",
                 if (object@phiKnown) NULL else "damp",
-                "season",
                 "scaleSeason",
                 "coef",
                 "scaleError")

@@ -2673,10 +2673,11 @@ setMethod("whereEstimated",
               likelihood <- list(c("likelihood", "mean"))
               betas <- makeMCMCBetas(priors = priors.betas,
                                      names = names.betas)
+              mu <- list(c("prior", "mean"))
               sd <- if (isSaturated(object)) NULL else list(c("prior", "sd"))
               priors <- makeMCMCPriorsBetas(priors = priors.betas,
                                             names = names.betas)
-              c(likelihood, betas, sd, priors)
+              c(likelihood, betas, mu, sd, priors)
           })
 
 ## HAS_TESTS
@@ -2689,10 +2690,11 @@ setMethod("whereEstimated",
                                  c("likelihood", "sd"))
               betas <- makeMCMCBetas(priors = priors.betas,
                                      names = names.betas)
+              mu <- list(c("prior", "mean"))
               sd <- if (isSaturated(object)) NULL else list(c("prior", "sd"))
               priors <- makeMCMCPriorsBetas(priors = priors.betas,
                                             names = names.betas)
-              c(likelihood, betas, sd, priors)
+              c(likelihood, betas, mu, sd, priors)
           })
 
 ## HAS_TESTS
@@ -2722,10 +2724,11 @@ setMethod("whereEstimated",
               likelihood <- list(c("likelihood", "prob"))
               betas <- makeMCMCBetas(priors = priors.betas,
                                      names = names.betas)
+              mu <- list(c("prior", "mean"))
               sd <- if (isSaturated(object)) NULL else list(c("prior", "sd"))
               priors <- makeMCMCPriorsBetas(priors = priors.betas,
                                             names = names.betas)
-              c(likelihood, betas, sd, priors)
+              c(likelihood, betas, mu, sd, priors)
           })
 
 ## HAS_TESTS
@@ -2746,10 +2749,11 @@ setMethod("whereEstimated",
               likelihood <- list(c("likelihood", "count"))
               betas <- makeMCMCBetas(priors = priors.betas,
                                      names = names.betas)
+              mu <- list(c("prior", "mean"))
               sd <- if (isSaturated(object)) NULL else list(c("prior", "sd"))
               priors <- makeMCMCPriorsBetas(priors = priors.betas,
                                             names = names.betas)
-              c(likelihood, betas, sd, priors)
+              c(likelihood, betas, mu, sd, priors)
           })
 
 ## HAS_TESTS
@@ -2761,10 +2765,11 @@ setMethod("whereEstimated",
               likelihood <- list(c("likelihood", "rate"))
               betas <- makeMCMCBetas(priors = priors.betas,
                                      names = names.betas)
+              mu <- list(c("prior", "mean"))
               sd <- if (isSaturated(object)) NULL else list(c("prior", "sd"))
               priors <- makeMCMCPriorsBetas(priors = priors.betas,
                                             names = names.betas)
-              c(likelihood, betas, sd, priors)
+              c(likelihood, betas, mu, sd, priors)
           })
 
 ## HAS_TESTS

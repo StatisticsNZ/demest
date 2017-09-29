@@ -350,6 +350,10 @@ setGeneric("printSpecAgValEqns",
            function(object, aggregate)
                standardGeneric("printSpecAgValEqns"))
 
+setGeneric("rescaleBetasPred",
+           function(results, adjustments, filename, nIteration, lengthIter)
+               standardGeneric("rescaleBetasPred"))
+
 setGeneric("rescalePairPriors",
           function(priorHigh, priorLow, skeletonBetaHigh, skeletonBetaLow,
                    skeletonsPriorHigh, skeletonsPriorLow,

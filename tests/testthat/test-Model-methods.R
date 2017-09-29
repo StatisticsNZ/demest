@@ -4806,9 +4806,7 @@ test_that("whereEstimated works with NormalVaryingVarsigmaKnown", {
     model <- initialModel(spec, y = y, weights = weights)
     ans.obtained <- whereEstimated(model)
     ans.expected <- list(c("likelihood", "mean"),
-                         c("prior", "(Intercept)"),
-                         c("prior", "sex"),
-                         c("prior", "age"),
+                         c("prior", "mean"),
                          c("prior", "sd"),
                          c("hyper", "age", "scaleError"))
     expect_identical(ans.obtained, ans.expected)
@@ -4818,10 +4816,7 @@ test_that("whereEstimated works with NormalVaryingVarsigmaKnown", {
     model <- initialModel(spec, y = y, weights = weights)
     ans.obtained <- whereEstimated(model)
     ans.expected <- list(c("likelihood", "mean"),
-                         c("prior", "(Intercept)"),
-                         c("prior", "sex"),
-                         c("prior", "age"),
-                         c("prior", "sex:age"),
+                         c("prior", "mean"),
                          c("hyper", "age", "scaleError"),
                          c("hyper", "sex:age", "scaleError"))
     expect_identical(ans.obtained, ans.expected)
@@ -4844,12 +4839,9 @@ test_that("whereEstimated works with NormalVaryingVarsigmaUnknown", {
     ans.obtained <- whereEstimated(model)
     ans.expected <- list(c("likelihood", "mean"),
                          c("likelihood", "sd"),
-                         c("prior", "(Intercept)"),
-                         c("prior", "age"),
+                         c("prior", "mean"),
                          c("prior", "sd"),
-                         c("hyper", "age", "level"),
                          c("hyper", "age", "scaleLevel"),
-                         c("hyper", "age", "trend"),
                          c("hyper", "age", "scaleTrend"),
                          c("hyper", "age", "damp"),
                          c("hyper", "age", "scaleError"))
@@ -4862,12 +4854,8 @@ test_that("whereEstimated works with NormalVaryingVarsigmaUnknown", {
     ans.obtained <- whereEstimated(model)
     ans.expected <- list(c("likelihood", "mean"),
                          c("likelihood", "sd"),
-                         c("prior", "(Intercept)"),
-                         c("prior", "age"),
-                         c("prior", "sex:age"),                         
-                         c("hyper", "age", "level"),
+                         c("prior", "mean"),                         
                          c("hyper", "age", "scaleLevel"),
-                         c("hyper", "age", "trend"),
                          c("hyper", "age", "scaleTrend"),
                          c("hyper", "age", "damp"),
                          c("hyper", "age", "scaleError"),
@@ -4892,9 +4880,7 @@ test_that("whereEstimated works with NormalVaryingVarsigmaKnownAgNormal", {
     model <- initialModel(spec, y = y, weights = weights)
     ans.obtained <- whereEstimated(model)
     ans.expected <- list(c("likelihood", "mean"),
-                         c("prior", "(Intercept)"),
-                         c("prior", "sex"),
-                         c("prior", "age"),
+                         c("prior", "mean"),
                          c("prior", "sd"),
                          c("hyper", "age", "scaleError"),
                          c("aggregate", "value"))
@@ -4906,10 +4892,7 @@ test_that("whereEstimated works with NormalVaryingVarsigmaKnownAgNormal", {
     model <- initialModel(spec, y = y, weights = weights)
     ans.obtained <- whereEstimated(model)
     ans.expected <- list(c("likelihood", "mean"),
-                         c("prior", "(Intercept)"),
-                         c("prior", "sex"),
-                         c("prior", "age"),
-                         c("prior", "sex:age"),
+                         c("prior", "mean"),
                          c("hyper", "age", "scaleError"),
                          c("hyper", "sex:age", "scaleError"),
                          c("aggregate", "value"))
@@ -4933,9 +4916,7 @@ test_that("whereEstimated works with NormalVaryingVarsigmaKnownAgNormal", {
     ans.obtained <- whereEstimated(model)
     ans.expected <- list(c("likelihood", "mean"),
                          c("likelihood", "sd"),
-                         c("prior", "(Intercept)"),
-                         c("prior", "sex"),
-                         c("prior", "age"),
+                         c("prior", "mean"),
                          c("prior", "sd"),
                          c("hyper", "age", "scaleError"),
                          c("aggregate", "value"))
@@ -4957,11 +4938,8 @@ test_that("whereEstimated works with BinomialVarying", {
     model <- initialModel(spec, y = y, exposure = exposure)
     ans.obtained <- whereEstimated(model)
     ans.expected <- list(c("likelihood", "prob"),
-                         c("prior", "(Intercept)"),
-                         c("prior", "sex"),
-                         c("prior", "age"),
+                         c("prior", "mean"),
                          c("prior", "sd"),
-                         c("hyper", "age", "level"),
                          c("hyper", "age", "scaleLevel"),
                          c("hyper", "age", "damp"),
                          c("hyper", "age", "scaleError"))
@@ -4970,7 +4948,7 @@ test_that("whereEstimated works with BinomialVarying", {
     model <- initialModel(spec, y = y, exposure = exposure)
     ans.obtained <- whereEstimated(model)
     ans.expected <- list(c("likelihood", "prob"),
-                         c("prior", "(Intercept)"),
+                         c("prior", "mean"),
                          c("prior", "sd"))
     expect_identical(ans.obtained, ans.expected)
     ## is saturated
@@ -4979,11 +4957,7 @@ test_that("whereEstimated works with BinomialVarying", {
     model <- initialModel(spec, y = y, exposure = exposure)
     ans.obtained <- whereEstimated(model)
     ans.expected <- list(c("likelihood", "prob"),
-                         c("prior", "(Intercept)"),
-                         c("prior", "sex"),
-                         c("prior", "age"),
-                         c("prior", "sex:age"),
-                         c("hyper", "age", "level"),
+                         c("prior", "mean"),
                          c("hyper", "age", "scaleLevel"),
                          c("hyper", "age", "damp"),
                          c("hyper", "age", "scaleError"),
@@ -4994,7 +4968,7 @@ test_that("whereEstimated works with BinomialVarying", {
     model <- initialModel(spec, y = y, exposure = exposure)
     ans.obtained <- whereEstimated(model)
     ans.expected <- list(c("likelihood", "prob"),
-                         c("prior", "(Intercept)"),
+                         c("prior", "mean"),
                          c("prior", "sd"))
     expect_identical(ans.obtained, ans.expected)
 })
@@ -5016,9 +4990,7 @@ test_that("whereEstimated works with BinomialVaryingAgCertain", {
     model <- initialModel(spec, y = y, exposure = exposure)
     ans.obtained <- whereEstimated(model)
     ans.expected <- list(c("likelihood", "prob"),
-                         c("prior", "(Intercept)"),
-                         c("prior", "sex"),
-                         c("prior", "age"),
+                         c("prior", "mean"),
                          c("prior", "sd"),
                          c("hyper", "age", "scaleError"))
     expect_identical(ans.obtained, ans.expected)
@@ -5042,9 +5014,7 @@ test_that("whereEstimated works with BinomialVaryingAgNormal", {
     model <- initialModel(spec, y = y, exposure = exposure)
     ans.obtained <- whereEstimated(model)
     ans.expected <- list(c("likelihood", "prob"),
-                         c("prior", "(Intercept)"),
-                         c("prior", "sex"),
-                         c("prior", "age"),
+                         c("prior", "mean"),
                          c("prior", "sd"),
                          c("hyper", "age", "scaleError"),
                          c("aggregate", "value"))
@@ -5063,13 +5033,9 @@ test_that("whereEstimated works with PoissonVaryingNotUseExp", {
     model <- initialModel(spec, y = y, exposure = NULL)
     ans.obtained <- whereEstimated(model)
     ans.expected <- list(c("likelihood", "count"),
-                         c("prior", "(Intercept)"),
-                         c("prior", "sex"),
-                         c("prior", "age"),
+                         c("prior", "mean"),
                          c("prior", "sd"),
-                         c("hyper", "age", "level"),
                          c("hyper", "age", "scaleLevel"),
-                         c("hyper", "age", "trend"),
                          c("hyper", "age", "scaleTrend"),
                          c("hyper", "age", "scaleError"))
     expect_identical(ans.obtained, ans.expected)
@@ -5079,13 +5045,8 @@ test_that("whereEstimated works with PoissonVaryingNotUseExp", {
     model <- initialModel(spec, y = y, exposure = NULL)
     ans.obtained <- whereEstimated(model)
     ans.expected <- list(c("likelihood", "count"),
-                         c("prior", "(Intercept)"),
-                         c("prior", "sex"),
-                         c("prior", "age"),
-                         c("prior", "sex:age"),
-                         c("hyper", "age", "level"),
+                         c("prior", "mean"),
                          c("hyper", "age", "scaleLevel"),
-                         c("hyper", "age", "trend"),
                          c("hyper", "age", "scaleTrend"),
                          c("hyper", "age", "scaleError"),
                          c("hyper", "sex:age", "scaleError"))
@@ -5109,9 +5070,7 @@ test_that("whereEstimated works with PoissonVaryingUseExpAgCertain", {
     model <- initialModel(spec, y = y, exposure = exposure)
     ans.obtained <- whereEstimated(model)
     ans.expected <- list(c("likelihood", "rate"),
-                         c("prior", "(Intercept)"),
-                         c("prior", "sex"),
-                         c("prior", "age"),
+                         c("prior", "mean"),
                          c("prior", "sd"),
                          c("hyper", "age", "scaleError"))
     expect_identical(ans.obtained, ans.expected)
@@ -5132,9 +5091,7 @@ test_that("whereEstimated works with PoissonVaryingNotUseExpAgNormal", {
     model <- initialModel(spec, y = y, exposure = NULL)
     ans.obtained <- whereEstimated(model)
     ans.expected <- list(c("likelihood", "count"),
-                         c("prior", "(Intercept)"),
-                         c("prior", "sex"),
-                         c("prior", "age"),
+                         c("prior", "mean"),
                          c("prior", "sd"),
                          c("hyper", "age", "scaleError"),
                          c("aggregate", "value"))
@@ -5158,9 +5115,7 @@ test_that("whereEstimated works with PoissonVaryingUseExpAgPoisson", {
     model <- initialModel(spec, y = y, exposure = exposure)
     ans.obtained <- whereEstimated(model)
     ans.expected <- list(c("likelihood", "rate"),
-                         c("prior", "(Intercept)"),
-                         c("prior", "sex"),
-                         c("prior", "age"),
+                         c("prior", "mean"),
                          c("prior", "sd"),
                          c("hyper", "age", "scaleError"),
                          c("aggregate", "value"))
@@ -5185,9 +5140,7 @@ test_that("whereEstimated works with PoissonVaryingUseExpAgNormal", {
     model <- initialModel(spec, y = y, exposure = exposure)
     ans.obtained <- whereEstimated(model)
     ans.expected <- list(c("likelihood", "rate"),
-                         c("prior", "(Intercept)"),
-                         c("prior", "sex"),
-                         c("prior", "age"),
+                         c("prior", "mean"),
                          c("prior", "sd"),
                          c("hyper", "age", "scaleError"),
                          c("aggregate", "value"))
@@ -5211,9 +5164,7 @@ test_that("whereEstimated works with PoissonVaryingUseExpAgPoisson", {
     model <- initialModel(spec, y = y, exposure = exposure)
     ans.obtained <- whereEstimated(model)
     ans.expected <- list(c("likelihood", "rate"),
-                         c("prior", "(Intercept)"),
-                         c("prior", "sex"),
-                         c("prior", "age"),
+                         c("prior", "mean"),
                          c("prior", "sd"),
                          c("hyper", "age", "scaleError"),
                          c("aggregate", "value"))

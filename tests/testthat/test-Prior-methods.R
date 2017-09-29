@@ -11,7 +11,7 @@ test_that("betaIsEstimated works in default case", {
     betaIsEstimated <- demest:::betaIsEstimated
     x <- new("ExchFixed",
              isSaturated = new("LogicalFlag", FALSE))
-    expect_true(betaIsEstimated(x))
+    expect_false(betaIsEstimated(x))
 })
 
 test_that("betaIsEstimated works with Zero prior", {
@@ -6041,65 +6041,53 @@ test_that("whereEstimated works", {
                      c("coef", "scaleError"))
     x <- new("DLMNoTrendNormZeroNoSeason")
     expect_identical(whereEstimated(x),
-                     c("level", "scaleLevel",
+                     c("scaleLevel",
                        "damp",
                        "scaleError"))
     x <- new("DLMWithTrendNormZeroNoSeason")
     x@hasLevel@.Data <- TRUE
     expect_identical(whereEstimated(x),
-                     c("level", "scaleLevel",
-                       "trend", "scaleTrend",
+                     c("scaleLevel",
+                       "scaleTrend",
                        "damp",
                        "scaleError"))
     x <- new("DLMWithTrendNormZeroNoSeason")
     x@hasLevel@.Data <- FALSE
     expect_identical(whereEstimated(x),
-                     c("level", 
-                       "trend",
-                       "scaleTrend",
+                     c("scaleTrend",
                        "damp",
                        "scaleError"))
     x <- new("DLMNoTrendNormZeroWithSeason")
     expect_identical(whereEstimated(x),
-                     c("level",
-                       "scaleLevel",
+                     c("scaleLevel",
                        "damp",
-                       "season",
                        "scaleSeason",
                        "scaleError"))
     x <- new("DLMWithTrendNormZeroWithSeason")
     x@hasLevel@.Data <- TRUE
     expect_identical(whereEstimated(x),
-                     c("level",
-                       "scaleLevel",
-                       "trend",
+                     c("scaleLevel",
                        "scaleTrend",
                        "damp",
-                       "season",
                        "scaleSeason",
                        "scaleError"))
     x <- new("DLMWithTrendNormZeroWithSeason")
     x@hasLevel@.Data <- FALSE
     expect_identical(whereEstimated(x),
-                     c("level",
-                       "trend",
-                       "scaleTrend",
+                     c("scaleTrend",
                        "damp",
-                       "season",
                        "scaleSeason",
                        "scaleError"))
     x <- new("DLMNoTrendNormCovNoSeason")
     expect_identical(whereEstimated(x),
-                     c("level", "scaleLevel",
+                     c("scaleLevel",
                        "damp",
                        "coef",
                        "scaleError"))
     x <- new("DLMWithTrendNormCovNoSeason")
     x@hasLevel@.Data <- TRUE
     expect_identical(whereEstimated(x),
-                     c("level",
-                       "scaleLevel",
-                       "trend",
+                     c("scaleLevel",
                        "scaleTrend",
                        "damp",
                        "coef",
@@ -6107,105 +6095,83 @@ test_that("whereEstimated works", {
     x <- new("DLMWithTrendNormCovNoSeason")
     x@hasLevel@.Data <- FALSE
     expect_identical(whereEstimated(x),
-                     c("level",
-                       "trend",
-                       "scaleTrend",
+                     c("scaleTrend",
                        "damp",
                        "coef",
                        "scaleError"))
     x <- new("DLMNoTrendNormCovWithSeason")
     expect_identical(whereEstimated(x),
-                     c("level", "scaleLevel",
+                     c("scaleLevel",
                        "damp",
-                       "season",
                        "scaleSeason",
                        "coef",
                        "scaleError"))
     x <- new("DLMWithTrendNormCovWithSeason")
     x@hasLevel@.Data <- TRUE
     expect_identical(whereEstimated(x),
-                     c("level",
-                       "scaleLevel",
-                       "trend",
+                     c("scaleLevel",
                        "scaleTrend",
                        "damp",
-                       "season",
                        "scaleSeason",
                        "coef",
                        "scaleError"))
     x <- new("DLMWithTrendNormCovWithSeason")
     x@hasLevel@.Data <- FALSE
     expect_identical(whereEstimated(x),
-                     c("level",
-                       "trend",
-                       "scaleTrend",
+                     c("scaleTrend",
                        "damp",
-                       "season",
                        "scaleSeason",
                        "coef",
                        "scaleError"))
     x <- new("DLMNoTrendRobustZeroNoSeason")
     expect_identical(whereEstimated(x),
-                     c("level", "scaleLevel",
+                     c("scaleLevel",
                        "damp",
                        "scaleError"))
     x <- new("DLMWithTrendRobustZeroNoSeason")
     x@hasLevel@.Data <- TRUE
     expect_identical(whereEstimated(x),
-                     c("level",
-                       "scaleLevel",
-                       "trend",
+                     c("scaleLevel",
                        "scaleTrend",
                        "damp",
                        "scaleError"))
     x <- new("DLMWithTrendRobustZeroNoSeason")
     x@hasLevel@.Data <- FALSE
     expect_identical(whereEstimated(x),
-                     c("level",
-                       "trend",
-                       "scaleTrend",
+                     c("scaleTrend",
                        "damp",
                        "scaleError"))
     x <- new("DLMNoTrendRobustZeroWithSeason")
     expect_identical(whereEstimated(x),
-                     c("level", "scaleLevel",
+                     c("scaleLevel",
                        "damp",
-                       "season",
                        "scaleSeason",
                        "scaleError"))
     x <- new("DLMWithTrendRobustZeroWithSeason")
     x@hasLevel@.Data <- TRUE
     expect_identical(whereEstimated(x),
-                     c("level",
-                       "scaleLevel",
-                       "trend",
+                     c("scaleLevel",
                        "scaleTrend",
                        "damp",
-                       "season",
                        "scaleSeason",
                        "scaleError"))
     x <- new("DLMWithTrendRobustZeroWithSeason")
     x@hasLevel@.Data <- FALSE
     expect_identical(whereEstimated(x),
-                     c("level",
-                       "trend",
-                       "scaleTrend",
+                     c("scaleTrend",
                        "damp",
-                       "season",
                        "scaleSeason",
                        "scaleError"))
     x <- new("DLMNoTrendRobustCovNoSeason")
     expect_identical(whereEstimated(x),
-                     c("level", "scaleLevel",
+                     c("scaleLevel",
                        "damp",
                        "coef",
                        "scaleError"))
     x <- new("DLMWithTrendRobustCovNoSeason")
     x@hasLevel@.Data <- TRUE
     expect_identical(whereEstimated(x),
-                     c("level",
-                       "scaleLevel",
-                       "trend",
+                     c("scaleLevel",
                        "scaleTrend",
                        "damp",
                        "coef",
@@ -6213,90 +6179,78 @@ test_that("whereEstimated works", {
     x <- new("DLMWithTrendRobustCovNoSeason")
     x@hasLevel@.Data <- FALSE
     expect_identical(whereEstimated(x),
-                     c("level",
-                       "trend",
-                       "scaleTrend",
+                     c("scaleTrend",
                        "damp",
                        "coef",
                        "scaleError"))
     x <- new("DLMNoTrendRobustCovWithSeason")
     expect_identical(whereEstimated(x),
-                     c("level", "scaleLevel",
+                     c("scaleLevel",
                        "damp",
-                       "season",
                        "scaleSeason",
                        "coef",
                        "scaleError"))
     x <- new("DLMWithTrendRobustCovWithSeason")
     x@hasLevel@.Data <- TRUE
     expect_identical(whereEstimated(x),
-                     c("level",
-                       "scaleLevel",
-                       "trend",
+                     c("scaleLevel",
                        "scaleTrend",
                        "damp",
-                       "season",
                        "scaleSeason",
                        "coef",
                        "scaleError"))
     x <- new("DLMWithTrendRobustCovWithSeason")
     x@hasLevel@.Data <- FALSE
     expect_identical(whereEstimated(x),
-                     c("level",
-                       "trend",
-                       "scaleTrend",
+                     c("scaleTrend",
                        "damp",
-                       "season",
                        "scaleSeason",
                        "coef",
                        "scaleError"))
     x <- new("DLMNoTrendNormZeroNoSeason")
     x@phiKnown@.Data <- TRUE
     expect_identical(whereEstimated(x),
-                     c("level", "scaleLevel",
+                     c("scaleLevel",
                        "scaleError"))
     x <- new("DLMWithTrendNormZeroNoSeason")
     x@phiKnown@.Data <- TRUE
     x@hasLevel@.Data <- TRUE
     expect_identical(whereEstimated(x),
-                     c("level", "scaleLevel",
-                       "trend", "scaleTrend",
+                     c("scaleLevel",
+                       "scaleTrend",
                        "scaleError"))
     x <- new("DLMNoTrendNormZeroWithSeason")
     x@phiKnown@.Data <- TRUE
     expect_identical(whereEstimated(x),
-                     c("level", "scaleLevel",
-                       "season",
+                     c("scaleLevel",
                        "scaleSeason",
                        "scaleError"))
     x <- new("DLMWithTrendNormZeroWithSeason")
     x@phiKnown@.Data <- TRUE
     x@hasLevel@.Data <- TRUE
     expect_identical(whereEstimated(x),
-                     c("level", "scaleLevel",
-                       "trend", "scaleTrend",
-                       "season",
+                     c("scaleLevel",
+                       "scaleTrend",
                        "scaleSeason",
                        "scaleError"))
     x <- new("DLMNoTrendNormCovNoSeason")
     x@phiKnown@.Data <- TRUE
     expect_identical(whereEstimated(x),
-                     c("level", "scaleLevel",
+                     c("scaleLevel",
                        "coef",
                        "scaleError"))
     x <- new("DLMWithTrendNormCovNoSeason")
     x@phiKnown@.Data <- TRUE
     x@hasLevel@.Data <- TRUE
     expect_identical(whereEstimated(x),
-                     c("level", "scaleLevel",
-                       "trend", "scaleTrend",
+                     c("scaleLevel",
+                       "scaleTrend",
                        "coef",
                        "scaleError"))
     x <- new("DLMNoTrendNormCovWithSeason")
     x@phiKnown@.Data <- TRUE
     expect_identical(whereEstimated(x),
-                     c("level", "scaleLevel",
-                       "season",
+                     c("scaleLevel",
                        "scaleSeason",
                        "coef",
                        "scaleError"))
@@ -6304,59 +6258,55 @@ test_that("whereEstimated works", {
     x@phiKnown@.Data <- TRUE
     x@hasLevel@.Data <- TRUE
     expect_identical(whereEstimated(x),
-                     c("level", "scaleLevel",
-                       "trend", "scaleTrend",
-                       "season",
+                     c("scaleLevel",
+                       "scaleTrend",
                        "scaleSeason",
                        "coef",
                        "scaleError"))
     x <- new("DLMNoTrendRobustZeroNoSeason")
     x@phiKnown@.Data <- TRUE
     expect_identical(whereEstimated(x),
-                     c("level", "scaleLevel",
+                     c("scaleLevel",
                        "scaleError"))
     x <- new("DLMWithTrendRobustZeroNoSeason")
     x@phiKnown@.Data <- TRUE
     x@hasLevel@.Data <- TRUE
     expect_identical(whereEstimated(x),
-                     c("level", "scaleLevel",
-                       "trend", "scaleTrend",
+                     c("scaleLevel",
+                       "scaleTrend",
                        "scaleError"))
     x <- new("DLMNoTrendRobustZeroWithSeason")
     x@phiKnown@.Data <- TRUE
     expect_identical(whereEstimated(x),
-                     c("level", "scaleLevel",
-                       "season",
+                     c("scaleLevel",
                        "scaleSeason",
                        "scaleError"))
     x <- new("DLMWithTrendRobustZeroWithSeason")
     x@phiKnown@.Data <- TRUE
     x@hasLevel@.Data <- TRUE
     expect_identical(whereEstimated(x),
-                     c("level", "scaleLevel",
-                       "trend", "scaleTrend",
-                       "season",
+                     c("scaleLevel",
+                       "scaleTrend",
                        "scaleSeason",
                        "scaleError"))
     x <- new("DLMNoTrendRobustCovNoSeason")
     x@phiKnown@.Data <- TRUE
     expect_identical(whereEstimated(x),
-                     c("level", "scaleLevel",
+                     c("scaleLevel",
                        "coef",
                        "scaleError"))
     x <- new("DLMWithTrendRobustCovNoSeason")
     x@phiKnown@.Data <- TRUE
     x@hasLevel@.Data <- TRUE
     expect_identical(whereEstimated(x),
-                     c("level", "scaleLevel",
-                       "trend", "scaleTrend",
+                     c("scaleLevel",
+                       "scaleTrend",
                        "coef",
                        "scaleError"))
     x <- new("DLMNoTrendRobustCovWithSeason")
     x@phiKnown@.Data <- TRUE
     expect_identical(whereEstimated(x),
-                     c("level", "scaleLevel",
-                       "season",
+                     c("scaleLevel",
                        "scaleSeason",
                        "coef",
                        "scaleError"))
@@ -6364,9 +6314,8 @@ test_that("whereEstimated works", {
     x@hasLevel@.Data <- TRUE
     x@phiKnown@.Data <- TRUE
     expect_identical(whereEstimated(x),
-                     c("level", "scaleLevel",
-                       "trend", "scaleTrend",
-                       "season",
+                     c("scaleLevel",
+                       "scaleTrend",
                        "scaleSeason",
                        "coef",
                        "scaleError"))
