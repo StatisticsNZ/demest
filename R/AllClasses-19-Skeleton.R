@@ -219,7 +219,7 @@ setClass("SkeletonMissingDataNormal",
 ## HAS_TESTS
 setClass("SkeletonMissingDataset",
          slots = c(offsetsComponent = "Offsets",
-                        transformComponent = "CollapseTransform"),
+                   transformComponent = "CollapseTransform"),
          contains = c("VIRTUAL", "SkeletonMissingData"),
          validity = function(object) {
              offsetsComponent <- object@offsetsComponent
