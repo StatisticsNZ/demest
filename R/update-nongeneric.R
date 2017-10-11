@@ -3147,7 +3147,23 @@ updateTheta_PoissonVaryingUseExp <- function(object, y, exposure, useC = FALSE) 
             }
             else
                 use.subtotal <- FALSE
-
+            draw.straight.from.prior <- y.is.missing && !use.subtotal
+            if (draw.straight.from.prior) {
+                mean <- mu
+                sd <- sigma
+            }
+            else {
+                th.curr <- theta[i]
+                log.th.curr <- log(th.curr)
+                mean <- log.th.curr
+                sd <- scale / sqrt(1 + exposure[i])
+            }
+            while (!found.prop && (attempt < max.attempt)) {
+                attempt <- attempt + 1L
+                log.th.prop <- stats::rnorm(n = 1L, mean = mean, sd = sd)
+                found.prop <- ((log.th.prop > lower + tolerance)
+                               && (log.th.prop < upper - tolerance))
+            }
             if (found.prop) {
                 th.prop <- exp(log.th.prop)
                 if (draw.straight.from.prior)

@@ -4608,8 +4608,7 @@ updateTheta_PoissonVaryingUseExp(SEXP object, SEXP y_R, SEXP exposure_R)
         }
         else {
             mean = log_th_curr;
-            /* sd = scale; */
-            sd = scale / sqrt(1 + log(1 + exposure[i])); /* changed by John 21 May 2016 */
+            sd = scale / sqrt(1 + exposure[i]); /* changed by John 10 October 2017 */
         }
 
         int attempt = 0;

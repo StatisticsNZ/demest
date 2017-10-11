@@ -5909,7 +5909,7 @@ test_that("updateTheta_PoissonVaryingUseExp gives valid answer", {
         for (i in seq_along(ans.expected@theta)) {
             theta.curr <- ans.expected@theta[i]
             theta.prop <- exp(rnorm(1, mean = log(theta.curr),
-                                    sd = model@scaleTheta*model@scaleThetaMultiplier/sqrt(1+log(1+exposure[i]))))
+                                    sd = model@scaleTheta*model@scaleThetaMultiplier/sqrt(1+exposure[i])))
             log.diff <- dpois(y[i], lambda = theta.prop * exposure[i], log = TRUE) -
                 dpois(y[i], lambda = theta.curr * exposure[i], log = TRUE) +
                     dnorm(x = log(theta.prop), mean = mu[i], sd = model@sigma, log = TRUE) -
@@ -5950,7 +5950,7 @@ test_that("updateTheta_PoissonVaryingUseExp gives valid answer", {
         for (i in 6:20) {
             theta.curr <- ans.expected@theta[i]
             theta.prop <- exp(rnorm(1, mean = log(theta.curr),
-                                    sd = model@scaleTheta*model@scaleThetaMultiplier/sqrt(1+log(1+exposure[i]))))
+                                    sd = model@scaleTheta*model@scaleThetaMultiplier/sqrt(1+exposure[i])))
             log.diff <- dpois(y[i], lambda = theta.prop * exposure[i], log = TRUE) -
                 dpois(y[i], lambda = theta.curr * exposure[i], log = TRUE) +
                     dnorm(x = log(theta.prop), mean = mu[i], sd = model@sigma, log = TRUE) -
@@ -5992,7 +5992,7 @@ test_that("updateTheta_PoissonVaryingUseExp gives valid answer", {
         for (i in 1:10) {
             theta.curr <- ans.expected@theta[i]
             theta.prop <- exp(rnorm(1, mean = log(theta.curr),
-                                    sd = model@scaleTheta*model@scaleThetaMultiplier/sqrt(1+log(1+exposure[i]))))
+                                    sd = model@scaleTheta*model@scaleThetaMultiplier/sqrt(1+exposure[i])))
             j <- if (i <= 5) 1 else 2
             ind <- (1:5) + (j - 1) * 5
             log.diff <- dpois(subtotals[j],
@@ -6010,7 +6010,7 @@ test_that("updateTheta_PoissonVaryingUseExp gives valid answer", {
         for (i in 13:20) {
             theta.curr <- ans.expected@theta[i]
             theta.prop <- exp(rnorm(1, mean = log(theta.curr),
-                                    sd = ans.expected@scaleTheta*model@scaleThetaMultiplier/sqrt(1+log(1+exposure[i]))))
+                                    sd = ans.expected@scaleTheta*model@scaleThetaMultiplier/sqrt(1+exposure[i])))
             log.diff <- dpois(y[i], lambda = theta.prop * exposure[i], log = TRUE) -
                 dpois(y[i], lambda = theta.curr * exposure[i], log = TRUE) +
                     dnorm(x = log(theta.prop), mean = mu[i], sd = ans.expected@sigma, log = TRUE) -
@@ -6052,7 +6052,7 @@ test_that("updateTheta_PoissonVaryingUseExp gives valid answer", {
         for (i in 1:8) {
             theta.curr <- ans.expected@theta[i]
             theta.prop <- exp(rnorm(1, mean = log(theta.curr),
-                                    sd = model@scaleTheta*model@scaleThetaMultiplier/sqrt(1+log(1+exposure[i]))))
+                                    sd = model@scaleTheta*model@scaleThetaMultiplier/sqrt(1+exposure[i])))
             if (i <= 5) {
                 j <- 1
                 ind <- 1:5
@@ -6075,7 +6075,7 @@ test_that("updateTheta_PoissonVaryingUseExp gives valid answer", {
         for (i in 9:10) {
             theta.curr <- ans.expected@theta[i]
             theta.prop <- exp(rnorm(1, mean = log(theta.curr),
-                                    sd = ans.expected@scaleTheta*model@scaleThetaMultiplier/sqrt(1+log(1+exposure[i]))))
+                                    sd = ans.expected@scaleTheta*model@scaleThetaMultiplier/sqrt(1+exposure[i])))
             log.diff <- dpois(y[i], lambda = theta.prop * exposure[i], log = TRUE) -
                 dpois(y[i], lambda = theta.curr * exposure[i], log = TRUE) +
                     dnorm(x = log(theta.prop), mean = mu[i], sd = ans.expected@sigma, log = TRUE) -
@@ -6089,7 +6089,7 @@ test_that("updateTheta_PoissonVaryingUseExp gives valid answer", {
         for (i in 13:20) {
             theta.curr <- ans.expected@theta[i]
             theta.prop <- exp(rnorm(1, mean = log(theta.curr),
-                                    sd = ans.expected@scaleTheta*model@scaleThetaMultiplier/sqrt(1+log(1+exposure[i]))))
+                                    sd = ans.expected@scaleTheta*model@scaleThetaMultiplier/sqrt(1+exposure[i])))
             log.diff <- dpois(y[i], lambda = theta.prop * exposure[i], log = TRUE) -
                 dpois(y[i], lambda = theta.curr * exposure[i], log = TRUE) +
                     dnorm(x = log(theta.prop), mean = mu[i], sd = ans.expected@sigma, log = TRUE) -

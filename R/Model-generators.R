@@ -889,7 +889,7 @@ setMethod("initialModel",
               if (has.exposure) {
                   exposure.tmp <- as.double(exposure)
                   exposure.tmp[is.na(exposure.tmp)] <- 0
-                  scale.theta.multiplier <- mean(sqrt(1 + log(1 + exposure.tmp)))
+                  scale.theta.multiplier <- mean(sqrt(1 + exposure.tmp))
               }
               else
                   scale.theta.multiplier <- 1.0
