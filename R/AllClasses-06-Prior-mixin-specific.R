@@ -1737,23 +1737,6 @@ setClass("URDRMixin",
              TRUE
          })
 
-setClass("UpdateSeriesDLM",
-         slots = c(updateSeriesDLM = "logical"),
-         contains = "VIRTUAL",
-         validity = function(object) {
-             updateSeriesDLM <- object@updateSeriesDLM
-             L <- object@L@.Data
-             ## 'updateSeriesDLM' has no missing values
-             if (any(is.na(updateSeriesDLM)))
-                 return(gettextf("'%s' has missing values",
-                                 "updateSeriesDLM"))
-             ## 'updateSeriesDLM' has length 'L'
-             if (!identical(length(updateSeriesDLM), L))
-                 return(gettextf("'%s' does not have length '%s'",
-                                 "updateSeriesDLM", "L"))
-             TRUE
-         })                                 
-
 ## 'psi' in notes
 setClass("VectorsMixMixin",
          slots = c(vectorsMix = "list"),

@@ -810,7 +810,6 @@ initialDLMAll <- function(object, beta, metadata, sY, isSaturated, ...) {
                                          numericDimScales = TRUE)
     K <- makeK(dim = dim, iAlong = iAlong)
     L <- makeL(dim = dim, iAlong = iAlong)
-    updateSeriesDLM <- makeUpdateSeriesDLM(dim = dim, iAlong = iAlong)
     dim.alpha.delta <- dim
     dim.alpha.delta[iAlong] <- dim.alpha.delta[iAlong] + 1L
     iteratorState <- AlongIterator(dim = dim.alpha.delta,
@@ -847,7 +846,6 @@ initialDLMAll <- function(object, beta, metadata, sY, isSaturated, ...) {
          J = J,
          K = K,
          L = L,
-         updateSeriesDLM = updateSeriesDLM,
          minPhi = minPhi,
          maxPhi = maxPhi,
          nuAlpha = nuAlpha,
@@ -859,8 +857,7 @@ initialDLMAll <- function(object, beta, metadata, sY, isSaturated, ...) {
          shape1Phi = shape1Phi,
          shape2Phi = shape2Phi,
          tau = tau,
-         tauMax = tauMax,
-         updateSeriesDLM = updateSeriesDLM)
+         tauMax = tauMax)
 }
 
 ## HAS_TESTS
@@ -881,7 +878,6 @@ initialDLMAllPredict <- function(prior, metadata, name, along) {
     dim <- dim(metadata)
     K.new <- makeK(dim = dim, iAlong = i.along.new)
     L <- makeL(dim = dim, iAlong = i.along.new)
-    updateSeriesDLM <- makeUpdateSeriesDLM(dim = dim, iAlong = i.along.new)
     dim.alpha.delta <- dim
     dim.alpha.delta[i.along.new] <- dim.alpha.delta[i.along.new] + 1L
     iterator.state.new <- AlongIterator(dim = dim.alpha.delta,
@@ -897,8 +893,7 @@ initialDLMAllPredict <- function(prior, metadata, name, along) {
          J = J,
          JOld = J.old,
          K = K.new,
-         L = L,
-         updateSeriesDLM = updateSeriesDLM)
+         L = L)
 }
 
 ## HAS_TESTS
@@ -2013,25 +2008,6 @@ makeDRInv <- function(K) {
     methods::new("FFBSList", ans)
 }
 
-## HAS_TESTS
-makeUpdateSeriesDLM <- function(dim, iAlong) {
-    n.dim <- length(dim)
-    if (identical(n.dim, 1L))
-        TRUE
-    else if (identical(n.dim, 2L)) {
-        ans <- rep(TRUE, times = dim[-iAlong])
-        ans[1L] <- FALSE
-        ans
-    }
-    else {
-        s <- seq_len(n.dim - 1L)
-        a <- array(dim = dim[-iAlong])
-        ans <- lapply(s, function(i) slice.index(a, i) > 1L)
-        ans <- Reduce(f = "&", x = ans)
-        as.logical(ans)
-    }
-}
-
 ## NO_TESTS
 makeRNoTrend <- function(K) {
     ans <- replicate(n = K,
@@ -2040,7 +2016,7 @@ makeRNoTrend <- function(K) {
     methods::new("FFBSList", ans)
 }
 
-## NO_TESTSz
+## NO_TESTS
 makeRSeason <- function(K, nSeason) {
     ans <- replicate(n = K,
                      rep(1.0, times = nSeason),

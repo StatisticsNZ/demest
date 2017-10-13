@@ -244,8 +244,7 @@ setMethod("initialPrior",
                            shape1Phi = l.all$shape1Phi,
                            shape2Phi = l.all$shape2Phi,
                            tau = l.all$tau,
-                           tauMax = l.all$tauMax,
-                           updateSeriesDLM = l.all$updateSeriesDLM)
+                           tauMax = l.all$tauMax)
           })
 
 setMethod("initialPrior",
@@ -303,7 +302,6 @@ setMethod("initialPrior",
                            tauMax = l.all$tauMax,
                            UC = l.with.trend$UC,
                            UR = l.with.trend$UR,
-                           updateSeriesDLM = l.all$updateSeriesDLM,
                            WSqrt = l.with.trend$WSqrt,
                            WSqrtInvG = l.with.trend$WSqrtInvG)
           })
@@ -361,8 +359,7 @@ setMethod("initialPrior",
                            shape1Phi = l.all$shape1Phi,
                            shape2Phi = l.all$shape2Phi,
                            tau = l.all$tau,
-                           tauMax = l.all$tauMax,
-                           updateSeriesDLM = l.all$updateSeriesDLM)
+                           tauMax = l.all$tauMax)
           })
 
 setMethod("initialPrior",
@@ -435,7 +432,6 @@ setMethod("initialPrior",
                            tauMax = l.all$tauMax,
                            UC = l.with.trend$UC,
                            UR = l.with.trend$UR,
-                           updateSeriesDLM = l.all$updateSeriesDLM,
                            WSqrt = l.with.trend$WSqrt,
                            WSqrtInvG = l.with.trend$WSqrtInvG)
           })
@@ -495,7 +491,6 @@ setMethod("initialPrior",
                            tau = l.all$tau,
                            tauMax = l.all$tauMax,
                            UEtaCoef = l.cov$UEtaCoef,
-                           updateSeriesDLM = l.all$updateSeriesDLM,
                            Z = l.cov$Z)
           })
 
@@ -567,7 +562,6 @@ setMethod("initialPrior",
                            UC = l.with.trend$UC,
                            UR = l.with.trend$UR,
                            UEtaCoef = l.cov$UEtaCoef,
-                           updateSeriesDLM = l.all$updateSeriesDLM,
                            WSqrt = l.with.trend$WSqrt,
                            WSqrtInvG = l.with.trend$WSqrtInvG,
                            Z = l.cov$Z)
@@ -640,7 +634,6 @@ setMethod("initialPrior",
                            tau = l.all$tau,
                            tauMax = l.all$tauMax,
                            UEtaCoef = l.cov$UEtaCoef,
-                           updateSeriesDLM = l.all$updateSeriesDLM,
                            Z = l.cov$Z)
           })
 
@@ -730,7 +723,6 @@ setMethod("initialPrior",
                            WSqrt = l.with.trend$WSqrt,
                            WSqrtInvG = l.with.trend$WSqrtInvG,
                            UEtaCoef = l.cov$UEtaCoef,
-                           updateSeriesDLM = l.all$updateSeriesDLM,
                            Z = l.cov$Z)
           })
 
@@ -782,8 +774,7 @@ setMethod("initialPrior",
                            shape2Phi = l.all$shape2Phi,
                            UBeta = l.robust$UBeta,
                            tau = l.all$tau,
-                           tauMax = l.all$tauMax,
-                           updateSeriesDLM = l.all$updateSeriesDLM)
+                           tauMax = l.all$tauMax)
           })
 
 setMethod("initialPrior",
@@ -848,7 +839,6 @@ setMethod("initialPrior",
                            UBeta = l.robust$UBeta,
                            UC = l.with.trend$UC,
                            UR = l.with.trend$UR,
-                           updateSeriesDLM = l.all$updateSeriesDLM,
                            WSqrt = l.with.trend$WSqrt,
                            WSqrtInvG = l.with.trend$WSqrtInvG)
           })
@@ -913,8 +903,7 @@ setMethod("initialPrior",
                            shape2Phi = l.all$shape2Phi,
                            tau = l.all$tau,
                            tauMax = l.all$tauMax,
-                           UBeta = l.robust$UBeta,
-                           updateSeriesDLM = l.all$updateSeriesDLM)
+                           UBeta = l.robust$UBeta)
           })
 
 setMethod("initialPrior",
@@ -994,7 +983,6 @@ setMethod("initialPrior",
                            UBeta = l.robust$UBeta,
                            UC = l.with.trend$UC,
                            UR = l.with.trend$UR,
-                           updateSeriesDLM = l.all$updateSeriesDLM,
                            WSqrt = l.with.trend$WSqrt,
                            WSqrtInvG = l.with.trend$WSqrtInvG)
           })
@@ -1061,7 +1049,6 @@ setMethod("initialPrior",
                            tauMax = l.all$tauMax,
                            UBeta = l.robust$UBeta,
                            UEtaCoef = l.cov$UEtaCoef,
-                           updateSeriesDLM = l.all$updateSeriesDLM,
                            Z = l.cov$Z)
           })
 
@@ -1140,7 +1127,6 @@ setMethod("initialPrior",
                            UC = l.with.trend$UC,
                            UR = l.with.trend$UR,
                            UEtaCoef = l.cov$UEtaCoef,
-                           updateSeriesDLM = l.all$updateSeriesDLM,
                            WSqrt = l.with.trend$WSqrt,
                            WSqrtInvG = l.with.trend$WSqrtInvG,
                            Z = l.cov$Z)
@@ -1220,7 +1206,6 @@ setMethod("initialPrior",
                            tauMax = l.all$tauMax,
                            UBeta = l.robust$UBeta,
                            UEtaCoef = l.cov$UEtaCoef,
-                           updateSeriesDLM = l.all$updateSeriesDLM,
                            Z = l.cov$Z)
           })
 
@@ -1316,7 +1301,6 @@ setMethod("initialPrior",
                            WSqrt = l.with.trend$WSqrt,
                            WSqrtInvG = l.with.trend$WSqrtInvG,
                            UEtaCoef = l.cov$UEtaCoef,
-                           updateSeriesDLM = l.all$updateSeriesDLM,
                            Z = l.cov$Z)
           })
 
@@ -1697,8 +1681,7 @@ setMethod("initialPriorPredict",
                            shape1Phi = prior@shape1Phi,
                            shape2Phi = prior@shape2Phi,
                            tau = prior@tau,
-                           tauMax = prior@tauMax,
-                           updateSeriesDLM = l.all$updateSeriesDLM)
+                           tauMax = prior@tauMax)
           })
 
 ## HAS_TESTS
@@ -1755,7 +1738,6 @@ setMethod("initialPriorPredict",
                            tauMax = prior@tauMax,
                            UC = l.with.trend$UC,
                            UR = l.with.trend$UR,
-                           updateSeriesDLM = l.all$updateSeriesDLM,
                            WSqrt = prior@WSqrt,
                            WSqrtInvG = prior@WSqrtInvG)
           })
@@ -1816,8 +1798,7 @@ setMethod("initialPriorPredict",
                            shape1Phi = prior@shape1Phi,
                            shape2Phi = prior@shape2Phi,
                            tau = prior@tau,
-                           tauMax = prior@tauMax,
-                           updateSeriesDLM = l.all$updateSeriesDLM)
+                           tauMax = prior@tauMax)
           })
 
 ## HAS_TESTS
@@ -1887,7 +1868,6 @@ setMethod("initialPriorPredict",
                            tauMax = prior@tauMax,
                            UC = l.with.trend$UC,
                            UR = l.with.trend$UR,
-                           updateSeriesDLM = l.all$updateSeriesDLM,
                            WSqrt = prior@WSqrt,
                            WSqrtInvG = prior@WSqrtInvG)
           })
@@ -1950,7 +1930,6 @@ setMethod("initialPriorPredict",
                            tau = prior@tau,
                            tauMax = prior@tauMax,
                            UEtaCoef = prior@UEtaCoef,
-                           updateSeriesDLM = l.all$updateSeriesDLM,
                            Z = l.cov$Z)
           })
 
@@ -2020,7 +1999,6 @@ setMethod("initialPriorPredict",
                            UC = l.with.trend$UC,
                            UR = l.with.trend$UR,
                            UEtaCoef = prior@UEtaCoef,
-                           updateSeriesDLM = l.all$updateSeriesDLM,
                            WSqrt = prior@WSqrt,
                            WSqrtInvG = prior@WSqrtInvG,
                            Z = l.cov$Z)
@@ -2094,7 +2072,6 @@ setMethod("initialPriorPredict",
                            tau = prior@tau,
                            tauMax = prior@tauMax,
                            UEtaCoef = prior@UEtaCoef,
-                           updateSeriesDLM = l.all$updateSeriesDLM,
                            Z = l.cov$Z)
           })
 
@@ -2177,7 +2154,6 @@ setMethod("initialPriorPredict",
                            UC = l.with.trend$UC,
                            UEtaCoef = prior@UEtaCoef,
                            UR = l.with.trend$UR,
-                           updateSeriesDLM = l.all$updateSeriesDLM,
                            WSqrt = prior@WSqrt,
                            WSqrtInvG = prior@WSqrtInvG,
                            Z = l.cov$Z)
@@ -2232,8 +2208,7 @@ setMethod("initialPriorPredict",
                            shape2Phi = prior@shape2Phi,
                            tau = prior@tau,
                            tauMax = prior@tauMax,
-                           UBeta = l.robust$UBeta,
-                           updateSeriesDLM = l.all$updateSeriesDLM)
+                           UBeta = l.robust$UBeta)
           })
 
 ## HAS_TESTS
@@ -2294,7 +2269,6 @@ setMethod("initialPriorPredict",
                            UBeta = l.robust$UBeta,
                            UC = l.with.trend$UC,
                            UR = l.with.trend$UR,
-                           updateSeriesDLM = l.all$updateSeriesDLM,
                            WSqrt = prior@WSqrt,
                            WSqrtInvG = prior@WSqrtInvG)
           })
@@ -2358,8 +2332,7 @@ setMethod("initialPriorPredict",
                            shape2Phi = prior@shape2Phi,
                            tau = prior@tau,
                            tauMax = prior@tauMax,
-                           UBeta = l.robust$UBeta,
-                           updateSeriesDLM = l.all$updateSeriesDLM)
+                           UBeta = l.robust$UBeta)
           })
 
 ## HAS_TESTS
@@ -2433,7 +2406,6 @@ setMethod("initialPriorPredict",
                            UBeta = l.robust$UBeta,
                            UC = l.with.trend$UC,
                            UR = l.with.trend$UR,
-                           updateSeriesDLM = l.all$updateSeriesDLM,
                            WSqrt = prior@WSqrt,
                            WSqrtInvG = prior@WSqrtInvG)
           })
@@ -2501,7 +2473,6 @@ setMethod("initialPriorPredict",
                            tauMax = prior@tauMax,
                            UBeta = l.robust$UBeta,
                            UEtaCoef = prior@UEtaCoef,
-                           updateSeriesDLM = l.all$updateSeriesDLM,
                            Z = l.cov$Z)
           })
 
@@ -2575,7 +2546,6 @@ setMethod("initialPriorPredict",
                            UC = l.with.trend$UC,
                            UR = l.with.trend$UR,
                            UEtaCoef = prior@UEtaCoef,
-                           updateSeriesDLM = l.all$updateSeriesDLM,
                            WSqrt = prior@WSqrt,
                            WSqrtInvG = prior@WSqrtInvG,
                            Z = l.cov$Z)
@@ -2653,7 +2623,6 @@ setMethod("initialPriorPredict",
                            tauMax = prior@tauMax,
                            UBeta = l.robust$UBeta,
                            UEtaCoef = prior@UEtaCoef,
-                           updateSeriesDLM = l.all$updateSeriesDLM,
                            Z = l.cov$Z)
           })
 
@@ -2740,7 +2709,6 @@ setMethod("initialPriorPredict",
                            UC = l.with.trend$UC,
                            UEtaCoef = prior@UEtaCoef,
                            UR = l.with.trend$UR,
-                           updateSeriesDLM = l.all$updateSeriesDLM,
                            WSqrt = prior@WSqrt,
                            WSqrtInvG = prior@WSqrtInvG,
                            Z = l.cov$Z)

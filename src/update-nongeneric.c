@@ -1716,8 +1716,6 @@ updateOmegaAlpha(SEXP prior_R, int isWithTrend)
 		int K = *INTEGER(GET_SLOT(prior_R, K_sym));
 		int L = *INTEGER(GET_SLOT(prior_R, L_sym));
 		
-		int * updateSeries = LOGICAL(GET_SLOT(prior_R, updateSeriesDLM_sym));
-		
 		double *alpha = REAL(GET_SLOT(prior_R, alphaDLM_sym)); /* vector, length (K+1)L */
 		double omega = *REAL(GET_SLOT(prior_R, omegaAlpha_sym));
 		double omegaMax = *REAL(GET_SLOT(prior_R, omegaAlphaMax_sym));
@@ -1744,28 +1742,25 @@ updateOmegaAlpha(SEXP prior_R, int isWithTrend)
 		int n = 0;
 		
 		for (int l = 0; l < L; ++l) {
-			if (updateSeries[l]) {
-				for (int i = 0; i < K; ++i) {
-					int k_curr = indices[i + 1] - 1; /* C style indices */
-					int k_prev = indices[i] - 1;
+		    for (int i = 0; i < K; ++i) {
+			int k_curr = indices[i + 1] - 1; /* C style indices */
+			int k_prev = indices[i] - 1;
 					
-					double alpha_k_curr = alpha[k_curr];
-					double alpha_k_prev = alpha[k_prev];
+			double alpha_k_curr = alpha[k_curr];
+			double alpha_k_prev = alpha[k_prev];
 					
-					double toSq = 0;
+			double toSq = 0;
 					
-					if (isWithTrend) {
-						toSq = alpha_k_curr - alpha_k_prev - delta[k_prev];
-					}
-					else { 
-						toSq = alpha_k_curr - phi * alpha_k_prev;
-					}
-					   V += toSq*toSq;
-					   n += 1;
-				}
-			} /* end if (updateSeries[l]) */
-			
-			advanceA(iterator_R); 
+			if (isWithTrend) {
+			    toSq = alpha_k_curr - alpha_k_prev - delta[k_prev];
+			}
+			else { 
+			    toSq = alpha_k_curr - phi * alpha_k_prev;
+			}
+			V += toSq*toSq;
+			n += 1;
+		    }
+		    advanceA(iterator_R); 
 		}
 
 		omega = updateSDNorm(omega, A, nu, V, n, omegaMax);
@@ -1822,8 +1817,6 @@ updateOmegaDelta(SEXP prior_R)
     int K = *INTEGER(GET_SLOT(prior_R, K_sym));
     int L = *INTEGER(GET_SLOT(prior_R, L_sym));
     
-    int * updateSeries = LOGICAL(GET_SLOT(prior_R, updateSeriesDLM_sym));
-    
     double *delta = REAL(GET_SLOT(prior_R, deltaDLM_sym)); /* vector, length (K+1)L */
     double phi = *REAL(GET_SLOT(prior_R, phi_sym));
     double omega = *REAL(GET_SLOT(prior_R, omegaDelta_sym));
@@ -1842,18 +1835,14 @@ updateOmegaDelta(SEXP prior_R)
     
     for (int l = 0; l < L; ++l) {
         
-        if (updateSeries[l]) {
-
-            for (int i = 0; i < K; ++i) {
-                int k_curr = indices[i + 1] - 1; /* C style indices */
-                int k_prev = indices[i] - 1;
+	for (int i = 0; i < K; ++i) {
+	    int k_curr = indices[i + 1] - 1; /* C style indices */
+	    int k_prev = indices[i] - 1;
                 
-                double toSq = delta[k_curr] - phi * delta[k_prev];
-                V += toSq*toSq;
-		n += 1;
-            }
-        } /* end if (updateSeries[l]) */
-        
+	    double toSq = delta[k_curr] - phi * delta[k_prev];
+	    V += toSq*toSq;
+	    n += 1;
+	}
         advanceA(iterator_R); 
     }
     
@@ -1927,8 +1916,6 @@ updateOmegaSeason(SEXP prior_R)
     int K = *INTEGER(GET_SLOT(prior_R, K_sym));
     int L = *INTEGER(GET_SLOT(prior_R, L_sym));
     
-    int * updateSeries = LOGICAL(GET_SLOT(prior_R, updateSeriesDLM_sym));
-    
     /* s is FFBS list */
     SEXP s_R = GET_SLOT(prior_R, s_sym);
     int nSeason = *INTEGER(GET_SLOT(prior_R, nSeason_sym));
@@ -1948,21 +1935,17 @@ updateOmegaSeason(SEXP prior_R)
     
     for (int l = 0; l < L; ++l) {
         
-        if (updateSeries[l]) {
-
-            for (int i = 0; i < K; ++i) {
-                int i_curr = indices[i + 1] - 1; /* C style indices */
-                int i_prev = indices[i] - 1;
+	for (int i = 0; i < K; ++i) {
+	    int i_curr = indices[i + 1] - 1; /* C style indices */
+	    int i_prev = indices[i] - 1;
                 
-                double *s_curr = REAL(VECTOR_ELT(s_R, i_curr));
-                double *s_prev = REAL(VECTOR_ELT(s_R, i_prev));
-                double curr = s_curr[0];
-                double prev = s_prev[nSeason-1];
-                double toSq = curr - prev;
-                V += toSq*toSq;
-            }
-        
-        } /* end if (updateSeries[l]) */
+	    double *s_curr = REAL(VECTOR_ELT(s_R, i_curr));
+	    double *s_prev = REAL(VECTOR_ELT(s_R, i_prev));
+	    double curr = s_curr[0];
+	    double prev = s_prev[nSeason-1];
+	    double toSq = curr - prev;
+	    V += toSq*toSq;
+	}
         
         advanceA(iterator_R); 
     }
@@ -2033,8 +2016,6 @@ updatePhi(SEXP prior_R, int isWithTrend)
         int K = *INTEGER(GET_SLOT(prior_R, K_sym));
         int L = *INTEGER(GET_SLOT(prior_R, L_sym));
         
-        int * updateSeries = LOGICAL(GET_SLOT(prior_R, updateSeriesDLM_sym));
-        
         double *state = NULL;
         double omega = 0;
         
@@ -2063,18 +2044,14 @@ updatePhi(SEXP prior_R, int isWithTrend)
 
         for (int l = 0; l < L; ++l) {
             
-            if (updateSeries[l]) {
-
-                for (int i = 0; i < K; ++i) {
-                    int k_curr = indices[i + 1] - 1; /* C style indices */
-                    int k_prev = indices[i] - 1;
+	    for (int i = 0; i < K; ++i) {
+		int k_curr = indices[i + 1] - 1; /* C style indices */
+		int k_prev = indices[i] - 1;
                     
-                    double state_k_prev = state[k_prev];
-                    numerator += state[k_curr] * state_k_prev;
-                    denominator += state_k_prev * state_k_prev;
-                }
-            
-            } /* end if (updateSeries[l]) */
+		double state_k_prev = state[k_prev];
+		numerator += state[k_curr] * state_k_prev;
+		denominator += state_k_prev * state_k_prev;
+	    }
             
             advanceA(iterator_R); 
         }
@@ -2182,8 +2159,6 @@ updateSeason(SEXP prior_R, double *betaTilde, int J)
     int L = *INTEGER(GET_SLOT(prior_R, L_sym));
     int nSeason = *INTEGER(GET_SLOT(prior_R, nSeason_sym));
     
-    int * updateSeries = LOGICAL(GET_SLOT(prior_R, updateSeriesDLM_sym));
-    
     /* s is length (K+1)L list of vectors of length nSeason*/
     SEXP s_R = GET_SLOT(prior_R, s_sym); 
     
@@ -2226,88 +2201,84 @@ updateSeason(SEXP prior_R, double *betaTilde, int J)
             
     for (int l = 0; l < L; ++l) {
         
-        if (updateSeries[l]) {    
-                
-            /*m[[1L]] <- m0[[l]]*/
-            double *m0_l = REAL(VECTOR_ELT(m0_R, l));
-            double *m_first = REAL(VECTOR_ELT(m_R, 0));
-            memcpy(m_first, m0_l, nSeason*sizeof(double));
+	/*m[[1L]] <- m0[[l]]*/
+	double *m0_l = REAL(VECTOR_ELT(m0_R, l));
+	double *m_first = REAL(VECTOR_ELT(m_R, 0));
+	memcpy(m_first, m0_l, nSeason*sizeof(double));
             
-            /* forward filter */
-            for (int i = 0; i < K; ++i) {
+	/* forward filter */
+	for (int i = 0; i < K; ++i) {
                 
-                int index_j = indices_v[i] - 1;
+	    int index_j = indices_v[i] - 1;
                 
-                double *this_m = REAL(VECTOR_ELT(m_R, i));
-                double *this_C = REAL(VECTOR_ELT(C_R, i));
-                double *this_a = REAL(VECTOR_ELT(a_R, i));
-                double *this_R = REAL(VECTOR_ELT(R_R, i));
+	    double *this_m = REAL(VECTOR_ELT(m_R, i));
+	    double *this_C = REAL(VECTOR_ELT(C_R, i));
+	    double *this_a = REAL(VECTOR_ELT(a_R, i));
+	    double *this_R = REAL(VECTOR_ELT(R_R, i));
                 
-                double *next_m = REAL(VECTOR_ELT(m_R, i+1));
-                double *next_C = REAL(VECTOR_ELT(C_R, i+1));
+	    double *next_m = REAL(VECTOR_ELT(m_R, i+1));
+	    double *next_C = REAL(VECTOR_ELT(C_R, i+1));
                 
-                for (int i_n = 0; i_n < nSeason-1; ++i_n) {
-                    this_a[i_n + 1] = this_m[i_n];
-                    this_R[i_n + 1] = this_C[i_n];
-                }
+	    for (int i_n = 0; i_n < nSeason-1; ++i_n) {
+		this_a[i_n + 1] = this_m[i_n];
+		this_R[i_n + 1] = this_C[i_n];
+	    }
                 
-                double curr_a = this_m[nSeason-1];
-                double curr_R = this_C[nSeason-1] + omegaSq;
-                this_a[0] = curr_a;
-                this_R[0] = curr_R;
+	    double curr_a = this_m[nSeason-1];
+	    double curr_R = this_C[nSeason-1] + omegaSq;
+	    this_a[0] = curr_a;
+	    this_R[0] = curr_R;
                 
-                double q = curr_R + v[index_j];
-                double e = betaTilde[index_j] - curr_a;
+	    double q = curr_R + v[index_j];
+	    double e = betaTilde[index_j] - curr_a;
                 
-                double Ae1 = curr_R * e/q;
-                memcpy(next_m, this_a, nSeason*sizeof(double));
-                next_m[0] += Ae1;
+	    double Ae1 = curr_R * e/q;
+	    memcpy(next_m, this_a, nSeason*sizeof(double));
+	    next_m[0] += Ae1;
                 
-                double AAq1 = curr_R * curr_R/q;
-                memcpy(next_C, this_R, nSeason*sizeof(double));
-                next_C[0] -= AAq1;
-            }
+	    double AAq1 = curr_R * curr_R/q;
+	    memcpy(next_C, this_R, nSeason*sizeof(double));
+	    next_C[0] -= AAq1;
+	}
             
-            int i_curr = indices_s[K] - 1;
-            double *this_s = REAL(VECTOR_ELT(s_R, i_curr));
+	int i_curr = indices_s[K] - 1;
+	double *this_s = REAL(VECTOR_ELT(s_R, i_curr));
                 
-            for (int i_n = 0; i_n < nSeason; ++i_n) {
-                double mean = last_m[i_n];
-                double sd = sqrt(last_C[i_n]);
-                double s = rnorm( mean, sd);
-                this_s[i_n] = s;
-            }     
+	for (int i_n = 0; i_n < nSeason; ++i_n) {
+	    double mean = last_m[i_n];
+	    double sd = sqrt(last_C[i_n]);
+	    double s = rnorm( mean, sd);
+	    this_s[i_n] = s;
+	}     
             
-            /* backward smooth */
-            for (int i = K-1; i >= 0; --i) {
+	/* backward smooth */
+	for (int i = K-1; i >= 0; --i) {
                 
-                int i_prev = indices_s[i+1] - 1;
-                int i_curr = indices_s[i] - 1;
+	    int i_prev = indices_s[i+1] - 1;
+	    int i_curr = indices_s[i] - 1;
                 
-                double *this_C = REAL(VECTOR_ELT(C_R, i));
-                double thisC_last = this_C[nSeason-1];
-                double *this_m = REAL(VECTOR_ELT(m_R, i));
-                double thism_last = this_m[nSeason-1];
+	    double *this_C = REAL(VECTOR_ELT(C_R, i));
+	    double thisC_last = this_C[nSeason-1];
+	    double *this_m = REAL(VECTOR_ELT(m_R, i));
+	    double thism_last = this_m[nSeason-1];
                 
-                double *s_prev = REAL(VECTOR_ELT(s_R, i_prev));
-                double *s_curr = REAL(VECTOR_ELT(s_R, i_curr));
+	    double *s_prev = REAL(VECTOR_ELT(s_R, i_prev));
+	    double *s_curr = REAL(VECTOR_ELT(s_R, i_curr));
                 
-                /*s[[i.curr]][-n.season] <- s[[i.prev]][-1L]
-                 * copy from last nSeason-1 elements of s_prev
-                 * into first nSeason-1 elements of s_curr */
-                memcpy(s_curr, (s_prev+1), (nSeason-1)*sizeof(double));
+	    /*s[[i.curr]][-n.season] <- s[[i.prev]][-1L]
+	     * copy from last nSeason-1 elements of s_prev
+	     * into first nSeason-1 elements of s_curr */
+	    memcpy(s_curr, (s_prev+1), (nSeason-1)*sizeof(double));
                 
-                double lambda = thisC_last/(thisC_last + omegaSq);
-                double s_prev_first = s_prev[0];
+	    double lambda = thisC_last/(thisC_last + omegaSq);
+	    double s_prev_first = s_prev[0];
                 
-                double mean = lambda * s_prev_first + (1 - lambda)*thism_last;
-                double sd = sqrt(lambda) * omega;
-                s_curr[nSeason-1] = rnorm(mean, sd);
+	    double mean = lambda * s_prev_first + (1 - lambda)*thism_last;
+	    double sd = sqrt(lambda) * omega;
+	    s_curr[nSeason-1] = rnorm(mean, sd);
                 
-            }
+	}
             
-        } /* end if (updateSeries[l]) */
-                
         advanceA(iterator_s_R);
         advanceA(iterator_v_R);
     }
@@ -4562,14 +4533,13 @@ updateTheta_PoissonVaryingUseExp(SEXP object, SEXP y_R, SEXP exposure_R)
         
     int has_subtotals = ( R_has_slot(y_R, subtotals_sym) );
     if (has_subtotals) {
-            
         transformSubtotals_R = GET_SLOT(y_R, transformSubtotals_sym);
     }
 
     int n_accept_theta = 0;
     int n_failed_prop_theta = 0;
 
-    scale = scale * scale_multiplier; /* added by John 22 May 2016 */
+    scale = scale * scale_multiplier;
     
     for (int i = 0; i < n_theta; ++i) {
 
@@ -4595,7 +4565,6 @@ updateTheta_PoissonVaryingUseExp(SEXP object, SEXP y_R, SEXP exposure_R)
         int use_subtotal = 0;
         int ir_after = 0;
         if (y_is_missing && has_subtotals) {
-            
             ir_after = dembase_getIAfter(ir, transformSubtotals_R);
             use_subtotal = (ir_after > 0);
         }
@@ -4608,7 +4577,10 @@ updateTheta_PoissonVaryingUseExp(SEXP object, SEXP y_R, SEXP exposure_R)
         }
         else {
             mean = log_th_curr;
-            sd = scale / sqrt(1 + exposure[i]); /* changed by John 10 October 2017 */
+	    if (y_is_missing)
+		sd = scale / scale_multiplier;
+	    else
+		sd = scale / sqrt(1 + y[i]);
         }
 
         int attempt = 0;
@@ -6229,7 +6201,7 @@ updateThetaAndValueAgFun_PoissonUseExp(SEXP object, SEXP y_R, SEXP exposure_R)
         if (!y_is_missing) {
             
             mean = log_th_curr;
-            sd = scale / sqrt(1 + log(1 + this_exp));
+            sd = scale / sqrt(1 + this_y);
         }
         
         int attempt = 0;
@@ -6441,7 +6413,7 @@ updateThetaAndValueAgLife_PoissonUseExp(SEXP object, SEXP y_R, SEXP exposure_R)
         if (!y_is_missing) {
             
             mean = log_th_curr;
-            sd = scale / sqrt(1 + log(1 + this_exp));
+            sd = scale / sqrt(1 + this_y);
         }
         
         int attempt = 0;

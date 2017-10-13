@@ -878,7 +878,10 @@ setMethod("initialModel",
                   stop(gettextf("model '%s' uses exposure, but no '%s' argument supplied",
                                 deparse(call[[2L]]), "exposure"))
               y.missing <- is.na(y@.Data)
-              mean.y.obs <- mean(y@.Data[!y.missing])
+              if (!all(y.missing))
+                  mean.y.obs <- mean(y@.Data[!y.missing])
+              else
+                  mean.y.obs <- 0.5
               shape <- ifelse(y.missing, mean.y.obs, 0.5 * mean.y.obs + 0.5 * y@.Data)
               if (has.exposure) {
                   mean.expose.obs <- mean(exposure[!y.missing])
@@ -886,11 +889,8 @@ setMethod("initialModel",
               }
               else
                   rate <- 1
-              if (has.exposure) {
-                  exposure.tmp <- as.double(exposure)
-                  exposure.tmp[is.na(exposure.tmp)] <- 0
-                  scale.theta.multiplier <- mean(sqrt(1 + exposure.tmp))
-              }
+              if (has.exposure)
+                  scale.theta.multiplier <- sqrt(mean.y.obs + 1)
               else
                   scale.theta.multiplier <- 1.0
               scale.theta.multiplier <- methods::new("Scale", scale.theta.multiplier)

@@ -466,7 +466,6 @@ test_that("initialDLMAll works", {
     expect_identical(l$J, new("Length", 10L))
     expect_identical(l$K, new("Length", 10L))
     expect_identical(l$L, new("Length", 1L))
-    expect_identical(l$updateSeriesDLM, TRUE)
     expect_identical(l$minPhi, 0.8)
     expect_identical(l$maxPhi, 1)
     expect_identical(l$shape1Phi, new("Scale", 2))
@@ -559,7 +558,6 @@ test_that("initialDLMAllPredict works", {
     expect_identical(l$JOld, new("Length", 10L))
     expect_identical(l$K, new("Length", 5L))
     expect_identical(l$L, new("Length", 1L))
-    expect_identical(l$updateSeriesDLM, TRUE)
     ## interaction
     spec <- DLM()
     beta <- rnorm(50)
@@ -591,7 +589,6 @@ test_that("initialDLMAllPredict works", {
     expect_identical(l$JOld, new("Length", 50L))
     expect_identical(l$K, new("Length", 5L))
     expect_identical(l$L, new("Length", 5L))
-    expect_identical(l$updateSeriesDLM, c(FALSE, TRUE, TRUE, TRUE, TRUE))
 })
 
 test_that("initialDLMNoTrend works", {
@@ -3542,19 +3539,6 @@ test_that("makeTransformsYToDatasets works", {
     expect_error(makeTransformsYToDatasets(y = y, nameY = "popn", datasets = datasets.wrong),
                  "unable to collapse 'popn' to make it compatible with dataset 'wrong' :")
 })
-
-test_that("makeUpdateSeriesDLM works", {
-    makeUpdateSeriesDLM <- demest:::makeUpdateSeriesDLM
-    expect_identical(makeUpdateSeriesDLM(dim = 5L, iAlong = 1L),
-                     TRUE)
-    expect_identical(makeUpdateSeriesDLM(dim = c(4L, 3L), iAlong = 2L),
-                     c(FALSE, TRUE, TRUE, TRUE))
-    expect_identical(makeUpdateSeriesDLM(dim = c(2L, 2L, 2L, 2L), iAlong = 2L),
-                     rep(c(FALSE, TRUE), times = c(7, 1)))
-    expect_identical(makeUpdateSeriesDLM(dim = 3:5, iAlong = 1L),
-                     c(rep(FALSE, 4), rep(c(FALSE, TRUE, TRUE, TRUE), times = 4)))
-})
-
 
 test_that("makeValueAndMetaDataAg works", {
     makeValueAndMetaDataAg <- demest:::makeValueAndMetaDataAg
