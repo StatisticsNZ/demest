@@ -561,7 +561,11 @@ setMethod("initialModel",
               theta[is.too.high] <- stats::runif(n = n.too.high, min = upper - width, max = upper)
               lower <- log(lower / (1 - lower))
               upper <- log(upper / (1 - upper))
-              scale.theta.multiplier <- mean(sqrt(1 + log(1 + exposure.tmp)))
+              if (any(!is.na(y)))
+                  scale.theta.multiplier <- median(sqrt(((exposure + 0.5) * (y + 0.5)) / (exposure - y + 0.5)),
+                                                   na.rm = TRUE)
+              else
+                  scale.theta.multiplier <- 1
               scale.theta.multiplier <- methods::new("Scale", scale.theta.multiplier)
               theta <- array(theta, dim = dim(y), dimnames = dimnames(y))
               logit.theta <- log(theta / (1 - theta))

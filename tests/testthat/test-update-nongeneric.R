@@ -3859,7 +3859,7 @@ test_that("updateTheta_BinomialVarying gives valid answer", {
         for (i in seq_along(model@theta)) {
             theta.curr <- model@theta[i]
             theta.prop <- invlogit(rnorm(1, mean = logit(theta.curr),
-                                         sd = model@scaleTheta * model@scaleThetaMultiplier /sqrt(1 + log(1+exposure[i]))))
+                                         sd = model@scaleTheta * model@scaleThetaMultiplier@.Data * sqrt((exposure[i]-y[i]+0.5)/((exposure[i]+0.5)*(y[i]+0.5)))))
             log.diff <- dbinom(y[i], size = exposure[i], prob = theta.prop, log = TRUE) -
                 dbinom(y[i], size = exposure[i], prob = theta.curr, log = TRUE) +
                     dnorm(logit(theta.prop), mean = mu[i], sd = sigma, log = TRUE) -

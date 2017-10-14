@@ -2717,7 +2717,7 @@ updateTheta_BinomialVarying(SEXP object, SEXP y_R, SEXP exposure_R)
     int n_accept_theta = 0;
     int n_failed_prop_theta = 0;
 
-    scale = scale * scale_multiplier;  /* added by John 22 May 2016 */
+    scale = scale * scale_multiplier;
 
     for (int i = 0; i < n_theta; ++i) {
         
@@ -2727,7 +2727,9 @@ updateTheta_BinomialVarying(SEXP object, SEXP y_R, SEXP exposure_R)
             mu += this_beta[indices[b]-1];
         }
         
-        int y_is_missing = ( y[i] == NA_INTEGER || ISNA(y[i]) );
+	int this_y = y[i];
+	int this_exposure = exposure[i];
+        int y_is_missing = ( this_y == NA_INTEGER || ISNA(this_y) );
         
         double mean = 0;
         double sd = 0;
@@ -2741,8 +2743,7 @@ updateTheta_BinomialVarying(SEXP object, SEXP y_R, SEXP exposure_R)
         else {
             logit_th_curr = log(theta_curr/(1- theta_curr));
             mean = logit_th_curr;
-            /* sd = scale; */
-        sd = scale / sqrt(1 + log(1 + exposure[i])); /* Changed by John, 21 May 2016 */
+	    sd = scale * sqrt((this_exposure - this_y + 0.5) / ((this_exposure + 0.5) * (this_y + 0.5)));
         }
         
         int attempt = 0;
@@ -2775,9 +2776,6 @@ updateTheta_BinomialVarying(SEXP object, SEXP y_R, SEXP exposure_R)
             }
             else {
                 
-                int this_y = y[i];
-                int this_exposure = exposure[i];
-
                 double loglik_prop = dbinom(this_y, this_exposure,
                                                     theta_prop, USE_LOG);
                 double loglik_curr = dbinom(this_y, this_exposure,
@@ -3312,7 +3310,8 @@ updateThetaAndValueAgFun_Binomial(SEXP object, SEXP y_R, SEXP exposure_R)
         if (!y_is_missing) {
             
             mean = logit_th_curr;
-            sd = scale / sqrt( 1 + log(1 + this_exposure) );
+	    sd = scale * sqrt((this_exposure - this_y + 0.5) / ((this_exposure + 0.5) * (this_y + 0.5)));
+
         }
         
         int attempt = 0;

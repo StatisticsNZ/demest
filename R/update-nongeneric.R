@@ -1985,7 +1985,7 @@ updateTheta_BinomialVarying <- function(object, y, exposure, useC = FALSE) {
                 th.curr <- theta[i]
                 logit.th.curr <- log(th.curr / (1 - th.curr))
                 mean <- logit.th.curr
-                sd <- scale / sqrt(1 + log(1 + exposure[i]))
+                sd <- scale * sqrt((exposure[i] - y[i] + 0.5) / ((exposure[i] + 0.5) * (y[i] + 0.5)))
             }
             found.prop <- FALSE
             attempt <- 0L
@@ -2419,7 +2419,7 @@ updateThetaAndValueAgFun_Binomial <- function(object, y, exposure, useC = FALSE)
             }
             else {
                 mean <- logit.th.curr
-                sd <- scale / sqrt(1 + log(1 + exposure[i]))
+                sd <- scale * sqrt((exposure[i] - y[i] + 0.5) / ((exposure[i] + 0.5) * (y[i] + 0.5)))
             }
             found.prop <- FALSE
             attempt <- 0L
