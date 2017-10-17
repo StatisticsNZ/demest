@@ -7242,11 +7242,13 @@ rescaleInFile <- function(filename) {
     nIteration <- results@mcmc["nIteration"]
     lengthIter <- results@control$lengthIter
     adjustments <- new.env(hash = TRUE) # modified in-place
-    rescalePriors(results = results,
-                  adjustments = adjustments,
-                  filename = filename,
-                  nIteration = nIteration,
-                  lengthIter = lengthIter)
+    if (nIteration > 0L) {
+        rescalePriors(results = results,
+                      adjustments = adjustments,
+                      filename = filename,
+                      nIteration = nIteration,
+                      lengthIter = lengthIter)
+    }
     adjustments.serialized <- serialize(adjustments,
                                         connection = NULL)
     size.adjustments <- length(adjustments.serialized)

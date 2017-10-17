@@ -346,7 +346,6 @@
 ##       overlay = list(values = theta, col = "red"),
 ##       midpoints = "age")
 
-
 ## filename1 <- tempfile()
 ## filename2 <- tempfile()
 ## y <- Counts(array(rpois(n = 12, lambda = 1:24),
