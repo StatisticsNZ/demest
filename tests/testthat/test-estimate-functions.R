@@ -205,8 +205,40 @@
 
 ## plot(fetchMCMC(filename.est, c("mod", "hy", "year", "scaleTrend")), sm = F, ask = T)
 
+## set.seed(0)
+## y <- Values(array(rnorm(20),
+##                   dim = c(10, 2),
+##                   dimnames = list(reg = 1:10,
+##                                   sex = c("f", "m"))))
+## data <- data.frame(reg = 1:10, reg1 = c(1, rep(0, 9)))
+## filename <- tempfile()
+## estimateModel(Model(y ~ Normal(mean ~ reg),
+##                     reg ~ Exch(covariates = Covariates(mean ~ reg1, data = data))),
+##               y = y,
+##               filename = filename,
+##               nBurnin = 0,
+##               nSim = 500,
+##               nChain = 4,
+##               nThin = 1)
+## fetchSummary(filename)                    
+
+## plot(fetchMCMC(filename, c("mod", "hy", "reg", "coef")), sm = F)
+## plot(fetchMCMC(filename, c("mod", "hy", "reg", "scaleEr")), sm = F)
 
 
+
+## plot(fetchMCMC(filename, c("mod", "pr", "(Intercept)")), sm = F)
+## plot(fetchMCMC(filename, c("mod", "pr", "mean")), sm = F, ask = T)
+## plot(fetchMCMC(filename, c("mod", "hy", "(Intercept)", "scaleEr")), sm = F)
+## plot(fetchMCMC(filename, c("mod", "hy", "(Intercept)", "scaleEr")), sm = )F
+
+## obj <- demest:::fetchResultsObject(filename)
+## prior <- obj@final[[1]]@model@priorsBetas[[2]]
+## beta <- obj@final[[1]]@model@betas[[2]]
+
+## mod.out <- obj@model
+## coef.out <- mod.out$hyper$reg$coef
+## demest:::getDataFromFile(filename, first = 35L, last = 35L, lengthIter = 37L, iterations = 1:4000)
 
 ## model <- Model(y ~ Poisson(mean ~ age * year),
 ##                age ~ DLM(level = Level(scale = HalfT(df = 30, mult = 0.25)),
