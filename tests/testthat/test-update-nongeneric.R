@@ -1469,9 +1469,9 @@ test_that("updateEta gives valid answer", {
         prior0 <- initialPrior(spec,
                                beta = beta,
                                metadata = metadata,
-                              sY = NULL,
-                              isSaturated = FALSE,
-                              multScale = 1)
+                               sY = NULL,
+                               isSaturated = FALSE,
+                               multScale = 1)
         expect_is(prior0, "ExchNormCov")
         beta <- rnorm(10)
         set.seed(seed)
@@ -1480,7 +1480,7 @@ test_that("updateEta gives valid answer", {
         ans.expected <- prior0
         V.inv <- crossprod(prior0@Z)/prior0@tau@.Data^2 + diag(1/c(prior0@AEtaIntercept^2, prior0@UEtaCoef))
         V <- solve(V.inv)
-        R <- qr.R(qr(V.inv))
+        R <- chol(V.inv)
         epsilon <- drop(solve(R) %*% rnorm(8))
         eta.hat <- drop(V %*% crossprod(prior0@Z, beta)/prior0@tau@.Data^2)
         eta <- eta.hat + epsilon
