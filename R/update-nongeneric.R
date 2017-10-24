@@ -633,7 +633,7 @@ updateComponentWeightMix <- function(prior, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE (AGAIN)
+## TRANSLATED
 ## HAS_TESTS
 updateEta <- function(prior, beta, useC = FALSE) {
     ## prior
@@ -662,7 +662,7 @@ updateEta <- function(prior, beta, useC = FALSE) {
         eta.hat <- qr.solve(qr, b)
         eta.hat <- drop(eta.hat)
         g <- stats::rnorm(n = P)
-        R <- chol(var.inv) ## replaces 'R <- qr.R(qr)'
+        R <- chol(var.inv) 
         epsilon <- backsolve(R, g)
         prior@eta@.Data <- eta.hat + epsilon
         prior
