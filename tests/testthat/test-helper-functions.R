@@ -11568,6 +11568,44 @@ test_that("rescalePriorsHelper works with Exchangeable", {
                
 })
 
+test_that("setCoefInterceptToZeroOnFile works", {
+    setCoefInterceptToZeroOnFile <- demest:::setCoefInterceptToZeroOnFile
+    filename <- tempfile()
+    con <- file(filename, open = "wb")
+    results <- new("ResultsModelEst")
+    results <- serialize(results, connection = NULL)
+    writeBin(length(results), con = con) # size results
+    writeBin(10L, con = con) # size adjustments
+    writeBin(results, con = con)
+    original <- as.double(1:200)
+    writeBin(original, con = con)
+    close(con)
+    nIteration <- 20L
+    lengthIter <- 10L
+    metadata <- new("MetaData",
+                    nms = "coef",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = c("a", "b"))))
+    skeleton <- new("SkeletonCovariates",
+                    first = 6L,
+                    last = 8L,
+                    metadata = metadata)
+    setCoefInterceptToZeroOnFile(skeleton = skeleton,
+                                 filename = filename,
+                                 nIteration = nIteration,
+                                 lengthIter = lengthIter)
+    con <- file(filename, open = "rb")
+    readBin(con = con, what = "integer", n = 2L)
+    readBin(con = con, what = "raw", n = length(results))
+    ans.obtained <- readBin(con = con, what = "double", n = 200L)
+    close(con)
+    ans.expected <- matrix(original, nr = 10)
+    ans.expected[6, ] <- 0
+    ans.expected <- as.double(ans.expected)
+    expect_identical(ans.obtained, ans.expected)
+})
+
+
 
 
 ## INSPECT RESULTS ###################################################################

@@ -7426,6 +7426,40 @@ rescalePriorsHelper <- function(priors, margins, skeletonsBetas, skeletonsPriors
     }
 }
 
+## HAS_TESTS
+setCoefInterceptToZeroOnFile <- function(skeleton, filename,
+                                         nIteration, lengthIter) {
+    ## Based on the warnings in the help for 'seek' about using
+    ## 'seek' with Windows, we have avoided it, and
+    ## used writeBin and readBin instead.
+    ## The pointer used for reading and the pointer used for
+    ## writing are independent of each other, so we have to
+    ## move each separately via read or write operations
+    first <- skeleton@first
+    con <- file(filename, open = "r+b")
+    on.exit(close(con))
+    size.results <- readBin(con = con, what = "integer", n = 1L)
+    writeBin(size.results, con = con)
+    size.adj <- readBin(con = con, what = "integer", n = 1L)
+    writeBin(size.adj, con = con)
+    results <- readBin(con = con, what = "raw", n = size.results)
+    writeBin(results, con = con)
+    for (i.iter in seq_len(nIteration)) {
+        ## skip over values in line before start of data
+        before.first <- readBin(con = con, what = "double", n = first - 1L)
+        writeBin(before.first, con = con)
+        ## write 0
+        readBin(con = con, what = "double", n = 1L) # discard value
+        writeBin(0, con = con)
+        ## skip remaining positions in line of file, if any
+        if (first < lengthIter) {
+            after.first <- readBin(con = con, what = "double", n = lengthIter - first)
+            writeBin(after.first, con = con)
+        }
+    }
+}
+
+
 
 
 

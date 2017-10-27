@@ -1960,10 +1960,23 @@ setMethod("rescalePriorIntercept",
                                              iterations = NULL,
                                              nIteration = nIteration,
                                              lengthIter = lengthIter)
-              mean.beta <- mean(beta.term)
+              if (has.covariates) {
+                  skeleton.covariates <- skeletonsPriorTerm$coef
+                  adj <- readCoefInterceptFromFile(skeleton = skeleton.covariates,
+                                                   filename = filename,
+                                                   nIteration = nIteration,
+                                                   lengthIter = lengthIter)
+                  setCoefInterceptToZeroOnFile(skeleton = skeleton.covariates,
+                                               filename = filename,
+                                               nIteration = nIteration,
+                                               lengthIter = lengthIter)
+              }
+              else {
+                  adj <- mean(beta.term)
+              }
               rescaleAndWriteBetas(high = beta.term,
                                    low = beta.intercept,
-                                   adj = mean.beta,
+                                   adj = adj,
                                    skeletonHigh = skeletonBetaTerm,
                                    skeletonLow = skeletonBetaIntercept,
                                    filename = filename,
@@ -1973,29 +1986,9 @@ setMethod("rescalePriorIntercept",
                                 priorLow = priorIntercept,
                                 namesHigh = names.term,
                                 namesLow = name.intercept,
-                                adj = mean.beta,
+                                adj = adj,
                                 adjustments = adjustments,
                                 prefixAdjustments = prefixAdjustments)
-              if (has.covariates) {
-                  skeleton.covariates <- skeletonsPriorTerm$coef
-                  ## don't bother adjusting betaTerm, since do
-                  ## not report intercept for covariates
-                  coef.intercept <- readCoefInterceptFromFile(skeleton = skeleton.covariates,
-                                                              filename = filename,
-                                                              nIteration = nIteration,
-                                                              lengthIter = lengthIter)
-                  beta.intercept <- fetchResults(object = skeletonBetaIntercept,
-                                                 filename = filename,
-                                                 iterations = NULL,
-                                                 nIteration = nIteration,
-                                                 lengthIter = lengthIter)
-                  beta.intercept <- beta.intercept + coef.intercept
-                  overwriteValuesOnFile(object = beta.intercept,
-                                        skeleton = skeletonBetaIntercept,
-                                        filename = filename,
-                                        nIteration = nIteration,
-                                        lengthIter = lengthIter)
-              }
               NULL
           })
 
@@ -2014,6 +2007,7 @@ setMethod("rescalePriorIntercept",
               skeleton.level.term <- skeletonsPriorTerm$level
               has.trend.term <- methods::is(priorTerm, "WithTrendMixin")
               non.stationary <- has.trend.term || (phi.known.term && isTRUE(all.equal(phi.term, 1)))
+              name.intercept <- "(Intercept)"
               if (non.stationary) {
                   names.term <- names(metadata.term)
                   beta.term <- fetchResults(object = skeletonBetaTerm,
@@ -2053,26 +2047,61 @@ setMethod("rescalePriorIntercept",
                                         filename = filename,
                                         nIteration = nIteration,
                                         lengthIter = lengthIter)
+                  recordAdjustments(priorHigh = priorTerm,
+                                    priorLow = priorIntercept,
+                                    namesHigh = names.term,
+                                    namesLow = name.intercept,
+                                    adj = mean.level.0,
+                                    adjustments = adjustments,
+                                    prefixAdjustments = prefixAdjustments)
               }
               if (has.covariates) {
-                  skeleton.covariates <- skeletonsPriorTerm$coef
-                  ## don't bother adjusting betaTerm, since do
-                  ## not report intercept for covariates
-                  coef.intercept <- readCoefInterceptFromFile(skeleton = skeleton.covariates,
-                                                              filename = filename,
-                                                              nIteration = nIteration,
-                                                              lengthIter = lengthIter)
+                  beta.term <- fetchResults(object = skeletonBetaTerm,
+                                            filename = filename,
+                                            iterations = NULL,
+                                            nIteration = nIteration,
+                                            lengthIter = lengthIter)
                   beta.intercept <- fetchResults(object = skeletonBetaIntercept,
                                                  filename = filename,
                                                  iterations = NULL,
                                                  nIteration = nIteration,
                                                  lengthIter = lengthIter)
-                  beta.intercept <- beta.intercept + coef.intercept
-                  overwriteValuesOnFile(object = beta.intercept,
-                                        skeleton = skeletonBetaIntercept,
+                  level.term <- readStateDLMFromFile(skeleton = skeleton.level.term,
+                                                     filename = filename,
+                                                     iterations = NULL,
+                                                     nIteration = nIteration,
+                                                     lengthIter = lengthIter,
+                                                     only0 = FALSE)
+                  skeleton.covariates <- skeletonsPriorTerm$coef
+                  coef.intercept <- readCoefInterceptFromFile(skeleton = skeleton.covariates,
+                                                              filename = filename,
+                                                              nIteration = nIteration,
+                                                              lengthIter = lengthIter)
+                  rescaleAndWriteBetas(high = beta.term,
+                                       low = beta.intercept,
+                                       adj = coef.intercept,
+                                       skeletonHigh = skeletonBetaTerm,
+                                       skeletonLow = skeletonBetaIntercept,
+                                       filename = filename,
+                                       nIteration = nIteration,
+                                       lengthIter = lengthIter)
+                  level.term <- level.term - coef.intercept
+                  overwriteValuesOnFile(object = level.term,
+                                        skeleton = skeleton.level.term,
                                         filename = filename,
                                         nIteration = nIteration,
                                         lengthIter = lengthIter)
+                  recordAdjustments(priorHigh = priorTerm,
+                                    priorLow = priorIntercept,
+                                    namesHigh = names.term,
+                                    namesLow = name.intercept,
+                                    adj = coef.intercept,
+                                    adjustments = adjustments,
+                                    prefixAdjustments = prefixAdjustments)
+                  setCoefInterceptToZeroOnFile(skeleton = skeleton.covariates,
+                                               filename = filename,
+                                               nIteration = nIteration,
+                                               lengthIter = lengthIter)
               }
               NULL
           })

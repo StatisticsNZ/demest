@@ -216,14 +216,15 @@
 ##                     reg ~ Exch(covariates = Covariates(mean ~ reg1, data = data))),
 ##               y = y,
 ##               filename = filename,
-##               nBurnin = 0,
-##               nSim = 500,
+##               nBurnin = 1000,
+##               nSim = 1000,
 ##               nChain = 4,
-##               nThin = 1)
+##               nThin = 10)
 ## fetchSummary(filename)                    
 
 ## plot(fetchMCMC(filename, c("mod", "hy", "reg", "coef")), sm = F)
 ## plot(fetchMCMC(filename, c("mod", "hy", "reg", "scaleEr")), sm = F)
+## plot(fetchMCMC(filename, c("mod", "pr", "mean")), sm = F, ask = T)
 
 
 

@@ -3951,7 +3951,7 @@ test_that("rescalePred works with Exchangeable", {
 
 ## rescalePriorIntercept ##############################################################
 
-test_that("rescalePriorIntercept works with Exchangeable", {
+test_that("rescalePriorIntercept works with Exchangeable - with covariates", {
     rescalePriorIntercept <- demest:::rescalePriorIntercept
     makeOutputPrior <- demest:::makeOutputPrior
     initialPrior <- demest:::initialPrior
@@ -4018,6 +4018,84 @@ test_that("rescalePriorIntercept works with Exchangeable", {
     output <- matrix(output, nr = lengthIter)
     data <- matrix(data, nr = lengthIter)
     here.term <- seq(from = skeleton.beta.term@first, to = skeleton.beta.term@last)
+    here.int <- skeleton.beta.int@first
+    here.coef.int <- skeletons.prior.term$coef@first
+    data.term <- data[here.term, ]
+    data.int <- data[here.int, ]
+    data.coef.int <- data[here.coef.int, ]
+    output.term <- output[here.term, ]
+    output.int <- output[here.int, ]
+    output.coef.int <- output[here.coef.int, ]
+    expect_equal(as.numeric(adjustments[["model.prior.country:sex"]]), -data.coef.int)
+    expect_equal(as.numeric(adjustments[["model.prior.(Intercept)"]]), data.coef.int)
+    expect_equal(output.term, data.term - rep(data.coef.int, each = 10))
+    expect_equal(output.int, data.int + data.coef.int)
+    expect_equal(output.coef.int, rep(0, 20))
+})
+
+test_that("rescalePriorIntercept works with Exchangeable - without covariates", {
+    rescalePriorIntercept <- demest:::rescalePriorIntercept
+    makeOutputPrior <- demest:::makeOutputPrior
+    initialPrior <- demest:::initialPrior
+    SkeletonBetaTerm <- demest:::SkeletonBetaTerm
+    SkeletonBetaIntercept <- demest:::SkeletonBetaIntercept
+    spec.term <- Exch()
+    spec.int <- ExchFixed()
+    beta.term <- rnorm(10)
+    beta.int <- rnorm(1)
+    metadata.term <- new("MetaData",
+                         nms = c("country", "sex"),
+                         dimtypes = c("state", "sex"),
+                         DimScales = list(new("Categories", dimvalues = letters[1:5]),
+                                          new("Sexes", dimvalues = c("F", "M"))))
+    prior.term <- initialPrior(spec.term,
+                               beta = beta.term,
+                               metadata = metadata.term,
+                               sY = NULL,
+                               isSaturated = new("LogicalFlag", FALSE))
+    prior.int <- initialPrior(spec.int,
+                              beta = beta.int,
+                              metadata = NULL,
+                              sY = NULL,
+                              isSaturated = new("LogicalFlag", FALSE))
+    skeleton.beta.term <- SkeletonBetaTerm(first = 10L,
+                                           metadata = metadata.term)
+    skeleton.beta.int <- SkeletonBetaIntercept(first = 30L)
+    skeletons.prior.term <- makeOutputPrior(prior = prior.term,
+                                            metadata = metadata.term,
+                                            pos = 50L)
+    adjustments <- new.env(hash = TRUE)
+    prefix.adjustments <- "model"
+    nIteration <- 20L
+    lengthIter <- 100L
+    filename <- tempfile()
+    con <- file(filename, open = "wb")
+    results <- new("ResultsModelEst")
+    results <- serialize(results, connection = NULL)
+    writeBin(length(results), con = con) # size results
+    writeBin(10L, con = con) # size adjustments
+    writeBin(results, con = con)
+    data <- as.double(1:2000)
+    writeBin(data, con = con)
+    close(con)
+    rescalePriorIntercept(priorTerm = prior.term,
+                          priorIntercept = prior.int,
+                          skeletonBetaTerm = skeleton.beta.term,
+                          skeletonBetaIntercept = skeleton.beta.int,
+                          skeletonsPriorTerm = skeletons.prior.term,
+                          adjustments = adjustments,
+                          prefixAdjustments = prefix.adjustments,
+                          filename = filename,
+                          nIteration = nIteration,
+                          lengthIter = lengthIter)
+    con <- file(filename, open = "rb")
+    lengths <- readBin(con = con, what = "integer", n = 2L)
+    results <- readBin(con = con, what = "raw", n = length(results))
+    output <- readBin(con = con, what = "double", n = 2000L)
+    close(con)
+    output <- matrix(output, nr = lengthIter)
+    data <- matrix(data, nr = lengthIter)
+    here.term <- seq(from = skeleton.beta.term@first, to = skeleton.beta.term@last)
     here.int <- seq(from = skeleton.beta.int@first, to = skeleton.beta.int@last)
     data.term <- data[here.term, ]
     data.int <- data[here.int, ]
@@ -4025,17 +4103,13 @@ test_that("rescalePriorIntercept works with Exchangeable", {
     output.int <- output[here.int, ]
     means <- array(data.term, dim = c(5, 2, 20))
     means <- apply(means, 3, mean)
-    here.coef.int <- skeletons.prior.term$coef@first
-    data.coef.int <- data[here.coef.int, ]
-    output.coef.int <- output[here.coef.int, ]
     expect_equal(as.numeric(adjustments[["model.prior.country:sex"]]), -as.numeric(means))
     expect_equal(as.numeric(adjustments[["model.prior.(Intercept)"]]), as.numeric(means))
     expect_equal(output.term, data.term - rep(means, each = 10))
-    expect_equal(output.int, data.int + means + output.coef.int)
 })
 
 
-test_that("rescalePriorIntercept works with DLM", {
+test_that("rescalePriorIntercept works with DLM - with covariates", {
     rescalePriorIntercept <- demest:::rescalePriorIntercept
     makeOutputPrior <- demest:::makeOutputPrior
     initialPrior <- demest:::initialPrior
@@ -4045,7 +4119,7 @@ test_that("rescalePriorIntercept works with DLM", {
                      sex = rep(c("F", "M"), each = 5),
                      income = rnorm(5))
     covariates <- Covariates(mean ~ income, data = df)
-    spec.term <- DLM(damp = NULL, covariates = covariates)
+    spec.term <- DLM(covariates = covariates)
     spec.int <- ExchFixed()
     beta.term <- rnorm(10)
     beta.int <- rnorm(1)
@@ -4102,24 +4176,108 @@ test_that("rescalePriorIntercept works with DLM", {
     output <- matrix(output, nr = lengthIter)
     data <- matrix(data, nr = lengthIter)
     here.term <- seq(from = skeleton.beta.term@first, to = skeleton.beta.term@last)
-    here.int <- seq(from = skeleton.beta.int@first, to = skeleton.beta.int@last)
+    here.int <- skeleton.beta.int@first
     here.level <- seq(from = skeletons.prior.term$level@first,
                       to = skeletons.prior.term$level@last)
+    here.level.0 <- skeletons.prior.term$level@indices0
     here.coef.int <- skeletons.prior.term$coef@first
     data.term <- data[here.term, ]
     data.int <- data[here.int, ]
     data.level <- data[here.level, ]
-    data.level.0 <- data.level[skeletons.prior.term$level@indices0, ]
+    data.level.0 <- data.level[here.level.0, ]
     data.coef.int <- data[here.coef.int, ]
     output.term <- output[here.term, ]
     output.int <- output[here.int, ]
     output.coef.int <- output[here.coef.int, ]
     output.level <- output[here.level, ]
+    output.level.0 <- output[here.level.0, ]
+    means <- apply(data.level.0, 2, mean)
+    expect_equal(output.term, data.term - rep(means, each = 10) - rep(data.coef.int, each = 10))
+    expect_equal(output.level, data.level - rep(means, each = 12) - rep(data.coef.int, each = 12))
+    expect_equal(output.int, data.int + means + data.coef.int)
+    expect_equal(as.numeric(adjustments[["model.prior.(Intercept)"]]), means + data.coef.int)
+})
+
+test_that("rescalePriorIntercept works with DLM - without covariates", {
+    rescalePriorIntercept <- demest:::rescalePriorIntercept
+    makeOutputPrior <- demest:::makeOutputPrior
+    initialPrior <- demest:::initialPrior
+    SkeletonBetaTerm <- demest:::SkeletonBetaTerm
+    SkeletonBetaIntercept <- demest:::SkeletonBetaIntercept
+    spec.term <- DLM()
+    spec.int <- ExchFixed()
+    beta.term <- rnorm(10)
+    beta.int <- rnorm(1)
+    metadata.term <- new("MetaData",
+                         nms = c("time", "sex"),
+                         dimtypes = c("time", "sex"),
+                         DimScales = list(new("Points", dimvalues = 2001:2005),
+                                          new("Sexes", dimvalues = c("F", "M"))))
+    prior.term <- initialPrior(spec.term,
+                               beta = beta.term,
+                               metadata = metadata.term,
+                               sY = NULL,
+                               isSaturated = new("LogicalFlag", FALSE))
+    prior.int <- initialPrior(spec.int,
+                              beta = beta.int,
+                              metadata = NULL,
+                              sY = NULL,
+                              isSaturated = new("LogicalFlag", FALSE))
+    skeleton.beta.term <- SkeletonBetaTerm(first = 10L,
+                                           metadata = metadata.term)
+    skeleton.beta.int <- SkeletonBetaIntercept(first = 30L)
+    skeletons.prior.term <- makeOutputPrior(prior = prior.term,
+                                            metadata = metadata.term,
+                                            pos = 50L)
+    adjustments <- new.env(hash = TRUE)
+    prefix.adjustments <- "model"
+    nIteration <- 20L
+    lengthIter <- 100L
+    filename <- tempfile()
+    con <- file(filename, open = "wb")
+    results <- new("ResultsModelEst")
+    results <- serialize(results, connection = NULL)
+    writeBin(length(results), con = con) # size results
+    writeBin(10L, con = con) # size adjustments
+    writeBin(results, con = con)
+    data <- as.double(1:2000)
+    writeBin(data, con = con)
+    close(con)
+    rescalePriorIntercept(priorTerm = prior.term,
+                          priorIntercept = prior.int,
+                          skeletonBetaTerm = skeleton.beta.term,
+                          skeletonBetaIntercept = skeleton.beta.int,
+                          skeletonsPriorTerm = skeletons.prior.term,
+                          adjustments = adjustments,
+                          prefixAdjustments = prefix.adjustments,
+                          filename = filename,
+                          nIteration = nIteration,
+                          lengthIter = lengthIter)
+    con <- file(filename, open = "rb")
+    lengths <- readBin(con = con, what = "integer", n = 2L)
+    results <- readBin(con = con, what = "raw", n = length(results))
+    output <- readBin(con = con, what = "double", n = 2000L)
+    close(con)
+    output <- matrix(output, nr = lengthIter)
+    data <- matrix(data, nr = lengthIter)
+    here.term <- seq(from = skeleton.beta.term@first, to = skeleton.beta.term@last)
+    here.int <- skeleton.beta.int@first
+    here.level <- seq(from = skeletons.prior.term$level@first,
+                      to = skeletons.prior.term$level@last)
+    here.level.0 <- skeletons.prior.term$level@indices0
+    data.term <- data[here.term, ]
+    data.int <- data[here.int, ]
+    data.level <- data[here.level, ]
+    data.level.0 <- data.level[here.level.0, ]
+    output.term <- output[here.term, ]
+    output.int <- output[here.int, ]
+    output.level <- output[here.level, ]
     means <- apply(data.level.0, 2, mean)
     expect_equal(output.term, data.term - rep(means, each = 10))
     expect_equal(output.level, data.level - rep(means, each = 12))
-    expect_equal(output.int, data.int + means + output.coef.int)
+    expect_equal(output.int, data.int + means)
 })
+
 
 
 
