@@ -282,6 +282,76 @@ diffLogLikPopnOneCell <- function(iAfter, diff, population, model,
     }
 }
 
+
+## HAS_TESTS
+diffLogLikCellComp <- function(diff, iComp, iCell, component,
+                               observationModels, datasets,
+                               seriesIndices, transforms,
+                               useC = FALSE) {
+    ## diff
+    stopifnot(identical(length(diff), 1L))
+    stopifnot(is.integer(diff))
+    stopifnot(!is.na(diff))
+    ## iComp
+    stopifnot(identical(length(iComp), 1L))
+    stopifnot(is.integer(iComp))
+    stopifnot(!is.na(iComp))
+    stopifnot(iComp >= 1L)
+    ## iCell
+    stopifnot(identical(length(iCell), 1L))
+    stopifnot(is.integer(iCell))
+    stopifnot(!is.na(iCell))
+    stopifnot(iCell >= 1L)
+    ## component
+    stopifnot(is(component, "Component"))
+    ## observationModels
+    stopifnot(is.list(observationModels))
+    stopifnot(all(sapply(observationModels, methods::is, "Model")))
+    ## datasets
+    stopifnot(is.list(datasets))
+    stopifnot(all(sapply(datasets, methods::is, "Counts")))
+    ## seriesIndices
+    stopifnot(is.integer(seriesIndices))
+    stopifnot(!any(is.na(seriesIndices)))
+    stopifnot(all(seriesIndices >= 0L))
+    ## transforms
+    stopifnot(is.list(transforms))
+    stopifnot(all(sapply(transforms, methods::is, "CollapseTransformExtra")))
+    ## observationModels and datasets
+    stopifnot(identical(length(observationModels), length(datasets)))
+    ## observationModels and seriesIndices
+    stopifnot(identical(length(observationModels), length(seriesIndices)))
+    ## observationModels and transforms
+    stopifnot(identical(length(observationModels), length(transforms)))
+    if (useC) {
+        .Call(diffLogLikCellComp_R,
+              diff, iComp, iCell, component, observationModels,
+              datasets, seriesIndices, transforms)
+    }
+    else {
+        ans <- 0
+        for (i.dataset in seq_along(datasets)) {
+            assoc.with.comp <- seriesIndices[i.dataset] == iComp
+            if (assoc.with.comp) {
+                dataset <- datasets[[i.dataset]]
+                model <- observationModels[[i.dataset]]
+                transform <- transforms[[i.dataset]]
+                diff.dataset <- diffLogLikCellOneDataset(diff = diff,
+                                                         iCell = iCell,
+                                                         component = component,
+                                                         model = model,
+                                                         dataset = dataset,
+                                                         transform = transform)
+                if (is.infinite(diff.dataset))
+                    return(diff.dataset)
+                ans <- ans + diff.dataset
+            }
+        }
+        ans
+    }
+}
+
+
 ## HAS_TESTS
 diffLogLikCellOneDataset <- function(diff, iCell, component,
                                      model, dataset, transform,
@@ -294,7 +364,7 @@ diffLogLikCellOneDataset <- function(diff, iCell, component,
     stopifnot(identical(length(iCell), 1L))
     stopifnot(is.integer(iCell))
     stopifnot(!is.na(iCell))
-    stopifnot(iCell >= 0L)
+    stopifnot(iCell >= 1L)
     ## component
     stopifnot(is(component, "Component"))
     ## model
@@ -483,5 +553,101 @@ diffLogLikAccountMovePopn <- function(combined, useC = FALSE) {
                        seriesIndices = seriesIndices,
                        transforms = transforms)
     }
+}
+
+## HAS_TESTS
+diffLogLikAccountMoveComp <- function(combined, useC = FALSE) {
+    stopifnot(is(combined, "CombinedAccountMovements"))
+    if (useC) {
+        .Call(diffLogLikAccountMoveComp_R, combined)
+    }
+    else {
+        account <- combined@account
+        i.comp <- combined@iComp
+        component <- combined@account@components[[i.comp]]
+        population <- combined@account@population
+        iterator <- combined@iteratorPopn
+        observationModels <- combined@observationModels
+        datasets <- combined@datasets
+        series.indices <- combined@seriesIndices
+        transforms <- combined@transforms
+        i.cell <- combined@iCell
+        i.popn.next <- combined@iPopnNext
+        diff <- combined@diffProp
+        is.increment <- combined@isIncrement[i.comp]
+        diff.log.lik.cell <- diffLogLikCellComp(diff = diff,
+                                                iComp = i.comp,
+                                                iCell = i.cell,
+                                                component = component,
+                                                observationModels = observationModels,
+                                                datasets = datasets,
+                                                seriesIndices = series.indices,
+                                                transforms = transforms)
+        if (is.infinite(diff.log.lik.cell))
+            return(diff.log.lik.cell)
+        diff.popn <- if (is.increment) diff else -diff
+        diff.log.lik.popn <- diffLogLikPopn(diff = diff.popn,
+                                            iFirst = i.popn.next,
+                                            iterator = iterator,
+                                            population = population,
+                                            observationModels = observationModels,
+                                            datasets = datasets,
+                                            seriesIndices = series.indices,
+                                            transforms = transforms)
+        if (is.infinite(diff.log.lik.popn))
+            return(diff.log.lik.popn)
+        diff.log.lik.cell + diff.log.lik.popn
+    }
+}
+
+
+
+## LOG DENSITY ################################################################
+
+
+## HAS_TESTS
+diffLogDensPopnOneCohort <- function(diff, population, i, iterator, theta,
+                                     useC = FALSE) {
+    ## diff
+    stopifnot(identical(length(diff), 1L))
+    stopifnot(is.integer(diff))
+    stopifnot(!is.na(diff))
+    stopifnot(diff != 0L)
+    ## population
+    stopifnot(methods::is(population, "Population"))
+    stopifnot(is.integer(population))
+    stopifnot(!any(is.na(population)))
+    stopifnot(all(population >= 0L))
+    ## i
+    stopifnot(identical(length(i), 1L))
+    stopifnot(is.integer(i))
+    stopifnot(!is.na(i))
+    stopifnot(i >= 0L)
+    ## iterator
+    stopifnot(methods::is(iterator, "CohortIteratorPopulation"))
+    ## theta
+    stopifnot(is.double(theta))
+    stopifnot(!any(is.na(theta)))
+    stopifnot(all(theta >= 0))
+    ## population and theta
+    stopifnot(identical(length(population), length(theta)))
+    if (useC) {
+        .Call(diffLogDensAccountMove_R, combined)
+    }
+    iterator <- resetCP(iterator, i = i)
+    ans <- 0
+    repeat {
+        i <- iterator@i
+        val.curr <- population[i]
+        val.prop <- val.curr + diff
+        lambda <- theta[i]
+        log.dens.prop <- dpois(x = val.prop, lambda = lambda, log = TRUE)
+        log.dens.curr <- dpois(x = val.curr, lambda = lambda, log = TRUE)
+        ans <- ans + log.dens.prop - log.dens.curr
+        if (iterator@finished)
+            break
+        iterator <- advanceCP(iterator)
+    }
+    ans
 }
 
