@@ -360,11 +360,17 @@ setMethod("initialCombinedAccount",
                   iterator.acc <- CohortIterator(accession)
                   mappings.to.acc <- lapply(components, function(x) Mapping(x, accession))
               }
+              theta.popn <- systemModels[[1L]]@theta
               exposure <- dembase::exposure(population,
                                             triangles = has.age)
+              expected.exposure <- dembase::exposure(theta.popn,
+                                                     triangles = has.age)
               exposure <- new("Exposure",
                               .Data = exposure@.Data,
                               metadata = exposure@metadata)
+              expected.exposure <- new("Exposure",
+                                       .Data = expected.exposure@.Data,
+                                       metadata = expected.exposure@metadata)
               population <- methods::new("Population",
                                          .Data = population@.Data,
                                          metadata = population@metadata)
@@ -437,6 +443,7 @@ setMethod("initialCombinedAccount",
                                descriptions = descriptions,
                                diffProp = NA_integer_,
                                exposure = exposure,
+                               expectedExposure = expected.exposure,
                                generatedNewProposal = new("LogicalFlag", FALSE),
                                hasAge = new("LogicalFlag", TRUE),
                                iAccNext = NA_integer_,
@@ -480,6 +487,7 @@ setMethod("initialCombinedAccount",
                                descriptions = descriptions,
                                diffProp = NA_integer_,
                                exposure = exposure,
+                               expectedExposure = expected.exposure,
                                generatedNewProposal = new("LogicalFlag", FALSE),
                                hasAge = new("LogicalFlag", FALSE),
                                iBirths = i.births,

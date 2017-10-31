@@ -651,3 +651,50 @@ diffLogDensPopnOneCohort <- function(diff, population, i, iterator, theta,
     ans
 }
 
+
+## HAS_TESTS
+diffLogDensPopn <- function(combined, useC = FALSE) {
+    stopifnot(is(combined, "CombinedAccountMovements"))
+    if (useC) {
+        .Call(diffLogDensPopn_R, combined)
+    }
+    else {
+        account <- combined@account
+        population <- account@population
+        iterator <- combined@iteratorPopn
+        theta <- combined@systemModels[[1L]]@theta
+        i.popn.next <- combined@iPopnNext
+        i.popn.next.other <- combined@iPopnNextOther
+        diff <- combined@diffProp
+        i.comp <- combined@iComp
+        i.orig.dest <- combined@iOrigDest
+        i.pool <- combined@iPool
+        i.int.net <- combined@iIntNet
+        is.increment <- combined@isIncrement
+        update.two.cohorts <- ((i.comp == i.orig.dest)
+                               || (i.comp == i.pool)
+                               || (i.comp == i.int.net))
+        if (update.two.cohorts) {
+            ans.orig <- diffLogDensPopnOneCohort(diff = -diff,
+                                                 population = population,
+                                                 i = i.popn.next,
+                                                 iterator = iterator,
+                                                 theta = theta)
+            ans.dest <- diffLogDensPopnOneCohort(diff = diff,
+                                                 population = population,
+                                                 i = i.popn.next.other,
+                                                 iterator = iterator,
+                                                 theta = theta)
+            ans.orig + ans.dest
+        }
+        else {
+            if (!is.increment[i.comp])
+                diff <- -diff
+            diffLogDensPopnOneCohort(diff = diff,
+                                     population = population,
+                                     i = i.popn.next,
+                                     iterator = iterator,
+                                     theta = theta)
+        }
+    }
+}

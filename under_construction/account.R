@@ -975,52 +975,6 @@ diffLogDensAccountMove <- function(combined, useC = FALSE) {
     }
 }
 
-diffLogDensPopn <- function(combined, useC = FALSE) {
-    stopifnot(is(combined, "CombinedAccountMovements"))
-    if (useC) {
-        .Call(diffLogDensPopn_R, combined)
-    }
-    else {
-        account <- combined@account
-        population <- account@population
-        iterator <- combined@iteratorPopn
-        theta <- combined@systemModels@model@theta
-        i.popn <- combined@iPopn
-        i.popn.oth <- combined@iPopnOth
-        diff <- combined@diffProp
-        i.comp <- combined@iComp
-        i.orig.dest <- combined@iOrigDest
-        i.pool <- combined@iPool
-        i.int.net <- combined@iIntNet
-        is.increment <- combined@isIncrement
-        update.two.cohorts <- ((i.comp == i.orig.dest)
-                               || (i.comp == i.pool)
-                               || (i.comp == i.int.net))
-        if (update.two.cohorts) {
-            ans.orig <- diffLogDensPopnOneCohort(diff = -diff,
-                                                 population = population,
-                                                 i = i.popn,
-                                                 iterator = iterator,
-                                                 theta = theta)
-            ans.dest <- diffLogDensPopnOneCohort(diff = diff,
-                                                 population = population,
-                                                 i = i.popn.oth,
-                                                 iterator = iterator,
-                                                 theta = theta)
-            ans.orig + ans.dest
-        }
-        else {
-            if (!is.increment[i.comp])
-                diff <- -diff
-            diffLogDensPopnOneCohort(diff = diff,
-                                     population = population,
-                                     i = i.popn,
-                                     iterator = iterator,
-                                     theta = theta)
-        }
-    }
-}
-
 diffLogDensJumpOrigDest <- function(combined, useC = FALSE) {
     stopifnot(is(combined, "CombinedAccountMovements"))
     if (useC) {
@@ -1181,8 +1135,7 @@ diffLogDensJumpComp <- function(combined, useC = FALSE) {
         account <- combined@account
         component <- account@components[[i.comp]]
         systemModels <- combined@systemModels
-        sys.mod <- systemModels[[i.comp + 1L]]
-        theta <- sys.mod@theta
+        theta <- systemModels[[i.comp + 1L]]@theta
         expose <- combined@exposure
         expected.expose <- combined@expectedExposure
         i.cell <- combined@iCell
@@ -1867,7 +1820,9 @@ updateSubsequentAccession <- function(combined) {
 }
 
 
-
+updateExpectedExposure <- function(combined) {
+    NULL
+}
 
 updateSystem <- function(combined) {
     systemModels <- combined@systemModels

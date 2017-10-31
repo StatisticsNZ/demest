@@ -163,6 +163,27 @@ setClass("DiffPropMixin",
          })
 
 ## NO_TESTS
+setClass("ExpectedExposureMixin",
+         slots = c(expectedExposure = "Exposure"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             expectedExposure <- object@expectedExposure
+             thetaPopulation <- object@systemModels[[1L]]@theta
+             hasAge <- object@hasAge@.Data
+             ## 'expectedExposure' object equals result of
+             ## calling 'exposure' function on 'thetaPopulation'
+             exposure.calc <- dembase::exposure(thetaPopulation,
+                                                triangles = hasAge)
+             exposure.calc <- new("Exposure",
+                                  .Data = exposure.calc@.Data,
+                                  metadata = exposure.calc@metadata)
+             if (!isTRUE(all.equal(expectedExposure, exposure.calc)))
+                 return(gettextf("'%s' and '%s' for '%s' inconsistent",
+                                 "expectedExposure", "theta", "population"))
+             TRUE
+         })
+
+## NO_TESTS
 setClass("ExposureMixin",
          slots = c(exposure = "Exposure"),
          contains = "VIRTUAL",
