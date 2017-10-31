@@ -99,14 +99,15 @@ NULL
 ## HAS_TESTS
 #' @rdname likelihood
 #' @export
-Poisson <- function(formula, useExpose = TRUE) {
+Poisson <- function(formula, useExpose = TRUE, boxCox = 0) {
     checkFormulaMu(formula)
     checkForMarginalTerms(formula)
     useExpose <- checkAndTidyLogicalFlag(x = useExpose,
                                          name = "useExpose")
     methods::new("SpecLikelihoodPoisson",
                  formulaMu = formula,
-                 useExpose = useExpose)
+                 useExpose = useExpose,
+                 boxCoxParam = boxCox)
 }
 
 ## HAS_TESTS
@@ -654,6 +655,7 @@ setMethod("SpecModel",
                    priorSD, jump, series, aggregate) {
               formula.mu <- specInner@formulaMu
               useExpose <- specInner@useExpose
+              boxCoxParam <- specInner@boxCoxParam
               specs.priors <- makeSpecsPriors(dots)
               names.specs.priors <- makeNamesSpecsPriors(dots)
               if (is.null(lower))
@@ -689,6 +691,7 @@ setMethod("SpecModel",
                   aggregate <- methods::new("SpecAgPlaceholder")
               methods::new("SpecPoissonVarying",
                            ASigma = A.sigma,
+                           boxCoxParam = boxCoxParam,
                            call = call,
                            formulaMu = formula.mu,
                            lower = lower,

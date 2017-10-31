@@ -41,7 +41,8 @@ setClass("Normal",
 ## HAS_TESTS
 setClass("Poisson",
          contains = c("VIRTUAL",
-             "ScaleThetaMultiplierMixin"),
+                      "BoxCoxParamMixin",
+                      "ScaleThetaMultiplierMixin"),
          validity = function(object) {
              theta <- object@theta
              ## 'theta' is non-negative
@@ -147,12 +148,21 @@ setClass("PoissonVarying",
              lower <- object@lower
              upper <- object@upper
              tolerance <- object@tolerance
-             ## 'theta' greater than or equal to exp(lower)
-             if (any(theta < exp(lower) - tolerance))
+             boxCoxParam <- object@boxCoxParam
+             if (boxCoxParam > 0) {
+                 lower.back.tr <- (boxCoxParam * lower + 1) ^ (1 / boxCoxParam)
+                 upper.back.tr <- (boxCoxParam * upper + 1) ^ (1 / boxCoxParam)
+             }
+             else {
+                 lower.back.tr <- exp(lower)
+                 upper.back.tr <- exp(upper)
+             }
+             ## 'theta' greater than or equal to back-transformed 'lower'
+             if (any(theta < lower.back.tr - tolerance))
                  return(gettextf("'%s' has values that are less than '%s'",
                                  "theta", "lower"))
-             ## 'theta' less than or equal to exp(upper)
-             if (any(theta > exp(upper) + tolerance))
+             ## 'theta' less than or equal to back-transformed 'upper'
+             if (any(theta > upper.back.tr + tolerance))
                  return(gettextf("'%s' has values that are greater than '%s'",
                                  "theta", "upper"))
              TRUE
