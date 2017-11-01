@@ -1975,6 +1975,8 @@ R_init_demest(DllInfo *info)
   /* skeleton */
   ADD_SYM(first);
   ADD_SYM(last);
+  /* Box-Cox */
+  ADD_SYM(boxCoxParam);
   
 #undef ADD_SYM
 

@@ -3064,7 +3064,7 @@ updateTheta_PoissonVaryingNotUseExp <- function(object, y, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE (AGAIN)
+## TRANSLATED (AGAIN)
 ## HAS_TESTS
 ## Includes case where 'y' has subtotals.
 ## Subtotals can only be used with PoissonVarying models.

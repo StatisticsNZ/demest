@@ -71,7 +71,8 @@
         int len_vbar, int *cellInLik, 
         SEXP betas_R, SEXP iteratorBetas_R, 
                 double *theta, int n_theta, int n_betas,
-                int iBeta, double (*g)(double));
+                int iBeta, double (*g)(double),
+                int usesBoxCoxTransform, double boxCoxParam);
     
     SEXP makeVBarAndN_General(SEXP object, int iBeta, double (*g)(double));
     
