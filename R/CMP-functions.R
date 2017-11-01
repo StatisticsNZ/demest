@@ -1,37 +1,193 @@
 
+# The CMP desity function is f(y|theta,nu)= (theta^y/y!)^nu*1/Z(theta,nu), 
+# Z(theta,nu) is the intractable normalising constant
+# So f is split in two parts: Z and q(y|theta,nu)=(theta^y/y!)^nu
 
-dqcmp1 <- function(x, gamma, nu, log = FALSE, useC = FALSE) {
-    ## x
-    
+logDensCMP1 <- function(y, theta, nu, useC = FALSE) {
+    ## 'y'
+    stopifnot(is.integer(y))
+    stopifnot(identical(length(y), 1L))
+    stopifnot(!is.na(y))
+    stopifnot(y >= 0L)
+    ## 'theta'
+    stopifnot(is.double(theta))
+    stopifnot(identical(length(theta), 1L))
+    stopifnot(!is.na(theta))
+    stopifnot(theta >= 0L)
+    ## 'nu'
+    stopifnot(is.double(nu))
+    stopifnot(identical(length(nu), 1L))
+    stopifnot(!is.na(nu))
+    stopifnot(nu >= 0L)
     if (useC) {
-        .Call(dqcmp1_R, x, gamma, nu, log)
+        .Call(logDensCMP1_R, y, theta, nu)
     }
     else {
-        if (log) {
-            nu * y * log(gamma) - sum(log(seq_len(y)))
-        }
-        else {
-            ((gamma ^ y) / factorial(y)) ^ nu
-        }
+        nu * y * log(theta) - sum(log(seq_len(y)))
     }
 }
 
 
+## Function to calculate the enveloping bounds
+## p is set by default to the optimum suggested in Benson & Friel 2017  
+makeBoundsCMP <- function(theta, nu, p, useC = FALSE) {
+    ## 'theta'
+    stopifnot(is.double(theta))
+    stopifnot(identical(length(theta), 1L))
+    stopifnot(!is.na(theta))
+    stopifnot(theta > 0)
+    ## 'nu'
+    stopifnot(is.double(nu))
+    stopifnot(identical(length(nu), 1L))
+    stopifnot(!is.na(nu))
+    stopifnot(nu > 0)
+    ## 'p'
+    stopifnot(is.double(p))
+    stopifnot(identical(length(p), 1L))
+    stopifnot(!is.na(p))
+    stopifnot(p >= 0)
+    stopifnot(p <= 1)
+    if (useC) {
+        .Call(makeBoundsCMP_R, theta, nu, p)
+    }
+    else {
+        if (nu < 1) {
+            fl <- floor(theta / ((1 - p)^(1 / nu)))
+            (theta^(nu * fl)) / (p * (1 - p)^fl * factorial(fl)^nu)
+        }
+        else {
+            fl <- floor(theta)
+            (theta^fl / factorial(fl))^(nu - 1)
+        }
+    }
+}
 
-                                        # Model without exposure
-# y ~ CMP(gamma, nu)
-# log gamma ~ N(mu, sigma)
-# log nu ~ N(delta, tau)
+    
+
+updateTheta_CMPVaryingUseExp <- function(object, y, exposure, useC = FALSE) {
+    ## object
+    stopifnot(methods::is(object, "CMPVaryingUseExp"))
+    stopifnot(methods::validObject(object))
+    ## y
+    stopifnot(methods::is(y, "Counts"))
+    stopifnot(identical(length(y), length(object@theta)))
+    stopifnot(is.integer(y))
+    stopifnot(all(y[!is.na(y)] >= 0L))
+    ## exposure
+    stopifnot(methods::is(exposure, "Counts"))
+    stopifnot(is.double(exposure))
+    stopifnot(all(exposure[!is.na(exposure)] >= 0))
+    ## y and exposure
+    stopifnot(identical(length(exposure), length(y)))
+    stopifnot(all(is.na(exposure) <= is.na(y)))
+    stopifnot(all(y[!is.na(y)][exposure[!is.na(y)] == 0] == 0L))
+    if (useC) {
+        .Call(updateTheta_PoissonVaryingUseExp_R, object, y, exposure)
+    }
+    else {
+        theta <- object@theta
+        scale <- object@scaleTheta
+        scale.multiplier <- object@scaleThetaMultiplier
+        nu <- object@nu # vector same length as 'theta'
+        sigma <- object@sigma@.Data
+        mean.nu <- object@meanNu@.Data # scalar
+        sd.nu <- object@sdNu@.Data
+        betas <- object@betas
+        iterator <- object@iteratorBetas
+        n.failed.prop.y <- 0L
+        n.failed.prop.theta <- 0L
+        n.accept.y <- 0L
+        n.accept.theta <- 0L
+        scale <- scale * scale.multiplier
+        iterator <- resetB(iterator)
+        for (i in seq_along(theta)) {
+            indices <- iterator@indices
+            mu <- 0
+            for (b in seq_along(betas))
+                mu <- mu + betas[[b]][indices[b]]
+            y.is.missing <- is.na(y[i]) ## what do we do if y is missing?
+            p <- 2 * nu[i] / (2 * theta[i] * nu[i] + 1 + nu[i])
+            th.curr <- theta[i]
+            nu.curr <- nu[i]
+            bounds <- makeBoundsCMP(theta = th.curr,
+                                    nu = nu.curr,
+                                    p = p)
+            found.prop.y <- FALSE
+            attempt.y <- 0L
+            while (!found.prop.y && (attempt.y < max.attempt)) {
+                attempt.y <- attempt.y + 1L
+                if (nu.curr < 1) 
+                    y.aux <- stats::rgeom(n = 1L, prob = p)
+                else
+                    y.aux <- stats::rpois(n = 1L, lambda = th.curr)
+                y.fact <- factorial(y.aux)
+                numerator.alpha <- ((th.curr ^ y.aux) / factorial(y)) ^ nu
+                if (nu.curr < 1)
+                    denominator.alpha <- B * ((1 - p) ^ y.aux) * p
+                else
+                    denominator.alpha <- B * (theta ^ y.aux) / y.fact
+                alpha <- numerator.alpha / denominator.alpha
+                found.y.aux <- stats::runif(1) < alpha
+            }
+            if (found.prop.y) {
+                if (y.is.missing) {
+                    mean <- mu
+                    sd <- sigma
+                }
+                else {
+                    log.th.curr <- log(th.curr)
+                    mean <- log.th.curr
+                    sd <- scale / sqrt(1 + y[i])
+                }
+                found.prop.theta <- FALSE
+                attempt.theta <- 0L
+                while (!found.prop.theta && (attempt.theta < max.attempt)) {
+                    attempt.theta <- attempt.theta + 1L
+                    log.th.prop <- stats::rnorm(n = 1L, mean = mean, sd = sd)
+                    found.prop <- ((log.th.prop > lower + tolerance)
+                        && (log.th.prop < upper - tolerance))
+                }
+                if (found.prop) {
+                    th.prop <- exp(log.th.prop)
+                    if (y.is.missing)
+                        theta[i] <- th.prop
+                    else {
+                        log.lik <- (logDensCMP1(y = y[i], theta = theta.prop, nu = nu.prop)
+                            - logDensCMP1(y = y[i], theta = theta.curr, nu = nu.curr)
+                            + logDensCMP1(y = y.aux, theta = theta.prop, nu = nu.prop)
+                            - logDensCMP1(y = y.aux, theta = theta.curr, nu = nu.curr))
+                        log.u <- (log(stats::runif(n = 1L)) # is the ratio the right way around?
+                            + stats::dnorm(x = log.th.curr, mean = mu, sd = sigma, log = TRUE) 
+                            - stats::dnorm(x = log.th.prop, mean = mu, sd = sigma, log = TRUE)  
+                            + stats::dnorm(x = log.nu.curr, mean = mean.nu, sd = sd.nu, log = TRUE) 
+                            - stats::dnorm(x = log.nu.prop, mean = mean.nu, sd = sd.nu, log = TRUE))
+                        accept <- log.lik > log.u
+                        if (accept) {
+                            n.accept.theta <- n.accept.theta + 1L
+                            theta[i] <- th.prop
+                        }
+                    }
+                }
+                else
+                    n.failed.prop.theta <- n.failed.prop.theta + 1L
+            }
+            else
+                n.failed.prop.y <- n.failed.prop.y + 1L
+            iterator <- advanceB(iterator)
+        }
+        object@theta <- theta
+        object@nFailedPropY@.Data <- n.failed.prop.y
+        object@nFailedPropTheta@.Data <- n.failed.prop.theta
+        object@nAcceptTheta@.Data <- n.accept.theta
+        object
+    }
+}
+
 
 ########################################################################################
 ### Benson and Friel 2017 Algorithm
 ########################################################################################
 
-library(combayes)
-
-# The CMP desity function is f(y|gamma,nu)= (gamma^y/y!)^nu*1/Z(gamma,nu), 
-# Z(gamma,nu) is the intractable normalising constant
-# So f is split in two parts: Z and q(y|gamma,nu)=(gamma^y/y!)^nu
 
 # the function allows for both density and log-density
 
@@ -144,7 +300,7 @@ rcmpois(100,mu=9,nu=0.9)
 # splitting the ratio allows the prior means and sds to not be included in the input of 'a.exch'
 # and also to choose the prior distribution to use in a easier way 
 # it can be modified of course
-
+}
 # onedimensional but prior mean is a linear combination of paramters depending on age,sex,region amd time 
 
 log_u<- (log(runif(1))+ dnorm(loggamma.curr,mu,sigma,log=TRUE) 
