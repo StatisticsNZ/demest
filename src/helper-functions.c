@@ -355,6 +355,77 @@ getRnormTruncatedSingle(double mean, double sd,
     }
     return ans;
 }
+
+/*## READY_TO_TRANSLATE
+## HAS_TESTS
+## Returns draw from truncated integer-only normal distribution (achieved by rounding).
+rnormIntTrunc1 <- function(mean = 0, sd = 1, lower = NA_integer_, upper = NA_integer_, useC = FALSE) {
+    ## mean
+    stopifnot(is.double(mean))
+    stopifnot(identical(length(mean), 1L))
+    stopifnot(!is.na(mean))
+    ## sd
+    stopifnot(is.double(sd))
+    stopifnot(identical(length(sd), 1L))
+    stopifnot(!is.na(sd))
+    stopifnot(sd > 0)
+    ## lower
+    stopifnot(is.integer(lower))
+    stopifnot(identical(length(lower), 1L))
+    ## upper
+    stopifnot(is.integer(upper))
+    stopifnot(identical(length(upper), 1L))
+    ## lower and upper
+    stopifnot(is.na(lower) || is.na(upper) || (lower <= upper))
+    if (useC) {
+        .Call(rnormIntTrunc1_R, mean, sd, lower, upper)
+    }
+    else {
+        if (!is.na(lower) && !is.na(upper) && (lower == upper))
+            return(lower)
+        lower <- if (is.na(lower)) -Inf else as.double(lower)
+        upper <- if (is.na(upper)) Inf else as.double(upper)
+        ans <- rtnorm1(mean = mean,
+                       sd = sd,
+                       lower = lower,
+                       upper = upper)
+        ans <- as.integer(ans + 0.5)
+        if (ans < lower)
+            ans <- lower
+        if (ans > upper)
+            ans <- upper
+        ans
+    }
+}
+*/
+
+
+int
+rnormIntTrunc1(double mean, double sd, 
+                int lower, int upper)
+{
+    int result = 0;
+    
+    if( !(lower == NA_INTEGER) && !(upper == NA_INTEGER) && (lower == upper) ) {
+        result = lower;
+    }
+    else {
+        
+        double dblLower = ( (lower == NA_INTEGER)? R_NegInf : lower );
+        double dblUpper = ( (upper == NA_INTEGER)? R_PosInf : upper );
+        
+        double dblAns = rtnorm1(mean, sd, dblLower, dblUpper);
+        
+        result = (int) (dblAns + 0.5);
+        
+        if (result < lower) {
+            result = lower;
+        }
+        if (result > upper) {
+            result = upper;
+        }
+    }
+}                
     
         
 double
@@ -1573,9 +1644,9 @@ getVBarAndN(double *vbar, int *n_vec,
     /* } */
 
     for (int i = 0; i < len_vbar; ++i) {
-    if (n_vec[i] > 0L) {    /* added by JB 2017-07-08 */
-        vbar[i] /= n_vec[i];
-    }
+        if (n_vec[i] > 0L) {    /* added by JB 2017-07-08 */
+            vbar[i] /= n_vec[i];
+        }
     }
 
 }

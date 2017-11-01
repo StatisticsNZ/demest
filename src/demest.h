@@ -432,6 +432,8 @@ SEXP rnormTruncated(int n, SEXP mean_R, SEXP sd_R,
                 double lower, double upper, double tolerance,
                 int maxAttempt,
                 int uniform);
+int rnormIntTrunc1(double mean, double sd, 
+                int lower, int upper);
 double rtnorm1(double mean, double sd, double lower, double upper);
 int rpoisTrunc1(double lambda, int lower, int upper, int maxAttempt);
                 
