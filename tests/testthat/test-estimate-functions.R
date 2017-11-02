@@ -8,40 +8,46 @@
 
 ## ## estimateModel ##################################################################
 
-## library(tidyverse)
-## library(demest)
-## births <- demdata::iceland.births %>%
-##     Counts(dimscales = c(year = "Intervals")) %>%
-##     subarray(age > 15 & age < 45) %>%
-##     collapseIntervals(dimension = "age", width = 5)
-## expose <- demdata::iceland.popn %>%
-##     Counts(dimscales = c(year = "Intervals", age = "Intervals")) %>%
-##     subarray(age > 15 & age < 45) %>%
-##     subarray(year < 2015) %>%
-##     collapseIntervals(dimension = "age", width = 5) %>%
-##     subarray(sex == "Females")
-## model <- Model(y ~ Poisson(mean ~ year * age),
-##                age ~ DLM(damp = NULL),
-##                year ~ DLM(damp = NULL),
-##                year:age ~ DLM(trend = NULL),
-##                jump = 0.03)
-## filename.est <- "deleteme.est"
-## filename.pred <- "deleteme.pred"
-## estimateModel(model,
-##               y = births,
-##               exposure = expose,
-##               filename = filename.est,
-##               nBurnin = 100,
-##               nSim = 100,
-##               nThin = 4,
-##               nChain = 4)
-## fetchSummary(filename.est)
+library(tidyverse)
+library(demest)
+births <- demdata::iceland.births %>%
+    Counts(dimscales = c(year = "Intervals")) %>%
+    subarray(age > 15 & age < 45) %>%
+    collapseIntervals(dimension = "age", width = 5)
+expose <- demdata::iceland.popn %>%
+    Counts(dimscales = c(year = "Intervals", age = "Intervals")) %>%
+    subarray(age > 15 & age < 45) %>%
+    subarray(year < 2015) %>%
+    collapseIntervals(dimension = "age", width = 5) %>%
+    subarray(sex == "Females")
+model <- Model(y ~ Poisson(mean ~ year * age, boxCox = 0.5),
+               age ~ DLM(damp = NULL),
+               year ~ DLM(damp = NULL),
+               year:age ~ DLM(trend = NULL),
+               jump = 0.03)
+filename.est <- "deleteme.est"
+filename.pred <- "deleteme.pred"
+estimateModel(model,
+              y = births,
+              exposure = expose,
+              filename = filename.est,
+              nBurnin = 1000,
+              nSim = 1000,
+              nThin = 4,
+              nChain = 4)
+fetchSummary(filename.est)
+predictModel(filenameEst = filename.est,
+             filenamePred = filename.pred,
+             n = 25)
+             
 
 
-
-## rates <- fetchBoth(filenameEst = filename.est, filenamePred = filename.pred,
-##                    where = c("model", "likelihood", "rate"))
-## dplot( ~ year, data = rates)
+rates <- fetchBoth(filenameEst = filename.est, filenamePred = filename.pred,
+                   where = c("model", "likelihood", "rate"))
+quartz()
+dplot( ~ year | age, data = rates)
+quartz()
+mean <- fetch(filename = filename.est, c("mod", "pr", "mean"))
 
 ## year <- fetch(filename = filename.est,
 ##               where = c("model", "prior", "year"))

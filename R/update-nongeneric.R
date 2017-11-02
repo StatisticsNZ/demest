@@ -1911,11 +1911,20 @@ updateSigma_Varying <- function(object, g, useC = FALSE) {
         theta <- object@theta
         betas <- object@betas
         iterator <- object@iteratorBetas
+        if (identical(g, log)) { ## NEW
+            box.cox.param <- object@boxCoxParam ## NEW
+            uses.box.cox.transform <- box.cox.param > 0 ## NEW
+        } ## NEW
+        else ## NEW
+            uses.box.cox.transform <- FALSE ## NEW
         iterator <- resetB(iterator)
         n <- length(theta)
         V <- 0
         for (i in seq_len(n)) {
-            transformed.theta <- g(theta[i])
+            if (uses.box.cox.transform) ## NEW
+                transformed.theta <- (theta[i] ^ box.cox.param - 1) / box.cox.param ## NEW
+            else ## NEW
+                transformed.theta <- g(theta[i]) ## NEW
             indices <- iterator@indices
             mu <- 0
             for (b in seq_along(betas))

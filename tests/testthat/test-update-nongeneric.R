@@ -3737,7 +3737,7 @@ test_that("R and C versions of updateWeightMix give same answer", {
 
 ## UPDATING MODELS ################################################################
 
-test_that("updateSigma_Varying gives valid answer", {
+test_that("updateSigma_Varying gives valid answer - no Box-Cox", {
     updateSigma_Varying <- demest:::updateSigma_Varying
     updateSDNorm <- demest:::updateSDNorm
     initialModel <- demest:::initialModel
@@ -3772,7 +3772,7 @@ test_that("updateSigma_Varying gives valid answer", {
     }
 })
 
-test_that("R and C versions of updateSigma_Varying give same answer", {
+test_that("R and C versions of updateSigma_Varying give same answer - no Box-Cox", {
     updateSigma_Varying <- demest:::updateSigma_Varying
     initialModel <- demest:::initialModel
     for (seed in seq_len(n.test)) {
@@ -3824,6 +3824,63 @@ test_that("R and C versions of updateSigma_Varying give same answer", {
         ans.R <- updateSigma_Varying(x, g = logit, useC = FALSE)
         set.seed(seed + 1)
         ans.C <- updateSigma_Varying(x, g = logit, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
+
+test_that("updateSigma_Varying gives valid answer - with Box-Cox", {
+    updateSigma_Varying <- demest:::updateSigma_Varying
+    updateSDNorm <- demest:::updateSDNorm
+    initialModel <- demest:::initialModel
+    for (seed in seq_len(n.test)) {
+        y <- Counts(array(rpois(n = 20, lambda = 30),
+                          dim = 5:4,
+                          dimnames = list(age = 0:4, region = letters[1:4])))
+        spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE, boxCox = 0.7),
+                      age ~ Exch())
+        x <- initialModel(spec, y = y, exposure = NULL)
+        set.seed(seed + 1)
+        ans.obtained <- updateSigma_Varying(x, g = log)
+        set.seed(seed + 1)
+        ans.expected <- x
+        mu <- x@betas[[1]] + x@betas[[2]] + rep(x@betas[[3]], each = 5)
+        I <- length(x@theta)
+        theta.transf <- (x@theta^(0.7) - 1) / 0.7
+        V <- sum((theta.transf - mu)^2)
+        ans.expected@sigma@.Data <- updateSDNorm(sigma = ans.expected@sigma@.Data,
+                                                 A = ans.expected@ASigma@.Data,
+                                                 nu = ans.expected@nuSigma@.Data,
+                                                 V = V,
+                                                 n = I,
+                                                 max = ans.expected@sigmaMax@.Data)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+        expect_identical(ans.obtained@theta, x@theta)
+        expect_identical(ans.obtained@betas, x@betas)
+        expect_identical(ans.obtained@priorsBetas, x@priorsBetas)
+        expect_identical(ans.obtained@iteratorBetas, x@iteratorBetas)
+    }
+})
+
+test_that("R and C versions of updateSigma_Varying give same answer - with Box-Cox", {
+    updateSigma_Varying <- demest:::updateSigma_Varying
+    initialModel <- demest:::initialModel
+    for (seed in seq_len(n.test)) {
+        y <- Counts(array(rpois(n = 20, lambda = 30),
+                          dim = 5:4,
+                          dimnames = list(age = 0:4, region = letters[1:4])))
+        spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE, boxCox = 0.8),
+                      age ~ Exch())
+        x <- initialModel(spec, y = y, exposure = NULL)
+        set.seed(seed + 1)
+        ans.R <- updateSigma_Varying(x, g = log, useC = FALSE)
+        set.seed(seed + 1)
+        ans.C <- updateSigma_Varying(x, g = log, useC = TRUE)
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else

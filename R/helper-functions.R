@@ -4852,7 +4852,7 @@ makeLifeExpBirth <- function(mx, nx, ax, iAge0, nAge,
     }
 }
 
-## TRANSLATED (AGAIN)
+## TRANSLATED
 ## HAS_TESTS
 makeVBarAndN <- function(object, iBeta, g, useC = FALSE) {
     ## object
@@ -4878,7 +4878,7 @@ makeVBarAndN <- function(object, iBeta, g, useC = FALSE) {
             uses.box.cox.transform <- box.cox.param > 0 
         } 
         else 
-            uses.box.cox.transform <- FALSE ## changed JAH
+            uses.box.cox.transform <- FALSE
         beta <- betas[[iBeta]]
         iterator <- resetB(iterator)
         vbar <- rep(0, times = length(beta))
