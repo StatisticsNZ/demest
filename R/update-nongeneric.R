@@ -1892,7 +1892,7 @@ updateWeightMix <- function(prior, useC = FALSE) {
 ## UPDATING MODELS ##################################################################
 
 
-## TRANSLATED
+## READY_TO_TRANSLATE (AGAIN)
 ## HAS_TESTS
 updateSigma_Varying <- function(object, g, useC = FALSE) {
     ## object
