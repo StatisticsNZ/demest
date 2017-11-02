@@ -3,27 +3,27 @@
 # Z(theta,nu) is the intractable normalising constant
 # So f is split in two parts: Z and q(y|theta,nu)=(theta^y/y!)^nu
 
-logDensCMP1 <- function(y, theta, nu, useC = FALSE) {
+logDensCMP1 <- function(y, gamma, nu, useC = FALSE) {
     ## 'y'
     stopifnot(is.integer(y))
     stopifnot(identical(length(y), 1L))
     stopifnot(!is.na(y))
     stopifnot(y >= 0L)
-    ## 'theta'
-    stopifnot(is.double(theta))
-    stopifnot(identical(length(theta), 1L))
-    stopifnot(!is.na(theta))
-    stopifnot(theta >= 0L)
+    ## 'gamma'
+    stopifnot(is.double(gamma))
+    stopifnot(identical(length(gamma), 1L))
+    stopifnot(!is.na(gamma))
+    stopifnot(gamma >= 0L)
     ## 'nu'
     stopifnot(is.double(nu))
     stopifnot(identical(length(nu), 1L))
     stopifnot(!is.na(nu))
     stopifnot(nu >= 0L)
     if (useC) {
-        .Call(logDensCMP1_R, y, theta, nu)
+        .Call(logDensCMP1_R, y, gamma, nu)
     }
     else {
-        nu * (y * log(theta) - lgamma(y + 1))
+        nu * (y * log(gamma) - lgamma(y + 1))
     }
 }
 
