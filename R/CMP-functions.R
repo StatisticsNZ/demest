@@ -2,7 +2,6 @@
 # The CMP desity function is f(y|theta,nu)= (theta^y/y!)^nu*1/Z(theta,nu), 
 # Z(theta,nu) is the intractable normalising constant
 # So f is split in two parts: Z and q(y|theta,nu)=(theta^y/y!)^nu
-
 logDensCMP1 <- function(y, theta, nu, useC = FALSE) {
     ## 'y'
     stopifnot(is.integer(y))
