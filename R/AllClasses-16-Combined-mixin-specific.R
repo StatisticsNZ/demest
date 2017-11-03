@@ -168,11 +168,19 @@ setClass("ExpectedExposureMixin",
          contains = "VIRTUAL",
          validity = function(object) {
              expectedExposure <- object@expectedExposure
-             thetaPopulation <- object@systemModels[[1L]]@theta
+             theta.popn <- object@systemModels[[1L]]@theta
+             population <- object@account@population
              hasAge <- object@hasAge@.Data
              ## 'expectedExposure' object equals result of
-             ## calling 'exposure' function on 'thetaPopulation'
-             exposure.calc <- dembase::exposure(thetaPopulation,
+             ## calling 'exposure' function on 'theta.popn'
+             metadata.theta.popn <- population@metadata
+             .Data.theta.popn <- array(theta.popn,
+                                       dim = dim(population),
+                                       dimnames = dimnames(population))
+             theta.popn <- new("Counts",
+                               .Data = .Data.theta.popn,
+                               metadata = metadata.theta.popn)
+             exposure.calc <- dembase::exposure(theta.popn,
                                                 triangles = hasAge)
              exposure.calc <- new("Exposure",
                                   .Data = exposure.calc@.Data,
@@ -367,25 +375,14 @@ setClass("IExpFirstMixin",
                  if (!is.na(value) && (value < 1L))
                      return(gettextf("'%s' is less than %d",
                                      name, 1L))
+                 ## if 'iExpFirst', 'iExpFirstOther' not missing, they are less than or
+                 ## equal to length of 'exposure'
                  if (!is.na(value)) {
-                     ## if 'iExpFirst', 'iExpFirstOther' not missing, they are less than or
-                     ## equal to length of 'exposure'
                      exposure <- object@exposure
                      n.exposure <- length(exposure)
                      if (value > n.exposure)
                          return(gettextf("'%s' is greater than the length of '%s'",
                                          name, "exposure"))
-                     ## if 'iExpFirst', 'iExpFirstOther' not missing,
-                     ## 'iExposure' and 'iExposureOther' also not missing
-                     name.i.exp <- if (name == "iExpFirst") "iExposure" else "iExposureOther"
-                     val.i.exp <- slot(object, name.i.exp)
-                     if (is.na(val.i.exp))
-                         return(gettextf("'%s' is missing but '%s' is not missing",
-                                         name.i.exp, name))
-                     ## 'iExpFirst' >= 'iExposure' and 'iExpFirstOther' >= 'iExposureOther'
-                     if (value < val.i.exp)
-                         return(gettextf("'%s' less than '%s'",
-                                         name, name.i.exp))
                  }
              }
              ## if 'iExpFirst' and 'iExpFirstOther' not missing, they have different values
@@ -528,16 +525,53 @@ setClass("IsNetMixin",
              TRUE
          })
 
-
 setClass("IteratorAccMixin",
          contains = "VIRTUAL",
          slots = c(iteratorAcc = "CohortIteratorAccession"))
+
+setClass("IteratorExposureMixin",
+         contains = "VIRTUAL",
+         slots = c(iteratorExposure = "CohortIteratorComponent"))
          
 setClass("IteratorPopnMixin",
          contains = "VIRTUAL",
          slots = c(iteratorPopn = "CohortIteratorPopulation"))
 
-## NO_TESTS
+setClass("IteratorsCompMixin",
+         contains = "VIRTUAL",
+         slots = c(iteratorsComp = "list"),
+         validity = function(object) {
+             iteratorsComp <- object@iteratorsComp
+             components <- object@account@components
+             iOrigDest <- object@iOrigDest
+             iPool <- object@iPool
+             ## all elements have class "CohortIteratorComponent"
+             if (!all(sapply(iteratorsComp, methods::is, "CohortIteratorComponent")))
+                 return(gettextf("'%s' has elements not of class \"%s\"",
+                                 "iteratorsComp", "CohortIteratorComponent"))
+             ## 'iteratorsComp' has same length as 'components'
+             if (!identical(length(iteratorsComp), length(components)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "iteratorsComp", "components"))
+             ## elements have class "CohortIteratorOrigDestParChPool" iff
+             ## they have class "InternalMovements" or "HasParentChild",
+             for (i in seq_along(iteratorsComp)) {
+                 is.iter.odpcp <- methods::is(iteratorsComp[[i]], "CohortIteratorOrigDestParChPool")
+                 is.odpcp <- ((i == iOrigDest)
+                     || methods::is(components[[i]], "HasParentChild")
+                     || (i == iPool))
+                 if (is.iter.odpcp && !is.odpcp)
+                     return(gettextf("element %d of '%s' has class \"%s\" but element %d of '%s' has class \"%s\"",
+                                     i, "iteratorsComp", class(iteratorsComp[[i]]),
+                                     i, "components", class(components[[i]])))
+                 if (is.odpcp && !is.iter.odpcp)
+                     return(gettextf("element %d of '%s' has class \"%s\" but element %d of '%s' has class \"%s\"",
+                                     i, "components", class(components[[i]]),
+                                     i, "iteratorsComp", class(iteratorsComp[[i]])))
+             }
+             TRUE
+         })    
+
 setClass("MappingsFromExpMixin",
          slots = c(mappingsFromExp = "list"),
          contains = "VIRTUAL",
