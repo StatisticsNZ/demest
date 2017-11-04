@@ -267,9 +267,8 @@ setClass("IAccNextMixin",
                    iAccNextOther = "integer"),
          contains = "VIRTUAL",
          validity = function(object) {
-             iAccNext <- object@iAccNext
-             iAccNextOther <- object@iAccNextOther
              accession <- object@accession
+             n.accession <- length(accession)
              for (name in c("iAccNext", "iAccNextOther")) {
                  value <- slot(object, name)
                  ## 'iAccNext', 'iAccNextOther' have length 1
@@ -289,10 +288,6 @@ setClass("IAccNextMixin",
                                          name, "accession"))
                  }
              }
-             ## if 'iAccNext' and 'iAccNextOther' not missing, they have different values
-             if (!is.na(iAccNext) && !is.na(iAccNextOther) && (iAccNext == iAccNextOther))
-                 return(gettextf("'%s' equals '%s'",
-                                 "iAccNext", "iAccNextOther"))
              TRUE
          })
 
@@ -363,18 +358,16 @@ setClass("IExpFirstMixin",
                    iExpFirstOther = "integer"),
          contains = "VIRTUAL",
          validity = function(object) {
-             iExpFirst <- object@iExpFirst
-             iExpFirstOther <- object@iExpFirstOther
              for (name in c("iExpFirst", "iExpFirstOther")) {
                  value <- slot(object, name)
                  ## 'iExpFirst', 'iExpFirstOther' have length 1
                  if (!identical(length(value), 1L))
                      return(gettextf("'%s' does not have length %d",
                                      name, 1L))
-                 ## if 'iExpFirst', 'iExpFirstOther' not missing, they are greater than or equal to 1L
-                 if (!is.na(value) && (value < 1L))
+                 ## if 'iExpFirst', 'iExpFirstOther' not missing, they are greater than or equal to 0L
+                 if (!is.na(value) && (value < 0L))
                      return(gettextf("'%s' is less than %d",
-                                     name, 1L))
+                                     name, 0L))
                  ## if 'iExpFirst', 'iExpFirstOther' not missing, they are less than or
                  ## equal to length of 'exposure'
                  if (!is.na(value)) {
@@ -385,10 +378,6 @@ setClass("IExpFirstMixin",
                                          name, "exposure"))
                  }
              }
-             ## if 'iExpFirst' and 'iExpFirstOther' not missing, they have different values
-             if (!is.na(iExpFirst) && !is.na(iExpFirstOther) && (iExpFirst == iExpFirstOther))
-                 return(gettextf("'%s' equals '%s'",
-                                 "iExpFirst", "iExpFirstOther"))
              TRUE
          })
 
@@ -401,8 +390,6 @@ setClass("IExposureMixin",
                    iExposureOther = "integer"),
          contains = "VIRTUAL",
          validity = function(object) {
-             iExposure <- object@iExposure
-             iExposureOther <- object@iExposureOther
              for (name in c("iExposure", "iExposureOther")) {
                  value <- slot(object, name)
                  ## 'iExposure', 'iExposureOther' have length 1
@@ -423,11 +410,6 @@ setClass("IExposureMixin",
                                          name, "exposure"))
                  }
              }
-             ## if 'iExposure' and 'iExposureOther' not missing or 0L, they have different values
-             if (!is.na(iExposure) && !is.na(iExposureOther) && (iExposure == iExposureOther)
-                 && (iExposure != 0L))
-                 return(gettextf("'%s' equals '%s'",
-                                 "iExposure", "iExposureOther"))
              TRUE
          })
 
@@ -441,8 +423,6 @@ setClass("IPopnNextMixin",
                    iPopnNextOther = "integer"),
          contains = "VIRTUAL",
          validity = function(object) {
-             iPopnNext <- object@iPopnNext
-             iPopnNextOther <- object@iPopnNextOther
              population <- object@account@population
              n.population <- length(population)
              for (name in c("iPopnNext", "iPopnNextOther")) {
@@ -460,12 +440,6 @@ setClass("IPopnNextMixin",
                  if (!is.na(value) && (value > n.population))
                      return(gettextf("'%s' is greater than the length of '%s'",
                                      name, "population"))
-             }
-             ## if 'iPopnNext' and 'iPopnNextOther' not missing and not both equal to 0, they have different values
-             if (!is.na(iPopnNext) && !is.na(iPopnNextOther) && (iPopnNext == iPopnNextOther)) {
-                 if (iPopnNext != 0L)
-                     return(gettextf("'%s' equals '%s'",
-                                     "iPopnNext", "iPopnNextOther"))
              }
              TRUE
          })

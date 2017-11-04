@@ -714,7 +714,9 @@ diffLogLikPopnPair <- function(diff, iPopnOrig, iPopnDest,
               population, observationModels, datasets,
               seriesIndices, transforms)
     }
-    else {        
+    else {
+        if (iPopnOrig == iPopnDest)
+            return(0)
         ans <- 0
         for (i.dataset in seq_along(datasets)) {
             assoc.with.popn <- seriesIndices[i.dataset] == 0L
@@ -1111,7 +1113,7 @@ diffLogDensExpOneOrigDestParChPool <- function(iCell, hasAge, component, theta, 
     ## component
     stopifnot(methods::is(component, "InternalMovementsOrigDest")
               || methods::is(component, "InternalMovementsPool")
-              || methods::is(component, "BirthsMovementsHasParentChild")
+              || methods::is(component, "BirthsMovementsHasParentChild"))
     ## theta
     stopifnot(is.double(theta))
     stopifnot(!any(is.na(theta)))

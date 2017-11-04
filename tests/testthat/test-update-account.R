@@ -42,17 +42,25 @@ test_that("updateProposalAccountMovePopn works with CombinedAccountMovements - n
                        makeTransform(x = population, y = datasets[[2]], subset = TRUE))
     transforms <- lapply(transforms, makeCollapseTransformExtra)
     x0 <- initialCombinedAccount(account = account,
-                                systemModels = systemModels,
-                                systemWeights = systemWeights,
-                                observationModels = observationModels,
-                                seriesIndices = seriesIndices,
-                                datasets = datasets,
-                                namesDatasets = namesDatasets,
-                                transforms = transforms)
+                                 systemModels = systemModels,
+                                 systemWeights = systemWeights,
+                                 observationModels = observationModels,
+                                 seriesIndices = seriesIndices,
+                                 datasets = datasets,
+                                 namesDatasets = namesDatasets,
+                                 transforms = transforms)
     expect_true(validObject(x0))
-    x1 <- updateProposalAccountMovePopn(x0)
-    expect_is(x1, "CombinedAccountMovements")
-    expect_true(validObject(x1))
+    updated <- FALSE
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        x1 <- updateProposalAccountMovePopn(x0)
+        if (x1@generatedNewProposal@.Data)
+            updated <- TRUE
+        expect_is(x1, "CombinedAccountMovements")
+        expect_true(validObject(x1))
+    }
+    if (!updated)
+        warning("not updated")
 })
 
 test_that("R and C versions of updateProposalAccountMovePopn give same answer CombinedAccountMovements - no age", {
@@ -90,22 +98,24 @@ test_that("R and C versions of updateProposalAccountMovePopn give same answer Co
                        makeTransform(x = population, y = datasets[[2]], subset = TRUE))
     transforms <- lapply(transforms, makeCollapseTransformExtra)
     x0 <- initialCombinedAccount(account = account,
-                                systemModels = systemModels,
-                                systemWeights = systemWeights,
-                                observationModels = observationModels,
-                                seriesIndices = seriesIndices,
-                                datasets = datasets,
-                                namesDatasets = namesDatasets,
-                                transforms = transforms)
+                                 systemModels = systemModels,
+                                 systemWeights = systemWeights,
+                                 observationModels = observationModels,
+                                 seriesIndices = seriesIndices,
+                                 datasets = datasets,
+                                 namesDatasets = namesDatasets,
+                                 transforms = transforms)
     expect_true(validObject(x0))
-    set.seed(1)
-    ans.R <- updateProposalAccountMovePopn(x0, useC = FALSE)
-    set.seed(1)
-    ans.C <- updateProposalAccountMovePopn(x0, useC = TRUE)
-    if (test.identity)
-        expect_identical(ans.R, ans.C)
-    else
-        expect_equal(ans.R, ans.C)
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.R <- updateProposalAccountMovePopn(x0, useC = FALSE)
+        set.seed(seed)
+        ans.C <- updateProposalAccountMovePopn(x0, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
 })
 
 test_that("updateProposalAccountMovePopn works with CombinedAccountMovementsHasAge", {
@@ -178,18 +188,26 @@ test_that("updateProposalAccountMovePopn works with CombinedAccountMovementsHasA
                        makeTransform(x = components(account, "deaths"), y = datasets[[5]], subset = TRUE))
     transforms <- lapply(transforms, makeCollapseTransformExtra)
     x0 <- initialCombinedAccount(account = account,
-                                systemModels = systemModels,
-                                systemWeights = systemWeights,
-                                observationModels = observationModels,
-                                seriesIndices = seriesIndices,
-                                datasets = datasets,
-                                namesDatasets = namesDatasets,
-                                transforms = transforms)
+                                 systemModels = systemModels,
+                                 systemWeights = systemWeights,
+                                 observationModels = observationModels,
+                                 seriesIndices = seriesIndices,
+                                 datasets = datasets,
+                                 namesDatasets = namesDatasets,
+                                 transforms = transforms)
     expect_true(validObject(x0))
     expect_is(x0, "CombinedAccountMovementsHasAge")
-    x1 <- updateProposalAccountMovePopn(x0)
-    expect_is(x1, "CombinedAccountMovements")
-    expect_true(validObject(x1))
+    updated <- FALSE
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        x1 <- updateProposalAccountMovePopn(x0)
+        if (x1@generatedNewProposal@.Data)
+            updated <- TRUE
+        expect_is(x1, "CombinedAccountMovements")
+        expect_true(validObject(x1))
+    }
+    if (!updated)
+        warning("not updated")
 })
 
 test_that("R and C versions of updateProposalAccountMovePopn give same answer CombinedAccountMovements - with age", {
@@ -262,23 +280,25 @@ test_that("R and C versions of updateProposalAccountMovePopn give same answer Co
                        makeTransform(x = components(account, "deaths"), y = datasets[[5]], subset = TRUE))
     transforms <- lapply(transforms, makeCollapseTransformExtra)
     x0 <- initialCombinedAccount(account = account,
-                                systemModels = systemModels,
-                                systemWeights = systemWeights,
-                                observationModels = observationModels,
-                                seriesIndices = seriesIndices,
-                                datasets = datasets,
-                                namesDatasets = namesDatasets,
-                                transforms = transforms)
+                                 systemModels = systemModels,
+                                 systemWeights = systemWeights,
+                                 observationModels = observationModels,
+                                 seriesIndices = seriesIndices,
+                                 datasets = datasets,
+                                 namesDatasets = namesDatasets,
+                                 transforms = transforms)
     expect_true(validObject(x0))
     expect_is(x0, "CombinedAccountMovementsHasAge")
-    set.seed(1)
-    ans.R <- updateProposalAccountMovePopn(x0, useC = FALSE)
-    set.seed(1)
-    ans.C <- updateProposalAccountMovePopn(x0, useC = TRUE)
-    if (test.identity)
-        expect_identical(ans.R, ans.C)
-    else
-        expect_equal(ans.R, ans.C)
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.R <- updateProposalAccountMovePopn(x0, useC = FALSE)
+        set.seed(seed)
+        ans.C <- updateProposalAccountMovePopn(x0, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
 })
 
 test_that("updateProposalAccountMoveComp works with CombinedAccountMovements - no age", {
@@ -316,18 +336,26 @@ test_that("updateProposalAccountMoveComp works with CombinedAccountMovements - n
                        makeTransform(x = population, y = datasets[[2]], subset = TRUE))
     transforms <- lapply(transforms, makeCollapseTransformExtra)
     x0 <- initialCombinedAccount(account = account,
-                                systemModels = systemModels,
-                                systemWeights = systemWeights,
-                                observationModels = observationModels,
-                                seriesIndices = seriesIndices,
-                                datasets = datasets,
-                                namesDatasets = namesDatasets,
-                                transforms = transforms)
+                                 systemModels = systemModels,
+                                 systemWeights = systemWeights,
+                                 observationModels = observationModels,
+                                 seriesIndices = seriesIndices,
+                                 datasets = datasets,
+                                 namesDatasets = namesDatasets,
+                                 transforms = transforms)
     expect_true(validObject(x0))
     x0@iComp <- 2L
-    x1 <- updateProposalAccountMoveComp(x0)
-    expect_is(x1, "CombinedAccountMovements")
-    expect_true(validObject(x1))
+    updated <- FALSE
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        x1 <- updateProposalAccountMoveComp(x0)
+        if (x1@generatedNewProposal@.Data)
+            updated <- TRUE
+        expect_is(x1, "CombinedAccountMovements")
+        expect_true(validObject(x1))
+    }
+    if (!updated)
+        warning("not updated")
 })
 
 test_that("R and C versions of updateProposalAccountMoveComp give same answer - no age", {
@@ -365,23 +393,25 @@ test_that("R and C versions of updateProposalAccountMoveComp give same answer - 
                        makeTransform(x = population, y = datasets[[2]], subset = TRUE))
     transforms <- lapply(transforms, makeCollapseTransformExtra)
     x0 <- initialCombinedAccount(account = account,
-                                systemModels = systemModels,
-                                systemWeights = systemWeights,
-                                observationModels = observationModels,
-                                seriesIndices = seriesIndices,
-                                datasets = datasets,
-                                namesDatasets = namesDatasets,
-                                transforms = transforms)
+                                 systemModels = systemModels,
+                                 systemWeights = systemWeights,
+                                 observationModels = observationModels,
+                                 seriesIndices = seriesIndices,
+                                 datasets = datasets,
+                                 namesDatasets = namesDatasets,
+                                 transforms = transforms)
     expect_true(validObject(x0))
     x0@iComp <- 2L
-    set.seed(1)
-    ans.R <- updateProposalAccountMoveComp(x0, useC = FALSE)
-    set.seed(1)
-    ans.C <- updateProposalAccountMoveComp(x0, useC = TRUE)
-    if (test.identity)
-        expect_identical(ans.R, ans.C)
-    else
-        expect_equal(ans.R, ans.C)
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.R <- updateProposalAccountMoveComp(x0, useC = FALSE)
+        set.seed(seed)
+        ans.C <- updateProposalAccountMoveComp(x0, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
 })
 
 test_that("updateProposalAccountMoveComp works with CombinedAccountMovementsHasAge", {
@@ -454,19 +484,27 @@ test_that("updateProposalAccountMoveComp works with CombinedAccountMovementsHasA
                        makeTransform(x = components(account, "deaths"), y = datasets[[5]], subset = TRUE))
     transforms <- lapply(transforms, makeCollapseTransformExtra)
     x0 <- initialCombinedAccount(account = account,
-                                systemModels = systemModels,
-                                systemWeights = systemWeights,
-                                observationModels = observationModels,
-                                seriesIndices = seriesIndices,
-                                datasets = datasets,
-                                namesDatasets = namesDatasets,
-                                transforms = transforms)
+                                 systemModels = systemModels,
+                                 systemWeights = systemWeights,
+                                 observationModels = observationModels,
+                                 seriesIndices = seriesIndices,
+                                 datasets = datasets,
+                                 namesDatasets = namesDatasets,
+                                 transforms = transforms)
     expect_true(validObject(x0))
     expect_is(x0, "CombinedAccountMovementsHasAge")
     x0@iComp <- 3L
-    x1 <- updateProposalAccountMoveComp(x0)
-    expect_is(x1, "CombinedAccountMovementsHasAge")
-    expect_true(validObject(x1))
+    updated <- FALSE
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        x1 <- updateProposalAccountMoveComp(x0)
+        if (x1@generatedNewProposal@.Data)
+            updated <- TRUE
+        expect_is(x1, "CombinedAccountMovementsHasAge")
+        expect_true(validObject(x1))
+    }
+    if (!updated)
+        warning("not updated")
 })
 
 test_that("R and C versions of updateProposalAccountMoveComp give same answer", {
@@ -539,24 +577,26 @@ test_that("R and C versions of updateProposalAccountMoveComp give same answer", 
                        makeTransform(x = components(account, "deaths"), y = datasets[[5]], subset = TRUE))
     transforms <- lapply(transforms, makeCollapseTransformExtra)
     x0 <- initialCombinedAccount(account = account,
-                                systemModels = systemModels,
-                                systemWeights = systemWeights,
-                                observationModels = observationModels,
-                                seriesIndices = seriesIndices,
-                                datasets = datasets,
-                                namesDatasets = namesDatasets,
-                                transforms = transforms)
+                                 systemModels = systemModels,
+                                 systemWeights = systemWeights,
+                                 observationModels = observationModels,
+                                 seriesIndices = seriesIndices,
+                                 datasets = datasets,
+                                 namesDatasets = namesDatasets,
+                                 transforms = transforms)
     expect_true(validObject(x0))
     expect_is(x0, "CombinedAccountMovementsHasAge")
     x0@iComp <- 3L
-    set.seed(1)
-    ans.R <- updateProposalAccountMoveComp(x0, useC = FALSE)
-    set.seed(1)
-    ans.C <- updateProposalAccountMoveComp(x0, useC = TRUE)
-    if (test.identity)
-        expect_identical(ans.R, ans.C)
-    else
-        expect_equal(ans.R, ans.C)
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.R <- updateProposalAccountMoveComp(x0, useC = FALSE)
+        set.seed(seed)
+        ans.C <- updateProposalAccountMoveComp(x0, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
 })
 
 test_that("updateProposalAccountMoveOrigDest works with CombinedAccountMovements - no age", {
@@ -590,18 +630,24 @@ test_that("updateProposalAccountMoveOrigDest works with CombinedAccountMovements
                        makeTransform(x = population, y = datasets[[2]], subset = TRUE))
     transforms <- lapply(transforms, makeCollapseTransformExtra)
     x0 <- initialCombinedAccount(account = account,
-                                systemModels = systemModels,
-                                systemWeights = systemWeights,
-                                observationModels = observationModels,
-                                seriesIndices = seriesIndices,
-                                datasets = datasets,
-                                namesDatasets = namesDatasets,
-                                transforms = transforms)
-    expect_true(validObject(x0))
+                                 systemModels = systemModels,
+                                 systemWeights = systemWeights,
+                                 observationModels = observationModels,
+                                 seriesIndices = seriesIndices,
+                                 datasets = datasets,
+                                 namesDatasets = namesDatasets,
+                                 transforms = transforms)
+    updated <- FALSE
     x0@iComp <- 1L
-    x1 <- updateProposalAccountMoveOrigDest(x0)
-    expect_is(x1, "CombinedAccountMovements")
-    expect_true(validObject(x1))
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        x1 <- updateProposalAccountMoveOrigDest(x0)
+        if (x1@generatedNewProposal@.Data)
+            updated <- TRUE
+        expect_is(x1, "CombinedAccountMovements")
+    }
+    if (!updated)
+        warning("not updated")
 })
 
 test_that("R and C versions of updateProposalAccountMoveOrigDest give same answer with CombinedAccountMovements - no age", {
@@ -635,25 +681,29 @@ test_that("R and C versions of updateProposalAccountMoveOrigDest give same answe
                        makeTransform(x = population, y = datasets[[2]], subset = TRUE))
     transforms <- lapply(transforms, makeCollapseTransformExtra)
     x0 <- initialCombinedAccount(account = account,
-                                systemModels = systemModels,
-                                systemWeights = systemWeights,
-                                observationModels = observationModels,
-                                seriesIndices = seriesIndices,
-                                datasets = datasets,
-                                namesDatasets = namesDatasets,
-                                transforms = transforms)
+                                 systemModels = systemModels,
+                                 systemWeights = systemWeights,
+                                 observationModels = observationModels,
+                                 seriesIndices = seriesIndices,
+                                 datasets = datasets,
+                                 namesDatasets = namesDatasets,
+                                 transforms = transforms)
     expect_true(validObject(x0))
     x0@iComp <- 1L
-    ans.R <- updateProposalAccountMoveOrigDest(x0, useC = FALSE)
-    ans.C <- updateProposalAccountMoveOrigDest(x0, useC = TRUE)
-    if (test.identity)
-        expect_identical(ans.R, ans.C)
-    else
-        expect_equal(ans.R, ans.C)
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.R <- updateProposalAccountMoveOrigDest(x0, useC = FALSE)
+        ans.C <- updateProposalAccountMoveOrigDest(x0, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
 })
 
 
 test_that("updateProposalAccountMoveOrigDest works with CombinedAccountMovementsHasAge", {
+    set.seed(1)
     updateProposalAccountMoveOrigDest <- demest:::updateProposalAccountMoveOrigDest
     initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
@@ -723,19 +773,27 @@ test_that("updateProposalAccountMoveOrigDest works with CombinedAccountMovements
                        makeTransform(x = components(account, "deaths"), y = datasets[[5]], subset = TRUE))
     transforms <- lapply(transforms, makeCollapseTransformExtra)
     x0 <- initialCombinedAccount(account = account,
-                                systemModels = systemModels,
-                                systemWeights = systemWeights,
-                                observationModels = observationModels,
-                                seriesIndices = seriesIndices,
-                                datasets = datasets,
-                                namesDatasets = namesDatasets,
-                                transforms = transforms)
+                                 systemModels = systemModels,
+                                 systemWeights = systemWeights,
+                                 observationModels = observationModels,
+                                 seriesIndices = seriesIndices,
+                                 datasets = datasets,
+                                 namesDatasets = namesDatasets,
+                                 transforms = transforms)
     expect_true(validObject(x0))
     expect_is(x0, "CombinedAccountMovementsHasAge")
     x0@iComp <- 2L
-    x1 <- updateProposalAccountMoveOrigDest(x0)
-    expect_is(x1, "CombinedAccountMovementsHasAge")
-    expect_true(validObject(x1))
+    updated <- FALSE
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        x1 <- updateProposalAccountMoveOrigDest(x0)
+        if (x1@generatedNewProposal@.Data)
+            updated <- TRUE
+        expect_is(x1, "CombinedAccountMovementsHasAge")
+        expect_true(validObject(x1))
+    }
+    if (!updated)
+        warning("not updated")
 })
 
 test_that("R and C versions of updateProposalAccountMoveOrigDest give same answer with CombinedAccountMovementsHasAge", {
@@ -808,22 +866,26 @@ test_that("R and C versions of updateProposalAccountMoveOrigDest give same answe
                        makeTransform(x = components(account, "deaths"), y = datasets[[5]], subset = TRUE))
     transforms <- lapply(transforms, makeCollapseTransformExtra)
     x0 <- initialCombinedAccount(account = account,
-                                systemModels = systemModels,
-                                systemWeights = systemWeights,
-                                observationModels = observationModels,
-                                seriesIndices = seriesIndices,
-                                datasets = datasets,
-                                namesDatasets = namesDatasets,
-                                transforms = transforms)
+                                 systemModels = systemModels,
+                                 systemWeights = systemWeights,
+                                 observationModels = observationModels,
+                                 seriesIndices = seriesIndices,
+                                 datasets = datasets,
+                                 namesDatasets = namesDatasets,
+                                 transforms = transforms)
     expect_true(validObject(x0))
     expect_is(x0, "CombinedAccountMovementsHasAge")
     x0@iComp <- 2L
-    ans.R <- updateProposalAccountMoveOrigDest(x0, useC = FALSE)
-    ans.C <- updateProposalAccountMoveOrigDest(x0, useC = TRUE)
-    if (test.identity)
-        expect_identical(ans.R, ans.C)
-    else
-        expect_equal(ans.R, ans.C)
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.R <- updateProposalAccountMoveOrigDest(x0, useC = FALSE)
+        set.seed(seed)
+        ans.C <- updateProposalAccountMoveOrigDest(x0, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
 })
 
 

@@ -883,6 +883,8 @@ diffLogDensExpOrigDestPool <- function(combined, useC = FALSE) {
         iterator.exposure <- combined@iteratorExposure
         diff <- combined@diffProp
         systemModels <- combined@systemModels
+        if (i.exp.orig == i.exp.dest)
+            return(0)
         ans <- 0
         for (i in seq_along(components)) {
             if (uses.exposure[i]) {
@@ -1009,14 +1011,14 @@ diffLogDensExpComp <- function(combined, useC = FALSE) {
                 if (i.comp == i.orig.dest) {
                     i.cell <- getICellCompFromExp(i = i.exp.first,
                                                   mapping = mapping.from.exp)
-                    diff.log <- diffLogDensExpOneOrigDestPool(iCell = i.cell,
-                                                              component = component,
-                                                              theta = theta,
-                                                              iteratorComp = iterator.comp,
-                                                              iExpFirst = i.exp.first,
-                                                              exposure = exposure,
-                                                              iteratorExposure = iterator.exposure,
-                                                              diff = diff)
+                    diff.log <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell,
+                                                                   component = component,
+                                                                   theta = theta,
+                                                                   iteratorComp = iterator.comp,
+                                                                   iExpFirst = i.exp.first,
+                                                                   exposure = exposure,
+                                                                   iteratorExposure = iterator.exposure,
+                                                                   diff = diff)
                     if (is.infinite(diff.log))
                         return(diff.log)
                     ans <- ans + diff.log
@@ -1024,14 +1026,14 @@ diffLogDensExpComp <- function(combined, useC = FALSE) {
                 if (i.comp == i.pool) {
                     i.cell <- getICellPoolFromExp(i = i.exp.first,
                                                   mapping = mapping)
-                    ans.one <- diffLogDensExpOneOrigDestPool(iCell = i.cell,
-                                                             component = component,
-                                                             theta = theta,
-                                                             iteratorComp = iterator.comp,
-                                                             iExpFirst = i.exp.first,
-                                                             exposure = exposure,
-                                                             iteratorExposure = iterator.exposure,
-                                                             diff = diff)
+                    ans.one <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell,
+                                                                  component = component,
+                                                                  theta = theta,
+                                                                  iteratorComp = iterator.comp,
+                                                                  iExpFirst = i.exp.first,
+                                                                  exposure = exposure,
+                                                                  iteratorExposure = iterator.exposure,
+                                                                  diff = diff)
                     if (is.infinite(ans.one))
                         return(diff.log)
                     ans <- ans + ans.one

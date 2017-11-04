@@ -4215,12 +4215,14 @@ if (test.extended) {
                 set.seed(seed + 1)
                 ans.expected <- rnorm(n = 1L, mean = mean, sd = sd)
                 expect_equal(ans.obtained, ans.expected, tol = 0.01)
+                expect_true(is.integer(ans.obtained))
             }
             ## all within range
             for (i in seq_len(10)) {
                 ans <- rnormIntTrunc1(mean = 0, sd = 50, lower = -200L, upper = 200L)
                 expect_true(ans >= -200L)
                 expect_true(ans <= 200L)
+                expect_true(is.integer(ans))
             }
             ## check distribution
             ans <- numeric(10000)
@@ -4251,6 +4253,7 @@ test_that("R and C versions of rnormIntTrunc1 give same answer", {
                 expect_identical(ans.R, ans.C)
             else
                 expect_equal(ans.R, ans.C)
+            expect_true(is.integer(ans.C))
         }
         ## upper limit
         for (i in seq(100, 200, 10)) {
@@ -4264,6 +4267,7 @@ test_that("R and C versions of rnormIntTrunc1 give same answer", {
                 expect_identical(ans.R, ans.C)
             else
                 expect_equal(ans.R, ans.C)
+            expect_true(is.integer(ans.C))
         }
         ## lower limit
         for (i in seq(100, 200, 10)) {
@@ -4277,6 +4281,7 @@ test_that("R and C versions of rnormIntTrunc1 give same answer", {
                 expect_identical(ans.R, ans.C)
             else
                 expect_equal(ans.R, ans.C)
+            expect_true(is.integer(ans.C))
         }
         ## lower and upper limits
         for (i in seq(100, 200, 10)) {
@@ -4290,11 +4295,10 @@ test_that("R and C versions of rnormIntTrunc1 give same answer", {
                 expect_identical(ans.R, ans.C)
             else
                 expect_equal(ans.R, ans.C)
+            expect_true(is.integer(ans.C))
         }
     }
 })
-
-
 
 test_that("rtnorm1 gives valid answer", {
     rtnorm1 <- demest:::rtnorm1
