@@ -1110,7 +1110,8 @@ diffLogDensExpOneOrigDestParChPool <- function(iCell, hasAge, component, theta, 
     stopifnot(!is.na(hasAge))
     ## component
     stopifnot(methods::is(component, "InternalMovementsOrigDest")
-              || methods::is(component, "InternalMovementsPool"))
+              || methods::is(component, "InternalMovementsPool")
+              || methods::is(component, "BirthsMovementsHasParentChild")
     ## theta
     stopifnot(is.double(theta))
     stopifnot(!any(is.na(theta)))
