@@ -5839,6 +5839,67 @@ test_that("R and C versions of makeVBarAndN give same answer with PoissonVarying
     }
 })
 
+test_that("makeVBarAndN gives valid answer with PoissonVaryingNotUseExp, with Box-Cox transform", {
+    makeVBarAndN <- demest:::makeVBarAndN
+    initialModel <- demest:::initialModel
+    y <- Counts(array(rpois(n = 20, lambda = 10),
+                      dim = c(5, 4),
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    spec <- Model(y ~ Poisson(mean ~ age + region,
+                              useExpose = FALSE,
+                              boxCox = 0.6))
+    x <- initialModel(spec, y = y, exposure = NULL)
+    ## iBeta = 1L
+    ans.obtained <- makeVBarAndN(x, iBeta = 1L, g = log)
+    other.betas <- x@betas[[2]] + rep(x@betas[[3]], each = 5)
+    f.theta <- (x@theta^0.6 - 1)/0.6
+    ans.expected <- list(sum(f.theta - other.betas) / length(x@theta),
+                         20L)
+    expect_equal(ans.obtained, ans.expected)
+    ## iBeta = 2L
+    ans.obtained <- makeVBarAndN(x, iBeta = 2L, g = log)
+    other.betas <- x@betas[[1]] + rep(x@betas[[3]], each = 5)
+    f.theta <- (x@theta^0.6 - 1)/0.6
+    ans <- f.theta - other.betas
+    ans.expected <- list(rowMeans(matrix(ans, nrow = 5)),
+                         rep(4L, 5))
+    expect_equal(ans.obtained, ans.expected)
+    ## iBeta = 3L
+    ans.obtained <- makeVBarAndN(x, iBeta = 3L, g = log)
+    other.betas <- x@betas[[1]] + x@betas[[2]]
+    f.theta <- (x@theta^0.6 - 1)/0.6
+    ans.expected <- f.theta - other.betas
+    ans.expected <- list(colMeans(matrix(ans.expected, nrow = 5)),
+                         rep(5L, 4))
+    expect_equal(ans.obtained, ans.expected)
+})
+
+test_that("R and C versions of makeVBarAndN give same answer with PoissonVaryingNotUseExp, Box-Cox transform", {
+    makeVBarAndN <- demest:::makeVBarAndN
+    initialModel <- demest:::initialModel  
+    for (seed in seq_len(n.test)) {
+        set.seed(seed+1)
+        y <- Counts(array(rpois(n = 20, lambda = 10),
+                          dim = c(5, 4),
+                          dimnames = list(age = 0:4, region = letters[1:4])))
+        y[10] <- NA
+        spec <- Model(y ~ Poisson(mean ~ age + region,
+                                  useExpose = FALSE,
+                                  boxCox = 0.6))
+        x <- initialModel(spec, y = y, exposure = NULL)
+        save_x <- x
+        for (iBeta in seq.int(from = 1, to = 3)) {
+            ans.R <- makeVBarAndN(x, iBeta = iBeta, g = log, useC = FALSE)
+            ans.C <- makeVBarAndN(x, iBeta = iBeta, g = log, useC = TRUE)
+            expect_identical(x, save_x)
+            if (test.identity)
+                expect_identical(ans.R, ans.C)
+            else
+                expect_equal(ans.R, ans.C)
+        }
+    }
+})
+
 test_that("makeVBarAndN gives valid answer with PoissonVaryingNotUseExp, intercept only", {
     makeVBarAndN <- demest:::makeVBarAndN
     initialModel <- demest:::initialModel

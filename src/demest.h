@@ -307,7 +307,10 @@ SEXP
   
   /* skeleton */
   first_sym,
-  last_sym;
+  last_sym,
+  
+  /* Box-Cox */
+  boxCoxParam_sym;
   
   
 /* Priors-methods */

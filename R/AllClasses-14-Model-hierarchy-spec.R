@@ -62,6 +62,7 @@ setClass("SpecLikelihoodNormalVarsigmaUnknown",
 setClass("SpecLikelihoodPoisson",
          prototype = prototype(useExpose = new("LogicalFlag", TRUE)),
          contains = c("SpecLikelihood",
+                      "BoxCoxParamMixin",
                       "FormulaMuMixin",
                       "UseExposeMixin"))
 
@@ -247,7 +248,8 @@ setClass("SpecNormalVaryingVarsigmaKnown",
 #' @export
 setClass("SpecPoissonVarying",
          prototype = prototype(useExpose = new("LogicalFlag", TRUE)),
-         contains = "SpecVarying",
+         contains = c("SpecVarying",
+                      "BoxCoxParamMixin"),
          validity = function(object) {
              lower <- object@lower
              ## 'lower' non-negative

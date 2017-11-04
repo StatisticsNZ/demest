@@ -1567,6 +1567,12 @@ makeVBarAndN_General(SEXP object, int iBeta, double (*g)(double))
     int n_betas = LENGTH(betas_R);
 
     SEXP iteratorBetas_R = GET_SLOT(object, iteratorBetas_sym); 
+
+    double boxCoxParam = 0;
+    if (g == log) {
+        boxCoxParam = *REAL(GET_SLOT(object, boxCoxParam_sym));
+    }
+    int usesBoxCoxTransform = ((boxCoxParam > 0)? 1: 0);
     
     int len_vbar = LENGTH(VECTOR_ELT(betas_R, iBeta));
     
@@ -1583,7 +1589,7 @@ makeVBarAndN_General(SEXP object, int iBeta, double (*g)(double))
                 len_vbar, cellInLik,
                 betas_R, iteratorBetas_R,
                 theta, n_theta, n_betas,
-                iBeta, g);
+                iBeta, g, usesBoxCoxTransform, boxCoxParam);
     
     SEXP ans_R = PROTECT(allocVector(VECSXP, 2));
     SET_VECTOR_ELT(ans_R, 0, vbar_R);
@@ -1593,13 +1599,13 @@ makeVBarAndN_General(SEXP object, int iBeta, double (*g)(double))
                 
 }
 
-
 void
 getVBarAndN(double *vbar, int *n_vec, 
         int len_vbar, int *cellInLik, 
         SEXP betas_R, SEXP iteratorBetas_R, 
                 double *theta, int n_theta, int n_betas,
-                int iBeta, double (*g)(double))
+                int iBeta, double (*g)(double),
+                int usesBoxCoxTransform, double boxCoxParam)
 {
     resetB(iteratorBetas_R);
     int *indices = INTEGER(GET_SLOT(iteratorBetas_R, indices_sym));
@@ -1608,7 +1614,7 @@ getVBarAndN(double *vbar, int *n_vec,
     for (int b = 0; b < n_betas; ++b) {
         betas[b] = REAL(VECTOR_ELT(betas_R, b));
     }
-    
+
     /* zero contents of vbar and n_vec*/
     memset(vbar, 0, len_vbar * sizeof(double));
     memset(n_vec, 0, len_vbar * sizeof(int));
@@ -1618,10 +1624,16 @@ getVBarAndN(double *vbar, int *n_vec,
         int includeCell = cellInLik[i];
         
         if (includeCell) {
-        
+
             int pos_ans = indices[iBeta] - 1;
         
-            double set_pos = g( theta[i] );
+            double set_pos = 0;
+            if(usesBoxCoxTransform) {
+                set_pos += ( pow(theta[i], boxCoxParam) - 1)/boxCoxParam; 
+            }
+            else {
+                set_pos += g( theta[i] );
+            }
         
             for (int b = 0; b < n_betas; ++b) {
             

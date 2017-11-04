@@ -4873,6 +4873,12 @@ makeVBarAndN <- function(object, iBeta, g, useC = FALSE) {
         cell.in.lik <- object@cellInLik
         betas <- object@betas
         iterator <- object@iteratorBetas
+        if (identical(g, log)) { 
+            box.cox.param <- object@boxCoxParam 
+            uses.box.cox.transform <- box.cox.param > 0 
+        } 
+        else 
+            uses.box.cox.transform <- FALSE
         beta <- betas[[iBeta]]
         iterator <- resetB(iterator)
         vbar <- rep(0, times = length(beta))
@@ -4883,7 +4889,10 @@ makeVBarAndN <- function(object, iBeta, g, useC = FALSE) {
             if (include.cell) {
                 indices <- iterator@indices
                 pos.ans <- indices[iBeta]
-                vbar[pos.ans] <- vbar[pos.ans] + g(theta[i.mu])
+                if (uses.box.cox.transform) 
+                    vbar[pos.ans] <- vbar[pos.ans] + (theta[i.mu] ^ box.cox.param - 1) / box.cox.param 
+                else 
+                    vbar[pos.ans] <- vbar[pos.ans] + g(theta[i.mu])
                 for (i.other.beta in i.other.betas) {
                     other.beta <- betas[[i.other.beta]]
                     pos.other.beta <- indices[i.other.beta]

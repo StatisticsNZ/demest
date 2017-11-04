@@ -1216,15 +1216,11 @@ void updateBetasAndPriorsBetas_General(SEXP object_R, double (*g)(double))
     double * vbar = (double *)R_alloc(max_len_beta, sizeof(double));
     int * n_vec = (int *)R_alloc(max_len_beta, sizeof(int));
     
-/*       vbar <- makeVBar(object, iBeta = b, g = g)  ## uses updated object
-            n <- I %/% length(vbar)
-            l <- updateBetaAndPriorBeta(prior = object@priorsBetas[[b]],
-                                        vbar = vbar,
-                                        n = n,
-                                        sigma = sigma)
-            object@betas[[b]] <- l[[1L]]
-            object@priorsBetas[[b]] <- l[[2L]]
-    */
+    double boxCoxParam = 0;
+    if (g == log) {
+        boxCoxParam = *REAL(GET_SLOT(object_R, boxCoxParam_sym));
+    }
+    int usesBoxCoxTransform = ((boxCoxParam > 0)? 1: 0);
     
     for (int iBeta = 0; iBeta < n_betas; ++iBeta) {
 
@@ -1234,7 +1230,7 @@ void updateBetasAndPriorsBetas_General(SEXP object_R, double (*g)(double))
                 len_beta, cellInLik,
                 betas_R, iteratorBetas_R,
                 theta, n_theta, n_betas,
-                iBeta, g);
+                iBeta, g, usesBoxCoxTransform, boxCoxParam);
 
         double *beta = REAL(VECTOR_ELT(betas_R, iBeta));
         SEXP prior_R = VECTOR_ELT(priors_R, iBeta);
@@ -2658,6 +2654,12 @@ updateSigma_Varying(SEXP object)
 void
 updateSigma_Varying_General(SEXP object, double (*g)(double))
 {
+    double boxCoxParam = 0;
+    if (g == log) {
+        boxCoxParam = *REAL(GET_SLOT(object, boxCoxParam_sym));
+    }
+    int usesBoxCoxTransform = ((boxCoxParam > 0)? 1: 0);
+    
     SEXP sigma_R = GET_SLOT(object, sigma_sym);
     
     double sigma = *REAL(GET_SLOT(sigma_R, Data_sym));
@@ -2692,7 +2694,15 @@ updateSigma_Varying_General(SEXP object, double (*g)(double))
             mu += this_beta[indices[b]-1];
         }
         
-        double tmp = (*g)(theta[i]) - mu;
+        double transformedTheta = 0;
+        if(usesBoxCoxTransform) {
+            transformedTheta = ( pow(theta[i], boxCoxParam) - 1)/boxCoxParam; 
+        }
+        else {
+            transformedTheta = g( theta[i] );
+        }
+        
+        double tmp = transformedTheta - mu;
         V += (tmp * tmp);
         advanceB(iteratorBetas_R);
     }
@@ -4514,6 +4524,9 @@ updateTheta_PoissonVaryingNotUseExp(SEXP object, SEXP y_R)
 void
 updateTheta_PoissonVaryingUseExp(SEXP object, SEXP y_R, SEXP exposure_R)
 {
+    double boxCoxParam = *REAL(GET_SLOT(object, boxCoxParam_sym));
+    int usesBoxCoxTransformation = (boxCoxParam > 0);
+    
     SEXP theta_R = GET_SLOT(object, theta_sym);
     double *theta = REAL(theta_R);
     int n_theta = LENGTH(theta_R);
@@ -4587,6 +4600,7 @@ updateTheta_PoissonVaryingUseExp(SEXP object, SEXP y_R, SEXP exposure_R)
         double sd = 0;
         double theta_curr = theta[i];
         double log_th_curr = log(theta_curr);
+        double transformedThetaCurr = log_th_curr;
             
         int y_is_missing = yMissing[i];
         
@@ -4604,31 +4618,45 @@ updateTheta_PoissonVaryingUseExp(SEXP object, SEXP y_R, SEXP exposure_R)
             sd = sigma;
         }
         else {
-            mean = log_th_curr;
-        if (y_is_missing)
-        sd = scale / scale_multiplier;
-        else
-        sd = scale / sqrt(1 + y[i]);
+            
+            if (usesBoxCoxTransformation) {
+                transformedThetaCurr = (pow(theta_curr, boxCoxParam) - 1) / boxCoxParam;
+            }
+            
+            mean = transformedThetaCurr;
+            
+            if (y_is_missing) {
+                sd = scale / scale_multiplier;
+            }
+            else {
+                sd = scale / sqrt(1 + y[i]);
+            }
         }
 
         int attempt = 0;
         int found_prop = 0;
         
-        double log_th_prop = 0.0;
+        double transformedThetaProp = 0.0;
         
         while( (!found_prop) && (attempt < maxAttempt) ) {
 
             ++attempt;
             
-            log_th_prop = rnorm(mean, sd);
-            found_prop = ( (log_th_prop > lower + tolerance) &&
-                            (log_th_prop < upper - tolerance));
+            transformedThetaProp = rnorm(mean, sd);
+            found_prop = ( (transformedThetaProp > lower + tolerance) &&
+                            (transformedThetaProp < upper - tolerance));
  
         }
                     
         if (found_prop) {
             
-            double theta_prop = exp(log_th_prop);
+            double theta_prop = 0;
+            if (usesBoxCoxTransformation) {
+                theta_prop = pow(boxCoxParam * transformedThetaProp + 1, 1/boxCoxParam);
+            }
+            else {
+                theta_prop = exp(transformedThetaProp);
+            }
             
             if (draw_straight_from_prior) {
                 theta[i] = theta_prop;
@@ -4675,8 +4703,9 @@ updateTheta_PoissonVaryingUseExp(SEXP object, SEXP y_R, SEXP exposure_R)
                     log_lik_curr = dpois(this_y, theta_curr*this_exposure, USE_LOG);
                 }
                 
-                double log_dens_prop = dnorm(log_th_prop, mu, sigma, USE_LOG);
-                double log_dens_curr = dnorm(log_th_curr, mu, sigma, USE_LOG);
+                double log_dens_prop = dnorm(transformedThetaProp, mu, sigma, USE_LOG);
+                double log_dens_curr = dnorm(transformedThetaCurr, mu, sigma, USE_LOG);
+                
                 double log_diff = (log_lik_prop + log_dens_prop
                                         - log_lik_curr - log_dens_curr);
                 
