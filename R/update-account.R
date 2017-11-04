@@ -824,6 +824,50 @@ diffLogLikAccountMoveComp <- function(combined, useC = FALSE) {
     }
 }
 
+## HAS_TESTS
+diffLogLikAccountMoveOrigDest <- function(combined, useC = FALSE) {
+    stopifnot(is(combined, "CombinedAccountMovements"))
+    if (useC) {
+        .Call(diffLogLikAccountMoveOrigDest_R, combined)
+    }
+    else {
+        account <- combined@account
+        i.comp <- combined@iComp
+        component <- account@components[[i.comp]]
+        population <- account@population
+        iterator <- combined@iteratorPopn
+        observation.models <- combined@observationModels
+        datasets <- combined@datasets
+        series.indices <- combined@seriesIndices
+        transforms <- combined@transforms
+        i.cell <- combined@iCell
+        i.popn.orig <- combined@iPopnNext
+        i.popn.dest <- combined@iPopnNextOther
+        diff <- combined@diffProp
+        diff.log.lik.cell <- diffLogLikCellComp(diff = diff,
+                                                iComp = i.comp,
+                                                iCell = i.cell,
+                                                component = component,
+                                                observationModels = observation.models,
+                                                datasets = datasets,
+                                                seriesIndices = series.indices,
+                                                transforms = transforms)
+        if (is.infinite(diff.log.lik.cell))
+            return(diff.log.lik.cell)
+        diff.log.lik.popn <- diffLogLikPopnPair(diff = diff,
+                                                iPopnOrig = i.popn.orig,
+                                                iPopnDest = i.popn.dest,
+                                                iterator = iterator,
+                                                population = population,
+                                                observationModels = observation.models,
+                                                datasets = datasets,
+                                                seriesIndices = series.indices,
+                                                transforms = transforms)
+        diff.log.lik.cell + diff.log.lik.popn
+    }
+}
+
+
 
 
 ## LOG DENSITY ################################################################
@@ -1050,6 +1094,93 @@ diffLogDensExpOneComp <- function(iCell, hasAge, component, theta, iterator,
         ans
     }
 }
+
+## HAS_TESTS
+diffLogDensExpOneOrigDestParChPool <- function(iCell, hasAge, component, theta, iteratorComp, 
+                                               iExpFirst, exposure, iteratorExposure,
+                                               diff, useC = FALSE) {
+    ## iCell
+    stopifnot(identical(length(iCell), 1L))
+    stopifnot(is.integer(iCell))
+    stopifnot(!is.na(iCell))
+    stopifnot(iCell > 0L)
+    ## hasAge
+    stopifnot(identical(length(hasAge), 1L))
+    stopifnot(is.logical(hasAge))
+    stopifnot(!is.na(hasAge))
+    ## component
+    stopifnot(methods::is(component, "InternalMovementsOrigDest")
+              || methods::is(component, "InternalMovementsPool"))
+    ## theta
+    stopifnot(is.double(theta))
+    stopifnot(!any(is.na(theta)))
+    stopifnot(all(theta >= 0))
+    ## iteratorComp
+    stopifnot(methods::is(iteratorComp, "CohortIteratorOrigDestParChPool"))
+    ## iExpFirst
+    stopifnot(identical(length(iExpFirst), 1L))
+    stopifnot(is.integer(iExpFirst))
+    stopifnot(!is.na(iExpFirst))
+    stopifnot(iExpFirst > 0L)
+    ## theta
+    stopifnot(methods::is(exposure, "Exposure"))
+    stopifnot(is.double(exposure))
+    stopifnot(!any(is.na(exposure)))
+    stopifnot(all(exposure >= 0))
+    ## iteratorExposure
+    stopifnot(methods::is(iteratorExposure, "CohortIteratorComponent"))
+    ## diff
+    stopifnot(identical(length(diff), 1L))
+    stopifnot(is.integer(diff))
+    stopifnot(!is.na(diff))
+    ## iCell and component
+    stopifnot(iCell <= length(component))
+    ## iExpFirst and exposure
+    stopifnot(iExpFirst <= length(exposure))
+    ## component and theta
+    stopifnot(identical(length(component), length(theta)))
+    if (useC) {
+        .Call(diffLogDensExpOneOrigDestParChPool_R,
+              iCell, hasAge, component, theta, iteratorComp,
+              iExpFirst, exposure, iteratorExposure,
+              diff)
+    }
+    else {    
+        iteratorComp <- resetCODPCP(iteratorComp, i = iCell)
+        iteratorExposure <- resetCC(iteratorExposure, i = iExpFirst)
+        ans <- 0
+        length.vec <- iteratorComp@lengthVec
+        is.first.value <- TRUE
+        repeat {
+            i.e <- iteratorExposure@i
+            i.c.vec <- iteratorComp@iVec
+            if (is.first.value) {
+                diff.expose <- 0.5 * diff
+                is.first.value <- FALSE
+            }
+            else
+                diff.expose <- if (hasAge) 0.5 * diff else diff
+            expose.curr <- exposure[i.e]
+            expose.prop <- expose.curr + diff.expose
+            for (j in seq_len(length.vec)) {
+                i.c <- i.c.vec[j]
+                comp.curr <- component[i.c]
+                if ((comp.curr > 0L) && !(expose.prop > 0))
+                    return(-Inf)
+                theta.curr <- theta[i.c]
+                diff.log.lik <- (dpois(x = comp.curr, lambda = theta.curr * expose.prop, log = TRUE)
+                    - dpois(x = comp.curr, lambda = theta.curr * expose.curr, log = TRUE))
+                ans <- ans + diff.log.lik
+            }
+            if (iteratorComp@finished)
+                break
+            iteratorComp <- advanceCODPCP(iteratorComp)
+            iteratorExposure <- advanceCC(iteratorExposure)
+        }
+        ans
+    }
+}
+
 
 
 

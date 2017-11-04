@@ -1922,6 +1922,122 @@ test_that("R and C versions of diffLogLikAccountMoveComp give same answer", {
         expect_equal(ans.R, ans.C)
 })
 
+test_that("diffLogLikAccountMoveOrigDest works", {
+    diffLogLikAccountMoveOrigDest <- demest:::diffLogLikAccountMoveOrigDest
+    updateProposalAccountMoveOrigDest <- demest:::updateProposalAccountMoveOrigDest
+    initialCombinedAccount <- demest:::initialCombinedAccount
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    population <- Counts(array(seq(1000L, 1500L, 100L),
+                               dim = c(3, 2),
+                               dimnames = list(reg = c("a", "b", "c"),
+                                               time = c(2000, 2005))))
+    internal <- Counts(array(c(0L, 50L, 40L,
+                               20L, 0L, 30L,
+                               60L, 20L, 0L),
+                             dim = c(3, 3, 1),
+                             dimnames = list(reg_orig = c("a", "b", "c"),
+                                             reg_dest = c("a", "b", "c"),
+                                             time = "2001-2005")))
+    account <- Movements(population = population,
+                         internal = internal)
+    account <- makeConsistent(account)
+    systemModels <- list(Model(population ~ Poisson(mean ~ reg, useExpose = FALSE)),
+                         Model(internal ~ Poisson(mean ~ 1)))
+    systemWeights <- list(NULL)
+    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
+                              Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
+    seriesIndices <- c(1L, 0L)
+    datasets <- list(internal + 10L,
+                     population - 5L)
+    namesDatasets <- c("tax", "census")
+    transforms <- list(makeTransform(x = internal, y = datasets[[1]], subset = TRUE),
+                       makeTransform(x = population, y = datasets[[2]], subset = TRUE))
+    transforms <- lapply(transforms, makeCollapseTransformExtra)
+    x <- initialCombinedAccount(account = account,
+                                systemModels = systemModels,
+                                systemWeights = systemWeights,
+                                observationModels = observationModels,
+                                seriesIndices = seriesIndices,
+                                datasets = datasets,
+                                namesDatasets = namesDatasets,
+                                transforms = transforms)
+    x@iComp <- 1L
+    updated <- FALSE
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        x <- updateProposalAccountMoveOrigDest(x)
+        if (x@generatedNewProposal@.Data) {
+            updated <- TRUE
+            ans.obtained <- diffLogLikAccountMoveOrigDest(x, useC = FALSE)
+            expect_identical(length(ans.obtained), 1L)
+            expect_true(is.numeric(ans.obtained))
+        }
+    }
+    if (!updated)
+        warning("proposal not updated")
+})
+
+
+test_that("R and C versions of diffLogLikAccountMoveOrigDest give same answer", {
+    diffLogLikAccountMoveOrigDest <- demest:::diffLogLikAccountMoveOrigDest
+    updateProposalAccountMoveOrigDest <- demest:::updateProposalAccountMoveOrigDest
+    initialCombinedAccount <- demest:::initialCombinedAccount
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    population <- Counts(array(seq(1000L, 1500L, 100L),
+                               dim = c(3, 2),
+                               dimnames = list(reg = c("a", "b", "c"),
+                                               time = c(2000, 2005))))
+    internal <- Counts(array(c(0L, 50L, 40L,
+                               20L, 0L, 30L,
+                               60L, 20L, 0L),
+                             dim = c(3, 3, 1),
+                             dimnames = list(reg_orig = c("a", "b", "c"),
+                                             reg_dest = c("a", "b", "c"),
+                                             time = "2001-2005")))
+    account <- Movements(population = population,
+                         internal = internal)
+    account <- makeConsistent(account)
+    systemModels <- list(Model(population ~ Poisson(mean ~ reg, useExpose = FALSE)),
+                         Model(internal ~ Poisson(mean ~ 1)))
+    systemWeights <- list(NULL)
+    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
+                              Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
+    seriesIndices <- c(1L, 0L)
+    datasets <- list(internal + 10L,
+                     population - 5L)
+    namesDatasets <- c("tax", "census")
+    transforms <- list(makeTransform(x = internal, y = datasets[[1]], subset = TRUE),
+                       makeTransform(x = population, y = datasets[[2]], subset = TRUE))
+    transforms <- lapply(transforms, makeCollapseTransformExtra)
+    x <- initialCombinedAccount(account = account,
+                                systemModels = systemModels,
+                                systemWeights = systemWeights,
+                                observationModels = observationModels,
+                                seriesIndices = seriesIndices,
+                                datasets = datasets,
+                                namesDatasets = namesDatasets,
+                                transforms = transforms)
+    x@iComp <- 1L
+    updated <- FALSE
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        x <- updateProposalAccountMoveOrigDest(x)
+        if (x@generatedNewProposal@.Data) {
+            updated <- TRUE
+            ans.R <- diffLogLikAccountMoveOrigDest(x, useC = FALSE)
+            ans.C <- diffLogLikAccountMoveOrigDest(x, useC = TRUE)
+            if (test.identity)
+                expect_identical(ans.R, ans.C)
+            else
+                expect_equal(ans.R, ans.C)
+        }
+        if (!updated)
+            warning("proposal not updated")
+    }
+})
+
+
+
 
 ## LOG DENSITY ################################################################
 
@@ -2524,6 +2640,163 @@ test_that("R and C versions of diffLogDensExpOneComp give same answer", {
     else
         expect_equal(ans.R, ans.C)
 })
+
+test_that("diffLogDensExpOneOrigDestParChPool works", {
+    diffLogDensExpOneOrigDestParChPool <- demest:::diffLogDensExpOneOrigDestParChPool
+    getICellCompFromExp <- demest:::getICellCompFromExp
+    updateProposalAccountMoveOrigDest <- demest:::updateProposalAccountMoveOrigDest
+    initialCombinedAccount <- demest:::initialCombinedAccount
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    population <- Counts(array(seq(1000L, 1500L, 100L),
+                               dim = c(3, 2),
+                               dimnames = list(reg = c("a", "b", "c"),
+                                               time = c(2000, 2005))))
+    internal <- Counts(array(c(0L, 50L, 40L,
+                               20L, 0L, 30L,
+                               60L, 20L, 0L),
+                             dim = c(3, 3, 1),
+                             dimnames = list(reg_orig = c("a", "b", "c"),
+                                             reg_dest = c("a", "b", "c"),
+                                             time = "2001-2005")))
+    account <- Movements(population = population,
+                         internal = internal)
+    account <- makeConsistent(account)
+    systemModels <- list(Model(population ~ Poisson(mean ~ reg, useExpose = FALSE)),
+                         Model(internal ~ Poisson(mean ~ 1)))
+    systemWeights <- list(NULL)
+    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
+                              Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
+    seriesIndices <- c(1L, 0L)
+    datasets <- list(internal + 10L,
+                     population - 5L)
+    namesDatasets <- c("tax", "census")
+    transforms <- list(makeTransform(x = internal, y = datasets[[1]], subset = TRUE),
+                       makeTransform(x = population, y = datasets[[2]], subset = TRUE))
+    transforms <- lapply(transforms, makeCollapseTransformExtra)
+    x <- initialCombinedAccount(account = account,
+                                systemModels = systemModels,
+                                systemWeights = systemWeights,
+                                observationModels = observationModels,
+                                seriesIndices = seriesIndices,
+                                datasets = datasets,
+                                namesDatasets = namesDatasets,
+                                transforms = transforms)
+    x@iComp <- 1L
+    updated <- FALSE
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        x <- updateProposalAccountMoveOrigDest(x)
+        if (x@generatedNewProposal@.Data) {
+            updated <- TRUE
+            ans.obtained <- diffLogDensExpOneOrigDestParChPool(iCell = getICellCompFromExp(i = x@iExpFirst,
+                                                                                           mapping = x@mappingsFromExp[[1]]),
+                                                               hasAge = FALSE,
+                                                               component = x@account@components[[1L]],
+                                                               theta = x@systemModels[[2]]@theta,
+                                                               iteratorComp = x@iteratorsComp[[1L]],
+                                                               iExpFirst = x@iExpFirst,
+                                                               exposure = x@exposure,
+                                                               iteratorExposure = x@iteratorExposure,
+                                                               diff = x@diffProp)
+            i.cell <- getICellCompFromExp(i = x@iExpFirst,
+                                          mapping = x@mappingsFromExp[[1]])
+            ans.expected <- sum(dpois(x = internal[i.cell + c(0, 3, 6)],
+                                      lambda = (x@exposure[i.cell] + 0.5 * x@diffProp) * x@systemModels[[2]]@theta[i.cell + c(0, 3, 6)],
+                                      log = TRUE)) -
+                sum(dpois(x = internal[i.cell + c(0, 3, 6)],
+                          lambda = x@exposure[i.cell] * x@systemModels[[2]]@theta[i.cell + c(0, 3, 6)],
+                          log = TRUE))
+            if (test.identity)
+                expect_identical(ans.obtained, ans.expected)
+            else
+                expect_equal(ans.obtained, ans.expected)
+        }
+        if (!updated)
+            warning("not updated")
+    }
+})
+
+
+test_that("R and C versions of diffLogDensExpOneOrigDestParChPool give same answer", {
+    diffLogDensExpOneOrigDestParChPool <- demest:::diffLogDensExpOneOrigDestParChPool
+    getICellCompFromExp <- demest:::getICellCompFromExp
+    updateProposalAccountMoveOrigDest <- demest:::updateProposalAccountMoveOrigDest
+    initialCombinedAccount <- demest:::initialCombinedAccount
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    population <- Counts(array(seq(1000L, 1500L, 100L),
+                               dim = c(3, 2),
+                               dimnames = list(reg = c("a", "b", "c"),
+                                               time = c(2000, 2005))))
+    internal <- Counts(array(c(0L, 50L, 40L,
+                               20L, 0L, 30L,
+                               60L, 20L, 0L),
+                             dim = c(3, 3, 1),
+                             dimnames = list(reg_orig = c("a", "b", "c"),
+                                             reg_dest = c("a", "b", "c"),
+                                             time = "2001-2005")))
+    account <- Movements(population = population,
+                         internal = internal)
+    account <- makeConsistent(account)
+    systemModels <- list(Model(population ~ Poisson(mean ~ reg, useExpose = FALSE)),
+                         Model(internal ~ Poisson(mean ~ 1)))
+    systemWeights <- list(NULL)
+    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
+                              Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
+    seriesIndices <- c(1L, 0L)
+    datasets <- list(internal + 10L,
+                     population - 5L)
+    namesDatasets <- c("tax", "census")
+    transforms <- list(makeTransform(x = internal, y = datasets[[1]], subset = TRUE),
+                       makeTransform(x = population, y = datasets[[2]], subset = TRUE))
+    transforms <- lapply(transforms, makeCollapseTransformExtra)
+    x <- initialCombinedAccount(account = account,
+                                systemModels = systemModels,
+                                systemWeights = systemWeights,
+                                observationModels = observationModels,
+                                seriesIndices = seriesIndices,
+                                datasets = datasets,
+                                namesDatasets = namesDatasets,
+                                transforms = transforms)
+    x@iComp <- 1L
+    updated <- FALSE
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        x <- updateProposalAccountMoveOrigDest(x)
+        if (x@generatedNewProposal@.Data) {
+            updated <- TRUE
+            ans.R <- diffLogDensExpOneOrigDestParChPool(iCell = getICellCompFromExp(i = x@iExpFirst,
+                                                                                    mapping = x@mappingsFromExp[[1]]),
+                                                        hasAge = FALSE,
+                                                        component = x@account@components[[1L]],
+                                                        theta = x@systemModels[[2]]@theta,
+                                                        iteratorComp = x@iteratorsComp[[1L]],
+                                                        iExpFirst = x@iExpFirst,
+                                                        exposure = x@exposure,
+                                                        iteratorExposure = x@iteratorExposure,
+                                                        diff = x@diffProp,
+                                                        useC = FALSE)
+            ans.C <- diffLogDensExpOneOrigDestParChPool(iCell = getICellCompFromExp(i = x@iExpFirst,
+                                                                                    mapping = x@mappingsFromExp[[1]]),
+                                                        hasAge = FALSE,
+                                                        component = x@account@components[[1L]],
+                                                        theta = x@systemModels[[2]]@theta,
+                                                        iteratorComp = x@iteratorsComp[[1L]],
+                                                        iExpFirst = x@iExpFirst,
+                                                        exposure = x@exposure,
+                                                        iteratorExposure = x@iteratorExposure,
+                                                        diff = x@diffProp,
+                                                        useC = TRUE)
+            if (test.identity)
+                expect_identical(ans.R, ans.C)
+            else
+                expect_equal(ans.R, ans.C)
+        }
+        if (!updated)
+            warning("not updated")
+    }
+})
+
+
 
 
 
