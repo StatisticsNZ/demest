@@ -2654,6 +2654,12 @@ updateSigma_Varying(SEXP object)
 void
 updateSigma_Varying_General(SEXP object, double (*g)(double))
 {
+    double boxCoxParam = 0;
+    if (g == log) {
+        boxCoxParam = *REAL(GET_SLOT(object, boxCoxParam_sym));
+    }
+    int usesBoxCoxTransform = ((boxCoxParam > 0)? 1: 0);
+    
     SEXP sigma_R = GET_SLOT(object, sigma_sym);
     
     double sigma = *REAL(GET_SLOT(sigma_R, Data_sym));
@@ -2688,7 +2694,15 @@ updateSigma_Varying_General(SEXP object, double (*g)(double))
             mu += this_beta[indices[b]-1];
         }
         
-        double tmp = (*g)(theta[i]) - mu;
+        double transformedTheta = 0;
+        if(usesBoxCoxTransform) {
+            transformedTheta = ( pow(theta[i], boxCoxParam) - 1)/boxCoxParam; 
+        }
+        else {
+            transformedTheta = g( theta[i] );
+        }
+        
+        double tmp = transformedTheta - mu;
         V += (tmp * tmp);
         advanceB(iteratorBetas_R);
     }
