@@ -8,46 +8,72 @@
 
 ## ## estimateModel ##################################################################
 
-library(tidyverse)
-library(demest)
-births <- demdata::iceland.births %>%
-    Counts(dimscales = c(year = "Intervals")) %>%
-    subarray(age > 15 & age < 45) %>%
-    collapseIntervals(dimension = "age", width = 5)
-expose <- demdata::iceland.popn %>%
-    Counts(dimscales = c(year = "Intervals", age = "Intervals")) %>%
-    subarray(age > 15 & age < 45) %>%
-    subarray(year < 2015) %>%
-    collapseIntervals(dimension = "age", width = 5) %>%
-    subarray(sex == "Females")
-model <- Model(y ~ Poisson(mean ~ year * age, boxCox = 0.5),
-               age ~ DLM(damp = NULL),
-               year ~ DLM(damp = NULL),
-               year:age ~ DLM(trend = NULL),
-               jump = 0.03)
-filename.est <- "deleteme.est"
-filename.pred <- "deleteme.pred"
-estimateModel(model,
-              y = births,
-              exposure = expose,
-              filename = filename.est,
-              nBurnin = 1000,
-              nSim = 1000,
-              nThin = 4,
-              nChain = 4)
-fetchSummary(filename.est)
-predictModel(filenameEst = filename.est,
-             filenamePred = filename.pred,
-             n = 25)
-             
-
-
-rates <- fetchBoth(filenameEst = filename.est, filenamePred = filename.pred,
-                   where = c("model", "likelihood", "rate"))
-quartz()
-dplot( ~ year | age, data = rates)
-quartz()
-mean <- fetch(filename = filename.est, c("mod", "pr", "mean"))
+## library(tidyverse)
+## library(demest)
+## library(latticeExtra)
+## births <- demdata::iceland.births %>%
+##     Counts(dimscales = c(year = "Intervals")) %>%
+##     subarray(age > 15 & age < 45) %>%
+##     collapseIntervals(dimension = "age", width = 5)
+## expose <- demdata::iceland.popn %>%
+##     Counts(dimscales = c(year = "Intervals", age = "Intervals")) %>%
+##     subarray(age > 15 & age < 45) %>%
+##     subarray(year < 2015) %>%
+##     collapseIntervals(dimension = "age", width = 5) %>%
+##     subarray(sex == "Females")
+## model <- Model(y ~ Poisson(mean ~ year * age),
+##                age ~ DLM(damp = NULL),
+##                year ~ DLM(level = Level(scale = HalfT(scale = 0.1)),
+##                           trend = Trend(scale = HalfT(scale = 0.1))),
+##                year:age ~ DLM(level = Level(scale = HalfT(scale = 0.05)),
+##                               trend = Trend(scale = HalfT(scale = 0.05))),
+##                jump = 0.008)
+## filename1.est <- "deleteme.est"
+## filename.pred <- "deleteme.pred"
+## estimateModel(model,
+##               y = births,
+##               exposure = expose,
+##               filename = filename.est,
+##               nBurnin = 20000,
+##               nSim = 20000,
+##               nThin = 50,
+##               nChain = 4)
+## fetchSummary(filename.est)
+## predictModel(filenameEst = filename.est,
+##              filenamePred = filename.pred,
+##              n = 25)             
+## rates <- fetchBoth(filenameEst = filename.est, filenamePred = filename.pred,
+##                    where = c("model", "likelihood", "rate"))
+## model.bc <- Model(y ~ Poisson(mean ~ year * age, boxCox = 0.5),
+##                   age ~ DLM(damp = NULL),
+##                   year ~ DLM(level = Level(scale = HalfT(scale = 0.1)),
+##                              trend = Trend(scale = HalfT(scale = 0.1))),
+##                   year:age ~ DLM(level = Level(scale = HalfT(scale = 0.05)),
+##                                  trend = Trend(scale = HalfT(scale = 0.05))),
+##                   jump = 0.008)
+## filename.bc.est <- "deleteme.bc.est"
+## filename.bc.pred <- "deleteme.bc.pred"
+## estimateModel(model.bc,
+##               y = births,
+##               exposure = expose,
+##               filename = filename.bc.est,
+##               nBurnin = 20000,
+##               nSim = 20000,
+##               nThin = 50,
+##               nChain = 4)
+## fetchSummary(filename.bc.est)
+## predictModel(filenameEst = filename.bc.est,
+##              filenamePred = filename.bc.pred,
+##              n = 25)             
+## rates.bc <- fetchBoth(filenameEst = filename.bc.est, filenamePred = filename.bc.pred,
+##                       where = c("model", "likelihood", "rate"))
+## rates.comb <- dbind(log = rates,
+##                     bc = rates.bc,
+##                     along = "bc")
+## p <- dplot( ~ year | age * bc,
+##            data = rates.comb,
+##            midpoints = "year")
+## useOuterStrips(p)
 
 ## year <- fetch(filename = filename.est,
 ##               where = c("model", "prior", "year"))

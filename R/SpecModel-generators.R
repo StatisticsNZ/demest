@@ -99,7 +99,7 @@ NULL
 ## HAS_TESTS
 #' @rdname likelihood
 #' @export
-Poisson <- function(formula, useExpose = TRUE, boxCox = 0) {
+Poisson <- function(formula, useExpose = TRUE, boxcox = 0) {
     checkFormulaMu(formula)
     checkForMarginalTerms(formula)
     useExpose <- checkAndTidyLogicalFlag(x = useExpose,
@@ -107,7 +107,7 @@ Poisson <- function(formula, useExpose = TRUE, boxCox = 0) {
     methods::new("SpecLikelihoodPoisson",
                  formulaMu = formula,
                  useExpose = useExpose,
-                 boxCoxParam = boxCox)
+                 boxCoxParam = boxcox)
 }
 
 ## HAS_TESTS
