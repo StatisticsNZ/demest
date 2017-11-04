@@ -559,7 +559,6 @@ test_that("R and C versions of updateProposalAccountMoveComp give same answer", 
         expect_equal(ans.R, ans.C)
 })
 
-
 test_that("updateProposalAccountMoveOrigDest works with CombinedAccountMovements - no age", {
     updateProposalAccountMoveOrigDest <- demest:::updateProposalAccountMoveOrigDest
     initialCombinedAccount <- demest:::initialCombinedAccount
@@ -1589,6 +1588,134 @@ test_that("R and C versions of diffLogLikPopn give same answer", {
     else
         expect_equal(ans.R, ans.C)
 })
+
+test_that("diffLogLikPopnPair works with CombinedAccountMovements", {
+    diffLogLikPopnPair <- demest:::diffLogLikPopnPair
+    diffLogLikPopnOneDataset <- demest:::diffLogLikPopnOneDataset
+    initialModel <- demest:::initialModel
+    initialCombinedAccount <- demest:::initialCombinedAccount
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    CohortIterator <- demest:::CohortIterator
+    Population <- dembase:::Population
+    population <- Counts(array(seq(1000L, 1500L, 100L),
+                               dim = c(3, 2),
+                               dimnames = list(reg = c("a", "b", "c"),
+                                               time = c(2000, 2005))))
+    population <- Population(population)
+    internal <- Counts(array(c(0L, 50L, 40L,
+                               20L, 0L, 30L,
+                               60L, 20L, 0L),
+                             dim = c(3, 3, 1),
+                             dimnames = list(reg_orig = c("a", "b", "c"),
+                                             reg_dest = c("a", "b", "c"),
+                                             time = "2001-2005")))
+    systemModels <- list(Model(population ~ Poisson(mean ~ reg, useExpose = FALSE)),
+                         Model(internal ~ Poisson(mean ~ 1)))
+    datasets <- list(internal + 10L,
+                     population - 5L)
+    observationModels <- list(initialModel(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
+                                           y = datasets[[1]],
+                                           exposure = internal),
+                              initialModel(Model(census ~ PoissonBinomial(prob = 0.9), series = "population"),
+                                           y = datasets[[2]],
+                                           exposure = population))
+    seriesIndices <- c(1L, 0L)
+    transforms <- list(makeTransform(x = internal, y = datasets[[1]], subset = TRUE),
+                       makeTransform(x = population, y = datasets[[2]], subset = TRUE))
+    transforms <- lapply(transforms, makeCollapseTransformExtra)
+    iterator <- CohortIterator(population)
+    diff <- -4L
+    ans.obtained <- diffLogLikPopnPair(diff = diff,
+                                       iPopnOrig = 6L,
+                                       iPopnDest = 5L,
+                                       iterator = iterator,
+                                       population = population,
+                                       observationModels = observationModels,
+                                       datasets = datasets,
+                                       seriesIndices = seriesIndices,
+                                       transforms = transforms)
+    ans.expected <- diffLogLikPopnOneDataset(diff = -diff,
+                                             iFirst = 6L,
+                                             iterator = iterator,
+                                             population = population,
+                                             model = observationModels[[2]],
+                                             dataset = datasets[[2]],
+                                             transform = transforms[[2]]) +
+        diffLogLikPopnOneDataset(diff = diff,
+                                 iFirst = 5L,
+                                 iterator = iterator,
+                                 population = population,
+                                 model = observationModels[[2]],
+                                 dataset = datasets[[2]],
+                                 transform = transforms[[2]])
+    if (test.identity)
+        expect_identical(ans.obtained, ans.expected)
+    else
+        expect_equal(ans.obtained, ans.expected)
+})
+
+
+test_that("R and C versions of diffLogLikPopnPair give same answer", {
+    diffLogLikPopnPair <- demest:::diffLogLikPopnPair
+    initialModel <- demest:::initialModel
+    initialCombinedAccount <- demest:::initialCombinedAccount
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    CohortIterator <- demest:::CohortIterator
+    Population <- dembase:::Population
+    population <- Counts(array(seq(1000L, 1500L, 100L),
+                               dim = c(3, 2),
+                               dimnames = list(reg = c("a", "b", "c"),
+                                               time = c(2000, 2005))))
+    population <- Population(population)
+    internal <- Counts(array(c(0L, 50L, 40L,
+                               20L, 0L, 30L,
+                               60L, 20L, 0L),
+                             dim = c(3, 3, 1),
+                             dimnames = list(reg_orig = c("a", "b", "c"),
+                                             reg_dest = c("a", "b", "c"),
+                                             time = "2001-2005")))
+    systemModels <- list(Model(population ~ Poisson(mean ~ reg, useExpose = FALSE)),
+                         Model(internal ~ Poisson(mean ~ 1)))
+    datasets <- list(internal + 10L,
+                     population - 5L)
+    observationModels <- list(initialModel(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
+                                           y = datasets[[1]],
+                                           exposure = internal),
+                              initialModel(Model(census ~ PoissonBinomial(prob = 0.9), series = "population"),
+                                           y = datasets[[2]],
+                                           exposure = population))
+    seriesIndices <- c(1L, 0L)
+    transforms <- list(makeTransform(x = internal, y = datasets[[1]], subset = TRUE),
+                       makeTransform(x = population, y = datasets[[2]], subset = TRUE))
+    transforms <- lapply(transforms, makeCollapseTransformExtra)
+    iterator <- CohortIterator(population)
+    diff <- -4L
+    ans.R <- diffLogLikPopnPair(diff = diff,
+                                iPopnOrig = 6L,
+                                iPopnDest = 5L,
+                                iterator = iterator,
+                                population = population,
+                                observationModels = observationModels,
+                                datasets = datasets,
+                                seriesIndices = seriesIndices,
+                                transforms = transforms,
+                                useC = FALSE)
+    ans.C <- diffLogLikPopnPair(diff = diff,
+                                iPopnOrig = 6L,
+                                iPopnDest = 5L,
+                                iterator = iterator,
+                                population = population,
+                                observationModels = observationModels,
+                                datasets = datasets,
+                                seriesIndices = seriesIndices,
+                                transforms = transforms,
+                                useC = TRUE)
+    if (test.identity)
+        expect_identical(ans.R, ans.C)
+    else
+        expect_equal(ans.R, ans.C)
+})
+
 
 test_that("diffLogLikAccountMovePopn works", {
     diffLogLikAccountMovePopn <- demest:::diffLogLikAccountMovePopn

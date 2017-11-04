@@ -514,7 +514,7 @@ diffLogLikAccountMoveOrigDest <- function(combined, useC = TRUE) {
         component <- account@components[[i.comp]]
         population <- account@population
         iterator <- combined@iteratorPopn
-        observation <- combined@observation
+        observation.models <- combined@observationModels
         datasets <- combined@datasets
         series.indices <- combined@seriesIndices
         transforms <- combined@transforms
@@ -522,26 +522,26 @@ diffLogLikAccountMoveOrigDest <- function(combined, useC = TRUE) {
         i.popn.orig <- combined@iPopnNext
         i.popn.dest <- combined@iPopnNextOther
         diff <- combined@diffProp
-        diff.cell <- diffLogLikCellComp(diff = diff,
-                                        iCell = i.cell,
-                                        iComp = i.comp,
-                                        component = component,
-                                        observation = observation,
-                                        datasets = datasets,
-                                        seriesIndices = series.indices,
-                                        transforms = transforms)
-        if (is.infinite(diff.cell))
-            return(diff.cell)
-        diff.popn <- diffLogLikPopnPair(diff = diff,
-                                        iPopnOrig = i.popn.orig,
-                                        iPopnDest = i.popn.dest,
-                                        iterator = iterator,
-                                        population = population,
-                                        observation = observation,
-                                        datasets = datasets,
-                                        seriesIndices = series.indices,
-                                        transforms = transforms)
-        diff.cell + diff.popn
+        diff.log.lik.cell <- diffLogLikCellComp(diff = diff,
+                                                iComp = i.comp,
+                                                iCell = i.cell,
+                                                component = component,
+                                                observationModels = observation.models,
+                                                datasets = datasets,
+                                                seriesIndices = series.indices,
+                                                transforms = transforms)
+        if (is.infinite(diff.log.lik.cell))
+            return(diff.log.lik.cell)
+        diff.log.lik.popn <- diffLogLikPopnPair(diff = diff,
+                                                iPopnOrig = i.popn.orig,
+                                                iPopnDest = i.popn.dest,
+                                                iterator = iterator,
+                                                population = population,
+                                                observationModels = observation.models,
+                                                datasets = datasets,
+                                                seriesIndices = series.indices,
+                                                transforms = transforms)
+        diff.log.lik.cell + diff.log.lik.popn
     }
 }
 
@@ -626,87 +626,6 @@ diffLogLikAccountMoveNet <- function(combined, useC = FALSE) {
             return(diff.log.lik.cell)
         diff.popn <- diffLogLikPopnPair(diff = diff,
   
-
-diffLogLikPopnPair <- function(diff, iPopnOrig, iPopnDest,
-                               iterator, population,
-                               observationModels, datasets,
-                               seriesIndices, transforms,
-                               useC = FALSE) {
-    ## diff
-    stopifnot(identical(length(diff), 1L))
-    stopifnot(is.integer(diff))
-    stopifnot(!is.na(diff))
-    ## iFirst
-    stopifnot(identical(length(iFirst), 1L))
-    stopifnot(is.integer(iFirst))
-    stopifnot(!is.na(iFirst))
-    stopifnot(iFirst > 0L)
-    ## iterator
-    stopifnot(is(iterator, "CohortIteratorAccessionPopulation"))
-    ## population
-    stopifnot(is(population, "Population"))
-    ## observationModels
-    stopifnot(is.list(observationModels))
-    stopifnot(all(sapply(observationModels, is, "Model")))
-    ## datasets
-    stopifnot(is.list(datasets))
-    stopifnot(all(sapply(datasets, is, "Counts")))
-    ## seriesIndices
-    stopifnot(is.integer(seriesIndices))
-    stopifnot(!any(is.na(seriesIndices)))
-    stopifnot(all(seriesIndices >= 0L))
-    ## transforms
-    stopifnot(is.list(transforms))
-    stopifnot(all(sapply(transforms, is, "CollapseTransformExtra")))
-    ## observationModels and datasets
-    stopifnot(identical(length(observationModels), length(datasets)))
-    ## observationModels and seriesIndices
-    stopifnot(identical(length(observationModels), length(seriesIndices)))
-    ## observationModels and transforms
-    stopifnot(identical(length(observationModels), length(transforms)))
-    if (useC) {
-        .Call(diffLogLikPopnPair_R,
-              diff, iPopnOrig, iPopnDest, iterator,
-              population, observationModels, datasets,
-              seriesIndices, transforms)
-    }
-    else {        
-        ans <- 0
-        for (i.dataset in seq_along(datasets)) {
-            assoc.with.popn <- seriesIndices[i.dataset] == 0L
-            if (assoc.with.popn) {
-                transform <- transforms[[i.dataset]]
-                i.after.orig <- getIAfter(i = iPopnOrig, transform = transform)
-                i.after.dest <- getIAfter(i = iPopnDest, transform = transform)
-                if (i.after.orig != i.after.dest) {
-                    model <- observationModels[[i.dataset]]
-                    dataset <- datasets[[i.dataset]]
-                    transform <- transforms[[i.dataset]]
-                    diff.orig <- diffLogLikPopnOneDataset(diff = -diff,
-                                                          iFirst = iPopnOrig,
-                                                          iterator = iterator,
-                                                          population = population,
-                                                          model = model,
-                                                          dataset = dataset,
-                                                          transform = transform)
-                    if (is.infinite(diff.orig))
-                        return(diff.orig)
-                    diff.dest <- diffLogLikPopnOneDataset(diff = diff,
-                                                          iFirst = iPopnDest,
-                                                          iterator = iterator,
-                                                          population = population,
-                                                          model = model,
-                                                          dataset = dataset,
-                                                          transform = transform)
-                    if (is.infinite(diff.dest))
-                        return(diff.dest)
-                    ans <- ans + diff.orig + diff.dest
-                }
-            }
-        }
-        ans
-    }
-}    
 
 diffLogLikCellsPoolNet <- function(diff, iComp, iCellOut, iCellIn,
                                    isPool, component, observationModels, datasets,
