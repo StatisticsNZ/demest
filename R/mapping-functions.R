@@ -459,7 +459,7 @@ getIExposureFromOrigDest <- function(i, mapping, useC = FALSE) {
 ## component - getIExpFirstFromComp DONE
 ## births no parent - getIExpFirstFromBirths DONE
 ## births with parent - getIExpFirstFromBirths DONE
-## orig-dest - getIExpFirstPairFromComp DONE
+## orig-dest - getIExpFirstPairFromOrigDest DONE
 ## pool - getIExpFirstFromComp DONE
 ## net - getIExpFirstFromComp DONE
 

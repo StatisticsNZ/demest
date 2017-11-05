@@ -197,6 +197,8 @@ test_that("ComponentIterator works with InternalMovementsPool", {
     expect_identical(ans.obtained, ans.expected)
 })
 
+
+
 test_that("ComponentIterator works with ordinary component", {
     CohortIterator <- demest:::CohortIterator
     EntriesMovements <- dembase:::EntriesMovements
@@ -216,6 +218,33 @@ test_that("ComponentIterator works with ordinary component", {
                                   template = template,
                                   name = "immigration")
     ans.obtained <- CohortIterator(component)
+    ans.expected <- new("CohortIteratorComponent",
+                        i = 1L,
+                        nTime = 2L,
+                        stepTime = 9L,
+                        iTime = 1L,
+                        hasAge = TRUE,
+                        nAge = 3L,
+                        stepAge = 1L,
+                        iAge = 1L,
+                        stepTriangle = 18L,
+                        iTriangle = 1L,
+                        finished = FALSE)
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("ComponentIterator works with Exposure", {
+    CohortIterator <- demest:::CohortIterator
+    population <- Counts(array(1L,
+                               dim = c(3, 3, 3),
+                               dimnames = list(age = c("0-4", "5-9", "10+"),
+                                               region = 1:3,
+                                               time = c(2000, 2005, 2010))))
+    exposure <- exposure(population, triangles = TRUE)
+    exposure <- new("Exposure",
+                    .Data = exposure@.Data,
+                    metadata = exposure@metadata)
+    ans.obtained <- CohortIterator(exposure)
     ans.expected <- new("CohortIteratorComponent",
                         i = 1L,
                         nTime = 2L,

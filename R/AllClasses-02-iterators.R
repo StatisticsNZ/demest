@@ -250,8 +250,8 @@ setClass("CohortIteratorComponent",
 ## HAS_TESTS
 setClass("CohortIteratorOrigDestParChPool",
          slots = c(iVec = "integer",
-                        lengthVec = "integer",
-                        increment = "integer"),
+                   lengthVec = "integer",
+                   increment = "integer"),
          contains = "CohortIteratorComponent",
          validity = function(object) {
              iVec <- object@iVec

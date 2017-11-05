@@ -215,141 +215,6 @@ updateProposalAccountBirths <- function(combined, useC = FALSE) {
 }
 
 
-updateProposalAccountMoveOrigDest <- function(combined, useC = FALSE) {
-    stopifnot(is(combined, "CombinedAccountMovements"))
-    if (useC) {
-        .Call(updateProposalAccountMoveOrigDest_R, combined)
-    }
-    else {
-        account <- combined@account
-        population <- account@population
-        components <- account@components
-        uses.exposure <- combined@usesExposure
-        i.comp <- combined@iComp
-        component <- components[[i.comp]]
-        if (uses.exposure[i.comp])
-            expected.exposure <- combined@expectedExposure
-        has.age <- combined@hasAge
-        if (has.age) {
-            accession <- combined@accession
-            mapping.acc <- combined@mappingsToAcc[[i.comp]]
-            iterator.acc <- combined@iteratorAcc
-        }
-        mapping.popn <- combined@mappingsToPopn[[i.comp]]
-        description.comp <- combined@descriptionsComp[[i.comp]]
-        mapping.exposure <- combined@mappingsToExposure[[i.comp]]
-        iterator.popn <- combined@iteratorPopn                     
-        sys.mod.popn <- combined@systemModels[[1L]]
-        sys.mod.comp <- combined@systemModels[[i.comp + 1L]]
-        theta.popn <- sys.mod.popn@theta
-        theta.comp <- sys.mod.comp@theta
-        max.attempt <- combined@maxAttempt
-        i.cell <- chooseICellComp(description.comp)
-        if (uses.exposure)
-            i.exposure <- getIExposure(i = i.cell,
-                                       mapping = mapping.exposure)
-        pair.exp.first <- getIExpFirstPairFromOrigDest(i = i.cell,
-                                                       mapping = mapping.exposure)
-        i.exp.first.orig <- pair.exp.first[1L]
-        i.exp.first.dest <- pair.exp.first[2L]
-        is.lower.triangle <- isLowerTriangle(i = i.cell,
-                                             description = description.comp)
-        pair.popn.next <- getIPopnNextFromOrigDest(i = i.cell,
-                                                   mapping = mapping.popn)
-        i.popn.next.orig <- pair.popn.next[1L]
-        i.popn.next.dest <- pair.popn.next[2L]
-        min.val.orig <- getMinValCohort(i = i.popn.next.orig,
-                                        series = population,
-                                        iter = iterator.popn)
-        min.val.dest <- getMinValCohort(i = i.popn.next.dest,
-                                        series = population,
-                                        iter = iterator.popn)
-        if (has.age) {
-            pair.acc.next <- getIAccNextFromOrigDest(i = i.cell,
-                                                     mapping = mapping.acc)
-            i.acc.next.orig <- pair.acc.next[1L]
-            has.later.accession <- i.acc.next.orig > 0L
-            if (has.later.accession) {
-                i.acc.next.dest <- pair.acc.next[2L]
-                min.acc.orig <- getMinValCohort(i = i.acc.next.orig,
-                                                series = accession,
-                                                iter = iterator.acc)
-                min.acc.dest <- getMinValCohort(i = i.acc.next.dest,
-                                                series = accession,
-                                                iter = iterator.acc)
-                min.val.orig <- min(min.val.orig, min.acc.orig)
-                min.val.dest <- min(min.val.dest, min.acc.dest)
-            }
-        }
-        theta.cell <- theta.comp[i.cell]
-        if (uses.exposure[i.comp]) {
-            expected.exposure.cell <- expected.exposure[i.exposure]
-            lambda <- theta.cell * expected.exposure.cell
-        }
-        else
-            lambda <- theta.cell
-        val.curr <- component[i.cell]
-        lower <- val.curr - min.val.dest
-        upper <- val.curr + min.val.orig
-        if (lower > upper)
-            found.value <- FALSE
-        else {
-            val.prop <- rpoisTrunc1(lambda = lambda,
-                                    lower = lower,
-                                    upper = upper,
-                                    maxAttempt = max.attempt)
-            found.value <- !is.na(val.prop)
-        }
-        if (found.value) {
-            diff.prop <- val.prop - val.curr
-            generated.new.proposal <- diff.prop != 0L
-        }
-        else
-            generated.new.proposal <- FALSE
-        if (generated.new.proposal) {
-            combined@iCell <- i.cell
-            combined@iCellOther <- NA_integer_
-            combined@isLowerTriangle <- is.lower.triangle
-            combined@iPopnNext <- i.popn.next.orig
-            combined@iPopnNextOther <- i.popn.next.dest
-            if (uses.age) {
-                combined@iAccNext <- i.acc.next.orig
-                combined@iAccNextOther <- i.acc.next.dest
-            }
-            else {
-                combined@iAccNext <- NA_integer_
-                combined@iAccNextOther <- NA_integer_
-            }
-            if (uses.exposure[i.comp]) {
-                combined@iExposure <- i.exposure
-                combined@iExposureOther <- NA_integer_
-            }
-            else {
-                combined@iExposure <- NA_integer_
-                combined@iExposureOther <- NA_integer_
-            }
-            combined@iExpFirst <- i.exp.first.orig
-            combined@iExpFirstOther <- i.exp.first.dest
-            combined@diffProp <- diff.prop
-        }
-        else {
-            combined@iCell <- NA_integer_
-            combined@iCellOther <- NA_integer_
-            combined@isLowerTriangle <- NA
-            combined@iPopnNext <- NA_integer_
-            combined@iPopnNextOther <- NA_integer_
-            combined@iAccNext <- NA_integer_
-            combined@iAccNextOther <- NA_integer_
-            combined@iExposure <- NA_integer_
-            combined@iExposureOther <- NA_integer_
-            combined@iExpFirst <- NA_integer_
-            combined@iExpFirstOther <- NA_integer_
-            combined@diffProp <- NA_integer_
-        }
-        combined
-    }
-}
-
 updateProposalAccountMovePool <- function(combined) {
     stopifnot(is(combined, "CombinedAccountMovements"))
     if (useC) {
@@ -638,48 +503,6 @@ diffLogLikAccountMove <- function(combined) {
     }
 }
 
-diffLogLikAccountMoveOrigDest <- function(combined, useC = TRUE) {
-    stopifnot(is(combined, "CombinedAccountMovements"))
-    if (useC) {
-        .Call(diffLogLikAccountMoveOrigDest_R, combined)
-    }
-    else {
-        account <- combined@account
-        i.comp <- combined@iComp
-        component <- account@components[[i.comp]]
-        population <- account@population
-        iterator <- combined@iteratorPopn
-        observation <- combined@observation
-        datasets <- combined@datasets
-        series.indices <- combined@seriesIndices
-        transforms <- combined@transforms
-        i.cell <- combined@iCell
-        i.popn.orig <- combined@iPopnNext
-        i.popn.dest <- combined@iPopnNextOther
-        diff <- combined@diffProp
-        diff.cell <- diffLogLikCellComp(diff = diff,
-                                        iCell = i.cell,
-                                        iComp = i.comp,
-                                        component = component,
-                                        observation = observation,
-                                        datasets = datasets,
-                                        seriesIndices = series.indices,
-                                        transforms = transforms)
-        if (is.infinite(diff.cell))
-            return(diff.cell)
-        diff.popn <- diffLogLikPopnPair(diff = diff,
-                                        iPopnOrig = i.popn.orig,
-                                        iPopnDest = i.popn.dest,
-                                        iterator = iterator,
-                                        population = population,
-                                        observation = observation,
-                                        datasets = datasets,
-                                        seriesIndices = series.indices,
-                                        transforms = transforms)
-        diff.cell + diff.popn
-    }
-}
-
 
 diffLogLikAccountMovePool <- function(combined, useC = FALSE) {
     stopifnot(is(combined, "CombinedAccountMovements"))
@@ -760,213 +583,10 @@ diffLogLikAccountMoveNet <- function(combined, useC = FALSE) {
         if (is.infinite(diff.log.lik.cell))
             return(diff.log.lik.cell)
         diff.popn <- diffLogLikPopnPair(diff = diff,
-                                        iPopnOrig = i.popn.out,
-                                        iPopnDest = i.popn.in,
-                                        iterator = iterator,
-                                        population = population,
-                                        observation = observation,
-                                        datasets = datasets,
-                                        seriesIndices = series.indices,
-                                        transforms = transforms)
-        diff.cell + diff.popn
-    }
-}
-
-
-diffLogLikAccountMoveComp <- function(combined, useC = FALSE) {
-    stopifnot(is(combined, "CombinedAccountMovements"))
-    if (useC) {
-        .Call(diffLogLikAccountMoveComp_R, combined)
-    }
-    else {
-        account <- combined@account
-        i.comp <- combined@iComp
-        component <- account@components[[i.comp]]
-        population <- account@population
-        iterator <- combined@iteratorPopn
-        observation <- combined@observation
-        datasets <- combined@datasets
-        series.indices <- combined@seriesIndices
-        transforms <- combined@transforms
-        i.cell <- combined@iCell
-        i.popn.next <- combined@iPopnNext
-        diff <- combined@diffProp
-        is.increment <- combined@isIncrement[i.comp]
-        diff.log.lik.cell <- diffLogLikCellComp(diff = diff,
-                                                iComp = i.comp,
-                                                iCell = i.cell,
-                                                component = component,
-                                                observation = observation,
-                                                datasets = datasets,
-                                                seriesIndices = series.indices,
-                                                transforms = transforms)
-        if (is.infinite(diff.log.lik.cell))
-            return(diff.log.lik.cell)
-        diff.popn <- if (is.increment) diff else -diff
-        diff.log.lik.popn <- diffLogLikPopn(diff = diff.popn,
-                                            iFirst = i.popn.next,
-                                            iterator = iterator,
-                                            population = population,
-                                            observation = observation,
-                                            datasets = datasets,
-                                            seriesIndices = series.indices,
-                                            transforms = transforms)
-        if (is.infinite(diff.log.lik.popn))
-            return(diff.log.lik.popn)
-        diff.log.lik.cell + diff.log.lik.popn
-    }
-}
-
-diffLogLikPopnPair <- function(diff, iPopnOrig, iPopnDest,
-                               iterator, population,
-                               observation, datasets,
-                               seriesIndices, transforms,
-                               useC = FALSE) {
-    ## diff
-    stopifnot(identical(length(diff), 1L))
-    stopifnot(is.integer(diff))
-    stopifnot(!is.na(diff))
-    ## iFirst
-    stopifnot(identical(length(iFirst), 1L))
-    stopifnot(is.integer(iFirst))
-    stopifnot(!is.na(iFirst))
-    stopifnot(iFirst > 0L)
-    ## iterator
-    stopifnot(is(iterator, "CohortIteratorAccessionPopulation"))
-    ## population
-    stopifnot(is(population, "Population"))
-    ## observation
-    stopifnot(is.list(observation))
-    stopifnot(all(sapply(observation, is, "Model")))
-    ## datasets
-    stopifnot(is.list(datasets))
-    stopifnot(all(sapply(datasets, is, "Counts")))
-    ## seriesIndices
-    stopifnot(is.integer(seriesIndices))
-    stopifnot(!any(is.na(seriesIndices)))
-    stopifnot(all(seriesIndices >= 0L))
-    ## transforms
-    stopifnot(is.list(transforms))
-    stopifnot(all(sapply(transforms, is, "CollapseTransformExtra")))
-    ## observation and datasets
-    stopifnot(identical(length(observation), length(datasets)))
-    ## observation and seriesIndices
-    stopifnot(identical(length(observation), length(seriesIndices)))
-    ## observation and transforms
-    stopifnot(identical(length(observation), length(transforms)))
-    if (useC) {
-        .Call(diffLogLikPopnPair_R,
-              diff, iPopnOrig, iPopnDest, iterator,
-              population, observation, datasets,
-              seriesIndices, transforms)
-    }
-    else {        
-        ans <- 0
-        for (i.dataset in seq_along(datasets)) {
-            assoc.with.popn <- seriesIndices[i.dataset] == 0L
-            if (assoc.with.popn) {
-                transform <- transforms[[i.dataset]]
-                i.after.orig <- getIAfter(i = iPopnOrig, transform = transform)
-                i.after.dest <- getIAfter(i = iPopnDest, transform = transform)
-                if (i.after.orig != i.after.dest) {
-                    model <- observation[[i.dataset]]
-                    dataset <- datasets[[i.dataset]]
-                    transform <- transforms[[i.dataset]]
-                    diff.orig <- diffLogLikPopnOneDataset(diff = -diff,
-                                                          iFirst = iPopnOrig,
-                                                          iterator = iterator,
-                                                          population = population,
-                                                          model = model,
-                                                          dataset = dataset,
-                                                          transform = transform)
-                    if (is.infinite(diff.orig))
-                        return(diff.orig)
-                    diff.dest <- diffLogLikPopnOneDataset(diff = diff,
-                                                          iFirst = iPopnDest,
-                                                          iterator = iterator,
-                                                          population = population,
-                                                          model = model,
-                                                          dataset = dataset,
-                                                          transform = transform)
-                    if (is.infinite(diff.dest))
-                        return(diff.dest)
-                    ans <- ans + diff.orig + diff.dest
-                }
-            }
-        }
-        ans
-    }
-}    
-
-diffLogLikCellComp <- function(diff, iComp, iCell, component,
-                               observation, datasets,
-                               seriesIndices, transforms,
-                               useC = FALSE) {
-    ## diff
-    stopifnot(identical(length(diff), 1L))
-    stopifnot(is.integer(diff))
-    stopifnot(!is.na(diff))
-    ## iComp
-    stopifnot(identical(length(iComp), 1L))
-    stopifnot(is.integer(iComp))
-    stopifnot(!is.na(iComp))
-    stopifnot(iComp >= 0L)
-    ## iCell
-    stopifnot(identical(length(iCell), 1L))
-    stopifnot(is.integer(iCell))
-    stopifnot(!is.na(iCell))
-    stopifnot(iCell >= 0L)
-    ## component
-    stopifnot(is(component, "Component"))
-    ## observation
-    stopifnot(is.list(observation))
-    stopifnot(all(sapply(observation, is, "Model")))
-    ## datasets
-    stopifnot(is.list(datasets))
-    stopifnot(all(sapply(datasets, is, "Counts")))
-    ## seriesIndices
-    stopifnot(is.integer(seriesIndices))
-    stopifnot(!any(is.na(seriesIndices)))
-    stopifnot(all(seriesIndices >= 0L))
-    ## transforms
-    stopifnot(is.list(transforms))
-    stopifnot(all(sapply(transforms, is, "CollapseTransformExtra")))
-    ## observation and datasets
-    stopifnot(identical(length(observation), length(datasets)))
-    ## observation and seriesIndices
-    stopifnot(identical(length(observation), length(seriesIndices)))
-    ## observation and transforms
-    stopifnot(identical(length(observation), length(transforms)))
-    if (useC) {
-        .Call(diffLogLikCellComp_R,
-              diff, iComp, iCell, component, observation,
-              datasets, seriesIndices, transforms)
-    }
-    else {
-        ans <- 0
-        for (i.dataset in seq_along(datasets)) {
-            assoc.with.comp <- seriesIndices[i.dataset] == iComp
-            if (assoc.with.comp) {
-                dataset <- datasets[[i.dataset]]
-                model <- observation[[i.dataset]]
-                transform <- transforms[[i.dataset]]
-                diff.dataset <- diffLogLikCellOneDataset(diff = diff,
-                                                         iCell = iCell,
-                                                         component = component,
-                                                         model = model,
-                                                         dataset = dataset,
-                                                         transform = transform)
-                if (is.infinite(diff.dataset))
-                    return(diff.dataset)
-                ans <- ans + diff.dataset
-            }
-        }
-        ans
-    }
-}
+  
 
 diffLogLikCellsPoolNet <- function(diff, iComp, iCellOut, iCellIn,
-                                   isPool, component, observation, datasets,
+                                   isPool, component, observationModels, datasets,
                                    seriesIndices, transforms,
                                    useC = FALSE) {
     ## diff
@@ -994,9 +614,9 @@ diffLogLikCellsPoolNet <- function(diff, iComp, iCellOut, iCellIn,
     stopifnot(!is.na(isPool))
     ## component
     stopifnot(is(component, "Component"))
-    ## observation
-    stopifnot(is.list(observation))
-    stopifnot(all(sapply(observation, is, "Model")))
+    ## observationModels
+    stopifnot(is.list(observationModels))
+    stopifnot(all(sapply(observationModels, is, "Model")))
     ## datasets
     stopifnot(is.list(datasets))
     stopifnot(all(sapply(datasets, is, "Counts")))
@@ -1007,15 +627,15 @@ diffLogLikCellsPoolNet <- function(diff, iComp, iCellOut, iCellIn,
     ## transforms
     stopifnot(is.list(transforms))
     stopifnot(all(sapply(transforms, is, "CollapseTransformExtra")))
-    ## observation and datasets
-    stopifnot(identical(length(observation), length(datasets)))
-    ## observation and seriesIndices
-    stopifnot(identical(length(observation), length(seriesIndices)))
-    ## observation and transforms
-    stopifnot(identical(length(observation), length(transforms)))
+    ## observationModels and datasets
+    stopifnot(identical(length(observationModels), length(datasets)))
+    ## observationModels and seriesIndices
+    stopifnot(identical(length(observationModels), length(seriesIndices)))
+    ## observationModels and transforms
+    stopifnot(identical(length(observationModels), length(transforms)))
     if (useC) {
         .Call(diffLogLikCellsPool_R,
-              diff, iComp, iCellOut, iCellIn, component, observation,
+              diff, iComp, iCellOut, iCellIn, component, observationModels,
               datasets, seriesIndices, transforms)
     }
     else {
@@ -1027,7 +647,7 @@ diffLogLikCellsPoolNet <- function(diff, iComp, iCellOut, iCellIn,
                 i.after.out <- getIAfter(iCellOut, transform = transform)
                 i.after.in <- getIAfter(iCellIn, transform = transform)
                 if (i.after.out != i.after.in) {
-                    model <- observation[[i.dataset]]
+                    model <- observationModels[[i.dataset]]
                     dataset <- datasets[[i.dataset]]
                     diff.out <- diffLogLikCellOneDataset(diff = diff,
                                                          iCell = iCellOut,
@@ -1095,95 +715,6 @@ diffLogDensAccountMove <- function(combined, useC = FALSE) {
         }
         ans
     }
-}
-
-diffLogDensPopn <- function(combined, useC = FALSE) {
-    stopifnot(is(combined, "CombinedAccountMovements"))
-    if (useC) {
-        .Call(diffLogDensPopn_R, combined)
-    }
-    else {
-        account <- combined@account
-        population <- account@population
-        iterator <- combined@iteratorPopn
-        theta <- combined@systemModels@model@theta
-        i.popn <- combined@iPopn
-        i.popn.oth <- combined@iPopnOth
-        diff <- combined@diffProp
-        i.comp <- combined@iComp
-        i.orig.dest <- combined@iOrigDest
-        i.pool <- combined@iPool
-        i.int.net <- combined@iIntNet
-        is.increment <- combined@isIncrement
-        update.two.cohorts <- ((i.comp == i.orig.dest)
-                               || (i.comp == i.pool)
-                               || (i.comp == i.int.net))
-        if (update.two.cohorts) {
-            ans.orig <- diffLogDensPopnOneCohort(diff = -diff,
-                                                 population = population,
-                                                 i = i.popn,
-                                                 iterator = iterator,
-                                                 theta = theta)
-            ans.dest <- diffLogDensPopnOneCohort(diff = diff,
-                                                 population = population,
-                                                 i = i.popn.oth,
-                                                 iterator = iterator,
-                                                 theta = theta)
-            ans.orig + ans.dest
-        }
-        else {
-            if (!is.increment[i.comp])
-                diff <- -diff
-            diffLogDensPopnOneCohort(diff = diff,
-                                     population = population,
-                                     i = i.popn,
-                                     iterator = iterator,
-                                     theta = theta)
-        }
-    }
-}
-
-diffLogDensPopnOneCohort <- function(diff, population, i, iterator, theta) {
-    ## diff
-    stopifnot(identical(length(diff), 1L))
-    stopifnot(is.integer(diff))
-    stopifnot(!is.na(diff))
-    ## population
-    stopifnot(is(population, "Population"))
-    stopifnot(is.integer(population))
-    stopifnot(!any(is.na(population)))
-    stopifnot(all(population >= 0L))
-    ## i
-    stopifnot(identical(length(i), 1L))
-    stopifnot(is.integer(i))
-    stopifnot(!is.na(i))
-    stopifnot(i >= 0L)
-    ## iterator
-    stopifnot(is(iterator, "CohortIteratorAccessionPopulation"))
-    ## theta
-    stopifnot(is(theta, "double"))
-    stopifnot(!any(is.na(theta)))
-    stopifnot(all(theta >= 0))
-    ## population and theta
-    stopifnot(identical(length(population), length(theta)))
-    if (useC) {
-        .Call(diffLogDensAccountMove_R, combined)
-    }
-    iterator <- resetCAP(iterator, i = i)
-    ans <- 0
-    repeat {
-        i <- iterator@i
-        val.curr <- population[i]
-        val.prop <- val.curr + diff
-        lambda <- theta[i]
-        log.dens.prop <- dpois(x = val.prop, lambda = lambda, log = TRUE)
-        log.dens.curr <- dpois(x = val.curr, lambda = lambda, log = TRUE)
-        ans <- ans + log.dens.prop - log.dens.curr
-        if (iterator@finished)
-            break
-        iterator <- advanceCAP(iterator)
-    }
-    ans
 }
 
 diffLogDensJumpOrigDest <- function(combined, useC = FALSE) {
@@ -1335,50 +866,6 @@ diffLogDensJumpNet <- function(combined, useC = FALSE) {
     }
 }
 
-
-diffLogDensJumpComp <- function(combined, useC = FALSE) {
-    stopifnot(is(combined, "CombinedAccountMovements"))
-    if (useC) {
-        .Call(diffLogDensJumpAccountMoveComp_R, combined)
-    }
-    else {
-        i.comp <- combined@iComp
-        account <- combined@account
-        component <- account@components[[i.comp]]
-        systemModels <- combined@systemModels
-        sys.mod <- systemModels[[i.comp + 1L]]
-        theta <- sys.mod@theta
-        expose <- combined@exposure
-        expected.expose <- combined@expectedExposure
-        i.cell <- combined@iCell
-        i.expose <- combined@iExposure
-        is.lower.triangle <- combined@isLowerTriangle
-        diff <- combined@diffProp
-        is.increment <- combined@isIncrement
-        theta.cell <- theta[i.cell]
-        expose.cell.curr <- expose[i.expose]
-        if (is.lower.triangle) {
-            if (is.increment[i.comp])
-                expose.cell.prop <- expose.cell.curr + 0.5 * diff
-            else
-                expose.cell.prop <- expose.cell.curr - 0.5 * diff
-        }
-        else
-            expose.cell.prop <- expose.cell.curr
-        expose.cell.jump <- expected.expose[i.expose]
-        lambda.dens.prop <- theta.cell * expose.cell.prop
-        lambda.dens.curr <- theta.cell * expose.cell.curr
-        lambda.jump <- theta.cell * expose.cell.jump
-        val.curr <- component[i.cell]
-        val.prop <- val.curr + diff
-        diff.log.dens <- (dpois(x = val.prop, lambda = lambda.dens.prop, log = TRUE)
-                          - dpois(x = val.curr, lambda = lambda.dens.curr, log = TRUE))
-        diff.log.jump <- (dpois(x = val.curr, lambda = lambda.jump, log = TRUE)
-                          - dpois(x = val.prop, lambda = lambda.jump, log = TRUE))
-        diff.log.dens + diff.log.jump
-    }
-}
-
 diffLogDensExpOrigDestPool <- function(combined, useC = FALSE) {
     stopifnot(is(combined, "CombinedAccountMovements"))
     if (useC) {
@@ -1396,6 +883,8 @@ diffLogDensExpOrigDestPool <- function(combined, useC = FALSE) {
         iterator.exposure <- combined@iteratorExposure
         diff <- combined@diffProp
         systemModels <- combined@systemModels
+        if (i.exp.orig == i.exp.dest)
+            return(0)
         ans <- 0
         for (i in seq_along(components)) {
             if (uses.exposure[i]) {
@@ -1496,36 +985,40 @@ diffLogDensExpComp <- function(combined, useC = FALSE) {
         account <- combined@account
         components <- account@components
         iterators.comp <- combined@iteratorsComp
-        uses.exposure <- combined@usesExposure
-        mappings <- combined@mappingsFromExposure
+        model.uses.exposure <- combined@modelUsesExposure
+        mappings.from.exp <- combined@mappingsFromExposure
         i.exp.first <- combined@iExpFirst
-        iterator.exposure <- combined@iteratorExposure
+        iterator.exp <- combined@iteratorExposure
         is.increment <- combined@isIncrement
         diff <- combined@diffProp
         i.comp <- combined@iComp
         i.orig.dest <- combined@iOrigDest
         i.pool <- combined@iPool
         systemModels <- combined@systemModels
+        has.age <- combined@hasAge
+        no.exposure.affected <- i.exp.first == 0L
+        if (no.exposure.affected) ## eg cell updated is last upper triangle
+            return(0)
         ans <- 0
-        if (is.increment[i.comp])
+        if (!is.increment[i.comp])
             diff <- -diff
         for (i in seq_along(components)) {
-            if (uses.exposure[i]) {
+            if (uses.exposure[i]) { ## note that 'net' components never use exposure
                 component <- components[[i]]
                 theta <- systemModels[[i + 1L]]@theta
                 iterator.comp <- iterators.comp[[i]]
-                mapping <- mappings[[i]]
+                mapping.from.exp <- mappings.from.exp[[i]]
                 if (i.comp == i.orig.dest) {
-                    i.cell <- getICellOrigDestFromExp(i = i.exp.first,
-                                                      mapping = mapping)
-                    diff.log <- diffLogDensExpOneOrigDestPool(iCell = i.cell,
-                                                              component = component,
-                                                              theta = theta,
-                                                              iteratorComp = iterator.comp,
-                                                              iExpFirst = i.exp.first,
-                                                              exposure = exposure,
-                                                              iteratorExposure = iterator.exposure,
-                                                              diff = diff)
+                    i.cell <- getICellCompFromExp(i = i.exp.first,
+                                                  mapping = mapping.from.exp)
+                    diff.log <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell,
+                                                                   component = component,
+                                                                   theta = theta,
+                                                                   iteratorComp = iterator.comp,
+                                                                   iExpFirst = i.exp.first,
+                                                                   exposure = exposure,
+                                                                   iteratorExposure = iterator.exposure,
+                                                                   diff = diff)
                     if (is.infinite(diff.log))
                         return(diff.log)
                     ans <- ans + diff.log
@@ -1533,28 +1026,28 @@ diffLogDensExpComp <- function(combined, useC = FALSE) {
                 if (i.comp == i.pool) {
                     i.cell <- getICellPoolFromExp(i = i.exp.first,
                                                   mapping = mapping)
-                    ans.one <- diffLogDensExpOneOrigDestPool(iCell = i.cell,
-                                                             component = component,
-                                                             theta = theta,
-                                                             iteratorComp = iterator.comp,
-                                                             iExpFirst = i.exp.first,
-                                                             exposure = exposure,
-                                                             iteratorExposure = iterator.exposure,
-                                                             diff = diff)
+                    ans.one <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell,
+                                                                  component = component,
+                                                                  theta = theta,
+                                                                  iteratorComp = iterator.comp,
+                                                                  iExpFirst = i.exp.first,
+                                                                  exposure = exposure,
+                                                                  iteratorExposure = iterator.exposure,
+                                                                  diff = diff)
                     if (is.infinite(ans.one))
                         return(diff.log)
                     ans <- ans + ans.one
                 }
-                else {
+                else { 
                     i.cell <- getICellCompFromExpose(mapping = mapping,
                                                      i = i.exp.first)
                     ans.one <- diffLogDensExpOneComp(iCell = i.cell,
+                                                     hasAge = has.age,
                                                      component = component,
                                                      theta = theta,
-                                                     iteratorComp = iterator.comp,
+                                                     iterator = iterator.comp,
                                                      iExpFirst = i.exp.first,
                                                      exposure = exposure,
-                                                     iteratorExposure = iterator.exposure,
                                                      diff = diff)
                     if (is.infinite(ans.one))
                         return(diff.log)
@@ -1569,188 +1062,19 @@ diffLogDensExpComp <- function(combined, useC = FALSE) {
 
 
 
-diffLogDensExpOneOrigDestParChPool <- function(iCell, component, theta, iteratorComp, 
-                                          iExpFirst, exposure, iteratorExposure,
-                                          diff, useC = FALSE) {
-    ## iCell
-    stopifnot(identical(length(iCell), 1L))
-    stopifnot(is.integer(iCell))
-    stopifnot(!is.na(iCell))
-    stopifnot(iCell > 0L)
-    ## component
-    stopifnot(is(component, "InternalMovementsOrigDest")
-              || is(component, "InternalMovementsPool"))
-    ## theta
-    stopifnot(is(theta, "Values"))
-    stopifnot(is.double(theta))
-    stopifnot(!any(is.na(theta)))
-    stopifnot(all(theta >= 0))
-    ## iteratorComp
-    stopifnot(is(iterator, "CohortIteratorOrigDestParChPool"))
-    ## iExpFirst
-    stopifnot(identical(length(iExpFirst), 1L))
-    stopifnot(is.integer(iExpFirst))
-    stopifnot(!is.na(iExpFirst))
-    stopifnot(iExpFirst > 0L)
-    ## theta
-    stopifnot(is(exposure, "Values"))
-    stopifnot(is.double(exposure))
-    stopifnot(!any(is.na(exposure)))
-    stopifnot(all(exposure >= 0))
-    ## iteratorExposure
-    stopifnot(is(iterator, "CohortIteratorComponent"))
-    ## diff
-    stopifnot(identical(length(diff), 1L))
-    stopifnot(is.integer(diff))
-    stopifnot(!is.na(diff))
-    ## iCell and component
-    stopifnot(iCell <= length(component))
-    ## iExpFirst and exposure
-    stopifnot(iExpFirst <= length(exposure))
-    ## component and theta
-    stopifnot(identical(length(component), length(theta)))
-    if (useC) {
-        .Call(diffLogDensExpOneOrigDestParChPool_R,
-              iCell, component, theta, iteratorComp,
-              iExpFirst, exposure, iteratorExposure,
-              diff)
-    }
-    else {    
-        kToleranceExposure <- 1e-5 ## in C can use a macro
-        iteratorComp <- resetCODP(iteratorComp, i = iCell)
-        iteratorExposure <- resetCC(iteratorExposure, i = iExpFirst)
-        ans <- 0
-        diff.expose <- 0.5 * diff
-        lengthVec <- iterator@lengthVec
-        if (iteratorComp@iTriangle == 1L) {
-            i.e <- iteratorExposure@i
-            i.c.vec <- iteratorComp@iVec
-            expose.curr <- exposure[i.e]
-            expose.prop <- expose.curr + diff.expose
-            diff.log.expose <- log(expose.prop) - log(expose.curr)
-            for (j in seq_len(lengthVec)) {
-                i.c <- i.c.vec[j]
-                comp.curr <- component[i.c]
-                if ((expose.prop < kToleranceExposure) && (comp.corr > 0L))
-                    return(-Inf)
-                theta.curr <- theta[i.c]
-                ans <- ans - theta.curr * diff.expose + comp.curr * diff.log.expose
-            }
-        }
-        while (!iteratorComp@finished) {
-            iteratorComp <- advanceCODP(iteratorComp)
-            iteratorExposure <- advanceCC(iteratorExposure)
-            i.e <- iteratorExposure@i
-            i.c.vec <- iteratorComp@iVec
-            expose.curr <- exposure[i.e]
-            expose.prop <- expose.curr + diff.expose
-            diff.log.expose <- log(expose.prop) - log(expose.curr)
-            for (j in seq_len(lengthVec)) {
-                i.c <- i.c.vec[j]
-                comp.curr <- component[i.c]
-                if ((expose.prop < kToleranceExposure) && (comp.corr > 0L))
-                    return(-Inf)
-                theta.curr <- theta[i.c]
-                ans <- ans - theta.curr * diff.expose + comp.curr * diff.log.expose
-            }
-        }
-        ans
-    }
-}
-
-diffLogDensExpOneComp <- function(iCell, component, theta, iteratorComp, 
-                                  iExpFirst, exposure, iteratorExposure,
-                                  diff, useC = FALSE) {
-    ## iCell
-    stopifnot(identical(length(iCell), 1L))
-    stopifnot(is.integer(iCell))
-    stopifnot(!is.na(iCell))
-    stopifnot(iCell > 0L)
-    ## component
-    stopifnot(is(component, "Component"))
-    ## theta
-    stopifnot(is(theta, "Values"))
-    stopifnot(is.double(theta))
-    stopifnot(!any(is.na(theta)))
-    stopifnot(all(theta >= 0))
-    ## iteratorComp
-    stopifnot(is(iterator, "CohortIteratorComponent"))
-    ## iExpFirst
-    stopifnot(identical(length(iExpFirst), 1L))
-    stopifnot(is.integer(iExpFirst))
-    stopifnot(!is.na(iExpFirst))
-    stopifnot(iExpFirst > 0L)
-    ## theta
-    stopifnot(is(exposure, "Values"))
-    stopifnot(is.double(exposure))
-    stopifnot(!any(is.na(exposure)))
-    stopifnot(all(exposure >= 0))
-    ## iteratorExposure
-    stopifnot(is(iterator, "CohortIteratorComponent"))
-    ## diff
-    stopifnot(identical(length(diff), 1L))
-    stopifnot(is.integer(diff))
-    stopifnot(!is.na(diff))
-    ## iCell and component
-    stopifnot(iCell <= length(component))
-    ## iExpFirst and exposure
-    stopifnot(iExpFirst <= length(exposure))
-    ## component and theta
-    stopifnot(identical(length(component), length(theta)))
-    if (useC) {
-        .Call(diffLogDensExpOneComp_R,
-              iCell, component, theta, iteratorComp,
-              iExpFirst, exposure, iteratorExposure,
-              diff)
-    }
-    else {    
-        kToleranceExposure <- 1e-5 ## in C can use a macro
-        iteratorComp <- resetCC(iteratorComp, i = iCell)
-        iteratorExposure <- resetCC(iteratorExposure, i = iExpFirst)
-        ans <- 0
-        diff.expose <- 0.5 * diff
-        if (iteratorComp@iTriangle == 1L) {
-            i.e <- iteratorExposure@i
-            i.c <- iteratorComp@i
-            comp.curr <- component[i.c]
-            expose.curr <- exposure[i.e]
-            expose.prop <- expose.curr + diff.expose
-            if ((expose.prop < kToleranceExposure) && (comp.corr > 0L))
-                return(-Inf)
-            diff.log.expose <- log(expose.prop) - log(expose.curr)
-            theta.curr <- theta[i.c]
-            ans <- ans - theta.curr * diff.expose + comp.curr * diff.log.expose
-        }
-        while (!iteratorComp@finished) {
-            iteratorComp <- advanceCC(iteratorComp)
-            iteratorExposure <- advanceCC(iteratorExposure)
-            i.c <- iteratorComp@i
-            i.e <- iteratorExposure@i
-            comp.curr <- component[i.c]
-            expose.curr <- exposure[i.e]
-            expose.prop <- expose.curr + diff.expose
-            if ((expose.prop < kToleranceExposure) && (comp.curr > 0L))
-                return(-Inf)
-            diff.log.expose <- log(expose.prop) - log(expose.curr)
-            theta.curr <- theta[i.c]
-            ans <- ans - theta.curr * diff.expose + comp.curr * diff.log.expose
-        }
-        ans
-    }
-}
     
 
 ## UPDATE VALUES ################################################################
 
 updateValuesAccountMove <- function(combined) {
-    combined <- updateCellAccountMove(combined)
-    combined <- updateSubsequentPopnAccountMove(combined)
+    combined <- updateCellMove(combined)
+    combined <- updateSubsequentPopnMove(combined)
     combined <- updateExposure(combined)
     combined <- updateSubsequentAccession(combined)
     combined
 }
 
-updateCellAccountMove <- function(combined) {
+updateCellMove <- function(combined) {
     i.comp <- combined@iComp
     i.cell <- combined@iCell
     diff <- combined@diffProp
@@ -1781,18 +1105,65 @@ updateCellAccountMove <- function(combined) {
     combined
 }
 
-## there is always at least one subsequent population value to update
-updateSubsequentPopnAccountMove <- function(combined) {
+
+
+updateExposure <- function(combined) {
+    exposure <- combined@exposure
+    diff <- combined@diffProp
     i.comp <- combined@iComp
     i.orig.dest <- combined@iOrigDest
     i.pool <- combined@iPool
     i.int.net <- combined@iIntNet
-    i.popn.next <- combined@iPopnNext
-    i.popn.next.other <- combined@iPopnNextOther
-    iterator <- combined@iteratorPopn
+    i.cell <- combined@iCell
+    i.cell.other <- combined@iCellOther
+    i.exp.first <- combined@iExpFirst
+    i.exp.first.other <- combined@iExpFirstOther
+    is.popn <- i.comp == 0L
+    is.orig.dest <- i.comp == i.orig.dest
+    is.pool <- i.comp == i.pool
+    is.int.net <- i.comp == i.int.net
+    if (i.exp.first == 0L)
+        return(combined)
+    if (is.popn) {
+        
+
+    }
+    
+    update.two.cohorts <- (is.orig.dest || is.pool || is.int.net)
+    
     is.popn <- i.comp == 0L
     if (is.popn) {
-        iterator <- resetCAP(iterator, i = i.popn.next)
+        
+        
+            
+    
+    if (is
+    i.exposure <- getIExposure(i = i.cell, mapping = mapping[[i.comp]])
+    
+    
+    if (update.two.cohorts) {
+        
+    update.two.cohorts <- 
+        mappings <- combined@mappingsToExposure
+    
+    is.lower.triangle <- combined@isLowerTriangle
+    i
+    has.age <- combined@has.age
+    if (!has.age)
+        return(combined)
+    i.acc.next <- combined@iAccNext
+    no.values.to.update <- i.acc.next == 0L # final period, upper triangle
+    if (no.values.to.update)
+        return(combined)
+    i.comp <- combined@iComp
+    i.orig.dest <- combined@iOrigDest
+    i.pool <- combined@iPool
+    i.int.net <- combined@iIntNet
+    i.acc.next.other <- combined@iAccNextOther
+    iterator <- combined@iteratorAcc
+    is.popn <- i.comp == 0L
+    if (is.popn) {
+        iterator <- resetCAP(iterator, i = i.acc.next)
         repeat {
             i <- iterator@i
             combined@account@population[i] <- 
@@ -1803,7 +1174,9 @@ updateSubsequentPopnAccountMove <- function(combined) {
             iterator <- advanceCAP(iterator)
         }
     }
-    else {
+    ## if final period and lower triangle, there are no
+    ## subsequent accession values to update
+    else { 
         is.orig.dest <- i.comp == i.orig.dest
         is.pool <- i.comp == i.pool
         is.int.net <- i.comp == i.int.net
@@ -1817,8 +1190,8 @@ updateSubsequentPopnAccountMove <- function(combined) {
                 diff.orig <- diff
                 diff.dest <- -diff
             }
-            iterator.orig <- resetCAP(iterator, i = i.popn.next)
-            iterator.dest <- resetCAP(iterator, i = i.popn.next.other)
+            iterator.orig <- resetCAP(iterator, i = i.acc.next)
+            iterator.dest <- resetCAP(iterator, i = i.acc.next.other)
             repeat {
                 i.orig <- iterator.orig@i
                 i.dest <- iterator.dest@i
@@ -1837,7 +1210,7 @@ updateSubsequentPopnAccountMove <- function(combined) {
         else {
             if (!is.increment[i.comp])
                 diff <- -diff
-            iterator <- resetCAP(iterator, i = i.popn.next)
+            iterator <- resetCAP(iterator, i = i.acc.next)
             repeat {
                 i <- iterator@i
                 combined@account@population[i] <- 
@@ -1851,109 +1224,6 @@ updateSubsequentPopnAccountMove <- function(combined) {
     }
     combined
 }
-
-
-## updateExposure <- function(combined) {
-##     i.comp <- combined@iComp
-##     i.orig.dest <- combined@iOrigDest
-##     i.pool <- combined@iPool
-##     i.int.net <- combined@iIntNet
-##     i.cell <- combined@iCell
-##     i.cell.other <- combined@iCellOther
-##     is.popn <- i.comp == 0L {
-##         if (is.popn) {
-            
-    
-##     if (is
-##     i.exposure <- getIExposure(i = i.cell, mapping = mapping[[i.comp]])
-    
-##     is.orig.dest <- i.comp == i.orig.dest
-##     is.pool <- i.comp == i.pool
-##     is.int.net <- i.comp == i.int.net
-##     update.two.cohorts <- (is.orig.dest || is.pool || is.int.net)
-##     if (update.two.cohorts) {
-        
-##     update.two.cohorts <- 
-##         mappings <- combined@mappingsToExposure
-    
-##     is.lower.triangle <- combined@isLowerTriangle
-##     i
-##     has.age <- combined@has.age
-##     if (!has.age)
-##         return(combined)
-##     i.acc.next <- combined@iAccNext
-##     no.values.to.update <- i.acc.next == 0L # final period, upper triangle
-##     if (no.values.to.update)
-##         return(combined)
-##     i.comp <- combined@iComp
-##     i.orig.dest <- combined@iOrigDest
-##     i.pool <- combined@iPool
-##     i.int.net <- combined@iIntNet
-##     i.acc.next.other <- combined@iAccNextOther
-##     iterator <- combined@iteratorAcc
-##     is.popn <- i.comp == 0L
-##     if (is.popn) {
-##         iterator <- resetCAP(iterator, i = i.acc.next)
-##         repeat {
-##             i <- iterator@i
-##             combined@account@population[i] <- 
-##                 (combined@account@population[i]
-##                  + diff)
-##             if (iterator@finished)
-##                 break
-##             iterator <- advanceCAP(iterator)
-##         }
-##     }
-##     ## if final period and lower triangle, there are no
-##     ## subsequent accession values to update
-##     else { 
-##         is.orig.dest <- i.comp == i.orig.dest
-##         is.pool <- i.comp == i.pool
-##         is.int.net <- i.comp == i.int.net
-##         update.two.cohorts <- (is.orig.dest || is.pool || is.int.net)
-##         if (update.two.cohorts) {
-##             if (is.orig.dest || is.pool) {
-##                 diff.orig <- -diff
-##                 diff.dest <- diff
-##             }
-##             else {
-##                 diff.orig <- diff
-##                 diff.dest <- -diff
-##             }
-##             iterator.orig <- resetCAP(iterator, i = i.acc.next)
-##             iterator.dest <- resetCAP(iterator, i = i.acc.next.other)
-##             repeat {
-##                 i.orig <- iterator.orig@i
-##                 i.dest <- iterator.dest@i
-##                 combined@account@population[i.orig] <- 
-##                     (combined@account@population[i.orig]
-##                      + diff.orig)
-##                 combined@account@population[i.dest] <- 
-##                     (combined@account@population[i.dest]
-##                      + diff.dest)
-##                 if (iterator.orig@finished)
-##                     break
-##                 iterator.orig <- advanceCAP(iterator.orig)
-##                 iterator.dest <- advanceCAP(iterator.dest)
-##             }
-##         }
-##         else {
-##             if (!is.increment[i.comp])
-##                 diff <- -diff
-##             iterator <- resetCAP(iterator, i = i.acc.next)
-##             repeat {
-##                 i <- iterator@i
-##                 combined@account@population[i] <- 
-##                     (combined@account@population[i]
-##                      + diff)
-##                 if (iterator@finished)
-##                     break
-##                 iterator <- advanceCAP(iterator)
-##             }
-##         }
-##     }
-##     combined
-## }
 
 updateSubsequentAccession <- function(combined) {
     has.age <- combined@hasAage
@@ -2032,7 +1302,9 @@ updateSubsequentAccession <- function(combined) {
 }
 
 
-
+updateExpectedExposure <- function(combined) {
+    NULL
+}
 
 updateSystem <- function(combined) {
     systemModels <- combined@systemModels
@@ -2070,14 +1342,14 @@ updateSystem <- function(combined) {
 }
 
 updateObservation <- function(combined) {
-    observation <- combined@observation
+    observationModels <- combined@observationModels
     account <- combined@account
     population <- account@population
     components <- account@components
     series.indices <- combined@seriesIndices
     transforms <- combined@transformsDatasets
-    for (i in seq_along(observation)) {
-        model <- observation[[i]]
+    for (i in seq_along(observationModels)) {
+        model <- observationModels[[i]]
         dataset <- datasets[[i]]
         transform <- transforms[[i]]
         series.index <- series.indices[i]
@@ -2089,9 +1361,9 @@ updateObservation <- function(combined) {
         if (is(model, "Poisson"))
             series.collapsed <- toDouble(series.collapsed)
         model <- updateModelUseExp(model, y = dataset, exposure = series.collapsed)
-        observation[[i]] <- model
+        observationModels[[i]] <- model
     }
-    combined@observation <- observation
+    combined@observationModels <- observationModels
     combined
 }
 
@@ -2103,7 +1375,7 @@ updateObservation <- function(combined) {
 
 
 
-estimateAccount <- function(y, systemModels, observation, datasets, filename = NULL,
+estimateAccount <- function(y, systemModels, observationModels, datasets, filename = NULL,
                             nBurnin = 1000, nSim = 1000, nChain = 4, nThin = 1,
                             parallel = TRUE, nUpdateMax = 200,
                             verbose = FALSE, useC = TRUE) {
@@ -2112,10 +1384,10 @@ estimateAccount <- function(y, systemModels, observation, datasets, filename = N
     checkSystem(systemModels)
     systemModels <- alignSystemToAccount(systemModels = systemModels,
                                    account = account)
-    checkObservation(observation, needsNonDefaultSeriesArg = TRUE)
+    checkObservation(observationModels, needsNonDefaultSeriesArg = TRUE)
     checkNamesDatasets(datasets)
     datasets <- alignDatasetsToObservation(datasets = datasets,
-                                           observation = observation)
+                                           observationModels = observationModels)
     ## check datasets after aligning to avoid checking datasets that are not needed
     datasets <- checkAndTidyDatasets(datasets)
     transforms <- makeTransformsYToDatasets(y = y, nameY = "y", datasets = datasets)
@@ -2134,7 +1406,7 @@ estimateAccount <- function(y, systemModels, observation, datasets, filename = N
     combineds <- replicate(n = mcmc.args$nChain,
                            initialCombinedAccount(account = account,
                                                   systemModels = systemModels,
-                                                  observation = observation,
+                                                  observationModels = observationModels,
                                                   datasets = datasets,
                                                   namesDatasets = namesDatasets,
                                                   transforms = transforms))

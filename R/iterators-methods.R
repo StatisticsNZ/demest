@@ -227,26 +227,27 @@ advanceCC <- function(object, useC = FALSE) {
     }
 }
 
-## ## NO_TESTS
-## ## It is the caller's responsibility to make
-## ## sure that the iterator has not finished
-## advanceCODPCP <- function(object, useC = FALSE) {
-##     stopifnot(methods::is(object, "CohortIteratorOrigDestParChPool"))
-##     if (useC) {
-##         .Call(advanceCODPCP_R, object)
-##     }
-##     else {
-##         object <- advanceCC(object)
-##         i <- object@i
-##         i.vec <- object@iVec
-##         length <- object@lengthVec
-##         increments <- object@increments
-##         for (j in seq_len(lengthVec))
-##             i.vec[j] <- i + increments[j]
-##         object@iVec <- i.vec
-##         object
-##     }
-## }
+## READY_TO_TRANSLATE
+## HAS_TESTS
+## It is the caller's responsibility to make
+## sure that the iterator has not finished
+advanceCODPCP <- function(object, useC = FALSE) {
+    stopifnot(methods::is(object, "CohortIteratorOrigDestParChPool"))
+    if (useC) {
+        .Call(advanceCODPCP_R, object)
+    }
+    else {
+        object <- advanceCC(object)
+        i <- object@i
+        i.vec <- object@iVec
+        length.vec <- object@lengthVec
+        increment <- object@increment
+        for (j in seq_len(length.vec))
+            i.vec[j] <- i + increment[j]
+        object@iVec <- i.vec
+        object
+    }
+}
 
 ## TRANSLATED
 ## HAS_TESTS

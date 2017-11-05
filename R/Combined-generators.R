@@ -370,6 +370,8 @@ setMethod("initialCombinedAccount",
                                          metadata = population@metadata)
               is.increment <- sapply(components, dembase::isPositiveIncrement)
               iterator.popn <- CohortIterator(population)
+              iterator.exposure <- CohortIterator(exposure)
+              iterators.comp <- lapply(components, CohortIterator)
               descriptions <- lapply(c(list(population), components), Description)
               mappings.from.exp <- lapply(components, function(x) Mapping(exposure, x))
               mappings.to.exp <- lapply(components, function(x) Mapping(x, exposure))
@@ -416,6 +418,18 @@ setMethod("initialCombinedAccount",
                       }
                   }
               }
+              .Data.theta.popn <- array(systemModels[[1L]]@theta,
+                                        dim = dim(population),
+                                        dimnames = dimnames(population))
+              metadata.theta.popn <- population@metadata
+              theta.popn <- new("Counts",
+                                .Data = .Data.theta.popn,
+                                metadata = metadata.theta.popn)
+              expected.exposure <- dembase::exposure(theta.popn,
+                                                     triangles = has.age)
+              expected.exposure <- new("Exposure",
+                                       .Data = expected.exposure@.Data,
+                                       metadata = expected.exposure@metadata)
               for (i in seq_along(observationModels)) {
                   series.index <- seriesIndices[i]
                   series <- if (series.index == 0L) population else components[[series.index]]
@@ -437,6 +451,7 @@ setMethod("initialCombinedAccount",
                                descriptions = descriptions,
                                diffProp = NA_integer_,
                                exposure = exposure,
+                               expectedExposure = expected.exposure,
                                generatedNewProposal = new("LogicalFlag", FALSE),
                                hasAge = new("LogicalFlag", TRUE),
                                iAccNext = NA_integer_,
@@ -458,7 +473,9 @@ setMethod("initialCombinedAccount",
                                isLowerTriangle = new("LogicalFlag", FALSE),
                                isNet = is.net,
                                iteratorAcc = iterator.acc,
+                               iteratorExposure = iterator.exposure,
                                iteratorPopn = iterator.popn,
+                               iteratorsComp = iterators.comp,
                                mappingsFromExp = mappings.from.exp,
                                mappingsToAcc = mappings.to.acc,
                                mappingsToExp = mappings.to.exp,
@@ -480,6 +497,7 @@ setMethod("initialCombinedAccount",
                                descriptions = descriptions,
                                diffProp = NA_integer_,
                                exposure = exposure,
+                               expectedExposure = expected.exposure,
                                generatedNewProposal = new("LogicalFlag", FALSE),
                                hasAge = new("LogicalFlag", FALSE),
                                iBirths = i.births,
@@ -497,7 +515,9 @@ setMethod("initialCombinedAccount",
                                iPool = i.pool,
                                isIncrement = is.increment,
                                isNet = is.net,
+                               iteratorExposure = iterator.exposure,
                                iteratorPopn = iterator.popn,
+                               iteratorsComp = iterators.comp,
                                mappingsFromExp = mappings.from.exp,
                                mappingsToExp = mappings.to.exp,
                                mappingsToPopn = mappings.to.popn,
