@@ -51,6 +51,7 @@ setClass("BetaIsPredicted",
 ## NO TESTS
 setClass("BoxCoxParamMixin",
          slots = c(boxCoxParam = "numeric"),
+         prototype = prototype(boxCoxParam = 0),
          contains = "VIRTUAL",
          validity = function(object) {
              boxCoxParam <- object@boxCoxParam@.Data

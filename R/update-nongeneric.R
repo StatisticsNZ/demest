@@ -2986,6 +2986,7 @@ updateTheta_PoissonVaryingNotUseExp <- function(object, y, useC = FALSE) {
             transform <- y@transformSubtotals
         }
         theta <- object@theta
+        box.cox.param <- object@boxCoxParam
         scale <- object@scaleTheta
         lower <- object@lower
         upper <- object@upper
@@ -3021,18 +3022,24 @@ updateTheta_PoissonVaryingNotUseExp <- function(object, y, useC = FALSE) {
             }
             else {
                 th.curr <- theta[i]
-                log.th.curr <- log(th.curr)
-                mean <- log.th.curr
+                if (box.cox.param > 0)
+                    tr.th.curr <- (th.curr ^ box.cox.param - 1) / box.cox.param # ('tr' short for 'transformed')
+                else
+                    tr.th.curr <- log(th.curr)
+                mean <- tr.th.curr
                 sd <- scale
             }
             while (!found.prop && (attempt < max.attempt)) {
                 attempt <- attempt + 1L
-                log.th.prop <- stats::rnorm(n = 1L, mean = mean, sd = sd)
-                found.prop <- ((log.th.prop > lower + tolerance)
-                               && (log.th.prop < upper - tolerance))
+                tr.th.prop <- stats::rnorm(n = 1L, mean = mean, sd = sd)
+                found.prop <- ((tr.th.prop > lower + tolerance)
+                               && (tr.th.prop < upper - tolerance))
             }
             if (found.prop) {
-                th.prop <- exp(log.th.prop)
+                if (box.cox.param > 0)
+                    th.prop <- (box.cox.param * tr.th.prop + 1) ^ (1 / box.cox.param)
+                else
+                    th.prop <- exp(tr.th.prop)
                 if (draw.straight.from.prior)
                     theta[i] <- th.prop
                 else {
@@ -3052,8 +3059,8 @@ updateTheta_PoissonVaryingNotUseExp <- function(object, y, useC = FALSE) {
                         log.lik.prop <- stats::dpois(y[i], lambda = th.prop, log = TRUE)
                         log.lik.curr <- stats::dpois(y[i], lambda = th.curr, log = TRUE)
                     }
-                    log.dens.prop <- stats::dnorm(x = log.th.prop, mean = mu, sd = sigma, log = TRUE)
-                    log.dens.curr <- stats::dnorm(x = log.th.curr, mean = mu, sd = sigma, log = TRUE)
+                    log.dens.prop <- stats::dnorm(x = tr.th.prop, mean = mu, sd = sigma, log = TRUE)
+                    log.dens.curr <- stats::dnorm(x = tr.th.curr, mean = mu, sd = sigma, log = TRUE)
                     log.diff <- log.lik.prop + log.dens.prop - log.lik.curr - log.dens.curr
                     accept <- (log.diff >= 0) || (stats::runif(n = 1L) < exp(log.diff))
                     if (accept) {
@@ -3073,7 +3080,7 @@ updateTheta_PoissonVaryingNotUseExp <- function(object, y, useC = FALSE) {
     }
 }
 
-## TRANSLATED (AGAIN)
+## TRANSLATED
 ## HAS_TESTS
 ## Includes case where 'y' has subtotals.
 ## Subtotals can only be used with PoissonVarying models.
@@ -3112,7 +3119,7 @@ updateTheta_PoissonVaryingUseExp <- function(object, y, exposure, useC = FALSE) 
             transform <- y@transformSubtotals
         }
         theta <- object@theta
-        box.cox.param <- object@boxCoxParam ## NEW
+        box.cox.param <- object@boxCoxParam
         scale <- object@scaleTheta
         scale.multiplier <- object@scaleThetaMultiplier
         lower <- object@lower
@@ -3150,13 +3157,11 @@ updateTheta_PoissonVaryingUseExp <- function(object, y, exposure, useC = FALSE) 
             }
             else {
                 th.curr <- theta[i]
-                ## log.th.curr <- log(th.curr)
-                if (box.cox.param > 0) ## NEW
-                    tr.th.curr <- (th.curr ^ box.cox.param - 1) / box.cox.param ## NEW ('tr' short for 'transformed')
-                else ## NEW
-                    tr.th.curr <- log(th.curr) ## NEW
-                ## mean <- log.th.curr
-                mean <- tr.th.curr ## NEW
+                if (box.cox.param > 0)
+                    tr.th.curr <- (th.curr ^ box.cox.param - 1) / box.cox.param # ('tr' short for 'transformed')
+                else
+                    tr.th.curr <- log(th.curr)
+                mean <- tr.th.curr
                 if (y.is.missing)
                     sd <- scale / scale.multiplier
                 else
@@ -3164,19 +3169,15 @@ updateTheta_PoissonVaryingUseExp <- function(object, y, exposure, useC = FALSE) 
             }
             while (!found.prop && (attempt < max.attempt)) {
                 attempt <- attempt + 1L
-                ## log.th.prop <- stats::rnorm(n = 1L, mean = mean, sd = sd)
-                ## found.prop <- ((log.th.prop > lower + tolerance)
-                ##                && (log.th.prop < upper - tolerance))
                 tr.th.prop <- stats::rnorm(n = 1L, mean = mean, sd = sd)
                 found.prop <- ((tr.th.prop > lower + tolerance)
                                && (tr.th.prop < upper - tolerance))
             }
             if (found.prop) {
-                ## th.prop <- exp(log.th.prop)
-                if (box.cox.param > 0) ## NEW
-                    th.prop <- (box.cox.param * tr.th.prop + 1) ^ (1 / box.cox.param) ## NEW
-                else ## NEW
-                    th.prop <- exp(tr.th.prop) ## NEW
+                if (box.cox.param > 0)
+                    th.prop <- (box.cox.param * tr.th.prop + 1) ^ (1 / box.cox.param)
+                else
+                    th.prop <- exp(tr.th.prop)
                 if (draw.straight.from.prior)
                     theta[i] <- th.prop
                 else {
@@ -3196,10 +3197,8 @@ updateTheta_PoissonVaryingUseExp <- function(object, y, exposure, useC = FALSE) 
                         log.lik.prop <- stats::dpois(y[i], lambda = th.prop * exposure[i], log = TRUE)
                         log.lik.curr <- stats::dpois(y[i], lambda = th.curr * exposure[i], log = TRUE)
                     }
-                    ## log.dens.prop <- stats::dnorm(x = log.th.prop, mean = mu, sd = sigma, log = TRUE)
-                    ## log.dens.curr <- stats::dnorm(x = log.th.curr, mean = mu, sd = sigma, log = TRUE)
-                    log.dens.prop <- stats::dnorm(x = tr.th.prop, mean = mu, sd = sigma, log = TRUE) ## NEW
-                    log.dens.curr <- stats::dnorm(x = tr.th.curr, mean = mu, sd = sigma, log = TRUE) ## NEW
+                    log.dens.prop <- stats::dnorm(x = tr.th.prop, mean = mu, sd = sigma, log = TRUE)
+                    log.dens.curr <- stats::dnorm(x = tr.th.curr, mean = mu, sd = sigma, log = TRUE)
                     log.diff <- log.lik.prop + log.dens.prop - log.lik.curr - log.dens.curr
                     accept <- (log.diff >= 0) || (stats::runif(n = 1L) < exp(log.diff))
                     if (accept) {

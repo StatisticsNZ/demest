@@ -3839,7 +3839,7 @@ test_that("updateSigma_Varying gives valid answer - with Box-Cox", {
         y <- Counts(array(rpois(n = 20, lambda = 30),
                           dim = 5:4,
                           dimnames = list(age = 0:4, region = letters[1:4])))
-        spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE, boxCox = 0.7),
+        spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE, boxcox = 0.7),
                       age ~ Exch())
         x <- initialModel(spec, y = y, exposure = NULL)
         set.seed(seed + 1)
@@ -3874,7 +3874,7 @@ test_that("R and C versions of updateSigma_Varying give same answer - with Box-C
         y <- Counts(array(rpois(n = 20, lambda = 30),
                           dim = 5:4,
                           dimnames = list(age = 0:4, region = letters[1:4])))
-        spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE, boxCox = 0.8),
+        spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE, boxcox = 0.8),
                       age ~ Exch())
         x <- initialModel(spec, y = y, exposure = NULL)
         set.seed(seed + 1)
@@ -5834,6 +5834,40 @@ test_that("updateTheta_PoissonVaryingNotUseExp gives valid answer", {
         set.seed(seed + 1)
         ans.obtained <- updateTheta_PoissonVaryingNotUseExp(model, y = y)
         expect_true(all((ans.obtained@theta > 10) & ans.obtained@theta < 30))
+        ## Box-Cox transform
+        y <- Counts(array(as.integer(rpois(n = 20, lambda = 5)),
+                          dim = c(5, 4),
+                          dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        spec <- Model(y ~ Poisson(mean ~ age + region, boxcox = 0.7, useExpose = FALSE))
+        model <- initialModel(spec, y = y, exposure = NULL)
+        set.seed(seed + 1)
+        ans.obtained <- updateTheta_PoissonVaryingNotUseExp(model, y = y)
+        set.seed(seed + 1)
+        ans.expected <- model
+        g <- function(x) (x^(0.7) - 1)/0.7
+        g.inv <- function(x) (0.7*x + 1)^(1/0.7)
+        mu <- (model@betas[[1]]
+            + model@betas[[2]]
+            + rep(model@betas[[3]], each = 5))
+        for (i in seq_along(ans.expected@theta)) {
+            theta.curr <- ans.expected@theta[i]
+            theta.prop <- g.inv(rnorm(1, mean = g(theta.curr),
+                                      sd = model@scaleTheta))
+            log.diff <- dpois(y[i], lambda = theta.prop, log = TRUE) -
+                dpois(y[i], lambda = theta.curr, log = TRUE) +
+                dnorm(x = g(theta.prop), mean = mu[i], sd = model@sigma, log = TRUE) -
+                dnorm(x = g(theta.curr), mean = mu[i], sd = model@sigma, log = TRUE)
+            if ((log.diff >= 0) || (runif(1) < exp(log.diff))) {
+                ans.expected@nAcceptTheta <- ans.expected@nAcceptTheta + 1L
+                ans.expected@theta[i] <- theta.prop
+            }
+        }
+        if (ans.expected@nAcceptTheta == 0L)
+            warning("no proposals accepted")
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)        
     }
 })
 
@@ -5933,6 +5967,20 @@ test_that("R and C versions of updateTheta_PoissonVaryingNotUseExp give same ans
         ans.C <- updateTheta_PoissonVaryingNotUseExp(model, y = y, useC = TRUE)
         if (ans.R@nAcceptTheta == 0L)
             warning("no proposals accepted")
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+        ## Box-cox
+        y <- Counts(array(as.integer(rpois(n = 20, lambda = 5)),
+                          dim = c(5, 4),
+                          dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        spec <- Model(y ~ Poisson(mean ~ age + region, boxcox = 0.7, useExpose = FALSE))
+        model <- initialModel(spec, y = y, exposure = NULL)
+        set.seed(seed + 1)
+        ans.R <- updateTheta_PoissonVaryingNotUseExp(model, y = y, useC = FALSE)
+        set.seed(seed + 1)
+        ans.C <- updateTheta_PoissonVaryingNotUseExp(model, y = y, useC = TRUE)
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else
@@ -6188,7 +6236,7 @@ test_that("updateTheta_PoissonVaryingUseExp gives valid answer", {
         y <- Counts(array(as.integer(rpois(n = 20, lambda = 0.5 * exposure)),
                           dim = c(5, 4),
                           dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
-        spec <- Model(y ~ Poisson(mean ~ age + region, boxCox = 0.7))
+        spec <- Model(y ~ Poisson(mean ~ age + region, boxcox = 0.7))
         model <- initialModel(spec, y = y, exposure = exposure)
         set.seed(seed + 1)
         ans.obtained <- updateTheta_PoissonVaryingUseExp(model, y = y, exposure = exposure)
@@ -6337,7 +6385,7 @@ test_that("R and C versions of updateTheta_PoissonVaryingUseExp give same answer
         y <- Counts(array(as.integer(rpois(n = 20, lambda = 0.5 * exposure)),
                           dim = c(5, 4),
                           dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
-        spec <- Model(y ~ Poisson(mean ~ age + region, boxCox = 0.7))
+        spec <- Model(y ~ Poisson(mean ~ age + region, boxcox = 0.7))
         model <- initialModel(spec, y = y, exposure = exposure)
         set.seed(seed + 1)
         ans.R <- updateTheta_PoissonVaryingUseExp(model, y = y, exposure = exposure, useC = FALSE)

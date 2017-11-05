@@ -4339,6 +4339,9 @@ updateThetaAndValueAgFun_Normal(SEXP object, SEXP y_R)
 void
 updateTheta_PoissonVaryingNotUseExp(SEXP object, SEXP y_R)
 {
+    double boxCoxParam = *REAL(GET_SLOT(object, boxCoxParam_sym));
+    int usesBoxCoxTransformation = (boxCoxParam > 0);
+
     SEXP theta_R = GET_SLOT(object, theta_sym);
     double *theta = REAL(theta_R);
     int n_theta = LENGTH(theta_R);
@@ -4407,6 +4410,7 @@ updateTheta_PoissonVaryingNotUseExp(SEXP object, SEXP y_R)
         double sd = 0;
         double theta_curr = theta[i];
         double log_th_curr = log(theta_curr);
+        double transformedThetaCurr = log_th_curr;
             
         int y_is_missing = yMissing[i];
         
@@ -4425,12 +4429,15 @@ updateTheta_PoissonVaryingNotUseExp(SEXP object, SEXP y_R)
             sd = sigma;
         }
         else {
-            mean = log_th_curr;
+            if (usesBoxCoxTransformation) {
+                transformedThetaCurr = (pow(theta_curr, boxCoxParam) - 1) / boxCoxParam;
+            }
+            mean = transformedThetaCurr;
             sd = scale;
         
         }
 
-        double log_th_prop = 0.0;
+        double transformedThetaProp = 0.0;
         
         int attempt = 0;
         int found_prop = 0;
@@ -4439,15 +4446,21 @@ updateTheta_PoissonVaryingNotUseExp(SEXP object, SEXP y_R)
 
             ++attempt;
             
-            log_th_prop = rnorm(mean, sd);
-            found_prop = ( (log_th_prop > lower + tolerance) &&
-                            (log_th_prop < upper - tolerance));
+            transformedThetaProp = rnorm(mean, sd);
+            found_prop = ( (transformedThetaProp > lower + tolerance) &&
+                            (transformedThetaProp < upper - tolerance));
          }
 
         if (found_prop) {
             
-            double theta_prop = exp(log_th_prop);
-            
+	    double theta_prop = 0;
+            if (usesBoxCoxTransformation) {
+                theta_prop = pow(boxCoxParam * transformedThetaProp + 1, 1/boxCoxParam);
+            }
+            else {
+                theta_prop = exp(transformedThetaProp);
+            }
+           
             if (draw_straight_from_prior) {
                 theta[i] = theta_prop;
             }
@@ -4490,8 +4503,8 @@ updateTheta_PoissonVaryingNotUseExp(SEXP object, SEXP y_R)
                     log_lik_curr = dpois(this_y, theta_curr, USE_LOG);
                 }
                 
-                double log_dens_prop = dnorm(log_th_prop, mu, sigma, USE_LOG);
-                double log_dens_curr = dnorm(log_th_curr, mu, sigma, USE_LOG);
+                double log_dens_prop = dnorm(transformedThetaProp, mu, sigma, USE_LOG);
+                double log_dens_curr = dnorm(transformedThetaCurr, mu, sigma, USE_LOG);
                 double log_diff = (log_lik_prop + log_dens_prop
                                         - log_lik_curr - log_dens_curr);
                 

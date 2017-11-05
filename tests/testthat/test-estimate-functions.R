@@ -44,7 +44,7 @@
 ##              n = 25)             
 ## rates <- fetchBoth(filenameEst = filename.est, filenamePred = filename.pred,
 ##                    where = c("model", "likelihood", "rate"))
-## model.bc <- Model(y ~ Poisson(mean ~ year * age, boxCox = 0.5),
+## model.bc <- Model(y ~ Poisson(mean ~ year * age, boxcox = 0.5),
 ##                   age ~ DLM(damp = NULL),
 ##                   year ~ DLM(level = Level(scale = HalfT(scale = 0.1)),
 ##                              trend = Trend(scale = HalfT(scale = 0.1))),

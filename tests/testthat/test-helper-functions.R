@@ -5847,7 +5847,7 @@ test_that("makeVBarAndN gives valid answer with PoissonVaryingNotUseExp, with Bo
                       dimnames = list(age = 0:4, region = letters[1:4])))
     spec <- Model(y ~ Poisson(mean ~ age + region,
                               useExpose = FALSE,
-                              boxCox = 0.6))
+                              boxcox = 0.6))
     x <- initialModel(spec, y = y, exposure = NULL)
     ## iBeta = 1L
     ans.obtained <- makeVBarAndN(x, iBeta = 1L, g = log)
@@ -5885,7 +5885,7 @@ test_that("R and C versions of makeVBarAndN give same answer with PoissonVarying
         y[10] <- NA
         spec <- Model(y ~ Poisson(mean ~ age + region,
                                   useExpose = FALSE,
-                                  boxCox = 0.6))
+                                  boxcox = 0.6))
         x <- initialModel(spec, y = y, exposure = NULL)
         save_x <- x
         for (iBeta in seq.int(from = 1, to = 3)) {
