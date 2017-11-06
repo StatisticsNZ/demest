@@ -974,7 +974,8 @@ diffLogDensPopn <- function(combined, useC = FALSE) {
 }
 
 ## HAS_TESTS
-## function called only if component uses exposure
+## Function called only if component uses exposure
+## - otherwise ratios cancel
 diffLogDensJumpComp <- function(combined, useC = FALSE) {
     stopifnot(is(combined, "CombinedAccountMovements"))
     if (useC) {
@@ -993,6 +994,7 @@ diffLogDensJumpComp <- function(combined, useC = FALSE) {
         is.increment <- combined@isIncrement
         theta.cell <- theta[i.cell]
         exposure.cell.curr <- exposure[i.exposure]
+        exposure.cell.jump <- expected.exposure[i.exposure]
         if (has.age) {
             is.lower.triangle <- combined@isLowerTriangle
             if (is.lower.triangle) {
@@ -1010,7 +1012,6 @@ diffLogDensJumpComp <- function(combined, useC = FALSE) {
             else
                 exposure.cell.prop <- exposure.cell.curr - 0.5 * diff
         }
-        exposure.cell.jump <- expected.exposure[i.exposure]
         lambda.dens.prop <- theta.cell * exposure.cell.prop
         lambda.jump <- theta.cell * exposure.cell.jump
         val.curr <- component[i.cell]
@@ -1026,6 +1027,46 @@ diffLogDensJumpComp <- function(combined, useC = FALSE) {
     }
 }
 
+## Function called only if component uses exposure
+## - otherwise ratios cancel
+diffLogDensJumpOrigDest <- function(combined, useC = FALSE) {
+    stopifnot(is(combined, "CombinedAccountMovements"))
+    if (useC) {
+        .Call(diffLogDensJumpOrigDest_R, combined)
+    }
+    else {
+        i.comp <- combined@iComp
+        component <- combined@account@components[[i.comp]]
+        theta <- systemModels[[i.comp + 1L]]@theta
+        exposure <- combined@exposure
+        expected.exposure <- combined@expectedExposure
+        i.cell <- combined@iCell
+        i.exposure <- combined@iExposure
+        diff <- combined@diffProp
+        has.age <- combined@hasAge@.Data
+        theta.cell <- theta[i.cell]
+        exposure.cell.curr <- exposure[i.exposure]
+        exposure.cell.jump <- expected.exposure[i.exposure]
+        if (has.age) {
+            is.lower.triangle <- combined@isLowerTriangle
+            if (is.lower.triangle)
+                exposure.cell.prop <- exposure.cell.curr - 0.5 * diff
+            else
+                exposure.cell.prop <- exposure.cell.curr
+        }
+        else
+            exposure.cell.prop <- exposure.cell.curr - 0.5 * diff
+        lambda.dens.prop <- theta.cell * exposure.cell.prop
+        lambda.jump <- theta.cell * exposure.cell.jump
+        val.curr <- component[i.cell]
+        val.prop <- val.curr + diff
+        diff.log.dens <- (dpois(x = val.prop, lambda = lambda.dens.prop, log = TRUE)
+                          - dpois(x = val.curr, lambda = lambda.dens.prop, log = TRUE))
+        diff.log.jump <- (dpois(x = val.curr, lambda = lambda.jump, log = TRUE)
+                          - dpois(x = val.prop, lambda = lambda.jump, log = TRUE))
+        diff.log.dens + diff.log.jump
+    }
+}
 
 ## HAS_TESTS
 diffLogDensExpOneComp <- function(iCell, hasAge, component, theta, iterator, 
