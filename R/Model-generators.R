@@ -561,7 +561,11 @@ setMethod("initialModel",
               theta[is.too.high] <- stats::runif(n = n.too.high, min = upper - width, max = upper)
               lower <- log(lower / (1 - lower))
               upper <- log(upper / (1 - upper))
-              scale.theta.multiplier <- mean(sqrt(1 + log(1 + exposure.tmp)))
+              if (any(!is.na(y)))
+                  scale.theta.multiplier <- median(sqrt(((exposure + 0.5) * (y + 0.5)) / (exposure - y + 0.5)),
+                                                   na.rm = TRUE)
+              else
+                  scale.theta.multiplier <- 1
               scale.theta.multiplier <- methods::new("Scale", scale.theta.multiplier)
               theta <- array(theta, dim = dim(y), dimnames = dimnames(y))
               logit.theta <- log(theta / (1 - theta))
@@ -856,6 +860,7 @@ setMethod("initialModel",
               formula.mu <- object@formulaMu
               specs.priors <- object@specsPriors
               names.specs.priors <- object@namesSpecsPriors
+              box.cox.param <- object@boxCoxParam
               scale.theta <- object@scaleTheta
               lower <- object@lower
               upper <- object@upper
@@ -878,7 +883,10 @@ setMethod("initialModel",
                   stop(gettextf("model '%s' uses exposure, but no '%s' argument supplied",
                                 deparse(call[[2L]]), "exposure"))
               y.missing <- is.na(y@.Data)
-              mean.y.obs <- mean(y@.Data[!y.missing])
+              if (!all(y.missing))
+                  mean.y.obs <- mean(y@.Data[!y.missing])
+              else
+                  mean.y.obs <- 0.5
               shape <- ifelse(y.missing, mean.y.obs, 0.5 * mean.y.obs + 0.5 * y@.Data)
               if (has.exposure) {
                   mean.expose.obs <- mean(exposure[!y.missing])
@@ -886,11 +894,8 @@ setMethod("initialModel",
               }
               else
                   rate <- 1
-              if (has.exposure) {
-                  exposure.tmp <- as.double(exposure)
-                  exposure.tmp[is.na(exposure.tmp)] <- 0
-                  scale.theta.multiplier <- mean(sqrt(1 + log(1 + exposure.tmp)))
-              }
+              if (has.exposure)
+                  scale.theta.multiplier <- sqrt(mean.y.obs + 1)
               else
                   scale.theta.multiplier <- 1.0
               scale.theta.multiplier <- methods::new("Scale", scale.theta.multiplier)
@@ -918,8 +923,14 @@ setMethod("initialModel",
               is.too.high <- theta > upper
               n.too.high <- sum(is.too.high)
               theta[is.too.high] <- stats::runif(n = n.too.high, min = upper - width, max = upper)
-              lower <- log(lower)
-              upper <- log(upper)
+              if (box.cox.param > 0) {
+                  lower <- (lower ^ box.cox.param - 1) / box.cox.param
+                  upper <- (upper ^ box.cox.param - 1) / box.cox.param
+              }
+              else {
+                  lower <- log(lower)
+                  upper <- log(upper)
+              }
               theta <- array(theta, dim = dim(y), dimnames = dimnames(y))
               if (formulaIsInterceptOnly(formula.mu))
                   betas <- list("(Intercept)" = mean(log(theta)))
@@ -958,6 +969,7 @@ setMethod("initialModel",
                                     metadataY = metadataY,
                                     scaleTheta = scale.theta,
                                     scaleThetaMultiplier = scale.theta.multiplier,
+                                    boxCoxParam = box.cox.param,
                                     lower = lower,
                                     upper = upper,
                                     tolerance = tolerance,
@@ -991,6 +1003,7 @@ setMethod("initialModel",
                                      y = y)
               model
           })
+
 
 ## HAS_TESTS
 setMethod("initialModel",

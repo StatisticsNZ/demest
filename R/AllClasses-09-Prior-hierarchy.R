@@ -28,8 +28,7 @@ setClass("DLM",
                       "PhiMixin",
                       "PhiKnownMixin",
                       "PhiMinMaxMixin",
-                      "Shape1Shape2PhiMixin",
-                      "UpdateSeriesDLM"))
+                      "Shape1Shape2PhiMixin"))
 
 setClass("ICAR",
          contains = c("VIRTUAL",
@@ -161,6 +160,9 @@ setClass("ExchFixed",
              TRUE
          })
 
+
+setClassUnion("Exchangeable",
+              members = c("Exch", "ExchFixed"))
 
 ## Exch
 

@@ -810,7 +810,6 @@ initialDLMAll <- function(object, beta, metadata, sY, isSaturated, ...) {
                                          numericDimScales = TRUE)
     K <- makeK(dim = dim, iAlong = iAlong)
     L <- makeL(dim = dim, iAlong = iAlong)
-    updateSeriesDLM <- makeUpdateSeriesDLM(dim = dim, iAlong = iAlong)
     dim.alpha.delta <- dim
     dim.alpha.delta[iAlong] <- dim.alpha.delta[iAlong] + 1L
     iteratorState <- AlongIterator(dim = dim.alpha.delta,
@@ -847,7 +846,6 @@ initialDLMAll <- function(object, beta, metadata, sY, isSaturated, ...) {
          J = J,
          K = K,
          L = L,
-         updateSeriesDLM = updateSeriesDLM,
          minPhi = minPhi,
          maxPhi = maxPhi,
          nuAlpha = nuAlpha,
@@ -859,8 +857,7 @@ initialDLMAll <- function(object, beta, metadata, sY, isSaturated, ...) {
          shape1Phi = shape1Phi,
          shape2Phi = shape2Phi,
          tau = tau,
-         tauMax = tauMax,
-         updateSeriesDLM = updateSeriesDLM)
+         tauMax = tauMax)
 }
 
 ## HAS_TESTS
@@ -881,7 +878,6 @@ initialDLMAllPredict <- function(prior, metadata, name, along) {
     dim <- dim(metadata)
     K.new <- makeK(dim = dim, iAlong = i.along.new)
     L <- makeL(dim = dim, iAlong = i.along.new)
-    updateSeriesDLM <- makeUpdateSeriesDLM(dim = dim, iAlong = i.along.new)
     dim.alpha.delta <- dim
     dim.alpha.delta[i.along.new] <- dim.alpha.delta[i.along.new] + 1L
     iterator.state.new <- AlongIterator(dim = dim.alpha.delta,
@@ -897,8 +893,7 @@ initialDLMAllPredict <- function(prior, metadata, name, along) {
          J = J,
          JOld = J.old,
          K = K.new,
-         L = L,
-         updateSeriesDLM = updateSeriesDLM)
+         L = L)
 }
 
 ## HAS_TESTS
@@ -1925,14 +1920,9 @@ makeCNoTrend <- function(K, C0 = NULL, sY, phi, phiKnown) {
                      1.0,
                      simplify = FALSE)
     if (is.null(C0)) {
-        phi.is.one <- phiKnown && isTRUE(all.equal(phi, 1))
-        if (phi.is.one)
-            C0 <- 0
-        else {
-            A0 <- makeAIntercept(A = NA, sY = sY)
-            A0 <- as.double(A0)
-            C0 <- A0^2
-        }
+        A0 <- makeAIntercept(A = NA, sY = sY)
+        A0 <- as.double(A0)
+        C0 <- A0^2
     }
     ans[[1L]] <- C0
     methods::new("FFBSList", ans)
@@ -1954,7 +1944,7 @@ makeCSeason <- function(K, nSeason, ASeason, C0 = NULL) {
 ## NO_TESTS
 makeCWithTrend <- function(K, C0 = NULL, sY, ADelta0, hasLevel = TRUE) {
     if (is.null(C0)) {
-        AAlpha <- 0
+        AAlpha <- makeAIntercept(A = NA, sY = sY)
         ADelta <- ADelta0@.Data
         C0 <- c(AAlpha^2, ADelta^2)
         C0 <- diag(C0,
@@ -2018,25 +2008,6 @@ makeDRInv <- function(K) {
     methods::new("FFBSList", ans)
 }
 
-## HAS_TESTS
-makeUpdateSeriesDLM <- function(dim, iAlong) {
-    n.dim <- length(dim)
-    if (identical(n.dim, 1L))
-        TRUE
-    else if (identical(n.dim, 2L)) {
-        ans <- rep(TRUE, times = dim[-iAlong])
-        ans[1L] <- FALSE
-        ans
-    }
-    else {
-        s <- seq_len(n.dim - 1L)
-        a <- array(dim = dim[-iAlong])
-        ans <- lapply(s, function(i) slice.index(a, i) > 1L)
-        ans <- Reduce(f = "&", x = ans)
-        as.logical(ans)
-    }
-}
-
 ## NO_TESTS
 makeRNoTrend <- function(K) {
     ans <- replicate(n = K,
@@ -2045,7 +2016,7 @@ makeRNoTrend <- function(K) {
     methods::new("FFBSList", ans)
 }
 
-## NO_TESTSz
+## NO_TESTS
 makeRSeason <- function(K, nSeason) {
     ans <- replicate(n = K,
                      rep(1.0, times = nSeason),
@@ -4900,6 +4871,12 @@ makeVBarAndN <- function(object, iBeta, g, useC = FALSE) {
         cell.in.lik <- object@cellInLik
         betas <- object@betas
         iterator <- object@iteratorBetas
+        if (identical(g, log)) { 
+            box.cox.param <- object@boxCoxParam 
+            uses.box.cox.transform <- box.cox.param > 0 
+        } 
+        else 
+            uses.box.cox.transform <- FALSE
         beta <- betas[[iBeta]]
         iterator <- resetB(iterator)
         vbar <- rep(0, times = length(beta))
@@ -4910,7 +4887,10 @@ makeVBarAndN <- function(object, iBeta, g, useC = FALSE) {
             if (include.cell) {
                 indices <- iterator@indices
                 pos.ans <- indices[iBeta]
-                vbar[pos.ans] <- vbar[pos.ans] + g(theta[i.mu])
+                if (uses.box.cox.transform) 
+                    vbar[pos.ans] <- vbar[pos.ans] + (theta[i.mu] ^ box.cox.param - 1) / box.cox.param 
+                else 
+                    vbar[pos.ans] <- vbar[pos.ans] + g(theta[i.mu])
                 for (i.other.beta in i.other.betas) {
                     other.beta <- betas[[i.other.beta]]
                     pos.other.beta <- indices[i.other.beta]
@@ -5797,8 +5777,8 @@ splitFile <- function(filename, nChain, nIteration, lengthIter) {
         stop(gettextf("'%s' is not a multiple of '%s'",
                       "nIteration", "nChain"))
     size.results <- readBin(con = con.read, what = "integer", n = 1L)
-    for (j in seq_len(size.results))
-        readBin(con = con.read, what = "raw", n = 1L)
+    size.adustments <- readBin(con = con.read, what = "integer", n = 1L)
+    results <- readBin(con = con.read, what = "raw", n = size.results)
     for (i in seq_len(nChain)) {
         tempfile <- paste(filename, i, sep = "_")
         con.write <- file(tempfile, "wb")
@@ -6700,6 +6680,51 @@ changeInPos <- function(object) {
 }
 
 ## HAS_TESTS
+fetchAdjustments <- function(filename, nIteration, lengthIter) {
+    con <- file(filename, open = "rb")
+    on.exit(close(con))
+    size.results <- readBin(con = con, what = "integer", n = 1L)
+    size.adjustments <- readBin(con = con, what = "integer", n = 1L)
+    readBin(con = con, what = "raw", n = size.results)
+    size.data <- nIteration * lengthIter
+    readBin(con = con, what = "double", n = size.data)
+    ans <- readBin(con = con, what = "raw", n = size.adjustments)
+    unserialize(ans)
+}
+
+## HAS_TESTS
+## 'dim' includes first element of 'along' dimension,
+## but does not include 'season' dimension
+indices0 <- function(iterator, nSeason = NULL, dim, iAlong) {
+    if (!methods::is(iterator, "AlongIterator"))
+        stop(gettextf("'%s' has class \"%s\"",
+                      "iterator", class(iterator)))
+    n.within <- iterator@nWithin
+    n.between <- iterator@nBetween
+    n.indices <- length(iterator@indices)
+    n.dim <- length(dim)
+    n <- n.within * n.between
+    ans <- vector(mode = "list", length = n)
+    iterator <- resetA(iterator)
+    for (i in seq_len(n)) {
+        indices <- iterator@indices
+        if (is.null(nSeason))
+            indices <- indices[1L]
+        else {
+            from <- (indices[1L] - 1L) * nSeason + 1L
+            indices <- seq.int(from = from, length.out = nSeason)
+            indices <- as.integer(indices)
+        }
+        ans[[i]] <- indices
+        iterator <- advanceA(iterator, useC = TRUE)
+    }
+    ans <- unlist(ans)
+    ans <- sort(ans)
+    ans
+}
+
+
+## HAS_TESTS
 ## 'dim' includes first element of 'along' dimension,
 ## but does not include 'season' dimension
 indicesShow <- function(iterator, nSeason = NULL, dim, iAlong) {
@@ -6715,7 +6740,7 @@ indicesShow <- function(iterator, nSeason = NULL, dim, iAlong) {
     iterator <- resetA(iterator)
     for (i in seq_len(n)) {
         indices <- iterator@indices
-        indices <- indices[-1]
+        indices <- indices[-1L]
         if (!is.null(nSeason))
             indices <- (indices - 1L) * nSeason + 1L
         ans[[i]] <- indices
@@ -6723,52 +6748,68 @@ indicesShow <- function(iterator, nSeason = NULL, dim, iAlong) {
     }
     ans <- unlist(ans)
     ans <- sort(ans)
-    if (n.dim > 1L) {
-        if (is.null(nSeason)) {
-            ind <- array(seq_len(prod(dim)), dim = dim)
-            for (i in seq_len(n.dim)) {
-                if (i != iAlong) {
-                    exclude <- ind[slice.index(ind, MARGIN = i) == 1L]
-                    ans <- setdiff(ans, exclude)
-                }
-            }
-        }
-        else {
-            ind <- array(seq_len(prod(c(nSeason, dim))), dim = c(nSeason, dim))
-            for (i in seq_len(n.dim)) {
-                if (i != iAlong) {
-                    exclude <- ind[slice.index(ind, MARGIN = i + 1L) == 1L]
-                    ans <- setdiff(ans, exclude)
-                }
-            }
-        }
-    }
     ans
 }
 
 ## HAS_TESTS
-makeMetadataStateDLM <- function(metadata, iAlong) {
+makeMetadata0 <- function(metadata, iAlong, nSeason) {
     dim <- dim(metadata)
-    n.dim <- length(dim)
-    if (n.dim == 1L)
-        return(metadata)
-    indices <- lapply(dim, seq_len)
-    dims <- seq_along(dim)
-    dim.after <- dim
-    for (i in seq_along(dim)) {
-        if (i != iAlong) {
-            indices[[i]] <- indices[[i]] - 1L
-            dim.after[i] <- dim.after[i] - 1L
-        }
+    names <- names(metadata)
+    dimtypes <- dimtypes(metadata, use.names = FALSE)
+    DimScales <- DimScales(metadata, use.names = FALSE)
+    if (!is.null(nSeason)) {
+        nm.season <- make.unique(c(names, "season"))[length(names) + 1L]
+        dimtype.season <- "state"
+        DimScale.season <- new("Categories", dimvalues = as.character(seq_len(nSeason)))
     }
-    transform <- methods::new("CollapseTransform",
-                              indices = indices,
-                              dims = dims,
-                              dimBefore = dim,
-                              dimAfter = dim.after)
-    dembase::collapse(metadata,
-                      transform = transform)
+    if (length(metadata) == 1L) {
+        if (is.null(nSeason))
+            NULL
+        else
+            new("MetaData",
+                nms = nm.season,
+                dimtypes = dimtype.season,
+                DimScales = list(DimScale.season))
+    }
+    else {
+        names <- names[-iAlong]
+        dimtypes <- dimtypes[-iAlong]
+        DimScales <- DimScales[-iAlong]
+        if (!is.null(nSeason)) {
+            names <- c(nm.season, names)
+            dimtypes <- c(dimtype.season, dimtypes)
+            DimScales <- c(list(DimScale.season), DimScales)
+        }
+        new("MetaData",
+            nms = names,
+            dimtypes = dimtypes,
+            DimScales = DimScales)
+    }
 }
+
+## HAS_TESTS
+makeMetadataIncl0 <- function(metadata, iAlong, nSeason) {
+    dim <- dim(metadata)
+    names <- names(metadata)
+    dimtypes <- dimtypes(metadata, use.names = FALSE)
+    DimScales <- DimScales(metadata, use.names = FALSE)
+    dimtypes[iAlong] <- "state"
+    dimvalues.along <- as.character(seq_len(dim[iAlong] + 1L))
+    DimScale.along <- new("Categories", dimvalues = dimvalues.along)
+    DimScales[[iAlong]] <- DimScale.along
+    if (!is.null(nSeason)) {
+        nm.season <- make.unique(c(names, "season"))[length(names) + 1L]
+        names <- c(nm.season, names)
+        dimtypes <- c("state", dimtypes)
+        DimScale.season <- new("Categories", dimvalues = as.character(seq_len(nSeason)))
+        DimScales <- c(list(DimScale.season), DimScales)
+    }
+    new("MetaData",
+        nms = names,
+        dimtypes = dimtypes,
+        DimScales = DimScales)
+}
+
 
 ## HAS_TESTS
 makeMetadataVectorsMix <- function(metadata, iAlong, indexClassMax) {
@@ -6835,13 +6876,13 @@ makeOutputPriorCoef <- function(Z, pos) {
     dimvalues <- names.eta[-1L] # omit intercept
     DimScales <- list(methods::new("Categories", dimvalues = dimvalues))
     metadata <- methods::new("MetaData",
-                    nms = "coef",
-                    dimtypes = "state",
-                    DimScales = DimScales)
+                             nms = "coef",
+                             dimtypes = "state",
+                             DimScales = DimScales)
     methods::new("SkeletonCovariates",
-        first = first,
-        last = last,
-        metadata = metadata)
+                 first = first,
+                 last = last,
+                 metadata = metadata)
 }
 
 ## NO_TESTS
@@ -6868,20 +6909,57 @@ makeOutputStateDLM <- function(iterator, metadata, nSeason, iAlong, pos, isTrend
     last <- pos + length - 1L
     dim <- dim(metadata)
     dim[iAlong] <- dim[iAlong] + 1L
+    indices.0 <- indices0(iterator = iterator,
+                          nSeason = nSeason,
+                          dim = dim,
+                          iAlong = iAlong)
     indices.show <- indicesShow(iterator = iterator,
                                 nSeason = nSeason,
                                 dim = dim,
                                 iAlong = iAlong)
-    metadata <- makeMetadataStateDLM(metadata = metadata,
-                                     iAlong = iAlong)
+    metadata0 <- makeMetadata0(metadata = metadata,
+                               iAlong = iAlong,
+                               nSeason = nSeason)
+    metadata.incl.0 <- makeMetadataIncl0(metadata = metadata,
+                                         iAlong = iAlong,
+                                         nSeason = nSeason)
     methods::new("SkeletonStateDLM",
                  first = first,
                  last = last,
                  iAlong = iAlong,
                  indicesShow = indices.show,
-                 metadata = metadata)
+                 indices0 = indices.0,
+                 metadata = metadata,
+                 metadata0 = metadata0,
+                 metadataIncl0 = metadata.incl.0)
 }
 
+## HAS_TESTS
+makePairsTerms <- function(margins) {
+    if (length(margins) < 3L)
+        return(list())
+    margins <- margins[-1L] # intercept
+    n <- length(margins)
+    ans <- vector(mode = "list", length = n * (n - 1L) / 2L)
+    i <- 1L
+    for (j in seq.int(from = n, to = 2L)) {
+        for (k in seq.int(from = j - 1L, to = 1L)) {
+            first <- margins[[j]]
+            second <- margins[[k]]
+            first.is.higher.order <- length(first) > length(second)
+            first.and.second.share.term <- any(second %in% first)
+            if (first.is.higher.order && first.and.second.share.term)
+                ans[[i]] <- c(j, k)
+            else
+                ans[[i]] <- NULL
+            i <- i + 1L
+        }
+    }
+    is.null <- sapply(ans, is.null)
+    ans <- ans[!is.null]
+    ans <- lapply(ans, function(x) x + 1L) # add 1 to allow for intercept
+    ans
+}
 
 ## HAS_TESTS
 makeResultsFile <- function(filename, results, tempfiles) {
@@ -6891,6 +6969,7 @@ makeResultsFile <- function(filename, results, tempfiles) {
     results <- serialize(results, connection = NULL)
     size.results <- length(results)
     writeBin(size.results, con = con.write)
+    writeBin(0L, con = con.write) # placeholder for size of adjustment
     writeBin(results, con = con.write)
     for (i in seq_along(tempfiles)) {
         con.read <- file(tempfiles[i], "rb")
@@ -7042,6 +7121,353 @@ makeResultsCounts <- function(finalCombineds, mcmcArgs, controlArgs, seed) {
             seed = seed,
             final = final)
 }
+
+## TRANSLATED
+## HAS_TESTS
+overwriteValuesOnFile <- function(object, skeleton, filename,
+                                  nIteration, lengthIter,
+                                  useC = TRUE) {
+    ## object
+    stopifnot(methods::is(object, "Values"))
+    stopifnot(is.double(object))
+    ## skeleton
+    stopifnot(methods::is(skeleton, "Skeleton"))
+    ## nIteration
+    stopifnot(is.integer(nIteration))
+    stopifnot(identical(length(nIteration), 1L))
+    stopifnot(!is.na(nIteration))
+    stopifnot(nIteration >= 1L)
+    ## lengthIter
+    stopifnot(is.integer(lengthIter))
+    stopifnot(identical(length(lengthIter), 1L))
+    stopifnot(!is.na(lengthIter))
+    stopifnot(lengthIter >= 1L)
+    if (useC) {
+        .Call(overwriteValuesOnFile_R, object, skeleton,
+              filename, nIteration, lengthIter)
+    }
+    else {
+        ## Based on the warnings in the help for 'seek' about using
+        ## 'seek' with Windows, we have avoided it, and
+        ## used writeBin and readBin instead.
+        ## The pointer used for reading and the pointer used for
+        ## writing are independent of each other, so we have to
+        ## move each separately via read or write operations
+        first <- skeleton@first
+        last <- skeleton@last
+        con <- file(filename, open = "r+b")
+        on.exit(close(con))
+        size.results <- readBin(con = con, what = "integer", n = 1L)
+        writeBin(size.results, con = con)
+        size.adj <- readBin(con = con, what = "integer", n = 1L)
+        writeBin(size.adj, con = con)
+        results <- readBin(con = con, what = "raw", n = size.results)
+        writeBin(results, con = con)
+        pos <- 1L ## position within object
+        for (i.iter in seq_len(nIteration)) {
+            ## skip over values in file before start of data
+            before.first <- readBin(con = con, what = "double", n = first - 1L)
+            writeBin(before.first, con = con)
+            ## write values
+            for (i.col in seq.int(from = first, to = last)) {
+                readBin(con = con, what = "double", n = 1L) # discard value
+                writeBin(object[pos], con = con)
+                pos <- pos + 1L
+            }
+            ## skip remaining positions in line of file, if any
+            if (last < lengthIter) {
+                after.last <- readBin(con = con, what = "double", n = lengthIter - last)
+                writeBin(after.last, con = con)
+            }
+        }
+    }
+}
+
+## HAS_TESTS
+readCoefInterceptFromFile <- function(skeleton, filename,
+                                      nIteration, lengthIter) {
+    first <- skeleton@first
+    iterations <- seq_len(nIteration)
+    .Data <- getDataFromFile(filename = filename,
+                             first = first,
+                             last = first,
+                             lengthIter = lengthIter,
+                             iterations = iterations)
+    metadata <- methods::new("MetaData",
+                             nms = "iteration",
+                             dimtypes = "iteration",
+                             DimScales = list(methods::new("Iterations",
+                                                           dimvalues = iterations)))
+    .Data <- array(.Data,
+                   dim = dim(metadata),
+                   dimnames = dimnames(metadata))
+    methods::new("Values",
+                 .Data = .Data,
+                 metadata = metadata)
+}
+
+## HAS_TESTS
+rescaleAndWriteBetas <- function(high, low, adj, skeletonHigh, skeletonLow,
+                                 filename, nIteration, lengthIter) {
+    high <- high - adj
+    low <- low + adj
+    overwriteValuesOnFile(object = high,
+                          skeleton = skeletonHigh,
+                          filename = filename,
+                          nIteration = nIteration,
+                          lengthIter = lengthIter)
+    overwriteValuesOnFile(object = low,
+                          skeleton = skeletonLow,
+                          filename = filename,
+                          nIteration = nIteration,
+                          lengthIter = lengthIter)
+    NULL
+}
+
+## HAS_TESTS
+rescaleBetasPredHelper <- function(priorsBetas, namesBetas, skeletonsBetas,
+                                   adjustments, prefixAdjustments,
+                                   filename, nIteration, lengthIter) {
+    for (i in seq_along(priorsBetas)) {
+        prior <- priorsBetas[[i]]
+        name <- namesBetas[i]
+        skeleton <- skeletonsBetas[[i]]
+        name.adj <- paste(prefixAdjustments, "prior", name, sep = ".")
+        adjustment <- adjustments[[name.adj]]
+        rescalePred(prior = prior,
+                    skeleton = skeleton,
+                    adjustment = adjustment,
+                    filename = filename,
+                    nIteration = nIteration,
+                    lengthIter = lengthIter)
+    }
+}
+
+## HAS_TESTS
+rescaleInFile <- function(filename) {
+    results <- fetchResultsObject(filename)
+    nIteration <- results@mcmc["nIteration"]
+    lengthIter <- results@control$lengthIter
+    adjustments <- new.env(hash = TRUE) # modified in-place
+    if (nIteration > 0L) {
+        rescalePriors(results = results,
+                      adjustments = adjustments,
+                      filename = filename,
+                      nIteration = nIteration,
+                      lengthIter = lengthIter)
+    }
+    adjustments.serialized <- serialize(adjustments,
+                                        connection = NULL)
+    size.adjustments <- length(adjustments.serialized)
+    con <- file(filename, open = "r+b")
+    on.exit(close(con))
+    size.results <- readBin(con = con, what = "integer", n = 1L)
+    writeBin(size.results, con = con)
+    readBin(con, what = "integer", n = 1L)
+    writeBin(size.adjustments, con = con)
+    results <- readBin(con, what = "raw", n = size.results)
+    writeBin(results, con = con)
+    for (i in seq_len(nIteration)) {
+        line <- readBin(con, what = "double", n = lengthIter)
+        writeBin(line, con = con)
+    }
+    writeBin(adjustments.serialized, con = con)    
+    NULL
+}
+
+## HAS_TESTS
+rescaleInFilePred <- function(filenameEst, filenamePred) {
+    ## get 'adjustments' from filenameEst
+    results.est <- fetchResultsObject(filenameEst)
+    results.pred <- fetchResultsObject(filenamePred)
+    nIteration.est <- results.est@mcmc["nIteration"]
+    nIteration.pred <- results.pred@mcmc["nIteration"]
+    lengthIter.est <- results.est@control$lengthIter
+    lengthIter.pred <- results.pred@control$lengthIter
+    con.est <- file(filenameEst, open = "rb")
+    size.results.est <- readBin(con = con.est, what = "integer", n = 1L)
+    size.adjustments <- readBin(con = con.est, what = "integer", n = 1L)
+    readBin(con = con.est, what = "raw", n = size.results.est)
+    for (i in seq_len(nIteration.est))
+        readBin(con = con.est, what = "double", n = lengthIter.est)
+    adjustments.serialized <- readBin(con = con.est, what = "raw", n = size.adjustments)
+    close(con.est)
+    adjustments <- unserialize(adjustments.serialized)
+    ## rescale
+    rescaleBetasPred(results = results.pred,
+                     adjustments = adjustments,
+                     filename = filenamePred,
+                     nIteration = nIteration.pred,
+                     lengthIter = lengthIter.pred)
+    ## add 'adjustments' to filenamePred
+    con.pred <- file(filenamePred, open = "r+b")
+    on.exit(close(con.pred))
+    size.results.pred <- readBin(con = con.pred, what = "integer", n = 1L)
+    writeBin(size.results.pred, con = con.pred)
+    readBin(con.pred, what = "integer", n = 1L)
+    writeBin(size.adjustments, con = con.pred)
+    results.pred.serialized <- readBin(con.pred, what = "raw", n = size.results.pred)
+    writeBin(results.pred.serialized, con = con.pred)
+    for (i in seq_len(nIteration.pred)) {
+        line <- readBin(con.pred, what = "double", n = lengthIter.pred)
+        writeBin(line, con = con.pred)
+    }
+    writeBin(adjustments.serialized, con = con.pred)    
+    NULL
+}
+
+## NO_TESTS
+readStateDLMFromFile <- function(skeleton, filename, iterations,
+                                 nIteration, lengthIter, only0) {
+    iAlong <- skeleton@iAlong
+    first <- skeleton@first
+    last <- skeleton@last
+    if (is.null(iterations))
+        iterations <- seq_len(nIteration)
+    n.iter <- length(iterations)
+    .Data <- getDataFromFile(filename = filename,
+                             first = first,
+                             last = last,
+                             lengthIter = lengthIter,
+                             iterations = iterations)
+    .Data <- matrix(.Data, ncol = n.iter)
+    if (only0) {
+        indices0 <- skeleton@indices0
+        metadata <- skeleton@metadata0
+        if (is.null(metadata)) {
+            metadata <- new("MetaData",
+                            nms = "iteration",
+                            dimtypes = "iteration",
+                            DimScales = list(new("Iterations", dimvalues = seq_len(nIteration))))
+        }
+        else
+            metadata <- dembase::addIterationsToMetadata(metadata, iterations = iterations)        
+        .Data <- .Data[indices0, ]
+    }
+    else {
+        metadata <- skeleton@metadataIncl0
+        metadata <- dembase::addIterationsToMetadata(metadata, iterations = iterations)        
+    }
+    .Data <- array(.Data, dim = dim(metadata), dimnames = dimnames(metadata))
+    methods::new("Values", .Data = .Data, metadata = metadata)
+}
+
+## HAS_TESTS
+recordAdjustments <- function(priorHigh, priorLow, namesHigh, namesLow,
+                              adj, adjustments, prefixAdjustments) {
+    prefix.adjustments <- paste(prefixAdjustments, "prior", sep = ".")
+    if (methods::is(priorHigh, "Exchangeable")) {
+        name.high <- paste(namesHigh, collapse = ":")
+        name.high <- paste(prefix.adjustments, name.high, sep = ".")
+        already.has.high <- !is.null(adjustments[[name.high]])
+        if (already.has.high)
+            adjustments[[name.high]] <- adjustments[[name.high]] - adj
+        else
+            adjustments[[name.high]] <- -1 * adj
+    }
+    if (methods::is(priorLow, "Exchangeable")) {
+        name.low <- paste(namesLow, collapse = ":")
+        name.low <- paste(prefix.adjustments, name.low, sep = ".")
+        already.has.low <- !is.null(adjustments[[name.low]])
+        if (already.has.low)
+            adjustments[[name.low]] <- adjustments[[name.low]] + adj
+        else
+            adjustments[[name.low]] <- adj
+    }
+    NULL
+}
+
+## HAS_TESTS
+rescalePriorsHelper <- function(priors, margins, skeletonsBetas, skeletonsPriors,
+                                adjustments, prefixAdjustments,
+                                filename, nIteration, lengthIter) {
+    for (i in seq_along(priors)) {
+        if (i != 1L) {
+            rescaleSeason(prior = priors[[i]],
+                          skeleton = skeletonsPriors[[i]],
+                          filename = filename,
+                          nIteration = nIteration,
+                          lengthIter = lengthIter)
+        }
+    }
+    pairs.terms <- makePairsTerms(margins)
+    for (pair.terms in pairs.terms) {
+        i.higher <- pair.terms[1L]
+        i.lower <- pair.terms[2L]
+        prior.higher <- priors[[i.higher]]
+        prior.lower <- priors[[i.lower]]
+        skeleton.beta.higher <- skeletonsBetas[[i.higher]]
+        skeleton.beta.lower <- skeletonsBetas[[i.lower]]
+        skeletons.prior.higher <- skeletonsPriors[[i.higher]]
+        skeletons.prior.lower <- skeletonsPriors[[i.lower]]
+        rescalePairPriors(priorHigh = prior.higher,
+                          priorLow = prior.lower,
+                          skeletonBetaHigh = skeleton.beta.higher,
+                          skeletonBetaLow = skeleton.beta.lower,
+                          skeletonsPriorHigh = skeletons.prior.higher,
+                          skeletonsPriorLow = skeletons.prior.lower,
+                          adjustments = adjustments,
+                          prefixAdjustments = prefixAdjustments,
+                          filename = filename,
+                          nIteration = nIteration,
+                          lengthIter = lengthIter)
+    }
+    prior.intercept <- priors[[1L]]
+    skeleton.beta.intercept <- skeletonsBetas[[1L]]
+    for (i in seq_along(priors)) {
+        if (i != 1L) {
+            prior.term <- priors[[i]]
+            skeleton.beta.term <- skeletonsBetas[[i]]
+            skeletons.prior.term <- skeletonsPriors[[i]]
+            rescalePriorIntercept(priorTerm = prior.term,
+                                  priorIntercept = prior.intercept,
+                                  skeletonBetaTerm = skeleton.beta.term,
+                                  skeletonBetaIntercept = skeleton.beta.intercept,
+                                  skeletonsPriorTerm = skeletons.prior.term,
+                                  adjustments = adjustments,
+                                  prefixAdjustments = prefixAdjustments,
+                                  filename = filename,
+                                  nIteration = nIteration,
+                                  lengthIter = lengthIter)
+        }
+    }
+}
+
+## HAS_TESTS
+setCoefInterceptToZeroOnFile <- function(skeleton, filename,
+                                         nIteration, lengthIter) {
+    ## Based on the warnings in the help for 'seek' about using
+    ## 'seek' with Windows, we have avoided it, and
+    ## used writeBin and readBin instead.
+    ## The pointer used for reading and the pointer used for
+    ## writing are independent of each other, so we have to
+    ## move each separately via read or write operations
+    first <- skeleton@first
+    con <- file(filename, open = "r+b")
+    on.exit(close(con))
+    size.results <- readBin(con = con, what = "integer", n = 1L)
+    writeBin(size.results, con = con)
+    size.adj <- readBin(con = con, what = "integer", n = 1L)
+    writeBin(size.adj, con = con)
+    results <- readBin(con = con, what = "raw", n = size.results)
+    writeBin(results, con = con)
+    for (i.iter in seq_len(nIteration)) {
+        ## skip over values in line before start of data
+        before.first <- readBin(con = con, what = "double", n = first - 1L)
+        writeBin(before.first, con = con)
+        ## write 0
+        readBin(con = con, what = "double", n = 1L) # discard value
+        writeBin(0, con = con)
+        ## skip remaining positions in line of file, if any
+        if (first < lengthIter) {
+            after.first <- readBin(con = con, what = "double", n = lengthIter - first)
+            writeBin(after.first, con = con)
+        }
+    }
+}
+
+
+
 
 
 ## PRINTING ##########################################################################
@@ -7440,7 +7866,6 @@ printLevelTrendEqns <- function(object, isMain, hasTrend) {
             sep = "")
     }
 }
-
 
 printMixEqns <- function(object, name, hasCovariates) {
     AVectors <- object@AVectorsMix@.Data
@@ -8140,6 +8565,7 @@ fetchResultsObject <- function(filename) {
     con <- file(filename, open = "rb")
     on.exit(close(con))
     size.results <- readBin(con = con, what = "integer", n = 1L)
+    size.adjustments <- readBin(con = con, what = "integer", n = 1L)
     results <- readBin(con = con, what = "raw", n = size.results)
     unserialize(results)
 }
@@ -8147,7 +8573,7 @@ fetchResultsObject <- function(filename) {
 ## HAS_TESTS
 fetchInner <- function(object, nameObject, where, iterations,
                        filename, lengthIter, nIteration,
-                       listsAsSingleItems, shift = TRUE,
+                       listsAsSingleItems, 
                        impute = FALSE) {
     n.where <- length(where)
     if (n.where == 0L) {
@@ -8166,7 +8592,6 @@ fetchInner <- function(object, nameObject, where, iterations,
                          iterations = iterations,
                          nIteration = nIteration,
                          lengthIter = lengthIter,
-                         shift = shift,
                          impute = impute)
     }
     else {
@@ -8184,7 +8609,6 @@ fetchInner <- function(object, nameObject, where, iterations,
                        lengthIter = lengthIter,
                        nIteration = nIteration,
                        listsAsSingleItems = listsAsSingleItems,
-                       shift = shift,
                        impute = impute)
             }
             else if (i == 0L)
@@ -8356,11 +8780,13 @@ getDataFromFile <- function(filename, first, last, lengthIter,
         ans <- double(length = n.iter * length.data)
         con <- file(filename, open = "rb")
         on.exit(close(con))
-        ## find out size of results object - stored in first position ## NEW
-        size.results <- readBin(con = con, what = "integer", n = 1L)  ## NEW
-        ## skip over results object ## NEW
-        for (j in seq_len(size.results))  ## NEW
-            readBin(con = con, what = "raw", n = 1L)  ## NEW
+        ## find out size of results object - stored in first position
+        size.results <- readBin(con = con, what = "integer", n = 1L)
+        ## skip over size of adjustments
+        readBin(con = con, what = "integer", n = 1L)
+        ## skip over results object
+        for (j in seq_len(size.results))
+            readBin(con = con, what = "raw", n = 1L)
         ## go to start of first iteration
         n.skip <- iterations[1L] - 1L
         for (i in seq_len(n.skip))
@@ -8459,12 +8885,10 @@ isTimeVarying <- function(filenameEst, filenamePred, where) {
     obj.est <- fetch(filenameEst,
                      where = where,
                      iterations = 1L,
-                     normalize = FALSE,
                      impute = FALSE)
     obj.pred <- fetch(filenamePred,
                       where = where,
                       iterations = 1L,
-                      normalize = FALSE,
                       impute = FALSE)
     metadata.est <- obj.est@metadata
     metadata.pred <- obj.pred@metadata

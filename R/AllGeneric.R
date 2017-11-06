@@ -217,8 +217,7 @@ setGeneric("fakeBeta",
 
 setGeneric("fetchResults",
            function(object, nameObject, filename, iterations,
-                    nIteration, lengthIter, shift = TRUE,
-                    impute = FALSE) {
+                    nIteration, lengthIter, impute = FALSE) {
                object
            })
 
@@ -350,6 +349,41 @@ setGeneric("printSpecAgAccuracyEqns",
 setGeneric("printSpecAgValEqns",
            function(object, aggregate)
                standardGeneric("printSpecAgValEqns"))
+
+setGeneric("rescaleBetasPred",
+           function(results, adjustments, filename, nIteration, lengthIter)
+               standardGeneric("rescaleBetasPred"))
+
+setGeneric("rescalePairPriors",
+          function(priorHigh, priorLow, skeletonBetaHigh, skeletonBetaLow,
+                   skeletonsPriorHigh, skeletonsPriorLow,
+                   adjustments, prefixAdjustments,
+                   filename, nIteration, lengthIter) {
+              NULL
+          })
+
+setGeneric("rescalePred",
+          function(prior, skeleton, adjustment,
+                   filename, nIteration, lengthIter) {
+               NULL
+           })
+
+setGeneric("rescalePriorIntercept",
+           function(priorTerm, priorIntercept,
+                    skeletonBetaTerm, skeletonBetaIntercept,
+                    skeletonsPriorTerm, adjustments, prefixAdjustments,
+                    filename, nIteration, lengthIter) {
+               NULL
+           })
+
+setGeneric("rescalePriors",
+           function(results, adjustments, filename, nIteration, lengthIter)
+               standardGeneric("rescalePriors"))
+
+setGeneric("rescaleSeason",
+           function(prior, skeleton, filename, nIteration, lengthIter) {
+               NULL
+           })
 
 setGeneric("showModelHelper",
            function(object)

@@ -57,6 +57,7 @@ updateProposalAccountMovePopn <- function(combined, useC = FALSE) {
             generated.new.proposal <- FALSE
         combined@generatedNewProposal@.Data <- generated.new.proposal
         if (generated.new.proposal) {
+            combined@generatedNewProposal@.Data <- TRUE
             combined@iCell <- i.cell
             combined@iCellOther <- NA_integer_
             combined@iPopnNext <- i.popn.next
@@ -73,6 +74,7 @@ updateProposalAccountMovePopn <- function(combined, useC = FALSE) {
             combined@diffProp <- diff.prop
         }
         else {
+            combined@generatedNewProposal@.Data <- FALSE
             combined@iCell <- NA_integer_
             combined@iCellOther <- NA_integer_
             combined@iPopnNext <- NA_integer_
@@ -189,6 +191,7 @@ updateProposalAccountMoveComp <- function(combined, useC = FALSE) {
             generated.new.proposal <- FALSE
         combined@generatedNewProposal@.Data <- generated.new.proposal
         if (generated.new.proposal) {
+            combined@generatedNewProposal@.Data <- TRUE
             combined@iCell <- i.cell
             combined@iCellOther <- NA_integer_
             combined@iPopnNext <- i.popn.next
@@ -211,6 +214,7 @@ updateProposalAccountMoveComp <- function(combined, useC = FALSE) {
             combined@diffProp <- diff.prop
         }
         else {
+            combined@generatedNewProposal@.Data <- FALSE
             combined@iCell <- NA_integer_
             combined@iCellOther <- NA_integer_
             combined@iPopnNext <- NA_integer_
@@ -970,8 +974,13 @@ diffLogDensPopn <- function(combined, useC = FALSE) {
 }
 
 ## HAS_TESTS
+<<<<<<< HEAD
 ## function called only if component uses exposure
 ## (otherwise ratios cancel)
+=======
+## Function called only if component uses exposure
+## - otherwise ratios cancel
+>>>>>>> master
 diffLogDensJumpComp <- function(combined, useC = FALSE) {
     stopifnot(is(combined, "CombinedAccountMovements"))
     if (useC) {
@@ -990,6 +999,7 @@ diffLogDensJumpComp <- function(combined, useC = FALSE) {
         is.increment <- combined@isIncrement
         theta.cell <- theta[i.cell]
         exposure.cell.curr <- exposure[i.exposure]
+        exposure.cell.jump <- expected.exposure[i.exposure]
         if (has.age) {
             is.lower.triangle <- combined@isLowerTriangle
             if (is.lower.triangle) {
@@ -1007,7 +1017,6 @@ diffLogDensJumpComp <- function(combined, useC = FALSE) {
             else
                 exposure.cell.prop <- exposure.cell.curr - 0.5 * diff
         }
-        exposure.cell.jump <- expected.exposure[i.exposure]
         lambda.dens.prop <- theta.cell * exposure.cell.prop
         lambda.jump <- theta.cell * exposure.cell.jump
         val.curr <- component[i.cell]
@@ -1040,6 +1049,7 @@ diffLogDensJumpOrigDest <- function(combined, useC = FALSE) {
         has.age <- combined@hasAge@.Data
         theta.cell <- theta[i.cell]
         exposure.cell.curr <- exposure[i.exposure]
+        exposure.cell.jump <- expected.exposure[i.exposure]
         if (has.age) {
             is.lower.triangle <- combined@isLowerTriangle
             if (is.lower.triangle)
@@ -1047,10 +1057,8 @@ diffLogDensJumpOrigDest <- function(combined, useC = FALSE) {
             else
                 exposure.cell.prop <- exposure.cell.curr
         }
-        else {
+        else
             exposure.cell.prop <- exposure.cell.curr - 0.5 * diff
-        }
-        exposure.cell.jump <- expected.exposure[i.exposure]
         lambda.dens.prop <- theta.cell * exposure.cell.prop
         lambda.jump <- theta.cell * exposure.cell.jump
         val.curr <- component[i.cell]
@@ -1062,7 +1070,6 @@ diffLogDensJumpOrigDest <- function(combined, useC = FALSE) {
         diff.log.dens + diff.log.jump
     }
 }
-
 
 
 ## HAS_TESTS

@@ -355,6 +355,77 @@ getRnormTruncatedSingle(double mean, double sd,
     }
     return ans;
 }
+
+/*## READY_TO_TRANSLATE
+## HAS_TESTS
+## Returns draw from truncated integer-only normal distribution (achieved by rounding).
+rnormIntTrunc1 <- function(mean = 0, sd = 1, lower = NA_integer_, upper = NA_integer_, useC = FALSE) {
+    ## mean
+    stopifnot(is.double(mean))
+    stopifnot(identical(length(mean), 1L))
+    stopifnot(!is.na(mean))
+    ## sd
+    stopifnot(is.double(sd))
+    stopifnot(identical(length(sd), 1L))
+    stopifnot(!is.na(sd))
+    stopifnot(sd > 0)
+    ## lower
+    stopifnot(is.integer(lower))
+    stopifnot(identical(length(lower), 1L))
+    ## upper
+    stopifnot(is.integer(upper))
+    stopifnot(identical(length(upper), 1L))
+    ## lower and upper
+    stopifnot(is.na(lower) || is.na(upper) || (lower <= upper))
+    if (useC) {
+        .Call(rnormIntTrunc1_R, mean, sd, lower, upper)
+    }
+    else {
+        if (!is.na(lower) && !is.na(upper) && (lower == upper))
+            return(lower)
+        lower <- if (is.na(lower)) -Inf else as.double(lower)
+        upper <- if (is.na(upper)) Inf else as.double(upper)
+        ans <- rtnorm1(mean = mean,
+                       sd = sd,
+                       lower = lower,
+                       upper = upper)
+        ans <- as.integer(ans + 0.5)
+        if (ans < lower)
+            ans <- lower
+        if (ans > upper)
+            ans <- upper
+        ans
+    }
+}
+*/
+
+
+int
+rnormIntTrunc1(double mean, double sd, 
+                int lower, int upper)
+{
+    int result = 0;
+    
+    if( !(lower == NA_INTEGER) && !(upper == NA_INTEGER) && (lower == upper) ) {
+        result = lower;
+    }
+    else {
+        
+        double dblLower = ( (lower == NA_INTEGER)? R_NegInf : lower );
+        double dblUpper = ( (upper == NA_INTEGER)? R_PosInf : upper );
+        
+        double dblAns = rtnorm1(mean, sd, dblLower, dblUpper);
+        
+        result = (int) (dblAns + 0.5);
+        
+        if (result < lower) {
+            result = lower;
+        }
+        if (result > upper) {
+            result = upper;
+        }
+    }
+}                
     
         
 double
@@ -420,7 +491,7 @@ int
 rpoisTrunc1(double lambda, int lower, int upper, int maxAttempt)
 {
     if (lower == NA_INTEGER)
-	lower = 0;
+    lower = 0;
 
     int finite_upper = ( (upper == NA_INTEGER) ? 0 : 1);
     
@@ -1496,6 +1567,12 @@ makeVBarAndN_General(SEXP object, int iBeta, double (*g)(double))
     int n_betas = LENGTH(betas_R);
 
     SEXP iteratorBetas_R = GET_SLOT(object, iteratorBetas_sym); 
+
+    double boxCoxParam = 0;
+    if (g == log) {
+        boxCoxParam = *REAL(GET_SLOT(object, boxCoxParam_sym));
+    }
+    int usesBoxCoxTransform = ((boxCoxParam > 0)? 1: 0);
     
     int len_vbar = LENGTH(VECTOR_ELT(betas_R, iBeta));
     
@@ -1512,7 +1589,7 @@ makeVBarAndN_General(SEXP object, int iBeta, double (*g)(double))
                 len_vbar, cellInLik,
                 betas_R, iteratorBetas_R,
                 theta, n_theta, n_betas,
-                iBeta, g);
+                iBeta, g, usesBoxCoxTransform, boxCoxParam);
     
     SEXP ans_R = PROTECT(allocVector(VECSXP, 2));
     SET_VECTOR_ELT(ans_R, 0, vbar_R);
@@ -1522,13 +1599,13 @@ makeVBarAndN_General(SEXP object, int iBeta, double (*g)(double))
                 
 }
 
-
 void
 getVBarAndN(double *vbar, int *n_vec, 
         int len_vbar, int *cellInLik, 
         SEXP betas_R, SEXP iteratorBetas_R, 
                 double *theta, int n_theta, int n_betas,
-                int iBeta, double (*g)(double))
+                int iBeta, double (*g)(double),
+                int usesBoxCoxTransform, double boxCoxParam)
 {
     resetB(iteratorBetas_R);
     int *indices = INTEGER(GET_SLOT(iteratorBetas_R, indices_sym));
@@ -1537,7 +1614,7 @@ getVBarAndN(double *vbar, int *n_vec,
     for (int b = 0; b < n_betas; ++b) {
         betas[b] = REAL(VECTOR_ELT(betas_R, b));
     }
-    
+
     /* zero contents of vbar and n_vec*/
     memset(vbar, 0, len_vbar * sizeof(double));
     memset(n_vec, 0, len_vbar * sizeof(int));
@@ -1547,10 +1624,16 @@ getVBarAndN(double *vbar, int *n_vec,
         int includeCell = cellInLik[i];
         
         if (includeCell) {
-        
+
             int pos_ans = indices[iBeta] - 1;
         
-            double set_pos = g( theta[i] );
+            double set_pos = 0;
+            if(usesBoxCoxTransform) {
+                set_pos += ( pow(theta[i], boxCoxParam) - 1)/boxCoxParam; 
+            }
+            else {
+                set_pos += g( theta[i] );
+            }
         
             for (int b = 0; b < n_betas; ++b) {
             
@@ -1573,9 +1656,9 @@ getVBarAndN(double *vbar, int *n_vec,
     /* } */
 
     for (int i = 0; i < len_vbar; ++i) {
-	if (n_vec[i] > 0L) { 	/* added by JB 2017-07-08 */
-	    vbar[i] /= n_vec[i];
-	}
+        if (n_vec[i] > 0L) {    /* added by JB 2017-07-08 */
+            vbar[i] /= n_vec[i];
+        }
     }
 
 }
@@ -1741,7 +1824,7 @@ predictAlphaDLMNoTrend(SEXP prior_R)
 void
 predictAlphaDeltaDLMWithTrend(SEXP prior_R)
 {
-	int K = *INTEGER(GET_SLOT(prior_R, K_sym));
+    int K = *INTEGER(GET_SLOT(prior_R, K_sym));
     int L = *INTEGER(GET_SLOT(prior_R, L_sym));
     
     double *alpha = REAL(GET_SLOT(prior_R, alphaDLM_sym)); /* vector, length (K+1)L */
@@ -1762,8 +1845,8 @@ predictAlphaDeltaDLMWithTrend(SEXP prior_R)
     for (int l = 0; l < L; ++l) {
         
         for (int i = 0; i < K; ++i) {
-			
-			int k_curr = indices[i+1] - 1;
+            
+            int k_curr = indices[i+1] - 1;
             int k_prev = indices[i] - 1;
             
             double delta_k_prev = delta[k_prev];
@@ -1773,11 +1856,11 @@ predictAlphaDeltaDLMWithTrend(SEXP prior_R)
             
             double meanAlpha = alpha[k_prev] + delta_k_prev;
             if (hasLevel) {
-				alpha[k_curr] = rnorm(meanAlpha, omegaAlpha);
-			}
-			else {
-				alpha[k_curr] = meanAlpha;
-			}
+                alpha[k_curr] = rnorm(meanAlpha, omegaAlpha);
+            }
+            else {
+                alpha[k_curr] = meanAlpha;
+            }
         }
             
         advanceA(iterator_R);
@@ -3041,14 +3124,22 @@ SEXP getDataFromFile_R(SEXP filename_R,
     rewind (fp); /* return to start of file */
     
     int sizeResultsBytes = 0;
+    int sizeAdjustmentsBytes = 0;
     
-    /* read the size of the results file - presumably in bytes?? */
-    size_t nRead1 = fread(&sizeResultsBytes, sizeof(int), 1, fp);
-    
-    if (nRead1 < 1) {
+    /* read the size of the results object */
+    size_t nReadRes = fread(&sizeResultsBytes, sizeof(int), 1, fp);
+
+    if (nReadRes < 1) {
         error("could not successfully read file %s", filename); 
     }
-    
+
+    /* read the size of the adjustments */
+    size_t nReadAdj = fread(&sizeAdjustmentsBytes, sizeof(int), 1, fp);
+
+    if (nReadAdj < 1) {
+        error("could not successfully read file %s", filename); 
+    }
+
     /* skip sizeResultsBytes bytes from current pos*/
     fseek (fp , sizeResultsBytes , SEEK_CUR );
     
@@ -3061,7 +3152,7 @@ SEXP getDataFromFile_R(SEXP filename_R,
     fseek (fp , skipBytes , SEEK_CUR );
 
     /* work out how many doubles to read and allocate a buffer */
-    long nDoubleRead = (size - sizeof(int) - sizeResultsBytes - skipBytes)
+    long nDoubleRead = (size - sizeof(int) - sizeResultsBytes - sizeAdjustmentsBytes - skipBytes)
                         /sizeof(double);
 
     double *buffer = (double*)R_alloc(nDoubleRead, sizeof(double));
@@ -3102,6 +3193,103 @@ SEXP getDataFromFile_R(SEXP filename_R,
     return ans_R;
 }
 #endif
+
+/* #if(1) */
+/* SEXP getDataFromFile_R(SEXP filename_R,  */
+/*                         SEXP first_R, SEXP last_R,  */
+/*                         SEXP lengthIter_R, SEXP iterations_R) */
+/* { */
+
+/*     /\* strings are character vectors, in this case just one element *\/ */
+/*     const char *filename = CHAR(STRING_ELT(filename_R,0));  */
+
+/*     FILE * fp = fopen(filename, "rb"); /\* binary mode *\/ */
+
+/*     if (NULL == fp) { */
+/*         error("could not open file %s", filename); /\* terminates now *\/ */
+/*     } */
+
+/*     int first = *(INTEGER(first_R)); */
+/*     int last = *(INTEGER(last_R)); */
+/*     int lengthIter = *(INTEGER(lengthIter_R)); */
+/*     int n_iter = LENGTH(iterations_R); */
+/*     int *iterations = INTEGER(iterations_R); */
+
+/*     int length_data = last - first + 1; */
+/*     int length_gap = lengthIter - length_data; */
+
+/*     /\* find size of file in total *\/ */
+/*     fseek(fp, 0, SEEK_END); */
+
+/*     long size = ftell(fp); /\* Bytes in file*\/ */
+    
+/*     rewind (fp); /\* return to start of file *\/ */
+    
+/*     int sizeResultsBytes = 0; */
+    
+/*     /\* read the size of the results file - presumably in bytes?? *\/ */
+/*     size_t nRead1 = fread(&sizeResultsBytes, sizeof(int), 1, fp); */
+
+/*     if (nRead1 < 1) { */
+/*         error("could not successfully read file %s", filename);  */
+/*     } */
+    
+/*     /\* skip over size of adjustments *\/ */
+/*     fseek (fp , sizeof(int) , SEEK_CUR ); /\* added by JB 2017-09-19 *\/ */
+
+/*     /\* skip sizeResultsBytes bytes from current pos*\/ */
+/*     fseek (fp , sizeResultsBytes , SEEK_CUR ); */
+    
+/*     int n_skip = iterations[0] - 1; /\* iterations to skip *\/ */
+
+/*     /\* skip n_skip iterations of length lengthIter, and first -1 values *\/ */
+/*     long skipBytes = (n_skip * lengthIter + first - 1) * sizeof(double); */
+
+/*     /\* position this far into file, in bytes, from current pos *\/ */
+/*     fseek (fp , skipBytes , SEEK_CUR ); */
+
+/*     /\* work out how many doubles to read and allocate a buffer *\/ */
+/*     long nDoubleRead = (size - sizeof(int) - sizeResultsBytes - skipBytes) */
+/*                         /sizeof(double); */
+
+/*     double *buffer = (double*)R_alloc(nDoubleRead, sizeof(double)); */
+/*     size_t nRead2 = fread(buffer, sizeof(double), nDoubleRead, fp); */
+
+/*     if (nRead2 != nDoubleRead) { */
+/*         error("could not successfully read file %s", filename);  */
+/*     } */
+
+/*     fclose(fp); /\* close the file *\/ */
+
+/*     SEXP ans_R; */
+/*     PROTECT(ans_R = allocVector(REALSXP, n_iter*length_data)); */
+/*     double *ans = REAL(ans_R); */
+
+/*     /\* transfer length_data values to ans *\/     */
+/*     memcpy(ans, buffer, length_data*sizeof(double)); */
+
+/*     double *bufferPtr = buffer;    */
+/*     double *ansPtr = ans;    */
+
+/*     for (int i = 1; i < n_iter; ++i) { */
+/*         /\* move to end of last block in ans *\/ */
+/*         ansPtr += length_data; */
+/*         /\* calculations for start of next block of data *\/ */
+/*         n_skip = iterations[i] - iterations[i-1] - 1; */
+
+/*         /\* position of start of next block in buffer*\/ */
+/*         bufferPtr += length_data + n_skip * lengthIter + length_gap; */
+
+/*         /\* transfer length_data values to ans *\/     */
+/*         memcpy(ansPtr, bufferPtr, length_data*sizeof(double)); */
+/*     } */
+
+/*     //free(buffer); */
+/*     UNPROTECT(1); /\* ans_R *\/ */
+
+/*     return ans_R; */
+/* } */
+/* #endif */
 
 
 
@@ -3310,15 +3498,15 @@ getIAccNextFromPopn(int i, SEXP description_R)
     int iAcc = 0;
     
     if ((iTime_r < nTimePopn) && (iAge_r < nAgePopn)) {
-	iAcc = (((i - 1) / (stepTimePopn * nTimePopn)) * (stepTimePopn * nTimeAcc)
-		+ ((i - 1) % (stepTimePopn * nTimePopn))) + 1;
-	int stepAgeAcc;
-	if (stepTimePopn > stepAgePopn)
-	    stepAgeAcc = stepAgePopn;
-	else
-	    stepAgeAcc = (stepAgePopn / nTimePopn) * nTimeAcc;
-	iAcc = (((iAcc - 1) / (stepAgeAcc * nAgePopn)) * (stepAgeAcc * nAgeAcc)
-		+ ((iAcc - 1) % (stepAgeAcc * nAgePopn))) + 1;
+    iAcc = (((i - 1) / (stepTimePopn * nTimePopn)) * (stepTimePopn * nTimeAcc)
+        + ((i - 1) % (stepTimePopn * nTimePopn))) + 1;
+    int stepAgeAcc;
+    if (stepTimePopn > stepAgePopn)
+        stepAgeAcc = stepAgePopn;
+    else
+        stepAgeAcc = (stepAgePopn / nTimePopn) * nTimeAcc;
+    iAcc = (((iAcc - 1) / (stepAgeAcc * nAgePopn)) * (stepAgeAcc * nAgeAcc)
+        + ((iAcc - 1) % (stepAgeAcc * nAgePopn))) + 1;
     }
     
     return iAcc;
@@ -3337,14 +3525,14 @@ getIExpFirstFromPopn(int i, SEXP description_R)
     int iNonTime = (i - 1) / nTimePopnTimesStepTime; /* integer div */
     int remainder = (i - 1) - iNonTime * nTimePopnTimesStepTime + 1;
     int indexExp = iNonTime * nTimeExp * stepTime + remainder;
-	
+    
     int hasAge = *INTEGER(GET_SLOT(description_R, hasAge_sym));
     if (hasAge) {
-	int lengthLowerTri = (lengthPopn / nTimePopn) * nTimeExp; /* integer div */
+    int lengthLowerTri = (lengthPopn / nTimePopn) * nTimeExp; /* integer div */
         return (lengthLowerTri + indexExp);
     }
     else
-	return indexExp;
+    return indexExp;
 }
     
 int
@@ -3389,13 +3577,13 @@ getMinValCohortAccession(int i, SEXP series_R, SEXP iterator_R)
     while(!(finished)) {
         
         advanceCA(iterator_R);
-	i = *INTEGER(GET_SLOT(iterator_R, i_sym));
+    i = *INTEGER(GET_SLOT(iterator_R, i_sym));
         int check = series[i - 1];
-	
+    
         if (check < ans) {
             ans = check;
         }
-	finished = *INTEGER(GET_SLOT(iterator_R, finished_sym));
+    finished = *INTEGER(GET_SLOT(iterator_R, finished_sym));
 
     }
     
@@ -3416,15 +3604,96 @@ getMinValCohortPopulation(int i, SEXP series_R, SEXP iterator_R)
     while(!(finished)) {
         
         advanceCP(iterator_R);
-	i = *INTEGER(GET_SLOT(iterator_R, i_sym));
+        i = *INTEGER(GET_SLOT(iterator_R, i_sym));
+
         int check = series[i - 1];
         
         if (check < ans) {
             ans = check;
         }
-	finished = *INTEGER(GET_SLOT(iterator_R, finished_sym));
-	
+    finished = *INTEGER(GET_SLOT(iterator_R, finished_sym));
+    
     }
     
     return ans;
 }
+
+/*Need a file positioning op between input/output or output/input
+ * eg use dummy like fseek(pFile,0,SEEK_CUR) */
+SEXP
+overwriteValuesOnFile_R(SEXP object_R, SEXP skeleton_R,
+              SEXP filename_R, SEXP nIteration_R, SEXP lengthIter_R)
+{
+    
+    /* strings are character vectors, in this case just one element */
+    const char *filename = CHAR(STRING_ELT(filename_R,0)); 
+
+    FILE * fp = fopen(filename, "r+b"); /* binary mode, with updating */
+    /* can only open if exists */
+    
+    if (NULL == fp) {
+        error("could not open file %s", filename); /* terminates now */
+    }
+    
+    double *object = REAL(object_R);
+
+    int first = *INTEGER(GET_SLOT(skeleton_R, first_sym));
+    int last = *INTEGER(GET_SLOT(skeleton_R, last_sym));
+    
+    int lengthIter = *(INTEGER(lengthIter_R));
+    int nIter = *INTEGER(nIteration_R);
+
+    /* read the size of the results and adjustment from the file */
+    int sizeResults = 0;
+    size_t nRead1 = fread(&sizeResults, sizeof(int), 1, fp);
+    if (nRead1 < 1) {
+        error("could not successfully read file %s", filename); 
+    }
+    
+    int sizeAdj = 0;
+    size_t nRead2 = fread(&sizeAdj, sizeof(int), 1, fp);
+    if (nRead2 < 1) {
+        error("could not successfully read file %s", filename); 
+    }
+    
+    /* skip sizeResults bytes from current pos*/
+    fseek (fp , sizeResults, SEEK_CUR );
+    /* even if no results, this meets requirements to use file 
+     * a positioning operation between read and write */
+    
+    int pos = 0; /* position in object */
+    int nWrite = last - first + 1; /* number of values to write each time */
+    int nComplete = 0;
+    if (lengthIter > last) {
+        nComplete = lengthIter - last;
+    }
+
+    for (int iIter = 0; iIter < nIter; ++iIter) {
+        
+        if (ferror(fp)) {
+            error("error in file %s", filename); 
+        }
+        
+        /* skip first-1 values */
+        long skipBytes = (first - 1) * sizeof(double);
+        fseek (fp , skipBytes, SEEK_CUR );
+        
+        fwrite( &object[pos], sizeof(double), nWrite, fp );
+        fflush(fp); /* flush buffer - forces output to file */
+        if (ferror(fp)) {
+            error("could not write to file %s", filename); 
+        }
+        
+        pos += nWrite;
+        
+        long skipMoreBytes = (nComplete) * sizeof(double);
+        fseek (fp , skipMoreBytes, SEEK_CUR );
+        /* fseek always used, and may be a dummy fseek (fp , 0, SEEK_CUR ); */
+        
+    }
+    
+    fclose(fp); /* close the file */
+    
+    return R_NilValue;
+}
+

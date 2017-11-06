@@ -303,7 +303,15 @@ SEXP
   updateSeriesDLM_sym,
   
   alphaKnown_sym,
-  AKnownVec_sym;  
+  AKnownVec_sym,  
+  
+  /* skeleton */
+  first_sym,
+  last_sym,
+  
+  /* Box-Cox */
+  boxCoxParam_sym;
+  
   
 /* Priors-methods */
 
@@ -427,6 +435,8 @@ SEXP rnormTruncated(int n, SEXP mean_R, SEXP sd_R,
                 double lower, double upper, double tolerance,
                 int maxAttempt,
                 int uniform);
+int rnormIntTrunc1(double mean, double sd, 
+                int lower, int upper);
 double rtnorm1(double mean, double sd, double lower, double upper);
 int rpoisTrunc1(double lambda, int lower, int upper, int maxAttempt);
                 
@@ -783,6 +793,9 @@ SEXP getOneIterFromFile_R(SEXP filename_R,
 SEXP getDataFromFile_R(SEXP filename_R, 
                         SEXP first_R, SEXP last_R, 
                         SEXP lengthIter_R, SEXP iterations_R);
+
+SEXP overwriteValuesOnFile_R(SEXP object_R, SEXP skeleton_R,
+              SEXP filename_R, SEXP nIteration_R, SEXP lengthIter_R);
 
 /* description helpers */
 int chooseICellComp(SEXP description_R);

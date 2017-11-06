@@ -311,7 +311,6 @@ updateAlphaDeltaDLMWithTrend <- function(prior, betaTilde, useC = FALSE) {
     else {    
         K <- prior@K@.Data
         L <- prior@L@.Data
-        update.series <- prior@updateSeriesDLM # logical length L
         alpha <- prior@alphaDLM@.Data  # numeric length (K+1)L
         delta <- prior@deltaDLM@.Data  # numeric length (K+1)L
         G <- prior@GWithTrend@.Data  # 2x2 matrix
@@ -336,112 +335,110 @@ updateAlphaDeltaDLMWithTrend <- function(prior, betaTilde, useC = FALSE) {
         iterator.ad <- resetA(iterator.ad)
         iterator.v <- resetA(iterator.v)
         for (l in seq_len(L)) {
-            if (update.series[l]) {
-                indices.ad <- iterator.ad@indices
-                indices.v <- iterator.v@indices
-                m[[1L]] <- m0[[l]]
-                ## forward filter
-                for (i in seq_len(K)) {
-                    M.R <- rbind(DC[[i]] %*% t(UC[[i]]) %*% t(G),
-                                 W.sqrt)
-                    svd.R <- svd(M.R, nu = 0)
-                    UR[[i]] <- svd.R$v
-                    DR.inv.diag <- 1 / svd.R$d
-                    DR.inv.diag[is.infinite(DR.inv.diag)] <- 0
-                    DR.inv[[i]][c(1L, 4L)] <- DR.inv.diag
-                    M.C <- rbind(UR[[i]][c(1L, 3L)] / sqrt(v[indices.v[i]]),
-                                 DR.inv[[i]])
-                    svd.C <- svd(M.C, nu = 0)
-                    UC[[i + 1L]] <- UR[[i]] %*% svd.C$v
-                    DC.inv.diag <- svd.C$d
-                    DC.diag <- 1/DC.inv.diag
-                    DC.diag[is.infinite(DC.diag)] <- 0
-                    DC.inv[[i + 1L]][c(1L, 4L)] <- DC.inv.diag
-                    DC[[i + 1L]][c(1L, 4L)] <- DC.diag
-                    a[[i]] <- drop(G %*% m[[i]])
-                    e <- betaTilde[indices.v[i]] - a[[i]][1L]
-                    C[[i + 1L]] <- UC[[i + 1L]] %*% DC[[i + 1L]] %*% DC[[i + 1L]] %*% t(UC[[i + 1L]])
-                    A <- C[[i + 1L]][1:2] / v[indices.v[i]]
-                    m[[i + 1L]] <- a[[i]] + A * e
+            indices.ad <- iterator.ad@indices
+            indices.v <- iterator.v@indices
+            m[[1L]] <- m0[[l]]
+            ## forward filter
+            for (i in seq_len(K)) {
+                M.R <- rbind(DC[[i]] %*% t(UC[[i]]) %*% t(G),
+                             W.sqrt)
+                svd.R <- svd(M.R, nu = 0)
+                UR[[i]] <- svd.R$v
+                DR.inv.diag <- 1 / svd.R$d
+                DR.inv.diag[is.infinite(DR.inv.diag)] <- 0
+                DR.inv[[i]][c(1L, 4L)] <- DR.inv.diag
+                M.C <- rbind(UR[[i]][c(1L, 3L)] / sqrt(v[indices.v[i]]),
+                             DR.inv[[i]])
+                svd.C <- svd(M.C, nu = 0)
+                UC[[i + 1L]] <- UR[[i]] %*% svd.C$v
+                DC.inv.diag <- svd.C$d
+                DC.diag <- 1/DC.inv.diag
+                DC.diag[is.infinite(DC.diag)] <- 0
+                DC.inv[[i + 1L]][c(1L, 4L)] <- DC.inv.diag
+                DC[[i + 1L]][c(1L, 4L)] <- DC.diag
+                a[[i]] <- drop(G %*% m[[i]])
+                e <- betaTilde[indices.v[i]] - a[[i]][1L]
+                C[[i + 1L]] <- UC[[i + 1L]] %*% DC[[i + 1L]] %*% DC[[i + 1L]] %*% t(UC[[i + 1L]])
+                A <- C[[i + 1L]][1:2] / v[indices.v[i]]
+                m[[i + 1L]] <- a[[i]] + A * e
+            }
+            ## draw final gamma, delta
+            sqrt.C <- UC[[K + 1L]] %*% DC[[K + 1L]]
+            z <- stats::rnorm(n = 2L)
+            theta <- m[[K + 1L]] + drop(sqrt.C %*% z)
+            alpha[indices.ad[K + 1L]] <- theta[1L]
+            delta[indices.ad[K + 1L]] <- theta[2L]
+            ## backward smooth
+            for (i in seq.int(from = K - 1L, to = 0L)) {
+                if (!has.level) {
+                    if ((i == 0L) && is.infinite(DC.inv[[1L]][1L])) {
+                        delta[indices.ad[1L]] <- alpha[indices.ad[2L]] - alpha[indices.ad[1L]]
+                    }
+                    else  {
+                        C.inv <- UC[[i + 1L]] %*% DC.inv[[i + 1L]] %*% DC.inv[[i + 1L]] %*% t(UC[[i + 1L]])
+                        sigma.inv.1 <- C.inv[1L]
+                        sigma.inv.2 <- C.inv[2L]
+                        sigma.inv.3 <- C.inv[3L]
+                        sigma.inv.4 <- C.inv[4L] + phi^2 / omega.delta^2
+                        determinant <- sigma.inv.1 * sigma.inv.4 - sigma.inv.2 * sigma.inv.3
+                        sigma.1 <- sigma.inv.4 / determinant
+                        sigma.2 <- -1 * sigma.inv.3 / determinant
+                        sigma.3 <- -1 * sigma.inv.2 / determinant
+                        sigma.4 <- sigma.inv.1 / determinant
+                        mu.inner.1 <- C.inv[1L] * m[[i + 1L]][1L] + C.inv[3L] * m[[i + 1L]][2L]
+                        mu.inner.2 <- (C.inv[2L] * m[[i + 1L]][1L] + C.inv[4L] * m[[i + 1L]][2L]
+                            + phi * delta[indices.ad[i + 2L]] / omega.delta^2)
+                        mu.1 <- sigma.1 * mu.inner.1 + sigma.3 * mu.inner.2
+                        mu.2 <- sigma.2 * mu.inner.1 + sigma.4 * mu.inner.2
+                        mu.star.1 <- mu.1
+                        mu.star.2 <- mu.1 + mu.2
+                        sigma.star.1 <- sigma.1
+                        sigma.star.2 <- sigma.1 + sigma.2
+                        sigma.star.3 <- sigma.1 + sigma.3
+                        sigma.star.4 <- sigma.1 + sigma.2 + sigma.3 + sigma.4
+                        rho.star.sq <- sigma.star.2 * sigma.star.3 / (sigma.star.1 * sigma.star.4)
+                        mean.alpha <- (mu.star.1 + sqrt(rho.star.sq * sigma.star.1 / sigma.star.4)
+                            * (alpha[indices.ad[i + 2L]] - mu.star.2))
+                        var.alpha <- (1 - rho.star.sq) * sigma.star.1
+                        alpha.curr <- stats::rnorm(n = 1L,
+                                                   mean = mean.alpha,
+                                                   sd = sqrt(var.alpha))
+                        delta.curr <- alpha[indices.ad[i + 2L]] - alpha.curr
+                        alpha[indices.ad[i + 1L]] <- alpha.curr
+                        delta[indices.ad[i + 1L]] <- delta.curr
+                    }
                 }
-                ## draw final gamma, delta
-                sqrt.C <- UC[[K + 1L]] %*% DC[[K + 1L]]
-                z <- stats::rnorm(n = 2L)
-                theta <- m[[K + 1L]] + drop(sqrt.C %*% z)
-                alpha[indices.ad[K + 1L]] <- theta[1L]
-                delta[indices.ad[K + 1L]] <- theta[2L]
-                ## backward smooth
-                for (i in seq.int(from = K - 1L, to = 0L)) {
-                    if (!has.level) {
-                        if ((i == 0L) && is.infinite(DC.inv[[1L]][1L])) {
-                            delta[indices.ad[1L]] <- alpha[indices.ad[2L]]
-                        }
-                        else  {
-                            C.inv <- UC[[i + 1L]] %*% DC.inv[[i + 1L]] %*% DC.inv[[i + 1L]] %*% t(UC[[i + 1L]])
-                            sigma.inv.1 <- C.inv[1L]
-                            sigma.inv.2 <- C.inv[2L]
-                            sigma.inv.3 <- C.inv[3L]
-                            sigma.inv.4 <- C.inv[4L] + phi^2 / omega.delta^2
-                            determinant <- sigma.inv.1 * sigma.inv.4 - sigma.inv.2 * sigma.inv.3
-                            sigma.1 <- sigma.inv.4 / determinant
-                            sigma.2 <- -1 * sigma.inv.3 / determinant
-                            sigma.3 <- -1 * sigma.inv.2 / determinant
-                            sigma.4 <- sigma.inv.1 / determinant
-                            mu.inner.1 <- C.inv[1L] * m[[i + 1L]][1L] + C.inv[3L] * m[[i + 1L]][2L]
-                            mu.inner.2 <- (C.inv[2L] * m[[i + 1L]][1L] + C.inv[4L] * m[[i + 1L]][2L]
-                                + phi * delta[indices.ad[i + 2L]] / omega.delta^2)
-                            mu.1 <- sigma.1 * mu.inner.1 + sigma.3 * mu.inner.2
-                            mu.2 <- sigma.2 * mu.inner.1 + sigma.4 * mu.inner.2
-                            mu.star.1 <- mu.1
-                            mu.star.2 <- mu.1 + mu.2
-                            sigma.star.1 <- sigma.1
-                            sigma.star.2 <- sigma.1 + sigma.2
-                            sigma.star.3 <- sigma.1 + sigma.3
-                            sigma.star.4 <- sigma.1 + sigma.2 + sigma.3 + sigma.4
-                            rho.star.sq <- sigma.star.2 * sigma.star.3 / (sigma.star.1 * sigma.star.4)
-                            mean.alpha <- (mu.star.1 + sqrt(rho.star.sq * sigma.star.1 / sigma.star.4)
-                                * (alpha[indices.ad[i + 2L]] - mu.star.2))
-                            var.alpha <- (1 - rho.star.sq) * sigma.star.1
-                            alpha.curr <- stats::rnorm(n = 1L,
-                                                       mean = mean.alpha,
-                                                       sd = sqrt(var.alpha))
-                            delta.curr <- alpha[indices.ad[i + 2L]] - alpha.curr
-                            alpha[indices.ad[i + 1L]] <- alpha.curr
-                            delta[indices.ad[i + 1L]] <- delta.curr
-                        }
+                else {
+                    if ((i == 0L) && is.infinite(DC.inv[[1L]][1L])) {
+                        prec.delta.0 <- DC.inv[[1L]][4L] 
+                        prec.alpha <- 1 / omega.alpha^2
+                        prec.delta.1 <- phi^2 / omega.delta^2
+                        var.delta.curr <- 1 / (prec.delta.0 + prec.alpha + prec.delta.1)
+                        mean.delta.curr <- var.delta.curr * (prec.delta.0 * m[[1L]][2L] + prec.alpha * alpha[indices.ad[2L]]
+                            + prec.delta.1 * delta[indices.ad[2L]] / phi)
+                        delta.curr <- rnorm(n = 1L,
+                                            mean = mean.delta.curr,
+                                            sd = sqrt(var.delta.curr))
+                        delta[indices.ad[1L]] <- delta.curr
                     }
                     else {
-                        if ((i == 0L) && is.infinite(DC.inv[[1L]][1L])) {
-                            prec.delta.0 <- DC.inv[[1L]][4L] 
-                            prec.alpha <- 1 / omega.alpha^2
-                            prec.delta.1 <- phi^2 / omega.delta^2
-                            var.delta.curr <- 1 / (prec.delta.0 + prec.alpha + prec.delta.1)
-                            mean.delta.curr <- var.delta.curr * (prec.delta.0 * m[[1L]][2L] + prec.alpha * alpha[indices.ad[2L]]
-                                + prec.delta.1 * delta[indices.ad[2L]] / phi)
-                            delta.curr <- rnorm(n = 1L,
-                                                mean = mean.delta.curr,
-                                                sd = sqrt(var.delta.curr))
-                            delta[indices.ad[1L]] <- delta.curr
-                        }
-                        else {
-                            R.inv <- (UR[[i + 1L]] %*% DR.inv[[i + 1L]]
-                                %*% DR.inv[[i + 1L]] %*% t(UR[[i + 1L]]))
-                            B <- C[[i + 1L]] %*% t(G) %*% R.inv
-                            M.C.star <- rbind(W.sqrt.inv.G,
-                                              DC.inv[[i + 1L]] %*% t(UC[[i + 1L]]))
-                            svd.C.star <- svd(M.C.star, nu = 0)
-                            UC.star <- svd.C.star$v
-                            DC.star <- 1 / svd.C.star$d
-                            DC.star[is.infinite(DC.star)] <- 0
-                            DC.star <- diag(DC.star, nrow = 2L)
-                            sqrt.C.star <- UC.star %*% DC.star
-                            theta.prev <- c(alpha[indices.ad[i + 2L]], delta[indices.ad[i + 2L]])
-                            m.star <- m[[i + 1L]] + drop(B %*% (theta.prev - a[[i + 1L]]))
-                            z <- stats::rnorm(n = 2L)
-                            theta.curr <- m.star + drop(sqrt.C.star %*% z)
-                            alpha[indices.ad[i + 1L]] <- theta.curr[1L]
-                            delta[indices.ad[i + 1L]] <- theta.curr[2L]
-                        }
+                        R.inv <- (UR[[i + 1L]] %*% DR.inv[[i + 1L]]
+                            %*% DR.inv[[i + 1L]] %*% t(UR[[i + 1L]]))
+                        B <- C[[i + 1L]] %*% t(G) %*% R.inv
+                        M.C.star <- rbind(W.sqrt.inv.G,
+                                          DC.inv[[i + 1L]] %*% t(UC[[i + 1L]]))
+                        svd.C.star <- svd(M.C.star, nu = 0)
+                        UC.star <- svd.C.star$v
+                        DC.star <- 1 / svd.C.star$d
+                        DC.star[is.infinite(DC.star)] <- 0
+                        DC.star <- diag(DC.star, nrow = 2L)
+                        sqrt.C.star <- UC.star %*% DC.star
+                        theta.prev <- c(alpha[indices.ad[i + 2L]], delta[indices.ad[i + 2L]])
+                        m.star <- m[[i + 1L]] + drop(B %*% (theta.prev - a[[i + 1L]]))
+                        z <- stats::rnorm(n = 2L)
+                        theta.curr <- m.star + drop(sqrt.C.star %*% z)
+                        alpha[indices.ad[i + 1L]] <- theta.curr[1L]
+                        delta[indices.ad[i + 1L]] <- theta.curr[2L]
                     }
                 }
             }
@@ -470,7 +467,6 @@ updateAlphaDLMNoTrend <- function(prior, betaTilde, useC = FALSE) {
     else {    
         K <- prior@K@.Data
         L <- prior@L@.Data
-        update.series <- prior@updateSeriesDLM # logical vector length L ## NEW
         alpha <- prior@alphaDLM@.Data # numeric vector length (K+1)L
         m <- prior@mNoTrend@.Data     # list length K+1
         m0 <- prior@m0NoTrend@.Data   # list length L
@@ -483,33 +479,32 @@ updateAlphaDLMNoTrend <- function(prior, betaTilde, useC = FALSE) {
         omega.sq <- omega^2
         v <- getV(prior)              # numeric vector length KL
         tolerance <- prior@tolerance@.Data
-        phi.known <- prior@phiKnown@.Data
-        non.stationary <- phi.known && (phi > 1 - tolerance)
         iterator.a <- prior@iteratorState
         iterator.v <- prior@iteratorV
         iterator.a <- resetA(iterator.a)
         iterator.v <- resetA(iterator.v)
         for (l in seq_len(L)) {
-            if (update.series[l]) { ## NEW
-                indices.a <- iterator.a@indices
-                indices.v <- iterator.v@indices
-                m[[1L]] <- m0[[l]]
-                ## forward filter
-                for (i in seq_len(K)) {
-                    a[[i]] <- phi * m[[i]]
-                    R[[i]] <- phi.sq * C[[i]] + omega.sq
-                    q <- R[[i]] + v[indices.v[i]]
-                    e <- betaTilde[indices.v[i]] - a[[i]]
-                    A <- R[[i]] / q
-                    m[[i + 1L]] <- a[[i]] + A * e
-                    C[[i + 1L]] <- R[[i]] - A^2 * q
-                }
-                ## draw gamma_K
-                alpha[indices.a[K + 1L]] <- stats::rnorm(n = 1L,
-                                                         mean = m[[K + 1L]], 
-                                                         sd = sqrt(C[[K + 1L]]))
-                ## backward sample
-                for (i in seq.int(from = K - 1L, to = non.stationary)) { # if nonstationary, alpha0 = 0
+            indices.a <- iterator.a@indices
+            indices.v <- iterator.v@indices
+            m[[1L]] <- m0[[l]]
+            ## forward filter
+            for (i in seq_len(K)) {
+                a[[i]] <- phi * m[[i]]
+                R[[i]] <- phi.sq * C[[i]] + omega.sq
+                q <- R[[i]] + v[indices.v[i]]
+                e <- betaTilde[indices.v[i]] - a[[i]]
+                A <- R[[i]] / q
+                m[[i + 1L]] <- a[[i]] + A * e
+                C[[i + 1L]] <- R[[i]] - A^2 * q
+            }
+            ## draw gamma_K
+            alpha[indices.a[K + 1L]] <- stats::rnorm(n = 1L,
+                                                     mean = m[[K + 1L]], 
+                                                     sd = sqrt(C[[K + 1L]]))
+            ## backward sample
+            ## for (i in seq.int(from = K - 1L, to = non.stationary)) { # if nonstationary, alpha0 = 0
+            for (i in seq.int(from = K - 1L, to = 0L)) { # if nonstationary, alpha0 = 0
+                if ((i > 0L) || (C[[1L]] > tolerance)) {
                     B <- C[[i + 1L]] * phi / R[[i + 1L]]
                     m.star <- m[[i + 1L]] + B * (alpha[indices.a[i + 2L]] - a[[i + 1L]])
                     C.star <- C[[i + 1L]] - B^2 * R[[i + 1L]]
@@ -667,12 +662,13 @@ updateEta <- function(prior, beta, useC = FALSE) {
         eta.hat <- qr.solve(qr, b)
         eta.hat <- drop(eta.hat)
         g <- stats::rnorm(n = P)
-        R <- qr.R(qr)
+        R <- chol(var.inv) 
         epsilon <- backsolve(R, g)
         prior@eta@.Data <- eta.hat + epsilon
         prior
     }
 }
+
 
 ## TRANSLATED
 ## HAS_TESTS
@@ -1087,7 +1083,6 @@ updateOmegaAlpha <- function(prior, withTrend, useC = FALSE) {
         J <- prior@J@.Data
         K <- prior@K@.Data
         L <- prior@L@.Data
-        update.series <- prior@updateSeriesDLM # logical length L
         alpha <- prior@alphaDLM@.Data
         omega <- prior@omegaAlpha@.Data
         omegaMax <- prior@omegaAlphaMax@.Data
@@ -1102,17 +1097,15 @@ updateOmegaAlpha <- function(prior, withTrend, useC = FALSE) {
         V <- 0
         n <- 0L
         for (l in seq_len(L)) {
-            if (update.series[l]) {
-                indices <- iterator@indices
-                for (i in seq_len(K)) {
-                    k.curr <- indices[i + 1]
-                    k.prev <- indices[i]
-                    if (withTrend)
-                        V <- V + (alpha[k.curr] - alpha[k.prev] - delta[k.prev])^2
-                    else
-                        V <- V + (alpha[k.curr] - phi * alpha[k.prev])^2
-                    n <- n + 1L
-                }
+            indices <- iterator@indices
+            for (i in seq_len(K)) {
+                k.curr <- indices[i + 1]
+                k.prev <- indices[i]
+                if (withTrend)
+                    V <- V + (alpha[k.curr] - alpha[k.prev] - delta[k.prev])^2
+                else
+                    V <- V + (alpha[k.curr] - phi * alpha[k.prev])^2
+                n <- n + 1L
             }
             iterator <- advanceA(iterator)
         }
@@ -1182,7 +1175,6 @@ updateOmegaDelta <- function(prior, useC = FALSE) {
         J <- prior@J@.Data
         K <- prior@K@.Data
         L <- prior@L@.Data
-        update.series <- prior@updateSeriesDLM 
         delta <- prior@deltaDLM@.Data
         phi <- prior@phi
         omega <- prior@omegaDelta@.Data
@@ -1194,14 +1186,12 @@ updateOmegaDelta <- function(prior, useC = FALSE) {
         V <- 0
         n <- 0L
         for (l in seq_len(L)) {
-            if (update.series[l]) {
-                indices <- iterator@indices
-                for (i in seq_len(K)) {
-                    k.curr <- indices[i + 1]
-                    k.prev <- indices[i]
-                    V <- V + (delta[k.curr] - phi * delta[k.prev])^2
-                    n <- n + 1L
-                }
+            indices <- iterator@indices
+            for (i in seq_len(K)) {
+                k.curr <- indices[i + 1]
+                k.prev <- indices[i]
+                V <- V + (delta[k.curr] - phi * delta[k.prev])^2
+                n <- n + 1L
             }
             iterator <- advanceA(iterator)
         }
@@ -1275,7 +1265,6 @@ updateOmegaSeason <- function(prior, useC = FALSE) {
         J <- prior@J@.Data
         K <- prior@K@.Data
         L <- prior@L@.Data
-        update.series <- prior@updateSeriesDLM # logical length L ## NEW
         s <- prior@s@.Data
         n.season <- prior@nSeason@.Data
         omega <- prior@omegaSeason@.Data
@@ -1286,16 +1275,14 @@ updateOmegaSeason <- function(prior, useC = FALSE) {
         iterator <- resetA(iterator)
         V <- 0
         for (l in seq_len(L)) {
-            if (update.series[l]) { ## NEW
-                indices <- iterator@indices
-                for (i in seq_len(K)) {
-                    i.curr <- indices[i + 1L]
-                    i.prev <- indices[i]
-                    curr <- s[[i.curr]][1L]
-                    prev <- s[[i.prev]][n.season]
-                    V <- V + (curr - prev)^2
-                }
-            } ## NEW
+            indices <- iterator@indices
+            for (i in seq_len(K)) {
+                i.curr <- indices[i + 1L]
+                i.prev <- indices[i]
+                curr <- s[[i.curr]][1L]
+                prev <- s[[i.prev]][n.season]
+                V <- V + (curr - prev)^2
+            }
             iterator <- advanceA(iterator)
         }
         omega <- updateSDNorm(sigma = omega,
@@ -1377,7 +1364,6 @@ updatePhi <- function(prior, withTrend, useC = FALSE) {
         phi.curr <- prior@phi
         K <- prior@K@.Data
         L <- prior@L@.Data
-        update.series <- prior@updateSeriesDLM # logical length L
         if (withTrend) {
             state <- prior@deltaDLM@.Data
             omega <- prior@omegaDelta@.Data
@@ -1395,14 +1381,12 @@ updatePhi <- function(prior, withTrend, useC = FALSE) {
         numerator <- 0
         denominator <- 0
         for (l in seq_len(L)) {
-            if (update.series[l]) {
-                indices <- iterator@indices
-                for (i in seq_len(K)) {
-                    k.curr <- indices[i + 1]
-                    k.prev <- indices[i]
-                    numerator <- numerator + state[k.curr] * state[k.prev]
-                    denominator <- denominator + (state[k.prev])^2
-                }
+            indices <- iterator@indices
+            for (i in seq_len(K)) {
+                k.curr <- indices[i + 1]
+                k.prev <- indices[i]
+                numerator <- numerator + state[k.curr] * state[k.prev]
+                denominator <- denominator + (state[k.prev])^2
             }
             iterator <- advanceA(iterator)
         }
@@ -1539,7 +1523,6 @@ updateSeason <- function(prior, betaTilde, useC = FALSE) {
     else {    
         K <- prior@K@.Data
         L <- prior@L@.Data
-        update.series <- prior@updateSeriesDLM # logical length L ## NEW
         n.season <- prior@nSeason@.Data 
         s <- prior@s@.Data       # length (K+1)L list of vectors of length nSeason
         m <- prior@mSeason@.Data # length K+1 list of vectors of length nSeason
@@ -1555,46 +1538,44 @@ updateSeason <- function(prior, betaTilde, useC = FALSE) {
         iterator.s <- resetA(iterator.s)
         iterator.v <- resetA(iterator.v)
         for (l in seq_len(L)) {
-            if (update.series[l]) { ## NEW
-                indices.s <- iterator.s@indices
-                indices.v <- iterator.v@indices
-                m[[1L]] <- m0[[l]]
-                ## forward filter
-                for (i in seq_len(K)) {
-                    j <- indices.v[i]
-                    for (i.n in seq_len(n.season - 1L)) {
-                        a[[i]][i.n + 1L] <- m[[i]][i.n]
-                        R[[i]][i.n + 1L] <- C[[i]][i.n]
-                    }
-                    a[[i]][1L] <- m[[i]][n.season]
-                    R[[i]][1L] <- C[[i]][n.season] + omega^2
-                    q <- R[[i]][1L] + v[j]
-                    e <- betaTilde[j] - a[[i]][1L]
-                    Ae1 <- R[[i]][1L] * e / q
-                    m[[i + 1L]] <- a[[i]]
-                    m[[i + 1L]][1L] <- m[[i + 1L]][1L] + Ae1
-                    AAq1 <- (R[[i]][1L])^2 / q
-                    C[[i + 1L]] <- R[[i]]
-                    C[[i + 1L]][1L] <- C[[i + 1L]][1L] - AAq1 
-                }                
-                ## draw final value for 's'
-                for (i.n in seq_len(n.season)) {
-                    i.curr <- indices.s[K + 1L]
-                    mean <- m[[K + 1L]][i.n]
-                    sd <- sqrt(C[[K + 1L]][i.n])
-                    s[[i.curr]][i.n] <- stats::rnorm(n = 1L, mean = mean, sd = sd)
+            indices.s <- iterator.s@indices
+            indices.v <- iterator.v@indices
+            m[[1L]] <- m0[[l]]
+            ## forward filter
+            for (i in seq_len(K)) {
+                j <- indices.v[i]
+                for (i.n in seq_len(n.season - 1L)) {
+                    a[[i]][i.n + 1L] <- m[[i]][i.n]
+                    R[[i]][i.n + 1L] <- C[[i]][i.n]
                 }
-                ## backward smooth
-                for (i in seq.int(from = K, to = 1L)) {
-                    i.prev <- indices.s[i + 1L]
-                    i.curr <- indices.s[i]
-                    s[[i.curr]][-n.season] <- s[[i.prev]][-1L]
-                    lambda <- C[[i]][n.season] / (C[[i]][n.season] + omega.sq)
-                    mean <- lambda * s[[i.prev]][1L] + (1 - lambda) * m[[i]][n.season]
-                    sd <- sqrt(lambda) * omega
-                    s[[i.curr]][n.season] <- stats::rnorm(n = 1L, mean = mean, sd = sd)
-                }
-            } ## NEW
+                a[[i]][1L] <- m[[i]][n.season]
+                R[[i]][1L] <- C[[i]][n.season] + omega^2
+                q <- R[[i]][1L] + v[j]
+                e <- betaTilde[j] - a[[i]][1L]
+                Ae1 <- R[[i]][1L] * e / q
+                m[[i + 1L]] <- a[[i]]
+                m[[i + 1L]][1L] <- m[[i + 1L]][1L] + Ae1
+                AAq1 <- (R[[i]][1L])^2 / q
+                C[[i + 1L]] <- R[[i]]
+                C[[i + 1L]][1L] <- C[[i + 1L]][1L] - AAq1 
+            }                
+            ## draw final value for 's'
+            for (i.n in seq_len(n.season)) {
+                i.curr <- indices.s[K + 1L]
+                mean <- m[[K + 1L]][i.n]
+                sd <- sqrt(C[[K + 1L]][i.n])
+                s[[i.curr]][i.n] <- stats::rnorm(n = 1L, mean = mean, sd = sd)
+            }
+            ## backward smooth
+            for (i in seq.int(from = K, to = 1L)) {
+                i.prev <- indices.s[i + 1L]
+                i.curr <- indices.s[i]
+                s[[i.curr]][-n.season] <- s[[i.prev]][-1L]
+                lambda <- C[[i]][n.season] / (C[[i]][n.season] + omega.sq)
+                mean <- lambda * s[[i.prev]][1L] + (1 - lambda) * m[[i]][n.season]
+                sd <- sqrt(lambda) * omega
+                s[[i.curr]][n.season] <- stats::rnorm(n = 1L, mean = mean, sd = sd)
+            }
             iterator.s <- advanceA(iterator.s)
             iterator.v <- advanceA(iterator.v)
         }
@@ -1911,7 +1892,7 @@ updateWeightMix <- function(prior, useC = FALSE) {
 ## UPDATING MODELS ##################################################################
 
 
-## TRANSLATED
+## TRANSLATED (AGAIN)
 ## HAS_TESTS
 updateSigma_Varying <- function(object, g, useC = FALSE) {
     ## object
@@ -1930,11 +1911,20 @@ updateSigma_Varying <- function(object, g, useC = FALSE) {
         theta <- object@theta
         betas <- object@betas
         iterator <- object@iteratorBetas
+        if (identical(g, log)) { 
+            box.cox.param <- object@boxCoxParam 
+            uses.box.cox.transform <- box.cox.param > 0 
+        } 
+        else 
+            uses.box.cox.transform <- FALSE 
         iterator <- resetB(iterator)
         n <- length(theta)
         V <- 0
         for (i in seq_len(n)) {
-            transformed.theta <- g(theta[i])
+            if (uses.box.cox.transform) 
+                transformed.theta <- (theta[i] ^ box.cox.param - 1) / box.cox.param 
+            else 
+                transformed.theta <- g(theta[i]) 
             indices <- iterator@indices
             mu <- 0
             for (b in seq_along(betas))
@@ -2005,7 +1995,7 @@ updateTheta_BinomialVarying <- function(object, y, exposure, useC = FALSE) {
                 th.curr <- theta[i]
                 logit.th.curr <- log(th.curr / (1 - th.curr))
                 mean <- logit.th.curr
-                sd <- scale / sqrt(1 + log(1 + exposure[i]))
+                sd <- scale * sqrt((exposure[i] - y[i] + 0.5) / ((exposure[i] + 0.5) * (y[i] + 0.5)))
             }
             found.prop <- FALSE
             attempt <- 0L
@@ -2439,7 +2429,7 @@ updateThetaAndValueAgFun_Binomial <- function(object, y, exposure, useC = FALSE)
             }
             else {
                 mean <- logit.th.curr
-                sd <- scale / sqrt(1 + log(1 + exposure[i]))
+                sd <- scale * sqrt((exposure[i] - y[i] + 0.5) / ((exposure[i] + 0.5) * (y[i] + 0.5)))
             }
             found.prop <- FALSE
             attempt <- 0L
@@ -2996,6 +2986,7 @@ updateTheta_PoissonVaryingNotUseExp <- function(object, y, useC = FALSE) {
             transform <- y@transformSubtotals
         }
         theta <- object@theta
+        box.cox.param <- object@boxCoxParam
         scale <- object@scaleTheta
         lower <- object@lower
         upper <- object@upper
@@ -3031,18 +3022,24 @@ updateTheta_PoissonVaryingNotUseExp <- function(object, y, useC = FALSE) {
             }
             else {
                 th.curr <- theta[i]
-                log.th.curr <- log(th.curr)
-                mean <- log.th.curr
+                if (box.cox.param > 0)
+                    tr.th.curr <- (th.curr ^ box.cox.param - 1) / box.cox.param # ('tr' short for 'transformed')
+                else
+                    tr.th.curr <- log(th.curr)
+                mean <- tr.th.curr
                 sd <- scale
             }
             while (!found.prop && (attempt < max.attempt)) {
                 attempt <- attempt + 1L
-                log.th.prop <- stats::rnorm(n = 1L, mean = mean, sd = sd)
-                found.prop <- ((log.th.prop > lower + tolerance)
-                               && (log.th.prop < upper - tolerance))
+                tr.th.prop <- stats::rnorm(n = 1L, mean = mean, sd = sd)
+                found.prop <- ((tr.th.prop > lower + tolerance)
+                               && (tr.th.prop < upper - tolerance))
             }
             if (found.prop) {
-                th.prop <- exp(log.th.prop)
+                if (box.cox.param > 0)
+                    th.prop <- (box.cox.param * tr.th.prop + 1) ^ (1 / box.cox.param)
+                else
+                    th.prop <- exp(tr.th.prop)
                 if (draw.straight.from.prior)
                     theta[i] <- th.prop
                 else {
@@ -3062,8 +3059,8 @@ updateTheta_PoissonVaryingNotUseExp <- function(object, y, useC = FALSE) {
                         log.lik.prop <- stats::dpois(y[i], lambda = th.prop, log = TRUE)
                         log.lik.curr <- stats::dpois(y[i], lambda = th.curr, log = TRUE)
                     }
-                    log.dens.prop <- stats::dnorm(x = log.th.prop, mean = mu, sd = sigma, log = TRUE)
-                    log.dens.curr <- stats::dnorm(x = log.th.curr, mean = mu, sd = sigma, log = TRUE)
+                    log.dens.prop <- stats::dnorm(x = tr.th.prop, mean = mu, sd = sigma, log = TRUE)
+                    log.dens.curr <- stats::dnorm(x = tr.th.curr, mean = mu, sd = sigma, log = TRUE)
                     log.diff <- log.lik.prop + log.dens.prop - log.lik.curr - log.dens.curr
                     accept <- (log.diff >= 0) || (stats::runif(n = 1L) < exp(log.diff))
                     if (accept) {
@@ -3122,6 +3119,7 @@ updateTheta_PoissonVaryingUseExp <- function(object, y, exposure, useC = FALSE) 
             transform <- y@transformSubtotals
         }
         theta <- object@theta
+        box.cox.param <- object@boxCoxParam
         scale <- object@scaleTheta
         scale.multiplier <- object@scaleThetaMultiplier
         lower <- object@lower
@@ -3159,18 +3157,27 @@ updateTheta_PoissonVaryingUseExp <- function(object, y, exposure, useC = FALSE) 
             }
             else {
                 th.curr <- theta[i]
-                log.th.curr <- log(th.curr)
-                mean <- log.th.curr
-                sd <- scale / sqrt(1 + log(1 + exposure[i]))
+                if (box.cox.param > 0)
+                    tr.th.curr <- (th.curr ^ box.cox.param - 1) / box.cox.param # ('tr' short for 'transformed')
+                else
+                    tr.th.curr <- log(th.curr)
+                mean <- tr.th.curr
+                if (y.is.missing)
+                    sd <- scale / scale.multiplier
+                else
+                    sd <- scale / sqrt(1 + y[i])
             }
             while (!found.prop && (attempt < max.attempt)) {
                 attempt <- attempt + 1L
-                log.th.prop <- stats::rnorm(n = 1L, mean = mean, sd = sd)
-                found.prop <- ((log.th.prop > lower + tolerance)
-                               && (log.th.prop < upper - tolerance))
+                tr.th.prop <- stats::rnorm(n = 1L, mean = mean, sd = sd)
+                found.prop <- ((tr.th.prop > lower + tolerance)
+                               && (tr.th.prop < upper - tolerance))
             }
             if (found.prop) {
-                th.prop <- exp(log.th.prop)
+                if (box.cox.param > 0)
+                    th.prop <- (box.cox.param * tr.th.prop + 1) ^ (1 / box.cox.param)
+                else
+                    th.prop <- exp(tr.th.prop)
                 if (draw.straight.from.prior)
                     theta[i] <- th.prop
                 else {
@@ -3190,8 +3197,8 @@ updateTheta_PoissonVaryingUseExp <- function(object, y, exposure, useC = FALSE) 
                         log.lik.prop <- stats::dpois(y[i], lambda = th.prop * exposure[i], log = TRUE)
                         log.lik.curr <- stats::dpois(y[i], lambda = th.curr * exposure[i], log = TRUE)
                     }
-                    log.dens.prop <- stats::dnorm(x = log.th.prop, mean = mu, sd = sigma, log = TRUE)
-                    log.dens.curr <- stats::dnorm(x = log.th.curr, mean = mu, sd = sigma, log = TRUE)
+                    log.dens.prop <- stats::dnorm(x = tr.th.prop, mean = mu, sd = sigma, log = TRUE)
+                    log.dens.curr <- stats::dnorm(x = tr.th.curr, mean = mu, sd = sigma, log = TRUE)
                     log.diff <- log.lik.prop + log.dens.prop - log.lik.curr - log.dens.curr
                     accept <- (log.diff >= 0) || (stats::runif(n = 1L) < exp(log.diff))
                     if (accept) {
@@ -4233,7 +4240,7 @@ updateThetaAndValueAgFun_PoissonUseExp <- function(object, y, exposure, useC = F
             }
             else {
                 mean <- log.th.curr
-                sd <- scale / sqrt(1 + log(1 + exposure[i]))
+                sd <- scale / sqrt(1 + y[i])
             }
             found.prop <- FALSE
             attempt <- 0L
@@ -4364,7 +4371,7 @@ updateThetaAndValueAgLife_PoissonUseExp <- function(object, y, exposure, useC = 
             }
             else {
                 mean <- log.th.curr
-                sd <- scale / sqrt(1 + log(1 + exposure[i]))
+                sd <- scale / sqrt(1 + y[i])
             }
             found.prop <- FALSE
             attempt <- 0L

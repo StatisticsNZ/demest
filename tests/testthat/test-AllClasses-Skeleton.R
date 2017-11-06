@@ -136,115 +136,39 @@ test_that("validity tests for SkeletonManyValues inherited from SkeletonManyValu
 })
 
 test_that("can create valid object of class SkeletonBetaIntercept", {
-    ## One higher term
     x <- new("SkeletonBetaIntercept",
              first = 2L,
-             offsetsHigher = list(new("Offsets", c(6L, 13L))))
-    ## No higher terms
-    x <- new("SkeletonBetaIntercept",
-             first = 2L,
-             offsetsHigher = list())
-    ## Two higher terms
-    x <- new("SkeletonBetaIntercept",
-             first = 2L,
-             offsetsHigher = list(new("Offsets", c(6L, 13L)),
-                 new("Offsets", c(14L, 33L))))
+             last = 2L)
 })
 
-test_that("validity tests for SkeletonBetaIntercept inherited from SkeletonOffsetsHigher work", {
+test_that("validity tests for SkeletonBetaIntercept inherited from SkeletonBetaIntercept work", {
     x <- new("SkeletonBetaIntercept",
              first = 2L,
-             offsetsHigher = list(new("Offsets", c(6L, 13L))))
-    ## all elements of 'offsetsHigher' have class "Offsets"
+             last = 2L)
+    ## 'last' has length 1
     x.wrong <- x
-    x.wrong@offsetsHigher[[1]] <- "wrong"
+    x.wrong@last <- 5:6
     expect_error(validObject(x.wrong),
-                 "'offsetsHigher' has elements not of class \"Offsets\"")
+                 "'last' does not have length 1")
+    ## 'last' is not missing
+    x.wrong <- x
+    x.wrong@last <- as.integer(NA)
+    expect_error(validObject(x.wrong),
+                 "'last' is missing")
+    ## 'last' >= 'first'
+    x.wrong <- x
+    x.wrong@first <- 8L
+    expect_error(validObject(x.wrong),
+                 "'last' does not equal 'first'")
 })
 
 test_that("can create valid object of class SkeletonBetaTerm", {
-    ## One higher term
     x <- new("SkeletonBetaTerm",
              first = 2L,
              last = 5L,
              metadata = new("MetaData", nms = "region", dimtypes = "state",
                  DimScales = list(new("Categories",
-                     dimvalues = c("a", "b", "c", "d")))),
-             offsetsHigher = list(new("Offsets", c(6L, 13L))),
-             transformsHigher = list(new("CollapseTransform",
-                 indices = list(c(1L, 1L), 1:4),
-                 dims = c(0L, 1L),
-                 dimBefore = c(2L, 4L),
-                 dimAfter = 4L)))
-    ## No higher terms
-    x <- new("SkeletonBetaTerm",
-             first = 2L,
-             last = 5L,
-             metadata = new("MetaData", nms = "region", dimtypes = "state",
-                 DimScales = list(new("Categories",
-                     dimvalues = c("a", "b", "c", "d")))),
-             offsetsHigher = list(),
-             transformsHigher = list())
-    ## Two higher terms
-    x <- new("SkeletonBetaTerm",
-             first = 2L,
-             last = 5L,
-             metadata = new("MetaData", nms = "region", dimtypes = "state",
-                 DimScales = list(new("Categories",
-                     dimvalues = c("a", "b", "c", "d")))),
-             offsetsHigher = list(new("Offsets", c(6L, 13L)),
-                 new("Offsets", c(14L, 33L))),
-             transformsHigher = list(new("CollapseTransform",
-                 indices = list(c(1L, 1L), 1:4),
-                 dims = c(0L, 1L),
-                 dimBefore = c(2L, 4L),
-                 dimAfter = 4L),
-                 new("CollapseTransform",
-                     indices = list(1:4, rep(1L, 5)),
-                     dims = c(1L, 0L),
-                     dimBefore = c(4L, 5L),
-                     dimAfter = 4L)))
-})
-
-test_that("validity tests for SkeletonBetaTerm inherited from SkeletonTransformsHigher work", {
-    x <- new("SkeletonBetaTerm",
-             first = 2L,
-             last = 5L,
-             metadata = new("MetaData", nms = "region", dimtypes = "state",
-                 DimScales = list(new("Categories",
-                     dimvalues = c("a", "b", "c", "d")))),
-             offsetsHigher = list(new("Offsets", c(6L, 13L))),
-             transformsHigher = list(new("CollapseTransform",
-                 indices = list(c(1L, 1L), 1:4),
-                 dims = c(0L, 1L),
-                 dimBefore = c(2L, 4L),
-                 dimAfter = 4L)))
-    ## all elements of 'transformsHigher' have class "CollapseTransform"
-    x.wrong <- x
-    x.wrong@transformsHigher[[1]] <- "wrong"
-    expect_error(validObject(x.wrong),
-                 "'transformsHigher' has elements not of class \"CollapseTransform\"")
-})
-
-
-test_that("validity tests for SkeletonBetaTerm inherited from SkeletonBetaTerm work", {
-    x <- new("SkeletonBetaTerm",
-             first = 2L,
-             last = 5L,
-             metadata = new("MetaData", nms = "region", dimtypes = "state",
-                 DimScales = list(new("Categories",
-                     dimvalues = c("a", "b", "c", "d")))),
-             offsetsHigher = list(new("Offsets", c(6L, 13L))),
-             transformsHigher = list(new("CollapseTransform",
-                 indices = list(c(1L, 1L), 1:4),
-                 dims = c(0L, 1L),
-                 dimBefore = c(2L, 4L),
-                 dimAfter = 4L)))
-    ## 'offsetsHigher' and 'transformsHigher' have same length
-    x.wrong <- x
-    x.wrong@transformsHigher <- list()
-    expect_error(validObject(x.wrong),
-                 "'offsetsHigher' and 'transformsHigher' have different lengths")
+                     dimvalues = c("a", "b", "c", "d")))))
 })
 
 test_that("can create valid object of class SkeletonMu", {
@@ -354,6 +278,11 @@ test_that("can create valid object of class SkeletonStateDLM", {
                             nms = "time",
                             dimtypes = "time",
                             DimScales = list(new("Points", dimvalues = 1:10))),
+             metadataIncl0 = new("MetaData",
+                 nms = "time",
+                 dimtypes = "state",
+                 DimScales = list(new("Categories", dimvalues = as.character(1:11)))),
+             indices0 = 1L,
              indicesShow = 2:11)
     expect_true(validObject(x))
     x <- new("SkeletonStateDLM",
@@ -365,8 +294,47 @@ test_that("can create valid object of class SkeletonStateDLM", {
                             dimtypes = c("state", "time"),
                             DimScales = list(new("Categories", dimvalues = c("f", "m")),
                                              new("Points", dimvalues = 1:10))),
+             metadataIncl0 = new("MetaData",
+                 nms = c("sex", "time"),
+                 dimtypes = c("sex", "state"),
+                 DimScales = list(new("Sexes", dimvalues = c("f", "m")),
+                                  new("Categories", dimvalues = as.character(1:11)))),
+             indices0 = c(1L, 12L),
              indicesShow = c(2:11, 13:22))
     expect_true(validObject(x))
+})
+
+test_that("validity tests for SkeletonStateDLM inherited from SkeletonMetadataIncl0 work", {
+    x <- new("SkeletonStateDLM",
+             first = 40L,
+             last = 50L,
+             iAlong = 1L,
+             metadata = new("MetaData",
+                 nms = "time",
+                 dimtypes = "time",
+                 DimScales = list(new("Points", dimvalues = 1:10))),
+             metadataIncl0 = new("MetaData",
+                 nms = "time",
+                 dimtypes = "state",
+                 DimScales = list(new("Categories", dimvalues = as.character(1:11)))),
+             indices0 = 1L,
+             indicesShow = 2:11)
+    expect_true(validObject(x))
+    ## 'indices0' has no missing values
+    x.wrong <- x
+    x.wrong@indices0[1] <- NA
+    expect_error(validObject(x.wrong),
+                 "'indices0' has missing values")
+    ## 'indices0' has no duplicates
+    x.wrong <- x
+    x.wrong@indices0[2] <- x.wrong@indices0[1]
+    expect_error(validObject(x.wrong),
+                 "'indices0' has duplicates")
+    ## 'indices0' within valid range
+    x.wrong <- x
+    x.wrong@indices0[1] <- -1L
+    expect_error(validObject(x.wrong),
+                 "'indices0' has elements outside valid range")
 })
 
 test_that("validity tests for SkeletonStateDLM inherited from SkeletonIndicesShow work", {
@@ -378,6 +346,11 @@ test_that("validity tests for SkeletonStateDLM inherited from SkeletonIndicesSho
                  nms = "time",
                  dimtypes = "time",
                  DimScales = list(new("Points", dimvalues = 1:10))),
+             metadataIncl0 = new("MetaData",
+                 nms = "time",
+                 dimtypes = "state",
+                 DimScales = list(new("Categories", dimvalues = as.character(1:11)))),
+             indices0 = 1L,
              indicesShow = 2:11)
     expect_true(validObject(x))
     ## 'indicesShow' has no missing values

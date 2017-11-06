@@ -10,41 +10,74 @@
 
 ## library(tidyverse)
 ## library(demest)
+## library(latticeExtra)
 ## births <- demdata::iceland.births %>%
 ##     Counts(dimscales = c(year = "Intervals")) %>%
 ##     subarray(age > 15 & age < 45) %>%
-##     collapseIntervals(dimension = "age", width = 5) %>%
-##     collapseDimension(dimension = "age")
+##     collapseIntervals(dimension = "age", width = 5)
 ## expose <- demdata::iceland.popn %>%
 ##     Counts(dimscales = c(year = "Intervals", age = "Intervals")) %>%
 ##     subarray(age > 15 & age < 45) %>%
 ##     subarray(year < 2015) %>%
 ##     collapseIntervals(dimension = "age", width = 5) %>%
 ##     subarray(sex == "Females")
-## model <- Model(y ~ Poisson(mean ~ year),
-##                year ~ DLM(level = NULL),
-##                jump = 0.03)
-## filename.est <- "deleteme.est"
+## model <- Model(y ~ Poisson(mean ~ year * age),
+##                age ~ DLM(damp = NULL),
+##                year ~ DLM(level = Level(scale = HalfT(scale = 0.1)),
+##                           trend = Trend(scale = HalfT(scale = 0.1))),
+##                year:age ~ DLM(level = Level(scale = HalfT(scale = 0.05)),
+##                               trend = Trend(scale = HalfT(scale = 0.05))),
+##                jump = 0.008)
+## filename1.est <- "deleteme.est"
 ## filename.pred <- "deleteme.pred"
 ## estimateModel(model,
 ##               y = births,
 ##               exposure = expose,
 ##               filename = filename.est,
-##               nBurnin = 1000,
-##               nSim = 1000,
-##               nThin = 5,
+##               nBurnin = 20000,
+##               nSim = 20000,
+##               nThin = 50,
 ##               nChain = 4)
 ## fetchSummary(filename.est)
-
-
-
+## predictModel(filenameEst = filename.est,
+##              filenamePred = filename.pred,
+##              n = 25)             
 ## rates <- fetchBoth(filenameEst = filename.est, filenamePred = filename.pred,
 ##                    where = c("model", "likelihood", "rate"))
-## dplot( ~ year, data = rates)
+## model.bc <- Model(y ~ Poisson(mean ~ year * age, boxcox = 0.5),
+##                   age ~ DLM(damp = NULL),
+##                   year ~ DLM(level = Level(scale = HalfT(scale = 0.1)),
+##                              trend = Trend(scale = HalfT(scale = 0.1))),
+##                   year:age ~ DLM(level = Level(scale = HalfT(scale = 0.05)),
+##                                  trend = Trend(scale = HalfT(scale = 0.05))),
+##                   jump = 0.008)
+## filename.bc.est <- "deleteme.bc.est"
+## filename.bc.pred <- "deleteme.bc.pred"
+## estimateModel(model.bc,
+##               y = births,
+##               exposure = expose,
+##               filename = filename.bc.est,
+##               nBurnin = 20000,
+##               nSim = 20000,
+##               nThin = 50,
+##               nChain = 4)
+## fetchSummary(filename.bc.est)
+## predictModel(filenameEst = filename.bc.est,
+##              filenamePred = filename.bc.pred,
+##              n = 25)             
+## rates.bc <- fetchBoth(filenameEst = filename.bc.est, filenamePred = filename.bc.pred,
+##                       where = c("model", "likelihood", "rate"))
+## rates.comb <- dbind(log = rates,
+##                     bc = rates.bc,
+##                     along = "bc")
+## p <- dplot( ~ year | age * bc,
+##            data = rates.comb,
+##            midpoints = "year")
+## useOuterStrips(p)
 
 ## year <- fetch(filename = filename.est,
-##               where = c("model", "prior", "year"), norm = F)
-## dplot( ~ year, data = year, main = "norm = F")
+##               where = c("model", "prior", "year"))
+## dplot( ~ year, data = year)
 ## quartz()
 ## year <- fetch(filename = filename.est,
 ##               where = c("model", "prior", "year"), norm = T)
@@ -66,7 +99,7 @@
 ##                   where = c("model", "prior", "year"), norm = T)
 ## dplot( ~ year, data = year)
 
-## year.level <- fetchBoth(filenameEst = filename.est, filenamePred = filename.pred,
+## year.level <- fetch(filename = filename.est,
 ##                         where = c("model", "hy", "year", "level"))
 ## dplot( ~ year, data = year.level)
 
@@ -204,8 +237,41 @@
 
 ## plot(fetchMCMC(filename.est, c("mod", "hy", "year", "scaleTrend")), sm = F, ask = T)
 
+## set.seed(0)
+## y <- Values(array(rnorm(20),
+##                   dim = c(10, 2),
+##                   dimnames = list(reg = 1:10,
+##                                   sex = c("f", "m"))))
+## data <- data.frame(reg = 1:10, reg1 = c(1, rep(0, 9)))
+## filename <- tempfile()
+## estimateModel(Model(y ~ Normal(mean ~ reg),
+##                     reg ~ Exch(covariates = Covariates(mean ~ reg1, data = data))),
+##               y = y,
+##               filename = filename,
+##               nBurnin = 1000,
+##               nSim = 1000,
+##               nChain = 4,
+##               nThin = 10)
+## fetchSummary(filename)                    
+
+## plot(fetchMCMC(filename, c("mod", "hy", "reg", "coef")), sm = F)
+## plot(fetchMCMC(filename, c("mod", "hy", "reg", "scaleEr")), sm = F)
+## plot(fetchMCMC(filename, c("mod", "pr", "mean")), sm = F, ask = T)
 
 
+
+## plot(fetchMCMC(filename, c("mod", "pr", "(Intercept)")), sm = F)
+## plot(fetchMCMC(filename, c("mod", "pr", "mean")), sm = F, ask = T)
+## plot(fetchMCMC(filename, c("mod", "hy", "(Intercept)", "scaleEr")), sm = F)
+## plot(fetchMCMC(filename, c("mod", "hy", "(Intercept)", "scaleEr")), sm = )F
+
+## obj <- demest:::fetchResultsObject(filename)
+## prior <- obj@final[[1]]@model@priorsBetas[[2]]
+## beta <- obj@final[[1]]@model@betas[[2]]
+
+## mod.out <- obj@model
+## coef.out <- mod.out$hyper$reg$coef
+## demest:::getDataFromFile(filename, first = 35L, last = 35L, lengthIter = 37L, iterations = 1:4000)
 
 ## model <- Model(y ~ Poisson(mean ~ age * year),
 ##                age ~ DLM(level = Level(scale = HalfT(df = 30, mult = 0.25)),
@@ -313,41 +379,40 @@
 ##       overlay = list(values = theta, col = "red"),
 ##       midpoints = "age")
 
-
 ## filename1 <- tempfile()
 ## filename2 <- tempfile()
 ## y <- Counts(array(rpois(n = 12, lambda = 1:24),
 ##                   dim = 2:4,
 ##                   dimnames = list(sex = c("f", "m"),
-##                       age = 0:2,
-##                       time = 2000:2003)),
+##                                   age = 0:2,
+##                                   time = 2000:2003)),
 ##             dimscales = c(time = "Points"))
 ## set.seed(1)
-## estimateModel(Model(y ~ Poisson(mean ~ age),
+## estimateModel(Model(y ~ Poisson(mean ~ age, useExpose = FALSE),
 ##                     age ~ Exch()),
 ##               y = y,
 ##               filename = filename1,
-##               nBurnin = 1000,
-##               nSim = 1000,
+##               nBurnin = 8,
+##               nSim = 8,
 ##               nChain = 2,
 ##               nThin = 2)
-## continueEstimation(filename1, nSim = 50)
+## continueEstimation(filename1, nBurnin = 4, nSim = 50)
 ## set.seed(1)
-## estimateModel(Model(y ~ Poisson(mean ~ age)),
-##                       y = y,
-##                       filename = filename2,
-##                       nBurnin = 20,
-##                       nSim = 50,
-##                       nChain = 2,
-##                       nThin = 2)
+## estimateModel(Model(y ~ Poisson(mean ~ age, useExpose = FALSE)),
+##               y = y,
+##               filename = filename2,
+##               nBurnin = 20,
+##               nSim = 50,
+##               nChain = 2,
+##               nThin = 2)
+## counts1 <- fetch(filename1, c("mod", "li", "count"))
+## counts2 <- fetch(filename2, c("mod", "li", "count"))
+## expect_equal(counts1, counts2)
+## age1 <- fetch(filename1, c("mod", "pr", "age"))
+## age2 <- fetch(filename2, c("mod", "pr", "age"))
+## expect_equal(age1, age2)
 
-## slots.same <- setdiff(slotNames(class(ans2)), "control")
-## for (name in slots.same) {
-##     expect_identical(slot(ans2, name), slot(ans3, name))
-## }
-## elements.same <- setdiff(names(ans1@control), c("call", "filename"))
-## for (name in elements.same)
-##     expect_identical(ans2@control[[name]], ans3@control[[name]])
+
 
 ## y <- demdata::nz.visitors
 ## dimnames(y)$time <- seq_along(dimnames(y)$time)

@@ -596,26 +596,21 @@ setMethod("makeOutputModel",
                   pos <- first + 1L
                   varsigma <- Skeleton(first = first)
               }
-              ## make betas
-              betas <- vector(mode = "list", length = n.beta)
+              ## make mu and betas
               first <- pos
               pos <- pos + 1L
               mu <- SkeletonMu(betas = betas.obj,
                                margins = margins,
                                first = first,
                                metadata = metadata)
-              betas[[1L]] <- SkeletonBetaIntercept(betas = betas.obj,
-                                                   first = first)
+              betas <- vector(mode = "list", length = n.beta)
+              betas[[1L]] <- SkeletonBetaIntercept(first = first)
               if (n.beta > 1L) {
                   for (i in seq_len(n.beta)[-1L]) {
                       first <- pos
                       pos <- first + length(betas.obj[[i]])
                       margin <- margins[[i]]
-                      i.tail <- seq(from = i, to = n.beta)
-                      betas[[i]] <- SkeletonBetaTerm(betas = betas.obj[i.tail],
-                                                     margins = margins[i.tail],
-                                                     dims = dims[i.tail],
-                                                     first = first,
+                      betas[[i]] <- SkeletonBetaTerm(first = first,
                                                      metadata = metadata[margin])
                   }
               }
@@ -703,26 +698,21 @@ setMethod("makeOutputModel",
                                              first = first,
                                              nChain = nChain,
                                              nIteration = nIteration)
-              ## make betas
-              betas <- vector(mode = "list", length = n.beta)
+              ## make mu and betas
               first <- pos
               pos <- pos + 1L
               mu <- SkeletonMu(betas = betas.obj,
                                margins = margins,
                                first = first,
                                metadata = metadata)
-              betas[[1L]] <- SkeletonBetaIntercept(betas = betas.obj,
-                                                   first = first)
+              betas <- vector(mode = "list", length = n.beta)
+              betas[[1L]] <- SkeletonBetaIntercept(first = first)
               if (n.beta > 1L) {
                   for (i in seq_len(n.beta)[-1L]) {
                       first <- pos
                       pos <- first + length(betas.obj[[i]])
                       margin <- margins[[i]]
-                      i.tail <- seq(from = i, to = n.beta)
-                      betas[[i]] <- SkeletonBetaTerm(betas = betas.obj[i.tail],
-                                                     margins = margins[i.tail],
-                                                     dims = dims[i.tail],
-                                                     first = first,
+                      betas[[i]] <- SkeletonBetaTerm(first = first,
                                                      metadata = metadata[margin])
                   }
               }
@@ -801,26 +791,21 @@ setMethod("makeOutputModel",
                                              first = first,
                                              nChain = nChain,
                                              nIteration = nIteration)
-              ## make betas
-              betas <- vector(mode = "list", length = n.beta)
+              ## make mu and betas
               first <- pos
               pos <- pos + 1L
               mu <- SkeletonMu(betas = betas.obj,
                                margins = margins,
                                first = first,
                                metadata = metadata)
-              betas[[1L]] <- SkeletonBetaIntercept(betas = betas.obj,
-                                                   first = first)
+              betas <- vector(mode = "list", length = n.beta)
+              betas[[1L]] <- SkeletonBetaIntercept(first = first)
               if (n.beta > 1L) {
                   for (i in seq_len(n.beta)[-1L]) {
                       first <- pos
                       pos <- first + length(betas.obj[[i]])
                       margin <- margins[[i]]
-                      i.tail <- seq(from = i, to = n.beta)
-                      betas[[i]] <- SkeletonBetaTerm(betas = betas.obj[i.tail],
-                                                     margins = margins[i.tail],
-                                                     dims = dims[i.tail],
-                                                     first = first,
+                      betas[[i]] <- SkeletonBetaTerm(first = first,
                                                      metadata = metadata[margin])
                   }
               }
@@ -2688,10 +2673,11 @@ setMethod("whereEstimated",
               likelihood <- list(c("likelihood", "mean"))
               betas <- makeMCMCBetas(priors = priors.betas,
                                      names = names.betas)
+              mu <- list(c("prior", "mean"))
               sd <- if (isSaturated(object)) NULL else list(c("prior", "sd"))
               priors <- makeMCMCPriorsBetas(priors = priors.betas,
                                             names = names.betas)
-              c(likelihood, betas, sd, priors)
+              c(likelihood, betas, mu, sd, priors)
           })
 
 ## HAS_TESTS
@@ -2704,10 +2690,11 @@ setMethod("whereEstimated",
                                  c("likelihood", "sd"))
               betas <- makeMCMCBetas(priors = priors.betas,
                                      names = names.betas)
+              mu <- list(c("prior", "mean"))
               sd <- if (isSaturated(object)) NULL else list(c("prior", "sd"))
               priors <- makeMCMCPriorsBetas(priors = priors.betas,
                                             names = names.betas)
-              c(likelihood, betas, sd, priors)
+              c(likelihood, betas, mu, sd, priors)
           })
 
 ## HAS_TESTS
@@ -2737,10 +2724,11 @@ setMethod("whereEstimated",
               likelihood <- list(c("likelihood", "prob"))
               betas <- makeMCMCBetas(priors = priors.betas,
                                      names = names.betas)
+              mu <- list(c("prior", "mean"))
               sd <- if (isSaturated(object)) NULL else list(c("prior", "sd"))
               priors <- makeMCMCPriorsBetas(priors = priors.betas,
                                             names = names.betas)
-              c(likelihood, betas, sd, priors)
+              c(likelihood, betas, mu, sd, priors)
           })
 
 ## HAS_TESTS
@@ -2761,10 +2749,11 @@ setMethod("whereEstimated",
               likelihood <- list(c("likelihood", "count"))
               betas <- makeMCMCBetas(priors = priors.betas,
                                      names = names.betas)
+              mu <- list(c("prior", "mean"))
               sd <- if (isSaturated(object)) NULL else list(c("prior", "sd"))
               priors <- makeMCMCPriorsBetas(priors = priors.betas,
                                             names = names.betas)
-              c(likelihood, betas, sd, priors)
+              c(likelihood, betas, mu, sd, priors)
           })
 
 ## HAS_TESTS
@@ -2776,10 +2765,11 @@ setMethod("whereEstimated",
               likelihood <- list(c("likelihood", "rate"))
               betas <- makeMCMCBetas(priors = priors.betas,
                                      names = names.betas)
+              mu <- list(c("prior", "mean"))
               sd <- if (isSaturated(object)) NULL else list(c("prior", "sd"))
               priors <- makeMCMCPriorsBetas(priors = priors.betas,
                                             names = names.betas)
-              c(likelihood, betas, sd, priors)
+              c(likelihood, betas, mu, sd, priors)
           })
 
 ## HAS_TESTS

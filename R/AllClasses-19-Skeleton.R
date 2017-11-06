@@ -25,6 +25,30 @@ setClass("SkeletonMetadata",
              TRUE
          })
 
+
+setClass("SkeletonMetadata0",
+         slots = c(metadata0 = "MetaDataOrNULL"),
+         contains = "VIRTUAL")
+
+
+## HAS_TESTS
+setClass("SkeletonMetadataIncl0",
+         slots = c(metadataIncl0 = "MetaData"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             metadataIncl0 <- object@metadataIncl0
+             metadata <- object@metadata
+             iAlong <- object@iAlong
+             dimtypes <- dembase::dimtypes(metadataIncl0, use.names = FALSE)
+             ## 'metadata' does not have iteration or quantile dimensions
+             for (dimtype in c("iteration", "quantile"))
+                 if (dimtype %in% dimtypes)
+                     return(gettextf("'%s' has dimension with dimtype \"%s\"",
+                                     "metadata", dimtype))
+             TRUE
+         })
+
+
 ## HAS_TESTS
 setClass("SkeletonFirst",
          slots = c(first = "integer"),
@@ -71,6 +95,31 @@ setClass("SkeletonMany",
              TRUE
          })
 
+## NO_TESTS
+setClass("SkeletonIndices0",
+         slots = c(indices0 = "integer"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             indices0 <- object@indices0
+             first <- object@first
+             last <- object@last
+             ## 'indices0' has no missing values
+             if (any(is.na(indices0)))
+                 return(gettextf("'%s' has missing values",
+                               "indices0"))
+             ## 'indices0' has not duplicates
+             if (any(duplicated(indices0)))
+                 return(gettextf("'%s' has duplicates",
+                               "indices0"))
+             ## 'indices0' within valid range
+             valid.range <- seq_len(last - first + 1L)
+             if (!all(indices0 %in% valid.range))
+                 return(gettextf("'%s' has elements outside valid range",
+                                 "indices0"))
+             TRUE
+         })
+
+
 ## HAS_TESTS
 setClass("SkeletonIndicesShow",
          slots = c(indicesShow = "integer"),
@@ -94,32 +143,6 @@ setClass("SkeletonIndicesShow",
                                  "indicesShow"))
              TRUE
          })            
-
-## HAS_TESTS
-setClass("SkeletonOffsetsHigher",
-         slots = c(offsetsHigher = "list"),
-         contains = "VIRTUAL",
-         validity = function(object) {
-             offsetsHigher <- object@offsetsHigher
-             ## all elements of 'offsetsHigher' have class "Offsets"
-             if (!all(sapply(offsetsHigher, is, "Offsets")))
-                 return(gettextf("'%s' has elements not of class \"%s\"",
-                                 "offsetsHigher", "Offsets"))
-             TRUE
-         })
-
-## HAS_TESTS
-setClass("SkeletonTransformsHigher",
-         slots = c(transformsHigher = "list"),
-         contains = "VIRTUAL",
-         validity = function(object) {
-             transformsHigher <- object@transformsHigher
-             ## all elements of 'transformsHigher' have class "CollapseTransform"
-             if (!all(sapply(transformsHigher, is, "CollapseTransform")))
-                 return(gettextf("'%s' has elements not of class \"%s\"",
-                                 "transformsHigher", "CollapseTransform"))
-             TRUE
-         })
 
 ## HAS_TESTS
 setClass("SkeletonOffsetsTheta",
@@ -196,7 +219,7 @@ setClass("SkeletonMissingDataNormal",
 ## HAS_TESTS
 setClass("SkeletonMissingDataset",
          slots = c(offsetsComponent = "Offsets",
-                        transformComponent = "CollapseTransform"),
+                   transformComponent = "CollapseTransform"),
          contains = c("VIRTUAL", "SkeletonMissingData"),
          validity = function(object) {
              offsetsComponent <- object@offsetsComponent
@@ -264,26 +287,32 @@ setClass("SkeletonManyValues",
 
 ## HAS_TESTS
 ## HAS_FETCH
+## include "last" slot because expected by functions such as 'overwriteValuesOnFile'
 setClass("SkeletonBetaIntercept",
-         contains = c("SkeletonOneValues",
-             "SkeletonOffsetsHigher"))
-
+         slots = c(last = "integer"),
+         contains = "SkeletonOneValues",
+         validity = function(object) {
+             first <- object@first
+             last <- object@last
+             ## 'last' has length 1
+                 if (!identical(length(last), 1L))
+                     return(gettextf("'%s' does not have length %d",
+                                     "last", 1L))
+             ## 'last' is not missing
+                 if (is.na(last))
+                     return(gettextf("'%s' is missing",
+                                     "last"))
+             ## 'last' == 'first'
+             if (last != first)
+                 return(gettextf("'%s' does not equal '%s'",
+                               "last", "first"))
+             TRUE
+         })
 
 ## HAS_TESTS
 ## HAS_FETCH
 setClass("SkeletonBetaTerm",
-         contains = c("SkeletonManyValues",
-             "SkeletonOffsetsHigher",
-             "SkeletonTransformsHigher"),
-         validity = function(object) {
-             offsetsHigher <- object@offsetsHigher
-             transformsHigher <- object@transformsHigher
-             ## 'offsetsHigher' and 'transformsHigher' have same length
-             if (!identical(length(offsetsHigher), length(transformsHigher)))
-                 return(gettextf("'%s' and '%s' have different lengths",
-                                 "offsetsHigher", "transformsHigher"))
-             TRUE
-         })
+         contains = "SkeletonManyValues")
 
 ## HAS_TESTS
 ## HAS_FETCH
@@ -333,9 +362,12 @@ setClass("SkeletonCovariates",
 ## HAS_TESTS
 ## HAS_FETCH
 setClass("SkeletonStateDLM",
-         slots = c(metadata = "MetaData"),
          contains = c("SkeletonMany",
+                      "SkeletonIndices0",
                       "SkeletonIndicesShow",
+                      "SkeletonMetadata",
+                      "SkeletonMetadata0",
+                      "SkeletonMetadataIncl0",
                       "IAlongMixin"))
 
 ## HAS_TESTS

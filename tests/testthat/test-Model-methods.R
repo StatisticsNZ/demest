@@ -818,21 +818,16 @@ test_that("makeOutputModel works with NormalVaryingVarsigmaKnown - no aggregate"
                      first = 32L,
                      metadata = model@metadataY)
     betas <- list("(Intercept)" = new("SkeletonBetaIntercept",
-                      first = 32L,
-                      offsetsHigher = list(new("Offsets", c(33L, 34L)),
-                          new("Offsets", c(35L, 44L)))),
+                                      first = 32L,
+                                      last = 32L),
                   sex = new("SkeletonBetaTerm",
                       first = 33L,
                       last = 34L,
-                      metadata = metadata[1],
-                      offsetsHigher = list(),
-                      transformsHigher = list()),
+                      metadata = metadata[1]),
                   age = new("SkeletonBetaTerm",
                       first = 35L,
                       last = 44L,
-                      metadata = metadata[2],
-                      offsetsHigher = list(),
-                      transformsHigher = list()))
+                      metadata = metadata[2]))
     sigma <- new("SkeletonOneValues", first = 45L)
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
@@ -884,21 +879,16 @@ test_that("makeOutputModel works with NormalVaryingVarsigmaKnown - AgCertain", {
                      first = 33L,
                      metadata = model@metadataY)
     betas <- list("(Intercept)" = new("SkeletonBetaIntercept",
-                      first = 33L,
-                      offsetsHigher = list(new("Offsets", c(34L, 35L)),
-                          new("Offsets", c(36L, 45L)))),
+                                      first = 33L,
+                                      last = 33L),
                   sex = new("SkeletonBetaTerm",
                       first = 34L,
                       last = 35L,
-                      metadata = metadata[1],
-                      offsetsHigher = list(),
-                      transformsHigher = list()),
+                      metadata = metadata[1]),
                   age = new("SkeletonBetaTerm",
                       first = 36L,
                       last = 45L,
-                      metadata = metadata[2],
-                      offsetsHigher = list(),
-                      transformsHigher = list()))
+                      metadata = metadata[2]))
     sigma <- new("SkeletonOneValues", first = 46L)
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
                    sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
@@ -955,21 +945,16 @@ test_that("makeOutputModel works with NormalVaryingVarsigmaKnown - AgNormal", {
                      first = 33L,
                      metadata = model@metadataY)
     betas <- list("(Intercept)" = new("SkeletonBetaIntercept",
-                      first = 33L,
-                      offsetsHigher = list(new("Offsets", c(34L, 35L)),
-                          new("Offsets", c(36L, 45L)))),
+                                      first = 33L,
+                                      last = 33L),
                   sex = new("SkeletonBetaTerm",
                       first = 34L,
                       last = 35L,
-                      metadata = metadata[1],
-                      offsetsHigher = list(),
-                      transformsHigher = list()),
+                      metadata = metadata[1]),
                   age = new("SkeletonBetaTerm",
                       first = 36L,
                       last = 45L,
-                      metadata = metadata[2],
-                      offsetsHigher = list(),
-                      transformsHigher = list()))
+                      metadata = metadata[2]))
     sigma <- new("SkeletonOneValues", first = 46L)
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
@@ -1021,21 +1006,16 @@ test_that("makeOutputModel works with NormalVaryingVarsigmaUnknown - no aggregat
                      first = 32L,
                      metadata = model@metadataY)
     betas <- list("(Intercept)" = new("SkeletonBetaIntercept",
-                      first = 32L,
-                      offsetsHigher = list(new("Offsets", c(33L, 34L)),
-                          new("Offsets", c(35L, 44L)))),
+                                      first = 32L,
+                                      last = 32L),
                   sex = new("SkeletonBetaTerm",
                       first = 33L,
                       last = 34L,
-                      metadata = metadata[1],
-                      offsetsHigher = list(),
-                      transformsHigher = list()),
+                      metadata = metadata[1]),
                   age = new("SkeletonBetaTerm",
                       first = 35L,
                       last = 44L,
-                      metadata = metadata[2],
-                      offsetsHigher = list(),
-                      transformsHigher = list()))
+                      metadata = metadata[2]))
     sigma <- new("SkeletonOneValues", first = 45L)
     prior <- c(betas, list(mean = mu), list(sd = sigma))
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
@@ -1089,21 +1069,16 @@ test_that("makeOutputModel works with NormalVaryingVarsigmaUnknown - AgCertain",
                      first = 33L,
                      metadata = model@metadataY)
     betas <- list("(Intercept)" = new("SkeletonBetaIntercept",
-                      first = 33L,
-                      offsetsHigher = list(new("Offsets", c(34L, 35L)),
-                          new("Offsets", c(36L, 45L)))),
+                                      first = 33L,
+                                      last = 33L),
                   sex = new("SkeletonBetaTerm",
                       first = 34L,
                       last = 35L,
-                      metadata = metadata[1],
-                      offsetsHigher = list(),
-                      transformsHigher = list()),
+                      metadata = metadata[1]),
                   age = new("SkeletonBetaTerm",
                       first = 36L,
                       last = 45L,
-                      metadata = metadata[2],
-                      offsetsHigher = list(),
-                      transformsHigher = list()))
+                      metadata = metadata[2]))
     sigma <- new("SkeletonOneValues", first = 46L)
     prior <- c(betas, list(mean = mu), list(sd = sigma))
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
@@ -1163,21 +1138,16 @@ test_that("makeOutputModel works with NormalVaryingVarsigmaUnknown - AgNormal", 
                      first = 34L,
                      metadata = model@metadataY)
     betas <- list("(Intercept)" = new("SkeletonBetaIntercept",
-                      first = 34L,
-                      offsetsHigher = list(new("Offsets", c(35L, 36L)),
-                          new("Offsets", c(37L, 46L)))),
+                                      first = 34L,
+                                      last = 34L),
                   sex = new("SkeletonBetaTerm",
                       first = 35L,
                       last = 36L,
-                      metadata = metadata[1],
-                      offsetsHigher = list(),
-                      transformsHigher = list()),
+                      metadata = metadata[1]),
                   age = new("SkeletonBetaTerm",
                       first = 37L,
                       last = 46L,
-                      metadata = metadata[2],
-                      offsetsHigher = list(),
-                      transformsHigher = list()))
+                      metadata = metadata[2]))
     sigma <- new("SkeletonOneValues", first = 47L)
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
@@ -1227,21 +1197,16 @@ test_that("makeOutputModel works with BinomialVarying - no aggregate", {
                      first = 32L,
                      metadata = model@metadataY)
     betas <- list("(Intercept)" = new("SkeletonBetaIntercept",
-                      first = 32L,
-                      offsetsHigher = list(new("Offsets", c(33L, 34L)),
-                          new("Offsets", c(35L, 44L)))),
+                                      first = 32L,
+                                      last = 32L),
                   sex = new("SkeletonBetaTerm",
                       first = 33L,
                       last = 34L,
-                      metadata = metadata[1],
-                      offsetsHigher = list(),
-                      transformsHigher = list()),
+                      metadata = metadata[1]),
                   age = new("SkeletonBetaTerm",
                       first = 35L,
                       last = 44L,
-                      metadata = metadata[2],
-                      offsetsHigher = list(),
-                      transformsHigher = list()))
+                      metadata = metadata[2]))
     sigma <- new("SkeletonOneValues", first = 45L)
     prior <- c(betas, list(mean = mu), list(sd = sigma))
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
@@ -1289,21 +1254,16 @@ test_that("makeOutputModel works with BinomialVarying - AgCertain", {
                      first = 32L,
                      metadata = model@metadataY)
     betas <- list("(Intercept)" = new("SkeletonBetaIntercept",
-                      first = 32L,
-                      offsetsHigher = list(new("Offsets", c(33L, 34L)),
-                          new("Offsets", c(35L, 44L)))),
+                                      first = 32L,
+                                      last = 32L),
                   sex = new("SkeletonBetaTerm",
                       first = 33L,
                       last = 34L,
-                      metadata = metadata[1],
-                      offsetsHigher = list(),
-                      transformsHigher = list()),
+                      metadata = metadata[1]),
                   age = new("SkeletonBetaTerm",
                       first = 35L,
                       last = 44L,
-                      metadata = metadata[2],
-                      offsetsHigher = list(),
-                      transformsHigher = list()))
+                      metadata = metadata[2]))
     sigma <- new("SkeletonOneValues", first = 45L)
     prior <- c(betas, list(mean = mu), list(sd = sigma))
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
@@ -1356,21 +1316,15 @@ test_that("makeOutputModel works with BinomialVarying - AgNormal", {
                      first = 33L,
                      metadata = model@metadataY)
     betas <- list("(Intercept)" = new("SkeletonBetaIntercept",
-                      first = 33L,
-                      offsetsHigher = list(new("Offsets", c(34L, 35L)),
-                          new("Offsets", c(36L, 45L)))),
+                      first = 33L, last = 33L),
                   sex = new("SkeletonBetaTerm",
                       first = 34L,
                       last = 35L,
-                      metadata = metadata[1],
-                      offsetsHigher = list(),
-                      transformsHigher = list()),
+                      metadata = metadata[1]),
                   age = new("SkeletonBetaTerm",
                       first = 36L,
                       last = 45L,
-                      metadata = metadata[2],
-                      offsetsHigher = list(),
-                      transformsHigher = list()))
+                      metadata = metadata[2]))
     sigma <- new("SkeletonOneValues", first = 46L)
     prior <- c(betas, list(mean = mu), list(sd = sigma))
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
@@ -1417,21 +1371,15 @@ test_that("makeOutputModel works with PoissonVarying - no aggregate", {
                      first = 32L,
                      metadata = model@metadataY)
     betas <- list("(Intercept)" = new("SkeletonBetaIntercept",
-                      first = 32L,
-                      offsetsHigher = list(new("Offsets", c(33L, 34L)),
-                          new("Offsets", c(35L, 44L)))),
+                      first = 32L, last = 32L),
                   sex = new("SkeletonBetaTerm",
                       first = 33L,
                       last = 34L,
-                      metadata = metadata[1],
-                      offsetsHigher = list(),
-                      transformsHigher = list()),
+                      metadata = metadata[1]),
                   age = new("SkeletonBetaTerm",
                       first = 35L,
                       last = 44L,
-                      metadata = metadata[2],
-                      offsetsHigher = list(),
-                      transformsHigher = list()))
+                      metadata = metadata[2]))
     sigma <- new("SkeletonOneValues", first = 45L)
     prior <- c(betas, list(mean = mu), list(sd = sigma))
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
@@ -1479,21 +1427,15 @@ test_that("makeOutputModel works with PoissonVaryingUseExp - AgCertain", {
                      first = 32L,
                      metadata = model@metadataY)
     betas <- list("(Intercept)" = new("SkeletonBetaIntercept",
-                      first = 32L,
-                      offsetsHigher = list(new("Offsets", c(33L, 34L)),
-                          new("Offsets", c(35L, 44L)))),
+                      first = 32L, last = 32L),
                   sex = new("SkeletonBetaTerm",
                       first = 33L,
                       last = 34L,
-                      metadata = metadata[1],
-                      offsetsHigher = list(),
-                      transformsHigher = list()),
+                      metadata = metadata[1]),
                   age = new("SkeletonBetaTerm",
                       first = 35L,
                       last = 44L,
-                      metadata = metadata[2],
-                      offsetsHigher = list(),
-                      transformsHigher = list()))
+                      metadata = metadata[2]))
     sigma <- new("SkeletonOneValues", first = 45L)
     prior <- c(betas, list(mean = mu), list(sd = sigma))
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
@@ -1546,21 +1488,15 @@ test_that("makeOutputModel works with PoissonVaryingUseExp - AgNormal", {
                      first = 43L,
                      metadata = model@metadataY)
     betas <- list("(Intercept)" = new("SkeletonBetaIntercept",
-                      first = 43L,
-                      offsetsHigher = list(new("Offsets", c(44L, 45L)),
-                          new("Offsets", c(46L, 55L)))),
+                      first = 43L, last = 43L),
                   sex = new("SkeletonBetaTerm",
                       first = 44L,
                       last = 45L,
-                      metadata = metadata[1],
-                      offsetsHigher = list(),
-                      transformsHigher = list()),
+                      metadata = metadata[1]),
                   age = new("SkeletonBetaTerm",
                       first = 46L,
                       last = 55L,
-                      metadata = metadata[2],
-                      offsetsHigher = list(),
-                      transformsHigher = list()))
+                      metadata = metadata[2]))
     sigma <- new("SkeletonOneValues", first = 56L)
     prior <- c(betas, list(mean = mu), list(sd = sigma))
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
@@ -1614,21 +1550,15 @@ test_that("makeOutputModel works with PoissonVaryingUseExp - AgFun", {
                      first = 43L,
                      metadata = model@metadataY)
     betas <- list("(Intercept)" = new("SkeletonBetaIntercept",
-                      first = 43L,
-                      offsetsHigher = list(new("Offsets", c(44L, 45L)),
-                          new("Offsets", c(46L, 55L)))),
+                      first = 43L, last = 43L),
                   sex = new("SkeletonBetaTerm",
                       first = 44L,
                       last = 45L,
-                      metadata = metadata[1],
-                      offsetsHigher = list(),
-                      transformsHigher = list()),
+                      metadata = metadata[1]),
                   age = new("SkeletonBetaTerm",
                       first = 46L,
                       last = 55L,
-                      metadata = metadata[2],
-                      offsetsHigher = list(),
-                      transformsHigher = list()))
+                      metadata = metadata[2]))
     sigma <- new("SkeletonOneValues", first = 56L)
     prior <- c(betas, list(mean = mu), list(sd = sigma))
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
@@ -1681,21 +1611,15 @@ test_that("makeOutputModel works with PoissonVaryingUseExp - AgPoisson", {
                      first = 43L,
                      metadata = model@metadataY)
     betas <- list("(Intercept)" = new("SkeletonBetaIntercept",
-                      first = 43L,
-                      offsetsHigher = list(new("Offsets", c(44L, 45L)),
-                          new("Offsets", c(46L, 55L)))),
+                      first = 43L, last = 43L),
                   sex = new("SkeletonBetaTerm",
                       first = 44L,
                       last = 45L,
-                      metadata = metadata[1],
-                      offsetsHigher = list(),
-                      transformsHigher = list()),
+                      metadata = metadata[1]),
                   age = new("SkeletonBetaTerm",
                       first = 46L,
                       last = 55L,
-                      metadata = metadata[2],
-                      offsetsHigher = list(),
-                      transformsHigher = list()))
+                      metadata = metadata[2]))
     sigma <- new("SkeletonOneValues", first = 56L)
     prior <- c(betas, list(mean = mu), list(sd = sigma))
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
@@ -4882,9 +4806,7 @@ test_that("whereEstimated works with NormalVaryingVarsigmaKnown", {
     model <- initialModel(spec, y = y, weights = weights)
     ans.obtained <- whereEstimated(model)
     ans.expected <- list(c("likelihood", "mean"),
-                         c("prior", "(Intercept)"),
-                         c("prior", "sex"),
-                         c("prior", "age"),
+                         c("prior", "mean"),
                          c("prior", "sd"),
                          c("hyper", "age", "scaleError"))
     expect_identical(ans.obtained, ans.expected)
@@ -4894,10 +4816,7 @@ test_that("whereEstimated works with NormalVaryingVarsigmaKnown", {
     model <- initialModel(spec, y = y, weights = weights)
     ans.obtained <- whereEstimated(model)
     ans.expected <- list(c("likelihood", "mean"),
-                         c("prior", "(Intercept)"),
-                         c("prior", "sex"),
-                         c("prior", "age"),
-                         c("prior", "sex:age"),
+                         c("prior", "mean"),
                          c("hyper", "age", "scaleError"),
                          c("hyper", "sex:age", "scaleError"))
     expect_identical(ans.obtained, ans.expected)
@@ -4920,12 +4839,9 @@ test_that("whereEstimated works with NormalVaryingVarsigmaUnknown", {
     ans.obtained <- whereEstimated(model)
     ans.expected <- list(c("likelihood", "mean"),
                          c("likelihood", "sd"),
-                         c("prior", "(Intercept)"),
-                         c("prior", "age"),
+                         c("prior", "mean"),
                          c("prior", "sd"),
-                         c("hyper", "age", "level"),
                          c("hyper", "age", "scaleLevel"),
-                         c("hyper", "age", "trend"),
                          c("hyper", "age", "scaleTrend"),
                          c("hyper", "age", "damp"),
                          c("hyper", "age", "scaleError"))
@@ -4938,12 +4854,8 @@ test_that("whereEstimated works with NormalVaryingVarsigmaUnknown", {
     ans.obtained <- whereEstimated(model)
     ans.expected <- list(c("likelihood", "mean"),
                          c("likelihood", "sd"),
-                         c("prior", "(Intercept)"),
-                         c("prior", "age"),
-                         c("prior", "sex:age"),                         
-                         c("hyper", "age", "level"),
+                         c("prior", "mean"),                         
                          c("hyper", "age", "scaleLevel"),
-                         c("hyper", "age", "trend"),
                          c("hyper", "age", "scaleTrend"),
                          c("hyper", "age", "damp"),
                          c("hyper", "age", "scaleError"),
@@ -4968,9 +4880,7 @@ test_that("whereEstimated works with NormalVaryingVarsigmaKnownAgNormal", {
     model <- initialModel(spec, y = y, weights = weights)
     ans.obtained <- whereEstimated(model)
     ans.expected <- list(c("likelihood", "mean"),
-                         c("prior", "(Intercept)"),
-                         c("prior", "sex"),
-                         c("prior", "age"),
+                         c("prior", "mean"),
                          c("prior", "sd"),
                          c("hyper", "age", "scaleError"),
                          c("aggregate", "value"))
@@ -4982,10 +4892,7 @@ test_that("whereEstimated works with NormalVaryingVarsigmaKnownAgNormal", {
     model <- initialModel(spec, y = y, weights = weights)
     ans.obtained <- whereEstimated(model)
     ans.expected <- list(c("likelihood", "mean"),
-                         c("prior", "(Intercept)"),
-                         c("prior", "sex"),
-                         c("prior", "age"),
-                         c("prior", "sex:age"),
+                         c("prior", "mean"),
                          c("hyper", "age", "scaleError"),
                          c("hyper", "sex:age", "scaleError"),
                          c("aggregate", "value"))
@@ -5009,9 +4916,7 @@ test_that("whereEstimated works with NormalVaryingVarsigmaKnownAgNormal", {
     ans.obtained <- whereEstimated(model)
     ans.expected <- list(c("likelihood", "mean"),
                          c("likelihood", "sd"),
-                         c("prior", "(Intercept)"),
-                         c("prior", "sex"),
-                         c("prior", "age"),
+                         c("prior", "mean"),
                          c("prior", "sd"),
                          c("hyper", "age", "scaleError"),
                          c("aggregate", "value"))
@@ -5033,11 +4938,8 @@ test_that("whereEstimated works with BinomialVarying", {
     model <- initialModel(spec, y = y, exposure = exposure)
     ans.obtained <- whereEstimated(model)
     ans.expected <- list(c("likelihood", "prob"),
-                         c("prior", "(Intercept)"),
-                         c("prior", "sex"),
-                         c("prior", "age"),
+                         c("prior", "mean"),
                          c("prior", "sd"),
-                         c("hyper", "age", "level"),
                          c("hyper", "age", "scaleLevel"),
                          c("hyper", "age", "damp"),
                          c("hyper", "age", "scaleError"))
@@ -5046,7 +4948,7 @@ test_that("whereEstimated works with BinomialVarying", {
     model <- initialModel(spec, y = y, exposure = exposure)
     ans.obtained <- whereEstimated(model)
     ans.expected <- list(c("likelihood", "prob"),
-                         c("prior", "(Intercept)"),
+                         c("prior", "mean"),
                          c("prior", "sd"))
     expect_identical(ans.obtained, ans.expected)
     ## is saturated
@@ -5055,11 +4957,7 @@ test_that("whereEstimated works with BinomialVarying", {
     model <- initialModel(spec, y = y, exposure = exposure)
     ans.obtained <- whereEstimated(model)
     ans.expected <- list(c("likelihood", "prob"),
-                         c("prior", "(Intercept)"),
-                         c("prior", "sex"),
-                         c("prior", "age"),
-                         c("prior", "sex:age"),
-                         c("hyper", "age", "level"),
+                         c("prior", "mean"),
                          c("hyper", "age", "scaleLevel"),
                          c("hyper", "age", "damp"),
                          c("hyper", "age", "scaleError"),
@@ -5070,7 +4968,7 @@ test_that("whereEstimated works with BinomialVarying", {
     model <- initialModel(spec, y = y, exposure = exposure)
     ans.obtained <- whereEstimated(model)
     ans.expected <- list(c("likelihood", "prob"),
-                         c("prior", "(Intercept)"),
+                         c("prior", "mean"),
                          c("prior", "sd"))
     expect_identical(ans.obtained, ans.expected)
 })
@@ -5092,9 +4990,7 @@ test_that("whereEstimated works with BinomialVaryingAgCertain", {
     model <- initialModel(spec, y = y, exposure = exposure)
     ans.obtained <- whereEstimated(model)
     ans.expected <- list(c("likelihood", "prob"),
-                         c("prior", "(Intercept)"),
-                         c("prior", "sex"),
-                         c("prior", "age"),
+                         c("prior", "mean"),
                          c("prior", "sd"),
                          c("hyper", "age", "scaleError"))
     expect_identical(ans.obtained, ans.expected)
@@ -5118,9 +5014,7 @@ test_that("whereEstimated works with BinomialVaryingAgNormal", {
     model <- initialModel(spec, y = y, exposure = exposure)
     ans.obtained <- whereEstimated(model)
     ans.expected <- list(c("likelihood", "prob"),
-                         c("prior", "(Intercept)"),
-                         c("prior", "sex"),
-                         c("prior", "age"),
+                         c("prior", "mean"),
                          c("prior", "sd"),
                          c("hyper", "age", "scaleError"),
                          c("aggregate", "value"))
@@ -5139,13 +5033,9 @@ test_that("whereEstimated works with PoissonVaryingNotUseExp", {
     model <- initialModel(spec, y = y, exposure = NULL)
     ans.obtained <- whereEstimated(model)
     ans.expected <- list(c("likelihood", "count"),
-                         c("prior", "(Intercept)"),
-                         c("prior", "sex"),
-                         c("prior", "age"),
+                         c("prior", "mean"),
                          c("prior", "sd"),
-                         c("hyper", "age", "level"),
                          c("hyper", "age", "scaleLevel"),
-                         c("hyper", "age", "trend"),
                          c("hyper", "age", "scaleTrend"),
                          c("hyper", "age", "scaleError"))
     expect_identical(ans.obtained, ans.expected)
@@ -5155,13 +5045,8 @@ test_that("whereEstimated works with PoissonVaryingNotUseExp", {
     model <- initialModel(spec, y = y, exposure = NULL)
     ans.obtained <- whereEstimated(model)
     ans.expected <- list(c("likelihood", "count"),
-                         c("prior", "(Intercept)"),
-                         c("prior", "sex"),
-                         c("prior", "age"),
-                         c("prior", "sex:age"),
-                         c("hyper", "age", "level"),
+                         c("prior", "mean"),
                          c("hyper", "age", "scaleLevel"),
-                         c("hyper", "age", "trend"),
                          c("hyper", "age", "scaleTrend"),
                          c("hyper", "age", "scaleError"),
                          c("hyper", "sex:age", "scaleError"))
@@ -5185,9 +5070,7 @@ test_that("whereEstimated works with PoissonVaryingUseExpAgCertain", {
     model <- initialModel(spec, y = y, exposure = exposure)
     ans.obtained <- whereEstimated(model)
     ans.expected <- list(c("likelihood", "rate"),
-                         c("prior", "(Intercept)"),
-                         c("prior", "sex"),
-                         c("prior", "age"),
+                         c("prior", "mean"),
                          c("prior", "sd"),
                          c("hyper", "age", "scaleError"))
     expect_identical(ans.obtained, ans.expected)
@@ -5208,9 +5091,7 @@ test_that("whereEstimated works with PoissonVaryingNotUseExpAgNormal", {
     model <- initialModel(spec, y = y, exposure = NULL)
     ans.obtained <- whereEstimated(model)
     ans.expected <- list(c("likelihood", "count"),
-                         c("prior", "(Intercept)"),
-                         c("prior", "sex"),
-                         c("prior", "age"),
+                         c("prior", "mean"),
                          c("prior", "sd"),
                          c("hyper", "age", "scaleError"),
                          c("aggregate", "value"))
@@ -5234,9 +5115,7 @@ test_that("whereEstimated works with PoissonVaryingUseExpAgPoisson", {
     model <- initialModel(spec, y = y, exposure = exposure)
     ans.obtained <- whereEstimated(model)
     ans.expected <- list(c("likelihood", "rate"),
-                         c("prior", "(Intercept)"),
-                         c("prior", "sex"),
-                         c("prior", "age"),
+                         c("prior", "mean"),
                          c("prior", "sd"),
                          c("hyper", "age", "scaleError"),
                          c("aggregate", "value"))
@@ -5261,9 +5140,7 @@ test_that("whereEstimated works with PoissonVaryingUseExpAgNormal", {
     model <- initialModel(spec, y = y, exposure = exposure)
     ans.obtained <- whereEstimated(model)
     ans.expected <- list(c("likelihood", "rate"),
-                         c("prior", "(Intercept)"),
-                         c("prior", "sex"),
-                         c("prior", "age"),
+                         c("prior", "mean"),
                          c("prior", "sd"),
                          c("hyper", "age", "scaleError"),
                          c("aggregate", "value"))
@@ -5287,9 +5164,7 @@ test_that("whereEstimated works with PoissonVaryingUseExpAgPoisson", {
     model <- initialModel(spec, y = y, exposure = exposure)
     ans.obtained <- whereEstimated(model)
     ans.expected <- list(c("likelihood", "rate"),
-                         c("prior", "(Intercept)"),
-                         c("prior", "sex"),
-                         c("prior", "age"),
+                         c("prior", "mean"),
                          c("prior", "sd"),
                          c("hyper", "age", "scaleError"),
                          c("aggregate", "value"))

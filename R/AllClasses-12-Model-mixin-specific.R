@@ -48,6 +48,39 @@ setClass("BetaIsPredicted",
              TRUE
          })
 
+## NO TESTS
+setClass("BoxCoxParamMixin",
+         slots = c(boxCoxParam = "numeric"),
+         prototype = prototype(boxCoxParam = 0),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             boxCoxParam <- object@boxCoxParam@.Data
+             ## 'boxCoxParam' has length 1
+             if (!identical(length(boxCoxParam), 1L))
+                 return(gettextf("'%s' does not have length %d",
+                                 "boxCoxParam", 1L))
+             ## 'boxCoxParam' is not missing
+             if (is.na(boxCoxParam))
+                 return(gettextf("'%s' is missing",
+                                 "boxCoxParam"))
+             ## 'boxCoxParam' is double
+             if (!is.double(boxCoxParam))
+                 return(gettextf("'%s' does not have type \"%s\"",
+                                 "boxCoxParam", "double"))
+             ## 'boxCoxParam' less than or equal to 1
+             if (boxCoxParam > 1)
+                 return(gettextf("'%s' is greater than %d",
+                                 "boxCoxParam", 1L))
+             ## 'boxCoxParam' is greater than or equal to 0
+             if (boxCoxParam < 0)
+                 return(gettextf("'%s' is less than %d",
+                                 "boxCoxParam", 0L))
+             ## TEMPORARILY CHECK THAT NOT AGGREGATE
+             if ((boxCoxParam > 0) && is(object, "Aggregate"))
+                 return("have not yet implemented Box-Cox transforms with aggregate values")
+             TRUE
+         })         
+
 ## HAS_TESTS
 setClass("Margins",
          slots = c(margins = "list"),

@@ -544,6 +544,22 @@ SEXP rnormTruncated_R(SEXP n_R, SEXP mean_R, SEXP sd_R,
     
 }
 
+/* one-off wrapper for rnormIntTrunc1 */
+SEXP rnormIntTrunc1_R(SEXP mean_R, SEXP sd_R, SEXP lower_R, SEXP upper_R)
+{
+    double mean = *REAL(mean_R);
+    double sd = *REAL(sd_R);
+    int lower = *INTEGER(lower_R);
+    int upper = *INTEGER(upper_R);
+    
+    GetRNGstate();
+    int ans = rnormIntTrunc1(mean, sd, lower, upper);
+    PutRNGstate();
+    return ScalarInteger(ans);
+    
+}
+
+
 /* one-off wrapper for rtnorm1 */
 SEXP rtnorm1_R(SEXP mean_R, SEXP sd_R, SEXP lower_R, SEXP upper_R)
 {
@@ -1387,6 +1403,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(rmvnorm1_R, 2),
   CALLDEF(rmvnorm2_R, 2),
   CALLDEF(rnormTruncated_R, 8),
+  CALLDEF(rnormIntTrunc1_R, 4),
   CALLDEF(rtnorm1_R, 4),
   CALLDEF(rpoisTrunc1_R, 4),
   
@@ -1583,6 +1600,7 @@ R_CallMethodDef callMethods[] = {
   
   CALLDEF(getOneIterFromFile_R, 5),
   CALLDEF(getDataFromFile_R, 5),
+  CALLDEF(overwriteValuesOnFile_R, 5),
   
   /* description helpers */
   CALLDEF(chooseICellComp_R, 1),
@@ -1971,6 +1989,11 @@ R_init_demest(DllInfo *info)
   ADD_SYM(updateSeriesDLM);
   ADD_SYM(alphaKnown);
   ADD_SYM(AKnownVec);
+  /* skeleton */
+  ADD_SYM(first);
+  ADD_SYM(last);
+  /* Box-Cox */
+  ADD_SYM(boxCoxParam);
   
 #undef ADD_SYM
 

@@ -33,14 +33,14 @@ test_that("fetchMCMC works with BinomialVarying", {
                                         sample = NULL, nChain = 2L, nThin = 1L)
     model.prior.sex <-  MCMCDemographic(fetch(filename, c("model", "prior", "sex")),
                                         sample = NULL, nChain = 2L, nThin = 1L)
+    model.prior.mean <- MCMCDemographic(fetch(filename, c("model", "prior", "mean")),
+                                      sample = NULL, nChain = 2L, nThin = 1L)
     model.prior.sd <- MCMCDemographic(fetch(filename, c("model", "prior", "sd")),
                                       sample = NULL, nChain = 2L, nThin = 1L)
     model.hyper.age.scaleError <- MCMCDemographic(fetch(filename, c("model", "hyper", "age", "scaleError")),
                                                   sample = NULL, nChain = 2L, nThin = 1L)
     ans.expected <- list(model.likelihood.prob = model.likelihood.prob,
-                         "model.prior.(Intercept)" = model.prior.Intercept,
-                         model.prior.age = model.prior.age,
-                         model.prior.sex = model.prior.sex,
+                         "model.prior.mean" = model.prior.mean,
                          model.prior.sd = model.prior.sd,
                          model.hyper.age.scaleError = model.hyper.age.scaleError)
     expect_identical(ans.obtained, ans.expected)
@@ -56,14 +56,14 @@ test_that("fetchMCMC works with BinomialVarying", {
                                         sample = NULL, nChain = 2L, nThin = 2L)
     model.prior.sex <-  MCMCDemographic(fetch(filename, c("model", "prior", "sex")),
                                         sample = NULL, nChain = 2L, nThin = 2L)
+    model.prior.mean <-  MCMCDemographic(fetch(filename, c("model", "prior", "mean")),
+                                              sample = NULL, nChain = 2L, nThin = 2L)
     model.prior.sd <- MCMCDemographic(fetch(filename, c("model", "prior", "sd")),
                                       sample = NULL, nChain = 2L, nThin = 2L)
     model.hyper.age.scaleError <- MCMCDemographic(fetch(filename, c("model", "hyper", "age", "scaleError")),
                                                   sample = NULL, nChain = 2L, nThin = 2L)
     ans.expected <- list(model.likelihood.prob = model.likelihood.prob,
-                         "model.prior.(Intercept)" = model.prior.Intercept,
-                         model.prior.age = model.prior.age,
-                         model.prior.sex = model.prior.sex,
+                         model.prior.mean = model.prior.mean,
                          model.prior.sd = model.prior.sd,
                          model.hyper.age.scaleError = model.hyper.age.scaleError)
     expect_identical(ans.obtained, ans.expected)
@@ -147,132 +147,107 @@ test_that("fetch works", {
                                collapse = ", ")))
 })
 
-test_that("fetchBoth works", {
-    combineEstPred <- demest:::combineEstPred
-    fetchResultsObject <- demest:::fetchResultsObject
-    fetchSkeleton <- demest:::fetchSkeleton
-    fetchInner <- demest:::fetchInner
-    sweepAllMargins <- demest:::sweepAllMargins
-    lengthValues <- demest:::lengthValues
-    listsAsSingleItems <- demest:::listsAsSingleItems
-    exposure <- Counts(array(as.double(rpois(n = 110, lambda = 10)),
-                             dim = c(2, 10, 11),
-                             dimnames = list(sex = c("f", "m"),
-                                 age = 0:9,
-                                 time = 2000:2010)),
-                       dimscales = c(time = "Intervals"))
-    y <- Counts(array(as.integer(rpois(n = 220, lambda = exposure * 0.5)),
-                      dim = c(2, 10, 11),
-                      dimnames = list(sex = c("f", "m"),
-                          age = 0:9,
-                          time = 2000:2010)),
-                dimscales = c(time = "Intervals"))
-    filename.est <- tempfile()
-    filename.pred <- tempfile()
-    estimateModel(Model(y ~ Poisson(mean ~ sex + age * time)),
-                  y = y,
-                  exposure = exposure,
-                  filename = filename.est,
-                  nBurnin = 50,
-                  nSim = 50,
-                  nChain = 2,
-                  nThin = 10)
-    predictModel(filenameEst = filename.est,
-                 filenamePred = filename.pred,
-                 n = 2)
-    ## not time varying, normalized
-    ans.obtained <- fetchBoth(filenameEst = filename.est,
-                              filenamePred = filename.pred,
-                              where = c("mod", "pr", "sex"))
-    ans.expected <- fetch(filename.est, where = c("mod", "pr", "sex"))
-    expect_identical(ans.obtained, ans.expected)
-    ## not time varying, not normalized
-    ans.obtained <- fetchBoth(filenameEst = filename.est,
-                              filenamePred = filename.pred,
-                              where = c("mod", "pr", "sex"),
-                              normalize = FALSE)
-    ans.expected <- fetch(filename.est, where = c("mod", "pr", "sex"),
-                          normalize = FALSE)
-    expect_identical(ans.obtained, ans.expected)
-    ## not time varying, need to normalize - do not normalize
-    ans.obtained <- fetchBoth(filenameEst = filename.est,
-                              filenamePred = filename.pred,
-                              where = c("mod", "pr", "(Int"),
-                              normalize = FALSE)
-    ans.expected <- fetch(filename.est, c("mod", "pr", "(Int"),
-                          normalize = FALSE)
-    expect_identical(ans.obtained, ans.expected)
-    ## not time varying, need to normalize - normalize
-    ans.obtained <- fetchBoth(filenameEst = filename.est,
-                              filenamePred = filename.pred,
-                              where = c("mod", "pr", "(Int"))
-    ans.expected <- fetch(filename.est, c("mod", "pr", "(Int"))
-    expect_identical(ans.obtained, ans.expected)
-    ## time varying, no need to normalize
-    ans.obtained <- fetchBoth(filenameEst = filename.est,
-                              filenamePred = filename.pred,
-                              where = c("mod", "li", "rate"))
-    est <- fetch(filename.est, c("mod", "li", "rate"))
-    pred <- fetch(filename.pred, c("mod", "li", "rate"))
-    ans.expected <- dbind(est, pred, along = "time")
-    expect_identical(ans.obtained, ans.expected)
-    ## time varying, need to normalize - normalize
-    ans.obtained <- fetchBoth(filenameEst = filename.est,
-                              filenamePred = filename.pred,
-                              where = c("mod", "pr", "time"))
-    est <- fetchInner(fetchResultsObject(filename.est)@model,
-                      nameObject = "model",
-                      where = c("pr", "time"),
-                      iterations = 1:10,
-                      filename = filename.est,
-                      lengthIter = lengthValues(fetchResultsObject(filename.est)@final[[1]]),
-                      nIteration = 10L,
-                      listsAsSingleItems = listsAsSingleItems(),
-                      shift = TRUE,
-                      impute = FALSE)
-    pred <- fetchInner(fetchResultsObject(filename.pred)@model,
-                      nameObject = "model",
-                      where = c("pr", "time"),
-                      iterations = 1:10,
-                      filename = filename.pred,
-                      lengthIter = lengthValues(fetchResultsObject(filename.pred)@final[[1]]),
-                      nIteration = 10L,
-                      listsAsSingleItems = listsAsSingleItems(),
-                      shift = TRUE,
-                      impute = FALSE)
-    ans.expected <- dbind(est, pred, along = "time")
-    ans.expected <- sweepAllMargins(ans.expected)
-    expect_identical(ans.obtained, ans.expected)
-    ## time varying, need to normalize - do not normalize
-    ans.obtained <- fetchBoth(filenameEst = filename.est,
-                              filenamePred = filename.pred,
-                              where = c("mod", "pr", "time"),
-                              normalize = FALSE)
-    est <- fetchInner(fetchResultsObject(filename.est)@model,
-                      nameObject = "model",
-                      where = c("pr", "time"),
-                      iterations = 1:10,
-                      filename = filename.est,
-                      lengthIter = lengthValues(fetchResultsObject(filename.est)@final[[1]]),
-                      nIteration = 10L,
-                      listsAsSingleItems = listsAsSingleItems(),
-                      shift = FALSE,
-                      impute = FALSE)
-    pred <- fetchInner(fetchResultsObject(filename.pred)@model,
-                      nameObject = "model",
-                      where = c("pr", "time"),
-                      iterations = 1:10,
-                      filename = filename.pred,
-                      lengthIter = lengthValues(fetchResultsObject(filename.pred)@final[[1]]),
-                      nIteration = 10L,
-                      listsAsSingleItems = listsAsSingleItems(),
-                      shift = FALSE,
-                      impute = FALSE)
-    ans.expected <- dbind(est, pred, along = "time")
-    expect_identical(ans.obtained, ans.expected)
-    ans.expected <- combineEstPred(est = est, pred = pred)
-    expect_identical(ans.obtained, ans.expected)
-})
+## test_that("fetchBoth works", {
+##     combineEstPred <- demest:::combineEstPred
+##     fetchResultsObject <- demest:::fetchResultsObject
+##     fetchSkeleton <- demest:::fetchSkeleton
+##     fetchInner <- demest:::fetchInner
+##     sweepAllMargins <- demest:::sweepAllMargins
+##     lengthValues <- demest:::lengthValues
+##     listsAsSingleItems <- demest:::listsAsSingleItems
+##     exposure <- Counts(array(as.double(rpois(n = 110, lambda = 10)),
+##                              dim = c(2, 10, 11),
+##                              dimnames = list(sex = c("f", "m"),
+##                                  age = 0:9,
+##                                  time = 2000:2010)),
+##                        dimscales = c(time = "Intervals"))
+##     y <- Counts(array(as.integer(rpois(n = 220, lambda = exposure * 0.5)),
+##                       dim = c(2, 10, 11),
+##                       dimnames = list(sex = c("f", "m"),
+##                           age = 0:9,
+##                           time = 2000:2010)),
+##                 dimscales = c(time = "Intervals"))
+##     filename.est <- tempfile()
+##     filename.pred <- tempfile()
+##     estimateModel(Model(y ~ Poisson(mean ~ sex + age * time)),
+##                   y = y,
+##                   exposure = exposure,
+##                   filename = filename.est,
+##                   nBurnin = 50,
+##                   nSim = 50,
+##                   nChain = 2,
+##                   nThin = 10)
+##     predictModel(filenameEst = filename.est,
+##                  filenamePred = filename.pred,
+##                  n = 2)
+##     ## not time varying
+##     ans.obtained <- fetchBoth(filenameEst = filename.est,
+##                               filenamePred = filename.pred,
+##                               where = c("mod", "pr", "sex"))
+##     ans.expected <- fetch(filename.est, where = c("mod", "pr", "sex"))
+##     expect_identical(ans.obtained, ans.expected)
+##     ans.obtained <- fetchBoth(filenameEst = filename.est,
+##                               filenamePred = filename.pred,
+##                               where = c("mod", "li", "rate"))
+##     est <- fetch(filename.est, c("mod", "li", "rate"))
+##     pred <- fetch(filename.pred, c("mod", "li", "rate"))
+##     ans.expected <- dbind(est, pred, along = "time")
+##     expect_identical(ans.obtained, ans.expected)
+##     ans.obtained <- fetchBoth(filenameEst = filename.est,
+##                               filenamePred = filename.pred,
+##                               where = c("mod", "pr", "time"))
+##     est <- fetchInner(fetchResultsObject(filename.est)@model,
+##                       nameObject = "model",
+##                       where = c("pr", "time"),
+##                       iterations = 1:10,
+##                       filename = filename.est,
+##                       lengthIter = lengthValues(fetchResultsObject(filename.est)@final[[1]]),
+##                       nIteration = 10L,
+##                       listsAsSingleItems = listsAsSingleItems(),
+##                       shift = TRUE,
+##                       impute = FALSE)
+##     pred <- fetchInner(fetchResultsObject(filename.pred)@model,
+##                       nameObject = "model",
+##                       where = c("pr", "time"),
+##                       iterations = 1:10,
+##                       filename = filename.pred,
+##                       lengthIter = lengthValues(fetchResultsObject(filename.pred)@final[[1]]),
+##                       nIteration = 10L,
+##                       listsAsSingleItems = listsAsSingleItems(),
+##                       shift = TRUE,
+##                       impute = FALSE)
+##     ans.expected <- dbind(est, pred, along = "time")
+##     ans.expected <- sweepAllMargins(ans.expected)
+##     expect_identical(ans.obtained, ans.expected)
+##     ## time varying, need to normalize - do not normalize
+##     ans.obtained <- fetchBoth(filenameEst = filename.est,
+##                               filenamePred = filename.pred,
+##                               where = c("mod", "pr", "time"))
+##     est <- fetchInner(fetchResultsObject(filename.est)@model,
+##                       nameObject = "model",
+##                       where = c("pr", "time"),
+##                       iterations = 1:10,
+##                       filename = filename.est,
+##                       lengthIter = lengthValues(fetchResultsObject(filename.est)@final[[1]]),
+##                       nIteration = 10L,
+##                       listsAsSingleItems = listsAsSingleItems(),
+##                       shift = FALSE,
+##                       impute = FALSE)
+##     pred <- fetchInner(fetchResultsObject(filename.pred)@model,
+##                       nameObject = "model",
+##                       where = c("pr", "time"),
+##                       iterations = 1:10,
+##                       filename = filename.pred,
+##                       lengthIter = lengthValues(fetchResultsObject(filename.pred)@final[[1]]),
+##                       nIteration = 10L,
+##                       listsAsSingleItems = listsAsSingleItems(),
+##                       shift = FALSE,
+##                       impute = FALSE)
+##     ans.expected <- dbind(est, pred, along = "time")
+##     expect_identical(ans.obtained, ans.expected)
+##     ans.expected <- combineEstPred(est = est, pred = pred)
+##     expect_identical(ans.obtained, ans.expected)
+## })
 
 test_that("fetchFiniteSD works with ResultsModel", {
     y <- Values(array(rnorm(n = 10, mean = 20),

@@ -4,8 +4,8 @@
 \alias{continueEstimation}
 \title{Add extra iterations to burnin or output.}
 \usage{
-continueEstimation(filename, nBurnin = 0, nSim = 1000, outfile = NULL,
-  verbose = FALSE, useC = TRUE)
+continueEstimation(filename, nBurnin = NULL, nSim = 1000, nThin = NULL,
+  outfile = NULL, verbose = FALSE, useC = TRUE)
 }
 \arguments{
 \item{filename}{The filename used by the original call.}
@@ -13,6 +13,8 @@ continueEstimation(filename, nBurnin = 0, nSim = 1000, outfile = NULL,
 \item{nBurnin}{Number of iteration discarded before recording begins.}
 
 \item{nSim}{Number of additional iterations.}
+
+\item{nThin}{Thinning interval.}
 
 \item{outfile}{Where to direct the ‘stdout’ and ‘stderr’ connection
 output from the workers when parallel processing.  Passed to function
@@ -34,13 +36,21 @@ and can be called multiple times.
 }
 \details{
 The treatment of output from previous calls to the estimation functions or
-to \code{continueEstimation} depends on whether \code{nBurnin} in the
-current call to \code{continueEstimation} is equal to 0 or greater than 0.
-If \code{nBurnin} is equal to 0, then any further iterations are added to
-the current posterior sample.  If \code{nBurnin} is greater than
-0, then any previous output is treated as part of the burnin, and the
-construction of the posterior sample begins again from scratch.
-See below for an example.
+to \code{continueEstimation} depends on \code{nBurnin} in the
+current call to \code{continueEstimation}.  If \code{nBurnin} is
+\code{NULL}, then \code{continueEstimation} adds iterations to
+any existing posterior sample.  If \code{nBurnin} is \code{NULL},
+then iterations from any previous calls to the
+\code{estimate} function or to \code{continueEstimation} are
+treated as burnin, and the construction of the posterior sample
+begins again from scratch. See below for an example.
+
+If \code{nThin} is set to a different value from previous calls to
+the \code{estimate} function or \code{continueEstimation}, then the
+thinning ratio, and hence correlations between successive iterations,
+will change. This is safe if the previous iterations are being used as
+burnin, but needs to be done with care, if the previous iterations
+will form part of the posterior sample.
 
 Because model output includes the state of the random number generator,
 it should be possible to obtain identical results by (i) calling an estimation
@@ -104,7 +114,6 @@ estimateModel(Model(y ~ Poisson(mean ~ age)),
               nChain = 2,
               parallel = FALSE)
 continueEstimation(filename = filename.with.continue,
-                   nBurnin = 0,
                    nSim = 20)
 rates.with.continue <- fetch(filename.all.at.once,
                            where = c("model", "likelihood", "rate"))
@@ -116,7 +125,7 @@ all.equal(rates.all.at.once, rates.with.continue)
 ## Demonstrate the differences between nBurnin = 0
 ## and nBurnin > 0.
 
-## nBurnin = 0 in call to continueEstimation, so keep 
+## nBurnin is NULL in call to continueEstimation, so keep 
 ## iterations from original call to estimateModel
 filename.keep.original <- tempfile()
 estimateModel(Model(y ~ Poisson(mean ~ age)),
@@ -129,11 +138,10 @@ estimateModel(Model(y ~ Poisson(mean ~ age)),
               nChain = 2,
               parallel = FALSE)
 continueEstimation(filename = filename.keep.original,
-                   nBurnin = 0,
                    nSim = 20)
 fetchSummary(filename.keep.original) # see 'nBurnin' and 'nSim'
 
-## nBurnin > 0 in call to continueEstimation, so treat
+## nBurnin non-NULL in call to continueEstimation, so treat
 ## iterations from original call to estimateModel
 ## as part of burnin
 filename.discard.original <- tempfile()

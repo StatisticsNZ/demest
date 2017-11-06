@@ -20,18 +20,6 @@
 #' if the object being extracted is large relative to memory or if calculations
 #' are running slowly.
 #'
-#' In the hierarchical models specified by functions such as
-#' \code{\link{Poisson}}, \code{\link{Binomial}}, and \code{\link{Normal}},
-#' main effects and interactions are only
-#' weakly identified, in that adding a given quantity to the intercept term
-#' and subtracting it from the remaining terms would yield the same likelihood.
-#' The weak identification helps speed convergence.  However, to obtain
-#' interpretable parameter estimates, it is necessary to impose some
-#' constraints.  If \code{normalize} is \code{TRUE} (the default), all main
-#' effects are constrained to sum to 0, as are all margins in interactions.
-#' For example, in a two-way interaction, the row sums and column sums will
-#' all be 0.
-#'
 #' Where possible, \code{\link{estimateModel}}, \code{\link{estimateCounts}},
 #' and \code{\link{estimateAccount}} avoid imputing missing values during
 #' model fitting, since the imputed values are typically highly correlated
@@ -44,8 +32,6 @@
 #' extracted.
 #' @param iterations A vector of positive integers giving the iterations to be
 #' extracted if an item has multiple iterations.
-#' @param normalize Logical. Whether to centre estimates of main effects and
-#' interactions from hierarchical models.  Defaults to \code{TRUE}.
 #' @param impute Logical. Whether to impute missing values.
 #'
 #' @return Parameters that were estimated from the data typically have class
@@ -108,24 +94,9 @@
 #' fetch(filename,
 #'       where = c("model", "prior", "(Intercept)"),
 #'       iterations = seq(from = 5, by = 5, to = 40))
-#'
-#' ## normalised vs normalised age effects
-#' age.sex.norm <- fetch(filename,
-#'                       where = c("model", "prior", "age:sex"),
-#'                       iterations = 1)
-#' age.sex.unnorm <- fetch(filename,
-#'                         where = c("model", "prior", "age:sex"),
-#'                         normalize = FALSE,
-#'                         iterations = 1)
-#' age.sex.norm <- drop(age.sex.norm) # drop 'iterations' dimension
-#' age.sex.unnorm <- drop(age.sex.unnorm) 
-#' rowSums(age.sex.norm)
-#' rowSums(age.sex.unnorm)
-#' colSums(age.sex.norm)
-#' colSums(age.sex.unnorm)
 #' @export
 fetch <- function(filename, where = character(), iterations = NULL,
-                  normalize = TRUE, impute = FALSE) {
+                  impute = FALSE) {
     object <- fetchResultsObject(filename)
     nIteration <- object@mcmc["nIteration"]
     lengthIter <- object@control$lengthIter
@@ -177,19 +148,12 @@ fetch <- function(filename, where = character(), iterations = NULL,
                           lengthIter = lengthIter,
                           nIteration = nIteration,
                           listsAsSingleItems = listsAsSingleItems,
-                          shift = normalize,
                           impute = impute)
     }
     else if (i == 0L)
         raiseMultipleMatchesError(target = name, choices = choices)
     else
         raiseNotFoundError(target = name, choices = choices)
-    if (normalize) {
-        skeleton <- fetchSkeleton(object, where = where)
-        need.to.center <- needToCenter(skeleton)
-        if (need.to.center)
-            ans <- sweepAllMargins(ans)
-    }
     ans
 }
 
@@ -252,7 +216,7 @@ fetch <- function(filename, where = character(), iterations = NULL,
 #' }
 #' @export
 fetchBoth <- function(filenameEst, filenamePred, where, iterations = NULL,
-                      normalize = TRUE, impute = FALSE) {
+                      impute = FALSE) {
     ## preparation and checking
     results.est <- fetchResultsObject(filenameEst)
     nIteration <- results.est@mcmc["nIteration"]
@@ -315,7 +279,6 @@ fetchBoth <- function(filenameEst, filenamePred, where, iterations = NULL,
                           lengthIter = lengthIterEst,
                           nIteration = nIteration,
                           listsAsSingleItems = listsAsSingleItems,
-                          shift = normalize,
                           impute = impute)
         pred <- fetchInner(object = methods::slot(results.pred, name),
                            nameObject = name,
@@ -325,7 +288,6 @@ fetchBoth <- function(filenameEst, filenamePred, where, iterations = NULL,
                            lengthIter = lengthIterPred,
                            nIteration = nIteration,
                            listsAsSingleItems = listsAsSingleItems,
-                           shift = normalize,
                            impute = impute)
         ans <- combineEstPred(est = est, pred = pred)
     }
@@ -338,14 +300,7 @@ fetchBoth <- function(filenameEst, filenamePred, where, iterations = NULL,
                           lengthIter = lengthIterEst,
                           nIteration = nIteration,
                           listsAsSingleItems = listsAsSingleItems,
-                          shift = normalize,
                           impute = impute)
-    }
-    if (normalize) {
-        skeleton <- fetchSkeleton(results.est, where = where)
-        need.to.center <- needToCenter(skeleton)
-        if (need.to.center)
-            ans <- sweepAllMargins(ans)
     }
     ans
 }

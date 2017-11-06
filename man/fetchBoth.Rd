@@ -5,7 +5,7 @@
 \title{Extract combined results from estimation and prediction.}
 \usage{
 fetchBoth(filenameEst, filenamePred, where, iterations = NULL,
-  normalize = TRUE, impute = FALSE)
+  impute = FALSE)
 }
 \arguments{
 \item{filenameEst}{The filename used for estimation.}
@@ -17,9 +17,6 @@ extracted.}
 
 \item{iterations}{A vector of positive integers giving the iterations to be
 extracted if an item has multiple iterations.}
-
-\item{normalize}{Logical. Whether to centre estimates of main effects and
-interactions from hierarchical models.  Defaults to \code{TRUE}.}
 
 \item{impute}{Logical. Whether to impute missing values.}
 }
