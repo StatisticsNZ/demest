@@ -717,44 +717,6 @@ diffLogDensAccountMove <- function(combined, useC = FALSE) {
     }
 }
 
-diffLogDensJumpOrigDest <- function(combined, useC = FALSE) {
-    stopifnot(is(combined, "CombinedAccountMovements"))
-    if (useC) {
-        .Call(diffLogDensJumpOrigDest_R, combined)
-    }
-    else {
-        i.comp <- combined@iComp
-        account <- combined@account
-        component <- account@components[[i.comp]]
-        systemModels <- combined@systemModels
-        sys.mod <- systemModels[[i.comp + 1L]]
-        theta <- sys.mod@theta
-        expose <- combined@exposure
-        expected.expose <- combined@expectedExposure
-        i.cell <- combined@iCell
-        i.expose <- combined@iExposure
-        is.lower.triangle <- combined@isLowerTriangle
-        diff <- combined@diffProp
-        theta.cell <- theta[i.cell]
-        expose.cell.curr <- expose[i.expose]
-        expose.cell.oth.curr <- expose[i.expose.oth]
-        if (is.lower.triangle)
-            expose.cell.prop <- expose.cell.curr - 0.5 * diff
-        else
-            expose.cell.prop <- expose.cell.curr
-        expose.cell.jump <- expected.expose[i.expose]
-        lambda.dens.prop <- theta.cell * expose.cell.prop
-        lambda.dens.curr <- theta.cell * expose.cell.curr
-        lambda.jump <- theta.cell * expose.cell.jump
-        val.curr <- component[i.cell]
-        val.prop <- val.curr + diff
-        diff.log.dens <- (dpois(x = val.prop, lambda = lambda.dens.prop, log = TRUE)
-                          - dpois(x = val.curr, lambda = lambda.dens.curr, log = TRUE))
-        diff.log.jump <- (dpois(x = val.curr, lambda = lambda.jump, log = TRUE)
-                          - dpois(x = val.prop, lambda = lambda.jump, log = TRUE))
-        diff.log.dens + diff.log.jump
-    }
-}
 
 diffLogDensJumpPoolWithExpose <- function(combined, useC = FALSE) {
     stopifnot(is(combined, "CombinedAccountMovements"))
