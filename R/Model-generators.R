@@ -1149,15 +1149,24 @@ setMethod("initialModelPredict",
                                              offsetModel = offsetModel,
                                              covariates = covariates)
               metadataY <- l$metadataY
-              if (is.null(lower))
-                  lower <- exp(model@lower)
-              if (is.null(upper))
-                  upper <- exp(model@upper)
+              box.cox.param <- model@boxCoxParam
+              if (box.cox.param > 0) {
+                  if (is.null(lower))
+                      lower <- (box.cox.param * lower + 1) ^ (1 / box.cox.param)
+                  if (is.null(upper))
+                      upper <- (box.cox.param * upper + 1) ^ (1 / box.cox.param)
+              }
+              else {
+                  if (is.null(lower))
+                      lower <- exp(model@lower)
+                  if (is.null(upper))
+                      upper <- exp(model@upper)
+              }
               checkLowerAndUpper(lower = lower,
                                  upper = upper,
                                  distribution = "Poisson")
-              lower <- log(lower)
-              upper <- log(upper)
+              lower <- model@lower
+              upper <- model@upper
               uses.exposure <- methods::is(model, "UseExposure")
               if (uses.exposure)
                   Class <- "PoissonVaryingUseExpPredict"
