@@ -2946,6 +2946,30 @@ test_that("getIExpFirstFromComp works with ordinary component", {
         ans.expected <- i
         expect_identical(ans.obtained, ans.expected)
     }
+    ## time is second dimension of three
+    component <- Counts(array(1:36,
+                              dim = c(3, 2, 3, 2),
+                              dimnames = list(reg = c("a", "b", "c"),
+                                              time = c("2001-2010", "2011-2020"),
+                                              age = c("0-9", "10-19", "20+"),
+                                              triangle = c("TL", "TU"))))
+    population <- Counts(array(1:18,
+                               dim = c(3, 3, 3),
+                               dimnames = list(reg = c("a", "b", "c"),
+                                               time = c(2000, 2010, 2020),
+                                               age = c("0-9", "10-19", "20+"))))
+    template <- makeTemplateComponent(population)
+    component <- ExitsMovements(exits = component,
+                                template = template,
+                                name = "exits")
+    exposure <- exposure(population, triangles = TRUE)
+    exposure <- Exposure(exposure)
+    mapping <- Mapping(current = component,
+                       target = exposure)
+    ans.obtained <- getIExpFirstFromComp(i = 10L, mapping = mapping)
+    ans.expected <- 10L
+    expect_identical(ans.obtained, ans.expected)
+    
 })
 
 test_that("R and C versions of getIExpFirstFromComp give same answer with ordinary component", {

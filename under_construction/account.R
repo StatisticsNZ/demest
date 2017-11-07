@@ -1,5 +1,26 @@
 
 
+
+##################################################################################
+## Top Level #####################################################################
+##################################################################################
+
+## updateCombined
+##   updateAccount
+##   updateSystemModels
+##   updateObservationAccount
+
+##################################################################################
+## Updating Account ##############################################################
+##################################################################################
+
+
+
+##################################################################################
+## Updating SystemModels ##############################################################
+##################################################################################
+
+
 ## identical for transition
 setMethod("updateCombined",
           signature(object = "CombinedAccount"),
@@ -27,36 +48,99 @@ setMethod("updateCombined",
               }
           })
 
-## identical for transition
-setMethod("updateAccount",
-          signature(object = "CombinedAccount"),
-          function(object, useC = FALSE) {
-              stopifnot(validObject(object))
-              if (useC) {
-                  if (useSpecific)
-                      .Call(updateAccount_CombinedAccount_R, object)
-                  else
-                      .Call(updateAccount_R, object)
-              }
-              else {
-                  n.cell.account <- object@account@nCellAccount@.Data
-                  for (i in seq_len(n.cell.account)) {
-                      object <- updateProposalAccount(object)
-                      generated.new.proposal <- object@generatedNewProposal@.Data
-                      if (generated.new.proposal) {
-                          diff.log.lik <- diffLogLikAccount(object)
-                          if (is.finite(diff.log.lik)) {
-                              diff.log.dens <- diffLogDensAccount(object)
-                              log.r <- diff.log.lik + diff.log.dens
-                              accept <- (log.r > 0) || (runif(n = 1L) < exp(log.r))
-                              if (accept)
-                                  object <- updateValuesAccount(object)
-                          }
-                      }
-                  }
-                  object
-              }
-          })
+
+updateAccount <- function(object) {
+    stopifnot(methods::is(object, "CombinedAccount"))
+    stopifnot(methods::validObject(object))
+    n.cell.account <- object@account@nCellAccount@.Data
+    for (i in seq_len(n.cell.account)) {
+        object <- updateProposalAccount(object)
+        generated.new.proposal <- object@generatedNewProposal@.Data
+        if (generated.new.proposal) {
+            diff.log.lik <- diffLogLikAccount(object)
+            if (is.finite(diff.log.lik)) {
+                diff.log.dens <- diffLogDensAccount(object)
+                log.r <- diff.log.lik + diff.log.dens
+                accept <- (log.r > 0) || (runif(n = 1L) < exp(log.r))
+                if (accept)
+                    object <- updateValuesAccount(object)
+            }
+        }
+    }
+    object
+}
+
+updateSystemModels <- function(combined) {
+    systemModels <- combined@systemModels
+    account <- combined@account
+    population <- account@population
+    components <- account@components
+    mappings <- combined@mappingsToPopn
+    has.age <- combined@hasAge
+    model.popn <- systemModels[[1L]]
+    model.popn <- updateModelNotUseExp(model.popn, y = population)
+    systemModels[[1L]] <- model.popn
+    for (i in seq_along(component)) {
+        model.comp <- systemModels[[i + 1L]]
+        component <- components[[i]]
+        mapping <- mappings[[i]]
+        uses.expose <- !is.null(transform)
+        if (uses.expose) {
+            if (has.age)
+                exposure <- makeExposureAge(population = population,
+                                            mapping = mapping)
+            else
+                exposure <- makeExposureNoAge(population = population,
+                                              mapping = mapping)
+            model.comp <- updateModelUseExp(model = model.comp,
+                                            y = component,
+                                            exposure = exposure)
+        }
+        else
+            model.comp <- updateModelNotUseExp(model = model.comp,
+                                               y = component)
+        systemModels[[i + 1L]] <- model.comp
+    }
+    combined@systemModels <- systemModels
+    combined
+}
+
+updateObservation <- function(combined) {
+    observationModels <- combined@observationModels
+    account <- combined@account
+    population <- account@population
+    components <- account@components
+    series.indices <- combined@seriesIndices
+    transforms <- combined@transformsDatasets
+    for (i in seq_along(observationModels)) {
+        model <- observationModels[[i]]
+        dataset <- datasets[[i]]
+        transform <- transforms[[i]]
+        series.index <- series.indices[i]
+        if (series.index == 0L)
+            series <- population
+        else
+            series <- components[[series.index]]
+        series.collapsed <- collapse(series, transform = transform)
+        if (is(model, "Poisson"))
+            series.collapsed <- toDouble(series.collapsed)
+        model <- updateModelUseExp(model, y = dataset, exposure = series.collapsed)
+        observationModels[[i]] <- model
+    }
+    combined@observationModels <- observationModels
+    combined
+}
+
+
+
+
+
+
+
+
+
+
+### Updating Account ####################################################################
 
 
 setMethod("updateProposalAccount",
@@ -98,6 +182,8 @@ setMethod("updateProposalAccount",
               }
           })
 
+
+              
 updateProposalAccountBirths <- function(combined, useC = FALSE) {
     stopifnot(is(combined, "CombinedAccountMovements"))
     if (useC) {
@@ -480,28 +566,33 @@ updateProposalAccountMoveNet <- function(combined) {
 
 ## LOG LIKELIHOOOD #########################################################
 
-diffLogLikAccountMove <- function(combined) {
-    stopifnot(is(combined, "CombinedAccountMovements"))
-    if (useC) {
-        .Call(diffLogLikAccountMove_R, combined)
-    }
-    else {
-        i.comp <- combined@iComp
-        i.orig.dest <- combined@iOrigDest
-        i.pool <- combined@iPool
-        i.int.net <- combined@iIntNet
-        if (i.comp == 0L)
-            diffLogLikAccountMovePopn(combined)
-        else if (i.comp == i.orig.dest)
-            diffLogLikAccountMoveOrigDest(combined)
-        else if (i.comp == i.pool) 
-            diffLogLikAccountMovePool(combined)
-        else if (i.comp == i.int.net) 
-            diffLogLikAccountMoveNet(combined)
-        else
-            diffLogLikAccountMoveComp(combined)
-    }
-}
+              
+setMethod("diffLogLikAccount",
+          signature(object = "CombinedAccountMovements"),
+          function(object, useC = FALSE, useSpecific = FALSE) {
+              if (useC) {
+                  if (useSpecific)
+                      .Call(diffLogLikAccount_CombineAccountMovements_R, object)
+                  else
+                      .Call(diffLogLikAccount_R, object)
+              }
+              else {
+                  i.comp <- object@iComp
+                  i.orig.dest <- object@iOrigDest
+                  i.pool <- object@iPool
+                  i.int.net <- object@iIntNet
+                  if (i.comp == 0L)
+                      diffLogLikAccountMovePopn(object)
+                  else if (i.comp == i.orig.dest)
+                      diffLogLikAccountMoveOrigDest(object)
+                  else if (i.comp == i.pool) 
+                      diffLogLikAccountMovePool(object)
+                  else if (i.comp == i.int.net) 
+                      diffLogLikAccountMoveNet(object)
+                  else
+                      diffLogLikAccountMoveComp(object)
+              }
+          })
 
 
 diffLogLikAccountMovePool <- function(combined, useC = FALSE) {
@@ -680,44 +771,111 @@ diffLogLikCellsPoolNet <- function(diff, iComp, iCellOut, iCellIn,
 
 ## LOG DENSITY ################################################################
 
-diffLogDensAccountMove <- function(combined, useC = FALSE) {
+
+setMethod("diffLogDensAccount",
+          signature(combined = "CombinedAccountMovements"),
+          function(combined, useC = FALSE, useSpecific = FALSE) {
+              if (useC) {
+                  if (useSpecific)
+                      .Call(diffLogDensAccount_CombinedAccountMovements_R, combined)
+                  else
+                      .Call(diffLogDensAccount_R, combined)
+              }
+              else {
+                  i.comp <- combined@iComp
+                  i.orig.dest <- combined@iOrigDest
+                  i.pool <- combined@iPool
+                  i.int.net <- combined@iIntNet
+                  uses.exposure <- combined@usesExposure
+                  ans <- diffLogDensPopn(combined)
+                  if (i.comp == i.orig.dest) {
+                      if (uses.exposure[i.comp])
+                          ans <- ans + diffLogDensJumpOrigDest(combined)
+                      ans <- ans + diffLogDensExpOrigDestPool(combined)
+                  }
+                  else if (i.comp == i.pool) {
+                      if (uses.exposure[i.comp])
+                          ans <- ans + diffLogDensJumpPoolWithExpose(combined)
+                      else
+                          ans <- ans + diffLogDensJumpPoolNoExpose(combined)
+                      ans <- ans + diffLogDensExpOrigDestPool(combined)
+                  }
+                  else if (i.comp == i.int.net) {
+                      ans <- ans + diffLogDensJumpNet(combined)
+                      ans <- ans + diffLogDensExpNet(combined)
+                  }
+                  else {
+                      if (uses.exposure[i.comp])
+                          ans <- ans + diffLogDensJumpComp(combined)
+                      ans <- ans + diffLogDensExpComp(combined)
+                  }
+                  ans
+              }
+          }
+
+
+diffLogDensExpOrigDestPool <- function(combined, useC = FALSE) {
     stopifnot(is(combined, "CombinedAccountMovements"))
     if (useC) {
-        .Call(diffLogDensAccountMove_R, combined)
+        .Call(diffLogDensExpOrigDestPool_R, combined)
     }
     else {
-        i.comp <- combined@iComp
-        i.orig.dest <- combined@iOrigDest
-        i.pool <- combined@iPool
-        i.int.net <- combined@iIntNet
+        account <- combined@account
+        components <- account@components
+        iterators.comp <- combined@iteratorsComp
+        exposure <- combined@exposure
         uses.exposure <- combined@usesExposure
-        ans <- diffLogDensPopn(combined)
-        if (i.comp == i.orig.dest) {
-            if (uses.exposure[i.comp])
-                ans <- ans + diffLogDensJumpOrigDest(combined)
-            ans <- ans + diffLogDensExpOrigDestPool(combined)
-        }
-        else if (i.comp == i.pool) {
-            if (uses.exposure[i.comp])
-                ans <- ans + diffLogDensJumpPoolWithExpose(combined)
-            else
-                ans <- ans + diffLogDensJumpPoolNoExpose(combined)
-            ans <- ans + diffLogDensExpOrigDestPool(combined)
-        }
-        else if (i.comp == i.int.net) {
-            ans <- ans + diffLogDensJumpNet(combined)
-            ans <- ans + diffLogDensExpNet(combined)
-        }
-        else {
-            if (uses.exposure[i.comp])
-                ans <- ans + diffLogDensJumpComp(combined)
-            ans <- ans + diffLogDensExpComp(combined)
+        mappings <- combined@mappingsFromExposure
+        i.exp.orig <- combined@iExpFirst
+        i.exp.dest <- combined@iExpFirstOth
+        iterator.exposure <- combined@iteratorExposure
+        diff <- combined@diffProp
+        systemModels <- combined@systemModels
+        if (i.exp.orig == i.exp.dest)
+            return(0)
+        ans <- 0
+        for (i in seq_along(components)) {
+            if (uses.exposure[i]) {
+                component <- components[[i]]
+                theta <- systemModels[[i + 1L]]@theta
+                iterator.comp <- iterators.comp[[i]]
+                mapping <- mappings[[i]]
+                i.cell.orig <- getICellCompFromExp(mapping = mapping,
+                                                   i = i.exp.orig)
+                i.cell.dest <- getICellCompFromExp(mapping = mapping,
+                                                   i = i.exp.dest)
+                ans.orig <- diffLogDensExpComp(iCell = i.cell.orig, ## diffLogDensExpOneComp?????
+                                               component = component,
+                                               theta = theta,
+                                               iteratorComp = iterator.comp,
+                                               iExpFirst = i.exp.orig,
+                                               exposure = exposure,
+                                               iteratorExposure = iterator.exposure,
+                                               diff = -diff)
+                if (is.infinite(ans.orig))
+                    return(ans.orig)
+                ans.dest <- diffLogDensExpComp(iCell = i.cell.dest,
+                                               component = component,
+                                               theta = theta,
+                                               iteratorComp = iterator.comp,
+                                               iExpFirst = i.exp.dest,
+                                               exposure = exposure,
+                                               iteratorExposure = iterator.exposure,
+                                               diff = diff)
+                if (is.infinite(ans.dest))
+                    return(ans.dest)
+                ans <- ans.orig + ans.dest
+            }
         }
         ans
     }
 }
 
 
+
+
+
+          
 diffLogDensJumpPoolWithExpose <- function(combined, useC = FALSE) {
     stopifnot(is(combined, "CombinedAccountMovements"))
     if (useC) {
@@ -828,63 +986,6 @@ diffLogDensJumpNet <- function(combined, useC = FALSE) {
     }
 }
 
-diffLogDensExpOrigDestPool <- function(combined, useC = FALSE) {
-    stopifnot(is(combined, "CombinedAccountMovements"))
-    if (useC) {
-        .Call(diffLogDensExpOrigDestPool_R, combined)
-    }
-    else {
-        account <- combined@account
-        components <- account@components
-        iterators.comp <- combined@iteratorsComp
-        exposure <- combined@exposure
-        uses.exposure <- combined@usesExposure
-        mappings <- combined@mappingsFromExposure
-        i.exp.orig <- combined@iExpFirst
-        i.exp.dest <- combined@iExpFirstOth
-        iterator.exposure <- combined@iteratorExposure
-        diff <- combined@diffProp
-        systemModels <- combined@systemModels
-        if (i.exp.orig == i.exp.dest)
-            return(0)
-        ans <- 0
-        for (i in seq_along(components)) {
-            if (uses.exposure[i]) {
-                component <- components[[i]]
-                theta <- systemModels[[i + 1L]]@theta
-                iterator.comp <- iterators.comp[[i]]
-                mapping <- mappings[[i]]
-                i.cell.orig <- getICellCompFromExp(mapping = mapping,
-                                                   i = i.exp.orig)
-                i.cell.dest <- getICellCompFromExp(mapping = mapping,
-                                                   i = i.exp.dest)
-                ans.orig <- diffLogDensExpComp(iCell = i.cell.orig,
-                                               component = component,
-                                               theta = theta,
-                                               iteratorComp = iterator.comp,
-                                               iExpFirst = i.exp.orig,
-                                               exposure = exposure,
-                                               iteratorExposure = iterator.exposure,
-                                               diff = -diff)
-                if (is.infinite(ans.orig))
-                    return(ans.orig)
-                ans.dest <- diffLogDensExpComp(iCell = i.cell.dest,
-                                               component = component,
-                                               theta = theta,
-                                               iteratorComp = iterator.comp,
-                                               iExpFirst = i.exp.dest,
-                                               exposure = exposure,
-                                               iteratorExposure = iterator.exposure,
-                                               diff = diff)
-                if (is.infinite(ans.dest))
-                    return(ans.dest)
-                ans <- ans.orig + ans.dest
-            }
-        }
-        ans
-    }
-}
-
 diffLogDensExpNet <- function(combined, useC = FALSE) {
     stopifnot(is(combined, "CombinedAccountMovements"))
     if (useC) {
@@ -938,89 +1039,6 @@ diffLogDensExpNet <- function(combined, useC = FALSE) {
     }
 }
 
-diffLogDensExpComp <- function(combined, useC = FALSE) {
-    stopifnot(is(combined, "CombinedAccountMovements"))
-    if (useC) {
-        .Call(diffLogDensExpComp_R, combined)
-    }
-    else {
-        account <- combined@account
-        components <- account@components
-        iterators.comp <- combined@iteratorsComp
-        model.uses.exposure <- combined@modelUsesExposure
-        mappings.from.exp <- combined@mappingsFromExposure
-        i.exp.first <- combined@iExpFirst
-        iterator.exp <- combined@iteratorExposure
-        is.increment <- combined@isIncrement
-        diff <- combined@diffProp
-        i.comp <- combined@iComp
-        i.orig.dest <- combined@iOrigDest
-        i.pool <- combined@iPool
-        systemModels <- combined@systemModels
-        has.age <- combined@hasAge
-        no.exposure.affected <- i.exp.first == 0L
-        if (no.exposure.affected) ## eg cell updated is last upper triangle
-            return(0)
-        ans <- 0
-        if (!is.increment[i.comp])
-            diff <- -diff
-        for (i in seq_along(components)) {
-            if (uses.exposure[i]) { ## note that 'net' components never use exposure
-                component <- components[[i]]
-                theta <- systemModels[[i + 1L]]@theta
-                iterator.comp <- iterators.comp[[i]]
-                mapping.from.exp <- mappings.from.exp[[i]]
-                if (i.comp == i.orig.dest) {
-                    i.cell <- getICellCompFromExp(i = i.exp.first,
-                                                  mapping = mapping.from.exp)
-                    diff.log <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell,
-                                                                   component = component,
-                                                                   theta = theta,
-                                                                   iteratorComp = iterator.comp,
-                                                                   iExpFirst = i.exp.first,
-                                                                   exposure = exposure,
-                                                                   iteratorExposure = iterator.exposure,
-                                                                   diff = diff)
-                    if (is.infinite(diff.log))
-                        return(diff.log)
-                    ans <- ans + diff.log
-                }
-                if (i.comp == i.pool) {
-                    i.cell <- getICellPoolFromExp(i = i.exp.first,
-                                                  mapping = mapping)
-                    ans.one <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell,
-                                                                  component = component,
-                                                                  theta = theta,
-                                                                  iteratorComp = iterator.comp,
-                                                                  iExpFirst = i.exp.first,
-                                                                  exposure = exposure,
-                                                                  iteratorExposure = iterator.exposure,
-                                                                  diff = diff)
-                    if (is.infinite(ans.one))
-                        return(diff.log)
-                    ans <- ans + ans.one
-                }
-                else { 
-                    i.cell <- getICellCompFromExpose(mapping = mapping,
-                                                     i = i.exp.first)
-                    ans.one <- diffLogDensExpOneComp(iCell = i.cell,
-                                                     hasAge = has.age,
-                                                     component = component,
-                                                     theta = theta,
-                                                     iterator = iterator.comp,
-                                                     iExpFirst = i.exp.first,
-                                                     exposure = exposure,
-                                                     diff = diff)
-                    if (is.infinite(ans.one))
-                        return(diff.log)
-                    ans <- ans + ans.one
-                }
-            }
-        }
-        ans
-    }
-}
-
 
 
 
@@ -1028,13 +1046,27 @@ diffLogDensExpComp <- function(combined, useC = FALSE) {
 
 ## UPDATE VALUES ################################################################
 
-updateValuesAccountMove <- function(combined) {
-    combined <- updateCellMove(combined)
-    combined <- updateSubsequentPopnMove(combined)
-    combined <- updateExposure(combined)
-    combined <- updateSubsequentAccession(combined)
-    combined
-}
+
+setMethod("updateValuesAccount",
+          signature(combined = "CombinedAccountsMovements"),
+          function(combined, useC = FALSE, useSpecific = FALSE) {
+              if (useC) {
+                  if (useSpecific)
+                      .Call(updateValuesAccount_CombinedAccountMovements_R, combined)
+                  else
+                      .Call(updateValuesAccount_R, combined)
+              }
+              else {
+                  combined <- updateCellMove(combined)
+                  combined <- updateSubsequentPopnMove(combined)
+                  combined <- updateExposure(combined)
+                  combined <- updateSubsequentAccession(combined)
+                  combined
+              }
+          })
+
+
+
 
 updateCellMove <- function(combined) {
     i.comp <- combined@iComp
@@ -1268,66 +1300,7 @@ updateExpectedExposure <- function(combined) {
     NULL
 }
 
-updateSystem <- function(combined) {
-    systemModels <- combined@systemModels
-    account <- combined@account
-    population <- account@population
-    components <- account@components
-    mappings <- combined@mappingsToPopn
-    has.age <- combined@hasAge
-    model.popn <- systemModels[[1L]]
-    model.popn <- updateModelNotUseExp(model.popn, y = population)
-    systemModels[[1L]] <- model.popn
-    for (i in seq_along(component)) {
-        model.comp <- systemModels[[i + 1L]]
-        component <- components[[i]]
-        mapping <- mappings[[i]]
-        uses.expose <- !is.null(transform)
-        if (uses.expose) {
-            if (has.age)
-                exposure <- makeExposureAge(population = population,
-                                            mapping = mapping)
-            else
-                exposure <- makeExposureNoAge(population = population,
-                                              mapping = mapping)
-            model.comp <- updateModelUseExp(model = model.comp,
-                                            y = component,
-                                            exposure = exposure)
-        }
-        else
-            model.comp <- updateModelNotUseExp(model = model.comp,
-                                               y = component)
-        systemModels[[i + 1L]] <- model.comp
-    }
-    combined@systemModels <- systemModels
-    combined
-}
 
-updateObservation <- function(combined) {
-    observationModels <- combined@observationModels
-    account <- combined@account
-    population <- account@population
-    components <- account@components
-    series.indices <- combined@seriesIndices
-    transforms <- combined@transformsDatasets
-    for (i in seq_along(observationModels)) {
-        model <- observationModels[[i]]
-        dataset <- datasets[[i]]
-        transform <- transforms[[i]]
-        series.index <- series.indices[i]
-        if (series.index == 0L)
-            series <- population
-        else
-            series <- components[[series.index]]
-        series.collapsed <- collapse(series, transform = transform)
-        if (is(model, "Poisson"))
-            series.collapsed <- toDouble(series.collapsed)
-        model <- updateModelUseExp(model, y = dataset, exposure = series.collapsed)
-        observationModels[[i]] <- model
-    }
-    combined@observationModels <- observationModels
-    combined
-}
 
 ## HELPER FUNCTIONS ################################################
 

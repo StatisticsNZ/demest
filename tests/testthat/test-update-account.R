@@ -2106,75 +2106,7 @@ test_that("R and C versions of diffLogLikAccountMoveOrigDest give same answer", 
 
 ## LOG DENSITY ################################################################
 
-test_that("diffLogDensPopnOneCohort works", {
-    diffLogDensPopnOneCohort <- demest:::diffLogDensPopnOneCohort
-    Population <- dembase:::Population
-    CohortIterator <- demest:::CohortIterator
-    popn <- Counts(array(rpois(n = 90, lambda = 100),
-                         dim = c(3, 2, 5, 3),
-                         dimnames = list(age = c("0-4", "5-9", "10+"),
-                                         sex = c("f", "m"),
-                                         reg = 1:5,
-                                         time = c(2000, 2005, 2010))))
-    popn <- Population(popn)
-    iterator <- CohortIterator(popn)
-    theta <- Values(array(rpois(n = 90, lambda = popn),
-                          dim = dim(popn),
-                          dimnames = dimnames(popn))) + 0.01
-    ans.obtained <- diffLogDensPopnOneCohort(diff = 3L,
-                                             population = popn,
-                                             i = 7L,
-                                             iterator = iterator,
-                                             theta = theta)
-    ii <- c(7, 38, 69)
-    ans.expected <- (sum(dpois(x = popn[ii] + 3,
-                               lambda = theta[ii],
-                               log = TRUE))
-        - sum(dpois(x = popn[ii],
-                    lambda = theta[ii],
-                    log = TRUE)))
-    if (test.identity)
-        expect_identical(ans.obtained, ans.expected)
-    else {
-        expect_equal(ans.obtained, ans.expected)
-    }
-})
-
-test_that("R and C versions of diffLogDensPopnOneCohort give same answer", {
-    diffLogDensPopnOneCohort <- demest:::diffLogDensPopnOneCohort
-    Population <- dembase:::Population
-    CohortIterator <- demest:::CohortIterator
-    popn <- Counts(array(rpois(n = 90, lambda = 100),
-                         dim = c(3, 2, 5, 3),
-                         dimnames = list(age = c("0-4", "5-9", "10+"),
-                                         sex = c("f", "m"),
-                                         reg = 1:5,
-                                         time = c(2000, 2005, 2010))))
-    popn <- Population(popn)
-    iterator <- CohortIterator(popn)
-    theta <- Values(array(rpois(n = 90, lambda = popn),
-                          dim = dim(popn),
-                          dimnames = dimnames(popn))) + 0.01
-    for (i in 1:12) {
-        ans.R <- diffLogDensPopnOneCohort(diff = 3L,
-                                          population = popn,
-                                          i = 7L,
-                                          iterator = iterator,
-                                          theta = theta,
-                                          useC = FALSE)
-        ans.C <- diffLogDensPopnOneCohort(diff = 3L,
-                                          population = popn,
-                                          i = 7L,
-                                          iterator = iterator,
-                                          theta = theta,
-                                          useC = TRUE)
-        if (test.identity)
-            expect_identical(ans.R, ans.C)
-        else {
-            expect_equal(ans.R, ans.C)
-        }
-    }
-})
+## diffLogDensPopn
 
 test_that("diffLogDensPopn works", {
     diffLogDensPopn <- demest:::diffLogDensPopn
@@ -2290,10 +2222,150 @@ test_that("R and C versions of diffLogDensPopn give same answer", {
     }
 })
 
+## diffLogDensPopnOneCohort
 
-test_that("diffLogDensJumpOrigDest works", {
+test_that("diffLogDensPopnOneCohort works", {
+    diffLogDensPopnOneCohort <- demest:::diffLogDensPopnOneCohort
+    Population <- dembase:::Population
+    CohortIterator <- demest:::CohortIterator
+    popn <- Counts(array(rpois(n = 90, lambda = 100),
+                         dim = c(3, 2, 5, 3),
+                         dimnames = list(age = c("0-4", "5-9", "10+"),
+                                         sex = c("f", "m"),
+                                         reg = 1:5,
+                                         time = c(2000, 2005, 2010))))
+    popn <- Population(popn)
+    iterator <- CohortIterator(popn)
+    theta <- Values(array(rpois(n = 90, lambda = popn),
+                          dim = dim(popn),
+                          dimnames = dimnames(popn))) + 0.01
+    ans.obtained <- diffLogDensPopnOneCohort(diff = 3L,
+                                             population = popn,
+                                             i = 7L,
+                                             iterator = iterator,
+                                             theta = theta)
+    ii <- c(7, 38, 69)
+    ans.expected <- (sum(dpois(x = popn[ii] + 3,
+                               lambda = theta[ii],
+                               log = TRUE))
+        - sum(dpois(x = popn[ii],
+                    lambda = theta[ii],
+                    log = TRUE)))
+    if (test.identity)
+        expect_identical(ans.obtained, ans.expected)
+    else {
+        expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of diffLogDensPopnOneCohort give same answer", {
+    diffLogDensPopnOneCohort <- demest:::diffLogDensPopnOneCohort
+    Population <- dembase:::Population
+    CohortIterator <- demest:::CohortIterator
+    popn <- Counts(array(rpois(n = 90, lambda = 100),
+                         dim = c(3, 2, 5, 3),
+                         dimnames = list(age = c("0-4", "5-9", "10+"),
+                                         sex = c("f", "m"),
+                                         reg = 1:5,
+                                         time = c(2000, 2005, 2010))))
+    popn <- Population(popn)
+    iterator <- CohortIterator(popn)
+    theta <- Values(array(rpois(n = 90, lambda = popn),
+                          dim = dim(popn),
+                          dimnames = dimnames(popn))) + 0.01
+    for (i in 1:12) {
+        ans.R <- diffLogDensPopnOneCohort(diff = 3L,
+                                          population = popn,
+                                          i = 7L,
+                                          iterator = iterator,
+                                          theta = theta,
+                                          useC = FALSE)
+        ans.C <- diffLogDensPopnOneCohort(diff = 3L,
+                                          population = popn,
+                                          i = 7L,
+                                          iterator = iterator,
+                                          theta = theta,
+                                          useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else {
+            expect_equal(ans.R, ans.C)
+        }
+    }
+})
+
+## diffLogDensJumpOrigDest
+
+test_that("diffLogDensJumpOrigDest works with CombinedAccountMovements - no age", {
     diffLogDensJumpOrigDest <- demest:::diffLogDensJumpOrigDest
     updateProposalAccountMoveOrigDest <- demest:::updateProposalAccountMoveOrigDest
+    initialCombinedAccount <- demest:::initialCombinedAccount
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    population <- Counts(array(seq(1000L, 1500L, 100L),
+                               dim = c(3, 2),
+                               dimnames = list(reg = c("a", "b", "c"),
+                                               time = c(2000, 2005))))
+    internal <- Counts(array(c(0L, 50L, 40L,
+                               20L, 0L, 30L,
+                               60L, 20L, 0L),
+                             dim = c(3, 3, 1),
+                             dimnames = list(reg_orig = c("a", "b", "c"),
+                                             reg_dest = c("a", "b", "c"),
+                                             time = "2001-2005")))
+    account <- Movements(population = population,
+                         internal = internal)
+    account <- makeConsistent(account)
+    systemModels <- list(Model(population ~ Poisson(mean ~ reg, useExpose = FALSE)),
+                         Model(internal ~ Poisson(mean ~ 1)))
+    systemWeights <- list(NULL)
+    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
+                              Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
+    seriesIndices <- c(1L, 0L)
+    datasets <- list(internal + 10L,
+                     population - 5L)
+    namesDatasets <- c("tax", "census")
+    transforms <- list(makeTransform(x = internal, y = datasets[[1]], subset = TRUE),
+                       makeTransform(x = population, y = datasets[[2]], subset = TRUE))
+    transforms <- lapply(transforms, makeCollapseTransformExtra)
+    x0 <- initialCombinedAccount(account = account,
+                                 systemModels = systemModels,
+                                 systemWeights = systemWeights,
+                                 observationModels = observationModels,
+                                 seriesIndices = seriesIndices,
+                                 datasets = datasets,
+                                 namesDatasets = namesDatasets,
+                                 transforms = transforms)
+    updated <- FALSE
+    x0@iComp <- 1L
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        x <- updateProposalAccountMoveOrigDest(x0)
+        if (x@generatedNewProposal@.Data) {
+            ans.obtained <- diffLogDensJumpOrigDest(x)
+            ans.expected <- (dpois(x@account@components[[1]][x@iCell] + x@diffProp,
+                                   lambda = (x@exposure[x@iExposure] - 0.5 * x@diffProp) * x@systemModels[[2]]@theta[x@iCell],
+                                   log = TRUE)
+                - dpois(x@account@components[[1]][x@iCell],
+                        lambda = (x@exposure[x@iExposure] - 0.5 * x@diffProp) * x@systemModels[[2]]@theta[x@iCell],
+                        log = TRUE)
+                + dpois(x@account@components[[1]][x@iCell],
+                        lambda = x@expectedExposure[x@iExposure] * x@systemModels[[2]]@theta[x@iCell],
+                        log = TRUE)
+                - dpois(x@account@components[[1]][x@iCell] + x@diffProp,
+                        lambda = x@expectedExposure[x@iExposure] * x@systemModels[[2]]@theta[x@iCell],
+                        log = TRUE))
+            if (test.identity)
+                expect_identical(ans.obtained, ans.expected)
+            else
+                expect_equal(ans.obtained, ans.expected)
+        }
+    }
+    if (!updated)
+        warning("not updated")
+})
+
+test_that("R and C versions of diffLogDensJumpOrigDest give same answer - no age", {
+    diffLogDensJumpOrigDest <- demest:::diffLogDensJumpOrigDest
     initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     population <- Counts(array(seq(1000L, 1500L, 100L),
@@ -2330,7 +2402,95 @@ test_that("diffLogDensJumpOrigDest works", {
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
+    updated <- FALSE
     x@iComp <- 1L
+    ans.R <- diffLogDensJumpOrigDest(x, useC = FALSE)
+    ans.C <- diffLogDensJumpOrigDest(x, useC = TRUE)
+    if (test.identity)
+        expect_identical(ans.R, ans.C)
+    else
+        expect_equal(ans.R, ans.C)
+})
+
+test_that("diffLogDensJumpOrigDest works - with age", {
+    diffLogDensJumpOrigDest <- demest:::diffLogDensJumpOrigDest
+    updateProposalAccountMoveOrigDest <- demest:::updateProposalAccountMoveOrigDest
+    initialCombinedAccount <- demest:::initialCombinedAccount
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    popn <- Counts(array(rpois(n = 90, lambda = 100),
+                         dim = c(3, 2, 5, 3),
+                         dimnames = list(age = c("0-4", "5-9", "10+"),
+                                         sex = c("f", "m"),
+                                         reg = 1:5,
+                                         time = c(2000, 2005, 2010))))
+    births <- Counts(array(rpois(n = 90, lambda = 5),
+                           dim = c(1, 2, 5, 2, 2),
+                           dimnames = list(age = "5-9",
+                                           sex = c("m", "f"),
+                                           reg = 1:5,
+                                           time = c("2001-2005", "2006-2010"),
+                                           triangle = c("TL", "TU"))))
+    internal <- Counts(array(rpois(n = 300, lambda = 10),
+                             dim = c(3, 2, 5, 5, 2, 2),
+                             dimnames = list(age = c("0-4", "5-9", "10+"),
+                                             sex = c("m", "f"),
+                                             reg_orig = 1:5,
+                                             reg_dest = 1:5,
+                                             time = c("2001-2005", "2006-2010"),
+                                             triangle = c("TL", "TU"))))
+    deaths <- Counts(array(rpois(n = 72, lambda = 10),
+                           dim = c(3, 2, 5, 2, 2),
+                           dimnames = list(age = c("0-4", "5-9", "10+"),
+                                           sex = c("m", "f"),
+                                           reg = 5:1,
+                                           time = c("2001-2005", "2006-2010"),
+                                           triangle = c("TL", "TU"))))
+    account <- Movements(population = popn,
+                         births = births,
+                         internal = internal,
+                         exits = list(deaths = deaths))
+    account <- makeConsistent(account)
+    systemModels <- list(Model(population ~ Poisson(mean ~ age + sex, useExpose = FALSE)),
+                         Model(births ~ Poisson(mean ~ 1)),
+                         Model(internal ~ Poisson(mean ~ reg_orig + reg_dest)),
+                         Model(deaths ~ Poisson(mean ~ 1)))
+    systemWeights <- list(NULL, NULL, NULL, NULL)
+    census <- subarray(popn, time == "2000", drop = FALSE) + 2L
+    register <- Counts(array(rpois(n = 90, lambda = popn),
+                             dim = dim(popn),
+                             dimnames = dimnames(popn)))
+    reg.births <- Counts(array(rbinom(n = 90, size = births, prob = 0.98),
+                               dim = dim(births),
+                               dimnames = dimnames(births)))
+    address.change <- Counts(array(rpois(n = 300, lambda = internal),
+                                   dim = dim(internal),
+                                   dimnames = dimnames(internal)))
+    reg.deaths <- Counts(array(rbinom(n = 90, size = deaths, prob = 0.98),
+                               dim = dim(deaths),
+                               dimnames = dimnames(deaths))) + 1L
+    datasets <- list(census, register, reg.births, address.change, reg.deaths)
+    namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths")
+    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
+                              Model(register ~ Poisson(mean ~ 1), series = "population"),
+                              Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
+                              Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
+                              Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
+    seriesIndices <- c(0L, 0L, 1L, 2L, 3L)
+    transforms <- list(makeTransform(x = population(account), y = datasets[[1]], subset = TRUE),
+                       makeTransform(x = population(account), y = datasets[[2]], subset = TRUE),
+                       makeTransform(x = components(account, "births"), y = datasets[[3]], subset = TRUE),
+                       makeTransform(x = components(account, "internal"), y = datasets[[4]], subset = TRUE),
+                       makeTransform(x = components(account, "deaths"), y = datasets[[5]], subset = TRUE))
+    transforms <- lapply(transforms, makeCollapseTransformExtra)
+    x <- initialCombinedAccount(account = account,
+                                systemModels = systemModels,
+                                systemWeights = systemWeights,
+                                observationModels = observationModels,
+                                seriesIndices = seriesIndices,
+                                datasets = datasets,
+                                namesDatasets = namesDatasets,
+                                transforms = transforms)
+    x@iComp <- 2L
     updated <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -2338,29 +2498,143 @@ test_that("diffLogDensJumpOrigDest works", {
         if (x@generatedNewProposal@.Data) {
             updated <- TRUE
             ans.obtained <- diffLogDensJumpOrigDest(x)
-    ans.expected <- (dpois(x@account@components[[1]][x@iCell] - x@diffProp,
-                           lambda = (x@exposure[x@iExposure] - 0.5 * x@diffProp) * x@systemModels[[2]]@theta[x@iCell],
-                           log = TRUE)
-        - dpois(x@account@components[[1]][x@iCell],
-                lambda = (x@exposure[x@iExposure] - 0.5 * x@diffProp) * x@systemModels[[2]]@theta[x@iCell],
-                log = TRUE)
-        + dpois(x@account@components[[1]][x@iCell],
-                lambda = x@expectedExposure[x@iExposure] * x@systemModels[[2]]@theta[x@iCell],
-                log = TRUE)
-        - dpois(x@account@components[[1]][x@iCell] - x@diffProp,
-                lambda = x@expectedExposure[x@iExposure] * x@systemModels[[2]]@theta[x@iCell],
-                log = TRUE))
+            if (x@isLowerTriangle) {
+                ans.expected <- (dpois(x@account@components[[2]][x@iCell] + x@diffProp,
+                                       lambda = (x@exposure[x@iExposure] - 0.5 * x@diffProp) * x@systemModels[[3]]@theta[x@iCell],
+                                       log = TRUE)
+                    - dpois(x@account@components[[2]][x@iCell],
+                            lambda = (x@exposure[x@iExposure] - 0.5 * x@diffProp) * x@systemModels[[3]]@theta[x@iCell],
+                            log = TRUE)
+                    + dpois(x@account@components[[2]][x@iCell],
+                            lambda = x@expectedExposure[x@iExposure] * x@systemModels[[3]]@theta[x@iCell],
+                            log = TRUE)
+                    - dpois(x@account@components[[2]][x@iCell] + x@diffProp,
+                            lambda = x@expectedExposure[x@iExposure] * x@systemModels[[3]]@theta[x@iCell],
+                            log = TRUE))
+            }
+            else {
+                ans.expected <- (dpois(x@account@components[[2]][x@iCell] + x@diffProp,
+                                       lambda = (x@exposure[x@iExposure]) * x@systemModels[[3]]@theta[x@iCell],
+                                       log = TRUE)
+                    - dpois(x@account@components[[2]][x@iCell],
+                            lambda = (x@exposure[x@iExposure]) * x@systemModels[[3]]@theta[x@iCell],
+                            log = TRUE)
+                    + dpois(x@account@components[[2]][x@iCell],
+                            lambda = x@expectedExposure[x@iExposure] * x@systemModels[[3]]@theta[x@iCell],
+                            log = TRUE)
+                    - dpois(x@account@components[[2]][x@iCell] + x@diffProp,
+                            lambda = x@expectedExposure[x@iExposure] * x@systemModels[[3]]@theta[x@iCell],
+                            log = TRUE))
+            }
+            expect_equal(ans.obtained, ans.expected)
             if (test.identity)
                 expect_identical(ans.obtained, ans.expected)
             else
                 expect_equal(ans.obtained, ans.expected)
         }
-        if (!updated)
-            warning("proposal not updated")
     }
+    if (!updated)
+        warning("not updated")
 })
 
+test_that("R and C versions of diffLogDensJumpOrigDest give same answer - with age", {
+    diffLogDensJumpOrigDest <- demest:::diffLogDensJumpOrigDest
+    updateProposalAccountMoveOrigDest <- demest:::updateProposalAccountMoveOrigDest
+    initialCombinedAccount <- demest:::initialCombinedAccount
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    popn <- Counts(array(rpois(n = 90, lambda = 100),
+                         dim = c(3, 2, 5, 3),
+                         dimnames = list(age = c("0-4", "5-9", "10+"),
+                                         sex = c("f", "m"),
+                                         reg = 1:5,
+                                         time = c(2000, 2005, 2010))))
+    births <- Counts(array(rpois(n = 90, lambda = 5),
+                           dim = c(1, 2, 5, 2, 2),
+                           dimnames = list(age = "5-9",
+                                           sex = c("m", "f"),
+                                           reg = 1:5,
+                                           time = c("2001-2005", "2006-2010"),
+                                           triangle = c("TL", "TU"))))
+    internal <- Counts(array(rpois(n = 300, lambda = 10),
+                             dim = c(3, 2, 5, 5, 2, 2),
+                             dimnames = list(age = c("0-4", "5-9", "10+"),
+                                             sex = c("m", "f"),
+                                             reg_orig = 1:5,
+                                             reg_dest = 1:5,
+                                             time = c("2001-2005", "2006-2010"),
+                                             triangle = c("TL", "TU"))))
+    deaths <- Counts(array(rpois(n = 72, lambda = 10),
+                           dim = c(3, 2, 5, 2, 2),
+                           dimnames = list(age = c("0-4", "5-9", "10+"),
+                                           sex = c("m", "f"),
+                                           reg = 5:1,
+                                           time = c("2001-2005", "2006-2010"),
+                                           triangle = c("TL", "TU"))))
+    account <- Movements(population = popn,
+                         births = births,
+                         internal = internal,
+                         exits = list(deaths = deaths))
+    account <- makeConsistent(account)
+    systemModels <- list(Model(population ~ Poisson(mean ~ age + sex, useExpose = FALSE)),
+                         Model(births ~ Poisson(mean ~ 1)),
+                         Model(internal ~ Poisson(mean ~ reg_orig + reg_dest)),
+                         Model(deaths ~ Poisson(mean ~ 1)))
+    systemWeights <- list(NULL, NULL, NULL, NULL)
+    census <- subarray(popn, time == "2000", drop = FALSE) + 2L
+    register <- Counts(array(rpois(n = 90, lambda = popn),
+                             dim = dim(popn),
+                             dimnames = dimnames(popn)))
+    reg.births <- Counts(array(rbinom(n = 90, size = births, prob = 0.98),
+                               dim = dim(births),
+                               dimnames = dimnames(births)))
+    address.change <- Counts(array(rpois(n = 300, lambda = internal),
+                                   dim = dim(internal),
+                                   dimnames = dimnames(internal)))
+    reg.deaths <- Counts(array(rbinom(n = 90, size = deaths, prob = 0.98),
+                               dim = dim(deaths),
+                               dimnames = dimnames(deaths))) + 1L
+    datasets <- list(census, register, reg.births, address.change, reg.deaths)
+    namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths")
+    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
+                              Model(register ~ Poisson(mean ~ 1), series = "population"),
+                              Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
+                              Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
+                              Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
+    seriesIndices <- c(0L, 0L, 1L, 2L, 3L)
+    transforms <- list(makeTransform(x = population(account), y = datasets[[1]], subset = TRUE),
+                       makeTransform(x = population(account), y = datasets[[2]], subset = TRUE),
+                       makeTransform(x = components(account, "births"), y = datasets[[3]], subset = TRUE),
+                       makeTransform(x = components(account, "internal"), y = datasets[[4]], subset = TRUE),
+                       makeTransform(x = components(account, "deaths"), y = datasets[[5]], subset = TRUE))
+    transforms <- lapply(transforms, makeCollapseTransformExtra)
+    x <- initialCombinedAccount(account = account,
+                                systemModels = systemModels,
+                                systemWeights = systemWeights,
+                                observationModels = observationModels,
+                                seriesIndices = seriesIndices,
+                                datasets = datasets,
+                                namesDatasets = namesDatasets,
+                                transforms = transforms)
+    x@iComp <- 2L
+    updated <- FALSE
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        x <- updateProposalAccountMoveOrigDest(x)
+        if (x@generatedNewProposal@.Data) {
+            updated <- TRUE
+            ans.R <- diffLogDensJumpOrigDest(x, useC = FALSE)
+            ans.C <- diffLogDensJumpOrigDest(x, useC = TRUE)
+            if (test.identity)
+                expect_identical(ans.R, ans.C)
+            else
+                expect_equal(ans.R, ans.C)
+        }
+    }
+    if (!updated)
+        warning("not updated")
+})
 
+## diffLogDensJumpComp
 
 test_that("diffLogDensJumpComp works - no age", {
     diffLogDensJumpComp <- demest:::diffLogDensJumpComp
@@ -2496,7 +2770,6 @@ test_that("R and C versions of diffLogDensJumpComp give same answer - no age", {
         warning("not updated")
 })
 
-
 test_that("diffLogDensJumpComp works - with age", {
     diffLogDensJumpComp <- demest:::diffLogDensJumpComp
     updateProposalAccountMoveComp <- demest:::updateProposalAccountMoveComp
@@ -2622,7 +2895,6 @@ test_that("diffLogDensJumpComp works - with age", {
         warning("not updated")
 })
 
-
 test_that("R and C versions of diffLogDensJumpComp give same answer - with age", {
     diffLogDensJumpComp <- demest:::diffLogDensJumpComp
     updateProposalAccountMoveComp <- demest:::updateProposalAccountMoveComp
@@ -2719,128 +2991,11 @@ test_that("R and C versions of diffLogDensJumpComp give same answer - with age",
         warning("not updated")
 })
 
+## diffLogDensExpComp
 
-test_that("diffLogDensJumpOrigDest works with CombinedAccountMovements - no age", {
-    diffLogDensJumpOrigDest <- demest:::diffLogDensJumpOrigDest
-    updateProposalAccountMoveOrigDest <- demest:::updateProposalAccountMoveOrigDest
-    initialCombinedAccount <- demest:::initialCombinedAccount
-    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
-    population <- Counts(array(seq(1000L, 1500L, 100L),
-                               dim = c(3, 2),
-                               dimnames = list(reg = c("a", "b", "c"),
-                                               time = c(2000, 2005))))
-    internal <- Counts(array(c(0L, 50L, 40L,
-                               20L, 0L, 30L,
-                               60L, 20L, 0L),
-                             dim = c(3, 3, 1),
-                             dimnames = list(reg_orig = c("a", "b", "c"),
-                                             reg_dest = c("a", "b", "c"),
-                                             time = "2001-2005")))
-    account <- Movements(population = population,
-                         internal = internal)
-    account <- makeConsistent(account)
-    systemModels <- list(Model(population ~ Poisson(mean ~ reg, useExpose = FALSE)),
-                         Model(internal ~ Poisson(mean ~ 1)))
-    systemWeights <- list(NULL)
-    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
-                              Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
-    seriesIndices <- c(1L, 0L)
-    datasets <- list(internal + 10L,
-                     population - 5L)
-    namesDatasets <- c("tax", "census")
-    transforms <- list(makeTransform(x = internal, y = datasets[[1]], subset = TRUE),
-                       makeTransform(x = population, y = datasets[[2]], subset = TRUE))
-    transforms <- lapply(transforms, makeCollapseTransformExtra)
-    x0 <- initialCombinedAccount(account = account,
-                                 systemModels = systemModels,
-                                 systemWeights = systemWeights,
-                                 observationModels = observationModels,
-                                 seriesIndices = seriesIndices,
-                                 datasets = datasets,
-                                 namesDatasets = namesDatasets,
-                                 transforms = transforms)
-    updated <- FALSE
-    x0@iComp <- 1L
-    for (seed in seq_len(n.test)) {
-        set.seed(seed)
-        x <- updateProposalAccountMoveOrigDest(x0)
-        if (x@generatedNewProposal@.Data) {
-            ans.obtained <- diffLogDensJumpOrigDest(x)
-            ans.expected <- (dpois(x@account@components[[1]][x@iCell] + x@diffProp,
-                                   lambda = (x@exposure[x@iExposure] - 0.5 * x@diffProp) * x@systemModels[[2]]@theta[x@iCell],
-                                   log = TRUE)
-                - dpois(x@account@components[[1]][x@iCell],
-                        lambda = (x@exposure[x@iExposure] - 0.5 * x@diffProp) * x@systemModels[[2]]@theta[x@iCell],
-                        log = TRUE)
-                + dpois(x@account@components[[1]][x@iCell],
-                        lambda = x@expectedExposure[x@iExposure] * x@systemModels[[2]]@theta[x@iCell],
-                        log = TRUE)
-                - dpois(x@account@components[[1]][x@iCell] + x@diffProp,
-                        lambda = x@expectedExposure[x@iExposure] * x@systemModels[[2]]@theta[x@iCell],
-                        log = TRUE))
-            if (test.identity)
-                expect_identical(ans.obtained, ans.expected)
-            else
-                expect_equal(ans.obtained, ans.expected)
-        }
-    }
-    if (!updated)
-        warning("not updated")
-})
-
-test_that("R and C versions of diffLogDensJumpOrigDest give same answer - no age", {
-    diffLogDensJumpOrigDest <- demest:::diffLogDensJumpOrigDest
-    initialCombinedAccount <- demest:::initialCombinedAccount
-    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
-    population <- Counts(array(seq(1000L, 1500L, 100L),
-                               dim = c(3, 2),
-                               dimnames = list(reg = c("a", "b", "c"),
-                                               time = c(2000, 2005))))
-    internal <- Counts(array(c(0L, 50L, 40L,
-                               20L, 0L, 30L,
-                               60L, 20L, 0L),
-                             dim = c(3, 3, 1),
-                             dimnames = list(reg_orig = c("a", "b", "c"),
-                                             reg_dest = c("a", "b", "c"),
-                                             time = "2001-2005")))
-    account <- Movements(population = population,
-                         internal = internal)
-    account <- makeConsistent(account)
-    systemModels <- list(Model(population ~ Poisson(mean ~ reg, useExpose = FALSE)),
-                         Model(internal ~ Poisson(mean ~ 1)))
-    systemWeights <- list(NULL)
-    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
-                              Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
-    seriesIndices <- c(1L, 0L)
-    datasets <- list(internal + 10L,
-                     population - 5L)
-    namesDatasets <- c("tax", "census")
-    transforms <- list(makeTransform(x = internal, y = datasets[[1]], subset = TRUE),
-                       makeTransform(x = population, y = datasets[[2]], subset = TRUE))
-    transforms <- lapply(transforms, makeCollapseTransformExtra)
-    x <- initialCombinedAccount(account = account,
-                                systemModels = systemModels,
-                                systemWeights = systemWeights,
-                                observationModels = observationModels,
-                                seriesIndices = seriesIndices,
-                                datasets = datasets,
-                                namesDatasets = namesDatasets,
-                                transforms = transforms)
-    updated <- FALSE
-    x@iComp <- 1L
-    ans.R <- diffLogDensJumpOrigDest(x, useC = FALSE)
-    ans.C <- diffLogDensJumpOrigDest(x, useC = TRUE)
-    if (test.identity)
-        expect_identical(ans.R, ans.C)
-    else
-        expect_equal(ans.R, ans.C)
-})
-
-
-
-test_that("diffLogDensJumpOrigDest works - with age", {
-    diffLogDensJumpOrigDest <- demest:::diffLogDensJumpOrigDest
-    updateProposalAccountMoveOrigDest <- demest:::updateProposalAccountMoveOrigDest
+test_that("diffLogDensExpComp works - with age", {
+    diffLogDensExpComp <- demest:::diffLogDensExpComp
+    updateProposalAccountMoveComp <- demest:::updateProposalAccountMoveComp
     initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     popn <- Counts(array(rpois(n = 90, lambda = 100),
@@ -2916,40 +3071,40 @@ test_that("diffLogDensJumpOrigDest works - with age", {
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
-    x@iComp <- 2L
+    x@iComp <- 3L
     updated <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
-        x <- updateProposalAccountMoveOrigDest(x)
+        x <- updateProposalAccountMoveComp(x)
         if (x@generatedNewProposal@.Data) {
             updated <- TRUE
-            ans.obtained <- diffLogDensJumpOrigDest(x)
+            ans.obtained <- diffLogDensExpComp(x)
             if (x@isLowerTriangle) {
-                ans.expected <- (dpois(x@account@components[[2]][x@iCell] + x@diffProp,
-                                       lambda = (x@exposure[x@iExposure] - 0.5 * x@diffProp) * x@systemModels[[3]]@theta[x@iCell],
+                ans.expected <- (dpois(x@account@components[[3]][x@iCell] + x@diffProp,
+                                       lambda = (x@exposure[x@iCell] - 0.5 * x@diffProp) * x@systemModels[[4]]@theta[x@iCell],
                                        log = TRUE)
-                    - dpois(x@account@components[[2]][x@iCell],
-                            lambda = (x@exposure[x@iExposure] - 0.5 * x@diffProp) * x@systemModels[[3]]@theta[x@iCell],
+                    - dpois(x@account@components[[3]][x@iCell],
+                            lambda = (x@exposure[x@iCell] - 0.5 * x@diffProp) * x@systemModels[[4]]@theta[x@iCell],
                             log = TRUE)
-                    + dpois(x@account@components[[2]][x@iCell],
-                            lambda = x@expectedExposure[x@iExposure] * x@systemModels[[3]]@theta[x@iCell],
+                    + dpois(x@account@components[[3]][x@iCell],
+                            lambda = x@expectedExposure[x@iCell] * x@systemModels[[4]]@theta[x@iCell],
                             log = TRUE)
-                    - dpois(x@account@components[[2]][x@iCell] + x@diffProp,
-                            lambda = x@expectedExposure[x@iExposure] * x@systemModels[[3]]@theta[x@iCell],
+                    - dpois(x@account@components[[3]][x@iCell] + x@diffProp,
+                            lambda = x@expectedExposure[x@iCell] * x@systemModels[[4]]@theta[x@iCell],
                             log = TRUE))
             }
             else {
-                ans.expected <- (dpois(x@account@components[[2]][x@iCell] + x@diffProp,
-                                       lambda = (x@exposure[x@iExposure]) * x@systemModels[[3]]@theta[x@iCell],
+                ans.expected <- (dpois(x@account@components[[3]][x@iCell] + x@diffProp,
+                                       lambda = (x@exposure[x@iCell]) * x@systemModels[[4]]@theta[x@iCell],
                                        log = TRUE)
-                    - dpois(x@account@components[[2]][x@iCell],
-                            lambda = (x@exposure[x@iExposure]) * x@systemModels[[3]]@theta[x@iCell],
+                    - dpois(x@account@components[[3]][x@iCell],
+                            lambda = (x@exposure[x@iCell]) * x@systemModels[[4]]@theta[x@iCell],
                             log = TRUE)
-                    + dpois(x@account@components[[2]][x@iCell],
-                            lambda = x@expectedExposure[x@iExposure] * x@systemModels[[3]]@theta[x@iCell],
+                    + dpois(x@account@components[[3]][x@iCell],
+                            lambda = x@expectedExposure[x@iCell] * x@systemModels[[4]]@theta[x@iCell],
                             log = TRUE)
-                    - dpois(x@account@components[[2]][x@iCell] + x@diffProp,
-                            lambda = x@expectedExposure[x@iExposure] * x@systemModels[[3]]@theta[x@iCell],
+                    - dpois(x@account@components[[3]][x@iCell] + x@diffProp,
+                            lambda = x@expectedExposure[x@iCell] * x@systemModels[[4]]@theta[x@iCell],
                             log = TRUE))
             }
             expect_equal(ans.obtained, ans.expected)
@@ -2964,102 +3119,8 @@ test_that("diffLogDensJumpOrigDest works - with age", {
 })
 
 
-test_that("R and C versions of diffLogDensJumpOrigDest give same answer - with age", {
-    diffLogDensJumpOrigDest <- demest:::diffLogDensJumpOrigDest
-    updateProposalAccountMoveOrigDest <- demest:::updateProposalAccountMoveOrigDest
-    initialCombinedAccount <- demest:::initialCombinedAccount
-    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
-    popn <- Counts(array(rpois(n = 90, lambda = 100),
-                         dim = c(3, 2, 5, 3),
-                         dimnames = list(age = c("0-4", "5-9", "10+"),
-                                         sex = c("f", "m"),
-                                         reg = 1:5,
-                                         time = c(2000, 2005, 2010))))
-    births <- Counts(array(rpois(n = 90, lambda = 5),
-                           dim = c(1, 2, 5, 2, 2),
-                           dimnames = list(age = "5-9",
-                                           sex = c("m", "f"),
-                                           reg = 1:5,
-                                           time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
-    internal <- Counts(array(rpois(n = 300, lambda = 10),
-                             dim = c(3, 2, 5, 5, 2, 2),
-                             dimnames = list(age = c("0-4", "5-9", "10+"),
-                                             sex = c("m", "f"),
-                                             reg_orig = 1:5,
-                                             reg_dest = 1:5,
-                                             time = c("2001-2005", "2006-2010"),
-                                             triangle = c("TL", "TU"))))
-    deaths <- Counts(array(rpois(n = 72, lambda = 10),
-                           dim = c(3, 2, 5, 2, 2),
-                           dimnames = list(age = c("0-4", "5-9", "10+"),
-                                           sex = c("m", "f"),
-                                           reg = 5:1,
-                                           time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
-    account <- Movements(population = popn,
-                         births = births,
-                         internal = internal,
-                         exits = list(deaths = deaths))
-    account <- makeConsistent(account)
-    systemModels <- list(Model(population ~ Poisson(mean ~ age + sex, useExpose = FALSE)),
-                         Model(births ~ Poisson(mean ~ 1)),
-                         Model(internal ~ Poisson(mean ~ reg_orig + reg_dest)),
-                         Model(deaths ~ Poisson(mean ~ 1)))
-    systemWeights <- list(NULL, NULL, NULL, NULL)
-    census <- subarray(popn, time == "2000", drop = FALSE) + 2L
-    register <- Counts(array(rpois(n = 90, lambda = popn),
-                             dim = dim(popn),
-                             dimnames = dimnames(popn)))
-    reg.births <- Counts(array(rbinom(n = 90, size = births, prob = 0.98),
-                               dim = dim(births),
-                               dimnames = dimnames(births)))
-    address.change <- Counts(array(rpois(n = 300, lambda = internal),
-                                   dim = dim(internal),
-                                   dimnames = dimnames(internal)))
-    reg.deaths <- Counts(array(rbinom(n = 90, size = deaths, prob = 0.98),
-                               dim = dim(deaths),
-                               dimnames = dimnames(deaths))) + 1L
-    datasets <- list(census, register, reg.births, address.change, reg.deaths)
-    namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths")
-    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
-                              Model(register ~ Poisson(mean ~ 1), series = "population"),
-                              Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
-                              Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
-                              Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
-    seriesIndices <- c(0L, 0L, 1L, 2L, 3L)
-    transforms <- list(makeTransform(x = population(account), y = datasets[[1]], subset = TRUE),
-                       makeTransform(x = population(account), y = datasets[[2]], subset = TRUE),
-                       makeTransform(x = components(account, "births"), y = datasets[[3]], subset = TRUE),
-                       makeTransform(x = components(account, "internal"), y = datasets[[4]], subset = TRUE),
-                       makeTransform(x = components(account, "deaths"), y = datasets[[5]], subset = TRUE))
-    transforms <- lapply(transforms, makeCollapseTransformExtra)
-    x <- initialCombinedAccount(account = account,
-                                systemModels = systemModels,
-                                systemWeights = systemWeights,
-                                observationModels = observationModels,
-                                seriesIndices = seriesIndices,
-                                datasets = datasets,
-                                namesDatasets = namesDatasets,
-                                transforms = transforms)
-    x@iComp <- 2L
-    updated <- FALSE
-    for (seed in seq_len(n.test)) {
-        set.seed(seed)
-        x <- updateProposalAccountMoveOrigDest(x)
-        if (x@generatedNewProposal@.Data) {
-            updated <- TRUE
-            ans.R <- diffLogDensJumpOrigDest(x, useC = FALSE)
-            ans.C <- diffLogDensJumpOrigDest(x, useC = TRUE)
-            if (test.identity)
-                expect_identical(ans.R, ans.C)
-            else
-                expect_equal(ans.R, ans.C)
-        }
-    }
-    if (!updated)
-        warning("not updated")
-})
+
+
 
 
 test_that("diffLogDensExpOneComp works", {

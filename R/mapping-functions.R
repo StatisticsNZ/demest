@@ -660,7 +660,7 @@ getIExpFirstPairFromOrigDest <- function(i, mapping, useC = FALSE) {
 ## births no parent - getICellBirthsFromExp DONE
 ## births with parent - getICellBirthsFromExp DONE
 ## orig-dest - getICellCompFromExp DONE
-## pool - getICellCompFromExp
+## pool - getICellCompFromExp DONE
 ## net - getICellCompFromExp DONE
 
 ## TRANSLATED
