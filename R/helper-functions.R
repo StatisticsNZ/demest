@@ -4431,6 +4431,7 @@ betaHatSeason <- function(prior, useC = FALSE) {
     }
 }
 
+
 ## TRANSLATED
 ## modified from pseudocode from https://en.wikipedia.org/wiki/Newton%27s_method
 ## If the function finds the root within 'kMaxIter' iterations, it

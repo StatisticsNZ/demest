@@ -1152,9 +1152,9 @@ setMethod("initialModelPredict",
               box.cox.param <- model@boxCoxParam
               if (box.cox.param > 0) {
                   if (is.null(lower))
-                      lower <- (box.cox.param * lower + 1) ^ (1 / box.cox.param)
+                      lower <- (box.cox.param * model@lower + 1) ^ (1 / box.cox.param)
                   if (is.null(upper))
-                      upper <- (box.cox.param * upper + 1) ^ (1 / box.cox.param)
+                      upper <- (box.cox.param * model@upper + 1) ^ (1 / box.cox.param)
               }
               else {
                   if (is.null(lower))

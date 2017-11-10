@@ -28,14 +28,14 @@
 ##                year:age ~ DLM(level = Level(scale = HalfT(scale = 0.05)),
 ##                               trend = Trend(scale = HalfT(scale = 0.05))),
 ##                jump = 0.008)
-## filename1.est <- "deleteme.est"
+## filename.est <- "deleteme.est"
 ## filename.pred <- "deleteme.pred"
 ## estimateModel(model,
 ##               y = births,
 ##               exposure = expose,
 ##               filename = filename.est,
-##               nBurnin = 20000,
-##               nSim = 20000,
+##               nBurnin = 2000,
+##               nSim = 2000,
 ##               nThin = 50,
 ##               nChain = 4)
 ## fetchSummary(filename.est)
@@ -50,6 +50,7 @@
 ##                              trend = Trend(scale = HalfT(scale = 0.1))),
 ##                   year:age ~ DLM(level = Level(scale = HalfT(scale = 0.05)),
 ##                                  trend = Trend(scale = HalfT(scale = 0.05))),
+##                 lower = 0.01, upper = 0.25,
 ##                   jump = 0.008)
 ## filename.bc.est <- "deleteme.bc.est"
 ## filename.bc.pred <- "deleteme.bc.pred"
@@ -57,8 +58,8 @@
 ##               y = births,
 ##               exposure = expose,
 ##               filename = filename.bc.est,
-##               nBurnin = 20000,
-##               nSim = 20000,
+##               nBurnin = 2000,
+##               nSim = 2000,
 ##               nThin = 50,
 ##               nChain = 4)
 ## fetchSummary(filename.bc.est)

@@ -4970,9 +4970,11 @@ test_that("findOneRootLogPostSigmaNorm works", {
                                                   max = Inf,
                                                   useC = FALSE)
         if (root.left > 0)
-            expect_equal(f(root.left), z)
+            expect_equal(f(root.left), z, tol = 0.001)
+        if (!isTRUE(all.equal(f(root.left), z, tol = 0.001)))
+            print(seed)
         if (root.right > 0)
-            expect_equal(f(root.right), z)
+            expect_equal(f(root.right), z, tol = 0.001)
         ans.at.max <- findOneRootLogPostSigmaNorm(sigma0 = sigma.max,
                                                   z = z,
                                                   A = A,
