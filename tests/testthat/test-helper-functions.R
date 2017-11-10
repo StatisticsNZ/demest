@@ -4935,7 +4935,7 @@ test_that("R and C versions of betaHatSeason give same answer", {
 })
 
 test_that("findOneRootLogPostSigmaNorm works", {
-    findOneRootLogPostSigmaNorm <- demest:::findOneRootLogPostSigmaNorm
+    ## findOneRootLogPostSigmaNorm <- demest:::findOneRootLogPostSigmaNorm
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         A <- runif(n = 1, min = 0.1, max = 10)
@@ -4969,6 +4969,8 @@ test_that("findOneRootLogPostSigmaNorm works", {
                                                   min = sigma.max,
                                                   max = Inf,
                                                   useC = FALSE)
+        print(root.left)
+        print(root.right)
         if (root.left > 0)
             expect_equal(f(root.left), z)
         if (root.right > 0)
@@ -4982,6 +4984,7 @@ test_that("findOneRootLogPostSigmaNorm works", {
                                                   min = sigma.max,
                                                   max = Inf,
                                                   useC = FALSE)
+        print(ans.at.max)
         expect_true(isTRUE(all.equal(ans.at.max, sigma.max))
                     || isTRUE(all.equal(ans.at.max, -1))
                     || isTRUE(all.equal(ans.at.max, root.left))

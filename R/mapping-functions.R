@@ -496,17 +496,15 @@ getIExpFirstFromComp <- function(i, mapping, useC = FALSE) {
             i.triangle.comp <- ((i - 1L) %/% step.triangle.comp) %% 2L
             is.lower <- i.triangle.comp == 0L
             if (is.lower) {
-                if (i.time.comp == (n.time - 1L))
-                    return(0L)
-                i.time.exp <- i.time.comp + 1L
+                i.time.exp <- i.time.comp
                 i.age.exp <- i.age.comp
-                i.triangle.exp <- 1L
+                i.triangle.exp <- 0L
             }
             else {
                 i.time.exp <- i.time.comp
                 if (i.age.comp == (n.age - 1L)) {
                     i.age.exp <- i.age.comp
-                    i.triangle.exp <- 1L
+                    i.triangle.exp <- 0L
                 }
                 else {
                     i.age.exp <- i.age.comp + 1L
@@ -605,17 +603,15 @@ getIExpFirstPairFromOrigDest <- function(i, mapping, useC = FALSE) {
             i.triangle.comp <- ((i - 1L) %/% step.triangle.comp) %% 2L
             is.lower <- i.triangle.comp == 0L
             if (is.lower) {
-                if (i.time.comp == (n.time - 1L))
-                    return(c(0L, 0L))
-                i.time.exp <- i.time.comp + 1L
+                i.time.exp <- i.time.comp
                 i.age.exp <- i.age.comp
-                i.triangle.exp <- 1L
+                i.triangle.exp <- 0L
             }
             else {
                 i.time.exp <- i.time.comp
                 if (i.age.comp == (n.age - 1L)) {
                     i.age.exp <- i.age.comp
-                    i.triangle.exp <- 1L
+                    i.triangle.exp <- 0L
                 }
                 else {
                     i.age.exp <- i.age.comp + 1L
