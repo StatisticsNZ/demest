@@ -4431,7 +4431,7 @@ betaHatSeason <- function(prior, useC = FALSE) {
     }
 }
 
-## TRANSLATED
+## READY_TO_TRANSLATE (AGAIN)
 ## modified from pseudocode from https://en.wikipedia.org/wiki/Newton%27s_method
 ## If the function finds the root within 'kMaxIter' iterations, it
 ## returns this root.  If the derivative of 'f' is near 0, the function
@@ -4528,7 +4528,7 @@ findOneRootLogPostSigmaNorm <- function(sigma0, z, A, nu, V, n, min, max,
     }
 }
 
-## TRANSLATED
+## READY_TO_TRANSLATE (AGAIN)
 ## modified from pseudocode from https://en.wikipedia.org/wiki/Newton%27s_method
 ## If the function finds the root within 'kMaxIter' iterations, it
 ## returns this root.  If the derivative of 'f' is near 0, the function
