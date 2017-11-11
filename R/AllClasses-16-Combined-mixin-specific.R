@@ -325,7 +325,7 @@ setClass("ICompMixin",
              iOrigDest <- object@iOrigDest
              iPool <- object@iPool
              iIntNet <- object@iIntNet
-             isParCh <- object@isP
+             iParCh <- object@iParCh
              components <- object@account@components
              s <- c(0L, seq_along(components))
              for (name in c("iComp", "iBirths", "iIntNet", "iOrigDest", "iParCh", "iPool")) {
@@ -349,6 +349,10 @@ setClass("ICompMixin",
              if (any(duplicated(indices.nonzero)))
                  return(gettextf("'%s', '%s', '%s', '%s' overlap",
                                  "iBirths", "iIntNet", "iOrigDest", "iPool"))
+             ## if 'iParCh' is non-zero, then it equals 'iBirth'
+             if ((iParCh != 0L) && (iParCh != iBirth))
+                 return(gettextf("'%s' is non-zero, but does not equal '%s'",
+                                 "iParCh", "iBirth"))                 
              TRUE
          })
 

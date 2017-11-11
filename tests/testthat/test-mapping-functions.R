@@ -248,7 +248,6 @@ test_that("R and C versions of getIPopnNextFromComp give same answer with ordina
     expect_identical(ans.R, ans.C)
 })
 
-
 ## births no parent
 
 test_that("getIPopnNextFromComp works with BirthsMovementNoParentChild", {
