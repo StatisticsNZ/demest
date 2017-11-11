@@ -1129,7 +1129,7 @@ diffLogDensJumpComp <- function(combined, useC = FALSE) {
     }
 }
 
-
+## HAS_TESTS
 ## Difference in log-density of current values for
 ## all components attributable to change in exposure,
 ## where change in exposure due to change in
@@ -1145,12 +1145,15 @@ diffLogDensExpComp <- function(combined, useC = FALSE) {
         model.uses.exposure <- combined@modelUsesExposure
         mappings.from.exp <- combined@mappingsFromExp
         i.exp.first <- combined@iExpFirst
-        iterator.exp <- combined@iteratorExposure
+        iterator.exposure <- combined@iteratorExposure
         is.increment <- combined@isIncrement
         diff <- combined@diffProp
         i.comp <- combined@iComp
         i.orig.dest <- combined@iOrigDest
+        i.par.ch <- combined@iParCh
         i.pool <- combined@iPool
+        i.births <- combined@iBirths
+        exposure <- combined@exposure
         systemModels <- combined@systemModels
         has.age <- combined@hasAge
         no.exposure.affected <- i.exp.first == 0L
@@ -1160,14 +1163,16 @@ diffLogDensExpComp <- function(combined, useC = FALSE) {
         if (!is.increment[i.comp])
             diff <- -diff
         for (i in seq_along(components)) {
-            if (model.uses.exposure[i]) { ## note that 'net' components never use exposure
+            if (model.uses.exposure[i + 1L]) { ## note that 'net' components never use exposure
                 component <- components[[i]]
                 theta <- systemModels[[i + 1L]]@theta
                 iterator.comp <- iterators.comp[[i]]
                 mapping.from.exp <- mappings.from.exp[[i]]
-                is.orig.dest <- i.comp == i.orig.dest
-                is.pool <- i.comp == i.pool
-                if (is.orig.dest || is.pool) {
+                is.orig.dest <- i == i.orig.dest
+                is.par.ch <- i == i.par.ch
+                is.pool <- i == i.pool
+                is.births <- i == i.births
+                if (is.orig.dest || is.par.ch || is.pool) {
                     i.cell <- getICellCompFromExp(i = i.exp.first,
                                                   mapping = mapping.from.exp)
                     diff.log <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell,
@@ -1179,25 +1184,40 @@ diffLogDensExpComp <- function(combined, useC = FALSE) {
                                                                    exposure = exposure,
                                                                    iteratorExposure = iterator.exposure,
                                                                    diff = diff)
-                    if (is.infinite(diff.log))
-                        return(diff.log)
-                    ans <- ans + diff.log
                 }
-                else { 
-                    i.cell <- getICellCompFromExp(mapping = mapping.from.exp,
-                                                  i = i.exp.first)
-                    ans.one <- diffLogDensExpOneComp(iCell = i.cell,
-                                                     hasAge = has.age,
-                                                     component = component,
-                                                     theta = theta,
-                                                     iterator = iterator.comp,
-                                                     iExpFirst = i.exp.first,
-                                                     exposure = exposure,
-                                                     diff = diff)
-                    if (is.infinite(ans.one))
-                        return(diff.log)
-                    ans <- ans + ans.one
+                else if (is.births) { ## 'is.par.ch' has precedence over 'is.births'
+                    i.cell <- getICellBirthsFromExp(i = i.exp.first,
+                                                    mapping = mapping.from.exp)
+                    cell.is.affected <- i.cell > 0L
+                    if (cell.is.affected)
+                        diff.log <- diffLogDensExpOneComp(iCell = i.cell,
+                                                          hasAge = has.age,
+                                                          component = component,
+                                                          theta = theta,
+                                                          iteratorComp = iterator.comp,
+                                                          iExpFirst = i.exp.first,
+                                                          exposure = exposure,
+                                                          iteratorExposure = iterator.exposure,
+                                                          diff = diff)
+                    else
+                        diff.log <- 0
                 }
+                else {
+                    i.cell <- getICellCompFromExp(i = i.exp.first,
+                                                  mapping = mapping.from.exp)
+                    diff.log <- diffLogDensExpOneComp(iCell = i.cell,
+                                                      hasAge = has.age,
+                                                      component = component,
+                                                      theta = theta,
+                                                      iteratorComp = iterator.comp,
+                                                      iExpFirst = i.exp.first,
+                                                      exposure = exposure,
+                                                      iteratorExposure = iterator.exposure,
+                                                      diff = diff)
+                }
+                if (is.infinite(diff.log))
+                    return(diff.log)
+                ans <- ans + diff.log
             }
         }
         ans
@@ -1207,8 +1227,9 @@ diffLogDensExpComp <- function(combined, useC = FALSE) {
 
 
 ## HAS_TESTS
-diffLogDensExpOneComp <- function(iCell, hasAge, component, theta, iterator, 
-                                  iExpFirst, exposure, diff, useC = FALSE) {
+diffLogDensExpOneComp <- function(iCell, hasAge, component, theta, iteratorComp, 
+                                  iExpFirst, exposure, iteratorExposure,
+                                  diff, useC = FALSE) {
     ## iCell
     stopifnot(identical(length(iCell), 1L))
     stopifnot(is.integer(iCell))
@@ -1221,12 +1242,11 @@ diffLogDensExpOneComp <- function(iCell, hasAge, component, theta, iterator,
     ## component
     stopifnot(is(component, "Component"))
     ## theta
-    stopifnot(is(theta, "Values"))
     stopifnot(is.double(theta))
     stopifnot(!any(is.na(theta)))
     stopifnot(all(theta >= 0))
-    ## iterator
-    stopifnot(is(iterator, "CohortIteratorComponent"))
+    ## iteratorComp
+    stopifnot(is(iteratorComp, "CohortIteratorComponent"))
     ## iExpFirst
     stopifnot(identical(length(iExpFirst), 1L))
     stopifnot(is.integer(iExpFirst))
@@ -1237,6 +1257,8 @@ diffLogDensExpOneComp <- function(iCell, hasAge, component, theta, iterator,
     stopifnot(is.double(exposure))
     stopifnot(!any(is.na(exposure)))
     stopifnot(all(exposure >= 0))
+    ## iteratorExposure
+    stopifnot(methods::is(iteratorExposure, "CohortIteratorComponent"))
     ## diff
     stopifnot(identical(length(diff), 1L))
     stopifnot(is.integer(diff))
@@ -1247,27 +1269,27 @@ diffLogDensExpOneComp <- function(iCell, hasAge, component, theta, iterator,
     stopifnot(iExpFirst <= length(exposure))
     ## component and theta
     stopifnot(identical(length(component), length(theta)))
-    ## component and exposure
-    stopifnot(identical(length(component), length(exposure)))
     if (useC) {
         .Call(diffLogDensExpOneComp_R,
-              iCell, hasAge, component, theta, iterator,
-              iExpFirst, exposure, diff)
+              iCell, hasAge, component, theta, iteratorComp,
+              iExpFirst, exposure, iteratorExposure, diff)
     }
     else {
-        iterator <- resetCC(iterator, i = iCell)
+        iteratorComp <- resetCC(iteratorComp, i = iCell)
+        iteratorExposure <- resetCC(iteratorExposure, i = iExpFirst)
         ans <- 0
         repeat {
-            i <- iterator@i
-            comp.curr <- component[i]
-            theta.curr <- theta[i]
+            i.c <- iteratorComp@i
+            i.e <- iteratorExposure@i
+            comp.curr <- component[i.c]
+            theta.curr <- theta[i.e]
             if (hasAge)
                 diff.exposure <- 0.5 * diff
             else {
-                is.first.cell <- i == iCell
+                is.first.cell <- i.c == iCell
                 diff.exposure <- if (is.first.cell) 0.5 * diff else diff
             }
-            exposure.curr <- exposure[i]
+            exposure.curr <- exposure[i.e]
             exposure.prop <- exposure.curr + diff.exposure
             if ((comp.curr > 0L) && !(exposure.prop > 0)) ## testing for exposure.prop == 0, since exposure.prop should be >= 0
                 return(-Inf)
@@ -1278,9 +1300,10 @@ diffLogDensExpOneComp <- function(iCell, hasAge, component, theta, iterator,
                         lambda = theta.curr * exposure.curr,
                         log = TRUE))
             ans <- ans + diff.log.lik
-            if (iterator@finished)
+            if (iteratorComp@finished)
                 break
-            iterator <- advanceCC(iterator)
+            iteratorComp <- advanceCC(iteratorComp)
+            iteratorExposure <- advanceCC(iteratorExposure)
         }
         ans
     }

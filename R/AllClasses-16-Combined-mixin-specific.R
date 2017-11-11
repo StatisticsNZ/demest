@@ -317,6 +317,7 @@ setClass("ICompMixin",
                    iBirths = "integer",
                    iIntNet = "integer",
                    iOrigDest = "integer",
+                   iParCh = "integer",
                    iPool = "integer"),
          contains = "VIRTUAL",
          validity = function(object) {
@@ -324,20 +325,21 @@ setClass("ICompMixin",
              iOrigDest <- object@iOrigDest
              iPool <- object@iPool
              iIntNet <- object@iIntNet
+             isParCh <- object@isP
              components <- object@account@components
              s <- c(0L, seq_along(components))
-             for (name in c("iComp", "iBirths", "iIntNet", "iOrigDest", "iPool")) {
+             for (name in c("iComp", "iBirths", "iIntNet", "iOrigDest", "iParCh", "iPool")) {
                  value <- slot(object, name)
-                 ## 'iComp', 'iBirths', iOrigDest', 'iPool' 'iIntNet' has  length 1
+                 ## 'iComp', 'iBirths', iOrigDest', 'iParCh', 'iPool' 'iIntNet' has  length 1
                  if (!identical(length(value), 1L))
                      return(gettextf("'%s' does not have length %d",
                                      name, 1L))
-                 ## 'iComp', 'iBirths', 'iOrigDest', 'iPool', 'iIntNet' is not missing
+                 ## 'iComp', 'iBirths', 'iOrigDest', 'iParCh', 'iPool', 'iIntNet' is not missing
                  if (is.na(value))
                      return(gettextf("'%s' is missing",
                                      name))
-                 ## if 'iComp', 'iBirths', iOrigDest', 'iPool', 'iIntNet' is not 0, it is the index of a component
-                 if ((value != 0L) && !(value %in% s))
+                 ## if 'iComp', 'iBirths', iOrigDest', 'iParCh', 'iPool', 'iIntNet' is not 0, it is the index of a component
+                 if (!(value %in% s))
                      return(gettextf("'%s' does not index a component",
                                      name))
              }

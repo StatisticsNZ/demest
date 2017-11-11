@@ -199,14 +199,13 @@ advanceCC <- function(object, useC = FALSE) {
                 i <- i + step.time + step.triangle
             }
             else {
+                i.triangle <- 1L
                 if (i.age < n.age) {
                     i.age <- i.age + 1L
-                    i.triangle <- 1L
                     i <- i + step.age - step.triangle
                 }
                 else {
-                    i.time <- i.time + 1L
-                    i <- i + step.time
+                    i <- i - step.triangle
                 }
             }
             finished <- (i.triangle == 1L) && (i.time == n.time)

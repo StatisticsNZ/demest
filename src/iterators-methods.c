@@ -331,14 +331,13 @@ advanceCC(SEXP iterator_R)
         }
         
         else {
+	    iTriangle = 1;
             if (iAge < nAge) {
                 ++iAge;
-                iTriangle = 1;
                 i += stepAge - stepTriangle;
             }
             else {
-                ++iTime;
-                i += stepTime;
+		i -= stepTriangle;
             }
             finished = ((iTriangle == 1) && (iTime == nTime));
         }
