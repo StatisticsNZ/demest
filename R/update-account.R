@@ -28,7 +28,7 @@
 ##         diffLogDensPopn DONE
 ##             diffLogDensPopnOneCohort DONE
 ##         diffLogDensJumpOrigDest DONE
-##         diffLogDensExpOrigDestPoolNet
+##         diffLogDensExpOrigDestPoolNet DONE
 ##             diffLogDensExpOneOrigDestParChPool DONE
 ##             diffLogDensExpOneComp DONE
 ##         diffLogDensJumpPoolWithExpose
