@@ -357,7 +357,7 @@ getIExposureFromBirths <- function(i, mapping, useC = FALSE) {
         step.time.exp <- mapping@stepTimeTarget
         has.age <- mapping@hasAge
         n.shared.vec <- mapping@nSharedVec
-        step.shared.births.vec <- mapping@stepSharedCurrentVec
+        step.shared.births.vec <- mapping@stepSharedCurrentExposureVec
         step.shared.exp.vec <- mapping@stepSharedTargetVec
         n.dim.shared <- length(n.shared.vec)
         i.exp <- 1L # R-style

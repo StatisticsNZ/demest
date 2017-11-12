@@ -2107,7 +2107,6 @@ test_that("getIExposureFromBirths works with BirthsMovementNoParentChild", {
     }
 })
 
-
 test_that("R and C versions of getIExposureFromBirths give same answer with BirthsMovementNoParentChild", {
     getIExposureFromBirths <- demest:::getIExposureFromBirths
     BirthsMovements <- dembase:::BirthsMovements
@@ -2131,7 +2130,6 @@ test_that("R and C versions of getIExposureFromBirths give same answer with Birt
     exposure <- Exposure(exposure)
     mapping <- Mapping(current = births,
                        target = exposure)
-    ans.exp <- c(3:6, 13:16)
     for (i in 1:8) {
         ans.R <- getIExposureFromBirths(i = i, mapping = mapping, useC = FALSE)
         ans.C <- getIExposureFromBirths(i = i, mapping = mapping, useC = TRUE)
@@ -2207,7 +2205,6 @@ test_that("R and C versions of getIExposureFromBirths give same answer with Birt
     }
 })
 
-
 ## births with parent
 
 test_that("getIExposureFromBirths works with BirthsMovementHasParentChild", {
@@ -2236,18 +2233,10 @@ test_that("getIExposureFromBirths works with BirthsMovementHasParentChild", {
     exposure <- Exposure(exposure)
     mapping <- Mapping(current = births,
                        target = exposure)
-    ans.exp <- c(rep(7:8, 3),
-                 rep(9:10, 3),
-                 rep(11:12, 3),
-                 rep(13:14, 3),
-                 rep(15:16, 3),
-                 rep(17:18, 3),
-                 rep(37:38, 3),
-                 rep(39:40, 3),
-                 rep(41:42, 3),
-                 rep(43:44, 3),
-                 rep(45:46, 3),
-                 rep(47:48, 3))
+    ans.exp <- c(rep(7:12, 3),
+                 rep(13:18, 3),
+                 rep(37:42, 3),
+                 rep(43:48, 3))
     for (i in 1:72) {
         ans.obtained <- getIExposureFromBirths(i = i, mapping = mapping)
         ans.expected <- ans.exp[i]
@@ -2273,10 +2262,10 @@ test_that("getIExposureFromBirths works with BirthsMovementHasParentChild", {
     exposure <- Exposure(exposure)
     mapping <- Mapping(current = births,
                        target = exposure)
-    ans.exp <- c(rep(1:3, each = 3),
-                 rep(1:3, each = 3),
-                 rep(4:6, each = 3),
-                 rep(4:6, each = 3))
+    ans.exp <- c(rep(1:3, 3),
+                 rep(4:6, 3),
+                 rep(1:3, 3),
+                 rep(4:6, 3))
     for (i in 1:36) {
         ans.obtained <- getIExposureFromBirths(i = i, mapping = mapping)
         ans.expected <- ans.exp[i]
@@ -2302,8 +2291,14 @@ test_that("getIExposureFromBirths works with BirthsMovementHasParentChild", {
     exposure <- Exposure(exposure)
     mapping <- Mapping(current = births,
                        target = exposure)
-    ans.exp <- c(rep(7:18, each = 3),
-                 rep(31:42, each = 3))
+    ans.exp <- c(rep(7:9, 3),
+                 rep(10:12, 3),
+                 rep(13:15, 3),
+                 rep(16:18, 3),
+                 rep(31:33, 3),
+                 rep(34:36, 3),
+                 rep(37:39, 3),
+                 rep(40:42, 3))
     for (i in 1:72) {
         ans.obtained <- getIExposureFromBirths(i = i, mapping = mapping)
         ans.expected <- ans.exp[i]
@@ -2330,14 +2325,13 @@ test_that("getIExposureFromBirths works with BirthsMovementHasParentChild", {
     exposure <- Exposure(exposure)
     mapping <- Mapping(current = births,
                        target = exposure)
-    ans.exp <- c(rep(1:11, 2), rep(12:22, 2))
+    ans.exp <- rep(1:22, 2)
     for (i in 1:44) {
         ans.obtained <- getIExposureFromBirths(i = i, mapping = mapping)
         ans.expected <- ans.exp[i]
         expect_identical(ans.obtained, ans.expected)
     }
 })
-
 
 test_that("R and C versions of getIExposureFromBirths give same answer with BirthsMovementHasParentChild", {
     getIExposureFromBirths <- demest:::getIExposureFromBirths
@@ -2365,18 +2359,6 @@ test_that("R and C versions of getIExposureFromBirths give same answer with Birt
     exposure <- Exposure(exposure)
     mapping <- Mapping(current = births,
                        target = exposure)
-    ans.exp <- c(rep(7:8, 3),
-                 rep(9:10, 3),
-                 rep(11:12, 3),
-                 rep(13:14, 3),
-                 rep(15:16, 3),
-                 rep(17:18, 3),
-                 rep(37:38, 3),
-                 rep(39:40, 3),
-                 rep(41:42, 3),
-                 rep(43:44, 3),
-                 rep(45:46, 3),
-                 rep(47:48, 3))
     for (i in 1:72) {
         ans.R <- getIExposureFromBirths(i = i, mapping = mapping, useC = FALSE)
         ans.C <- getIExposureFromBirths(i = i, mapping = mapping, useC = TRUE)
@@ -2403,10 +2385,6 @@ test_that("R and C versions of getIExposureFromBirths give same answer with Birt
     exposure <- Exposure(exposure)
     mapping <- Mapping(current = births,
                        target = exposure)
-    ans.exp <- c(rep(1:3, each = 3),
-                 rep(1:3, each = 3),
-                 rep(4:6, each = 3),
-                 rep(4:6, each = 3))
     for (i in 1:36) {
         ans.R <- getIExposureFromBirths(i = i, mapping = mapping, useC = FALSE)
         ans.C <- getIExposureFromBirths(i = i, mapping = mapping, useC = TRUE)
@@ -2432,8 +2410,6 @@ test_that("R and C versions of getIExposureFromBirths give same answer with Birt
     exposure <- Exposure(exposure)
     mapping <- Mapping(current = births,
                        target = exposure)
-    ans.exp <- c(rep(7:18, each = 3),
-                 rep(31:42, each = 3))
     for (i in 1:72) {
         ans.R <- getIExposureFromBirths(i = i, mapping = mapping, useC = FALSE)
         ans.C <- getIExposureFromBirths(i = i, mapping = mapping, useC = TRUE)
@@ -2460,7 +2436,6 @@ test_that("R and C versions of getIExposureFromBirths give same answer with Birt
     exposure <- Exposure(exposure)
     mapping <- Mapping(current = births,
                        target = exposure)
-    ans.exp <- c(rep(1:11, 2), rep(12:22, 2))
     for (i in 1:44) {
         ans.R <- getIExposureFromBirths(i = i, mapping = mapping, useC = FALSE)
         ans.C <- getIExposureFromBirths(i = i, mapping = mapping, useC = TRUE)
@@ -3739,11 +3714,12 @@ test_that("getIExpFirstFromComp works with InternalMovementsPool", {
     exposure <- Exposure(exposure)
     mapping <- Mapping(current = component,
                        target = exposure)
-    ans.exp <- rep(c(14L, 0L, 16L, 0L, 18L, 0L,
-                     20L, 0L, 22L, 0L, 24L, 0L,
-                     7:12,
-                     19:24),
-                   times = 2)
+    ans.exp <- c(1:12,
+                 7:12,
+                 7:12,
+                 1:12,
+                 7:12,
+                 7:12)
     for (i in 1:48) {
         ans.obtained <- getIExpFirstFromComp(i = i, mapping = mapping, useC = FALSE)
         ans.expected <- ans.exp[[i]]
@@ -3833,11 +3809,6 @@ test_that("R and C versions of getIExpFirstFromComp give same answer with Intern
     exposure <- Exposure(exposure)
     mapping <- Mapping(current = component,
                        target = exposure)
-    ans.exp <- rep(c(14L, 0L, 16L, 0L, 18L, 0L,
-                     20L, 0L, 22L, 0L, 24L, 0L,
-                     7:12,
-                     19:24),
-                   times = 2)
     for (i in 1:48) {
         ans.R <- getIExpFirstFromComp(i = i, mapping = mapping, useC = FALSE)
         ans.C <- getIExpFirstFromComp(i = i, mapping = mapping, useC = TRUE)
@@ -4560,13 +4531,13 @@ test_that("getICellBirthsFromExp works with BirthsMovementHasParentChild", {
     exposure <- Exposure(exposure)
     mapping <- Mapping(current = exposure,
                        target = births)
-    ans.exp <- c(2L, 0L, 8L, 0L, 14L, 0L,
-                 1L, 2L, 7L, 8L, 13L, 14L,
-                 19L, 20L, 25L, 26L, 31L, 32L,
+    ans.exp <- c(2L, 0L, 4L, 0L, 6L, 0L,
+                 1:6,
+                 19:24,
                  rep(0L, 12),
-                 1L, 2L, 7L, 8L, 13L, 14L,
-                 37L, 38L, 43L, 44L, 49L, 50L,
-                 55L, 56L, 61L, 62L, 67L, 68L,
+                 1:6,
+                 37:42,
+                 55:60,
                  rep(0L, 12))
     for (i in 1:60) {
         ans.obtained <- getICellBirthsFromExp(i = i, mapping = mapping)
@@ -4592,7 +4563,7 @@ test_that("getICellBirthsFromExp works with BirthsMovementHasParentChild", {
     exposure <- Exposure(exposure)
     mapping <- Mapping(current = exposure,
                        target = births)
-    ans.exp <- c(1L, 4L, 7L, 19L, 22L, 25L)
+    ans.exp <- c(1:3, 10:12)
     for (i in 1:6) {
         ans.obtained <- getICellBirthsFromExp(i = i, mapping = mapping)
         ans.expected <- ans.exp[i]
@@ -4618,13 +4589,19 @@ test_that("getICellBirthsFromExp works with BirthsMovementHasParentChild", {
     exposure <- Exposure(exposure)
     mapping <- Mapping(current = exposure,
                        target = births)
-    ans.exp <- c(10L, 13L, 16L, 0L, 0L, 0L,
-                 1L, 4L, 7L, 10L, 13L, 16L,
-                 19L, 22L, 25L, 28L, 31L, 34L,
+    ans.exp <- c(10:12,
+                 rep(0L, 3),
+                 1:3,
+                 10:12,
+                 19:21,
+                 28:30,
                  rep(0L, 6),
-                 1L, 4L, 7L, 10L, 13L, 16L,
-                 37L, 40L, 43L, 46L, 49L, 52L,
-                 55L, 58L, 61L, 64L, 67L, 70L,
+                 1:3,
+                 10:12,
+                 37:39,
+                 46:48,
+                 55:57,
+                 64:66,
                  rep(0L, 6))
     for (i in 1:48) {
         ans.obtained <- getICellBirthsFromExp(i = i, mapping = mapping)
@@ -4652,10 +4629,9 @@ test_that("getICellBirthsFromExp works with BirthsMovementHasParentChild", {
     exposure <- Exposure(exposure)
     mapping <- Mapping(current = exposure,
                        target = births)
-    ans.exp <- c(1:11, 23:33)
     for (i in 1:22) {
         ans.obtained <- getICellBirthsFromExp(i = i, mapping = mapping)
-        ans.expected <- ans.exp[i]
+        ans.expected <- i
         expect_identical(ans.obtained, ans.expected)
     }
 })
@@ -4711,7 +4687,6 @@ test_that("getICellBirthsFromExp works with BirthsMovementHasParentChild", {
     exposure <- Exposure(exposure)
     mapping <- Mapping(current = exposure,
                        target = births)
-    ans.exp <- c(1L, 4L, 7L, 19L, 22L, 25L)
     for (i in 1:6) {
         ans.R <- getICellBirthsFromExp(i = i, mapping = mapping, useC = FALSE)
         ans.C <- getICellBirthsFromExp(i = i, mapping = mapping, useC = TRUE)

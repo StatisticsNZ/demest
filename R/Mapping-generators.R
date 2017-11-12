@@ -792,6 +792,11 @@ setMethod("Mapping",
                   step.triangle.exp <- NA_integer_
               }
               i.parent <- grep("parent", dimtypes.births)
+              has.par.ch <- length(i.parent) > 0L
+              if (has.par.ch) {
+                  i.child <- grep("child", dimtypes.births)
+                  i.shared.births.parent <- setdiff(i.shared.births, i.child)
+              }
               i.shared.births <- setdiff(i.shared.births, i.parent)
               n.shared.vec <- dim.births[i.shared.births]
               length.shared <- length(i.shared.births)
@@ -807,6 +812,17 @@ setMethod("Mapping",
                       step <- step * dim.exp[d]
                   step.shared.exp.vec[i] <- step
               }
+              if (has.par.ch) {
+                  step.shared.births.exposure.vec <- integer(length = length.shared)
+                  for (i in seq_len(length.shared)) {
+                      step <- 1L
+                      for (d in seq_len(i.shared.births.parent[i] - 1L))
+                          step <- step * dim.births[d]
+                      step.shared.births.exposure.vec[i] <- step
+                  }
+              }
+              else
+                  step.shared.births.exposure.vec <- step.shared.births.vec
               methods::new("MappingBirthsToExp",
                            isOneToOne = FALSE,
                            nTimeCurrent = n.time,
@@ -814,6 +830,7 @@ setMethod("Mapping",
                            stepTimeTarget = step.time.exp,
                            nSharedVec = n.shared.vec,
                            stepSharedCurrentVec = step.shared.births.vec,
+                           stepSharedCurrentExposureVec = step.shared.births.exposure.vec,
                            stepSharedTargetVec = step.shared.exp.vec,
                            hasAge = has.age,
                            nAgeCurrent = n.age,
@@ -1081,7 +1098,7 @@ setMethod("Mapping",
               i.time.births <- match("time", dimtypes.births)
               i.age.exp <- match("age", dimtypes.exp, nomatch = 0L)
               has.age <- i.age.exp > 0L
-              i.parent <- grep("parent", dimtypes.births)
+              i.child <- grep("child", dimtypes.births)
               n.time <- dim.exp[i.time.exp]
               step.time.exp <- 1L
               for (d in seq_len(i.time.exp - 1L))
@@ -1093,7 +1110,7 @@ setMethod("Mapping",
               s.births <- seq_along(dim.births)
               i.shared.exp <- setdiff(s.exp, i.time.exp)
               i.shared.births <- setdiff(s.births,
-                                         c(i.time.births, i.parent))
+                                         c(i.time.births, i.child))
               if (has.age) {
                   i.age.births <- match("age", dimtypes.births)
                   i.triangle.exp <- match("triangle", dimtypes.exp)

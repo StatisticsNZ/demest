@@ -349,10 +349,10 @@ setClass("ICompMixin",
              if (any(duplicated(indices.nonzero)))
                  return(gettextf("'%s', '%s', '%s', '%s' overlap",
                                  "iBirths", "iIntNet", "iOrigDest", "iPool"))
-             ## if 'iParCh' is non-zero, then it equals 'iBirth'
-             if ((iParCh != 0L) && (iParCh != iBirth))
+             ## if 'iParCh' is non-zero, then it equals 'iBirths'
+             if ((iParCh != 0L) && (iParCh != iBirths))
                  return(gettextf("'%s' is non-zero, but does not equal '%s'",
-                                 "iParCh", "iBirth"))                 
+                                 "iParCh", "iBirths"))                 
              TRUE
          })
 

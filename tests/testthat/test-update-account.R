@@ -899,6 +899,70 @@ test_that("R and C versions of updateProposalAccountMoveBirths give same answer 
         warning("not updated")
 })
 
+test_that("updateProposalAccountMoveBirths works with CombinedAccountMovements - Parent-Child dimensions", {
+    updateProposalAccountMoveBirths <- demest:::updateProposalAccountMoveBirths
+    initialcombinedaccount <- demest:::initialCombinedAccount
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    population <- Counts(array(c(200L, 220L, 190L,
+                                 220L, 180L, 190L),
+                               dim = c(3, 2),
+                               dimnames = list(eth = c("A", "B", "C"),
+                                               time = c("2000", "2005"))))
+    births <- Counts(array(c(40L, 30L, 10L,
+                             15L, 40L, 10L,
+                             20L, 10L, 50L),
+                           dim = c(3, 3, 1),
+                           dimnames = list(eth_parent = c("A", "B", "C"),
+                                           eth_child = c("A", "B", "C"),
+                                           time = "2001-2005")))
+    deaths <- Counts(array(c(25L, 10L, 5L),
+                           dim = c(3, 1),
+                           dimnames = list(eth = c("A", "B", "C"),
+                                           time = "2001-2005")))
+    account <- Movements(population = population,
+                         births = births,
+                         exits = list(deaths = deaths))
+    account <- makeConsistent(account)
+    systemModels <- list(Model(population ~ Poisson(mean ~ time, useExpose = FALSE)),
+                         Model(births ~ Poisson(mean ~ 1)),
+                         Model(deaths ~ Poisson(mean ~ 1)))
+    systemWeights <- rep(list(NULL), 3)
+    observationModels <- list(Model(reg.births ~ PoissonBinomial(prob = 0.9), series = "births"),
+                              Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
+                              Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
+    seriesIndices <- c(1L, 2L, 0L)
+    datasets <- list(births + 1L,
+                     deaths - 5L,
+                     population + 10L)
+    namesDatasets <- c("reg.births", "tax", "census")
+    transforms <- list(makeTransform(x = births, y = datasets[[1]], subset = TRUE),
+                       makeTransform(x = deaths, y = datasets[[2]], subset = TRUE),
+                       makeTransform(x = population, y = datasets[[3]], subset = TRUE))
+    transforms <- lapply(transforms, makeCollapseTransformExtra)
+    x0 <- initialCombinedAccount(account = account,
+                                 systemModels = systemModels,
+                                 systemWeights = systemWeights,
+                                 observationModels = observationModels,
+                                 seriesIndices = seriesIndices,
+                                 datasets = datasets,
+                                 namesDatasets = namesDatasets,
+                                 transforms = transforms)
+    expect_true(validObject(x0))
+    updated <- FALSE
+    x0@iComp <- 1L
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        x1 <- updateProposalAccountMoveBirths(x0)
+        if (x1@generatedNewProposal@.Data)
+            updated <- TRUE
+        expect_is(x1, "CombinedAccountMovements")
+        expect_true(validObject(x1))
+    }
+    if (!updated)
+        warning("not updated")
+})
+
+
 
 
 

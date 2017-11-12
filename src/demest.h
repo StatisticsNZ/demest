@@ -167,9 +167,11 @@ SEXP
   lengthVec_sym,
   increment_sym,
   /* mappings */
+  hasParCh_sym,
   isOneToOne_sym,
   nSharedVec_sym,
   stepSharedCurrentVec_sym,
+  stepSharedCurrentExposureVec_sym,
   stepSharedTargetVec_sym,
   nTimeCurrent_sym,
   stepTimeCurrent_sym,

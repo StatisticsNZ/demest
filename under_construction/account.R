@@ -676,18 +676,18 @@ setMethod("diffLogDensAccount",
                   if (i.comp == i.orig.dest) {
                       if (uses.exposure[i.comp])
                           ans <- ans + diffLogDensJumpOrigDest(combined)
-                      ans <- ans + diffLogDensExpOrigDestPool(combined)
+                      ans <- ans + diffLogDensExpOrigDestPoolNet(combined)
                   }
                   else if (i.comp == i.pool) {
                       if (uses.exposure[i.comp])
                           ans <- ans + diffLogDensJumpPoolWithExpose(combined)
                       else
                           ans <- ans + diffLogDensJumpPoolNoExpose(combined)
-                      ans <- ans + diffLogDensExpOrigDestPool(combined)
+                      ans <- ans + diffLogDensExpOrigDestPoolNet(combined)
                   }
                   else if (i.comp == i.int.net) {
                       ans <- ans + diffLogDensJumpNet(combined)
-                      ans <- ans + diffLogDensExpNet(combined)
+                      ans <- ans + diffLogDensExpOrigDestPoolNet(combined)
                   }
                   else {
                       if (uses.exposure[i.comp])
@@ -696,63 +696,180 @@ setMethod("diffLogDensAccount",
                   }
                   ans
               }
-          }
+          })
 
 ## Difference in log-density of current values for
 ## all components attributable to change in exposure,
 ## where the change in exposure is due to a change in
-## a cell in an Orig-Dest or Pool component.
-diffLogDensExpOrigDestPoolParCh <- function(combined, useC = FALSE) {
+## a cell in an Orig-Dest, Pool, or Net component
+## (ie a component that potentially affects two cohorts).
+diffLogDensExpOrigDestPoolNet <- function(combined, useC = FALSE) {
     stopifnot(is(combined, "CombinedAccountMovements"))
     if (useC) {
         .Call(diffLogDensExpOrigDestPool_R, combined)
     }
     else {
-        account <- combined@account
-        components <- account@components
+        components <- combined@account@components
         iterators.comp <- combined@iteratorsComp
-        exposure <- combined@exposure
-        uses.exposure <- combined@usesExposure
-        mappings <- combined@mappingsFromExposure
-        i.exp.orig <- combined@iExpFirst
-        i.exp.dest <- combined@iExpFirstOth
+        model.uses.exposure <- combined@modelUsesExposure
+        mappings.from.exp <- combined@mappingsFromExposure
+        i.exp.first.orig <- combined@iExpFirst
+        i.exp.first.dest <- combined@iExpFirstOth
         iterator.exposure <- combined@iteratorExposure
         diff <- combined@diffProp
+        i.comp <- combined@iComp
+        i.orig.dest <- combined@iOrigDest
+        i.pool <- combined@iPool
+        i.int.net <- combined@iIntNet
+        i.births <- combined@iBirths
+        i.par.ch <- combined@iParCh
+        exposure <- combined@exposure
         systemModels <- combined@systemModels
-        if (i.exp.orig == i.exp.dest)
+        has.age <- combined@hasAge
+        no.exposure.affected <- (i.exp.first.orig == 0L) || (i.exp.first.orig == i.exp.first.dest)
+        if (no.exposure.affected)
             return(0)
         ans <- 0
+        comp.is.int.net <- i.comp == i.int.net
+        if (comp.is.int.net) {
+            diff.orig <- diff
+            diff.dest <- -diff
+        }
+        else {
+            diff.orig <- -diff
+            diff.dest <- diff
+        }
         for (i in seq_along(components)) {
-            if (uses.exposure[i]) {
+            if (model.uses.exposure[i + 1]) {
                 component <- components[[i]]
                 theta <- systemModels[[i + 1L]]@theta
                 iterator.comp <- iterators.comp[[i]]
-                mapping <- mappings[[i]]
-                i.cell.orig <- getICellCompFromExp(mapping = mapping,
-                                                   i = i.exp.orig)
-                i.cell.dest <- getICellCompFromExp(mapping = mapping,
-                                                   i = i.exp.dest)
-                ans.orig <- diffLogDensExpComp(iCell = i.cell.orig, ## diffLogDensExpOneComp?????
-                                               component = component,
-                                               theta = theta,
-                                               iteratorComp = iterator.comp,
-                                               iExpFirst = i.exp.orig,
-                                               exposure = exposure,
-                                               iteratorExposure = iterator.exposure,
-                                               diff = -diff)
-                if (is.infinite(ans.orig))
-                    return(ans.orig)
-                ans.dest <- diffLogDensExpComp(iCell = i.cell.dest,
-                                               component = component,
-                                               theta = theta,
-                                               iteratorComp = iterator.comp,
-                                               iExpFirst = i.exp.dest,
-                                               exposure = exposure,
-                                               iteratorExposure = iterator.exposure,
-                                               diff = diff)
-                if (is.infinite(ans.dest))
-                    return(ans.dest)
-                ans <- ans.orig + ans.dest
+                mapping.from.exp <- mappings.from.exp[[i]]
+                is.orig.dest <- i == i.orig.dest
+                is.pool <- i == i.pool
+                is.births <- i == i.births
+                is.par.ch <- i == i.par.ch
+                if (is.orig.dest || is.pool) {
+                    i.cell.orig <- getICellCompFromExp(i = i.exp.first.orig,
+                                                       mapping = mapping.from.exp)
+                    i.cell.dest <- getICellCompFromExp(i = i.exp.first.dest,
+                                                       mapping = mapping.from.exp)
+                    diff.log.orig <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell.orig,
+                                                                   hasAge = has.age,
+                                                                   component = component,
+                                                                   theta = theta,
+                                                                   iteratorComp = iterator.comp,
+                                                                   iExpFirst = i.exp.first.orig,
+                                                                   exposure = exposure,
+                                                                   iteratorExposure = iterator.exposure,
+                                                                   diff = diff.orig)
+                    if (is.infinite(diff.log.orig))
+                        return(diff.log.orig)
+                    ans <- ans + diff.log.orig
+                    diff.log.dest <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell.dest,
+                                                                   hasAge = has.age,
+                                                                   component = component,
+                                                                   theta = theta,
+                                                                   iteratorComp = iterator.comp,
+                                                                   iExpFirst = i.exp.first.dest,
+                                                                   exposure = exposure,
+                                                                   iteratorExposure = iterator.exposure,
+                                                                   diff = diff.dest)
+                    if (is.infinite(diff.log.dest))
+                        return(diff.log.dest)
+                    ans <- ans + diff.log.dest
+                }
+                else if (is.births) {
+                    i.cell.orig <- getICellBirthsFromExp(i = i.exp.first.orig,
+                                                         mapping = mapping.from.exp)
+                    i.cell.dest <- getICellBirthsFromExp(i = i.exp.first.dest,
+                                                         mapping = mapping.from.exp)
+                    cell.is.affected <- i.cell.orig > 0L
+                    if (cell.is.affected) {
+                        if (is.par.ch) {
+                            diff.log.orig <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell.orig,
+                                                                                hasAge = has.age,
+                                                                                component = component,
+                                                                                theta = theta,
+                                                                                iteratorComp = iterator.comp,
+                                                                                iExpFirst = i.exp.first.orig,
+                                                                                exposure = exposure,
+                                                                                iteratorExposure = iterator.exposure,
+                                                                                diff = diff.orig)
+                            if (is.infinite(diff.log.orig))
+                                return(diff.log.orig)
+                            ans <- ans + diff.log.orig
+                            diff.log.dest <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell.dest,
+                                                                                hasAge = has.age,
+                                                                                component = component,
+                                                                                theta = theta,
+                                                                                iteratorComp = iterator.comp,
+                                                                                iExpFirst = i.exp.first.dest,
+                                                                                exposure = exposure,
+                                                                                iteratorExposure = iterator.exposure,
+                                                                                diff = diff.dest)
+                            if (is.infinite(diff.log.dest))
+                                return(diff.log.dest)
+                            ans <- ans + diff.log.dest
+                        }
+                        else {
+                            diff.log.orig <- diffLogDensExpOneComp(iCell = i.cell.orig,
+                                                                   hasAge = has.age,
+                                                                   component = component,
+                                                                   theta = theta,
+                                                                   iteratorComp = iterator.comp,
+                                                                   iExpFirst = i.exp.first.orig,
+                                                                   exposure = exposure,
+                                                                   iteratorExposure = iterator.exposure,
+                                                                   diff = diff.orig)
+                            if (is.infinite(diff.log.orig))
+                                return(diff.log.orig)
+                            ans <- ans + diff.log.orig
+                            diff.log.dest <- diffLogDensExpOneComp(iCell = i.cell.dest,
+                                                                   hasAge = has.age,
+                                                                   component = component,
+                                                                   theta = theta,
+                                                                   iteratorComp = iterator.comp,
+                                                                   iExpFirst = i.exp.first.dest,
+                                                                   exposure = exposure,
+                                                                   iteratorExposure = iterator.exposure,
+                                                                   diff = diff.dest)
+                            if (is.infinite(diff.log.dest))
+                                return(diff.log.dest)
+                            ans <- ans + diff.log.dest
+                        }
+                    }
+                }
+                else {
+                    i.cell.orig <- getICellCompFromExp(i = i.exp.first.orig,
+                                                       mapping = mapping.from.exp)
+                    i.cell.dest <- getICellCompFromExp(i = i.exp.first.dest,
+                                                       mapping = mapping.from.exp)
+                    diff.log.orig <- diffLogDensExpOneComp(iCell = i.cell.orig,
+                                                           hasAge = has.age,
+                                                           component = component,
+                                                           theta = theta,
+                                                           iteratorComp = iterator.comp,
+                                                           iExpFirst = i.exp.first.orig,
+                                                           exposure = exposure,
+                                                           iteratorExposure = iterator.exposure,
+                                                           diff = diff.orig)
+                    if (is.infinite(diff.log.orig))
+                        return(diff.log.orig)
+                    ans <- ans + diff.log.orig
+                    diff.log.dest <- diffLogDensExpOneComp(iCell = i.cell.dest,
+                                                           hasAge = has.age,
+                                                           component = component,
+                                                           theta = theta,
+                                                           iteratorComp = iterator.comp,
+                                                           iExpFirst = i.exp.first.dest,
+                                                           exposure = exposure,
+                                                           iteratorExposure = iterator.exposure,
+                                                           diff = diff.dest)
+                    if (is.infinite(diff.log.dest))
+                        return(diff.log.dest)
+                    ans <- ans + diff.log.dest
+                }
             }
         }
         ans
@@ -871,59 +988,6 @@ diffLogDensJumpNet <- function(combined, useC = FALSE) {
         val.in.prop <- val.in.curr - diff
         dnorm(x = val.in.prop, mean = mean.in, sd = sd.in, log = TRUE)
         - dnorm(x = val.in.curr, mean = mean.in, sd = sd.in, log = TRUE)
-    }
-}
-
-diffLogDensExpNet <- function(combined, useC = FALSE) {
-    stopifnot(is(combined, "CombinedAccountMovements"))
-    if (useC) {
-        .Call(diffLogDensExpNet_R, combined)
-    }
-    else {
-        account <- combined@account
-        components <- account@components
-        iterators.comp <- combined@iteratorsComp
-        exposure <- combined@exposure
-        uses.exposure <- combined@usesExposure
-        mappings <- combined@mappingsFromExposure
-        i.exp.1 <- combined@iExpFirst
-        i.exp.2 <- combined@iExpFirstOth
-        iterator.exposure <- combined@iteratorExposure
-        diff <- combined@diffProp
-        systemModels <- combined@systemModels
-        ans <- 0
-        for (i in seq_along(components)) {
-            if (uses.exposure[i]) {
-                component <- components[[i]]
-                theta <- systemModels[[i + 1L]]@theta
-                iterator.comp <- iterators.comp[[i]]
-                mapping <- mappings[[i]]
-                i.cell.1 <- getICellCompFromExp(mapping = mapping, i = i.exp.1)
-                i.cell.2 <- getICellCompFromExp(mapping = mapping, i = i.exp.2)
-                ans.1 <- diffLogDensExpComp(iCell = i.cell.1,
-                                            component = component,
-                                            theta = theta,
-                                            iteratorComp = iterator.comp,
-                                            iExpFirst = i.exp.1,
-                                            exposure = exposure,
-                                            iteratorExposure = iterator.exposure,
-                                            diff = diff)
-                if (is.infinite(ans.1))
-                    return(ans.1)
-                ans.2 <- diffLogDensExpComp(iCell = i.cell.2,
-                                            component = component,
-                                            theta = theta,
-                                            iteratorComp = iterator.comp,
-                                            iExpFirst = i.exp.2,
-                                            exposure = exposure,
-                                            iteratorExposure = iterator.exposure,
-                                            diff = -diff)
-                if (is.infinite(ans.2))
-                    return(ans.2)
-                ans <- ans.1 + ans.2
-            }
-        }
-        ans
     }
 }
 

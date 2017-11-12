@@ -1854,6 +1854,7 @@ R_init_demest(DllInfo *info)
   ADD_SYM(isOneToOne);
   ADD_SYM(nSharedVec);
   ADD_SYM(stepSharedCurrentVec);
+  ADD_SYM(stepSharedCurrentExposureVec);
   ADD_SYM(stepSharedTargetVec);
   ADD_SYM(nTimeCurrent);
   ADD_SYM(stepTimeCurrent);

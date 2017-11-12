@@ -289,6 +289,28 @@ setClass("MappingMixinOrigDest",
              TRUE
          })
 
+## HAS_TESTS
+setClass("MappingExposureVecMixin",
+         slots = c(stepSharedCurrentExposureVec = "integer"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             stepSharedCurrentExposureVec <- object@stepSharedCurrentExposureVec
+             stepSharedCurrentVec <- object@stepSharedCurrentVec
+             ## stepSharedCurrentExposureVec has no missing values
+             if (any(is.na(stepSharedCurrentExposureVec)))
+                 return(gettextf("'%s' has missing values",
+                                 "stepSharedCurrentExposureVec"))
+             ## stepSharedCurrentExposureVec has all positive values
+             if (any(stepSharedCurrentExposureVec < 1L))
+                 return(gettextf("'%s' has non-positive values",
+                                 "stepSharedCurrentExposureVec"))
+             ## stepSharedCurrentVec, stepSharedCurrentExposureVec have same length
+             if (!identical(length(stepSharedCurrentVec), length(stepSharedCurrentExposureVec)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "stepSharedCurrentVec", "stepSharedCurrentExposureVec"))
+             TRUE
+         })
+
 ## Mappings to population
 
 setClass("MappingToPopn",
@@ -344,7 +366,8 @@ setClass("MappingCompToExp",
 ## HAS_TESTS
 setClass("MappingBirthsToExp",
          contains = c("MappingToExp",
-                      "MappingMixinIMinAge"))
+                      "MappingMixinIMinAge",
+                      "MappingExposureVecMixin"))
 
 ## HAS_TESTS
 setClass("MappingOrigDestToExp",
