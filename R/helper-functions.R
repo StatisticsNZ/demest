@@ -4430,89 +4430,9 @@ betaHatSeason <- function(prior, useC = FALSE) {
         ans
     }
 }
-
-## ## TRANSLATED
-## ## modified from pseudocode from https://en.wikipedia.org/wiki/Newton%27s_method
-## ## If the function finds the root within 'kMaxIter' iterations, it
-## ## returns this root.  If the derivative of 'f' is near 0, the function
-## ## returns -1.0.  If the function fails to find a root, it returns -99.0.
-## ## The root must be between 'min' and 'max'.
-## findOneRootLogPostSigmaNorm <- function(sigma0, z, A, nu, V, n, min, max,
-##                                         useC = FALSE) {
-##     ## 'sigma0'
-##     stopifnot(identical(length(sigma0), 1L))
-##     stopifnot(is.double(sigma0))
-##     stopifnot(!is.na(sigma0))
-##     stopifnot(sigma0 > 0)
-##     ## 'z'
-##     stopifnot(identical(length(z), 1L))
-##     stopifnot(is.double(z))
-##     stopifnot(!is.na(z))
-##     ## 'A'
-##     stopifnot(identical(length(A), 1L))
-##     stopifnot(is.double(A))
-##     stopifnot(!is.na(A))
-##     stopifnot(A > 0)
-##     ## 'nu'
-##     stopifnot(identical(length(nu), 1L))
-##     stopifnot(is.double(nu))
-##     stopifnot(!is.na(nu))
-##     stopifnot(nu > 0)
-##     ## 'V'
-##     stopifnot(identical(length(V), 1L))
-##     stopifnot(is.double(V))
-##     stopifnot(!is.na(V))
-##     stopifnot(V > 0)
-##     ## 'n'
-##     stopifnot(identical(length(n), 1L))
-##     stopifnot(is.integer(n))
-##     stopifnot(!is.na(n))
-##     stopifnot(n > 0L)
-##     ## 'min'
-##     stopifnot(identical(length(min), 1L))
-##     stopifnot(is.double(min))
-##     stopifnot(!is.na(min))
-##     ## 'max'
-##     stopifnot(identical(length(max), 1L))
-##     stopifnot(is.double(max))
-##     stopifnot(!is.na(max))
-##     ## 'min' and 'max'
-##     stopifnot(max > min)
-##     if (useC) {
-##         .Call(findOneRootLogPostSigmaNorm_R, sigma0, z, A, nu, V, n, min, max)
-##     }
-##     else {
-##         kTolerance <- 1e-7           ## C version can
-##         kEpsilonMax <- 1e-14         ## use macros to
-##         kEpsilonBoundaries <- 1e-30  ## set these
-##         kMaxIter <- 1000L     
-##         for (i in seq_len(kMaxIter)) {
-##             f <- -n*log(sigma0) - V/(2*sigma0^2) - ((nu + 1)/2) * log(sigma0^2 + nu*A^2) - z
-##             fprime <- -n/sigma0 + V/(sigma0^3) - ((nu + 1)*sigma0) / (sigma0^2 + nu*A^2)
-##             deriv_near_zero <- abs(fprime) < kEpsilonMax
-##             if (deriv_near_zero)
-##                 return(-1.0)
-##             sigma1 <- sigma0 - f / fprime
-##             sigma1 <- max(sigma1, min + kEpsilonBoundaries)
-##             sigma1 <- min(sigma1, max - kEpsilonBoundaries)
-##             if (sigma1 - sigma0 > 1)
-##                 sigma1 <- sigma0 + 1
-##             sigma1.equals.sigma0 <- abs(sigma1 - sigma0) < kTolerance * abs(sigma1)
-##             if (sigma1.equals.sigma0)
-##                 return(sigma1)
-##             sigma0 <- sigma1
-##         }
-##         ## reached maximum iterations without finding root
-##         -99.0
-##     }
-## }
-
-
-
-## TRANSLATED
+## READY_TO_TRANSLATE (AGAIN)
 ## If the function finds the root within 'kMaxIter' iterations, it
-## returns this root.  If the derivative of 'f' is near 0, the function
-## returns -1.0.  If the function fails to find a root, it returns -99.0.
+## returns this root. If the function fails to find a root, it returns -99.0.
 ## The root must be between 'min' and 'max'.
 findOneRootLogPostSigmaNorm <- function(sigma0, z, A, nu, V, n, min, max,
                                         useC = FALSE) {
@@ -4559,55 +4479,53 @@ findOneRootLogPostSigmaNorm <- function(sigma0, z, A, nu, V, n, min, max,
         .Call(findOneRootLogPostSigmaNorm_R, sigma0, z, A, nu, V, n, min, max)
     }
     else {
-        kTolerance <- 1e-7           ## C version can use macros to set these
-        kEpsilonBoundaries <- 1e-30
+        kTolerance <- 1e-15           ## C version can use macros to set these
         kMaxIter <- 1000L
         ## check that a value can be found
-        min <- min + kEpsilonBoundaries
-        max <- max - kEpsilonBoundaries
-        fmin <- -n*log(min) - V/(2*min^2) - ((nu + 1)/2) * log(min^2 + nu*A^2)
-        fmax <- -n*log(max) - V/(2*max^2) - ((nu + 1)/2) * log(max^2 + nu*A^2)
-        f.increasing <- (fmin < z) && (z < fmax) ## I HAVE CHANGED THIS FROM THE NOTES
-        f.decreasing <- (fmin > z) && (z > fmax)
-        if (!(f.increasing || f.decreasing))
+        min.tol <- min + kTolerance
+        fmin <- -n*log(min.tol) - V/(2*(min.tol)^2) - ((nu + 1)/2) * log((min.tol)^2 + nu*A^2)
+        if (is.finite(max)) {
+            max.tol <- max - kTolerance
+            fmax <- -n*log(max.tol) - V/(2*(max.tol)^2) - ((nu + 1)/2) * log((max.tol)^2 + nu*A^2)
+        }
+        else
+            fmax <- -Inf
+        if (((fmin < z) && (fmax < z)) || ((fmin > z) && (fmax > z)))
             return(-99.0)
         ## find root
         f0 <- -n*log(sigma0) - V/(2*sigma0^2) - ((nu + 1)/2) * log(sigma0^2 + nu*A^2)
         g0 <- (f0 - z)^2
         for (i in seq_len(kMaxIter)) {
+            f0prime <- -n/sigma0 + V/(sigma0^3) - ((nu + 1)*sigma0) / (sigma0^2 + nu*A^2)
             rho <- 1
-            while (rho > kTolerance) {
-                f0prime <- -n/sigma0 + V/(sigma0^3) - ((nu + 1)*sigma0) / (sigma0^2 + nu*A^2)
+            repeat {
                 sigma1 <- sigma0 - rho * (f0 - z) / f0prime
                 if ((min <= sigma1) && (sigma1 <= max))
                     break
                 rho <- rho / 2
             }
-	    repeat {
+            repeat {
                 f1 <- -n*log(sigma1) - V/(2*sigma1^2) - ((nu + 1)/2) * log(sigma1^2 + nu*A^2)
                 g1 <- (f1 - z)^2
-                if ((g1 >= g0 + kTolerance) || (abs(g1 - g0) < kTolerance) || (rho < kTolerance))
-		    break
-		rho <- rho / 2 
-	    }
-            ## It seems strange to update to f1
-            ## when (f1 - z)^2 > (f0 - z)^2
-	    if (g1 >= g0 + kTolerance) {
-	       sigma0 <- sigma1
-	       f0 <- f1
-	       g0 <- g1
-	    }
-	    else
+                if (g1 <= g0 || abs(g1 - g0) < kTolerance || (rho < kTolerance))
+                    break
+                rho <- rho / 2 
+                sigma1 <- sigma0 - rho * (f0 - z) / f0prime
+            }
+      	    if ((abs(g1 - g0) < kTolerance) || (rho < kTolerance))
                 return(sigma0)
+            else {
+                sigma0 <- sigma1
+                f0 <- f1
+                g0 <- g1
+            }
         }
         ## reached maximum iterations without finding root
         return(-99.0)
     }
 }
 
-
-
-## TRANSLATED
+## READY_TO_TRANSLATE (AGAIN)
 ## modified from pseudocode from https://en.wikipedia.org/wiki/Newton%27s_method
 ## If the function finds the root within 'kMaxIter' iterations, it
 ## returns this root.  If the derivative of 'f' is near 0, the function
@@ -4664,26 +4582,48 @@ findOneRootLogPostSigmaRobust <- function(sigma0, z, A, nuBeta, nuTau, V, n, min
         .Call(findOneRootLogPostSigmaRobust_R, sigma0, z, A, nuBeta, nuTau, V, n, min, max)
     }
     else {
-        kTolerance <- 1e-7           ## C version can
-        kEpsilonMax <- 1e-14         ## use macros to
-        kEpsilonBoundaries <- 1e-30  ## set these
-        kMaxIter <- 1000L     
-        for (i in seq_len(kMaxIter)) {
-            f <- n*nuBeta*log(sigma0) - (nuBeta/2)*(sigma0^2)*V - ((nuTau+1)/2)*log(sigma0^2 + nuTau*A^2) - z
-            fprime <- n*nuBeta/sigma0 - nuBeta*sigma0*V - ((nuTau + 1)*sigma0)/(sigma0^2 + nuTau*A^2)
-            deriv_near_zero <- abs(fprime) < kEpsilonMax
-            if (deriv_near_zero)
-                return(-1.0)
-            sigma1 <- sigma0 - f / fprime
-            sigma1 <- max(sigma1, min + kEpsilonBoundaries)
-            sigma1 <- min(sigma1, max - kEpsilonBoundaries)
-            if (sigma1 - sigma0 > 1)
-                sigma1 <- sigma0 + 1
-            sigma1.equals.sigma0 <- abs(sigma1 - sigma0) < kTolerance * abs(sigma1)
-            if (sigma1.equals.sigma0)
-                return(sigma1)
-            sigma0 <- sigma1
+        kTolerance <- 1e-15           ## C version can use macros to set these
+        kMaxIter <- 1000L
+        min.tol <- min + kTolerance
+        fmin <- n*nuBeta*log(min.tol) - (nuBeta/2)*(min.tol^2)*V - ((nuTau+1)/2)*log(min.tol^2 + nuTau*A^2)
+        if (is.finite(max)) {
+            max.tol <- max - kTolerance
+            fmax <- n*nuBeta*log(max.tol) - (nuBeta/2)*(max.tol^2)*V - ((nuTau+1)/2)*log(max.tol^2 + nuTau*A^2)
         }
+        else
+            fmax <- -Inf
+        if ((fmin < z && fmax < z) || (fmin>z && fmax>z))
+            return(-99.0)
+        ## find root
+        f0 <- n*nuBeta*log(sigma0) - (nuBeta/2)*(sigma0^2)*V - ((nuTau+1)/2)*log(sigma0^2 + nuTau*A^2)
+        g0 <- (f0 - z)^2
+        for (i in seq_len(kMaxIter)) {
+            f0prime <- n*nuBeta/sigma0 - nuBeta*sigma0*V - ((nuTau + 1)*sigma0)/(sigma0^2 + nuTau*A^2)
+            rho <- 1
+            repeat {
+                sigma1 <- sigma0 - rho * (f0 - z) / f0prime
+                if ((min <= sigma1) && (sigma1 <= max))
+                    break
+                rho <- rho / 2
+            }
+            repeat {
+                f1 <- n*nuBeta*log(sigma1) - (nuBeta/2)*(sigma1^2)*V - ((nuTau+1)/2)*log(sigma1^2 + nuTau*A^2)
+                g1 <- (f1 - z)^2
+                if (g1 <= g0 || abs(g1 - g0) < kTolerance || (rho < kTolerance))
+                    break
+                rho <- rho / 2 
+                sigma1 <- sigma0 - rho * (f0 - z) / f0prime
+            }
+      	    if ((abs(g1 - g0) < kTolerance) || (rho < kTolerance))
+                return(sigma0)
+            else {
+                sigma0 <- sigma1
+                f0 <- f1
+                g0 <- g1
+            }
+        }
+        ## reached maximum iterations without finding root
+        return(-99.0)
         ## reached maximum iterations without finding root
         -99.0
     }
