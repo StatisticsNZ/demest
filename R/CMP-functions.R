@@ -62,7 +62,18 @@ makeBoundsCMP <- function(theta, nu, p, useC = FALSE) {
     }
 }
 
-    
+
+
+rcmpUnder <- function(mu, nu, max){
+  fl <- floor(mu)
+  bound <- (mu^fl / gamma(fl + 1))^(nu - 1)
+  
+  
+  
+}
+
+
+  
 
 updateTheta_CMPVaryingUseExp <- function(object, y, exposure, useC = FALSE) {
     ## object
