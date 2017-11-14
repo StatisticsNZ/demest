@@ -103,25 +103,12 @@ setClass("DescriptionComp",
              TRUE
          })
 
-## NO_TESTS
-setClass("DescriptionPool",
-         slots = c(stepDirection = "integer", 
-                        nBetweenVec = "integer",
-                        stepBetweenVec = "integer",
-                        nWithinVec = "integer",
-                        stepWithinVec = "integer"),
-         contains = "DescriptionComp",
+## HAS_TESTS
+setClass("StepDirectionMixin",
+         slots = c(stepDirection = "integer"),
+         contains = "VIRTUAL",
          validity = function(object) {
-             nTime <- object@nTime
-             stepTime <- object@stepTime
-             hasAge <- object@hasAge
-             nAge <- object@nAge
              stepDirection <- object@stepDirection
-             nBetweenVec <- object@nBetweenVec
-             stepBetweenVec <- object@stepBetweenVec
-             nWithinVec <- object@nWithinVec
-             stepWithinVec <- object@stepWithinVec
-             length <- object@length
              ## 'stepDirection' has length 1
              if (!identical(length(stepDirection), 1L))
                  return(gettextf("'%s' does not have length %d",
@@ -130,10 +117,30 @@ setClass("DescriptionPool",
              if (is.na(stepDirection))
                  return(gettextf("'%s' is missing",
                                  "stepDirection"))
-             ## 'stepTime' positive
+             ## 'stepDirection' positive
              if (stepDirection < 1L)
                  return(gettextf("'%s' is non-positive",
                                  "stepDirection"))
+             TRUE
+         })
+
+## HAS_TESTS
+setClass("BetweenWithinMixin",
+         slots = c(nBetweenVec = "integer",
+                   stepBetweenVec = "integer",
+                   nWithinVec = "integer",
+                   stepWithinVec = "integer"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             nTime <- object@nTime
+             stepTime <- object@stepTime
+             hasAge <- object@hasAge
+             nAge <- object@nAge
+             nBetweenVec <- object@nBetweenVec
+             stepBetweenVec <- object@stepBetweenVec
+             nWithinVec <- object@nWithinVec
+             stepWithinVec <- object@stepWithinVec
+             length <- object@length
              for (name in c("nBetweenVec", "stepBetweenVec", "nWithinVec", "stepWithinVec")) {
                  value <- methods::slot(object, name)
                  ## 'nBetweenVec', 'stepBetweenVec', 'nWithinVec', 'stepWithinVec'
@@ -181,9 +188,38 @@ setClass("DescriptionPool",
              if (!identical(length(nWithinVec), length(stepWithinVec)))
                  return(gettextf("'%s' and '%s' have different lengths",
                                  "nWithinVec", "stepWithinVec"))
+             TRUE
+         })
+
+## HAS_TESTS
+setClass("DescriptionPool",
+         contains = c("DescriptionComp",
+                      "StepDirectionMixin",
+                      "BetweenWithinMixin"),
+         validity = function(object) {
+             nBetweenVec <- object@nBetweenVec
+             nWithinVec <- object@nWithinVec
+             length <- object@length
              ## 2 * prod(nBetweenVec) * prod(nWithinVec) equals length
              if (!isTRUE(all.equal(2 * prod(nBetweenVec) * prod(nWithinVec), length)))
                  return(gettextf("'%s', '%s', and '%s' inconsistent",
                                  "nBetweenVec", "nWithinVec", "length"))
              TRUE
          })
+
+## HAS_TESTS
+setClass("DescriptionNet",
+         contains = c("DescriptionComp",
+                      "BetweenWithinMixin"),
+         validity = function(object) {
+             nBetweenVec <- object@nBetweenVec
+             nWithinVec <- object@nWithinVec
+             length <- object@length
+             ## prod(nBetweenVec) * prod(nWithinVec) equals length
+             if (!isTRUE(all.equal(prod(nBetweenVec) * prod(nWithinVec), length)))
+                 return(gettextf("'%s', '%s', and '%s' inconsistent",
+                                 "nBetweenVec", "nWithinVec", "length"))
+             TRUE
+         })
+
+

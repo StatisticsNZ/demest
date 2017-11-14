@@ -4,7 +4,7 @@
 ##         updateProposalAccountMovePopn DONE
 ##         updateProposalAccountMoveBirths DONE
 ##         updateProposalAccountMoveOrigDest DONE
-##         updateProposalAccountMovePool
+##         updateProposalAccountMovePool DONE
 ##         updateProposalAccountMoveNet
 ##         updateProposalAccountMoveComp DONE
 ##     diffLogLikAccount [method]
@@ -393,7 +393,7 @@ updateProposalAccountMoveOrigDest <- function(combined, useC = FALSE) {
     }
 }
 
-
+## HAS_TESTS
 updateProposalAccountMovePool <- function(combined, useC = FALSE) {
     stopifnot(is(combined, "CombinedAccountMovements"))
     if (useC) {
@@ -418,8 +418,8 @@ updateProposalAccountMovePool <- function(combined, useC = FALSE) {
         description <- combined@descriptions[[i.comp + 1L]]        
         theta <- combined@systemModels[[i.comp + 1L]]@theta
         pair.cell <- chooseICellOutInPool(description)
-        i.cell.out <- pair.cell[1L]
-        i.cell.in <- pair.cell[2L]
+        i.cell.out <- pair.cell[1L] # 'diffProp' added to this cell
+        i.cell.in <- pair.cell[2L]  # 'diffProp' also added to this cell
         if (has.age)
             is.lower.triangle <- isLowerTriangle(i = i.cell.out,
                                                  description = description)

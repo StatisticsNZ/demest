@@ -92,7 +92,6 @@ test_that("can create valid object of class DescriptionComp", {
     expect_true(validObject(x))
 })
 
-
 test_that("validity tests for DescriptionComp inherited from DescriptionComp work", {
     x <- new("DescriptionComp",
              nTime = 5L,
@@ -129,14 +128,6 @@ test_that("validity tests for DescriptionComp inherited from DescriptionComp wor
 })
 
 test_that("can create valid object of class DescriptionPool", {
-    ## series <- Counts(array(1:2000,
-    ##                        dim = c(5, 5, 2, 4, 2, 5),
-    ##                        dimnames = list(reg_orig = 1:5,
-    ##                            reg_dest = 1:5,
-    ##                            direction = c("In", "Out"),
-    ##                            age = 1:4,
-    ##                            triangle = c("TL", "TU"),
-    ##                            time = 1:5)))
     x <- new("DescriptionPool",
              stepDirection = 25L,
              nBetweenVec = c(5L, 5L),
@@ -151,12 +142,6 @@ test_that("can create valid object of class DescriptionPool", {
              stepAge = 50L,
              length = 2000L)
     expect_true(validObject(x))
-    ## series <- Counts(array(1:250,
-    ##                        dim = c(5, 5, 2, 5),
-    ##                        dimnames = list(reg_orig = 1:5,
-    ##                            reg_dest = 1:5,
-    ##                            direction = c("In", "Out"),
-    ##                            time = 1:5)))
     x <- new("DescriptionPool",
              stepDirection = 25L,
              nBetweenVec = c(5L, 5L),
@@ -173,7 +158,7 @@ test_that("can create valid object of class DescriptionPool", {
     expect_true(validObject(x))
 })
 
-test_that("validity tests for DescriptionPool inherited from DescriptionPool work", {
+test_that("validity tests for DescriptionPool inherited from StepDirectionMixin work", {
     x <- new("DescriptionPool",
              stepDirection = 25L,
              nBetweenVec = c(5L, 5L),
@@ -197,11 +182,27 @@ test_that("validity tests for DescriptionPool inherited from DescriptionPool wor
     x.wrong@stepDirection <- as.integer(NA)
     expect_error(validObject(x.wrong),
                  "'stepDirection' is missing")
-             ## 'stepTime' positive
+    ## 'stepDirection' positive
     x.wrong <- x
     x.wrong@stepDirection <- 0L
     expect_error(validObject(x.wrong),
                  "'stepDirection' is non-positive")
+})
+
+test_that("validity tests for DescriptionPool inherited from BetweenWithinMixin work", {
+    x <- new("DescriptionPool",
+             stepDirection = 25L,
+             nBetweenVec = c(5L, 5L),
+             stepBetweenVec = c(1L, 5L),
+             nWithinVec = c(4L, 2L, 5L),
+             stepWithinVec = c(50L, 200L, 400L),
+             nTime = 5L,
+             stepTime = 400L,
+             stepTriangle = 200L,
+             hasAge = TRUE,
+             nAge = 5L,
+             stepAge = 50L,
+             length = 2000L)
     ## 'nBetweenVec', 'stepBetweenVec', 'nWithinVec', 'stepWithinVec'
     ## all have positive length
     x.wrong <- x
@@ -256,4 +257,84 @@ test_that("validity tests for DescriptionPool inherited from DescriptionPool wor
     expect_error(validObject(x.wrong),
                  "'nBetweenVec', 'nWithinVec', and 'length' inconsistent")
 })
- 
+
+test_that("validity tests for DescriptionPool inherited from DescriptionPool work", {
+    x <- new("DescriptionPool",
+             stepDirection = 25L,
+             nBetweenVec = c(5L, 5L),
+             stepBetweenVec = c(1L, 5L),
+             nWithinVec = c(4L, 2L, 5L),
+             stepWithinVec = c(50L, 200L, 400L),
+             nTime = 5L,
+             stepTime = 400L,
+             stepTriangle = 200L,
+             hasAge = TRUE,
+             nAge = 5L,
+             stepAge = 50L,
+             length = 2000L)
+  ## 2 * prod(nBetweenVec) * prod(nWithinVec) equals length
+    x.wrong <- x
+    x.wrong@length <- x.wrong@length + 1L
+    expect_error(validObject(x.wrong),
+                 "'nBetweenVec', 'nWithinVec', and 'length' inconsistent")
+})
+
+test_that("can create valid object of class DescriptionNet", {
+    ## series <- Counts(array(0,
+    ##                        dim = c(5, 4, 2, 5),
+    ##                        dimnames = list(reg = 1:5,
+    ##                            age = 1:4,
+    ##                            triangle = c("TL", "TU"),
+    ##                            time = 1:5)))
+    x <- new("DescriptionNet",
+             nBetweenVec = 5L,
+             stepBetweenVec = 1L,
+             nWithinVec = c(4L, 2L, 5L),
+             stepWithinVec = c(5L, 20L, 40L),
+             nTime = 5L,
+             stepTime = 40L,
+             stepTriangle = 20L,
+             hasAge = TRUE,
+             nAge = 4L,
+             stepAge = 5L,
+             length = 200L)
+    expect_true(validObject(x))
+    ## series <- Counts(array(0,
+    ##                        dim = c(5, 5),
+    ##                        dimnames = list(reg = 1:5,
+    ##                            time = 1:5)))
+    x <- new("DescriptionNet",
+             nBetweenVec = 5L,
+             stepBetweenVec = 1L,
+             nWithinVec = 5L,
+             stepWithinVec = 5L,
+             nTime = 5L,
+             stepTime = 5L,
+             stepTriangle = as.integer(NA),
+             hasAge = FALSE,
+             nAge = as.integer(NA),
+             stepAge = as.integer(NA),
+             length = 25L)
+    expect_true(validObject(x))
+})
+
+
+test_that("validity tests for DescriptionNet inherited from DescriptionNet work", {
+    x <- new("DescriptionNet",
+             nBetweenVec = 5L,
+             stepBetweenVec = 1L,
+             nWithinVec = 5L,
+             stepWithinVec = 5L,
+             nTime = 5L,
+             stepTime = 5L,
+             stepTriangle = as.integer(NA),
+             hasAge = FALSE,
+             nAge = as.integer(NA),
+             stepAge = as.integer(NA),
+             length = 25L)
+  ## prod(nBetweenVec) * prod(nWithinVec) equals length
+    x.wrong <- x
+    x.wrong@length <- x.wrong@length + 1L
+    expect_error(validObject(x.wrong),
+                 "'nBetweenVec', 'nWithinVec', and 'length' inconsistent")
+})

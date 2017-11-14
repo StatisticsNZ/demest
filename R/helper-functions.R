@@ -9523,6 +9523,54 @@ chooseICellPopn <- function(description, useC = FALSE) {
     }
 }
 
+## READY_TO_TRANSLATE
+## HAS_TESTS
+## This function is almost identical to 'chooseICellOutInPool', but
+## it seems clearest to keep them separate, even at the cost
+## of some cut-and-paste.
+chooseICellSubAddNet <- function(description, useC = FALSE) { 
+    stopifnot(methods::is(description, "DescriptionNet"))
+    if (useC) {
+        .Call(chooseICellSubAddNet_R, description) 
+    }
+    else { # different from 'chooseICellOutInPool', because do not extract 'step.direction'
+        n.between.vec <- description@nBetweenVec
+        step.between.vec <- description@stepBetweenVec
+        n.within.vec <- description@nWithinVec
+        step.within.vec <- description@stepWithinVec
+        n.dim.between <- length(n.between.vec)
+        n.dim.within <- length(n.within.vec)
+        i.sub <- 1L
+        i.add <- 1L # different from 'chooseICellOutInPool', because do not add 'step.direction'
+        for (d in seq_len(n.dim.between)) {
+            n.between <- n.between.vec[d]  # guaranteed > 1
+            step.between <- step.between.vec[d]
+            i.between.sub <- as.integer(stats::runif(n = 1L) * n.between) # C-style  
+            if (i.between.sub == n.between) # just in case
+                i.between.sub <- n.between - 1L
+            i.between.add <- as.integer(stats::runif(n = 1L) * (n.between - 1L)) # C-style
+            if (i.between.add == n.between - 1L) # just in case
+                i.between.add <- n.between - 2L
+            if (i.between.add >= i.between.sub)
+                i.between.add <- i.between.sub + 1L
+            i.sub <- i.sub + i.between.sub * step.between
+            i.add <- i.add + i.between.add * step.between
+        }
+        for (d in seq_len(n.dim.within)) {
+            n.within <- n.within.vec[d]
+            step.within <- step.within.vec[d]
+            i.within <- as.integer(stats::runif(n = 1L) * n.within) # C-style
+            if (i.within == n.within) # just in case
+                i.within <- n.within - 1L
+            i.sub <- i.sub + i.within * step.within
+            i.add <- i.add + i.within * step.within
+        }
+        c(i.sub, i.add)
+    }
+}
+
+
+
 ## TRANSLATED
 ## HAS_TESTS
 isLowerTriangle <- function(i, description, useC = FALSE) {

@@ -1,8 +1,3 @@
-
-
-setMethod("makeTransformExposure",
-          signature(series = "Births"),
-          function(series, exposure) {
               
 
 
@@ -77,52 +72,52 @@ updateAccount <- function(object) {
 }
 
               
-              updateSystemModels <- function(combined, useC = FALSE) {
-                  stopifnot(methods::is(combined, "CombinedAccount"))
-                  stopifnot(methods::validObject(combined))
-                  if (useC) {
-                      .Call(updateSystemModels_R, combined)
-                  }
-                  else {
-                      system.models <- combined@systemModels
-                      population <- combined@account@population
-                      components <- combined@account@components
-                      has.age <- combined@hasAge
-                      model.uses.exposure <- combined@modelUsesExposure
-                      transforms.exp.to.comp <- combined@transformsExpToComp
-                      transform.exp.to.births <- combined@transformExpToBirths
-                      i.births <- combined@iBirths
-                      model <- system.models[[1L]]
-                      model <- updateModelNotUseExp(model,
-                                                    y = population)
-                      system.models[[1L]] <- model.popn
-                      for (i in seq_along(components)) {
-                          model <- system.models[[i + 1L]]
-                          component <- components[[i]]
-                          uses.exposure <- model.uses.exposure[i + 1L]
-                          if (uses.exposure) {
-                              exposure <- combined@exposure@.Data
-                              is.births <- i == i.births
-                              if (is.births)
-                                  exposure <- collapse(exposure,
-                                                       transform = transform.exp.to.births)
-                              transform <- transforms.exp.to.comp[[i]]
-                              if (!is.null(transform))
-                                  exposure <- extend(exposure,
-                                                     transform = transforms.exp.to.comp[i])
-                              model <- updateModelUseExp(model = model.comp,
-                                                         y = component,
-                                                         exposure = exposure)
-                          }
-                          else
-                              model <- updateModelNotUseExp(model = model,
-                                                            y = component)
-                          system.models[[i + 1L]] <- model
-                      }
-                      combined@systemModels <- system.models
-                      combined
-                  }
-              }
+updateSystemModels <- function(combined, useC = FALSE) {
+    stopifnot(methods::is(combined, "CombinedAccount"))
+    stopifnot(methods::validObject(combined))
+    if (useC) {
+        .Call(updateSystemModels_R, combined)
+    }
+    else {
+        system.models <- combined@systemModels
+        population <- combined@account@population
+        components <- combined@account@components
+        has.age <- combined@hasAge
+        model.uses.exposure <- combined@modelUsesExposure
+        transforms.exp.to.comp <- combined@transformsExpToComp
+        transform.exp.to.births <- combined@transformExpToBirths
+        i.births <- combined@iBirths
+        model <- system.models[[1L]]
+        model <- updateModelNotUseExp(model,
+                                      y = population)
+        system.models[[1L]] <- model.popn
+        for (i in seq_along(components)) {
+            model <- system.models[[i + 1L]]
+            component <- components[[i]]
+            uses.exposure <- model.uses.exposure[i + 1L]
+            if (uses.exposure) {
+                exposure <- combined@exposure@.Data
+                is.births <- i == i.births
+                if (is.births)
+                    exposure <- collapse(exposure,
+                                         transform = transform.exp.to.births)
+                transform <- transforms.exp.to.comp[[i]]
+                if (!is.null(transform))
+                    exposure <- extend(exposure,
+                                       transform = transforms.exp.to.comp[i])
+                model <- updateModelUseExp(model = model.comp,
+                                           y = component,
+                                           exposure = exposure)
+            }
+            else
+                model <- updateModelNotUseExp(model = model,
+                                              y = component)
+            system.models[[i + 1L]] <- model
+        }
+        combined@systemModels <- system.models
+        combined
+    }
+}
 
 updateObservation <- function(combined) {
     observationModels <- combined@observationModels
@@ -202,7 +197,10 @@ setMethod("updateProposalAccount",
           })
 
 
-              
+
+
+
+
 
 
 updateProposalAccountMoveNet <- function(combined) {
@@ -215,6 +213,7 @@ updateProposalAccountMoveNet <- function(combined) {
         population <- account@population
         i.comp <- combined@iComp
         component <- account@components[[i.comp]]
+        max.attempt <- combined@maxAttempt
         has.age <- combined@hasAge
         if (has.age) {
             accession <- combined@accession
@@ -222,66 +221,65 @@ updateProposalAccountMoveNet <- function(combined) {
             mapping.to.acc <- combined@mappingsToAcc[[i.comp]]
         }        
         mapping.to.popn <- combined@mappingsToPopn[[i.comp]]
-        description.comp <- combined@descriptionsComp[[i.comp]]
         iterator.popn <- combined@iteratorPopn
-        sys.mod.popn <- combined@systemModels[[1L]]
-        sys.mod.comp <- combined@systemModels[[i.comp + 1L]]
-        theta.popn <- sys.mod.popn@theta
-        theta.comp <- sys.mod.comp@theta
-        varsigma.comp <- sys.mod.comp@varsigma
-        w.comp <- sys.mod.comp@w
-        max.attempt <- combined@maxAttempt
-        pair.cell <- chooseICellOutInNet(description.comp)
-        i.cell.1 <- pair.cell[1L]
-        i.cell.2 <- pair.cell[2L]
-        is.lower.triangle <- isLowerTriangle(i = i.cell,
-                                             description = description.comp)
-        i.exp.first.1 <- getIExpFirstFromComp(i = i.cell.1, # needed??
-                                              mapping = mapping.to.exp)
-        i.exp.first.2 <- getIExpFirstFromComp(i = i.cell.2,
-                                              mapping = mapping.to.exp)
-        i.popn.next.1 <- getIPopnNextFromComp(i = i.cell.1,
-                                              mapping = mapping.to.popn)
-        i.popn.next.2 <- getIPopnNextFromComp(i = i.cell.2,
-                                              mapping = mapping.to.popn)
-        min.val.1 <- getMinValCohort(i = i.popn.next.1,
-                                     series = population,
-                                     iter = iterator.popn)
-        min.val.2 <- getMinValCohort(i = i.popn.next.2,
-                                     series = population,
-                                     iter = iterator.popn)
+        description <- combined@descriptions[[i.comp + 1L]]
+        system.model <- combined@systemModels[[i.comp + 1L]]
+        theta <- system.model@theta
+        varsigma <- system.model@varsigma
+        w <- system.model@w
+        pair.cell <- chooseICellSubAddNet(description)
+        i.cell.sub <- pair.cell[1L] # 'diffProp' subtracted from this cell
+        i.cell.add <- pair.cell[2L] # 'diffProp' added to this cell
         if (has.age) {
-            i.acc.next.1 <- getIAccNextFromComp(i = i.cell.1,
-                                                mapping = mapping.to.acc)
-            has.later.accession <- i.acc.next.1 > 0L
+            is.lower.triangle <- isLowerTriangle(i = i.cell,
+                                                 description = description)
+        }
+        i.exp.first.sub <- getIExpFirstFromComp(i = i.cell.sub,
+                                                mapping = mapping.to.exp)
+        i.exp.first.add <- getIExpFirstFromComp(i = i.cell.add,
+                                                mapping = mapping.to.exp)
+        i.popn.next.sub <- getIPopnNextFromComp(i = i.cell.sub,
+                                                mapping = mapping.to.popn)
+        i.popn.next.add <- getIPopnNextFromComp(i = i.cell.add,
+                                                mapping = mapping.to.popn)
+        min.val.sub <- getMinValCohortPopulation(i = i.popn.next.sub,
+                                                 series = population,
+                                                 iterator = iterator.popn)
+        min.val.add <- getMinValCohortPopulation(i = i.popn.next.add,
+                                                 series = population,
+                                                 iterator = iterator.popn)
+        if (has.age) {
+            i.acc.next.sub <- getIAccNextFromComp(i = i.cell.sub,
+                                                  mapping = mapping.to.acc)
+            i.acc.next.add <- getIAccNextFromComp(i = i.cell.add,
+                                                  mapping = mapping.to.acc)
+            has.later.accession <- i.acc.next.sub > 0L
             if (has.later.accession) {
-                i.acc.next.2 <- getIAccNextFromComp(i = i.cell.2,
-                                                    mapping = mapping.to.acc)
-                min.acc.1 <- getMinValCohort(i = i.acc.next.1,
-                                             series = accession,
-                                             iter = iterator.acc)
-                min.acc.2 <- getMinValCohort(i = i.acc.next.2,
-                                             series = accession,
-                                             iter = iterator.acc)
-                min.val.1 <- min(min.val.1, min.acc.1)
-                min.val.2 <- min(min.val.2, min.acc.2)
+                min.acc.sub <- getMinValCohortAccession(i = i.acc.next.sub,
+                                                        series = accession,
+                                                        iterator = iterator.acc)
+                min.acc.add <- getMinValCohortAccession(i = i.acc.next.add,
+                                                        series = accession,
+                                                        iterator = iterator.acc)
+                min.val.sub <- min(min.val.sub, min.acc.sub)
+                min.val.add <- min(min.val.add, min.acc.add)
             }
         }
-        mean.1 <- theta.comp[i.cell.1]
-        val.curr.1 <- component[i.cell.1]
-        val.curr.2 <- component[i.cell.2]
-        lower <- val.curr.1 - min.val.1
-        upper <- val.curr.2 + min.val.2
+        mean.sub <- theta.comp[i.cell.sub]
+        val.curr.sub <- component[i.cell.sub]
+        val.curr.add <- component[i.cell.add]
+        lower <- val.curr.add - min.val.add
+        upper <- val.curr.sub + min.val.sub
         if (lower > upper)
             found.value <- FALSE
         else {
-            w.1 <- w.comp[i.cell.1]
-            sd.1 <- varsigma.comp / w.1
-            val.prop.1 <- rnormIntTrunc1(mean = mean.1,
-                                         sd = sd.1,
-                                         lower = lower,
-                                         upper = upper,
-                                         maxAttempt = max.attempt)
+            w.sub <- w[i.cell.sub]
+            sd.sub <- varsigma / sqrt(w.sub)
+            val.prop.sub <- rnormIntTrunc1(mean = mean.sub,
+                                           sd = sd.sub,
+                                           lower = lower,
+                                           upper = upper,
+                                           maxAttempt = max.attempt)
             found.value <- !is.na(val.prop)
         }
         if (found.value) {
@@ -289,35 +287,34 @@ updateProposalAccountMoveNet <- function(combined) {
             generated.new.proposal <- diff.prop != 0L
         }
         else
-            generated.new.propoal <- FALSE
+            generated.new.proposal <- FALSE
+        combined@generatedNewProposal@.Data <- generated.new.proposal
         if (generated.new.proposal) {
-            combined@iCell <- i.cell.1
-            combined@iCellOther <- i.cell.2
-            combined@isLowerTriangle <- is.lower.triangle
-            combined@iPopnNext <- i.popn.next.1
-            combined@iPopnNextOther <- i.popn.next.2
-            if (uses.age) {
-                combined@iAccNext <- i.acc.next.1
-                combined@iAccNextOther <- i.acc.next.2
-            }
-            else {
-                combined@iAccNext <- NA_integer_
-                combined@iAccNextOther <- NA_integer_
+            combined@iCell <- i.cell.sub
+            combined@iCellOther <- i.cell.add
+            combined@iPopnNext <- i.popn.next.sub
+            combined@iPopnNextOther <- i.popn.next.add
+            if (has.age) {
+                combined@iAccNext <- i.acc.next.sub
+                combined@iAccNextOther <- i.acc.next.add
+                combined@isLowerTriangle <- is.lower.triangle
             }
             combined@iExposure <- NA_integer_
             combined@iExposureOther <- NA_integer_
-            combined@iExpFirst <- i.exp.first.1
-            combined@iExpFirstOther <- i.exp.first.2
+            combined@iExpFirst <- i.exp.first.sub
+            combined@iExpFirstOther <- i.exp.first.add
             combined@diffProp <- diff.prop
         }
         else {
             combined@iCell <- NA_integer_
             combined@iCellOther <- NA_integer_
-            combined@isLowerTriangle <- NA
             combined@iPopnNext <- NA_integer_
             combined@iPopnNextOther <- NA_integer_
-            combined@iAccNext <- NA_integer_
-            combined@iAccNextOther <- NA_integer_
+            if (has.age) {
+                combined@iAccNext <- NA_integer_
+                combined@iAccNextOther <- NA_integer_
+                combined@isLowerTriangle <- NA
+            }
             combined@iExposure <- NA_integer_
             combined@iExposureOther <- NA_integer_
             combined@iExpFirst <- NA_integer_
@@ -362,7 +359,7 @@ setMethod("diffLogLikAccount",
 diffLogLikAccountMovePool <- function(combined, useC = FALSE) {
     stopifnot(is(combined, "CombinedAccountMovements"))
     if (useC) {
-        .Call(diffLogLikAccountMovePool_R, combined)
+        .Call(diffLogLikAccountMovePoolNet_R, combined)
     }
     else {
         account <- combined@account
@@ -370,7 +367,7 @@ diffLogLikAccountMovePool <- function(combined, useC = FALSE) {
         component <- account@components[[i.comp]]
         population <- account@population
         iterator <- combined@iteratorPopn
-        observation <- combined@observation
+        observation.models <- combined@observationModels
         datasets <- combined@datasets
         series.indices <- combined@seriesIndices
         transforms <- combined@transforms
@@ -379,31 +376,29 @@ diffLogLikAccountMovePool <- function(combined, useC = FALSE) {
         i.popn.out <- combined@iPopnNext
         i.popn.in <- combined@iPopnNextOther
         diff <- combined@diffProp
-        diff.cells <- diffLogLikCellsPoolNet(diff = diff,
-                                             iCellOut = i.cell.out,
-                                             iCellIn = i.cell.in,
-                                             isPool = TRUE,
-                                             iComp = i.comp,
-                                             component = component,
-                                             observation = observation,
-                                             datasets = datasets,
-                                             seriesIndices = series.indices,
-                                             transforms = transforms)
-        if (is.infinite(diff.log.lik.cell))
-            return(diff.log.lik.cell)
-        diff.popn <- diffLogLikPopnPair(diff = diff,
-                                        iPopnOrig = i.popn.out,
-                                        iPopnDest = i.popn.in,
-                                        iterator = iterator,
-                                        population = population,
-                                        observation = observation,
-                                        datasets = datasets,
-                                        seriesIndices = series.indices,
-                                        transforms = transforms)
-        diff.cell + diff.popn
+        diff.log.lik.cells <- diffLogLikCellsPool(diff = diff,
+                                                  iCellOut = i.cell.out,
+                                                  iCellIn = i.cell.in,
+                                                  iComp = i.comp,
+                                                  component = component,
+                                                  observation = observation,
+                                                  datasets = datasets,
+                                                  seriesIndices = series.indices,
+                                                  transforms = transforms)
+        if (is.infinite(diff.log.lik.cells))
+            return(diff.log.lik.cells)
+        diff.log.lik.popn <- diffLogLikPopnPair(diff = diff,
+                                                iPopnOrig = i.popn.out,
+                                                iPopnDest = i.popn.in,
+                                                iterator = iterator,
+                                                population = population,
+                                                observationModels = observation.models,
+                                                datasets = datasets,
+                                                seriesIndices = series.indices,
+                                                transforms = transforms)
+        diff.log.lik.cells + diff.log.lik.popn
     }
 }
-
 
 diffLogLikAccountMoveNet <- function(combined, useC = FALSE) {
     stopifnot(is(combined, "CombinedAccountMovements"))
@@ -416,29 +411,125 @@ diffLogLikAccountMoveNet <- function(combined, useC = FALSE) {
         component <- account@components[[i.comp]]
         population <- account@population
         iterator <- combined@iteratorPopn
-        observation <- combined@observation
+        observation.models <- combined@observationModels
         datasets <- combined@datasets
         series.indices <- combined@seriesIndices
         transforms <- combined@transforms
-        i.cell.orig <- combined@iCell
-        i.cell.dest <- combined@iCellOther
-        i.popn.orig <- combined@iPopnNext
-        i.popn.dest <- combined@iPopnNextOther
+        i.cell.sub <- combined@iCell
+        i.cell.add <- combined@iCellOther
+        i.popn.sub <- combined@iPopnNext
+        i.popn.add <- combined@iPopnNextOther
         diff <- combined@diffProp
-        diff.cells <- diffLogLikCellsPoolNet(diff = diff,
-                                             iCellOrig = i.cell.orig,
-                                             iCellDest = i.cell.dest,
-                                             isPool = FALSE,
-                                             iComp = i.comp,
-                                             component = component,
-                                             observation = observation,
-                                             datasets = datasets,
-                                             seriesIndices = series.indices,
-                                             transforms = transforms)
-        if (is.infinite(diff.log.lik.cell))
-            return(diff.log.lik.cell)
-        diff.popn <- diffLogLikPopnPair(diff = diff,
+        diff.log.lik.cells <- diffLogLikCellsNet(diff = diff,
+                                                 iCellSub = i.cell.sub,
+                                                 iCellAdd = i.cell.add,
+                                                 iComp = i.comp,
+                                                 component = component,
+                                                 observation = observation,
+                                                 datasets = datasets,
+                                                 seriesIndices = series.indices,
+                                                 transforms = transforms)
+        if (is.infinite(diff.log.lik.cells))
+            return(diff.log.lik.cells)
+        diff.log.lik.popn <- diffLogLikPopnPair(diff = diff,
+                                                iPopnOrig = i.popn.sub,
+                                                iPopnDest = i.popn.add,
+                                                iterator = iterator,
+                                                population = population,
+                                                observationModels = observation.models,
+                                                datasets = datasets,
+                                                seriesIndices = series.indices,
+                                                transforms = transforms)
+        diff.log.lik.cells + diff.log.lik.popn
+    }
+}
   
+
+
+diffLogLikCellsPool <- function(diff, iComp, iCellOut, iCellIn,
+                                component, observationModels, datasets,
+                                seriesIndices, transforms,
+                                useC = FALSE) {
+    ## diff
+    stopifnot(identical(length(diff), 1L))
+    stopifnot(is.integer(diff))
+    stopifnot(!is.na(diff))
+    ## iComp
+    stopifnot(identical(length(iComp), 1L))
+    stopifnot(is.integer(iComp))
+    stopifnot(!is.na(iComp))
+    stopifnot(iComp > 0L)
+    ## iCellOut
+    stopifnot(identical(length(iCellOut), 1L))
+    stopifnot(is.integer(iCellOut))
+    stopifnot(!is.na(iCellOut))
+    stopifnot(iCellOut > 0L)
+    ## iCellIn
+    stopifnot(identical(length(iCellIn), 1L))
+    stopifnot(is.integer(iCellIn))
+    stopifnot(!is.na(iCellIn))
+    stopifnot(iCellIn > 0L)
+    ## component
+    stopifnot(is(component, "Component"))
+    ## observationModels
+    stopifnot(is.list(observationModels))
+    stopifnot(all(sapply(observationModels, is, "Model")))
+    ## datasets
+    stopifnot(is.list(datasets))
+    stopifnot(all(sapply(datasets, is, "Counts")))
+    ## seriesIndices
+    stopifnot(is.integer(seriesIndices))
+    stopifnot(!any(is.na(seriesIndices)))
+    stopifnot(all(seriesIndices >= 0L))
+    ## transforms
+    stopifnot(is.list(transforms))
+    stopifnot(all(sapply(transforms, is, "CollapseTransformExtra")))
+    ## observationModels and datasets
+    stopifnot(identical(length(observationModels), length(datasets)))
+    ## observationModels and seriesIndices
+    stopifnot(identical(length(observationModels), length(seriesIndices)))
+    ## observationModels and transforms
+    stopifnot(identical(length(observationModels), length(transforms)))
+    if (useC) {
+        .Call(diffLogLikCellsPool_R,
+              diff, iComp, iCellOut, iCellIn, component, observationModels,
+              datasets, seriesIndices, transforms)
+    }
+    else {
+        ans <- 0
+        for (i.dataset in seq_along(datasets)) {
+            assoc.with.comp <- seriesIndices[i.dataset] == iComp
+            if (assoc.with.comp) {
+                dataset <- datasets[[i.dataset]]
+                model <- observationModels[[i.dataset]]                
+                transform <- transforms[[i.dataset]]
+                diff.log.lik.out <- diffLogLikCellOneDataset(diff = diff,
+                                                             iCell = iCellOut,
+                                                             component = component,
+                                                             model = model,
+                                                             dataset = dataset,
+                                                             transform = transform)
+                if (is.infinite(diff.log.lik.out))
+                    return(diff.log.lik.out)
+                if (!isPool)
+                    diff <- -diff
+                diff.in <- diffLogLikCellOneDataset(diff = diff,
+                                                    iCell = iCellIn,
+                                                    component = component,
+                                                    model = model,
+                                                    dataset = dataset,
+                                                    transform = transform)
+                if (is.infinite(diff.in))
+                    return(diff.in)
+                ans <- ans + diff.out + diff.in
+            }
+        }
+    }
+    ans
+}
+}
+
+
 
 diffLogLikCellsPoolNet <- function(diff, iComp, iCellOut, iCellIn,
                                    isPool, component, observationModels, datasets,
@@ -489,7 +580,7 @@ diffLogLikCellsPoolNet <- function(diff, iComp, iCellOut, iCellIn,
     ## observationModels and transforms
     stopifnot(identical(length(observationModels), length(transforms)))
     if (useC) {
-        .Call(diffLogLikCellsPool_R,
+        .Call(diffLogLikCellsPoolNet_R,
               diff, iComp, iCellOut, iCellIn, component, observationModels,
               datasets, seriesIndices, transforms)
     }

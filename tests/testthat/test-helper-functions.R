@@ -13134,6 +13134,84 @@ test_that("R and C versions of chooseICellPopn give same answer", {
     expect_identical(ans.R, ans.C)
 })
 
+test_that("chooseICellSubAddNet works", {
+    chooseICellSubAddNet <- demest:::chooseICellSubAddNet
+    Description <- demest:::Description
+    for (seed in seq_len(n.test)) {
+        object <- Counts(array(0L,
+                               dim = c(3, 2, 5, 2),
+                               dimnames = list(time = c("2001-2010", "2011-2020", "2021-2030"),
+                                   age = c("0-9", "10+"),
+                                   region = 1:5,
+                                   triangle = c("TL", "TU"))))
+        object <- new("InternalMovementsNet",
+                      .Data = object@.Data,
+                      iBetween = 3L,
+                      metadata = object@metadata)
+        description <- Description(object)
+        ans <- chooseICellSubAddNet(description)
+        indices <- arrayInd(ans, .dim = dim(object))
+        expect_true(all(indices[1, -3] == indices[2, -3]))
+        expect_true(indices[1, 3] != indices[2, 3])
+        object <- Counts(array(0L,
+                               dim = c(3, 3, 4, 2),
+                               dimnames = list(time = c("2001-2010", "2011-2020", "2021-2030"),
+                                   region = 1:3,
+                                   eth = 1:4,
+                                   sex = c("f", "m"))))
+        object <- new("InternalMovementsNet",
+                      .Data = object@.Data,
+                      iBetween = 2:3,
+                      metadata = object@metadata)
+        description <- Description(object)
+        ans <- chooseICellSubAddNet(description)
+        indices <- arrayInd(ans, .dim = dim(object))
+        expect_true(all(indices[1, -c(2, 3)] == indices[2, -c(2, 3)]))
+        expect_true(all(indices[1, 2:3] != indices[2, 2:3]))
+    }
+})
+
+test_that("R and C versions of chooseICellSubAddNet give same answer", {
+    chooseICellSubAddNet <- demest:::chooseICellSubAddNet
+    Description <- demest:::Description
+    for (seed in seq_len(n.test)) {
+        object <- Counts(array(0L,
+                               dim = c(3, 2, 5, 2),
+                               dimnames = list(time = c("2001-2010", "2011-2020", "2021-2030"),
+                                   age = c("0-9", "10+"),
+                                   region = 1:5,
+                                   triangle = c("TL", "TU"))))
+        object <- new("InternalMovementsNet",
+                      .Data = object@.Data,
+                      iBetween = 3L,
+                      metadata = object@metadata)
+        description <- Description(object)
+        set.seed(seed + 1)
+        ans.R <- chooseICellSubAddNet(description, useC = FALSE)
+        set.seed(seed + 1)
+        ans.C <- chooseICellSubAddNet(description, useC = TRUE)
+        expect_identical(ans.R, ans.C)
+        object <- Counts(array(0L,
+                               dim = c(3, 3, 4, 2),
+                               dimnames = list(time = c("2001-2010", "2011-2020", "2021-2030"),
+                                   region = 1:3,
+                                   eth = 1:4,
+                                   sex = c("f", "m"))))
+        object <- new("InternalMovementsNet",
+                      .Data = object@.Data,
+                      iBetween = 2:3,
+                      metadata = object@metadata)
+        description <- Description(object)
+        set.seed(seed + 1)
+        ans.R <- chooseICellSubAddNet(description, useC = FALSE)
+        set.seed(seed + 1)
+        ans.C <- chooseICellSubAddNet(description, useC = TRUE)
+        expect_identical(ans.R, ans.C)
+    }
+})
+
+
+
 test_that("isLowerTriangle works", {
     isLowerTriangle <- demest:::isLowerTriangle
     Description <- demest:::Description
