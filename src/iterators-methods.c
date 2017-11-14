@@ -359,6 +359,55 @@ advanceCC(SEXP iterator_R)
     SET_SLOT(iterator_R, finished_sym, ScalarLogical(finished));
 }
 
+/*## READY_TO_TRANSLATE
+## HAS_TESTS
+## It is the caller's responsibility to make
+## sure that the iterator has not finished
+advanceCODPCP <- function(object, useC = FALSE) {
+    stopifnot(methods::is(object, "CohortIteratorOrigDestParChPool"))
+    if (useC) {
+        .Call(advanceCODPCP_R, object)
+    }
+    else {
+        object <- advanceCC(object)
+        i <- object@i
+        i.vec <- object@iVec
+        length.vec <- object@lengthVec
+        increment <- object@increment
+        for (j in seq_len(length.vec))
+            i.vec[j] <- i + increment[j]
+        object@iVec <- i.vec
+        object
+    }
+}
+*/
+
+/* advance CODPCP iterator */
+void
+advanceCODPCP(SEXP iterator_R)
+{
+    /*iterator <- advanceCC(iterator)
+        i <- iterator@i
+        i.vec <- iterator@iVec
+        length.vec <- iterator@lengthVec
+        increment <- iterator@increment
+        for (j in seq_len(length.vec))
+            i.vec[j] <- i + increment[j]*/
+    
+    advanceCC(iterator_R);
+    int iter_i = *INTEGER(GET_SLOT(iterator_R, i_sym));
+    int *iVec = INTEGER(GET_SLOT(iterator_R, iVec_sym));
+    int length = *INTEGER(GET_SLOT(iterator_R, lengthVec_sym));
+    int *increment = INTEGER(GET_SLOT(iterator_R, increment_sym));
+    
+    for(int j = 0; j < length; ++j) {
+        
+        iVec[j] = iter_i + increment[j];
+    
+    }
+
+}
+
 /* reset cohort iterator */
 void
 resetCA(SEXP iterator_R, int i)

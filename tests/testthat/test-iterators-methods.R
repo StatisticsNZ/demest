@@ -1298,7 +1298,7 @@ test_that("R and C versions of advanceCODPCP give same answer", {
     iterator <- resetCODPCP(object = iterator, i = 8L)
     iterator.R <- iterator
     iterator.C <- iterator
-    while (!iterator@finished) {
+    while (!iterator.R@finished) {
         iterator.R <- advanceCODPCP(iterator.R, useC = FALSE)
         iterator.C <- advanceCODPCP(iterator.C, useC = TRUE)
         expect_identical(iterator.R, iterator.C)
@@ -1307,7 +1307,7 @@ test_that("R and C versions of advanceCODPCP give same answer", {
     iterator <- resetCODPCP(iterator, i = 85L)
     iterator.R <- iterator
     iterator.C <- iterator
-    while (!iterator@finished) {
+    while (!iterator.R@finished) {
         iterator.R <- advanceCODPCP(iterator.R, useC = FALSE)
         iterator.C <- advanceCODPCP(iterator.C, useC = TRUE)
         expect_identical(iterator.R, iterator.C)
@@ -1316,7 +1316,7 @@ test_that("R and C versions of advanceCODPCP give same answer", {
     iterator <- resetCODPCP(iterator, i = 57L)
     iterator.R <- iterator
     iterator.C <- iterator
-    while (!iterator@finished) {
+    while (!iterator.R@finished) {
         iterator.R <- advanceCODPCP(iterator.R, useC = FALSE)
         iterator.C <- advanceCODPCP(iterator.C, useC = TRUE)
         expect_identical(iterator.R, iterator.C)
