@@ -3994,7 +3994,7 @@ rnormTruncated <- function(n, mean, sd, lower, upper, tolerance = 1e-5, maxAttem
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 ## Returns draw from truncated integer-only normal distribution (achieved by rounding).
 rnormIntTrunc1 <- function(mean = 0, sd = 1, lower = NA_integer_, upper = NA_integer_, useC = FALSE) {
@@ -4512,7 +4512,7 @@ findOneRootLogPostSigmaNorm <- function(sigma0, z, A, nu, V, n, min, max,
                 rho <- rho / 2 
                 sigma1 <- sigma0 - rho * (f0 - z) / f0prime
             }
-      	    if ((abs(g1 - g0) < kTolerance) || (rho < kTolerance))
+            if ((abs(g1 - g0) < kTolerance) || (rho < kTolerance))
                 return(sigma0)
             else {
                 sigma0 <- sigma1
@@ -4614,7 +4614,7 @@ findOneRootLogPostSigmaRobust <- function(sigma0, z, A, nuBeta, nuTau, V, n, min
                 rho <- rho / 2 
                 sigma1 <- sigma0 - rho * (f0 - z) / f0prime
             }
-      	    if ((abs(g1 - g0) < kTolerance) || (rho < kTolerance))
+            if ((abs(g1 - g0) < kTolerance) || (rho < kTolerance))
                 return(sigma0)
             else {
                 sigma0 <- sigma1
@@ -9523,7 +9523,7 @@ chooseICellPopn <- function(description, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 isLowerTriangle <- function(i, description, useC = FALSE) {
     stopifnot(is(description, "DescriptionComp"))
