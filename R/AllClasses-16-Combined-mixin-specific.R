@@ -904,6 +904,39 @@ setClass("SystemMovementsMixin",
              TRUE
          })
 
+
+setClass("TransformExpToBirthsMixin",
+         slots = c(transformExpToBirths = "CollapseTransform"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             transformExpToBirths <- object@transformExpToBirths
+             iBirths <- object@iBirths
+             exposure <- object@exposure
+             modelUsesExposure <- object@modelUsesExposure
+             ## if 'iBirths' is 0, then 'transformExpToBirths' is empty
+             if (iBirths == 0L) {
+                 if (!identical(transformExpToBirths, new("CollapseTransform")))
+                     return(gettextf("account does not have births component, but '%s' is not empty",
+                                     "transformExpToBirths"))
+             }
+             else {
+                 if (modelUsesExposure[iBirths + 1L]) {
+                     ## if model for births uses exposure, then 'dimBefore' matches dimensions of 'exposure'
+                     if (!identical(transformExpToBirths@dimBefore, dim(exposure)))
+                         return(gettextf("'%s' from '%s' not consistent with dimensions of '%s'",
+                                         "dimBefore", "transformExpToBirths", "exposure"))
+                 }
+                 else {
+                     ## if model for births does not use exposure, then 'transformExpToBirths' is empty
+                     if (!identical(transformExpToBirths, new("CollapseTransform")))
+                         return(gettextf("model for births does not use exposure, but '%s' is not empty",
+                                         "transformExpToBirths"))
+                 }
+             }
+             TRUE
+         })
+
+
 ## HAS_TESTS
 setClass("TransformsMixin",
          slots = c(transforms = "list"),
@@ -931,6 +964,60 @@ setClass("TransformsMixin",
                  if (!identical(dim(datasets[[i]]), transforms[[i]]@dimAfter))
                      return(gettextf("'%s' and '%s' for \"%s\" inconsistent",
                                      "dataset", "transform", namesDatasets[i]))
+             }
+             TRUE
+         })
+
+setClass("TransformsExpToCompMixin",
+         slots = c(transformsExpToComp = "list"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             transformsExpToComp <- object@transformsExpToComp
+             transformExpToBirths <- object@transformExpToBirths
+             components <- object@account@components
+             namesComponents <- object@account@namesComponents
+             exposure <- object@exposure
+             iBirths <- object@iBirths
+             modelUsesExposure <- object@modelUsesExposure
+             ## 'transformsExpToComp' has same length as 'components'
+             if (!identical(length(transformsExpToComp), length(components)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "transformsExpToComp", "components"))
+             for (i in seq_along(components)) {
+                 transform <- transformsExpToComp[[i]]
+                 if (modelUsesExposure[i + 1L]) {
+                     component <- components[[i]]
+                     expose <- exposure
+                     ## [collapse 'expose' if 'component' has class "Births"]
+                     if (i == iBirths)
+                         expose <- dembase::collapse(expose,
+                                                     transform = transformExpToBirths)
+                     if (is.null(transform)) {
+                         ## if element of 'transformsExpToComp' is NULL, then 'exposure' and
+                         ## 'component' must have the same metadata
+                         same.dim <- isTRUE(all.equal(dim(expose), dim(component)))
+                         if (!same.dim)
+                             return(gettextf("element %d of '%s' is %s but correspondending element of '%s' does not have same dimensions as '%s'",
+                                             i, "transformsExpToComp", "NULL", "components", "exposure"))
+                     }
+                     else {
+                         ## if element of 'transformsExpToComp' is non-NULL, it must have
+                         ## class "ExtendTransform"
+                         if (!methods::is(transform, "ExtendTransform"))
+                             return(gettextf("element %d of '%s' has class \"%s\"",
+                                             i, "transformsExpToComp", class(transform)))
+                         ## after extending 'exposure', 'exposure' and 'component' must have the same metadata
+                         expose <- dembase::extend(expose, transform = transform)
+                         same.dim <- isTRUE(all.equal(dim(expose), dim(component)))
+                         if (!same.dim)
+                             return(gettextf("even after \"extend\" transformation, '%s' has different dimensions from '%s'",
+                                             "exposure", namesComponents[i]))
+                     }
+                 }
+                 else ## if component does not use exposure, transform is NULL
+                     if (!is.null(transform))
+                         return(gettextf("system model for '%s' does not use exposure, but corresponding element of '%s' is not %s",
+                                         namesComponents[i + 1L], "transformsExpToComp", "NULL"))
              }
              TRUE
          })

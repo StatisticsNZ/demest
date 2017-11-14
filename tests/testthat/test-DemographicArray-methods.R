@@ -501,6 +501,236 @@ test_that("equivalentSample throws appropriate errors", {
 })
 
 
+## makeTransformExpToComp ##################################################
+
+test_that("makeTransformExpToComp works with general component", {
+    makeTransformExpToComp <- demest:::makeTransformExpToComp
+    ## metadata same
+    exposure <- Counts(array(1:4 + 0.1,
+                             dim = c(2, 2),
+                             dimnames = list(reg = c("a", "b"),
+                                             time = c("2001-2005", "2006-2010"))))
+    component <- Counts(array(1:4,
+                              dim = c(2, 2),
+                              dimnames = list(reg = c("a", "b"),
+                                              time = c("2001-2005", "2006-2010"))))
+    exposure <- new("Exposure", .Data = exposure@.Data, metadata = exposure@metadata)
+    component <- new("ExitsMovements", .Data = component@.Data, metadata = component@metadata)
+    ans.obtained <- makeTransformExpToComp(exposure = exposure,
+                                                 component = component,
+                                                 nameComponent = "deaths")
+    ans.expected <- NULL
+    expect_identical(ans.obtained, ans.expected)
+    ## component permuted
+    exposure <- Counts(array(1:4 + 0.1,
+                             dim = c(2, 2),
+                             dimnames = list(reg = c("a", "b"),
+                                             time = c("2001-2005", "2006-2010"))))
+    component <- Counts(array(1:4,
+                              dim = c(2, 2),
+                              dimnames = list(reg = c("a", "b"),
+                                              time = c("2001-2005", "2006-2010"))))
+    component <- t(component)
+    exposure <- new("Exposure", .Data = exposure@.Data, metadata = exposure@metadata)
+    component <- new("ExitsMovements", .Data = component@.Data, metadata = component@metadata)
+    ans.obtained <- makeTransformExpToComp(exposure = exposure,
+                                                 component = component,
+                                                 nameComponent = "deaths")
+    ans.expected <- dembase::makeTransform(x = as(exposure, "Values"), y = component)
+    expect_identical(ans.obtained, ans.expected)
+    ## raises appropriate error
+    exposure <- Counts(array(1:4 + 0.1,
+                             dim = c(2, 2),
+                             dimnames = list(reg = c("a", "b"),
+                                             time = c("2001-2005", "2006-2010"))))
+    component <- Counts(array(1:4,
+                              dim = c(2, 2),
+                              dimnames = list(reg = c("a", "wrong"),
+                                              time = c("2001-2005", "2006-2010"))))
+    component <- t(component)
+    exposure <- new("Exposure", .Data = exposure@.Data, metadata = exposure@metadata)
+    component <- new("ExitsMovements", .Data = component@.Data, metadata = component@metadata)
+    expect_error(makeTransformExpToComp(exposure = exposure,
+                                              component = component,
+                                              nameComponent = "deaths"),
+                 "unable to make \"extend\" transform for 'deaths' :")    
+})
+
+
+test_that("makeTransformExpToComp works with Orig-Dest", {
+    makeTransformExpToComp <- demest:::makeTransformExpToComp
+    ## one orig-dest pair
+    exposure <- Counts(array(1:4 + 0.1,
+                             dim = c(2, 2),
+                             dimnames = list(reg = c("a", "b"),
+                                             time = c("2001-2005", "2006-2010"))))
+    component <- Counts(array(1:8,
+                           dim = c(2, 2, 2),
+                           dimnames = list(reg_orig = c("a", "b"),
+                                           reg_dest = c("a", "b"),
+                                           time = c("2001-2005", "2006-2010"))))
+    exposure <- new("Exposure", .Data = exposure@.Data, metadata = exposure@metadata)
+    component <- new("InternalMovementsOrigDest",
+                     .Data = component@.Data,
+                     metadata = component@metadata)
+    ans.obtained <- makeTransformExpToComp(exposure = exposure,
+                                                 component = component,
+                                                 nameComponent = "internal")
+    ans.expected <- new("ExtendTransform",
+                        dims = c(1L, 0L, 2L),
+                        indices = list(1:2, c(1L, 1L), 1:2),
+                        dimBefore = c(2L, 2L),
+                        dimAfter = c(2L, 2L, 2L))
+    expect_identical(ans.obtained, ans.expected)
+    ## two orig-dest pairs
+    exposure <- Counts(array(1:8 + 0.1,
+                             dim = c(2, 2, 2),
+                             dimnames = list(reg = c("a", "b"),
+                                             eth = c("x", "y"),
+                                             time = c("2001-2005", "2006-2010"))))
+    component <- Counts(array(1:32,
+                           dim = c(2, 2, 2, 2, 2),
+                           dimnames = list(reg_orig = c("a", "b"),
+                                           reg_dest = c("a", "b"),
+                                           eth_orig = c("a", "b"),
+                                           eth_dest = c("a", "b"),
+                                           time = c("2001-2005", "2006-2010"))))
+    exposure <- new("Exposure", .Data = exposure@.Data, metadata = exposure@metadata)
+    component <- new("InternalMovementsOrigDest",
+                  .Data = component@.Data,
+                  metadata = component@metadata)
+    ans.obtained <- makeTransformExpToComp(exposure = exposure,
+                                                 component = component,
+                                                 nameComponent = "component")
+    ans.expected <- new("ExtendTransform",
+                        dims = c(1L, 0L, 2L, 0L, 3L),
+                        indices = list(1:2,
+                                       c(1L, 1L),
+                                       1:2,
+                                       c(1L, 1L),
+                                       1:2),
+                        dimBefore = c(2L, 2L, 2L),
+                        dimAfter = c(2L, 2L, 2L, 2L, 2L))
+    expect_identical(ans.obtained, ans.expected)
+})
+
+
+
+test_that("makeTransformExpToComp works with Pool", {
+    makeTransformExpToComp <- demest:::makeTransformExpToComp
+    exposure <- Counts(array(1:4 + 0.1,
+                             dim = c(2, 2),
+                             dimnames = list(reg = c("a", "b"),
+                                             time = c("2001-2005", "2006-2010"))))
+    component <- Counts(array(1L,
+                              dim = c(2, 2, 2),
+                              dimnames = list(reg = c("a", "b"),
+                                              time = c("2001-2005", "2006-2010"),
+                                              direction = c("Out", "In"))))
+    exposure <- new("Exposure", .Data = exposure@.Data, metadata = exposure@metadata)
+    component <- new("InternalMovementsPool",
+                     .Data = component@.Data,
+                     metadata = component@metadata,
+                     iBetween = 1L,
+                     iDirection = 3L)
+    ans.obtained <- makeTransformExpToComp(exposure = exposure,
+                                                 component = component,
+                                                 nameComponent = "internal")
+    ans.expected <- new("ExtendTransform",
+                        dims = c(1:2, 0L),
+                        indices = list(1:2, 1:2, c(1L, 1L)),
+                        dimBefore = c(2L, 2L),
+                        dimAfter = c(2L, 2L, 2L))
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("makeTransformExpToComp works with Births", {
+    makeTransformExpToComp <- demest:::makeTransformExpToComp
+    ## metadata same
+    exposure <- Counts(array(1:4 + 0.1,
+                             dim = c(2, 2),
+                             dimnames = list(reg = c("a", "b"),
+                                             time = c("2001-2005", "2006-2010"))))
+    births <- Counts(array(1:4,
+                           dim = c(2, 2),
+                           dimnames = list(reg = c("a", "b"),
+                                           time = c("2001-2005", "2006-2010"))))
+    exposure <- new("Exposure", .Data = exposure@.Data, metadata = exposure@metadata)
+    births <- new("BirthsMovementsNoParentChild",
+                  .Data = births@.Data,
+                  metadata = births@metadata,
+                  iMinAge = NA_integer_)
+    ans.obtained <- makeTransformExpToComp(exposure = exposure,
+                                           component = births,
+                                           nameComponent = "births")
+    ans.expected <- NULL
+    expect_identical(ans.obtained, ans.expected)
+    ## births has sex
+    exposure <- Counts(array(1:4 + 0.1,
+                             dim = c(2, 2),
+                             dimnames = list(reg = c("a", "b"),
+                                             time = c("2001-2005", "2006-2010"))))
+    births <- Counts(array(1:8,
+                           dim = c(2, 2, 2),
+                           dimnames = list(reg = c("a", "b"),
+                                           sex = c("f", "m"),
+                                           time = c("2001-2005", "2006-2010"))))
+    exposure <- new("Exposure", .Data = exposure@.Data, metadata = exposure@metadata)
+    births <- new("BirthsMovementsNoParentChild",
+                  .Data = births@.Data,
+                  metadata = births@metadata,
+                  iMinAge = NA_integer_)
+    ans.obtained <- makeTransformExpToComp(exposure = exposure,
+                                           component = births,
+                                           nameComponent = "births")
+    ans.expected <- new("ExtendTransform",
+                        dims = c(1L, 0L, 2L),
+                        indices = list(1:2,
+                                       c(1L, 1L),
+                                       1:2),
+                        dimBefore = c(2L, 2L),
+                        dimAfter = c(2L, 2L, 2L))
+    expect_identical(ans.obtained, ans.expected)
+    ## births has two parent dimensions
+    exposure <- Counts(array(1:8 + 0.1,
+                             dim = c(2, 2, 2),
+                             dimnames = list(reg = c("a", "b"),
+                                             eth = c("x", "y"),
+                                             time = c("2001-2005", "2006-2010"))))
+    births <- Counts(array(1:32,
+                           dim = c(2, 2, 2, 2, 2),
+                           dimnames = list(reg_parent = c("a", "b"),
+                                           reg_child = c("a", "b"),
+                                           eth_parent = c("a", "b"),
+                                           eth_child = c("a", "b"),
+                                           time = c("2001-2005", "2006-2010"))))
+    exposure <- new("Exposure", .Data = exposure@.Data, metadata = exposure@metadata)
+    births <- new("BirthsMovementsHasParentChild",
+                  .Data = births@.Data,
+                  metadata = births@metadata,
+                  iMinAge = NA_integer_)
+    ans.obtained <- makeTransformExpToComp(exposure = exposure,
+                                           component = births,
+                                           nameComponent = "births")
+    ans.expected <- new("ExtendTransform",
+                        dims = c(1L, 0L, 2L, 0L, 3L),
+                        indices = list(1:2,
+                                       c(1L, 1L),
+                                       1:2,
+                                       c(1L, 1L),
+                                       1:2),
+                        dimBefore = c(2L, 2L, 2L),
+                        dimAfter = c(2L, 2L, 2L, 2L, 2L))
+    expect_identical(ans.obtained, ans.expected)
+})
+
+
+
+
+
+
+
+
 ## sweepAllMargins ###############################################################
 
 test_that("sweepAllMargins works with arrays", {

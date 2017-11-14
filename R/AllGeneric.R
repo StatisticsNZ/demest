@@ -238,7 +238,8 @@ setGeneric("hasEstimated",
 setGeneric("initialCombinedAccount",
            function(account, systemModels, systemWeights,
                     observationModels, seriesIndices, 
-                    datasets, namesDatasets, transforms)
+                    datasets, namesDatasets, transforms,
+                    dominant = c("Female", "Male"))
            standardGeneric("initialCombinedAccount"))
 
 setGeneric("initialCombinedCounts",
@@ -287,6 +288,10 @@ setGeneric("makeCellInLik",
                model@cellInLik <- !is.na(y)
                model
            })
+
+setGeneric("makeTransformExpToComp",
+           function(exposure, component, nameComponent)
+               standardGeneric("makeTransformExpToComp"))
 
 setGeneric("makeOutputAggregate",
            function(model, pos, nChain, nIteration)

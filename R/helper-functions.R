@@ -9724,6 +9724,51 @@ getMinValCohortPopulation <- function(i, series, iterator, useC = FALSE) {
 }
 
 
+makeTransformExpToBirths <- function(exposure, births,
+                                     dominant = c("Female", "Male")) {
+    dominant <- match.arg(dominant)
+    names.exp <- names(exposure)
+    dimtypes.exp <- dimtypes(exposure, use.names = FALSE)
+    dimtypes.births <- dimtypes(births, use.names = FALSE)
+    DimScales.exp <- DimScales(exposure, use.names = FALSE)
+    DimScales.births <- DimScales(births, use.names = FALSE)
+    i.sex.exp <- match("sex", dimtypes.exp, nomatch = 0L)
+    i.age.exp <- match("age", dimtypes.exp, nomatch = 0L)
+    has.sex.exp <- i.sex.exp > 0L
+    has.age.exp <- i.age.exp > 0L
+    dimBefore <- dim(exposure)
+    dimAfter <- dim(exposure)
+    indices <- lapply(dimBefore, seq_len)
+    if (has.sex.exp) {
+        DimScale <- DimScales.exp[[i.sex.exp]]
+        if (dominant == "Female") 
+            i.dominant <- dembase::iFemale(DimScale)
+        else
+            i.dominant <- dembase::iMale(DimScale)
+        indices[[i.sex.exp]] <- ifelse(indices[[i.sex.exp]] == i.dominant, 1L, 0L)
+        dims <- match(names.exp, names.exp[-i.sex.exp], nomatch = 0L)
+    }
+    else
+        dims <- seq_along(names.exp)
+    if (has.age.exp) {
+        i.age.births <- match("age", dimtypes.births)
+        DimScale.exp <- DimScales.exp[[i.age.exp]]
+        DimScale.births <- DimScales.births[[i.age.births]]
+        labels.exp <- labels(DimScale.exp)
+        labels.births <- labels(DimScale.births)
+        indices[[i.age.exp]] <- match(labels.exp, labels.births, nomatch = 0L)
+        dimAfter[i.age.exp] <- length(labels.births)
+    }
+    if (has.sex.exp)
+        dimAfter <- dimAfter[-i.sex.exp]
+    methods::new("CollapseTransform",
+                 dims = dims,
+                 indices = indices,
+                 dimBefore = dimBefore,
+                 dimAfter = dimAfter)
+}
+
+
 ## HAS_TESTS
 makeIteratorCAP <- function(dim, iTime, iAge, accession) {
     n.time <- dim[iTime]

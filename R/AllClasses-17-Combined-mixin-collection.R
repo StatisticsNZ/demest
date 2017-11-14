@@ -43,5 +43,7 @@ setClass("ObservationMixin",
 setClass("SystemMixin",
          contains = c("VIRTUAL",
                       "SystemModelsMixin",
-                      "ModelUsesExposureMixin"))
+                      "ModelUsesExposureMixin",
+                      "TransformExpToBirthsMixin",
+                      "TransformsExpToCompMixin"))
          

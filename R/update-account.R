@@ -304,10 +304,10 @@ updateProposalAccountMoveOrigDest <- function(combined, useC = FALSE) {
         i.popn.next.dest <- pair.popn.next[2L]
         min.val.orig <- getMinValCohortPopulation(i = i.popn.next.orig,
                                                   series = population,
-                                                  iter = iterator.popn)
+                                                  iterator = iterator.popn)
         min.val.dest <- getMinValCohortPopulation(i = i.popn.next.dest,
                                                   series = population,
-                                                  iter = iterator.popn)
+                                                  iterator = iterator.popn)
         if (has.age) {
             pair.acc.next <- getIAccNextFromOrigDest(i = i.cell,
                                                      mapping = mapping.to.acc)
@@ -317,10 +317,10 @@ updateProposalAccountMoveOrigDest <- function(combined, useC = FALSE) {
             if (has.later.accession) {
                 min.acc.orig <- getMinValCohortAccession(i = i.acc.next.orig,
                                                          series = accession,
-                                                         iter = iterator.acc)
+                                                         iterator = iterator.acc)
                 min.acc.dest <- getMinValCohortAccession(i = i.acc.next.dest,
                                                          series = accession,
-                                                         iter = iterator.acc)
+                                                         iterator = iterator.acc)
                 min.val.orig <- min(min.val.orig, min.acc.orig)
                 min.val.dest <- min(min.val.dest, min.acc.dest)
             }
@@ -392,6 +392,149 @@ updateProposalAccountMoveOrigDest <- function(combined, useC = FALSE) {
         combined
     }
 }
+
+
+updateProposalAccountMovePool <- function(combined, useC = FALSE) {
+    stopifnot(is(combined, "CombinedAccountMovements"))
+    if (useC) {
+        .Call(updateProposalAccountMovePool_R, combined)
+    }
+    else {
+        account <- combined@account
+        population <- account@population
+        i.comp <- combined@iComp
+        component <- account@components[[i.comp]]
+        max.attempt <- combined@maxAttempt
+        has.age <- combined@hasAge@.Data
+        if (has.age) {
+            accession <- combined@accession
+            iterator.acc <- combined@iteratorAcc
+            mapping.to.acc <- combined@mappingsToAcc[[i.comp]]
+        }
+        mapping.to.popn <- combined@mappingsToPopn[[i.comp]]
+        iterator.popn <- combined@iteratorPopn
+        mapping.to.exp <- combined@mappingsToExp[[i.comp]]
+        uses.exposure <- combined@modelUsesExposure[i.comp + 1L]
+        description <- combined@descriptions[[i.comp + 1L]]        
+        theta <- combined@systemModels[[i.comp + 1L]]@theta
+        pair.cell <- chooseICellOutInPool(description)
+        i.cell.out <- pair.cell[1L]
+        i.cell.in <- pair.cell[2L]
+        if (has.age)
+            is.lower.triangle <- isLowerTriangle(i = i.cell.out,
+                                                 description = description)
+        if (uses.exposure) {
+            expected.exposure <- combined@expectedExposure
+            i.exposure.out <- getIExposureFromComp(i = i.cell.out,
+                                                   mapping = mapping.to.exp)
+            i.exposure.in <- getIExposureFromComp(i = i.cell.in,
+                                                  mapping = mapping.to.exp)
+        }
+        i.exp.first.out <- getIExpFirstFromComp(i = i.cell.out,
+                                                mapping = mapping.to.exp)
+        i.exp.first.in <- getIExpFirstFromComp(i = i.cell.in,
+                                               mapping = mapping.to.exp)
+        i.popn.next.out <- getIPopnNextFromComp(i = i.cell.out,
+                                                mapping = mapping.to.popn)
+        i.popn.next.in <- getIPopnNextFromComp(i = i.cell.in,
+                                               mapping = mapping.to.popn)
+        min.val.out <- getMinValCohortPopulation(i = i.popn.next.out,
+                                                 series = population,
+                                                 iter = iterator.popn)
+        min.val.in <- getMinValCohortPopulation(i = i.popn.next.in,
+                                                series = population,
+                                                iter = iterator.popn)
+        if (has.age) {
+            i.acc.next.out <- getIAccNextFromComp(i = i.cell.out,
+                                                  mapping = mapping.to.acc)
+            i.acc.next.in <- getIAccNextFromComp(i = i.cell.in,
+                                                 mapping = mapping.to.acc)
+            has.later.accession <- i.acc.next.out > 0L
+            if (has.later.accession) {
+                min.acc.out <- getMinValCohortAccession(i = i.acc.next.out,
+                                                        series = accession,
+                                                        iterator = iterator.acc)
+                min.acc.in <- getMinValCohortAccession(i = i.acc.next.in,
+                                                       series = accession,
+                                                       iterator = iterator.acc)
+                min.val.out <- min(min.val.out, min.acc.out)
+                min.val.in <- min(min.val.in, min.acc.in)
+            }
+        }
+        val.curr.out <- component[i.cell.out]
+        val.curr.in <- component[i.cell.in]
+        lower <- val.curr.in - min.val.in
+        upper <- val.curr.out + min.val.out
+        theta.out <- theta[i.cell.out]
+        if (uses.exposure) {
+            expected.exposure.out <- expected.exposure[i.exposure.out]
+            lambda.out <- theta.out * expected.exposure.out
+        }
+        else
+            lambda.out <- theta.out
+        if (lower > upper)
+            found.value <- FALSE
+        else {
+            val.prop.out <- rpoisTrunc1(lambda = lambda.out,
+                                        lower = lower,
+                                        upper = upper,
+                                        maxAttempt = max.attempt)
+            found.value <- !is.na(val.prop.out)
+        }
+        if (found.value) {
+            diff.prop <- val.prop.out - val.curr.out
+            generated.new.proposal <- diff.prop != 0L
+        }
+        else
+            generated.new.proposal <- FALSE
+        combined@generatedNewProposal@.Data <- generated.new.proposal
+        if (generated.new.proposal) {
+            combined@iCell <- i.cell.out
+            combined@iCellOther <- i.cell.in
+            combined@iPopnNext <- i.popn.next.out
+            combined@iPopnNextOther <- i.popn.next.in
+            if (has.age) {
+                combined@iAccNext <- i.acc.next.out
+                combined@iAccNextOther <- i.acc.next.in
+                combined@isLowerTriangle <- is.lower.triangle
+            }
+            if (uses.exposure) {
+                combined@iExposure <- i.exposure.out
+                combined@iExposureOther <- i.exposure.in
+            }
+            else {
+                combined@iExposure <- 0L
+                combined@iExposureOther <- NA_integer_
+            }
+            combined@iExpFirst <- i.exp.first.out
+            combined@iExpFirstOther <- i.exp.first.in
+            combined@diffProp <- diff.prop
+        }
+        else {
+            combined@iCell <- NA_integer_
+            combined@iCellOther <- NA_integer_
+            combined@iPopnNext <- NA_integer_
+            combined@iPopnNextOther <- NA_integer_
+            if (has.age) {
+                combined@iAccNext <- NA_integer_
+                combined@iAccNextOther <- NA_integer_
+                combined@isLowerTriangle <- NA
+            }
+            combined@iExposure <- NA_integer_
+            combined@iExposureOther <- NA_integer_
+            combined@iExpFirst <- NA_integer_
+            combined@iExpFirstOther <- NA_integer_
+            combined@diffProp <- NA_integer_
+        }
+        combined
+    }
+}
+
+
+
+
+
+
 
 ## HAS_TESTS
 updateProposalAccountMoveComp <- function(combined, useC = FALSE) {
@@ -1196,7 +1339,7 @@ diffLogDensJumpOrigDest <- function(combined, useC = FALSE) {
     }
 }
 
-
+## HAS_TESTS
 ## Difference in log-density of current values for
 ## all components attributable to change in exposure,
 ## where the change in exposure is due to a change in

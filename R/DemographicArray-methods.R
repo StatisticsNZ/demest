@@ -402,6 +402,92 @@ setMethod("equivalentSample",
               list(y = y, exposure = exposure)
           })
 
+
+## makeTransformExpToComp #################################################
+
+## HAS_TESTS
+setMethod("makeTransformExpToComp",
+          signature(exposure = "DemographicArray",
+                    component = "Component"),
+          function(exposure, component, nameComponent) {
+              same.metadata <- isTRUE(all.equal(exposure@metadata, component@metadata))
+              if (same.metadata)
+                  NULL
+              else {
+                  exposure <- as(exposure, "Values")
+                  transform <- tryCatch(dembase::makeTransform(x = exposure,
+                                                               y = component,
+                                                               subset = TRUE,
+                                                               check = TRUE),
+                                        error = function(e) e)
+                  if (methods::is(transform, "error"))
+                      stop(gettextf("unable to make \"extend\" transform for '%s' : %s",
+                                    nameComponent, transform$message))
+                  transform
+              }
+          })
+
+## HAS_TESTS
+setMethod("makeTransformExpToComp",
+          signature(exposure = "DemographicArray",
+                    component = "HasOrigDest"),
+          function(exposure, component, nameComponent) {
+              dim.exp <- dim(exposure)
+              dim.comp <- dim(component)
+              names.exp <- names(exposure)
+              names.comp <- names(component)
+              dimtypes.comp <- dimtypes(component, use.names = FALSE)
+              is.orig <- dimtypes.comp == "origin"
+              names.comp[is.orig] <- sub("_orig$", "", names.comp[is.orig])
+              dims <- match(names.comp, names.exp, nomatch = 0L)
+              indices <- vector(mode = "list", length = length(dim.comp))
+              for (i in seq_along(indices)) {
+                  if (dims[i] > 0L)
+                      indices[[i]] <- seq_len(dim.comp[i])
+                  else
+                      indices[[i]] <- rep(1L, times = dim.comp[i])
+              }
+              methods::new("ExtendTransform",
+                           dims = dims,
+                           indices = indices,
+                           dimBefore = dim.exp,
+                           dimAfter = dim.comp)
+          })
+
+## HAS_TESTS
+setMethod("makeTransformExpToComp",
+          signature(exposure = "DemographicArray",
+                    component = "Births"),
+          function(exposure, component, nameComponent) {
+              same.metadata <- isTRUE(all.equal(exposure@metadata, component@metadata))
+              if (same.metadata)
+                  NULL
+              else {
+                  dim.exp <- dim(exposure)
+                  dim.births <- dim(component)
+                  names.exp <- names(exposure)
+                  names.births <- names(component)
+                  dimtypes.births <- dimtypes(component, use.names = FALSE)
+                  is.parent <- dimtypes.births == "parent"
+                  names.births[is.parent] <- sub("_parent$", "", names.births[is.parent])
+                  dims <- match(names.births, names.exp, nomatch = 0L)
+                  indices <- vector(mode = "list", length = length(dim.births))
+                  for (i in seq_along(indices)) {
+                      if (dims[i] > 0L)
+                          indices[[i]] <- seq_len(dim.births[i])
+                      else
+                          indices[[i]] <- rep(1L, times = dim.births[i])
+                  }
+                  methods::new("ExtendTransform",
+                               dims = dims,
+                               indices = indices,
+                               dimBefore = dim.exp,
+                               dimAfter = dim.births)
+              }
+          })
+
+
+
         
 ## show #########################################################################
 

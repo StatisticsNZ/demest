@@ -13903,49 +13903,103 @@ test_that("R and C versions of getMinValCohortPopulation give same answer", {
     }
 })
 
-## test_that("R and C versions of getMinValCohort give same answer", {
-##     getMinValCohort <- demest:::getMinValCohort
-##     CohortIterator <- demest:::CohortIterator
-##     Population <- dembase:::Population
-##     for (seed in seq_len(n.test)) {
-##         set.seed(seed)
-##         population <- Counts(array(rpois(n = 12, lambda = 10),
-##                                    dim = c(4, 3),
-##                                    dimnames = list(age = c("0-4", "5-9", "10-14", "15+"),
-##                                        time = c(2000, 2005, 2010))))
-##         population <- Population(population)
-##         iter <- CohortIterator(population)
-##         ans.R <- getMinValCohort(i = 2L, series = population, iter = iter, useC = FALSE)
-##         ans.C <- getMinValCohort(i = 2L, series = population, iter = iter, useC = TRUE)
-##         expect_identical(ans.R, ans.C)
-##         population <- Counts(array(as.integer(rpois(4, lambda = 10)),
-##                                    dim = 4L,
-##                                    dimnames = list(time = c(0, 5, 10, 15))))
-##         population <- Population(population)
-##         iter <- CohortIterator(population)
-##         ans.R <- getMinValCohort(i = 1L, series = population, iter = iter, useC = FALSE)
-##         ans.C <- getMinValCohort(i = 1L, series = population, iter = iter, useC = TRUE)
-##         expect_identical(ans.R, ans.C)
-##         population <- Counts(array(as.integer(rpois(12, lambda = 5)),
-##                                    dim = c(4, 3),
-##                                    dimnames = list(region = 1:4, time = c(0, 5, 10))))
-##         population <- Population(population)
-##         iter <- CohortIterator(population)
-##         ans.R <- getMinValCohort(i = 8L, series = population, iter = iter, useC = FALSE)
-##         ans.C <- getMinValCohort(i = 8L, series = population, iter = iter, useC = TRUE)
-##         expect_identical(ans.R, ans.C)
-##         population <- Counts(array(as.integer(rpois(n = 60, lambda = 20)),
-##                                    dim = 5:3,
-##                                    dimnames = list(region = 1:5,
-##                                        time = c(2000, 2005, 2010, 2015),
-##                                        age = c("0-4", "5-9", "10+"))))
-##         population <- Population(population)
-##         iter <- CohortIterator(population)
-##         ans.R <- getMinValCohort(i = 22L, series = population, iter = iter, useC = FALSE)
-##         ans.C <- getMinValCohort(i = 22L, series = population, iter = iter, useC = TRUE)
-##         expect_identical(ans.R, ans.C)
-##     }
-## })
+test_that("makeTransformExpToBirths works", {
+    makeTransformExpToBirths <- demest:::makeTransformExpToBirths
+    ## exposure has sex and age dimensions
+    exposure <- Counts(array(1,
+                             dim = c(5, 2, 2, 3, 2),
+                             dimnames = list(region = 1:5,
+                                             time = c("2002-2006", "2007-2011"),
+                                             sex = c("f", "m"),
+                                             age = c("0-4", "5-9", "10+"),
+                                             triangle = c("TL", "TU"))))
+    births <- Counts(array(1,
+                           dim = c(5, 2, 2, 1, 2),
+                           dimnames = list(region = 1:5,
+                                           time = c("2002-2006", "2007-2011"),
+                                           sex = c("f", "m"),
+                                           age = "5-9",
+                                           triangle = c("TL", "TU"))))
+    ans.obtained <- makeTransformExpToBirths(exposure = exposure,
+                                             births = births,
+                                             dominant = "Female")
+    ans.expected <- new("CollapseTransform",
+                        dims = c(1L, 2L, 0L, 3L, 4L),
+                        indices = list(1:5,
+                                       1:2,
+                                       c(1L, 0L),
+                                       c(0L, 1L, 0L),
+                                       1:2),
+                        dimBefore = c(5L, 2L, 2L, 3L, 2L),
+                        dimAfter = c(5L, 2L, 1L, 2L))
+    expect_identical(ans.obtained, ans.expected)
+    ## exposure has sex dimension but no age dimension; births has no sex dimension; male dominant
+    exposure <- Counts(array(1,
+                             dim = c(5, 2, 2),
+                             dimnames = list(region = 1:5,
+                                             time = c("2002-2006", "2007-2011"),
+                                             sex = c("f", "m"))))
+    births <- Counts(array(1,
+                           dim = c(5, 2),
+                           dimnames = list(region = 1:5,
+                                           time = c("2002-2006", "2007-2011"))))
+    ans.obtained <- makeTransformExpToBirths(exposure = exposure,
+                                             births = births,
+                                             dominant = "Male")
+    ans.expected <- new("CollapseTransform",
+                        dims = c(1L, 2L, 0L),
+                        indices = list(1:5,
+                                       1:2,
+                                       c(0L, 1L)),
+                        dimBefore = c(5L, 2L, 2L),
+                        dimAfter = c(5L, 2L))
+    expect_identical(ans.obtained, ans.expected)    
+    ## exposure has age dimensions but not sex dimension
+    exposure <- Counts(array(1,
+                             dim = c(5, 2, 3, 2),
+                             dimnames = list(region = 1:5,
+                                             time = c("2002-2006", "2007-2011"),
+                                             age = c("0-4", "5-9", "10+"),
+                                             triangle = c("TL", "TU"))))
+    births <- Counts(array(1,
+                           dim = c(5, 2, 1, 2),
+                           dimnames = list(region = 1:5,
+                                           time = c("2002-2006", "2007-2011"),
+                                           age = "5-9",
+                                           triangle = c("TL", "TU"))))
+    ans.obtained <- makeTransformExpToBirths(exposure = exposure,
+                                             births = births,
+                                             dominant = "Female")
+    ans.expected <- new("CollapseTransform",
+                        dims = c(1L, 2L, 3L, 4L),
+                        indices = list(1:5,
+                                       1:2,
+                                       c(0L, 1L, 0L),
+                                       1:2),
+                        dimBefore = c(5L, 2L, 3L, 2L),
+                        dimAfter = c(5L, 2L, 1L, 2L))
+    expect_identical(ans.obtained, ans.expected)
+    ## exposure has no age dimension, no sex dimension
+    exposure <- Counts(array(1,
+                             dim = c(5, 2),
+                             dimnames = list(region = 1:5,
+                                             time = c("2002-2006", "2007-2011"))))
+    births <- Counts(array(1,
+                           dim = c(5, 2),
+                           dimnames = list(region = 1:5,
+                                           time = c("2002-2006", "2007-2011"))))
+    ans.obtained <- makeTransformExpToBirths(exposure = exposure,
+                                             births = births,
+                                             dominant = "Female")
+    ans.expected <- new("CollapseTransform",
+                        dims = c(1L, 2L),
+                        indices = list(1:5,
+                                       1:2),
+                        dimBefore = c(5L, 2L),
+                        dimAfter = c(5L, 2L))
+    expect_identical(ans.obtained, ans.expected)
+})
+
 
 test_that("makeIteratorCAP creates objects from valid inputs - Accession", {
     makeIteratorCAP <- demest:::makeIteratorCAP

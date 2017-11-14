@@ -1,5 +1,11 @@
 
 
+setMethod("makeTransformExposure",
+          signature(series = "Births"),
+          function(series, exposure) {
+              
+
+
 
 ##################################################################################
 ## Top Level #####################################################################
@@ -70,40 +76,53 @@ updateAccount <- function(object) {
     object
 }
 
-updateSystemModels <- function(combined) {
-    systemModels <- combined@systemModels
-    account <- combined@account
-    population <- account@population
-    components <- account@components
-    mappings <- combined@mappingsToPopn
-    has.age <- combined@hasAge
-    model.popn <- systemModels[[1L]]
-    model.popn <- updateModelNotUseExp(model.popn, y = population)
-    systemModels[[1L]] <- model.popn
-    for (i in seq_along(component)) {
-        model.comp <- systemModels[[i + 1L]]
-        component <- components[[i]]
-        mapping <- mappings[[i]]
-        uses.expose <- !is.null(transform)
-        if (uses.expose) {
-            if (has.age)
-                exposure <- makeExposureAge(population = population,
-                                            mapping = mapping)
-            else
-                exposure <- makeExposureNoAge(population = population,
-                                              mapping = mapping)
-            model.comp <- updateModelUseExp(model = model.comp,
-                                            y = component,
-                                            exposure = exposure)
-        }
-        else
-            model.comp <- updateModelNotUseExp(model = model.comp,
-                                               y = component)
-        systemModels[[i + 1L]] <- model.comp
-    }
-    combined@systemModels <- systemModels
-    combined
-}
+              
+              updateSystemModels <- function(combined, useC = FALSE) {
+                  stopifnot(methods::is(combined, "CombinedAccount"))
+                  stopifnot(methods::validObject(combined))
+                  if (useC) {
+                      .Call(updateSystemModels_R, combined)
+                  }
+                  else {
+                      system.models <- combined@systemModels
+                      population <- combined@account@population
+                      components <- combined@account@components
+                      has.age <- combined@hasAge
+                      model.uses.exposure <- combined@modelUsesExposure
+                      transforms.exp.to.comp <- combined@transformsExpToComp
+                      transform.exp.to.births <- combined@transformExpToBirths
+                      i.births <- combined@iBirths
+                      model <- system.models[[1L]]
+                      model <- updateModelNotUseExp(model,
+                                                    y = population)
+                      system.models[[1L]] <- model.popn
+                      for (i in seq_along(components)) {
+                          model <- system.models[[i + 1L]]
+                          component <- components[[i]]
+                          uses.exposure <- model.uses.exposure[i + 1L]
+                          if (uses.exposure) {
+                              exposure <- combined@exposure@.Data
+                              is.births <- i == i.births
+                              if (is.births)
+                                  exposure <- collapse(exposure,
+                                                       transform = transform.exp.to.births)
+                              transform <- transforms.exp.to.comp[[i]]
+                              if (!is.null(transform))
+                                  exposure <- extend(exposure,
+                                                     transform = transforms.exp.to.comp[i])
+                              model <- updateModelUseExp(model = model.comp,
+                                                         y = component,
+                                                         exposure = exposure)
+                          }
+                          else
+                              model <- updateModelNotUseExp(model = model,
+                                                            y = component)
+                          system.models[[i + 1L]] <- model
+                      }
+                      combined@systemModels <- system.models
+                      combined
+                  }
+              }
 
 updateObservation <- function(combined) {
     observationModels <- combined@observationModels
@@ -186,146 +205,6 @@ setMethod("updateProposalAccount",
               
 
 
-updateProposalAccountMovePool <- function(combined) {
-    stopifnot(is(combined, "CombinedAccountMovements"))
-    if (useC) {
-        .Call(updateProposalAccountMovePool_R, combined)
-    }
-    else {
-        account <- combined@account
-        population <- account@population
-        i.comp <- combined@iComp
-        component <- account@components[[i.comp]]
-        uses.exposure <- combined@usesExposure[i.comp]
-        if (uses.exposure)
-            expected.exposure <- combined@expectedExposure
-        has.age <- combined@hasAge
-        if (has.age) {
-            accession <- combined@accession
-            iterator.acc <- combined@iteratorAcc
-            mapping.acc <- combined@mappingsToAcc[[i.comp]]
-        }
-        mapping.popn <- combined@mappingsToPopn[[i.comp]]
-        mapping.exposure <- combined@mappingsToExposure[[i.comp]]
-        description.comp <- combined@descriptionsComp[[i.comp]]
-        iterator.popn <- combined@iteratorPopn
-        sys.mod.popn <- combined@systemModels[[1L]]
-        sys.mod.comp <- combined@systemModels[[i.comp + 1L]]
-        theta.popn <- sys.mod.popn@theta
-        theta.comp <- sys.mod.comp@theta
-        max.attempt <- combined@maxAttempt
-        pair.cell <- chooseICellOutInPool(description.comp)
-        i.cell.out <- pair.cell[1L]
-        i.cell.in <- pair.cell[2L]
-        i.exp.first.out <- getIExpFirstFromComp(i = i.cell.out,
-                                                mapping = mapping.exposure)
-        i.exp.first.in <- getIExpFirstFromComp(i = i.cell.in,
-                                               mapping = mapping.exposure)
-        is.lower.triangle <- isLowerTriangle(i = i.cell,
-                                             description = description.comp)
-        if (uses.exposure) {
-            i.exposure.out <- getIExposure(i = i.cell.out,
-                                           mapping = mapping.exposure)
-            i.exposure.in <- getIExposure(i = i.cell.in,
-                                          mapping = mapping.exposure)
-        }
-        i.popn.next.out <- getIPopnNextFromComp(i = i.cell.out,
-                                                mapping = mapping.popn)
-        i.popn.next.in <- getIPopnNextFromComp(i = i.cell.in,
-                                               mapping = mapping.popn)
-        min.val.out <- getMinValCohort(i = i.popn.next.out,
-                                       series = population,
-                                       iter = iterator.popn)
-        min.val.in <- getMinValCohort(i = i.popn.next.in,
-                                      series = population,
-                                      iter = iterator.popn)
-        if (has.age) {
-            i.acc.next.out <- getIAccNextFromComp(i = i.cell.out,
-                                                  mapping = mapping.acc)
-            has.later.accession <- i.acc.next.out > 0L
-            if (has.later.accession) {
-                i.acc.next.in <- getIAccNextFromComp(i = i.cell.in,
-                                                     mapping = mapping.acc)
-                min.acc.out <- getMinValCohort(i = i.acc.next.out,
-                                               series = accession,
-                                               iter = iterator.acc)
-                min.acc.in <- getMinValCohort(i = i.acc.next.in,
-                                              series = accession,
-                                              iter = iterator.acc)
-                min.val.out <- min(min.val.out, min.acc.out)
-                min.val.in <- min(min.val.in, min.acc.in)
-            }
-        }
-        theta.out <- theta.comp[i.cell.out]
-        if (uses.exposure) {
-            expected.exposure.out <- expected.exposure[i.exposure.out]
-            lambda.out <- theta.out * expected.exposure.out
-        }
-        else
-            lambda.out <- theta.out
-        val.curr.out <- component[i.cell.out]
-        val.curr.in <- component[i.cell.in]
-        lower <- val.curr.in - min.val.in
-        upper <- val.curr.out + min.val.out
-        if (lower > upper)
-            found.value <- FALSE
-        else {
-            val.prop.out <- rpoisTrunc1(lambda = lambda.out,
-                                        lower = lower,
-                                        upper = upper,
-                                        maxAttempt = max.attempt)
-            found.value <- !is.na(val.prop.out)
-        }
-        if (found.value) {
-            diff.prop <- val.prop.out - val.curr.out
-            generated.new.proposal <- diff.prop != 0L
-        }
-        else
-            generated.new.proposal <- FALSE
-        if (generated.new.proposal) {
-            combined@iCell <- i.cell.out
-            combined@iCellOther <- i.cell.in
-            combined@isLowerTriangle <- is.lower.triangle
-            combined@iPopnNext <- i.popn.next.out
-            combined@iPopnNextOther <- i.popn.next.in
-            if (uses.age) {
-                combined@iAccNext <- i.acc.next.out
-                combined@iAccNextOther <- i.acc.next.in
-            }
-            else {
-                combined@iAccNext <- NA_integer_
-                combined@iAccNextOther <- NA_integer_
-            }
-            if (uses.exposure) {
-                combined@iExposure <- i.exposure.out
-                combined@iExposureOther <- i.exposure.in
-            }
-            else {
-                combined@iExposure <- NA_integer_
-                combined@iExposureOther <- NA_integer_
-            }
-            combined@iExpFirst <- i.exp.first.out
-            combined@iExpFirstOther <- i.exp.first.in
-            combined@diffProp <- diff.prop
-        }
-        else {
-            combined@iCell <- NA_integer_
-            combined@iCellOther <- NA_integer_
-            combined@isLowerTriangle <- NA
-            combined@iPopnNext <- NA_integer_
-            combined@iPopnNextOther <- NA_integer_
-            combined@iAccNext <- NA_integer_
-            combined@iAccNextOther <- NA_integer_
-            combined@iExposure <- NA_integer_
-            combined@iExposureOther <- NA_integer_
-            combined@iExpFirst <- NA_integer_
-            combined@iExpFirstOther <- NA_integer_
-            combined@diffProp <- NA_integer_
-        }
-        combined
-    }
-}
-
 updateProposalAccountMoveNet <- function(combined) {
     stopifnot(is(combined, "CombinedAccountMovements"))
     if (useC) {
@@ -358,9 +237,9 @@ updateProposalAccountMoveNet <- function(combined) {
         is.lower.triangle <- isLowerTriangle(i = i.cell,
                                              description = description.comp)
         i.exp.first.1 <- getIExpFirstFromComp(i = i.cell.1, # needed??
-                                              mapping = mapping.exposure)
+                                              mapping = mapping.to.exp)
         i.exp.first.2 <- getIExpFirstFromComp(i = i.cell.2,
-                                              mapping = mapping.exposure)
+                                              mapping = mapping.to.exp)
         i.popn.next.1 <- getIPopnNextFromComp(i = i.cell.1,
                                               mapping = mapping.to.popn)
         i.popn.next.2 <- getIPopnNextFromComp(i = i.cell.2,
@@ -875,123 +754,123 @@ updateCellMove <- function(combined) {
 
 
 
-updateExposure <- function(combined) {
-    exposure <- combined@exposure
-    diff <- combined@diffProp
-    i.comp <- combined@iComp
-    i.orig.dest <- combined@iOrigDest
-    i.pool <- combined@iPool
-    i.int.net <- combined@iIntNet
-    i.cell <- combined@iCell
-    i.cell.other <- combined@iCellOther
-    i.exp.first <- combined@iExpFirst
-    i.exp.first.other <- combined@iExpFirstOther
-    is.popn <- i.comp == 0L
-    is.orig.dest <- i.comp == i.orig.dest
-    is.pool <- i.comp == i.pool
-    is.int.net <- i.comp == i.int.net
-    if (i.exp.first == 0L)
-        return(combined)
-    if (is.popn) {
+## updateExposure <- function(combined) {
+##     exposure <- combined@exposure
+##     diff <- combined@diffProp
+##     i.comp <- combined@iComp
+##     i.orig.dest <- combined@iOrigDest
+##     i.pool <- combined@iPool
+##     i.int.net <- combined@iIntNet
+##     i.cell <- combined@iCell
+##     i.cell.other <- combined@iCellOther
+##     i.exp.first <- combined@iExpFirst
+##     i.exp.first.other <- combined@iExpFirstOther
+##     is.popn <- i.comp == 0L
+##     is.orig.dest <- i.comp == i.orig.dest
+##     is.pool <- i.comp == i.pool
+##     is.int.net <- i.comp == i.int.net
+##     if (i.exp.first == 0L)
+##         return(combined)
+##     if (is.popn) {
         
 
-    }
+##     }
     
-    update.two.cohorts <- (is.orig.dest || is.pool || is.int.net)
+##     update.two.cohorts <- (is.orig.dest || is.pool || is.int.net)
     
-    is.popn <- i.comp == 0L
-    if (is.popn) {
+##     is.popn <- i.comp == 0L
+##     if (is.popn) {
         
         
             
     
-    if (is
-    i.exposure <- getIExposure(i = i.cell, mapping = mapping[[i.comp]])
+##     if (is
+##     i.exposure <- getIExposure(i = i.cell, mapping = mapping[[i.comp]])
     
     
-    if (update.two.cohorts) {
+##     if (update.two.cohorts) {
         
-    update.two.cohorts <- 
-        mappings <- combined@mappingsToExposure
+##     update.two.cohorts <- 
+##         mappings <- combined@mappingsToExposure
     
-    is.lower.triangle <- combined@isLowerTriangle
-    i
-    has.age <- combined@has.age
-    if (!has.age)
-        return(combined)
-    i.acc.next <- combined@iAccNext
-    no.values.to.update <- i.acc.next == 0L # final period, upper triangle
-    if (no.values.to.update)
-        return(combined)
-    i.comp <- combined@iComp
-    i.orig.dest <- combined@iOrigDest
-    i.pool <- combined@iPool
-    i.int.net <- combined@iIntNet
-    i.acc.next.other <- combined@iAccNextOther
-    iterator <- combined@iteratorAcc
-    is.popn <- i.comp == 0L
-    if (is.popn) {
-        iterator <- resetCAP(iterator, i = i.acc.next)
-        repeat {
-            i <- iterator@i
-            combined@account@population[i] <- 
-                (combined@account@population[i]
-                 + diff)
-            if (iterator@finished)
-                break
-            iterator <- advanceCAP(iterator)
-        }
-    }
-    ## if final period and lower triangle, there are no
-    ## subsequent accession values to update
-    else { 
-        is.orig.dest <- i.comp == i.orig.dest
-        is.pool <- i.comp == i.pool
-        is.int.net <- i.comp == i.int.net
-        update.two.cohorts <- (is.orig.dest || is.pool || is.int.net)
-        if (update.two.cohorts) {
-            if (is.orig.dest || is.pool) {
-                diff.orig <- -diff
-                diff.dest <- diff
-            }
-            else {
-                diff.orig <- diff
-                diff.dest <- -diff
-            }
-            iterator.orig <- resetCAP(iterator, i = i.acc.next)
-            iterator.dest <- resetCAP(iterator, i = i.acc.next.other)
-            repeat {
-                i.orig <- iterator.orig@i
-                i.dest <- iterator.dest@i
-                combined@account@population[i.orig] <- 
-                    (combined@account@population[i.orig]
-                     + diff.orig)
-                combined@account@population[i.dest] <- 
-                    (combined@account@population[i.dest]
-                     + diff.dest)
-                if (iterator.orig@finished)
-                    break
-                iterator.orig <- advanceCAP(iterator.orig)
-                iterator.dest <- advanceCAP(iterator.dest)
-            }
-        }
-        else {
-            if (!is.increment[i.comp])
-                diff <- -diff
-            iterator <- resetCAP(iterator, i = i.acc.next)
-            repeat {
-                i <- iterator@i
-                combined@account@population[i] <- 
-                    (combined@account@population[i]
-                     + diff)
-                if (iterator@finished)
-                    break
-                iterator <- advanceCAP(iterator)
-            }
-        }
-    }
-    combined
-}
+##     is.lower.triangle <- combined@isLowerTriangle
+##     i
+##     has.age <- combined@has.age
+##     if (!has.age)
+##         return(combined)
+##     i.acc.next <- combined@iAccNext
+##     no.values.to.update <- i.acc.next == 0L # final period, upper triangle
+##     if (no.values.to.update)
+##         return(combined)
+##     i.comp <- combined@iComp
+##     i.orig.dest <- combined@iOrigDest
+##     i.pool <- combined@iPool
+##     i.int.net <- combined@iIntNet
+##     i.acc.next.other <- combined@iAccNextOther
+##     iterator <- combined@iteratorAcc
+##     is.popn <- i.comp == 0L
+##     if (is.popn) {
+##         iterator <- resetCAP(iterator, i = i.acc.next)
+##         repeat {
+##             i <- iterator@i
+##             combined@account@population[i] <- 
+##                 (combined@account@population[i]
+##                  + diff)
+##             if (iterator@finished)
+##                 break
+##             iterator <- advanceCAP(iterator)
+##         }
+##     }
+##     ## if final period and lower triangle, there are no
+##     ## subsequent accession values to update
+##     else { 
+##         is.orig.dest <- i.comp == i.orig.dest
+##         is.pool <- i.comp == i.pool
+##         is.int.net <- i.comp == i.int.net
+##         update.two.cohorts <- (is.orig.dest || is.pool || is.int.net)
+##         if (update.two.cohorts) {
+##             if (is.orig.dest || is.pool) {
+##                 diff.orig <- -diff
+##                 diff.dest <- diff
+##             }
+##             else {
+##                 diff.orig <- diff
+##                 diff.dest <- -diff
+##             }
+##             iterator.orig <- resetCAP(iterator, i = i.acc.next)
+##             iterator.dest <- resetCAP(iterator, i = i.acc.next.other)
+##             repeat {
+##                 i.orig <- iterator.orig@i
+##                 i.dest <- iterator.dest@i
+##                 combined@account@population[i.orig] <- 
+##                     (combined@account@population[i.orig]
+##                      + diff.orig)
+##                 combined@account@population[i.dest] <- 
+##                     (combined@account@population[i.dest]
+##                      + diff.dest)
+##                 if (iterator.orig@finished)
+##                     break
+##                 iterator.orig <- advanceCAP(iterator.orig)
+##                 iterator.dest <- advanceCAP(iterator.dest)
+##             }
+##         }
+##         else {
+##             if (!is.increment[i.comp])
+##                 diff <- -diff
+##             iterator <- resetCAP(iterator, i = i.acc.next)
+##             repeat {
+##                 i <- iterator@i
+##                 combined@account@population[i] <- 
+##                     (combined@account@population[i]
+##                      + diff)
+##                 if (iterator@finished)
+##                     break
+##                 iterator <- advanceCAP(iterator)
+##             }
+##         }
+##     }
+##     combined
+## }
 
 updateSubsequentAccession <- function(combined) {
     has.age <- combined@hasAage
@@ -1084,7 +963,12 @@ updateExpectedExposure <- function(combined) {
 
 
 
-estimateAccount <- function(y, systemModels, observationModels, datasets, filename = NULL,
+
+
+
+estimateAccount <- function(y, systemModels, observationModels, datasets,
+                            dominant = c("Female", "Male"),
+                            filename = NULL,
                             nBurnin = 1000, nSim = 1000, nChain = 4, nThin = 1,
                             parallel = TRUE, nUpdateMax = 200,
                             verbose = FALSE, useC = TRUE) {
@@ -1099,6 +983,7 @@ estimateAccount <- function(y, systemModels, observationModels, datasets, filena
                                            observationModels = observationModels)
     ## check datasets after aligning to avoid checking datasets that are not needed
     datasets <- checkAndTidyDatasets(datasets)
+    dominant <- match.arg(dominant)
     transforms <- makeTransformsYToDatasets(y = y, nameY = "y", datasets = datasets)
     namesDatasets <- names(datasets)
     names(datasets) <- NULL
@@ -1115,10 +1000,13 @@ estimateAccount <- function(y, systemModels, observationModels, datasets, filena
     combineds <- replicate(n = mcmc.args$nChain,
                            initialCombinedAccount(account = account,
                                                   systemModels = systemModels,
+                                                  systemWeights = systemWeights,
                                                   observationModels = observationModels,
+                                                  seriesIndices = seriesIndices,
                                                   datasets = datasets,
                                                   namesDatasets = namesDatasets,
-                                                  transforms = transforms))
+                                                  transforms = transforms,
+                                                  dominant = dominant))
     parallel <- control.args$parallel
     tempfile <- paste(filename, seq_len(mcmc.args$nChain), sep = "_")
     MoreArgs <- c(list(seed = NULL),
@@ -1157,3 +1045,5 @@ estimateAccount <- function(y, systemModels, observationModels, datasets, filena
                     tempfiles = tempfiles)
     finalMessage(filename = filename, verbose = verbose)
 }
+
+

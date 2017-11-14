@@ -332,9 +332,11 @@ setMethod("initialCombinedAccount",
                     transforms = "list"),
           function(account, systemModels, systemWeights,
                    observationModels, seriesIndices, 
-                   datasets, namesDatasets, transforms) {
+                   datasets, namesDatasets, transforms,
+                   dominant = c("Female", "Male")) {
               population <- account@population
               components <- account@components
+              names.components <- account@namesComponents
               has.age <- "age" %in% dimtypes(population, use.names = FALSE)
               n.popn <- length(population)
               n.components <- sapply(components, length)
@@ -344,7 +346,7 @@ setMethod("initialCombinedAccount",
               is.births <- sapply(components, methods::is, "Births")
               is.orig.dest <- sapply(components, methods::is, "HasOrigDest")
               is.par.ch <- sapply(components, methods::is, "HasParentChild")
-              is.pool <- sapply(components, methods::is, "Pool")
+              is.pool <- sapply(components, methods::is, "InternalMovementsPool")
               is.int.net <- sapply(components, methods::is, "InternalMovementsNet")
               is.net.move <- sapply(components, methods::is, "NetMovements")
               i.births <- if (any(is.births)) which(is.births) else 0L
@@ -379,30 +381,46 @@ setMethod("initialCombinedAccount",
               mappings.to.exp <- lapply(components, function(x) Mapping(x, exposure))
               mappings.to.popn <- lapply(components, function(x) Mapping(x, population))
               model.uses.exposure <- sapply(systemModels, function(x) x@useExpose@.Data)
+              if ((i.births > 0L) && model.uses.exposure[i.births + 1L])
+                  transform.exp.to.births <- makeTransformExpToBirths(exposure = exposure,
+                                                                      births = components[[i.births]],
+                                                                      dominant = dominant)
+              else
+                  transform.exp.to.births <- new("CollapseTransform")
+              transforms.exp.to.comp <- vector(mode = "list", length = length(components))
+              for (i in seq_along(transforms.exp.to.comp)) {
+                  if (model.uses.exposure[i + 1L]) {
+                      if (i == i.births) {
+                          exposure.births <- collapse(exposure,
+                                                      transform = transform.exp.to.births)
+                          transform <- makeTransformExpToComp(exposure = exposure.births,
+                                                              component = components[[i]],
+                                                              nameComponent = names.components[i])
+                      }
+                      else
+                          transform <- makeTransformExpToComp(exposure = exposure,
+                                                              component = components[[i]],
+                                                              nameComponent = names.components[i])
+                  }
+                  else
+                      transform <- NULL
+                  if (is.null(transform))
+                      transforms.exp.to.comp[i] <- list(NULL)
+                  else
+                      transforms.exp.to.comp[[i]] <- transform
+              }
               for (i in seq_along(systemModels)) {
                   series <- if (i == 1L) population else components[[i - 1L]]
                   if (model.uses.exposure[i]) {
-                      if (is(series, "Births"))
-                          expose <- exposureBirths(object = population,
-                                                   births = series,
-                                                   triangles = has.age)
-                      else {
+                      if (i - 1L == i.births)
+                          expose <- collapse(exposure,
+                                             transform = transform.exp.to.births)
+                      else
                           expose <- exposure
-                          if (is(series, "HasOrigDest")) {
-                              names.series <- names(series)
-                              dimtypes.series <- dimtypes(series, use.names = FALSE)
-                              i.orig.vec <- grep("origin", dimtypes.series)
-                              for (i.orig in i.orig.vec) {
-                                  name.series <- names.series[i.orig]
-                                  name.expose <- sub("_orig$", "", name.series)
-                                  expose <- addPair(expose,
-                                                    base = name.expose)
-                              }
-                          }
-                      }
-                      expose <- makeCompatible(x = expose,
-                                               y = series,
-                                               subset = TRUE)
+                      transform <- transforms.exp.to.comp[[i - 1L]]
+                      if (!is.null(transform))
+                          expose <- extend(expose,
+                                           transform = transform)
                       systemModels[[i]] <- initialModel(systemModels[[i]],
                                                         y = series,
                                                         exposure = expose)
@@ -490,7 +508,9 @@ setMethod("initialCombinedAccount",
                                probPopn = prob.popn,
                                seriesIndices = seriesIndices,
                                systemModels = systemModels,
-                               transforms = transforms)
+                               transformExpToBirths = transform.exp.to.births,
+                               transforms = transforms,
+                               transformsExpToComp = transforms.exp.to.comp)
               }
               else {
                   methods::new("CombinedAccountMovements",
@@ -532,6 +552,8 @@ setMethod("initialCombinedAccount",
                                probPopn = prob.popn,
                                seriesIndices = seriesIndices,
                                systemModels = systemModels,
-                               transforms = transforms)
+                               transformExpToBirths = transform.exp.to.births,
+                               transforms = transforms,
+                               transformsExpToComp = transforms.exp.to.comp)
               }
           })
