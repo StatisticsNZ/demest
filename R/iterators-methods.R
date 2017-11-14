@@ -187,16 +187,6 @@ advanceCC <- function(object, useC = FALSE) {
         n.time <- object@nTime
         i.time <- object@iTime
         has.age <- object@hasAge
-        
-        print(" ")
-        print(" -------------- advanceCC ")
-        print("has.age")
-        print(has.age)
-        print("n.time")
-        print(n.time)
-        print("i.time")
-        print(i.time)
-        
         if (has.age) {
             step.age <- object@stepAge
             n.age <- object@nAge
@@ -220,29 +210,11 @@ advanceCC <- function(object, useC = FALSE) {
                 }
             }
             finished <- (i.triangle == 1L) && (i.time == n.time)
-            
-            print("end if has.age")
-            print("i.triangle")
-            print(i.triangle)
-            print("n.time")
-            print(n.time)
-            print("i.time")
-            print(i.time)
-            print("finished")
-            print(finished)
         }
         else {
             i.time <- i.time + 1L
             i <- i + step.time
             finished <- i.time == n.time
-            
-            print("end else if has.age")
-            print("n.time")
-            print(n.time)
-            print("i.time")
-            print(i.time)
-            print("finished")
-            print(finished)
         }
         object@i <- i
         object@iTime <- i.time
