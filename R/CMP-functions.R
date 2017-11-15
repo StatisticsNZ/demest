@@ -1,4 +1,4 @@
-
+###########################################################################
 # The CMP desity function is f(y|theta,nu)= (theta^y/y!)^nu*1/Z(theta,nu), 
 # Z(theta,nu) is the intractable normalising constant
 # So f is split in two parts: Z and q(y|theta,nu)=(theta^y/y!)^nu
@@ -27,52 +27,96 @@ logDensCMP1 <- function(y, gamma, nu, useC = FALSE) {
     }
 }
 
-
-## Function to calculate the enveloping bounds
-## p is set by default to the optimum suggested in Benson & Friel 2017  
-makeBoundsCMP <- function(theta, nu, p, useC = FALSE) {
-    ## 'theta'
-    stopifnot(is.double(theta))
-    stopifnot(identical(length(theta), 1L))
-    stopifnot(!is.na(theta))
-    stopifnot(theta > 0)
-    ## 'nu'
-    stopifnot(is.double(nu))
-    stopifnot(identical(length(nu), 1L))
-    stopifnot(!is.na(nu))
-    stopifnot(nu > 0)
-    ## 'p'
-    stopifnot(is.double(p))
-    stopifnot(identical(length(p), 1L))
-    stopifnot(!is.na(p))
-    stopifnot(p >= 0)
-    stopifnot(p <= 1)
-    if (useC) {
-        .Call(makeBoundsCMP_R, theta, nu, p)
-    }
-    else {
-        if (nu < 1) {
-            fl <- floor(theta / ((1 - p)^(1 / nu)))
-            (theta^(nu * fl)) / (p * (1 - p)^fl * factorial(fl)^nu)
-        }
-        else {
-            fl <- floor(theta)
-            (theta^fl / factorial(fl))^(nu - 1)
-        }
-    }
-}
-
-
+##########################################################
 
 rcmpUnder <- function(mu, nu, max){
+  ## 'mu'
+  stopifnot(is.double(mu))
+  stopifnot(identical(length(mu), 1L))
+  stopifnot(!is.na(mu))
+  stopifnot(mu >= 0)
+  ## 'nu'
+  stopifnot(is.double(nu))
+  stopifnot(identical(length(nu), 1L))
+  stopifnot(!is.na(nu))
+  stopifnot(nu > 0)
+  ## 'max'
+  stopifnot(is.double(max))
+  stopifnot(identical(length(max), 1L))
+  stopifnot(!is.na(max))
+  stopifnot(max >= 0L)
+  #
   fl <- floor(mu)
-  bound <- (mu^fl / gamma(fl + 1))^(nu - 1)
-  
-  
-  
+  logm <- lgamma(fl + 1)
+  for(i in seq_len(max)){
+    ynew <- rpois(n = 1, lambda = mu)
+    logy <- lgamma(ynew + 1)
+    log_a <- (nu - 1) * (log(mu) * (ynew - fl) - logy + logm)
+    u <- log(runif(n = 1))
+    if(u < log_a) 
+      return(ynew)
+  }
+  return(-Inf)
 }
 
+rcmpOver <- function(mu, nu, max){
+  ## 'mu'
+  stopifnot(is.double(mu))
+  stopifnot(identical(length(mu), 1L))
+  stopifnot(!is.na(mu))
+  stopifnot(mu >= 0L)
+  ## 'nu'
+  stopifnot(is.double(nu))
+  stopifnot(identical(length(nu), 1L))
+  stopifnot(!is.na(nu))
+  stopifnot(nu >= 0L)
+  stopifnot(nu < 1L)  # Do we need it here or the choice in rcmp is enough?
+  ## 'max'
+  stopifnot(is.double(max))
+  stopifnot(identical(length(max), 1L))
+  stopifnot(!is.na(max))
+  stopifnot(max >= 0L)
+  #
+  p <- 2 * nu / (2 * mu * nu + 1 + nu)
+  fl <- floor(mu / ((1 - p)^(1 / nu)))
+  logfl <- lgamma(fl + 1)
+  for(i in seq_len(max)){
+    ynew <- rgeom(n = 1, prob = p)
+    logy <- lgamma(ynew + 1)
+    log_a <- (ynew - fl) * (nu * log(mu) - log(1 - p)) + nu * (logfl - logy)
+    u <- log(runif(n = 1))
+    if(u < log_a) 
+      return(ynew)
+  }
+  return(-Inf)
+}
 
+rcmp1 <- function(mu, nu, max){
+  ## 'mu'
+  stopifnot(is.double(mu))
+  stopifnot(identical(length(mu), 1L))
+  stopifnot(!is.na(mu))
+  stopifnot(mu >= 0L)
+  ## 'nu'
+  stopifnot(is.double(nu))
+  stopifnot(identical(length(nu), 1L))
+  stopifnot(!is.na(nu))
+  stopifnot(nu >= 0L)
+  ## 'max'
+  stopifnot(is.double(max))
+  stopifnot(identical(length(max), 1L))
+  stopifnot(!is.na(max))
+  stopifnot(max >= 0L)
+  #
+  if( nu < 1){
+    rcmpOverLog(mu = mu , nu = nu, max = max)
+  } else {
+    rcmpUnderLog(mu = mu , nu = nu, max = max)
+  }
+} 
+
+
+######################################################
   
 
 updateTheta_CMPVaryingUseExp <- function(object, y, exposure, useC = FALSE) {
