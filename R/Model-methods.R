@@ -229,10 +229,8 @@ setMethod("logLikelihood",
               ## count
               stopifnot(identical(length(count), 1L))
               stopifnot(!is.na(count))
-              stopifnot(count >= 0)
               ## dataset
               stopifnot(is.integer(dataset))
-              stopifnot(all(dataset[!is.na(dataset)] >= 0))
               ## i
               stopifnot(identical(length(i), 1L))
               stopifnot(!is.na(i))

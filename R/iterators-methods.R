@@ -126,7 +126,7 @@ advanceCA <- function(object, useC = FALSE) {
         i <- i + step.time
         i.age <- i.age + 1L
         i <- i + step.age
-        finished <- (i.time >= n.time) | (i.age >= n.age)
+        finished <- (i.time >= n.time) || (i.age >= n.age)
         object@i <- i
         object@iTime <- i.time
         object@iAge <- i.age
@@ -172,6 +172,8 @@ advanceCP <- function(object, useC = FALSE) {
 }
 
 
+
+
 ## TRANSLATED
 ## HAS_TESTS
 ## It is the caller's responsibility to make
@@ -199,16 +201,20 @@ advanceCC <- function(object, useC = FALSE) {
                 i <- i + step.time + step.triangle
             }
             else {
-                i.triangle <- 1L
                 if (i.age < n.age) {
                     i.age <- i.age + 1L
+                    i.triangle <- 1L
                     i <- i + step.age - step.triangle
                 }
                 else {
-                    i <- i - step.triangle
+                    i.time <- i.time + 1L
+                    i <- i + step.time
                 }
             }
-            finished <- (i.triangle == 1L) && (i.time == n.time)
+            if (i.triangle == 1L)
+                finished <- i.time == n.time
+            else
+                finished <- (i.time == n.time) && (i.age == n.age)
         }
         else {
             i.time <- i.time + 1L
@@ -225,6 +231,7 @@ advanceCC <- function(object, useC = FALSE) {
         object
     }
 }
+
 
 ## READY_TO_TRANSLATE
 ## HAS_TESTS
@@ -337,8 +344,13 @@ resetCC <- function(object, i, useC = FALSE) {
             i.age <- (((i - 1L) %/% step.age) %% n.age) + 1L # R-style
             step.triangle <- object@stepTriangle
             i.triangle <- (((i - 1L) %/% step.triangle) %% 2L) + 1L # R-style
+            if (i.triangle == 1L)
+                finished <- i.time >= n.time
+            else
+                finished <- (i.time >= n.time) && (i.age >= n.age)
         }
-        finished <- i.time >= n.time
+        else
+            finished <- i.time >= n.time
         object@i <- i
         object@iTime <- i.time
         if (has.age) {

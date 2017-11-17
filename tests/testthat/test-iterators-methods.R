@@ -664,6 +664,11 @@ test_that("advanceCC works", {
     iterator <- advanceCC(iterator)
     expect_identical(iterator@i, 12L)
     expect_true(iterator@finished)
+    iterator <- resetCC(iterator, i = 21L)
+    expect_false(iterator@finished)
+    iterator <- advanceCC(iterator)
+    expect_identical(iterator@i, 30L)
+    expect_true(iterator@finished)
     ## without age
     entries <- Counts(array(1:12,
                             dim = c(3, 4),
@@ -718,6 +723,11 @@ test_that("R and C versions of advanceCC give same answer", {
         iterator.C <- advanceCC(iterator.C, useC = TRUE)
         expect_identical(iterator.R, iterator.C)
     }
+    iterator.R <- resetCC(iterator, i = 21L)
+    iterator.C <- resetCC(iterator, i = 21L)
+    iterator.R <- advanceCC(iterator.R, useC = FALSE)
+    iterator.C <- advanceCC(iterator.C, useC = TRUE)
+    expect_identical(iterator.R, iterator.C)
     ## without age
     entries <- Counts(array(1:12,
                             dim = c(3, 4),
@@ -1357,7 +1367,7 @@ test_that("resetCODPCP works", {
     expect_identical(iterator@iAge, 1L)
     expect_identical(iterator@iTriangle, 2L)
     expect_identical(iterator@iVec, c(85L, 94L, 103L))
-    expect_true(iterator@finished)
+    expect_false(iterator@finished)
     ## i = 57L
     iterator <- resetCODPCP(iterator, i = 57L)
     expect_identical(iterator@iTime, 1L)
@@ -1365,6 +1375,12 @@ test_that("resetCODPCP works", {
     expect_identical(iterator@iTriangle, 2L)
     expect_identical(iterator@iVec, c(57L, 66L, 75L))
     expect_false(iterator@finished)
+    ## i = 108L
+    iterator <- resetCODPCP(iterator, i = 108L)
+    expect_identical(iterator@iTime, 2L)
+    expect_identical(iterator@iAge, 3L)
+    expect_identical(iterator@iTriangle, 2L)
+    expect_true(iterator@finished)
     ## without age
     internal <- Counts(array(1:72,
                              dim = c(3, 3, 2, 2, 2),

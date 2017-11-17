@@ -2841,7 +2841,7 @@ test_that("getIExpFirstFromComp works with ordinary component", {
     exposure <- Exposure(exposure)
     mapping <- Mapping(current = component,
                        target = exposure)
-    ans.exp <- c(1:4, 3L, 4L, 3L, 4L)
+    ans.exp <- c(1:4, 3L, 4L, 8L, 0L)
     for (i in 1:8) {
         ans.obtained <- getIExpFirstFromComp(i = i, mapping = mapping)
         ans.expected <- ans.exp[i]
@@ -2889,7 +2889,7 @@ test_that("getIExpFirstFromComp works with ordinary component", {
     exposure <- Exposure(exposure)
     mapping <- Mapping(current = component,
                        target = exposure)
-    ans.exp <- c(1:12, 7:12, 7:12)
+    ans.exp <- c(1:12, 7:12, 22:24, rep(0L, 3))
     for (i in 1:24) {
         ans.obtained <- getIExpFirstFromComp(i = i, mapping = mapping)
         ans.expected <- ans.exp[i]
@@ -2939,7 +2939,7 @@ test_that("getIExpFirstFromComp works with ordinary component", {
     exposure <- Exposure(exposure)
     mapping <- Mapping(current = component,
                        target = exposure)
-    ans.exp <- c(1:18, 7:18, 13:18)
+    ans.exp <- c(1:18, 7:18, 34:36, rep(0L, 3))
     for (i in seq_along(ans.expected)) {
         ans.obtained <- getIExpFirstFromComp(i = i, mapping = mapping)
         ans.expected <- ans.exp[i]
@@ -3530,9 +3530,9 @@ test_that("getIExpFirstPairFromOrigDest works with InternalMovementsOrigDest", {
                     c(7L, 7L), c(8L, 8L), c(9L, 7L), c(10L, 8L), c(11L, 7L), c(12L, 8L),
                     c(7L, 9L), c(8L, 10L), c(9L, 9L), c(10L, 10L), c(11L, 9L), c(12L, 10L),
                     c(7L, 11L), c(8L, 12L), c(9L, 11L), c(10L, 12L), c(11L, 11L), c(12L, 12L),
-                    c(7L, 7L), c(8L, 8L), c(9L, 7L), c(10L, 8L), c(11L, 7L), c(12L, 8L),
-                    c(7L, 9L), c(8L, 10L), c(9L, 9L), c(10L, 10L), c(11L, 9L), c(12L, 10L),
-                    c(7L, 11L), c(8L, 12L), c(9L, 11L), c(10L, 12L), c(11L, 11L), c(12L, 12L))
+                    c(20L, 20L), c(0L, 0L), c(22L, 20L), c(0L, 0L), c(24L, 20L), c(0L, 0L),
+                    c(20L, 22L), c(0L, 0L), c(22L, 22L), c(0L, 0L), c(24L, 22L), c(0L, 0L),
+                    c(20L, 24L), c(0L, 0L), c(22L, 24L), c(0L, 0L), c(24L, 24L), c(0L, 0L))
     for (i in 1:72) {
         ans.obtained <- getIExpFirstPairFromOrigDest(i = i, mapping = mapping, useC = FALSE)
         ans.expected <- ans.exp[[i]]
@@ -3716,10 +3716,10 @@ test_that("getIExpFirstFromComp works with InternalMovementsPool", {
                        target = exposure)
     ans.exp <- c(1:12,
                  7:12,
-                 7:12,
+                 c(20L, 0L, 22L, 0L, 24L, 0L),
                  1:12,
                  7:12,
-                 7:12)
+                 c(20L, 0L, 22L, 0L, 24L, 0L))
     for (i in 1:48) {
         ans.obtained <- getIExpFirstFromComp(i = i, mapping = mapping, useC = FALSE)
         ans.expected <- ans.exp[[i]]

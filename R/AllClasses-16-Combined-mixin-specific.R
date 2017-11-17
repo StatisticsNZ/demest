@@ -56,43 +56,42 @@ setClass("AccessionMixin",
 
 
 ## NO_TESTS
-setClass("CumProbPopnMixin",
-         slots = c(cumProbPopn = "numeric"),
+setClass("CumProbCompMixin",
+         slots = c(cumProbComp = "numeric"),
          contains = "VIRTUAL",
          validity = function(object) {
-             cumProbPopn <- object@cumProbPopn
+             cumProbComp <- object@cumProbComp
              components <- object@account@components
-             ## 'cumProbPopn' and 'components' have same length
-             if (!identical(length(cumProbPopn), length(components)))
+             ## 'cumProbComp' and 'components' have same length
+             if (!identical(length(cumProbComp), length(components)))
                  return(gettextf("'%s' and '%s' have different lengths",
-                                 "cumProbPopn", "components"))
-             ## 'cumProbPopn' has no missing values
-             if (any(is.na(cumProbPopn)))
+                                 "cumProbComp", "components"))
+             ## 'cumProbComp' has no missing values
+             if (any(is.na(cumProbComp)))
                  return(gettextf("'%s' has missing values",
-                                 "cumProbPopn"))
-             ## 'cumProbPopn' is double
-             if (!is.double(cumProbPopn))
+                                 "cumProbComp"))
+             ## 'cumProbComp' is double
+             if (!is.double(cumProbComp))
                  return(gettextf("'%s' does not have type \"%s\"",
-                                 "cumProbPopn", "double"))
-             ## 'cumProbPopn' is between 0 and 1
-             if (any((cumProbPopn < 0) || (cumProbPopn > 1)))
+                                 "cumProbComp", "double"))
+             ## 'cumProbComp' is between 0 and 1
+             if (any((cumProbComp < 0) || (cumProbComp > 1)))
                  return(gettextf("'%s' has values between %d and %d",
-                                 "cumProbPopn", 0L, 1L))
-             ## 'cumProbPopn' strictly increasing
-             if (any(diff(cumProbPopn) <= 0))
+                                 "cumProbComp", 0L, 1L))
+             ## 'cumProbComp' strictly increasing
+             if (any(diff(cumProbComp) <= 0))
                  return(gettextf("'%s' not strictly increasing",
-                                 "cumProbPopn"))
+                                 "cumProbComp"))
              TRUE
          })
 
-## HAS_TESTS
+## NO_TESTS
 setClass("DatasetsMixin",
          slots = c(datasets = "list"),
          contains = "VIRTUAL",
          validity = function(object) {
              datasets <- object@datasets
              observationModels <- object@observationModels
-             hasNegative <- function(x) any(x[!is.na(x)] < 0)
              ## all elements of 'datasets' have class "Counts"
              if (!all(sapply(datasets, is, "Counts")))
                  return(gettextf("'%s' has elements not of class \"%s\"",
@@ -101,10 +100,6 @@ setClass("DatasetsMixin",
              if (!all(sapply(datasets, is.integer)))
                  return(gettextf("'%s' has elements not of type \"%s\"",
                                  "datasets", "integer"))
-             ## all elements of "datasets' are non-negative
-             if (any(sapply(datasets, hasNegative)))
-                 return(gettextf("'%s' has elements with negative values",
-                                 "datasets"))
              ## 'datasets' does not have names
              if (!is.null(names(datasets)))
                  return(gettextf("'%s' has names",

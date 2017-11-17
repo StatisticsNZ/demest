@@ -207,7 +207,31 @@ setClass("CombinedAccountMovements",
          prototype = prototype(iMethodCombined = 9L),
          slots = c(account = "Movements"),
          contains = c("CombinedAccount",
-                      "SystemMovementsMixin"))
+                      "SystemMovementsMixin"),
+         validity = function(object) {
+             datasets <- object@datasets
+             namesDatasets <- object@namesDatasets
+             seriesIndices <- object@seriesIndices
+             components <- object@account@components
+             ## all elements of "datasets' are non-negative, unless component
+             ## has class "NetMovements", or "InternalMovementsNet"
+             for (i in seq_along(datasets)) {
+                 dataset <- datasets[[i]]
+                 has.negative <- any(dataset[!is.na(dataset)] < 0L)
+                 if (has.negative) {
+                     is.net <- FALSE
+                     i.comp <- seriesIndices[i]
+                     is.net <- ((i.comp > 0L)
+                         && (methods::is(components[[i.comp]], "NetMovements")
+                             || methods::is(components[[i.comp]], "InternalMovementsNet")))
+                     if (!is.net)
+                         return(gettextf("dataset '%s' has negative values (and associated demographic series does not have 'net' format)",
+                                         namesDatasets[i]))
+                 }
+             }
+             TRUE
+         })
+
 
 setClass("CombinedAccountMovementsHasAge",
          prototype = prototype(iMethodCombined = 10L),

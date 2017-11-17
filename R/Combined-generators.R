@@ -342,7 +342,7 @@ setMethod("initialCombinedAccount",
               n.components <- sapply(components, length)
               n.cell.account <- n.popn + sum(n.components)
               prob.popn <- n.popn / (n.popn + sum(n.components))
-              cum.prob.popn <- cumsum(n.components) / sum(n.components)
+              cum.prob.comp <- cumsum(n.components) / sum(n.components)
               is.births <- sapply(components, methods::is, "Births")
               is.orig.dest <- sapply(components, methods::is, "HasOrigDest")
               is.par.ch <- sapply(components, methods::is, "HasParentChild")
@@ -466,7 +466,7 @@ setMethod("initialCombinedAccount",
                   methods::new("CombinedAccountMovementsHasAge",
                                accession = accession,
                                account = account,
-                               cumProbPopn = cum.prob.popn,
+                               cumProbComp = cum.prob.comp,
                                datasets = datasets,
                                descriptions = descriptions,
                                diffProp = NA_integer_,
@@ -515,7 +515,7 @@ setMethod("initialCombinedAccount",
               else {
                   methods::new("CombinedAccountMovements",
                                account = account,
-                               cumProbPopn = cum.prob.popn,
+                               cumProbComp = cum.prob.comp,
                                datasets = datasets,
                                descriptions = descriptions,
                                diffProp = NA_integer_,
@@ -525,8 +525,7 @@ setMethod("initialCombinedAccount",
                                hasAge = new("LogicalFlag", FALSE),
                                iBirths = i.births,
                                iCell = NA_integer_,
-                               iCellOther = NA_integer_,
-                               iComp = 0L,
+                               iCellOther = NA_integer_, iComp = 0L,
                                iExpFirst = NA_integer_,
                                iExpFirstOther = NA_integer_,
                                iExposure = NA_integer_,
@@ -546,7 +545,7 @@ setMethod("initialCombinedAccount",
                                mappingsToExp = mappings.to.exp,
                                mappingsToPopn = mappings.to.popn,
                                modelUsesExposure = model.uses.exposure,
-                               namesDatasets = namesDatasets,                           
+                               namesDatasets = namesDatasets,
                                nCellAccount = n.cell.account,
                                observationModels = observationModels,
                                probPopn = prob.popn,

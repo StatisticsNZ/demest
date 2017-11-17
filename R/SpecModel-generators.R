@@ -219,10 +219,6 @@ NormalFixed <- function(mean, sd, useExpose = TRUE) {
     if (any(is.na(mean)))
         stop(gettextf("'%s' has missing values",
                       "mean"))
-    ## mean has length of 2 or more
-    if (length(mean) < 2L)
-        stop(gettextf("'%s' has length %d",
-                      "mean", length(mean)))
     mean.param <- as.double(mean)
     mean.param <- new("ParameterVector", mean.param)
     if (methods::is(sd, "Values")) {

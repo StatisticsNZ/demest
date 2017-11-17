@@ -548,23 +548,32 @@ getIExpFirstFromComp(int i, SEXP mapping_R)
         int stepAgeExp = *INTEGER(GET_SLOT(mapping_R, stepAgeTarget_sym));
         int stepTriangleComp = *INTEGER(GET_SLOT(mapping_R, 
                                                 stepTriangleCurrent_sym));
+        int stepTriangleExp = *INTEGER(GET_SLOT(mapping_R, 
+                                                stepTriangleTarget_sym));
         
         int iAgeComp = ( iMinus1 / stepAgeComp ) % nAge;
         int iTriangleComp = ( iMinus1 / stepTriangleComp ) % 2;
         
         int isLower = (iTriangleComp == 0);
-        
-        int iAgeExp = 0;
 
-	if (isLower || (iAgeComp == (nAge - 1))) {
-	    iAgeExp = iAgeComp;
-        }
-        else {
-	    iAgeExp = iAgeComp + 1;
-        }
+        int iAgeExp = iAgeComp;
+	int iTriangleExp = iTriangleComp;
 
+	if (!isLower) {
+	    if (iAgeComp == (nAge - 1)) {
+		if (iTimeComp == (nTime - 1))
+		    return 0;
+		iTimeExp++;
+	    }
+	    else {
+		iAgeExp++;
+		iTriangleExp = 0;
+	    }
+	}
+	
 	iExp_r += iAgeExp * stepAgeExp;
-
+	iExp_r += iTriangleExp * stepTriangleExp;
+	
     }
     
     iExp_r += iTimeExp * stepTimeExp;
@@ -662,21 +671,34 @@ getIExpFirstFromOrigDestInternal(int *ans, int i, SEXP mapping_R)
         int stepAgeComp = *INTEGER(GET_SLOT(mapping_R, stepAgeCurrent_sym));
         int stepAgeExp = *INTEGER(GET_SLOT(mapping_R, stepAgeTarget_sym));
         int stepTriangleComp = *INTEGER(GET_SLOT(mapping_R, stepTriangleCurrent_sym));
+        int stepTriangleExp = *INTEGER(GET_SLOT(mapping_R, 
+                                                stepTriangleTarget_sym));
         
         int iAgeComp = (iMinus1 / stepAgeComp) % nAge;
-        int iTriangle = (iMinus1 / stepTriangleComp) % 2;
-        int isLower = (iTriangle == 0);
-    
-        int iAgeExp = 0;
-
-        if (isLower || (iAgeComp == (nAge - 1))) {
-	    iAgeExp = iAgeComp;
-        }
-        else {
-            iAgeExp = iAgeComp + 1;
-        }
+        int iTriangleComp = (iMinus1 / stepTriangleComp) % 2;
 	
+        int isLower = (iTriangleComp == 0);
+    
+        int iAgeExp = iAgeComp;
+	int iTriangleExp = iTriangleComp;
+
+        if (!isLower) {
+	    if (iAgeComp == (nAge - 1)) {
+		if (iTimeComp == (nTime - 1)) {
+		    ans[0] = 0;
+		    ans[1] = 0;
+		    return ;
+		}
+		iTimeExp++;
+	    }
+	    else {
+		iAgeExp++;
+		iTriangleExp = 0;
+	    }
+	}
+		    
 	iExp += iAgeExp * stepAgeExp;
+	iExp += iTriangleExp * stepTriangleExp;
 
     }
 

@@ -498,15 +498,18 @@ getIExpFirstFromComp <- function(i, mapping, useC = FALSE) {
             if (is.lower) {
                 i.time.exp <- i.time.comp
                 i.age.exp <- i.age.comp
-                i.triangle.exp <- 0L
+                i.triangle.exp <- i.triangle.comp
             }
             else {
-                i.time.exp <- i.time.comp
                 if (i.age.comp == (n.age - 1L)) {
+                    if (i.time.comp == (n.time - 1L))
+                        return(0L)
+                    i.time.exp <- i.time.comp + 1L
                     i.age.exp <- i.age.comp
-                    i.triangle.exp <- 0L
+                    i.triangle.exp <- i.triangle.comp
                 }
                 else {
+                    i.time.exp <- i.time.comp
                     i.age.exp <- i.age.comp + 1L
                     i.triangle.exp <- 0L
                 }
@@ -605,15 +608,18 @@ getIExpFirstPairFromOrigDest <- function(i, mapping, useC = FALSE) {
             if (is.lower) {
                 i.time.exp <- i.time.comp
                 i.age.exp <- i.age.comp
-                i.triangle.exp <- 0L
+                i.triangle.exp <- i.triangle.comp
             }
             else {
-                i.time.exp <- i.time.comp
                 if (i.age.comp == (n.age - 1L)) {
+                    if (i.time.comp == (n.time - 1L))
+                        return(c(0L, 0L))
+                    i.time.exp <- i.time.comp + 1L
                     i.age.exp <- i.age.comp
-                    i.triangle.exp <- 0L
+                    i.triangle.exp <- i.triangle.comp
                 }
                 else {
+                    i.time.exp <- i.time.comp
                     i.age.exp <- i.age.comp + 1L
                     i.triangle.exp <- 0L
                 }

@@ -6447,10 +6447,8 @@ logLikelihood_NormalFixedUseExp <- function(model, count, dataset, i, useC = FAL
     stopifnot(identical(length(count), 1L))
     stopifnot(is.integer(count))
     stopifnot(!is.na(count))
-    stopifnot(count >= 0L)
     ## dataset
     stopifnot(is.integer(dataset))
-    stopifnot(all(dataset[!is.na(dataset)] >= 0L))
     ## i
     stopifnot(identical(length(i), 1L))
     stopifnot(is.integer(i))
@@ -6467,7 +6465,7 @@ logLikelihood_NormalFixedUseExp <- function(model, count, dataset, i, useC = FAL
         mean <- model@mean@.Data[i]
         sd <- model@sd@.Data[i]
         mean <- count * mean
-        sd <- sqrt(count) * sd
+        sd <- sqrt(abs(count)) * sd
         stats::dnorm(x = x, mean = mean, sd = sd, log = TRUE)
     }
 }
@@ -9771,7 +9769,7 @@ getMinValCohortPopulation <- function(i, series, iterator, useC = FALSE) {
     }
 }
 
-
+## HAS_TESTS
 makeTransformExpToBirths <- function(exposure, births,
                                      dominant = c("Female", "Male")) {
     dominant <- match.arg(dominant)

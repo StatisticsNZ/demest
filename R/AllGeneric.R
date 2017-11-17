@@ -108,6 +108,14 @@ setGeneric("concatDimScaleFirstSecond",
                                  "along", name, class(first), class(second)))
            })
 
+setGeneric("diffLogDensAccount",
+           function(combined, useC = FALSE, useSpecific = FALSE)
+               standardGeneric("diffLogDensAccount"))
+
+setGeneric("diffLogLikAccount",
+           function(object, useC = FALSE, useSpecific = FALSE)
+               standardGeneric("diffLogLikAccount"))
+
 setGeneric("drawYNonSampled",
            function(filename, model, nonsampled, iterations)
            standardGeneric("drawYNonSampled"))
@@ -439,6 +447,14 @@ setGeneric("updateModelUseExp",
 setGeneric("updatePredictedBetaAndPriorBeta",
            function(prior, vbar, n, sigma, useC = FALSE, useSpecific = FALSE)
                standardGeneric("updatePredictedBetaAndPriorBeta"))
+
+setGeneric("updateProposalAccount",
+           function(object, useC = FALSE, useSpecific = FALSE)
+               standardGeneric("updateProposalAccount"))
+
+setGeneric("updateValuesAccount",
+           function(combined, useC = FALSE, useSpecific = FALSE)
+               standardGeneric("updateValuesAccount"))
 
 setGeneric("whereAcceptance",
            function(object)
