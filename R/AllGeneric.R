@@ -436,6 +436,10 @@ setGeneric("updateCombined",
            function(object, nUpdate = 1L, useC = FALSE, useSpecific = FALSE)
            standardGeneric("updateCombined"))
 
+setGeneric("updateExpectedExposure",
+           function(combined, useC = FALSE, useSpecific = FALSE)
+               standardGeneric("updateExpectedExposure"))
+
 setGeneric("updateModelNotUseExp",
            function(object, y, useC = FALSE, useSpecific = FALSE)
            standardGeneric("updateModelNotUseExp"))
@@ -451,6 +455,10 @@ setGeneric("updatePredictedBetaAndPriorBeta",
 setGeneric("updateProposalAccount",
            function(object, useC = FALSE, useSpecific = FALSE)
                standardGeneric("updateProposalAccount"))
+
+setGeneric("updateSystemModels",
+           function(combined, useC = FALSE, useSpecific = FALSE)
+               standardGeneric("updateSystemModels"))
 
 setGeneric("updateValuesAccount",
            function(combined, useC = FALSE, useSpecific = FALSE)

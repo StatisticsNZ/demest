@@ -54,6 +54,19 @@ setClass("AccessionMixin",
              TRUE
          })
 
+## NO_TESTS
+setClass("AgeTimeStepMixin",
+         slot = c(ageTimeStep = "numeric"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             ageTimeStep <- object@ageTimeStep
+             population <- object@account@population
+             ## identical to calling function 'ageTimeStep' on 'population'
+             if (!identical(dembase::ageTimeStep(population), ageTimeStep))
+                 return(gettextf("'%s' not equal to result of calling function '%s' on '%s'",
+                                 "ageTimeStep", "ageTimeStep", "population"))
+             TRUE
+         })
 
 ## NO_TESTS
 setClass("CumProbCompMixin",

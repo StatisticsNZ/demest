@@ -99,7 +99,7 @@ updateAccount <- function(object, useC = FALSE) {
 ## READY_TO_TRANSLATE
 ## HAS_TESTS
 updateProposalAccountMovePopn <- function(combined, useC = FALSE) {
-    stopifnot(is(combined, "CombinedAccountMovements"))
+    stopifnot(methods::is(combined, "CombinedAccountMovements"))
     if (useC) {
         .Call(updateProposalAccountMovePopn_R, combined)
     }
@@ -192,7 +192,7 @@ updateProposalAccountMovePopn <- function(combined, useC = FALSE) {
 ## READY_TO_TRANSLATE
 ## HAS_TESTS
 updateProposalAccountMoveBirths <- function(combined, useC = FALSE) {
-    stopifnot(is(combined, "CombinedAccountMovements"))
+    stopifnot(methods::is(combined, "CombinedAccountMovements"))
     if (useC) {
         .Call(updateProposalAccountBirths_R, combined)
     }
@@ -309,7 +309,7 @@ updateProposalAccountMoveBirths <- function(combined, useC = FALSE) {
 ## READY_TO_TRANSLATE
 ## HAS_TESTS
 updateProposalAccountMoveOrigDest <- function(combined, useC = FALSE) {
-    stopifnot(is(combined, "CombinedAccountMovements"))
+    stopifnot(methods::is(combined, "CombinedAccountMovements"))
     if (useC) {
         .Call(updateProposalAccountMoveOrigDest_R, combined)
     }
@@ -442,7 +442,7 @@ updateProposalAccountMoveOrigDest <- function(combined, useC = FALSE) {
 ## READY_TO_TRANSLATE
 ## HAS_TESTS
 updateProposalAccountMovePool <- function(combined, useC = FALSE) {
-    stopifnot(is(combined, "CombinedAccountMovements"))
+    stopifnot(methods::is(combined, "CombinedAccountMovements"))
     if (useC) {
         .Call(updateProposalAccountMovePool_R, combined)
     }
@@ -580,7 +580,7 @@ updateProposalAccountMovePool <- function(combined, useC = FALSE) {
 ## READY_TO_TRANSLATE
 ## HAS_TESTS
 updateProposalAccountMoveNet <- function(combined, useC = FALSE) {
-    stopifnot(is(combined, "CombinedAccountMovements"))
+    stopifnot(methods::is(combined, "CombinedAccountMovements"))
     if (useC) {
         .Call(updateProposalAccountMoveNet_R, combined)
     }
@@ -704,7 +704,7 @@ updateProposalAccountMoveNet <- function(combined, useC = FALSE) {
 ## READY_TO_TRANSLATE
 ## HAS_TESTS
 updateProposalAccountMoveComp <- function(combined, useC = FALSE) {
-    stopifnot(is(combined, "CombinedAccountMovements"))
+    stopifnot(methods::is(combined, "CombinedAccountMovements"))
     if (useC) {
         .Call(updateProposalAccountMoveComp_R, combined)
     }
@@ -847,7 +847,7 @@ updateProposalAccountMoveComp <- function(combined, useC = FALSE) {
 ## READY_TO_TRANSLATE
 ## HAS_TESTS
 diffLogLikAccountMovePopn <- function(combined, useC = FALSE) {
-    stopifnot(is(combined, "CombinedAccountMovements"))
+    stopifnot(methods::is(combined, "CombinedAccountMovements"))
     if (useC) {
         .Call(diffLogLikAccountMovePopn_R, combined)
     }
@@ -1002,6 +1002,7 @@ diffLogLikPopnOneDataset <- function(diff, iFirst, iterator, population,
 
 ## READY_TO_TRANSLATE
 ## HAS_TESTS
+## Have already checked that iAfter > 0
 diffLogLikPopnOneCell <- function(iAfter, diff, population, model,
                                   dataset, transform, useC = FALSE) {
     ## iAfter
@@ -1054,7 +1055,7 @@ diffLogLikPopnOneCell <- function(iAfter, diff, population, model,
 ## READY_TO_TRANSLATE
 ## HAS_TESTS
 diffLogLikAccountMoveOrigDest <- function(combined, useC = FALSE) {
-    stopifnot(is(combined, "CombinedAccountMovements"))
+    stopifnot(methods::is(combined, "CombinedAccountMovements"))
     if (useC) {
         .Call(diffLogLikAccountMoveOrigDest_R, combined)
     }
@@ -1193,7 +1194,7 @@ diffLogLikCellOneDataset <- function(diff, iCell, component,
     else {
         i.after <- getIAfter(i = iCell,
                              transform = transform)
-        cell.has.no.data <- is.na(dataset@.Data[i.after])
+        cell.has.no.data <- (i.after == 0L) || is.na(dataset@.Data[i.after])
         if (cell.has.no.data)
             return(0)
         i.before <- getIBefore(i = i.after,
@@ -1307,7 +1308,7 @@ diffLogLikPopnPair <- function(diff, iPopnOrig, iPopnDest,
 ## READY_TO_TRANSLATE
 ## HAS_TESTS
 diffLogLikAccountMovePool <- function(combined, useC = FALSE) {
-    stopifnot(is(combined, "CombinedAccountMovements"))
+    stopifnot(methods::is(combined, "CombinedAccountMovements"))
     if (useC) {
         .Call(diffLogLikAccountMovePool_R, combined)
     }
@@ -1436,7 +1437,7 @@ diffLogLikCellsPool <- function(diff, iComp, iCellOut, iCellIn,
 ## READY_TO_TRANSLATE
 ## HAS_TESTS
 diffLogLikAccountMoveNet <- function(combined, useC = FALSE) {
-    stopifnot(is(combined, "CombinedAccountMovements"))
+    stopifnot(methods::is(combined, "CombinedAccountMovements"))
     if (useC) {
         .Call(diffLogLikAccountMoveNet_R, combined)
     }
@@ -1572,7 +1573,7 @@ diffLogLikCellsNet <- function(diff, iComp, iCellAdd, iCellSub,
 ## READY_TO_TRANSLATE
 ## HAS_TESTS
 diffLogLikAccountMoveComp <- function(combined, useC = FALSE) {
-    stopifnot(is(combined, "CombinedAccountMovements"))
+    stopifnot(methods::is(combined, "CombinedAccountMovements"))
     if (useC) {
         .Call(diffLogLikAccountMoveComp_R, combined)
     }
@@ -1623,7 +1624,7 @@ diffLogLikAccountMoveComp <- function(combined, useC = FALSE) {
 ## READY_TO_TRANSLATE
 ## HAS_TESTS
 diffLogDensPopn <- function(combined, useC = FALSE) {
-    stopifnot(is(combined, "CombinedAccountMovements"))
+    stopifnot(methods::is(combined, "CombinedAccountMovements"))
     if (useC) {
         .Call(diffLogDensPopn_R, combined)
     }
@@ -1743,7 +1744,7 @@ diffLogDensPopnOneCohort <- function(diff, population, i, iterator, theta,
 ## where change in exposure due to change in
 ## a cell in the initial population.
 diffLogDensExpPopn <- function(combined, useC = FALSE) {
-    stopifnot(is(combined, "CombinedAccountMovements"))
+    stopifnot(methods::is(combined, "CombinedAccountMovements"))
     if (useC) {
         .Call(diffLogDensExpPopn_R, combined)
     }
@@ -1762,6 +1763,7 @@ diffLogDensExpPopn <- function(combined, useC = FALSE) {
         exposure <- combined@exposure
         systemModels <- combined@systemModels
         has.age <- combined@hasAge
+        age.time.step <- combined@ageTimeStep
         ans <- 0
         for (i in seq_along(components)) {
             if (model.uses.exposure[i + 1L]) { ## note that 'net' components never use exposure
@@ -1778,6 +1780,7 @@ diffLogDensExpPopn <- function(combined, useC = FALSE) {
                                                   mapping = mapping.from.exp)
                     diff.log <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell,
                                                                    hasAge = has.age,
+                                                                   ageTimeStep = age.time.step,
                                                                    updatedPopn = TRUE,
                                                                    component = component,
                                                                    theta = theta,
@@ -1798,6 +1801,7 @@ diffLogDensExpPopn <- function(combined, useC = FALSE) {
                         if (is.par.ch)
                             diff.log <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell,
                                                                            hasAge = has.age,
+                                                                           ageTimeStep = age.time.step,
                                                                            updatedPopn = TRUE,
                                                                            component = component,
                                                                            theta = theta,
@@ -1809,6 +1813,7 @@ diffLogDensExpPopn <- function(combined, useC = FALSE) {
                         else
                             diff.log <- diffLogDensExpOneComp(iCell = i.cell,
                                                               hasAge = has.age,
+                                                              ageTimeStep = age.time.step,
                                                               updatedPopn = TRUE,
                                                               component = component,
                                                               theta = theta,
@@ -1827,6 +1832,7 @@ diffLogDensExpPopn <- function(combined, useC = FALSE) {
                                                   mapping = mapping.from.exp)
                     diff.log <- diffLogDensExpOneComp(iCell = i.cell,
                                                       hasAge = has.age,
+                                                      ageTimeStep = age.time.step,
                                                       updatedPopn = TRUE,
                                                       component = component,
                                                       theta = theta,
@@ -1847,7 +1853,7 @@ diffLogDensExpPopn <- function(combined, useC = FALSE) {
 
 ## READY_TO_TRANSLATE
 ## HAS_TESTS
-diffLogDensExpOneOrigDestParChPool <- function(iCell, hasAge, updatedPopn,
+diffLogDensExpOneOrigDestParChPool <- function(iCell, hasAge, ageTimeStep, updatedPopn,
                                                component, theta, iteratorComp, 
                                                iExpFirst, exposure, iteratorExposure,
                                                diff, useC = FALSE) {
@@ -1860,6 +1866,11 @@ diffLogDensExpOneOrigDestParChPool <- function(iCell, hasAge, updatedPopn,
     stopifnot(identical(length(hasAge), 1L))
     stopifnot(is.logical(hasAge))
     stopifnot(!is.na(hasAge))
+    ## ageTimeStep
+    stopifnot(is.double(ageTimeStep))
+    stopifnot(identical(length(ageTimeStep), 1L))
+    stopifnot(!is.na(ageTimeStep))
+    stopifnot(ageTimeStep > 0)
     ## updatedPopn
     stopifnot(identical(length(updatedPopn), 1L))
     stopifnot(is.logical(updatedPopn))
@@ -1898,7 +1909,8 @@ diffLogDensExpOneOrigDestParChPool <- function(iCell, hasAge, updatedPopn,
     stopifnot(identical(length(component), length(theta)))
     if (useC) {
         .Call(diffLogDensExpOneOrigDestParChPool_R,
-              iCell, hasAge, component, theta, iteratorComp,
+              iCell, hasAge, ageTimeStep, updatedPopn,
+              component, theta, iteratorComp,
               iExpFirst, exposure, iteratorExposure,
               diff)
     }
@@ -1911,13 +1923,13 @@ diffLogDensExpOneOrigDestParChPool <- function(iCell, hasAge, updatedPopn,
             i.e <- iteratorExposure@i
             i.c.vec <- iteratorComp@iVec
             if (hasAge)
-                diff.exposure <- 0.5 * diff
+                diff.exposure <- 0.5 * diff * ageTimeStep
             else {
                 is.first.cell <- i.e == iExpFirst
                 if (is.first.cell && !updatedPopn)
-                    diff.exposure <- 0.5 * diff
+                    diff.exposure <- 0.5 * diff * ageTimeStep
                 else
-                    diff.exposure <- diff
+                    diff.exposure <- diff * ageTimeStep
             }
             exposure.curr <- exposure[i.e]
             exposure.prop <- exposure.curr + diff.exposure
@@ -1946,7 +1958,7 @@ diffLogDensExpOneOrigDestParChPool <- function(iCell, hasAge, updatedPopn,
 
 ## READY_TO_TRANSLATE
 ## HAS_TESTS
-diffLogDensExpOneComp <- function(iCell, hasAge, updatedPopn,
+diffLogDensExpOneComp <- function(iCell, hasAge, ageTimeStep, updatedPopn,
                                   component, theta, iteratorComp, 
                                   iExpFirst, exposure, iteratorExposure,
                                   diff, useC = FALSE) {
@@ -1959,6 +1971,11 @@ diffLogDensExpOneComp <- function(iCell, hasAge, updatedPopn,
     stopifnot(identical(length(hasAge), 1L))
     stopifnot(is.logical(hasAge))
     stopifnot(!is.na(hasAge))
+    ## ageTimeStep
+    stopifnot(is.double(ageTimeStep))
+    stopifnot(identical(length(ageTimeStep), 1L))
+    stopifnot(!is.na(ageTimeStep))
+    stopifnot(ageTimeStep > 0)
     ## updatedPopn
     stopifnot(identical(length(updatedPopn), 1L))
     stopifnot(is.logical(updatedPopn))
@@ -1995,7 +2012,8 @@ diffLogDensExpOneComp <- function(iCell, hasAge, updatedPopn,
     stopifnot(identical(length(component), length(theta)))
     if (useC) {
         .Call(diffLogDensExpOneComp_R,
-              iCell, hasAge, component, theta, iteratorComp,
+              iCell, hasAge, ageTimeStep, updatedPopn,
+              component, theta, iteratorComp,
               iExpFirst, exposure, iteratorExposure, diff)
     }
     else {
@@ -2008,13 +2026,13 @@ diffLogDensExpOneComp <- function(iCell, hasAge, updatedPopn,
             comp.curr <- component[i.c]
             theta.curr <- theta[i.c]
             if (hasAge)
-                diff.exposure <- 0.5 * diff
+                diff.exposure <- 0.5 * diff * ageTimeStep
             else {
                 is.first.cell <- i.c == iCell
                 if (is.first.cell && !updatedPopn)
-                    diff.exposure <- 0.5 * diff
+                    diff.exposure <- 0.5 * diff * ageTimeStep
                 else
-                    diff.exposure <- diff
+                    diff.exposure <- diff * ageTimeStep
             }
             exposure.curr <- exposure[i.e]
             exposure.prop <- exposure.curr + diff.exposure
@@ -2041,7 +2059,7 @@ diffLogDensExpOneComp <- function(iCell, hasAge, updatedPopn,
 ## function called only if component uses exposure
 ## (otherwise ratios cancel)
 diffLogDensJumpOrigDest <- function(combined, useC = FALSE) {
-    stopifnot(is(combined, "CombinedAccountMovements"))
+    stopifnot(methods::is(combined, "CombinedAccountMovements"))
     if (useC) {
         .Call(diffLogDensJumpOrigDest_R, combined)
     }
@@ -2055,18 +2073,19 @@ diffLogDensJumpOrigDest <- function(combined, useC = FALSE) {
         i.exposure <- combined@iExposure
         diff <- combined@diffProp
         has.age <- combined@hasAge@.Data
+        age.time.step <- combined@ageTimeStep
         theta.cell <- theta[i.cell]
         exposure.cell.curr <- exposure[i.exposure]
         exposure.cell.jump <- expected.exposure[i.exposure]
         if (has.age) {
             is.lower.triangle <- combined@isLowerTriangle
             if (is.lower.triangle)
-                exposure.cell.prop <- exposure.cell.curr - 0.5 * diff
+                exposure.cell.prop <- exposure.cell.curr - 0.5 * diff * age.time.step
             else
                 exposure.cell.prop <- exposure.cell.curr
         }
         else
-            exposure.cell.prop <- exposure.cell.curr - 0.5 * diff
+            exposure.cell.prop <- exposure.cell.curr - 0.5 * diff * age.time.step
         lambda.dens.prop <- theta.cell * exposure.cell.prop
         lambda.jump <- theta.cell * exposure.cell.jump
         val.curr <- component[i.cell]
@@ -2087,7 +2106,7 @@ diffLogDensJumpOrigDest <- function(combined, useC = FALSE) {
 ## a cell in an Orig-Dest, Pool, or Net component
 ## (ie a component that potentially affects two cohorts).
 diffLogDensExpOrigDestPoolNet <- function(combined, useC = FALSE) {
-    stopifnot(is(combined, "CombinedAccountMovements"))
+    stopifnot(methods::is(combined, "CombinedAccountMovements"))
     if (useC) {
         .Call(diffLogDensExpOrigDestPoolNet_R, combined)
     }
@@ -2109,6 +2128,7 @@ diffLogDensExpOrigDestPoolNet <- function(combined, useC = FALSE) {
         exposure <- combined@exposure
         systemModels <- combined@systemModels
         has.age <- combined@hasAge
+        age.time.step <- combined@ageTimeStep
         no.exposure.affected <- (i.exp.first.orig == 0L) || (i.exp.first.orig == i.exp.first.dest)
         if (no.exposure.affected)
             return(0)
@@ -2139,6 +2159,7 @@ diffLogDensExpOrigDestPoolNet <- function(combined, useC = FALSE) {
                                                        mapping = mapping.from.exp)
                     diff.log.orig <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell.orig,
                                                                         hasAge = has.age,
+                                                                        ageTimeStep = age.time.step,
                                                                         updatedPopn = FALSE,
                                                                         component = component,
                                                                         theta = theta,
@@ -2152,6 +2173,7 @@ diffLogDensExpOrigDestPoolNet <- function(combined, useC = FALSE) {
                     ans <- ans + diff.log.orig
                     diff.log.dest <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell.dest,
                                                                         hasAge = has.age,
+                                                                        ageTimeStep = age.time.step,
                                                                         updatedPopn = FALSE,
                                                                         component = component,
                                                                         theta = theta,
@@ -2174,6 +2196,7 @@ diffLogDensExpOrigDestPoolNet <- function(combined, useC = FALSE) {
                         if (is.par.ch) {
                             diff.log.orig <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell.orig,
                                                                                 hasAge = has.age,
+                                                                                ageTimeStep = age.time.step,
                                                                                 updatedPopn = FALSE,
                                                                                 component = component,
                                                                                 theta = theta,
@@ -2187,6 +2210,7 @@ diffLogDensExpOrigDestPoolNet <- function(combined, useC = FALSE) {
                             ans <- ans + diff.log.orig
                             diff.log.dest <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell.dest,
                                                                                 hasAge = has.age,
+                                                                                ageTimeStep = age.time.step,
                                                                                 updatedPopn = FALSE,
                                                                                 component = component,
                                                                                 theta = theta,
@@ -2202,6 +2226,7 @@ diffLogDensExpOrigDestPoolNet <- function(combined, useC = FALSE) {
                         else {
                             diff.log.orig <- diffLogDensExpOneComp(iCell = i.cell.orig,
                                                                    hasAge = has.age,
+                                                                   ageTimeStep = age.time.step,
                                                                    updatedPopn = FALSE,
                                                                    component = component,
                                                                    theta = theta,
@@ -2215,6 +2240,7 @@ diffLogDensExpOrigDestPoolNet <- function(combined, useC = FALSE) {
                             ans <- ans + diff.log.orig
                             diff.log.dest <- diffLogDensExpOneComp(iCell = i.cell.dest,
                                                                    hasAge = has.age,
+                                                                   ageTimeStep = age.time.step,
                                                                    updatedPopn = FALSE,
                                                                    component = component,
                                                                    theta = theta,
@@ -2236,6 +2262,7 @@ diffLogDensExpOrigDestPoolNet <- function(combined, useC = FALSE) {
                                                        mapping = mapping.from.exp)
                     diff.log.orig <- diffLogDensExpOneComp(iCell = i.cell.orig,
                                                            hasAge = has.age,
+                                                           ageTimeStep = age.time.step,
                                                            updatedPopn = FALSE,
                                                            component = component,
                                                            theta = theta,
@@ -2249,6 +2276,7 @@ diffLogDensExpOrigDestPoolNet <- function(combined, useC = FALSE) {
                     ans <- ans + diff.log.orig
                     diff.log.dest <- diffLogDensExpOneComp(iCell = i.cell.dest,
                                                            hasAge = has.age,
+                                                           ageTimeStep = age.time.step,
                                                            updatedPopn = FALSE,
                                                            component = component,
                                                            theta = theta,
@@ -2270,7 +2298,7 @@ diffLogDensExpOrigDestPoolNet <- function(combined, useC = FALSE) {
 ## READY_TO_TRANSLATE
 ## HAS_TESTS
 diffLogDensJumpPoolWithExpose <- function(combined, useC = FALSE) {
-    stopifnot(is(combined, "CombinedAccountMovements"))
+    stopifnot(methods::is(combined, "CombinedAccountMovements"))
     if (useC) {
         .Call(diffLogDensJumpPoolWithExpose_R, combined)
     }
@@ -2286,6 +2314,7 @@ diffLogDensJumpPoolWithExpose <- function(combined, useC = FALSE) {
         i.exposure.in <- combined@iExposureOther
         diff <- combined@diffProp
         has.age <- combined@hasAge
+        age.time.step <- combined@ageTimeStep
         theta.out <- theta[i.cell.out]
         theta.in <- theta[i.cell.in]
         exposure.out.curr <- exposure[i.exposure.out]
@@ -2294,8 +2323,8 @@ diffLogDensJumpPoolWithExpose <- function(combined, useC = FALSE) {
         if (has.age) {
             is.lower.triangle <- combined@isLowerTriangle
             if (is.lower.triangle) {
-                exposure.out.prop <- exposure.out.curr - 0.5 * diff
-                exposure.in.prop <- exposure.in.curr + 0.5 * diff
+                exposure.out.prop <- exposure.out.curr - 0.5 * diff * age.time.step
+                exposure.in.prop <- exposure.in.curr + 0.5 * diff * age.time.step
             }
             else {
                 exposure.out.prop <- exposure.out.curr
@@ -2303,8 +2332,8 @@ diffLogDensJumpPoolWithExpose <- function(combined, useC = FALSE) {
             }
         }
         else {
-            exposure.out.prop <- exposure.out.curr - 0.5 * diff
-            exposure.in.prop <- exposure.in.curr + 0.5 * diff
+            exposure.out.prop <- exposure.out.curr - 0.5 * diff * age.time.step
+            exposure.in.prop <- exposure.in.curr + 0.5 * diff * age.time.step
         }
         lambda.dens.out.prop <- theta.out * exposure.out.prop
         lambda.dens.in.prop <- theta.in * exposure.in.prop
@@ -2328,7 +2357,7 @@ diffLogDensJumpPoolWithExpose <- function(combined, useC = FALSE) {
 ## READY_TO_TRANSLATE
 ## HAS_TESTS
 diffLogDensJumpPoolNoExpose <- function(combined, useC = FALSE) {
-    stopifnot(is(combined, "CombinedAccountMovements"))
+    stopifnot(methods::is(combined, "CombinedAccountMovements"))
     if (useC) {
         .Call(diffLogDensJumpPoolNoExpose_R, combined)
     }
@@ -2349,7 +2378,7 @@ diffLogDensJumpPoolNoExpose <- function(combined, useC = FALSE) {
 ## READY_TO_TRANSLATE
 ## HAS_TESTS
 diffLogDensJumpNet <- function(combined, useC = FALSE) {
-    stopifnot(is(combined, "CombinedAccountMovements"))
+    stopifnot(methods::is(combined, "CombinedAccountMovements"))
     if (useC) {
         .Call(diffLogDensJumpNet_R, combined)
     }
@@ -2383,7 +2412,7 @@ diffLogDensJumpNet <- function(combined, useC = FALSE) {
 ## function called only if component uses exposure
 ## (otherwise ratios cancel)
 diffLogDensJumpComp <- function(combined, useC = FALSE) {
-    stopifnot(is(combined, "CombinedAccountMovements"))
+    stopifnot(methods::is(combined, "CombinedAccountMovements"))
     if (useC) {
         .Call(diffLogDensJumpComp_R, combined)
     }
@@ -2397,6 +2426,7 @@ diffLogDensJumpComp <- function(combined, useC = FALSE) {
         i.exposure <- combined@iExposure
         diff <- combined@diffProp
         has.age <- combined@hasAge@.Data
+        age.time.step <- combined@ageTimeStep
         is.increment <- combined@isIncrement
         theta.cell <- theta[i.cell]
         exposure.cell.curr <- exposure[i.exposure]
@@ -2405,18 +2435,18 @@ diffLogDensJumpComp <- function(combined, useC = FALSE) {
             is.lower.triangle <- combined@isLowerTriangle
             if (is.lower.triangle) {
                 if (is.increment[i.comp])
-                    exposure.cell.prop <- exposure.cell.curr + 0.5 * diff
+                    exposure.cell.prop <- exposure.cell.curr + 0.5 * diff * age.time.step
                 else
-                    exposure.cell.prop <- exposure.cell.curr - 0.5 * diff
+                    exposure.cell.prop <- exposure.cell.curr - 0.5 * diff * age.time.step
             }
             else
                 exposure.cell.prop <- exposure.cell.curr
         }
         else {
             if (is.increment[i.comp])
-                exposure.cell.prop <- exposure.cell.curr + 0.5 * diff
+                exposure.cell.prop <- exposure.cell.curr + 0.5 * diff * age.time.step
             else
-                exposure.cell.prop <- exposure.cell.curr - 0.5 * diff
+                exposure.cell.prop <- exposure.cell.curr - 0.5 * diff * age.time.step
         }
         lambda.dens.prop <- theta.cell * exposure.cell.prop
         lambda.jump <- theta.cell * exposure.cell.jump
@@ -2439,7 +2469,7 @@ diffLogDensJumpComp <- function(combined, useC = FALSE) {
 ## cell in an ordinary component (ie a component
 ## that only potentially affects one cohort)
 diffLogDensExpComp <- function(combined, useC = FALSE) {
-    stopifnot(is(combined, "CombinedAccountMovements"))
+    stopifnot(methods::is(combined, "CombinedAccountMovements"))
     if (useC) {
         .Call(diffLogDensExpComp_R, combined)
     }
@@ -2460,6 +2490,7 @@ diffLogDensExpComp <- function(combined, useC = FALSE) {
         exposure <- combined@exposure
         systemModels <- combined@systemModels
         has.age <- combined@hasAge
+        age.time.step <- combined@ageTimeStep
         no.exposure.affected <- i.exp.first == 0L
         if (no.exposure.affected)
             return(0)
@@ -2481,6 +2512,7 @@ diffLogDensExpComp <- function(combined, useC = FALSE) {
                                                   mapping = mapping.from.exp)
                     diff.log <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell,
                                                                    hasAge = has.age,
+                                                                   ageTimeStep = age.time.step,
                                                                    updatedPopn = FALSE,
                                                                    component = component,
                                                                    theta = theta,
@@ -2501,6 +2533,7 @@ diffLogDensExpComp <- function(combined, useC = FALSE) {
                         if (is.par.ch)
                             diff.log <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell,
                                                                            hasAge = has.age,
+                                                                           ageTimeStep = age.time.step,
                                                                            updatedPopn = FALSE,
                                                                            component = component,
                                                                            theta = theta,
@@ -2512,6 +2545,7 @@ diffLogDensExpComp <- function(combined, useC = FALSE) {
                         else
                             diff.log <- diffLogDensExpOneComp(iCell = i.cell,
                                                               hasAge = has.age,
+                                                              ageTimeStep = age.time.step,
                                                               updatedPopn = FALSE,
                                                               component = component,
                                                               theta = theta,
@@ -2530,6 +2564,7 @@ diffLogDensExpComp <- function(combined, useC = FALSE) {
                                                   mapping = mapping.from.exp)
                     diff.log <- diffLogDensExpOneComp(iCell = i.cell,
                                                       hasAge = has.age,
+                                                      ageTimeStep = age.time.step,
                                                       updatedPopn = FALSE,
                                                       component = component,
                                                       theta = theta,
@@ -2559,7 +2594,7 @@ diffLogDensExpComp <- function(combined, useC = FALSE) {
 ## READY_TO_TRANSLATE
 ## HAS_TESTS
 updateCellMove <- function(combined, useC = FALSE) {
-    stopifnot(is(combined, "CombinedAccountMovements"))
+    stopifnot(methods::is(combined, "CombinedAccountMovements"))
     if (useC) {
         .Call(updateCellMove_R, combined)
     }
@@ -2602,12 +2637,11 @@ updateCellMove <- function(combined, useC = FALSE) {
 ## HAS_TESTS
 ## there is always at least one subsequent population value to update
 updateSubsequentPopnMove <- function(combined, useC = FALSE) {
-    stopifnot(is(combined, "CombinedAccountMovements"))
+    stopifnot(methods::is(combined, "CombinedAccountMovements"))
     if (useC) {
         .Call(updateSubsequentPopnMove_R, combined)
     }
     else {
-        i.cell <- combined@iCell
         i.comp <- combined@iComp
         i.orig.dest <- combined@iOrigDest
         i.pool <- combined@iPool
@@ -2628,7 +2662,6 @@ updateSubsequentPopnMove <- function(combined, useC = FALSE) {
         if (update.two.cohorts)
             i.popn.next.other <- combined@iPopnNextOther
         if (is.popn) {
-            combined@account@population[i.cell] <- combined@account@population[i.cell] + diff
             iterator <- resetCP(iterator, i = i.popn.next)
             repeat {
                 i <- iterator@i
@@ -2756,7 +2789,7 @@ updateSubsequentAccMove <- function(combined, useC = FALSE) {
 ## READY_TO_TRANSLATE
 ## HAS_TESTS
 updateSubsequentExpMove <- function(combined, useC = FALSE) {
-    stopifnot(is(combined, "CombinedAccountMovements"))
+    stopifnot(methods::is(combined, "CombinedAccountMovements"))
     if (useC) {
         .Call(updateSubsequentExpMove_R, combined)
     }
@@ -2770,6 +2803,7 @@ updateSubsequentExpMove <- function(combined, useC = FALSE) {
         diff <- combined@diffProp
         is.increment <- combined@isIncrement
         has.age <- combined@hasAge
+        age.time.step <- combined@ageTimeStep
         no.subsequent.exposure <- i.exp.first == 0L
         if (no.subsequent.exposure)
             return(combined)
@@ -2782,7 +2816,9 @@ updateSubsequentExpMove <- function(combined, useC = FALSE) {
             i.exp.first.other <- combined@iExpFirstOther
         if (is.popn) {
             if (has.age)
-                diff <- diff * 0.5
+                diff <- 0.5 * diff * age.time.step
+            else
+                diff <- diff * age.time.step
             iterator <- resetCC(iterator, i = i.exp.first)
             repeat {
                 i <- iterator@i
@@ -2794,12 +2830,12 @@ updateSubsequentExpMove <- function(combined, useC = FALSE) {
         }
         else if (update.two.cohorts) {
             if (is.orig.dest || is.pool) {
-                diff.orig <- -0.5 * diff
-                diff.dest <- 0.5 * diff
+                diff.orig <- -0.5 * diff * age.time.step
+                diff.dest <- 0.5 * diff * age.time.step
             }
             else { # is.int.net
-                diff.orig <- 0.5 * diff
-                diff.dest <- -0.5 * diff
+                diff.orig <- 0.5 * diff * age.time.step
+                diff.dest <- -0.5 * diff * age.time.step
             }
             iterator.orig <- resetCC(iterator, i = i.exp.first)
             iterator.dest <- resetCC(iterator, i = i.exp.first.other)
@@ -2820,9 +2856,9 @@ updateSubsequentExpMove <- function(combined, useC = FALSE) {
         }
         else {
             if (is.increment[i.comp])
-                diff <- 0.5 * diff
+                diff <- 0.5 * diff * age.time.step
             else
-                diff <- -0.5 * diff
+                diff <- -0.5 * diff * age.time.step
             iterator <- resetCC(iterator, i = i.exp.first)
             combined@exposure[i.exp.first] <- combined@exposure[i.exp.first] + diff
             if (!has.age)
@@ -2836,6 +2872,3 @@ updateSubsequentExpMove <- function(combined, useC = FALSE) {
         combined
     }
 }
-
-
-

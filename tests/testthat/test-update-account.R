@@ -440,7 +440,7 @@ test_that("R and C versions of updateProposalAccountMovePopn give same answer Co
 
 test_that("updateProposalAccountMoveBirths works with CombinedAccountMovements - no age", {
     updateProposalAccountMoveBirths <- demest:::updateProposalAccountMoveBirths
-    initialcombinedaccount <- demest:::initialCombinedAccount
+    initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     population <- CountsOne(values = seq(100, 200, 10),
                             labels = seq(2000, 2100, 10),
@@ -497,7 +497,7 @@ test_that("updateProposalAccountMoveBirths works with CombinedAccountMovements -
 
 test_that("R and C versions of updateProposalAccountMoveBirths give same answer with CombinedAccountMovements - no age", {
     updateProposalAccountMoveBirths <- demest:::updateProposalAccountMoveBirths
-    initialcombinedaccount <- demest:::initialCombinedAccount
+    initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     population <- CountsOne(values = seq(100, 200, 10),
                             labels = seq(2000, 2100, 10),
@@ -744,7 +744,7 @@ test_that("R and C versions of updateProposalAccountMoveBirths give same answer 
 
 test_that("updateProposalAccountMoveBirths works with CombinedAccountMovements - Parent-Child dimensions", {
     updateProposalAccountMoveBirths <- demest:::updateProposalAccountMoveBirths
-    initialcombinedaccount <- demest:::initialCombinedAccount
+    initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     population <- Counts(array(c(200L, 220L, 190L,
                                  220L, 180L, 190L),
@@ -807,7 +807,7 @@ test_that("updateProposalAccountMoveBirths works with CombinedAccountMovements -
 
 test_that("R and C versions of updateProposalAccountMoveBirths give same answer with CombinedAccountMovements - Parent-Child dimensions", {
     updateProposalAccountMoveBirths <- demest:::updateProposalAccountMoveBirths
-    initialcombinedaccount <- demest:::initialCombinedAccount
+    initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     population <- Counts(array(c(200L, 220L, 190L,
                                  220L, 180L, 190L),
@@ -2363,26 +2363,37 @@ test_that("diffLogLikCellOneDataset works", {
     deaths <- new("ExitsMovements",
                   .Data = deaths@.Data,
                   metadata = deaths@metadata)
-    dataset <- Counts(array(rpois(n = 180, lambda = deaths),
-                            dim = dim(deaths),
-                            dimnames = dimnames(deaths)))
+    dataset <- subarray(deaths, reg != "1") + 1L
     spec <- Model(dataset ~ Poisson(mean ~ age + sex))
-    model <- initialModel(spec, y = dataset, exposure = deaths)
     transform <- makeTransform(x = deaths, y = dataset, subset = TRUE)
     transform <- makeCollapseTransformExtra(transform)
+    model <- initialModel(spec, y = dataset, exposure = collapse(deaths, transform = transform))
+    ## cell in dataset
+    ans.obtained <- diffLogLikCellOneDataset(diff = 3L,
+                                             iCell = 15L,
+                                             component = deaths,
+                                             model = model,
+                                             dataset = dataset,
+                                             transform = transform)
+    ans.expected <- (dpois(x = dataset[[9L]], lambda = model@theta[9L] * (deaths[[15L]] + 3L), log = TRUE)
+        - dpois(x = dataset[[9L]], lambda = model@theta[9] * deaths[[15]], log = TRUE))
+    if (test.identity)
+        expect_identical(ans.obtained, ans.expected)
+    else {
+        expect_equal(ans.obtained, ans.expected)
+    }
+    ## cell not in dataset
     ans.obtained <- diffLogLikCellOneDataset(diff = 3L,
                                              iCell = 5L,
                                              component = deaths,
                                              model = model,
                                              dataset = dataset,
                                              transform = transform)
-    ans.expected <- (dpois(x = dataset[[5L]], lambda = model@theta[5L] * (deaths[[5L]] + 3L), log = TRUE)
-        - dpois(x = dataset[[5L]], lambda = model@theta[5] * deaths[[5]], log = TRUE))
+    ans.expected <- 0
     if (test.identity)
         expect_identical(ans.obtained, ans.expected)
-    else {
+    else
         expect_equal(ans.obtained, ans.expected)
-    }
     ## many to one
     deaths <- Counts(array(rpois(n = 180, lambda = 100),
                            dim = c(3, 2, 5, 3, 2),
@@ -2436,13 +2447,39 @@ test_that("R and C versions of diffLogLikCellOneDataset give same answer", {
     deaths <- new("ExitsMovements",
                   .Data = deaths@.Data,
                   metadata = deaths@metadata)
-    dataset <- Counts(array(rpois(n = 180, lambda = deaths),
-                            dim = dim(deaths),
-                            dimnames = dimnames(deaths)))
+    dataset <- subarray(deaths, reg != "1") + 1L
     spec <- Model(dataset ~ Poisson(mean ~ age + sex))
-    model <- initialModel(spec, y = dataset, exposure = deaths)
     transform <- makeTransform(x = deaths, y = dataset, subset = TRUE)
     transform <- makeCollapseTransformExtra(transform)
+    model <- initialModel(spec, y = dataset, exposure = collapse(deaths, transform = transform))
+    ## cell in dataset
+    ans.obtained <- diffLogLikCellOneDataset(diff = 3L,
+                                             iCell = 15L,
+                                             component = deaths,
+                                             model = model,
+                                             dataset = dataset,
+                                             transform = transform)
+    ans.expected <- (dpois(x = dataset[[9L]], lambda = model@theta[9L] * (deaths[[15L]] + 3L), log = TRUE)
+        - dpois(x = dataset[[9L]], lambda = model@theta[9] * deaths[[15]], log = TRUE))
+    ans.R <- diffLogLikCellOneDataset(diff = 3L,
+                                      iCell = 15L,
+                                      component = deaths,
+                                      model = model,
+                                      dataset = dataset,
+                                      transform = transform,
+                                      useC = FALSE)
+    ans.C <- diffLogLikCellOneDataset(diff = 3L,
+                                      iCell = 15L,
+                                      component = deaths,
+                                      model = model,
+                                      dataset = dataset,
+                                      transform = transform,
+                                      useC = TRUE)
+    if (test.identity)
+        expect_identical(ans.R, ans.C)
+    else
+        expect_equal(ans.R, ans.C)
+    ## cell not in dataset
     ans.R <- diffLogLikCellOneDataset(diff = 3L,
                                       iCell = 5L,
                                       component = deaths,
@@ -4178,6 +4215,7 @@ test_that("diffLogDensExpPopn works", {
                 ans.expected <- ans.expected + diffLogDensExpOneComp(iCell= i.cell.births,
                                                                      hasAge = TRUE,
                                                                      updatedPopn = TRUE,
+                                                                     ageTimeStep = x@ageTimeStep,
                                                                      component = x@account@components[[1]],
                                                                      theta = x@systemModels[[2]]@theta,
                                                                      iteratorComp = x@iteratorsComp[[1]],
@@ -4189,6 +4227,7 @@ test_that("diffLogDensExpPopn works", {
             ans.expected <- ans.expected + diffLogDensExpOneOrigDestParChPool(iCell = i.cell.internal,
                                                                               hasAge = TRUE,
                                                                               updatedPopn = TRUE,
+                                                                              ageTimeStep = x@ageTimeStep,
                                                                               component = x@account@components[[2]],
                                                                               theta = x@systemModels[[3]]@theta,
                                                                               iteratorComp = x@iteratorsComp[[2]],
@@ -4200,6 +4239,7 @@ test_that("diffLogDensExpPopn works", {
                 ans.expected <- ans.expected + diffLogDensExpOneComp(iCell= i.cell.deaths,
                                                                      hasAge = TRUE,
                                                                      updatedPopn = FALSE,
+                                                                     ageTimeStep = x@ageTimeStep,
                                                                      component = x@account@components[[3]],
                                                                      theta = x@systemModels[[4]]@theta,
                                                                      iteratorComp = x@iteratorsComp[[3]],
@@ -4323,13 +4363,14 @@ test_that("diffLogDensJumpOrigDest works with CombinedAccountMovements - no age"
     updateProposalAccountMoveOrigDest <- demest:::updateProposalAccountMoveOrigDest
     initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    set.seed(0)
     population <- Counts(array(seq(1000L, 1500L, 100L),
                                dim = c(3, 2),
                                dimnames = list(reg = c("a", "b", "c"),
                                                time = c(2000, 2005))))
-    internal <- Counts(array(c(0L, 50L, 40L,
+    internal <- Counts(array(c(0L, 25L, 10L,
                                20L, 0L, 30L,
-                               60L, 20L, 0L),
+                               15L, 20L, 0L),
                              dim = c(3, 3, 1),
                              dimnames = list(reg_orig = c("a", "b", "c"),
                                              reg_dest = c("a", "b", "c"),
@@ -4365,10 +4406,10 @@ test_that("diffLogDensJumpOrigDest works with CombinedAccountMovements - no age"
         if (x@generatedNewProposal@.Data) {
             ans.obtained <- diffLogDensJumpOrigDest(x)
             ans.expected <- (dpois(x@account@components[[1]][x@iCell] + x@diffProp,
-                                   lambda = (x@exposure[x@iExposure] - 0.5 * x@diffProp) * x@systemModels[[2]]@theta[x@iCell],
+                                   lambda = (x@exposure[x@iExposure] - 0.5 * x@diffProp * x@ageTimeStep) * x@systemModels[[2]]@theta[x@iCell],
                                    log = TRUE)
                 - dpois(x@account@components[[1]][x@iCell],
-                        lambda = (x@exposure[x@iExposure] - 0.5 * x@diffProp) * x@systemModels[[2]]@theta[x@iCell],
+                        lambda = (x@exposure[x@iExposure] - 0.5 * x@diffProp * x@ageTimeStep) * x@systemModels[[2]]@theta[x@iCell],
                         log = TRUE)
                 + dpois(x@account@components[[1]][x@iCell],
                         lambda = x@expectedExposure[x@iExposure] * x@systemModels[[2]]@theta[x@iCell],
@@ -4522,10 +4563,10 @@ test_that("diffLogDensJumpOrigDest works - with age", {
             ans.obtained <- diffLogDensJumpOrigDest(x)
             if (x@isLowerTriangle) {
                 ans.expected <- (dpois(x@account@components[[2]][x@iCell] + x@diffProp,
-                                       lambda = (x@exposure[x@iExposure] - 0.5 * x@diffProp) * x@systemModels[[3]]@theta[x@iCell],
+                                       lambda = (x@exposure[x@iExposure] - 0.5 * x@diffProp * x@ageTimeStep) * x@systemModels[[3]]@theta[x@iCell],
                                        log = TRUE)
                     - dpois(x@account@components[[2]][x@iCell],
-                            lambda = (x@exposure[x@iExposure] - 0.5 * x@diffProp) * x@systemModels[[3]]@theta[x@iCell],
+                            lambda = (x@exposure[x@iExposure] - 0.5 * x@diffProp * x@ageTimeStep) * x@systemModels[[3]]@theta[x@iCell],
                             log = TRUE)
                     + dpois(x@account@components[[2]][x@iCell],
                             lambda = x@expectedExposure[x@iExposure] * x@systemModels[[3]]@theta[x@iCell],
@@ -4719,6 +4760,7 @@ test_that("diffLogDensExpOrigDestPoolNet works with CombinedAccountMovements - n
             ans.expected <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell.orig,
                                                                hasAge = FALSE,
                                                                updatedPopn = FALSE,
+                                                               ageTimeStep = x@ageTimeStep,
                                                                component = x@account@components[[1]],
                                                                theta = x@systemModels[[2]]@theta,
                                                                iteratorComp = x@iteratorsComp[[1]],
@@ -4729,6 +4771,7 @@ test_that("diffLogDensExpOrigDestPoolNet works with CombinedAccountMovements - n
                 diffLogDensExpOneOrigDestParChPool(iCell = i.cell.dest,
                                                    hasAge = FALSE,
                                                    updatedPopn = FALSE,
+                                                   ageTimeStep = x@ageTimeStep,
                                                    component = x@account@components[[1]],
                                                    theta = x@systemModels[[2]]@theta,
                                                    iteratorComp = x@iteratorsComp[[1]],
@@ -4911,6 +4954,7 @@ test_that("diffLogDensExpOrigDestPoolNet works - with age", {
                 log.diff.births <- diffLogDensExpOneComp(iCell = i.cell.orig,
                                                          hasAge = TRUE,
                                                          updatedPopn = FALSE,
+                                                         ageTimeStep = x@ageTimeStep,
                                                          component = x@account@components[[1]],
                                                          theta = x@systemModels[[2]]@theta,
                                                          iteratorComp = x@iteratorsComp[[1]],
@@ -4921,6 +4965,7 @@ test_that("diffLogDensExpOrigDestPoolNet works - with age", {
                     diffLogDensExpOneComp(iCell = i.cell.dest,
                                           hasAge = TRUE,
                                           updatedPopn = FALSE,
+                                          ageTimeStep = x@ageTimeStep,
                                           component = x@account@components[[1]],
                                           theta = x@systemModels[[2]]@theta,
                                           iteratorComp = x@iteratorsComp[[1]],
@@ -4936,6 +4981,7 @@ test_that("diffLogDensExpOrigDestPoolNet works - with age", {
             log.diff.internal <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell.orig,
                                                                     hasAge = TRUE,
                                                                     updatedPopn = FALSE,
+                                                                    ageTimeStep = x@ageTimeStep,
                                                                     component = x@account@components[[2]],
                                                                     theta = x@systemModels[[3]]@theta,
                                                                     iteratorComp = x@iteratorsComp[[2]],
@@ -4946,18 +4992,20 @@ test_that("diffLogDensExpOrigDestPoolNet works - with age", {
                 diffLogDensExpOneOrigDestParChPool(iCell = i.cell.dest,
                                                    hasAge = TRUE,
                                                    updatedPopn = FALSE,
+                                                   ageTimeStep = x@ageTimeStep,
                                                    component = x@account@components[[2]],
                                                    theta = x@systemModels[[3]]@theta,
                                                    iteratorComp = x@iteratorsComp[[2]],
                                                    iExpFirst = x@iExpFirstOther,
                                                    exposure = x@exposure,
                                                    iteratorExposure = x@iteratorExposure,
-                                                   diff = x@diffProp) # 0.109037
+                                                   diff = x@diffProp)
             i.cell.orig <- getICellCompFromExp(x@iExpFirst, x@mappingsFromExp[[3]])
             i.cell.dest <- getICellCompFromExp(x@iExpFirstOther, x@mappingsFromExp[[3]])
             log.diff.deaths <- diffLogDensExpOneComp(iCell = i.cell.orig,
                                                      hasAge = TRUE,
                                                      updatedPopn = FALSE,
+                                                     ageTimeStep = x@ageTimeStep,
                                                      component = x@account@components[[3]],
                                                      theta = x@systemModels[[4]]@theta,
                                                      iteratorComp = x@iteratorsComp[[3]],
@@ -4968,6 +5016,7 @@ test_that("diffLogDensExpOrigDestPoolNet works - with age", {
                 diffLogDensExpOneComp(iCell = i.cell.dest,
                                       hasAge = TRUE,
                                       updatedPopn = FALSE,
+                                      ageTimeStep = x@ageTimeStep,
                                       component = x@account@components[[3]],
                                       theta = x@systemModels[[4]]@theta,
                                       iteratorComp = x@iteratorsComp[[3]],
@@ -5139,7 +5188,9 @@ test_that("diffLogDensExpOneOrigDestParChPool works", {
             ans.obtained <- diffLogDensExpOneOrigDestParChPool(iCell = getICellCompFromExp(i = x@iExpFirst,
                                                                                            mapping = x@mappingsFromExp[[1]]),
                                                                hasAge = FALSE,
+                                                               ageTimeStep = x@ageTimeStep,
                                                                updatedPopn = FALSE,
+                                                               ageTimeStep = x@ageTimeStep,
                                                                component = x@account@components[[1L]],
                                                                theta = x@systemModels[[2]]@theta,
                                                                iteratorComp = x@iteratorsComp[[1L]],
@@ -5150,7 +5201,7 @@ test_that("diffLogDensExpOneOrigDestParChPool works", {
             i.cell <- getICellCompFromExp(i = x@iExpFirst,
                                           mapping = x@mappingsFromExp[[1]])
             ans.expected <- sum(dpois(x = internal[i.cell + c(0, 3, 6)],
-                                      lambda = (x@exposure[i.cell] + 0.5 * x@diffProp) * x@systemModels[[2]]@theta[i.cell + c(0, 3, 6)],
+                                      lambda = (x@exposure[i.cell] + 2.5 * x@diffProp) * x@systemModels[[2]]@theta[i.cell + c(0, 3, 6)],
                                       log = TRUE)) -
                 sum(dpois(x = internal[i.cell + c(0, 3, 6)],
                           lambda = x@exposure[i.cell] * x@systemModels[[2]]@theta[i.cell + c(0, 3, 6)],
@@ -5217,6 +5268,7 @@ test_that("R and C versions of diffLogDensExpOneOrigDestParChPool give same answ
                                                                                     mapping = x@mappingsFromExp[[1]]),
                                                         hasAge = FALSE,
                                                         updatedPopn = FALSE,
+                                                        ageTimeStep = x@ageTimeStep,
                                                         component = x@account@components[[1L]],
                                                         theta = x@systemModels[[2]]@theta,
                                                         iteratorComp = x@iteratorsComp[[1L]],
@@ -5229,6 +5281,7 @@ test_that("R and C versions of diffLogDensExpOneOrigDestParChPool give same answ
                                                                                     mapping = x@mappingsFromExp[[1]]),
                                                         hasAge = FALSE,
                                                         updatedPopn = FALSE,
+                                                        ageTimeStep = x@ageTimeStep,
                                                         component = x@account@components[[1L]],
                                                         theta = x@systemModels[[2]]@theta,
                                                         iteratorComp = x@iteratorsComp[[1L]],
@@ -5275,6 +5328,7 @@ test_that("diffLogDensExpOneComp works", {
     ans.obtained <- diffLogDensExpOneComp(iCell = iCell,
                                           hasAge = hasAge,
                                           updatedPopn = FALSE,
+                                          ageTimeStep = 10,
                                           component = deaths,
                                           theta = theta,
                                           iteratorComp = iteratorComp,
@@ -5318,6 +5372,7 @@ test_that("R and C versions of diffLogDensExpOneComp give same answer", {
     ans.R <- diffLogDensExpOneComp(iCell = iCell,
                                    hasAge = hasAge,
                                    updatedPopn = FALSE,
+                                   ageTimeStep = 10,
                                    component = deaths,
                                    theta = theta,
                                    iteratorComp = iteratorComp,
@@ -5329,6 +5384,7 @@ test_that("R and C versions of diffLogDensExpOneComp give same answer", {
     ans.C <- diffLogDensExpOneComp(iCell = iCell,
                                    hasAge = hasAge,
                                    updatedPopn = FALSE,
+                                   ageTimeStep = 10,
                                    component = deaths,
                                    theta = theta,
                                    iteratorComp = iteratorComp,
@@ -5389,10 +5445,10 @@ test_that("diffLogDensJumpPoolWithExpose works with CombinedAccountMovements", {
         x <- updateProposalAccountMovePool(x)
     ans.obtained <- diffLogDensJumpPoolWithExpose(x)
     ans.expected <- (dpois(x@account@components[[1]][x@iCell] + x@diffProp,
-                           lambda = (x@exposure[x@iExposure] - 0.5 * x@diffProp) * x@systemModels[[2]]@theta[x@iCell],
+                           lambda = (x@exposure[x@iExposure] - 0.5 * x@diffProp * x@ageTimeStep) * x@systemModels[[2]]@theta[x@iCell],
                            log = TRUE)
         + dpois(x@account@components[[1]][x@iCellOther] + x@diffProp,
-                lambda = (x@exposure[x@iExposureOther] + 0.5 * x@diffProp) * x@systemModels[[2]]@theta[x@iCellOther],
+                lambda = (x@exposure[x@iExposureOther] + 0.5 * x@diffProp * x@ageTimeStep) * x@systemModels[[2]]@theta[x@iCellOther],
                 log = TRUE)
         - dpois(x@account@components[[1]][x@iCell],
                 lambda = x@exposure[x@iExposure] * x@systemModels[[2]]@theta[x@iCell],
@@ -5752,10 +5808,10 @@ test_that("diffLogDensJumpComp works - no age", {
             updated <- TRUE
             ans.obtained <- diffLogDensJumpComp(x)
             ans.expected <- (dpois(x@account@components[[2]][x@iCell] + x@diffProp,
-                                   lambda = (x@exposure[x@iExposure] - 0.5 * x@diffProp) * x@systemModels[[3]]@theta[x@iCell],
+                                   lambda = (x@exposure[x@iExposure] - 0.5 * x@diffProp * x@ageTimeStep) * x@systemModels[[3]]@theta[x@iCell],
                                    log = TRUE)
                 - dpois(x@account@components[[2]][x@iCell],
-                        lambda = (x@exposure[x@iExposure] - 0.5 * x@diffProp) * x@systemModels[[3]]@theta[x@iCell],
+                        lambda = (x@exposure[x@iExposure] - 0.5 * x@diffProp * x@ageTimeStep) * x@systemModels[[3]]@theta[x@iCell],
                         log = TRUE)
                 + dpois(x@account@components[[2]][x@iCell],
                         lambda = x@expectedExposure[x@iExposure] * x@systemModels[[3]]@theta[x@iCell],
@@ -5923,10 +5979,10 @@ test_that("diffLogDensJumpComp works - with age", {
             ans.obtained <- diffLogDensJumpComp(x)
             if (x@isLowerTriangle) {
                 ans.expected <- (dpois(x@account@components[[3]][x@iCell] + x@diffProp,
-                                       lambda = (x@exposure[x@iCell] - 0.5 * x@diffProp) * x@systemModels[[4]]@theta[x@iCell],
+                                       lambda = (x@exposure[x@iCell] - 0.5 * x@diffProp * x@ageTimeStep) * x@systemModels[[4]]@theta[x@iCell],
                                        log = TRUE)
                     - dpois(x@account@components[[3]][x@iCell],
-                            lambda = (x@exposure[x@iCell] - 0.5 * x@diffProp) * x@systemModels[[4]]@theta[x@iCell],
+                            lambda = (x@exposure[x@iCell] - 0.5 * x@diffProp * x@ageTimeStep) * x@systemModels[[4]]@theta[x@iCell],
                             log = TRUE)
                     + dpois(x@account@components[[3]][x@iCell],
                             lambda = x@expectedExposure[x@iCell] * x@systemModels[[4]]@theta[x@iCell],
@@ -5965,6 +6021,7 @@ test_that("R and C versions of diffLogDensJumpComp give same answer - with age",
     updateProposalAccountMoveComp <- demest:::updateProposalAccountMoveComp
     initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    set.seed(0)
     popn <- Counts(array(rpois(n = 90, lambda = 100),
                          dim = c(3, 2, 5, 3),
                          dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -5978,7 +6035,7 @@ test_that("R and C versions of diffLogDensJumpComp give same answer - with age",
                                            reg = 1:5,
                                            time = c("2001-2005", "2006-2010"),
                                            triangle = c("TL", "TU"))))
-    internal <- Counts(array(rpois(n = 300, lambda = 10),
+    internal <- Counts(array(rpois(n = 300, lambda = 3),
                              dim = c(3, 2, 5, 5, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
                                              sex = c("m", "f"),
@@ -6150,6 +6207,7 @@ test_that("diffLogDensExpComp works", {
                 ans.expected <- ans.expected + diffLogDensExpOneComp(iCell= i.cell.births,
                                                                      hasAge = TRUE,
                                                                      updatedPopn = FALSE,
+                                                                     ageTimeStep = x@ageTimeStep,
                                                                      component = x@account@components[[1]],
                                                                      theta = x@systemModels[[2]]@theta,
                                                                      iteratorComp = x@iteratorsComp[[1]],
@@ -6161,6 +6219,7 @@ test_that("diffLogDensExpComp works", {
             ans.expected <- ans.expected + diffLogDensExpOneOrigDestParChPool(iCell = i.cell.internal,
                                                                               hasAge = TRUE,
                                                                               updatedPopn = FALSE,
+                                                                              ageTimeStep = x@ageTimeStep,
                                                                               component = x@account@components[[2]],
                                                                               theta = x@systemModels[[3]]@theta,
                                                                               iteratorComp = x@iteratorsComp[[2]],
@@ -6169,16 +6228,17 @@ test_that("diffLogDensExpComp works", {
                                                                               iteratorExposure = x@iteratorExposure,
                                                                               diff = -x@diffProp)
             i.cell.deaths <- getICellCompFromExp(x@iExpFirst, x@mappingsFromExp[[3]])
-                ans.expected <- ans.expected + diffLogDensExpOneComp(iCell= i.cell.deaths,
-                                                                     hasAge = TRUE,
-                                                                     updatedPopn = FALSE,
-                                                                     component = x@account@components[[3]],
-                                                                     theta = x@systemModels[[4]]@theta,
-                                                                     iteratorComp = x@iteratorsComp[[3]],
-                                                                     iExpFirst = x@iExpFirst,
-                                                                     exposure = x@exposure,
-                                                                     iteratorExposure = x@iteratorExposure,
-                                                                     diff = -x@diffProp)
+            ans.expected <- ans.expected + diffLogDensExpOneComp(iCell= i.cell.deaths,
+                                                                 hasAge = TRUE,
+                                                                 updatedPopn = FALSE,
+                                                                 ageTimeStep = x@ageTimeStep,
+                                                                 component = x@account@components[[3]],
+                                                                 theta = x@systemModels[[4]]@theta,
+                                                                 iteratorComp = x@iteratorsComp[[3]],
+                                                                 iExpFirst = x@iExpFirst,
+                                                                 exposure = x@exposure,
+                                                                 iteratorExposure = x@iteratorExposure,
+                                                                 diff = -x@diffProp)
             if (test.identity)
                 expect_identical(ans.obtained, ans.expected)
             else
@@ -6289,7 +6349,7 @@ test_that("R and C versions of diffLogDensExpComp give same value", {
 
 test_that("diffLogDensExpComp works with CombinedAccountMovements - Parent-Child dimensions", {
     updateProposalAccountMoveBirths <- demest:::updateProposalAccountMoveBirths
-    initialcombinedaccount <- demest:::initialCombinedAccount
+    initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     population <- Counts(array(c(200L, 220L, 190L,
                                  220L, 180L, 190L),
@@ -6351,6 +6411,7 @@ test_that("diffLogDensExpComp works with CombinedAccountMovements - Parent-Child
                 ans.expected <- ans.expected + diffLogDensExpOneOrigDestParChPool(iCell= i.cell.births,
                                                                                   hasAge = FALSE,
                                                                                   updatedPopn = FALSE,
+                                                                                  ageTimeStep = x@ageTimeStep,
                                                                                   component = x@account@components[[1]],
                                                                                   theta = x@systemModels[[2]]@theta,
                                                                                   iteratorComp = x@iteratorsComp[[1]],
@@ -6362,6 +6423,7 @@ test_that("diffLogDensExpComp works with CombinedAccountMovements - Parent-Child
             ans.expected <- ans.expected + diffLogDensExpOneComp(iCell= i.cell.deaths,
                                                                  hasAge = FALSE,
                                                                  updatedPopn = FALSE,
+                                                                 ageTimeStep = x@ageTimeStep,
                                                                  component = x@account@components[[2]],
                                                                  theta = x@systemModels[[3]]@theta,
                                                                  iteratorComp = x@iteratorsComp[[2]],
@@ -6381,7 +6443,7 @@ test_that("diffLogDensExpComp works with CombinedAccountMovements - Parent-Child
 
 test_that("R and C versions of diffLogDensExpComp give same answer with CombinedAccountMovements - Parent-Child dimensions", {
     updateProposalAccountMoveBirths <- demest:::updateProposalAccountMoveBirths
-    initialcombinedaccount <- demest:::initialCombinedAccount
+    initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     population <- Counts(array(c(200L, 220L, 190L,
                                  220L, 180L, 190L),
@@ -6801,7 +6863,7 @@ test_that("updateSubsequentPopnMove works", {
             tested.popn <- TRUE
             ans.obtained <- updateSubsequentPopnMove(x1)
             expect_equal(sum(ans.obtained@account@population),
-                         sum(x1@account@population) + 3 * x1@diffProp)
+                         sum(x1@account@population) + 2 * x1@diffProp)
         }
         ## updating orig-dest
         x0 <- x
@@ -7348,9 +7410,17 @@ test_that("updateSubsequentExpMove works", {
         x1 <- updateProposalAccountMovePopn(x0)
         if (x1@generatedNewProposal@.Data) {
             tested.popn <- TRUE
-            ans.R <- updateSubsequentExpMove(x1, useC = FALSE)
-            ans.C <- updateSubsequentExpMove(x1, useC = TRUE)
-            expect_identical(ans.R, ans.C)
+            ans.obtained <- updateSubsequentExpMove(x1)
+            age <- as.data.frame(x1@account@population, direction = "long")[x1@iCell, "age"]
+            if (age == "10+")
+                expect_equal(sum(ans.obtained@exposure),
+                             sum(x1@exposure) + x@ageTimeStep * x1@diffProp)
+            else if (age == "5-9")
+                expect_equal(sum(ans.obtained@exposure),
+                             sum(x1@exposure) + x@ageTimeStep * 1.5 * x1@diffProp)
+            else
+                expect_equal(sum(ans.obtained@exposure),
+                             sum(x1@exposure) + x@ageTimeStep * 2 * x1@diffProp)
         }
         ## updating orig-dest
         x0 <- x
@@ -7358,9 +7428,9 @@ test_that("updateSubsequentExpMove works", {
         x1 <- updateProposalAccountMoveOrigDest(x0)
         if (x1@generatedNewProposal@.Data) {
             tested.orig.dest <- TRUE
-            ans.R <- updateSubsequentExpMove(x1, useC = FALSE)
-            ans.C <- updateSubsequentExpMove(x1, useC = TRUE)
-            expect_identical(ans.R, ans.C)
+            ans.obtained <- updateSubsequentExpMove(x1)
+            expect_equal(sum(ans.obtained@exposure),
+                         sum(x1@exposure))
         }
         ## updating component
         x0 <- x
@@ -7368,9 +7438,52 @@ test_that("updateSubsequentExpMove works", {
         x1 <- updateProposalAccountMoveComp(x0)
         if (x1@generatedNewProposal@.Data) {
             tested.comp <- TRUE
-            ans.R <- updateSubsequentExpMove(x1, useC = FALSE)
-            ans.C <- updateSubsequentExpMove(x1, useC = TRUE)
-            expect_identical(ans.R, ans.C)
+            ans.obtained <- updateSubsequentExpMove(x1)
+            age <- as.data.frame(x1@account@components[[3]], direction = "long")[x1@iCell, "age"]
+            time <- as.data.frame(x1@account@components[[3]], direction = "long")[x1@iCell, "time"]
+            is.lower <- x1@isLowerTriangle@.Data
+            if (age == "10+") {
+                if (time == "2001-2005") {
+                    if (is.lower)
+                        expect_equal(sum(ans.obtained@exposure),
+                                     sum(x1@exposure) - x@ageTimeStep * x1@diffProp)
+                    else
+                        expect_equal(sum(ans.obtained@exposure),
+                                     sum(x1@exposure) - 0.5 * x@ageTimeStep * x1@diffProp)
+                }
+                else {
+                    if (is.lower)
+                        expect_equal(sum(ans.obtained@exposure),
+                                     sum(x1@exposure) - 0.5 * x@ageTimeStep * x1@diffProp)
+                    else
+                        expect_equal(sum(ans.obtained@exposure),
+                                     sum(x1@exposure))
+                }
+            }
+            else if (age == "5-9") {
+                if (time == "2001-2005") {
+                    if (is.lower)
+                        expect_equal(sum(ans.obtained@exposure),
+                                     sum(x1@exposure) - 1.5 * x@ageTimeStep * x1@diffProp)
+                    else
+                        expect_equal(sum(ans.obtained@exposure),
+                                     sum(x1@exposure) - x@ageTimeStep * x1@diffProp)
+                }
+                else {
+                    expect_equal(sum(ans.obtained@exposure),
+                                 sum(x1@exposure) - 0.5 * x@ageTimeStep * x1@diffProp)
+                }
+            }
+            else {
+                if (time == "2001-2005") {
+                    expect_equal(sum(ans.obtained@exposure),
+                                 sum(x1@exposure) - 1.5 * x@ageTimeStep * x1@diffProp)
+                }
+                else {
+                    expect_equal(sum(ans.obtained@exposure),
+                                 sum(x1@exposure) - 0.5 * x@ageTimeStep * x1@diffProp)
+                }
+            }
         }
     }
     if (!tested.popn)
@@ -7381,7 +7494,8 @@ test_that("updateSubsequentExpMove works", {
         warning("updateSubsequentExpMove not tested with comp")
 })
 
-test_that("R and C versions of updateSubsequentExpMove give same value", {
+
+test_that("R and C versions of updateSubsequentExpMove give same answer", {
     updateSubsequentExpMove <- demest:::updateSubsequentExpMove
     updateProposalAccountMovePopn <- demest:::updateProposalAccountMovePopn
     updateProposalAccountMoveComp <- demest:::updateProposalAccountMoveComp
@@ -7472,17 +7586,9 @@ test_that("R and C versions of updateSubsequentExpMove give same value", {
         x1 <- updateProposalAccountMovePopn(x0)
         if (x1@generatedNewProposal@.Data) {
             tested.popn <- TRUE
-            ans.obtained <- updateSubsequentExpMove(x1)
-            age <- as.data.frame(x1@account@population, direction = "long")[x1@iCell, "age"]
-            if (age == "10+")
-                expect_equal(sum(ans.obtained@exposure),
-                             sum(x1@exposure) + x1@diffProp)
-            else if (age == "5-9")
-                expect_equal(sum(ans.obtained@exposure),
-                             sum(x1@exposure) + 1.5 * x1@diffProp)
-            else
-                expect_equal(sum(ans.obtained@exposure),
-                             sum(x1@exposure) + 2 * x1@diffProp)
+            ans.R <- updateSubsequentExpMove(x1, useC = FALSE)
+            ans.C <- updateSubsequentExpMove(x1, useC = TRUE)
+            expect_identical(ans.R, ans.C)
         }
         ## updating orig-dest
         x0 <- x
@@ -7490,9 +7596,9 @@ test_that("R and C versions of updateSubsequentExpMove give same value", {
         x1 <- updateProposalAccountMoveOrigDest(x0)
         if (x1@generatedNewProposal@.Data) {
             tested.orig.dest <- TRUE
-            ans.obtained <- updateSubsequentExpMove(x1)
-            expect_equal(sum(ans.obtained@exposure),
-                         sum(x1@exposure))
+            ans.R <- updateSubsequentExpMove(x1, useC = FALSE)
+            ans.C <- updateSubsequentExpMove(x1, useC = TRUE)
+            expect_identical(ans.R, ans.C)
         }
         ## updating component
         x0 <- x
@@ -7500,52 +7606,9 @@ test_that("R and C versions of updateSubsequentExpMove give same value", {
         x1 <- updateProposalAccountMoveComp(x0)
         if (x1@generatedNewProposal@.Data) {
             tested.comp <- TRUE
-            ans.obtained <- updateSubsequentExpMove(x1)
-            age <- as.data.frame(x1@account@components[[3]], direction = "long")[x1@iCell, "age"]
-            time <- as.data.frame(x1@account@components[[3]], direction = "long")[x1@iCell, "time"]
-            is.lower <- x1@isLowerTriangle@.Data
-            if (age == "10+") {
-                if (time == "2001-2005") {
-                    if (is.lower)
-                        expect_equal(sum(ans.obtained@exposure),
-                                     sum(x1@exposure) - x1@diffProp)
-                    else
-                        expect_equal(sum(ans.obtained@exposure),
-                                     sum(x1@exposure) - 0.5 * x1@diffProp)
-                }
-                else {
-                    if (is.lower)
-                        expect_equal(sum(ans.obtained@exposure),
-                                     sum(x1@exposure) - 0.5 * x1@diffProp)
-                    else
-                        expect_equal(sum(ans.obtained@exposure),
-                                     sum(x1@exposure))
-                }
-            }
-            else if (age == "5-9") {
-                if (time == "2001-2005") {
-                    if (is.lower)
-                        expect_equal(sum(ans.obtained@exposure),
-                                     sum(x1@exposure) - 1.5 * x1@diffProp)
-                    else
-                        expect_equal(sum(ans.obtained@exposure),
-                                     sum(x1@exposure) - x1@diffProp)
-                }
-                else {
-                    expect_equal(sum(ans.obtained@exposure),
-                                 sum(x1@exposure) - 0.5 * x1@diffProp)
-                }
-            }
-            else {
-                if (time == "2001-2005") {
-                    expect_equal(sum(ans.obtained@exposure),
-                                 sum(x1@exposure) - 1.5 * x1@diffProp)
-                }
-                else {
-                    expect_equal(sum(ans.obtained@exposure),
-                                 sum(x1@exposure) - 0.5 * x1@diffProp)
-                }
-            }
+            ans.R <- updateSubsequentExpMove(x1, useC = FALSE)
+            ans.C <- updateSubsequentExpMove(x1, useC = TRUE)
+            expect_identical(ans.R, ans.C)
         }
     }
     if (!tested.popn)
@@ -7555,4 +7618,3 @@ test_that("R and C versions of updateSubsequentExpMove give same value", {
     if (!tested.comp)
         warning("updateSubsequentExpMove not tested with comp")
 })
-

@@ -9397,3 +9397,115 @@ test_that("R and C versions of updateObservationCounts give same answer with agg
 })
 
 
+
+test_that("updateObservationModelsAccount works with CombinedAccountMovements", {
+    updateObservationModelsAccount <- demest:::updateObservationModelsAccount
+    updateAccount <- demest:::updateAccount
+    initialCombinedAccount <- demest:::initialCombinedAccount
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    updateModelUseExp <- demest:::updateModelUseExp
+    set.seed(1)
+    population <- CountsOne(values = seq(100L, 200L, 10L),
+                            labels = seq(2000, 2100, 10),
+                            name = "time")
+    births <- CountsOne(values = rpois(n = 10, lambda = 15),
+                        labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
+                        name = "time")
+    deaths <- CountsOne(values = rpois(n = 10, lambda = 5),
+                        labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
+                        name = "time")
+    account <- Movements(population = population,
+                         births = births,
+                         exits = list(deaths = deaths))
+    account <- makeConsistent(account)
+    systemModels <- list(Model(population ~ Poisson(mean ~ time, useExpose = FALSE)),
+                         Model(births ~ Poisson(mean ~ 1)),
+                         Model(deaths ~ Poisson(mean ~ 1)))
+    systemWeights <- rep(list(NULL), 3)
+    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
+                              Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
+    seriesIndices <- c(2L, 0L)
+    datasets <- list(subarray(deaths, time > 2010, drop = FALSE) + 1L,
+                     subarray(population, time < 2090, drop = FALSE) - 1L)
+    namesDatasets <- c("tax", "census")
+    transforms <- list(makeTransform(x = deaths, y = datasets[[1]], subset = TRUE),
+                       makeTransform(x = population, y = datasets[[2]], subset = TRUE))
+    transforms <- lapply(transforms, makeCollapseTransformExtra)
+    x <- initialCombinedAccount(account = account,
+                                systemModels = systemModels,
+                                systemWeights = systemWeights,
+                                observationModels = observationModels,
+                                seriesIndices = seriesIndices,
+                                datasets = datasets,
+                                namesDatasets = namesDatasets,
+                                transforms = transforms)
+    x <- updateAccount(x)
+    set.seed(1)
+    ans.obtained <- updateObservationModelsAccount(x)
+    set.seed(1)
+    ans.expected <- x
+    ans.expected@observationModels[[1]] <- updateModelUseExp(ans.expected@observationModels[[1]],
+                                                             y = ans.expected@datasets[[1]],
+                                                             exposure = toDouble(collapse(ans.expected@account@components[[2]],
+                                                                                          transform = transforms[[1]])))
+    ans.expected@observationModels[[2]] <- updateModelUseExp(ans.expected@observationModels[[2]],
+                                                             y = ans.expected@datasets[[2]],
+                                                             exposure = collapse(ans.expected@account@population,
+                                                                                 transform = transforms[[2]]))
+    if (test.identity)
+        expect_identical(ans.obtained, ans.expected)
+    else
+        expect_equal(ans.obtained, ans.expected)
+})
+
+test_that("R and C versions of updateObservationModelsAccount give same answer", {
+    updateObservationModelsAccount <- demest:::updateObservationModelsAccount
+    updateAccount <- demest:::updateAccount
+    initialCombinedAccount <- demest:::initialCombinedAccount
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    updateModelUseExp <- demest:::updateModelUseExp
+    set.seed(1)
+    population <- CountsOne(values = seq(100L, 200L, 10L),
+                            labels = seq(2000, 2100, 10),
+                            name = "time")
+    births <- CountsOne(values = rpois(n = 10, lambda = 15),
+                        labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
+                        name = "time")
+    deaths <- CountsOne(values = rpois(n = 10, lambda = 5),
+                        labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
+                        name = "time")
+    account <- Movements(population = population,
+                         births = births,
+                         exits = list(deaths = deaths))
+    account <- makeConsistent(account)
+    systemModels <- list(Model(population ~ Poisson(mean ~ time, useExpose = FALSE)),
+                         Model(births ~ Poisson(mean ~ 1)),
+                         Model(deaths ~ Poisson(mean ~ 1)))
+    systemWeights <- rep(list(NULL), 3)
+    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
+                              Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
+    seriesIndices <- c(2L, 0L)
+    datasets <- list(subarray(deaths, time > 2010, drop = FALSE) + 1L,
+                     subarray(population, time < 2090, drop = FALSE) - 1L)
+    namesDatasets <- c("tax", "census")
+    transforms <- list(makeTransform(x = deaths, y = datasets[[1]], subset = TRUE),
+                       makeTransform(x = population, y = datasets[[2]], subset = TRUE))
+    transforms <- lapply(transforms, makeCollapseTransformExtra)
+    x <- initialCombinedAccount(account = account,
+                                systemModels = systemModels,
+                                systemWeights = systemWeights,
+                                observationModels = observationModels,
+                                seriesIndices = seriesIndices,
+                                datasets = datasets,
+                                namesDatasets = namesDatasets,
+                                transforms = transforms)
+    x <- updateAccount(x)
+    set.seed(1)
+    ans.R <- updateObservationModelsAccount(x, useC = FALSE)
+    set.seed(1)
+    ans.C <- updateObservationModelsAccount(x, useC = TRUE)
+    if (test.identity)
+        expect_identical(ans.R, ans.C)
+    else
+        expect_equal(ans.R, ans.C)
+})

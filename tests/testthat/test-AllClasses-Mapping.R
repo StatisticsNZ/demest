@@ -172,15 +172,6 @@ test_that("validity tests for MappingCompToPopn inherited from MappingMixinAge w
     x.wrong@stepAgeTarget <- -1L
     expect_error(validObject(x.wrong),
                  "'stepAgeTarget' is non-positive")
-    ## if hasAge: stepAge not in stepShared
-    x.wrong <- x
-    x.wrong@stepAgeCurrent <- x.wrong@stepSharedCurrentVec[1]
-    expect_error(validObject(x.wrong),
-                 "overlap between 'stepAgeCurrent' and 'stepSharedCurrentVec'")
-    x.wrong <- x
-    x.wrong@stepAgeTarget <- x.wrong@stepSharedTargetVec[1]
-    expect_error(validObject(x.wrong),
-                 "overlap between 'stepAgeTarget' and 'stepSharedTargetVec'")
     ## if not hasAge: nAgeCurrent, stepAgeCurrent, stepAgeTarget, stepTriangleCurrent missing
     x.wrong <- x
     x.wrong@hasAge <- FALSE

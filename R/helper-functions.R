@@ -9658,16 +9658,16 @@ getIExpFirstFromPopn <- function(i, description, useC = FALSE) {
         n.time.popn <- description@nTime
         step.time <- description@stepTime
         length.popn <- description@length
-        has.age <- description@hasAge ## new
-        i.nontime <- (i - 1L) %/% (n.time.popn * step.time) ## moved
-        remainder <- (i - 1L) %% (n.time.popn * step.time) + 1L ## moved
+        has.age <- description@hasAge
+        i.nontime <- (i - 1L) %/% (n.time.popn * step.time)
+        remainder <- (i - 1L) %% (n.time.popn * step.time) + 1L
         n.time.exp <- n.time.popn - 1L
         index.exp <- i.nontime * n.time.exp * step.time + remainder
-        if (has.age) { ## new
+        if (has.age) {
             length.lower.tri <- (length.popn %/% n.time.popn) * n.time.exp
             length.lower.tri + index.exp
         }
-        else ## new
+        else
             index.exp
     }
 }

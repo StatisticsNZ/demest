@@ -1,6 +1,7 @@
 
 setClass("AccountMixin",
          contains = c("VIRTUAL",
+                      "AgeTimeStepMixin",
                       "CumProbCompMixin",
                       "DescriptionsMixin",
                       "DiffPropMixin",

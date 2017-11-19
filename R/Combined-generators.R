@@ -338,6 +338,7 @@ setMethod("initialCombinedAccount",
               components <- account@components
               names.components <- account@namesComponents
               has.age <- "age" %in% dimtypes(population, use.names = FALSE)
+              age.time.step <- dembase::ageTimeStep(population)
               n.popn <- length(population)
               n.components <- sapply(components, length)
               n.cell.account <- n.popn + sum(n.components)
@@ -466,6 +467,7 @@ setMethod("initialCombinedAccount",
                   methods::new("CombinedAccountMovementsHasAge",
                                accession = accession,
                                account = account,
+                               ageTimeStep = age.time.step,
                                cumProbComp = cum.prob.comp,
                                datasets = datasets,
                                descriptions = descriptions,
@@ -515,6 +517,7 @@ setMethod("initialCombinedAccount",
               else {
                   methods::new("CombinedAccountMovements",
                                account = account,
+                               ageTimeStep = age.time.step,
                                cumProbComp = cum.prob.comp,
                                datasets = datasets,
                                descriptions = descriptions,

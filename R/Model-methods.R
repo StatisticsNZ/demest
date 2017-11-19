@@ -1900,7 +1900,6 @@ setMethod("updateModelNotUseExp",
               stopifnot(methods::validObject(object))
               ## y
               stopifnot(is.integer(y))
-              stopifnot(all(y[!is.na(y)] >= 0))
               if (useC) {
                   if (useSpecific)
                       .Call(updateModelNotUseExp_NormalFixedNotUseExp_R, object, y)
@@ -2288,13 +2287,11 @@ setMethod("updateModelUseExp",
               stopifnot(methods::validObject(object))
               ## y
               stopifnot(is.integer(y))
-              stopifnot(all(y[!is.na(y)] >= 0))
               ## exposure
               stopifnot(is.integer(exposure))
-              stopifnot(all(exposure[!is.na(exposure)] >= 0L))
+              stopifnot(!any(is.na(exposure)))
               ## y and exposure
               stopifnot(identical(length(exposure), length(y)))
-              stopifnot(all(is.na(exposure) <= is.na(y)))
               if (useC) {
                   if (useSpecific)
                       .Call(updateModelUseExp_NormalFixedUseExp_R, object, y, exposure)

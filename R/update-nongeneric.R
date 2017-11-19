@@ -1957,7 +1957,6 @@ updateTheta_BinomialVarying <- function(object, y, exposure, useC = FALSE) {
     stopifnot(is.integer(y))
     stopifnot(all(y[!is.na(y)] >= 0))
     ## exposure
-    stopifnot(methods::is(exposure, "Counts"))
     stopifnot(identical(length(exposure), length(y)))
     stopifnot(is.integer(exposure))
     ## y and exposure
@@ -2051,7 +2050,6 @@ updateTheta_BinomialVaryingAgCertain <- function(object, y, exposure, useC = FAL
     stopifnot(is.integer(y))
     stopifnot(all(y[!is.na(y)] >= 0))
     ## exposure
-    stopifnot(methods::is(exposure, "Counts"))
     stopifnot(is.integer(exposure))
     ## y and exposure
     stopifnot(identical(length(exposure), length(y)))
@@ -2246,7 +2244,6 @@ updateThetaAndValueAgNormal_Binomial <- function(object, y, exposure, useC = FAL
     stopifnot(identical(length(y), length(object@theta)))
     stopifnot(all(y[!is.na(y)] >= 0))
     ## exposure
-    stopifnot(methods::is(exposure, "Counts"))
     stopifnot(is.integer(exposure))
     stopifnot(identical(length(exposure), length(y)))
     ## y and exposure
@@ -2377,7 +2374,6 @@ updateThetaAndValueAgFun_Binomial <- function(object, y, exposure, useC = FALSE)
     stopifnot(identical(length(y), length(object@theta)))
     stopifnot(all(y[!is.na(y)] >= 0))
     ## exposure
-    stopifnot(methods::is(exposure, "Counts"))
     stopifnot(is.integer(exposure))
     stopifnot(all(exposure[!is.na(exposure)] >= 0))
     ## y and exposure
@@ -2972,7 +2968,6 @@ updateTheta_PoissonVaryingNotUseExp <- function(object, y, useC = FALSE) {
     stopifnot(methods::is(object, "PoissonVaryingNotUseExp"))
     stopifnot(methods::validObject(object))
     ## y
-    stopifnot(methods::is(y, "Counts"))
     stopifnot(identical(length(y), length(object@theta)))
     stopifnot(is.integer(y))
     stopifnot(all(y[!is.na(y)] >= 0L))
@@ -3089,12 +3084,10 @@ updateTheta_PoissonVaryingUseExp <- function(object, y, exposure, useC = FALSE) 
     stopifnot(methods::is(object, "PoissonVaryingUseExp"))
     stopifnot(methods::validObject(object))
     ## y
-    stopifnot(methods::is(y, "Counts"))
     stopifnot(identical(length(y), length(object@theta)))
     stopifnot(is.integer(y))
     stopifnot(all(y[!is.na(y)] >= 0L))
     ## exposure
-    stopifnot(methods::is(exposure, "Counts"))
     stopifnot(is.double(exposure))
     stopifnot(all(exposure[!is.na(exposure)] >= 0))
     ## y and exposure
@@ -3226,7 +3219,6 @@ updateTheta_PoissonVaryingNotUseExpAgCertain <- function(object, y, useC = FALSE
     stopifnot(methods::is(object, "Aggregate"))
     stopifnot(methods::validObject(object))
     ## y
-    stopifnot(methods::is(y, "Counts"))
     stopifnot(is.integer(y))
     stopifnot(identical(length(y), length(object@theta)))
     stopifnot(all(y[!is.na(y)] >= 0L))
@@ -3400,12 +3392,10 @@ updateTheta_PoissonVaryingUseExpAgCertain <- function(object, y, exposure, useC 
     stopifnot(methods::is(object, "Aggregate"))
     stopifnot(methods::validObject(object))
     ## y
-    stopifnot(methods::is(y, "Counts"))
     stopifnot(is.integer(y))
     stopifnot(identical(length(y), length(object@theta)))
     stopifnot(all(y[!is.na(y)] >= 0L))
     ## exposure
-    stopifnot(methods::is(exposure, "Counts"))
     stopifnot(is.double(exposure))
     stopifnot(identical(length(exposure), length(y)))
     stopifnot(all(exposure[!is.na(exposure)] >= 0))
@@ -3586,7 +3576,6 @@ updateThetaAndValueAgNormal_PoissonNotUseExp <- function(object, y, useC = FALSE
     stopifnot(methods::is(object, "AgNormal"))
     stopifnot(methods::validObject(object))
     ## y
-    stopifnot(methods::is(y, "Counts"))
     stopifnot(is.integer(y))
     stopifnot(identical(length(y), length(object@theta)))
     stopifnot(all(y[!is.na(y)] >= 0))
@@ -3704,7 +3693,6 @@ updateThetaAndValueAgPoisson_PoissonNotUseExp <- function(object, y, useC = FALS
     stopifnot(methods::is(object, "AgPoisson"))
     stopifnot(methods::validObject(object))
     ## y
-    stopifnot(methods::is(y, "Counts"))
     stopifnot(is.integer(y))
     stopifnot(identical(length(y), length(object@theta)))
     stopifnot(all(y[!is.na(y)] >= 0))
@@ -3817,7 +3805,6 @@ updateThetaAndValueAgFun_PoissonNotUseExp <- function(object, y, useC = FALSE) {
     stopifnot(methods::is(object, "AgFun"))
     stopifnot(methods::validObject(object))
     ## y
-    stopifnot(methods::is(y, "Counts"))
     stopifnot(is.integer(y))
     stopifnot(identical(length(y), length(object@theta)))
     stopifnot(all(y[!is.na(y)] >= 0))
@@ -3937,12 +3924,10 @@ updateThetaAndValueAgNormal_PoissonUseExp <- function(object, y, exposure, useC 
     stopifnot(methods::is(object, "AgNormal"))
     stopifnot(methods::validObject(object))
     ## y
-    stopifnot(methods::is(y, "Counts"))
     stopifnot(is.integer(y))
     stopifnot(identical(length(y), length(object@theta)))
     stopifnot(all(y[!is.na(y)] >= 0))
     ## exposure
-    stopifnot(methods::is(exposure, "Counts"))
     stopifnot(is.double(exposure))
     stopifnot(all(exposure[!is.na(exposure)] >= 0))
     ## y and exposure
@@ -4063,12 +4048,10 @@ updateThetaAndValueAgPoisson_PoissonUseExp <- function(object, y, exposure, useC
     stopifnot(methods::is(object, "AgPoisson"))
     stopifnot(methods::validObject(object))
     ## y
-    stopifnot(methods::is(y, "Counts"))
     stopifnot(is.integer(y))
     stopifnot(identical(length(y), length(object@theta)))
     stopifnot(all(y[!is.na(y)] >= 0))
     ## exposure
-    stopifnot(methods::is(exposure, "Counts"))
     stopifnot(is.double(exposure))
     stopifnot(all(exposure[!is.na(exposure)] >= 0))
     ## y and exposure
@@ -4184,12 +4167,10 @@ updateThetaAndValueAgFun_PoissonUseExp <- function(object, y, exposure, useC = F
     stopifnot(methods::is(object, "AgFun"))
     stopifnot(methods::validObject(object))
     ## y
-    stopifnot(methods::is(y, "Counts"))
     stopifnot(is.integer(y))
     stopifnot(identical(length(y), length(object@theta)))
     stopifnot(all(y[!is.na(y)] >= 0))
     ## exposure
-    stopifnot(methods::is(exposure, "Counts"))
     stopifnot(is.double(exposure))
     stopifnot(all(exposure[!is.na(exposure)] >= 0))
     ## y and exposure
@@ -4313,12 +4294,10 @@ updateThetaAndValueAgLife_PoissonUseExp <- function(object, y, exposure, useC = 
     stopifnot(methods::is(object, "AgLife"))
     stopifnot(methods::validObject(object))
     ## y
-    stopifnot(methods::is(y, "Counts"))
     stopifnot(is.integer(y))
     stopifnot(identical(length(y), length(object@theta)))
     stopifnot(all(y[!is.na(y)] >= 0))
     ## exposure
-    stopifnot(methods::is(exposure, "Counts"))
     stopifnot(is.double(exposure))
     stopifnot(all(exposure[!is.na(exposure)] >= 0))
     ## y and exposure
@@ -4768,4 +4747,41 @@ updateObservationCounts <- function(y, observationModels, datasets,
         observationModels
     }
 }
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+updateObservationModelsAccount <- function(combined, useC = FALSE) {
+    stopifnot(methods::validObject(combined))
+    if (useC) {
+        .Call(updateObservationModelsAccount_R, combined)
+    }
+    else {
+        observation.models <- combined@observationModels
+        datasets <- combined@datasets
+        population <- combined@account@population
+        components <- combined@account@components
+        series.indices <- combined@seriesIndices
+        transforms <- combined@transforms
+        for (i in seq_along(observation.models)) {
+            model <- observation.models[[i]]
+            dataset <- datasets[[i]]
+            transform <- transforms[[i]]
+            series.index <- series.indices[i]
+            if (series.index == 0L)
+                series <- population
+            else
+                series <- components[[series.index]]
+            series.collapsed <- collapse(series, transform = transform)
+            if (is(model, "Poisson"))
+                series.collapsed <- toDouble(series.collapsed)
+            model <- updateModelUseExp(model,
+                                       y = dataset,
+                                       exposure = series.collapsed)
+            observation.models[[i]] <- model
+        }
+        combined@observationModels <- observation.models
+        combined
+    }
+}
+
 
