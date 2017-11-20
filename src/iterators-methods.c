@@ -333,19 +333,19 @@ advanceCC(SEXP iterator_R)
         else {
             if (iAge < nAge) {
                 ++iAge;
-		iTriangle = 1;
+        iTriangle = 1;
                 i += stepAge - stepTriangle;
             }
             else {
-		++iTime;
-		i += stepTime;
+        ++iTime;
+        i += stepTime;
             }
         }
 
-	if (iTriangle == 1)
-	    finished = (iTime == nTime);
-	else
-	    finished = (iTime == nTime) && (iAge == nAge);
+    if (iTriangle == 1)
+        finished = (iTime == nTime);
+    else
+        finished = (iTime == nTime) && (iAge == nAge);
         
         SET_SLOT(iterator_R, iAge_sym, ScalarInteger(iAge));
         SET_SLOT(iterator_R, iTriangle_sym, ScalarInteger(iTriangle));
@@ -354,7 +354,7 @@ advanceCC(SEXP iterator_R)
     else {
         ++iTime;
         i += stepTime;
-	finished = (iTime == nTime);
+    finished = (iTime == nTime);
     }   
 
     SET_SLOT(iterator_R, i_sym, ScalarInteger(i));
@@ -363,41 +363,10 @@ advanceCC(SEXP iterator_R)
     SET_SLOT(iterator_R, finished_sym, ScalarLogical(finished));
 }
 
-/*## READY_TO_TRANSLATE
-## HAS_TESTS
-## It is the caller's responsibility to make
-## sure that the iterator has not finished
-advanceCODPCP <- function(object, useC = FALSE) {
-    stopifnot(methods::is(object, "CohortIteratorOrigDestParChPool"))
-    if (useC) {
-        .Call(advanceCODPCP_R, object)
-    }
-    else {
-        object <- advanceCC(object)
-        i <- object@i
-        i.vec <- object@iVec
-        length.vec <- object@lengthVec
-        increment <- object@increment
-        for (j in seq_len(length.vec))
-            i.vec[j] <- i + increment[j]
-        object@iVec <- i.vec
-        object
-    }
-}
-*/
-
 /* advance CODPCP iterator */
 void
 advanceCODPCP(SEXP iterator_R)
 {
-    /*iterator <- advanceCC(iterator)
-        i <- iterator@i
-        i.vec <- iterator@iVec
-        length.vec <- iterator@lengthVec
-        increment <- iterator@increment
-        for (j in seq_len(length.vec))
-            i.vec[j] <- i + increment[j]*/
-    
     advanceCC(iterator_R);
     int iter_i = *INTEGER(GET_SLOT(iterator_R, i_sym));
     int *iVec = INTEGER(GET_SLOT(iterator_R, iVec_sym));
@@ -467,7 +436,7 @@ resetCC(SEXP iterator_R, int i)
     int iTime_R = ((i - 1)/stepTime) % nTime  + 1;
 
     int finished = 0;
-	
+    
     SET_SLOT(iterator_R, i_sym, ScalarInteger(i));
     SET_SLOT(iterator_R, iTime_sym, ScalarInteger(iTime_R));
         
@@ -482,13 +451,13 @@ resetCC(SEXP iterator_R, int i)
         SET_SLOT(iterator_R, iAge_sym, ScalarInteger(iAge_R));
         SET_SLOT(iterator_R, iTriangle_sym, ScalarInteger(iTriangle_R));
 
-	if (iTriangle_R == 1)
-	    finished = (iTime_R >= nTime);
-	else
-	    finished = (iTime_R >= nTime) && (iAge_R >= nAge);
+    if (iTriangle_R == 1)
+        finished = (iTime_R >= nTime);
+    else
+        finished = (iTime_R >= nTime) && (iAge_R >= nAge);
     }
     else
-	finished = (iTime_R >= nTime);
+    finished = (iTime_R >= nTime);
     
     SET_SLOT(iterator_R, finished_sym, ScalarLogical(finished));
 }

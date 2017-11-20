@@ -233,7 +233,7 @@ advanceCC <- function(object, useC = FALSE) {
 }
 
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 ## It is the caller's responsibility to make
 ## sure that the iterator has not finished

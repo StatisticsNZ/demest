@@ -953,63 +953,296 @@ betaHatSeason(double *beta_hat, SEXP prior_R, int J)
     }
 }
 
+/*## READY_TO_TRANSLATE (AGAIN)
+## If the function finds the root within 'kMaxIter' iterations, it
+## returns this root. If the function fails to find a root, it returns -99.0.
+## The root must be between 'min' and 'max'.
+findOneRootLogPostSigmaNorm <- function(sigma0, z, A, nu, V, n, min, max,
+                                        useC = FALSE) {
+    ## 'sigma0'
+    stopifnot(identical(length(sigma0), 1L))
+    stopifnot(is.double(sigma0))
+    stopifnot(!is.na(sigma0))
+    stopifnot(sigma0 > 0)
+    ## 'z'
+    stopifnot(identical(length(z), 1L))
+    stopifnot(is.double(z))
+    stopifnot(!is.na(z))
+    ## 'A'
+    stopifnot(identical(length(A), 1L))
+    stopifnot(is.double(A))
+    stopifnot(!is.na(A))
+    stopifnot(A > 0)
+    ## 'nu'
+    stopifnot(identical(length(nu), 1L))
+    stopifnot(is.double(nu))
+    stopifnot(!is.na(nu))
+    stopifnot(nu > 0)
+    ## 'V'
+    stopifnot(identical(length(V), 1L))
+    stopifnot(is.double(V))
+    stopifnot(!is.na(V))
+    stopifnot(V > 0)
+    ## 'n'
+    stopifnot(identical(length(n), 1L))
+    stopifnot(is.integer(n))
+    stopifnot(!is.na(n))
+    stopifnot(n > 0L)
+    ## 'min'
+    stopifnot(identical(length(min), 1L))
+    stopifnot(is.double(min))
+    stopifnot(!is.na(min))
+    ## 'max'
+    stopifnot(identical(length(max), 1L))
+    stopifnot(is.double(max))
+    stopifnot(!is.na(max))
+    ## 'min' and 'max'
+    stopifnot(max > min)
+    if (useC) {
+        .Call(findOneRootLogPostSigmaNorm_R, sigma0, z, A, nu, V, n, min, max)
+    }
+    else {
+        kTolerance <- 1e-15           ## C version can use macros to set these
+        kMaxIter <- 1000L
+        ## check that a value can be found
+        min.tol <- min + kTolerance
+        fmin <- -n*log(min.tol) - V/(2*(min.tol)^2) - ((nu + 1)/2) * log((min.tol)^2 + nu*A^2)
+        if (is.finite(max)) {
+            max.tol <- max - kTolerance
+            fmax <- -n*log(max.tol) - V/(2*(max.tol)^2) - ((nu + 1)/2) * log((max.tol)^2 + nu*A^2)
+        }
+        else
+            fmax <- -Inf
+        if (((fmin < z) && (fmax < z)) || ((fmin > z) && (fmax > z)))
+            return(-99.0)
+        ## find root
+        f0 <- -n*log(sigma0) - V/(2*sigma0^2) - ((nu + 1)/2) * log(sigma0^2 + nu*A^2)
+        g0 <- (f0 - z)^2
+        for (i in seq_len(kMaxIter)) {
+            f0prime <- -n/sigma0 + V/(sigma0^3) - ((nu + 1)*sigma0) / (sigma0^2 + nu*A^2)
+            rho <- 1
+            repeat {
+                sigma1 <- sigma0 - rho * (f0 - z) / f0prime
+                if ((min <= sigma1) && (sigma1 <= max))
+                    break
+                rho <- rho / 2
+            }
+            repeat {
+                f1 <- -n*log(sigma1) - V/(2*sigma1^2) - ((nu + 1)/2) * log(sigma1^2 + nu*A^2)
+                g1 <- (f1 - z)^2
+                if (g1 <= g0 || abs(g1 - g0) < kTolerance || (rho < kTolerance))
+                    break
+                rho <- rho / 2 
+                sigma1 <- sigma0 - rho * (f0 - z) / f0prime
+            }
+            if ((abs(g1 - g0) < kTolerance) || (rho < kTolerance))
+                return(sigma0)
+            else {
+                sigma0 <- sigma1
+                f0 <- f1
+                g0 <- g1
+            }
+        }
+        ## reached maximum iterations without finding root
+        return(-99.0)
+    }
+}
+*/
+
+
+/* K_EPSILON_BOUNDARIES?? */
+
 
 double
 findOneRootLogPostSigmaNorm(double sigma0, double z, double A, double nu,
                             double V, int n, double min, double max)
 {
-    int keepGoing = 1;
-    int kIter = 0;
     double nuPlus1 = nu + 1;
     double nuASq = nu * A * A;
     
     double retValue = -99.0;
     
-    double minPlusBoundaries = min + K_EPSILON_BOUNDARIES;
-    double maxMinusBoundaries = max - K_EPSILON_BOUNDARIES;
+    double minTol = min + K_TOLERANCE;
+    double maxTol = max - K_TOLERANCE;
     
-    while (keepGoing && kIter < K_MAX_ITER) {
-       
-        double sigma0Sq = sigma0 * sigma0;
+    double minTolSq = minTol * minTol;
+    double logMinTol = log(minTol);
+    double maxTolSq = maxTol * maxTol;
+    double logMaxTol = log(maxTol);
+    
+    
+    //double maxMinusBoundaries = max - K_EPSILON_BOUNDARIES;
+    
+    
+    /*kTolerance <- 1e-15           ## C version can use macros to set these
+        kMaxIter <- 1000L
         
-        double f = -n*log(sigma0) - V/(2*sigma0Sq)
-                    - nuPlus1/2 * log(sigma0Sq + nuASq) - z;
-        double fprime = -n/sigma0 + V/(sigma0Sq*sigma0)
-                    - nuPlus1*sigma0 / (sigma0Sq + nuASq);
-        
-        int deriv_near_zero = (fabs(fprime) < K_EPSILON_MAX);
-        
-        if ( deriv_near_zero ) {
-            retValue = -1.0;
-            keepGoing = 0;
+        ## check that a value can be found
+        min.tol <- min + kTolerance
+        fmin <- -n*log(min.tol) - V/(2*(min.tol)^2) - ((nu + 1)/2) * log((min.tol)^2 + nu*A^2)
+        if (is.finite(max)) {
+            max.tol <- max - kTolerance
+            fmax <- -n*log(max.tol) - V/(2*(max.tol)^2) - ((nu + 1)/2) * log((max.tol)^2 + nu*A^2)
         }
+        else
+            fmax <- -Inf*/
+    
+    double fmin = -n * logMinTol - V/(2 * minTolSq) 
+                                    - nuPlus1/2 * log(minTolSq + nuASq);
+    
+    double fmax = R_NegInf;
+    if ( R_finite(max) ) {
+        fmax = -n * logMaxTol - V/(2 * maxTolSq) 
+                                    - nuPlus1/2 * log(maxTolSq + nuASq);
+    }
+    
+    #ifdef DEBUGGING
+        PrintValue(mkString(""));
+        PrintValue(mkString("fmax"));
+        PrintValue(ScalarReal(fmax));
+        PrintValue(mkString("fmin"));
+        PrintValue(ScalarReal(fmin));
+        PrintValue(mkString("z"));
+        PrintValue(ScalarReal(z));
+    #endif
+    
+    /* if ((fmin < z && fmax < z) || (fmin>z && fmax>z))
+            return(-99.0)
+        ## find root
+        f0 <- -n*log(sigma0) - V/(2*sigma0^2) - ((nu + 1)/2) * log(sigma0^2 + nu*A^2)
+        g0 <- (f0 - z)^2
         
-        else {
-            double sigma1 = sigma0 - f/fprime;
-            if (sigma1 < minPlusBoundaries) {
-                sigma1 = minPlusBoundaries;
-            }
-            else if (sigma1 > maxMinusBoundaries) {
-                sigma1 = maxMinusBoundaries;
-            }
-            else if (sigma1 - sigma0 > 1) { /* a temporary hack added by John */
-              sigma1 = sigma0 + 1;      /* 30 April 2016 */
-            }
+        */    
+    
+    if ( !(( (fmin < z) && (fmax < z ) ) || ( (fmin > z) && (fmax > z) ) ) ) {
+    
+        int found = 0;
+        int kIter = 0;
+    
+        double sigma0Sq = sigma0 * sigma0;
+    
+        double f0 = -n * log(sigma0) - V/(2 * sigma0Sq) 
+                                - nuPlus1/2 * log(sigma0Sq + nuASq);
+        double g0 = (f0 - z)*(f0 - z); 
         
-            int sigma1_equals_sigma0
-                = (fabs(sigma1 - sigma0) < K_TOLERANCE * fabs(sigma1));
-
-            if (sigma1_equals_sigma0) {
-                retValue = sigma1;
-                keepGoing = 0;
+        
+        /*for (i in seq_len(kMaxIter)) {
+            f0prime <- -n/sigma0 + V/(sigma0^3) - ((nu + 1)*sigma0) / (sigma0^2 + nu*A^2)
+            rho <- 1
+            repeat {
+                sigma1 <- sigma0 - rho * (f0 - z) / f0prime
+                if ((min <= sigma1) && (sigma1 <= max))
+                    break
+                rho <- rho / 2
+            }*/
+        while ( !found && (kIter < K_MAX_ITER) ) {
+            /* sigma0, f0, g0 can change in each iteration */
+            sigma0Sq = sigma0 * sigma0;
+            
+            #ifdef DEBUGGING
+                PrintValue(mkString(""));
+                PrintValue(mkString("kIter+1"));
+                PrintValue(ScalarInteger(kIter+1));
+                PrintValue(mkString("sigma0"));
+                PrintValue(ScalarReal(sigma0));
+                PrintValue(mkString("f0"));
+                PrintValue(ScalarReal(f0));
+                PrintValue(mkString("g0"));
+                PrintValue(ScalarReal(g0));
+                
+            #endif
+            
+            double sigma0Cubed = sigma0Sq * sigma0;
+            
+            double f0prime = -n/sigma0 + V/sigma0Cubed 
+                            - nuPlus1 * sigma0 / (sigma0Sq + nuASq);
+            double rho = 1;
+            double f0MinusZOverF0prime = (f0 - z) /f0prime;
+            double sigma1 = sigma0 - rho * f0MinusZOverF0prime;
+            while ( (min > sigma1) || (sigma1 > max) ) {
+                rho /= 2;
+                sigma1 = sigma0 - rho * f0MinusZOverF0prime;
+            }
+            
+            #ifdef DEBUGGING
+                PrintValue(mkString("end repeat 1"));
+                PrintValue(mkString("sigma1"));
+                PrintValue(ScalarReal(sigma1));
+                PrintValue(mkString("rho"));
+                PrintValue(ScalarReal(rho));
+                
+            #endif
+            
+            /*repeat {
+                f1 <- -n*log(sigma1) - V/(2*sigma1^2) - ((nu + 1)/2) * log(sigma1^2 + nu*A^2)
+                g1 <- (f1 - z)^2
+                if (g1 <= g0 || abs(g1 - g0) < kTolerance || (rho < kTolerance))
+                    break
+                rho <- rho / 2 
+                sigma1 <- sigma0 - rho * (f0 - z) / f0prime
+            }*/
+            double sigma1Sq = sigma1 * sigma1;
+            double f1 = -n*log(sigma1) - V/(2*sigma1Sq) 
+                                    - nuPlus1/2 * log(sigma1Sq + nuASq);
+            double g1 = (f1 - z)*(f1 - z);
+            while ( (g1 > g0) && ( fabs(g1 - g0) >= K_TOLERANCE ) 
+                                            && (rho >= K_TOLERANCE)) {
+                rho /= 2;
+                sigma1 = sigma0 - rho * f0MinusZOverF0prime;
+                sigma1Sq = sigma1 * sigma1;
+                f1 = -n*log(sigma1) - V/(2*sigma1Sq) 
+                                    - nuPlus1/2 * log(sigma1Sq + nuASq);
+                g1 = (f1 - z)*(f1 - z);
+                
+            }
+            
+            #ifdef DEBUGGING
+                PrintValue(mkString("end repeat 2"));
+                PrintValue(mkString("sigma1"));
+                PrintValue(ScalarReal(sigma1));
+                PrintValue(mkString("rho"));
+                PrintValue(ScalarReal(rho));
+                PrintValue(mkString("f1"));
+                PrintValue(ScalarReal(f1));
+                PrintValue(mkString("g1"));
+                PrintValue(ScalarReal(g1));
+                
+            #endif
+            /*if ((abs(g1 - g0) < kTolerance) || (rho < kTolerance))
+                return(sigma0)
+            else {
+                sigma0 <- sigma1
+                f0 <- f1
+                g0 <- g1
+            }*/
+            
+            ++kIter;
+            
+            if ( (fabs(g1 - g0) < K_TOLERANCE ) || (rho < K_TOLERANCE) ) {
+                retValue = sigma0; 
+                found = 1;
+                #ifdef DEBUGGING
+                    PrintValue(mkString("found"));
+                    
+                    
+                #endif
             }
             else {
                 sigma0 = sigma1;
-            }
-        }
+                f0 = f1;
+                g0 = g1;
+            }    
+       } /* end k iterations while loop */
+       
+       /* if not found retValue will stay as default value */ 
+    
+    } /* end if */
+    
+    #ifdef DEBUGGING
+        PrintValue(mkString("returning"));
+        PrintValue(ScalarReal(retValue));
         
-        ++kIter;
-    }
+    #endif
     
     return retValue;
 }
