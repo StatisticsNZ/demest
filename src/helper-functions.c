@@ -2817,7 +2817,7 @@ logLikelihood_NormalFixedUseExp(SEXP model_R, int count,
     double *sd = REAL(GET_SLOT(model_R, sd_sym));
     
     double thisMean = count * mean[i_c];
-    double thisSd = sqrt(abs(count)) * sd[i_c];
+    double thisSd = sd[i_c];
     
     return dnorm(x, thisMean, thisSd, USE_LOG);
 }

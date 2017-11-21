@@ -155,7 +155,7 @@ Normal <- function(formula, sd = NULL, priorSD = HalfT()) {
 #' Specify a model of the form
 #'   \deqn{y_i = N(mean[i], sd[i])}
 #' or
-#'   \deqn{y_i = N(exposure[i] * mean[i], sqrt(exposure[i]) * sd[i])}.
+#'   \deqn{y_i = N(exposure[i] * mean[i], sd[i])}.
 #'
 #' Among other things, the model is useful as a data model for
 #' surveys.  In such cases, \code{exposure} represents the

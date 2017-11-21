@@ -4480,7 +4480,7 @@ findOneRootLogPostSigmaNorm <- function(sigma0, z, A, nu, V, n, min, max,
         .Call(findOneRootLogPostSigmaNorm_R, sigma0, z, A, nu, V, n, min, max)
     }
     else {
-        kTolerance <- 1e-15           ## C version can use macros to set these
+        kTolerance <- 1e-20           ## C version can use macros to set these
         kEpsilon <- 1e-15     ## NEW
         kMaxIter <- 1000L
         ## check that a value can be found
@@ -4587,7 +4587,7 @@ findOneRootLogPostSigmaRobust <- function(sigma0, z, A, nuBeta, nuTau, V, n, min
         .Call(findOneRootLogPostSigmaRobust_R, sigma0, z, A, nuBeta, nuTau, V, n, min, max)
     }
     else {
-        kTolerance <- 1e-15           ## C version can use macros to set these
+        kTolerance <- 1e-20           ## C version can use macros to set these
         kEpsilon <- 1e-15     ## NEW
         kMaxIter <- 1000L
         min.tol <- min + kTolerance
@@ -6474,7 +6474,6 @@ logLikelihood_NormalFixedUseExp <- function(model, count, dataset, i, useC = FAL
         mean <- model@mean@.Data[i]
         sd <- model@sd@.Data[i]
         mean <- count * mean
-        sd <- sqrt(abs(count)) * sd
         stats::dnorm(x = x, mean = mean, sd = sd, log = TRUE)
     }
 }
@@ -7996,9 +7995,9 @@ printMixEqns <- function(object, name, hasCovariates) {
 printNormalFixedLikEqns <- function(object) {
     useExpose <- object@useExpose@.Data
     if (useExpose)
-        cat("            y[i] ~ Normal(exposure[i] * mean[i], sqrt(exposure[i]) * sd[i])\n")
+        cat("            y[i] ~ Normal(exposure[i] * mean[i], sd[i]^2)\n")
     else
-        cat("            y[i] ~ Normal(mean[i], sd[i])\n")
+        cat("            y[i] ~ Normal(mean[i], sd[i]^2)\n")
 }
 
 printNormalFixedModEqns <- function(object) {
@@ -8016,9 +8015,9 @@ printNormalFixedModEqns <- function(object) {
         exposure <- series
     name.y <- sprintf("%13s", name.y)
     if (uses.exposure)
-        cat(name.y, "[i] ~ NormalFixed(", exposure, "[i] * mean[i], sqrt(", exposure, "[i]) * sd[i])\n", sep = "")
+        cat(name.y, "[i] ~ NormalFixed(", exposure, "[i] * mean[i], sd[i]^2)\n", sep = "")
     else
-        cat(name.y, "Normal(mean[i], sd[i])\n", sep = "")
+        cat(name.y, "Normal(mean[i], sd[i]^2)\n", sep = "")
 }
 
 printNormalFixedSpecEqns <- function(object) {
@@ -8034,10 +8033,10 @@ printNormalFixedSpecEqns <- function(object) {
             exposure <- series        
         else
             exposure <- "exposure"
-        cat(name.y, "[i] ~ Normal(", exposure, "[i] * mean[i], sqrt(", exposure, "[i]) * sd[i])\n", sep = "")
+        cat(name.y, "[i] ~ Normal(", exposure, "[i] * mean[i], sd[i]^2)\n", sep = "")
     }
     else
-        cat("            y[i] ~ Normal(mean[i], sd[i])\n")
+        cat("            y[i] ~ Normal(mean[i], sd[i]^2)\n")
 }
 
 printNormalVarsigmaKnownLikEqns <- function(object) {

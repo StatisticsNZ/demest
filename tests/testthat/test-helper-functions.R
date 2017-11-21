@@ -4941,7 +4941,7 @@ test_that("findOneRootLogPostSigmaNorm works", {
         A <- runif(n = 1, min = 0.1, max = 10)
         nu <- 1.0 * max(rpois(n = 1, lambda = 5), 1)
         V <- runif(n = 1, 0.01, 20)
-        n <- as.integer(rpois(n = 1, lambda = 10))
+        n <- as.integer(rpois(n = 1, lambda = 10)) + 1L
         sigma <- runif(n = 1, min = 0.001, max = 10)
         sigma.max <- sqrt((V - n*nu*A^2 + sqrt((V - n*nu*A^2)^2 + 4*(n + nu + 1)*V*nu*A^2))
                           / (2*(n + nu + 1)))
@@ -4999,7 +4999,7 @@ test_that("R and C versions of findOneRootLogPostSigmaNorm give same answer", {
         A <- runif(n = 1, min = 0.1, max = 10)
         nu <- 1.0 * max(rpois(n = 1, lambda = 5), 1)
         V <- runif(n = 1, 0.01, 10)
-        n <- as.integer(rpois(n = 1, lambda = 10))
+        n <- as.integer(rpois(n = 1, lambda = 10)) + 1L
         sigma <- runif(1, 0, 10)
         sigma.max <- sqrt((V - n*nu*A^2 + sqrt((V - n*nu*A^2)^2 + 4*(n + nu + 1)*V*nu*A^2))
                           / (2*(n + nu + 1)))
@@ -5082,7 +5082,7 @@ test_that("findOneRootLogPostSigmaRobust works", {
         nuBeta <- 1.0 * max(rpois(n = 1, lambda = 5), 1)
         nuTau <- 1.0 * max(rpois(n = 1, lambda = 5), 1)
         V <- runif(n = 1, 0.01, 10)
-        n <- as.integer(rpois(n = 1, lambda = 10))
+        n <- as.integer(rpois(n = 1, lambda = 10)) + 1L
         H1 <- nuBeta * V
         H2 <- nuBeta * nuTau * V * A^2 + nuTau + 1 - n * nuBeta
         H3 <- -n * nuBeta * nuTau * A^2
@@ -5145,7 +5145,7 @@ test_that("R and C versions of findOneRootLogPostSigmaRobust give same answer", 
         nuBeta <- 1.0 * max(rpois(n = 1, lambda = 5), 1)
         nuTau <- 1.0 * max(rpois(n = 1, lambda = 5), 1)
         V <- runif(n = 1, 0.01, 10)
-        n <- as.integer(rpois(n = 1, lambda = 10))
+        n <- as.integer(rpois(n = 1, lambda = 10)) + 1L
         H1 <- nuBeta * V
         H2 <- nuBeta * nuTau * V * A^2 + nuTau + 1 - n * nuBeta
         H3 <- -n * nuBeta * nuTau * A^2
@@ -9234,7 +9234,7 @@ test_that("logLikelihood gives valid answer with NormalFixedUseExp", {
                                                         count = count,
                                                         dataset = dataset,
                                                         i = i)
-        ans.expected <- dnorm(x = dataset[i], mean = count * mean@.Data[i], sd = sqrt(count) * 0.1, log = TRUE)
+        ans.expected <- dnorm(x = dataset[i], mean = count * mean@.Data[i], sd = 0.1, log = TRUE)
         if (test.identity)
             expect_identical(ans.obtained, ans.expected)
         else
