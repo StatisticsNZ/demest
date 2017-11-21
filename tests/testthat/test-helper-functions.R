@@ -4945,8 +4945,11 @@ test_that("findOneRootLogPostSigmaNorm works", {
         sigma <- runif(n = 1, min = 0.001, max = 10)
         sigma.max <- sqrt((V - n*nu*A^2 + sqrt((V - n*nu*A^2)^2 + 4*(n + nu + 1)*V*nu*A^2))
                           / (2*(n + nu + 1)))
-        sigma.left <- runif(n = 1, min = 0.000, max = sigma.max)
-        sigma.right <- runif(n = 1, min = sigma.max, max = 3*sigma.max)
+        max.right <- if (runif(1) < 0.7) runif(1, sigma.max, 10 * sigma.max) else Inf ## NEW
+        ## sigma.left <- runif(n = 1, min = 0.000, max = sigma.max)
+        ## sigma.right <- runif(n = 1, min = sigma.max, max = 3*sigma.max)
+        sigma.left <- 0.5 * sigma.max ## NEW
+        sigma.right <- min(1.5 * sigma.max, (sigma.max + max.right) / 2) ## NEW
         f <- function(sigma) {
             -n*log(sigma) - V/(2*sigma^2) - ((nu + 1)/2) * log(sigma^2 + nu*A^2)
         }
@@ -4967,14 +4970,10 @@ test_that("findOneRootLogPostSigmaNorm works", {
                                                   V = V,
                                                   n = n,
                                                   min = sigma.max,
-                                                  max = Inf,
+                                                  max = max.right, ## NEW
                                                   useC = FALSE)
-        print(root.left)
-        print(root.right)
         if (root.left > 0)
             expect_equal(f(root.left), z)
-        if (!isTRUE(all.equal(f(root.left), z)))
-            print(seed)
         if (root.right > 0)
             expect_equal(f(root.right), z)
         ans.at.max <- findOneRootLogPostSigmaNorm(sigma0 = sigma.max,
@@ -4984,9 +4983,8 @@ test_that("findOneRootLogPostSigmaNorm works", {
                                                   V = V,
                                                   n = n,
                                                   min = sigma.max,
-                                                  max = Inf,
+                                                  max = max.right, ## NEW
                                                   useC = FALSE)
-        print(ans.at.max)
         expect_true(isTRUE(all.equal(ans.at.max, sigma.max))
                     || isTRUE(all.equal(ans.at.max, -1))
                     || isTRUE(all.equal(ans.at.max, root.left))
@@ -5009,8 +5007,9 @@ test_that("R and C versions of findOneRootLogPostSigmaNorm give same answer", {
             -n*log(sigma) - V/(2*sigma^2) - ((nu + 1)/2) * log(sigma^2 + nu*A^2)
         }
         z <- f(sigma) - rexp(n = 1, 1)
-        sigma.left <- runif(n = 1, min = 0.001, max = sigma.max)
-        sigma.right <- runif(n = 1, min = sigma.max, max = 10*sigma.max)
+        max.right <- if (runif(1) < 0.7) runif(1, sigma.max, 10 * sigma.max) else Inf ## NEW
+        sigma.left <- 0.5 * sigma.max ## NEW
+        sigma.right <- min(1.5 * sigma.max, (sigma.max + max.right) / 2) ## NEW
         root.left.R <- findOneRootLogPostSigmaNorm(sigma0 = sigma.left,
                                                    z = z,
                                                    A = A,
@@ -5036,7 +5035,7 @@ test_that("R and C versions of findOneRootLogPostSigmaNorm give same answer", {
                                                     V = V,
                                                     n = n,
                                                     min = sigma.max,
-                                                    max = Inf,
+                                                    max = max.right,
                                                     useC = FALSE)
         root.right.C <- findOneRootLogPostSigmaNorm(sigma0 = sigma.right,
                                                     z = z,
@@ -5056,7 +5055,7 @@ test_that("R and C versions of findOneRootLogPostSigmaNorm give same answer", {
                                                     V = V,
                                                     n = n,
                                                     min = sigma.max,
-                                                    max = Inf,
+                                                    max = max.right, ## NEW
                                                     useC = FALSE)
         ans.at.max.C <- findOneRootLogPostSigmaNorm(sigma0 = sigma.max,
                                                     z = z,
@@ -5065,7 +5064,7 @@ test_that("R and C versions of findOneRootLogPostSigmaNorm give same answer", {
                                                     V = V,
                                                     n = n,
                                                     min = sigma.max,
-                                                    max = Inf,
+                                                    max = max.right, ## NEW
                                                     useC = TRUE)
         expect_equal(ans.at.max.R, ans.at.max.C)
         expect_true(isTRUE(all.equal(ans.at.max.R, sigma.max))
@@ -5093,8 +5092,11 @@ test_that("findOneRootLogPostSigmaRobust works", {
         }
         sigma <- runif(1, 0.05, 10)
         z <- f(sigma) - rexp(n = 1, 1)
-        sigma.left <- runif(n = 1, min = 0.005, max = sigma.max)
-        sigma.right <- runif(n = 1, min = sigma.max, max = 5*sigma.max)
+        ## sigma.left <- runif(n = 1, min = 0.005, max = sigma.max)
+        ## sigma.right <- runif(n = 1, min = sigma.max, max = 5*sigma.max)
+        max.right <- if (runif(1) < 0.7) runif(1, sigma.max, 10 * sigma.max) else Inf ## NEW
+        sigma.left <- 0.5 * sigma.max ## NEW
+        sigma.right <- min(1.5 * sigma.max, (sigma.max + max.right) / 2) ## NEW
         root.left <- findOneRootLogPostSigmaRobust(sigma0 = sigma.left,
                                                    z = z,
                                                    A = A,
@@ -5113,7 +5115,7 @@ test_that("findOneRootLogPostSigmaRobust works", {
                                                     V = V,
                                                     n = n,
                                                     min = sigma.max,
-                                                    max = Inf,
+                                                    max = max.right,
                                                     useC = FALSE)
         if (root.left > 0)
             expect_equal(f(root.left), z)
@@ -5127,7 +5129,7 @@ test_that("findOneRootLogPostSigmaRobust works", {
                                                     V = V,
                                                     n = n,
                                                     min = sigma.max,
-                                                    max = Inf,
+                                                    max = max.right,
                                                     useC = FALSE)
         expect_true(isTRUE(all.equal(ans.at.max, sigma.max))
                     || isTRUE(all.equal(ans.at.max, -1))
@@ -5153,8 +5155,11 @@ test_that("R and C versions of findOneRootLogPostSigmaRobust give same answer", 
         }
         sigma <- runif(1, 0.005, 5)
         z <- f(sigma) - rexp(n = 1, 1)
-        sigma.left <- runif(n = 1, min = 0.001, max = sigma.max)
-        sigma.right <- runif(n = 1, min = sigma.max, max = 10*sigma.max)
+        max.right <- if (runif(1) < 0.7) runif(1, sigma.max, 10 * sigma.max) else Inf ## NEW
+        ## sigma.left <- runif(n = 1, min = 0.001, max = sigma.max)
+        ## sigma.right <- runif(n = 1, min = sigma.max, max = 10*sigma.max)
+        sigma.left <- 0.5 * sigma.max ## NEW
+        sigma.right <- min(1.5 * sigma.max, (sigma.max + max.right) / 2) ## NEW
         root.left.R <- findOneRootLogPostSigmaRobust(sigma0 = sigma.left,
                                                      z = z,
                                                      A = A,
@@ -5183,7 +5188,7 @@ test_that("R and C versions of findOneRootLogPostSigmaRobust give same answer", 
                                                       V = V,
                                                       n = n,
                                                       min = sigma.max,
-                                                      max = Inf,
+                                                      max = max.right,
                                                       useC = FALSE)
         root.right.C <- findOneRootLogPostSigmaRobust(sigma0 = sigma.right,
                                                       z = z,
@@ -5193,7 +5198,7 @@ test_that("R and C versions of findOneRootLogPostSigmaRobust give same answer", 
                                                       V = V,
                                                       n = n,
                                                       min = sigma.max,
-                                                      max = Inf,
+                                                      max = max.right,
                                                       useC = TRUE)
         expect_equal(root.left.R, root.left.C)
         expect_equal(root.right.R, root.right.C)
@@ -5205,12 +5210,12 @@ test_that("R and C versions of findOneRootLogPostSigmaRobust give same answer", 
                                                     V = V,
                                                     n = n,
                                                     min = sigma.max,
-                                                    max = Inf,
+                                                    max = max.right,
                                                     useC = TRUE)
         expect_true(isTRUE(all.equal(ans.at.max, sigma.max))
                     || isTRUE(all.equal(ans.at.max, -1))
-                    || isTRUE(all.equal(ans.at.max, root.left))
-                    || isTRUE(all.equal(ans.at.max, root.right)))
+                    || isTRUE(all.equal(ans.at.max, root.left.C))
+                    || isTRUE(all.equal(ans.at.max, root.right.C)))
     }
 })
 

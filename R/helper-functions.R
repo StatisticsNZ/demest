@@ -4430,6 +4430,7 @@ betaHatSeason <- function(prior, useC = FALSE) {
         ans
     }
 }
+
 ## READY_TO_TRANSLATE (AGAIN)
 ## If the function finds the root within 'kMaxIter' iterations, it
 ## returns this root. If the function fails to find a root, it returns -99.0.
@@ -4480,6 +4481,7 @@ findOneRootLogPostSigmaNorm <- function(sigma0, z, A, nu, V, n, min, max,
     }
     else {
         kTolerance <- 1e-15           ## C version can use macros to set these
+        kEpsilon <- 1e-15     ## NEW
         kMaxIter <- 1000L
         ## check that a value can be found
         min.tol <- min + kTolerance
@@ -4497,6 +4499,9 @@ findOneRootLogPostSigmaNorm <- function(sigma0, z, A, nu, V, n, min, max,
         g0 <- (f0 - z)^2
         for (i in seq_len(kMaxIter)) {
             f0prime <- -n/sigma0 + V/(sigma0^3) - ((nu + 1)*sigma0) / (sigma0^2 + nu*A^2)
+            deriv.near.zero <- abs(f0prime) < kEpsilon ## NEW
+            if (deriv.near.zero) ## NEW
+                return(-1.0) ## NEW
             rho <- 1
             repeat {
                 sigma1 <- sigma0 - rho * (f0 - z) / f0prime
@@ -4583,6 +4588,7 @@ findOneRootLogPostSigmaRobust <- function(sigma0, z, A, nuBeta, nuTau, V, n, min
     }
     else {
         kTolerance <- 1e-15           ## C version can use macros to set these
+        kEpsilon <- 1e-15     ## NEW
         kMaxIter <- 1000L
         min.tol <- min + kTolerance
         fmin <- n*nuBeta*log(min.tol) - (nuBeta/2)*(min.tol^2)*V - ((nuTau+1)/2)*log(min.tol^2 + nuTau*A^2)
@@ -4599,6 +4605,9 @@ findOneRootLogPostSigmaRobust <- function(sigma0, z, A, nuBeta, nuTau, V, n, min
         g0 <- (f0 - z)^2
         for (i in seq_len(kMaxIter)) {
             f0prime <- n*nuBeta/sigma0 - nuBeta*sigma0*V - ((nuTau + 1)*sigma0)/(sigma0^2 + nuTau*A^2)
+            deriv.near.zero <- abs(f0prime) < kEpsilon ## NEW
+            if (deriv.near.zero) ## NEW
+                return(-1.0) ## NEW
             rho <- 1
             repeat {
                 sigma1 <- sigma0 - rho * (f0 - z) / f0prime
