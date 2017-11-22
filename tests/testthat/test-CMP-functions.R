@@ -1,19 +1,16 @@
-################################################################
-context("CMP-functions")
+ #########################################################
+ context("CMP-functions")
 
-n.test <- 5
-test.identity <- FALSE
-test.extended <- TRUE
+ n.test <- 5
+ test.identity <- FALSE
+ test.extended <- TRUE
 
-test_that("logDensCMP1 works", {
-  logDensCMP1 <- demest:::logDensCMP1
-    
-    mydcmp<- function(y,gamma,nu,log=FALSE){
 
-      pdf <- nu * (y * log(gamma)-lgamma(y + 1))
-      
-      if(log==FALSE){ pdf <- exp(pdf)}
-      
+ test_that("logDensCMP1 works", {
+   logDensCMP1 <- demest:::logDensCMP1
+     mydcmp<- function(y,gamma,nu,log=FALSE){
+       pdf <- nu*(y*log(gamma)-lgamma(y+1))
+       if(log==FALSE){ pdf <- exp(pdf)}
       return(pdf)
     }
 
@@ -38,7 +35,7 @@ test_that("R and C versions of dqcmp1 give same answer", {
             fact <- factorial(y)
             (gamma^y/fact)^nu
         } else {
-            nu*(y*log(gamma)-(sum(log(1:y))))
+            nu*(y*log(gamma)-(lgamma(y + 1)))
         }
     }
     for (seed in seq_len(n.test)) {
@@ -61,7 +58,7 @@ test_that("rcmpUnder okay", {
     set.seed(seed)
     mu <- runif(n = 1, max = 10000)
     nu <- runif(n = 1, min = 1, max = 10)
-    max <- 25
+    max <- 100
     y <- replicate(n = 10000, rcmpUnder(mu = mu, nu = nu, max = max))
     y_fin <- y[is.finite(y) == TRUE]
     expect_equal(mean(y_fin), mu + 1 / (2 * nu) - 0.5, tolerance = 0.02)
@@ -74,11 +71,11 @@ test_that("rcmpOver okay", {
     set.seed(seed)
     mu <- runif(n = 1, max = 10000)
     nu <- runif(n = 1, max = (1 - 10^( -7)))
-    max <- 25
+    max <- 100
     y <- replicate(n = 10000, rcmpOver(mu = mu, nu = nu, max = max))
     y_fin <- y[is.finite(y) == TRUE]
-    expect_equal(mean(y_fin), mu + 1 / (2 * nu) - 0.5, tolerance = 0.01)
-    expect_equal(var(y_fin), mu / nu , tolerance = 0.01)
+    expect_equal(mean(y_fin), mu + 1 / (2 * nu) - 0.5, tolerance = 0.02)
+    expect_equal(var(y_fin), mu / nu , tolerance = 0.02)
   }
 })
 
@@ -87,7 +84,7 @@ test_that("rcmp1 okay", {
     set.seed(seed)
     mu <- runif(n = 1, max = 10000)
     nu <- runif(n = 1, max = 10)
-    max <- 25
+    max <- 100
     y <- replicate(n = 1000, rcmp1(mu = mu, nu = nu, max = max))
     y_fin <- y[is.finite(y) == TRUE]
     if( nu < 1){
