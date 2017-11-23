@@ -29,7 +29,7 @@ logDensCMP1 <- function(y, gamma, nu, useC = FALSE) {
 
 # Function to generate underdispersed data
 
-rcmpUnderLog <- function(mu, nu, max){
+rcmpUnder <- function(mu, nu, max){
   ## 'mu'
   stopifnot(is.double(mu))
   stopifnot(identical(length(mu), 1L))
@@ -61,7 +61,7 @@ rcmpUnderLog <- function(mu, nu, max){
 
 # Function to generate overdispersed data 
 
-rcmpOverLog <- function(mu, nu, max){
+rcmpOver <- function(mu, nu, max){
   ## 'mu'
   stopifnot(is.double(mu))
   stopifnot(identical(length(mu), 1L))
@@ -111,9 +111,9 @@ rcmp1 <- function(mu, nu, max){
   stopifnot(max >= 0L)
   #
   if( nu < 1){
-    rcmpOverLog(mu = mu , nu = nu, max = max)
+    rcmpOver(mu = mu , nu = nu, max = max)
   } else {
-    rcmpUnderLog(mu = mu , nu = nu, max = max)
+    rcmpUnder(mu = mu , nu = nu, max = max)
   }
 } 
 
