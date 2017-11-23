@@ -332,22 +332,27 @@ setMethod("initialCombinedAccount",
                     transforms = "list"),
           function(account, systemModels, systemWeights,
                    observationModels, seriesIndices, 
-                   datasets, namesDatasets, transforms) {
+                   datasets, namesDatasets, transforms,
+                   dominant = c("Female", "Male")) {
               population <- account@population
               components <- account@components
+              names.components <- account@namesComponents
               has.age <- "age" %in% dimtypes(population, use.names = FALSE)
+              age.time.step <- dembase::ageTimeStep(population)
               n.popn <- length(population)
               n.components <- sapply(components, length)
               n.cell.account <- n.popn + sum(n.components)
               prob.popn <- n.popn / (n.popn + sum(n.components))
-              cum.prob.popn <- cumsum(n.components) / sum(n.components)
+              cum.prob.comp <- cumsum(n.components) / sum(n.components)
               is.births <- sapply(components, methods::is, "Births")
               is.orig.dest <- sapply(components, methods::is, "HasOrigDest")
-              is.pool <- sapply(components, methods::is, "Pool")
+              is.par.ch <- sapply(components, methods::is, "HasParentChild")
+              is.pool <- sapply(components, methods::is, "InternalMovementsPool")
               is.int.net <- sapply(components, methods::is, "InternalMovementsNet")
               is.net.move <- sapply(components, methods::is, "NetMovements")
               i.births <- if (any(is.births)) which(is.births) else 0L
               i.orig.dest <- if (any(is.orig.dest)) which(is.orig.dest) else 0L
+              i.par.ch <- if (any(is.par.ch)) which(is.par.ch) else 0L
               i.pool <- if (any(is.pool)) which(is.pool) else 0L
               i.int.net <- if (any(is.int.net)) which(is.int.net) else 0L
               is.net <- is.int.net | is.net.move
@@ -370,35 +375,53 @@ setMethod("initialCombinedAccount",
                                          metadata = population@metadata)
               is.increment <- sapply(components, dembase::isPositiveIncrement)
               iterator.popn <- CohortIterator(population)
+              iterator.exposure <- CohortIterator(exposure)
+              iterators.comp <- lapply(components, CohortIterator)
               descriptions <- lapply(c(list(population), components), Description)
               mappings.from.exp <- lapply(components, function(x) Mapping(exposure, x))
               mappings.to.exp <- lapply(components, function(x) Mapping(x, exposure))
               mappings.to.popn <- lapply(components, function(x) Mapping(x, population))
               model.uses.exposure <- sapply(systemModels, function(x) x@useExpose@.Data)
+              if ((i.births > 0L) && model.uses.exposure[i.births + 1L])
+                  transform.exp.to.births <- makeTransformExpToBirths(exposure = exposure,
+                                                                      births = components[[i.births]],
+                                                                      dominant = dominant)
+              else
+                  transform.exp.to.births <- new("CollapseTransform")
+              transforms.exp.to.comp <- vector(mode = "list", length = length(components))
+              for (i in seq_along(transforms.exp.to.comp)) {
+                  if (model.uses.exposure[i + 1L]) {
+                      if (i == i.births) {
+                          exposure.births <- collapse(exposure,
+                                                      transform = transform.exp.to.births)
+                          transform <- makeTransformExpToComp(exposure = exposure.births,
+                                                              component = components[[i]],
+                                                              nameComponent = names.components[i])
+                      }
+                      else
+                          transform <- makeTransformExpToComp(exposure = exposure,
+                                                              component = components[[i]],
+                                                              nameComponent = names.components[i])
+                  }
+                  else
+                      transform <- NULL
+                  if (is.null(transform))
+                      transforms.exp.to.comp[i] <- list(NULL)
+                  else
+                      transforms.exp.to.comp[[i]] <- transform
+              }
               for (i in seq_along(systemModels)) {
                   series <- if (i == 1L) population else components[[i - 1L]]
                   if (model.uses.exposure[i]) {
-                      if (is(series, "Births"))
-                          expose <- exposureBirths(object = population,
-                                                   births = series,
-                                                   triangles = has.age)
-                      else {
+                      if (i - 1L == i.births)
+                          expose <- collapse(exposure,
+                                             transform = transform.exp.to.births)
+                      else
                           expose <- exposure
-                          if (is(series, "HasOrigDest")) {
-                              names.series <- names(series)
-                              dimtypes.series <- dimtypes(series, use.names = FALSE)
-                              i.orig.vec <- grep("origin", dimtypes.series)
-                              for (i.orig in i.orig.vec) {
-                                  name.series <- names.series[i.orig]
-                                  name.expose <- sub("_orig$", "", name.series)
-                                  expose <- addPair(expose,
-                                                    base = name.expose)
-                              }
-                          }
-                      }
-                      expose <- makeCompatible(x = expose,
-                                               y = series,
-                                               subset = TRUE)
+                      transform <- transforms.exp.to.comp[[i - 1L]]
+                      if (!is.null(transform))
+                          expose <- extend(expose,
+                                           transform = transform)
                       systemModels[[i]] <- initialModel(systemModels[[i]],
                                                         y = series,
                                                         exposure = expose)
@@ -416,6 +439,18 @@ setMethod("initialCombinedAccount",
                       }
                   }
               }
+              .Data.theta.popn <- array(systemModels[[1L]]@theta,
+                                        dim = dim(population),
+                                        dimnames = dimnames(population))
+              metadata.theta.popn <- population@metadata
+              theta.popn <- new("Counts",
+                                .Data = .Data.theta.popn,
+                                metadata = metadata.theta.popn)
+              expected.exposure <- dembase::exposure(theta.popn,
+                                                     triangles = has.age)
+              expected.exposure <- new("Exposure",
+                                       .Data = expected.exposure@.Data,
+                                       metadata = expected.exposure@metadata)
               for (i in seq_along(observationModels)) {
                   series.index <- seriesIndices[i]
                   series <- if (series.index == 0L) population else components[[series.index]]
@@ -432,11 +467,13 @@ setMethod("initialCombinedAccount",
                   methods::new("CombinedAccountMovementsHasAge",
                                accession = accession,
                                account = account,
-                               cumProbPopn = cum.prob.popn,
+                               ageTimeStep = age.time.step,
+                               cumProbComp = cum.prob.comp,
                                datasets = datasets,
                                descriptions = descriptions,
                                diffProp = NA_integer_,
                                exposure = exposure,
+                               expectedExposure = expected.exposure,
                                generatedNewProposal = new("LogicalFlag", FALSE),
                                hasAge = new("LogicalFlag", TRUE),
                                iAccNext = NA_integer_,
@@ -451,6 +488,7 @@ setMethod("initialCombinedAccount",
                                iExposureOther = NA_integer_,
                                iIntNet = i.int.net,
                                iOrigDest = i.orig.dest,
+                               iParCh = i.par.ch,
                                iPopnNext = NA_integer_,
                                iPopnNextOther = NA_integer_,
                                iPool = i.pool,
@@ -458,7 +496,9 @@ setMethod("initialCombinedAccount",
                                isLowerTriangle = new("LogicalFlag", FALSE),
                                isNet = is.net,
                                iteratorAcc = iterator.acc,
+                               iteratorExposure = iterator.exposure,
                                iteratorPopn = iterator.popn,
+                               iteratorsComp = iterators.comp,
                                mappingsFromExp = mappings.from.exp,
                                mappingsToAcc = mappings.to.acc,
                                mappingsToExp = mappings.to.exp,
@@ -470,44 +510,52 @@ setMethod("initialCombinedAccount",
                                probPopn = prob.popn,
                                seriesIndices = seriesIndices,
                                systemModels = systemModels,
-                               transforms = transforms)
+                               transformExpToBirths = transform.exp.to.births,
+                               transforms = transforms,
+                               transformsExpToComp = transforms.exp.to.comp)
               }
               else {
                   methods::new("CombinedAccountMovements",
                                account = account,
-                               cumProbPopn = cum.prob.popn,
+                               ageTimeStep = age.time.step,
+                               cumProbComp = cum.prob.comp,
                                datasets = datasets,
                                descriptions = descriptions,
                                diffProp = NA_integer_,
                                exposure = exposure,
+                               expectedExposure = expected.exposure,
                                generatedNewProposal = new("LogicalFlag", FALSE),
                                hasAge = new("LogicalFlag", FALSE),
                                iBirths = i.births,
                                iCell = NA_integer_,
-                               iCellOther = NA_integer_,
-                               iComp = 0L,
+                               iCellOther = NA_integer_, iComp = 0L,
                                iExpFirst = NA_integer_,
                                iExpFirstOther = NA_integer_,
                                iExposure = NA_integer_,
                                iExposureOther = NA_integer_,
                                iIntNet = i.int.net,
                                iOrigDest = i.orig.dest,
+                               iParCh = i.par.ch,
                                iPopnNext = NA_integer_,
                                iPopnNextOther = NA_integer_,
                                iPool = i.pool,
                                isIncrement = is.increment,
                                isNet = is.net,
+                               iteratorExposure = iterator.exposure,
                                iteratorPopn = iterator.popn,
+                               iteratorsComp = iterators.comp,
                                mappingsFromExp = mappings.from.exp,
                                mappingsToExp = mappings.to.exp,
                                mappingsToPopn = mappings.to.popn,
                                modelUsesExposure = model.uses.exposure,
-                               namesDatasets = namesDatasets,                           
+                               namesDatasets = namesDatasets,
                                nCellAccount = n.cell.account,
                                observationModels = observationModels,
                                probPopn = prob.popn,
                                seriesIndices = seriesIndices,
                                systemModels = systemModels,
-                               transforms = transforms)
+                               transformExpToBirths = transform.exp.to.births,
+                               transforms = transforms,
+                               transformsExpToComp = transforms.exp.to.comp)
               }
           })

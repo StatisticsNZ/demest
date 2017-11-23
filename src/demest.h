@@ -167,9 +167,11 @@ SEXP
   lengthVec_sym,
   increment_sym,
   /* mappings */
+  hasParCh_sym,
   isOneToOne_sym,
   nSharedVec_sym,
   stepSharedCurrentVec_sym,
+  stepSharedCurrentExposureVec_sym,
   stepSharedTargetVec_sym,
   nTimeCurrent_sym,
   stepTimeCurrent_sym,
@@ -307,7 +309,10 @@ SEXP
   
   /* skeleton */
   first_sym,
-  last_sym;
+  last_sym,
+  
+  /* Box-Cox */
+  boxCoxParam_sym;
   
   
 /* Priors-methods */
@@ -541,6 +546,7 @@ void resetS(SEXP object_R);
 void advanceCA(SEXP iterator_R);
 void advanceCP(SEXP iterator_R);
 void advanceCC(SEXP iterator_R);
+void advanceCODPCP(SEXP iterator_R);
 void resetCA(SEXP iterator_R, int i);
 void resetCP(SEXP iterator_R, int i);
 void resetCC(SEXP iterator_R, int i);
@@ -798,6 +804,7 @@ SEXP overwriteValuesOnFile_R(SEXP object_R, SEXP skeleton_R,
 int chooseICellComp(SEXP description_R);
 SEXP chooseICellOutInPool(SEXP description_R);
 int chooseICellPopn(SEXP description_R);
+int isLowerTriangle(int i, SEXP description_R);
 int getIAccNextFromPopn(int i, SEXP description_R);
 int getIPopnNextFromPopn(int i, SEXP description_R);
 int getIExpFirstFromPopn(int i, SEXP description_R);

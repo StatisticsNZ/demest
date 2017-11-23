@@ -357,7 +357,7 @@ getIExposureFromBirths <- function(i, mapping, useC = FALSE) {
         step.time.exp <- mapping@stepTimeTarget
         has.age <- mapping@hasAge
         n.shared.vec <- mapping@nSharedVec
-        step.shared.births.vec <- mapping@stepSharedCurrentVec
+        step.shared.births.vec <- mapping@stepSharedCurrentExposureVec
         step.shared.exp.vec <- mapping@stepSharedTargetVec
         n.dim.shared <- length(n.shared.vec)
         i.exp <- 1L # R-style
@@ -459,7 +459,7 @@ getIExposureFromOrigDest <- function(i, mapping, useC = FALSE) {
 ## component - getIExpFirstFromComp DONE
 ## births no parent - getIExpFirstFromBirths DONE
 ## births with parent - getIExpFirstFromBirths DONE
-## orig-dest - getIExpFirstPairFromComp DONE
+## orig-dest - getIExpFirstPairFromOrigDest DONE
 ## pool - getIExpFirstFromComp DONE
 ## net - getIExpFirstFromComp DONE
 
@@ -496,19 +496,20 @@ getIExpFirstFromComp <- function(i, mapping, useC = FALSE) {
             i.triangle.comp <- ((i - 1L) %/% step.triangle.comp) %% 2L
             is.lower <- i.triangle.comp == 0L
             if (is.lower) {
-                if (i.time.comp == (n.time - 1L))
-                    return(0L)
-                i.time.exp <- i.time.comp + 1L
+                i.time.exp <- i.time.comp
                 i.age.exp <- i.age.comp
-                i.triangle.exp <- 1L
+                i.triangle.exp <- i.triangle.comp
             }
             else {
-                i.time.exp <- i.time.comp
                 if (i.age.comp == (n.age - 1L)) {
+                    if (i.time.comp == (n.time - 1L))
+                        return(0L)
+                    i.time.exp <- i.time.comp + 1L
                     i.age.exp <- i.age.comp
-                    i.triangle.exp <- 1L
+                    i.triangle.exp <- i.triangle.comp
                 }
                 else {
+                    i.time.exp <- i.time.comp
                     i.age.exp <- i.age.comp + 1L
                     i.triangle.exp <- 0L
                 }
@@ -605,19 +606,20 @@ getIExpFirstPairFromOrigDest <- function(i, mapping, useC = FALSE) {
             i.triangle.comp <- ((i - 1L) %/% step.triangle.comp) %% 2L
             is.lower <- i.triangle.comp == 0L
             if (is.lower) {
-                if (i.time.comp == (n.time - 1L))
-                    return(c(0L, 0L))
-                i.time.exp <- i.time.comp + 1L
+                i.time.exp <- i.time.comp
                 i.age.exp <- i.age.comp
-                i.triangle.exp <- 1L
+                i.triangle.exp <- i.triangle.comp
             }
             else {
-                i.time.exp <- i.time.comp
                 if (i.age.comp == (n.age - 1L)) {
+                    if (i.time.comp == (n.time - 1L))
+                        return(c(0L, 0L))
+                    i.time.exp <- i.time.comp + 1L
                     i.age.exp <- i.age.comp
-                    i.triangle.exp <- 1L
+                    i.triangle.exp <- i.triangle.comp
                 }
                 else {
+                    i.time.exp <- i.time.comp
                     i.age.exp <- i.age.comp + 1L
                     i.triangle.exp <- 0L
                 }
@@ -660,7 +662,7 @@ getIExpFirstPairFromOrigDest <- function(i, mapping, useC = FALSE) {
 ## births no parent - getICellBirthsFromExp DONE
 ## births with parent - getICellBirthsFromExp DONE
 ## orig-dest - getICellCompFromExp DONE
-## pool - getICellCompFromExp
+## pool - getICellCompFromExp DONE
 ## net - getICellCompFromExp DONE
 
 ## TRANSLATED

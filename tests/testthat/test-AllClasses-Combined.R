@@ -1261,11 +1261,6 @@ test_that("validity tests inherited for CombinedCountsPoissonNotHasExp inherited
     x.wrong@datasets[[1]] <- toDouble(x.wrong@datasets[[1]])
     expect_error(validObject(x.wrong),
                  "'datasets' has elements not of type \"integer\"")
-    ## all elements of "datasets' are non-negative
-    x.wrong <- x
-    x.wrong@datasets[[1]][1] <- -1L
-    expect_error(validObject(x.wrong),
-                 "'datasets' has elements with negative values")
     ## 'datasets' does not have names
     x.wrong <- x
     names(x.wrong@datasets)[1] <- "a"

@@ -664,6 +664,11 @@ test_that("advanceCC works", {
     iterator <- advanceCC(iterator)
     expect_identical(iterator@i, 12L)
     expect_true(iterator@finished)
+    iterator <- resetCC(iterator, i = 21L)
+    expect_false(iterator@finished)
+    iterator <- advanceCC(iterator)
+    expect_identical(iterator@i, 30L)
+    expect_true(iterator@finished)
     ## without age
     entries <- Counts(array(1:12,
                             dim = c(3, 4),
@@ -718,6 +723,11 @@ test_that("R and C versions of advanceCC give same answer", {
         iterator.C <- advanceCC(iterator.C, useC = TRUE)
         expect_identical(iterator.R, iterator.C)
     }
+    iterator.R <- resetCC(iterator, i = 21L)
+    iterator.C <- resetCC(iterator, i = 21L)
+    iterator.R <- advanceCC(iterator.R, useC = FALSE)
+    iterator.C <- advanceCC(iterator.C, useC = TRUE)
+    expect_identical(iterator.R, iterator.C)
     ## without age
     entries <- Counts(array(1:12,
                             dim = c(3, 4),
@@ -1224,6 +1234,105 @@ test_that("R and C versions of resetCC give same answer", {
 })
 
 
+## CODPCP iterator
+
+## updating of age, time, etc based on advanceCC,
+## so only check that tracking orig-dest correctly
+test_that("advanceCODPCP works", {
+    advanceCODPCP <- demest:::advanceCODPCP
+    resetCODPCP <- demest:::resetCODPCP
+    CohortIterator <- demest:::CohortIterator
+    InternalMovements <- dembase:::InternalMovements
+    internal <- Counts(array(1:108,
+                             dim = c(3, 3, 3, 2, 2),
+                             dimnames = list(age = c("0-4", "5-9", "10+"),
+                                 reg_orig = 1:3,
+                                 reg_dest = 1:3,
+                                 time = c("2001-2005", "2006-2010"),
+                                 triangle = c("TL", "TU"))))
+    template <- Counts(array(0L,
+                             dim = c(3, 3, 2, 2),
+                             dimnames = list(age = c("0-4", "5-9", "10+"),
+                                 reg = 1:3,
+                                 time = c("2001-2005", "2006-2010"),
+                                 triangle = c("TL", "TU"))))
+    internal <- InternalMovements(internal = internal,
+                                  template = template)
+    iterator <- CohortIterator(internal)
+    internal.df <- as.data.frame(internal, direction = "long")
+    ## i = 2
+    iterator <- resetCODPCP(object = iterator, i = 8L)
+    expect_true(all(internal.df[iterator@iVec, "reg_orig"] == 3))
+    expect_true(all(internal.df[iterator@iVec, "reg_dest"] == 1:3))
+    iterator <- advanceCODPCP(iterator)
+    expect_true(all(internal.df[iterator@iVec, "reg_orig"] == 3))
+    expect_true(all(internal.df[iterator@iVec, "reg_dest"] == 1:3))
+    ## i = 85L
+    iterator <- resetCODPCP(iterator, i = 85L)
+    expect_true(all(internal.df[iterator@iVec, "reg_orig"] == 2))
+    expect_true(all(internal.df[iterator@iVec, "reg_dest"] == 1:3))
+    iterator <- advanceCODPCP(iterator)
+    expect_true(all(internal.df[iterator@iVec, "reg_orig"] == 2))
+    expect_true(all(internal.df[iterator@iVec, "reg_dest"] == 1:3))
+    ## i = 57L
+    iterator <- resetCODPCP(iterator, i = 57L)
+    expect_true(all(internal.df[iterator@iVec, "reg_orig"] == 1))
+    expect_true(all(internal.df[iterator@iVec, "reg_dest"] == 1:3))
+    iterator <- advanceCODPCP(iterator)
+    expect_true(all(internal.df[iterator@iVec, "reg_orig"] == 1))
+    expect_true(all(internal.df[iterator@iVec, "reg_dest"] == 1:3))
+})
+
+test_that("R and C versions of advanceCODPCP give same answer", {
+    advanceCODPCP <- demest:::advanceCODPCP
+    resetCODPCP <- demest:::resetCODPCP
+    CohortIterator <- demest:::CohortIterator
+    InternalMovements <- dembase:::InternalMovements
+    internal <- Counts(array(1:108,
+                             dim = c(3, 3, 3, 2, 2),
+                             dimnames = list(age = c("0-4", "5-9", "10+"),
+                                 reg_orig = 1:3,
+                                 reg_dest = 1:3,
+                                 time = c("2001-2005", "2006-2010"),
+                                 triangle = c("TL", "TU"))))
+    template <- Counts(array(0L,
+                             dim = c(3, 3, 2, 2),
+                             dimnames = list(age = c("0-4", "5-9", "10+"),
+                                 reg = 1:3,
+                                 time = c("2001-2005", "2006-2010"),
+                                 triangle = c("TL", "TU"))))
+    internal <- InternalMovements(internal = internal,
+                                  template = template)
+    iterator <- CohortIterator(internal)
+    ## i = 2
+    iterator <- resetCODPCP(object = iterator, i = 8L)
+    iterator.R <- iterator
+    iterator.C <- iterator
+    while (!iterator.R@finished) {
+        iterator.R <- advanceCODPCP(iterator.R, useC = FALSE)
+        iterator.C <- advanceCODPCP(iterator.C, useC = TRUE)
+        expect_identical(iterator.R, iterator.C)
+    }
+    ## i = 85L
+    iterator <- resetCODPCP(iterator, i = 85L)
+    iterator.R <- iterator
+    iterator.C <- iterator
+    while (!iterator.R@finished) {
+        iterator.R <- advanceCODPCP(iterator.R, useC = FALSE)
+        iterator.C <- advanceCODPCP(iterator.C, useC = TRUE)
+        expect_identical(iterator.R, iterator.C)
+    }
+    ## i = 57L
+    iterator <- resetCODPCP(iterator, i = 57L)
+    iterator.R <- iterator
+    iterator.C <- iterator
+    while (!iterator.R@finished) {
+        iterator.R <- advanceCODPCP(iterator.R, useC = FALSE)
+        iterator.C <- advanceCODPCP(iterator.C, useC = TRUE)
+        expect_identical(iterator.R, iterator.C)
+    }
+})
+
 test_that("resetCODPCP works", {
     resetCODPCP <- demest:::resetCODPCP
     CohortIterator <- demest:::CohortIterator
@@ -1258,7 +1367,7 @@ test_that("resetCODPCP works", {
     expect_identical(iterator@iAge, 1L)
     expect_identical(iterator@iTriangle, 2L)
     expect_identical(iterator@iVec, c(85L, 94L, 103L))
-    expect_true(iterator@finished)
+    expect_false(iterator@finished)
     ## i = 57L
     iterator <- resetCODPCP(iterator, i = 57L)
     expect_identical(iterator@iTime, 1L)
@@ -1266,6 +1375,12 @@ test_that("resetCODPCP works", {
     expect_identical(iterator@iTriangle, 2L)
     expect_identical(iterator@iVec, c(57L, 66L, 75L))
     expect_false(iterator@finished)
+    ## i = 108L
+    iterator <- resetCODPCP(iterator, i = 108L)
+    expect_identical(iterator@iTime, 2L)
+    expect_identical(iterator@iAge, 3L)
+    expect_identical(iterator@iTriangle, 2L)
+    expect_true(iterator@finished)
     ## without age
     internal <- Counts(array(1:72,
                              dim = c(3, 3, 2, 2, 2),

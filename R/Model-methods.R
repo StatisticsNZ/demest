@@ -229,10 +229,8 @@ setMethod("logLikelihood",
               ## count
               stopifnot(identical(length(count), 1L))
               stopifnot(!is.na(count))
-              stopifnot(count >= 0)
               ## dataset
               stopifnot(is.integer(dataset))
-              stopifnot(all(dataset[!is.na(dataset)] >= 0))
               ## i
               stopifnot(identical(length(i), 1L))
               stopifnot(!is.na(i))
@@ -896,8 +894,7 @@ setMethod("makeOutputModel",
 ## TRANSLATED
 ## HAS_TESTS
 setMethod("predictModelNotUseExp",
-          signature(object = "NormalVaryingVarsigmaKnownPredict",
-                    y = "DemographicArray"),
+          signature(object = "NormalVaryingVarsigmaKnownPredict"),
           function(object, y, useC = FALSE, useSpecific = FALSE) {
               ## object
               stopifnot(methods::validObject(object))
@@ -924,8 +921,7 @@ setMethod("predictModelNotUseExp",
 ## TRANSLATED
 ## HAS_TESTS
 setMethod("predictModelNotUseExp",
-          signature(object = "NormalVaryingVarsigmaUnknownPredict",
-                    y = "DemographicArray"),
+          signature(object = "NormalVaryingVarsigmaUnknownPredict"),
           function(object, y, useC = FALSE, useSpecific = FALSE) {
               ## object
               stopifnot(methods::validObject(object))
@@ -952,8 +948,7 @@ setMethod("predictModelNotUseExp",
 ## TRANSLATED
 ## HAS_TESTS
 setMethod("predictModelNotUseExp",
-          signature(object = "PoissonVaryingNotUseExpPredict",
-                    y = "DemographicArray"),
+          signature(object = "PoissonVaryingNotUseExpPredict"),
           function(object, y, useC = FALSE, useSpecific = FALSE) {
               ## object
               stopifnot(methods::validObject(object))
@@ -980,8 +975,7 @@ setMethod("predictModelNotUseExp",
 ## TRANSLATED
 ## HAS_TESTS
 setMethod("predictModelNotUseExp",
-          signature(object = "NormalFixedNotUseExpPredict",
-                    y = "Counts"),
+          signature(object = "NormalFixedNotUseExpPredict"),
           function(object, y, useC = FALSE, useSpecific = FALSE) {
               ## object
               stopifnot(methods::validObject(object))
@@ -1009,9 +1003,7 @@ setMethod("predictModelNotUseExp",
 ## TRANSLATED
 ## HAS_TESTS
 setMethod("predictModelUseExp",
-          signature(object = "BinomialVaryingPredict",
-                    y = "Counts",
-                    exposure = "Counts"),
+          signature(object = "BinomialVaryingPredict"),
           function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
               ## object
               stopifnot(methods::validObject(object))
@@ -1043,9 +1035,7 @@ setMethod("predictModelUseExp",
 ## TRANSLATED
 ## HAS_TESTS
 setMethod("predictModelUseExp",
-          signature(object = "PoissonVaryingUseExpPredict",
-                    y = "Counts",
-                    exposure = "Counts"),
+          signature(object = "PoissonVaryingUseExpPredict"),
           function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
               ## object
               stopifnot(methods::validObject(object))
@@ -1078,9 +1068,7 @@ setMethod("predictModelUseExp",
 ## TRANSLATED
 ## HAS_TESTS
 setMethod("predictModelUseExp",
-          signature(object = "PoissonBinomialMixturePredict",
-                    y = "Counts",
-                    exposure = "Counts"),
+          signature(object = "PoissonBinomialMixturePredict"),
           function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
               ## object
               stopifnot(methods::validObject(object))
@@ -1108,9 +1096,7 @@ setMethod("predictModelUseExp",
 ## TRANSLATED
 ## HAS_TESTS
 setMethod("predictModelUseExp",
-          signature(object = "NormalFixedUseExpPredict",
-                    y = "Counts",
-                    exposure = "Counts"),
+          signature(object = "NormalFixedUseExpPredict"),
           function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
               ## object
               stopifnot(methods::validObject(object))
@@ -1574,8 +1560,7 @@ setMethod("transferParamModel",
 ## TRANSLATED
 ## HAS_TESTS
 setMethod("updateModelNotUseExp",
-          signature(object = "NormalVaryingVarsigmaKnown",
-                    y = "DemographicArray"),
+          signature(object = "NormalVaryingVarsigmaKnown"),
           function(object, y, useC = FALSE, useSpecific = FALSE) {
               ## object
               stopifnot(methods::validObject(object))
@@ -1600,8 +1585,7 @@ setMethod("updateModelNotUseExp",
 ## TRANSLATED
 ## HAS_TESTS
 setMethod("updateModelNotUseExp",
-          signature(object = "NormalVaryingVarsigmaUnknown",
-                    y = "DemographicArray"),
+          signature(object = "NormalVaryingVarsigmaUnknown"),
           function(object, y, useC = FALSE, useSpecific = FALSE) {
               ## object
               stopifnot(methods::validObject(object))
@@ -1627,8 +1611,7 @@ setMethod("updateModelNotUseExp",
 ## TRANSLATED
 ## HAS_TESTS
 setMethod("updateModelNotUseExp",
-          signature(object = "PoissonVaryingNotUseExp",
-                    y = "Counts"),
+          signature(object = "PoissonVaryingNotUseExp"),
           function(object, y, useC = FALSE, useSpecific = FALSE) {
               ## object
               stopifnot(methods::validObject(object))
@@ -1654,8 +1637,7 @@ setMethod("updateModelNotUseExp",
 ## TRANSLATED
 ## HAS_TESTS
 setMethod("updateModelNotUseExp",
-          signature(object = "NormalVaryingVarsigmaKnownAgCertain",
-                    y = "DemographicArray"),
+          signature(object = "NormalVaryingVarsigmaKnownAgCertain"),
           function(object, y, useC = FALSE, useSpecific = FALSE) {
               ## object
               stopifnot(methods::validObject(object))
@@ -1680,8 +1662,7 @@ setMethod("updateModelNotUseExp",
 ## TRANSLATED
 ## HAS_TESTS
 setMethod("updateModelNotUseExp",
-          signature(object = "NormalVaryingVarsigmaUnknownAgCertain",
-                    y = "DemographicArray"),
+          signature(object = "NormalVaryingVarsigmaUnknownAgCertain"),
           function(object, y, useC = FALSE, useSpecific = FALSE) {
               ## object
               stopifnot(methods::validObject(object))
@@ -1707,8 +1688,7 @@ setMethod("updateModelNotUseExp",
 ## TRANSLATED
 ## HAS_TESTS
 setMethod("updateModelNotUseExp",
-          signature(object = "PoissonVaryingNotUseExpAgCertain",
-                    y = "Counts"),
+          signature(object = "PoissonVaryingNotUseExpAgCertain"),
           function(object, y, useC = FALSE, useSpecific = FALSE) {
               ## object
               stopifnot(methods::validObject(object))
@@ -1733,8 +1713,7 @@ setMethod("updateModelNotUseExp",
 ## TRANSLATED
 ## HAS_TESTS
 setMethod("updateModelNotUseExp",
-          signature(object = "NormalVaryingVarsigmaKnownAgNormal",
-                    y = "DemographicArray"),
+          signature(object = "NormalVaryingVarsigmaKnownAgNormal"),
           function(object, y, useC = FALSE, useSpecific = FALSE) {
               ## object
               stopifnot(methods::validObject(object))
@@ -1760,8 +1739,7 @@ setMethod("updateModelNotUseExp",
 ## TRANSLATED
 ## HAS_TESTS
 setMethod("updateModelNotUseExp",
-          signature(object = "NormalVaryingVarsigmaUnknownAgNormal",
-                    y = "DemographicArray"),
+          signature(object = "NormalVaryingVarsigmaUnknownAgNormal"),
           function(object, y, useC = FALSE, useSpecific = FALSE) {
               ## object
               stopifnot(methods::validObject(object))
@@ -1788,8 +1766,7 @@ setMethod("updateModelNotUseExp",
 ## TRANSLATED
 ## HAS_TESTS
 setMethod("updateModelNotUseExp",
-          signature(object = "NormalVaryingVarsigmaKnownAgFun",
-                    y = "DemographicArray"),
+          signature(object = "NormalVaryingVarsigmaKnownAgFun"),
           function(object, y, useC = FALSE, useSpecific = FALSE) {
               ## object
               stopifnot(methods::validObject(object))
@@ -1814,8 +1791,7 @@ setMethod("updateModelNotUseExp",
 ## TRANSLATED
 ## HAS_TESTS
 setMethod("updateModelNotUseExp",
-          signature(object = "NormalVaryingVarsigmaUnknownAgFun",
-                    y = "DemographicArray"),
+          signature(object = "NormalVaryingVarsigmaUnknownAgFun"),
           function(object, y, useC = FALSE, useSpecific = FALSE) {
               ## object
               stopifnot(methods::validObject(object))
@@ -1841,8 +1817,7 @@ setMethod("updateModelNotUseExp",
 ## TRANSLATED
 ## HAS_TESTS
 setMethod("updateModelNotUseExp",
-          signature(object = "PoissonVaryingNotUseExpAgNormal",
-                    y = "Counts"),
+          signature(object = "PoissonVaryingNotUseExpAgNormal"),
           function(object, y, useC = FALSE, useSpecific = FALSE) {
               ## object
               stopifnot(methods::validObject(object))
@@ -1868,8 +1843,7 @@ setMethod("updateModelNotUseExp",
 ## TRANSLATED
 ## HAS_TESTS
 setMethod("updateModelNotUseExp",
-          signature(object = "PoissonVaryingNotUseExpAgFun",
-                    y = "Counts"),
+          signature(object = "PoissonVaryingNotUseExpAgFun"),
           function(object, y, useC = FALSE, useSpecific = FALSE) {
               ## object
               stopifnot(methods::validObject(object))
@@ -1894,8 +1868,7 @@ setMethod("updateModelNotUseExp",
 ## TRANSLATED
 ## HAS_TESTS
 setMethod("updateModelNotUseExp",
-          signature(object = "PoissonVaryingNotUseExpAgPoisson",
-                    y = "Counts"),
+          signature(object = "PoissonVaryingNotUseExpAgPoisson"),
           function(object, y, useC = FALSE, useSpecific = FALSE) {
               ## object
               stopifnot(methods::validObject(object))
@@ -1921,14 +1894,12 @@ setMethod("updateModelNotUseExp",
 ## TRANSLATED
 ## HAS_TESTS
 setMethod("updateModelNotUseExp",
-          signature(object = "NormalFixedNotUseExp",
-                    y = "Counts"),
+          signature(object = "NormalFixedNotUseExp"),
           function(object, y, useC = FALSE, useSpecific = FALSE) {
               ## object
               stopifnot(methods::validObject(object))
               ## y
               stopifnot(is.integer(y))
-              stopifnot(all(y[!is.na(y)] >= 0))
               if (useC) {
                   if (useSpecific)
                       .Call(updateModelNotUseExp_NormalFixedNotUseExp_R, object, y)
@@ -1949,9 +1920,7 @@ setMethod("updateModelNotUseExp",
 ## TRANSLATED
 ## HAS_TESTS
 setMethod("updateModelUseExp",
-          signature(object = "BinomialVarying",
-                    y = "Counts",
-                    exposure = "Counts"),
+          signature(object = "BinomialVarying"),
           function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
               ## object
               stopifnot(methods::validObject(object))
@@ -1986,9 +1955,7 @@ setMethod("updateModelUseExp",
 ## TRANSLATED
 ## HAS_TESTS
 setMethod("updateModelUseExp",
-          signature(object = "PoissonVaryingUseExp",
-                    y = "Counts",
-                    exposure = "Counts"),
+          signature(object = "PoissonVaryingUseExp"),
           function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
               ## object
               stopifnot(methods::validObject(object))
@@ -2020,9 +1987,7 @@ setMethod("updateModelUseExp",
 ## TRANSLATED
 ## HAS_TESTS
 setMethod("updateModelUseExp",
-          signature(object = "PoissonBinomialMixture",
-                    y = "Counts",
-                    exposure = "Counts"),
+          signature(object = "PoissonBinomialMixture"),
           function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
               ## object
               stopifnot(methods::validObject(object))
@@ -2050,9 +2015,7 @@ setMethod("updateModelUseExp",
 ## TRANSLATED
 ## HAS_TESTS
 setMethod("updateModelUseExp",
-          signature(object = "BinomialVaryingAgCertain",
-                    y = "Counts",
-                    exposure = "Counts"),
+          signature(object = "BinomialVaryingAgCertain"),
           function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
               ## object
               stopifnot(methods::validObject(object))
@@ -2086,9 +2049,7 @@ setMethod("updateModelUseExp",
 ## TRANSLATED
 ## HAS_TESTS
 setMethod("updateModelUseExp",
-          signature(object = "PoissonVaryingUseExpAgCertain",
-                    y = "Counts",
-                    exposure = "Counts"),
+          signature(object = "PoissonVaryingUseExpAgCertain"),
           function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
               ## object
               stopifnot(methods::validObject(object))
@@ -2120,9 +2081,7 @@ setMethod("updateModelUseExp",
 ## TRANSLATED
 ## HAS_TESTS
 setMethod("updateModelUseExp",
-          signature(object = "BinomialVaryingAgNormal",
-                    y = "Counts",
-                    exposure = "Counts"),
+          signature(object = "BinomialVaryingAgNormal"),
           function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
               ## object
               stopifnot(methods::validObject(object))
@@ -2157,9 +2116,7 @@ setMethod("updateModelUseExp",
 ## TRANSLATED
 ## HAS_TESTS
 setMethod("updateModelUseExp",
-          signature(object = "BinomialVaryingAgFun",
-                    y = "Counts",
-                    exposure = "Counts"),
+          signature(object = "BinomialVaryingAgFun"),
           function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
               ## object
               stopifnot(methods::validObject(object))
@@ -2193,9 +2150,7 @@ setMethod("updateModelUseExp",
 ## TRANSLATED
 ## HAS_TESTS
 setMethod("updateModelUseExp",
-          signature(object = "PoissonVaryingUseExpAgNormal",
-                    y = "Counts",
-                    exposure = "Counts"),
+          signature(object = "PoissonVaryingUseExpAgNormal"),
           function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
               ## object
               stopifnot(methods::validObject(object))
@@ -2228,9 +2183,7 @@ setMethod("updateModelUseExp",
 ## TRANSLATED
 ## HAS_TESTS
 setMethod("updateModelUseExp",
-          signature(object = "PoissonVaryingUseExpAgFun",
-                    y = "Counts",
-                    exposure = "Counts"),
+          signature(object = "PoissonVaryingUseExpAgFun"),
           function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
               ## object
               stopifnot(methods::validObject(object))
@@ -2262,9 +2215,7 @@ setMethod("updateModelUseExp",
 ## TRANSLATED
 ## HAS_TESTS
 setMethod("updateModelUseExp",
-          signature(object = "PoissonVaryingUseExpAgLife",
-                    y = "Counts",
-                    exposure = "Counts"),
+          signature(object = "PoissonVaryingUseExpAgLife"),
           function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
               ## object
               stopifnot(methods::validObject(object))
@@ -2297,9 +2248,7 @@ setMethod("updateModelUseExp",
 ## TRANSLATED
 ## HAS_TESTS
 setMethod("updateModelUseExp",
-          signature(object = "PoissonVaryingUseExpAgPoisson",
-                    y = "Counts",
-                    exposure = "Counts"),
+          signature(object = "PoissonVaryingUseExpAgPoisson"),
           function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
               ## object
               stopifnot(methods::validObject(object))
@@ -2332,21 +2281,17 @@ setMethod("updateModelUseExp",
 ## TRANSLATED
 ## HAS_TESTS
 setMethod("updateModelUseExp",
-          signature(object = "NormalFixedUseExp",
-                    y = "Counts",
-                    exposure = "Counts"),
+          signature(object = "NormalFixedUseExp"),
           function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
               ## object
               stopifnot(methods::validObject(object))
               ## y
               stopifnot(is.integer(y))
-              stopifnot(all(y[!is.na(y)] >= 0))
               ## exposure
               stopifnot(is.integer(exposure))
-              stopifnot(all(exposure[!is.na(exposure)] >= 0L))
+              stopifnot(!any(is.na(exposure)))
               ## y and exposure
               stopifnot(identical(length(exposure), length(y)))
-              stopifnot(all(is.na(exposure) <= is.na(y)))
               if (useC) {
                   if (useSpecific)
                       .Call(updateModelUseExp_NormalFixedUseExp_R, object, y, exposure)

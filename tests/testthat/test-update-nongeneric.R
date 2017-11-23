@@ -3737,7 +3737,7 @@ test_that("R and C versions of updateWeightMix give same answer", {
 
 ## UPDATING MODELS ################################################################
 
-test_that("updateSigma_Varying gives valid answer", {
+test_that("updateSigma_Varying gives valid answer - no Box-Cox", {
     updateSigma_Varying <- demest:::updateSigma_Varying
     updateSDNorm <- demest:::updateSDNorm
     initialModel <- demest:::initialModel
@@ -3772,7 +3772,7 @@ test_that("updateSigma_Varying gives valid answer", {
     }
 })
 
-test_that("R and C versions of updateSigma_Varying give same answer", {
+test_that("R and C versions of updateSigma_Varying give same answer - no Box-Cox", {
     updateSigma_Varying <- demest:::updateSigma_Varying
     initialModel <- demest:::initialModel
     for (seed in seq_len(n.test)) {
@@ -3824,6 +3824,63 @@ test_that("R and C versions of updateSigma_Varying give same answer", {
         ans.R <- updateSigma_Varying(x, g = logit, useC = FALSE)
         set.seed(seed + 1)
         ans.C <- updateSigma_Varying(x, g = logit, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
+
+test_that("updateSigma_Varying gives valid answer - with Box-Cox", {
+    updateSigma_Varying <- demest:::updateSigma_Varying
+    updateSDNorm <- demest:::updateSDNorm
+    initialModel <- demest:::initialModel
+    for (seed in seq_len(n.test)) {
+        y <- Counts(array(rpois(n = 20, lambda = 30),
+                          dim = 5:4,
+                          dimnames = list(age = 0:4, region = letters[1:4])))
+        spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE, boxcox = 0.7),
+                      age ~ Exch())
+        x <- initialModel(spec, y = y, exposure = NULL)
+        set.seed(seed + 1)
+        ans.obtained <- updateSigma_Varying(x, g = log)
+        set.seed(seed + 1)
+        ans.expected <- x
+        mu <- x@betas[[1]] + x@betas[[2]] + rep(x@betas[[3]], each = 5)
+        I <- length(x@theta)
+        theta.transf <- (x@theta^(0.7) - 1) / 0.7
+        V <- sum((theta.transf - mu)^2)
+        ans.expected@sigma@.Data <- updateSDNorm(sigma = ans.expected@sigma@.Data,
+                                                 A = ans.expected@ASigma@.Data,
+                                                 nu = ans.expected@nuSigma@.Data,
+                                                 V = V,
+                                                 n = I,
+                                                 max = ans.expected@sigmaMax@.Data)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+        expect_identical(ans.obtained@theta, x@theta)
+        expect_identical(ans.obtained@betas, x@betas)
+        expect_identical(ans.obtained@priorsBetas, x@priorsBetas)
+        expect_identical(ans.obtained@iteratorBetas, x@iteratorBetas)
+    }
+})
+
+test_that("R and C versions of updateSigma_Varying give same answer - with Box-Cox", {
+    updateSigma_Varying <- demest:::updateSigma_Varying
+    initialModel <- demest:::initialModel
+    for (seed in seq_len(n.test)) {
+        y <- Counts(array(rpois(n = 20, lambda = 30),
+                          dim = 5:4,
+                          dimnames = list(age = 0:4, region = letters[1:4])))
+        spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE, boxcox = 0.8),
+                      age ~ Exch())
+        x <- initialModel(spec, y = y, exposure = NULL)
+        set.seed(seed + 1)
+        ans.R <- updateSigma_Varying(x, g = log, useC = FALSE)
+        set.seed(seed + 1)
+        ans.C <- updateSigma_Varying(x, g = log, useC = TRUE)
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else
@@ -5777,6 +5834,40 @@ test_that("updateTheta_PoissonVaryingNotUseExp gives valid answer", {
         set.seed(seed + 1)
         ans.obtained <- updateTheta_PoissonVaryingNotUseExp(model, y = y)
         expect_true(all((ans.obtained@theta > 10) & ans.obtained@theta < 30))
+        ## Box-Cox transform
+        y <- Counts(array(as.integer(rpois(n = 20, lambda = 5)),
+                          dim = c(5, 4),
+                          dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        spec <- Model(y ~ Poisson(mean ~ age + region, boxcox = 0.7, useExpose = FALSE))
+        model <- initialModel(spec, y = y, exposure = NULL)
+        set.seed(seed + 1)
+        ans.obtained <- updateTheta_PoissonVaryingNotUseExp(model, y = y)
+        set.seed(seed + 1)
+        ans.expected <- model
+        g <- function(x) (x^(0.7) - 1)/0.7
+        g.inv <- function(x) (0.7*x + 1)^(1/0.7)
+        mu <- (model@betas[[1]]
+            + model@betas[[2]]
+            + rep(model@betas[[3]], each = 5))
+        for (i in seq_along(ans.expected@theta)) {
+            theta.curr <- ans.expected@theta[i]
+            theta.prop <- g.inv(rnorm(1, mean = g(theta.curr),
+                                      sd = model@scaleTheta))
+            log.diff <- dpois(y[i], lambda = theta.prop, log = TRUE) -
+                dpois(y[i], lambda = theta.curr, log = TRUE) +
+                dnorm(x = g(theta.prop), mean = mu[i], sd = model@sigma, log = TRUE) -
+                dnorm(x = g(theta.curr), mean = mu[i], sd = model@sigma, log = TRUE)
+            if ((log.diff >= 0) || (runif(1) < exp(log.diff))) {
+                ans.expected@nAcceptTheta <- ans.expected@nAcceptTheta + 1L
+                ans.expected@theta[i] <- theta.prop
+            }
+        }
+        if (ans.expected@nAcceptTheta == 0L)
+            warning("no proposals accepted")
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)        
     }
 })
 
@@ -5880,6 +5971,20 @@ test_that("R and C versions of updateTheta_PoissonVaryingNotUseExp give same ans
             expect_identical(ans.R, ans.C)
         else
             expect_equal(ans.R, ans.C)
+        ## Box-cox
+        y <- Counts(array(as.integer(rpois(n = 20, lambda = 5)),
+                          dim = c(5, 4),
+                          dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        spec <- Model(y ~ Poisson(mean ~ age + region, boxcox = 0.7, useExpose = FALSE))
+        model <- initialModel(spec, y = y, exposure = NULL)
+        set.seed(seed + 1)
+        ans.R <- updateTheta_PoissonVaryingNotUseExp(model, y = y, useC = FALSE)
+        set.seed(seed + 1)
+        ans.C <- updateTheta_PoissonVaryingNotUseExp(model, y = y, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
     }
 })
 
@@ -5904,16 +6009,16 @@ test_that("updateTheta_PoissonVaryingUseExp gives valid answer", {
         set.seed(seed + 1)
         ans.expected <- model
         mu <- (model@betas[[1]]
-               + model@betas[[2]]
-               + rep(model@betas[[3]], each = 5))
+            + model@betas[[2]]
+            + rep(model@betas[[3]], each = 5))
         for (i in seq_along(ans.expected@theta)) {
             theta.curr <- ans.expected@theta[i]
             theta.prop <- exp(rnorm(1, mean = log(theta.curr),
                                     sd = model@scaleTheta*model@scaleThetaMultiplier/sqrt(1+y[i])))
             log.diff <- dpois(y[i], lambda = theta.prop * exposure[i], log = TRUE) -
                 dpois(y[i], lambda = theta.curr * exposure[i], log = TRUE) +
-                    dnorm(x = log(theta.prop), mean = mu[i], sd = model@sigma, log = TRUE) -
-                        dnorm(x = log(theta.curr), mean = mu[i], sd = model@sigma, log = TRUE)
+                dnorm(x = log(theta.prop), mean = mu[i], sd = model@sigma, log = TRUE) -
+                dnorm(x = log(theta.curr), mean = mu[i], sd = model@sigma, log = TRUE)
             if ((log.diff >= 0) || (runif(1) < exp(log.diff))) {
                 ans.expected@nAcceptTheta <- ans.expected@nAcceptTheta + 1L
                 ans.expected@theta[i] <- theta.prop
@@ -5944,8 +6049,8 @@ test_that("updateTheta_PoissonVaryingUseExp gives valid answer", {
         set.seed(seed + 1)
         ans.expected <- model
         mu <- (model@betas[[1]]
-               + model@betas[[2]]
-               + rep(model@betas[[3]], each = 5))
+            + model@betas[[2]]
+            + rep(model@betas[[3]], each = 5))
         ans.expected@theta[1:5] <- exp(rnorm(n = 5, mean = mu[1:5], sd = model@sigma))
         for (i in 6:20) {
             theta.curr <- ans.expected@theta[i]
@@ -5953,8 +6058,8 @@ test_that("updateTheta_PoissonVaryingUseExp gives valid answer", {
                                     sd = model@scaleTheta*model@scaleThetaMultiplier/sqrt(1+y[i])))
             log.diff <- dpois(y[i], lambda = theta.prop * exposure[i], log = TRUE) -
                 dpois(y[i], lambda = theta.curr * exposure[i], log = TRUE) +
-                    dnorm(x = log(theta.prop), mean = mu[i], sd = model@sigma, log = TRUE) -
-                        dnorm(x = log(theta.curr), mean = mu[i], sd = model@sigma, log = TRUE)
+                dnorm(x = log(theta.prop), mean = mu[i], sd = model@sigma, log = TRUE) -
+                dnorm(x = log(theta.curr), mean = mu[i], sd = model@sigma, log = TRUE)
             if ((log.diff >= 0) || (runif(1) < exp(log.diff))) {
                 ans.expected@nAcceptTheta <- ans.expected@nAcceptTheta + 1L
                 ans.expected@theta[i] <- theta.prop
@@ -5987,8 +6092,8 @@ test_that("updateTheta_PoissonVaryingUseExp gives valid answer", {
         set.seed(seed + 1)
         ans.expected <- model
         mu <- (model@betas[[1]]
-               + model@betas[[2]]
-               + rep(model@betas[[3]], each = 5))
+            + model@betas[[2]]
+            + rep(model@betas[[3]], each = 5))
         for (i in 1:10) {
             theta.curr <- ans.expected@theta[i]
             theta.prop <- exp(rnorm(1, mean = log(theta.curr),
@@ -5999,8 +6104,8 @@ test_that("updateTheta_PoissonVaryingUseExp gives valid answer", {
                               lambda = sum(ans.expected@theta[ind] * exposure[ind]) + (theta.prop - theta.curr) * exposure[i],
                               log = TRUE) -
                 dpois(subtotals[j], lambda = sum(ans.expected@theta[ind] * exposure[ind]), log = TRUE) +
-                    dnorm(x = log(theta.prop), mean = mu[i], sd = ans.expected@sigma, log = TRUE) -
-                        dnorm(x = log(theta.curr), mean = mu[i], sd = ans.expected@sigma, log = TRUE)
+                dnorm(x = log(theta.prop), mean = mu[i], sd = ans.expected@sigma, log = TRUE) -
+                dnorm(x = log(theta.curr), mean = mu[i], sd = ans.expected@sigma, log = TRUE)
             if ((log.diff >= 0) || (runif(1) < exp(log.diff))) {
                 ans.expected@nAcceptTheta <- ans.expected@nAcceptTheta + 1L
                 ans.expected@theta[i] <- theta.prop
@@ -6013,8 +6118,8 @@ test_that("updateTheta_PoissonVaryingUseExp gives valid answer", {
                                     sd = ifelse(is.na(y[i]), 0.1, ans.expected@scaleTheta*model@scaleThetaMultiplier/sqrt(1+y[i]))))
             log.diff <- dpois(y[i], lambda = theta.prop * exposure[i], log = TRUE) -
                 dpois(y[i], lambda = theta.curr * exposure[i], log = TRUE) +
-                    dnorm(x = log(theta.prop), mean = mu[i], sd = ans.expected@sigma, log = TRUE) -
-                        dnorm(x = log(theta.curr), mean = mu[i], sd = ans.expected@sigma, log = TRUE)
+                dnorm(x = log(theta.prop), mean = mu[i], sd = ans.expected@sigma, log = TRUE) -
+                dnorm(x = log(theta.curr), mean = mu[i], sd = ans.expected@sigma, log = TRUE)
             if ((log.diff >= 0) || (runif(1) < exp(log.diff))) {
                 ans.expected@nAcceptTheta <- ans.expected@nAcceptTheta + 1L
                 ans.expected@theta[i] <- theta.prop
@@ -6047,8 +6152,8 @@ test_that("updateTheta_PoissonVaryingUseExp gives valid answer", {
         set.seed(seed + 1)
         ans.expected <- model
         mu <- (model@betas[[1]]
-               + model@betas[[2]]
-               + rep(model@betas[[3]], each = 5))
+            + model@betas[[2]]
+            + rep(model@betas[[3]], each = 5))
         for (i in 1:8) {
             theta.curr <- ans.expected@theta[i]
             theta.prop <- exp(rnorm(1, mean = log(theta.curr),
@@ -6065,8 +6170,8 @@ test_that("updateTheta_PoissonVaryingUseExp gives valid answer", {
                               lambda = sum(ans.expected@theta[ind] * exposure[ind]) + (theta.prop - theta.curr) * exposure[i],
                               log = TRUE) -
                 dpois(y@subtotalsNet[j], lambda = sum(ans.expected@theta[ind] * exposure[ind]), log = TRUE) +
-                    dnorm(x = log(theta.prop), mean = mu[i], sd = ans.expected@sigma, log = TRUE) -
-                        dnorm(x = log(theta.curr), mean = mu[i], sd = ans.expected@sigma, log = TRUE)
+                dnorm(x = log(theta.prop), mean = mu[i], sd = ans.expected@sigma, log = TRUE) -
+                dnorm(x = log(theta.curr), mean = mu[i], sd = ans.expected@sigma, log = TRUE)
             if ((log.diff >= 0) || (runif(1) < exp(log.diff))) {
                 ans.expected@nAcceptTheta <- ans.expected@nAcceptTheta + 1L
                 ans.expected@theta[i] <- theta.prop
@@ -6078,8 +6183,8 @@ test_that("updateTheta_PoissonVaryingUseExp gives valid answer", {
                                     sd = ans.expected@scaleTheta*model@scaleThetaMultiplier/sqrt(1+y[i])))
             log.diff <- dpois(y[i], lambda = theta.prop * exposure[i], log = TRUE) -
                 dpois(y[i], lambda = theta.curr * exposure[i], log = TRUE) +
-                    dnorm(x = log(theta.prop), mean = mu[i], sd = ans.expected@sigma, log = TRUE) -
-                        dnorm(x = log(theta.curr), mean = mu[i], sd = ans.expected@sigma, log = TRUE)
+                dnorm(x = log(theta.prop), mean = mu[i], sd = ans.expected@sigma, log = TRUE) -
+                dnorm(x = log(theta.curr), mean = mu[i], sd = ans.expected@sigma, log = TRUE)
             if ((log.diff >= 0) || (runif(1) < exp(log.diff))) {
                 ans.expected@nAcceptTheta <- ans.expected@nAcceptTheta + 1L
                 ans.expected@theta[i] <- theta.prop
@@ -6092,8 +6197,8 @@ test_that("updateTheta_PoissonVaryingUseExp gives valid answer", {
                                     sd = ans.expected@scaleTheta*model@scaleThetaMultiplier/sqrt(1+y[i])))
             log.diff <- dpois(y[i], lambda = theta.prop * exposure[i], log = TRUE) -
                 dpois(y[i], lambda = theta.curr * exposure[i], log = TRUE) +
-                    dnorm(x = log(theta.prop), mean = mu[i], sd = ans.expected@sigma, log = TRUE) -
-                        dnorm(x = log(theta.curr), mean = mu[i], sd = ans.expected@sigma, log = TRUE)
+                dnorm(x = log(theta.prop), mean = mu[i], sd = ans.expected@sigma, log = TRUE) -
+                dnorm(x = log(theta.curr), mean = mu[i], sd = ans.expected@sigma, log = TRUE)
             if ((log.diff >= 0) || (runif(1) < exp(log.diff))) {
                 ans.expected@nAcceptTheta <- ans.expected@nAcceptTheta + 1L
                 ans.expected@theta[i] <- theta.prop
@@ -6124,6 +6229,43 @@ test_that("updateTheta_PoissonVaryingUseExp gives valid answer", {
         set.seed(seed + 1)
         ans.obtained <- updateTheta_PoissonVaryingUseExp(model, y = y, exposure = exposure)
         expect_true(all((ans.obtained@theta > 0.3) & ans.obtained@theta < 0.6))
+        ## Box-Cox transform
+        exposure <- Counts(array(10 * rbeta(n = 20, shape1 = 20, shape2 = 5),
+                                 dim = c(5, 4),
+                                 dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        y <- Counts(array(as.integer(rpois(n = 20, lambda = 0.5 * exposure)),
+                          dim = c(5, 4),
+                          dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        spec <- Model(y ~ Poisson(mean ~ age + region, boxcox = 0.7))
+        model <- initialModel(spec, y = y, exposure = exposure)
+        set.seed(seed + 1)
+        ans.obtained <- updateTheta_PoissonVaryingUseExp(model, y = y, exposure = exposure)
+        set.seed(seed + 1)
+        ans.expected <- model
+        g <- function(x) (x^(0.7) - 1)/0.7
+        g.inv <- function(x) (0.7*x + 1)^(1/0.7)
+        mu <- (model@betas[[1]]
+            + model@betas[[2]]
+            + rep(model@betas[[3]], each = 5))
+        for (i in seq_along(ans.expected@theta)) {
+            theta.curr <- ans.expected@theta[i]
+            theta.prop <- g.inv(rnorm(1, mean = g(theta.curr),
+                                      sd = model@scaleTheta*model@scaleThetaMultiplier/sqrt(1+y[i])))
+            log.diff <- dpois(y[i], lambda = theta.prop * exposure[i], log = TRUE) -
+                dpois(y[i], lambda = theta.curr * exposure[i], log = TRUE) +
+                dnorm(x = g(theta.prop), mean = mu[i], sd = model@sigma, log = TRUE) -
+                dnorm(x = g(theta.curr), mean = mu[i], sd = model@sigma, log = TRUE)
+            if ((log.diff >= 0) || (runif(1) < exp(log.diff))) {
+                ans.expected@nAcceptTheta <- ans.expected@nAcceptTheta + 1L
+                ans.expected@theta[i] <- theta.prop
+            }
+        }
+        if (ans.expected@nAcceptTheta == 0L)
+            warning("no proposals accepted")
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)        
     }
 })
 
@@ -6232,6 +6374,23 @@ test_that("R and C versions of updateTheta_PoissonVaryingUseExp give same answer
         ans.C <- updateTheta_PoissonVaryingUseExp(model, y = y, exposure = exposure, useC = TRUE)
         if (ans.R@nAcceptTheta == 0L)
             warning("no proposals accepted")
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+        ## Box-Cox transform
+        exposure <- Counts(array(10 * rbeta(n = 20, shape1 = 20, shape2 = 5),
+                                 dim = c(5, 4),
+                                 dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        y <- Counts(array(as.integer(rpois(n = 20, lambda = 0.5 * exposure)),
+                          dim = c(5, 4),
+                          dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        spec <- Model(y ~ Poisson(mean ~ age + region, boxcox = 0.7))
+        model <- initialModel(spec, y = y, exposure = exposure)
+        set.seed(seed + 1)
+        ans.R <- updateTheta_PoissonVaryingUseExp(model, y = y, exposure = exposure, useC = FALSE)
+        set.seed(seed + 1)
+        ans.C <- updateTheta_PoissonVaryingUseExp(model, y = y, exposure = exposure, useC = TRUE)
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else
@@ -9238,3 +9397,115 @@ test_that("R and C versions of updateObservationCounts give same answer with agg
 })
 
 
+
+test_that("updateObservationModelsAccount works with CombinedAccountMovements", {
+    updateObservationModelsAccount <- demest:::updateObservationModelsAccount
+    updateAccount <- demest:::updateAccount
+    initialCombinedAccount <- demest:::initialCombinedAccount
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    updateModelUseExp <- demest:::updateModelUseExp
+    set.seed(1)
+    population <- CountsOne(values = seq(100L, 200L, 10L),
+                            labels = seq(2000, 2100, 10),
+                            name = "time")
+    births <- CountsOne(values = rpois(n = 10, lambda = 15),
+                        labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
+                        name = "time")
+    deaths <- CountsOne(values = rpois(n = 10, lambda = 5),
+                        labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
+                        name = "time")
+    account <- Movements(population = population,
+                         births = births,
+                         exits = list(deaths = deaths))
+    account <- makeConsistent(account)
+    systemModels <- list(Model(population ~ Poisson(mean ~ time, useExpose = FALSE)),
+                         Model(births ~ Poisson(mean ~ 1)),
+                         Model(deaths ~ Poisson(mean ~ 1)))
+    systemWeights <- rep(list(NULL), 3)
+    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
+                              Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
+    seriesIndices <- c(2L, 0L)
+    datasets <- list(subarray(deaths, time > 2010, drop = FALSE) + 1L,
+                     subarray(population, time < 2090, drop = FALSE) - 1L)
+    namesDatasets <- c("tax", "census")
+    transforms <- list(makeTransform(x = deaths, y = datasets[[1]], subset = TRUE),
+                       makeTransform(x = population, y = datasets[[2]], subset = TRUE))
+    transforms <- lapply(transforms, makeCollapseTransformExtra)
+    x <- initialCombinedAccount(account = account,
+                                systemModels = systemModels,
+                                systemWeights = systemWeights,
+                                observationModels = observationModels,
+                                seriesIndices = seriesIndices,
+                                datasets = datasets,
+                                namesDatasets = namesDatasets,
+                                transforms = transforms)
+    x <- updateAccount(x)
+    set.seed(1)
+    ans.obtained <- updateObservationModelsAccount(x)
+    set.seed(1)
+    ans.expected <- x
+    ans.expected@observationModels[[1]] <- updateModelUseExp(ans.expected@observationModels[[1]],
+                                                             y = ans.expected@datasets[[1]],
+                                                             exposure = toDouble(collapse(ans.expected@account@components[[2]],
+                                                                                          transform = transforms[[1]])))
+    ans.expected@observationModels[[2]] <- updateModelUseExp(ans.expected@observationModels[[2]],
+                                                             y = ans.expected@datasets[[2]],
+                                                             exposure = collapse(ans.expected@account@population,
+                                                                                 transform = transforms[[2]]))
+    if (test.identity)
+        expect_identical(ans.obtained, ans.expected)
+    else
+        expect_equal(ans.obtained, ans.expected)
+})
+
+test_that("R and C versions of updateObservationModelsAccount give same answer", {
+    updateObservationModelsAccount <- demest:::updateObservationModelsAccount
+    updateAccount <- demest:::updateAccount
+    initialCombinedAccount <- demest:::initialCombinedAccount
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    updateModelUseExp <- demest:::updateModelUseExp
+    set.seed(1)
+    population <- CountsOne(values = seq(100L, 200L, 10L),
+                            labels = seq(2000, 2100, 10),
+                            name = "time")
+    births <- CountsOne(values = rpois(n = 10, lambda = 15),
+                        labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
+                        name = "time")
+    deaths <- CountsOne(values = rpois(n = 10, lambda = 5),
+                        labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
+                        name = "time")
+    account <- Movements(population = population,
+                         births = births,
+                         exits = list(deaths = deaths))
+    account <- makeConsistent(account)
+    systemModels <- list(Model(population ~ Poisson(mean ~ time, useExpose = FALSE)),
+                         Model(births ~ Poisson(mean ~ 1)),
+                         Model(deaths ~ Poisson(mean ~ 1)))
+    systemWeights <- rep(list(NULL), 3)
+    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
+                              Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
+    seriesIndices <- c(2L, 0L)
+    datasets <- list(subarray(deaths, time > 2010, drop = FALSE) + 1L,
+                     subarray(population, time < 2090, drop = FALSE) - 1L)
+    namesDatasets <- c("tax", "census")
+    transforms <- list(makeTransform(x = deaths, y = datasets[[1]], subset = TRUE),
+                       makeTransform(x = population, y = datasets[[2]], subset = TRUE))
+    transforms <- lapply(transforms, makeCollapseTransformExtra)
+    x <- initialCombinedAccount(account = account,
+                                systemModels = systemModels,
+                                systemWeights = systemWeights,
+                                observationModels = observationModels,
+                                seriesIndices = seriesIndices,
+                                datasets = datasets,
+                                namesDatasets = namesDatasets,
+                                transforms = transforms)
+    x <- updateAccount(x)
+    set.seed(1)
+    ans.R <- updateObservationModelsAccount(x, useC = FALSE)
+    set.seed(1)
+    ans.C <- updateObservationModelsAccount(x, useC = TRUE)
+    if (test.identity)
+        expect_identical(ans.R, ans.C)
+    else
+        expect_equal(ans.R, ans.C)
+})

@@ -3994,7 +3994,7 @@ rnormTruncated <- function(n, mean, sd, lower, upper, tolerance = 1e-5, maxAttem
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 ## Returns draw from truncated integer-only normal distribution (achieved by rounding).
 rnormIntTrunc1 <- function(mean = 0, sd = 1, lower = NA_integer_, upper = NA_integer_, useC = FALSE) {
@@ -4027,12 +4027,10 @@ rnormIntTrunc1 <- function(mean = 0, sd = 1, lower = NA_integer_, upper = NA_int
                        sd = sd,
                        lower = lower,
                        upper = upper)
-        ans <- as.integer(ans + 0.5)
-        if (ans < lower)
-            ans <- lower
-        if (ans > upper)
-            ans <- upper
-        ans
+        if (ans > 0)
+            as.integer(ans + 0.5)
+        else
+            as.integer(ans - 0.5)
     }
 }
 
@@ -4433,11 +4431,9 @@ betaHatSeason <- function(prior, useC = FALSE) {
     }
 }
 
-## TRANSLATED
-## modified from pseudocode from https://en.wikipedia.org/wiki/Newton%27s_method
+## READY_TO_TRANSLATE (AGAIN)
 ## If the function finds the root within 'kMaxIter' iterations, it
-## returns this root.  If the derivative of 'f' is near 0, the function
-## returns -1.0.  If the function fails to find a root, it returns -99.0.
+## returns this root. If the function fails to find a root, it returns -99.0.
 ## The root must be between 'min' and 'max'.
 findOneRootLogPostSigmaNorm <- function(sigma0, z, A, nu, V, n, min, max,
                                         useC = FALSE) {
@@ -4484,32 +4480,57 @@ findOneRootLogPostSigmaNorm <- function(sigma0, z, A, nu, V, n, min, max,
         .Call(findOneRootLogPostSigmaNorm_R, sigma0, z, A, nu, V, n, min, max)
     }
     else {
-        kTolerance <- 1e-7           ## C version can
-        kEpsilonMax <- 1e-14         ## use macros to
-        kEpsilonBoundaries <- 1e-30  ## set these
-        kMaxIter <- 1000L     
+        kTolerance <- 1e-20           ## C version can use macros to set these
+        kEpsilon <- 1e-15     ## NEW
+        kMaxIter <- 1000L
+        ## check that a value can be found
+        min.tol <- min + kTolerance
+        fmin <- -n*log(min.tol) - V/(2*(min.tol)^2) - ((nu + 1)/2) * log((min.tol)^2 + nu*A^2)
+        if (is.finite(max)) {
+            max.tol <- max - kTolerance
+            fmax <- -n*log(max.tol) - V/(2*(max.tol)^2) - ((nu + 1)/2) * log((max.tol)^2 + nu*A^2)
+        }
+        else
+            fmax <- -Inf
+        if (((fmin < z) && (fmax < z)) || ((fmin > z) && (fmax > z)))
+            return(-99.0)
+        ## find root
+        f0 <- -n*log(sigma0) - V/(2*sigma0^2) - ((nu + 1)/2) * log(sigma0^2 + nu*A^2)
+        g0 <- (f0 - z)^2
         for (i in seq_len(kMaxIter)) {
-            f <- -n*log(sigma0) - V/(2*sigma0^2) - ((nu + 1)/2) * log(sigma0^2 + nu*A^2) - z
-            fprime <- -n/sigma0 + V/(sigma0^3) - ((nu + 1)*sigma0) / (sigma0^2 + nu*A^2)
-            deriv_near_zero <- abs(fprime) < kEpsilonMax
-            if (deriv_near_zero)
-                return(-1.0)
-            sigma1 <- sigma0 - f / fprime
-            sigma1 <- max(sigma1, min + kEpsilonBoundaries)
-            sigma1 <- min(sigma1, max - kEpsilonBoundaries)
-            if (sigma1 - sigma0 > 1)
-                sigma1 <- sigma0 + 1
-            sigma1.equals.sigma0 <- abs(sigma1 - sigma0) < kTolerance * abs(sigma1)
-            if (sigma1.equals.sigma0)
-                return(sigma1)
-            sigma0 <- sigma1
+            f0prime <- -n/sigma0 + V/(sigma0^3) - ((nu + 1)*sigma0) / (sigma0^2 + nu*A^2)
+            deriv.near.zero <- abs(f0prime) < kEpsilon ## NEW
+            if (deriv.near.zero) ## NEW
+                return(-1.0) ## NEW
+            rho <- 1
+            repeat {
+                sigma1 <- sigma0 - rho * (f0 - z) / f0prime
+                if ((min <= sigma1) && (sigma1 <= max))
+                    break
+                rho <- rho / 2
+            }
+            repeat {
+                f1 <- -n*log(sigma1) - V/(2*sigma1^2) - ((nu + 1)/2) * log(sigma1^2 + nu*A^2)
+                g1 <- (f1 - z)^2
+                if (g1 <= g0 || abs(g1 - g0) < kTolerance || (rho < kTolerance))
+                    break
+                rho <- rho / 2 
+                sigma1 <- sigma0 - rho * (f0 - z) / f0prime
+            }
+            if ((abs(g1 - g0) < kTolerance) || (rho < kTolerance))
+                return(sigma0)
+            else {
+                sigma0 <- sigma1
+                f0 <- f1
+                g0 <- g1
+            }
         }
         ## reached maximum iterations without finding root
-        -99.0
+        return(-99.0)
     }
 }
 
-## TRANSLATED
+## READY_TO_TRANSLATE (AGAIN)
 ## modified from pseudocode from https://en.wikipedia.org/wiki/Newton%27s_method
 ## If the function finds the root within 'kMaxIter' iterations, it
 ## returns this root.  If the derivative of 'f' is near 0, the function
@@ -4566,26 +4587,52 @@ findOneRootLogPostSigmaRobust <- function(sigma0, z, A, nuBeta, nuTau, V, n, min
         .Call(findOneRootLogPostSigmaRobust_R, sigma0, z, A, nuBeta, nuTau, V, n, min, max)
     }
     else {
-        kTolerance <- 1e-7           ## C version can
-        kEpsilonMax <- 1e-14         ## use macros to
-        kEpsilonBoundaries <- 1e-30  ## set these
-        kMaxIter <- 1000L     
-        for (i in seq_len(kMaxIter)) {
-            f <- n*nuBeta*log(sigma0) - (nuBeta/2)*(sigma0^2)*V - ((nuTau+1)/2)*log(sigma0^2 + nuTau*A^2) - z
-            fprime <- n*nuBeta/sigma0 - nuBeta*sigma0*V - ((nuTau + 1)*sigma0)/(sigma0^2 + nuTau*A^2)
-            deriv_near_zero <- abs(fprime) < kEpsilonMax
-            if (deriv_near_zero)
-                return(-1.0)
-            sigma1 <- sigma0 - f / fprime
-            sigma1 <- max(sigma1, min + kEpsilonBoundaries)
-            sigma1 <- min(sigma1, max - kEpsilonBoundaries)
-            if (sigma1 - sigma0 > 1)
-                sigma1 <- sigma0 + 1
-            sigma1.equals.sigma0 <- abs(sigma1 - sigma0) < kTolerance * abs(sigma1)
-            if (sigma1.equals.sigma0)
-                return(sigma1)
-            sigma0 <- sigma1
+        kTolerance <- 1e-20           ## C version can use macros to set these
+        kEpsilon <- 1e-15     ## NEW
+        kMaxIter <- 1000L
+        min.tol <- min + kTolerance
+        fmin <- n*nuBeta*log(min.tol) - (nuBeta/2)*(min.tol^2)*V - ((nuTau+1)/2)*log(min.tol^2 + nuTau*A^2)
+        if (is.finite(max)) {
+            max.tol <- max - kTolerance
+            fmax <- n*nuBeta*log(max.tol) - (nuBeta/2)*(max.tol^2)*V - ((nuTau+1)/2)*log(max.tol^2 + nuTau*A^2)
         }
+        else
+            fmax <- -Inf
+        if ((fmin < z && fmax < z) || (fmin>z && fmax>z))
+            return(-99.0)
+        ## find root
+        f0 <- n*nuBeta*log(sigma0) - (nuBeta/2)*(sigma0^2)*V - ((nuTau+1)/2)*log(sigma0^2 + nuTau*A^2)
+        g0 <- (f0 - z)^2
+        for (i in seq_len(kMaxIter)) {
+            f0prime <- n*nuBeta/sigma0 - nuBeta*sigma0*V - ((nuTau + 1)*sigma0)/(sigma0^2 + nuTau*A^2)
+            deriv.near.zero <- abs(f0prime) < kEpsilon ## NEW
+            if (deriv.near.zero) ## NEW
+                return(-1.0) ## NEW
+            rho <- 1
+            repeat {
+                sigma1 <- sigma0 - rho * (f0 - z) / f0prime
+                if ((min <= sigma1) && (sigma1 <= max))
+                    break
+                rho <- rho / 2
+            }
+            repeat {
+                f1 <- n*nuBeta*log(sigma1) - (nuBeta/2)*(sigma1^2)*V - ((nuTau+1)/2)*log(sigma1^2 + nuTau*A^2)
+                g1 <- (f1 - z)^2
+                if (g1 <= g0 || abs(g1 - g0) < kTolerance || (rho < kTolerance))
+                    break
+                rho <- rho / 2 
+                sigma1 <- sigma0 - rho * (f0 - z) / f0prime
+            }
+            if ((abs(g1 - g0) < kTolerance) || (rho < kTolerance))
+                return(sigma0)
+            else {
+                sigma0 <- sigma1
+                f0 <- f1
+                g0 <- g1
+            }
+        }
+        ## reached maximum iterations without finding root
+        return(-99.0)
         ## reached maximum iterations without finding root
         -99.0
     }
@@ -4873,6 +4920,12 @@ makeVBarAndN <- function(object, iBeta, g, useC = FALSE) {
         cell.in.lik <- object@cellInLik
         betas <- object@betas
         iterator <- object@iteratorBetas
+        if (identical(g, log)) { 
+            box.cox.param <- object@boxCoxParam 
+            uses.box.cox.transform <- box.cox.param > 0 
+        } 
+        else 
+            uses.box.cox.transform <- FALSE
         beta <- betas[[iBeta]]
         iterator <- resetB(iterator)
         vbar <- rep(0, times = length(beta))
@@ -4883,7 +4936,10 @@ makeVBarAndN <- function(object, iBeta, g, useC = FALSE) {
             if (include.cell) {
                 indices <- iterator@indices
                 pos.ans <- indices[iBeta]
-                vbar[pos.ans] <- vbar[pos.ans] + g(theta[i.mu])
+                if (uses.box.cox.transform) 
+                    vbar[pos.ans] <- vbar[pos.ans] + (theta[i.mu] ^ box.cox.param - 1) / box.cox.param 
+                else 
+                    vbar[pos.ans] <- vbar[pos.ans] + g(theta[i.mu])
                 for (i.other.beta in i.other.betas) {
                     other.beta <- betas[[i.other.beta]]
                     pos.other.beta <- indices[i.other.beta]
@@ -6400,10 +6456,8 @@ logLikelihood_NormalFixedUseExp <- function(model, count, dataset, i, useC = FAL
     stopifnot(identical(length(count), 1L))
     stopifnot(is.integer(count))
     stopifnot(!is.na(count))
-    stopifnot(count >= 0L)
     ## dataset
     stopifnot(is.integer(dataset))
-    stopifnot(all(dataset[!is.na(dataset)] >= 0L))
     ## i
     stopifnot(identical(length(i), 1L))
     stopifnot(is.integer(i))
@@ -6420,7 +6474,6 @@ logLikelihood_NormalFixedUseExp <- function(model, count, dataset, i, useC = FAL
         mean <- model@mean@.Data[i]
         sd <- model@sd@.Data[i]
         mean <- count * mean
-        sd <- sqrt(count) * sd
         stats::dnorm(x = x, mean = mean, sd = sd, log = TRUE)
     }
 }
@@ -7942,9 +7995,9 @@ printMixEqns <- function(object, name, hasCovariates) {
 printNormalFixedLikEqns <- function(object) {
     useExpose <- object@useExpose@.Data
     if (useExpose)
-        cat("            y[i] ~ Normal(exposure[i] * mean[i], sqrt(exposure[i]) * sd[i])\n")
+        cat("            y[i] ~ Normal(exposure[i] * mean[i], sd[i]^2)\n")
     else
-        cat("            y[i] ~ Normal(mean[i], sd[i])\n")
+        cat("            y[i] ~ Normal(mean[i], sd[i]^2)\n")
 }
 
 printNormalFixedModEqns <- function(object) {
@@ -7962,9 +8015,9 @@ printNormalFixedModEqns <- function(object) {
         exposure <- series
     name.y <- sprintf("%13s", name.y)
     if (uses.exposure)
-        cat(name.y, "[i] ~ NormalFixed(", exposure, "[i] * mean[i], sqrt(", exposure, "[i]) * sd[i])\n", sep = "")
+        cat(name.y, "[i] ~ NormalFixed(", exposure, "[i] * mean[i], sd[i]^2)\n", sep = "")
     else
-        cat(name.y, "Normal(mean[i], sd[i])\n", sep = "")
+        cat(name.y, "Normal(mean[i], sd[i]^2)\n", sep = "")
 }
 
 printNormalFixedSpecEqns <- function(object) {
@@ -7980,10 +8033,10 @@ printNormalFixedSpecEqns <- function(object) {
             exposure <- series        
         else
             exposure <- "exposure"
-        cat(name.y, "[i] ~ Normal(", exposure, "[i] * mean[i], sqrt(", exposure, "[i]) * sd[i])\n", sep = "")
+        cat(name.y, "[i] ~ Normal(", exposure, "[i] * mean[i], sd[i]^2)\n", sep = "")
     }
     else
-        cat("            y[i] ~ Normal(mean[i], sd[i])\n")
+        cat("            y[i] ~ Normal(mean[i], sd[i]^2)\n")
 }
 
 printNormalVarsigmaKnownLikEqns <- function(object) {
@@ -9478,6 +9531,54 @@ chooseICellPopn <- function(description, useC = FALSE) {
 
 ## READY_TO_TRANSLATE
 ## HAS_TESTS
+## This function is almost identical to 'chooseICellOutInPool', but
+## it seems clearest to keep them separate, even at the cost
+## of some cut-and-paste.
+chooseICellSubAddNet <- function(description, useC = FALSE) { 
+    stopifnot(methods::is(description, "DescriptionNet"))
+    if (useC) {
+        .Call(chooseICellSubAddNet_R, description) 
+    }
+    else { # different from 'chooseICellOutInPool', because do not extract 'step.direction'
+        n.between.vec <- description@nBetweenVec
+        step.between.vec <- description@stepBetweenVec
+        n.within.vec <- description@nWithinVec
+        step.within.vec <- description@stepWithinVec
+        n.dim.between <- length(n.between.vec)
+        n.dim.within <- length(n.within.vec)
+        i.sub <- 1L
+        i.add <- 1L # different from 'chooseICellOutInPool', because do not add 'step.direction'
+        for (d in seq_len(n.dim.between)) {
+            n.between <- n.between.vec[d]  # guaranteed > 1
+            step.between <- step.between.vec[d]
+            i.between.sub <- as.integer(stats::runif(n = 1L) * n.between) # C-style  
+            if (i.between.sub == n.between) # just in case
+                i.between.sub <- n.between - 1L
+            i.between.add <- as.integer(stats::runif(n = 1L) * (n.between - 1L)) # C-style
+            if (i.between.add == n.between - 1L) # just in case
+                i.between.add <- n.between - 2L
+            if (i.between.add >= i.between.sub)
+                i.between.add <- i.between.sub + 1L
+            i.sub <- i.sub + i.between.sub * step.between
+            i.add <- i.add + i.between.add * step.between
+        }
+        for (d in seq_len(n.dim.within)) {
+            n.within <- n.within.vec[d]
+            step.within <- step.within.vec[d]
+            i.within <- as.integer(stats::runif(n = 1L) * n.within) # C-style
+            if (i.within == n.within) # just in case
+                i.within <- n.within - 1L
+            i.sub <- i.sub + i.within * step.within
+            i.add <- i.add + i.within * step.within
+        }
+        c(i.sub, i.add)
+    }
+}
+
+
+
+## TRANSLATED
+## HAS_TESTS
 isLowerTriangle <- function(i, description, useC = FALSE) {
     stopifnot(is(description, "DescriptionComp"))
     stopifnot(description@hasAge)
@@ -9542,7 +9643,7 @@ getIAccNextFromPopn <- function(i, description, useC = FALSE) {
 }
 
 ## TRANSLATED
-## HAS_TESTS (JAH added R vs C test 18/6/2017)
+## HAS_TESTS
 ## Assumes that the Lexis triangle dimension is the
 ## last dimension in 'exposure'.
 ## We only ever update population values for the beginning
@@ -9565,16 +9666,16 @@ getIExpFirstFromPopn <- function(i, description, useC = FALSE) {
         n.time.popn <- description@nTime
         step.time <- description@stepTime
         length.popn <- description@length
-        has.age <- description@hasAge ## new
-        i.nontime <- (i - 1L) %/% (n.time.popn * step.time) ## moved
-        remainder <- (i - 1L) %% (n.time.popn * step.time) + 1L ## moved
+        has.age <- description@hasAge
+        i.nontime <- (i - 1L) %/% (n.time.popn * step.time)
+        remainder <- (i - 1L) %% (n.time.popn * step.time) + 1L
         n.time.exp <- n.time.popn - 1L
         index.exp <- i.nontime * n.time.exp * step.time + remainder
-        if (has.age) { ## new
+        if (has.age) {
             length.lower.tri <- (length.popn %/% n.time.popn) * n.time.exp
             length.lower.tri + index.exp
         }
-        else ## new
+        else
             index.exp
     }
 }
@@ -9674,6 +9775,51 @@ getMinValCohortPopulation <- function(i, series, iterator, useC = FALSE) {
         }
         ans
     }
+}
+
+## HAS_TESTS
+makeTransformExpToBirths <- function(exposure, births,
+                                     dominant = c("Female", "Male")) {
+    dominant <- match.arg(dominant)
+    names.exp <- names(exposure)
+    dimtypes.exp <- dimtypes(exposure, use.names = FALSE)
+    dimtypes.births <- dimtypes(births, use.names = FALSE)
+    DimScales.exp <- DimScales(exposure, use.names = FALSE)
+    DimScales.births <- DimScales(births, use.names = FALSE)
+    i.sex.exp <- match("sex", dimtypes.exp, nomatch = 0L)
+    i.age.exp <- match("age", dimtypes.exp, nomatch = 0L)
+    has.sex.exp <- i.sex.exp > 0L
+    has.age.exp <- i.age.exp > 0L
+    dimBefore <- dim(exposure)
+    dimAfter <- dim(exposure)
+    indices <- lapply(dimBefore, seq_len)
+    if (has.sex.exp) {
+        DimScale <- DimScales.exp[[i.sex.exp]]
+        if (dominant == "Female") 
+            i.dominant <- dembase::iFemale(DimScale)
+        else
+            i.dominant <- dembase::iMale(DimScale)
+        indices[[i.sex.exp]] <- ifelse(indices[[i.sex.exp]] == i.dominant, 1L, 0L)
+        dims <- match(names.exp, names.exp[-i.sex.exp], nomatch = 0L)
+    }
+    else
+        dims <- seq_along(names.exp)
+    if (has.age.exp) {
+        i.age.births <- match("age", dimtypes.births)
+        DimScale.exp <- DimScales.exp[[i.age.exp]]
+        DimScale.births <- DimScales.births[[i.age.births]]
+        labels.exp <- labels(DimScale.exp)
+        labels.births <- labels(DimScale.births)
+        indices[[i.age.exp]] <- match(labels.exp, labels.births, nomatch = 0L)
+        dimAfter[i.age.exp] <- length(labels.births)
+    }
+    if (has.sex.exp)
+        dimAfter <- dimAfter[-i.sex.exp]
+    methods::new("CollapseTransform",
+                 dims = dims,
+                 indices = indices,
+                 dimBefore = dimBefore,
+                 dimAfter = dimAfter)
 }
 
 

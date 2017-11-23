@@ -6,7 +6,7 @@
     #define THRESHOLD_POIBIN 1000 
     
     /* for Newton's method rootfinding code */
-    #define K_TOLERANCE 1e-7
+    #define K_TOLERANCE 1e-15
     #define K_EPSILON_MAX 1e-14
     #define K_EPSILON_BOUNDARIES 1e-30
     #define K_MAX_ITER 1000
@@ -71,7 +71,8 @@
         int len_vbar, int *cellInLik, 
         SEXP betas_R, SEXP iteratorBetas_R, 
                 double *theta, int n_theta, int n_betas,
-                int iBeta, double (*g)(double));
+                int iBeta, double (*g)(double),
+                int usesBoxCoxTransform, double boxCoxParam);
     
     SEXP makeVBarAndN_General(SEXP object, int iBeta, double (*g)(double));
     

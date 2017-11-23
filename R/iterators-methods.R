@@ -126,7 +126,7 @@ advanceCA <- function(object, useC = FALSE) {
         i <- i + step.time
         i.age <- i.age + 1L
         i <- i + step.age
-        finished <- (i.time >= n.time) | (i.age >= n.age)
+        finished <- (i.time >= n.time) || (i.age >= n.age)
         object@i <- i
         object@iTime <- i.time
         object@iAge <- i.age
@@ -172,6 +172,8 @@ advanceCP <- function(object, useC = FALSE) {
 }
 
 
+
+
 ## TRANSLATED
 ## HAS_TESTS
 ## It is the caller's responsibility to make
@@ -209,7 +211,10 @@ advanceCC <- function(object, useC = FALSE) {
                     i <- i + step.time
                 }
             }
-            finished <- (i.triangle == 1L) && (i.time == n.time)
+            if (i.triangle == 1L)
+                finished <- i.time == n.time
+            else
+                finished <- (i.time == n.time) && (i.age == n.age)
         }
         else {
             i.time <- i.time + 1L
@@ -227,26 +232,28 @@ advanceCC <- function(object, useC = FALSE) {
     }
 }
 
-## ## NO_TESTS
-## ## It is the caller's responsibility to make
-## ## sure that the iterator has not finished
-## advanceCODPCP <- function(object, useC = FALSE) {
-##     stopifnot(methods::is(object, "CohortIteratorOrigDestParChPool"))
-##     if (useC) {
-##         .Call(advanceCODPCP_R, object)
-##     }
-##     else {
-##         object <- advanceCC(object)
-##         i <- object@i
-##         i.vec <- object@iVec
-##         length <- object@lengthVec
-##         increments <- object@increments
-##         for (j in seq_len(lengthVec))
-##             i.vec[j] <- i + increments[j]
-##         object@iVec <- i.vec
-##         object
-##     }
-## }
+
+## TRANSLATED
+## HAS_TESTS
+## It is the caller's responsibility to make
+## sure that the iterator has not finished
+advanceCODPCP <- function(object, useC = FALSE) {
+    stopifnot(methods::is(object, "CohortIteratorOrigDestParChPool"))
+    if (useC) {
+        .Call(advanceCODPCP_R, object)
+    }
+    else {
+        object <- advanceCC(object)
+        i <- object@i
+        i.vec <- object@iVec
+        length.vec <- object@lengthVec
+        increment <- object@increment
+        for (j in seq_len(length.vec))
+            i.vec[j] <- i + increment[j]
+        object@iVec <- i.vec
+        object
+    }
+}
 
 ## TRANSLATED
 ## HAS_TESTS
@@ -337,8 +344,13 @@ resetCC <- function(object, i, useC = FALSE) {
             i.age <- (((i - 1L) %/% step.age) %% n.age) + 1L # R-style
             step.triangle <- object@stepTriangle
             i.triangle <- (((i - 1L) %/% step.triangle) %% 2L) + 1L # R-style
+            if (i.triangle == 1L)
+                finished <- i.time >= n.time
+            else
+                finished <- (i.time >= n.time) && (i.age >= n.age)
         }
-        finished <- i.time >= n.time
+        else
+            finished <- i.time >= n.time
         object@i <- i
         object@iTime <- i.time
         if (has.age) {

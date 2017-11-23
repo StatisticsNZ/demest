@@ -54,45 +54,57 @@ setClass("AccessionMixin",
              TRUE
          })
 
-
 ## NO_TESTS
-setClass("CumProbPopnMixin",
-         slots = c(cumProbPopn = "numeric"),
+setClass("AgeTimeStepMixin",
+         slot = c(ageTimeStep = "numeric"),
          contains = "VIRTUAL",
          validity = function(object) {
-             cumProbPopn <- object@cumProbPopn
-             components <- object@account@components
-             ## 'cumProbPopn' and 'components' have same length
-             if (!identical(length(cumProbPopn), length(components)))
-                 return(gettextf("'%s' and '%s' have different lengths",
-                                 "cumProbPopn", "components"))
-             ## 'cumProbPopn' has no missing values
-             if (any(is.na(cumProbPopn)))
-                 return(gettextf("'%s' has missing values",
-                                 "cumProbPopn"))
-             ## 'cumProbPopn' is double
-             if (!is.double(cumProbPopn))
-                 return(gettextf("'%s' does not have type \"%s\"",
-                                 "cumProbPopn", "double"))
-             ## 'cumProbPopn' is between 0 and 1
-             if (any((cumProbPopn < 0) || (cumProbPopn > 1)))
-                 return(gettextf("'%s' has values between %d and %d",
-                                 "cumProbPopn", 0L, 1L))
-             ## 'cumProbPopn' strictly increasing
-             if (any(diff(cumProbPopn) <= 0))
-                 return(gettextf("'%s' not strictly increasing",
-                                 "cumProbPopn"))
+             ageTimeStep <- object@ageTimeStep
+             population <- object@account@population
+             ## identical to calling function 'ageTimeStep' on 'population'
+             if (!identical(dembase::ageTimeStep(population), ageTimeStep))
+                 return(gettextf("'%s' not equal to result of calling function '%s' on '%s'",
+                                 "ageTimeStep", "ageTimeStep", "population"))
              TRUE
          })
 
-## HAS_TESTS
+## NO_TESTS
+setClass("CumProbCompMixin",
+         slots = c(cumProbComp = "numeric"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             cumProbComp <- object@cumProbComp
+             components <- object@account@components
+             ## 'cumProbComp' and 'components' have same length
+             if (!identical(length(cumProbComp), length(components)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "cumProbComp", "components"))
+             ## 'cumProbComp' has no missing values
+             if (any(is.na(cumProbComp)))
+                 return(gettextf("'%s' has missing values",
+                                 "cumProbComp"))
+             ## 'cumProbComp' is double
+             if (!is.double(cumProbComp))
+                 return(gettextf("'%s' does not have type \"%s\"",
+                                 "cumProbComp", "double"))
+             ## 'cumProbComp' is between 0 and 1
+             if (any((cumProbComp < 0) || (cumProbComp > 1)))
+                 return(gettextf("'%s' has values between %d and %d",
+                                 "cumProbComp", 0L, 1L))
+             ## 'cumProbComp' strictly increasing
+             if (any(diff(cumProbComp) <= 0))
+                 return(gettextf("'%s' not strictly increasing",
+                                 "cumProbComp"))
+             TRUE
+         })
+
+## NO_TESTS
 setClass("DatasetsMixin",
          slots = c(datasets = "list"),
          contains = "VIRTUAL",
          validity = function(object) {
              datasets <- object@datasets
              observationModels <- object@observationModels
-             hasNegative <- function(x) any(x[!is.na(x)] < 0)
              ## all elements of 'datasets' have class "Counts"
              if (!all(sapply(datasets, is, "Counts")))
                  return(gettextf("'%s' has elements not of class \"%s\"",
@@ -101,10 +113,6 @@ setClass("DatasetsMixin",
              if (!all(sapply(datasets, is.integer)))
                  return(gettextf("'%s' has elements not of type \"%s\"",
                                  "datasets", "integer"))
-             ## all elements of "datasets' are non-negative
-             if (any(sapply(datasets, hasNegative)))
-                 return(gettextf("'%s' has elements with negative values",
-                                 "datasets"))
              ## 'datasets' does not have names
              if (!is.null(names(datasets)))
                  return(gettextf("'%s' has names",
@@ -159,6 +167,35 @@ setClass("DiffPropMixin",
              if (!is.na(diffProp) && (diffProp == 0L))
                  return(gettextf("'%s' equals %d",
                                  name, 0L))
+             TRUE
+         })
+
+## NO_TESTS
+setClass("ExpectedExposureMixin",
+         slots = c(expectedExposure = "Exposure"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             expectedExposure <- object@expectedExposure
+             theta.popn <- object@systemModels[[1L]]@theta
+             population <- object@account@population
+             hasAge <- object@hasAge@.Data
+             ## 'expectedExposure' object equals result of
+             ## calling 'exposure' function on 'theta.popn'
+             metadata.theta.popn <- population@metadata
+             .Data.theta.popn <- array(theta.popn,
+                                       dim = dim(population),
+                                       dimnames = dimnames(population))
+             theta.popn <- new("Counts",
+                               .Data = .Data.theta.popn,
+                               metadata = metadata.theta.popn)
+             exposure.calc <- dembase::exposure(theta.popn,
+                                                triangles = hasAge)
+             exposure.calc <- new("Exposure",
+                                  .Data = exposure.calc@.Data,
+                                  metadata = exposure.calc@metadata)
+             if (!isTRUE(all.equal(expectedExposure, exposure.calc)))
+                 return(gettextf("'%s' and '%s' for '%s' inconsistent",
+                                 "expectedExposure", "theta", "population"))
              TRUE
          })
 
@@ -238,9 +275,8 @@ setClass("IAccNextMixin",
                    iAccNextOther = "integer"),
          contains = "VIRTUAL",
          validity = function(object) {
-             iAccNext <- object@iAccNext
-             iAccNextOther <- object@iAccNextOther
              accession <- object@accession
+             n.accession <- length(accession)
              for (name in c("iAccNext", "iAccNextOther")) {
                  value <- slot(object, name)
                  ## 'iAccNext', 'iAccNextOther' have length 1
@@ -260,10 +296,6 @@ setClass("IAccNextMixin",
                                          name, "accession"))
                  }
              }
-             ## if 'iAccNext' and 'iAccNextOther' not missing, they have different values
-             if (!is.na(iAccNext) && !is.na(iAccNextOther) && (iAccNext == iAccNextOther))
-                 return(gettextf("'%s' equals '%s'",
-                                 "iAccNext", "iAccNextOther"))
              TRUE
          })
 
@@ -293,6 +325,7 @@ setClass("ICompMixin",
                    iBirths = "integer",
                    iIntNet = "integer",
                    iOrigDest = "integer",
+                   iParCh = "integer",
                    iPool = "integer"),
          contains = "VIRTUAL",
          validity = function(object) {
@@ -300,20 +333,21 @@ setClass("ICompMixin",
              iOrigDest <- object@iOrigDest
              iPool <- object@iPool
              iIntNet <- object@iIntNet
+             iParCh <- object@iParCh
              components <- object@account@components
              s <- c(0L, seq_along(components))
-             for (name in c("iComp", "iBirths", "iIntNet", "iOrigDest", "iPool")) {
+             for (name in c("iComp", "iBirths", "iIntNet", "iOrigDest", "iParCh", "iPool")) {
                  value <- slot(object, name)
-                 ## 'iComp', 'iBirths', iOrigDest', 'iPool' 'iIntNet' has  length 1
+                 ## 'iComp', 'iBirths', iOrigDest', 'iParCh', 'iPool' 'iIntNet' has  length 1
                  if (!identical(length(value), 1L))
                      return(gettextf("'%s' does not have length %d",
                                      name, 1L))
-                 ## 'iComp', 'iBirths', 'iOrigDest', 'iPool', 'iIntNet' is not missing
+                 ## 'iComp', 'iBirths', 'iOrigDest', 'iParCh', 'iPool', 'iIntNet' is not missing
                  if (is.na(value))
                      return(gettextf("'%s' is missing",
                                      name))
-                 ## if 'iComp', 'iBirths', iOrigDest', 'iPool', 'iIntNet' is not 0, it is the index of a component
-                 if ((value != 0L) && !(value %in% s))
+                 ## if 'iComp', 'iBirths', iOrigDest', 'iParCh', 'iPool', 'iIntNet' is not 0, it is the index of a component
+                 if (!(value %in% s))
                      return(gettextf("'%s' does not index a component",
                                      name))
              }
@@ -323,6 +357,10 @@ setClass("ICompMixin",
              if (any(duplicated(indices.nonzero)))
                  return(gettextf("'%s', '%s', '%s', '%s' overlap",
                                  "iBirths", "iIntNet", "iOrigDest", "iPool"))
+             ## if 'iParCh' is non-zero, then it equals 'iBirths'
+             if ((iParCh != 0L) && (iParCh != iBirths))
+                 return(gettextf("'%s' is non-zero, but does not equal '%s'",
+                                 "iParCh", "iBirths"))                 
              TRUE
          })
 
@@ -334,43 +372,26 @@ setClass("IExpFirstMixin",
                    iExpFirstOther = "integer"),
          contains = "VIRTUAL",
          validity = function(object) {
-             iExpFirst <- object@iExpFirst
-             iExpFirstOther <- object@iExpFirstOther
              for (name in c("iExpFirst", "iExpFirstOther")) {
                  value <- slot(object, name)
                  ## 'iExpFirst', 'iExpFirstOther' have length 1
                  if (!identical(length(value), 1L))
                      return(gettextf("'%s' does not have length %d",
                                      name, 1L))
-                 ## if 'iExpFirst', 'iExpFirstOther' not missing, they are greater than or equal to 1L
-                 if (!is.na(value) && (value < 1L))
+                 ## if 'iExpFirst', 'iExpFirstOther' not missing, they are greater than or equal to 0L
+                 if (!is.na(value) && (value < 0L))
                      return(gettextf("'%s' is less than %d",
-                                     name, 1L))
+                                     name, 0L))
+                 ## if 'iExpFirst', 'iExpFirstOther' not missing, they are less than or
+                 ## equal to length of 'exposure'
                  if (!is.na(value)) {
-                     ## if 'iExpFirst', 'iExpFirstOther' not missing, they are less than or
-                     ## equal to length of 'exposure'
                      exposure <- object@exposure
                      n.exposure <- length(exposure)
                      if (value > n.exposure)
                          return(gettextf("'%s' is greater than the length of '%s'",
                                          name, "exposure"))
-                     ## if 'iExpFirst', 'iExpFirstOther' not missing,
-                     ## 'iExposure' and 'iExposureOther' also not missing
-                     name.i.exp <- if (name == "iExpFirst") "iExposure" else "iExposureOther"
-                     val.i.exp <- slot(object, name.i.exp)
-                     if (is.na(val.i.exp))
-                         return(gettextf("'%s' is missing but '%s' is not missing",
-                                         name.i.exp, name))
-                     ## 'iExpFirst' >= 'iExposure' and 'iExpFirstOther' >= 'iExposureOther'
-                     if (value < val.i.exp)
-                         return(gettextf("'%s' less than '%s'",
-                                         name, name.i.exp))
                  }
              }
-             ## if 'iExpFirst' and 'iExpFirstOther' not missing, they have different values
-             if (!is.na(iExpFirst) && !is.na(iExpFirstOther) && (iExpFirst == iExpFirstOther))
-                 return(gettextf("'%s' equals '%s'",
-                                 "iExpFirst", "iExpFirstOther"))
              TRUE
          })
 
@@ -383,8 +404,6 @@ setClass("IExposureMixin",
                    iExposureOther = "integer"),
          contains = "VIRTUAL",
          validity = function(object) {
-             iExposure <- object@iExposure
-             iExposureOther <- object@iExposureOther
              for (name in c("iExposure", "iExposureOther")) {
                  value <- slot(object, name)
                  ## 'iExposure', 'iExposureOther' have length 1
@@ -405,11 +424,6 @@ setClass("IExposureMixin",
                                          name, "exposure"))
                  }
              }
-             ## if 'iExposure' and 'iExposureOther' not missing or 0L, they have different values
-             if (!is.na(iExposure) && !is.na(iExposureOther) && (iExposure == iExposureOther)
-                 && (iExposure != 0L))
-                 return(gettextf("'%s' equals '%s'",
-                                 "iExposure", "iExposureOther"))
              TRUE
          })
 
@@ -423,8 +437,6 @@ setClass("IPopnNextMixin",
                    iPopnNextOther = "integer"),
          contains = "VIRTUAL",
          validity = function(object) {
-             iPopnNext <- object@iPopnNext
-             iPopnNextOther <- object@iPopnNextOther
              population <- object@account@population
              n.population <- length(population)
              for (name in c("iPopnNext", "iPopnNextOther")) {
@@ -442,12 +454,6 @@ setClass("IPopnNextMixin",
                  if (!is.na(value) && (value > n.population))
                      return(gettextf("'%s' is greater than the length of '%s'",
                                      name, "population"))
-             }
-             ## if 'iPopnNext' and 'iPopnNextOther' not missing and not both equal to 0, they have different values
-             if (!is.na(iPopnNext) && !is.na(iPopnNextOther) && (iPopnNext == iPopnNextOther)) {
-                 if (iPopnNext != 0L)
-                     return(gettextf("'%s' equals '%s'",
-                                     "iPopnNext", "iPopnNextOther"))
              }
              TRUE
          })
@@ -507,16 +513,53 @@ setClass("IsNetMixin",
              TRUE
          })
 
-
 setClass("IteratorAccMixin",
          contains = "VIRTUAL",
          slots = c(iteratorAcc = "CohortIteratorAccession"))
+
+setClass("IteratorExposureMixin",
+         contains = "VIRTUAL",
+         slots = c(iteratorExposure = "CohortIteratorComponent"))
          
 setClass("IteratorPopnMixin",
          contains = "VIRTUAL",
          slots = c(iteratorPopn = "CohortIteratorPopulation"))
 
-## NO_TESTS
+setClass("IteratorsCompMixin",
+         contains = "VIRTUAL",
+         slots = c(iteratorsComp = "list"),
+         validity = function(object) {
+             iteratorsComp <- object@iteratorsComp
+             components <- object@account@components
+             iOrigDest <- object@iOrigDest
+             iPool <- object@iPool
+             ## all elements have class "CohortIteratorComponent"
+             if (!all(sapply(iteratorsComp, methods::is, "CohortIteratorComponent")))
+                 return(gettextf("'%s' has elements not of class \"%s\"",
+                                 "iteratorsComp", "CohortIteratorComponent"))
+             ## 'iteratorsComp' has same length as 'components'
+             if (!identical(length(iteratorsComp), length(components)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "iteratorsComp", "components"))
+             ## elements have class "CohortIteratorOrigDestParChPool" iff
+             ## they have class "InternalMovements" or "HasParentChild",
+             for (i in seq_along(iteratorsComp)) {
+                 is.iter.odpcp <- methods::is(iteratorsComp[[i]], "CohortIteratorOrigDestParChPool")
+                 is.odpcp <- ((i == iOrigDest)
+                     || methods::is(components[[i]], "HasParentChild")
+                     || (i == iPool))
+                 if (is.iter.odpcp && !is.odpcp)
+                     return(gettextf("element %d of '%s' has class \"%s\" but element %d of '%s' has class \"%s\"",
+                                     i, "iteratorsComp", class(iteratorsComp[[i]]),
+                                     i, "components", class(components[[i]])))
+                 if (is.odpcp && !is.iter.odpcp)
+                     return(gettextf("element %d of '%s' has class \"%s\" but element %d of '%s' has class \"%s\"",
+                                     i, "components", class(components[[i]]),
+                                     i, "iteratorsComp", class(iteratorsComp[[i]])))
+             }
+             TRUE
+         })    
+
 setClass("MappingsFromExpMixin",
          slots = c(mappingsFromExp = "list"),
          contains = "VIRTUAL",
@@ -869,6 +912,39 @@ setClass("SystemMovementsMixin",
              TRUE
          })
 
+
+setClass("TransformExpToBirthsMixin",
+         slots = c(transformExpToBirths = "CollapseTransform"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             transformExpToBirths <- object@transformExpToBirths
+             iBirths <- object@iBirths
+             exposure <- object@exposure
+             modelUsesExposure <- object@modelUsesExposure
+             ## if 'iBirths' is 0, then 'transformExpToBirths' is empty
+             if (iBirths == 0L) {
+                 if (!identical(transformExpToBirths, new("CollapseTransform")))
+                     return(gettextf("account does not have births component, but '%s' is not empty",
+                                     "transformExpToBirths"))
+             }
+             else {
+                 if (modelUsesExposure[iBirths + 1L]) {
+                     ## if model for births uses exposure, then 'dimBefore' matches dimensions of 'exposure'
+                     if (!identical(transformExpToBirths@dimBefore, dim(exposure)))
+                         return(gettextf("'%s' from '%s' not consistent with dimensions of '%s'",
+                                         "dimBefore", "transformExpToBirths", "exposure"))
+                 }
+                 else {
+                     ## if model for births does not use exposure, then 'transformExpToBirths' is empty
+                     if (!identical(transformExpToBirths, new("CollapseTransform")))
+                         return(gettextf("model for births does not use exposure, but '%s' is not empty",
+                                         "transformExpToBirths"))
+                 }
+             }
+             TRUE
+         })
+
+
 ## HAS_TESTS
 setClass("TransformsMixin",
          slots = c(transforms = "list"),
@@ -896,6 +972,60 @@ setClass("TransformsMixin",
                  if (!identical(dim(datasets[[i]]), transforms[[i]]@dimAfter))
                      return(gettextf("'%s' and '%s' for \"%s\" inconsistent",
                                      "dataset", "transform", namesDatasets[i]))
+             }
+             TRUE
+         })
+
+setClass("TransformsExpToCompMixin",
+         slots = c(transformsExpToComp = "list"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             transformsExpToComp <- object@transformsExpToComp
+             transformExpToBirths <- object@transformExpToBirths
+             components <- object@account@components
+             namesComponents <- object@account@namesComponents
+             exposure <- object@exposure
+             iBirths <- object@iBirths
+             modelUsesExposure <- object@modelUsesExposure
+             ## 'transformsExpToComp' has same length as 'components'
+             if (!identical(length(transformsExpToComp), length(components)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "transformsExpToComp", "components"))
+             for (i in seq_along(components)) {
+                 transform <- transformsExpToComp[[i]]
+                 if (modelUsesExposure[i + 1L]) {
+                     component <- components[[i]]
+                     expose <- exposure
+                     ## [collapse 'expose' if 'component' has class "Births"]
+                     if (i == iBirths)
+                         expose <- dembase::collapse(expose,
+                                                     transform = transformExpToBirths)
+                     if (is.null(transform)) {
+                         ## if element of 'transformsExpToComp' is NULL, then 'exposure' and
+                         ## 'component' must have the same metadata
+                         same.dim <- isTRUE(all.equal(dim(expose), dim(component)))
+                         if (!same.dim)
+                             return(gettextf("element %d of '%s' is %s but correspondending element of '%s' does not have same dimensions as '%s'",
+                                             i, "transformsExpToComp", "NULL", "components", "exposure"))
+                     }
+                     else {
+                         ## if element of 'transformsExpToComp' is non-NULL, it must have
+                         ## class "ExtendTransform"
+                         if (!methods::is(transform, "ExtendTransform"))
+                             return(gettextf("element %d of '%s' has class \"%s\"",
+                                             i, "transformsExpToComp", class(transform)))
+                         ## after extending 'exposure', 'exposure' and 'component' must have the same metadata
+                         expose <- dembase::extend(expose, transform = transform)
+                         same.dim <- isTRUE(all.equal(dim(expose), dim(component)))
+                         if (!same.dim)
+                             return(gettextf("even after \"extend\" transformation, '%s' has different dimensions from '%s'",
+                                             "exposure", namesComponents[i]))
+                     }
+                 }
+                 else ## if component does not use exposure, transform is NULL
+                     if (!is.null(transform))
+                         return(gettextf("system model for '%s' does not use exposure, but corresponding element of '%s' is not %s",
+                                         namesComponents[i + 1L], "transformsExpToComp", "NULL"))
              }
              TRUE
          })

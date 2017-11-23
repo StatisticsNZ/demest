@@ -857,6 +857,14 @@ SEXP chooseICellPopn_R(SEXP description_R)
     return ScalarInteger(ans);
 }
 
+/* one off wrapper for isLowerTriangle */
+SEXP isLowerTriangle_R(SEXP i_R, SEXP description_R)
+{
+    int i = *INTEGER(i_R);
+    int ans = isLowerTriangle(i, description_R);
+    return ScalarLogical(ans);
+}
+
 /* wrap getIMappingFunctions */
 MAPPING_GET_I_WRAPPER(getIAccNextFromPopn);
 MAPPING_GET_I_WRAPPER(getIPopnNextFromPopn);
@@ -1073,7 +1081,7 @@ UPDATEOBJECT_NOPRNG_WRAPPER_R(resetS);
 UPDATEOBJECT_NOPRNG_WRAPPER_R(advanceCA);
 UPDATEOBJECT_NOPRNG_WRAPPER_R(advanceCP);
 UPDATEOBJECT_NOPRNG_WRAPPER_R(advanceCC);
-
+UPDATEOBJECT_NOPRNG_WRAPPER_R(advanceCODPCP);
 
 /* one-off wrapper for centre RandomWalk 
  * duplicates the iterator, which should be unchanged */
@@ -1470,6 +1478,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(advanceCA_R, 1),
   CALLDEF(advanceCP_R, 1),
   CALLDEF(advanceCC_R, 1),
+  CALLDEF(advanceCODPCP_R, 1),
   CALLDEF(resetCA_R, 2),
   CALLDEF(resetCP_R, 2),
   CALLDEF(resetCC_R, 2),
@@ -1606,6 +1615,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(chooseICellComp_R, 1),
   CALLDEF(chooseICellOutInPool_R, 1),
   CALLDEF(chooseICellPopn_R, 1),
+  CALLDEF(isLowerTriangle_R, 2),
   CALLDEF(getIAccNextFromPopn_R, 2),
   CALLDEF(getIPopnNextFromPopn_R, 2),
   CALLDEF(getIExpFirstFromPopn_R, 2),
@@ -1854,6 +1864,7 @@ R_init_demest(DllInfo *info)
   ADD_SYM(isOneToOne);
   ADD_SYM(nSharedVec);
   ADD_SYM(stepSharedCurrentVec);
+  ADD_SYM(stepSharedCurrentExposureVec);
   ADD_SYM(stepSharedTargetVec);
   ADD_SYM(nTimeCurrent);
   ADD_SYM(stepTimeCurrent);
@@ -1992,6 +2003,8 @@ R_init_demest(DllInfo *info)
   /* skeleton */
   ADD_SYM(first);
   ADD_SYM(last);
+  /* Box-Cox */
+  ADD_SYM(boxCoxParam);
   
 #undef ADD_SYM
 

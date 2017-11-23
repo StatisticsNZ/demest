@@ -1224,6 +1224,7 @@ test_that("Mapping creates object of class MappingBirthsToExp from object of cla
                         stepTimeTarget = 4L,
                         nSharedVec = integer(),
                         stepSharedCurrentVec = integer(),
+                        stepSharedCurrentExposureVec = integer(),
                         stepSharedTargetVec = integer(),
                         hasAge = TRUE,
                         iMinAge = 2L,
@@ -1258,6 +1259,7 @@ test_that("Mapping creates object of class MappingBirthsToExp from object of cla
                         stepTimeTarget = 12L,
                         nSharedVec = 3L,
                         stepSharedCurrentVec = 1L,
+                        stepSharedCurrentExposureVec = 1L,
                         stepSharedTargetVec = 1L,
                         hasAge = TRUE,
                         nAgeCurrent = 2L,
@@ -1291,6 +1293,7 @@ test_that("Mapping creates object of class MappingBirthsToExp from object of cla
                         stepTimeTarget = 12L,
                         nSharedVec = 3:4,
                         stepSharedCurrentVec = c(1L, 3L),
+                        stepSharedCurrentExposureVec = c(1L, 3L),
                         stepSharedTargetVec = c(1L, 3L),
                         hasAge = FALSE,
                         iMinAge = NA_integer_,
@@ -1304,7 +1307,7 @@ test_that("Mapping creates object of class MappingBirthsToExp from object of cla
 
 ## births has parent
 
-test_that("Mapping creates object of class MappingBirthsToExp from object of class BirthsMovementHasParentChild", {
+test_that("Mapping creates object of class MappingBirthsToExpParCh from object of class BirthsMovementHasParentChild", {
     Mapping <- demest:::Mapping
     BirthsMovements <- dembase:::BirthsMovements
     Exposure <- dembase:::Exposure
@@ -1335,6 +1338,7 @@ test_that("Mapping creates object of class MappingBirthsToExp from object of cla
                         stepTimeTarget = 4L,
                         nSharedVec = 3L,
                         stepSharedCurrentVec = 18L,
+                        stepSharedCurrentExposureVec = 6L,
                         stepSharedTargetVec = 12L,
                         hasAge = TRUE,
                         nAgeCurrent = 2L,
@@ -1375,6 +1379,7 @@ test_that("Mapping creates object of class MappingBirthsToExp from object of cla
                         stepTimeTarget = 72L,
                         nSharedVec = c(3L, 2L, 3L),
                         stepSharedCurrentVec = c(1L, 6L, 36L),
+                        stepSharedCurrentExposureVec = c(1L, 3L, 12L),
                         stepSharedTargetVec = c(1L, 3L, 6L),
                         hasAge = TRUE,
                         nAgeCurrent = 2L,
@@ -1758,7 +1763,7 @@ test_that("Mapping creates object of class MappingExpToBirths from objects of cl
 
 ## births has parent
 
-test_that("Mapping creates object of class MappingBirthsToExp from object of classes Exposure, BirthsMovementHasParentChild", {
+test_that("Mapping creates object of class MappingExpToBirths from object of classes Exposure, BirthsMovementHasParentChild", {
     Mapping <- demest:::Mapping
     BirthsMovements <- dembase:::BirthsMovements
     Exposure <- dembase:::Exposure
@@ -1789,7 +1794,7 @@ test_that("Mapping creates object of class MappingBirthsToExp from object of cla
                         stepTimeTarget = 2L,
                         nSharedVec = 3L,
                         stepSharedCurrentVec = 12L,
-                        stepSharedTargetVec = 18L,
+                        stepSharedTargetVec = 6L,
                         hasAge = TRUE,
                         nAgeCurrent = 4L,
                         nAgeTarget = 2L,
@@ -1830,7 +1835,7 @@ test_that("Mapping creates object of class MappingBirthsToExp from object of cla
                         stepTimeTarget = 216L,
                         nSharedVec = c(3L, 2L, 3L),
                         stepSharedCurrentVec = c(1L, 3L, 6L),
-                        stepSharedTargetVec = c(1L, 6L, 36L),
+                        stepSharedTargetVec = c(1L, 3L, 12L),
                         hasAge = TRUE,
                         nAgeCurrent = 4L,
                         nAgeTarget = 2L,

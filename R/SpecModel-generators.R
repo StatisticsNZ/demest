@@ -99,14 +99,15 @@ NULL
 ## HAS_TESTS
 #' @rdname likelihood
 #' @export
-Poisson <- function(formula, useExpose = TRUE) {
+Poisson <- function(formula, useExpose = TRUE, boxcox = 0) {
     checkFormulaMu(formula)
     checkForMarginalTerms(formula)
     useExpose <- checkAndTidyLogicalFlag(x = useExpose,
                                          name = "useExpose")
     methods::new("SpecLikelihoodPoisson",
                  formulaMu = formula,
-                 useExpose = useExpose)
+                 useExpose = useExpose,
+                 boxCoxParam = boxcox)
 }
 
 ## HAS_TESTS
@@ -154,7 +155,7 @@ Normal <- function(formula, sd = NULL, priorSD = HalfT()) {
 #' Specify a model of the form
 #'   \deqn{y_i = N(mean[i], sd[i])}
 #' or
-#'   \deqn{y_i = N(exposure[i] * mean[i], sqrt(exposure[i]) * sd[i])}.
+#'   \deqn{y_i = N(exposure[i] * mean[i], sd[i])}.
 #'
 #' Among other things, the model is useful as a data model for
 #' surveys.  In such cases, \code{exposure} represents the
@@ -218,10 +219,6 @@ NormalFixed <- function(mean, sd, useExpose = TRUE) {
     if (any(is.na(mean)))
         stop(gettextf("'%s' has missing values",
                       "mean"))
-    ## mean has length of 2 or more
-    if (length(mean) < 2L)
-        stop(gettextf("'%s' has length %d",
-                      "mean", length(mean)))
     mean.param <- as.double(mean)
     mean.param <- new("ParameterVector", mean.param)
     if (methods::is(sd, "Values")) {
@@ -654,6 +651,7 @@ setMethod("SpecModel",
                    priorSD, jump, series, aggregate) {
               formula.mu <- specInner@formulaMu
               useExpose <- specInner@useExpose
+              boxCoxParam <- specInner@boxCoxParam
               specs.priors <- makeSpecsPriors(dots)
               names.specs.priors <- makeNamesSpecsPriors(dots)
               if (is.null(lower))
@@ -689,6 +687,7 @@ setMethod("SpecModel",
                   aggregate <- methods::new("SpecAgPlaceholder")
               methods::new("SpecPoissonVarying",
                            ASigma = A.sigma,
+                           boxCoxParam = boxCoxParam,
                            call = call,
                            formulaMu = formula.mu,
                            lower = lower,

@@ -108,6 +108,14 @@ setGeneric("concatDimScaleFirstSecond",
                                  "along", name, class(first), class(second)))
            })
 
+setGeneric("diffLogDensAccount",
+           function(combined, useC = FALSE, useSpecific = FALSE)
+               standardGeneric("diffLogDensAccount"))
+
+setGeneric("diffLogLikAccount",
+           function(object, useC = FALSE, useSpecific = FALSE)
+               standardGeneric("diffLogLikAccount"))
+
 setGeneric("drawYNonSampled",
            function(filename, model, nonsampled, iterations)
            standardGeneric("drawYNonSampled"))
@@ -238,7 +246,8 @@ setGeneric("hasEstimated",
 setGeneric("initialCombinedAccount",
            function(account, systemModels, systemWeights,
                     observationModels, seriesIndices, 
-                    datasets, namesDatasets, transforms)
+                    datasets, namesDatasets, transforms,
+                    dominant = c("Female", "Male"))
            standardGeneric("initialCombinedAccount"))
 
 setGeneric("initialCombinedCounts",
@@ -287,6 +296,10 @@ setGeneric("makeCellInLik",
                model@cellInLik <- !is.na(y)
                model
            })
+
+setGeneric("makeTransformExpToComp",
+           function(exposure, component, nameComponent)
+               standardGeneric("makeTransformExpToComp"))
 
 setGeneric("makeOutputAggregate",
            function(model, pos, nChain, nIteration)
@@ -423,6 +436,10 @@ setGeneric("updateCombined",
            function(object, nUpdate = 1L, useC = FALSE, useSpecific = FALSE)
            standardGeneric("updateCombined"))
 
+setGeneric("updateExpectedExposure",
+           function(combined, useC = FALSE, useSpecific = FALSE)
+               standardGeneric("updateExpectedExposure"))
+
 setGeneric("updateModelNotUseExp",
            function(object, y, useC = FALSE, useSpecific = FALSE)
            standardGeneric("updateModelNotUseExp"))
@@ -434,6 +451,18 @@ setGeneric("updateModelUseExp",
 setGeneric("updatePredictedBetaAndPriorBeta",
            function(prior, vbar, n, sigma, useC = FALSE, useSpecific = FALSE)
                standardGeneric("updatePredictedBetaAndPriorBeta"))
+
+setGeneric("updateProposalAccount",
+           function(object, useC = FALSE, useSpecific = FALSE)
+               standardGeneric("updateProposalAccount"))
+
+setGeneric("updateSystemModels",
+           function(combined, useC = FALSE, useSpecific = FALSE)
+               standardGeneric("updateSystemModels"))
+
+setGeneric("updateValuesAccount",
+           function(combined, useC = FALSE, useSpecific = FALSE)
+               standardGeneric("updateValuesAccount"))
 
 setGeneric("whereAcceptance",
            function(object)

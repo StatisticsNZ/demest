@@ -860,6 +860,7 @@ setMethod("initialModel",
               formula.mu <- object@formulaMu
               specs.priors <- object@specsPriors
               names.specs.priors <- object@namesSpecsPriors
+              box.cox.param <- object@boxCoxParam
               scale.theta <- object@scaleTheta
               lower <- object@lower
               upper <- object@upper
@@ -922,8 +923,14 @@ setMethod("initialModel",
               is.too.high <- theta > upper
               n.too.high <- sum(is.too.high)
               theta[is.too.high] <- stats::runif(n = n.too.high, min = upper - width, max = upper)
-              lower <- log(lower)
-              upper <- log(upper)
+              if (box.cox.param > 0) {
+                  lower <- (lower ^ box.cox.param - 1) / box.cox.param
+                  upper <- (upper ^ box.cox.param - 1) / box.cox.param
+              }
+              else {
+                  lower <- log(lower)
+                  upper <- log(upper)
+              }
               theta <- array(theta, dim = dim(y), dimnames = dimnames(y))
               if (formulaIsInterceptOnly(formula.mu))
                   betas <- list("(Intercept)" = mean(log(theta)))
@@ -962,6 +969,7 @@ setMethod("initialModel",
                                     metadataY = metadataY,
                                     scaleTheta = scale.theta,
                                     scaleThetaMultiplier = scale.theta.multiplier,
+                                    boxCoxParam = box.cox.param,
                                     lower = lower,
                                     upper = upper,
                                     tolerance = tolerance,
@@ -995,6 +1003,7 @@ setMethod("initialModel",
                                      y = y)
               model
           })
+
 
 ## HAS_TESTS
 setMethod("initialModel",
@@ -1140,15 +1149,24 @@ setMethod("initialModelPredict",
                                              offsetModel = offsetModel,
                                              covariates = covariates)
               metadataY <- l$metadataY
-              if (is.null(lower))
-                  lower <- exp(model@lower)
-              if (is.null(upper))
-                  upper <- exp(model@upper)
+              box.cox.param <- model@boxCoxParam
+              if (box.cox.param > 0) {
+                  if (is.null(lower))
+                      lower <- (box.cox.param * model@lower + 1) ^ (1 / box.cox.param)
+                  if (is.null(upper))
+                      upper <- (box.cox.param * model@upper + 1) ^ (1 / box.cox.param)
+              }
+              else {
+                  if (is.null(lower))
+                      lower <- exp(model@lower)
+                  if (is.null(upper))
+                      upper <- exp(model@upper)
+              }
               checkLowerAndUpper(lower = lower,
                                  upper = upper,
                                  distribution = "Poisson")
-              lower <- log(lower)
-              upper <- log(upper)
+              lower <- model@lower
+              upper <- model@upper
               uses.exposure <- methods::is(model, "UseExposure")
               if (uses.exposure)
                   Class <- "PoissonVaryingUseExpPredict"

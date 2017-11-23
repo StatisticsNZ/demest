@@ -175,10 +175,6 @@ test_that("NormalFixed works", {
     mean.wrong[1] <- NA
     expect_error(NormalFixed(mean = mean.wrong, sd = sd),
                  "'mean' has missing values")
-    ## 'mean' has length of 2 or more
-    mean.wrong <- Values(array(1, dim = 1, dimnames = list(age = 0)))
-    expect_error(NormalFixed(mean = mean.wrong, sd = 1),
-                 "'mean' has length 1")
     ## 'sd' is compatible with 'mean'
     expect_error(NormalFixed(mean = mean, sd = sd[1:2]),
                  "'sd' and 'mean' not compatible :")

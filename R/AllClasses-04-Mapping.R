@@ -112,20 +112,6 @@ setClass("MappingMixinAge",
                          return(gettextf("'%s' is non-positive",
                                          name))
                  }
-                 ## if hasAge: stepAge not in stepShared, apart from 1
-                 for (type in c("Current", "Target")) {
-                     name.age <- sprintf("stepAge%s", type)
-                     name.shared.vec <- sprintf("stepShared%sVec", type)
-                     step.age <- methods::slot(object, name.age)
-                     step.shared.vec <- methods::slot(object, name.shared.vec)
-                     step.age.not.1 <- setdiff(step.age, 1L)
-                     step.shared.vec.not.1 <- setdiff(step.shared.vec, 1L)
-                     if ((length(step.age.not.1) > 0L) && (length(step.shared.vec.not.1) > 0L)) {
-                         if (step.age.not.1 %in% step.shared.vec.not.1)
-                             stop(gettextf("overlap between '%s' and '%s'",
-                                           name.age, name.shared.vec))
-                     }
-                 }
              }
              else {
                  ## if not hasAge: nAgeCurrent, stepAgeCurrent, stepAgeTarget missing
@@ -289,6 +275,28 @@ setClass("MappingMixinOrigDest",
              TRUE
          })
 
+## HAS_TESTS
+setClass("MappingExposureVecMixin",
+         slots = c(stepSharedCurrentExposureVec = "integer"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             stepSharedCurrentExposureVec <- object@stepSharedCurrentExposureVec
+             stepSharedCurrentVec <- object@stepSharedCurrentVec
+             ## stepSharedCurrentExposureVec has no missing values
+             if (any(is.na(stepSharedCurrentExposureVec)))
+                 return(gettextf("'%s' has missing values",
+                                 "stepSharedCurrentExposureVec"))
+             ## stepSharedCurrentExposureVec has all positive values
+             if (any(stepSharedCurrentExposureVec < 1L))
+                 return(gettextf("'%s' has non-positive values",
+                                 "stepSharedCurrentExposureVec"))
+             ## stepSharedCurrentVec, stepSharedCurrentExposureVec have same length
+             if (!identical(length(stepSharedCurrentVec), length(stepSharedCurrentExposureVec)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "stepSharedCurrentVec", "stepSharedCurrentExposureVec"))
+             TRUE
+         })
+
 ## Mappings to population
 
 setClass("MappingToPopn",
@@ -344,7 +352,8 @@ setClass("MappingCompToExp",
 ## HAS_TESTS
 setClass("MappingBirthsToExp",
          contains = c("MappingToExp",
-                      "MappingMixinIMinAge"))
+                      "MappingMixinIMinAge",
+                      "MappingExposureVecMixin"))
 
 ## HAS_TESTS
 setClass("MappingOrigDestToExp",

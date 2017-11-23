@@ -333,15 +333,19 @@ advanceCC(SEXP iterator_R)
         else {
             if (iAge < nAge) {
                 ++iAge;
-                iTriangle = 1;
+        iTriangle = 1;
                 i += stepAge - stepTriangle;
             }
             else {
-                ++iTime;
-                i += stepTime;
+        ++iTime;
+        i += stepTime;
             }
-            finished = ((iTriangle == 1) && (iTime == nTime));
         }
+
+    if (iTriangle == 1)
+        finished = (iTime == nTime);
+    else
+        finished = (iTime == nTime) && (iAge == nAge);
         
         SET_SLOT(iterator_R, iAge_sym, ScalarInteger(iAge));
         SET_SLOT(iterator_R, iTriangle_sym, ScalarInteger(iTriangle));
@@ -350,13 +354,31 @@ advanceCC(SEXP iterator_R)
     else {
         ++iTime;
         i += stepTime;
-        finished = (iTime == nTime);
+    finished = (iTime == nTime);
     }   
-    
+
     SET_SLOT(iterator_R, i_sym, ScalarInteger(i));
     SET_SLOT(iterator_R, iTime_sym, ScalarInteger(iTime));
     
     SET_SLOT(iterator_R, finished_sym, ScalarLogical(finished));
+}
+
+/* advance CODPCP iterator */
+void
+advanceCODPCP(SEXP iterator_R)
+{
+    advanceCC(iterator_R);
+    int iter_i = *INTEGER(GET_SLOT(iterator_R, i_sym));
+    int *iVec = INTEGER(GET_SLOT(iterator_R, iVec_sym));
+    int length = *INTEGER(GET_SLOT(iterator_R, lengthVec_sym));
+    int *increment = INTEGER(GET_SLOT(iterator_R, increment_sym));
+    
+    for(int j = 0; j < length; ++j) {
+        
+        iVec[j] = iter_i + increment[j];
+    
+    }
+
 }
 
 /* reset cohort iterator */
@@ -412,6 +434,8 @@ resetCC(SEXP iterator_R, int i)
     int hasAge = *INTEGER(GET_SLOT(iterator_R, hasAge_sym));
     
     int iTime_R = ((i - 1)/stepTime) % nTime  + 1;
+
+    int finished = 0;
     
     SET_SLOT(iterator_R, i_sym, ScalarInteger(i));
     SET_SLOT(iterator_R, iTime_sym, ScalarInteger(iTime_R));
@@ -426,9 +450,15 @@ resetCC(SEXP iterator_R, int i)
         
         SET_SLOT(iterator_R, iAge_sym, ScalarInteger(iAge_R));
         SET_SLOT(iterator_R, iTriangle_sym, ScalarInteger(iTriangle_R));
+
+    if (iTriangle_R == 1)
+        finished = (iTime_R >= nTime);
+    else
+        finished = (iTime_R >= nTime) && (iAge_R >= nAge);
     }
+    else
+    finished = (iTime_R >= nTime);
     
-    int finished = (iTime_R >= nTime);
     SET_SLOT(iterator_R, finished_sym, ScalarLogical(finished));
 }
 

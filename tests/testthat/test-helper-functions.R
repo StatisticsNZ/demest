@@ -4199,12 +4199,14 @@ if (test.extended) {
                 set.seed(seed + 1)
                 ans.expected <- rnorm(n = 1L, mean = mean, sd = sd)
                 expect_equal(ans.obtained, ans.expected, tol = 0.01)
+                expect_true(is.integer(ans.obtained))
             }
             ## all within range
             for (i in seq_len(10)) {
                 ans <- rnormIntTrunc1(mean = 0, sd = 50, lower = -200L, upper = 200L)
                 expect_true(ans >= -200L)
                 expect_true(ans <= 200L)
+                expect_true(is.integer(ans))
             }
             ## check distribution
             ans <- numeric(10000)
@@ -4235,6 +4237,7 @@ test_that("R and C versions of rnormIntTrunc1 give same answer", {
                 expect_identical(ans.R, ans.C)
             else
                 expect_equal(ans.R, ans.C)
+            expect_true(is.integer(ans.C))
         }
         ## upper limit
         for (i in seq(100, 200, 10)) {
@@ -4248,6 +4251,7 @@ test_that("R and C versions of rnormIntTrunc1 give same answer", {
                 expect_identical(ans.R, ans.C)
             else
                 expect_equal(ans.R, ans.C)
+            expect_true(is.integer(ans.C))
         }
         ## lower limit
         for (i in seq(100, 200, 10)) {
@@ -4261,6 +4265,7 @@ test_that("R and C versions of rnormIntTrunc1 give same answer", {
                 expect_identical(ans.R, ans.C)
             else
                 expect_equal(ans.R, ans.C)
+            expect_true(is.integer(ans.C))
         }
         ## lower and upper limits
         for (i in seq(100, 200, 10)) {
@@ -4274,11 +4279,10 @@ test_that("R and C versions of rnormIntTrunc1 give same answer", {
                 expect_identical(ans.R, ans.C)
             else
                 expect_equal(ans.R, ans.C)
+            expect_true(is.integer(ans.C))
         }
     }
 })
-
-
 
 test_that("rtnorm1 gives valid answer", {
     rtnorm1 <- demest:::rtnorm1
@@ -4937,12 +4941,15 @@ test_that("findOneRootLogPostSigmaNorm works", {
         A <- runif(n = 1, min = 0.1, max = 10)
         nu <- 1.0 * max(rpois(n = 1, lambda = 5), 1)
         V <- runif(n = 1, 0.01, 20)
-        n <- as.integer(rpois(n = 1, lambda = 10))
+        n <- as.integer(rpois(n = 1, lambda = 10)) + 1L
         sigma <- runif(n = 1, min = 0.001, max = 10)
         sigma.max <- sqrt((V - n*nu*A^2 + sqrt((V - n*nu*A^2)^2 + 4*(n + nu + 1)*V*nu*A^2))
                           / (2*(n + nu + 1)))
-        sigma.left <- runif(n = 1, min = 0.000, max = sigma.max)
-        sigma.right <- runif(n = 1, min = sigma.max, max = 3*sigma.max)
+        max.right <- if (runif(1) < 0.7) runif(1, sigma.max, 10 * sigma.max) else Inf ## NEW
+        ## sigma.left <- runif(n = 1, min = 0.000, max = sigma.max)
+        ## sigma.right <- runif(n = 1, min = sigma.max, max = 3*sigma.max)
+        sigma.left <- 0.5 * sigma.max ## NEW
+        sigma.right <- min(1.5 * sigma.max, (sigma.max + max.right) / 2) ## NEW
         f <- function(sigma) {
             -n*log(sigma) - V/(2*sigma^2) - ((nu + 1)/2) * log(sigma^2 + nu*A^2)
         }
@@ -4963,7 +4970,7 @@ test_that("findOneRootLogPostSigmaNorm works", {
                                                   V = V,
                                                   n = n,
                                                   min = sigma.max,
-                                                  max = Inf,
+                                                  max = max.right, ## NEW
                                                   useC = FALSE)
         if (root.left > 0)
             expect_equal(f(root.left), z)
@@ -4976,7 +4983,7 @@ test_that("findOneRootLogPostSigmaNorm works", {
                                                   V = V,
                                                   n = n,
                                                   min = sigma.max,
-                                                  max = Inf,
+                                                  max = max.right, ## NEW
                                                   useC = FALSE)
         expect_true(isTRUE(all.equal(ans.at.max, sigma.max))
                     || isTRUE(all.equal(ans.at.max, -1))
@@ -4992,7 +4999,7 @@ test_that("R and C versions of findOneRootLogPostSigmaNorm give same answer", {
         A <- runif(n = 1, min = 0.1, max = 10)
         nu <- 1.0 * max(rpois(n = 1, lambda = 5), 1)
         V <- runif(n = 1, 0.01, 10)
-        n <- as.integer(rpois(n = 1, lambda = 10))
+        n <- as.integer(rpois(n = 1, lambda = 10)) + 1L
         sigma <- runif(1, 0, 10)
         sigma.max <- sqrt((V - n*nu*A^2 + sqrt((V - n*nu*A^2)^2 + 4*(n + nu + 1)*V*nu*A^2))
                           / (2*(n + nu + 1)))
@@ -5000,8 +5007,9 @@ test_that("R and C versions of findOneRootLogPostSigmaNorm give same answer", {
             -n*log(sigma) - V/(2*sigma^2) - ((nu + 1)/2) * log(sigma^2 + nu*A^2)
         }
         z <- f(sigma) - rexp(n = 1, 1)
-        sigma.left <- runif(n = 1, min = 0.001, max = sigma.max)
-        sigma.right <- runif(n = 1, min = sigma.max, max = 10*sigma.max)
+        max.right <- if (runif(1) < 0.7) runif(1, sigma.max, 10 * sigma.max) else Inf ## NEW
+        sigma.left <- 0.5 * sigma.max ## NEW
+        sigma.right <- min(1.5 * sigma.max, (sigma.max + max.right) / 2) ## NEW
         root.left.R <- findOneRootLogPostSigmaNorm(sigma0 = sigma.left,
                                                    z = z,
                                                    A = A,
@@ -5027,7 +5035,7 @@ test_that("R and C versions of findOneRootLogPostSigmaNorm give same answer", {
                                                     V = V,
                                                     n = n,
                                                     min = sigma.max,
-                                                    max = Inf,
+                                                    max = max.right,
                                                     useC = FALSE)
         root.right.C <- findOneRootLogPostSigmaNorm(sigma0 = sigma.right,
                                                     z = z,
@@ -5047,7 +5055,7 @@ test_that("R and C versions of findOneRootLogPostSigmaNorm give same answer", {
                                                     V = V,
                                                     n = n,
                                                     min = sigma.max,
-                                                    max = Inf,
+                                                    max = max.right, ## NEW
                                                     useC = FALSE)
         ans.at.max.C <- findOneRootLogPostSigmaNorm(sigma0 = sigma.max,
                                                     z = z,
@@ -5056,7 +5064,7 @@ test_that("R and C versions of findOneRootLogPostSigmaNorm give same answer", {
                                                     V = V,
                                                     n = n,
                                                     min = sigma.max,
-                                                    max = Inf,
+                                                    max = max.right, ## NEW
                                                     useC = TRUE)
         expect_equal(ans.at.max.R, ans.at.max.C)
         expect_true(isTRUE(all.equal(ans.at.max.R, sigma.max))
@@ -5074,7 +5082,7 @@ test_that("findOneRootLogPostSigmaRobust works", {
         nuBeta <- 1.0 * max(rpois(n = 1, lambda = 5), 1)
         nuTau <- 1.0 * max(rpois(n = 1, lambda = 5), 1)
         V <- runif(n = 1, 0.01, 10)
-        n <- as.integer(rpois(n = 1, lambda = 10))
+        n <- as.integer(rpois(n = 1, lambda = 10)) + 1L
         H1 <- nuBeta * V
         H2 <- nuBeta * nuTau * V * A^2 + nuTau + 1 - n * nuBeta
         H3 <- -n * nuBeta * nuTau * A^2
@@ -5084,8 +5092,11 @@ test_that("findOneRootLogPostSigmaRobust works", {
         }
         sigma <- runif(1, 0.05, 10)
         z <- f(sigma) - rexp(n = 1, 1)
-        sigma.left <- runif(n = 1, min = 0.005, max = sigma.max)
-        sigma.right <- runif(n = 1, min = sigma.max, max = 5*sigma.max)
+        ## sigma.left <- runif(n = 1, min = 0.005, max = sigma.max)
+        ## sigma.right <- runif(n = 1, min = sigma.max, max = 5*sigma.max)
+        max.right <- if (runif(1) < 0.7) runif(1, sigma.max, 10 * sigma.max) else Inf ## NEW
+        sigma.left <- 0.5 * sigma.max ## NEW
+        sigma.right <- min(1.5 * sigma.max, (sigma.max + max.right) / 2) ## NEW
         root.left <- findOneRootLogPostSigmaRobust(sigma0 = sigma.left,
                                                    z = z,
                                                    A = A,
@@ -5104,7 +5115,7 @@ test_that("findOneRootLogPostSigmaRobust works", {
                                                     V = V,
                                                     n = n,
                                                     min = sigma.max,
-                                                    max = Inf,
+                                                    max = max.right,
                                                     useC = FALSE)
         if (root.left > 0)
             expect_equal(f(root.left), z)
@@ -5118,7 +5129,7 @@ test_that("findOneRootLogPostSigmaRobust works", {
                                                     V = V,
                                                     n = n,
                                                     min = sigma.max,
-                                                    max = Inf,
+                                                    max = max.right,
                                                     useC = FALSE)
         expect_true(isTRUE(all.equal(ans.at.max, sigma.max))
                     || isTRUE(all.equal(ans.at.max, -1))
@@ -5134,7 +5145,7 @@ test_that("R and C versions of findOneRootLogPostSigmaRobust give same answer", 
         nuBeta <- 1.0 * max(rpois(n = 1, lambda = 5), 1)
         nuTau <- 1.0 * max(rpois(n = 1, lambda = 5), 1)
         V <- runif(n = 1, 0.01, 10)
-        n <- as.integer(rpois(n = 1, lambda = 10))
+        n <- as.integer(rpois(n = 1, lambda = 10)) + 1L
         H1 <- nuBeta * V
         H2 <- nuBeta * nuTau * V * A^2 + nuTau + 1 - n * nuBeta
         H3 <- -n * nuBeta * nuTau * A^2
@@ -5144,8 +5155,11 @@ test_that("R and C versions of findOneRootLogPostSigmaRobust give same answer", 
         }
         sigma <- runif(1, 0.005, 5)
         z <- f(sigma) - rexp(n = 1, 1)
-        sigma.left <- runif(n = 1, min = 0.001, max = sigma.max)
-        sigma.right <- runif(n = 1, min = sigma.max, max = 10*sigma.max)
+        max.right <- if (runif(1) < 0.7) runif(1, sigma.max, 10 * sigma.max) else Inf ## NEW
+        ## sigma.left <- runif(n = 1, min = 0.001, max = sigma.max)
+        ## sigma.right <- runif(n = 1, min = sigma.max, max = 10*sigma.max)
+        sigma.left <- 0.5 * sigma.max ## NEW
+        sigma.right <- min(1.5 * sigma.max, (sigma.max + max.right) / 2) ## NEW
         root.left.R <- findOneRootLogPostSigmaRobust(sigma0 = sigma.left,
                                                      z = z,
                                                      A = A,
@@ -5174,7 +5188,7 @@ test_that("R and C versions of findOneRootLogPostSigmaRobust give same answer", 
                                                       V = V,
                                                       n = n,
                                                       min = sigma.max,
-                                                      max = Inf,
+                                                      max = max.right,
                                                       useC = FALSE)
         root.right.C <- findOneRootLogPostSigmaRobust(sigma0 = sigma.right,
                                                       z = z,
@@ -5184,7 +5198,7 @@ test_that("R and C versions of findOneRootLogPostSigmaRobust give same answer", 
                                                       V = V,
                                                       n = n,
                                                       min = sigma.max,
-                                                      max = Inf,
+                                                      max = max.right,
                                                       useC = TRUE)
         expect_equal(root.left.R, root.left.C)
         expect_equal(root.right.R, root.right.C)
@@ -5196,12 +5210,12 @@ test_that("R and C versions of findOneRootLogPostSigmaRobust give same answer", 
                                                     V = V,
                                                     n = n,
                                                     min = sigma.max,
-                                                    max = Inf,
+                                                    max = max.right,
                                                     useC = TRUE)
         expect_true(isTRUE(all.equal(ans.at.max, sigma.max))
                     || isTRUE(all.equal(ans.at.max, -1))
-                    || isTRUE(all.equal(ans.at.max, root.left))
-                    || isTRUE(all.equal(ans.at.max, root.right)))
+                    || isTRUE(all.equal(ans.at.max, root.left.C))
+                    || isTRUE(all.equal(ans.at.max, root.right.C)))
     }
 })
 
@@ -5825,6 +5839,67 @@ test_that("R and C versions of makeVBarAndN give same answer with PoissonVarying
                           dimnames = list(age = 0:4, region = letters[1:4])))
         y[10] <- NA
         spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE))
+        x <- initialModel(spec, y = y, exposure = NULL)
+        save_x <- x
+        for (iBeta in seq.int(from = 1, to = 3)) {
+            ans.R <- makeVBarAndN(x, iBeta = iBeta, g = log, useC = FALSE)
+            ans.C <- makeVBarAndN(x, iBeta = iBeta, g = log, useC = TRUE)
+            expect_identical(x, save_x)
+            if (test.identity)
+                expect_identical(ans.R, ans.C)
+            else
+                expect_equal(ans.R, ans.C)
+        }
+    }
+})
+
+test_that("makeVBarAndN gives valid answer with PoissonVaryingNotUseExp, with Box-Cox transform", {
+    makeVBarAndN <- demest:::makeVBarAndN
+    initialModel <- demest:::initialModel
+    y <- Counts(array(rpois(n = 20, lambda = 10),
+                      dim = c(5, 4),
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    spec <- Model(y ~ Poisson(mean ~ age + region,
+                              useExpose = FALSE,
+                              boxcox = 0.6))
+    x <- initialModel(spec, y = y, exposure = NULL)
+    ## iBeta = 1L
+    ans.obtained <- makeVBarAndN(x, iBeta = 1L, g = log)
+    other.betas <- x@betas[[2]] + rep(x@betas[[3]], each = 5)
+    f.theta <- (x@theta^0.6 - 1)/0.6
+    ans.expected <- list(sum(f.theta - other.betas) / length(x@theta),
+                         20L)
+    expect_equal(ans.obtained, ans.expected)
+    ## iBeta = 2L
+    ans.obtained <- makeVBarAndN(x, iBeta = 2L, g = log)
+    other.betas <- x@betas[[1]] + rep(x@betas[[3]], each = 5)
+    f.theta <- (x@theta^0.6 - 1)/0.6
+    ans <- f.theta - other.betas
+    ans.expected <- list(rowMeans(matrix(ans, nrow = 5)),
+                         rep(4L, 5))
+    expect_equal(ans.obtained, ans.expected)
+    ## iBeta = 3L
+    ans.obtained <- makeVBarAndN(x, iBeta = 3L, g = log)
+    other.betas <- x@betas[[1]] + x@betas[[2]]
+    f.theta <- (x@theta^0.6 - 1)/0.6
+    ans.expected <- f.theta - other.betas
+    ans.expected <- list(colMeans(matrix(ans.expected, nrow = 5)),
+                         rep(5L, 4))
+    expect_equal(ans.obtained, ans.expected)
+})
+
+test_that("R and C versions of makeVBarAndN give same answer with PoissonVaryingNotUseExp, Box-Cox transform", {
+    makeVBarAndN <- demest:::makeVBarAndN
+    initialModel <- demest:::initialModel  
+    for (seed in seq_len(n.test)) {
+        set.seed(seed+1)
+        y <- Counts(array(rpois(n = 20, lambda = 10),
+                          dim = c(5, 4),
+                          dimnames = list(age = 0:4, region = letters[1:4])))
+        y[10] <- NA
+        spec <- Model(y ~ Poisson(mean ~ age + region,
+                                  useExpose = FALSE,
+                                  boxcox = 0.6))
         x <- initialModel(spec, y = y, exposure = NULL)
         save_x <- x
         for (iBeta in seq.int(from = 1, to = 3)) {
@@ -9159,7 +9234,7 @@ test_that("logLikelihood gives valid answer with NormalFixedUseExp", {
                                                         count = count,
                                                         dataset = dataset,
                                                         i = i)
-        ans.expected <- dnorm(x = dataset[i], mean = count * mean@.Data[i], sd = sqrt(count) * 0.1, log = TRUE)
+        ans.expected <- dnorm(x = dataset[i], mean = count * mean@.Data[i], sd = 0.1, log = TRUE)
         if (test.identity)
             expect_identical(ans.obtained, ans.expected)
         else
@@ -13064,6 +13139,84 @@ test_that("R and C versions of chooseICellPopn give same answer", {
     expect_identical(ans.R, ans.C)
 })
 
+test_that("chooseICellSubAddNet works", {
+    chooseICellSubAddNet <- demest:::chooseICellSubAddNet
+    Description <- demest:::Description
+    for (seed in seq_len(n.test)) {
+        object <- Counts(array(0L,
+                               dim = c(3, 2, 5, 2),
+                               dimnames = list(time = c("2001-2010", "2011-2020", "2021-2030"),
+                                   age = c("0-9", "10+"),
+                                   region = 1:5,
+                                   triangle = c("TL", "TU"))))
+        object <- new("InternalMovementsNet",
+                      .Data = object@.Data,
+                      iBetween = 3L,
+                      metadata = object@metadata)
+        description <- Description(object)
+        ans <- chooseICellSubAddNet(description)
+        indices <- arrayInd(ans, .dim = dim(object))
+        expect_true(all(indices[1, -3] == indices[2, -3]))
+        expect_true(indices[1, 3] != indices[2, 3])
+        object <- Counts(array(0L,
+                               dim = c(3, 3, 4, 2),
+                               dimnames = list(time = c("2001-2010", "2011-2020", "2021-2030"),
+                                   region = 1:3,
+                                   eth = 1:4,
+                                   sex = c("f", "m"))))
+        object <- new("InternalMovementsNet",
+                      .Data = object@.Data,
+                      iBetween = 2:3,
+                      metadata = object@metadata)
+        description <- Description(object)
+        ans <- chooseICellSubAddNet(description)
+        indices <- arrayInd(ans, .dim = dim(object))
+        expect_true(all(indices[1, -c(2, 3)] == indices[2, -c(2, 3)]))
+        expect_true(all(indices[1, 2:3] != indices[2, 2:3]))
+    }
+})
+
+test_that("R and C versions of chooseICellSubAddNet give same answer", {
+    chooseICellSubAddNet <- demest:::chooseICellSubAddNet
+    Description <- demest:::Description
+    for (seed in seq_len(n.test)) {
+        object <- Counts(array(0L,
+                               dim = c(3, 2, 5, 2),
+                               dimnames = list(time = c("2001-2010", "2011-2020", "2021-2030"),
+                                   age = c("0-9", "10+"),
+                                   region = 1:5,
+                                   triangle = c("TL", "TU"))))
+        object <- new("InternalMovementsNet",
+                      .Data = object@.Data,
+                      iBetween = 3L,
+                      metadata = object@metadata)
+        description <- Description(object)
+        set.seed(seed + 1)
+        ans.R <- chooseICellSubAddNet(description, useC = FALSE)
+        set.seed(seed + 1)
+        ans.C <- chooseICellSubAddNet(description, useC = TRUE)
+        expect_identical(ans.R, ans.C)
+        object <- Counts(array(0L,
+                               dim = c(3, 3, 4, 2),
+                               dimnames = list(time = c("2001-2010", "2011-2020", "2021-2030"),
+                                   region = 1:3,
+                                   eth = 1:4,
+                                   sex = c("f", "m"))))
+        object <- new("InternalMovementsNet",
+                      .Data = object@.Data,
+                      iBetween = 2:3,
+                      metadata = object@metadata)
+        description <- Description(object)
+        set.seed(seed + 1)
+        ans.R <- chooseICellSubAddNet(description, useC = FALSE)
+        set.seed(seed + 1)
+        ans.C <- chooseICellSubAddNet(description, useC = TRUE)
+        expect_identical(ans.R, ans.C)
+    }
+})
+
+
+
 test_that("isLowerTriangle works", {
     isLowerTriangle <- demest:::isLowerTriangle
     Description <- demest:::Description
@@ -13833,49 +13986,103 @@ test_that("R and C versions of getMinValCohortPopulation give same answer", {
     }
 })
 
-## test_that("R and C versions of getMinValCohort give same answer", {
-##     getMinValCohort <- demest:::getMinValCohort
-##     CohortIterator <- demest:::CohortIterator
-##     Population <- dembase:::Population
-##     for (seed in seq_len(n.test)) {
-##         set.seed(seed)
-##         population <- Counts(array(rpois(n = 12, lambda = 10),
-##                                    dim = c(4, 3),
-##                                    dimnames = list(age = c("0-4", "5-9", "10-14", "15+"),
-##                                        time = c(2000, 2005, 2010))))
-##         population <- Population(population)
-##         iter <- CohortIterator(population)
-##         ans.R <- getMinValCohort(i = 2L, series = population, iter = iter, useC = FALSE)
-##         ans.C <- getMinValCohort(i = 2L, series = population, iter = iter, useC = TRUE)
-##         expect_identical(ans.R, ans.C)
-##         population <- Counts(array(as.integer(rpois(4, lambda = 10)),
-##                                    dim = 4L,
-##                                    dimnames = list(time = c(0, 5, 10, 15))))
-##         population <- Population(population)
-##         iter <- CohortIterator(population)
-##         ans.R <- getMinValCohort(i = 1L, series = population, iter = iter, useC = FALSE)
-##         ans.C <- getMinValCohort(i = 1L, series = population, iter = iter, useC = TRUE)
-##         expect_identical(ans.R, ans.C)
-##         population <- Counts(array(as.integer(rpois(12, lambda = 5)),
-##                                    dim = c(4, 3),
-##                                    dimnames = list(region = 1:4, time = c(0, 5, 10))))
-##         population <- Population(population)
-##         iter <- CohortIterator(population)
-##         ans.R <- getMinValCohort(i = 8L, series = population, iter = iter, useC = FALSE)
-##         ans.C <- getMinValCohort(i = 8L, series = population, iter = iter, useC = TRUE)
-##         expect_identical(ans.R, ans.C)
-##         population <- Counts(array(as.integer(rpois(n = 60, lambda = 20)),
-##                                    dim = 5:3,
-##                                    dimnames = list(region = 1:5,
-##                                        time = c(2000, 2005, 2010, 2015),
-##                                        age = c("0-4", "5-9", "10+"))))
-##         population <- Population(population)
-##         iter <- CohortIterator(population)
-##         ans.R <- getMinValCohort(i = 22L, series = population, iter = iter, useC = FALSE)
-##         ans.C <- getMinValCohort(i = 22L, series = population, iter = iter, useC = TRUE)
-##         expect_identical(ans.R, ans.C)
-##     }
-## })
+test_that("makeTransformExpToBirths works", {
+    makeTransformExpToBirths <- demest:::makeTransformExpToBirths
+    ## exposure has sex and age dimensions
+    exposure <- Counts(array(1,
+                             dim = c(5, 2, 2, 3, 2),
+                             dimnames = list(region = 1:5,
+                                             time = c("2002-2006", "2007-2011"),
+                                             sex = c("f", "m"),
+                                             age = c("0-4", "5-9", "10+"),
+                                             triangle = c("TL", "TU"))))
+    births <- Counts(array(1,
+                           dim = c(5, 2, 2, 1, 2),
+                           dimnames = list(region = 1:5,
+                                           time = c("2002-2006", "2007-2011"),
+                                           sex = c("f", "m"),
+                                           age = "5-9",
+                                           triangle = c("TL", "TU"))))
+    ans.obtained <- makeTransformExpToBirths(exposure = exposure,
+                                             births = births,
+                                             dominant = "Female")
+    ans.expected <- new("CollapseTransform",
+                        dims = c(1L, 2L, 0L, 3L, 4L),
+                        indices = list(1:5,
+                                       1:2,
+                                       c(1L, 0L),
+                                       c(0L, 1L, 0L),
+                                       1:2),
+                        dimBefore = c(5L, 2L, 2L, 3L, 2L),
+                        dimAfter = c(5L, 2L, 1L, 2L))
+    expect_identical(ans.obtained, ans.expected)
+    ## exposure has sex dimension but no age dimension; births has no sex dimension; male dominant
+    exposure <- Counts(array(1,
+                             dim = c(5, 2, 2),
+                             dimnames = list(region = 1:5,
+                                             time = c("2002-2006", "2007-2011"),
+                                             sex = c("f", "m"))))
+    births <- Counts(array(1,
+                           dim = c(5, 2),
+                           dimnames = list(region = 1:5,
+                                           time = c("2002-2006", "2007-2011"))))
+    ans.obtained <- makeTransformExpToBirths(exposure = exposure,
+                                             births = births,
+                                             dominant = "Male")
+    ans.expected <- new("CollapseTransform",
+                        dims = c(1L, 2L, 0L),
+                        indices = list(1:5,
+                                       1:2,
+                                       c(0L, 1L)),
+                        dimBefore = c(5L, 2L, 2L),
+                        dimAfter = c(5L, 2L))
+    expect_identical(ans.obtained, ans.expected)    
+    ## exposure has age dimensions but not sex dimension
+    exposure <- Counts(array(1,
+                             dim = c(5, 2, 3, 2),
+                             dimnames = list(region = 1:5,
+                                             time = c("2002-2006", "2007-2011"),
+                                             age = c("0-4", "5-9", "10+"),
+                                             triangle = c("TL", "TU"))))
+    births <- Counts(array(1,
+                           dim = c(5, 2, 1, 2),
+                           dimnames = list(region = 1:5,
+                                           time = c("2002-2006", "2007-2011"),
+                                           age = "5-9",
+                                           triangle = c("TL", "TU"))))
+    ans.obtained <- makeTransformExpToBirths(exposure = exposure,
+                                             births = births,
+                                             dominant = "Female")
+    ans.expected <- new("CollapseTransform",
+                        dims = c(1L, 2L, 3L, 4L),
+                        indices = list(1:5,
+                                       1:2,
+                                       c(0L, 1L, 0L),
+                                       1:2),
+                        dimBefore = c(5L, 2L, 3L, 2L),
+                        dimAfter = c(5L, 2L, 1L, 2L))
+    expect_identical(ans.obtained, ans.expected)
+    ## exposure has no age dimension, no sex dimension
+    exposure <- Counts(array(1,
+                             dim = c(5, 2),
+                             dimnames = list(region = 1:5,
+                                             time = c("2002-2006", "2007-2011"))))
+    births <- Counts(array(1,
+                           dim = c(5, 2),
+                           dimnames = list(region = 1:5,
+                                           time = c("2002-2006", "2007-2011"))))
+    ans.obtained <- makeTransformExpToBirths(exposure = exposure,
+                                             births = births,
+                                             dominant = "Female")
+    ans.expected <- new("CollapseTransform",
+                        dims = c(1L, 2L),
+                        indices = list(1:5,
+                                       1:2),
+                        dimBefore = c(5L, 2L),
+                        dimAfter = c(5L, 2L))
+    expect_identical(ans.obtained, ans.expected)
+})
+
 
 test_that("makeIteratorCAP creates objects from valid inputs - Accession", {
     makeIteratorCAP <- demest:::makeIteratorCAP

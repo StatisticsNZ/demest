@@ -112,6 +112,21 @@ setMethod("CohortIterator",
 
 ## HAS_TESTS
 setMethod("CohortIterator",
+          signature(object = "Exposure"),
+          function(object) {
+              dim <- dim(object)
+              dimtypes <- dembase::dimtypes(object, use.names = FALSE)
+              i.time <- match("time", dimtypes)
+              i.age <- match("age", dimtypes, nomatch = 0L)
+              i.triangle <- match("triangle", dimtypes, nomatch = 0L)
+              makeIteratorCC(dim = dim,
+                             iTime = i.time,
+                             iAge = i.age,
+                             iTriangle = i.triangle)
+          })
+
+## HAS_TESTS
+setMethod("CohortIterator",
           signature(object = "InternalMovementsOrigDest"),
           function(object) {
               dim <- dim(object)

@@ -540,6 +540,7 @@ test_that("fetchResults works with object of class SkeletonStateDLM - Season", {
 })
 
 test_that("fetchResults works with object of class SkeletonAccept", {
+    set.seed(1L)
     fetchResults <- demest:::fetchResults
     object <- new("SkeletonAccept",
                   first = 10L,
@@ -570,6 +571,7 @@ test_that("fetchResults works with object of class SkeletonAccept", {
 })
 
 test_that("fetchResults works with object of class SkeletonNAccept", {
+    set.seed(1L)
     fetchResults <- demest:::fetchResults
     object <- new("SkeletonNAccept",
                   nAttempt = 20L,
