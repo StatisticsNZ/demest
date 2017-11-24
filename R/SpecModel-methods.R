@@ -1,4 +1,12 @@
 
+## modelUsesWeights
+
+## HAS_TESTS
+setMethod("modelUsesWeights",
+          signature(object = "SpecNormalVarying"),
+          function(object) TRUE)
+
+
 ## printSpecAgAccuracyEqns ################################################################
 
 setMethod("printSpecAgAccuracyEqns",

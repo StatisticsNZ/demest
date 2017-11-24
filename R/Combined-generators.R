@@ -412,6 +412,7 @@ setMethod("initialCombinedAccount",
               }
               for (i in seq_along(systemModels)) {
                   series <- if (i == 1L) population else components[[i - 1L]]
+                  spec <- systemModels[[i]]
                   if (model.uses.exposure[i]) {
                       if (i - 1L == i.births)
                           expose <- collapse(exposure,
@@ -422,18 +423,30 @@ setMethod("initialCombinedAccount",
                       if (!is.null(transform))
                           expose <- extend(expose,
                                            transform = transform)
-                      systemModels[[i]] <- initialModel(systemModels[[i]],
+                      systemModels[[i]] <- initialModel(spec,
                                                         y = series,
                                                         exposure = expose)
                   }
                   else {
                       weights <- systemWeights[[i]]
-                      if (is.null(weights))
-                          systemModels[[i]] <- initialModel(systemModels[[i]],
-                                                            y = series,
-                                                            exposure = NULL)
+                      if (is.null(weights)) {
+                          uses.weights <- modelUsesWeights(spec)
+                          if (uses.weights) {
+                              .Data <- array(1, dim = dim(series), dimnames = dimnames(series))
+                              metadata <- series@metadata
+                              weights <- methods::new("Counts", .Data = .Data, metadata = metadata)
+                              systemModels[[i]] <- initialModel(spec,
+                                                                y = series,
+                                                                weights = weights)
+                          }
+                          else {
+                              systemModels[[i]] <- initialModel(spec,
+                                                                y = series,
+                                                                exposure = NULL)
+                          }
+                      }
                       else {
-                          systemModels[[i]] <- initialModel(systemModels[[i]],
+                          systemModels[[i]] <- initialModel(spec,
                                                             y = series,
                                                             weights = weights)
                       }

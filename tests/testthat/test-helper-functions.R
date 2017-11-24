@@ -1833,28 +1833,37 @@ test_that("addAgLife works", {
 })
 
 
-
-
-test_that("alignDatasetsToObservation works", {
-    alignDatasetsToObservation <- demest:::alignDatasetsToObservation
-    observation <- list(Model(census ~ PoissonBinomial(prob = 0.98)),
-                        Model(tax ~ Poisson(mean ~ age)))
-    datasets <- list(tax = Counts(array(1:6, dim = 3:2,
-                     dimnames = list(age = 0:2, sex = c("f", "m")))),
-                     census = Counts(array(1:4, dim = c(2, 2),
-                     dimnames = list(age = 0:1, sex = c("m", "f")))))
-    expect_identical(alignDatasetsToObservation(datasets = datasets, observation = observation),
-                     datasets[2:1])
-    datasets.wrong <- datasets
-    names(datasets.wrong)[1] <- "wrong"
-    expect_error(alignDatasetsToObservation(datasets = datasets.wrong, observation = observation),
-                 "'observation' has a model for 'tax' but 'datasets' does not have a dataset called 'tax'")
-    datasets.extra <- c(datasets, extra = datasets[[1]])
-    expect_identical(alignDatasetsToObservation(datasets = datasets.extra, observation = observation),
-                     datasets[2:1])
+test_that("alignObservationModelsToDatasets works", {
+    alignObservationModelsToDatasets <- demest:::alignObservationModelsToDatasets
+    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.98)),
+                              Model(tax ~ Poisson(mean ~ age)))
+    datasets <- list(Counts(array(1:6,
+                                  dim = 3:2,
+                                  dimnames = list(age = 0:2, sex = c("f", "m")))),
+                     Counts(array(1:4,
+                                  dim = c(2, 2),
+                                  dimnames = list(age = 0:1, sex = c("m", "f")))))
+    namesDatasets <- c("tax", "census")
+    expect_identical(alignObservationModelsToDatasets(observationModels = observationModels,
+                                                      datasets = datasets,
+                                                      namesDatasets = namesDatasets),
+                     observationModels[2:1])
+    ## no observation models without datasets
+    obs.mod.wrong <- c(observationModels,
+                       list(Model(wrong ~ PoissonBinomial(prob = 0.99))))
+    expect_error(alignObservationModelsToDatasets(observationModels = obs.mod.wrong,
+                                                  datasets = datasets,
+                                                  namesDatasets = namesDatasets),
+                 "'observationModels' contains a model for 'wrong', but there is no dataset called 'wrong' in 'datasets'")
+    ## no datasets without observation models
+    datasets.wrong <- c(datasets, list(datasets[[1]]))
+    names.datasets.wrong <- c(namesDatasets, "wrong")
+    expect_error(alignObservationModelsToDatasets(observationModels = observationModels,
+                                                  datasets = datasets.wrong,
+                                                  namesDatasets = names.datasets.wrong),
+                 "'datasets' contains a dataset called 'wrong', but 'observationModels' does not contain a model for 'wrong'")
 })
 
-## assumes that 'checkNamesDatasets' has been run first
 test_that("checkAndTidyDatasets works", {
     checkAndTidyDatasets <- demest:::checkAndTidyDatasets
     x <- list(deaths = Counts(array(1:6, dim = 3:2, dimnames = list(age = 0:2, sex = c("f", "m")))),
@@ -1865,6 +1874,22 @@ test_that("checkAndTidyDatasets works", {
                  "'datasets' has class \"character\"")
     expect_error(checkAndTidyDatasets(list()),
                  "'datasets' has length 0")
+    x.wrong <- x
+    x.wrong <- unname(x.wrong)
+    expect_error(checkAndTidyDatasets(x.wrong),
+                 "'datasets' does not have names")
+    x.wrong <- x
+    names(x.wrong)[1] <- NA
+    expect_error(checkAndTidyDatasets(x.wrong),
+                 "names for 'datasets' has missing values")
+    x.wrong <- x
+    names(x.wrong)[1] <- ""
+    expect_error(checkAndTidyDatasets(x.wrong),
+                 "names for 'datasets' has blanks")
+    x.wrong <- x
+    names(x.wrong)[1] <- "births"
+    expect_error(checkAndTidyDatasets(x.wrong),
+                 "names for 'datasets' has duplicates")
     x.wrong <- x
     x.wrong[[1]] <- as(x.wrong[[1]], "matrix")
     expect_error(checkAndTidyDatasets(x.wrong),
@@ -2236,25 +2261,15 @@ test_that("checkLengthDimInFormula works", {
                        "\\* time' but has length 1"))
 })
 
-test_that("checkNamesDatasets works", {
-    checkNamesDatasets <- demest:::checkNamesDatasets
-    x <- list(deaths = Counts(array(1:6, dim = 3:2, dimnames = list(age = 0:2, sex = c("f", "m")))),
-              births= Counts(array(1:4, dim = c(2, 2), dimnames = list(age = 0:1, sex = c("m", "f")))))
-    x.wrong <- x
-    x.wrong <- unname(x.wrong)
-    expect_error(checkNamesDatasets(x.wrong),
+test_that("checkListNames works", {
+    checkListNames <- demest:::checkListNames
+    expect_error(checkListNames(NULL, "datasets"),
                  "'datasets' does not have names")
-    x.wrong <- x
-    names(x.wrong)[1] <- NA
-    expect_error(checkNamesDatasets(x.wrong),
+    expect_error(checkListNames(c("births", NA), "datasets"),
                  "names for 'datasets' has missing values")
-    x.wrong <- x
-    names(x.wrong)[1] <- ""
-    expect_error(checkNamesDatasets(x.wrong),
+    expect_error(checkListNames(c("", "deaths"), "datasets"),
                  "names for 'datasets' has blanks")
-    x.wrong <- x
-    names(x.wrong)[1] <- "births"
-    expect_error(checkNamesDatasets(x.wrong),
+    expect_error(checkListNames(c("births", "births"), "datasets"),
                  "names for 'datasets' has duplicates")
 })
 
@@ -2366,48 +2381,48 @@ test_that("defaultPrior throws appropriate errors", {
                  "length of 'beta' for \"region\" \\[2\\] not equal to product of dimensions \\[3\\]")
 })
 
-test_that("checkObservation works", {
-    checkObservation <- demest:::checkObservation
+test_that("checkObservationModels works", {
+    checkObservationModels <- demest:::checkObservationModels
     x <- list(Model(tax ~ Poisson(mean ~ age),
                     age ~ Exch(error = Error(robust = TRUE))),
               Model(census ~ PoissonBinomial(prob = 0.97)))
-    expect_identical(checkObservation(x), NULL)
-    ## 'observation' is a list
-    expect_error(checkObservation("wrong"),
-                 "'observation' has class \"character\"")
+    expect_identical(checkObservationModels(x), NULL)
+    ## 'observationModels' is a list
+    expect_error(checkObservationModels("wrong"),
+                 "'observationModels' has class \"character\"")
     ## all elements have class "SpecModel"
     x.wrong <- x
     x.wrong[[2]] <- "wrong"
-    expect_error(checkObservation(x.wrong),
-                 "element 2 of 'observation' has class \"character\"")
+    expect_error(checkObservationModels(x.wrong),
+                 "element 2 of 'observationModels' has class \"character\"")
     ## all elements use exposure
     x.wrong <- x
     x.wrong[[1]] <- Model(tax ~ Poisson(mean ~ age, useExpose = FALSE),
                           age ~ Exch(error = Error(robust = TRUE)))
-    expect_error(checkObservation(x.wrong),
-                 "model 1 of 'observation' does not use exposure")
+    expect_error(checkObservationModels(x.wrong),
+                 "model 1 of 'observationModels' does not use exposure")
     ## element has name
     x.wrong <- x
     x.wrong[[1]]@nameY@.Data <- as.character(NA)
-    expect_error(checkObservation(x.wrong),
-                 "element 1 of 'observation' has no name for response variable")
+    expect_error(checkObservationModels(x.wrong),
+                 "element 1 of 'observationModels' has no name for response variable")
     x.wrong <- x
     x.wrong[[2]]@nameY@.Data <- ""
-    expect_error(checkObservation(x.wrong),
-                 "element 2 of 'observation' has no name for response variable")
+    expect_error(checkObservationModels(x.wrong),
+                 "element 2 of 'observationModels' has no name for response variable")
     ## specification of of model is valid
     x.wrong <- x
     x.wrong[[1]]@namesSpecsPriors <- "wrong"
-    expect_error(checkObservation(x.wrong),
-                 "error in observation model for 'tax'")
+    expect_error(checkObservationModels(x.wrong),
+                 "error in observationModels model for 'tax'")
     ## 'series' argument supplied if needed
-    expect_error(checkObservation(x, needsNonDefaultSeriesArg = TRUE),
-                 "'series' argument not supplied in observation model for 'tax'")
+    expect_error(checkObservationModels(x, needsNonDefaultSeriesArg = TRUE),
+                 "'series' argument not supplied in observationModels model for 'tax'")
     ## no 'series' argument supplied if not needed
     x.wrong <- x
     x.wrong[[1]]@series@.Data <- "population"
-    expect_warning(checkObservation(x.wrong),
-                   "non-default argument for 'series' in observation model for 'tax' ignored")
+    expect_warning(checkObservationModels(x.wrong),
+                   "non-default argument for 'series' in observationModels model for 'tax' ignored")
 })
 
 test_that("checkSpecWeightAg works", {
@@ -2643,11 +2658,11 @@ test_that("imputeCountsInternal works", {
     expect_true(!any(is.na(ans)))
 })
 
-test_that("initialObservation works", {
-    initialObservation <- demest:::initialObservation
+test_that("initialObservationModels works", {
+    initialObservationModels <- demest:::initialObservationModels
     initialModel <- demest:::initialModel
     y <- Counts(array(1:24, dim = 2:4, dimnames = list(sex = c("f", "m"), reg = 1:3, age = 0:3)))
-    observation <- list(Model(reg.pop ~ Poisson(mean ~ age), age ~ Exch(error = Error(robust = TRUE))),
+    observationModels <- list(Model(reg.pop ~ Poisson(mean ~ age), age ~ Exch(error = Error(robust = TRUE))),
                         Model(est.pop ~ Poisson(mean ~ age + sex)),
                         Model(census ~ PoissonBinomial(prob = 0.9)))
     datasets <- list(reg.pop = Counts(array(1:12, dim = 3:4, dimnames = list(reg = 1:3, age = 0:3))),
@@ -2658,18 +2673,18 @@ test_that("initialObservation works", {
                        makeTransform(x = y, y = datasets[[2]], subset = TRUE),
                        makeTransform(x = y, y = datasets[[3]], subset = TRUE))
     set.seed(100)
-    ans.obtained <- initialObservation(observation = observation,
+    ans.obtained <- initialObservationModels(observationModels = observationModels,
                                        datasets = datasets,
                                        y = y,
                                        transforms = transforms)
     set.seed(100)
-    ans.expected <- list(initialModel(observation[[1]],
+    ans.expected <- list(initialModel(observationModels[[1]],
                                       y = datasets[[1]],
                                       exposure = dembase::collapse(y, transforms[[1]])),
-                         initialModel(observation[[2]],
+                         initialModel(observationModels[[2]],
                                       y = datasets[[2]],
                                       exposure = dembase::collapse(y, transforms[[2]])),
-                         initialModel(observation[[3]],
+                         initialModel(observationModels[[3]],
                                       y = datasets[[3]],
                                       exposure = dembase::collapse(y, transforms[[3]])))
     if (test.identity)
@@ -8611,13 +8626,13 @@ test_that("R version of diffLogLik works", {
                      Counts(array(as.integer(rpois(18, lambda = 10)),
                                   dim = c(6, 3),
                                   dimnames = list(age = 0:5, reg = letters[1:3]))))
-    observation <- vector("list", 2)
+    observationModels <- vector("list", 2)
     transforms <- vector("list", 2)
     for (i in 1:2) {
         transforms[[i]] <- makeCollapseTransformExtra(makeTransform(x = y,
                                                              y = datasets[[i]],
                                                              subset = TRUE))
-        observation[[i]] <- initialModel(Model(y ~ Poisson(mean ~ 1)),
+        observationModels[[i]] <- initialModel(Model(y ~ Poisson(mean ~ 1)),
                                          y = datasets[[i]],
                                          exposure = dembase::collapse(y, transforms[[i]]))
     }
@@ -8627,22 +8642,22 @@ test_that("R version of diffLogLik works", {
     ans.obtained <- diffLogLik(yProp = yProp,
                                y = y,
                                indicesY = indicesY,
-                               observation = observation,
+                               observationModels = observationModels,
                                datasets = datasets,
                                transforms = transforms)
-    ans.expected <- (logLikelihood(model = observation[[1]],
+    ans.expected <- (logLikelihood(model = observationModels[[1]],
                                    count = sum(y[1:6]) + 1L,
                                    dataset = datasets[[1]],
                                    i = 1L) -
-                     logLikelihood(model = observation[[1]],
+                     logLikelihood(model = observationModels[[1]],
                                    count = sum(y[1:6]),
                                    dataset = datasets[[1]],
                                    i = 1L) +
-                     logLikelihood(model = observation[[2]],
+                     logLikelihood(model = observationModels[[2]],
                                    count = y[1] + 1L,
                                    dataset = datasets[[2]],
                                    i = 1L) -
-                     logLikelihood(model = observation[[2]],
+                     logLikelihood(model = observationModels[[2]],
                                    count = y[1],
                                    dataset = datasets[[2]],
                                    i = 1L))
@@ -8653,7 +8668,7 @@ test_that("R version of diffLogLik works", {
     ans.obtained <- diffLogLik(yProp = yProp,
                                y = y,
                                indicesY = indicesY,
-                               observation = observation,
+                               observationModels = observationModels,
                                datasets = datasets,
                                transforms = transforms)
     ans.expected <- 0
@@ -8664,38 +8679,38 @@ test_that("R version of diffLogLik works", {
     ans.obtained <- diffLogLik(yProp = yProp,
                                y = y,
                                indicesY = indicesY,
-                               observation = observation,
+                               observationModels = observationModels,
                                datasets = datasets,
                                transforms = transforms)
-    ans.expected <- (logLikelihood(model = observation[[1]],
+    ans.expected <- (logLikelihood(model = observationModels[[1]],
                                    count = sum(y[7:12]) - 1L,
                                    dataset = datasets[[1]],
                                    i = 2L) -
-                     logLikelihood(model = observation[[1]],
+                     logLikelihood(model = observationModels[[1]],
                                    count = sum(y[7:12]),
                                    dataset = datasets[[1]],
                                    i = 2L) +
-                     logLikelihood(model = observation[[2]],
+                     logLikelihood(model = observationModels[[2]],
                                    count = y[7] - 1L,
                                    dataset = datasets[[2]],
                                    i = 7L) -
-                     logLikelihood(model = observation[[2]],
+                     logLikelihood(model = observationModels[[2]],
                                    count = y[7],
                                    dataset = datasets[[2]],
                                    i = 7L) +
-                     logLikelihood(model = observation[[1]],
+                     logLikelihood(model = observationModels[[1]],
                                    count = sum(y[13:18]) + 1L,
                                    dataset = datasets[[1]],
                                    i = 3L) -
-                     logLikelihood(model = observation[[1]],
+                     logLikelihood(model = observationModels[[1]],
                                    count = sum(y[13:18]),
                                    dataset = datasets[[1]],
                                    i = 3L) +
-                     logLikelihood(model = observation[[2]],
+                     logLikelihood(model = observationModels[[2]],
                                    count = y[13] + 1L,
                                    dataset = datasets[[2]],
                                    i = 13L) -
-                     logLikelihood(model = observation[[2]],
+                     logLikelihood(model = observationModels[[2]],
                                    count = y[13],
                                    dataset = datasets[[2]],
                                    i = 13L))
@@ -8706,7 +8721,7 @@ test_that("R version of diffLogLik works", {
     ans.obtained <- diffLogLik(yProp = yProp,
                                y = y,
                                indicesY = indicesY,
-                               observation = observation,
+                               observationModels = observationModels,
                                datasets = datasets,
                                transforms = transforms)
     ans.expected <- 0
@@ -8717,22 +8732,22 @@ test_that("R version of diffLogLik works", {
     ans.obtained <- diffLogLik(yProp = yProp,
                                y = y,
                                indicesY = indicesY,
-                               observation = observation,
+                               observationModels = observationModels,
                                datasets = datasets,
                                transforms = transforms)
-    ans.expected <- (logLikelihood(model = observation[[1]],
+    ans.expected <- (logLikelihood(model = observationModels[[1]],
                                    count = sum(y[13:18]) + 2L,
                                    dataset = datasets[[1]],
                                    i = 3L) -
-                     logLikelihood(model = observation[[1]],
+                     logLikelihood(model = observationModels[[1]],
                                    count = sum(y[13:18]),
                                    dataset = datasets[[1]],
                                    i = 3L) +
-                     logLikelihood(model = observation[[2]],
+                     logLikelihood(model = observationModels[[2]],
                                    count = y[18] + 2L,
                                    dataset = datasets[[2]],
                                    i = 18L) -
-                     logLikelihood(model = observation[[2]],
+                     logLikelihood(model = observationModels[[2]],
                                    count = y[18],
                                    dataset = datasets[[2]],
                                    i = 18L))
@@ -8744,7 +8759,7 @@ test_that("R version of diffLogLik works", {
     ans.obtained <- diffLogLik(yProp = yProp,
                                y = y,
                                indicesY = indicesY,
-                               observation = observation,
+                               observationModels = observationModels,
                                datasets = datasets,
                                transforms = transforms)
     ans.expected <- -Inf
@@ -8756,7 +8771,7 @@ test_that("R version of diffLogLik works", {
     ans.obtained <- diffLogLik(yProp = yProp,
                                y = y,
                                indicesY = indicesY,
-                               observation = observation,
+                               observationModels = observationModels,
                                datasets = datasets,
                                transforms = transforms)
     ans.expected <- -Inf
@@ -8773,13 +8788,13 @@ test_that("R version of diffLogLik works", {
     datasets[[1]][1] <- NA
     transforms <- list(makeCollapseTransformExtra(makeTransform(x = y,
                                                                 y = datasets[[1]])))
-    observation <- list(initialModel(Model(y ~ Poisson(mean ~ 1)),
+    observationModels <- list(initialModel(Model(y ~ Poisson(mean ~ 1)),
                                      y = datasets[[1]],
                                      exposure = y))
     ans.obtained <- diffLogLik(yProp = yProp,
                                y = y,
                                indicesY = indicesY,
-                               observation = observation,
+                               observationModels = observationModels,
                                datasets = datasets,
                                transforms = transforms)
     ans.expected <- 0
@@ -8804,13 +8819,13 @@ test_that("R and C versions of diffLogLik give same answer, part 1", {
                      Counts(array(as.integer(rpois(18, lambda = 10)),
                                   dim = c(6, 3),
                                   dimnames = list(age = 0:5, reg = letters[1:3]))))
-    observation <- vector("list", 2)
+    observationModels <- vector("list", 2)
     transforms <- vector("list", 2)
     for (i in 1:2) {
         transforms[[i]] <- makeCollapseTransformExtra(makeTransform(x = y,
                                                              y = datasets[[i]],
                                                              subset = TRUE))
-        observation[[i]] <- initialModel(Model(y ~ Poisson(mean ~ 1)),
+        observationModels[[i]] <- initialModel(Model(y ~ Poisson(mean ~ 1)),
                                          y = datasets[[i]],
                                          exposure = dembase::collapse(y, transforms[[i]]))
     }
@@ -8820,14 +8835,14 @@ test_that("R and C versions of diffLogLik give same answer, part 1", {
         ans.R <- diffLogLik(yProp = yProp,
                             y = y,
                             indicesY = i,
-                            observation = observation,
+                            observationModels = observationModels,
                             datasets = datasets,
                             transforms = transforms,
                             useC = FALSE)
         ans.C <- diffLogLik(yProp = yProp,
                             y = y,
                             indicesY = i,
-                            observation = observation,
+                            observationModels = observationModels,
                             datasets = datasets,
                             transforms = transforms,
                             useC = TRUE)
@@ -8843,14 +8858,14 @@ test_that("R and C versions of diffLogLik give same answer, part 1", {
         ans.R <- diffLogLik(yProp = yProp,
                             y = y,
                             indicesY = indicesY,
-                            observation = observation,
+                            observationModels = observationModels,
                             datasets = datasets,
                             transforms = transforms,
                             useC = FALSE)
         ans.C <- diffLogLik(yProp = yProp,
                             y = y,
                             indicesY = indicesY,
-                            observation = observation,
+                            observationModels = observationModels,
                             datasets = datasets,
                             transforms = transforms,
                             useC = TRUE)
@@ -8871,20 +8886,20 @@ test_that("R and C versions of diffLogLik give same answer, part 1", {
     datasets[[1]][1] <- NA
     transforms <- list(makeCollapseTransformExtra(makeTransform(x = y,
                                                                 y = datasets[[1]])))
-    observation <- list(initialModel(Model(y ~ Poisson(mean ~ 1)),
+    observationModels <- list(initialModel(Model(y ~ Poisson(mean ~ 1)),
                                      y = datasets[[1]],
                                      exposure = y))
     ans.R <- diffLogLik(yProp = yProp,
                                y = y,
                                indicesY = indicesY,
-                               observation = observation,
+                               observationModels = observationModels,
                                datasets = datasets,
                         transforms = transforms,
                         useC = FALSE)
     ans.C <- diffLogLik(yProp = yProp,
                                y = y,
                                indicesY = indicesY,
-                               observation = observation,
+                               observationModels = observationModels,
                                datasets = datasets,
                         transforms = transforms,
                         useC = TRUE)
@@ -8912,13 +8927,13 @@ test_that("R and C versions of diffLogLik give same answer, part 2", {
                      Counts(array(as.integer(rpois(18, lambda = 10)),
                                   dim = c(6, 3),
                                   dimnames = list(age = 0:5, reg = letters[1:3]))))
-    observation <- vector("list", 2)
+    observationModels <- vector("list", 2)
     transforms <- vector("list", 2)
     for (i in 1:2) {
         transforms[[i]] <- makeCollapseTransformExtra(makeTransform(x = y,
                                                              y = datasets[[i]],
                                                              subset = TRUE))
-        observation[[i]] <- initialModel(Model(y ~ Poisson(mean ~ 1)),
+        observationModels[[i]] <- initialModel(Model(y ~ Poisson(mean ~ 1)),
                                          y = datasets[[i]],
                                          exposure = dembase::collapse(y, transforms[[i]]))
     }
@@ -8929,14 +8944,14 @@ test_that("R and C versions of diffLogLik give same answer, part 2", {
     ans.R <- diffLogLik(yProp = yProp,
                         y = y,
                         indicesY = indicesY,
-                        observation = observation,
+                        observationModels = observationModels,
                         datasets = datasets,
                         transforms = transforms,
                         useC = FALSE)
     ans.C <- diffLogLik(yProp = yProp,
                         y = y,
                         indicesY = indicesY,
-                        observation = observation,
+                        observationModels = observationModels,
                         datasets = datasets,
                         transforms = transforms,
                         useC = TRUE)
@@ -8952,14 +8967,14 @@ test_that("R and C versions of diffLogLik give same answer, part 2", {
     ans.R <- diffLogLik(yProp = yProp,
                         y = y,
                         indicesY = indicesY,
-                        observation = observation,
+                        observationModels = observationModels,
                         datasets = datasets,
                         transforms = transforms,
                         useC = FALSE)
     ans.C <- diffLogLik(yProp = yProp,
                         y = y,
                         indicesY = indicesY,
-                        observation = observation,
+                        observationModels = observationModels,
                         datasets = datasets,
                         transforms = transforms,
                         useC = TRUE)
@@ -11113,7 +11128,7 @@ test_that("makeResultsCounts works with no exposure", {
                                   dim = c(2, 3, 1),
                                   dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000)),
                             dimscales = c(time = "Intervals")))
-    observation <- list(Model(register ~ Poisson(mean ~ age)),
+    observationModels <- list(Model(register ~ Poisson(mean ~ age)),
                         Model(census ~ PoissonBinomial(prob = 0.98)))
     transforms <- list(makeTransform(x = y, y = datasets[[1]], subset = TRUE),
                        makeTransform(x = y, y = datasets[[2]], subset = TRUE))
@@ -11122,7 +11137,7 @@ test_that("makeResultsCounts works with no exposure", {
                                 initialCombinedCounts(spec,
                                                       y = y,
                                                       exposure = NULL,
-                                                      observation = observation,
+                                                      observationModels = observationModels,
                                                       datasets = datasets,
                                                       namesDatasets = c("register", "census"),
                                                       transforms = transforms))
@@ -11162,7 +11177,7 @@ test_that("makeResultsCounts works with exposure", {
                                   dim = c(2, 3, 1),
                                   dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000)),
                             dimscales = c(time = "Intervals")))
-    observation <- list(Model(register ~ Poisson(mean ~ age)),
+    observationModels <- list(Model(register ~ Poisson(mean ~ age)),
                         Model(census ~ PoissonBinomial(prob = 0.98)))
     transforms <- list(makeTransform(x = y, y = datasets[[1]], subset = TRUE),
                        makeTransform(x = y, y = datasets[[2]], subset = TRUE))
@@ -11171,7 +11186,7 @@ test_that("makeResultsCounts works with exposure", {
                                 initialCombinedCounts(spec,
                                                       y = y,
                                                       exposure = exposure,
-                                                      observation = observation,
+                                                      observationModels = observationModels,
                                                       datasets = datasets,
                                                       namesDatasets = c("register", "census"),
                                                       transforms = transforms))
@@ -12603,7 +12618,7 @@ test_that("makeMetropolis works with ResultsCounts", {
                        jump = 0.3,
                        age ~ Exch()),
                    y = y,
-                   observation = list(Model(d1 ~ Binomial(mean ~ 1), jump = 0.03),
+                   observationModels = list(Model(d1 ~ Binomial(mean ~ 1), jump = 0.03),
                        Model(d2 ~ Poisson(mean ~ region), jump = 0.2, lower = 0.3),
                        Model(d3 ~ PoissonBinomial(prob = 0.95))),
                    datasets = list(d1 = d1, d2 = d2, d3 = d3),
@@ -12617,16 +12632,16 @@ test_that("makeMetropolis works with ResultsCounts", {
     ans.obtained <- makeMetropolis(object, filename = filename)
     set.seed(1)
     ans.expected <- data.frame(jump = c(fetch(filename, c("model", "likelihood", "jumpCount")),
-                                   fetch(filename, c("observation", "d1", "likelihood", "jumpProb")),
-                                   fetch(filename, c("observation", "d2", "likelihood", "jumpRate"))),
+                                   fetch(filename, c("observationModels", "d1", "likelihood", "jumpProb")),
+                                   fetch(filename, c("observationModels", "d2", "likelihood", "jumpRate"))),
                                acceptance = c(mean(fetch(filename, c("model", "likelihood", "acceptCount"))),
-                                   mean(fetch(filename, c("observation", "d1", "likelihood", "acceptProb"))),
-                                   mean(fetch(filename, c("observation", "d2", "likelihood", "acceptRate")))),
+                                   mean(fetch(filename, c("observationModels", "d1", "likelihood", "acceptProb"))),
+                                   mean(fetch(filename, c("observationModels", "d2", "likelihood", "acceptRate")))),
                                autocorr = c(makeAutocorr(fetchMCMC(filename, c("model", "likelihood", "count"))),
-                                   makeAutocorr(fetchMCMC(filename, c("observation", "d1", "likelihood", "prob"))),
-                                   makeAutocorr(fetchMCMC(filename, c("observation", "d2", "likelihood", "rate")))))
-    rownames(ans.expected) <- c("model.likelihood.count", "observationModels.d1.likelihood.prob",
-                                "observationModels.d2.likelihood.rate")
+                                   makeAutocorr(fetchMCMC(filename, c("observationModels", "d1", "likelihood", "prob"))),
+                                   makeAutocorr(fetchMCMC(filename, c("observationModels", "d2", "likelihood", "rate")))))
+    rownames(ans.expected) <- c("model.likelihood.count", "observationModelsModels.d1.likelihood.prob",
+                                "observationModelsModels.d2.likelihood.rate")
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -12911,6 +12926,190 @@ test_that("trimNULLsFromList works", {
 
     
 ## DEMOGRAPHIC ACCOUNTS ###################################################
+
+
+test_that("alignSystemModelsToAccount works", {
+    alignSystemModelsToAccount <- demest:::alignSystemModelsToAccount
+    system.models <- list(Model(deaths ~ Poisson(mean ~ time)),
+                          Model(population ~ Poisson(mean ~ eth, useExpose = FALSE)),
+                          Model(births ~ Poisson(mean ~ eth)))
+    population <- Counts(array(c(200L, 220L, 190L,
+                                 220L, 180L, 190L),
+                               dim = c(3, 2),
+                               dimnames = list(eth = c("A", "B", "C"),
+                                               time = c("2000", "2005"))))
+    births <- Counts(array(c(40L, 30L, 10L,
+                             15L, 40L, 10L,
+                             20L, 10L, 50L),
+                           dim = c(3, 3, 1),
+                           dimnames = list(eth_parent = c("A", "B", "C"),
+                                           eth_child = c("A", "B", "C"),
+                                           time = "2001-2005")))
+    deaths <- Counts(array(c(25L, 10L, 5L),
+                           dim = c(3, 1),
+                           dimnames = list(eth = c("A", "B", "C"),
+                                           time = "2001-2005")))
+    account <- Movements(population = population,
+                         births = births,
+                         exits = list(deaths = deaths))
+    ans.obtained <- alignSystemModelsToAccount(systemModels = system.models,
+                                               account = account)
+    ans.expected <- list(Model(population ~ Poisson(mean ~ eth, useExpose = FALSE)),
+                         Model(births ~ Poisson(mean ~ eth)),
+                         Model(deaths ~ Poisson(mean ~ time)))
+    expect_identical(ans.obtained, ans.expected)
+    ## no system models without series
+    system.models.wrong <- c(system.models,
+                             Model(wrong ~ Poisson(mean ~ eth)))
+    expect_error(alignSystemModelsToAccount(systemModels = system.models.wrong,
+                                            account = account),
+                 "'systemModels' contains a system model for 'wrong', but there is no series called 'wrong' in 'account'")
+    ## no series without system models
+    system.models.wrong <- system.models[-1]
+    expect_error(alignSystemModelsToAccount(systemModels = system.models.wrong,
+                                            account = account),
+                 "'systemModels' does not contain a model for series 'deaths' in 'account'")
+})
+
+test_that("checkAndTidySystemWeights works", {
+    checkAndTidySystemWeights <- demest:::checkAndTidySystemWeights
+    weights <- list(migration = Counts(array(1,
+                                             dim = c(2, 3),
+                                             dimnames = list(age = c("0-4", "5+"),
+                                                             reg = c("a", "b", "c")))))
+    system.models <- list(Model(population ~ Poisson(mean ~ age + sex)),
+                          Model(migration ~ Normal(mean ~ age + region)))
+    ans.obtained <- checkAndTidySystemWeights(weights = weights,
+                                              systemModels = system.models)
+    ans.expected <- list(NULL, weights[[1]])
+    expect_identical(ans.obtained, ans.expected)
+    ## not weights without system model
+    weights.wrong <- weights
+    names(weights.wrong)[1] <- "wrong"
+    expect_error(checkAndTidySystemWeights(weights.wrong, systemModels = system.models),
+                 "'weights' contains weights for 'wrong', but 'systemModels' does not contain a model for 'wrong'")
+    ## weights supplied only if system model needs them
+    weights.wrong <- weights
+    names(weights.wrong)[1] <- "population"
+    expect_error(checkAndTidySystemWeights(weights.wrong, systemModels = system.models),
+                 "'weights' contains weights for 'population', but system model for 'population' does not use weights")
+})
+
+test_that("checkSystemModels works", {
+    checkSystemModels <- demest:::checkSystemModels
+    x <- list(Model(population ~ Poisson(mean ~ age + sex)),
+              Model(deaths ~ Poisson(mean ~ age + region)))
+    ans.obtained <- checkSystemModels(x)
+    ans.expected <- NULL
+    expect_identical(ans.obtained, ans.expected)
+    ## 'systemModels' is a list
+    expect_error(checkSystemModels("wrong"),
+                 "'systemModels' has class \"character\"")
+    ## element has class "SpecModel"
+    x.wrong <- x
+    x.wrong[[1]] <- "wrong"
+    expect_error(checkSystemModels(x.wrong),
+                 "element 1 of 'systemModels' has class \"character\"")
+    ## specification is valid
+    x.wrong <- x
+    x.wrong[[1]]@upper <- -2
+    expect_error(checkSystemModels(x.wrong),
+                 "element 1 of 'systemModels' is invalid")
+    ## no 'series' argument supplied
+    x.wrong <- x
+    x.wrong[[1]] <- Model(population ~ Poisson(mean ~ age + sex),
+                          series = "wrong")
+    expect_error(checkSystemModels(x.wrong),
+                 "element 1 of 'systemModels' has value for 'series' \\[\"wrong\"\\] : in system models, series should instead be specified via response variable")
+})
+
+test_that("makeSeriesIndices works", {
+    makeSeriesIndices <- demest:::makeSeriesIndices
+    obs.models <- list(Model(census ~ Poisson(mean ~ eth), series = "population"),
+                       Model(reg.births ~ Poisson(mean ~ eth), series = "births"),
+                       Model(reg.deaths ~ Poisson(mean ~ time), series = "deaths"),
+                       Model(health ~ PoissonBinomial(prob = 0.95), series = "population"))
+    population <- Counts(array(c(200L, 220L, 190L,
+                                 220L, 180L, 190L),
+                               dim = c(3, 2),
+                               dimnames = list(eth = c("A", "B", "C"),
+                                               time = c("2000", "2005"))))
+    births <- Counts(array(c(40L, 30L, 10L,
+                             15L, 40L, 10L,
+                             20L, 10L, 50L),
+                           dim = c(3, 3, 1),
+                           dimnames = list(eth_parent = c("A", "B", "C"),
+                                           eth_child = c("A", "B", "C"),
+                                           time = "2001-2005")))
+    deaths <- Counts(array(c(25L, 10L, 5L),
+                           dim = c(3, 1),
+                           dimnames = list(eth = c("A", "B", "C"),
+                                           time = "2001-2005")))
+    account <- Movements(population = population,
+                         births = births,
+                         exits = list(deaths = deaths))
+    ans.obtained <- makeSeriesIndices(observationModels = obs.models,
+                                      account = account)
+    ans.expected <- c(0L, 1L, 2L, 0L)
+    expect_identical(ans.obtained, ans.expected)
+    ## no observation models without series
+    obs.models.wrong <- c(obs.models,
+                          Model(wrong ~ Poisson(mean ~ eth), series = "wrong"))
+    expect_error(makeSeriesIndices(observationModels = obs.models.wrong,
+                                   account = account),
+                 "'observationModels' contains a model for 'wrong', but 'account' does not have a series called 'wrong'")
+})
+
+test_that("makeTransformsAccountToDatasets works", {
+    makeTransformsAccountToDatasets <- demest:::makeTransformsAccountToDatasets
+    makeCollapseTransformExtra <- dembase:::makeCollapseTransformExtra
+    population <- Counts(array(c(200L, 220L, 190L,
+                                 220L, 180L, 190L),
+                               dim = c(3, 2),
+                               dimnames = list(eth = c("A", "B", "C"),
+                                               time = c("2000", "2005"))))
+    births <- Counts(array(c(40L, 30L, 10L,
+                             15L, 40L, 10L,
+                             20L, 10L, 50L),
+                           dim = c(3, 3, 1),
+                           dimnames = list(eth_parent = c("A", "B", "C"),
+                                           eth_child = c("A", "B", "C"),
+                                           time = "2001-2005")))
+    deaths <- Counts(array(c(25L, 10L, 5L),
+                           dim = c(3, 1),
+                           dimnames = list(eth = c("A", "B", "C"),
+                                           time = "2001-2005")))
+    account <- Movements(population = population,
+                         births = births,
+                         exits = list(deaths = deaths))
+    datasets <- list(population + 1L, births + 1L, deaths + 1L)
+    namesDatasets <- c("population.data", "births.data", "deaths.data")
+    seriesIndices <- 0:2
+    ans.obtained <- makeTransformsAccountToDatasets(account = account,
+                                                    datasets = datasets,
+                                                    namesDatasets = namesDatasets,
+                                                    seriesIndices = seriesIndices)
+    ans.expected <- list(makeTransform(account@population, datasets[[1]]),
+                         makeTransform(account@components[[1]], datasets[[2]]),
+                         makeTransform(account@components[[2]], datasets[[3]]))
+    ans.expected <- lapply(ans.expected, makeCollapseTransformExtra)
+    expect_identical(ans.obtained, ans.expected)
+    ## no observation models without series
+    deaths.wrong <- Counts(array(c(25L, 10L, 5L),
+                           dim = c(3, 1),
+                           dimnames = list(eth = c("A", "B", "D"),
+                                           time = "2001-2005")))
+    datasets.wrong <- list(population + 1L, births + 1L, deaths.wrong)
+    expect_error(makeTransformsAccountToDatasets(account = account,
+                                                    datasets = datasets.wrong,
+                                                    namesDatasets = namesDatasets,
+                                                 seriesIndices = seriesIndices),
+                 "unable to collapse series 'deaths' to make it compatible with dataset 'deaths.data'")
+})
+
+
+
+
 
 test_that("chooseICellComp works", {
     chooseICellComp <- demest:::chooseICellComp

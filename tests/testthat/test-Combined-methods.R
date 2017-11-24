@@ -1474,7 +1474,7 @@ test_that("updateValuesAccount works with CombinedAccountMovements", {
     updateSubsequentPopnMove <- demest:::updateSubsequentPopnMove
     updateSubsequentExpMove <- demest:::updateSubsequentExpMove
     set.seed(1)
-    population <- CountsOne(values = seq(100, 200, 10),
+    population <- CountsOne(values = seq(200, 300, 10),
                             labels = seq(2000, 2100, 10),
                             name = "time")
     births <- CountsOne(values = rpois(n = 10, lambda = 15),
@@ -1604,7 +1604,7 @@ test_that("updateValuesAccount works with CombinedAccountMovements", {
     updateSubsequentPopnMove <- demest:::updateSubsequentPopnMove
     updateSubsequentExpMove <- demest:::updateSubsequentExpMove
     set.seed(1)
-    population <- CountsOne(values = seq(100, 200, 10),
+    population <- CountsOne(values = seq(200, 300, 10),
                             labels = seq(2000, 2100, 10),
                             name = "time")
     births <- CountsOne(values = rpois(n = 10, lambda = 5),

@@ -4364,7 +4364,7 @@ test_that("diffLogDensJumpOrigDest works with CombinedAccountMovements - no age"
     initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     set.seed(0)
-    population <- Counts(array(seq(1000L, 1500L, 100L),
+    population <- Counts(array(seq(2000L, 2500L, 100L),
                                dim = c(3, 2),
                                dimnames = list(reg = c("a", "b", "c"),
                                                time = c(2000, 2005))))

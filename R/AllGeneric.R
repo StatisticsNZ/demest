@@ -313,6 +313,9 @@ setGeneric("makeOutputPrior",
            function(prior, metadata, pos)
            standardGeneric("makeOutputPrior"))
 
+setGeneric("modelUsesWeights",
+           function(object) FALSE)
+
 setGeneric("needToCenter",
            function(object) FALSE)
 

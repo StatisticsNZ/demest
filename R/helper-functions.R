@@ -2557,33 +2557,16 @@ addAgLife <- function(object, aggregate, defaultWeights) {
 }
 
 ## HAS_TESTS
-alignDatasetsToObservation <- function(datasets, observation) {
-    ans <- vector(mode = "list", length = length(observation))
-    names.datasets <- names(datasets)
-    for (i in seq_along(observation)) {
-        obs <- observation[[i]]
-        name.y <- obs@nameY
-        i.dataset <- match(name.y, names.datasets, nomatch = 0L)
-        has.dataset <- i.dataset > 0L
-        if (has.dataset)
-            ans[[i]] <- datasets[[i.dataset]]
-        else
-            stop(gettextf("'%s' has a model for '%s' but '%s' does not have a dataset called '%s'",
-                          "observation", name.y, "datasets", name.y))
-    }
-    names(ans) <- sapply(observation, function(x) methods::slot(x, "nameY"))
-    ans
-}
-
-## HAS_TESTS
 checkAndTidyDatasets <- function(datasets) {
-    names.datasets <- names(datasets)
     if (!is.list(datasets))
         stop(gettextf("'%s' has class \"%s\"",
                       "datasets", class(datasets)))
     if (identical(length(datasets), 0L))
         stop(gettextf("'%s' has length %d",
                       "datasets", 0L))
+    names.datasets <- names(datasets)
+    checkListNames(names = names.datasets,
+                   listName = "datasets")
     ans <- vector(mode = "list", length = length(datasets))
     for (i in seq_along(ans)) {
         dataset <- datasets[[i]]
@@ -2598,8 +2581,8 @@ checkAndTidyDatasets <- function(datasets) {
                           names.datasets[i]))
         dataset <- dembase::toInteger(dataset)
         ans[[i]] <- dataset
+        names(ans) <- names.datasets
     }
-    names(ans) <- names.datasets
     ans
 }
 
@@ -2871,59 +2854,58 @@ checkLengthDimInFormula <- function(y, formula, minLength = 2L) {
 }
 
 ## HAS_TESTS
-checkNamesDatasets <- function(datasets) {
-    names.datasets <- names(datasets)
-    if (is.null(names.datasets))
+checkListNames <- function(names, listName) {
+    if (is.null(names))
         stop(gettextf("'%s' does not have names",
-                      "datasets"))
-    if (any(is.na(names.datasets)))
+                      listName))
+    if (any(is.na(names)))
         stop(gettextf("names for '%s' has missing values",
-                      "datasets"))
-    if (!all(nzchar(names.datasets)))
+                      listName))
+    if (!all(nzchar(names)))
         stop(gettextf("names for '%s' has blanks",
-                      "datasets"))
-    if (any(duplicated(names.datasets)))
+                      listName))
+    if (any(duplicated(names)))
         stop(gettextf("names for '%s' has duplicates",
-                      "datasets"))
+                      listName))
     NULL
 }
 
 ## HAS_TESTS
-checkObservation <- function(observation, needsNonDefaultSeriesArg = FALSE) {
-    ## 'observation' is a list
-    if (!is.list(observation))
+checkObservationModels <- function(observationModels, needsNonDefaultSeriesArg = FALSE) {
+    ## 'observationModels' is a list
+    if (!is.list(observationModels))
         stop(gettextf("'%s' has class \"%s\"",
-                      "observation", class(observation)))
-    for (i in seq_along(observation)) {
-        obs <- observation[[i]]
+                      "observationModels", class(observationModels)))
+    for (i in seq_along(observationModels)) {
+        obs <- observationModels[[i]]
         ## all elements have class "SpecModel"
         if (!methods::is(obs, "SpecModel"))
             stop(gettextf("element %d of '%s' has class \"%s\"",
-                          i, "observation", class(obs)))
+                          i, "observationModels", class(obs)))
         ## element uses exposure
         if (!obs@useExpose@.Data)
             stop(gettextf("model %d of '%s' does not use exposure",
-                          i, "observation"))
+                          i, "observationModels"))
         ## element has name
         if (is.na(obs@nameY@.Data) || !nzchar(obs@nameY@.Data))
             stop(gettextf("element %d of '%s' has no name for response variable",
-                          i, "observation"))
+                          i, "observationModels"))
         ## specification of model is valid
         return.value <- tryCatch(methods::validObject(obs),
                                  error = function(e) e)
         if (methods::is(return.value, "error"))
-            stop(gettextf("error in observation model for '%s' : %s",
+            stop(gettextf("error in observationModels model for '%s' : %s",
                           obs@nameY@.Data, return.value$message))
         if (needsNonDefaultSeriesArg) {
             ## 'series' argument supplied if needed
             if (identical(obs@series@.Data, "y"))
-                stop(gettextf("'%s' argument not supplied in observation model for '%s'",
+                stop(gettextf("'%s' argument not supplied in observationModels model for '%s'",
                               "series", obs@nameY))
         }
         else {
             ## no 'series' argument supplied if not needed
             if (!identical(obs@series@.Data, "y"))
-                warning(gettextf("non-default argument for '%s' in observation model for '%s' ignored",
+                warning(gettextf("non-default argument for '%s' in observationModels model for '%s' ignored",
                                  "series", obs@nameY))
         }
     }
@@ -3078,10 +3060,10 @@ imputeCountsInternal <- function(object, max = NULL) {
 }
 
 ## HAS_TESTS
-initialObservation <- function(observation, datasets, y, transforms) {
-    ans <- vector(mode = "list", length = length(observation))
+initialObservationModels <- function(observationModels, datasets, y, transforms) {
+    ans <- vector(mode = "list", length = length(observationModels))
     for (i in seq_along(ans)) {
-        ans[[i]] <- initialModel(object = observation[[i]],
+        ans[[i]] <- initialModel(object = observationModels[[i]],
                                  y = datasets[[i]],
                                  exposure = dembase::collapse(y, transform = transforms[[i]]))
     }
@@ -7122,25 +7104,25 @@ makeResultsCounts <- function(finalCombineds, mcmcArgs, controlArgs, seed) {
     has.exposure <- methods::is(combined, "HasExposure")
     if (has.exposure)
         exposure <- combined@exposure
-    output.observationModels <- vector(mode = "list", length = length(observationModels))
+    output.observation.models <- vector(mode = "list", length = length(observationModels))
     if (n.sim > 0L) {
         for (i in seq_along(observationModels)) {
-            output.observationModels[[i]] <- makeOutputModel(model = observationModels[[i]],
+            output.observation.models[[i]] <- makeOutputModel(model = observationModels[[i]],
                                                        pos = pos,
                                                        mcmc = mcmc)
-            pos <- pos + changeInPos(output.observationModels[[i]])
+            pos <- pos + changeInPos(output.observation.models[[i]])
         }
         for (i in seq_along(datasets)) {
             if (any(is.na(datasets[[i]])))
                 datasets[[i]] <-
                     SkeletonMissingDataset(object = datasets[[i]],
                                            model = observationModels[[i]],
-                                           outputModel = output.observationModels[[i]],
+                                           outputModel = output.observation.models[[i]],
                                            transformComponent = transforms[[i]],
                                            skeletonComponent = output.y)
         }
     }
-    names(output.observationModels) <- names.datasets
+    names(output.observation.models) <- names.datasets
     names(datasets) <- names.datasets
     final <- finalCombineds
     names(final) <- paste("chain", seq_along(final), sep = "")
@@ -7149,7 +7131,7 @@ makeResultsCounts <- function(finalCombineds, mcmcArgs, controlArgs, seed) {
             model = output.model,
             y = output.y,
             exposure = exposure,
-            observationModels = output.observationModels,
+            observationModels = output.observation.models,
             datasets = datasets,
             mcmc = mcmc,
             control = controlArgs,
@@ -7160,7 +7142,7 @@ makeResultsCounts <- function(finalCombineds, mcmcArgs, controlArgs, seed) {
         methods::new("ResultsCountsEst",
             model = output.model,
             y = output.y,
-            observationModels = output.observationModels,
+            observationModels = output.observation.models,
             datasets = datasets,
             mcmc = mcmc,
             control = controlArgs,
@@ -9443,6 +9425,158 @@ trimNULLsFromList <- function(object) {
 
 
 ## DEMOGRAPHIC ACCOUNTS ###################################################
+
+## preparing inputs
+
+## HAS_TESTS
+alignObservationModelsToDatasets <- function(observationModels, datasets, namesDatasets) {
+    names.obs.mod <- sapply(observationModels, methods::slot, "nameY")
+    obs.not.in.data <- setdiff(names.obs.mod, namesDatasets)
+    data.not.in.obs <- setdiff(namesDatasets, names.obs.mod)
+    ## no observation models without datasets
+    if (length(obs.not.in.data) > 0L)
+        stop(gettextf("'%s' contains a model for '%s', but there is no dataset called '%s' in '%s'",
+                      "observationModels", obs.not.in.data[1L], obs.not.in.data[1L], "datasets"))
+    ## no datasets without observation models
+    if (length(data.not.in.obs) > 0L)
+        stop(gettextf("'%s' contains a dataset called '%s', but '%s' does not contain a model for '%s'",
+                      "datasets", data.not.in.obs[1L], "observationModels", data.not.in.obs[1L]))
+    ans <- vector(mode = "list", length = length(datasets))
+    for (i in seq_along(datasets)) {
+        name.dataset <- namesDatasets[i]
+        i.obs <- match(name.dataset, names.obs.mod)
+        ans[[i]] <- observationModels[[i.obs]]
+    }
+    ans
+}
+
+## HAS_TESTS
+alignSystemModelsToAccount <- function(systemModels, account) {
+    names.sys.mod <- sapply(systemModels, methods::slot, "nameY")
+    names.components <- account@namesComponents
+    names.series <- c("population", names.components)
+    sys.not.in.series <- setdiff(names.sys.mod, names.series)
+    series.not.in.sys <- setdiff(names.series, names.sys.mod)
+    ## no system models without series
+    if (length(sys.not.in.series) > 0L)
+        stop(gettextf("'%s' contains a system model for '%s', but there is no series called '%s' in '%s'",
+                      "systemModels", sys.not.in.series[1L], sys.not.in.series[1L], "account"))
+    ## no series without system models
+    if (length(series.not.in.sys) > 0L)
+        stop(gettextf("'%s' does not contain a model for series '%s' in '%s'",
+                      "systemModels", series.not.in.sys[1L], "account"))
+    ans <- vector(mode = "list", length = length(names.series))
+    for (i in seq_along(names.series)) {
+        name.series <- names.series[i]
+        i.sys <- match(name.series, names.sys.mod)
+        ans[[i]] <- systemModels[[i.sys]]
+    }
+    ans
+}
+
+## HAS_TESTS
+checkAndTidySystemWeights <- function(weights, systemModels) {
+    names.weights <- names(weights)
+    checkListNames(names = names.weights,
+                   listName = "weights")
+    names.sys.mod <- sapply(systemModels, methods::slot, "nameY")
+    weights.not.in.sys <- setdiff(names.weights, names.sys.mod)
+    ## no weights without system models (system models without weights are OK)
+    if (length(weights.not.in.sys) > 0L)
+        stop(gettextf("'%s' contains weights for '%s', but '%s' does not contain a model for '%s'",
+                      "weights", weights.not.in.sys[1L], "systemModels", weights.not.in.sys[1L]))
+    ans <- vector(mode = "list", length = length(systemModels))
+    for (i in seq_along(ans)) {
+        spec <- systemModels[[i]]
+        name.y <- spec@nameY
+        i.weights <- match(name.y, names.weights, nomatch = 0L)
+        has.weights <- i.weights > 0L
+        if (has.weights) {
+            uses.weights <- modelUsesWeights(spec)
+            if (uses.weights)
+                ans[[i]] <- weights[[i.weights]]
+            else ## weights supplied only if system model needs them
+                stop(gettextf("'%s' contains weights for '%s', but system model for '%s' does not use weights",
+                              "weights", name.y, name.y))
+        }
+        else
+            ans[[i]] <- NULL
+    }
+    ans
+}
+
+## HAS_TESTS
+checkSystemModels <- function(systemModels) {
+    ## 'systemModels' is a list
+    if (!is.list(systemModels))
+        stop(gettextf("'%s' has class \"%s\"",
+                      "systemModels", class(systemModels)))
+    for (i in seq_along(systemModels)) {
+        spec <- systemModels[[i]]
+        ## element has class "SpecModel"
+        if (!methods::is(spec, "SpecModel"))
+            stop(gettextf("element %d of '%s' has class \"%s\"",
+                          i, "systemModels", class(spec)))
+        ## specification is valid
+        return.value <- tryCatch(methods::validObject(spec),
+                                 error = function(e) e)
+        if (methods::is(return.value, "error"))
+            stop(gettextf("element %d of '%s' is invalid : %s",
+                          i, "systemModels", return.value$message))
+        ## no 'series' argument supplied
+        if (!identical(spec@series@.Data, "y"))
+            stop(gettextf("element %d of '%s' has value for '%s' [\"%s\"] : in system models, series should instead be specified via response variable",
+                          i, "systemModels", "series", spec@series@.Data))
+    }
+    NULL
+}
+
+## HAS_TESTS
+## Note that every observation model has to relate to one series,
+## but every series does not have to have an observation model.
+makeSeriesIndices <- function(observationModels, account) {
+    names.obs.mod <- sapply(observationModels, methods::slot, "series")
+    names.components <- account@namesComponents
+    names.series <- c("population", names.components)
+    obs.not.in.series <- setdiff(names.obs.mod, names.series)
+    if (length(obs.not.in.series) > 0L)
+        stop(gettextf("'%s' contains a model for '%s', but '%s' does not have a series called '%s'",
+                      "observationModels", obs.not.in.series[1L], "account", obs.not.in.series[1L]))
+    ans <- integer(length = length(observationModels))
+    for (i in seq_along(observationModels)) {
+        name.obs <- names.obs.mod[i]
+        i.series <- match(name.obs, names.series)
+        ans[i] <- i.series - 1L # 'population' has index 0; first component has index 1
+    }
+    ans
+}
+
+## HAS_TESTS
+makeTransformsAccountToDatasets <- function(account, datasets, namesDatasets, seriesIndices) {
+    population <- account@population
+    components <- account@components
+    series <- c(list(population), components)
+    names.components <- account@namesComponents
+    names.series <- c("population", names.components)
+    ans <- vector(mode = "list", length = length(datasets))
+    for (i in seq_along(ans)) {
+        dataset <- datasets[[i]]
+        index <- seriesIndices[i] + 1L
+        transform <- tryCatch(dembase::makeTransform(x = series[[index]],
+                                                     y = dataset,
+                                                     subset = TRUE,
+                                                     check = TRUE),
+                              error = function(e) e)
+        if (methods::is(transform, "error"))
+            stop(gettextf("unable to collapse series '%s' to make it compatible with dataset '%s' : %s",
+                          names.series[index], namesDatasets[i], transform$message))
+        transform <- dembase::makeCollapseTransformExtra(transform)
+        ans[[i]] <- transform
+    }
+    ans
+}
+
+
 
 ## functions for getting cell positions in other components,
 ## given a mapping, in file 'mapping-functions.R'

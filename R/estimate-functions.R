@@ -371,7 +371,7 @@ predictModel <- function(filenameEst, filenamePred, along = NULL, labels = NULL,
 #' See the documentation for \code{\link{estimateModel}} for details on
 #' model output and on MCMC settings.
 #'
-#' \code{observation} is a list of specificiations for data models,
+#' \code{observationModels} is a list of specificiations for data models,
 #' and \code{datasets} is a named list of datasets.  The response for each
 #' data model must be the name of a dataset.  See below for examples.
 #' 
@@ -380,7 +380,7 @@ predictModel <- function(filenameEst, filenamePred, along = NULL, labels = NULL,
 #' @param y An object of class
 #' \code{\link[dembase:DemographicArray-class]{Counts}} with the same
 #' structure as the counts to be estimated.
-#' @param observation A list of objects of class
+#' @param observationModels A list of objects of class
 #' \code{\linkS4class{SpecModel}} describing the relationship between 
 #' the datasets and counts.  
 #' @param datasets A named list of objects of class
@@ -397,7 +397,7 @@ predictModel <- function(filenameEst, filenamePred, along = NULL, labels = NULL,
 #' survey <- Counts(survey)
 #' y <- health + 10
 #' model <- Model(y ~ Poisson(mean ~ age + sex + region))
-#' observation <- list(Model(nat ~ PoissonBinomial(prob = 0.98)),
+#' observationModels <- list(Model(nat ~ PoissonBinomial(prob = 0.98)),
 #'                     Model(health ~ Poisson(mean ~ age)),
 #'                     Model(survey ~ Binomial(mean ~ 1)))
 #' datasets <- list(nat = nat, health = health, survey = survey)
@@ -406,7 +406,7 @@ predictModel <- function(filenameEst, filenamePred, along = NULL, labels = NULL,
 #' \dontrun{
 #' estimateCounts(model = model,
 #'                y = y,
-#'                observation = observation,
+#'                observationModels = observationModels,
 #'                datasets = datasets,
 #'                filename = filename,
 #'                nBurnin = 50,
@@ -417,7 +417,7 @@ predictModel <- function(filenameEst, filenamePred, along = NULL, labels = NULL,
 #' fetchSummary(filename)
 #' }
 #' @export
-estimateCounts <- function(model, y, exposure = NULL, observation,
+estimateCounts <- function(model, y, exposure = NULL, observationModels,
                            datasets, filename = NULL, nBurnin = 1000,
                            nSim = 1000, nChain = 5, nThin = 1,
                            parallel = TRUE, outfile = NULL, nUpdateMax = 50,
@@ -440,10 +440,9 @@ estimateCounts <- function(model, y, exposure = NULL, observation,
     checkForSubtotals(object = y, model = model, name = "y")
     exposure <- checkAndTidyExposure(exposure = exposure, y = y)
     exposure <- castExposure(exposure = exposure, model = model)
-    checkObservation(observation, needsNonDefaultSeriesArg = FALSE)
-    checkNamesDatasets(datasets)
-    datasets <- alignDatasetsToObservation(datasets = datasets,
-                                           observation = observation)
+    checkObservationModels(observationModels, needsNonDefaultSeriesArg = FALSE)
+    datasets <- alignDatasetsToObservationModels(datasets = datasets,
+                                           observationModels = observationModels)
     ## check of datasets comes after aligning,
     ## to avoid checking datasets that are not needed
     datasets <- checkAndTidyDatasets(datasets)
@@ -454,7 +453,7 @@ estimateCounts <- function(model, y, exposure = NULL, observation,
                            initialCombinedCounts(model,
                                                  y = y,
                                                  exposure = exposure,
-                                                 observation = observation,
+                                                 observationModels = observationModels,
                                                  datasets = datasets,
                                                  namesDatasets = namesDatasets,
                                                  transforms = transforms))
@@ -530,7 +529,7 @@ predictCounts <- function(filenameEst, filenamePred, along = NULL, labels = NULL
 #' \code{\link[dembase:DemographicAccount-class]{DemographicAccount}}.
 #' @param system A list of objects of class \code{\linkS4class{SpecModel}}
 #' specifying models for the demographic series.
-#' @param observation A list of objects of class
+#' @param observationModels A list of objects of class
 #' \code{\linkS4class{SpecModel}} specifying models for the datasets.
 #'
 #' @seealso \code{\link{estimateModel}}, \code{\link{estimateCounts}}

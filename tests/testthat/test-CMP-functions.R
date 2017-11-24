@@ -13,7 +13,6 @@
        if(log==FALSE){ pdf <- exp(pdf)}
       return(pdf)
     }
-
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         y <- rpois(n = 1, lambda = 10)
