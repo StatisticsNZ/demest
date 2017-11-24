@@ -40,12 +40,12 @@ test_that("finiteSDObject works with ResultsCounts", {
     d3 <- collapseDimension(y, dim = "region")
     filename <- tempfile()
     estimateCounts(model = Model(y ~ Poisson(mean ~ age + sex + region, useExpose = FALSE),
-                       jump = 0.3,
-                       age ~ Exch()),
+                                 jump = 0.3,
+                                 age ~ Exch()),
                    y = y,
-                   observation = list(Model(d1 ~ Binomial(mean ~ 1), jump = 0.03),
-                       Model(d2 ~ Poisson(mean ~ region), jump = 0.2, lower = 0.3),
-                       Model(d3 ~ PoissonBinomial(prob = 0.95))),
+                   dataModels = list(Model(d1 ~ Binomial(mean ~ 1), jump = 0.03),
+                                     Model(d2 ~ Poisson(mean ~ region), jump = 0.2, lower = 0.3),
+                                     Model(d3 ~ PoissonBinomial(prob = 0.95))),
                    datasets = list(d1 = d1, d2 = d2, d3 = d3),
                    filename = filename,
                    nBurnin = 5,
@@ -54,17 +54,17 @@ test_that("finiteSDObject works with ResultsCounts", {
     obj <- fetchResultsObject(filename)
     ans.obtained <- finiteSDObject(obj, filename = filename)
     ans.expected <- list(model = finiteSDInner(model = obj@final[[1L]]@model,
-                             filename = filename,
-                             where = "model",
-                             probs = c(0.025, 0.5, 0.975),
-                             iterations = NULL),
-                         observationModels = list(d1 = NULL,
-                             d2 = finiteSDInner(model = obj@final[[1L]]@observationModels[[2]],
-                                 filename = filename,
-                                 where = c("observation", "d2"),
-                                 probs = c(0.025, 0.5, 0.975),
-                                 iterations = NULL),
-                             d3 = NULL))
+                                               filename = filename,
+                                               where = "model",
+                                               probs = c(0.025, 0.5, 0.975),
+                                               iterations = NULL),
+                         dataModels = list(d1 = NULL,
+                                           d2 = finiteSDInner(model = obj@final[[1L]]@dataModels[[2]],
+                                                              filename = filename,
+                                                              where = c("dataModels", "d2"),
+                                                              probs = c(0.025, 0.5, 0.975),
+                                                              iterations = NULL),
+                                           d3 = NULL))
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -208,7 +208,7 @@ test_that("rescalePriors works with ResultsCounts", {
                        jump = 0.3,
                        age ~ Exch()),
                    y = y,
-                   observation = list(Model(d1 ~ Binomial(mean ~ 1), jump = 0.03),
+                   dataModels = list(Model(d1 ~ Binomial(mean ~ 1), jump = 0.03),
                        Model(d2 ~ Poisson(mean ~ region), jump = 0.2, lower = 0.3),
                        Model(d3 ~ PoissonBinomial(prob = 0.95))),
                    datasets = list(d1 = d1, d2 = d2, d3 = d3),
@@ -230,8 +230,8 @@ test_that("rescalePriors works with ResultsCounts", {
                            "model.prior.age",
                            "model.prior.sex",
                            "model.prior.region",
-                           "observation.d2.prior.(Intercept)",
-                           "observation.d2.prior.region")))
+                           "dataModels.d2.prior.(Intercept)",
+                           "dataModels.d2.prior.region")))
 })
 
 
@@ -368,7 +368,7 @@ test_that("whereMetropStat works with ResultsCounts", {
                        jump = 0.3,
                        age ~ Exch()),
                    y = y,
-                   observation = list(Model(d1 ~ Binomial(mean ~ 1), jump = 0.03),
+                   dataModels = list(Model(d1 ~ Binomial(mean ~ 1), jump = 0.03),
                        Model(d2 ~ Poisson(mean ~ region), jump = 0.2, lower = 0.3),
                        Model(d3 ~ PoissonBinomial(prob = 0.95))),
                    datasets = list(d1 = d1, d2 = d2, d3 = d3),
@@ -380,17 +380,17 @@ test_that("whereMetropStat works with ResultsCounts", {
     expect_true(validObject(object))
     ans.obtained <- whereMetropStat(object, FUN = whereAcceptance)
     ans.expected <- list(c("model", "likelihood", "acceptCount"),
-                         c("observationModels", "d1", "likelihood", "acceptProb"),
-                         c("observationModels", "d2", "likelihood", "acceptRate"))
+                         c("dataModels", "d1", "likelihood", "acceptProb"),
+                         c("dataModels", "d2", "likelihood", "acceptRate"))
     expect_identical(ans.obtained, ans.expected)
     ans.obtained <- whereMetropStat(object, FUN = whereAutocorr)
     ans.expected <- list(c("model", "likelihood", "count"),
-                         c("observationModels", "d1", "likelihood", "prob"),
-                         c("observationModels", "d2", "likelihood", "rate"))
+                         c("dataModels", "d1", "likelihood", "prob"),
+                         c("dataModels", "d2", "likelihood", "rate"))
     expect_identical(ans.obtained, ans.expected)
     ans.obtained <- whereMetropStat(object, FUN = whereJump)
     ans.expected <- list(c("model", "likelihood", "jumpCount"),
-                         c("observationModels", "d1", "likelihood", "jumpProb"),
-                         c("observationModels", "d2", "likelihood", "jumpRate"))
+                         c("dataModels", "d1", "likelihood", "jumpProb"),
+                         c("dataModels", "d2", "likelihood", "jumpRate"))
     expect_identical(ans.obtained, ans.expected)
 })

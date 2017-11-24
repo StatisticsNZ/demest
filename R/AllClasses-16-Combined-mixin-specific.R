@@ -104,7 +104,7 @@ setClass("DatasetsMixin",
          contains = "VIRTUAL",
          validity = function(object) {
              datasets <- object@datasets
-             observationModels <- object@observationModels
+             dataModels <- object@dataModels
              ## all elements of 'datasets' have class "Counts"
              if (!all(sapply(datasets, is, "Counts")))
                  return(gettextf("'%s' has elements not of class \"%s\"",
@@ -117,10 +117,10 @@ setClass("DatasetsMixin",
              if (!is.null(names(datasets)))
                  return(gettextf("'%s' has names",
                                  "datasets"))
-             ## 'observationModels' and 'datasets' have same length
-             if (!identical(length(observationModels), length(datasets)))
+             ## 'dataModels' and 'datasets' have same length
+             if (!identical(length(dataModels), length(datasets)))
                  return(gettextf("'%s' and '%s' have different lengths",
-                                 "observationModels", "datasets"))
+                                 "dataModels", "datasets"))
              TRUE
          })
 
@@ -703,7 +703,7 @@ setClass("NamesDatasetsMixin",
          contains = "VIRTUAL",
          validity = function(object) {
              namesDatasets <- object@namesDatasets
-             observationModels <- object@observationModels
+             dataModels <- object@dataModels
              hasMissing <- function(x) any(is.na(x))
              ## 'namesDatasets' has no missing values
              if (hasMissing(namesDatasets))
@@ -717,10 +717,10 @@ setClass("NamesDatasetsMixin",
              if (any(duplicated(namesDatasets)))
                  return(gettextf("'%s' has duplicates",
                                  "namesDatasets"))
-             ## 'observationModels' and 'namesDatasets' have same length
-             if (!identical(length(observationModels), length(namesDatasets)))
+             ## 'dataModels' and 'namesDatasets' have same length
+             if (!identical(length(dataModels), length(namesDatasets)))
                  return(gettextf("'%s' and '%s' have different lengths",
-                                 "observationModels", "namesDatasets"))
+                                 "dataModels", "namesDatasets"))
              TRUE
          })
 
@@ -774,23 +774,23 @@ setClass("NotHasSubtotals",
          })
 
 ## HAS_TESTS
-setClass("ObservationModelsMixin",
-         slots = c(observationModels = "list"),
+setClass("DataModelsMixin",
+         slots = c(dataModels = "list"),
          contains = "VIRTUAL",
          validity = function(object) {
-             observationModels <- object@observationModels
-             ## all elements of 'observationModels' have class "Model"
-             if (!all(sapply(observationModels, methods::is, "Model")))
+             dataModels <- object@dataModels
+             ## all elements of 'dataModels' have class "Model"
+             if (!all(sapply(dataModels, methods::is, "Model")))
                  return(gettextf("'%s' has elements not of class \"%s\"",
-                                 "observationModels", "Model"))
-             ## all elements of 'observationModels' have class "UseExposure"
-             if (!all(sapply(observationModels, methods::is, "UseExposure")))
+                                 "dataModels", "Model"))
+             ## all elements of 'dataModels' have class "UseExposure"
+             if (!all(sapply(dataModels, methods::is, "UseExposure")))
                  return(gettextf("'%s' has elements not of class \"%s\"",
-                                 "observationModels", "UseExposure"))
-             ## 'observationModels' does not have names
-             if (!is.null(names(observationModels)))
+                                 "dataModels", "UseExposure"))
+             ## 'dataModels' does not have names
+             if (!is.null(names(dataModels)))
                  return(gettextf("'%s' has names",
-                                 "observationModels"))
+                                 "dataModels"))
              TRUE
          })
 
@@ -820,24 +820,24 @@ setClass("ProbPopnMixin",
          })
 
 ## NO_TESTS
-## 'seriesIndices' is a mapping from observationModels models
+## 'seriesIndices' is a mapping from dataModels models
 ## to demographic series.  'seriesIndices' equals 0L when
-## the observationModels model maps back to population
+## the dataModels model maps back to population
 setClass("SeriesIndicesMixin",
          slots = c(seriesIndices = "integer"),
          contains = "VIRTUAL",
          validity = function(object) {
              seriesIndices <- object@seriesIndices
-             observationModels <- object@observationModels
+             dataModels <- object@dataModels
              components <- object@account@components
              ## 'seriesIndices' does not have missing values
              if (any(is.na(seriesIndices)))
                  return(gettextf("'%s' has missing values",
                                  "seriesIndices"))
-             ## 'seriesIndices' has same length as 'observationModels'
-             if (!identical(length(observationModels), length(seriesIndices)))
+             ## 'seriesIndices' has same length as 'dataModels'
+             if (!identical(length(dataModels), length(seriesIndices)))
                  return(gettextf("'%s' and '%s' have different lengths",
-                                 "observationModels", "seriesIndices"))
+                                 "dataModels", "seriesIndices"))
              ## elements of 'seriesIndices' inside valid range
              valid.range <- c(0L, seq_along(components))
              if (!all(seriesIndices %in% valid.range))
@@ -951,7 +951,7 @@ setClass("TransformsMixin",
          contains = "VIRTUAL",
          validity = function(object) {
              transforms <- object@transforms
-             observationModels <- object@observationModels
+             dataModels <- object@dataModels
              datasets <- object@datasets
              namesDatasets <- object@namesDatasets
              dimBefore <- function(x) x@dimBefore
@@ -963,10 +963,10 @@ setClass("TransformsMixin",
              if (!is.null(names(transforms)))
                  return(gettextf("'%s' has names",
                                  "transforms"))
-             ## 'observationModels' and 'transforms' have same length
-             if (!identical(length(observationModels), length(transforms)))
+             ## 'dataModels' and 'transforms' have same length
+             if (!identical(length(dataModels), length(transforms)))
                  return(gettextf("'%s' and '%s' have different lengths",
-                                 "observationModels", "transforms"))
+                                 "dataModels", "transforms"))
              ## 'transforms' have 'dimAfter' consistent with datasets
              for (i in seq_along(datasets)) {
                  if (!identical(dim(datasets[[i]]), transforms[[i]]@dimAfter))

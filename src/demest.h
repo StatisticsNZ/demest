@@ -115,7 +115,7 @@ SEXP
   model_sym,
   exposure_sym,
   y_sym,
-  observationModels_sym,
+  dataModels_sym,
   datasets_sym,
   transforms_sym,
   
@@ -530,7 +530,7 @@ double logLikelihood_NormalFixedUseExp(SEXP model_R, int count,
 double logLikelihood(SEXP model_R, int count, 
                                 SEXP dataset_R, int i);
 SEXP diffLogLik_R(SEXP yProp_R, SEXP y_R, SEXP indicesY_R, 
-        SEXP observation_R, SEXP datasets_R, SEXP transforms_R);
+        SEXP dataModels_R, SEXP datasets_R, SEXP transforms_R);
 
 /* iterators */
 void advanceA(SEXP iterator_R);
@@ -667,16 +667,16 @@ void updateVarsigma(SEXP object, SEXP y_R);
 
 /* update counts */
 void updateCountsPoissonNotUseExp(SEXP y_R, SEXP model_R, 
-            SEXP observation_R, SEXP datasets_R, SEXP transforms_R);
+            SEXP dataModels_R, SEXP datasets_R, SEXP transforms_R);
 void updateCountsPoissonUseExp(SEXP y_R, SEXP model_R, 
-                        SEXP exposure_R, SEXP observation_R, 
+                        SEXP exposure_R, SEXP dataModels_R, 
                         SEXP datasets_R, SEXP transforms_R);
 void updateCountsBinomial(SEXP y_R, SEXP model_R, 
-                        SEXP exposure_R, SEXP observation_R, 
+                        SEXP exposure_R, SEXP dataModels_R, 
                         SEXP datasets_R, SEXP transforms_R);
 void 
-updateObservationCounts(SEXP y_R, SEXP observation_R, 
-                        SEXP datasets_R, SEXP transforms_R);
+updateDataModelsCounts(SEXP y_R, SEXP dataModels_R, 
+		       SEXP datasets_R, SEXP transforms_R);
 
 /* transfer param model */
 void transferParamModel(SEXP model_R, const char *filename,

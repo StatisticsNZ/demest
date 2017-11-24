@@ -87,7 +87,7 @@
     
     double diffLogLik(int *yProp, SEXP y_R, 
                     int *indices, int n_element_indices_y, 
-                SEXP observation_R, SEXP datasets_R, SEXP transforms_R);
+                SEXP dataModels_R, SEXP datasets_R, SEXP transforms_R);
     
     void rmvnorm1_Internal(double *ans, double *mean, double *var, int n);
     

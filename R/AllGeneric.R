@@ -245,13 +245,13 @@ setGeneric("hasEstimated",
 
 setGeneric("initialCombinedAccount",
            function(account, systemModels, systemWeights,
-                    observationModels, seriesIndices, 
+                    dataModels, seriesIndices, 
                     datasets, namesDatasets, transforms,
                     dominant = c("Female", "Male"))
            standardGeneric("initialCombinedAccount"))
 
 setGeneric("initialCombinedCounts",
-           function(object, y, exposure, observationModels, datasets,
+           function(object, y, exposure, dataModels, datasets,
                     namesDatasets, transforms)
            standardGeneric("initialCombinedCounts"))
 
@@ -312,6 +312,9 @@ setGeneric("makeOutputModel",
 setGeneric("makeOutputPrior",
            function(prior, metadata, pos)
            standardGeneric("makeOutputPrior"))
+
+setGeneric("modelUsesWeights",
+           function(object) FALSE)
 
 setGeneric("needToCenter",
            function(object) FALSE)

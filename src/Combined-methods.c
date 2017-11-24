@@ -196,7 +196,7 @@ updateCombined_CombinedCountsPoissonNotHasExp(SEXP object_R,
 {
     SEXP model_R = GET_SLOT(object_R, model_sym);
     SEXP y_R = GET_SLOT(object_R, y_sym);
-    SEXP observationModels_R = GET_SLOT(object_R, observationModels_sym);
+    SEXP dataModels_R = GET_SLOT(object_R, dataModels_sym);
     SEXP datasets_R = GET_SLOT(object_R, datasets_sym);
     SEXP transforms_R = GET_SLOT(object_R, transforms_sym);
     
@@ -206,21 +206,21 @@ updateCombined_CombinedCountsPoissonNotHasExp(SEXP object_R,
 
 /*                     y <- updateCountsPoissonNotUseExp(y = y,
                                                         model = model,
-                                                        observationModels = observationModels,
+                                                        dataModels = dataModels,
                                                         datasets = datasets,
                                                         transforms = transforms)
                       model <- updateModelNotUseExp(object = model,
                                                     y = y)
-                      observationModels <- updateObservationCounts(observationModels = observationModels,
+                      dataModels <- updateDataModelsCounts(dataModels = dataModels,
                                                              datasets = datasets,
                                                              transforms = transforms,
  */                
-        updateCountsPoissonNotUseExp(y_R, model_R, observationModels_R,
+        updateCountsPoissonNotUseExp(y_R, model_R, dataModels_R,
                                         datasets_R, transforms_R);
         
         updateModelNotUseExp_Internal(model_R, y_R, i_method_model);
         
-        updateObservationCounts(y_R, observationModels_R, datasets_R,
+        updateDataModelsCounts(y_R, dataModels_R, datasets_R,
                                         transforms_R);
         
         --nUpdate;
@@ -230,27 +230,27 @@ updateCombined_CombinedCountsPoissonNotHasExp(SEXP object_R,
 /*                  y <- object@y
                   model <- object@model
                   exposure <- object@exposure
-                  observationModels <- object@observationModels
+                  dataModels <- object@dataModels
                   datasets <- object@datasets
                   transforms <- object@transforms
                   for (i in seq_len(nUpdate)) {
                       y <- updateCountsPoissonUseExp(y = y,
                                                      model = model,
                                                      exposure = exposure,
-                                                     observationModels = observationModels,
+                                                     dataModels = dataModels,
                                                      datasets = datasets,
                                                      transforms = transforms)
                       model <- updateModelUseExp(object = model,
                                                  y = y,
                                                  exposure = exposure)
-                      observationModels <- updateObservationCounts(observationModels = observationModels,
+                      dataModels <- updateDataModelsCounts(dataModels = dataModels,
                                                              datasets = datasets,
                                                              transforms = transforms,
                                                              y = y)
                   }
                   object@y <- y
                   object@model <- model
-                  object@observationModels <- observationModels
+                  object@dataModels <- dataModels
                   object
 */
 
@@ -261,7 +261,7 @@ updateCombined_CombinedCountsPoissonHasExp(SEXP object_R, int nUpdate)
     SEXP model_R = GET_SLOT(object_R, model_sym);
     SEXP y_R = GET_SLOT(object_R, y_sym);
     SEXP exposure_R = GET_SLOT(object_R, exposure_sym);
-    SEXP observationModels_R = GET_SLOT(object_R, observationModels_sym);
+    SEXP dataModels_R = GET_SLOT(object_R, dataModels_sym);
     SEXP datasets_R = GET_SLOT(object_R, datasets_sym);
     SEXP transforms_R = GET_SLOT(object_R, transforms_sym);
     
@@ -272,23 +272,23 @@ updateCombined_CombinedCountsPoissonHasExp(SEXP object_R, int nUpdate)
 /*                                           y <- updateCountsPoissonUseExp(y = y,
                                                      model = model,
                                                      exposure = exposure,
-                                                     observationModels = observationModels,
+                                                     dataModels = dataModels,
                                                      datasets = datasets,
                                                      transforms = transforms)
                       model <- updateModelUseExp(object = model,
                                                  y = y,
                                                  exposure = exposure)
-                      observationModels <- updateObservationCounts(observationModels = observationModels,
+                      dataModels <- updateDataModelsCounts(dataModels = dataModels,
                                                              datasets = datasets,
                                                              transforms = transforms,
                                                              y = y)
 
  */                
         updateCountsPoissonUseExp(y_R, model_R, 
-                                exposure_R, observationModels_R,
+                                exposure_R, dataModels_R,
                                 datasets_R, transforms_R);
         updateModelUseExp_Internal(model_R, y_R, exposure_R, i_method_model);
-        updateObservationCounts(y_R, observationModels_R, datasets_R,
+        updateDataModelsCounts(y_R, dataModels_R, datasets_R,
                                         transforms_R);
         --nUpdate;
     }
@@ -301,7 +301,7 @@ updateCombined_CombinedCountsBinomial(SEXP object_R, int nUpdate)
     SEXP model_R = GET_SLOT(object_R, model_sym);
     SEXP y_R = GET_SLOT(object_R, y_sym);
     SEXP exposure_R = GET_SLOT(object_R, exposure_sym);
-    SEXP observationModels_R = GET_SLOT(object_R, observationModels_sym);
+    SEXP dataModels_R = GET_SLOT(object_R, dataModels_sym);
     SEXP datasets_R = GET_SLOT(object_R, datasets_sym);
     SEXP transforms_R = GET_SLOT(object_R, transforms_sym);
     
@@ -312,13 +312,13 @@ updateCombined_CombinedCountsBinomial(SEXP object_R, int nUpdate)
 /*                        y <- updateCountsBinomial(y = y,
                                                 model = model,
                                                 exposure = exposure,
-                                                observationModels = observationModels,
+                                                dataModels = dataModels,
                                                 datasets = datasets,
                                                 transforms = transforms)
                       model <- updateModelUseExp(object = model,
                                                  y = y,
                                                  exposure = exposure)
-                      observationModels <- updateObservationCounts(observationModels = observationModels,
+                      dataModels <- updateDataModelsCounts(dataModels = dataModels,
                                                              datasets = datasets,
                                                              transforms = transforms,
                                                              y = y)
@@ -326,12 +326,12 @@ updateCombined_CombinedCountsBinomial(SEXP object_R, int nUpdate)
  */                
         
         updateCountsBinomial(y_R, model_R, 
-                                exposure_R, observationModels_R,
+                                exposure_R, dataModels_R,
                                 datasets_R, transforms_R);
         
         updateModelUseExp_Internal(model_R, y_R, exposure_R, i_method_model);
         
-        updateObservationCounts(y_R, observationModels_R, datasets_R,
+        updateDataModelsCounts(y_R, dataModels_R, datasets_R,
                                         transforms_R);
         
         --nUpdate;

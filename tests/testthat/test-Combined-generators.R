@@ -319,12 +319,12 @@ test_that("initialCombinedCounts creates object of class CombinedCountsPoissonNo
     transforms <- list(makeTransform(x = y, y = datasets[[1]], subset = TRUE),
                        makeTransform(x = y, y = datasets[[2]], subset = TRUE))
     transforms <- lapply(transforms, makeCollapseTransformExtra)
-    observation <- list(Model(tax ~ Poisson(mean ~ age + sex)),
+    data.models <- list(Model(tax ~ Poisson(mean ~ age + sex)),
                         Model(census ~ PoissonBinomial(prob = 0.9)))
     x <- initialCombinedCounts(object = object,
                                y = y,
                                exposure = NULL,
-                               observation = observation,
+                               dataModels = data.models,
                                datasets = datasets,
                                namesDatasets = namesDatasets,
                                transforms = transforms)
@@ -350,12 +350,12 @@ test_that("initialCombinedCounts creates object of class CombinedCountsPoissonNo
     transforms <- list(makeTransform(x = y, y = datasets[[1]], subset = TRUE),
                        makeTransform(x = y, y = datasets[[2]], subset = TRUE))
     transforms <- lapply(transforms, makeCollapseTransformExtra)
-    observation <- list(Model(tax ~ Poisson(mean ~ age + sex)),
+    data.models <- list(Model(tax ~ Poisson(mean ~ age + sex)),
                         Model(census ~ PoissonBinomial(prob = 0.9)))
     x <- initialCombinedCounts(object = object,
                                y = y,
                                exposure = NULL,
-                               observation = observation,
+                               dataModels = data.models,
                                datasets = datasets,
                                namesDatasets = namesDatasets,
                                transforms = transforms)
@@ -385,12 +385,12 @@ test_that("initialCombinedCounts creates object of class CombinedCountsPoissonHa
     transforms <- list(makeTransform(x = y, y = datasets[[1]], subset = TRUE),
                        makeTransform(x = y, y = datasets[[2]], subset = TRUE))
     transforms <- lapply(transforms, makeCollapseTransformExtra)
-    observation <- list(Model(tax ~ Poisson(mean ~ age + sex)),
+    data.models <- list(Model(tax ~ Poisson(mean ~ age + sex)),
                         Model(census ~ PoissonBinomial(prob = 0.9)))
     x <- initialCombinedCounts(object = object,
                                y = y,
                                exposure = exposure,
-                               observation = observation,
+                               dataModels = data.models,
                                datasets = datasets,
                                namesDatasets = namesDatasets,
                                transforms = transforms)
@@ -418,12 +418,12 @@ test_that("initialCombinedCounts creates object of class CombinedCountsPoissonHa
     transforms <- list(makeTransform(x = y, y = datasets[[1]], subset = TRUE),
                        makeTransform(x = y, y = datasets[[2]], subset = TRUE))
     transforms <- lapply(transforms, makeCollapseTransformExtra)
-    observation <- list(Model(tax ~ Poisson(mean ~ age + sex)),
+    data.models <- list(Model(tax ~ Poisson(mean ~ age + sex)),
                         Model(census ~ PoissonBinomial(prob = 0.9)))
     x <- initialCombinedCounts(object = object,
                                y = y,
                                exposure = exposure,
-                               observation = observation,
+                               dataModels = data.models,
                                datasets = datasets,
                                namesDatasets = namesDatasets,
                                transforms = transforms)
@@ -452,12 +452,12 @@ test_that("initialCombinedCounts creates object of class CombinedCountsBinomial 
     transforms <- list(makeTransform(x = y, y = datasets[[1]], subset = TRUE),
                        makeTransform(x = y, y = datasets[[2]], subset = TRUE))
     transforms <- lapply(transforms, makeCollapseTransformExtra)
-    observation <- list(Model(tax ~ Poisson(mean ~ age + sex)),
+    data.models <- list(Model(tax ~ Poisson(mean ~ age + sex)),
                         Model(census ~ PoissonBinomial(prob = 0.9)))
     x <- initialCombinedCounts(object = object,
                                y = y,
                                exposure = exposure,
-                               observation = observation,
+                               dataModels = data.models,
                                datasets = datasets,
                                namesDatasets = namesDatasets,
                                transforms = transforms)
@@ -486,7 +486,7 @@ test_that("initialCombinedCounts throws appropriate errors with CombinedCountsBi
     transforms <- list(makeTransform(x = y, y = datasets[[1]], subset = TRUE),
                        makeTransform(x = y, y = datasets[[2]], subset = TRUE))
     transforms <- lapply(transforms, makeCollapseTransformExtra)
-    observation <- list(Model(tax ~ Poisson(mean ~ age + sex)),
+    data.models <- list(Model(tax ~ Poisson(mean ~ age + sex)),
                         Model(census ~ PoissonBinomial(prob = 0.9)))
     ## y > exposure
     y.wrong <- y
@@ -494,7 +494,7 @@ test_that("initialCombinedCounts throws appropriate errors with CombinedCountsBi
     expect_error(initialCombinedCounts(object = object,
                                        y = y.wrong,
                                        exposure = exposure,
-                                       observation = observation,
+                                       dataModels = data.models,
                                        datasets = datasets,
                                        namesDatasets = namesDatasets,
                                        transforms = transforms),
@@ -525,7 +525,7 @@ test_that("initialCombinedAccount creates object of class CombinedAccountMovemen
                          Model(births ~ Poisson(mean ~ 1)),
                          Model(deaths ~ Poisson(mean ~ 1)))
     systemWeights <- rep(list(NULL), 3)
-    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
+    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(2L, 0L)
     datasets <- list(Counts(array(7L,
@@ -541,7 +541,7 @@ test_that("initialCombinedAccount creates object of class CombinedAccountMovemen
     x <- initialCombinedAccount(account = account,
                                 systemModels = systemModels,
                                 systemWeights = systemWeights,
-                                observationModels = observationModels,
+                                dataModels = data.models,
                                 seriesIndices = seriesIndices,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
@@ -638,7 +638,7 @@ test_that("initialCombinedAccount creates object of class CombinedAccountMovemen
     departures <- collapseDimension(emigration, dimension = "sex")
     datasets <- list(census, register, reg.births, address.change, reg.deaths, arrivals, departures)
     namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths", "arrivals", "departures")
-    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
                               Model(register ~ Poisson(mean ~ 1), series = "population"),
                               Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
@@ -657,7 +657,7 @@ test_that("initialCombinedAccount creates object of class CombinedAccountMovemen
     x <- initialCombinedAccount(account = account,
                                 systemModels = systemModels,
                                 systemWeights = systemWeights,
-                                observationModels = observationModels,
+                                dataModels = data.models,
                                 seriesIndices = seriesIndices,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,

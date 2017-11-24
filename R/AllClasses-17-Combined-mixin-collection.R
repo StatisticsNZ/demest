@@ -34,9 +34,9 @@ setClass("MovementsAgeMixin",
                       "IteratorAccMixin",
                       "MappingsToAccMixin"))
 
-setClass("ObservationMixin",
+setClass("DataMixin",
          contains = c("VIRTUAL",
-                      "ObservationModelsMixin",
+                      "DataModelsMixin",
                       "DatasetsMixin",
                       "NamesDatasetsMixin",
                       "TransformsMixin"))

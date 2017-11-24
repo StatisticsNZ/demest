@@ -246,16 +246,16 @@ setMethod("initialCombinedCounts",
           signature(object = "SpecPoissonVarying",
                     y = "Counts",
                     exposure = "ANY",
-                    observationModels = "list",
+                    dataModels = "list",
                     datasets = "list",
                     namesDatasets = "character",
                     transforms = "list"),
-          function(object, y, exposure, observationModels, datasets,
+          function(object, y, exposure, dataModels, datasets,
                    namesDatasets, transforms) {
               y <- imputeCountsInternal(y)
-              for (i in seq_along(observationModels)) {
+              for (i in seq_along(dataModels)) {
                   y.collapsed <- dembase::collapse(y, transform = transforms[[i]])
-                  observationModels[[i]] <- initialModel(observationModels[[i]],
+                  dataModels[[i]] <- initialModel(dataModels[[i]],
                                                          y = datasets[[i]],
                                                          exposure = y.collapsed)
               }
@@ -266,7 +266,7 @@ setMethod("initialCombinedCounts",
                                model = model,
                                y = y,
                                exposure = exposure,
-                               observationModels = observationModels,
+                               dataModels = dataModels,
                                datasets = datasets,
                                namesDatasets = namesDatasets,
                                transforms = transforms)
@@ -276,7 +276,7 @@ setMethod("initialCombinedCounts",
                   methods::new("CombinedCountsPoissonNotHasExp",
                                model = model,
                                y = y,
-                               observationModels = observationModels,
+                               dataModels = dataModels,
                                datasets = datasets,
                                namesDatasets = namesDatasets,
                                transforms = transforms)
@@ -288,11 +288,11 @@ setMethod("initialCombinedCounts",
           signature(object = "SpecBinomialVarying",
                     y = "Counts",
                     exposure = "ANY",
-                    observationModels = "list",
+                    dataModels = "list",
                     datasets = "list",
                     namesDatasets = "character",
                     transforms = "list"),
-          function(object, y, exposure, observationModels, datasets,
+          function(object, y, exposure, dataModels, datasets,
                    namesDatasets, transforms) {
               if (is.null(exposure))
                   stop(gettextf("binomial model, but no '%s' argument supplied",
@@ -301,9 +301,9 @@ setMethod("initialCombinedCounts",
               if (any(y[!is.na(y)] > exposure[!is.na(y)]))
                   stop(gettextf("'%s' greater than '%s'",
                                 "y", "exposure"))
-              for (i in seq_along(observationModels)) {
+              for (i in seq_along(dataModels)) {
                   y.collapsed <- dembase::collapse(y, transform = transforms[[i]])
-                  observationModels[[i]] <- initialModel(observationModels[[i]],
+                  dataModels[[i]] <- initialModel(dataModels[[i]],
                                                    y = datasets[[i]],
                                                    exposure = y.collapsed)
               }
@@ -312,7 +312,7 @@ setMethod("initialCombinedCounts",
                            model = model,
                            y = y,
                            exposure = exposure,
-                           observationModels = observationModels,
+                           dataModels = dataModels,
                            datasets = datasets,
                            namesDatasets = namesDatasets,
                            transforms = transforms)
@@ -325,13 +325,13 @@ setMethod("initialCombinedAccount",
           signature(account = "Movements",
                     systemModels = "list",
                     systemWeights = "list",
-                    observationModels = "list",
+                    dataModels = "list",
                     seriesIndices = "integer",
                     datasets = "list",
                     namesDatasets = "character",
                     transforms = "list"),
           function(account, systemModels, systemWeights,
-                   observationModels, seriesIndices, 
+                   dataModels, seriesIndices, 
                    datasets, namesDatasets, transforms,
                    dominant = c("Female", "Male")) {
               population <- account@population
@@ -412,6 +412,7 @@ setMethod("initialCombinedAccount",
               }
               for (i in seq_along(systemModels)) {
                   series <- if (i == 1L) population else components[[i - 1L]]
+                  spec <- systemModels[[i]]
                   if (model.uses.exposure[i]) {
                       if (i - 1L == i.births)
                           expose <- collapse(exposure,
@@ -422,18 +423,30 @@ setMethod("initialCombinedAccount",
                       if (!is.null(transform))
                           expose <- extend(expose,
                                            transform = transform)
-                      systemModels[[i]] <- initialModel(systemModels[[i]],
+                      systemModels[[i]] <- initialModel(spec,
                                                         y = series,
                                                         exposure = expose)
                   }
                   else {
                       weights <- systemWeights[[i]]
-                      if (is.null(weights))
-                          systemModels[[i]] <- initialModel(systemModels[[i]],
-                                                            y = series,
-                                                            exposure = NULL)
+                      if (is.null(weights)) {
+                          uses.weights <- modelUsesWeights(spec)
+                          if (uses.weights) {
+                              .Data <- array(1, dim = dim(series), dimnames = dimnames(series))
+                              metadata <- series@metadata
+                              weights <- methods::new("Counts", .Data = .Data, metadata = metadata)
+                              systemModels[[i]] <- initialModel(spec,
+                                                                y = series,
+                                                                weights = weights)
+                          }
+                          else {
+                              systemModels[[i]] <- initialModel(spec,
+                                                                y = series,
+                                                                exposure = NULL)
+                          }
+                      }
                       else {
-                          systemModels[[i]] <- initialModel(systemModels[[i]],
+                          systemModels[[i]] <- initialModel(spec,
                                                             y = series,
                                                             weights = weights)
                       }
@@ -451,15 +464,15 @@ setMethod("initialCombinedAccount",
               expected.exposure <- new("Exposure",
                                        .Data = expected.exposure@.Data,
                                        metadata = expected.exposure@metadata)
-              for (i in seq_along(observationModels)) {
+              for (i in seq_along(dataModels)) {
                   series.index <- seriesIndices[i]
                   series <- if (series.index == 0L) population else components[[series.index]]
                   series.collapsed <- dembase::collapse(series, transform = transforms[[i]])
-                  model <- observationModels[[i]]
+                  model <- dataModels[[i]]
                   if (methods::is(model, "Poisson"))
                       series.collapsed <- dembase::toDouble(series.collapsed)
                   dataset <- datasets[[i]]
-                  observationModels[[i]] <- initialModel(model,
+                  dataModels[[i]] <- initialModel(model,
                                                          y = dataset,
                                                          exposure = series.collapsed)
               }
@@ -506,7 +519,7 @@ setMethod("initialCombinedAccount",
                                modelUsesExposure = model.uses.exposure,
                                namesDatasets = namesDatasets,                           
                                nCellAccount = n.cell.account,
-                               observationModels = observationModels,
+                               dataModels = dataModels,
                                probPopn = prob.popn,
                                seriesIndices = seriesIndices,
                                systemModels = systemModels,
@@ -550,7 +563,7 @@ setMethod("initialCombinedAccount",
                                modelUsesExposure = model.uses.exposure,
                                namesDatasets = namesDatasets,
                                nCellAccount = n.cell.account,
-                               observationModels = observationModels,
+                               dataModels = dataModels,
                                probPopn = prob.popn,
                                seriesIndices = seriesIndices,
                                systemModels = systemModels,

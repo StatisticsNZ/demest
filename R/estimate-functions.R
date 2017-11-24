@@ -371,7 +371,7 @@ predictModel <- function(filenameEst, filenamePred, along = NULL, labels = NULL,
 #' See the documentation for \code{\link{estimateModel}} for details on
 #' model output and on MCMC settings.
 #'
-#' \code{observation} is a list of specificiations for data models,
+#' \code{dataModels} is a list of specificiations for data models,
 #' and \code{datasets} is a named list of datasets.  The response for each
 #' data model must be the name of a dataset.  See below for examples.
 #' 
@@ -380,7 +380,7 @@ predictModel <- function(filenameEst, filenamePred, along = NULL, labels = NULL,
 #' @param y An object of class
 #' \code{\link[dembase:DemographicArray-class]{Counts}} with the same
 #' structure as the counts to be estimated.
-#' @param observation A list of objects of class
+#' @param dataModels A list of objects of class
 #' \code{\linkS4class{SpecModel}} describing the relationship between 
 #' the datasets and counts.  
 #' @param datasets A named list of objects of class
@@ -397,7 +397,7 @@ predictModel <- function(filenameEst, filenamePred, along = NULL, labels = NULL,
 #' survey <- Counts(survey)
 #' y <- health + 10
 #' model <- Model(y ~ Poisson(mean ~ age + sex + region))
-#' observation <- list(Model(nat ~ PoissonBinomial(prob = 0.98)),
+#' dataModels <- list(Model(nat ~ PoissonBinomial(prob = 0.98)),
 #'                     Model(health ~ Poisson(mean ~ age)),
 #'                     Model(survey ~ Binomial(mean ~ 1)))
 #' datasets <- list(nat = nat, health = health, survey = survey)
@@ -406,7 +406,7 @@ predictModel <- function(filenameEst, filenamePred, along = NULL, labels = NULL,
 #' \dontrun{
 #' estimateCounts(model = model,
 #'                y = y,
-#'                observation = observation,
+#'                dataModels = dataModels,
 #'                datasets = datasets,
 #'                filename = filename,
 #'                nBurnin = 50,
@@ -417,13 +417,38 @@ predictModel <- function(filenameEst, filenamePred, along = NULL, labels = NULL,
 #' fetchSummary(filename)
 #' }
 #' @export
-estimateCounts <- function(model, y, exposure = NULL, observation,
+estimateCounts <- function(model, y, exposure = NULL, dataModels,
                            datasets, filename = NULL, nBurnin = 1000,
                            nSim = 1000, nChain = 5, nThin = 1,
                            parallel = TRUE, outfile = NULL, nUpdateMax = 50,
                            verbose = FALSE, useC = TRUE) {
     call <- match.call()
     methods::validObject(model)
+    ## check and tidy 'y'
+    y <- checkAndTidyY(y)
+    y <- dembase::toInteger(y)
+    checkForSubtotals(object = y,
+                      model = model,
+                      name = "y")
+    ## check and tidy 'exposure
+    exposure <- checkAndTidyExposure(exposure = exposure,
+                                     y = y)
+    exposure <- castExposure(exposure = exposure,
+                             model = model)
+    ## check and tidy data models and align to datasets
+    checkDataModels(dataModels = dataModels,
+                    needsNonDefaultSeriesArg = FALSE)
+    datasets <- checkAndTidyDatasets(datasets)
+    namesDatasets <- names(datasets)
+    names(datasets) <- NULL
+    dataModels <- alignDataModelsToDatasets(dataModels = dataModels,
+                                            datasets = datasets,
+                                            namesDatasets = namesDatasets)
+    ## make transforms from y to datasets
+    transforms <- makeTransformsYToDatasets(y = y,
+                                            datasets = datasets,
+                                            namesDatasets = namesDatasets)
+    ## mcmc and control arguments
     mcmc.args <- makeMCMCArgs(nBurnin = nBurnin,
                               nSim = nSim,
                               nChain = nChain,
@@ -435,26 +460,12 @@ estimateCounts <- function(model, y, exposure = NULL, observation,
     control.args <- makeControlArgs(call = call,
                                     parallel = parallel,
                                     nUpdateMax = nUpdateMax)
-    y <- checkAndTidyY(y)
-    y <- dembase::toInteger(y)
-    checkForSubtotals(object = y, model = model, name = "y")
-    exposure <- checkAndTidyExposure(exposure = exposure, y = y)
-    exposure <- castExposure(exposure = exposure, model = model)
-    checkObservation(observation, needsNonDefaultSeriesArg = FALSE)
-    checkNamesDatasets(datasets)
-    datasets <- alignDatasetsToObservation(datasets = datasets,
-                                           observation = observation)
-    ## check of datasets comes after aligning,
-    ## to avoid checking datasets that are not needed
-    datasets <- checkAndTidyDatasets(datasets)
-    transforms <- makeTransformsYToDatasets(y = y, nameY = "y", datasets = datasets)
-    namesDatasets <- names(datasets)
-    names(datasets) <- NULL
+    ## initial values
     combineds <- replicate(n = mcmc.args$nChain,
                            initialCombinedCounts(model,
                                                  y = y,
                                                  exposure = exposure,
-                                                 observation = observation,
+                                                 dataModels = dataModels,
                                                  datasets = datasets,
                                                  namesDatasets = namesDatasets,
                                                  transforms = transforms))
@@ -465,6 +476,7 @@ estimateCounts <- function(model, y, exposure = NULL, observation,
                   control.args,
                   list(continuing = FALSE,
                        useC = useC))
+    ## estimation
     if (parallel) {
         if (is.null(outfile)) ## passing 'outfile' as an argument always causes redirection
             cl <- parallel::makeCluster(getOption("cl.cores",
@@ -493,6 +505,7 @@ estimateCounts <- function(model, y, exposure = NULL, observation,
                                   USE.NAMES = FALSE)
         seed <- list(.Random.seed)
     }
+    ## results object
     control.args$lengthIter <- length(extractValues(final.combineds[[1L]]))
     results <- makeResultsCounts(finalCombineds = final.combineds,
                                  mcmcArgs = mcmc.args,
@@ -530,7 +543,7 @@ predictCounts <- function(filenameEst, filenamePred, along = NULL, labels = NULL
 #' \code{\link[dembase:DemographicAccount-class]{DemographicAccount}}.
 #' @param system A list of objects of class \code{\linkS4class{SpecModel}}
 #' specifying models for the demographic series.
-#' @param observation A list of objects of class
+#' @param dataModels A list of objects of class
 #' \code{\linkS4class{SpecModel}} specifying models for the datasets.
 #'
 #' @seealso \code{\link{estimateModel}}, \code{\link{estimateCounts}}
@@ -539,7 +552,7 @@ predictCounts <- function(filenameEst, filenamePred, along = NULL, labels = NULL
 #' Subnational population estimation using multiple datasources. 2013.
 #' \emph{Bayesian Analysis}
 #' @export
-estimateAccount <- function(y, system, observation, datasets, filename = NULL,
+estimateAccount <- function(y, system, dataModels, datasets, filename = NULL,
                             nBurnin = 1000, nSim = 1000, nChain = 4, nThin = 1,
                             parallel = TRUE, outfile = NULL, nUpdateMax = 50,
                             verbose = FALSE, useC = TRUE) {

@@ -4471,7 +4471,7 @@ updateVarsigma <- function(object, y, useC = FALSE) {
 
 ## TRANSLATED
 ## HAS_TESTS
-updateCountsPoissonNotUseExp <- function(y, model, observationModels, datasets,
+updateCountsPoissonNotUseExp <- function(y, model, dataModels, datasets,
                                          transforms, useC = FALSE) {
     ## y
     stopifnot(methods::is(y, "Counts"))
@@ -4483,10 +4483,10 @@ updateCountsPoissonNotUseExp <- function(y, model, observationModels, datasets,
     stopifnot(methods::is(model, "Model"))
     stopifnot(methods::is(model, "Poisson"))
     stopifnot(methods::is(model, "NotUseExposure"))
-    ## observationModels
-    stopifnot(is.list(observationModels))
-    stopifnot(all(sapply(observationModels, methods::is, "Model")))
-    stopifnot(all(sapply(observationModels, methods::is, "UseExposure")))
+    ## dataModels
+    stopifnot(is.list(dataModels))
+    stopifnot(all(sapply(dataModels, methods::is, "Model")))
+    stopifnot(all(sapply(dataModels, methods::is, "UseExposure")))
     ## datasets
     stopifnot(is.list(datasets))
     stopifnot(all(sapply(datasets, methods::is, "Counts")))
@@ -4498,19 +4498,19 @@ updateCountsPoissonNotUseExp <- function(y, model, observationModels, datasets,
     ## y and transforms
     for (i in seq_along(transforms))
         stopifnot(identical(dim(y), transforms[[i]]@dimBefore))
-    ## observationModels and datasets
-    stopifnot(identical(length(observationModels), length(datasets)))
-    ## observationModels and transforms
-    stopifnot(identical(length(observationModels), length(transforms)))
+    ## dataModels and datasets
+    stopifnot(identical(length(dataModels), length(datasets)))
+    ## dataModels and transforms
+    stopifnot(identical(length(dataModels), length(transforms)))
     ## datasets and transforms
     for (i in seq_along(datasets))
         stopifnot(identical(transforms[[i]]@dimAfter, dim(datasets[[i]])))
     if (useC) {
         .Call(updateCountsPoissonNotUseExp_R, y, model,
-              observationModels, datasets, transforms)
+              dataModels, datasets, transforms)
     }
     else {
-        ##y, model, observationModels, datasets, transforms
+        ##y, model, dataModels, datasets, transforms
         theta <- model@theta
         has.subtotals <- methods::is(y, "HasSubtotals")
         if (has.subtotals) {
@@ -4539,7 +4539,7 @@ updateCountsPoissonNotUseExp <- function(y, model, observationModels, datasets,
             diff.log.lik <- diffLogLik(yProp = y.prop,
                                        y = y,
                                        indicesY = i,
-                                       observationModels = observationModels,
+                                       dataModels = dataModels,
                                        datasets = datasets,
                                        transforms = transforms)
             accept <- (diff.log.lik >= 0) || (stats::runif(n = 1L) < exp(diff.log.lik))
@@ -4552,7 +4552,7 @@ updateCountsPoissonNotUseExp <- function(y, model, observationModels, datasets,
 
 ## TRANSLATED
 ## HAS_TESTS
-updateCountsPoissonUseExp <- function(y, model, exposure, observationModels, datasets,
+updateCountsPoissonUseExp <- function(y, model, exposure, dataModels, datasets,
                                       transforms, useC = FALSE) {
     ## y
     stopifnot(methods::is(y, "Counts"))
@@ -4570,10 +4570,10 @@ updateCountsPoissonUseExp <- function(y, model, exposure, observationModels, dat
     stopifnot(is.double(exposure))
     stopifnot(all(exposure >= 0))
     stopifnot(all(y[exposure == 0] == 0))
-    ## observationModels
-    stopifnot(is.list(observationModels))
-    stopifnot(all(sapply(observationModels, methods::is, "Model")))
-    stopifnot(all(sapply(observationModels, methods::is, "UseExposure")))
+    ## dataModels
+    stopifnot(is.list(dataModels))
+    stopifnot(all(sapply(dataModels, methods::is, "Model")))
+    stopifnot(all(sapply(dataModels, methods::is, "UseExposure")))
     ## datasets
     stopifnot(is.list(datasets))
     stopifnot(all(sapply(datasets, methods::is, "Counts")))
@@ -4585,16 +4585,16 @@ updateCountsPoissonUseExp <- function(y, model, exposure, observationModels, dat
     ## y and transforms
     for (i in seq_along(transforms))
         stopifnot(identical(dim(y), transforms[[i]]@dimBefore))
-    ## observationModels and datasets
-    stopifnot(identical(length(observationModels), length(datasets)))
-    ## observationModels and transforms
-    stopifnot(identical(length(observationModels), length(transforms)))
+    ## dataModels and datasets
+    stopifnot(identical(length(dataModels), length(datasets)))
+    ## dataModels and transforms
+    stopifnot(identical(length(dataModels), length(transforms)))
     ## datasets and transforms
     for (i in seq_along(datasets))
         stopifnot(identical(transforms[[i]]@dimAfter, dim(datasets[[i]])))
     if (useC) {
         .Call(updateCountsPoissonUseExp_R, y, model, exposure,
-              observationModels, datasets, transforms)
+              dataModels, datasets, transforms)
     }
     else {
         theta <- model@theta
@@ -4620,7 +4620,7 @@ updateCountsPoissonUseExp <- function(y, model, exposure, observationModels, dat
             diff.log.lik <- diffLogLik(yProp = y.prop,
                                        y = y,
                                        indicesY = i,
-                                       observationModels = observationModels,
+                                       dataModels = dataModels,
                                        datasets = datasets,
                                        transforms = transforms)
             accept <- (diff.log.lik >= 0) || (stats::runif(n = 1L) < exp(diff.log.lik))
@@ -4633,7 +4633,7 @@ updateCountsPoissonUseExp <- function(y, model, exposure, observationModels, dat
 
 ## TRANSLATED
 ## HAS_TESTS
-updateCountsBinomial <- function(y, model, exposure, observationModels, datasets,
+updateCountsBinomial <- function(y, model, exposure, dataModels, datasets,
                                  transforms, useC = FALSE) {
     ## y
     stopifnot(methods::is(y, "Counts"))
@@ -4650,10 +4650,10 @@ updateCountsBinomial <- function(y, model, exposure, observationModels, datasets
     stopifnot(!any(is.na(exposure)))
     stopifnot(is.integer(exposure))
     stopifnot(all(exposure >= 0))
-    ## observationModels
-    stopifnot(is.list(observationModels))
-    stopifnot(all(sapply(observationModels, methods::is, "Model")))
-    stopifnot(all(sapply(observationModels, methods::is, "UseExposure")))
+    ## dataModels
+    stopifnot(is.list(dataModels))
+    stopifnot(all(sapply(dataModels, methods::is, "Model")))
+    stopifnot(all(sapply(dataModels, methods::is, "UseExposure")))
     ## datasets
     stopifnot(is.list(datasets))
     stopifnot(all(sapply(datasets, methods::is, "Counts")))
@@ -4667,16 +4667,16 @@ updateCountsBinomial <- function(y, model, exposure, observationModels, datasets
     ## y and transforms
     for (i in seq_along(transforms))
         stopifnot(identical(dim(y), transforms[[i]]@dimBefore))
-    ## observationModels and datasets
-    stopifnot(identical(length(observationModels), length(datasets)))
-    ## observationModels and transforms
-    stopifnot(identical(length(observationModels), length(transforms)))
+    ## dataModels and datasets
+    stopifnot(identical(length(dataModels), length(datasets)))
+    ## dataModels and transforms
+    stopifnot(identical(length(dataModels), length(transforms)))
     ## datasets and transforms
     for (i in seq_along(datasets))
         stopifnot(identical(transforms[[i]]@dimAfter, dim(datasets[[i]])))
     if (useC) {
         .Call(updateCountsBinomial_R, y, model, exposure,
-              observationModels, datasets, transforms)
+              dataModels, datasets, transforms)
     }
     else {
         theta <- model@theta
@@ -4686,7 +4686,7 @@ updateCountsBinomial <- function(y, model, exposure, observationModels, datasets
             diff.log.lik <- diffLogLik(yProp = y.prop,
                                        y = y,
                                        indicesY = i,
-                                       observationModels = observationModels,
+                                       dataModels = dataModels,
                                        datasets = datasets,
                                        transforms = transforms)
             accept <- (diff.log.lik >= 0) || (stats::runif(n = 1L) < exp(diff.log.lik))
@@ -4701,16 +4701,16 @@ updateCountsBinomial <- function(y, model, exposure, observationModels, datasets
 
 ## TRANSLATED
 ## HAS_TESTS
-updateObservationCounts <- function(y, observationModels, datasets,
+updateDataModelsCounts <- function(y, dataModels, datasets,
                                     transforms, useC = FALSE) {
     ## y
     stopifnot(methods::is(y, "Counts"))
     stopifnot(is.integer(y))
     stopifnot(all(y >= 0))
-    ## observationModels
-    stopifnot(is.list(observationModels))
-    stopifnot(all(sapply(observationModels, methods::is, "Model")))
-    stopifnot(all(sapply(observationModels, methods::is, "UseExposure")))
+    ## dataModels
+    stopifnot(is.list(dataModels))
+    stopifnot(all(sapply(dataModels, methods::is, "Model")))
+    stopifnot(all(sapply(dataModels, methods::is, "UseExposure")))
     ## datasets
     stopifnot(is.list(datasets))
     stopifnot(all(sapply(datasets, methods::is, "Counts")))
@@ -4722,48 +4722,48 @@ updateObservationCounts <- function(y, observationModels, datasets,
     ## y and transforms
     for (i in seq_along(transforms))
         stopifnot(identical(dim(y), transforms[[i]]@dimBefore))
-    ## observationModels and datasets
-    stopifnot(identical(length(observationModels), length(datasets)))
-    ## observationModels and transforms
-    stopifnot(identical(length(observationModels), length(transforms)))
+    ## dataModels and datasets
+    stopifnot(identical(length(dataModels), length(datasets)))
+    ## dataModels and transforms
+    stopifnot(identical(length(dataModels), length(transforms)))
     ## datasets and transforms
     stopifnot(identical(transforms[[i]]@dimAfter, dim(datasets[[i]])))
     if (useC) {
-        .Call(updateObservationCounts_R, y, observationModels, datasets,
+        .Call(updateDataModelsCounts_R, y, dataModels, datasets,
               transforms)
     }
     else {
-        for (i in seq_along(observationModels)) {
-            model <- observationModels[[i]]
+        for (i in seq_along(dataModels)) {
+            model <- dataModels[[i]]
             dataset <- datasets[[i]]
             transform <- transforms[[i]]
             y.collapsed <- dembase::collapse(y, transform = transform)
             if (methods::is(model, "Poisson"))
                 y.collapsed <- dembase::toDouble(y.collapsed)
-            observationModels[[i]] <- updateModelUseExp(model,
+            dataModels[[i]] <- updateModelUseExp(model,
                                                   y = dataset,
                                                   exposure = y.collapsed)
         }
-        observationModels
+        dataModels
     }
 }
 
 ## READY_TO_TRANSLATE
 ## HAS_TESTS
-updateObservationModelsAccount <- function(combined, useC = FALSE) {
+updateDataModelsAccount <- function(combined, useC = FALSE) {
     stopifnot(methods::validObject(combined))
     if (useC) {
-        .Call(updateObservationModelsAccount_R, combined)
+        .Call(updateDataModelsAccount_R, combined)
     }
     else {
-        observation.models <- combined@observationModels
+        data.models <- combined@dataModels
         datasets <- combined@datasets
         population <- combined@account@population
         components <- combined@account@components
         series.indices <- combined@seriesIndices
         transforms <- combined@transforms
-        for (i in seq_along(observation.models)) {
-            model <- observation.models[[i]]
+        for (i in seq_along(data.models)) {
+            model <- data.models[[i]]
             dataset <- datasets[[i]]
             transform <- transforms[[i]]
             series.index <- series.indices[i]
@@ -4777,9 +4777,9 @@ updateObservationModelsAccount <- function(combined, useC = FALSE) {
             model <- updateModelUseExp(model,
                                        y = dataset,
                                        exposure = series.collapsed)
-            observation.models[[i]] <- model
+            data.models[[i]] <- model
         }
-        combined@observationModels <- observation.models
+        combined@dataModels <- data.models
         combined
     }
 }

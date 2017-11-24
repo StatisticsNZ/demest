@@ -855,7 +855,7 @@ diffLogLikAccountMovePopn <- function(combined, useC = FALSE) {
         account <- combined@account
         population <- account@population
         iterator <- combined@iteratorPopn
-        observationModels <- combined@observationModels
+        dataModels <- combined@dataModels
         datasets <- combined@datasets
         seriesIndices <- combined@seriesIndices
         transforms <- combined@transforms
@@ -865,7 +865,7 @@ diffLogLikAccountMovePopn <- function(combined, useC = FALSE) {
                        iFirst = iCell,
                        iterator = iterator,
                        population = population,
-                       observationModels = observationModels,
+                       dataModels = dataModels,
                        datasets = datasets,
                        seriesIndices = seriesIndices,
                        transforms = transforms)
@@ -875,7 +875,7 @@ diffLogLikAccountMovePopn <- function(combined, useC = FALSE) {
 ## READY_TO_TRANSLATE
 ## HAS_TESTS
 diffLogLikPopn <- function(diff, iFirst, iterator, population,
-                           observationModels, datasets,
+                           dataModels, datasets,
                            seriesIndices, transforms,
                            useC = FALSE) {
     ## diff
@@ -892,9 +892,9 @@ diffLogLikPopn <- function(diff, iFirst, iterator, population,
     stopifnot(is(iterator, "CohortIteratorPopulation"))
     ## population
     stopifnot(is(population, "Population"))
-    ## observationModels
-    stopifnot(is.list(observationModels))
-    stopifnot(all(sapply(observationModels, methods::is, "UseExposure")))
+    ## dataModels
+    stopifnot(is.list(dataModels))
+    stopifnot(all(sapply(dataModels, methods::is, "UseExposure")))
     ## datasets
     stopifnot(is.list(datasets))
     stopifnot(all(sapply(datasets, methods::is, "Counts")))
@@ -905,15 +905,15 @@ diffLogLikPopn <- function(diff, iFirst, iterator, population,
     ## transforms
     stopifnot(is.list(transforms))
     stopifnot(all(sapply(transforms, methods::is, "CollapseTransformExtra")))
-    ## observationModels and datasets
-    stopifnot(identical(length(observationModels), length(datasets)))
-    ## observationModels and seriesIndices
-    stopifnot(identical(length(observationModels), length(seriesIndices)))
-    ## observationModels and transforms
-    stopifnot(identical(length(observationModels), length(transforms)))
+    ## dataModels and datasets
+    stopifnot(identical(length(dataModels), length(datasets)))
+    ## dataModels and seriesIndices
+    stopifnot(identical(length(dataModels), length(seriesIndices)))
+    ## dataModels and transforms
+    stopifnot(identical(length(dataModels), length(transforms)))
     if (useC) {
         .Call(diffLogLikPopn_R,
-              diff, iFirst, iterator, population, observationModels,
+              diff, iFirst, iterator, population, dataModels,
               datasets, seriesIndices, transforms)
     }
     else {        
@@ -921,7 +921,7 @@ diffLogLikPopn <- function(diff, iFirst, iterator, population,
         for (i.dataset in seq_along(datasets)) {
             assoc.with.popn <- seriesIndices[i.dataset] == 0L
             if (assoc.with.popn) {
-                model <- observationModels[[i.dataset]]
+                model <- dataModels[[i.dataset]]
                 dataset <- datasets[[i.dataset]]
                 transform <- transforms[[i.dataset]]
                 diff.log.lik <- diffLogLikPopnOneDataset(diff = diff,
@@ -1065,7 +1065,7 @@ diffLogLikAccountMoveOrigDest <- function(combined, useC = FALSE) {
         component <- account@components[[i.comp]]
         population <- account@population
         iterator <- combined@iteratorPopn
-        observation.models <- combined@observationModels
+        data.models <- combined@dataModels
         datasets <- combined@datasets
         series.indices <- combined@seriesIndices
         transforms <- combined@transforms
@@ -1077,7 +1077,7 @@ diffLogLikAccountMoveOrigDest <- function(combined, useC = FALSE) {
                                                 iComp = i.comp,
                                                 iCell = i.cell,
                                                 component = component,
-                                                observationModels = observation.models,
+                                                dataModels = data.models,
                                                 datasets = datasets,
                                                 seriesIndices = series.indices,
                                                 transforms = transforms)
@@ -1088,7 +1088,7 @@ diffLogLikAccountMoveOrigDest <- function(combined, useC = FALSE) {
                                                 iPopnDest = i.popn.dest,
                                                 iterator = iterator,
                                                 population = population,
-                                                observationModels = observation.models,
+                                                dataModels = data.models,
                                                 datasets = datasets,
                                                 seriesIndices = series.indices,
                                                 transforms = transforms)
@@ -1099,7 +1099,7 @@ diffLogLikAccountMoveOrigDest <- function(combined, useC = FALSE) {
 ## READY_TO_TRANSLATE
 ## HAS_TESTS
 diffLogLikCellComp <- function(diff, iComp, iCell, component,
-                               observationModels, datasets,
+                               dataModels, datasets,
                                seriesIndices, transforms,
                                useC = FALSE) {
     ## diff
@@ -1118,9 +1118,9 @@ diffLogLikCellComp <- function(diff, iComp, iCell, component,
     stopifnot(iCell >= 1L)
     ## component
     stopifnot(is(component, "Component"))
-    ## observationModels
-    stopifnot(is.list(observationModels))
-    stopifnot(all(sapply(observationModels, methods::is, "Model")))
+    ## dataModels
+    stopifnot(is.list(dataModels))
+    stopifnot(all(sapply(dataModels, methods::is, "Model")))
     ## datasets
     stopifnot(is.list(datasets))
     stopifnot(all(sapply(datasets, methods::is, "Counts")))
@@ -1131,15 +1131,15 @@ diffLogLikCellComp <- function(diff, iComp, iCell, component,
     ## transforms
     stopifnot(is.list(transforms))
     stopifnot(all(sapply(transforms, methods::is, "CollapseTransformExtra")))
-    ## observationModels and datasets
-    stopifnot(identical(length(observationModels), length(datasets)))
-    ## observationModels and seriesIndices
-    stopifnot(identical(length(observationModels), length(seriesIndices)))
-    ## observationModels and transforms
-    stopifnot(identical(length(observationModels), length(transforms)))
+    ## dataModels and datasets
+    stopifnot(identical(length(dataModels), length(datasets)))
+    ## dataModels and seriesIndices
+    stopifnot(identical(length(dataModels), length(seriesIndices)))
+    ## dataModels and transforms
+    stopifnot(identical(length(dataModels), length(transforms)))
     if (useC) {
         .Call(diffLogLikCellComp_R,
-              diff, iComp, iCell, component, observationModels,
+              diff, iComp, iCell, component, dataModels,
               datasets, seriesIndices, transforms)
     }
     else {
@@ -1148,7 +1148,7 @@ diffLogLikCellComp <- function(diff, iComp, iCell, component,
             assoc.with.comp <- seriesIndices[i.dataset] == iComp
             if (assoc.with.comp) {
                 dataset <- datasets[[i.dataset]]
-                model <- observationModels[[i.dataset]]
+                model <- dataModels[[i.dataset]]
                 transform <- transforms[[i.dataset]]
                 diff.dataset <- diffLogLikCellOneDataset(diff = diff,
                                                          iCell = iCell,
@@ -1219,7 +1219,7 @@ diffLogLikCellOneDataset <- function(diff, iCell, component,
 ## HAS_TESTS
 diffLogLikPopnPair <- function(diff, iPopnOrig, iPopnDest,
                                iterator, population,
-                               observationModels, datasets,
+                               dataModels, datasets,
                                seriesIndices, transforms,
                                useC = FALSE) {
     ## diff
@@ -1241,9 +1241,9 @@ diffLogLikPopnPair <- function(diff, iPopnOrig, iPopnDest,
     stopifnot(is(iterator, "CohortIteratorPopulation"))
     ## population
     stopifnot(is(population, "Population"))
-    ## observationModels
-    stopifnot(is.list(observationModels))
-    stopifnot(all(sapply(observationModels, methods::is, "UseExposure")))
+    ## dataModels
+    stopifnot(is.list(dataModels))
+    stopifnot(all(sapply(dataModels, methods::is, "UseExposure")))
     ## datasets
     stopifnot(is.list(datasets))
     stopifnot(all(sapply(datasets, methods::is, "Counts")))
@@ -1254,16 +1254,16 @@ diffLogLikPopnPair <- function(diff, iPopnOrig, iPopnDest,
     ## transforms
     stopifnot(is.list(transforms))
     stopifnot(all(sapply(transforms, methods::is, "CollapseTransformExtra")))
-    ## observationModels and datasets
-    stopifnot(identical(length(observationModels), length(datasets)))
-    ## observationModels and seriesIndices
-    stopifnot(identical(length(observationModels), length(seriesIndices)))
-    ## observationModels and transforms
-    stopifnot(identical(length(observationModels), length(transforms)))
+    ## dataModels and datasets
+    stopifnot(identical(length(dataModels), length(datasets)))
+    ## dataModels and seriesIndices
+    stopifnot(identical(length(dataModels), length(seriesIndices)))
+    ## dataModels and transforms
+    stopifnot(identical(length(dataModels), length(transforms)))
     if (useC) {
         .Call(diffLogLikPopnPair_R,
               diff, iPopnOrig, iPopnDest, iterator,
-              population, observationModels, datasets,
+              population, dataModels, datasets,
               seriesIndices, transforms)
     }
     else {
@@ -1277,7 +1277,7 @@ diffLogLikPopnPair <- function(diff, iPopnOrig, iPopnDest,
                 i.after.orig <- getIAfter(i = iPopnOrig, transform = transform)
                 i.after.dest <- getIAfter(i = iPopnDest, transform = transform)
                 if (i.after.orig != i.after.dest) {
-                    model <- observationModels[[i.dataset]]
+                    model <- dataModels[[i.dataset]]
                     dataset <- datasets[[i.dataset]]
                     diff.orig <- diffLogLikPopnOneDataset(diff = -diff,
                                                           iFirst = iPopnOrig,
@@ -1318,7 +1318,7 @@ diffLogLikAccountMovePool <- function(combined, useC = FALSE) {
         component <- account@components[[i.comp]]
         population <- account@population
         iterator <- combined@iteratorPopn
-        observation.models <- combined@observationModels
+        data.models <- combined@dataModels
         datasets <- combined@datasets
         series.indices <- combined@seriesIndices
         transforms <- combined@transforms
@@ -1332,7 +1332,7 @@ diffLogLikAccountMovePool <- function(combined, useC = FALSE) {
                                                   iCellIn = i.cell.in,
                                                   iComp = i.comp,
                                                   component = component,
-                                                  observationModels = observation.models,
+                                                  dataModels = data.models,
                                                   datasets = datasets,
                                                   seriesIndices = series.indices,
                                                   transforms = transforms)
@@ -1343,7 +1343,7 @@ diffLogLikAccountMovePool <- function(combined, useC = FALSE) {
                                                 iPopnDest = i.popn.in,
                                                 iterator = iterator,
                                                 population = population,
-                                                observationModels = observation.models,
+                                                dataModels = data.models,
                                                 datasets = datasets,
                                                 seriesIndices = series.indices,
                                                 transforms = transforms)
@@ -1354,7 +1354,7 @@ diffLogLikAccountMovePool <- function(combined, useC = FALSE) {
 ## READY_TO_TRANSLATE
 ## HAS_TESTS
 diffLogLikCellsPool <- function(diff, iComp, iCellOut, iCellIn,
-                               component, observationModels, datasets,
+                               component, dataModels, datasets,
                                seriesIndices, transforms,
                                useC = FALSE) {
     ## diff
@@ -1378,9 +1378,9 @@ diffLogLikCellsPool <- function(diff, iComp, iCellOut, iCellIn,
     stopifnot(iCellIn > 0L)
     ## component
     stopifnot(is(component, "Component"))
-    ## observationModels
-    stopifnot(is.list(observationModels))
-    stopifnot(all(sapply(observationModels, is, "Model")))
+    ## dataModels
+    stopifnot(is.list(dataModels))
+    stopifnot(all(sapply(dataModels, is, "Model")))
     ## datasets
     stopifnot(is.list(datasets))
     stopifnot(all(sapply(datasets, is, "Counts")))
@@ -1391,15 +1391,15 @@ diffLogLikCellsPool <- function(diff, iComp, iCellOut, iCellIn,
     ## transforms
     stopifnot(is.list(transforms))
     stopifnot(all(sapply(transforms, is, "CollapseTransformExtra")))
-    ## observationModels and datasets
-    stopifnot(identical(length(observationModels), length(datasets)))
-    ## observationModels and seriesIndices
-    stopifnot(identical(length(observationModels), length(seriesIndices)))
-    ## observationModels and transforms
-    stopifnot(identical(length(observationModels), length(transforms)))
+    ## dataModels and datasets
+    stopifnot(identical(length(dataModels), length(datasets)))
+    ## dataModels and seriesIndices
+    stopifnot(identical(length(dataModels), length(seriesIndices)))
+    ## dataModels and transforms
+    stopifnot(identical(length(dataModels), length(transforms)))
     if (useC) {
         .Call(diffLogLikCellsPool_R,
-              diff, iComp, iCellOut, iCellIn, component, observationModels,
+              diff, iComp, iCellOut, iCellIn, component, dataModels,
               datasets, seriesIndices, transforms)
     }
     else {
@@ -1408,7 +1408,7 @@ diffLogLikCellsPool <- function(diff, iComp, iCellOut, iCellIn,
             assoc.with.comp <- seriesIndices[i.dataset] == iComp
             if (assoc.with.comp) {
                 dataset <- datasets[[i.dataset]]
-                model <- observationModels[[i.dataset]]
+                model <- dataModels[[i.dataset]]
                 transform <- transforms[[i.dataset]]
                 ## 'diff' added to 'out' and 'in' cells
                 diff.log.lik.out <- diffLogLikCellOneDataset(diff = diff,
@@ -1447,7 +1447,7 @@ diffLogLikAccountMoveNet <- function(combined, useC = FALSE) {
         component <- account@components[[i.comp]]
         population <- account@population
         iterator <- combined@iteratorPopn
-        observation.models <- combined@observationModels
+        data.models <- combined@dataModels
         datasets <- combined@datasets
         series.indices <- combined@seriesIndices
         transforms <- combined@transforms
@@ -1461,7 +1461,7 @@ diffLogLikAccountMoveNet <- function(combined, useC = FALSE) {
                                                  iCellSub = i.cell.sub,
                                                  iComp = i.comp,
                                                  component = component,
-                                                 observationModels = observation.models,
+                                                 dataModels = data.models,
                                                  datasets = datasets,
                                                  seriesIndices = series.indices,
                                                  transforms = transforms)
@@ -1475,7 +1475,7 @@ diffLogLikAccountMoveNet <- function(combined, useC = FALSE) {
                                                 iPopnDest = i.popn.sub,
                                                 iterator = iterator,
                                                 population = population,
-                                                observationModels = observation.models,
+                                                dataModels = data.models,
                                                 datasets = datasets,
                                                 seriesIndices = series.indices,
                                                 transforms = transforms)
@@ -1486,7 +1486,7 @@ diffLogLikAccountMoveNet <- function(combined, useC = FALSE) {
 ## READY_TO_TRANSLATE
 ## HAS_TESTS
 diffLogLikCellsNet <- function(diff, iComp, iCellAdd, iCellSub,
-                               component, observationModels, datasets,
+                               component, dataModels, datasets,
                                seriesIndices, transforms,
                                useC = FALSE) {
     ## diff
@@ -1510,9 +1510,9 @@ diffLogLikCellsNet <- function(diff, iComp, iCellAdd, iCellSub,
     stopifnot(iCellSub > 0L)
     ## component
     stopifnot(is(component, "Component"))
-    ## observationModels
-    stopifnot(is.list(observationModels))
-    stopifnot(all(sapply(observationModels, is, "Model")))
+    ## dataModels
+    stopifnot(is.list(dataModels))
+    stopifnot(all(sapply(dataModels, is, "Model")))
     ## datasets
     stopifnot(is.list(datasets))
     stopifnot(all(sapply(datasets, is, "Counts")))
@@ -1523,15 +1523,15 @@ diffLogLikCellsNet <- function(diff, iComp, iCellAdd, iCellSub,
     ## transforms
     stopifnot(is.list(transforms))
     stopifnot(all(sapply(transforms, is, "CollapseTransformExtra")))
-    ## observationModels and datasets
-    stopifnot(identical(length(observationModels), length(datasets)))
-    ## observationModels and seriesIndices
-    stopifnot(identical(length(observationModels), length(seriesIndices)))
-    ## observationModels and transforms
-    stopifnot(identical(length(observationModels), length(transforms)))
+    ## dataModels and datasets
+    stopifnot(identical(length(dataModels), length(datasets)))
+    ## dataModels and seriesIndices
+    stopifnot(identical(length(dataModels), length(seriesIndices)))
+    ## dataModels and transforms
+    stopifnot(identical(length(dataModels), length(transforms)))
     if (useC) {
         .Call(diffLogLikCellsNet_R,
-              diff, iComp, iCellAdd, iCellSub, component, observationModels,
+              diff, iComp, iCellAdd, iCellSub, component, dataModels,
               datasets, seriesIndices, transforms)
     }
     else {
@@ -1540,7 +1540,7 @@ diffLogLikCellsNet <- function(diff, iComp, iCellAdd, iCellSub,
             assoc.with.comp <- seriesIndices[i.dataset] == iComp
             if (assoc.with.comp) {
                 dataset <- datasets[[i.dataset]]
-                model <- observationModels[[i.dataset]]
+                model <- dataModels[[i.dataset]]
                 transform <- transforms[[i.dataset]]
                 ## 'diff' added to 'add' cell and subtracted from 'sub' cell
                 diff.log.lik.add <- diffLogLikCellOneDataset(diff = diff,
@@ -1583,7 +1583,7 @@ diffLogLikAccountMoveComp <- function(combined, useC = FALSE) {
         component <- combined@account@components[[i.comp]]
         population <- combined@account@population
         iterator <- combined@iteratorPopn
-        observation.models <- combined@observationModels
+        data.models <- combined@dataModels
         datasets <- combined@datasets
         series.indices <- combined@seriesIndices
         transforms <- combined@transforms
@@ -1595,7 +1595,7 @@ diffLogLikAccountMoveComp <- function(combined, useC = FALSE) {
                                                 iComp = i.comp,
                                                 iCell = i.cell,
                                                 component = component,
-                                                observationModels = observation.models,
+                                                dataModels = data.models,
                                                 datasets = datasets,
                                                 seriesIndices = series.indices,
                                                 transforms = transforms)
@@ -1606,7 +1606,7 @@ diffLogLikAccountMoveComp <- function(combined, useC = FALSE) {
                                             iFirst = i.popn.next,
                                             iterator = iterator,
                                             population = population,
-                                            observationModels = observation.models,
+                                            dataModels = data.models,
                                             datasets = datasets,
                                             seriesIndices = series.indices,
                                             transforms = transforms)
