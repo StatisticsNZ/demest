@@ -6,9 +6,8 @@
     #define THRESHOLD_POIBIN 1000 
     
     /* for Newton's method rootfinding code */
-    #define K_TOLERANCE 1e-15
-    #define K_EPSILON_MAX 1e-14
-    #define K_EPSILON_BOUNDARIES 1e-30
+    #define K_TOLERANCE 1e-20
+    #define K_EPSILON 1e-15
     #define K_MAX_ITER 1000
     #define K_CUTOFF_CONV_MODE_PHI 0.0001
     

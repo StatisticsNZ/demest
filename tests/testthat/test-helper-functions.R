@@ -5044,7 +5044,8 @@ test_that("R and C versions of findOneRootLogPostSigmaNorm give same answer", {
                                                     V = V,
                                                     n = n,
                                                     min = sigma.max,
-                                                    max = Inf,
+                                                    max = max.right,
+                                                    ##max = Inf, JAH changed for line above
                                                     useC = TRUE)
         expect_equal(root.left.R, root.left.C)
         expect_equal(root.right.R, root.right.C)
@@ -5141,6 +5142,7 @@ test_that("findOneRootLogPostSigmaRobust works", {
 test_that("R and C versions of findOneRootLogPostSigmaRobust give same answer", {
     findOneRootLogPostSigmaRobust <- demest:::findOneRootLogPostSigmaRobust
     for (seed in seq_len(n.test)) {
+        set.seed(seed)
         A <- runif(n = 1, min = 0.1, max = 10)
         nuBeta <- 1.0 * max(rpois(n = 1, lambda = 5), 1)
         nuTau <- 1.0 * max(rpois(n = 1, lambda = 5), 1)
