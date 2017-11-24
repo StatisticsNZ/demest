@@ -111,9 +111,9 @@ rcmp1 <- function(mu, nu, max){
   stopifnot(max >= 0L)
   #
   if( nu < 1){
-    rcmpOverLog(mu = mu , nu = nu, max = max)
+    rcmpOver(mu = mu , nu = nu, max = max)
   } else {
-    rcmpUnderLog(mu = mu , nu = nu, max = max)
+    rcmpUnder(mu = mu , nu = nu, max = max)
   }
 } 
 
