@@ -39,7 +39,7 @@ The treatment of output from previous calls to the estimation functions or
 to \code{continueEstimation} depends on \code{nBurnin} in the
 current call to \code{continueEstimation}.  If \code{nBurnin} is
 \code{NULL}, then \code{continueEstimation} adds iterations to
-any existing posterior sample.  If \code{nBurnin} is \code{NULL},
+any existing posterior sample.  If \code{nBurnin} is a number,
 then iterations from any previous calls to the
 \code{estimate} function or to \code{continueEstimation} are
 treated as burnin, and the construction of the posterior sample
@@ -49,7 +49,7 @@ If \code{nThin} is set to a different value from previous calls to
 the \code{estimate} function or \code{continueEstimation}, then the
 thinning ratio, and hence correlations between successive iterations,
 will change. This is safe if the previous iterations are being used as
-burnin, but needs to be done with care, if the previous iterations
+burnin, but needs to be done with care if the previous iterations
 will form part of the posterior sample.
 
 Because model output includes the state of the random number generator,

@@ -1,4 +1,6 @@
 
+## Mixin classes #############################################################
+
 ## HAS_TESTS
 setClass("CombinedBinomial",
          contains = c("VIRTUAL", "NotHasSubtotals"),
@@ -49,7 +51,7 @@ setClass("CombinedPoisson",
 setClass("Combined",
          contains = c("VIRTUAL", "SlotsToExtract", "IMethodCombined"))
 
-## CombinedModel
+## CombinedModel #############################################################
 
 ## HAS_TESTS
 setClass("CombinedModel",
@@ -149,6 +151,9 @@ setClass("CombinedModelPoissonHasExp",
              TRUE
          })
 
+
+## CombinedCounts #############################################################
+
 setClass("CombinedCounts",
          slots = c(model = "Model"),
          prototype = prototype(slotsToExtract = c("model", "y", "dataModels")),
@@ -184,8 +189,13 @@ setClass("CombinedCountsBinomial",
                       "CombinedBinomial",
                       "HasExposure"))
 
+
+
+## CombinedAccount #############################################################
+
 setClass("CombinedAccount",
          contains = c("VIRTUAL",
+                      "Combined",
                       "AccountMixin",
                       "SystemMixin",
                       "DataMixin",
@@ -204,9 +214,9 @@ setClass("CombinedAccount",
          })
                                
 setClass("CombinedAccountMovements",
-         prototype = prototype(iMethodCombined = 9L),
          slots = c(account = "Movements"),
-         contains = c("CombinedAccount",
+         contains = c("VIRTUAL",
+                      "CombinedAccount",
                       "SystemMovementsMixin"),
          validity = function(object) {
              datasets <- object@datasets
@@ -232,9 +242,18 @@ setClass("CombinedAccountMovements",
              TRUE
          })
 
+setClass("CombinedAccountMovementsNoAge",
+         prototype = prototype(iMethodCombined = 9L,
+                               slotsToExtract = c("account",
+                                                  "systemModels",
+                                                  "dataModels")),
+         contains = "CombinedAccountMovements")
 
 setClass("CombinedAccountMovementsHasAge",
-         prototype = prototype(iMethodCombined = 10L),
+         prototype = prototype(iMethodCombined = 10L,
+                               slotsToExtract = c("account",
+                                                  "systemModels",
+                                                  "dataModels")),
          contains = c("CombinedAccountMovements",
                       "MovementsAgeMixin"))
 

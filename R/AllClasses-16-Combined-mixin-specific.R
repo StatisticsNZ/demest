@@ -54,6 +54,7 @@ setClass("AccessionMixin",
              TRUE
          })
 
+
 ## NO_TESTS
 setClass("AgeTimeStepMixin",
          slot = c(ageTimeStep = "numeric"),
@@ -69,12 +70,14 @@ setClass("AgeTimeStepMixin",
          })
 
 ## NO_TESTS
-setClass("CumProbCompMixin",
-         slots = c(cumProbComp = "numeric"),
+setClass("ProbAccountMixin",
+         slots = c(cumProbComp = "numeric",
+                   probPopn = "numeric"),
          contains = "VIRTUAL",
          validity = function(object) {
              cumProbComp <- object@cumProbComp
              components <- object@account@components
+             probPopn <- object@probPopn
              ## 'cumProbComp' and 'components' have same length
              if (!identical(length(cumProbComp), length(components)))
                  return(gettextf("'%s' and '%s' have different lengths",
@@ -95,6 +98,22 @@ setClass("CumProbCompMixin",
              if (any(diff(cumProbComp) <= 0))
                  return(gettextf("'%s' not strictly increasing",
                                  "cumProbComp"))
+             ## 'probPopn' has length 1
+             if (!identical(length(probPopn), 1L))
+                 return(gettextf("'%s' does not have length %d",
+                                 "probPopn", 1L))
+             ## 'probPopn' is not missing
+             if (is.na(probPopn))
+                 return(gettextf("'%s' is missing",
+                                 "probPopn"))
+             ## 'probPopn' is double
+             if (!is.double(probPopn))
+                 return(gettextf("'%s' does not have type \"%s\"",
+                                 "probPopn", "double"))
+             ## 'probPopn' is between 0 and 1
+             if ((probPopn < 0) || (probPopn > 1))
+                 return(gettextf("'%s' is not between %d and %d",
+                                 "probPopn", 0L, 1L))
              TRUE
          })
 
@@ -143,7 +162,7 @@ setClass("DescriptionsMixin",
              if (!all(sapply(descriptions[-1L], methods::is, "DescriptionComp")))
                  return(gettextf("first element of '%s' does not have class \"%s\"",
                                  "descriptions", "DescriptionComp"))
-             ## element has class "DescriptionPoool" iff corresponding
+             ## element has class "DescriptionPool" iff corresponding
              ## element of 'components' has class InternalMovementsPool",
              is.desc.pool <- sapply(descriptions[-1], methods::is, "DescriptionPool")
              is.pool <- sapply(components, methods::is, "InternalMovementsPool")
@@ -364,14 +383,20 @@ setClass("ICompMixin",
              TRUE
          })
 
+
 ## NO_TESTS
 ## the index of the first cell in 'exposure' that
 ## will change if the cell being updated is changed
 setClass("IExpFirstMixin",
          slots = c(iExpFirst = "integer",
-                   iExpFirstOther = "integer"),
+                   iExpFirstOther = "integer",
+                   iExposure = "integer",
+                   iExposureOther = "integer",
+                   iPopnNext = "integer",
+                   iPopnNextOther = "integer"),
          contains = "VIRTUAL",
          validity = function(object) {
+             ## iExpFirst, iExpFirstOther
              for (name in c("iExpFirst", "iExpFirstOther")) {
                  value <- slot(object, name)
                  ## 'iExpFirst', 'iExpFirstOther' have length 1
@@ -392,18 +417,7 @@ setClass("IExpFirstMixin",
                                          name, "exposure"))
                  }
              }
-             TRUE
-         })
-
-## NO_TESTS
-## The index of the cell in 'exposure' that appears in the likelihood for
-## the cell being updated.  iExposure is 0L if the model for the cell being
-## updated does not include exposure.
-setClass("IExposureMixin",
-         slots = c(iExposure = "integer",
-                   iExposureOther = "integer"),
-         contains = "VIRTUAL",
-         validity = function(object) {
+             ## iExposure, iExposureOther
              for (name in c("iExposure", "iExposureOther")) {
                  value <- slot(object, name)
                  ## 'iExposure', 'iExposureOther' have length 1
@@ -424,19 +438,7 @@ setClass("IExposureMixin",
                                          name, "exposure"))
                  }
              }
-             TRUE
-         })
-
-setClass("IMethodCombined",
-         slots = c(iMethodCombined = "integer"),
-         contains = "VIRTUAL")
-
-## NO_TESTS
-setClass("IPopnNextMixin",
-         slots = c(iPopnNext = "integer",
-                   iPopnNextOther = "integer"),
-         contains = "VIRTUAL",
-         validity = function(object) {
+             ## iPopnNext, iPopnNextOther
              population <- object@account@population
              n.population <- length(population)
              for (name in c("iPopnNext", "iPopnNextOther")) {
@@ -455,8 +457,103 @@ setClass("IPopnNextMixin",
                      return(gettextf("'%s' is greater than the length of '%s'",
                                      name, "population"))
              }
+
              TRUE
          })
+
+## ## NO_TESTS
+## ## the index of the first cell in 'exposure' that
+## ## will change if the cell being updated is changed
+## setClass("IExpFirstMixin",
+##          slots = c(iExpFirst = "integer",
+##                    iExpFirstOther = "integer"),
+##          contains = "VIRTUAL",
+##          validity = function(object) {
+##              for (name in c("iExpFirst", "iExpFirstOther")) {
+##                  value <- slot(object, name)
+##                  ## 'iExpFirst', 'iExpFirstOther' have length 1
+##                  if (!identical(length(value), 1L))
+##                      return(gettextf("'%s' does not have length %d",
+##                                      name, 1L))
+##                  ## if 'iExpFirst', 'iExpFirstOther' not missing, they are greater than or equal to 0L
+##                  if (!is.na(value) && (value < 0L))
+##                      return(gettextf("'%s' is less than %d",
+##                                      name, 0L))
+##                  ## if 'iExpFirst', 'iExpFirstOther' not missing, they are less than or
+##                  ## equal to length of 'exposure'
+##                  if (!is.na(value)) {
+##                      exposure <- object@exposure
+##                      n.exposure <- length(exposure)
+##                      if (value > n.exposure)
+##                          return(gettextf("'%s' is greater than the length of '%s'",
+##                                          name, "exposure"))
+##                  }
+##              }
+##              TRUE
+##          })
+
+## ## NO_TESTS
+## ## The index of the cell in 'exposure' that appears in the likelihood for
+## ## the cell being updated.  iExposure is 0L if the model for the cell being
+## ## updated does not include exposure.
+## setClass("IExposureMixin",
+##          slots = c(iExposure = "integer",
+##                    iExposureOther = "integer"),
+##          contains = "VIRTUAL",
+##          validity = function(object) {
+##              for (name in c("iExposure", "iExposureOther")) {
+##                  value <- slot(object, name)
+##                  ## 'iExposure', 'iExposureOther' have length 1
+##                  if (!identical(length(value), 1L))
+##                      return(gettextf("'%s' does not have length %d",
+##                                      name, 1L))
+##                  ## if 'iExposure', 'iExposureOther' not missing, they are greater than or equal to 0L
+##                  if (!is.na(value) && (value < 0L))
+##                      return(gettextf("'%s' is less than %d",
+##                                      name, 0L))
+##                  ## if 'iExposure', 'iExposureOther' not missing, they are less than or
+##                  ## equal to length of 'exposure'
+##                  if (!is.na(value)) {
+##                      exposure <- object@exposure
+##                      n.exposure <- length(exposure)
+##                      if (value > n.exposure)
+##                          return(gettextf("'%s' is greater than the length of '%s'",
+##                                          name, "exposure"))
+##                  }
+##              }
+##              TRUE
+##          })
+
+setClass("IMethodCombined",
+         slots = c(iMethodCombined = "integer"),
+         contains = "VIRTUAL")
+
+## ## NO_TESTS
+## setClass("IPopnNextMixin",
+##          slots = c(iPopnNext = "integer",
+##                    iPopnNextOther = "integer"),
+##          contains = "VIRTUAL",
+##          validity = function(object) {
+##              population <- object@account@population
+##              n.population <- length(population)
+##              for (name in c("iPopnNext", "iPopnNextOther")) {
+##                  value <- slot(object, name)
+##                  ## 'iPopnNext', 'iPopnNextOther' have length 1
+##                  if (!identical(length(value), 1L))
+##                      return(gettextf("'%s' does not have length %d",
+##                                      name, 1L))
+##                  ## if 'iPopnNext', 'iPopnNextOther' not missing, they are greater than or equal to 0L
+##                  if (!is.na(value) && (value < 0L))
+##                      return(gettextf("'%s' is less than %d",
+##                                      name, 1L))
+##                  ## if 'iPopnNext', 'iPopnNextOther' not missing, they are less than or
+##                  ## equal to length of 'population'
+##                  if (!is.na(value) && (value > n.population))
+##                      return(gettextf("'%s' is greater than the length of '%s'",
+##                                      name, "population"))
+##              }
+##              TRUE
+##          })
 
 ## NO_TESTS
 setClass("IsIncrementMixin",
@@ -513,21 +610,11 @@ setClass("IsNetMixin",
              TRUE
          })
 
-setClass("IteratorAccMixin",
+setClass("IteratorsAccountMixin",
          contains = "VIRTUAL",
-         slots = c(iteratorAcc = "CohortIteratorAccession"))
-
-setClass("IteratorExposureMixin",
-         contains = "VIRTUAL",
-         slots = c(iteratorExposure = "CohortIteratorComponent"))
-         
-setClass("IteratorPopnMixin",
-         contains = "VIRTUAL",
-         slots = c(iteratorPopn = "CohortIteratorPopulation"))
-
-setClass("IteratorsCompMixin",
-         contains = "VIRTUAL",
-         slots = c(iteratorsComp = "list"),
+         slots = c(iteratorExposure = "CohortIteratorComponent",
+                   iteratorPopn = "CohortIteratorPopulation",
+                   iteratorsComp = "list"),
          validity = function(object) {
              iteratorsComp <- object@iteratorsComp
              components <- object@account@components
@@ -559,11 +646,18 @@ setClass("IteratorsCompMixin",
              }
              TRUE
          })    
+         
+setClass("IteratorAccMixin",
+         contains = "VIRTUAL",
+         slots = c(iteratorAcc = "CohortIteratorAccession"))
 
-setClass("MappingsFromExpMixin",
-         slots = c(mappingsFromExp = "list"),
+setClass("MappingsAccountMixin",
+         slots = c(mappingsFromExp = "list",
+                   mappingsToExp = "list",
+                   mappingsToPopn = "list"),
          contains = "VIRTUAL",
          validity = function(object) {
+             ## mappingsFromExp
              mappingsFromExp <- object@mappingsFromExp
              components <- object@account@components
              ## all elements have class "MappingFromExp"
@@ -580,7 +674,48 @@ setClass("MappingsFromExpMixin",
              is.births <- sapply(components, methods::is, "Births")
              if (!identical(is.mapping.births, is.births))
                  return(gettextf("elements of '%s' must have class \"%s\" iff correspondening element of '%s' has class \"%s\"",
-                                 "mappingsFromExp", "MappingExpToBirths", "components", "Births"))             
+                                 "mappingsFromExp", "MappingExpToBirths", "components", "Births"))
+             ## mappingsToExp
+             mappingsToExp <- object@mappingsToExp
+             ## all elements have class "MappingToExp"
+             if (!all(sapply(mappingsToExp, methods::is, "MappingToExp")))
+                 return(gettextf("'%s' has elements not of class \"%s\"",
+                                 "mappingsToExp", "MappingToExp"))
+             ## has same length as 'components'
+             if (!identical(length(mappingsToExp), length(components)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "mappingsToExp", "components"))
+             ## element has class "MappingBirthsToExp" iff corresponding
+             ## element of 'components' has class "Births",
+             is.mapping.births <- sapply(mappingsToExp, methods::is, "MappingBirthsToExp")
+             is.births <- sapply(components, methods::is, "Births")
+             if (!identical(is.mapping.births, is.births))
+                 return(gettextf("elements of '%s' must have class \"%s\" iff correspondening element of '%s' has class \"%s\"",
+                                 "mappingsToExp", "MappingBirthsToExp", "components", "Births"))             
+             ## element has class "MappingOrigDestToExp" iff corresponding
+             ## element of 'components' has class "HasOrigDest",
+             is.mapping.orig.dest <- sapply(mappingsToExp, methods::is, "MappingOrigDestToExp")
+             is.has.orig.dest <- sapply(components, methods::is, "HasOrigDest")
+             if (!identical(is.mapping.orig.dest, is.has.orig.dest))
+                 return(gettextf("elements of '%s' must have class \"%s\" iff correspondening element of '%s' has class \"%s\"",
+                                 "mappingsToExp", "MappingOrigDestToExp", "components", "HasOrigDest"))             
+             ## mappingsToPopn
+             mappingsToPopn <- object@mappingsToPopn
+             ## all elements have class "MappingToPopn"
+             if (!all(sapply(mappingsToPopn, methods::is, "MappingToPopn")))
+                 return(gettextf("'%s' has elements not of class \"%s\"",
+                                 "mappingsToPopn", "MappingToPopn"))
+             ## has same length as 'components'
+             if (!identical(length(mappingsToPopn), length(components)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "mappingsToPopn", "components"))
+             ## element has class "MappingOrigDestToPopn" iff corresponding
+             ## element of 'components' has class "HasOrigDest",
+             is.mapping.orig.dest <- sapply(mappingsToPopn, methods::is, "MappingOrigDestToPopn")
+             is.has.orig.dest <- sapply(components, methods::is, "HasOrigDest")
+             if (!identical(is.mapping.orig.dest, is.has.orig.dest))
+                 return(gettextf("elements of '%s' must have class \"%s\" iff correspondening element of '%s' has class \"%s\"",
+                                 "mappingsToPopn", "MappingOrigDestToPopn", "components", "HasOrigDest"))             
              TRUE
          })
 
@@ -609,62 +744,6 @@ setClass("MappingsToAccMixin",
              TRUE
          })
 
-## NO_TESTS
-setClass("MappingsToExpMixin",
-         slots = c(mappingsToExp = "list"),
-         contains = "VIRTUAL",
-         validity = function(object) {
-             mappingsToExp <- object@mappingsToExp
-             components <- object@account@components
-             ## all elements have class "MappingToExp"
-             if (!all(sapply(mappingsToExp, methods::is, "MappingToExp")))
-                 return(gettextf("'%s' has elements not of class \"%s\"",
-                                 "mappingsToExp", "MappingToExp"))
-             ## has same length as 'components'
-             if (!identical(length(mappingsToExp), length(components)))
-                 return(gettextf("'%s' and '%s' have different lengths",
-                                 "mappingsToExp", "components"))
-             ## element has class "MappingBirthsToExp" iff corresponding
-             ## element of 'components' has class "Births",
-             is.mapping.births <- sapply(mappingsToExp, methods::is, "MappingBirthsToExp")
-             is.births <- sapply(components, methods::is, "Births")
-             if (!identical(is.mapping.births, is.births))
-                 return(gettextf("elements of '%s' must have class \"%s\" iff correspondening element of '%s' has class \"%s\"",
-                                 "mappingsToExp", "MappingBirthsToExp", "components", "Births"))             
-             ## element has class "MappingOrigDestToExp" iff corresponding
-             ## element of 'components' has class "HasOrigDest",
-             is.mapping.orig.dest <- sapply(mappingsToExp, methods::is, "MappingOrigDestToExp")
-             is.has.orig.dest <- sapply(components, methods::is, "HasOrigDest")
-             if (!identical(is.mapping.orig.dest, is.has.orig.dest))
-                 return(gettextf("elements of '%s' must have class \"%s\" iff correspondening element of '%s' has class \"%s\"",
-                                 "mappingsToExp", "MappingOrigDestToExp", "components", "HasOrigDest"))             
-             TRUE
-         })
-
-## NO_TESTS
-setClass("MappingsToPopnMixin",
-         slots = c(mappingsToPopn = "list"),
-         contains = "VIRTUAL",
-         validity = function(object) {
-             mappingsToPopn <- object@mappingsToPopn
-             components <- object@account@components
-             ## all elements have class "MappingToPopn"
-             if (!all(sapply(mappingsToPopn, methods::is, "MappingToPopn")))
-                 return(gettextf("'%s' has elements not of class \"%s\"",
-                                 "mappingsToPopn", "MappingToPopn"))
-             ## has same length as 'components'
-             if (!identical(length(mappingsToPopn), length(components)))
-                 return(gettextf("'%s' and '%s' have different lengths",
-                                 "mappingsToPopn", "components"))
-             ## element has class "MappingOrigDestToPopn" iff corresponding
-             ## element of 'components' has class "HasOrigDest",
-             is.mapping.orig.dest <- sapply(mappingsToPopn, methods::is, "MappingOrigDestToPopn")
-             is.has.orig.dest <- sapply(components, methods::is, "HasOrigDest")
-             if (!identical(is.mapping.orig.dest, is.has.orig.dest))
-                 return(gettextf("elements of '%s' must have class \"%s\" iff correspondening element of '%s' has class \"%s\"",
-                                 "mappingsToPopn", "MappingOrigDestToPopn", "components", "HasOrigDest"))             
-             TRUE
-         })
 
 ## NO_TESTS
 setClass("ModelUsesExposureMixin",
@@ -791,31 +870,6 @@ setClass("DataModelsMixin",
              if (!is.null(names(dataModels)))
                  return(gettextf("'%s' has names",
                                  "dataModels"))
-             TRUE
-         })
-
-## NO_TESTS
-setClass("ProbPopnMixin",
-         slots = c(probPopn = "numeric"),
-         contains = "VIRTUAL",
-         validity = function(object) {
-             probPopn <- object@probPopn
-             ## 'probPopn' has length 1
-             if (!identical(length(probPopn), 1L))
-                 return(gettextf("'%s' does not have length %d",
-                                 "probPopn", 1L))
-             ## 'probPopn' is not missing
-             if (is.na(probPopn))
-                 return(gettextf("'%s' is missing",
-                                 "probPopn"))
-             ## 'probPopn' is double
-             if (!is.double(probPopn))
-                 return(gettextf("'%s' does not have type \"%s\"",
-                                 "probPopn", "double"))
-             ## 'probPopn' is between 0 and 1
-             if ((probPopn < 0) || (probPopn > 1))
-                 return(gettextf("'%s' is not between %d and %d",
-                                 "probPopn", 0L, 1L))
              TRUE
          })
 

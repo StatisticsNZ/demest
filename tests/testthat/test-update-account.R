@@ -4404,6 +4404,7 @@ test_that("diffLogDensJumpOrigDest works with CombinedAccountMovements - no age"
         set.seed(seed)
         x <- updateProposalAccountMoveOrigDest(x0)
         if (x@generatedNewProposal@.Data) {
+            updated <- TRUE
             ans.obtained <- diffLogDensJumpOrigDest(x)
             ans.expected <- (dpois(x@account@components[[1]][x@iCell] + x@diffProp,
                                    lambda = (x@exposure[x@iExposure] - 0.5 * x@diffProp * x@ageTimeStep) * x@systemModels[[2]]@theta[x@iCell],

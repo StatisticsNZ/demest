@@ -4,7 +4,7 @@
 \alias{estimateCounts}
 \title{Estimate counts and model from multiple noisy datasets.}
 \usage{
-estimateCounts(model, y, exposure = NULL, observation, datasets,
+estimateCounts(model, y, exposure = NULL, dataModels, datasets,
   filename = NULL, nBurnin = 1000, nSim = 1000, nChain = 5, nThin = 1,
   parallel = TRUE, outfile = NULL, nUpdateMax = 50, verbose = FALSE,
   useC = TRUE)
@@ -20,7 +20,7 @@ structure as the counts to be estimated.}
 \item{exposure}{A \code{\link[dembase:DemographicArray-class]{Counts}}
 object specifying exposure or sample size.}
 
-\item{observation}{A list of objects of class
+\item{dataModels}{A list of objects of class
 \code{\linkS4class{SpecModel}} describing the relationship between 
 the datasets and counts.}
 
@@ -63,7 +63,7 @@ the array, using multiple noisy datasets.
 See the documentation for \code{\link{estimateModel}} for details on
 model output and on MCMC settings.
 
-\code{observation} is a list of specificiations for data models,
+\code{dataModels} is a list of specificiations for data models,
 and \code{datasets} is a named list of datasets.  The response for each
 data model must be the name of a dataset.  See below for examples.
 }
@@ -76,7 +76,7 @@ health <- Counts(health, dimscales = c(year = "Points"))
 survey <- Counts(survey)
 y <- health + 10
 model <- Model(y ~ Poisson(mean ~ age + sex + region))
-observation <- list(Model(nat ~ PoissonBinomial(prob = 0.98)),
+dataModels <- list(Model(nat ~ PoissonBinomial(prob = 0.98)),
                     Model(health ~ Poisson(mean ~ age)),
                     Model(survey ~ Binomial(mean ~ 1)))
 datasets <- list(nat = nat, health = health, survey = survey)
@@ -85,7 +85,7 @@ filename <- tempfile()
 \dontrun{
 estimateCounts(model = model,
                y = y,
-               observation = observation,
+               dataModels = dataModels,
                datasets = datasets,
                filename = filename,
                nBurnin = 50,

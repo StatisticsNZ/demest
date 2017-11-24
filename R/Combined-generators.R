@@ -528,7 +528,7 @@ setMethod("initialCombinedAccount",
                                transformsExpToComp = transforms.exp.to.comp)
               }
               else {
-                  methods::new("CombinedAccountMovements",
+                  methods::new("CombinedAccountMovementsNoAge",
                                account = account,
                                ageTimeStep = age.time.step,
                                cumProbComp = cum.prob.comp,
