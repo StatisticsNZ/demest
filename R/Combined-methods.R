@@ -279,25 +279,25 @@ setMethod("updateCombined",
               else {
                   y <- object@y
                   model <- object@model
-                  observationModels <- object@observationModels
+                  dataModels <- object@dataModels
                   datasets <- object@datasets
                   transforms <- object@transforms
                   for (i in seq_len(nUpdate)) {
                       y <- updateCountsPoissonNotUseExp(y = y,
                                                         model = model,
-                                                        observationModels = observationModels,
+                                                        dataModels = dataModels,
                                                         datasets = datasets,
                                                         transforms = transforms)
                       model <- updateModelNotUseExp(object = model,
                                                     y = y)
-                      observationModels <- updateObservationCounts(observationModels = observationModels,
+                      dataModels <- updateDataModelsCounts(dataModels = dataModels,
                                                                    datasets = datasets,
                                                                    transforms = transforms,
                                                                    y = y)
                   }
                   object@y <- y
                   object@model <- model
-                  object@observationModels <- observationModels
+                  object@dataModels <- dataModels
                   object
               }
           })
@@ -324,27 +324,27 @@ setMethod("updateCombined",
                   y <- object@y
                   model <- object@model
                   exposure <- object@exposure
-                  observationModels <- object@observationModels
+                  dataModels <- object@dataModels
                   datasets <- object@datasets
                   transforms <- object@transforms
                   for (i in seq_len(nUpdate)) {
                       y <- updateCountsPoissonUseExp(y = y,
                                                      model = model,
                                                      exposure = exposure,
-                                                     observationModels = observationModels,
+                                                     dataModels = dataModels,
                                                      datasets = datasets,
                                                      transforms = transforms)
                       model <- updateModelUseExp(object = model,
                                                  y = y,
                                                  exposure = exposure)
-                      observationModels <- updateObservationCounts(observationModels = observationModels,
+                      dataModels <- updateDataModelsCounts(dataModels = dataModels,
                                                              datasets = datasets,
                                                              transforms = transforms,
                                                              y = y)
                   }
                   object@y <- y
                   object@model <- model
-                  object@observationModels <- observationModels
+                  object@dataModels <- dataModels
                   object
               }
           })
@@ -371,27 +371,27 @@ setMethod("updateCombined",
                   y <- object@y
                   model <- object@model
                   exposure <- object@exposure
-                  observationModels <- object@observationModels
+                  dataModels <- object@dataModels
                   datasets <- object@datasets
                   transforms <- object@transforms
                   for (i in seq_len(nUpdate)) {
                       y <- updateCountsBinomial(y = y,
                                                 model = model,
                                                 exposure = exposure,
-                                                observationModels = observationModels,
+                                                dataModels = dataModels,
                                                 datasets = datasets,
                                                 transforms = transforms)
                       model <- updateModelUseExp(object = model,
                                                  y = y,
                                                  exposure = exposure)
-                      observationModels <- updateObservationCounts(observationModels = observationModels,
+                      dataModels <- updateDataModelsCounts(dataModels = dataModels,
                                                              datasets = datasets,
                                                              transforms = transforms,
                                                              y = y)
                   }
                   object@y <- y
                   object@model <- model
-                  object@observationModels <- observationModels
+                  object@dataModels <- dataModels
                   object
               }
           })
@@ -669,7 +669,7 @@ setMethod("updateCombined",
                       object <- updateAccount(object)
                       object <- updateSystemModels(object)
                       object <- updateExpectedExposure(object)
-                      object <- updateObservationModelsAccount(object)
+                      object <- updateDataModelsAccount(object)
                   }
                   object
               }

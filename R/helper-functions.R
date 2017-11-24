@@ -2871,41 +2871,41 @@ checkListNames <- function(names, listName) {
 }
 
 ## HAS_TESTS
-checkObservationModels <- function(observationModels, needsNonDefaultSeriesArg = FALSE) {
-    ## 'observationModels' is a list
-    if (!is.list(observationModels))
+checkDataModels <- function(dataModels, needsNonDefaultSeriesArg = FALSE) {
+    ## 'dataModels' is a list
+    if (!is.list(dataModels))
         stop(gettextf("'%s' has class \"%s\"",
-                      "observationModels", class(observationModels)))
-    for (i in seq_along(observationModels)) {
-        obs <- observationModels[[i]]
+                      "dataModels", class(dataModels)))
+    for (i in seq_along(dataModels)) {
+        obs <- dataModels[[i]]
         ## all elements have class "SpecModel"
         if (!methods::is(obs, "SpecModel"))
             stop(gettextf("element %d of '%s' has class \"%s\"",
-                          i, "observationModels", class(obs)))
+                          i, "dataModels", class(obs)))
         ## element uses exposure
         if (!obs@useExpose@.Data)
             stop(gettextf("model %d of '%s' does not use exposure",
-                          i, "observationModels"))
+                          i, "dataModels"))
         ## element has name
         if (is.na(obs@nameY@.Data) || !nzchar(obs@nameY@.Data))
             stop(gettextf("element %d of '%s' has no name for response variable",
-                          i, "observationModels"))
+                          i, "dataModels"))
         ## specification of model is valid
         return.value <- tryCatch(methods::validObject(obs),
                                  error = function(e) e)
         if (methods::is(return.value, "error"))
-            stop(gettextf("error in observationModels model for '%s' : %s",
+            stop(gettextf("error in data model for '%s' : %s",
                           obs@nameY@.Data, return.value$message))
         if (needsNonDefaultSeriesArg) {
             ## 'series' argument supplied if needed
             if (identical(obs@series@.Data, "y"))
-                stop(gettextf("'%s' argument not supplied in observationModels model for '%s'",
+                stop(gettextf("'%s' argument not supplied in data model for '%s'",
                               "series", obs@nameY))
         }
         else {
             ## no 'series' argument supplied if not needed
             if (!identical(obs@series@.Data, "y"))
-                warning(gettextf("non-default argument for '%s' in observationModels model for '%s' ignored",
+                warning(gettextf("non-default argument for '%s' in data model for '%s' ignored",
                                  "series", obs@nameY))
         }
     }
@@ -3060,10 +3060,10 @@ imputeCountsInternal <- function(object, max = NULL) {
 }
 
 ## HAS_TESTS
-initialObservationModels <- function(observationModels, datasets, y, transforms) {
-    ans <- vector(mode = "list", length = length(observationModels))
+initialDataModels <- function(dataModels, datasets, y, transforms) {
+    ans <- vector(mode = "list", length = length(dataModels))
     for (i in seq_along(ans)) {
-        ans[[i]] <- initialModel(object = observationModels[[i]],
+        ans[[i]] <- initialModel(object = dataModels[[i]],
                                  y = datasets[[i]],
                                  exposure = dembase::collapse(y, transform = transforms[[i]]))
     }
@@ -3431,17 +3431,18 @@ makeSpecsPriors <- function(dots) {
 }
 
 ## HAS_TESTS
-makeTransformsYToDatasets <- function(y, nameY = "y", datasets) {
-    names.datasets <- names(datasets)
+makeTransformsYToDatasets <- function(y, datasets, namesDatasets) {
     ans <- vector(mode = "list", length = length(datasets))
     for (i in seq_along(ans)) {
         dataset <- datasets[[i]]
-        return.value <- tryCatch(dembase::canMakeCompatible(x = y, y = dataset, subset = TRUE),
-                                 error = function(e) e)
-        if (methods::is(return.value, "error"))
+        transform <- tryCatch(dembase::makeTransform(x = y,
+                                                     y = dataset,
+                                                     subset = TRUE,
+                                                     check = TRUE),
+                              error = function(e) e)
+        if (methods::is(transform, "error"))
             stop(gettextf("unable to collapse '%s' to make it compatible with dataset '%s' : %s",
-                          nameY, names.datasets[i], return.value$message))
-        transform <- dembase::makeTransform(x = y, y = dataset, subset = TRUE, check = FALSE)
+                          "y", namesDatasets[i], transform$message))
         transform <- dembase::makeCollapseTransformExtra(transform)
         ans[[i]] <- transform
     }
@@ -6210,10 +6211,10 @@ sweepMargins <- function(x, margins) {
 
 ## 'diffLogLik' has special provisions for infinite values.
 ## log-likelihood of -Inf can occur fairly frequently with
-## sparse data.  When the observation model is binomial, it occurs
+## sparse data.  When the data model is binomial, it occurs
 ## whenever the cell in 'dataset' has a higher value than the
 ## sum of the corresponding cell(s) from 'y'.  When the
-## observation model is Poisson or a Poisson-binomial mixture,
+## data model is Poisson or a Poisson-binomial mixture,
 ## it occurs whenever the cell in 'dataset' has a value > 0
 ## but the corresponding cell(s)
 ## in 'y' are all 0. Whether testing and allowing for an
@@ -6225,7 +6226,7 @@ sweepMargins <- function(x, margins) {
 
 ## TRANSLATED
 ## HAS_TESTS
-diffLogLik <- function(yProp, y, indicesY, observationModels,
+diffLogLik <- function(yProp, y, indicesY, dataModels,
                        datasets, transforms, useC = FALSE) {
     ## yProp
     stopifnot(is.integer(yProp))
@@ -6240,10 +6241,10 @@ diffLogLik <- function(yProp, y, indicesY, observationModels,
     stopifnot(is.integer(indicesY))
     stopifnot(!any(is.na(indicesY)))
     stopifnot(all(indicesY >= 1L))
-    ## observationModels
-    stopifnot(is.list(observationModels))
-    stopifnot(all(sapply(observationModels, methods::is, "Model")))
-    stopifnot(all(sapply(observationModels, methods::is, "UseExposure")))
+    ## dataModels
+    stopifnot(is.list(dataModels))
+    stopifnot(all(sapply(dataModels, methods::is, "Model")))
+    stopifnot(all(sapply(dataModels, methods::is, "UseExposure")))
     ## datasets
     stopifnot(is.list(datasets))
     stopifnot(all(sapply(datasets, methods::is, "Counts")))
@@ -6259,15 +6260,15 @@ diffLogLik <- function(yProp, y, indicesY, observationModels,
     ## y and transforms
     for (i in seq_along(transforms))
         stopifnot(identical(transforms[[i]]@dimBefore, dim(y)))
-    ## observationModels and datasets
-    stopifnot(identical(length(observationModels), length(datasets)))
-    ## observationModels and transforms
-    stopifnot(identical(length(observationModels), length(transforms)))
+    ## dataModels and datasets
+    stopifnot(identical(length(dataModels), length(datasets)))
+    ## dataModels and transforms
+    stopifnot(identical(length(dataModels), length(transforms)))
     ## datasets and transforms
     for (i in seq_along(datasets))
         stopifnot(identical(transforms[[i]]@dimAfter, dim(datasets[[i]])))
     if (useC) {
-        .Call(diffLogLik_R, yProp, y, indicesY, observationModels,
+        .Call(diffLogLik_R, yProp, y, indicesY, dataModels,
               datasets, transforms)
     }
     else {
@@ -6285,10 +6286,9 @@ diffLogLik <- function(yProp, y, indicesY, observationModels,
                     i.cell.dataset <- dembase::getIAfter(i.cell.y, transform = transform)
                     if (i.cell.dataset > 0L) {
                         dataset <- datasets[[i.dataset]]
-                        ## THE FOLLOWING LINE AND THE TEST FOR CELL OBSERVED ARE NEW
                         cell.observed <- !is.na(dataset[i.cell.dataset])
                         if (cell.observed) {
-                            model <- observationModels[[i.dataset]]
+                            model <- dataModels[[i.dataset]]
                             i.contrib.to.cell <- dembase::getIShared(i = i.cell.y, transform = transform)
                             collapsed.y.curr <- sum(y[i.contrib.to.cell])
                             diff.prop.curr <- yProp[i.element.indices.y] - y[i.cell.y]
@@ -7085,7 +7085,7 @@ makeResultsCounts <- function(finalCombineds, mcmcArgs, controlArgs, seed) {
     combined <- finalCombineds[[1L]]
     model <- combined@model
     y <- combined@y
-    observationModels <- combined@observationModels
+    dataModels <- combined@dataModels
     datasets <- combined@datasets
     names.datasets <- combined@namesDatasets
     transforms <- combined@transforms
@@ -7104,25 +7104,25 @@ makeResultsCounts <- function(finalCombineds, mcmcArgs, controlArgs, seed) {
     has.exposure <- methods::is(combined, "HasExposure")
     if (has.exposure)
         exposure <- combined@exposure
-    output.observation.models <- vector(mode = "list", length = length(observationModels))
+    output.data.models <- vector(mode = "list", length = length(dataModels))
     if (n.sim > 0L) {
-        for (i in seq_along(observationModels)) {
-            output.observation.models[[i]] <- makeOutputModel(model = observationModels[[i]],
+        for (i in seq_along(dataModels)) {
+            output.data.models[[i]] <- makeOutputModel(model = dataModels[[i]],
                                                        pos = pos,
                                                        mcmc = mcmc)
-            pos <- pos + changeInPos(output.observation.models[[i]])
+            pos <- pos + changeInPos(output.data.models[[i]])
         }
         for (i in seq_along(datasets)) {
             if (any(is.na(datasets[[i]])))
                 datasets[[i]] <-
                     SkeletonMissingDataset(object = datasets[[i]],
-                                           model = observationModels[[i]],
-                                           outputModel = output.observation.models[[i]],
+                                           model = dataModels[[i]],
+                                           outputModel = output.data.models[[i]],
                                            transformComponent = transforms[[i]],
                                            skeletonComponent = output.y)
         }
     }
-    names(output.observation.models) <- names.datasets
+    names(output.data.models) <- names.datasets
     names(datasets) <- names.datasets
     final <- finalCombineds
     names(final) <- paste("chain", seq_along(final), sep = "")
@@ -7131,7 +7131,7 @@ makeResultsCounts <- function(finalCombineds, mcmcArgs, controlArgs, seed) {
             model = output.model,
             y = output.y,
             exposure = exposure,
-            observationModels = output.observation.models,
+            dataModels = output.data.models,
             datasets = datasets,
             mcmc = mcmc,
             control = controlArgs,
@@ -7142,7 +7142,7 @@ makeResultsCounts <- function(finalCombineds, mcmcArgs, controlArgs, seed) {
         methods::new("ResultsCountsEst",
             model = output.model,
             y = output.y,
-            observationModels = output.observation.models,
+            dataModels = output.data.models,
             datasets = datasets,
             mcmc = mcmc,
             control = controlArgs,
@@ -9429,23 +9429,23 @@ trimNULLsFromList <- function(object) {
 ## preparing inputs
 
 ## HAS_TESTS
-alignObservationModelsToDatasets <- function(observationModels, datasets, namesDatasets) {
-    names.obs.mod <- sapply(observationModels, methods::slot, "nameY")
+alignDataModelsToDatasets <- function(dataModels, datasets, namesDatasets) {
+    names.obs.mod <- sapply(dataModels, methods::slot, "nameY")
     obs.not.in.data <- setdiff(names.obs.mod, namesDatasets)
     data.not.in.obs <- setdiff(namesDatasets, names.obs.mod)
-    ## no observation models without datasets
+    ## no data models without datasets
     if (length(obs.not.in.data) > 0L)
         stop(gettextf("'%s' contains a model for '%s', but there is no dataset called '%s' in '%s'",
-                      "observationModels", obs.not.in.data[1L], obs.not.in.data[1L], "datasets"))
-    ## no datasets without observation models
+                      "dataModels", obs.not.in.data[1L], obs.not.in.data[1L], "datasets"))
+    ## no datasets without data models
     if (length(data.not.in.obs) > 0L)
         stop(gettextf("'%s' contains a dataset called '%s', but '%s' does not contain a model for '%s'",
-                      "datasets", data.not.in.obs[1L], "observationModels", data.not.in.obs[1L]))
+                      "datasets", data.not.in.obs[1L], "dataModels", data.not.in.obs[1L]))
     ans <- vector(mode = "list", length = length(datasets))
     for (i in seq_along(datasets)) {
         name.dataset <- namesDatasets[i]
         i.obs <- match(name.dataset, names.obs.mod)
-        ans[[i]] <- observationModels[[i.obs]]
+        ans[[i]] <- dataModels[[i.obs]]
     }
     ans
 }
@@ -9532,18 +9532,18 @@ checkSystemModels <- function(systemModels) {
 }
 
 ## HAS_TESTS
-## Note that every observation model has to relate to one series,
-## but every series does not have to have an observation model.
-makeSeriesIndices <- function(observationModels, account) {
-    names.obs.mod <- sapply(observationModels, methods::slot, "series")
+## Note that every data model has to relate to one series,
+## but every series does not have to have a data model.
+makeSeriesIndices <- function(dataModels, account) {
+    names.obs.mod <- sapply(dataModels, methods::slot, "series")
     names.components <- account@namesComponents
     names.series <- c("population", names.components)
     obs.not.in.series <- setdiff(names.obs.mod, names.series)
     if (length(obs.not.in.series) > 0L)
         stop(gettextf("'%s' contains a model for '%s', but '%s' does not have a series called '%s'",
-                      "observationModels", obs.not.in.series[1L], "account", obs.not.in.series[1L]))
-    ans <- integer(length = length(observationModels))
-    for (i in seq_along(observationModels)) {
+                      "dataModels", obs.not.in.series[1L], "account", obs.not.in.series[1L]))
+    ans <- integer(length = length(dataModels))
+    for (i in seq_along(dataModels)) {
         name.obs <- names.obs.mod[i]
         i.series <- match(name.obs, names.series)
         ans[i] <- i.series - 1L # 'population' has index 0; first component has index 1

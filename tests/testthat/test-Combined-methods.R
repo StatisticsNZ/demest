@@ -657,7 +657,7 @@ test_that("updateCombined method for CombinedCountsPoissonNotHasExp updates corr
                       dim = c(6, 2),
                       dimnames = list(age = 0:5, sex = c("f", "m"))))
     model <- Model(y ~ Poisson(mean ~ age, useExpose = FALSE))
-    observationModels <- list(Model(register ~ PoissonBinomial(prob = 0.98)),
+    data.models <- list(Model(register ~ PoissonBinomial(prob = 0.98)),
                               Model(tax ~ Binomial(mean ~ 1)))
     datasets <- list(Counts(array(c(0L, 2:12), dim = c(6, 2),
                                   dimnames = list(age = 0:5, sex = c("f", "m")))),
@@ -669,12 +669,12 @@ test_that("updateCombined method for CombinedCountsPoissonNotHasExp updates corr
     x0 <- initialCombinedCounts(model,
                                y = y,
                                exposure = NULL,
-                               observationModels = observationModels,
+                               dataModels = data.models,
                                datasets = datasets,
                                namesDatasets = namesDatasets,
                                transforms = transforms)
     x1 <- updateCombined(x0)
-    for (name in c("model", "y", "observationModels")) {
+    for (name in c("model", "y", "dataModels")) {
         expect_false(identical(slot(x1, name), slot(x0, name)))
     }
     for (name in c("namesDatasets", "datasets", "transforms", "iMethodCombined", "slotsToExtract"))
@@ -691,7 +691,7 @@ test_that("R, specific C, and generic C versions of updateCombined method for Co
                       dim = c(6, 2),
                       dimnames = list(age = 0:5, sex = c("f", "m"))))
     model <- Model(y ~ Poisson(mean ~ age, useExpose = FALSE))
-    observationModels <- list(Model(register ~ PoissonBinomial(prob = 0.98)),
+    data.models <- list(Model(register ~ PoissonBinomial(prob = 0.98)),
                         Model(tax ~ Binomial(mean ~ 1)))
     datasets <- list(Counts(array(c(0L, 2:12), dim = c(6, 2),
                                   dimnames = list(age = 0:5, sex = c("f", "m")))),
@@ -703,7 +703,7 @@ test_that("R, specific C, and generic C versions of updateCombined method for Co
     x0 <- initialCombinedCounts(model,
                                y = y,
                                exposure = NULL,
-                               observationModels = observationModels,
+                               dataModels = data.models,
                                datasets = datasets,
                                namesDatasets = namesDatasets,
                                transforms = transforms)
@@ -732,7 +732,7 @@ test_that("updateCombined method for CombinedCountsPoissonHasExp updates correct
                       dim = c(6, 2),
                       dimnames = list(age = 0:5, sex = c("f", "m"))))
     model <- Model(y ~ Poisson(mean ~ age))
-    observationModels <- list(Model(register ~ PoissonBinomial(prob = 0.98)),
+    data.models <- list(Model(register ~ PoissonBinomial(prob = 0.98)),
                         Model(tax ~ Binomial(mean ~ 1)))
     datasets <- list(Counts(array(c(0L, 2:12), dim = c(6, 2),
                                   dimnames = list(age = 0:5, sex = c("f", "m")))),
@@ -744,12 +744,12 @@ test_that("updateCombined method for CombinedCountsPoissonHasExp updates correct
     x0 <- initialCombinedCounts(model,
                                y = y,
                                exposure = exposure,
-                               observationModels = observationModels,
+                               dataModels = data.models,
                                datasets = datasets,
                                namesDatasets = namesDatasets,
                                transforms = transforms)
     x1 <- updateCombined(x0)
-    for (name in c("model", "y", "observationModels")) {
+    for (name in c("model", "y", "dataModels")) {
         expect_false(identical(slot(x1, name), slot(x0, name)))
     }
     for (name in c("namesDatasets", "datasets", "exposure", "transforms", "iMethodCombined", "slotsToExtract"))
@@ -769,7 +769,7 @@ test_that("R, specific C, and generic C versions of updateCombined method for Co
                       dim = c(6, 2),
                       dimnames = list(age = 0:5, sex = c("f", "m"))))
     model <- Model(y ~ Poisson(mean ~ age))
-    observationModels <- list(Model(register ~ PoissonBinomial(prob = 0.98)),
+    data.models <- list(Model(register ~ PoissonBinomial(prob = 0.98)),
                         Model(tax ~ Binomial(mean ~ 1)))
     datasets <- list(Counts(array(c(0L, 2:12), dim = c(6, 2),
                                   dimnames = list(age = 0:5, sex = c("f", "m")))),
@@ -781,7 +781,7 @@ test_that("R, specific C, and generic C versions of updateCombined method for Co
     x0 <- initialCombinedCounts(model,
                                y = y,
                                exposure = exposure,
-                               observationModels = observationModels,
+                               dataModels = data.models,
                                datasets = datasets,
                                namesDatasets = namesDatasets,
                                transforms = transforms)
@@ -808,7 +808,7 @@ test_that("updateCombined method for CombinedCountsBinomial updates correct slot
                       dimnames = list(age = 0:5, sex = c("f", "m"))))
     exposure <- y + y
     model <- Model(y ~ Binomial(mean ~ age))
-    observationModels <- list(Model(register ~ PoissonBinomial(prob = 0.98)),
+    data.models <- list(Model(register ~ PoissonBinomial(prob = 0.98)),
                         Model(tax ~ Binomial(mean ~ 1)))
     datasets <- list(Counts(array(c(0L, 2:12), dim = c(6, 2),
                                   dimnames = list(age = 0:5, sex = c("f", "m")))),
@@ -820,14 +820,14 @@ test_that("updateCombined method for CombinedCountsBinomial updates correct slot
     x0 <- initialCombinedCounts(model,
                                y = y,
                                exposure = exposure,
-                               observationModels = observationModels,
+                               dataModels = data.models,
                                datasets = datasets,
                                namesDatasets = namesDatasets,
                                transforms = transforms)
     x1 <- updateCombined(x0)
     for (i in 1:5)
         x1 <- updateCombined(x1)
-    for (name in c("model", "y", "observationModels")) {
+    for (name in c("model", "y", "dataModels")) {
         expect_false(identical(slot(x1, name), slot(x0, name)))
     }
     for (name in c("namesDatasets", "datasets", "exposure", "transforms", "iMethodCombined", "slotsToExtract"))
@@ -845,7 +845,7 @@ test_that("R, specific C, and generic C versions of updateCombined method for Co
                       dimnames = list(age = 0:5, sex = c("f", "m"))))
     exposure <- y + y
     model <- Model(y ~ Binomial(mean ~ age))
-    observationModels <- list(Model(register ~ PoissonBinomial(prob = 0.98)),
+    data.models <- list(Model(register ~ PoissonBinomial(prob = 0.98)),
                         Model(tax ~ Binomial(mean ~ 1)))
     datasets <- list(Counts(array(c(0L, 2:12), dim = c(6, 2),
                                   dimnames = list(age = 0:5, sex = c("f", "m")))),
@@ -857,7 +857,7 @@ test_that("R, specific C, and generic C versions of updateCombined method for Co
     x0 <- initialCombinedCounts(model,
                                y = y,
                                exposure = exposure,
-                               observationModels = observationModels,
+                               dataModels = data.models,
                                datasets = datasets,
                                namesDatasets = namesDatasets,
                                transforms = transforms)
@@ -937,7 +937,7 @@ test_that("diffLogDensAccount works with CombinedAccountMovementsHasAge", {
                                dimnames = dimnames(deaths))) + 1L
     datasets <- list(census, register, reg.births, address.change, reg.deaths)
     namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths")
-    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
                               Model(register ~ Poisson(mean ~ 1), series = "population"),
                               Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
@@ -952,7 +952,7 @@ test_that("diffLogDensAccount works with CombinedAccountMovementsHasAge", {
     x0 <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -1031,7 +1031,7 @@ test_that("R and C versions of diffLogDensAccount give same answer with Combined
                                dimnames = dimnames(deaths))) + 1L
     datasets <- list(census, register, reg.births, address.change, reg.deaths)
     namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths")
-    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
                               Model(register ~ Poisson(mean ~ 1), series = "population"),
                               Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
@@ -1046,7 +1046,7 @@ test_that("R and C versions of diffLogDensAccount give same answer with Combined
     x0 <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -1135,7 +1135,7 @@ test_that("diffLogLikAccount works with CombinedAccountMovementsHasAge", {
                                dimnames = dimnames(deaths))) + 1L
     datasets <- list(census, register, reg.births, address.change, reg.deaths)
     namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths")
-    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
                               Model(register ~ Poisson(mean ~ 1), series = "population"),
                               Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
@@ -1150,7 +1150,7 @@ test_that("diffLogLikAccount works with CombinedAccountMovementsHasAge", {
     x0 <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -1229,7 +1229,7 @@ test_that("R and C versions of diffLogLikAccount give same answer with CombinedA
                                dimnames = dimnames(deaths))) + 1L
     datasets <- list(census, register, reg.births, address.change, reg.deaths)
     namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths")
-    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
                               Model(register ~ Poisson(mean ~ 1), series = "population"),
                               Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
@@ -1244,7 +1244,7 @@ test_that("R and C versions of diffLogLikAccount give same answer with CombinedA
     x0 <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -1332,7 +1332,7 @@ test_that("updateProposalAccount works with CombinedAccountMovementsHasAge", {
                                dimnames = dimnames(deaths))) + 1L
     datasets <- list(census, register, reg.births, address.change, reg.deaths)
     namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths")
-    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
                               Model(register ~ Poisson(mean ~ 1), series = "population"),
                               Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
@@ -1347,7 +1347,7 @@ test_that("updateProposalAccount works with CombinedAccountMovementsHasAge", {
     x0 <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -1425,7 +1425,7 @@ test_that("R and C versions of updateProposalAccount give same answer with Combi
                                dimnames = dimnames(deaths))) + 1L
     datasets <- list(census, register, reg.births, address.change, reg.deaths)
     namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths")
-    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
                               Model(register ~ Poisson(mean ~ 1), series = "population"),
                               Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
@@ -1440,7 +1440,7 @@ test_that("R and C versions of updateProposalAccount give same answer with Combi
     x0 <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -1477,7 +1477,7 @@ test_that("updateValuesAccount works with CombinedAccountMovements", {
     population <- CountsOne(values = seq(200, 300, 10),
                             labels = seq(2000, 2100, 10),
                             name = "time")
-    births <- CountsOne(values = rpois(n = 10, lambda = 15),
+    births <- CountsOne(values = rpois(n = 10, lambda = 5),
                         labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
                         name = "time")
     deaths <- CountsOne(values = rpois(n = 10, lambda = 5),
@@ -1491,7 +1491,7 @@ test_that("updateValuesAccount works with CombinedAccountMovements", {
                          Model(births ~ Poisson(mean ~ 1)),
                          Model(deaths ~ Poisson(mean ~ 1)))
     systemWeights <- rep(list(NULL), 3)
-    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
+    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(2L, 0L)
     datasets <- list(Counts(array(7L,
@@ -1507,17 +1507,17 @@ test_that("updateValuesAccount works with CombinedAccountMovements", {
     x <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
     expect_true(validObject(x))
-    updated <- FALSE
     for (seed in seq_len(2 * n.test)) {
         set.seed(seed)
         while (!x@generatedNewProposal@.Data)
             x <- updateProposalAccount(x)
+        
         ans.obtained <- updateValuesAccount(x)
         ans.expected <- x
         ans.expected <- updateCellMove(x)
@@ -1525,8 +1525,6 @@ test_that("updateValuesAccount works with CombinedAccountMovements", {
         ans.expected <- updateSubsequentExpMove(ans.expected)
         expect_identical(ans.obtained, ans.expected)
     }
-    if (!updated)
-        warning("not updated")
 })
 
 test_that("R and C versions of updateValuesAccount give same answer with CombinedAccountMovements", {
@@ -1554,7 +1552,7 @@ test_that("R and C versions of updateValuesAccount give same answer with Combine
                          Model(births ~ Poisson(mean ~ 1)),
                          Model(deaths ~ Poisson(mean ~ 1)))
     systemWeights <- rep(list(NULL), 3)
-    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
+    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(2L, 0L)
     datasets <- list(Counts(array(7L,
@@ -1570,7 +1568,7 @@ test_that("R and C versions of updateValuesAccount give same answer with Combine
     x <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -1621,7 +1619,7 @@ test_that("updateValuesAccount works with CombinedAccountMovements", {
                          Model(births ~ Poisson(mean ~ 1)),
                          Model(deaths ~ Poisson(mean ~ 1)))
     systemWeights <- rep(list(NULL), 3)
-    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
+    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(2L, 0L)
     datasets <- list(Counts(array(7L,
@@ -1637,13 +1635,12 @@ test_that("updateValuesAccount works with CombinedAccountMovements", {
     x <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
     expect_true(validObject(x))
-    updated <- FALSE
     for (seed in seq_len(2 * n.test)) {
         set.seed(seed)
         while (!x@generatedNewProposal@.Data)
@@ -1655,8 +1652,6 @@ test_that("updateValuesAccount works with CombinedAccountMovements", {
         ans.expected <- updateSubsequentExpMove(ans.expected)
         expect_identical(ans.obtained, ans.expected)
     }
-    if (!updated)
-        warning("not updated")
 })
 
 test_that("updatedExpectedExposure works with CombinedAccountMovements - no age", {
@@ -1685,7 +1680,7 @@ test_that("updatedExpectedExposure works with CombinedAccountMovements - no age"
     systemModels <- list(Model(population ~ Poisson(mean ~ time, useExpose = FALSE)),
                          Model(arrivals ~ Poisson(mean ~ 1)))
     systemWeights <- rep(list(NULL), 2)
-    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- 0L
     datasets <- list(population + 1L)
     namesDatasets <- "census"
@@ -1694,7 +1689,7 @@ test_that("updatedExpectedExposure works with CombinedAccountMovements - no age"
     x <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -1728,7 +1723,7 @@ test_that("updatedExpectedExposure works with CombinedAccountMovements - no age"
     systemModels <- list(Model(population ~ Poisson(mean ~ time, useExpose = FALSE)),
                          Model(arrivals ~ Poisson(mean ~ 1)))
     systemWeights <- rep(list(NULL), 2)
-    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- 0L
     datasets <- list(population + 1L)
     namesDatasets <- "census"
@@ -1737,7 +1732,7 @@ test_that("updatedExpectedExposure works with CombinedAccountMovements - no age"
     x <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -1771,7 +1766,7 @@ test_that("updatedExpectedExposure works with CombinedAccountMovements - no age"
     systemModels <- list(Model(population ~ Poisson(mean ~ time, useExpose = FALSE)),
                          Model(arrivals ~ Poisson(mean ~ 1)))
     systemWeights <- rep(list(NULL), 2)
-    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- 0L
     datasets <- list(population + 1L)
     namesDatasets <- "census"
@@ -1780,7 +1775,7 @@ test_that("updatedExpectedExposure works with CombinedAccountMovements - no age"
     x <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -1819,7 +1814,7 @@ test_that("R and C versions of updatedExpectedExposure give same answer with Com
     systemModels <- list(Model(population ~ Poisson(mean ~ time, useExpose = FALSE)),
                          Model(arrivals ~ Poisson(mean ~ 1)))
     systemWeights <- rep(list(NULL), 2)
-    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- 0L
     datasets <- list(population + 1L)
     namesDatasets <- "census"
@@ -1828,7 +1823,7 @@ test_that("R and C versions of updatedExpectedExposure give same answer with Com
     x <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -1858,7 +1853,7 @@ test_that("R and C versions of updatedExpectedExposure give same answer with Com
     systemModels <- list(Model(population ~ Poisson(mean ~ time, useExpose = FALSE)),
                          Model(arrivals ~ Poisson(mean ~ 1)))
     systemWeights <- rep(list(NULL), 2)
-    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- 0L
     datasets <- list(population + 1L)
     namesDatasets <- "census"
@@ -1867,7 +1862,7 @@ test_that("R and C versions of updatedExpectedExposure give same answer with Com
     x <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -1897,7 +1892,7 @@ test_that("R and C versions of updatedExpectedExposure give same answer with Com
     systemModels <- list(Model(population ~ Poisson(mean ~ time, useExpose = FALSE)),
                          Model(arrivals ~ Poisson(mean ~ 1)))
     systemWeights <- rep(list(NULL), 2)
-    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- 0L
     datasets <- list(population + 1L)
     namesDatasets <- "census"
@@ -1906,7 +1901,7 @@ test_that("R and C versions of updatedExpectedExposure give same answer with Com
     x <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -1941,7 +1936,7 @@ test_that("updatedExpectedExposure works with CombinedAccountMovementsHasAge", {
     systemModels <- list(Model(population ~ Poisson(mean ~ time, useExpose = FALSE)),
                          Model(arrivals ~ Poisson(mean ~ 1)))
     systemWeights <- rep(list(NULL), 2)
-    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- 0L
     datasets <- list(population + 1L)
     namesDatasets <- "census"
@@ -1950,7 +1945,7 @@ test_that("updatedExpectedExposure works with CombinedAccountMovementsHasAge", {
     x <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -1984,7 +1979,7 @@ test_that("updatedExpectedExposure works with CombinedAccountMovementsHasAge", {
     systemModels <- list(Model(population ~ Poisson(mean ~ time, useExpose = FALSE)),
                          Model(arrivals ~ Poisson(mean ~ 1)))
     systemWeights <- rep(list(NULL), 2)
-    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- 0L
     datasets <- list(population + 1L)
     namesDatasets <- "census"
@@ -1993,7 +1988,7 @@ test_that("updatedExpectedExposure works with CombinedAccountMovementsHasAge", {
     x <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -2027,7 +2022,7 @@ test_that("updatedExpectedExposure works with CombinedAccountMovementsHasAge", {
     systemModels <- list(Model(population ~ Poisson(mean ~ time, useExpose = FALSE)),
                          Model(arrivals ~ Poisson(mean ~ 1)))
     systemWeights <- rep(list(NULL), 2)
-    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- 0L
     datasets <- list(population + 1L)
     namesDatasets <- "census"
@@ -2036,7 +2031,7 @@ test_that("updatedExpectedExposure works with CombinedAccountMovementsHasAge", {
     x <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -2075,7 +2070,7 @@ test_that("R and C give same answer for updatedExpectedExposure with CombinedAcc
     systemModels <- list(Model(population ~ Poisson(mean ~ time, useExpose = FALSE)),
                          Model(arrivals ~ Poisson(mean ~ 1)))
     systemWeights <- rep(list(NULL), 2)
-    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- 0L
     datasets <- list(population + 1L)
     namesDatasets <- "census"
@@ -2084,7 +2079,7 @@ test_that("R and C give same answer for updatedExpectedExposure with CombinedAcc
     x <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -2114,7 +2109,7 @@ test_that("R and C give same answer for updatedExpectedExposure with CombinedAcc
     systemModels <- list(Model(population ~ Poisson(mean ~ time, useExpose = FALSE)),
                          Model(arrivals ~ Poisson(mean ~ 1)))
     systemWeights <- rep(list(NULL), 2)
-    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- 0L
     datasets <- list(population + 1L)
     namesDatasets <- "census"
@@ -2123,7 +2118,7 @@ test_that("R and C give same answer for updatedExpectedExposure with CombinedAcc
     x <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -2153,7 +2148,7 @@ test_that("R and C give same answer for updatedExpectedExposure with CombinedAcc
     systemModels <- list(Model(population ~ Poisson(mean ~ time, useExpose = FALSE)),
                          Model(arrivals ~ Poisson(mean ~ 1)))
     systemWeights <- rep(list(NULL), 2)
-    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- 0L
     datasets <- list(population + 1L)
     namesDatasets <- "census"
@@ -2162,7 +2157,7 @@ test_that("R and C give same answer for updatedExpectedExposure with CombinedAcc
     x <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -2215,7 +2210,7 @@ test_that("updateSystemModels works with CombinedAccountMovements", {
                                                              time = "2001-2005"))),
                           NULL)
     mean <- ValuesOne(1, labels = "2001-2005", name = "time")
-    observationModels <- list(Model(tax ~ NormalFixed(mean = mean, sd = 0.1), series = "internal"),
+    data.models <- list(Model(tax ~ NormalFixed(mean = mean, sd = 0.1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
     datasets <- list(internal + 10L,
@@ -2227,7 +2222,7 @@ test_that("updateSystemModels works with CombinedAccountMovements", {
     x0 <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -2286,7 +2281,7 @@ test_that("R and C versions of updateSystemModels give same answer with Combined
                                                              time = "2001-2005"))),
                           NULL)
     mean <- ValuesOne(1, labels = "2001-2005", name = "time")
-    observationModels <- list(Model(tax ~ NormalFixed(mean = mean, sd = 0.1), series = "internal"),
+    data.models <- list(Model(tax ~ NormalFixed(mean = mean, sd = 0.1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
     datasets <- list(internal + 10L,
@@ -2298,7 +2293,7 @@ test_that("R and C versions of updateSystemModels give same answer with Combined
     x0 <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -2322,7 +2317,7 @@ test_that("updateCombined works with CombinedAccountMovements", {
     updateAccount <- demest:::updateAccount
     updateSystemModels <- demest:::updateSystemModels
     updateExpectedExposure <- demest:::updateExpectedExposure
-    updateObservationModelsAccount <- demest:::updateObservationModelsAccount
+    updateDataModelsAccount <- demest:::updateDataModelsAccount
     initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     updateModelNotUseExp <- demest:::updateModelNotUseExp
@@ -2357,7 +2352,7 @@ test_that("updateCombined works with CombinedAccountMovements", {
                                                        time = "2001-2005"))),
                           NULL)
     mean <- ValuesOne(1, labels = "2001-2005", name = "time")
-    observationModels <- list(Model(tax ~ NormalFixed(mean = mean, sd = 0.1), series = "internal"),
+    data.models <- list(Model(tax ~ NormalFixed(mean = mean, sd = 0.1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
     datasets <- list(internal + 10L,
@@ -2369,7 +2364,7 @@ test_that("updateCombined works with CombinedAccountMovements", {
     x0 <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -2382,7 +2377,7 @@ test_that("updateCombined works with CombinedAccountMovements", {
         ans.expected <- updateAccount(ans.expected)
         ans.expected <- updateSystemModels(ans.expected)
         ans.expected <- updateExpectedExposure(ans.expected)
-        ans.expected <- updateObservationModelsAccount(ans.expected)
+        ans.expected <- updateDataModelsAccount(ans.expected)
         if (test.identity)
             expect_identical(ans.obtained, ans.expected)
         else
@@ -2426,7 +2421,7 @@ test_that("R and C versions of updateCombined give same answer with CombinedAcco
                                                              time = "2001-2005"))),
                           NULL)
     mean <- ValuesOne(1, labels = "2001-2005", name = "time")
-    observationModels <- list(Model(tax ~ NormalFixed(mean = mean, sd = 0.1), series = "internal"),
+    data.models <- list(Model(tax ~ NormalFixed(mean = mean, sd = 0.1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
     datasets <- list(internal + 10L,
@@ -2438,7 +2433,7 @@ test_that("R and C versions of updateCombined give same answer with CombinedAcco
     x0 <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,

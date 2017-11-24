@@ -2600,7 +2600,7 @@ transferParamVarsigma(SEXP model_R, const char *filename,
 
 SEXP 
 diffLogLik_R(SEXP yProp_R, SEXP y_R, SEXP indicesY_R, 
-                SEXP observation_R, SEXP datasets_R, SEXP transforms_R)
+                SEXP dataModels_R, SEXP datasets_R, SEXP transforms_R)
 {
     
     int n_element_indices_y = LENGTH(indicesY_R);
@@ -2610,7 +2610,7 @@ diffLogLik_R(SEXP yProp_R, SEXP y_R, SEXP indicesY_R,
     
     return ScalarReal(diffLogLik(yProp, y_R, 
                 indices, n_element_indices_y,
-                observation_R, datasets_R, transforms_R));
+                dataModels_R, datasets_R, transforms_R));
 }
 
 
@@ -2618,7 +2618,7 @@ diffLogLik_R(SEXP yProp_R, SEXP y_R, SEXP indicesY_R,
 double 
 diffLogLik(int *yProp, SEXP y_R, 
                 int *indices, int n_element_indices_y, 
-                SEXP observation_R, SEXP datasets_R, SEXP transforms_R)
+                SEXP dataModels_R, SEXP datasets_R, SEXP transforms_R)
 {
     
     int *y = INTEGER(y_R);
@@ -2684,7 +2684,7 @@ diffLogLik(int *yProp, SEXP y_R,
                     
                     if (cellObserved) {
                         
-                        SEXP this_model_R = VECTOR_ELT(observation_R, i_dataset);
+                        SEXP this_model_R = VECTOR_ELT(dataModels_R, i_dataset);
                         
                         SEXP i_contrib_to_cell_R;
                         PROTECT( i_contrib_to_cell_R 

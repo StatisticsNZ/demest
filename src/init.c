@@ -330,12 +330,12 @@ SEXP name##_R(SEXP prior_R, SEXP vbar_R, SEXP n_R, SEXP sigma_R) {    \
  * use prngs),
  * and ensures that the R version returns the updated object */
 #define UPDATECOUNTS_NOEXP_WRAPPER_R(name)      \
-    SEXP name##_R(SEXP y_R, SEXP model_R, SEXP observationModels_R,       \
+    SEXP name##_R(SEXP y_R, SEXP model_R, SEXP dataModels_R,       \
                             SEXP datasets_R, SEXP transforms_R) {       \
     SEXP ans_R;         \
     PROTECT(ans_R = duplicate(y_R));         \
     GetRNGstate();      \
-    name(ans_R, model_R, observationModels_R, datasets_R, transforms_R);       \
+    name(ans_R, model_R, dataModels_R, datasets_R, transforms_R);       \
     PutRNGstate();      \
     UNPROTECT(1);       \
     return ans_R;       \
@@ -352,12 +352,12 @@ SEXP name##_R(SEXP prior_R, SEXP vbar_R, SEXP n_R, SEXP sigma_R) {    \
  * and ensures that the R version returns the updated object */
 #define UPDATECOUNTS_WITHEXP_WRAPPER_R(name)      \
     SEXP name##_R(SEXP y_R, SEXP model_R,       \
-                            SEXP exposure_R, SEXP observationModels_R,       \
+                            SEXP exposure_R, SEXP dataModels_R,       \
                             SEXP datasets_R, SEXP transforms_R) {       \
     SEXP ans_R;         \
     PROTECT(ans_R = duplicate(y_R));         \
     GetRNGstate();      \
-    name(ans_R, model_R, exposure_R, observationModels_R, datasets_R, transforms_R);       \
+    name(ans_R, model_R, exposure_R, dataModels_R, datasets_R, transforms_R);       \
     PutRNGstate();      \
     UNPROTECT(1);       \
     return ans_R;       \
@@ -1108,14 +1108,14 @@ makeIOther_R(SEXP i_R, SEXP transform_R)
     
 }
 
-/* one off wrapper for updateObservationCounts_R */
-SEXP updateObservationCounts_R(SEXP y_R, SEXP observationModels_R, 
+/* one off wrapper for updateDataModelsCounts_R */
+SEXP updateDataModelsCounts_R(SEXP y_R, SEXP dataModels_R, 
                         SEXP datasets_R, SEXP transforms_R) 
 {
     SEXP ans_R;
-    PROTECT(ans_R = duplicate(observationModels_R));
+    PROTECT(ans_R = duplicate(dataModels_R));
     GetRNGstate();
-    updateObservationCounts(y_R, ans_R, 
+    updateDataModelsCounts(y_R, ans_R, 
                         datasets_R, transforms_R);
     PutRNGstate();
     
@@ -1526,8 +1526,8 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateCountsPoissonUseExp_R,6),
   CALLDEF(updateCountsBinomial_R,6),
   
-  /* update observationModels and datasets */
-  CALLDEF(updateObservationCounts_R,4),
+  /* update dataModels and datasets */
+  CALLDEF(updateDataModelsCounts_R,4),
   
   /* models */
   CALLDEF(logLikelihood_R, 4),
@@ -1811,7 +1811,7 @@ R_init_demest(DllInfo *info)
   ADD_SYM(model);
   ADD_SYM(exposure);
   ADD_SYM(y);
-  ADD_SYM(observationModels);
+  ADD_SYM(dataModels);
   ADD_SYM(datasets);
   ADD_SYM(transforms);
   

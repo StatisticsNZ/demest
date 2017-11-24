@@ -245,13 +245,13 @@ setGeneric("hasEstimated",
 
 setGeneric("initialCombinedAccount",
            function(account, systemModels, systemWeights,
-                    observationModels, seriesIndices, 
+                    dataModels, seriesIndices, 
                     datasets, namesDatasets, transforms,
                     dominant = c("Female", "Male"))
            standardGeneric("initialCombinedAccount"))
 
 setGeneric("initialCombinedCounts",
-           function(object, y, exposure, observationModels, datasets,
+           function(object, y, exposure, dataModels, datasets,
                     namesDatasets, transforms)
            standardGeneric("initialCombinedCounts"))
 

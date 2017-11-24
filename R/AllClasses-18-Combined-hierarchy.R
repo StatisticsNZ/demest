@@ -151,11 +151,11 @@ setClass("CombinedModelPoissonHasExp",
 
 setClass("CombinedCounts",
          slots = c(model = "Model"),
-         prototype = prototype(slotsToExtract = c("model", "y", "observationModels")),
+         prototype = prototype(slotsToExtract = c("model", "y", "dataModels")),
          contains = c("VIRTUAL",
                       "Combined",
                       "YNonNegativeCounts",
-                      "ObservationMixin"))
+                      "DataMixin"))
 
 ## HAS_TESTS
 setClass("CombinedCountsPoissonNotHasExp",
@@ -188,18 +188,18 @@ setClass("CombinedAccount",
          contains = c("VIRTUAL",
                       "AccountMixin",
                       "SystemMixin",
-                      "ObservationMixin",
+                      "DataMixin",
                       "SeriesIndicesMixin"),
          validity = function(object) {
              systemModels <- object@systemModels
-             observationModels <- object@observationModels
-             ## 'observationModels' has length 0 iff 'systemModels' consists
+             dataModels <- object@dataModels
+             ## 'dataModels' has length 0 iff 'systemModels' consists
              ## entirely of models with class "SingleIter"
-             obs.length.0 <- identical(length(observationModels), 0L)
+             obs.length.0 <- identical(length(dataModels), 0L)
              sys.all.single <- all(sapply(systemModels, methods::is, "SingleIter"))
              if (!identical(obs.length.0, sys.all.single))
                  return(gettextf("'%s' should have length %d iff '%s' consists entirely of models with class \"%s\"",
-                                 "observationModels", 0L, "systemModels", "SingleIter"))
+                                 "dataModels", 0L, "systemModels", "SingleIter"))
              TRUE
          })
                                

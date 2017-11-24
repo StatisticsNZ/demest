@@ -119,7 +119,7 @@ test_that("summary works with object of class ResultsCountsEst", {
     filename <- tempfile()
     estimateCounts(model = model,
                    y = y,
-                   observation = observation,
+                   dataModels = observation,
                    datasets = list(d1 = d1, d2 = d2, d3 = d3),
                    filename = filename,
                    nBurnin = 2,
@@ -136,10 +136,10 @@ test_that("summary works with object of class ResultsCountsEst", {
                         metropolis = makeMetropolis(object, filename),
                         model = summary(object@final[[1]]@model),
                         y = summary(object@y),
-                        observationModels = list(
-                            summary(object@final[[1]]@observationModels[[1]]),
-                            summary(object@final[[1]]@observationModels[[2]]),
-                            summary(object@final[[1]]@observationModels[[3]])),
+                        datamodels = list(
+                            summary(object@final[[1]]@dataModels[[1]]),
+                            summary(object@final[[1]]@dataModels[[2]]),
+                            summary(object@final[[1]]@dataModels[[3]])),
                         datasets = list(
                             summaryDataset(d1),
                             summaryDataset(d2),

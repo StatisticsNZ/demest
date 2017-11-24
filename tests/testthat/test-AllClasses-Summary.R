@@ -208,14 +208,14 @@ test_that("can create valid object of class SummaryResultsCounts", {
              metropolis = data.frame(jump = c(1, 0.1),
                  acceptance = c(0.3, 0.4),
                  autocorr = c(0.38, 0.4),
-                 row.names = c("model.prior.sd", "observation.prior.sd")),
+                 row.names = c("model.prior.sd", "data.models.prior.sd")),
              model = new("SummaryModel",
                  specification = "y ~ Binomial(prob = 0.6)",
                  dimensions = c("age", "sex")),
              y = new("SummarySeries",
                  dimensions = c("age", "sex"),
                  nCell = 24L),
-             observationModels = list(new("SummaryModel",
+             dataModels = list(new("SummaryModel",
                  specification = "y ~ Poisson(mean = 1)",
                  dimensions = "age")),
              datasets = list(new("SummaryDataset",
@@ -230,11 +230,11 @@ test_that("can create valid object of class SummaryResultsCounts", {
              mcmc = c(nBurnin = 1000L, nSim = 1000L, nChain = 2L, nThin = 10L, nIteration = 200L),
              parameters = data.frame(matrix(rnorm(16), nc = 4),
                  row.names = c("model.likelihood.prob", "model.prior.sd",
-                     "observationModels.census.likelihood.mean",
-                     "observationModels.census.likelihood.sd")),
+                     "dataModels.census.likelihood.mean",
+                     "dataModels.census.likelihood.sd")),
              gelmanDiag = c("model.likelihood.prob" = 1, "model.prior.sd" = 1,
-                     "observationModels.census.likelihood.mean" = 1,
-                     "observationModels.census.likelihood.sd" = 1))
+                     "dataModels.census.likelihood.mean" = 1,
+                     "dataModels.census.likelihood.sd" = 1))
     expect_true(validObject(x))
 })
 

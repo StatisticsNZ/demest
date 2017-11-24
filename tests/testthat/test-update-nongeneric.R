@@ -8562,7 +8562,7 @@ test_that("R version of updateCountsPoissonNotUseExp works with no subtotals", {
         set.seed(seed)
         ans.obtained <- updateCountsPoissonNotUseExp(y = y,
                                                      model = model,
-                                                     observation = observation,
+                                                     dataModels = observation,
                                                      datasets = datasets,
                                                      transforms = transforms)
         set.seed(seed)
@@ -8572,7 +8572,7 @@ test_that("R version of updateCountsPoissonNotUseExp works with no subtotals", {
             diff.log.lik <- diffLogLik(yProp = y.prop,
                                        y = ans.expected,
                                        indicesY = i,
-                                       observation = observation,
+                                       dataModels = observation,
                                        datasets = datasets,
                                        transforms = transforms)
             if ((diff.log.lik >= 0) || (runif(1) < exp(diff.log.lik)))
@@ -8586,7 +8586,7 @@ test_that("R version of updateCountsPoissonNotUseExp works with no subtotals", {
     set.seed(100)
     ans.obtained <- updateCountsPoissonNotUseExp(y = y,
                                                  model = model,
-                                                 observation = observation,
+                                                 dataModels = observation,
                                                  datasets = datasets,
                                                  transforms = transforms)
     set.seed(100)
@@ -8596,7 +8596,7 @@ test_that("R version of updateCountsPoissonNotUseExp works with no subtotals", {
         diff.log.lik <- diffLogLik(yProp = y.prop,
                                    y = ans.expected,
                                    indicesY = i,
-                                   observation = observation,
+                                   dataModels = observation,
                                    datasets = datasets,
                                    transforms = transforms)
         if ((diff.log.lik >= 0) || (runif(1) < exp(diff.log.lik)))
@@ -8638,14 +8638,14 @@ test_that("R and C versions of updateCountsPoissonNotUseExp with no subtotals gi
     set.seed(100)
     ans.R <- updateCountsPoissonNotUseExp(y = y,
                                           model = model,
-                                          observation = observation,
+                                          dataModels = observation,
                                           datasets = datasets,
                                           transforms = transforms,
                                           useC = FALSE)
     set.seed(100)
     ans.C <- updateCountsPoissonNotUseExp(y = y,
                                           model = model,
-                                          observation = observation,
+                                          dataModels = observation,
                                           datasets = datasets,
                                           transforms = transforms,
                                           useC = TRUE)
@@ -8703,7 +8703,7 @@ test_that("R version of updateCountsPoissonNotUseExp works with subtotals made f
         set.seed(seed)
         ans.obtained <- updateCountsPoissonNotUseExp(y = y,
                                                      model = model,
-                                                     observation = observation,
+                                                     dataModels = observation,
                                                      datasets = datasets,
                                                      transforms = transforms)
         set.seed(seed)
@@ -8716,7 +8716,7 @@ test_that("R version of updateCountsPoissonNotUseExp works with subtotals made f
             diff.log.lik <- diffLogLik(yProp = y.prop,
                                        y = y.tmp,
                                        indicesY = c(i, i.other),
-                                       observation = observation,
+                                       dataModels = observation,
                                        datasets = datasets,
                                        transforms = transforms)
             if ((diff.log.lik >= 0) || (runif(1) < exp(diff.log.lik)))
@@ -8727,7 +8727,7 @@ test_that("R version of updateCountsPoissonNotUseExp works with subtotals made f
             diff.log.lik <- diffLogLik(yProp = y.prop,
                                        y = y.tmp,
                                        indicesY = i,
-                                       observation = observation,
+                                       dataModels = observation,
                                        datasets = datasets,
                                        transforms = transforms)
             if ((diff.log.lik >= 0) || (runif(1) < exp(diff.log.lik)))
@@ -8789,14 +8789,14 @@ test_that("R and C versions of updateCountsPoissonNotUseExp give same answer wit
         set.seed(seed)
         ans.R <- updateCountsPoissonNotUseExp(y = y,
                                               model = model,
-                                              observation = observation,
+                                              dataModels = observation,
                                               datasets = datasets,
                                               transforms = transforms,
                                               useC = FALSE)
         set.seed(seed)
         ans.C <- updateCountsPoissonNotUseExp(y = y,
                                               model = model,
-                                              observation = observation,
+                                              dataModels = observation,
                                               datasets = datasets,
                                               transforms = transforms,
                                               useC = TRUE)
@@ -8849,7 +8849,7 @@ test_that("R version of updateCountsPoissonUseExp works with no subtotals", {
         ans.obtained <- updateCountsPoissonUseExp(y = y,
                                                   model = model,
                                                   exposure = exposure,
-                                                  observation = observation,
+                                                  dataModels = observation,
                                                   datasets = datasets,
                                                   transforms = transforms)
         set.seed(seed)
@@ -8859,7 +8859,7 @@ test_that("R version of updateCountsPoissonUseExp works with no subtotals", {
             diff.log.lik <- diffLogLik(yProp = y.prop,
                                        y = ans.expected,
                                        indicesY = i,
-                                       observation = observation,
+                                       dataModels = observation,
                                        datasets = datasets,
                                        transforms = transforms)
             if ((diff.log.lik >= 0) || (runif(1) < exp(diff.log.lik)))
@@ -8910,7 +8910,7 @@ test_that("R and C versions of updateCountsPoissonUseExp give same answer with n
         ans.R <- updateCountsPoissonUseExp(y = y,
                                            model = model,
                                            exposure = exposure,
-                                           observation = observation,
+                                           dataModels = observation,
                                            datasets = datasets,
                                            transforms = transforms,
                                            useC = FALSE)
@@ -8918,7 +8918,7 @@ test_that("R and C versions of updateCountsPoissonUseExp give same answer with n
         ans.C <- updateCountsPoissonUseExp(y = y,
                                            model = model,
                                            exposure = exposure,
-                                           observation = observation,
+                                           dataModels = observation,
                                            datasets = datasets,
                                            transforms = transforms,
                                            useC = TRUE)
@@ -8982,7 +8982,7 @@ test_that("R version of updateCountsPoissonUseExp works with subtotals made from
         ans.obtained <- updateCountsPoissonUseExp(y = y,
                                                   exposure = exposure,
                                                   model = model,
-                                                  observation = observation,
+                                                  dataModels = observation,
                                                   datasets = datasets,
                                                   transforms = transforms)
         set.seed(seed)
@@ -8995,7 +8995,7 @@ test_that("R version of updateCountsPoissonUseExp works with subtotals made from
             diff.log.lik <- diffLogLik(yProp = y.prop,
                                        y = y.tmp,
                                        indicesY = c(i, i.other),
-                                       observation = observation,
+                                       dataModels = observation,
                                        datasets = datasets,
                                        transforms = transforms)
             if ((diff.log.lik >= 0) || (runif(1) < exp(diff.log.lik)))
@@ -9006,7 +9006,7 @@ test_that("R version of updateCountsPoissonUseExp works with subtotals made from
             diff.log.lik <- diffLogLik(yProp = y.prop,
                                        y = y.tmp,
                                        indicesY = i,
-                                       observation = observation,
+                                       dataModels = observation,
                                        datasets = datasets,
                                        transforms = transforms)
             if ((diff.log.lik >= 0) || (runif(1) < exp(diff.log.lik)))
@@ -9073,7 +9073,7 @@ test_that("R and C versions of updateCountsPoissonUseExp give same answer with s
         ans.R <- updateCountsPoissonUseExp(y = y,
                                            exposure = exposure,
                                            model = model,
-                                           observation = observation,
+                                           dataModels = observation,
                                            datasets = datasets,
                                            transforms = transforms,
                                            useC = FALSE)
@@ -9081,7 +9081,7 @@ test_that("R and C versions of updateCountsPoissonUseExp give same answer with s
         ans.C <- updateCountsPoissonUseExp(y = y,
                                            exposure = exposure,
                                            model = model,
-                                           observation = observation,
+                                           dataModels = observation,
                                            datasets = datasets,
                                            transforms = transforms,
                                            useC = TRUE)
@@ -9130,7 +9130,7 @@ test_that("R version of updateCountsBinomial works", {
         ans.obtained <- updateCountsBinomial(y = y,
                                              model = model,
                                              exposure = exposure,
-                                             observation = observation,
+                                             dataModels = observation,
                                              datasets = datasets,
                                              transforms = transforms)
         set.seed(seed)
@@ -9140,7 +9140,7 @@ test_that("R version of updateCountsBinomial works", {
             diff.log.lik <- diffLogLik(yProp = y.prop,
                                        y = ans.expected,
                                        indicesY = i,
-                                       observation = observation,
+                                       dataModels = observation,
                                        datasets = datasets,
                                        transforms = transforms)
             if ((diff.log.lik >= 0) || (runif(1) < exp(diff.log.lik)))
@@ -9191,7 +9191,7 @@ test_that("R and C versions of updateCountsBinomial give same answer", {
         ans.R <- updateCountsBinomial(y = y,
                                       model = model,
                                       exposure = exposure,
-                                      observation = observation,
+                                      dataModels = observation,
                                       datasets = datasets,
                                       transforms = transforms,
                                       useC = FALSE)
@@ -9199,7 +9199,7 @@ test_that("R and C versions of updateCountsBinomial give same answer", {
         ans.C <- updateCountsBinomial(y = y,
                                       model = model,
                                       exposure = exposure,
-                                      observation = observation,
+                                      dataModels = observation,
                                       datasets = datasets,
                                       transforms = transforms,
                                       useC = TRUE)
@@ -9211,10 +9211,10 @@ test_that("R and C versions of updateCountsBinomial give same answer", {
 })
 
 
-## updateObservation ######################################################
+## updateDataModel ######################################################
 
-test_that("R version of updateObservationCounts works", {
-    updateObservationCounts <- demest:::updateObservationCounts
+test_that("R version of updateDataModelsCounts works", {
+    updateDataModelsCounts <- demest:::updateDataModelsCounts
     initialModel <- demest:::initialModel
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     updateModelUseExp <- demest:::updateModelUseExp
@@ -9244,8 +9244,8 @@ test_that("R version of updateObservationCounts works", {
                                          y = datasets[[2]],
                                          exposure = toDouble(dembase::collapse(y, transforms[[2]]))))
         set.seed(seed + 1)
-        ans.obtained <- updateObservationCounts(y = y,
-                                                observation = observation,
+        ans.obtained <- updateDataModelsCounts(y = y,
+                                                dataModels = observation,
                                                 datasets = datasets,
                                                 transforms = transforms)
         set.seed(seed + 1)
@@ -9265,8 +9265,8 @@ test_that("R version of updateObservationCounts works", {
     }
 })
 
-test_that("R and C versions of updateObservationCounts give same answer", {
-    updateObservationCounts <- demest:::updateObservationCounts
+test_that("R and C versions of updateDataModelsCounts give same answer", {
+    updateDataModelsCounts <- demest:::updateDataModelsCounts
     initialModel <- demest:::initialModel
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     for (seed in seq_len(n.test)) {
@@ -9294,14 +9294,14 @@ test_that("R and C versions of updateObservationCounts give same answer", {
                                          y = datasets[[2]],
                                          exposure = toDouble(dembase::collapse(y, transforms[[2]]))))
         set.seed(seed + 1)
-        ans.R <- updateObservationCounts(y = y,
-                                         observation = observation,
+        ans.R <- updateDataModelsCounts(y = y,
+                                         dataModels = observation,
                                          datasets = datasets,
                                          transforms = transforms,
                                          useC = FALSE)
         set.seed(seed + 1)
-        ans.C <- updateObservationCounts(y = y,
-                                         observation = observation,
+        ans.C <- updateDataModelsCounts(y = y,
+                                         dataModels = observation,
                                          datasets = datasets,
                                          transforms = transforms,
                                          useC = TRUE)
@@ -9312,8 +9312,8 @@ test_that("R and C versions of updateObservationCounts give same answer", {
     }
 })
 
-test_that("R version of updateObservationCounts works with aggregate data model", {
-    updateObservationCounts <- demest:::updateObservationCounts
+test_that("R version of updateDataModelsCounts works with aggregate data model", {
+    updateDataModelsCounts <- demest:::updateDataModelsCounts
     initialModel <- demest:::initialModel
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     updateModelUseExp <- demest:::updateModelUseExp
@@ -9337,8 +9337,8 @@ test_that("R version of updateObservationCounts works with aggregate data model"
                                          y = datasets[[1]],
                                          exposure = toDouble(dembase::collapse(y, transform))))
         set.seed(seed + 1)
-        ans.obtained <- updateObservationCounts(y = y,
-                                                observation = observation,
+        ans.obtained <- updateDataModelsCounts(y = y,
+                                                dataModels = observation,
                                                 datasets = datasets,
                                                 transforms = list(transform))
         set.seed(seed + 1)
@@ -9353,8 +9353,8 @@ test_that("R version of updateObservationCounts works with aggregate data model"
     }
 })
 
-test_that("R and C versions of updateObservationCounts give same answer with aggregate data model", {
-    updateObservationCounts <- demest:::updateObservationCounts
+test_that("R and C versions of updateDataModelsCounts give same answer with aggregate data model", {
+    updateDataModelsCounts <- demest:::updateDataModelsCounts
     initialModel <- demest:::initialModel
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     updateModelUseExp <- demest:::updateModelUseExp
@@ -9378,14 +9378,14 @@ test_that("R and C versions of updateObservationCounts give same answer with agg
                                          y = datasets[[1]],
                                          exposure = toDouble(dembase::collapse(y, transform))))
         set.seed(seed + 1)
-        ans.R <- updateObservationCounts(y = y,
-                                         observation = observation,
+        ans.R <- updateDataModelsCounts(y = y,
+                                         dataModels = observation,
                                          datasets = datasets,
                                          transforms = list(transform),
                                          useC = FALSE)
         set.seed(seed + 1)
-        ans.C <- updateObservationCounts(y = y,
-                                         observation = observation,
+        ans.C <- updateDataModelsCounts(y = y,
+                                         dataModels = observation,
                                          datasets = datasets,
                                          transforms = list(transform),
                                          useC = TRUE)
@@ -9398,8 +9398,8 @@ test_that("R and C versions of updateObservationCounts give same answer with agg
 
 
 
-test_that("updateObservationModelsAccount works with CombinedAccountMovements", {
-    updateObservationModelsAccount <- demest:::updateObservationModelsAccount
+test_that("updateDataModelsAccount works with CombinedAccountMovements", {
+    updateDataModelsAccount <- demest:::updateDataModelsAccount
     updateAccount <- demest:::updateAccount
     initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
@@ -9422,7 +9422,7 @@ test_that("updateObservationModelsAccount works with CombinedAccountMovements", 
                          Model(births ~ Poisson(mean ~ 1)),
                          Model(deaths ~ Poisson(mean ~ 1)))
     systemWeights <- rep(list(NULL), 3)
-    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
+    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(2L, 0L)
     datasets <- list(subarray(deaths, time > 2010, drop = FALSE) + 1L,
@@ -9434,21 +9434,21 @@ test_that("updateObservationModelsAccount works with CombinedAccountMovements", 
     x <- initialCombinedAccount(account = account,
                                 systemModels = systemModels,
                                 systemWeights = systemWeights,
-                                observationModels = observationModels,
+                                dataModels = data.models,
                                 seriesIndices = seriesIndices,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
     x <- updateAccount(x)
     set.seed(1)
-    ans.obtained <- updateObservationModelsAccount(x)
+    ans.obtained <- updateDataModelsAccount(x)
     set.seed(1)
     ans.expected <- x
-    ans.expected@observationModels[[1]] <- updateModelUseExp(ans.expected@observationModels[[1]],
+    ans.expected@dataModels[[1]] <- updateModelUseExp(ans.expected@dataModels[[1]],
                                                              y = ans.expected@datasets[[1]],
                                                              exposure = toDouble(collapse(ans.expected@account@components[[2]],
                                                                                           transform = transforms[[1]])))
-    ans.expected@observationModels[[2]] <- updateModelUseExp(ans.expected@observationModels[[2]],
+    ans.expected@dataModels[[2]] <- updateModelUseExp(ans.expected@dataModels[[2]],
                                                              y = ans.expected@datasets[[2]],
                                                              exposure = collapse(ans.expected@account@population,
                                                                                  transform = transforms[[2]]))
@@ -9458,8 +9458,8 @@ test_that("updateObservationModelsAccount works with CombinedAccountMovements", 
         expect_equal(ans.obtained, ans.expected)
 })
 
-test_that("R and C versions of updateObservationModelsAccount give same answer", {
-    updateObservationModelsAccount <- demest:::updateObservationModelsAccount
+test_that("R and C versions of updateDataModelsAccount give same answer", {
+    updateDataModelsAccount <- demest:::updateDataModelsAccount
     updateAccount <- demest:::updateAccount
     initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
@@ -9482,7 +9482,7 @@ test_that("R and C versions of updateObservationModelsAccount give same answer",
                          Model(births ~ Poisson(mean ~ 1)),
                          Model(deaths ~ Poisson(mean ~ 1)))
     systemWeights <- rep(list(NULL), 3)
-    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
+    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(2L, 0L)
     datasets <- list(subarray(deaths, time > 2010, drop = FALSE) + 1L,
@@ -9494,16 +9494,16 @@ test_that("R and C versions of updateObservationModelsAccount give same answer",
     x <- initialCombinedAccount(account = account,
                                 systemModels = systemModels,
                                 systemWeights = systemWeights,
-                                observationModels = observationModels,
+                                dataModels = data.models,
                                 seriesIndices = seriesIndices,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
     x <- updateAccount(x)
     set.seed(1)
-    ans.R <- updateObservationModelsAccount(x, useC = FALSE)
+    ans.R <- updateDataModelsAccount(x, useC = FALSE)
     set.seed(1)
-    ans.C <- updateObservationModelsAccount(x, useC = TRUE)
+    ans.C <- updateDataModelsAccount(x, useC = TRUE)
     if (test.identity)
         expect_identical(ans.R, ans.C)
     else

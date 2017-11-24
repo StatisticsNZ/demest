@@ -34,7 +34,7 @@ test_that("updateAccount works with CombinedAccountMovements", {
                          Model(births ~ Poisson(mean ~ 1)),
                          Model(deaths ~ Poisson(mean ~ 1)))
     systemWeights <- rep(list(NULL), 3)
-    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
+    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(2L, 0L)
     datasets <- list(Counts(array(7L,
@@ -50,7 +50,7 @@ test_that("updateAccount works with CombinedAccountMovements", {
     x0 <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -103,7 +103,7 @@ test_that("R and C versions of updateAccount give same answer with CombinedAccou
                          Model(births ~ Poisson(mean ~ 1)),
                          Model(deaths ~ Poisson(mean ~ 1)))
     systemWeights <- rep(list(NULL), 3)
-    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
+    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(2L, 0L)
     datasets <- list(Counts(array(7L,
@@ -119,7 +119,7 @@ test_that("R and C versions of updateAccount give same answer with CombinedAccou
     x0 <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -163,7 +163,7 @@ test_that("updateProposalAccountMovePopn works with CombinedAccountMovements - n
                          Model(births ~ Poisson(mean ~ 1)),
                          Model(deaths ~ Poisson(mean ~ 1)))
     systemWeights <- rep(list(NULL), 3)
-    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
+    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(2L, 0L)
     datasets <- list(Counts(array(7L,
@@ -179,7 +179,7 @@ test_that("updateProposalAccountMovePopn works with CombinedAccountMovements - n
     x0 <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -219,7 +219,7 @@ test_that("R and C versions of updateProposalAccountMovePopn give same answer Co
                          Model(births ~ Poisson(mean ~ 1)),
                          Model(deaths ~ Poisson(mean ~ 1)))
     systemWeights <- rep(list(NULL), 3)
-    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
+    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(2L, 0L)
     datasets <- list(Counts(array(7L,
@@ -235,7 +235,7 @@ test_that("R and C versions of updateProposalAccountMovePopn give same answer Co
     x0 <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -310,7 +310,7 @@ test_that("updateProposalAccountMovePopn works with CombinedAccountMovementsHasA
                                dimnames = dimnames(deaths))) + 1L
     datasets <- list(census, register, reg.births, address.change, reg.deaths)
     namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths")
-    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
                               Model(register ~ Poisson(mean ~ 1), series = "population"),
                               Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
@@ -325,7 +325,7 @@ test_that("updateProposalAccountMovePopn works with CombinedAccountMovementsHasA
     x0 <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -402,7 +402,7 @@ test_that("R and C versions of updateProposalAccountMovePopn give same answer Co
                                dimnames = dimnames(deaths))) + 1L
     datasets <- list(census, register, reg.births, address.change, reg.deaths)
     namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths")
-    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
                               Model(register ~ Poisson(mean ~ 1), series = "population"),
                               Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
@@ -417,7 +417,7 @@ test_that("R and C versions of updateProposalAccountMovePopn give same answer Co
     x0 <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -459,7 +459,7 @@ test_that("updateProposalAccountMoveBirths works with CombinedAccountMovements -
                          Model(births ~ Poisson(mean ~ 1)),
                          Model(deaths ~ Poisson(mean ~ 1)))
     systemWeights <- rep(list(NULL), 3)
-    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
+    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(2L, 0L)
     datasets <- list(Counts(array(7L,
@@ -475,7 +475,7 @@ test_that("updateProposalAccountMoveBirths works with CombinedAccountMovements -
     x0 <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -516,7 +516,7 @@ test_that("R and C versions of updateProposalAccountMoveBirths give same answer 
                          Model(births ~ Poisson(mean ~ 1)),
                          Model(deaths ~ Poisson(mean ~ 1)))
     systemWeights <- rep(list(NULL), 3)
-    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
+    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(2L, 0L)
     datasets <- list(Counts(array(7L,
@@ -532,7 +532,7 @@ test_that("R and C versions of updateProposalAccountMoveBirths give same answer 
     x0 <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -611,7 +611,7 @@ test_that("updateProposalAccountMoveBirths works with CombinedAccountMovementsHa
                                dimnames = dimnames(deaths))) + 1L
     datasets <- list(census, register, reg.births, address.change, reg.deaths)
     namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths")
-    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
                               Model(register ~ Poisson(mean ~ 1), series = "population"),
                               Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
@@ -626,7 +626,7 @@ test_that("updateProposalAccountMoveBirths works with CombinedAccountMovementsHa
     x0 <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -704,7 +704,7 @@ test_that("R and C versions of updateProposalAccountMoveBirths give same answer 
                                dimnames = dimnames(deaths))) + 1L
     datasets <- list(census, register, reg.births, address.change, reg.deaths)
     namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths")
-    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
                               Model(register ~ Poisson(mean ~ 1), series = "population"),
                               Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
@@ -719,7 +719,7 @@ test_that("R and C versions of updateProposalAccountMoveBirths give same answer 
     x0 <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -770,7 +770,7 @@ test_that("updateProposalAccountMoveBirths works with CombinedAccountMovements -
                          Model(births ~ Poisson(mean ~ 1)),
                          Model(deaths ~ Poisson(mean ~ 1)))
     systemWeights <- rep(list(NULL), 3)
-    observationModels <- list(Model(reg.births ~ PoissonBinomial(prob = 0.9), series = "births"),
+    data.models <- list(Model(reg.births ~ PoissonBinomial(prob = 0.9), series = "births"),
                               Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 2L, 0L)
@@ -785,7 +785,7 @@ test_that("updateProposalAccountMoveBirths works with CombinedAccountMovements -
     x0 <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -833,7 +833,7 @@ test_that("R and C versions of updateProposalAccountMoveBirths give same answer 
                          Model(births ~ Poisson(mean ~ 1)),
                          Model(deaths ~ Poisson(mean ~ 1)))
     systemWeights <- rep(list(NULL), 3)
-    observationModels <- list(Model(reg.births ~ PoissonBinomial(prob = 0.9), series = "births"),
+    data.models <- list(Model(reg.births ~ PoissonBinomial(prob = 0.9), series = "births"),
                               Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 2L, 0L)
@@ -848,7 +848,7 @@ test_that("R and C versions of updateProposalAccountMoveBirths give same answer 
     x0 <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -893,7 +893,7 @@ test_that("updateProposalAccountMoveOrigDest works with CombinedAccountMovements
     systemModels <- list(Model(population ~ Poisson(mean ~ reg, useExpose = FALSE)),
                          Model(internal ~ Poisson(mean ~ 1)))
     systemWeights <- list(NULL, NULL)
-    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
+    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
     datasets <- list(internal + 10L,
@@ -905,7 +905,7 @@ test_that("updateProposalAccountMoveOrigDest works with CombinedAccountMovements
     x0 <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -944,7 +944,7 @@ test_that("R and C versions of updateProposalAccountMoveOrigDest give same answe
     systemModels <- list(Model(population ~ Poisson(mean ~ reg, useExpose = FALSE)),
                          Model(internal ~ Poisson(mean ~ 1)))
     systemWeights <- list(NULL, NULL)
-    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
+    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
     datasets <- list(internal + 10L,
@@ -956,7 +956,7 @@ test_that("R and C versions of updateProposalAccountMoveOrigDest give same answe
     x0 <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -1032,7 +1032,7 @@ test_that("updateProposalAccountMoveOrigDest works with CombinedAccountMovements
                                dimnames = dimnames(deaths))) + 1L
     datasets <- list(census, register, reg.births, address.change, reg.deaths)
     namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths")
-    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
                               Model(register ~ Poisson(mean ~ 1), series = "population"),
                               Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
@@ -1047,7 +1047,7 @@ test_that("updateProposalAccountMoveOrigDest works with CombinedAccountMovements
     x0 <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -1125,7 +1125,7 @@ test_that("R and C versions of updateProposalAccountMoveOrigDest give same answe
                                dimnames = dimnames(deaths))) + 1L
     datasets <- list(census, register, reg.births, address.change, reg.deaths)
     namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths")
-    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
                               Model(register ~ Poisson(mean ~ 1), series = "population"),
                               Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
@@ -1140,7 +1140,7 @@ test_that("R and C versions of updateProposalAccountMoveOrigDest give same answe
     x0 <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -1184,7 +1184,7 @@ test_that("updateProposalAccountMovePool works with CombinedAccountMovements - n
     systemModels <- list(Model(population ~ Poisson(mean ~ reg, useExpose = FALSE)),
                          Model(internal ~ Poisson(mean ~ 1)))
     systemWeights <- list(NULL, NULL)
-    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
+    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
     datasets <- list(internal + 10L,
@@ -1196,7 +1196,7 @@ test_that("updateProposalAccountMovePool works with CombinedAccountMovements - n
     x0 <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -1236,7 +1236,7 @@ test_that("R and C versions of updateProposalAccountMovePool give same answer wi
     systemModels <- list(Model(population ~ Poisson(mean ~ reg, useExpose = FALSE)),
                          Model(internal ~ Poisson(mean ~ 1)))
     systemWeights <- list(NULL, NULL)
-    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
+    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
     datasets <- list(internal + 10L,
@@ -1248,7 +1248,7 @@ test_that("R and C versions of updateProposalAccountMovePool give same answer wi
     x0 <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -1328,7 +1328,7 @@ test_that("updateProposalAccountMovePool works with CombinedAccountMovementsHasA
                                dimnames = dimnames(deaths))) + 1L
     datasets <- list(census, register, reg.births, address.change, reg.deaths)
     namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths")
-    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
                               Model(register ~ Poisson(mean ~ 1), series = "population"),
                               Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
@@ -1343,7 +1343,7 @@ test_that("updateProposalAccountMovePool works with CombinedAccountMovementsHasA
     x0 <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -1422,7 +1422,7 @@ test_that("R and C versions of updateProposalAccountMovePool give same answer wi
                                dimnames = dimnames(deaths))) + 1L
     datasets <- list(census, register, reg.births, address.change, reg.deaths)
     namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths")
-    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
                               Model(register ~ Poisson(mean ~ 1), series = "population"),
                               Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
@@ -1437,7 +1437,7 @@ test_that("R and C versions of updateProposalAccountMovePool give same answer wi
     x0 <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -1488,7 +1488,7 @@ test_that("updateProposalAccountMoveNet works with CombinedAccountMovements - no
                                              dimnames = list(reg = c("a", "b", "c"),
                                                              time = "2001-2005"))))
     mean <- ValuesOne(1, labels = "2001-2005", name = "time")
-    observationModels <- list(Model(tax ~ NormalFixed(mean = mean, sd = 0.1), series = "internal"),
+    data.models <- list(Model(tax ~ NormalFixed(mean = mean, sd = 0.1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
     datasets <- list(internal + 10L,
@@ -1500,7 +1500,7 @@ test_that("updateProposalAccountMoveNet works with CombinedAccountMovements - no
     x0 <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -1544,7 +1544,7 @@ test_that("R and C versions of updateProposalAccountMoveNet give same answer wit
                                              dimnames = list(reg = c("a", "b", "c"),
                                                              time = "2001-2005"))))
     mean <- ValuesOne(1, labels = "2001-2005", name = "time")
-    observationModels <- list(Model(tax ~ NormalFixed(mean = mean, sd = 0.1), series = "internal"),
+    data.models <- list(Model(tax ~ NormalFixed(mean = mean, sd = 0.1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
     datasets <- list(internal + 10L,
@@ -1556,7 +1556,7 @@ test_that("R and C versions of updateProposalAccountMoveNet give same answer wit
     x0 <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -1644,7 +1644,7 @@ test_that("updateProposalAccountMoveNet works with CombinedAccountMovementsHasAg
                          dim = c(3, 2),
                          dimnames = list(age = c("0-4", "5-9", "10+"),
                                          time = c("2001-2005", "2006-2010"))))
-    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
                               Model(register ~ Poisson(mean ~ 1), series = "population"),
                               Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
                               Model(address.change ~ NormalFixed(mean = mean, sd = 0.1), series = "internal"),
@@ -1659,7 +1659,7 @@ test_that("updateProposalAccountMoveNet works with CombinedAccountMovementsHasAg
     x0 <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -1747,7 +1747,7 @@ test_that("R and C versions of updateProposalAccountMoveNet give same answer wit
                          dim = c(3, 2),
                          dimnames = list(age = c("0-4", "5-9", "10+"),
                                          time = c("2001-2005", "2006-2010"))))
-    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
                               Model(register ~ Poisson(mean ~ 1), series = "population"),
                               Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
                               Model(address.change ~ NormalFixed(mean = mean, sd = 0.1), series = "internal"),
@@ -1762,7 +1762,7 @@ test_that("R and C versions of updateProposalAccountMoveNet give same answer wit
     x0 <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -1808,7 +1808,7 @@ test_that("updateProposalAccountMoveComp works with CombinedAccountMovements - n
                          Model(births ~ Poisson(mean ~ 1)),
                          Model(deaths ~ Poisson(mean ~ 1)))
     systemWeights <- rep(list(NULL), 3)
-    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
+    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(2L, 0L)
     datasets <- list(Counts(array(7L,
@@ -1824,7 +1824,7 @@ test_that("updateProposalAccountMoveComp works with CombinedAccountMovements - n
     x0 <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -1865,7 +1865,7 @@ test_that("R and C versions of updateProposalAccountMoveComp give same answer - 
                          Model(births ~ Poisson(mean ~ 1)),
                          Model(deaths ~ Poisson(mean ~ 1)))
     systemWeights <- rep(list(NULL), 3)
-    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
+    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(2L, 0L)
     datasets <- list(Counts(array(7L,
@@ -1881,7 +1881,7 @@ test_that("R and C versions of updateProposalAccountMoveComp give same answer - 
     x0 <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -1957,7 +1957,7 @@ test_that("updateProposalAccountMoveComp works with CombinedAccountMovementsHasA
                                dimnames = dimnames(deaths))) + 1L
     datasets <- list(census, register, reg.births, address.change, reg.deaths)
     namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths")
-    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
                               Model(register ~ Poisson(mean ~ 1), series = "population"),
                               Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
@@ -1972,7 +1972,7 @@ test_that("updateProposalAccountMoveComp works with CombinedAccountMovementsHasA
     x0 <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -2050,7 +2050,7 @@ test_that("R and C versions of updateProposalAccountMoveComp give same answer", 
                                dimnames = dimnames(deaths))) + 1L
     datasets <- list(census, register, reg.births, address.change, reg.deaths)
     namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths")
-    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
                               Model(register ~ Poisson(mean ~ 1), series = "population"),
                               Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
@@ -2065,7 +2065,7 @@ test_that("R and C versions of updateProposalAccountMoveComp give same answer", 
     x0 <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -2259,7 +2259,7 @@ test_that("diffLogLikCellComp works", {
     iCell <- 5L
     datasets <- list(dataset1, dataset2)
     seriesIndices <- c(2L, 2L)
-    observationModels <- list(initialModel(Model(component ~ Poisson(mean ~ age + sex)),
+    data.models <- list(initialModel(Model(component ~ Poisson(mean ~ age + sex)),
                                            y = component,
                                            exposure = dataset1),
                               initialModel(Model(component ~ Poisson(mean ~ age + sex)),
@@ -2272,20 +2272,20 @@ test_that("diffLogLikCellComp works", {
                                        iComp = iComp,
                                        iCell = iCell,
                                        component = component,
-                                       observationModels = observationModels,
+                                       dataModels = data.models,
                                        datasets = datasets,
                                        seriesIndices = seriesIndices,
                                        transforms = transforms)
     ans.expected <- diffLogLikCellOneDataset(diff = diff,
                                              iCell = iCell,
                                              component = component,
-                                             model = observationModels[[1]],
+                                             model = datamodels[[1]],
                                              dataset = datasets[[1]],
                                              transform = transforms[[1]]) +
         diffLogLikCellOneDataset(diff = diff,
                                  iCell = iCell,
                                  component = component,
-                                 model = observationModels[[2]],
+                                 model = datamodels[[2]],
                                  dataset = datasets[[2]],
                                  transform = transforms[[2]])
     expect_identical(ans.obtained, ans.expected)
@@ -2315,7 +2315,7 @@ test_that("R and C versions of diffLogLikCellComp give same answer", {
     iCell <- 5L
     datasets <- list(dataset1, dataset2)
     seriesIndices <- c(2L, 2L)
-    observationModels <- list(initialModel(Model(component ~ Poisson(mean ~ age + sex)),
+    data.models <- list(initialModel(Model(component ~ Poisson(mean ~ age + sex)),
                                            y = component,
                                            exposure = dataset1),
                               initialModel(Model(component ~ Poisson(mean ~ age + sex)),
@@ -2328,7 +2328,7 @@ test_that("R and C versions of diffLogLikCellComp give same answer", {
                                 iComp = iComp,
                                 iCell = iCell,
                                 component = component,
-                                observationModels = observationModels,
+                                dataModels = data.models,
                                 datasets = datasets,
                                 seriesIndices = seriesIndices,
                                 transforms = transforms,
@@ -2337,7 +2337,7 @@ test_that("R and C versions of diffLogLikCellComp give same answer", {
                                 iComp = iComp,
                                 iCell = iCell,
                                 component = component,
-                                observationModels = observationModels,
+                                dataModels = data.models,
                                 datasets = datasets,
                                 seriesIndices = seriesIndices,
                                 transforms = transforms,
@@ -2727,7 +2727,7 @@ test_that("diffLogLikPopn works", {
                                dim = dim(deaths),
                                dimnames = dimnames(deaths))) + 1L
     datasets <- list(census, register, reg.births, address.change, reg.deaths)
-    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
                               Model(register ~ Poisson(mean ~ 1), series = "population"),
                               Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
@@ -2741,26 +2741,26 @@ test_that("diffLogLikPopn works", {
     transforms <- lapply(transforms, makeCollapseTransformExtra)
     popn <- Population(popn)
     iterator <- CohortIterator(popn)
-    observationModels <- list(initialModel(object = observationModels[[1L]],
+    data.models <- list(initialModel(object = datamodels[[1L]],
                                             y = datasets[[1L]],
                                             exposure = collapse(popn, transform = transforms[[1L]])),
-                              initialModel(object = observationModels[[2L]],
+                              initialModel(object = datamodels[[2L]],
                                             y = datasets[[2L]],
                                             exposure = collapse(popn, transform = transforms[[2L]])),
-                              initialModel(object = observationModels[[3L]],
+                              initialModel(object = datamodels[[3L]],
                                             y = datasets[[3L]],
                                             exposure = collapse(births, transform = transforms[[3L]])),
-                              initialModel(object = observationModels[[4L]],
+                              initialModel(object = datamodels[[4L]],
                                             y = datasets[[4L]],
                                             exposure = collapse(internal, transform = transforms[[4L]])),
-                              initialModel(object = observationModels[[5L]],
+                              initialModel(object = datamodels[[5L]],
                                             y = datasets[[5L]],
                                             exposure = collapse(deaths, transform = transforms[[5L]])))
     ans.obtained <- diffLogLikPopn(diff = 5L,
                                    iFirst  = 11L,
                                    iterator = iterator,
                                    population = popn,
-                                   observationModels = observationModels,
+                                   dataModels = data.models,
                                    datasets = datasets,
                                    seriesIndices = seriesIndices,
                                    transforms = transforms)
@@ -2768,14 +2768,14 @@ test_that("diffLogLikPopn works", {
                                              iFirst = 11L,
                                              iterator = iterator,
                                              population = popn,
-                                             model = observationModels[[1L]],
+                                             model = datamodels[[1L]],
                                              dataset = datasets[[1L]],
                                              transform = transforms[[1L]]) + 
         diffLogLikPopnOneDataset(diff = 5L,
                                  iFirst = 11L,
                                  iterator = iterator,
                                  population = popn,
-                                 model = observationModels[[2L]],
+                                 model = datamodels[[2L]],
                                  dataset = datasets[[2L]],
                                  transform = transforms[[2L]])
     if (test.identity)
@@ -2834,7 +2834,7 @@ test_that("R and C versions of diffLogLikPopn give same answer", {
                                dim = dim(deaths),
                                dimnames = dimnames(deaths))) + 1L
     datasets <- list(census, register, reg.births, address.change, reg.deaths)
-    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
                               Model(register ~ Poisson(mean ~ 1), series = "population"),
                               Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
@@ -2848,26 +2848,26 @@ test_that("R and C versions of diffLogLikPopn give same answer", {
     transforms <- lapply(transforms, makeCollapseTransformExtra)
     popn <- Population(popn)
     iterator <- CohortIterator(popn)
-    observationModels <- list(initialModel(object = observationModels[[1L]],
+    data.models <- list(initialModel(object = datamodels[[1L]],
                                            y = datasets[[1L]],
                                            exposure = collapse(popn, transform = transforms[[1L]])),
-                              initialModel(object = observationModels[[2L]],
+                              initialModel(object = datamodels[[2L]],
                                            y = datasets[[2L]],
                                            exposure = collapse(popn, transform = transforms[[2L]])),
-                              initialModel(object = observationModels[[3L]],
+                              initialModel(object = datamodels[[3L]],
                                            y = datasets[[3L]],
                                            exposure = collapse(births, transform = transforms[[3L]])),
-                              initialModel(object = observationModels[[4L]],
+                              initialModel(object = datamodels[[4L]],
                                            y = datasets[[4L]],
                                            exposure = collapse(internal, transform = transforms[[4L]])),
-                              initialModel(object = observationModels[[5L]],
+                              initialModel(object = datamodels[[5L]],
                                            y = datasets[[5L]],
                                            exposure = collapse(deaths, transform = transforms[[5L]])))
     ans.R <- diffLogLikPopn(diff = 5L,
                             iFirst  = 11L,
                             iterator = iterator,
                             population = popn,
-                            observationModels = observationModels,
+                            dataModels = data.models,
                             datasets = datasets,
                             seriesIndices = seriesIndices,
                             transforms = transforms,
@@ -2876,7 +2876,7 @@ test_that("R and C versions of diffLogLikPopn give same answer", {
                             iFirst  = 11L,
                             iterator = iterator,
                             population = popn,
-                            observationModels = observationModels,
+                            dataModels = data.models,
                             datasets = datasets,
                             seriesIndices = seriesIndices,
                             transforms = transforms,
@@ -2911,7 +2911,7 @@ test_that("diffLogLikPopnPair works with CombinedAccountMovements", {
                          Model(internal ~ Poisson(mean ~ 1)))
     datasets <- list(internal + 10L,
                      population - 5L)
-    observationModels <- list(initialModel(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
+    data.models <- list(initialModel(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
                                            y = datasets[[1]],
                                            exposure = internal),
                               initialModel(Model(census ~ PoissonBinomial(prob = 0.9), series = "population"),
@@ -2928,7 +2928,7 @@ test_that("diffLogLikPopnPair works with CombinedAccountMovements", {
                                        iPopnDest = 5L,
                                        iterator = iterator,
                                        population = population,
-                                       observationModels = observationModels,
+                                       dataModels = data.models,
                                        datasets = datasets,
                                        seriesIndices = seriesIndices,
                                        transforms = transforms)
@@ -2936,14 +2936,14 @@ test_that("diffLogLikPopnPair works with CombinedAccountMovements", {
                                              iFirst = 6L,
                                              iterator = iterator,
                                              population = population,
-                                             model = observationModels[[2]],
+                                             model = datamodels[[2]],
                                              dataset = datasets[[2]],
                                              transform = transforms[[2]]) +
         diffLogLikPopnOneDataset(diff = diff,
                                  iFirst = 5L,
                                  iterator = iterator,
                                  population = population,
-                                 model = observationModels[[2]],
+                                 model = datamodels[[2]],
                                  dataset = datasets[[2]],
                                  transform = transforms[[2]])
     if (test.identity)
@@ -2976,7 +2976,7 @@ test_that("R and C versions of diffLogLikPopnPair give same answer", {
                          Model(internal ~ Poisson(mean ~ 1)))
     datasets <- list(internal + 10L,
                      population - 5L)
-    observationModels <- list(initialModel(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
+    data.models <- list(initialModel(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
                                            y = datasets[[1]],
                                            exposure = internal),
                               initialModel(Model(census ~ PoissonBinomial(prob = 0.9), series = "population"),
@@ -2993,7 +2993,7 @@ test_that("R and C versions of diffLogLikPopnPair give same answer", {
                                 iPopnDest = 5L,
                                 iterator = iterator,
                                 population = population,
-                                observationModels = observationModels,
+                                dataModels = data.models,
                                 datasets = datasets,
                                 seriesIndices = seriesIndices,
                                 transforms = transforms,
@@ -3003,7 +3003,7 @@ test_that("R and C versions of diffLogLikPopnPair give same answer", {
                                 iPopnDest = 5L,
                                 iterator = iterator,
                                 population = population,
-                                observationModels = observationModels,
+                                dataModels = data.models,
                                 datasets = datasets,
                                 seriesIndices = seriesIndices,
                                 transforms = transforms,
@@ -3038,7 +3038,7 @@ test_that("diffLogLikAccountMovePopn works", {
                          Model(births ~ Poisson(mean ~ 1)),
                          Model(deaths ~ Poisson(mean ~ 1)))
     systemWeights <- rep(list(NULL), 3)
-    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
+    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(2L, 0L)
     datasets <- list(Counts(array(7L,
@@ -3054,7 +3054,7 @@ test_that("diffLogLikAccountMovePopn works", {
     x <- initialCombinedAccount(account = account,
                                 systemModels = systemModels,
                                 systemWeights = systemWeights,
-                                observationModels = observationModels,
+                                dataModels = data.models,
                                 seriesIndices = seriesIndices,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
@@ -3087,7 +3087,7 @@ test_that("R and C versions of diffLogLikAccountMovePopn give same answer", {
                          Model(births ~ Poisson(mean ~ 1)),
                          Model(deaths ~ Poisson(mean ~ 1)))
     systemWeights <- rep(list(NULL), 3)
-    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
+    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(2L, 0L)
     datasets <- list(Counts(array(7L,
@@ -3103,7 +3103,7 @@ test_that("R and C versions of diffLogLikAccountMovePopn give same answer", {
     x <- initialCombinedAccount(account = account,
                                 systemModels = systemModels,
                                 systemWeights = systemWeights,
-                                observationModels = observationModels,
+                                dataModels = data.models,
                                 seriesIndices = seriesIndices,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
@@ -3142,7 +3142,7 @@ test_that("diffLogLikAccountMovePool works with CombinedAccountMovements", {
     systemModels <- list(Model(population ~ Poisson(mean ~ reg, useExpose = FALSE)),
                          Model(internal ~ Poisson(mean ~ 1)))
     systemWeights <- list(NULL, NULL)
-    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
+    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
     datasets <- list(internal + 10L,
@@ -3154,7 +3154,7 @@ test_that("diffLogLikAccountMovePool works with CombinedAccountMovements", {
     x <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -3170,7 +3170,7 @@ test_that("diffLogLikAccountMovePool works with CombinedAccountMovements", {
                                         iCellOut = x@iCell,
                                         iCellIn = x@iCellOther,
                                         component = x@account@components[[1]],
-                                        observationModels = x@observationModels,
+                                        datamodels = x@dataModels,
                                         datasets = x@datasets,
                                         seriesIndices = x@seriesIndices,
                                         transforms = x@transforms) +
@@ -3179,7 +3179,7 @@ test_that("diffLogLikAccountMovePool works with CombinedAccountMovements", {
                            iPopnDest = x@iPopnNextOther,
                            iterator = x@iteratorPopn,
                            population = x@account@population,
-                           observationModels = x@observationModels,
+                           datamodels = x@dataModels,
                            datasets = x@datasets,
                            seriesIndices = x@seriesIndices,
                            transforms = x@transforms)
@@ -3212,7 +3212,7 @@ test_that("R and C versions of diffLogLikAccountMovePool give same answer with C
     systemModels <- list(Model(population ~ Poisson(mean ~ reg, useExpose = FALSE)),
                          Model(internal ~ Poisson(mean ~ 1)))
     systemWeights <- list(NULL, NULL)
-    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
+    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
     datasets <- list(internal + 10L,
@@ -3224,7 +3224,7 @@ test_that("R and C versions of diffLogLikAccountMovePool give same answer with C
     x <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -3265,7 +3265,7 @@ test_that("diffLogLikCellsPool works with CombinedAccountMovements", {
     systemModels <- list(Model(population ~ Poisson(mean ~ reg, useExpose = FALSE)),
                          Model(internal ~ Poisson(mean ~ 1)))
     systemWeights <- list(NULL, NULL)
-    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
+    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
     datasets <- list(internal + 10L,
@@ -3277,7 +3277,7 @@ test_that("diffLogLikCellsPool works with CombinedAccountMovements", {
     x <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -3292,20 +3292,20 @@ test_that("diffLogLikCellsPool works with CombinedAccountMovements", {
                                         iCellOut = x@iCell,
                                         iCellIn = x@iCellOther,
                                         component = x@account@components[[1]],
-                                        observationModels = x@observationModels,
+                                        datamodels = x@dataModels,
                                         datasets = x@datasets,
                                         seriesIndices = x@seriesIndices,
                                         transforms = x@transforms)
     ans.expected <- diffLogLikCellOneDataset(diff = x@diffProp,
                                              iCell = x@iCell,
                                              component = x@account@components[[1]],
-                                             model = x@observationModels[[1]],
+                                             model = x@dataModels[[1]],
                                              dataset = x@datasets[[1]],
                                              transform = x@transforms[[1]]) +
         diffLogLikCellOneDataset(diff = x@diffProp,
                                  iCell = x@iCellOther,
                                  component = x@account@components[[1]],
-                                 model = x@observationModels[[1]],
+                                 model = x@dataModels[[1]],
                                  dataset = x@datasets[[1]],
                                  transform = x@transforms[[1]])
     if (test.identity)
@@ -3337,7 +3337,7 @@ test_that("R and C versions of diffLogLikCellsPool give same answer with Combine
     systemModels <- list(Model(population ~ Poisson(mean ~ reg, useExpose = FALSE)),
                          Model(internal ~ Poisson(mean ~ 1)))
     systemWeights <- list(NULL, NULL)
-    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
+    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
     datasets <- list(internal + 10L,
@@ -3349,7 +3349,7 @@ test_that("R and C versions of diffLogLikCellsPool give same answer with Combine
     x <- initialCombinedAccount(account = account,
                                 systemModels = systemModels,
                                 systemWeights = systemWeights,
-                                observationModels = observationModels,
+                                dataModels = data.models,
                                 seriesIndices = seriesIndices,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
@@ -3364,7 +3364,7 @@ test_that("R and C versions of diffLogLikCellsPool give same answer with Combine
                                  iCellOut = x@iCell,
                                  iCellIn = x@iCellOther,
                                  component = x@account@components[[1]],
-                                 observationModels = x@observationModels,
+                                 datamodels = x@dataModels,
                                  datasets = x@datasets,
                                  seriesIndices = x@seriesIndices,
                                  transforms = x@transforms,
@@ -3374,7 +3374,7 @@ test_that("R and C versions of diffLogLikCellsPool give same answer with Combine
                                  iCellOut = x@iCell,
                                  iCellIn = x@iCellOther,
                                  component = x@account@components[[1]],
-                                 observationModels = x@observationModels,
+                                 datamodels = x@dataModels,
                                  datasets = x@datasets,
                                  seriesIndices = x@seriesIndices,
                                  transforms = x@transforms,
@@ -3414,7 +3414,7 @@ test_that("diffLogLikAccountMoveNet works with CombinedAccountMovements", {
                                       time = "2001-2005")))
     systemWeights <- list(NULL, w)
     mean <- ValuesOne(1, labels = "2001-2005", name = "time")
-    observationModels <- list(Model(tax ~ NormalFixed(mean = mean, sd = 0.1), series = "internal"),
+    data.models <- list(Model(tax ~ NormalFixed(mean = mean, sd = 0.1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
     datasets <- list(internal + 10L,
@@ -3426,7 +3426,7 @@ test_that("diffLogLikAccountMoveNet works with CombinedAccountMovements", {
     x <- initialCombinedAccount(account = account,
                                 systemModels = systemModels,
                                 systemWeights = systemWeights,
-                                observationModels = observationModels,
+                                dataModels = data.models,
                                 seriesIndices = seriesIndices,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
@@ -3442,7 +3442,7 @@ test_that("diffLogLikAccountMoveNet works with CombinedAccountMovements", {
                                        iCellAdd = x@iCell,
                                        iCellSub = x@iCellOther,
                                        component = x@account@components[[1]],
-                                       observationModels = x@observationModels,
+                                       datamodels = x@dataModels,
                                        datasets = x@datasets,
                                        seriesIndices = x@seriesIndices,
                                        transforms = x@transforms) +
@@ -3451,7 +3451,7 @@ test_that("diffLogLikAccountMoveNet works with CombinedAccountMovements", {
                            iPopnDest = x@iPopnNextOther,
                            iterator = x@iteratorPopn,
                            population = x@account@population,
-                           observationModels = x@observationModels,
+                           datamodels = x@dataModels,
                            datasets = x@datasets,
                            seriesIndices = x@seriesIndices,
                            transforms = x@transforms)
@@ -3490,7 +3490,7 @@ test_that("R and C versions of diffLogLikAccountMoveNet give same answer with Co
                                       time = "2001-2005")))
     systemWeights <- list(NULL, w)
     mean <- ValuesOne(1, labels = "2001-2005", name = "time")
-    observationModels <- list(Model(tax ~ NormalFixed(mean = mean, sd = 0.1), series = "internal"),
+    data.models <- list(Model(tax ~ NormalFixed(mean = mean, sd = 0.1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
     datasets <- list(internal + 10L,
@@ -3502,7 +3502,7 @@ test_that("R and C versions of diffLogLikAccountMoveNet give same answer with Co
     x <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -3548,7 +3548,7 @@ test_that("diffLogLikCellsNet works with CombinedAccountMovements", {
                                              time = "2001-2005")))
     systemWeights <- list(NULL, w)
     mean <- ValuesOne(1, labels = "2001-2005", name = "time")
-    observationModels <- list(Model(tax ~ NormalFixed(mean = mean, sd = 0.1), series = "internal"),
+    data.models <- list(Model(tax ~ NormalFixed(mean = mean, sd = 0.1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
     datasets <- list(internal + 10L,
@@ -3560,7 +3560,7 @@ test_that("diffLogLikCellsNet works with CombinedAccountMovements", {
     x <- initialCombinedAccount(account = account,
                                 systemModels = systemModels,
                                 systemWeights = systemWeights,
-                                observationModels = observationModels,
+                                dataModels = data.models,
                                 seriesIndices = seriesIndices,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
@@ -3575,20 +3575,20 @@ test_that("diffLogLikCellsNet works with CombinedAccountMovements", {
                                        iCellAdd = x@iCell,
                                        iCellSub = x@iCellOther,
                                        component = x@account@components[[1]],
-                                       observationModels = x@observationModels,
+                                       datamodels = x@dataModels,
                                        datasets = x@datasets,
                                        seriesIndices = x@seriesIndices,
                                        transforms = x@transforms)
     ans.expected <- diffLogLikCellOneDataset(diff = x@diffProp,
                                              iCell = x@iCell,
                                              component = x@account@components[[1]],
-                                             model = x@observationModels[[1]],
+                                             model = x@dataModels[[1]],
                                              dataset = x@datasets[[1]],
                                              transform = x@transforms[[1]]) +
         diffLogLikCellOneDataset(diff = -x@diffProp,
                                  iCell = x@iCellOther,
                                  component = x@account@components[[1]],
-                                 model = x@observationModels[[1]],
+                                 model = x@dataModels[[1]],
                                  dataset = x@datasets[[1]],
                                  transform = x@transforms[[1]])
     if (test.identity)
@@ -3625,7 +3625,7 @@ test_that("R and C versions of diffLogLikCellsNet give same answer with Combined
                                       time = "2001-2005")))
     systemWeights <- list(NULL, w)
     mean <- ValuesOne(1, labels = "2001-2005", name = "time")
-    observationModels <- list(Model(tax ~ NormalFixed(mean = mean, sd = 0.1), series = "internal"),
+    data.models <- list(Model(tax ~ NormalFixed(mean = mean, sd = 0.1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
     datasets <- list(internal + 10L,
@@ -3637,7 +3637,7 @@ test_that("R and C versions of diffLogLikCellsNet give same answer with Combined
     x <- initialCombinedAccount(account = account,
                                 systemModels = systemModels,
                                 systemWeights = systemWeights,
-                                observationModels = observationModels,
+                                dataModels = data.models,
                                 seriesIndices = seriesIndices,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
@@ -3652,7 +3652,7 @@ test_that("R and C versions of diffLogLikCellsNet give same answer with Combined
                                 iCellAdd = x@iCell,
                                 iCellSub = x@iCellOther,
                                 component = x@account@components[[1]],
-                                observationModels = x@observationModels,
+                                datamodels = x@dataModels,
                                 datasets = x@datasets,
                                 seriesIndices = x@seriesIndices,
                                 transforms = x@transforms,
@@ -3662,7 +3662,7 @@ test_that("R and C versions of diffLogLikCellsNet give same answer with Combined
                                 iCellAdd = x@iCell,
                                 iCellSub = x@iCellOther,
                                 component = x@account@components[[1]],
-                                observationModels = x@observationModels,
+                                datamodels = x@dataModels,
                                 datasets = x@datasets,
                                 seriesIndices = x@seriesIndices,
                                 transforms = x@transforms,
@@ -3695,7 +3695,7 @@ test_that("diffLogLikAccountMoveComp works", {
                          Model(births ~ Poisson(mean ~ 1)),
                          Model(deaths ~ Poisson(mean ~ 1)))
     systemWeights <- rep(list(NULL), 3)
-    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
+    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(2L, 0L)
     datasets <- list(Counts(array(7L,
@@ -3711,7 +3711,7 @@ test_that("diffLogLikAccountMoveComp works", {
     x <- initialCombinedAccount(account = account,
                                 systemModels = systemModels,
                                 systemWeights = systemWeights,
-                                observationModels = observationModels,
+                                dataModels = data.models,
                                 seriesIndices = seriesIndices,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
@@ -3746,7 +3746,7 @@ test_that("R and C versions of diffLogLikAccountMoveComp give same answer", {
                          Model(births ~ Poisson(mean ~ 1)),
                          Model(deaths ~ Poisson(mean ~ 1)))
     systemWeights <- rep(list(NULL), 3)
-    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
+    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(2L, 0L)
     datasets <- list(Counts(array(7L,
@@ -3762,7 +3762,7 @@ test_that("R and C versions of diffLogLikAccountMoveComp give same answer", {
     x <- initialCombinedAccount(account = account,
                                 systemModels = systemModels,
                                 systemWeights = systemWeights,
-                                observationModels = observationModels,
+                                dataModels = data.models,
                                 seriesIndices = seriesIndices,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
@@ -3799,7 +3799,7 @@ test_that("diffLogLikAccountMoveOrigDest works", {
     systemModels <- list(Model(population ~ Poisson(mean ~ reg, useExpose = FALSE)),
                          Model(internal ~ Poisson(mean ~ 1)))
     systemWeights <- list(NULL, NULL)
-    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
+    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
     datasets <- list(internal + 10L,
@@ -3811,7 +3811,7 @@ test_that("diffLogLikAccountMoveOrigDest works", {
     x <- initialCombinedAccount(account = account,
                                 systemModels = systemModels,
                                 systemWeights = systemWeights,
-                                observationModels = observationModels,
+                                dataModels = data.models,
                                 seriesIndices = seriesIndices,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
@@ -3855,7 +3855,7 @@ test_that("R and C versions of diffLogLikAccountMoveOrigDest give same answer", 
     systemModels <- list(Model(population ~ Poisson(mean ~ reg, useExpose = FALSE)),
                          Model(internal ~ Poisson(mean ~ 1)))
     systemWeights <- list(NULL, NULL)
-    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
+    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
     datasets <- list(internal + 10L,
@@ -3867,7 +3867,7 @@ test_that("R and C versions of diffLogLikAccountMoveOrigDest give same answer", 
     x <- initialCombinedAccount(account = account,
                                 systemModels = systemModels,
                                 systemWeights = systemWeights,
-                                observationModels = observationModels,
+                                dataModels = data.models,
                                 seriesIndices = seriesIndices,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
@@ -3922,7 +3922,7 @@ test_that("diffLogDensPopn works", {
                          Model(births ~ Poisson(mean ~ 1)),
                          Model(deaths ~ Poisson(mean ~ 1)))
     systemWeights <- rep(list(NULL), 3)
-    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
+    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(2L, 0L)
     datasets <- list(Counts(array(7L,
@@ -3938,7 +3938,7 @@ test_that("diffLogDensPopn works", {
     x <- initialCombinedAccount(account = account,
                                 systemModels = systemModels,
                                 systemWeights = systemWeights,
-                                observationModels = observationModels,
+                                dataModels = data.models,
                                 seriesIndices = seriesIndices,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
@@ -4001,7 +4001,7 @@ test_that("R and C versions of diffLogDensPopn give same answer", {
                          Model(births ~ Poisson(mean ~ 1)),
                          Model(deaths ~ Poisson(mean ~ 1)))
     systemWeights <- rep(list(NULL), 3)
-    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
+    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(2L, 0L)
     datasets <- list(Counts(array(7L,
@@ -4017,7 +4017,7 @@ test_that("R and C versions of diffLogDensPopn give same answer", {
     x <- initialCombinedAccount(account = account,
                                 systemModels = systemModels,
                                 systemWeights = systemWeights,
-                                observationModels = observationModels,
+                                dataModels = data.models,
                                 seriesIndices = seriesIndices,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
@@ -4181,7 +4181,7 @@ test_that("diffLogDensExpPopn works", {
                                dimnames = dimnames(deaths))) + 1L
     datasets <- list(census, register, reg.births, address.change, reg.deaths)
     namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths")
-    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
                               Model(register ~ Poisson(mean ~ 1), series = "population"),
                               Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
@@ -4196,7 +4196,7 @@ test_that("diffLogDensExpPopn works", {
     x <- initialCombinedAccount(account = account,
                                 systemModels = systemModels,
                                 systemWeights = systemWeights,
-                                observationModels = observationModels,
+                                dataModels = data.models,
                                 seriesIndices = seriesIndices,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
@@ -4315,7 +4315,7 @@ test_that("R and C versions of diffLogDensExpPopn give same answer", {
                                dimnames = dimnames(deaths))) + 1L
     datasets <- list(census, register, reg.births, address.change, reg.deaths)
     namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths")
-    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
                               Model(register ~ Poisson(mean ~ 1), series = "population"),
                               Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
@@ -4330,7 +4330,7 @@ test_that("R and C versions of diffLogDensExpPopn give same answer", {
     x <- initialCombinedAccount(account = account,
                                 systemModels = systemModels,
                                 systemWeights = systemWeights,
-                                observationModels = observationModels,
+                                dataModels = data.models,
                                 seriesIndices = seriesIndices,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
@@ -4381,7 +4381,7 @@ test_that("diffLogDensJumpOrigDest works with CombinedAccountMovements - no age"
     systemModels <- list(Model(population ~ Poisson(mean ~ reg, useExpose = FALSE)),
                          Model(internal ~ Poisson(mean ~ 1)))
     systemWeights <- list(NULL, NULL)
-    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
+    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
     datasets <- list(internal + 10L,
@@ -4393,14 +4393,14 @@ test_that("diffLogDensJumpOrigDest works with CombinedAccountMovements - no age"
     x0 <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
     updated <- FALSE
     x0@iComp <- 1L
-    for (seed in seq_len(5 * n.test)) {
+    for (seed in seq_len(10 * n.test)) {
         set.seed(seed)
         x <- updateProposalAccountMoveOrigDest(x0)
         if (x@generatedNewProposal@.Data) {
@@ -4448,7 +4448,7 @@ test_that("R and C versions of diffLogDensJumpOrigDest give same answer - no age
     systemModels <- list(Model(population ~ Poisson(mean ~ reg, useExpose = FALSE)),
                          Model(internal ~ Poisson(mean ~ 1)))
     systemWeights <- list(NULL, NULL)
-    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
+    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
     datasets <- list(internal + 10L,
@@ -4460,7 +4460,7 @@ test_that("R and C versions of diffLogDensJumpOrigDest give same answer - no age
     x <- initialCombinedAccount(account = account,
                                 systemModels = systemModels,
                                 systemWeights = systemWeights,
-                                observationModels = observationModels,
+                                dataModels = data.models,
                                 seriesIndices = seriesIndices,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
@@ -4533,7 +4533,7 @@ test_that("diffLogDensJumpOrigDest works - with age", {
                                dimnames = dimnames(deaths))) + 1L
     datasets <- list(census, register, reg.births, address.change, reg.deaths)
     namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths")
-    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
                               Model(register ~ Poisson(mean ~ 1), series = "population"),
                               Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
@@ -4548,7 +4548,7 @@ test_that("diffLogDensJumpOrigDest works - with age", {
     x <- initialCombinedAccount(account = account,
                                 systemModels = systemModels,
                                 systemWeights = systemWeights,
-                                observationModels = observationModels,
+                                dataModels = data.models,
                                 seriesIndices = seriesIndices,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
@@ -4658,7 +4658,7 @@ test_that("R and C versions of diffLogDensJumpOrigDest give same answer - with a
                                dimnames = dimnames(deaths))) + 1L
     datasets <- list(census, register, reg.births, address.change, reg.deaths)
     namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths")
-    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
                               Model(register ~ Poisson(mean ~ 1), series = "population"),
                               Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
@@ -4673,7 +4673,7 @@ test_that("R and C versions of diffLogDensJumpOrigDest give same answer - with a
     x <- initialCombinedAccount(account = account,
                                 systemModels = systemModels,
                                 systemWeights = systemWeights,
-                                observationModels = observationModels,
+                                dataModels = data.models,
                                 seriesIndices = seriesIndices,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
@@ -4731,7 +4731,7 @@ test_that("diffLogDensExpOrigDestPoolNet works with CombinedAccountMovements - n
                                                    dim = c(3, 1),
                                                    dimnames = list(reg = c("a", "b", "c"),
                                                                    time = "2001-2005"))))
-    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
+    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
     datasets <- list(internal + 10L,
@@ -4743,7 +4743,7 @@ test_that("diffLogDensExpOrigDestPoolNet works with CombinedAccountMovements - n
     x0 <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -4821,7 +4821,7 @@ test_that("R and C versions of diffLogDensExpOrigDestPoolNet give same answer wi
                                                    dim = c(3, 1),
                                                    dimnames = list(reg = c("a", "b", "c"),
                                                                    time = "2001-2005"))))
-    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
+    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
     datasets <- list(internal + 10L,
@@ -4833,7 +4833,7 @@ test_that("R and C versions of diffLogDensExpOrigDestPoolNet give same answer wi
     x0 <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -4920,7 +4920,7 @@ test_that("diffLogDensExpOrigDestPoolNet works - with age", {
                                dimnames = dimnames(deaths))) + 1L
     datasets <- list(census, register, reg.births, address.change, reg.deaths)
     namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths")
-    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
                               Model(register ~ Poisson(mean ~ 1), series = "population"),
                               Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
@@ -4935,7 +4935,7 @@ test_that("diffLogDensExpOrigDestPoolNet works - with age", {
     x0 <- initialCombinedAccount(account = account,
                                 systemModels = systemModels,
                                 systemWeights = systemWeights,
-                                observationModels = observationModels,
+                                dataModels = data.models,
                                 seriesIndices = seriesIndices,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
@@ -5098,7 +5098,7 @@ test_that("R and C versions of diffLogDensExpOrigDestPoolNet give same answer - 
                                dimnames = dimnames(deaths))) + 1L
     datasets <- list(census, register, reg.births, address.change, reg.deaths)
     namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths")
-    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
                               Model(register ~ Poisson(mean ~ 1), series = "population"),
                               Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
@@ -5113,7 +5113,7 @@ test_that("R and C versions of diffLogDensExpOrigDestPoolNet give same answer - 
     x0 <- initialCombinedAccount(account = account,
                                 systemModels = systemModels,
                                 systemWeights = systemWeights,
-                                observationModels = observationModels,
+                                dataModels = data.models,
                                 seriesIndices = seriesIndices,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
@@ -5161,7 +5161,7 @@ test_that("diffLogDensExpOneOrigDestParChPool works", {
     systemModels <- list(Model(population ~ Poisson(mean ~ reg, useExpose = FALSE)),
                          Model(internal ~ Poisson(mean ~ 1)))
     systemWeights <- list(NULL, NULL)
-    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
+    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
     datasets <- list(internal + 10L,
@@ -5173,7 +5173,7 @@ test_that("diffLogDensExpOneOrigDestParChPool works", {
     x <- initialCombinedAccount(account = account,
                                 systemModels = systemModels,
                                 systemWeights = systemWeights,
-                                observationModels = observationModels,
+                                dataModels = data.models,
                                 seriesIndices = seriesIndices,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
@@ -5240,7 +5240,7 @@ test_that("R and C versions of diffLogDensExpOneOrigDestParChPool give same answ
     systemModels <- list(Model(population ~ Poisson(mean ~ reg, useExpose = FALSE)),
                          Model(internal ~ Poisson(mean ~ 1)))
     systemWeights <- list(NULL, NULL)
-    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
+    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
     datasets <- list(internal + 10L,
@@ -5252,7 +5252,7 @@ test_that("R and C versions of diffLogDensExpOneOrigDestParChPool give same answ
     x <- initialCombinedAccount(account = account,
                                 systemModels = systemModels,
                                 systemWeights = systemWeights,
-                                observationModels = observationModels,
+                                dataModels = data.models,
                                 seriesIndices = seriesIndices,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
@@ -5422,7 +5422,7 @@ test_that("diffLogDensJumpPoolWithExpose works with CombinedAccountMovements", {
     systemModels <- list(Model(population ~ Poisson(mean ~ reg, useExpose = FALSE)),
                          Model(internal ~ Poisson(mean ~ 1)))
     systemWeights <- list(NULL, NULL)
-    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
+    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
     datasets <- list(internal + 10L,
@@ -5434,7 +5434,7 @@ test_that("diffLogDensJumpPoolWithExpose works with CombinedAccountMovements", {
     x <- initialCombinedAccount(account = account,
                                 systemModels = systemModels,
                                 systemWeights = systemWeights,
-                                observationModels = observationModels,
+                                dataModels = data.models,
                                 seriesIndices = seriesIndices,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
@@ -5491,7 +5491,7 @@ test_that("R and C versions of diffLogDensJumpPoolWithExpose give same answer wi
     systemModels <- list(Model(population ~ Poisson(mean ~ reg, useExpose = FALSE)),
                          Model(internal ~ Poisson(mean ~ 1)))
     systemWeights <- list(NULL, NULL)
-    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
+    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
     datasets <- list(internal + 10L,
@@ -5503,7 +5503,7 @@ test_that("R and C versions of diffLogDensJumpPoolWithExpose give same answer wi
     x <- initialCombinedAccount(account = account,
                                 systemModels = systemModels,
                                 systemWeights = systemWeights,
-                                observationModels = observationModels,
+                                dataModels = data.models,
                                 seriesIndices = seriesIndices,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
@@ -5543,7 +5543,7 @@ test_that("diffLogDensJumpPoolNoExpose works with CombinedAccountMovements", {
     systemModels <- list(Model(population ~ Poisson(mean ~ reg, useExpose = FALSE)),
                          Model(internal ~ Poisson(mean ~ 1, useExpose = FALSE)))
     systemWeights <- list(NULL, NULL)
-    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
+    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
     datasets <- list(internal + 10L,
@@ -5555,7 +5555,7 @@ test_that("diffLogDensJumpPoolNoExpose works with CombinedAccountMovements", {
     x <- initialCombinedAccount(account = account,
                                 systemModels = systemModels,
                                 systemWeights = systemWeights,
-                                observationModels = observationModels,
+                                dataModels = data.models,
                                 seriesIndices = seriesIndices,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
@@ -5600,7 +5600,7 @@ test_that("R and C versions of diffLogDensJumpPoolNoExpose give same answer with
     systemModels <- list(Model(population ~ Poisson(mean ~ reg, useExpose = FALSE)),
                          Model(internal ~ Poisson(mean ~ 1, useExpose = FALSE)))
     systemWeights <- list(NULL, NULL)
-    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
+    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
     datasets <- list(internal + 10L,
@@ -5612,7 +5612,7 @@ test_that("R and C versions of diffLogDensJumpPoolNoExpose give same answer with
     x <- initialCombinedAccount(account = account,
                                 systemModels = systemModels,
                                 systemWeights = systemWeights,
-                                observationModels = observationModels,
+                                dataModels = data.models,
                                 seriesIndices = seriesIndices,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
@@ -5659,7 +5659,7 @@ test_that("diffLogDensJumpNet works with CombinedAccountMovements", {
                                       time = "2001-2005")))
     systemWeights <- list(NULL, w)
     mean <- ValuesOne(1, labels = "2001-2005", name = "time")
-    observationModels <- list(Model(tax ~ NormalFixed(mean = mean, sd = 0.1), series = "internal"),
+    data.models <- list(Model(tax ~ NormalFixed(mean = mean, sd = 0.1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
     datasets <- list(internal + 10L,
@@ -5671,7 +5671,7 @@ test_that("diffLogDensJumpNet works with CombinedAccountMovements", {
     x <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -5725,7 +5725,7 @@ test_that("R and C versions of diffLogDensJumpNet give same answer with Combined
                                       time = "2001-2005")))
     systemWeights <- list(NULL, w)
     mean <- ValuesOne(1, labels = "2001-2005", name = "time")
-    observationModels <- list(Model(tax ~ NormalFixed(mean = mean, sd = 0.1), series = "internal"),
+    data.models <- list(Model(tax ~ NormalFixed(mean = mean, sd = 0.1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
     datasets <- list(internal + 10L,
@@ -5737,7 +5737,7 @@ test_that("R and C versions of diffLogDensJumpNet give same answer with Combined
     x <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
-                                 observationModels = observationModels,
+                                 dataModels = data.models,
                                  seriesIndices = seriesIndices,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
@@ -5779,7 +5779,7 @@ test_that("diffLogDensJumpComp works - no age", {
                          Model(births ~ Poisson(mean ~ 1)),
                          Model(deaths ~ Poisson(mean ~ 1)))
     systemWeights <- rep(list(NULL), 3)
-    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
+    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(2L, 0L)
     datasets <- list(Counts(array(7L,
@@ -5795,7 +5795,7 @@ test_that("diffLogDensJumpComp works - no age", {
     x <- initialCombinedAccount(account = account,
                                 systemModels = systemModels,
                                 systemWeights = systemWeights,
-                                observationModels = observationModels,
+                                dataModels = data.models,
                                 seriesIndices = seriesIndices,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
@@ -5852,7 +5852,7 @@ test_that("R and C versions of diffLogDensJumpComp give same answer - no age", {
                          Model(births ~ Poisson(mean ~ 1)),
                          Model(deaths ~ Poisson(mean ~ 1)))
     systemWeights <- rep(list(NULL), 3)
-    observationModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
+    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(2L, 0L)
     datasets <- list(Counts(array(7L,
@@ -5868,7 +5868,7 @@ test_that("R and C versions of diffLogDensJumpComp give same answer - no age", {
     x <- initialCombinedAccount(account = account,
                                 systemModels = systemModels,
                                 systemWeights = systemWeights,
-                                observationModels = observationModels,
+                                dataModels = data.models,
                                 seriesIndices = seriesIndices,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
@@ -5949,7 +5949,7 @@ test_that("diffLogDensJumpComp works - with age", {
                                dimnames = dimnames(deaths))) + 1L
     datasets <- list(census, register, reg.births, address.change, reg.deaths)
     namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths")
-    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
                               Model(register ~ Poisson(mean ~ 1), series = "population"),
                               Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
@@ -5964,7 +5964,7 @@ test_that("diffLogDensJumpComp works - with age", {
     x <- initialCombinedAccount(account = account,
                                 systemModels = systemModels,
                                 systemWeights = systemWeights,
-                                observationModels = observationModels,
+                                dataModels = data.models,
                                 seriesIndices = seriesIndices,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
@@ -6075,7 +6075,7 @@ test_that("R and C versions of diffLogDensJumpComp give same answer - with age",
                                dimnames = dimnames(deaths))) + 1L
     datasets <- list(census, register, reg.births, address.change, reg.deaths)
     namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths")
-    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
                               Model(register ~ Poisson(mean ~ 1), series = "population"),
                               Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
@@ -6090,17 +6090,18 @@ test_that("R and C versions of diffLogDensJumpComp give same answer - with age",
     x <- initialCombinedAccount(account = account,
                                 systemModels = systemModels,
                                 systemWeights = systemWeights,
-                                observationModels = observationModels,
+                                dataModels = data.models,
                                 seriesIndices = seriesIndices,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
     x@iComp <- 3L
     updated <- FALSE
-    for (seed in seq_len(5 * n.test)) {
+    for (seed in seq_len(10 * n.test)) {
         set.seed(seed)
         x <- updateProposalAccountMoveComp(x)
         if (x@generatedNewProposal@.Data) {
+            updated <- TRUE
             ans.R <- diffLogDensJumpComp(x, useC = FALSE)
             ans.C <- diffLogDensJumpComp(x, useC = FALSE)
             if (test.identity)
@@ -6173,7 +6174,7 @@ test_that("diffLogDensExpComp works", {
                                dimnames = dimnames(deaths))) + 1L
     datasets <- list(census, register, reg.births, address.change, reg.deaths)
     namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths")
-    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
                               Model(register ~ Poisson(mean ~ 1), series = "population"),
                               Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
@@ -6188,7 +6189,7 @@ test_that("diffLogDensExpComp works", {
     x <- initialCombinedAccount(account = account,
                                 systemModels = systemModels,
                                 systemWeights = systemWeights,
-                                observationModels = observationModels,
+                                dataModels = data.models,
                                 seriesIndices = seriesIndices,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
@@ -6307,7 +6308,7 @@ test_that("R and C versions of diffLogDensExpComp give same value", {
                                dimnames = dimnames(deaths))) + 1L
     datasets <- list(census, register, reg.births, address.change, reg.deaths)
     namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths")
-    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
                               Model(register ~ Poisson(mean ~ 1), series = "population"),
                               Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
@@ -6322,7 +6323,7 @@ test_that("R and C versions of diffLogDensExpComp give same value", {
     x <- initialCombinedAccount(account = account,
                                 systemModels = systemModels,
                                 systemWeights = systemWeights,
-                                observationModels = observationModels,
+                                dataModels = data.models,
                                 seriesIndices = seriesIndices,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
@@ -6375,7 +6376,7 @@ test_that("diffLogDensExpComp works with CombinedAccountMovements - Parent-Child
                          Model(births ~ Poisson(mean ~ 1)),
                          Model(deaths ~ Poisson(mean ~ 1)))
     systemWeights <- rep(list(NULL), 3)
-    observationModels <- list(Model(reg.births ~ PoissonBinomial(prob = 0.9), series = "births"),
+    data.models <- list(Model(reg.births ~ PoissonBinomial(prob = 0.9), series = "births"),
                               Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 2L, 0L)
@@ -6390,7 +6391,7 @@ test_that("diffLogDensExpComp works with CombinedAccountMovements - Parent-Child
     x <- initialCombinedAccount(account = account,
                                 systemModels = systemModels,
                                 systemWeights = systemWeights,
-                                observationModels = observationModels,
+                                dataModels = data.models,
                                 seriesIndices = seriesIndices,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
@@ -6469,7 +6470,7 @@ test_that("R and C versions of diffLogDensExpComp give same answer with Combined
                          Model(births ~ Poisson(mean ~ 1)),
                          Model(deaths ~ Poisson(mean ~ 1)))
     systemWeights <- rep(list(NULL), 3)
-    observationModels <- list(Model(reg.births ~ PoissonBinomial(prob = 0.9), series = "births"),
+    data.models <- list(Model(reg.births ~ PoissonBinomial(prob = 0.9), series = "births"),
                               Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 2L, 0L)
@@ -6484,7 +6485,7 @@ test_that("R and C versions of diffLogDensExpComp give same answer with Combined
     x <- initialCombinedAccount(account = account,
                                 systemModels = systemModels,
                                 systemWeights = systemWeights,
-                                observationModels = observationModels,
+                                dataModels = data.models,
                                 seriesIndices = seriesIndices,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
@@ -6576,7 +6577,7 @@ test_that("updateCellMove works", {
                                dimnames = dimnames(deaths))) + 1L
     datasets <- list(census, register, reg.births, address.change, reg.deaths)
     namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths")
-    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
                               Model(register ~ Poisson(mean ~ 1), series = "population"),
                               Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
@@ -6591,7 +6592,7 @@ test_that("updateCellMove works", {
     x <- initialCombinedAccount(account = account,
                                 systemModels = systemModels,
                                 systemWeights = systemWeights,
-                                observationModels = observationModels,
+                                dataModels = data.models,
                                 seriesIndices = seriesIndices,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
@@ -6702,7 +6703,7 @@ test_that("R and C versions of updateCellMove give same answer", {
                                dimnames = dimnames(deaths))) + 1L
     datasets <- list(census, register, reg.births, address.change, reg.deaths)
     namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths")
-    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
                               Model(register ~ Poisson(mean ~ 1), series = "population"),
                               Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
@@ -6717,7 +6718,7 @@ test_that("R and C versions of updateCellMove give same answer", {
     x <- initialCombinedAccount(account = account,
                                 systemModels = systemModels,
                                 systemWeights = systemWeights,
-                                observationModels = observationModels,
+                                dataModels = data.models,
                                 seriesIndices = seriesIndices,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
@@ -6830,7 +6831,7 @@ test_that("updateSubsequentPopnMove works", {
                                dimnames = dimnames(deaths))) + 1L
     datasets <- list(census, register, reg.births, address.change, reg.deaths)
     namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths")
-    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
                               Model(register ~ Poisson(mean ~ 1), series = "population"),
                               Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
@@ -6845,7 +6846,7 @@ test_that("updateSubsequentPopnMove works", {
     x <- initialCombinedAccount(account = account,
                                 systemModels = systemModels,
                                 systemWeights = systemWeights,
-                                observationModels = observationModels,
+                                dataModels = data.models,
                                 seriesIndices = seriesIndices,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
@@ -6959,7 +6960,7 @@ test_that("R and C versions of updateSubsequentPopnMove give same answer", {
                                dimnames = dimnames(deaths))) + 1L
     datasets <- list(census, register, reg.births, address.change, reg.deaths)
     namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths")
-    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
                               Model(register ~ Poisson(mean ~ 1), series = "population"),
                               Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
@@ -6974,7 +6975,7 @@ test_that("R and C versions of updateSubsequentPopnMove give same answer", {
     x <- initialCombinedAccount(account = account,
                                 systemModels = systemModels,
                                 systemWeights = systemWeights,
-                                observationModels = observationModels,
+                                dataModels = data.models,
                                 seriesIndices = seriesIndices,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
@@ -7092,7 +7093,7 @@ test_that("updateSubsequentAccMove works", {
                                dimnames = dimnames(deaths))) + 1L
     datasets <- list(census, register, reg.births, address.change, reg.deaths)
     namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths")
-    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
                               Model(register ~ Poisson(mean ~ 1), series = "population"),
                               Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
@@ -7107,7 +7108,7 @@ test_that("updateSubsequentAccMove works", {
     x <- initialCombinedAccount(account = account,
                                 systemModels = systemModels,
                                 systemWeights = systemWeights,
-                                observationModels = observationModels,
+                                dataModels = data.models,
                                 seriesIndices = seriesIndices,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
@@ -7255,7 +7256,7 @@ test_that("R and C versions of updateSubsequentAccMove give same answer", {
                                dimnames = dimnames(deaths))) + 1L
     datasets <- list(census, register, reg.births, address.change, reg.deaths)
     namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths")
-    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
                               Model(register ~ Poisson(mean ~ 1), series = "population"),
                               Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
@@ -7270,7 +7271,7 @@ test_that("R and C versions of updateSubsequentAccMove give same answer", {
     x <- initialCombinedAccount(account = account,
                                 systemModels = systemModels,
                                 systemWeights = systemWeights,
-                                observationModels = observationModels,
+                                dataModels = data.models,
                                 seriesIndices = seriesIndices,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
@@ -7379,7 +7380,7 @@ test_that("updateSubsequentExpMove works", {
                                dimnames = dimnames(deaths))) + 1L
     datasets <- list(census, register, reg.births, address.change, reg.deaths)
     namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths")
-    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
                               Model(register ~ Poisson(mean ~ 1), series = "population"),
                               Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
@@ -7394,7 +7395,7 @@ test_that("updateSubsequentExpMove works", {
     x <- initialCombinedAccount(account = account,
                                 systemModels = systemModels,
                                 systemWeights = systemWeights,
-                                observationModels = observationModels,
+                                dataModels = data.models,
                                 seriesIndices = seriesIndices,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
@@ -7555,7 +7556,7 @@ test_that("R and C versions of updateSubsequentExpMove give same answer", {
                                dimnames = dimnames(deaths))) + 1L
     datasets <- list(census, register, reg.births, address.change, reg.deaths)
     namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths")
-    observationModels <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
                               Model(register ~ Poisson(mean ~ 1), series = "population"),
                               Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
@@ -7570,7 +7571,7 @@ test_that("R and C versions of updateSubsequentExpMove give same answer", {
     x <- initialCombinedAccount(account = account,
                                 systemModels = systemModels,
                                 systemWeights = systemWeights,
-                                observationModels = observationModels,
+                                dataModels = data.models,
                                 seriesIndices = seriesIndices,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,

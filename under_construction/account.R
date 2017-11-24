@@ -5,7 +5,7 @@
 
 
 
-estimateAccount <- function(account, systemModels, observationModels, datasets,
+estimateAccount <- function(account, systemModels, dataModels, datasets,
                             weights = list(), dominant = c("Female", "Male"),
                             filename = NULL, nBurnin = 1000, nSim = 1000,
                             nChain = 4, nThin = 1,
@@ -21,22 +21,23 @@ estimateAccount <- function(account, systemModels, observationModels, datasets,
     ## align weights to system models
     systemWeights <- checkAndTidySystemWeights(weights,
                                                systemModels = systemModels)
-    ## align observation models to datasets
-    checkObservationModels(observationModels = observationModels,
-                           needsNonDefaultSeriesArg = TRUE)
+    ## align data models to datasets
+    checkDataModels(dataModels = dataModels,
+                    needsNonDefaultSeriesArg = TRUE)
     datasets <- checkAndTidyDatasets(datasets)
     namesDatasets <- names(datasets)
     names(datasets) <- NULL
-    observationModels <- alignObservationModelsToDatasets(observationModels = observationModels,
-                                                          datasets = datasets,
-                                                          namesDatasets = namesDatasets)
-    ## make 'seriesIndices', mapping observations models to account
-    seriesIndices <- makeSeriesIndices(observationModels = observationModels,
+    dataModels <- alignDataModelsToDatasets(dataModels = dataModels,
+                                            datasets = datasets,
+                                            namesDatasets = namesDatasets)
+    ## make 'seriesIndices', mapping data models to account
+    seriesIndices <- makeSeriesIndices(dataModels = dataModels,
                                        account = account)
     ## make transforms from account to datasets
     transforms <- makeTransformsAccountToDatasets(account = account,
                                                   datasets = datasets,
                                                   namesDatasets = namesDatasets)
+    ## mcmc and control arguments
     mcmc.args <- makeMCMCArgs(nBurnin = nBurnin,
                               nSim = nSim,
                               nChain = nChain,
@@ -46,12 +47,14 @@ estimateAccount <- function(account, systemModels, observationModels, datasets,
     else
         checkFilename(filename)
     control.args <- makeControlArgs(call = call,
-                                    parallel = parallel)
+                                    parallel = parallel,
+                                    nUpdateMax = nUpdateMax)
+    ## initial values
     combineds <- replicate(n = mcmc.args$nChain,
                            initialCombinedAccount(account = account,
                                                   systemModels = systemModels,
                                                   systemWeights = weights,
-                                                  observationModels = observationModels,
+                                                  dataModels = dataModels,
                                                   seriesIndices = seriesIndices,
                                                   datasets = datasets,
                                                   namesDatasets = namesDatasets,
@@ -63,16 +66,23 @@ estimateAccount <- function(account, systemModels, observationModels, datasets,
                   mcmc.args,
                   control.args,
                   list(continuing = FALSE))
+    ## estimation
     if (parallel) {
-        cl <- parallel::makeCluster(getOption("cl.cores", default = mcmc.args$nChain))
+        if (is.null(outfile)) ## passing 'outfile' as an argument always causes redirection
+            cl <- parallel::makeCluster(getOption("cl.cores",
+                                                  default = mcmc.args$nChain))
+        else
+            cl <- parallel::makeCluster(getOption("cl.cores",
+                                                  default = mcmc.args$nChain),
+                                        outfile = outfile)
         parallel::clusterSetRNGStream(cl)
         final.combineds <- parallel::clusterMap(cl = cl,
-                                      fun = estimateOneChain,
-                                      tempfile = tempfiles,
-                                      combined = combineds,
-                                      MoreArgs = MoreArgs,
-                                      SIMPLIFY = FALSE,
-                                      USE.NAMES = FALSE)
+                                                fun = estimateOneChain,
+                                                tempfile = tempfiles,
+                                                combined = combineds,
+                                                MoreArgs = MoreArgs,
+                                                SIMPLIFY = FALSE,
+                                                USE.NAMES = FALSE)
         seed <- parallel::clusterCall(cl, function() .Random.seed)
         parallel::stopCluster(cl)
     }
@@ -85,14 +95,16 @@ estimateAccount <- function(account, systemModels, observationModels, datasets,
                                   USE.NAMES = FALSE)
         seed <- list(.Random.seed)
     }
+    ## results object
     control.args$lengthIter <- length(extractValues(final.combineds[[1L]]))
     results <- makeResultsAccount(finalCombineds = final.combineds,
                                   mcmcArgs = mcmc.args,
                                   controlArgs = control.args,
                                   seed = seed)
-    makeResultsFile(filename = control.args$filename,
+    makeResultsFile(filename = filename,
                     results = results,
                     tempfiles = tempfiles)
+    rescaleInFile(filename)
     finalMessage(filename = filename, verbose = verbose)
 }
 
