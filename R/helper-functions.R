@@ -10197,6 +10197,141 @@ makeOutputAccount <- function(account, pos) {
 
 
 
+## CMP ###############################################################
+
+
+## READY_TO_TRANSLATE_FIRST
+## HAS_TESTS
+# The CMP desity function is f(y|theta,nu)= (theta^y/y!)^nu*1/Z(theta,nu), 
+# Z(theta,nu) is the intractable normalising constant
+# So f is split in two parts: Z and q(y|theta,nu)=(theta^y/y!)^nu
+logDensCMPUnnormalised1 <- function(x, gamma, nu, useC = FALSE) {
+    ## 'x'
+    stopifnot(is.integer(x))
+    stopifnot(identical(length(x), 1L))
+    stopifnot(!is.na(x))
+    stopifnot(x >= 0L)
+    ## 'gamma'
+    stopifnot(is.double(gamma))
+    stopifnot(identical(length(gamma), 1L))
+    stopifnot(!is.na(gamma))
+    stopifnot(gamma >= 0L)
+    ## 'nu'
+    stopifnot(is.double(nu))
+    stopifnot(identical(length(nu), 1L))
+    stopifnot(!is.na(nu))
+    stopifnot(nu >= 0L)
+    if (useC) {
+        .Call(logDensCMPUnnormalised1_R, x, gamma, nu)
+    }
+    else {
+        nu * (x * log(gamma) - lgamma(x + 1))
+    }
+}
+
+## READY_TO_TRANSLATE_FIRST
+## HAS_TESTS
+rcmpUnder <- function(mu, nu, maxAttempt, useC = FALSE) {
+    ## 'mu'
+    stopifnot(is.double(mu))
+    stopifnot(identical(length(mu), 1L))
+    stopifnot(!is.na(mu))
+    stopifnot(mu >= 0)
+    ## 'nu'
+    stopifnot(is.double(nu))
+    stopifnot(identical(length(nu), 1L))
+    stopifnot(!is.na(nu))
+    stopifnot(nu > 0)
+    ## 'maxAttempt'
+    stopifnot(is.double(maxAttempt))
+    stopifnot(identical(length(maxAttempt), 1L))
+    stopifnot(!is.na(maxAttempt))
+    stopifnot(maxAttempt >= 1L)
+    if (useC) {
+        .Call(rcmpUnder_R, mu, nu, maxAttempt)
+    }
+    else {
+        fl <- floor(mu)
+        logm <- lgamma(fl + 1)
+        for (i in seq_len(maxAttempt)) {
+            ynew <- rpois(n = 1L, lambda = mu)
+            logy <- lgamma(ynew + 1)
+            log_a <- (nu - 1) * (log(mu) * (ynew - fl) - logy + logm)
+            u <- log(runif(n = 1L))
+            if(u < log_a) 
+                return(ynew)
+        }
+        return(-Inf)
+    }
+}
+
+## READY_TO_TRANSLATE_FIRST
+## HAS_TESTS
+rcmpOver <- function(mu, nu, maxAttempt, useC = FALSE) {
+    ## 'mu'
+    stopifnot(is.double(mu))
+    stopifnot(identical(length(mu), 1L))
+    stopifnot(!is.na(mu))
+    stopifnot(mu >= 0L)
+    ## 'nu'
+    stopifnot(is.double(nu))
+    stopifnot(identical(length(nu), 1L))
+    stopifnot(!is.na(nu))
+    stopifnot(nu >= 0L)
+    ## 'maxAttempt'
+    stopifnot(is.integer(maxAttempt))
+    stopifnot(identical(length(maxAttempt), 1L))
+    stopifnot(!is.na(maxAttempt))
+    stopifnot(maxAttempt >= 1L)
+    if (useC) {
+        .Call(rcmpOver_R, mu, nu, maxAttempt)
+    }
+    else {
+        p <- 2 * nu / (2 * mu * nu + 1 + nu)
+        fl <- floor(mu / ((1 - p)^(1 / nu)))
+        logfl <- lgamma(fl + 1)
+        for (i in seq_len(maxAttempt)) {
+            ynew <- rgeom(n = 1L, prob = p)
+            logy <- lgamma(ynew + 1)
+            log_a <- (ynew - fl) * (nu * log(mu) - log1p(-p)) + nu * (logfl - logy)
+            u <- log(runif(n = 1L))
+            if(u < log_a) 
+                return(ynew)
+        }
+        return(-Inf)
+    }
+}
 
     
 
+## Random generation function for CMP data
+rcmp1 <- function(mu, nu, maxAttempt, useC = FALSE){
+    ## 'mu'
+    stopifnot(is.double(mu))
+    stopifnot(identical(length(mu), 1L))
+    stopifnot(!is.na(mu))
+    stopifnot(mu > 0L)
+    ## 'nu'
+    stopifnot(is.double(nu))
+    stopifnot(identical(length(nu), 1L))
+    stopifnot(!is.na(nu))
+    stopifnot(nu > 0L)
+    ## 'maxAttempt'
+    stopifnot(is.integer(maxAttempt))
+    stopifnot(identical(length(maxAttempt), 1L))
+    stopifnot(!is.na(maxAttempt))
+    stopifnot(maxAttempt >= 1L)
+    if (useC) {
+        .Call(rcmp1_R, mu, nu, maxAttempt)
+    }
+    else {
+        if( nu < 1)
+            rcmpOver(mu = mu,
+                     nu = nu,
+                     maxAttempt = maxAttempt)
+        else
+            rcmpUnder(mu = mu,
+                      nu = nu,
+                      maxAttempt = maxAttempt)
+    }
+}
