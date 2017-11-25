@@ -7150,6 +7150,88 @@ makeResultsCounts <- function(finalCombineds, mcmcArgs, controlArgs, seed) {
             final = final)
 }
 
+## HAS_TESTS
+makeResultsAccount <- function(finalCombineds, mcmcArgs, controlArgs, seed) {
+    combined <- finalCombineds[[1L]]
+    account <- combined@account
+    names.components <- account@namesComponents
+    system.models <- combined@systemModels
+    data.models <- combined@dataModels
+    datasets <- combined@datasets
+    names.datasets <- combined@namesDatasets
+    transforms <- combined@transforms
+    series.indices <- combined@seriesIndices
+    names.series <- c("population", names.components)
+    ## mcmc
+    mcmc <- makeOutputMCMC(mcmcArgs = mcmcArgs,
+                           finalCombineds = finalCombineds)
+    n.sim <- mcmc[["nSim"]]
+    ## account
+    pos <- 1L
+    if (n.sim > 0) {
+        output.account <- makeOutputAccount(account = account,
+                                            pos = pos)
+        pos <- pos + changeInPos(output.account)
+    }
+    else {
+        output.account <- vector(mode = "list", length = length(series))
+        names(output.account) <- names.series
+    }
+    ## system models
+    output.system.models <- vector(mode = "list",
+                                   length = length(system.models))
+    if (n.sim > 0L) {
+        for (i in seq_along(system.models)) {
+            output.system.models[[i]] <- makeOutputModel(model = system.models[[i]],
+                                                         pos = pos,
+                                                         mcmc = mcmc)
+            pos <- pos + changeInPos(output.system.models[[i]])
+        }
+    }
+    names(output.system.models) <- names.series
+    ## data models
+    output.data.models <- vector(mode = "list",
+                                 length = length(data.models))
+    if (n.sim > 0L) {
+        for (i in seq_along(data.models)) {
+            output.data.models[[i]] <- makeOutputModel(model = data.models[[i]],
+                                                       pos = pos,
+                                                       mcmc = mcmc)
+            pos <- pos + changeInPos(output.data.models[[i]])
+        }
+    }
+    names(output.data.models) <- names.datasets
+    ## datasets
+    output.datasets <- vector(mode = "list", length = length(datasets))
+    for (i in seq_along(datasets)) {
+        has.missing <- any(is.na(datasets[[i]]))
+        if (has.missing && (n.sim > 0L)) {
+            index <- series.indices[i] + 1L
+            output.series <- output.account[[index]]
+            output.datasets[[i]] <- SkeletonMissingDataset(object = datasets[[i]],
+                                                           model = data.models[[i]],
+                                                           outputModel = output.data.models[[i]],
+                                                           transformComponent = transforms[[i]],
+                                                           skeletonComponent = output.series)
+        }
+        else
+            output.datasets[[i]] <- datasets[[i]]
+    }
+    names(datasets) <- names.datasets
+    final <- finalCombineds
+    names(final) <- paste("chain", seq_along(final), sep = "")
+    methods::new("ResultsAccount",
+                 account = output.account,
+                 systemModels = output.system.models,
+                 dataModels = output.data.models,
+                 datasets = datasets,
+                 mcmc = mcmc,
+                 control = controlArgs,
+                 seed = seed,
+                 final = final)
+}
+
+
 ## TRANSLATED
 ## HAS_TESTS
 overwriteValuesOnFile <- function(object, skeleton, filename,
@@ -9476,6 +9558,10 @@ alignSystemModelsToAccount <- function(systemModels, account) {
 
 ## HAS_TESTS
 checkAndTidySystemWeights <- function(weights, systemModels) {
+    if (identical(weights, list())) {
+        ans <- vector(mode = "list", length = length(systemModels))
+        return(ans)
+    }
     names.weights <- names(weights)
     checkListNames(names = names.weights,
                    listName = "weights")
@@ -10085,6 +10171,30 @@ makeIteratorCODPCP <- function(dim, iTime, iAge, iTriangle, iMultiple) {
                  increment = increment,
                  finished = finished)
 }
+
+
+makeOutputAccount <- function(account, pos) {
+    population.obj <- account@population
+    components.obj <- account@components
+    names.components <- account@namesComponents
+    first <- pos
+    pos <- first + length(population.obj)
+    population.out <- Skeleton(population.obj,
+                               first = first)
+    components.out <- vector(mode = "list",
+                             length = length(components.obj))
+    for (i in seq_along(components.obj)) {
+        component <- components.obj[[i]]
+        first <- pos
+        pos <- first + length(component)
+        components.out[[i]] <- Skeleton(component,
+                                        first = first)
+    }
+    names(components.out) <- names.components
+    c(list(population = population.out),
+      components.out)
+}
+
 
 
 

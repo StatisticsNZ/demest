@@ -86,6 +86,8 @@ setMethod("rescalePriors",
                                   lengthIter = lengthIter)
           })
 
+
+
 ## HAS_TESTS
 setMethod("rescalePriors",
           signature(results = "ResultsCountsEst"),
@@ -124,6 +126,64 @@ setMethod("rescalePriors",
                   }
               }
           })
+
+## NO_TESTS
+setMethod("rescalePriors",
+          signature(results = "ResultsAccount"),
+          function(results, adjustments, filename, nIteration, lengthIter) {
+              combined <- results@final[[1L]]
+              system.models.obj <- combined@systemModels
+              system.models.out <- results@systemModels
+              data.models.obj <- combined@dataModels
+              data.models.out <- results@dataModels
+              names.components <- combined@account@namesComponents
+              names.series <- c("population", names.components)
+              names.datasets <- combined@namesDatasets
+              for (i in seq_along(system.models.obj)) {
+                  model.obj <- system.models.obj[[i]]
+                  model.out <- system.models.out[[i]]
+                  if (methods::is(model.obj, "Varying")) {
+                      priors <- model.obj@priorsBetas
+                      margins <- model.obj@margins
+                      skeletons.betas <- model.out$prior[seq_along(priors)]
+                      skeletons.priors <- model.out$hyper
+                      name.series <- names.series[i]
+                      prefix.adjustments <- paste("systemModels", name.series, sep = ".")
+                      rescalePriorsHelper(priors = priors,
+                                          margins = margins,
+                                          skeletonsBetas = skeletons.betas,
+                                          skeletonsPriors = skeletons.priors,
+                                          adjustments = adjustments,
+                                          prefixAdjustments = prefix.adjustments,
+                                          filename = filename,
+                                          nIteration = nIteration,
+                                          lengthIter = lengthIter)
+                  }
+              }
+              for (i in seq_along(data.models.obj)) {
+                  model.obj <- data.models.obj[[i]]
+                  model.out <- data.models.out[[i]]
+                  if (methods::is(model.obj, "Varying")) {
+                      priors <- model.obj@priorsBetas
+                      margins <- model.obj@margins
+                      skeletons.betas <- model.out$prior[seq_along(priors)]
+                      skeletons.priors <- model.out$hyper
+                      name.dataset <- names.datasets[i]
+                      prefix.adjustments <- paste("dataModels", name.dataset, sep = ".")
+                      rescalePriorsHelper(priors = priors,
+                                          margins = margins,
+                                          skeletonsBetas = skeletons.betas,
+                                          skeletonsPriors = skeletons.priors,
+                                          adjustments = adjustments,
+                                          prefixAdjustments = prefix.adjustments,
+                                          filename = filename,
+                                          nIteration = nIteration,
+                                          lengthIter = lengthIter)
+                  }
+              }
+          })
+
+
 
 
 

@@ -1618,7 +1618,7 @@ setMethod("updateModelNotUseExp",
               ## y
               stopifnot(is.integer(y))
               stopifnot(identical(length(y), length(object@theta)))
-              stopifnot(all(y[!is.na(y)] >= 0))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
               if (useC) {
                   if (useSpecific)
                       .Call(updateModelNotUseExp_PoissonVaryingNotUseExp_R, object, y)
@@ -1695,7 +1695,7 @@ setMethod("updateModelNotUseExp",
               ## y
               stopifnot(is.integer(y))
               stopifnot(identical(length(y), length(object@theta)))
-              stopifnot(all(y[!is.na(y)] >= 0))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
               if (useC) {
                   if (useSpecific)
                       .Call(updateModelNotUseExp_PoissonVaryingNotUseExpAgCertain_R, object, y)
@@ -1824,7 +1824,7 @@ setMethod("updateModelNotUseExp",
               ## y
               stopifnot(is.integer(y))
               stopifnot(identical(length(y), length(object@theta)))
-              stopifnot(all(y[!is.na(y)] >= 0))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
               if (useC) {
                   if (useSpecific)
                       .Call(updateModelNotUseExp_PoissonVaryingNotUseExpAgNormal_R, object, y)
@@ -1850,7 +1850,7 @@ setMethod("updateModelNotUseExp",
               ## y
               stopifnot(is.integer(y))
               stopifnot(identical(length(y), length(object@theta)))
-              stopifnot(all(y[!is.na(y)] >= 0))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
               if (useC) {
                   if (useSpecific)
                       .Call(updateModelNotUseExp_PoissonVaryingNotUseExpAgFun_R, object, y)
@@ -1875,7 +1875,7 @@ setMethod("updateModelNotUseExp",
               ## y
               stopifnot(is.integer(y))
               stopifnot(identical(length(y), length(object@theta)))
-              stopifnot(all(y[!is.na(y)] >= 0))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
               if (useC) {
                   if (useSpecific)
                       .Call(updateModelNotUseExp_PoissonVaryingNotUseExpAgPoisson_R, object, y)
@@ -1927,14 +1927,14 @@ setMethod("updateModelUseExp",
               ## y
               stopifnot(identical(length(y), length(object@theta)))
               stopifnot(is.integer(y))
-              stopifnot(all(y[!is.na(y)] >= 0))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
               ## exposure
               stopifnot(is.integer(exposure))
               stopifnot(all(exposure[!is.na(exposure)] >= 0L))
               ## y and exposure
               stopifnot(identical(length(exposure), length(y)))
               stopifnot(all(is.na(exposure) <= is.na(y)))
-              stopifnot(all(y[!is.na(y)] <= exposure[!is.na(y)]))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] <= exposure[!is.na(y)]))
               if (useC) {
                   if (useSpecific)
                       .Call(updateModelUseExp_BinomialVarying_R, object, y, exposure)
@@ -1962,14 +1962,14 @@ setMethod("updateModelUseExp",
               ## y
               stopifnot(identical(length(y), length(object@theta)))
               stopifnot(is.integer(y))
-              stopifnot(all(y[!is.na(y)] >= 0))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
               ## exposure
               stopifnot(is.double(exposure))
               stopifnot(all(exposure[!is.na(exposure)] >= 0))
               ## y and exposure
               stopifnot(identical(length(exposure), length(y)))
               stopifnot(all(is.na(exposure) <= is.na(y)))
-              stopifnot(all(y[!is.na(y)][exposure[!is.na(y)] == 0] == 0))
+              stopifnot(all(y@.Data[!is.na(y@.Data)][exposure[!is.na(y)] == 0] == 0))
               if (useC) {
                   if (useSpecific)
                       .Call(updateModelUseExp_PoissonVarying_R, object, y, exposure)
@@ -1993,7 +1993,7 @@ setMethod("updateModelUseExp",
               stopifnot(methods::validObject(object))
               ## y
               stopifnot(is.integer(y))
-              stopifnot(all(y[!is.na(y)] >= 0))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
               ## exposure
               stopifnot(is.integer(exposure))
               stopifnot(all(exposure[!is.na(exposure)] >= 0L))
@@ -2022,7 +2022,7 @@ setMethod("updateModelUseExp",
               ## y
               stopifnot(identical(length(y), length(object@theta)))
               stopifnot(is.integer(y))
-              stopifnot(all(y[!is.na(y)] >= 0))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
               ## exposure
               stopifnot(is.integer(exposure))
               stopifnot(!any(is.na(exposure)))
@@ -2030,7 +2030,7 @@ setMethod("updateModelUseExp",
               ## y and exposure
               stopifnot(identical(length(exposure), length(y)))
               stopifnot(all(is.na(exposure) <= is.na(y)))
-              stopifnot(all(y[!is.na(y)] <= exposure[is.na(y)]))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] <= exposure[is.na(y)]))
               if (useC) {
                   if (useSpecific)
                       .Call(updateModelUseExp_BinomialVaryingAgCertain_R, object, y, exposure)
@@ -2056,7 +2056,7 @@ setMethod("updateModelUseExp",
               ## y
               stopifnot(identical(length(y), length(object@theta)))
               stopifnot(is.integer(y))
-              stopifnot(all(y[!is.na(y)] >= 0))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
               ## exposure
               stopifnot(is.double(exposure))
               stopifnot(!any(is.na(exposure)))
@@ -2088,7 +2088,7 @@ setMethod("updateModelUseExp",
               ## y
               stopifnot(identical(length(y), length(object@theta)))
               stopifnot(is.integer(y))
-              stopifnot(all(y[!is.na(y)] >= 0L))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0L))
               ## exposure
               stopifnot(is.integer(exposure))
               stopifnot(!any(is.na(exposure)))
@@ -2096,7 +2096,7 @@ setMethod("updateModelUseExp",
               ## y and exposure
               stopifnot(identical(length(exposure), length(y)))
               stopifnot(all(is.na(exposure) <= is.na(y)))
-              stopifnot(all(y[!is.na(y)] <= exposure[!is.na(y)]))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] <= exposure[!is.na(y)]))
               if (useC) {
                   if (useSpecific)
                       .Call(updateModelUseExp_BinomialVaryingAgNormal_R, object, y, exposure)
@@ -2123,7 +2123,7 @@ setMethod("updateModelUseExp",
               ## y
               stopifnot(identical(length(y), length(object@theta)))
               stopifnot(is.integer(y))
-              stopifnot(all(y[!is.na(y)] >= 0L))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0L))
               ## exposure
               stopifnot(is.integer(exposure))
               stopifnot(!any(is.na(exposure)))
@@ -2131,7 +2131,7 @@ setMethod("updateModelUseExp",
               ## y and exposure
               stopifnot(identical(length(exposure), length(y)))
               stopifnot(all(is.na(exposure) <= is.na(y)))
-              stopifnot(all(y[!is.na(y)] <= exposure[!is.na(y)]))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] <= exposure[!is.na(y)]))
               if (useC) {
                   if (useSpecific)
                       .Call(updateModelUseExp_BinomialVaryingAgFun_R, object, y, exposure)
@@ -2157,7 +2157,7 @@ setMethod("updateModelUseExp",
               ## y
               stopifnot(identical(length(y), length(object@theta)))
               stopifnot(is.integer(y))
-              stopifnot(all(y[!is.na(y)] >= 0L))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0L))
               ## exposure
               stopifnot(is.double(exposure))
               stopifnot(!any(is.na(exposure)))
@@ -2190,7 +2190,7 @@ setMethod("updateModelUseExp",
               ## y
               stopifnot(identical(length(y), length(object@theta)))
               stopifnot(is.integer(y))
-              stopifnot(all(y[!is.na(y)] >= 0L))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0L))
               ## exposure
               stopifnot(is.double(exposure))
               stopifnot(!any(is.na(exposure)))
@@ -2222,7 +2222,7 @@ setMethod("updateModelUseExp",
               ## y
               stopifnot(identical(length(y), length(object@theta)))
               stopifnot(is.integer(y))
-              stopifnot(all(y[!is.na(y)] >= 0L))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0L))
               ## exposure
               stopifnot(is.double(exposure))
               stopifnot(!any(is.na(exposure)))
@@ -2255,7 +2255,7 @@ setMethod("updateModelUseExp",
               ## y
               stopifnot(identical(length(y), length(object@theta)))
               stopifnot(is.integer(y))
-              stopifnot(all(y[!is.na(y)] >= 0L))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0L))
               ## exposure
               stopifnot(is.double(exposure))
               stopifnot(!any(is.na(exposure)))

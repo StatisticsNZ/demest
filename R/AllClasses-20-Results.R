@@ -255,10 +255,10 @@ setClass("ResultsCountsEst",
 ## HAS_TESTS
 setClass("ResultsCountsExposureEst",
          slots = c(model = "list",
-                        y = "Skeleton",
-                        exposure = "Counts",
-                        dataModels = "list",
-                        datasets = "list"),
+                   y = "Skeleton",
+                   exposure = "Counts",
+                   dataModels = "list",
+                   datasets = "list"),
          contains = "ResultsCountsEst",
          validity = function(object) {
              y <- object@y
@@ -270,10 +270,27 @@ setClass("ResultsCountsExposureEst",
              TRUE
          })
 
-
+## NO_TESTS
 setClass("ResultsAccount",
-         slots = c(counts = "list",
-                        system = "list",
-                        dataModels = "list",
-                        datasets = "list"))
+         slots = c(account = "list",
+                   systemModels = "list",
+                   dataModels = "list",
+                   datasets = "list"),
+         contains = "ResultsEst",
+         validity = function(object) {
+             account <- object@account
+             systemModels <- object@systemModels
+             dataModels <- object@dataModels
+             datasets <- object@datasets
+             ## 'account' and 'systemModels' have same length
+             if (!identical(length(account), length(systemModels)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "account", "systemModels"))
+             ## 'dataModels' and 'datasets' have same length
+             if (!identical(length(account), length(systemModels)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "dataModels", "datasets"))
+             TRUE
+         })
+         
 
