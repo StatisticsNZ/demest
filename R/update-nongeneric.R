@@ -1956,13 +1956,13 @@ updateTheta_BinomialVarying <- function(object, y, exposure, useC = FALSE) {
     stopifnot(methods::is(y, "Counts"))
     stopifnot(identical(length(y), length(object@theta)))
     stopifnot(is.integer(y))
-    stopifnot(all(y[!is.na(y)] >= 0))
+    stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
     ## exposure
     stopifnot(identical(length(exposure), length(y)))
     stopifnot(is.integer(exposure))
     ## y and exposure
     stopifnot(all(is.na(exposure) <= is.na(y)))
-    stopifnot(all(exposure[!is.na(y)] >= y[!is.na(y)]))
+    stopifnot(all(exposure[!is.na(y)] >= y@.Data[!is.na(y@.Data)]))
     if (useC) {
         .Call(updateTheta_BinomialVarying_R, object, y, exposure)
     }
@@ -2049,13 +2049,13 @@ updateTheta_BinomialVaryingAgCertain <- function(object, y, exposure, useC = FAL
     stopifnot(methods::is(y, "Counts"))
     stopifnot(identical(length(y), length(object@theta)))
     stopifnot(is.integer(y))
-    stopifnot(all(y[!is.na(y)] >= 0))
+    stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
     ## exposure
     stopifnot(is.integer(exposure))
     ## y and exposure
     stopifnot(identical(length(exposure), length(y)))
     stopifnot(all(is.na(exposure) <= is.na(y)))
-    stopifnot(all(exposure[!is.na(y)] >= y[!is.na(y)]))
+    stopifnot(all(exposure[!is.na(y)] >= y@.Data[!is.na(y@.Data)]))
     if (useC) {
         .Call(updateTheta_BinomialVaryingAgCertain_R, object, y, exposure)
     }
@@ -2243,13 +2243,13 @@ updateThetaAndValueAgNormal_Binomial <- function(object, y, exposure, useC = FAL
     stopifnot(methods::is(y, "Counts"))
     stopifnot(is.integer(y))
     stopifnot(identical(length(y), length(object@theta)))
-    stopifnot(all(y[!is.na(y)] >= 0))
+    stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
     ## exposure
     stopifnot(is.integer(exposure))
     stopifnot(identical(length(exposure), length(y)))
     ## y and exposure
     stopifnot(all(is.na(exposure) <= is.na(y)))
-    stopifnot(all(exposure[!is.na(y)] >= y[!is.na(y)]))
+    stopifnot(all(exposure[!is.na(y)] >= y@.Data[!is.na(y@.Data)]))
     if (useC) {
         .Call(updateThetaAndValueAgNormal_Binomial_R, object, y, exposure)
     }
@@ -2373,14 +2373,14 @@ updateThetaAndValueAgFun_Binomial <- function(object, y, exposure, useC = FALSE)
     stopifnot(methods::is(y, "Counts"))
     stopifnot(is.integer(y))
     stopifnot(identical(length(y), length(object@theta)))
-    stopifnot(all(y[!is.na(y)] >= 0))
+    stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
     ## exposure
     stopifnot(is.integer(exposure))
-    stopifnot(all(exposure[!is.na(exposure)] >= 0))
+    stopifnot(all(exposure@.Data[!is.na(exposure@.Data)] >= 0))
     ## y and exposure
     stopifnot(identical(length(exposure), length(y)))
     stopifnot(all(is.na(exposure) <= is.na(y)))
-    stopifnot(all(y[!is.na(y)] <= exposure[!is.na(y)]))
+    stopifnot(all(y@.Data[!is.na(y@.Data)] <= exposure[!is.na(y)]))
     if (useC) {
         .Call(updateThetaAndValueAgFun_Binomial_R, object, y, exposure)
     }
@@ -2971,7 +2971,7 @@ updateTheta_PoissonVaryingNotUseExp <- function(object, y, useC = FALSE) {
     ## y
     stopifnot(identical(length(y), length(object@theta)))
     stopifnot(is.integer(y))
-    stopifnot(all(y[!is.na(y)] >= 0L))
+    stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0L))
     if (useC) {
         .Call(updateTheta_PoissonVaryingNotUseExp_R, object, y)
     }
@@ -3087,14 +3087,14 @@ updateTheta_PoissonVaryingUseExp <- function(object, y, exposure, useC = FALSE) 
     ## y
     stopifnot(identical(length(y), length(object@theta)))
     stopifnot(is.integer(y))
-    stopifnot(all(y[!is.na(y)] >= 0L))
+    stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0L))
     ## exposure
     stopifnot(is.double(exposure))
-    stopifnot(all(exposure[!is.na(exposure)] >= 0))
+    stopifnot(all(exposure@.Data[!is.na(exposure@.Data)] >= 0))
     ## y and exposure
     stopifnot(identical(length(exposure), length(y)))
     stopifnot(all(is.na(exposure) <= is.na(y)))
-    stopifnot(all(y[!is.na(y)][exposure[!is.na(y)] == 0] == 0L))
+    stopifnot(all(y@.Data[!is.na(y@.Data)][exposure[!is.na(y)] == 0] == 0L))
     if (methods::is(y, "HasSubtotals")) {
         for (i in seq_along(exposure))
             if (is.na(exposure[i]) && (dembase::getIAfter(i,
@@ -3222,7 +3222,7 @@ updateTheta_PoissonVaryingNotUseExpAgCertain <- function(object, y, useC = FALSE
     ## y
     stopifnot(is.integer(y))
     stopifnot(identical(length(y), length(object@theta)))
-    stopifnot(all(y[!is.na(y)] >= 0L))
+    stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0L))
     if (useC) {
         .Call(updateTheta_PoissonVaryingNotUseExpAgCertain_R, object, y)
     }
@@ -3395,11 +3395,11 @@ updateTheta_PoissonVaryingUseExpAgCertain <- function(object, y, exposure, useC 
     ## y
     stopifnot(is.integer(y))
     stopifnot(identical(length(y), length(object@theta)))
-    stopifnot(all(y[!is.na(y)] >= 0L))
+    stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0L))
     ## exposure
     stopifnot(is.double(exposure))
     stopifnot(identical(length(exposure), length(y)))
-    stopifnot(all(exposure[!is.na(exposure)] >= 0))
+    stopifnot(all(exposure@.Data[!is.na(exposure@.Data)] >= 0))
     ## y and exposure
     stopifnot(all(is.na(exposure) <= is.na(y)))
     if (useC) {
@@ -3579,7 +3579,7 @@ updateThetaAndValueAgNormal_PoissonNotUseExp <- function(object, y, useC = FALSE
     ## y
     stopifnot(is.integer(y))
     stopifnot(identical(length(y), length(object@theta)))
-    stopifnot(all(y[!is.na(y)] >= 0))
+    stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
     if (useC) {
         .Call(updateThetaAndValueAgNormal_PoissonNotUseExp_R, object, y)
     }
@@ -3696,7 +3696,7 @@ updateThetaAndValueAgPoisson_PoissonNotUseExp <- function(object, y, useC = FALS
     ## y
     stopifnot(is.integer(y))
     stopifnot(identical(length(y), length(object@theta)))
-    stopifnot(all(y[!is.na(y)] >= 0))
+    stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
     if (useC) {
         .Call(updateThetaAndValueAgPoisson_PoissonNotUseExp_R, object, y)
     }
@@ -3808,7 +3808,7 @@ updateThetaAndValueAgFun_PoissonNotUseExp <- function(object, y, useC = FALSE) {
     ## y
     stopifnot(is.integer(y))
     stopifnot(identical(length(y), length(object@theta)))
-    stopifnot(all(y[!is.na(y)] >= 0))
+    stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
     if (useC) {
         .Call(updateThetaAndValueAgFun_PoissonNotUseExp_R, object, y)
     }
@@ -3927,10 +3927,10 @@ updateThetaAndValueAgNormal_PoissonUseExp <- function(object, y, exposure, useC 
     ## y
     stopifnot(is.integer(y))
     stopifnot(identical(length(y), length(object@theta)))
-    stopifnot(all(y[!is.na(y)] >= 0))
+    stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
     ## exposure
     stopifnot(is.double(exposure))
-    stopifnot(all(exposure[!is.na(exposure)] >= 0))
+    stopifnot(all(exposure@.Data[!is.na(exposure@.Data)] >= 0))
     ## y and exposure
     stopifnot(identical(length(exposure), length(y)))
     stopifnot(all(is.na(exposure) <= is.na(y)))
@@ -4051,10 +4051,10 @@ updateThetaAndValueAgPoisson_PoissonUseExp <- function(object, y, exposure, useC
     ## y
     stopifnot(is.integer(y))
     stopifnot(identical(length(y), length(object@theta)))
-    stopifnot(all(y[!is.na(y)] >= 0))
+    stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
     ## exposure
     stopifnot(is.double(exposure))
-    stopifnot(all(exposure[!is.na(exposure)] >= 0))
+    stopifnot(all(exposure@.Data[!is.na(exposure@.Data)] >= 0))
     ## y and exposure
     stopifnot(identical(length(exposure), length(y)))
     stopifnot(all(is.na(exposure) <= is.na(y)))
@@ -4170,10 +4170,10 @@ updateThetaAndValueAgFun_PoissonUseExp <- function(object, y, exposure, useC = F
     ## y
     stopifnot(is.integer(y))
     stopifnot(identical(length(y), length(object@theta)))
-    stopifnot(all(y[!is.na(y)] >= 0))
+    stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
     ## exposure
     stopifnot(is.double(exposure))
-    stopifnot(all(exposure[!is.na(exposure)] >= 0))
+    stopifnot(all(exposure@.Data[!is.na(exposure@.Data)] >= 0))
     ## y and exposure
     stopifnot(identical(length(exposure), length(y)))
     stopifnot(all(is.na(exposure) <= is.na(y)))
@@ -4297,10 +4297,10 @@ updateThetaAndValueAgLife_PoissonUseExp <- function(object, y, exposure, useC = 
     ## y
     stopifnot(is.integer(y))
     stopifnot(identical(length(y), length(object@theta)))
-    stopifnot(all(y[!is.na(y)] >= 0))
+    stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
     ## exposure
     stopifnot(is.double(exposure))
-    stopifnot(all(exposure[!is.na(exposure)] >= 0))
+    stopifnot(all(exposure@.Data[!is.na(exposure@.Data)] >= 0))
     ## y and exposure
     stopifnot(identical(length(exposure), length(y)))
     stopifnot(all(is.na(exposure) <= is.na(y)))

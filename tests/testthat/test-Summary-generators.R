@@ -136,7 +136,7 @@ test_that("summary works with object of class ResultsCountsEst", {
                         metropolis = makeMetropolis(object, filename),
                         model = summary(object@final[[1]]@model),
                         y = summary(object@y),
-                        datamodels = list(
+                        dataModels = list(
                             summary(object@final[[1]]@dataModels[[1]]),
                             summary(object@final[[1]]@dataModels[[2]]),
                             summary(object@final[[1]]@dataModels[[3]])),

@@ -7150,6 +7150,88 @@ makeResultsCounts <- function(finalCombineds, mcmcArgs, controlArgs, seed) {
             final = final)
 }
 
+## HAS_TESTS
+makeResultsAccount <- function(finalCombineds, mcmcArgs, controlArgs, seed) {
+    combined <- finalCombineds[[1L]]
+    account <- combined@account
+    names.components <- account@namesComponents
+    system.models <- combined@systemModels
+    data.models <- combined@dataModels
+    datasets <- combined@datasets
+    names.datasets <- combined@namesDatasets
+    transforms <- combined@transforms
+    series.indices <- combined@seriesIndices
+    names.series <- c("population", names.components)
+    ## mcmc
+    mcmc <- makeOutputMCMC(mcmcArgs = mcmcArgs,
+                           finalCombineds = finalCombineds)
+    n.sim <- mcmc[["nSim"]]
+    ## account
+    pos <- 1L
+    if (n.sim > 0) {
+        output.account <- makeOutputAccount(account = account,
+                                            pos = pos)
+        pos <- pos + changeInPos(output.account)
+    }
+    else {
+        output.account <- vector(mode = "list", length = length(series))
+        names(output.account) <- names.series
+    }
+    ## system models
+    output.system.models <- vector(mode = "list",
+                                   length = length(system.models))
+    if (n.sim > 0L) {
+        for (i in seq_along(system.models)) {
+            output.system.models[[i]] <- makeOutputModel(model = system.models[[i]],
+                                                         pos = pos,
+                                                         mcmc = mcmc)
+            pos <- pos + changeInPos(output.system.models[[i]])
+        }
+    }
+    names(output.system.models) <- names.series
+    ## data models
+    output.data.models <- vector(mode = "list",
+                                 length = length(data.models))
+    if (n.sim > 0L) {
+        for (i in seq_along(data.models)) {
+            output.data.models[[i]] <- makeOutputModel(model = data.models[[i]],
+                                                       pos = pos,
+                                                       mcmc = mcmc)
+            pos <- pos + changeInPos(output.data.models[[i]])
+        }
+    }
+    names(output.data.models) <- names.datasets
+    ## datasets
+    output.datasets <- vector(mode = "list", length = length(datasets))
+    for (i in seq_along(datasets)) {
+        has.missing <- any(is.na(datasets[[i]]))
+        if (has.missing && (n.sim > 0L)) {
+            index <- series.indices[i] + 1L
+            output.series <- output.account[[index]]
+            output.datasets[[i]] <- SkeletonMissingDataset(object = datasets[[i]],
+                                                           model = data.models[[i]],
+                                                           outputModel = output.data.models[[i]],
+                                                           transformComponent = transforms[[i]],
+                                                           skeletonComponent = output.series)
+        }
+        else
+            output.datasets[[i]] <- datasets[[i]]
+    }
+    names(datasets) <- names.datasets
+    final <- finalCombineds
+    names(final) <- paste("chain", seq_along(final), sep = "")
+    methods::new("ResultsAccount",
+                 account = output.account,
+                 systemModels = output.system.models,
+                 dataModels = output.data.models,
+                 datasets = datasets,
+                 mcmc = mcmc,
+                 control = controlArgs,
+                 seed = seed,
+                 final = final)
+}
+
+
 ## TRANSLATED
 ## HAS_TESTS
 overwriteValuesOnFile <- function(object, skeleton, filename,
@@ -9476,6 +9558,10 @@ alignSystemModelsToAccount <- function(systemModels, account) {
 
 ## HAS_TESTS
 checkAndTidySystemWeights <- function(weights, systemModels) {
+    if (identical(weights, list())) {
+        ans <- vector(mode = "list", length = length(systemModels))
+        return(ans)
+    }
     names.weights <- names(weights)
     checkListNames(names = names.weights,
                    listName = "weights")
@@ -9663,7 +9749,7 @@ chooseICellPopn <- function(description, useC = FALSE) {
     }
 }
 
-## TRANSLATED - see note about line at end first d-loop - JAH
+## TRANSLATED
 ## HAS_TESTS
 ## This function is almost identical to 'chooseICellOutInPool', but
 ## it seems clearest to keep them separate, even at the cost
@@ -9692,8 +9778,6 @@ chooseICellSubAddNet <- function(description, useC = FALSE) {
             if (i.between.add == n.between - 1L) # just in case
                 i.between.add <- n.between - 2L
             if (i.between.add >= i.between.sub)
-                ##  JAH I think the line below was incorrect  - replaced below 
-                ## i.between.add <- i.between.sub + 1L
                 i.between.add <- i.between.add + 1L
             i.sub <- i.sub + i.between.sub * step.between
             i.add <- i.add + i.between.add * step.between
@@ -10089,6 +10173,165 @@ makeIteratorCODPCP <- function(dim, iTime, iAge, iTriangle, iMultiple) {
 }
 
 
+makeOutputAccount <- function(account, pos) {
+    population.obj <- account@population
+    components.obj <- account@components
+    names.components <- account@namesComponents
+    first <- pos
+    pos <- first + length(population.obj)
+    population.out <- Skeleton(population.obj,
+                               first = first)
+    components.out <- vector(mode = "list",
+                             length = length(components.obj))
+    for (i in seq_along(components.obj)) {
+        component <- components.obj[[i]]
+        first <- pos
+        pos <- first + length(component)
+        components.out[[i]] <- Skeleton(component,
+                                        first = first)
+    }
+    names(components.out) <- names.components
+    c(list(population = population.out),
+      components.out)
+}
 
-    
 
+
+## CMP ###############################################################
+
+
+## READY_TO_TRANSLATE_FIRST
+## HAS_TESTS
+# The CMP desity function is f(y|theta,nu)= (theta^y/y!)^nu*1/Z(theta,nu), 
+# Z(theta,nu) is the intractable normalising constant
+# So f is split in two parts: Z and q(y|theta,nu)=(theta^y/y!)^nu
+logDensCMPUnnormalised1 <- function(x, gamma, nu, useC = FALSE) {
+    ## 'x'
+    stopifnot(is.integer(x))
+    stopifnot(identical(length(x), 1L))
+    stopifnot(!is.na(x))
+    stopifnot(x >= 0L)
+    ## 'gamma'
+    stopifnot(is.double(gamma))
+    stopifnot(identical(length(gamma), 1L))
+    stopifnot(!is.na(gamma))
+    stopifnot(gamma >= 0L)
+    ## 'nu'
+    stopifnot(is.double(nu))
+    stopifnot(identical(length(nu), 1L))
+    stopifnot(!is.na(nu))
+    stopifnot(nu >= 0L)
+    if (useC) {
+        .Call(logDensCMPUnnormalised1_R, x, gamma, nu)
+    }
+    else {
+        nu * (x * log(gamma) - lgamma(x + 1))
+    }
+}
+
+## READY_TO_TRANSLATE_FIRST
+## HAS_TESTS
+rcmpUnder <- function(mu, nu, maxAttempt, useC = FALSE) {
+    ## 'mu'
+    stopifnot(is.double(mu))
+    stopifnot(identical(length(mu), 1L))
+    stopifnot(!is.na(mu))
+    stopifnot(mu >= 0)
+    ## 'nu'
+    stopifnot(is.double(nu))
+    stopifnot(identical(length(nu), 1L))
+    stopifnot(!is.na(nu))
+    stopifnot(nu > 0)
+    ## 'maxAttempt'
+    stopifnot(is.integer(maxAttempt))
+    stopifnot(identical(length(maxAttempt), 1L))
+    stopifnot(!is.na(maxAttempt))
+    stopifnot(maxAttempt >= 1L)
+    if (useC) {
+        .Call(rcmpUnder_R, mu, nu, maxAttempt)
+    }
+    else {
+        fl <- floor(mu)
+        logm <- lgamma(fl + 1)
+        for (i in seq_len(maxAttempt)) {
+            ynew <- rpois(n = 1L, lambda = mu)
+            logy <- lgamma(ynew + 1)
+            log_a <- (nu - 1) * (log(mu) * (ynew - fl) - logy + logm)
+            u <- log(runif(n = 1L))
+            if(u < log_a) 
+                return(ynew)
+        }
+        return(-Inf)
+    }
+}
+
+## READY_TO_TRANSLATE_FIRST
+## HAS_TESTS
+rcmpOver <- function(mu, nu, maxAttempt, useC = FALSE) {
+    ## 'mu'
+    stopifnot(is.double(mu))
+    stopifnot(identical(length(mu), 1L))
+    stopifnot(!is.na(mu))
+    stopifnot(mu >= 0L)
+    ## 'nu'
+    stopifnot(is.double(nu))
+    stopifnot(identical(length(nu), 1L))
+    stopifnot(!is.na(nu))
+    stopifnot(nu >= 0L)
+    ## 'maxAttempt'
+    stopifnot(is.integer(maxAttempt))
+    stopifnot(identical(length(maxAttempt), 1L))
+    stopifnot(!is.na(maxAttempt))
+    stopifnot(maxAttempt >= 1L)
+    if (useC) {
+        .Call(rcmpOver_R, mu, nu, maxAttempt)
+    }
+    else {
+        p <- 2 * nu / (2 * mu * nu + 1 + nu)
+        fl <- floor(mu / ((1 - p)^(1 / nu)))
+        logfl <- lgamma(fl + 1)
+        for (i in seq_len(maxAttempt)) {
+            ynew <- rgeom(n = 1L, prob = p)
+            logy <- lgamma(ynew + 1)
+            log_a <- (ynew - fl) * (nu * log(mu) - log1p(-p)) + nu * (logfl - logy)
+            u <- log(runif(n = 1L))
+            if(u < log_a) 
+                return(ynew)
+        }
+        return(-Inf)
+    }
+}
+
+## READY_TO_TRANSLATE_FIRST
+## HAS_TESTS
+## Random generation function for CMP data
+rcmp1 <- function(mu, nu, maxAttempt, useC = FALSE){
+    ## 'mu'
+    stopifnot(is.double(mu))
+    stopifnot(identical(length(mu), 1L))
+    stopifnot(!is.na(mu))
+    stopifnot(mu > 0L)
+    ## 'nu'
+    stopifnot(is.double(nu))
+    stopifnot(identical(length(nu), 1L))
+    stopifnot(!is.na(nu))
+    stopifnot(nu > 0L)
+    ## 'maxAttempt'
+    stopifnot(is.integer(maxAttempt))
+    stopifnot(identical(length(maxAttempt), 1L))
+    stopifnot(!is.na(maxAttempt))
+    stopifnot(maxAttempt >= 1L)
+    if (useC) {
+        .Call(rcmp1_R, mu, nu, maxAttempt)
+    }
+    else {
+        if( nu < 1)
+            rcmpOver(mu = mu,
+                     nu = nu,
+                     maxAttempt = maxAttempt)
+        else
+            rcmpUnder(mu = mu,
+                      nu = nu,
+                      maxAttempt = maxAttempt)
+    }
+}

@@ -118,6 +118,10 @@ setClass("AMoveMixin",
          slots = c(AMove = "Scale"),
          contains = "VIRTUAL")
 
+setClass("ASDLogNuCMPMixin",
+         slots = c(ASDLogNuCMP = "Scale"),
+         contains = "VIRTUAL")
+
 setClass("ASeasonMixin",
          slots = c(ASeason = "Scale"),
          contains = "VIRTUAL")
@@ -1019,6 +1023,16 @@ setClass("MeanDelta0Mixin",
          prototype = prototype(meanDelta0 = new("Parameter", 0)),
          contains = "VIRTUAL")
 
+setClass("MeanMeanLogNuCMPMixin",
+         slots = c(meanMeanLogNuCMP = "Parameter"),
+         prototype = prototype(meanMeanLogNuCMP = new("Parameter", 0)),
+         contains = "VIRTUAL")
+
+setClass("MeanLogNuCMPMixin",
+         slots = c(meanLogNuCMP = "Parameter"),
+         prototype = prototype(meanLogNuCMP = new("Parameter", 0)),
+         contains = "VIRTUAL")
+
 setClass("MetadataMixin",
          slots = c(metadata = "MetaData"),
          contains = "VIRTUAL")
@@ -1140,6 +1154,19 @@ setClass("NuAlphaMixin",
 setClass("NuBetaMixin",
          slots = c(nuBeta = "DegreesFreedom"),
          contains = "VIRTUAL")
+
+setClass("NuCMPMixin",
+         slot = c(nuCMP = "ParameterVector"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             nuCMP <- object@nuCMP
+             theta <- object@theta
+             ## 'nuCMP' has same length as 'theta'
+             if (!identical(length(nuCMP), length(theta)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "nuCMP", "theta"))
+             TRUE
+         })
 
 setClass("NuComponentWeightMixMixin",
          slots = c(nuComponentWeightMix = "DegreesFreedom"),
@@ -1486,6 +1513,13 @@ setClass("RSeasonMixin",
              TRUE
          })
 
+
+setClass("SDMeanLogNuCMPMixin",
+         slots = c(sdMeanLogNuCMP = "Scale"),
+         prototype = prototype(sdMeanLogNuCMP = new("Scale", 1)),
+         contains = "VIRTUAL")
+
+
 setClass("Shape1Shape2PhiMixin",
          slots = c(shape1Phi = "Scale",
                    shape2Phi = "Scale"))
@@ -1512,6 +1546,10 @@ setClass("SMixin",
                                  "s", "nSeason"))
              TRUE
          })
+
+setClass("SDLogNuCMPMixin",
+         slots = c(SDLogNuCMP = "Scale"),
+         contains = "VIRTUAL")
 
 setClass("SpecAMixin",
          slots = c(A = "SpecScale"),
@@ -1613,6 +1651,10 @@ setClass("SpecPhiMixin",
              }
              TRUE
          })
+
+setClass("SpecSDLogNuCMPMixin",
+         slots = c(SDLogNuCMP = "SpecScale"),
+         contains = "VIRTUAL")
 
 setClass("SpecScaleMaxMixin",
          slots = c(scaleMax = "SpecScale"),

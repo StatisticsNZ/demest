@@ -175,9 +175,10 @@ Components <- function(scale = HalfT()) {
 #' parameters are described in the' documentation for \code{\link{HalfT}}.
 #' Shrinking coefficient' estimates towards 0 protects against over-fitting.
 #'
-#' The intercept term is assumed to have a diffuse normal distribution centered
-#' at 0.  The rules for choosing default values for the standard deviation are
-#' described in the documentation for \code{\link{Norm}}.
+#' The intercept term is assumed to have a diffuse normal distribution.
+#' The rules for choosing default values for the standard deviation are
+#' described in the documentation for \code{\link{Norm}}. \code{mean}
+#' must equal 0 (the default).
 #' 
 #' The help for \code{\link[stats]{model.matrix}} contains a discussion of
 #' contrasts.  With Bayesian models that have informative priors, such as the
@@ -215,7 +216,7 @@ Components <- function(scale = HalfT()) {
 #' ## intercept and coefficients
 #' Covariates(mean ~ income + area,
 #'            data = reg.data,
-#'            intercept = Norm(scale = 5),
+#'            intercept = Norm(sd = 5),
 #'            coef = HalfT(scale = 0.25))
 #'
 #' ## override the default 'treatment' contrast
@@ -264,6 +265,10 @@ Covariates <- function(formula = NULL, data = NULL, infant = FALSE,
     if (!methods::is(coef, "HalfT"))
         stop(gettextf("'%s' has class \"%s\"",
                       "coef", class(coef)))
+    mean <- intercept@mean@.Data
+    if (!isTRUE(all.equal(mean, 0)))
+        stop(gettextf("'%s' in '%s' does not equal %d",
+                      "mean", "intercept", 0L))
     AEtaIntercept <- intercept@A
     AEtaCoef <- coef@A
     multEtaCoef <- coef@mult
@@ -1938,18 +1943,21 @@ Move <- function(classes, covariates = NULL, error = Error()) {
     
 
 ## NO_TESTS
-#' Specify a normal distribution centered at 0.
+#' Specify a normal distribution.
 #'
-#' Specify a normal distribution with mean equal to 0 and standard
-#' deviation equal to \code{scale}.
+#' Specify a normal distribution with mean \code{mean}
+#' and standard deviation \code{sd}.
+#'
+#' The default for \code{mean} is always 0, but the default
+#' for \code{sd} depends on context.
 #'
 #' \code{Norm} is used to specify the prior for the intercept in
-#' function \code{\link{Covariates}}.  If a value for \code{scale}
+#' function \code{\link{Covariates}}.  If a value for \code{sd}
 #' is not specified, a default value is determined when function
 #' \code{\link{estimateModel}}, \code{\link{estimateCounts}}, or
 #' \code{\link{estimateAccount}} is called.  Let \eqn{s} be the standard
 #' deviation of data \eqn{y}, or of \code{log(y)} in the case of a Poisson
-#' model without exposure.  Then the default for \code{scale} is
+#' model without exposure.  Then the default for \code{sd} is
 #' determined as follows.
 #' 
 #' \tabular{ll}{
@@ -1960,8 +1968,12 @@ Move <- function(classes, covariates = NULL, error = Error()) {
 #'   normal \tab  \eqn{10s}
 #' }
 #'
-#' @param scale Standard deviation for the normal distribution.
-#' A positive number.
+#' {Norm} is also used to specify a prior (on the log scale) for
+#' the dispersion parameter in a \code{\link{CMP}} model. In this
+#' case \code{sd} defaults to 1.
+#'
+#' @param mean Mean.
+#' @param sd Standard deviation. A positive number.
 #'
 #' @return An object of class \code{\linkS4class{Norm}}.
 #'
@@ -1969,11 +1981,15 @@ Move <- function(classes, covariates = NULL, error = Error()) {
 #'
 #' @examples
 #' Norm()
-#' Norm(scale = 0.5)
+#' Norm(sd = 0.5)
+#' Norm(mean = 0.5, sd = 1.5)
 #' @export
-Norm <- function(scale = NULL) {
-    A <- checkAndTidySpecScale(x = scale, name = "scale")
+Norm <- function(mean = 0, sd = NULL) {
+    mean <- checkAndTidyMeanOrProb(mean, name = "mean")
+    mean <- new("Parameter", mean)
+    A <- checkAndTidySpecScale(x = sd, name = "scale")
     methods::new("Norm",
+                 mean = mean,
                  A = A)
 }
 

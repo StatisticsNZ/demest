@@ -11208,6 +11208,68 @@ test_that("makeResultsCounts works with exposure", {
     expect_is(ans, "ResultsCountsExposureEst")
 })
 
+test_that("makeResultsAccount works", {
+    makeResultsAccount <- demest:::makeResultsAccount
+    initialCombinedAccount <- demest:::initialCombinedAccount
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    extractValues <- demest:::extractValues
+    population <- CountsOne(values = seq(100, 200, 10),
+                            labels = seq(2000, 2100, 10),
+                            name = "time")
+    births <- CountsOne(values = rpois(n = 10, lambda = 15),
+                        labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
+                        name = "time")
+    deaths <- CountsOne(values = rpois(n = 10, lambda = 5),
+                        labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
+                        name = "time")
+    account <- Movements(population = population,
+                         births = births,
+                         exits = list(deaths = deaths))
+    account <- makeConsistent(account)
+    systemModels <- list(Model(population ~ Poisson(mean ~ time, useExpose = FALSE)),
+                         Model(births ~ Poisson(mean ~ 1)),
+                         Model(deaths ~ Poisson(mean ~ 1)))
+    systemWeights <- rep(list(NULL), 3)
+    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
+                        Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
+    seriesIndices <- c(2L, 0L)
+    datasets <- list(Counts(array(7L,
+                                  dim = 10,
+                                  dimnames = list(time = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-")))),
+                     Counts(array(seq.int(110L, 210L, 10L),
+                                  dim = 11,
+                                  dimnames = list(time = seq(2000, 2100, 10)))))
+    namesDatasets <- c("tax", "census")
+    transforms <- list(makeTransform(x = deaths, y = datasets[[1]], subset = TRUE),
+                       makeTransform(x = population, y = datasets[[2]], subset = TRUE))
+    transforms <- lapply(transforms, makeCollapseTransformExtra)
+    finalCombineds <- replicate(n = 3,
+                                initialCombinedAccount(account = account,
+                                                       systemModels = systemModels,
+                                                       systemWeights = systemWeights,
+                                                       dataModels = data.models,
+                                                       seriesIndices = seriesIndices,
+                                                       datasets = datasets,
+                                                       namesDatasets = namesDatasets,
+                                                       transforms = transforms))
+    filename <- "filename"
+    call <- call("estimateAccount", list("model"))
+    mcmcArgs <- list(nBurnin = 1000L, nSim = 1000L, nChain = 3L, nThin = 20L)
+    lengthIter <- length(extractValues(finalCombineds[[1L]]))
+    controlArgs <- list(call = call,
+                        parallel = TRUE,
+                        lengthIter = lengthIter,
+                        nUpdateMax = 200L)
+    seed <- list(c(407L, 1:6), c(407L, 6:1), c(407L, 3:8))
+    ans <- makeResultsAccount(finalCombineds = finalCombineds,
+                              mcmcArgs = mcmcArgs,
+                              controlArgs = controlArgs,
+                              seed = seed)
+    expect_true(validObject(ans))
+    expect_is(ans, "ResultsAccount")
+})
+
+
 test_that("rescaleAndWriteBetas works", {
     rescaleAndWriteBetas <- demest:::rescaleAndWriteBetas
     filename <- tempfile()
@@ -14539,5 +14601,174 @@ test_that("makeIteratorCODPCP creates objects from valid inputs", {
                         finished = FALSE)
     expect_identical(ans.obtained, ans.expected)
 })
+
+
+
+test_that("makeOutputAccount works", {
+    makeOutputAccount <- demest:::makeOutputAccount
+    Skeleton <- demest:::Skeleton
+    population <- CountsOne(values = seq(100, 200, 10),
+                            labels = seq(2000, 2100, 10),
+                            name = "time")
+    births <- CountsOne(values = rpois(n = 10, lambda = 15),
+                        labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
+                        name = "time")
+    deaths <- CountsOne(values = rpois(n = 10, lambda = 5),
+                        labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
+                        name = "time")
+    account <- Movements(population = population,
+                         births = births,
+                         exits = list(deaths = deaths))
+    ans.obtained <- makeOutputAccount(account = account, pos = 11L)
+    ans.expected <- list(population = Skeleton(account@population, first = 11L),
+                         births = Skeleton(account@components[[1]], first = 22L),
+                         deaths = Skeleton(account@components[[2]], first = 32L))
+    expect_identical(ans.obtained, ans.expected)    
+})
+
+
+
+
+## CMP ###############################################################
+
+test_that("logDensCMPUnnormalised1 works", {
+    logDensCMPUnnormalised1 <- demest:::logDensCMPUnnormalised1
+    mydcmp<- function(y,gamma,nu){
+        pdf <- nu*(y*log(gamma)-lgamma(y+1))
+        return(pdf)
+    }
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        x <- rpois(n = 1, lambda = 10)
+        gamma <- runif(n = 1, max = 10)
+        nu <- runif(n = 1, max = 10)
+        ans.obtained <- logDensCMPUnnormalised1(x = x, gamma = gamma, nu = nu)
+        ans.expected <- mydcmp(y = x, gamma = gamma, nu = nu)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of logDensCMPUnnormalised1 give same answer", {
+    logDensCMPUnnormalised1 <- demest:::logDensCMPUnnormalised1
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        x <- rpois(n = 1, lambda = 10)
+        gamma <- runif(n = 1, max = 10)
+        nu <- runif(n = 1, max = 10)
+        ans.R <- logDensCMPUnnormalised1(x = x, gamma = gamma, nu = nu, useC = FALSE)
+        ans.C <- logDensCMPUnnormalised1(x = x, gamma = gamma, nu = nu, useC = TRUE)
+        ans.expected <- mydcmp(y = x, gamma = gamma, nu = nu)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
+
+test_that("rcmpUnder works", {
+    rcmpUnder <- demest:::rcmpUnder
+    set.seed(0)
+    mu <- runif(n = 1, max = 10000)
+    nu <- runif(n = 1, min = 1, max = 10)
+    max <- 100L
+    y <- replicate(n = 10000, rcmpUnder(mu = mu, nu = nu, max = max))
+    y_fin <- y[is.finite(y) == TRUE]
+    expect_equal(mean(y_fin), mu + 1 / (2 * nu) - 0.5, tolerance = 0.02)
+    expect_equal(var(y_fin), mu / nu , tolerance = 0.02)
+})
+
+test_that("R and C versions of rcmpUnder give same answer", {
+    rcmpUnder <- demest:::rcmpUnder
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        mu <- runif(n = 1, max = 100)
+        nu <- runif(n = 1, min = 1, max = 10)
+        max <- 100L
+        set.seed(1)
+        ans.R <- replicate(n = 100, rcmpUnder(mu = mu, nu = nu, max = max, useC = FALSE))
+        set.seed(1)
+        ans.C <- replicate(n = 100, rcmpUnder(mu = mu, nu = nu, max = max, useC = TRUE))
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
+
+test_that("rcmpOver works", {
+    rcmpOver <- demest:::rcmpOver
+    set.seed(0)
+    mu <- runif(n = 1, max = 10000)
+    nu <- runif(n = 1, max = (1 - 10^( -7)))
+    max <- 100L
+    y <- replicate(n = 10000, rcmpOver(mu = mu, nu = nu, max = max))
+    y_fin <- y[is.finite(y) == TRUE]
+    expect_equal(mean(y_fin), mu + 1 / (2 * nu) - 0.5, tolerance = 0.02)
+    expect_equal(var(y_fin), mu / nu , tolerance = 0.02)
+})
+
+test_that("R and C versions of rcmpOver give same answer", {
+    rcmpOver <- demest:::rcmpOver
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        mu <- runif(n = 1, max = 100)
+        nu <- runif(n = 1, min = 1, max = 10)
+        max <- 100L
+        set.seed(1)
+        ans.R <- replicate(n = 100, rcmpOver(mu = mu, nu = nu, max = max, useC = FALSE))
+        set.seed(1)
+        ans.C <- replicate(n = 100, rcmpOver(mu = mu, nu = nu, max = max, useC = TRUE))
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
+
+test_that("rcmp1 works", {
+    rcmp1 <- demest:::rcmp1
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        mu <- runif(n = 1, max = 10000)
+        nu <- runif(n = 1, max = 10)
+        max <- 100L
+        y <- replicate(n = 1000, rcmp1(mu = mu, nu = nu, max = max))
+        y_fin <- y[is.finite(y) == TRUE]
+        if (nu < 1){
+            disp <- mean(y_fin) < var(y_fin)
+        } else {
+            disp <- mean(y_fin) >= var(y_fin)
+        }
+        expect_true(disp)
+    }
+})
+
+test_that("R and C versions of rcmp1 give same answer", {
+    rcmp1 <- demest:::rcmp1
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        mu <- runif(n = 1, max = 10000)
+        nu <- runif(n = 1, max = 10)
+        max <- 100L
+        set.seed(seed)
+        ans.R <- replicate(n = 1000, rcmp1(mu = mu, nu = nu, max = max, useC = FALSE))
+        set.seed(seed)
+        ans.C <- replicate(n = 1000, rcmp1(mu = mu, nu = nu, max = max, useC = TRUE))
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
+
+
+
+
+
+
+
 
 

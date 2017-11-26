@@ -206,8 +206,7 @@ setClass("Level",
 #' An S4 class to specify a normal distribution.
 #'
 #' An object of class \code{Norm} specifies a normal
-#' distribution with mean 0.  It is used as a
-#' prior distribution.
+#' distribution.  It is used as a prior distribution.
 #'
 #' @section Warning:
 #' In  normal usage, it should not be necessary to
@@ -215,6 +214,7 @@ setClass("Level",
 #' \code{Norm} object.  The slots are not part of
 #' the API of the package, and may change in future.
 #'
+#' @slot mean Mean.
 #' @slot A Standard deviation.
 #'
 #' @seealso Objects of class \code{Norm} are created
@@ -222,7 +222,8 @@ setClass("Level",
 #'
 #' @export
 setClass("Norm",
-         contains = "SpecAMixin")
+         contains = c("MeanMixin",
+                      "SpecAMixin"))
 
 
 #' An S4 class to specify a seasonal effect in a DLM prior.
