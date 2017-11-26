@@ -12,6 +12,7 @@
 #include <Rdefines.h>
 #include <R_ext/Rdynload.h>
 
+# define DEBUGGING_NEW
 //#define DEBUGGING
 //#define DEBUGGING_EXTRA
 //#define DEBUGNANS /* debugging NaNs */
@@ -118,6 +119,7 @@ SEXP
   dataModels_sym,
   datasets_sym,
   transforms_sym,
+  seriesIndices_sym,
   
   J_sym,
   
@@ -233,8 +235,8 @@ SEXP
   ADelta_sym,
   minPhi_sym,
   maxPhi_sym,
-  shape1Phi_sym,        /* Added by JB 2017-04-19 */
-  shape2Phi_sym,        /* Added by JB 2017-04-19 */
+  shape1Phi_sym,
+  shape2Phi_sym,
   WSqrt_sym,
   WSqrtInvG_sym,
   exposureAg_sym,
@@ -312,7 +314,13 @@ SEXP
   last_sym,
   
   /* Box-Cox */
-  boxCoxParam_sym;
+  boxCoxParam_sym,
+  
+  /* accounts */
+  account_sym,
+  population_sym,
+  components_sym;
+  
   
   
 /* Priors-methods */
@@ -677,6 +685,8 @@ void updateCountsBinomial(SEXP y_R, SEXP model_R,
 void 
 updateDataModelsCounts(SEXP y_R, SEXP dataModels_R, 
                SEXP datasets_R, SEXP transforms_R);
+void 
+updateDataModelsAccount(SEXP combined_R);
 
 /* transfer param model */
 void transferParamModel(SEXP model_R, const char *filename,

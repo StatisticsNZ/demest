@@ -1135,6 +1135,19 @@ SEXP updateDataModelsCounts_R(SEXP y_R, SEXP dataModels_R,
     return ans_R;
 }
 
+/* one off wrapper for updateDataModelsAccount_R */
+SEXP updateDataModelsAccount_R(SEXP combined_R) 
+{
+    SEXP ans_R;
+    PROTECT(ans_R = duplicate(combined_R));
+    GetRNGstate();
+    updateDataModelsAccount(ans_R);
+    PutRNGstate();
+    
+    UNPROTECT(1); /* ans_R */
+    
+    return ans_R;
+}
 
 /* wrap generic update functions for priors */
 
@@ -1533,12 +1546,13 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateVarsigma_R, 2),
   
   /* update counts */
-  CALLDEF(updateCountsPoissonNotUseExp_R,5),
-  CALLDEF(updateCountsPoissonUseExp_R,6),
-  CALLDEF(updateCountsBinomial_R,6),
+  CALLDEF(updateCountsPoissonNotUseExp_R, 5),
+  CALLDEF(updateCountsPoissonUseExp_R, 6),
+  CALLDEF(updateCountsBinomial_R, 6),
   
   /* update dataModels and datasets */
-  CALLDEF(updateDataModelsCounts_R,4),
+  CALLDEF(updateDataModelsCounts_R, 4),
+  CALLDEF(updateDataModelsAccount_R, 1),
   
   /* models */
   CALLDEF(logLikelihood_R, 4),
@@ -1826,6 +1840,7 @@ R_init_demest(DllInfo *info)
   ADD_SYM(dataModels);
   ADD_SYM(datasets);
   ADD_SYM(transforms);
+  ADD_SYM(seriesIndices);
   
   ADD_SYM(J);
   
@@ -2017,6 +2032,11 @@ R_init_demest(DllInfo *info)
   ADD_SYM(last);
   /* Box-Cox */
   ADD_SYM(boxCoxParam);
+  /* accounts */
+  ADD_SYM(account);
+  ADD_SYM(population);
+  ADD_SYM(components);
+  
   
 #undef ADD_SYM
 

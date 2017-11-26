@@ -84,7 +84,8 @@ updateSDNorm <- function(sigma, A, nu, V, n, max, useC = FALSE) {
                                                           V = V,
                                                           n = n,
                                                           min = sigma.star,
-                                                          max = max)
+                                                          max = max,
+                                                          useC = TRUE)
                 found.root.right <- root.right > 0
                 if (found.root.right) {
                     limit.right <- root.right
@@ -4748,7 +4749,7 @@ updateDataModelsCounts <- function(y, dataModels, datasets,
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 updateDataModelsAccount <- function(combined, useC = FALSE) {
     stopifnot(methods::validObject(combined))
