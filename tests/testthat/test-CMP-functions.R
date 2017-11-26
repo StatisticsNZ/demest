@@ -78,22 +78,22 @@
 ##   }
 ## })
 
-test_that("rcmp1 okay", {
-  for( seed in seq_len(n.test)){
-    set.seed(seed)
-    mu <- runif(n = 1, max = 10000)
-    nu <- runif(n = 1, max = 10)
-    max <- 100
-    y <- replicate(n = 1000, rcmp1(mu = mu, nu = nu, max = max))
-    y_fin <- y[is.finite(y) == TRUE]
-    if( nu < 1){
-      disp <- mean(y_fin) < var(y_fin)
-    }else{
-      disp <- mean(y_fin) >= var(y_fin)
-    }
-    expect_equal(disp, TRUE)
-  }
-})
+## test_that("rcmp1 okay", {
+##   for( seed in seq_len(n.test)){
+##     set.seed(seed)
+##     mu <- runif(n = 1, max = 10000)
+##     nu <- runif(n = 1, max = 10)
+##     max <- 100
+##     y <- replicate(n = 1000, rcmp1(mu = mu, nu = nu, max = max))
+##     y_fin <- y[is.finite(y) == TRUE]
+##     if( nu < 1){
+##       disp <- mean(y_fin) < var(y_fin)
+##     }else{
+##       disp <- mean(y_fin) >= var(y_fin)
+##     }
+##     expect_equal(disp, TRUE)
+##   }
+## })
 
 
 

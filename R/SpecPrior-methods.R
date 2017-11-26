@@ -505,6 +505,17 @@ setMethod("show",
 #' @rdname show-methods
 #' @export
 setMethod("show",
+          signature(object = "Norm"),
+          function(object) {
+              mean <- object@mean@.Data
+              A <- object@A@.Data
+              cat("An object of class \"", class(object), "\"\n", sep = "")
+              cat("N(", mean, ", ", squaredOrNA(A), ")\n", sep = "")
+          })
+
+#' @rdname show-methods
+#' @export
+setMethod("show",
           signature(object = "Trend"),
           function(object) {
               mean <- object@meanDelta0

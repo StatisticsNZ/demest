@@ -11210,7 +11210,7 @@ test_that("makeResultsCounts works with exposure", {
 
 test_that("makeResultsAccount works", {
     makeResultsAccount <- demest:::makeResultsAccount
-    initialCombinedCounts <- demest:::initialCombinedCounts
+    initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     extractValues <- demest:::extractValues
     population <- CountsOne(values = seq(100, 200, 10),
@@ -14673,7 +14673,7 @@ test_that("rcmpUnder works", {
     set.seed(0)
     mu <- runif(n = 1, max = 10000)
     nu <- runif(n = 1, min = 1, max = 10)
-    max <- 100
+    max <- 100L
     y <- replicate(n = 10000, rcmpUnder(mu = mu, nu = nu, max = max))
     y_fin <- y[is.finite(y) == TRUE]
     expect_equal(mean(y_fin), mu + 1 / (2 * nu) - 0.5, tolerance = 0.02)
@@ -14686,7 +14686,7 @@ test_that("R and C versions of rcmpUnder give same answer", {
         set.seed(seed)
         mu <- runif(n = 1, max = 100)
         nu <- runif(n = 1, min = 1, max = 10)
-        max <- 100
+        max <- 100L
         set.seed(1)
         ans.R <- replicate(n = 100, rcmpUnder(mu = mu, nu = nu, max = max, useC = FALSE))
         set.seed(1)

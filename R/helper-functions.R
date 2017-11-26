@@ -10243,7 +10243,7 @@ rcmpUnder <- function(mu, nu, maxAttempt, useC = FALSE) {
     stopifnot(!is.na(nu))
     stopifnot(nu > 0)
     ## 'maxAttempt'
-    stopifnot(is.double(maxAttempt))
+    stopifnot(is.integer(maxAttempt))
     stopifnot(identical(length(maxAttempt), 1L))
     stopifnot(!is.na(maxAttempt))
     stopifnot(maxAttempt >= 1L)
@@ -10302,8 +10302,8 @@ rcmpOver <- function(mu, nu, maxAttempt, useC = FALSE) {
     }
 }
 
-    
-
+## READY_TO_TRANSLATE_FIRST
+## HAS_TESTS
 ## Random generation function for CMP data
 rcmp1 <- function(mu, nu, maxAttempt, useC = FALSE){
     ## 'mu'
