@@ -848,6 +848,17 @@ SEXP chooseICellOutInPool_R(SEXP description_R)
     return ans_R;
 }
 
+/* one off wrapper for chooseICellSubAddNet */
+SEXP chooseICellSubAddNet_R(SEXP description_R)
+{
+    SEXP ans_R;
+    GetRNGstate();
+    PROTECT(ans_R = chooseICellSubAddNet(description_R));
+    PutRNGstate();
+    UNPROTECT(1);
+    return ans_R;
+}
+
 /* one off wrapper for chooseICellPopn */
 SEXP chooseICellPopn_R(SEXP description_R)
 {
@@ -1615,6 +1626,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(chooseICellComp_R, 1),
   CALLDEF(chooseICellOutInPool_R, 1),
   CALLDEF(chooseICellPopn_R, 1),
+  CALLDEF(chooseICellSubAddNet_R, 1),
   CALLDEF(isLowerTriangle_R, 2),
   CALLDEF(getIAccNextFromPopn_R, 2),
   CALLDEF(getIPopnNextFromPopn_R, 2),

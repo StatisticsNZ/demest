@@ -9663,7 +9663,7 @@ chooseICellPopn <- function(description, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED - see note about line at end first d-loop - JAH
 ## HAS_TESTS
 ## This function is almost identical to 'chooseICellOutInPool', but
 ## it seems clearest to keep them separate, even at the cost
@@ -9692,7 +9692,9 @@ chooseICellSubAddNet <- function(description, useC = FALSE) {
             if (i.between.add == n.between - 1L) # just in case
                 i.between.add <- n.between - 2L
             if (i.between.add >= i.between.sub)
-                i.between.add <- i.between.sub + 1L
+                ##  JAH I think the line below was incorrect  - replaced below 
+                ## i.between.add <- i.between.sub + 1L
+                i.between.add <- i.between.add + 1L
             i.sub <- i.sub + i.between.sub * step.between
             i.add <- i.add + i.between.add * step.between
         }
