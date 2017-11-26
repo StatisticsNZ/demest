@@ -1359,6 +1359,36 @@ TRANSFERPARAMPRIOR_WRAPPER_R(transferParamPrior_DLMNoTrendRobustCovWithSeasonPre
 TRANSFERPARAMPRIOR_WRAPPER_R(transferParamPrior_DLMWithTrendRobustCovWithSeasonPredict);
 TRANSFERPARAMPRIOR_WRAPPER_R(transferParamPrior_MixNormZeroPredict);
 
+/* CMP functions */
+
+/* one off wrapper for logDensCMPUnnormalised1_R */
+SEXP logDensCMPUnnormalised1_R(SEXP x_R, SEXP gamma_R, SEXP nu_R) 
+{
+    int x = *INTEGER(x_R);
+    double gam = *REAL(gamma_R);
+    double nu = *REAL(nu_R);
+    
+    double ans = logDensCMPUnnormalised1(x, gam, nu);
+    
+    return ScalarReal(ans);
+}
+
+/* wrapper for rcmp functions with parameters mu, nu, maxAttempts */ 
+#define RCMP_WRAPPER_R(name)         \
+    SEXP name##_R(SEXP mu_R, SEXP nu_R, SEXP maxAttempts_R) {    \
+    double mu = *REAL(mu_R);         \
+    double nu = *REAL(nu_R);         \
+    int maxAttempts = *INTEGER(maxAttempts_R);         \
+    GetRNGstate();         \
+    double ans = name(mu, nu, maxAttempts);         \
+    PutRNGstate();         \
+    return ScalarReal(ans);         \
+    }
+
+RCMP_WRAPPER_R(rcmpUnder);
+RCMP_WRAPPER_R(rcmpOver);
+RCMP_WRAPPER_R(rcmp1);
+
 
 /* ******************************************************************************* */
 /* Create table describing R-visible versions of C functions ********************* */
@@ -1713,6 +1743,12 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(transferParamPrior_DLMNoTrendRobustCovWithSeasonPredict_R, 2),
   CALLDEF(transferParamPrior_DLMWithTrendRobustCovWithSeasonPredict_R, 2),
   CALLDEF(transferParamPrior_MixNormZeroPredict_R, 2),
+
+  /* CMP */
+  CALLDEF(logDensCMPUnnormalised1_R, 3),
+  CALLDEF(rcmpUnder_R, 3),
+  CALLDEF(rcmpOver_R, 3),
+  CALLDEF(rcmp1_R, 3),
   
   {NULL}
 };

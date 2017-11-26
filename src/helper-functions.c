@@ -3893,3 +3893,99 @@ overwriteValuesOnFile_R(SEXP object_R, SEXP skeleton_R,
     return R_NilValue;
 }
 
+/* ----------------- CMP ------------------ */
+
+double
+logDensCMPUnnormalised1(int x, double gam, double nu)
+{
+    double ans = nu * ( x * log(gam) - lgammafn(x + 1) );
+    return ans;
+}
+
+
+double
+rcmpUnder(double mu, double nu, int maxAttempt)
+{
+    double fl = floor(mu);
+    double logfl = lgammafn(fl + 1);
+    
+    double nuMinus1 = nu -1;
+    double logMu = log(mu);
+    
+    int found = 0;
+    int i = 0;
+    
+    double retValue = R_NegInf;
+    
+    while ( !found && (i < maxAttempt) ) {
+        
+        double ynew = rpois(mu);
+        double logy = lgammafn(ynew + 1);
+        double log_a = nuMinus1 * ( logMu * (ynew - fl) - logy + logfl);
+        
+        double logu = log(runif(0, 1));
+        
+        if (logu < log_a) {
+            retValue = ynew;
+            found = 1;
+        }
+        
+        ++i;
+    }
+    
+    return retValue;
+}
+
+
+double
+rcmpOver(double mu, double nu, int maxAttempt)
+{
+    double p = 2 * nu / (2 * mu * nu + 1 + nu);
+    double fl = floor(mu / pow( 1-p, 1/nu) );
+    double logfl = lgammafn(fl + 1);
+    
+    double log1pMinusP = log1p(-p);
+    double nuTimeslogMu = nu * log(mu);
+    
+    int found = 0;
+    int i = 0;
+    
+    double retValue = R_NegInf;
+    
+    while ( !found && (i < maxAttempt) ) {
+        
+        double ynew = rgeom(p);
+        double logy = lgammafn(ynew + 1);
+        double log_a = (ynew - fl) * ( nuTimeslogMu - log1pMinusP) 
+                                                + nu * (logfl - logy);
+        
+        double logu = log(runif(0, 1));
+        
+        if (logu < log_a) {
+            retValue = ynew;
+            found = 1;
+        }
+        
+        ++i;
+    }
+    
+    return retValue;
+}
+
+
+double
+rcmp1(double mu, double nu, int maxAttempt)
+{
+    double retValue = 0;
+    
+    if(nu < 1) {
+        
+        retValue = rcmpOver(mu, nu, maxAttempt);
+    }
+    else {
+        
+        retValue = rcmpUnder(mu, nu, maxAttempt);
+    }
+    
+    return retValue;
+}

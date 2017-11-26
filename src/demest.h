@@ -837,6 +837,12 @@ SEXP getIExpFirstFromOrigDest(int i, SEXP mapping_R);
 int getICellCompFromExp(int i, SEXP mapping_R);
 int getICellBirthsFromExp(int i, SEXP mapping_R);
 
+/* CMP */
+double logDensCMPUnnormalised1(int x, double gamma, double nu);
+double rcmpUnder(double mu, double nu, int maxAttempt);
+double rcmpOver(double mu, double nu, int maxAttempt);
+double rcmp1(double mu, double nu, int maxAttempt);
+
 /* pointers for routines from dembase package 
  * 
  * these have to be populated with R_GetCCallable in the initialisation function */
