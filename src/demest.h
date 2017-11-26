@@ -676,7 +676,7 @@ void updateCountsBinomial(SEXP y_R, SEXP model_R,
                         SEXP datasets_R, SEXP transforms_R);
 void 
 updateDataModelsCounts(SEXP y_R, SEXP dataModels_R, 
-		       SEXP datasets_R, SEXP transforms_R);
+               SEXP datasets_R, SEXP transforms_R);
 
 /* transfer param model */
 void transferParamModel(SEXP model_R, const char *filename,
@@ -804,6 +804,7 @@ SEXP overwriteValuesOnFile_R(SEXP object_R, SEXP skeleton_R,
 int chooseICellComp(SEXP description_R);
 SEXP chooseICellOutInPool(SEXP description_R);
 int chooseICellPopn(SEXP description_R);
+SEXP chooseICellSubAddNet(SEXP description_R);
 int isLowerTriangle(int i, SEXP description_R);
 int getIAccNextFromPopn(int i, SEXP description_R);
 int getIPopnNextFromPopn(int i, SEXP description_R);

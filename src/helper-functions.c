@@ -1015,13 +1015,9 @@ findOneRootLogPostSigmaNorm(double sigma0, double z, double A, double nu,
  /*  f0prime <- -n/sigma0 + V/(sigma0^3) - ((nu + 1)*sigma0) / (sigma0^2 + nu*A^2)
           */
                      
-            double f0prime = -n/sigma0 + V/(sigma0*sigma0*sigma0) 
-                                        -((nu + 1) * sigma0)/(sigma0 * sigma0 + nu * A * A);
-            /* 
-            
             double f0prime = -n/sigma0 + V/sigma0Cubed 
                             - nuPlus1 * sigma0 / (sigma0Sq + nuASq);
-            */
+           
             
             int derivNearZero = ( fabs(f0prime) < K_EPSILON );
             
@@ -3579,7 +3575,7 @@ chooseICellOutInPoolInternal(int *ans, SEXP description_R)
         iOut +=  iBetweenOut * stepBetween;
         iIn += iBetweenIn * stepBetween;
     }
-
+    
     for (int d = 0; d < nDimWithin; ++d) {
         int nWithin = nWithinVec[d];
         int stepWithin = stepWithinVec[d];
@@ -3608,6 +3604,69 @@ chooseICellPopn(SEXP description_R)
     
     int i_R = i + 1;
     return i_R;
+}
+
+
+SEXP
+chooseICellSubAddNet(SEXP description_R)
+{
+    SEXP ans_R;
+    PROTECT(ans_R = allocVector(INTSXP, 2));
+    int *ans = INTEGER(ans_R);
+    
+    chooseICellSubAddNetInternal(ans, description_R);
+    
+    UNPROTECT(1); /* ans_R */
+    return ans_R;
+}
+
+/* ans must have 2 elements */
+void
+chooseICellSubAddNetInternal(int *ans, SEXP description_R)
+{
+    SEXP nBetweenVec_R = GET_SLOT(description_R, nBetweenVec_sym);
+    int *nBetweenVec = INTEGER(nBetweenVec_R);
+    int *stepBetweenVec = INTEGER(GET_SLOT(description_R, stepBetweenVec_sym));
+    SEXP nWithinVec_R = GET_SLOT(description_R, nWithinVec_sym);
+    int *nWithinVec = INTEGER(nWithinVec_R);
+    int *stepWithinVec = INTEGER(GET_SLOT(description_R, stepWithinVec_sym));
+    
+    int nDimBetween = LENGTH(nBetweenVec_R);
+    int nDimWithin = LENGTH(nWithinVec_R);
+    
+    int iSub = 1;
+    int iAdd = 1;
+    
+    for (int d = 0; d < nDimBetween; ++d) {
+        
+        int nBetween = nBetweenVec[d];
+        int stepBetween = stepBetweenVec[d];
+        
+        int iBetweenSub = runifInt(nBetween); /* C-style index */
+                
+        /* pick iBetweenOut from integers 
+         * in {0,..iBetweenIn-1} U {iBetweenIn + 1, nBetween-1} */
+        int iBetweenAdd = runifInt(nBetween - 1); /* C-style index */
+        if (iBetweenAdd >= iBetweenSub) {
+            
+            ++iBetweenAdd; 
+        }
+ 
+        iSub +=  iBetweenSub * stepBetween;
+        iAdd += iBetweenAdd * stepBetween;
+    }
+    
+    for (int d = 0; d < nDimWithin; ++d) {
+        int nWithin = nWithinVec[d];
+        int stepWithin = stepWithinVec[d];
+        
+        int iWithin = runifInt(nWithin); /* C-style index */
+        
+        iSub += iWithin * stepWithin;
+        iAdd +=  iWithin * stepWithin;
+    }
+    ans[0] = iSub;
+    ans[1] = iAdd;
 }
 
 
