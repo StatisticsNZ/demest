@@ -940,7 +940,7 @@ diffLogLikPopn <- function(diff, iFirst, iterator, population,
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 ## Time dimension for population has dimscale "Points", so can't be collapsed.
 ## Each new value for a cohort (which has a new time) is therefore guaranteed
@@ -1000,7 +1000,7 @@ diffLogLikPopnOneDataset <- function(diff, iFirst, iterator, population,
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 ## Have already checked that iAfter > 0
 diffLogLikPopnOneCell <- function(iAfter, diff, population, model,

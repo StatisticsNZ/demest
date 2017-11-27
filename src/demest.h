@@ -12,7 +12,6 @@
 #include <Rdefines.h>
 #include <R_ext/Rdynload.h>
 
-# define DEBUGGING_NEW
 //#define DEBUGGING
 //#define DEBUGGING_EXTRA
 //#define DEBUGNANS /* debugging NaNs */
@@ -842,6 +841,13 @@ double logDensCMPUnnormalised1(int x, double gamma, double nu);
 double rcmpUnder(double mu, double nu, int maxAttempt);
 double rcmpOver(double mu, double nu, int maxAttempt);
 double rcmp1(double mu, double nu, int maxAttempt);
+
+/* update-account */
+double diffLogLikPopnOneDataset(int diff, int iFirst_r, SEXP iterator_R, 
+                        SEXP population_R, SEXP model_R, 
+                        SEXP dataset_R, SEXP transform_R);
+double diffLogLikPopnOneCell(int iAfter_r, int diff, SEXP population_R, 
+                        SEXP model_R, SEXP dataset_R, SEXP transform_R);
 
 /* pointers for routines from dembase package 
  * 

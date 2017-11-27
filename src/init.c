@@ -1389,6 +1389,37 @@ RCMP_WRAPPER_R(rcmpUnder);
 RCMP_WRAPPER_R(rcmpOver);
 RCMP_WRAPPER_R(rcmp1);
 
+/* *************************** update-account -------------------------- */
+
+
+/* one-off wrapper for diffLogLikPopnOneDataset */
+SEXP
+diffLogLikPopnOneDataset_R(SEXP diff_R, SEXP iFirst_R, SEXP iterator_R, 
+                            SEXP population_R, SEXP model_R,
+                            SEXP dataset_R, SEXP transform_R)
+{
+    int diff = *INTEGER(diff_R);
+    int iFirst_r = *INTEGER(iFirst_R);
+    SEXP iteratornew_R;
+    PROTECT(iteratornew_R = duplicate(iterator_R));
+    double ans = diffLogLikPopnOneDataset(diff, iFirst_r, iteratornew_R,
+                                    population_R, model_R,
+                                    dataset_R, transform_R);
+    UNPROTECT(1);
+    return ScalarReal(ans);
+}
+
+/* one-off wrapper for diffLogLikPopnOneCell */
+SEXP
+diffLogLikPopnOneCell_R(SEXP iAfter_R, SEXP diff_R, SEXP population_R, 
+                SEXP model_R, SEXP dataset_R, SEXP transform_R)
+{
+    int iAfter_r = *INTEGER(iAfter_R);
+    int diff = *INTEGER(diff_R);
+    double ans = diffLogLikPopnOneCell(iAfter_r, diff, population_R, 
+                                    model_R, dataset_R, transform_R);
+    return ScalarReal(ans);
+}
 
 /* ******************************************************************************* */
 /* Create table describing R-visible versions of C functions ********************* */
@@ -1749,6 +1780,10 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(rcmpUnder_R, 3),
   CALLDEF(rcmpOver_R, 3),
   CALLDEF(rcmp1_R, 3),
+
+  /* update-account */
+  CALLDEF(diffLogLikPopnOneCell_R, 6),
+  CALLDEF(diffLogLikPopnOneDataset_R, 7),
   
   {NULL}
 };
