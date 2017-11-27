@@ -1135,6 +1135,19 @@ SEXP updateDataModelsCounts_R(SEXP y_R, SEXP dataModels_R,
     return ans_R;
 }
 
+/* one off wrapper for updateDataModelsAccount_R */
+SEXP updateDataModelsAccount_R(SEXP combined_R) 
+{
+    SEXP ans_R;
+    PROTECT(ans_R = duplicate(combined_R));
+    GetRNGstate();
+    updateDataModelsAccount(ans_R);
+    PutRNGstate();
+    
+    UNPROTECT(1); /* ans_R */
+    
+    return ans_R;
+}
 
 /* wrap generic update functions for priors */
 
@@ -1346,6 +1359,36 @@ TRANSFERPARAMPRIOR_WRAPPER_R(transferParamPrior_DLMNoTrendRobustCovWithSeasonPre
 TRANSFERPARAMPRIOR_WRAPPER_R(transferParamPrior_DLMWithTrendRobustCovWithSeasonPredict);
 TRANSFERPARAMPRIOR_WRAPPER_R(transferParamPrior_MixNormZeroPredict);
 
+/* CMP functions */
+
+/* one off wrapper for logDensCMPUnnormalised1_R */
+SEXP logDensCMPUnnormalised1_R(SEXP x_R, SEXP gamma_R, SEXP nu_R) 
+{
+    int x = *INTEGER(x_R);
+    double gam = *REAL(gamma_R);
+    double nu = *REAL(nu_R);
+    
+    double ans = logDensCMPUnnormalised1(x, gam, nu);
+    
+    return ScalarReal(ans);
+}
+
+/* wrapper for rcmp functions with parameters mu, nu, maxAttempts */ 
+#define RCMP_WRAPPER_R(name)         \
+    SEXP name##_R(SEXP mu_R, SEXP nu_R, SEXP maxAttempts_R) {    \
+    double mu = *REAL(mu_R);         \
+    double nu = *REAL(nu_R);         \
+    int maxAttempts = *INTEGER(maxAttempts_R);         \
+    GetRNGstate();         \
+    double ans = name(mu, nu, maxAttempts);         \
+    PutRNGstate();         \
+    return ScalarReal(ans);         \
+    }
+
+RCMP_WRAPPER_R(rcmpUnder);
+RCMP_WRAPPER_R(rcmpOver);
+RCMP_WRAPPER_R(rcmp1);
+
 
 /* ******************************************************************************* */
 /* Create table describing R-visible versions of C functions ********************* */
@@ -1533,12 +1576,13 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateVarsigma_R, 2),
   
   /* update counts */
-  CALLDEF(updateCountsPoissonNotUseExp_R,5),
-  CALLDEF(updateCountsPoissonUseExp_R,6),
-  CALLDEF(updateCountsBinomial_R,6),
+  CALLDEF(updateCountsPoissonNotUseExp_R, 5),
+  CALLDEF(updateCountsPoissonUseExp_R, 6),
+  CALLDEF(updateCountsBinomial_R, 6),
   
   /* update dataModels and datasets */
-  CALLDEF(updateDataModelsCounts_R,4),
+  CALLDEF(updateDataModelsCounts_R, 4),
+  CALLDEF(updateDataModelsAccount_R, 1),
   
   /* models */
   CALLDEF(logLikelihood_R, 4),
@@ -1699,6 +1743,12 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(transferParamPrior_DLMNoTrendRobustCovWithSeasonPredict_R, 2),
   CALLDEF(transferParamPrior_DLMWithTrendRobustCovWithSeasonPredict_R, 2),
   CALLDEF(transferParamPrior_MixNormZeroPredict_R, 2),
+
+  /* CMP */
+  CALLDEF(logDensCMPUnnormalised1_R, 3),
+  CALLDEF(rcmpUnder_R, 3),
+  CALLDEF(rcmpOver_R, 3),
+  CALLDEF(rcmp1_R, 3),
   
   {NULL}
 };
@@ -1826,6 +1876,7 @@ R_init_demest(DllInfo *info)
   ADD_SYM(dataModels);
   ADD_SYM(datasets);
   ADD_SYM(transforms);
+  ADD_SYM(seriesIndices);
   
   ADD_SYM(J);
   
@@ -2017,6 +2068,11 @@ R_init_demest(DllInfo *info)
   ADD_SYM(last);
   /* Box-Cox */
   ADD_SYM(boxCoxParam);
+  /* accounts */
+  ADD_SYM(account);
+  ADD_SYM(population);
+  ADD_SYM(components);
+  
   
 #undef ADD_SYM
 

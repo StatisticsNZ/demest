@@ -10200,7 +10200,7 @@ makeOutputAccount <- function(account, pos) {
 ## CMP ###############################################################
 
 
-## READY_TO_TRANSLATE_FIRST
+## TRANSLATED
 ## HAS_TESTS
 # The CMP desity function is f(y|theta,nu)= (theta^y/y!)^nu*1/Z(theta,nu), 
 # Z(theta,nu) is the intractable normalising constant
@@ -10229,7 +10229,7 @@ logDensCMPUnnormalised1 <- function(x, gamma, nu, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE_FIRST
+## TRANSLATED
 ## HAS_TESTS
 rcmpUnder <- function(mu, nu, maxAttempt, useC = FALSE) {
     ## 'mu'
@@ -10265,7 +10265,7 @@ rcmpUnder <- function(mu, nu, maxAttempt, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE_FIRST
+## TRANSLATED
 ## HAS_TESTS
 rcmpOver <- function(mu, nu, maxAttempt, useC = FALSE) {
     ## 'mu'
@@ -10302,7 +10302,7 @@ rcmpOver <- function(mu, nu, maxAttempt, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE_FIRST
+## TRANSLATED
 ## HAS_TESTS
 ## Random generation function for CMP data
 rcmp1 <- function(mu, nu, maxAttempt, useC = FALSE){

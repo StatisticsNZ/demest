@@ -14653,6 +14653,10 @@ test_that("logDensCMPUnnormalised1 works", {
 
 test_that("R and C versions of logDensCMPUnnormalised1 give same answer", {
     logDensCMPUnnormalised1 <- demest:::logDensCMPUnnormalised1
+    mydcmp<- function(y,gamma,nu){
+        pdf <- nu*(y*log(gamma)-lgamma(y+1))
+        return(pdf)
+    }
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         x <- rpois(n = 1, lambda = 10)
@@ -14680,6 +14684,7 @@ test_that("rcmpUnder works", {
     expect_equal(var(y_fin), mu / nu , tolerance = 0.02)
 })
 
+## tests equal but not identical
 test_that("R and C versions of rcmpUnder give same answer", {
     rcmpUnder <- demest:::rcmpUnder
     for (seed in seq_len(n.test)) {
@@ -14710,6 +14715,7 @@ test_that("rcmpOver works", {
     expect_equal(var(y_fin), mu / nu , tolerance = 0.02)
 })
 
+## tests equal but not identical
 test_that("R and C versions of rcmpOver give same answer", {
     rcmpOver <- demest:::rcmpOver
     for (seed in seq_len(n.test)) {
@@ -14746,12 +14752,44 @@ test_that("rcmp1 works", {
     }
 })
 
+## tests equal but not identical
 test_that("R and C versions of rcmp1 give same answer", {
     rcmp1 <- demest:::rcmp1
+    ## nu < 1
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         mu <- runif(n = 1, max = 10000)
-        nu <- runif(n = 1, max = 10)
+        nu <- runif(n = 1, max = 1)
+        max <- 100L
+        set.seed(seed)
+        ans.R <- replicate(n = 1000, rcmp1(mu = mu, nu = nu, max = max, useC = FALSE))
+        set.seed(seed)
+        ans.C <- replicate(n = 1000, rcmp1(mu = mu, nu = nu, max = max, useC = TRUE))
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+    ## nu = 1
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        mu <- runif(n = 1, max = 10000)
+        nu <- 1
+        max <- 100L
+        set.seed(seed)
+        ans.R <- replicate(n = 1000, rcmp1(mu = mu, nu = nu, max = max, useC = FALSE))
+        set.seed(seed)
+        ans.C <- replicate(n = 1000, rcmp1(mu = mu, nu = nu, max = max, useC = TRUE))
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+    ## nu > 1
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        mu <- runif(n = 1, max = 10000)
+        nu <- runif(n = 1, min = 1, max = 10)
         max <- 100L
         set.seed(seed)
         ans.R <- replicate(n = 1000, rcmp1(mu = mu, nu = nu, max = max, useC = FALSE))

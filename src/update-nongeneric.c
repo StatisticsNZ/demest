@@ -4453,7 +4453,7 @@ updateTheta_PoissonVaryingNotUseExp(SEXP object, SEXP y_R)
 
         if (found_prop) {
             
-	    double theta_prop = 0;
+        double theta_prop = 0;
             if (usesBoxCoxTransformation) {
                 theta_prop = pow(boxCoxParam * transformedThetaProp + 1, 1/boxCoxParam);
             }
@@ -6892,27 +6892,6 @@ updateCountsPoissonUseExp(SEXP y_R, SEXP model_R,
 
 }
 
-/*    .Call(updateCountsBinomial_R, y, model, exposure,
-              dataModels, datasets, transforms)
-              * else {
-        theta <- model@theta
-        for (i in seq_along(y)) {
-            y.prop <- rbinom(n = 1L, size = exposure[i], prob = theta[i])
-            y.prop <- as.integer(y.prop)  # needed for R < 3.0
-            diff.log.lik <- diffLogLik(yProp = y.prop,
-                                       y = y,
-                                       indicesY = i,
-                                       dataModels = dataModels,
-                                       datasets = datasets,
-                                       transforms = transforms)
-            accept <- (diff.log.lik >= 0) || (runif(n = 1L) < exp(diff.log.lik))
-            if (accept)
-                y[i] <- y.prop
-        }
-    }
-    y
-}*/
-
 void
 updateCountsBinomial(SEXP y_R, SEXP model_R,
              SEXP exposure_R, SEXP dataModels_R,
@@ -6947,7 +6926,7 @@ updateCountsBinomial(SEXP y_R, SEXP model_R,
 
 void 
 updateDataModelsCounts(SEXP y_R, SEXP dataModels_R, 
-                        SEXP datasets_R, SEXP transforms_R)
+               SEXP datasets_R, SEXP transforms_R)
 {
     int nObs = LENGTH(dataModels_R);
     
@@ -6986,5 +6965,66 @@ updateDataModelsCounts(SEXP y_R, SEXP dataModels_R,
 
         UNPROTECT(nProtect); /* yCollapsed_R and possibly also y_Collapsed_tmp_R*/
 
+    }
+}
+
+
+void 
+updateDataModelsAccount(SEXP combined_R)
+{
+    SEXP dataModels_R = GET_SLOT(combined_R, dataModels_sym);
+    SEXP datasets_R = GET_SLOT(combined_R, datasets_sym);
+    SEXP seriesIndices_R = GET_SLOT(combined_R, seriesIndices_sym);
+    SEXP transforms_R = GET_SLOT(combined_R, transforms_sym);
+    
+    SEXP account_R = GET_SLOT(combined_R, account_sym);
+    SEXP population_R = GET_SLOT(account_R, population_sym);
+    SEXP components_R = GET_SLOT(account_R, components_sym);
+    
+    int* seriesIndices = INTEGER(seriesIndices_R);
+    
+    int nObs = LENGTH(dataModels_R);
+    
+    for (int i = 0; i < nObs; ++i) {
+        
+        SEXP model_R = VECTOR_ELT(dataModels_R, i);
+        SEXP dataset_R = VECTOR_ELT(datasets_R, i);
+        SEXP transform_R = VECTOR_ELT(transforms_R, i);
+        
+        int seriesIndex_r = seriesIndices[i];
+        SEXP series_R = population_R;
+        if (seriesIndex_r > 0) {
+            series_R = VECTOR_ELT(components_R, seriesIndex_r-1);
+        }
+        
+        SEXP seriesCollapsed_R;
+
+        int nProtect  = 0;
+        int i_method_model = *(INTEGER(GET_SLOT(model_R, iMethodModel_sym)));
+        
+        const char *class_name = CHAR(STRING_ELT(GET_SLOT((model_R), R_ClassSymbol), 0));
+        char *found = NULL;
+        found = strstr(class_name, "Poisson");
+        if (found) {
+            
+            SEXP seriesCollapsed_tmp_R;
+            /* collapse_R in demographic is okay with series_R being integer
+             * but type of contents of seriesCollapsed_R will be integer*/
+            PROTECT(seriesCollapsed_tmp_R = dembase_Collapse_R(series_R, transform_R));
+
+            PROTECT(seriesCollapsed_R = coerceVector(seriesCollapsed_tmp_R, REALSXP));
+            nProtect  = 2;
+        }
+        else {
+            
+            PROTECT(seriesCollapsed_R = dembase_Collapse_R(series_R, transform_R));
+            nProtect  = 1;
+        }
+        
+        /* seriesCollapsed_R should now be in appropriate state for model */
+        updateModelUseExp_Internal(model_R, dataset_R,
+                                    seriesCollapsed_R, i_method_model);
+
+        UNPROTECT(nProtect); /* seriesCollapsed_R and possibly also series_Collapsed_tmp_R*/
     }
 }
