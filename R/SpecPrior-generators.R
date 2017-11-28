@@ -1356,8 +1356,13 @@ Exch <- function(covariates = NULL, error = Error()) {
 #'
 #' The prior specified by \code{ExchFixed} has the form
 #'
-#' \code{parameter[j] ~ N(0, sd^2).}
+#' \code{parameter[j] ~ N(mean, sd^2).}
 #'
+#' \code{mean} defaults to 0. In most cases, non-zero means are ignored,
+#' with a warning, when the model is generated. The exception is when
+#' \code{ExchFixed} is being used to specify an intercept term,
+#' when generating fake data.
+#' 
 #' If a value for \code{sd} is not supplied by the user, then a value is
 #' generated when function \code{\link{estimateModel}},
 #' \code{\link{estimateCounts}}, or \code{\link{estimateAccount}} is called.
@@ -1380,6 +1385,7 @@ Exch <- function(covariates = NULL, error = Error()) {
 #' dimension, where there is insufficient information to justify more
 #' complicated priors.
 #'
+#' @param mean Mean. Optional.
 #' @param sd Standard deviation.  Optional.
 #' @param mult Multiplier applied to \code{sd}, if \code{sd}
 #' is generated automatically.  Defaults to 1.
@@ -1399,12 +1405,15 @@ Exch <- function(covariates = NULL, error = Error()) {
 #' ## increase the size of the automatically-generated 'sd'
 #' ExchFixed(mult = 2)
 #' @export
-ExchFixed <- function(sd = NULL, mult = 1) {
+ExchFixed <- function(mean = 0, sd = NULL, mult = 1) {
+    mean <- checkAndTidyMeanOrProb(mean, name = "mean")
+    mean <- new("Parameter", mean)
     tau <- checkAndTidySpecScale(x = sd, name = "sd")
     multTau <- checkAndTidyMult(mult = mult,
                                 scale = tau,
                                 nameScale = "sd")
     methods::new("SpecExchFixed",
+                 mean = mean,
                  tau = tau,
                  multTau = multTau)
 }

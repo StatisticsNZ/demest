@@ -219,9 +219,9 @@ setGeneric("equivalentSample",
            function(mean, se, to = c("binomial", "Poisson"), epsilon = 1e-6)
                standardGeneric("equivalentSample"))
 
-setGeneric("fakeBeta",
+setGeneric("fakePrior",
            function(object, metadata)
-           standardGeneric("fakeBeta"))
+               standardGeneric("fakePrior"))
 
 setGeneric("fetchResults",
            function(object, nameObject, filename, iterations,

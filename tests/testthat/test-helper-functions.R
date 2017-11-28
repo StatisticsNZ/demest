@@ -1235,6 +1235,41 @@ test_that("hasResponse works", {
     expect_false(hasResponse(~ income))
 })
 
+
+## FAKE ######################################################################
+
+test_that("makeFakeScaleAndScaleMix works", {
+    rhalftTrunc1 <- demest:::rhalftTrunc1
+    ## valid inputs
+    A <- new("SpecScale", 0.1)
+    nu <- new("DegreesFreedom", 2)
+    scaleMax <- new("SpecScale", 0.3)
+    functionName <- "Error"
+    set.seed(1)
+    ans.obtained <- makeFakeScaleAndScaleMax(A = A,
+                             nu = nu,
+                             scaleMax = scaleMax,
+                             functionName = functionName)
+    set.seed(1)
+    scale <- new("Scale", rhalftTrunc1(df = 2, scale = 0.1, max = 0.3))
+    scaleMax <- new("Scale", 0.3)
+    ans.expected <- list(scale = scale, scaleMax = scaleMax)
+    if (test.identity)
+        expect_identical(ans.obtained, ans.expected)
+    else
+        expect_equal(ans.obtained, ans.expected)
+    ## no scale specified
+    expect_error(makeFakeScaleAndScaleMax(A = new("SpecScale", as.double(NA)),
+                                          nu = nu,
+                                          scaleMax = scaleMax,
+                                          functionName = functionName),
+                 "need to specify scale of half-t distribution for 'scale' in call to function 'Error'")
+})
+
+
+
+## INITIAL VALUES - PRIORS ###################################################        
+
 test_that("initialCov works", {
     initialCov <- demest:::initialCov
     set.seed(100)
@@ -4085,6 +4120,38 @@ test_that("R and C versions of invlogit1 give same answer", {
     }
 })
 
+test_that("rhalftTrunc1 gives valid answer", {
+    rhalftTrunc1 <- demest:::rhalftTrunc1
+    for (seed in seq_len(100 * n.test)) {
+        set.seed(seed)
+        df <- runif(1, 0.1, 10)
+        scale <- runif(1, 0.1, 10)
+        max <- runif(1, scale, 10)
+        ans <- rhalftTrunc1(df = df, scale = scale, max = max)
+        expect_true(ans > 0)
+        expect_true(ans < max)
+        set.seed(seed + 1)
+        ans.obtained <- rhalftTrunc1(df = df, scale = scale, max = Inf)
+        set.seed(seed + 1)
+        ans.expected <- rhalft(n = 1, df = df, scale = scale)
+        expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of rhalftTrunc1 give same answer", {
+    rhalftTrunc1 <- demest:::rhalftTrunc1
+    for (seed in seq_len(100 * n.test)) {
+        set.seed(seed)
+        df <- runif(1, 0.1, 10)
+        scale <- runif(1, 0.1, 10)
+        max <- runif(1, scale, 10)
+        set.seed(seed + 1)
+        ans.R <- rhalftTrunc1(df = df, scale = scale, max = max, useC = FALSE)
+        set.seed(seed + 1)
+        ans.C <- rhalftTrunc1(df = df, scale = scale, max = max, useC = TRUE)
+        expect_equal(ans.R, ans.C)
+    }
+})
 
 test_that("rinvchisq1 gives valid answer", {
     rinvchisq1 <- demest:::rinvchisq1

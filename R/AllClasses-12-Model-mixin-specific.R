@@ -638,6 +638,7 @@ setClass("SpecsPriorsMixin",
                                  "specsPriors", "namesSpecsPriors"))
              ## 'namesSpecsPriors' refers to terms from 'formulaMu'
              term.labels <- attr(stats::terms(formulaMu), "term.labels")
+             term.labels <- c(term.labels, "(Intercept)")
              not.in.labels <- !(namesSpecsPriors %in% term.labels)
              n.not.in.labels <- sum(not.in.labels)
              if (n.not.in.labels > 0L) {

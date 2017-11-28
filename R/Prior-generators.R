@@ -1,4 +1,61 @@
 
+## fakePrior ##########################################################################
+    
+
+## NO_TESTS
+setMethod("fakePrior",
+          signature(object = "SpecExchNormZero"),
+          function(object, metadata) {
+              ATau <- object@ATau
+              nuTau <- object@nuTau
+              tauMax <- object@tauMax
+              l <- makeFakeScaleAndScaleMax(A = ATau,
+                                            nu = nuTau,
+                                            scaleMax = tauMax,
+                                            functionName = "Error")
+              tau <- l$scale
+              tauMax <- l$scaleMax
+              J <- as.integer(prod(dim(metadata)))
+              methods::new("FakeExchNormZero",
+                           ATau = ATau,
+                           J = J,
+                           nuTau = nuTau,
+                           tau = tau,
+                           tauMax = tauMax)
+          })
+
+
+## initialPrior #########################################################################
+
+setMethod("initialPrior",
+          signature(object = "SpecExchNormZero"),
+          function(object, beta, metadata, sY, isSaturated, ...) {
+              ATau <- object@ATau
+              multTau <- object@multTau
+              nuTau <- object@nuTau
+              tauMax <- object@tauMax
+              J <- makeJ(beta)
+              ATau <- makeAHalfT(A = ATau,
+                                 metadata = metadata,
+                                 sY = sY,
+                                 mult = multTau)
+              tauMax <- makeScaleMax(scaleMax = tauMax,
+                                     A = ATau,
+                                     nu = nuTau)
+              tau <- makeScale(A = ATau,
+                               nu = nuTau,
+                               scaleMax = tauMax)
+              isSaturated <- methods::new("LogicalFlag", isSaturated)
+              methods::new("ExchNormZero",
+                           ATau = ATau,
+                           isSaturated = isSaturated,
+                           J = J,
+                           nuTau = nuTau,
+                           tau = tau,
+                           tauMax = tauMax)
+          })
+
+
 ## initialPrior #######################################################################
 
 ## In 'initialPrior' methods for priors, assume that calling
@@ -10,7 +67,11 @@
 setMethod("initialPrior",
           signature(object = "SpecExchFixed", metadata = "NULL"),
           function(object, beta, metadata, sY, isSaturated, ...) {
+              mean <- object@mean@.Data
               tau <- object@tau
+              if (!all.equal(mean, 0))
+                  warning(gettextf("non-zero mean in '%s' prior for '%s' ignored",
+                                   "ExchFixed", paste(names(metadata), collapse = ":")))
               J <- makeJ(beta)
               if (J > 1L)
                   stop(gettextf("'%s' is %s but '%s' is greater than %d",

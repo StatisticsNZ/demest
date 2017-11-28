@@ -51,15 +51,14 @@ setMethod("fakeBeta",
               as.double(ans)
           })
 
-
+## HAS_TESTS
 setMethod("fakeBeta",
-          signature(object = "MixNormZero",
+          signature(object = "ExchNormZero",
                     metadata = "MetaData"),
           function(object, metadata) {
               J <- object@J@.Data
               tau <- object@tau@.Data
               dim <- dim(metadata)
-              omega.
               ans <- stats::rnorm(n = J,
                                   mean = 0,
                                   sd = tau)
@@ -68,6 +67,8 @@ setMethod("fakeBeta",
               ans <- sweepAllMargins(ans)
               as.double(ans)
           })
+
+
 
           
           

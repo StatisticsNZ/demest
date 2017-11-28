@@ -148,8 +148,10 @@ setClass("ExchFixed",
          prototype = prototype(iMethodPrior = 0L,
                                slotsToExtract = character(),
                                J = methods::new("Length", 1L),
+                               mean = methods::new("Parameter", 0),
                                tau = methods::new("Scale", 1)),
          contains = c("Prior",
+                      "MeanMixin",
                       "TauMixin"),
          validity = function(object) {
              isSaturated <- object@isSaturated@.Data

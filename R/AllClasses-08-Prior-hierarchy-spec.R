@@ -15,7 +15,7 @@ setClass("SpecPrior",
 #'
 #' An object of class \code{SpecExchFixed} specifies
 #' a prior in which
-#'   parameter[j] ~ N(0, sd^2).
+#'   parameter[j] ~ N(mean, sd^2).
 #' For details, see the documentation for function
 #' \code{\link{ExchFixed}}.
 #'
@@ -24,7 +24,8 @@ setClass("SpecPrior",
 #' access, or even know about, the slots of a
 #' \code{SpecExchFixed} object.  The slots are not part of
 #' the API of the package, and may change in future.
-#' 
+#'
+#' @slot mean Mean.
 #' @slot tau Standard deviation.
 #' @slot multTau Multiplier applied to default value for \code{tau}.
 #'
@@ -36,6 +37,7 @@ setClass("SpecPrior",
 #'
 #' @export
 setClass("SpecExchFixed",
+         prototype(mean = methods::new("Parameter", 0)),
          contains = c("MultTauMixin",
              "SpecPrior",
              "SpecTauMixin"))

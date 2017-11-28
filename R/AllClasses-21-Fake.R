@@ -1,5 +1,62 @@
 
 
+setClass("FakePrior",
+         contains = c("VIRTUAL",
+                      "JMixin"))
+
+setClass("FakeExch",
+         contains = c("VIRTUAL",
+                      "FakePrior",
+                      "ComponentFlags"))
+
+setClass("FakeDLM",
+         contains = c("VIRTUAL",
+                      "FakePrior",
+                      "AAlphaMixin",
+                      "AlphaDLMMixin",
+                      "ComponentFlags",
+                      "IAlongMixin",
+                      "IteratorStateMixin",
+                      "IteratorVMixin",
+                      "KLMixin",
+                      "NuAlphaMixin",
+                      "OmegaAlphaMixin",
+                      "OmegaAlphaMaxMixin",
+                      "PhiMixin",
+                      "PhiMinMaxMixin",
+                      "Shape1Shape2PhiMixin"))
+
+
+setClass("FakeExchFixed",
+         contains = c("FakePrior",
+                      "MeanMixin",
+                      "TauMixin"))
+
+setClass("FakeExchNormZero",
+         prototype = prototype(hasAlphaDLM = methods::new("LogicalFlag", FALSE),
+                               hasAlphaICAR = methods::new("LogicalFlag", FALSE),
+                               hasAlphaMix = methods:::new("LogicalFlag", FALSE),
+                               hasAlphaMove = methods::new("LogicalFlag", FALSE),
+                               hasCovariates = methods::new("LogicalFlag", FALSE),
+                               hasSeason = methods::new("LogicalFlag", FALSE),
+                               isRobust = methods::new("LogicalFlag", FALSE),
+                               contains = c("FakeExch",
+                                            "NormMixin",
+                                            "ZeroMixin")))
+
+setClass("FakeDLMNoTrendNormZeroNoSeason",
+         prototype = prototype(hasAlphaDLM = methods::new("LogicalFlag", TRUE),
+                               hasAlphaICAR = methods::new("LogicalFlag", FALSE),
+                               hasAlphaMix = methods:::new("LogicalFlag", FALSE),
+                               hasAlphaMove = methods::new("LogicalFlag", FALSE),
+                               hasCovariates = methods::new("LogicalFlag", FALSE),
+                               hasSeason = methods::new("LogicalFlag", FALSE),
+                               isRobust = methods::new("LogicalFlag", FALSE),
+                               contains = c("FakeDLM",
+                                            "NormMixin",
+                                            "ZeroMixin")))
+
+
 ## HAS_TESTS
 setClass("FakeData",
          slots = c(call = "call",

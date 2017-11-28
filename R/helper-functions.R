@@ -16,25 +16,7 @@ checkAllTermsInFormulaSpecified <- function(formula, namesSpecPriors) {
     NULL
 }
 
-## ## HAS_TESTS
-## makeFakeBetas <- function(y, formula, specPriors, namesSpecPriors, intercept) {
-##     dim.y <- dim(y)
-##     dimnames.y <- dimnames(y)
-##     names.y <- names(y)
-##     metadata.y <- y@metadata
-##     checkTermsFromFormulaFound(y = y, formula = formula)
-##     checkLengthDimInFormula(y = y, formula = formula)
-##     checkAllTermsInFormulaSpecified(formula = formula, namesSpecPriors = namesSpecPriors)
-##     betas <- vector(mode = "list", length = length(namesSpecPriors))
-##     for (i in seq_along(betas)) {
-##         name.split <- strsplit(namesSpecPriors[i], split = ":", fixed = TRUE)[[1L]]
-##         margin <- match(name.split, names.y)
-##         metadata <- metadata.y[margin]
-##         betas[[i]] <- fakeBeta(object = specPriors[[i]], metadata = metadata)
-##     }
-##     betas <- c(list(intercept), betas)
-##     betas
-## }
+## makeFakeBetas
 
 ## ## HAS_TESTS
 ## makeFakeBetasOutput <- function(betas, namesBetas, y) {
@@ -175,8 +157,6 @@ maxWithSubtotal <- function(x, max, subtotal) {
         }
     }
 }
-
-
 
 
 ## SPECIFICATIONS ##################################################################
@@ -721,6 +701,28 @@ checkAndTidySeries <- function(series) {
         methods::new("SpecName", as.character(NA))
 }
 
+## FAKE ######################################################################
+
+## HAS_TESTS
+makeFakeScaleAndScaleMax <- function(A, nu, scaleMax, functionName) {
+    if (is.na(A))
+        stop(gettextf("need to specify scale of half-t distribution for '%s' in call to function '%s'",
+                      "scale", functionName))
+    scaleMax <- makeScaleMax(scaleMax = scaleMax,
+                             A = A,
+                             nu = nu,
+                             isSpec = FALSE)
+    scale <- tryCatch(rhalftTrunc1(df = nu@.Data,
+                                   scale = A@.Data,
+                                   max = scaleMax@.Data),
+                      error = function(e) e)
+    if (methods::is(scale, "error"))
+        stop(gettextf("problem generating scale parameter within function '%s' : %s",
+                      functionName, scale$message))
+    scale <- new("Scale", scale)
+    list(scale = scale,
+         scaleMax = scaleMax)
+}
 
     
 ## INITIAL VALUES - PRIORS ###################################################        
@@ -2990,6 +2992,9 @@ convertToFormulaOrder <- function(betas, formulaMu) {
 ## need to have Cross default for orig-dest or parent-child
 ## HAS_TESTS
 defaultPrior <- function(beta, metadata) {
+    is.intercept <- is.null(metadata)
+    if (is.intercept)
+        return(ExchFixed())
     dim <- dim(metadata)
     names <- names(metadata)
     dimtypes <- dembase::dimtypes(metadata, use.names = FALSE)
@@ -3319,18 +3324,13 @@ makePriors <- function(betas, specs, namesSpecs, margins, y, sY) {
             metadata <- NULL
         else
             metadata <- metadata.y[margin]
-        is.intercept <- i == 1L
         is.saturated <- identical(sort(margin), s)
-        if (is.intercept)
-            spec <- ExchFixed()
-        else {
-            i.spec <- match(name, namesSpecs, nomatch = 0L)
-            has.spec <- i.spec > 0L
-            if (has.spec)
-                spec <- specs[[i.spec]]
-            else
-                spec <- defaultPrior(beta = beta, metadata = metadata)
-        }
+        i.spec <- match(name, namesSpecs, nomatch = 0L)
+        has.spec <- i.spec > 0L
+        if (has.spec)
+            spec <- specs[[i.spec]]
+        else
+            spec <- defaultPrior(beta = beta, metadata = metadata)
         ans[[i]] <- initialPrior(object = spec,
                                  beta = beta,
                                  metadata = metadata,
@@ -3819,6 +3819,38 @@ plotHalfT <- function(df = 7, scale = 1, max = 0.999,
     }
 }
 
+## READY_TO_TRANSLATE_FIRST
+## HAS_TESTS
+rhalftTrunc1 <- function(df, scale, max, useC = FALSE) {
+    ## df
+    stopifnot(is.double(df))
+    stopifnot(identical(length(df), 1L))
+    stopifnot(!is.na(df))
+    stopifnot(df > 0)
+    ## scale
+    stopifnot(is.double(scale))
+    stopifnot(identical(length(scale), 1L))
+    stopifnot(!is.na(scale))
+    stopifnot(scale > 0)
+    ## max
+    stopifnot(is.double(max))
+    stopifnot(identical(length(max), 1L))
+    stopifnot(!is.na(max))
+    stopifnot(max > 0)
+    if (useC) {
+        .Call(rhalftTrunc1_R, df, scale, max)
+    }
+    else {
+        kMaxAttempt <- 1000L
+        for (i in seq_len(kMaxAttempt)) {
+            ans <- stats::rt(n = 1L, df = df)
+            ans <- scale * abs(ans)
+            if (ans < max)
+                return(ans)
+        }
+        stop("unable to generate value for truncated half-t (consider using higher maximum value)")
+    }
+}
 
 
 ## HAS_TESTS
