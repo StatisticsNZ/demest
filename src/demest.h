@@ -12,7 +12,6 @@
 #include <Rdefines.h>
 #include <R_ext/Rdynload.h>
 
-# define DEBUGGING_NEW
 //#define DEBUGGING
 //#define DEBUGGING_EXTRA
 //#define DEBUGNANS /* debugging NaNs */
@@ -316,10 +315,13 @@ SEXP
   /* Box-Cox */
   boxCoxParam_sym,
   
-  /* accounts */
+  /* accounts  and combined accounts*/
   account_sym,
   population_sym,
-  components_sym;
+  components_sym,
+  iteratorPopn_sym,
+  iCell_sym,
+  diffProp_sym;
   
   
   
@@ -842,6 +844,18 @@ double logDensCMPUnnormalised1(int x, double gamma, double nu);
 double rcmpUnder(double mu, double nu, int maxAttempt);
 double rcmpOver(double mu, double nu, int maxAttempt);
 double rcmp1(double mu, double nu, int maxAttempt);
+
+/* update-account */
+double diffLogLikAccountMovePopn(SEXP combined_R);
+double diffLogLikPopn(int diff, int iFirst_r, SEXP iterator_R, 
+                        SEXP population_R, SEXP dataModels_R, 
+                        SEXP datasets_R, SEXP seriesIndices_R, 
+                        SEXP transforms_R);
+double diffLogLikPopnOneDataset(int diff, int iFirst_r, SEXP iterator_R, 
+                        SEXP population_R, SEXP model_R, 
+                        SEXP dataset_R, SEXP transform_R);
+double diffLogLikPopnOneCell(int iAfter_r, int diff, SEXP population_R, 
+                        SEXP model_R, SEXP dataset_R, SEXP transform_R);
 
 /* pointers for routines from dembase package 
  * 

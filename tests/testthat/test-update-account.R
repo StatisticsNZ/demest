@@ -2741,19 +2741,19 @@ test_that("diffLogLikPopn works", {
     transforms <- lapply(transforms, makeCollapseTransformExtra)
     popn <- Population(popn)
     iterator <- CohortIterator(popn)
-    data.models <- list(initialModel(object = datamodels[[1L]],
+    data.models <- list(initialModel(object = data.models[[1L]],
                                             y = datasets[[1L]],
                                             exposure = collapse(popn, transform = transforms[[1L]])),
-                              initialModel(object = datamodels[[2L]],
+                              initialModel(object = data.models[[2L]],
                                             y = datasets[[2L]],
                                             exposure = collapse(popn, transform = transforms[[2L]])),
-                              initialModel(object = datamodels[[3L]],
+                              initialModel(object = data.models[[3L]],
                                             y = datasets[[3L]],
                                             exposure = collapse(births, transform = transforms[[3L]])),
-                              initialModel(object = datamodels[[4L]],
+                              initialModel(object = data.models[[4L]],
                                             y = datasets[[4L]],
                                             exposure = collapse(internal, transform = transforms[[4L]])),
-                              initialModel(object = datamodels[[5L]],
+                              initialModel(object = data.models[[5L]],
                                             y = datasets[[5L]],
                                             exposure = collapse(deaths, transform = transforms[[5L]])))
     ans.obtained <- diffLogLikPopn(diff = 5L,
@@ -2768,14 +2768,14 @@ test_that("diffLogLikPopn works", {
                                              iFirst = 11L,
                                              iterator = iterator,
                                              population = popn,
-                                             model = datamodels[[1L]],
+                                             model = data.models[[1L]],
                                              dataset = datasets[[1L]],
                                              transform = transforms[[1L]]) + 
         diffLogLikPopnOneDataset(diff = 5L,
                                  iFirst = 11L,
                                  iterator = iterator,
                                  population = popn,
-                                 model = datamodels[[2L]],
+                                 model = data.models[[2L]],
                                  dataset = datasets[[2L]],
                                  transform = transforms[[2L]])
     if (test.identity)
@@ -2848,19 +2848,19 @@ test_that("R and C versions of diffLogLikPopn give same answer", {
     transforms <- lapply(transforms, makeCollapseTransformExtra)
     popn <- Population(popn)
     iterator <- CohortIterator(popn)
-    data.models <- list(initialModel(object = datamodels[[1L]],
+    data.models <- list(initialModel(object = data.models[[1L]],
                                            y = datasets[[1L]],
                                            exposure = collapse(popn, transform = transforms[[1L]])),
-                              initialModel(object = datamodels[[2L]],
+                              initialModel(object = data.models[[2L]],
                                            y = datasets[[2L]],
                                            exposure = collapse(popn, transform = transforms[[2L]])),
-                              initialModel(object = datamodels[[3L]],
+                              initialModel(object = data.models[[3L]],
                                            y = datasets[[3L]],
                                            exposure = collapse(births, transform = transforms[[3L]])),
-                              initialModel(object = datamodels[[4L]],
+                              initialModel(object = data.models[[4L]],
                                            y = datasets[[4L]],
                                            exposure = collapse(internal, transform = transforms[[4L]])),
-                              initialModel(object = datamodels[[5L]],
+                              initialModel(object = data.models[[5L]],
                                            y = datasets[[5L]],
                                            exposure = collapse(deaths, transform = transforms[[5L]])))
     ans.R <- diffLogLikPopn(diff = 5L,
