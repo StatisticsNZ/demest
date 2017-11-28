@@ -1391,6 +1391,35 @@ RCMP_WRAPPER_R(rcmp1);
 
 /* *************************** update-account -------------------------- */
 
+/* one-off wrapper for diffLogLikAccountMovePopn */
+SEXP
+diffLogLikAccountMovePopn_R(SEXP combined_R)
+{
+    SEXP combinednew_R;
+    PROTECT(combinednew_R = duplicate(combined_R));
+    double ans = diffLogLikAccountMovePopn(combinednew_R);
+    UNPROTECT(1);
+    return ScalarReal(ans);
+}
+
+/* one-off wrapper for diffLogLikPopn */
+SEXP
+diffLogLikPopn_R(SEXP diff_R, SEXP iFirst_R, SEXP iterator_R, 
+                            SEXP population_R, SEXP dataModels_R, 
+                            SEXP datasets_R, SEXP seriesIndices_R, 
+                            SEXP transforms_R)
+{
+    int diff = *INTEGER(diff_R);
+    int iFirst_r = *INTEGER(iFirst_R);
+    SEXP iteratornew_R;
+    PROTECT(iteratornew_R = duplicate(iterator_R));
+    double ans = diffLogLikPopn(diff, iFirst_r, iteratornew_R,
+                                    population_R, dataModels_R,
+                                    datasets_R, seriesIndices_R,
+                                    transforms_R);
+    UNPROTECT(1);
+    return ScalarReal(ans);
+}
 
 /* one-off wrapper for diffLogLikPopnOneDataset */
 SEXP
@@ -1782,8 +1811,11 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(rcmp1_R, 3),
 
   /* update-account */
-  CALLDEF(diffLogLikPopnOneCell_R, 6),
+  CALLDEF(diffLogLikAccountMovePopn_R, 1),
+  CALLDEF(diffLogLikPopn_R, 8),
   CALLDEF(diffLogLikPopnOneDataset_R, 7),
+  CALLDEF(diffLogLikPopnOneCell_R, 6),
+  
   
   {NULL}
 };
@@ -2103,10 +2135,13 @@ R_init_demest(DllInfo *info)
   ADD_SYM(last);
   /* Box-Cox */
   ADD_SYM(boxCoxParam);
-  /* accounts */
+  /* accounts and combined accounts*/
   ADD_SYM(account);
   ADD_SYM(population);
   ADD_SYM(components);
+  ADD_SYM(iteratorPopn);
+  ADD_SYM(iCell);
+  ADD_SYM(diffProp);
   
   
 #undef ADD_SYM

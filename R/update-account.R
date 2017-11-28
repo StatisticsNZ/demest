@@ -844,7 +844,7 @@ updateProposalAccountMoveComp <- function(combined, useC = FALSE) {
 
 ## Log-Likelihood ##################################################################
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 diffLogLikAccountMovePopn <- function(combined, useC = FALSE) {
     stopifnot(methods::is(combined, "CombinedAccountMovements"))
@@ -872,7 +872,7 @@ diffLogLikAccountMovePopn <- function(combined, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 diffLogLikPopn <- function(diff, iFirst, iterator, population,
                            dataModels, datasets,

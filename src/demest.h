@@ -315,10 +315,13 @@ SEXP
   /* Box-Cox */
   boxCoxParam_sym,
   
-  /* accounts */
+  /* accounts  and combined accounts*/
   account_sym,
   population_sym,
-  components_sym;
+  components_sym,
+  iteratorPopn_sym,
+  iCell_sym,
+  diffProp_sym;
   
   
   
@@ -843,6 +846,11 @@ double rcmpOver(double mu, double nu, int maxAttempt);
 double rcmp1(double mu, double nu, int maxAttempt);
 
 /* update-account */
+double diffLogLikAccountMovePopn(SEXP combined_R);
+double diffLogLikPopn(int diff, int iFirst_r, SEXP iterator_R, 
+                        SEXP population_R, SEXP dataModels_R, 
+                        SEXP datasets_R, SEXP seriesIndices_R, 
+                        SEXP transforms_R);
 double diffLogLikPopnOneDataset(int diff, int iFirst_r, SEXP iterator_R, 
                         SEXP population_R, SEXP model_R, 
                         SEXP dataset_R, SEXP transform_R);

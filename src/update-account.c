@@ -5,109 +5,60 @@
 
 /* ******************** Log-Likelihood ********************** */
 
-
-
-/*
-## READY_TO_TRANSLATE
-## HAS_TESTS
-diffLogLikAccountMovePopn <- function(combined, useC = FALSE) {
-    stopifnot(methods::is(combined, "CombinedAccountMovements"))
-    if (useC) {
-        .Call(diffLogLikAccountMovePopn_R, combined)
-    }
-    else {
-        account <- combined@account
-        population <- account@population
-        iterator <- combined@iteratorPopn
-        dataModels <- combined@dataModels
-        datasets <- combined@datasets
-        seriesIndices <- combined@seriesIndices
-        transforms <- combined@transforms
-        iCell <- combined@iCell
-        diff <- combined@diffProp
-        diffLogLikPopn(diff = diff,
-                       iFirst = iCell,
-                       iterator = iterator,
-                       population = population,
-                       dataModels = dataModels,
-                       datasets = datasets,
-                       seriesIndices = seriesIndices,
-                       transforms = transforms)
-    }
+double 
+diffLogLikAccountMovePopn(SEXP combined_R)
+{
+    SEXP account_R = GET_SLOT(combined_R, account_sym);
+    SEXP population_R = GET_SLOT(account_R, population_sym);
+    SEXP iterator_R = GET_SLOT(combined_R, iteratorPopn_sym);
+    SEXP dataModels_R = GET_SLOT(combined_R, dataModels_sym);
+    SEXP datasets_R = GET_SLOT(combined_R, datasets_sym);
+    SEXP seriesIndices_R = GET_SLOT(combined_R, seriesIndices_sym);
+    SEXP transforms_R = GET_SLOT(combined_R, transforms_sym);
+    int iCell = *INTEGER(GET_SLOT(combined_R, iCell_sym));
+    int diff = *INTEGER(GET_SLOT(combined_R, diffProp_sym));
+         
+    double ans = diffLogLikPopn(diff, iCell, iterator_R, 
+                        population_R, dataModels_R, datasets_R, 
+                        seriesIndices_R, transforms_R);
+    return ans;
 }
-*/
 
 
-/*
-## READY_TO_TRANSLATE
-## HAS_TESTS
-diffLogLikPopn <- function(diff, iFirst, iterator, population,
-                           dataModels, datasets,
-                           seriesIndices, transforms,
-                           useC = FALSE) {
-    ## diff
-    stopifnot(identical(length(diff), 1L))
-    stopifnot(is.integer(diff))
-    stopifnot(!is.na(diff))
-    stopifnot(diff != 0L)
-    ## iFirst
-    stopifnot(identical(length(iFirst), 1L))
-    stopifnot(is.integer(iFirst))
-    stopifnot(!is.na(iFirst))
-    stopifnot(iFirst > 0L)
-    ## iterator
-    stopifnot(is(iterator, "CohortIteratorPopulation"))
-    ## population
-    stopifnot(is(population, "Population"))
-    ## dataModels
-    stopifnot(is.list(dataModels))
-    stopifnot(all(sapply(dataModels, methods::is, "UseExposure")))
-    ## datasets
-    stopifnot(is.list(datasets))
-    stopifnot(all(sapply(datasets, methods::is, "Counts")))
-    ## seriesIndices
-    stopifnot(is.integer(seriesIndices))
-    stopifnot(!any(is.na(seriesIndices)))
-    stopifnot(all(seriesIndices >= 0L))
-    ## transforms
-    stopifnot(is.list(transforms))
-    stopifnot(all(sapply(transforms, methods::is, "CollapseTransformExtra")))
-    ## dataModels and datasets
-    stopifnot(identical(length(dataModels), length(datasets)))
-    ## dataModels and seriesIndices
-    stopifnot(identical(length(dataModels), length(seriesIndices)))
-    ## dataModels and transforms
-    stopifnot(identical(length(dataModels), length(transforms)))
-    if (useC) {
-        .Call(diffLogLikPopn_R,
-              diff, iFirst, iterator, population, dataModels,
-              datasets, seriesIndices, transforms)
-    }
-    else {        
-        ans <- 0
-        for (i.dataset in seq_along(datasets)) {
-            assoc.with.popn <- seriesIndices[i.dataset] == 0L
-            if (assoc.with.popn) {
-                model <- dataModels[[i.dataset]]
-                dataset <- datasets[[i.dataset]]
-                transform <- transforms[[i.dataset]]
-                diff.log.lik <- diffLogLikPopnOneDataset(diff = diff,
-                                                         iFirst = iFirst,
-                                                         iterator = iterator,
-                                                         population = population,
-                                                         model = model,
-                                                         dataset = dataset,
-                                                         transform = transform)
-                if (is.infinite(diff.log.lik))
-                    return(diff.log.lik)
-                ans <- ans + diff.log.lik
+double 
+diffLogLikPopn(int diff, int iFirst_r, SEXP iterator_R, 
+                        SEXP population_R, SEXP dataModels_R, 
+                        SEXP datasets_R, SEXP seriesIndices_R, 
+                        SEXP transforms_R)
+{
+    double ans = 0;
+    int * seriesIndices = INTEGER(seriesIndices_R);
+    
+    int nDatasets = LENGTH(datasets_R);
+    
+    for (int iDataset = 0; iDataset < nDatasets; ++iDataset) {
+        
+        int assocWithPopn = (seriesIndices[iDataset] == 0);
+        
+        if (assocWithPopn) {
+            SEXP model_R = VECTOR_ELT(dataModels_R, iDataset);
+            SEXP dataset_R = VECTOR_ELT(datasets_R, iDataset);
+            SEXP transform_R = VECTOR_ELT(transforms_R, iDataset);
+            
+            double diffLogLik = diffLogLikPopnOneDataset(diff, iFirst_r, 
+                                    iterator_R, population_R, 
+                                    model_R, dataset_R, transform_R);
+            if (R_finite(diffLogLik) ) {
+                ans += diffLogLik;
+            }
+            else { /* infinite */
+                ans = diffLogLik;
             }
         }
-        ans
     }
+     
+    return ans;
 }
-*/
-
 
 double 
 diffLogLikPopnOneDataset(int diff, int iFirst_r, SEXP iterator_R, 
