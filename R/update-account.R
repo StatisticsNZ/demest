@@ -1165,7 +1165,7 @@ diffLogLikCellComp <- function(diff, iComp, iCell, component,
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 diffLogLikCellOneDataset <- function(diff, iCell, component,
                                      model, dataset, transform,
@@ -1215,7 +1215,7 @@ diffLogLikCellOneDataset <- function(diff, iCell, component,
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 diffLogLikPopnPair <- function(diff, iPopnOrig, iPopnDest,
                                iterator, population,

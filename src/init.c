@@ -1450,6 +1450,39 @@ diffLogLikPopnOneCell_R(SEXP iAfter_R, SEXP diff_R, SEXP population_R,
     return ScalarReal(ans);
 }
 
+/* one-off wrapper for diffLogLikCellOneDataset */
+SEXP
+diffLogLikCellOneDataset_R(SEXP diff_R, SEXP iCell_R, SEXP component_R, 
+                SEXP model_R, SEXP dataset_R, SEXP transform_R)
+{
+    int iCell_r = *INTEGER(iCell_R);
+    int diff = *INTEGER(diff_R);
+    double ans = diffLogLikCellOneDataset(diff, iCell_r, component_R, 
+                                    model_R, dataset_R, transform_R);
+    return ScalarReal(ans);
+}
+
+/* one-off wrapper for diffLogLikPopnPair */
+SEXP
+diffLogLikPopnPair_R(SEXP diff_R, SEXP iPopnOrig_R, SEXP iPopnDest_R,
+                            SEXP iterator_R, 
+                            SEXP population_R, SEXP dataModels_R, 
+                            SEXP datasets_R, SEXP seriesIndices_R, 
+                            SEXP transforms_R)
+{
+    int diff = *INTEGER(diff_R);
+    int iPopnOrig_r = *INTEGER(iPopnOrig_R);
+    int iPopnDest_r = *INTEGER(iPopnDest_R);
+    SEXP iteratornew_R;
+    PROTECT(iteratornew_R = duplicate(iterator_R));
+    double ans = diffLogLikPopnPair(diff, iPopnOrig_r, iPopnDest_r,
+                                    iteratornew_R,
+                                    population_R, dataModels_R,
+                                    datasets_R, seriesIndices_R,
+                                    transforms_R);
+    UNPROTECT(1);
+    return ScalarReal(ans);
+}
 /* ******************************************************************************* */
 /* Create table describing R-visible versions of C functions ********************* */
 /* ******************************************************************************* */
@@ -1815,6 +1848,8 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(diffLogLikPopn_R, 8),
   CALLDEF(diffLogLikPopnOneDataset_R, 7),
   CALLDEF(diffLogLikPopnOneCell_R, 6),
+  CALLDEF(diffLogLikCellOneDataset_R,6),
+  CALLDEF(diffLogLikPopnPair_R, 9),
   
   
   {NULL}

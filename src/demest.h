@@ -856,7 +856,13 @@ double diffLogLikPopnOneDataset(int diff, int iFirst_r, SEXP iterator_R,
                         SEXP dataset_R, SEXP transform_R);
 double diffLogLikPopnOneCell(int iAfter_r, int diff, SEXP population_R, 
                         SEXP model_R, SEXP dataset_R, SEXP transform_R);
-
+double diffLogLikCellOneDataset(int diff, int iCell_r, SEXP component_R, 
+                        SEXP model_R, SEXP dataset_R, SEXP transform_R);
+double diffLogLikPopnPair(int diff, int iPopnOrig_r, int iPopnDest_r,
+                        SEXP iterator_R, 
+                        SEXP population_R, SEXP dataModels_R, 
+                        SEXP datasets_R, SEXP seriesIndices_R, 
+                        SEXP transforms_R);
 /* pointers for routines from dembase package 
  * 
  * these have to be populated with R_GetCCallable in the initialisation function */
