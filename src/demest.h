@@ -872,7 +872,11 @@ double diffLogLikPopnPair(int diff, int iPopnOrig_r, int iPopnDest_r,
                         SEXP population_R, SEXP dataModels_R, 
                         SEXP datasets_R, SEXP seriesIndices_R, 
                         SEXP transforms_R);
-
+double diffLogLikAccountMovePool(SEXP combined_R);
+double diffLogLikCellsPool(int diff, int iComp_r, int iCellOut_r, int iCellIn_r,
+                        SEXP component_R, SEXP dataModels_R, 
+                        SEXP datasets_R, SEXP seriesIndices_R, 
+                        SEXP transforms_R);
 double diffLogLikAccountMoveNet(SEXP combined_R);
 double diffLogLikCellsNet(int diff, int iComp_r, 
                         int iCellAdd_r, int iCellSub_r,  

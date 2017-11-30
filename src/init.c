@@ -1391,16 +1391,18 @@ RCMP_WRAPPER_R(rcmp1);
 
 /* *************************** update-account -------------------------- */
 
-/* one-off wrapper for diffLogLikAccountMovePopn */
-SEXP
-diffLogLikAccountMovePopn_R(SEXP combined_R)
-{
-    SEXP combinednew_R;
-    PROTECT(combinednew_R = duplicate(combined_R));
-    double ans = diffLogLikAccountMovePopn(combinednew_R);
-    UNPROTECT(1);
-    return ScalarReal(ans);
-}
+/* wrapper for diffLogLik functions with parameter combined */ 
+#define DIFFLOGLIKCOMBINED_WRAPPER_R(name)         \
+    SEXP name##_R(SEXP combined_R) {    \
+    SEXP combinednew_R;    \
+    PROTECT(combinednew_R = duplicate(combined_R));    \
+    double ans = name(combinednew_R);         \
+    UNPROTECT(1);         \
+    return ScalarReal(ans);         \
+    }
+
+/* wrapper for diffLogLikAccountMovePopn */
+DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogLikAccountMovePopn);
 
 /* one-off wrapper for diffLogLikPopn */
 SEXP
@@ -1450,16 +1452,8 @@ diffLogLikPopnOneCell_R(SEXP iAfter_R, SEXP diff_R, SEXP population_R,
     return ScalarReal(ans);
 }
 
-/* one-off wrapper for diffLogLikAccountMoveOrigDest */
-SEXP
-diffLogLikAccountMoveOrigDest_R(SEXP combined_R)
-{
-    SEXP combinednew_R;
-    PROTECT(combinednew_R = duplicate(combined_R));
-    double ans = diffLogLikAccountMoveOrigDest(combinednew_R);
-    UNPROTECT(1);
-    return ScalarReal(ans);
-}
+/* wrapper for diffLogLikAccountMoveOrigDest */
+DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogLikAccountMoveOrigDest);
 
 
 /* one-off wrapper for diffLogLikCellComp */
@@ -1513,16 +1507,31 @@ diffLogLikPopnPair_R(SEXP diff_R, SEXP iPopnOrig_R, SEXP iPopnDest_R,
     return ScalarReal(ans);
 }
 
-/* one-off wrapper for diffLogLikAccountMoveNet */
+/* wrapper for diffLogLikAccountMovePool */
+DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogLikAccountMovePool);
+
+
+/* one-off wrapper for diffLogLikCellsPool */
 SEXP
-diffLogLikAccountMoveNet_R(SEXP combined_R)
+diffLogLikCellsPool_R(SEXP diff_R, SEXP iComp_R, 
+                            SEXP iCellOut_R, SEXP iCellIn_R,
+                            SEXP component_R, SEXP dataModels_R, 
+                            SEXP datasets_R, SEXP seriesIndices_R, 
+                            SEXP transforms_R)
 {
-    SEXP combinednew_R;
-    PROTECT(combinednew_R = duplicate(combined_R));
-    double ans = diffLogLikAccountMoveNet(combinednew_R);
-    UNPROTECT(1);
+    int diff = *INTEGER(diff_R);
+    int iComp_r = *INTEGER(iComp_R);
+    int iCellOut_r = *INTEGER(iCellOut_R);
+    int iCellIn_r = *INTEGER(iCellIn_R);
+    double ans = diffLogLikCellsPool(diff, iComp_r, iCellOut_r, iCellIn_r,
+                                    component_R, dataModels_R,
+                                    datasets_R, seriesIndices_R,
+                                    transforms_R);
     return ScalarReal(ans);
 }
+
+/* wrapper for diffLogLikAccountMoveNet */
+DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogLikAccountMoveNet);
 
 
 /* one-off wrapper for diffLogLikCellsNet */
@@ -1913,10 +1922,10 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(diffLogLikCellComp_R, 8),
   CALLDEF(diffLogLikCellOneDataset_R,6),
   CALLDEF(diffLogLikPopnPair_R, 9),
-  
+  CALLDEF(diffLogLikAccountMovePool_R, 1),
+  CALLDEF(diffLogLikCellsPool_R, 9),
   CALLDEF(diffLogLikAccountMoveNet_R, 1),
   CALLDEF(diffLogLikCellsNet_R, 9),
-  
   
   {NULL}
 };

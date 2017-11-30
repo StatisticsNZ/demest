@@ -3122,8 +3122,10 @@ test_that("R and C versions of diffLogLikAccountMovePopn give same answer", {
 test_that("diffLogLikAccountMovePool works with CombinedAccountMovements", {
     diffLogLikAccountMovePool <- demest:::diffLogLikAccountMovePool
     diffLogLikCellsPool <- demest:::diffLogLikCellsPool
+    diffLogLikPopnPair <- demest:::diffLogLikPopnPair
     initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    updateProposalAccountMovePool <- demest:::updateProposalAccountMovePool
     population <- Counts(array(seq(1000L, 1500L, 100L),
                                dim = c(3, 2),
                                dimnames = list(reg = c("a", "b", "c"),
@@ -3194,6 +3196,7 @@ test_that("R and C versions of diffLogLikAccountMovePool give same answer with C
     diffLogLikCellsPool <- demest:::diffLogLikCellsPool
     initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    updateProposalAccountMovePool <- demest:::updateProposalAccountMovePool
     population <- Counts(array(seq(1000L, 1500L, 100L),
                                dim = c(3, 2),
                                dimnames = list(reg = c("a", "b", "c"),
@@ -3246,6 +3249,7 @@ test_that("diffLogLikCellsPool works with CombinedAccountMovements", {
     diffLogLikCellsPool <- demest:::diffLogLikCellsPool
     diffLogLikCellOneDataset <- demest:::diffLogLikCellOneDataset
     initialCombinedAccount <- demest:::initialCombinedAccount
+    updateProposalAccountMovePool <- demest:::updateProposalAccountMovePool
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     population <- Counts(array(seq(1000L, 1500L, 100L),
                                dim = c(3, 2),
@@ -3319,6 +3323,7 @@ test_that("R and C versions of diffLogLikCellsPool give same answer with Combine
     diffLogLikCellOneDataset <- demest:::diffLogLikCellOneDataset
     initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    updateProposalAccountMovePool <- demest:::updateProposalAccountMovePool
     population <- Counts(array(seq(1000L, 1500L, 100L),
                                dim = c(3, 2),
                                dimnames = list(reg = c("a", "b", "c"),
@@ -3388,6 +3393,7 @@ test_that("R and C versions of diffLogLikCellsPool give same answer with Combine
 test_that("diffLogLikAccountMoveNet works with CombinedAccountMovements", {
     diffLogLikAccountMoveNet <- demest:::diffLogLikAccountMoveNet
     diffLogLikCellsNet <- demest:::diffLogLikCellsNet
+    diffLogLikPopnPair <- demest:::diffLogLikPopnPair
     initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     updateProposalAccountMoveNet <- demest:::updateProposalAccountMoveNet
@@ -3524,6 +3530,7 @@ test_that("diffLogLikCellsNet works with CombinedAccountMovements", {
     diffLogLikCellsNet <- demest:::diffLogLikCellsNet
     diffLogLikCellOneDataset <- demest:::diffLogLikCellOneDataset
     initialCombinedAccount <- demest:::initialCombinedAccount
+    updateProposalAccountMoveNet <- demest:::updateProposalAccountMoveNet
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     population <- Counts(array(seq(1000L, 1500L, 100L),
                                dim = c(3, 2),
@@ -3601,6 +3608,7 @@ test_that("R and C versions of diffLogLikCellsNet give same answer with Combined
     diffLogLikCellsNet <- demest:::diffLogLikCellsNet
     diffLogLikCellOneDataset <- demest:::diffLogLikCellOneDataset
     initialCombinedAccount <- demest:::initialCombinedAccount
+    updateProposalAccountMoveNet <- demest:::updateProposalAccountMoveNet
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     population <- Counts(array(seq(1000L, 1500L, 100L),
                                dim = c(3, 2),

@@ -1305,7 +1305,7 @@ diffLogLikPopnPair <- function(diff, iPopnOrig, iPopnDest,
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 diffLogLikAccountMovePool <- function(combined, useC = FALSE) {
     stopifnot(methods::is(combined, "CombinedAccountMovements"))
@@ -1351,7 +1351,7 @@ diffLogLikAccountMovePool <- function(combined, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 diffLogLikCellsPool <- function(diff, iComp, iCellOut, iCellIn,
                                component, dataModels, datasets,
@@ -1434,7 +1434,7 @@ diffLogLikCellsPool <- function(diff, iComp, iCellOut, iCellIn,
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 diffLogLikAccountMoveNet <- function(combined, useC = FALSE) {
     stopifnot(methods::is(combined, "CombinedAccountMovements"))
@@ -1483,7 +1483,7 @@ diffLogLikAccountMoveNet <- function(combined, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 diffLogLikCellsNet <- function(diff, iComp, iCellAdd, iCellSub,
                                component, dataModels, datasets,
