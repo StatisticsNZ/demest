@@ -54,6 +54,7 @@ diffLogLikPopn(int diff, int iFirst_r, SEXP iterator_R,
             }
             else { /* infinite */
                 ans = diffLogLik;
+                break; /* break out of for loop */
             }
         }
     }
@@ -139,122 +140,96 @@ diffLogLikPopnOneCell(int iAfter_r, int diff, SEXP population_R,
     return retValue;
 }
 
-/*## READY_TO_TRANSLATE
-## HAS_TESTS
-diffLogLikAccountMoveOrigDest <- function(combined, useC = FALSE) {
-    stopifnot(methods::is(combined, "CombinedAccountMovements"))
-    if (useC) {
-        .Call(diffLogLikAccountMoveOrigDest_R, combined)
-    }
-    else {
-        account <- combined@account
-        i.comp <- combined@iComp
-        component <- account@components[[i.comp]]
-        population <- account@population
-        iterator <- combined@iteratorPopn
-        data.models <- combined@dataModels
-        datasets <- combined@datasets
-        series.indices <- combined@seriesIndices
-        transforms <- combined@transforms
-        i.cell <- combined@iCell
-        i.popn.orig <- combined@iPopnNext
-        i.popn.dest <- combined@iPopnNextOther
-        diff <- combined@diffProp
-        diff.log.lik.cell <- diffLogLikCellComp(diff = diff,
-                                                iComp = i.comp,
-                                                iCell = i.cell,
-                                                component = component,
-                                                dataModels = data.models,
-                                                datasets = datasets,
-                                                seriesIndices = series.indices,
-                                                transforms = transforms)
-        if (is.infinite(diff.log.lik.cell))
-            return(diff.log.lik.cell)
-        diff.log.lik.popn <- diffLogLikPopnPair(diff = diff,
-                                                iPopnOrig = i.popn.orig,
-                                                iPopnDest = i.popn.dest,
-                                                iterator = iterator,
-                                                population = population,
-                                                dataModels = data.models,
-                                                datasets = datasets,
-                                                seriesIndices = series.indices,
-                                                transforms = transforms)
-        diff.log.lik.cell + diff.log.lik.popn
-    }
-}
-*/
 
-/*
-## READY_TO_TRANSLATE
-## HAS_TESTS
-diffLogLikCellComp <- function(diff, iComp, iCell, component,
-                               dataModels, datasets,
-                               seriesIndices, transforms,
-                               useC = FALSE) {
-    ## diff
-    stopifnot(identical(length(diff), 1L))
-    stopifnot(is.integer(diff))
-    stopifnot(!is.na(diff))
-    ## iComp
-    stopifnot(identical(length(iComp), 1L))
-    stopifnot(is.integer(iComp))
-    stopifnot(!is.na(iComp))
-    stopifnot(iComp >= 1L)
-    ## iCell
-    stopifnot(identical(length(iCell), 1L))
-    stopifnot(is.integer(iCell))
-    stopifnot(!is.na(iCell))
-    stopifnot(iCell >= 1L)
-    ## component
-    stopifnot(is(component, "Component"))
-    ## dataModels
-    stopifnot(is.list(dataModels))
-    stopifnot(all(sapply(dataModels, methods::is, "Model")))
-    ## datasets
-    stopifnot(is.list(datasets))
-    stopifnot(all(sapply(datasets, methods::is, "Counts")))
-    ## seriesIndices
-    stopifnot(is.integer(seriesIndices))
-    stopifnot(!any(is.na(seriesIndices)))
-    stopifnot(all(seriesIndices >= 0L))
-    ## transforms
-    stopifnot(is.list(transforms))
-    stopifnot(all(sapply(transforms, methods::is, "CollapseTransformExtra")))
-    ## dataModels and datasets
-    stopifnot(identical(length(dataModels), length(datasets)))
-    ## dataModels and seriesIndices
-    stopifnot(identical(length(dataModels), length(seriesIndices)))
-    ## dataModels and transforms
-    stopifnot(identical(length(dataModels), length(transforms)))
-    if (useC) {
-        .Call(diffLogLikCellComp_R,
-              diff, iComp, iCell, component, dataModels,
-              datasets, seriesIndices, transforms)
+double 
+diffLogLikAccountMoveOrigDest(SEXP combined_R)
+{
+    SEXP account_R = GET_SLOT(combined_R, account_sym);
+    int iComp_r = *INTEGER(GET_SLOT(combined_R, iComp_sym));
+    
+    SEXP component_R = VECTOR_ELT(GET_SLOT(account_R, components_sym), iComp_r - 1);
+    
+    SEXP population_R = GET_SLOT(account_R, population_sym);
+    SEXP iterator_R = GET_SLOT(combined_R, iteratorPopn_sym);
+    SEXP dataModels_R = GET_SLOT(combined_R, dataModels_sym);
+    SEXP datasets_R = GET_SLOT(combined_R, datasets_sym);
+    SEXP seriesIndices_R = GET_SLOT(combined_R, seriesIndices_sym);
+    SEXP transforms_R = GET_SLOT(combined_R, transforms_sym);
+    int iCell_r = *INTEGER(GET_SLOT(combined_R, iCell_sym));
+    int iPopnOrig_r = *INTEGER(GET_SLOT(combined_R, iPopnNext_sym));
+    int iPopnDest_r = *INTEGER(GET_SLOT(combined_R, iPopnNextOther_sym));
+    int diff = *INTEGER(GET_SLOT(combined_R, diffProp_sym));
+    
+    double ans = 0;
+    
+    double diffLogLikCell = diffLogLikCellComp( diff, iComp_r, iCell_r, 
+                                        component_R, 
+                                        dataModels_R, datasets_R, 
+                                        seriesIndices_R, transforms_R);
+    if (R_finite(diffLogLikCell) ) {
+
+        ans += diffLogLikCell;
+        
+        double diffLogLikPopn = diffLogLikPopnPair( diff,
+                                iPopnOrig_r, iPopnDest_r, 
+                                iterator_R, population_R, 
+                                dataModels_R, datasets_R, 
+                                seriesIndices_R, transforms_R);
+    
+        if (R_finite(diffLogLikPopn) ) {
+            ans += diffLogLikPopn;
+           
+        }
+        else { /* infinite */
+            ans = diffLogLikPopn;
+        }    
     }
-    else {
-        ans <- 0
-        for (i.dataset in seq_along(datasets)) {
-            assoc.with.comp <- seriesIndices[i.dataset] == iComp
-            if (assoc.with.comp) {
-                dataset <- datasets[[i.dataset]]
-                model <- dataModels[[i.dataset]]
-                transform <- transforms[[i.dataset]]
-                diff.dataset <- diffLogLikCellOneDataset(diff = diff,
-                                                         iCell = iCell,
-                                                         component = component,
-                                                         model = model,
-                                                         dataset = dataset,
-                                                         transform = transform)
-                if (is.infinite(diff.dataset))
-                    return(diff.dataset)
-                ans <- ans + diff.dataset
+    else { /* infinite */
+        ans = diffLogLikCell;
+    }
+    
+    return ans;
+}
+
+
+double 
+diffLogLikCellComp(int diff, int iComp_r, int iCell_r,  
+                        SEXP component_R, SEXP dataModels_R, 
+                        SEXP datasets_R, SEXP seriesIndices_R, 
+                        SEXP transforms_R)
+{
+    double ans = 0;
+    
+    int nDatasets = LENGTH(datasets_R);
+    int * seriesIndices = INTEGER(seriesIndices_R);
+    
+    for(int iDataset = 0; iDataset < nDatasets; ++iDataset) {
+        
+        int assocWithComp = ( seriesIndices[iDataset] == iComp_r );
+        
+        if (assocWithComp) {
+            
+            SEXP model_R = VECTOR_ELT(dataModels_R, iDataset);
+            SEXP dataset_R = VECTOR_ELT(datasets_R, iDataset);
+            SEXP transform_R = VECTOR_ELT(transforms_R, iDataset);
+            
+            double diffDataset = diffLogLikCellOneDataset( diff,
+                                    iCell_r, component_R, 
+                                    model_R, dataset_R, transform_R);
+            if (R_finite(diffDataset) ) {
+                
+                ans += diffDataset;
+                
+            }
+            else { /* infinite */
+                ans = diffDataset;
+                break; /* break out of for loop */
             }
         }
-        ans
     }
+    
+    return ans;
 }
-*/
-
 
 double 
 diffLogLikCellOneDataset(int diff, int iCell_r, SEXP component_R, 
@@ -355,12 +330,358 @@ diffLogLikPopnPair(int diff, int iPopnOrig_r, int iPopnDest_r,
                         }
                         else { /* infinite */
                             ans = diffDest;
+                            break; /* break out of for loop */
                         }    
                     }
                     else { /* infinite */
                         ans = diffOrig;
+                        break; /* break out of for loop */
                     }
                 }
+            }
+        }
+    }
+    
+    return ans;
+}
+
+/*
+## READY_TO_TRANSLATE
+## HAS_TESTS
+diffLogLikAccountMovePool <- function(combined, useC = FALSE) {
+    stopifnot(methods::is(combined, "CombinedAccountMovements"))
+    if (useC) {
+        .Call(diffLogLikAccountMovePool_R, combined)
+    }
+    else {
+        account <- combined@account
+        i.comp <- combined@iComp
+        component <- account@components[[i.comp]]
+        population <- account@population
+        iterator <- combined@iteratorPopn
+        data.models <- combined@dataModels
+        datasets <- combined@datasets
+        series.indices <- combined@seriesIndices
+        transforms <- combined@transforms
+        i.cell.out <- combined@iCell
+        i.cell.in <- combined@iCellOther
+        i.popn.out <- combined@iPopnNext
+        i.popn.in <- combined@iPopnNextOther
+        diff <- combined@diffProp
+        diff.log.lik.cells <- diffLogLikCellsPool(diff = diff,
+                                                  iCellOut = i.cell.out,
+                                                  iCellIn = i.cell.in,
+                                                  iComp = i.comp,
+                                                  component = component,
+                                                  dataModels = data.models,
+                                                  datasets = datasets,
+                                                  seriesIndices = series.indices,
+                                                  transforms = transforms)
+        if (is.infinite(diff.log.lik.cells))
+            return(diff.log.lik.cells)
+        diff.log.lik.popn <- diffLogLikPopnPair(diff = diff,
+                                                iPopnOrig = i.popn.out,
+                                                iPopnDest = i.popn.in,
+                                                iterator = iterator,
+                                                population = population,
+                                                dataModels = data.models,
+                                                datasets = datasets,
+                                                seriesIndices = series.indices,
+                                                transforms = transforms)
+        diff.log.lik.cells + diff.log.lik.popn
+    }
+}
+*/
+
+
+/*
+## READY_TO_TRANSLATE
+## HAS_TESTS
+diffLogLikCellsPool <- function(diff, iComp, iCellOut, iCellIn,
+                               component, dataModels, datasets,
+                               seriesIndices, transforms,
+                               useC = FALSE) {
+    ## diff
+    stopifnot(identical(length(diff), 1L))
+    stopifnot(is.integer(diff))
+    stopifnot(!is.na(diff))
+    ## iComp
+    stopifnot(identical(length(iComp), 1L))
+    stopifnot(is.integer(iComp))
+    stopifnot(!is.na(iComp))
+    stopifnot(iComp > 0L)
+    ## iCellOut
+    stopifnot(identical(length(iCellOut), 1L))
+    stopifnot(is.integer(iCellOut))
+    stopifnot(!is.na(iCellOut))
+    stopifnot(iCellOut > 0L)
+    ## iCellIn
+    stopifnot(identical(length(iCellIn), 1L))
+    stopifnot(is.integer(iCellIn))
+    stopifnot(!is.na(iCellIn))
+    stopifnot(iCellIn > 0L)
+    ## component
+    stopifnot(is(component, "Component"))
+    ## dataModels
+    stopifnot(is.list(dataModels))
+    stopifnot(all(sapply(dataModels, is, "Model")))
+    ## datasets
+    stopifnot(is.list(datasets))
+    stopifnot(all(sapply(datasets, is, "Counts")))
+    ## seriesIndices
+    stopifnot(is.integer(seriesIndices))
+    stopifnot(!any(is.na(seriesIndices)))
+    stopifnot(all(seriesIndices >= 0L))
+    ## transforms
+    stopifnot(is.list(transforms))
+    stopifnot(all(sapply(transforms, is, "CollapseTransformExtra")))
+    ## dataModels and datasets
+    stopifnot(identical(length(dataModels), length(datasets)))
+    ## dataModels and seriesIndices
+    stopifnot(identical(length(dataModels), length(seriesIndices)))
+    ## dataModels and transforms
+    stopifnot(identical(length(dataModels), length(transforms)))
+    if (useC) {
+        .Call(diffLogLikCellsPool_R,
+              diff, iComp, iCellOut, iCellIn, component, dataModels,
+              datasets, seriesIndices, transforms)
+    }
+    else {
+        ans <- 0
+        for (i.dataset in seq_along(datasets)) {
+            assoc.with.comp <- seriesIndices[i.dataset] == iComp
+            if (assoc.with.comp) {
+                dataset <- datasets[[i.dataset]]
+                model <- dataModels[[i.dataset]]
+                transform <- transforms[[i.dataset]]
+                ## 'diff' added to 'out' and 'in' cells
+                diff.log.lik.out <- diffLogLikCellOneDataset(diff = diff,
+                                                             iCell = iCellOut,
+                                                             component = component,
+                                                             model = model,
+                                                             dataset = dataset,
+                                                             transform = transform)
+                if (is.infinite(diff.log.lik.out))
+                    return(diff.log.lik.out)
+                diff.log.lik.in <- diffLogLikCellOneDataset(diff = diff,
+                                                            iCell = iCellIn,
+                                                            component = component,
+                                                            model = model,
+                                                            dataset = dataset,
+                                                            transform = transform)
+                if (is.infinite(diff.log.lik.in))
+                    return(diff.log.lik.in)
+                ans <- ans + diff.log.lik.out + diff.log.lik.in
+            }
+        }
+        ans
+    }
+}
+*/
+
+
+/*
+## READY_TO_TRANSLATE
+## HAS_TESTS
+diffLogLikAccountMoveNet <- function(combined, useC = FALSE) {
+    stopifnot(methods::is(combined, "CombinedAccountMovements"))
+    if (useC) {
+        .Call(diffLogLikAccountMoveNet_R, combined)
+    }
+    else {
+        account <- combined@account
+        i.comp <- combined@iComp
+        component <- account@components[[i.comp]]
+        population <- account@population
+        iterator <- combined@iteratorPopn
+        data.models <- combined@dataModels
+        datasets <- combined@datasets
+        series.indices <- combined@seriesIndices
+        transforms <- combined@transforms
+        i.cell.add <- combined@iCell
+        i.cell.sub <- combined@iCellOther
+        i.popn.add <- combined@iPopnNext
+        i.popn.sub <- combined@iPopnNextOther
+        diff <- combined@diffProp
+        diff.log.lik.cells <- diffLogLikCellsNet(diff = diff,
+                                                 iCellAdd = i.cell.add,
+                                                 iCellSub = i.cell.sub,
+                                                 iComp = i.comp,
+                                                 component = component,
+                                                 dataModels = data.models,
+                                                 datasets = datasets,
+                                                 seriesIndices = series.indices,
+                                                 transforms = transforms)
+        if (is.infinite(diff.log.lik.cells))
+            return(diff.log.lik.cells)
+        ## 'diffLogLikPopnPair assumes 'diff' is subtracted from first cohort
+        ## and added to second, which is what happens with orig-dest and pool.
+        ## To instead add and subtract, we use -diff.
+        diff.log.lik.popn <- diffLogLikPopnPair(diff = -diff, 
+                                                iPopnOrig = i.popn.add,
+                                                iPopnDest = i.popn.sub,
+                                                iterator = iterator,
+                                                population = population,
+                                                dataModels = data.models,
+                                                datasets = datasets,
+                                                seriesIndices = series.indices,
+                                                transforms = transforms)
+        diff.log.lik.cells + diff.log.lik.popn
+    }
+}
+*/
+
+
+/*
+## READY_TO_TRANSLATE
+## HAS_TESTS
+diffLogLikCellsNet <- function(diff, iComp, iCellAdd, iCellSub,
+                               component, dataModels, datasets,
+                               seriesIndices, transforms,
+                               useC = FALSE) {
+    ## diff
+    stopifnot(identical(length(diff), 1L))
+    stopifnot(is.integer(diff))
+    stopifnot(!is.na(diff))
+    ## iComp
+    stopifnot(identical(length(iComp), 1L))
+    stopifnot(is.integer(iComp))
+    stopifnot(!is.na(iComp))
+    stopifnot(iComp > 0L)
+    ## iCellAdd
+    stopifnot(identical(length(iCellAdd), 1L))
+    stopifnot(is.integer(iCellAdd))
+    stopifnot(!is.na(iCellAdd))
+    stopifnot(iCellAdd > 0L)
+    ## iCellSub
+    stopifnot(identical(length(iCellSub), 1L))
+    stopifnot(is.integer(iCellSub))
+    stopifnot(!is.na(iCellSub))
+    stopifnot(iCellSub > 0L)
+    ## component
+    stopifnot(is(component, "Component"))
+    ## dataModels
+    stopifnot(is.list(dataModels))
+    stopifnot(all(sapply(dataModels, is, "Model")))
+    ## datasets
+    stopifnot(is.list(datasets))
+    stopifnot(all(sapply(datasets, is, "Counts")))
+    ## seriesIndices
+    stopifnot(is.integer(seriesIndices))
+    stopifnot(!any(is.na(seriesIndices)))
+    stopifnot(all(seriesIndices >= 0L))
+    ## transforms
+    stopifnot(is.list(transforms))
+    stopifnot(all(sapply(transforms, is, "CollapseTransformExtra")))
+    ## dataModels and datasets
+    stopifnot(identical(length(dataModels), length(datasets)))
+    ## dataModels and seriesIndices
+    stopifnot(identical(length(dataModels), length(seriesIndices)))
+    ## dataModels and transforms
+    stopifnot(identical(length(dataModels), length(transforms)))
+    if (useC) {
+        .Call(diffLogLikCellsNet_R,
+              diff, iComp, iCellAdd, iCellSub, component, dataModels,
+              datasets, seriesIndices, transforms)
+    }
+    else {
+        ans <- 0
+        for (i.dataset in seq_along(datasets)) {
+            assoc.with.comp <- seriesIndices[i.dataset] == iComp
+            if (assoc.with.comp) {
+                dataset <- datasets[[i.dataset]]
+                model <- dataModels[[i.dataset]]
+                transform <- transforms[[i.dataset]]
+                ## 'diff' added to 'add' cell and subtracted from 'sub' cell
+                diff.log.lik.add <- diffLogLikCellOneDataset(diff = diff,
+                                                             iCell = iCellAdd,
+                                                             component = component,
+                                                             model = model,
+                                                             dataset = dataset,
+                                                             transform = transform)
+                if (is.infinite(diff.log.lik.add))
+                    return(diff.log.lik.add)
+                diff.log.lik.sub <- diffLogLikCellOneDataset(diff = -diff,
+                                                             iCell = iCellSub,
+                                                             component = component,
+                                                             model = model,
+                                                             dataset = dataset,
+                                                             transform = transform)
+                if (is.infinite(diff.log.lik.sub))
+                    return(diff.log.lik.sub)
+                ans <- ans + diff.log.lik.add + diff.log.lik.sub
+            }
+        }
+        ans
+    }
+}        
+
+
+*/
+
+
+double 
+diffLogLikCellsNet(int diff, int iComp_r, int iCellAdd_r, int iCellSub_r,  
+                        SEXP component_R, SEXP dataModels_R, 
+                        SEXP datasets_R, SEXP seriesIndices_R, 
+                        SEXP transforms_R)
+{
+    /*    ans <- 0
+        for (i.dataset in seq_along(datasets)) {
+            assoc.with.comp <- seriesIndices[i.dataset] == iComp
+            if (assoc.with.comp) {
+                dataset <- datasets[[i.dataset]]
+                model <- dataModels[[i.dataset]]
+                transform <- transforms[[i.dataset]]
+                ## 'diff' added to 'add' cell and subtracted from 'sub' cell
+                diff.log.lik.add <- diffLogLikCellOneDataset(diff = diff,
+                                                             iCell = iCellAdd,
+                                                             component = component,
+                                                             model = model,
+                                                             dataset = dataset,
+                                                             transform = transform)
+                if (is.infinite(diff.log.lik.add))
+                    return(diff.log.lik.add)
+    */
+    double ans = 0;
+    
+    int nDatasets = LENGTH(datasets_R);
+    int * seriesIndices = INTEGER(seriesIndices_R);
+    
+    for(int iDataset = 0; iDataset < nDatasets; ++iDataset) {
+        
+        int assocWithComp = ( seriesIndices[iDataset] == iComp_r );
+        
+        if (assocWithComp) {
+            
+            SEXP model_R = VECTOR_ELT(dataModels_R, iDataset);
+            SEXP dataset_R = VECTOR_ELT(datasets_R, iDataset);
+            SEXP transform_R = VECTOR_ELT(transforms_R, iDataset);
+            
+            double diffLogLikAdd = diffLogLikCellOneDataset( diff,
+                                    iCellAdd_r, component_R, 
+                                    model_R, dataset_R, transform_R);
+            if (R_finite(diffLogLikAdd) ) {
+                
+                ans += diffLogLikAdd;
+                
+                double diffLogLikSub = diffLogLikCellOneDataset( -diff,
+                                    iCellSub_r, component_R, 
+                                    model_R, dataset_R, transform_R);
+                if (R_finite(diffLogLikSub) ) {
+                    
+                    ans += diffLogLikSub;
+                    
+                }
+                else { /* infinite */
+                    ans = diffLogLikSub;
+                    break; /* break out of for loop */
+                }
+                
+            }
+            else { /* infinite */
+                ans = diffLogLikAdd;
+                break; /* break out of for loop */
             }
         }
     }

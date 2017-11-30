@@ -1450,6 +1450,35 @@ diffLogLikPopnOneCell_R(SEXP iAfter_R, SEXP diff_R, SEXP population_R,
     return ScalarReal(ans);
 }
 
+/* one-off wrapper for diffLogLikAccountMoveOrigDest */
+SEXP
+diffLogLikAccountMoveOrigDest_R(SEXP combined_R)
+{
+    SEXP combinednew_R;
+    PROTECT(combinednew_R = duplicate(combined_R));
+    double ans = diffLogLikAccountMoveOrigDest(combinednew_R);
+    UNPROTECT(1);
+    return ScalarReal(ans);
+}
+
+
+/* one-off wrapper for diffLogLikCellComp */
+SEXP
+diffLogLikCellComp_R(SEXP diff_R, SEXP iComp_R, SEXP iCell_R,
+                            SEXP component_R, SEXP dataModels_R, 
+                            SEXP datasets_R, SEXP seriesIndices_R, 
+                            SEXP transforms_R)
+{
+    int diff = *INTEGER(diff_R);
+    int iComp_r = *INTEGER(iComp_R);
+    int iCell_r = *INTEGER(iCell_R);
+    double ans = diffLogLikCellComp(diff, iComp_r, iCell_r,
+                                    component_R, dataModels_R,
+                                    datasets_R, seriesIndices_R,
+                                    transforms_R);
+    return ScalarReal(ans);
+}
+
 /* one-off wrapper for diffLogLikCellOneDataset */
 SEXP
 diffLogLikCellOneDataset_R(SEXP diff_R, SEXP iCell_R, SEXP component_R, 
@@ -1483,6 +1512,28 @@ diffLogLikPopnPair_R(SEXP diff_R, SEXP iPopnOrig_R, SEXP iPopnDest_R,
     UNPROTECT(1);
     return ScalarReal(ans);
 }
+
+
+
+/* one-off wrapper for diffLogLikCellsNet */
+SEXP
+diffLogLikCellsNet_R(SEXP diff_R, SEXP iComp_R, 
+                            SEXP iCellAdd_R, SEXP iCellSub_R,
+                            SEXP component_R, SEXP dataModels_R, 
+                            SEXP datasets_R, SEXP seriesIndices_R, 
+                            SEXP transforms_R)
+{
+    int diff = *INTEGER(diff_R);
+    int iComp_r = *INTEGER(iComp_R);
+    int iCellAdd_r = *INTEGER(iCellAdd_R);
+    int iCellSub_r = *INTEGER(iCellSub_R);
+    double ans = diffLogLikCellsNet(diff, iComp_r, iCellAdd_r, iCellSub_r,
+                                    component_R, dataModels_R,
+                                    datasets_R, seriesIndices_R,
+                                    transforms_R);
+    return ScalarReal(ans);
+}
+
 /* ******************************************************************************* */
 /* Create table describing R-visible versions of C functions ********************* */
 /* ******************************************************************************* */
@@ -1848,8 +1899,12 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(diffLogLikPopn_R, 8),
   CALLDEF(diffLogLikPopnOneDataset_R, 7),
   CALLDEF(diffLogLikPopnOneCell_R, 6),
+  CALLDEF(diffLogLikAccountMoveOrigDest_R, 1),
+  CALLDEF(diffLogLikCellComp_R, 8),
   CALLDEF(diffLogLikCellOneDataset_R,6),
   CALLDEF(diffLogLikPopnPair_R, 9),
+  
+  CALLDEF(diffLogLikCellsNet_R, 9),
   
   
   {NULL}
@@ -2176,6 +2231,9 @@ R_init_demest(DllInfo *info)
   ADD_SYM(components);
   ADD_SYM(iteratorPopn);
   ADD_SYM(iCell);
+  ADD_SYM(iComp);
+  ADD_SYM(iPopnNext);
+  ADD_SYM(iPopnNextOther);
   ADD_SYM(diffProp);
   
   

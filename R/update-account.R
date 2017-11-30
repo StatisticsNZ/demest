@@ -1052,7 +1052,7 @@ diffLogLikPopnOneCell <- function(iAfter, diff, population, model,
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 diffLogLikAccountMoveOrigDest <- function(combined, useC = FALSE) {
     stopifnot(methods::is(combined, "CombinedAccountMovements"))
@@ -1096,7 +1096,7 @@ diffLogLikAccountMoveOrigDest <- function(combined, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 diffLogLikCellComp <- function(diff, iComp, iCell, component,
                                dataModels, datasets,

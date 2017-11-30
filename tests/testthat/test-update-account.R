@@ -2279,13 +2279,13 @@ test_that("diffLogLikCellComp works", {
     ans.expected <- diffLogLikCellOneDataset(diff = diff,
                                              iCell = iCell,
                                              component = component,
-                                             model = datamodels[[1]],
+                                             model = data.models[[1]],
                                              dataset = datasets[[1]],
                                              transform = transforms[[1]]) +
         diffLogLikCellOneDataset(diff = diff,
                                  iCell = iCell,
                                  component = component,
-                                 model = datamodels[[2]],
+                                 model = data.models[[2]],
                                  dataset = datasets[[2]],
                                  transform = transforms[[2]])
     expect_identical(ans.obtained, ans.expected)
