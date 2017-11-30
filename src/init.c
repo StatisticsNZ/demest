@@ -1513,6 +1513,16 @@ diffLogLikPopnPair_R(SEXP diff_R, SEXP iPopnOrig_R, SEXP iPopnDest_R,
     return ScalarReal(ans);
 }
 
+/* one-off wrapper for diffLogLikAccountMoveNet */
+SEXP
+diffLogLikAccountMoveNet_R(SEXP combined_R)
+{
+    SEXP combinednew_R;
+    PROTECT(combinednew_R = duplicate(combined_R));
+    double ans = diffLogLikAccountMoveNet(combinednew_R);
+    UNPROTECT(1);
+    return ScalarReal(ans);
+}
 
 
 /* one-off wrapper for diffLogLikCellsNet */
@@ -1904,6 +1914,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(diffLogLikCellOneDataset_R,6),
   CALLDEF(diffLogLikPopnPair_R, 9),
   
+  CALLDEF(diffLogLikAccountMoveNet_R, 1),
   CALLDEF(diffLogLikCellsNet_R, 9),
   
   
@@ -2231,6 +2242,7 @@ R_init_demest(DllInfo *info)
   ADD_SYM(components);
   ADD_SYM(iteratorPopn);
   ADD_SYM(iCell);
+  ADD_SYM(iCellOther);
   ADD_SYM(iComp);
   ADD_SYM(iPopnNext);
   ADD_SYM(iPopnNextOther);

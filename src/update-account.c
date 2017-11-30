@@ -531,6 +531,104 @@ diffLogLikAccountMoveNet <- function(combined, useC = FALSE) {
 }
 */
 
+double 
+diffLogLikAccountMoveNet(SEXP combined_R)
+{
+    /*        account <- combined@account
+        i.comp <- combined@iComp
+        component <- account@components[[i.comp]]
+        population <- account@population
+        iterator <- combined@iteratorPopn
+        data.models <- combined@dataModels
+        datasets <- combined@datasets
+        series.indices <- combined@seriesIndices
+        transforms <- combined@transforms
+        i.cell.add <- combined@iCell
+        i.cell.sub <- combined@iCellOther
+        i.popn.add <- combined@iPopnNext
+        i.popn.sub <- combined@iPopnNextOther
+        diff <- combined@diffProp
+*/
+    SEXP account_R = GET_SLOT(combined_R, account_sym);
+    int iComp_r = *INTEGER(GET_SLOT(combined_R, iComp_sym));
+    
+    SEXP component_R = VECTOR_ELT(GET_SLOT(account_R, components_sym), iComp_r - 1);
+    
+    SEXP population_R = GET_SLOT(account_R, population_sym);
+    SEXP iterator_R = GET_SLOT(combined_R, iteratorPopn_sym);
+    SEXP dataModels_R = GET_SLOT(combined_R, dataModels_sym);
+    SEXP datasets_R = GET_SLOT(combined_R, datasets_sym);
+    SEXP seriesIndices_R = GET_SLOT(combined_R, seriesIndices_sym);
+    SEXP transforms_R = GET_SLOT(combined_R, transforms_sym);
+    int iCellAdd_r = *INTEGER(GET_SLOT(combined_R, iCell_sym));
+    int iCellSub_r = *INTEGER(GET_SLOT(combined_R, iCellOther_sym));
+    int iPopnAdd_r = *INTEGER(GET_SLOT(combined_R, iPopnNext_sym));
+    int iPopnSub_r = *INTEGER(GET_SLOT(combined_R, iPopnNextOther_sym));
+    int diff = *INTEGER(GET_SLOT(combined_R, diffProp_sym));
+    
+    double ans = 0;
+    
+    /*diff.log.lik.cells <- diffLogLikCellsNet(diff = diff,
+                                                 iCellAdd = i.cell.add,
+                                                 iCellSub = i.cell.sub,
+                                                 iComp = i.comp,
+                                                 component = component,
+                                                 dataModels = data.models,
+                                                 datasets = datasets,
+                                                 seriesIndices = series.indices,
+                                                 transforms = transforms)
+        if (is.infinite(diff.log.lik.cells))
+            return(diff.log.lik.cells)
+        */
+    
+    double diffLogLikCells = diffLogLikCellsNet( diff, iComp_r,
+                                        iCellAdd_r, iCellSub_r, 
+                                        component_R, 
+                                        dataModels_R, datasets_R, 
+                                        seriesIndices_R, transforms_R);
+    if (R_finite(diffLogLikCells) ) {
+
+        ans += diffLogLikCells;
+        
+        /*## 'diffLogLikPopnPair assumes 'diff' is subtracted from first cohort
+        ## and added to second, which is what happens with orig-dest and pool.
+        ## To instead add and subtract, we use -diff.
+        diff.log.lik.popn <- diffLogLikPopnPair(diff = -diff, 
+                                                iPopnOrig = i.popn.add,
+                                                iPopnDest = i.popn.sub,
+                                                iterator = iterator,
+                                                population = population,
+                                                dataModels = data.models,
+                                                datasets = datasets,
+                                                seriesIndices = series.indices,
+                                                transforms = transforms)
+        */
+        
+        /*'diffLogLikPopnPair assumes 'diff' is subtracted from first cohort
+         and added to second, which is what happens with orig-dest and pool.
+         To instead add and subtract, we use -diff.         */
+        double diffLogLikPopn = diffLogLikPopnPair( -diff,
+                                iPopnAdd_r, iPopnSub_r, 
+                                iterator_R, population_R, 
+                                dataModels_R, datasets_R, 
+                                seriesIndices_R, transforms_R);
+    
+        if (R_finite(diffLogLikPopn) ) {
+            ans += diffLogLikPopn;
+           
+        }
+        else { /* infinite */
+            ans = diffLogLikPopn;
+        }    
+    }
+    else { /* infinite */
+        ans = diffLogLikCells;
+    }
+    
+    return ans;
+}
+
+
 
 /*
 ## READY_TO_TRANSLATE
