@@ -219,8 +219,12 @@ setGeneric("equivalentSample",
            function(mean, se, to = c("binomial", "Poisson"), epsilon = 1e-6)
                standardGeneric("equivalentSample"))
 
+setGeneric("fakeBeta",
+           function(object)
+               standardGeneric("fakeBeta"))
+
 setGeneric("fakePrior",
-           function(object, metadata)
+           function(object, metadata, isSaturated)
                standardGeneric("fakePrior"))
 
 setGeneric("fetchResults",
@@ -296,6 +300,10 @@ setGeneric("makeCellInLik",
                model@cellInLik <- !is.na(y)
                model
            })
+
+setGeneric("makeFakeOutputPrior",
+           function(prior, metadata)
+               standardGeneric("makeFakeOutputPrior"))
 
 setGeneric("makeTransformExpToComp",
            function(exposure, component, nameComponent)

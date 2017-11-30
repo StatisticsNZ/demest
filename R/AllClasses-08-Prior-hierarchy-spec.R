@@ -37,10 +37,11 @@ setClass("SpecPrior",
 #'
 #' @export
 setClass("SpecExchFixed",
-         prototype(mean = methods::new("Parameter", 0)),
-         contains = c("MultTauMixin",
-             "SpecPrior",
-             "SpecTauMixin"))
+         prototype = prototype(mean = methods::new("Parameter", 0)),
+         contains = c("MeanMixin",
+                      "MultTauMixin",
+                      "SpecPrior",
+                      "SpecTauMixin"))
 
 
 #' A S4 class to specify an exchangeable prior.

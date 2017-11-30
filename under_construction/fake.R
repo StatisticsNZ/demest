@@ -1,102 +1,7 @@
 
-setMethod("fakePrior",
-          signature(object = "SpecDLMNoTrendNormZeroNoSeason"),
-          function(object, metadata) {
-              ATau <- object@ATau
-              nuTau <- object@nuTau
-              tauMax <- object@tauMax
-              AAlpha <- object@AAlpha
-              nuAlpha <- object@nuAlpha
-              omegaAlphaMax <- object@omegaAlphaMax
-              phi <- object@phi
-              minPhi <- object@minPhi
-              maxPhi <- object@maxPhi
-              shape1Phi <- object@shape1Phi
-              shape2Phi <- object@shape2Phi
-              l <- fakeScaleAndScaleMax(A = ATau,
-                                        nu = nuTau,
-                                        scaleMax = tauMax,
-                                        functionName = "Error")
-              tau <- l$scale
-              tauMax <- l$scaleMax
-              l <- fakeScaleAndScaleMax(A = ATau,
-                                        nu = nuTau,
-                                        scaleMax = tauMax,
-                                        functionName = "Level")
-              omega <- l$scale
-              omegaMax <- l$scaleMax
-              phi <- fakePhi(phi = phi,
-                             min = minPhi,
-                             max = maxPhi,
-                             shape1 = shape1Phi@.Data,
-                             shape2 <- shape2Phi@.Data)
-              iAlong <- dembase::checkAndTidyAlong(along = along,
-                                                   metadata = metadata,
-                                                   numericDimScales = TRUE)
-              K <- makeK(dim = dim, iAlong = iAlong)
-              L <- makeL(dim = dim, iAlong = iAlong)
-              dim.alpha.delta <- dim
-              dim.alpha.delta[iAlong] <- dim.alpha.delta[iAlong] + 1L
-              iteratorState <- AlongIterator(dim = dim.alpha.delta,
-                                             iAlong = iAlong)
-              iteratorV <- AlongIterator(dim = dim,
-                                         iAlong = iAlong)
-              l.all <- initialDLMAll(object = object,
-                                     beta = beta,
-                                     metadata = metadata,
-                                     sY = sY,
-                                     isSaturated = isSaturated)
-              l.no.trend <- initialDLMNoTrend(object = object,
-                                              metadata = metadata,
-                                              sY = sY)
-              ans <-methods::new("DLMNoTrendNormZeroNoSeason",
-                           AAlpha = l.all$AAlpha,
-                           aNoTrend = l.no.trend$aNoTrend,
-                           ATau = l.all$ATau,
-                           alphaDLM = l.all$alphaDLM,
-                           CNoTrend = l.no.trend$CNoTrend,
-                           iAlong = l.all$iAlong,
-                           isSaturated = l.all$isSaturated,
-                           J = l.all$J,
-                           K = l.all$K,
-                           L = l.all$L,
-                           iteratorState = l.all$iteratorState,
-                           iteratorV = l.all$iteratorV,
-                           mNoTrend = l.no.trend$mNoTrend,
-                           m0NoTrend = l.no.trend$m0NoTrend,
-                           minPhi = l.all$minPhi,
-                           maxPhi = l.all$maxPhi,
-                           nuAlpha = l.all$nuAlpha,
-                           nuTau = l.all$nuTau,
-                           omegaAlpha = l.all$omegaAlpha,
-                           omegaAlphaMax = l.all$omegaAlphaMax,
-                           phi = l.all$phi,
-                           phiKnown = l.all$phiKnown,
-                           RNoTrend = l.no.trend$RNoTrend,
-                           shape1Phi = l.all$shape1Phi,
-                           shape2Phi = l.all$shape2Phi,
-                           tau = l.all$tau,
-                           tauMax = l.all$tauMax)
-              predictAlphaDLMNoTrend(ans, useC = TRUE)
-          })
 
     
     
-
-
-fakePhi <- function(phi, min, max, shape1, shape2) {
-    if (is.na(phi)) {
-        phi.transformed <- rbeta(n = 1L,
-                                 shape1 = shape1,
-                                 shape2 = shape2)
-        phi <- phi.transformed * (max - min) + min
-    }
-    phi
-}
-
-setGeneric("fakeDLMErrors",
-           function(spec, J)
-           standardGeneric("fakeDLMErrors"))
 
 #' Generate Fake Data
 #' 
@@ -235,8 +140,6 @@ NULL
 #' 
 NULL
 
-
-
 setGeneric("fakeData",
            function(model, intercept, templateY, exposure = NULL,
                     weights = NULL, uniform = TRUE)
@@ -246,8 +149,6 @@ setGeneric("fakeData",
 setGeneric("fetchInnerFake",
            function(object, nameObject, where)
            standardGeneric("fetchInnerFake"))
-
-
 
 
 ## HAS_TESTS
@@ -272,44 +173,6 @@ makeFakeBetas <- function(y, formula, specPriors, namesSpecPriors, intercept) {
 
 
 
-makeFakePriors <- function(specs, margins, metadata) {
-    ans <- vector(mode = "list", length = length(specs))
-    for (i in seq_along(specs)) {
-        is.intercept <- identical(margin, 0L)
-        if (is.intercept)
-            
-            ans[[i]] <- fakePrior(spec, metadata = NULL)
-        else
-            ans[[i]] <- fakePrior(spec, metadata = metadata[margin])
-    }
-    ans
-}
-
-
-makeFakeMargins <- function(names, y, call) {
-    names.y <- names(dimnames(y))
-    i.intercept <- match("(Intercept)", names, nomatch = 0L)
-    has.intercept <- i.intercept > 0L
-    if (!has.intercept)
-        stop(gettextf("no prior specified for '%s' in model '%s'",
-                      "(Intercept)", deparse(call[[2L]])))
-    names <- names[-i.intercept]
-    s <- seq_along(names.y)
-    possible.margins <- sapply(s, function(i) combn(s, i, simplify = FALSE))
-    possible.margins <- unlist(possible.margins, recursive = FALSE)
-    possible.names <- sapply(possible.margins, function(i) paste(names.y[i], collapse = ":"))
-    i.found <- sapply(names, match, possible.names, nomatch = 0L)
-    not.found <- i.found == 0L
-    if (any(not.found)) {
-        stop(gettextf("term '%s' not found in dimensions of '%s'",
-                      names[not.found][1L], "templateY"))
-    }
-    ans <- possible.margins[i.found]
-    ans <- c(list(0L), ans)
-    ans
-}
-
-
 setMethod("fakeData",
           signature(model = "SpecPoissonVarying",
                     templateY = "Counts",
@@ -319,7 +182,7 @@ setMethod("fakeData",
                    weights = NULL) {
               call <- model@call
               formula <- model@formulaMu
-              use.expose <- model@useExpose
+              use.expose <- model@useExpose@.Data
               spec.priors <- model@specsPriors
               names.spec.priors <- model@namesSpecsPriors
               A.sigma <- model@ASigma@.Data
@@ -345,11 +208,14 @@ setMethod("fakeData",
               margins <- makeFakeMargins(names = names.spec.priors,
                                          y = templateY,
                                          call = call)
+              s <- seq_along(dim.y)
+              is.saturated <- sapply(margins, identical, s)
               priors.betas <- makeFakePriors(specs = specs.priors,
-                                             namesSpecs = names.specs.priors,
                                              margins = margins,
-                                             y = templateY)
+                                             metadata = metadata.y,
+                                             isSaturated = is.saturated)
               betas <- lapply(priors.betas, makeFakeBeta)
+              names(betas) <- names.spec.priors
               sigma <- rhalftTrunc1(df = nuSigma,
                                     scale = ASigma,
                                     max = sigmaMax)
@@ -372,7 +238,9 @@ setMethod("fakeData",
                                           useC = TRUE)
                   }
                   else
-                      tr.theta <- stats::rnorm(n = n, mean = mu, sd = sigma)
+                      tr.theta <- stats::rnorm(n = n,
+                                               mean = mu,
+                                               sd = sigma)
               }
               if (box.cox.param > 0)
                   theta <- (box.cox.param * tr.theta + 1) ^ (1 / box.cox.param)
@@ -380,21 +248,37 @@ setMethod("fakeData",
                   theta <- exp(tr.theta)
               lambda <- if (is.null(exposure)) theta else exposure * theta
               .Data.y <- stats::rpois(n = n, lambda = lambda)
-              .Data.y <- array(.Data.y, dim = dim.y, dimnames = dimnames.y)
-              y <- methods::new("Counts", .Data = .Data.y, metadata = metadata.y)
+              .Data.y <- array(.Data.y,
+                               dim = dim.y,
+                               dimnames = dimnames.y)
+              y <- methods::new("Counts",
+                                .Data = .Data.y,
+                                metadata = metadata.y)
               .Data.theta <- array(theta, dim = dim.y, dimnames = dimnames.y)
               if (is.null(exposure))
-                  theta <- methods::new("Counts", .Data = .Data.theta, metadata = metadata.y)
+                  theta <- methods::new("Counts",
+                                        .Data = .Data.theta,
+                                        metadata = metadata.y)
               else
-                  theta <- methods::new("Values", .Data = .Data.theta, metadata = metadata.y)
+                  theta <- methods::new("Values",
+                                        .Data = .Data.theta,
+                                        metadata = metadata.y)
               likelihood <- list(mean = theta)
-              betas <- makeFakeBetasOutput(betas = betas,
-                                           namesBetas = names.betas,
-                                           y = y)
-              prior <- list(param = betas, sd = sigma)
-              model <- list(likelihood = likelihood, prior = prior)
+              prior <- c(betas, list(mean = mu), list(sd = sigma))
+              hyper <- lapply(priors.betas, makeOutputFakePrior)
+              names(hyper) <- names.spec.priors
+              model <- list(likelihood = likelihood,
+                            prior = prior,
+                            hyper = hyper)
               if (is.null(exposure))
-                  methods::new("FakeData", call = call, y = y, model = model)
+                  methods::new("FakeModel",
+                               call = call,
+                               y = y,
+                               model = model)
               else
-                  methods::new("FakeDataExposure", call = call, y = y, exposure = exposure, model = model)
+                  methods::new("FakeModelExposure",
+                               call = call,
+                               y = y,
+                               exposure = exposure,
+                               model = model)
           })

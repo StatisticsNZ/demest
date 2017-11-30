@@ -1238,7 +1238,192 @@ test_that("hasResponse works", {
 
 ## FAKE ######################################################################
 
-test_that("makeFakeScaleAndScaleMix works", {
+test_that("initialFakeDLMAll works", {
+    initialFakeDLMAll <- demest:::initialFakeDLMAll
+    spec <- DLM(level = Level(scale = HalfT(scale = 0.05)),
+                trend = Trend(initial = Initial(mean = -0.02, sd = 0.01),
+                              scale = HalfT(scale = 0.02)),
+                error = Error(scale = HalfT(scale = 0.06)))
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 2001:2010)))
+    ans.obtained <- initialFakeDLMAll(spec = spec,
+                                      metadata = metadata)
+    expect_identical(ans.obtained$AAlpha, new("Scale", 0.05))
+    expect_identical(ans.obtained$alphaDLM, new("ParameterVector", rep(0, 11)))
+    expect_identical(ans.obtained$ATau, new("Scale", 0.06))
+    expect_identical(ans.obtained$iAlong, 1L)
+    expect_is(ans.obtained$iteratorState, "AlongIterator")
+    expect_is(ans.obtained$iteratorV, "AlongIterator")
+    expect_identical(ans.obtained$J, new("Length", 10L))
+    expect_identical(ans.obtained$K, new("Length", 10L))
+    expect_identical(ans.obtained$L, new("Length", 1L))
+    expect_identical(ans.obtained$minPhi, 0.8)
+    expect_identical(ans.obtained$maxPhi, 1)
+    expect_identical(ans.obtained$nuAlpha, new("DegreesFreedom", 7))
+    expect_identical(ans.obtained$nuTau, new("DegreesFreedom", 7))
+    expect_is(ans.obtained$omegaAlpha, "Scale")
+    expect_is(ans.obtained$omegaAlphaMax, "Scale")
+    expect_is(ans.obtained$phi, "numeric")
+    expect_identical(ans.obtained$shape1Phi, new("Scale", 2))
+    expect_identical(ans.obtained$shape2Phi, new("Scale", 2))
+    expect_is(ans.obtained$tau, "Scale")
+    expect_is(ans.obtained$tauMax, "Scale")
+})
+
+test_that("initialFakeDLMWithTrend works", {
+    initialFakeDLMWithTrend <- demest:::initialFakeDLMWithTrend
+    spec <- DLM(level = Level(scale = HalfT(scale = 0.05)),
+                trend = Trend(initial = Initial(mean = -0.02, sd = 0.01),
+                              scale = HalfT(scale = 0.02)),
+                error = Error(scale = HalfT(scale = 0.06)))
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 2001:2010)))
+    ans.obtained <- initialFakeDLMWithTrend(spec = spec, metadata = metadata)
+    expect_identical(ans.obtained$ADelta, new("Scale", 0.02))
+    expect_identical(ans.obtained$deltaDLM, new("ParameterVector", rep(0, 11)))
+    expect_identical(ans.obtained$nuDelta, new("DegreesFreedom", 7))
+    expect_is(ans.obtained$omegaDelta, "Scale")
+    expect_is(ans.obtained$omegaDeltaMax, "Scale")
+    expect_identical(ans.obtained$ADelta0, new("Scale", 0.01))
+    expect_identical(ans.obtained$meanDelta0, new("Parameter", -0.02))
+    expect_identical(ans.obtained$hasLevel, new("LogicalFlag", TRUE))
+})
+
+test_that("makeFakeMargins works", {
+    makeFakeMargins <- demest:::makeFakeMargins
+    namesSpecs <- c("(Intercept)", "age", "sex", "age:sex")
+    y <- Counts(array(1,
+                      dim = c(3, 2),
+                      dimnames = list(age = c("0-4", "5-9", "10+"),
+                                      sex = c("f", "m"))))
+    call <- call("Model", y ~ Poisson(mean ~ age * sex),
+                 `(Intercept)` ~ ExchFixed(mean = -3, sd = 0.1),
+                 age ~ DLM(level = Level(scale = HalfT(scale = 0.01)),
+                           error = Error(scale = HalfT(scale = 0.1))),
+                 sex ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
+                 age:sex ~ Exch(error = Error(scale = HalfT(scale = 0.001))))
+    ans.obtained <- makeFakeMargins(namesSpecs = namesSpecs,
+                                    y = y,
+                                    call = call)
+    expect_identical(ans.obtained, list(0L, 1L, 2L, 1:2))
+    namesSpecs.wrong <- namesSpecs[-1]
+    expect_error(makeFakeMargins(namesSpecs = namesSpecs.wrong,
+                                 y = y,
+                                 call = call),
+                 "no prior specified for '\\(Intercept\\)' in model")
+    namesSpecs.wrong <- c(namesSpecs, "wrong")
+    expect_error(makeFakeMargins(namesSpecs = namesSpecs.wrong,
+                                 y = y,
+                                 call = call),
+                 "term 'wrong' from formula")
+})
+
+test_that("makeFakeOutputLevelDLM works", {
+    makeFakeOutputLevelDLM <- demest:::makeFakeOutputLevelDLM
+    fakePrior <- demest:::fakePrior
+    spec <- DLM(level = Level(scale = HalfT(scale = 0.01)),
+                trend = NULL,
+                error = Error(scale = HalfT(scale = 0.01)))
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 1:10)))
+    prior <- fakePrior(spec,
+                       metadata = metadata,
+                       isSaturated = FALSE)
+    ans.obtained <- makeFakeOutputLevelDLM(prior = prior,
+                                           metadata = metadata)
+    ans.expected <- array(prior@alphaDLM[-1L],
+                          dim = dim(metadata),
+                          dimnames = dimnames(metadata))
+    ans.expected <- new("Values",
+                        .Data = ans.expected,
+                        metadata = metadata)
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("makeFakeOutputTrendDLM works", {
+    makeFakeOutputTrendDLM <- demest:::makeFakeOutputTrendDLM
+    fakePrior <- demest:::fakePrior
+    spec <- DLM(level = Level(scale = HalfT(scale = 0.01)),
+                trend = Trend(initial = Initial(sd = 0.01),
+                              scale = HalfT(scale = 0.01)),
+                error = Error(scale = HalfT(scale = 0.01)))
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 1:10)))
+    prior <- fakePrior(spec,
+                       metadata = metadata,
+                       isSaturated = FALSE)
+    ans.obtained <- makeFakeOutputTrendDLM(prior = prior,
+                                           metadata = metadata)
+    ans.expected <- array(prior@deltaDLM[-1L],
+                          dim = dim(metadata),
+                          dimnames = dimnames(metadata))
+    ans.expected <- new("Values",
+                        .Data = ans.expected,
+                        metadata = metadata)
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("makeFakePhi works", {
+    makeFakePhi <- demest:::makeFakePhi
+    ## phi known
+    ans.obtained <- makeFakePhi(phi = 0.9,
+                                phiKnown = TRUE,
+                                min = 0,
+                                max = 1,
+                                shape1 = 1,
+                                shape2 = 1)
+    ans.expected <- 0.9
+    expect_identical(ans.obtained, ans.expected)
+    ## phi unknown
+    set.seed(1)
+    ans.obtained <- makeFakePhi(phi = as.double(NA),
+                                phiKnown = FALSE,
+                                min = 0.8,
+                                max = 0.98,
+                                shape1 = 3,
+                                shape2 = 3)
+    set.seed(1)
+    ans.expected <- rbeta(1, 3, 3)
+    ans.expected <- ans.expected * 0.18 + 0.8
+    if (test.identity)
+        expect_identical(ans.obtained, ans.expected)
+    else
+        expect_equal(ans.obtained, ans.expected)
+})
+
+test_that("makeFakePriors works", {
+    makeFakePriors <- demest:::makeFakePriors
+    specs <- list(ExchFixed(mean = -3, sd = 0.1),
+                  Exch(error = Error(scale = HalfT(scale = 0.05))),
+                  DLM(level = Level(scale = HalfT(scale = 0.01)),
+                      trend = Trend(initial = Initial(sd = 0.01, mean = 0.02),
+                                    scale = HalfT(scale = 0.01)),
+                      error = Error(scale = HalfT(scale = 0.05))))
+    margins <- c(0L, 1L, 2L)
+    metadata <- new("MetaData",
+                    nms = c("reg", "age"),
+                    dimtypes = c("state", "age"),
+                    DimScales = list(new("Categories", dimvalues = letters[1:10]),
+                                     new("Intervals", dimvalues = seq(0, 50, 5))))
+    isSaturated <- c(FALSE, FALSE, FALSE)
+    ans.obtained <- makeFakePriors(specs = specs,
+                                   margins = margins,
+                                   metadata = metadata,
+                                   isSaturated = isSaturated)
+    expect_identical(sapply(ans.obtained, class),
+                     c("FakeExchFixed", "FakeExchNormZero", "FakeDLMWithTrendNormZeroNoSeason"))
+})
+
+test_that("makeFakeScale works", {
+    makeFakeScale <- demest:::makeFakeScale
     rhalftTrunc1 <- demest:::rhalftTrunc1
     ## valid inputs
     A <- new("SpecScale", 0.1)
@@ -1246,20 +1431,21 @@ test_that("makeFakeScaleAndScaleMix works", {
     scaleMax <- new("SpecScale", 0.3)
     functionName <- "Error"
     set.seed(1)
-    ans.obtained <- makeFakeScaleAndScaleMax(A = A,
+    ans.obtained <- makeFakeScale(A = A,
                              nu = nu,
                              scaleMax = scaleMax,
                              functionName = functionName)
     set.seed(1)
     scale <- new("Scale", rhalftTrunc1(df = 2, scale = 0.1, max = 0.3))
     scaleMax <- new("Scale", 0.3)
-    ans.expected <- list(scale = scale, scaleMax = scaleMax)
+    A <- new("Scale", 0.1)
+    ans.expected <- list(scale = scale, A = A, scaleMax = scaleMax)
     if (test.identity)
         expect_identical(ans.obtained, ans.expected)
     else
         expect_equal(ans.obtained, ans.expected)
     ## no scale specified
-    expect_error(makeFakeScaleAndScaleMax(A = new("SpecScale", as.double(NA)),
+    expect_error(makeFakeScale(A = new("SpecScale", as.double(NA)),
                                           nu = nu,
                                           scaleMax = scaleMax,
                                           functionName = functionName),
@@ -10809,10 +10995,7 @@ test_that("makeOutputStateDLM works with Level", {
                                        metadata = metadata,
                                        nSeason = NULL,
                                        iAlong = 1L,
-                                       pos = 3L,
-                                       isTrend = FALSE,
-                                       phi = 1,
-                                       phiKnown = TRUE)
+                                       pos = 3L)
     metadata0 <- NULL
     metadataIncl0 <- new("MetaData",
                          nms = "time",
@@ -10843,10 +11026,7 @@ test_that("makeOutputStateDLM works with Level", {
                                        metadata = metadata,
                                        nSeason = NULL,
                                        iAlong = 1L,
-                                       pos = 3L,
-                                       isTrend = FALSE,
-                                       phi = 0.99,
-                                       phiKnown = FALSE)
+                                       pos = 3L)
     ans.expected <- new("SkeletonStateDLM",
                         metadata = metadata,
                         metadata0 = metadata0,
@@ -10868,10 +11048,7 @@ test_that("makeOutputStateDLM works with Level", {
                                        metadata = metadata,
                                        nSeason = NULL,
                                        iAlong = 2L,
-                                       pos = 3L,
-                                       isTrend = FALSE,
-                                       phi = 0.9,
-                                       phiKnown = TRUE)
+                                       pos = 3L)
     metadata0 <- new("MetaData",
                          nms = "sex",
                          dimtypes = "sex", 
@@ -10905,10 +11082,7 @@ test_that("makeOutputStateDLM works with Trend", {
                                        metadata = metadata,
                                        nSeason = NULL,
                                        iAlong = 1L,
-                                       pos = 3L,
-                                       isTrend = TRUE,
-                                       phi = 0.9,
-                                       phiKnown = FALSE)
+                                       pos = 3L)
     metadataIncl0 <- new("MetaData",
                     nms = "time",
                     dimtypes = "state",
@@ -10937,10 +11111,7 @@ test_that("makeOutputStateDLM works with Season", {
                                        metadata = metadata,
                                        nSeason = 4L,
                                        iAlong = 1L,
-                                       pos = 3L,
-                                       isTrend = FALSE,
-                                       phi = 1,
-                                       phiKnown = TRUE)
+                                       pos = 3L)
     metadata0 <- new("MetaData",
                      nms = "season",
                      dimtypes = "state",

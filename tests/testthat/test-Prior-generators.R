@@ -1,9 +1,12 @@
 
+
 context("Prior-generators")
 
 n.test <- 5
 test.identity <- FALSE
 test.extended <- TRUE
+
+
 
 
 ## test generator function and initialPrior together ############################################
