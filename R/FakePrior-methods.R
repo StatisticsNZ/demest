@@ -21,7 +21,7 @@ setMethod("fakeBeta",
 
 ## HAS_TESTS
 setMethod("fakeBeta",
-          signature(object = "ExchFixed"),
+          signature(object = "FakeExchFixed"),
           function(object) {
               J <- object@J@.Data
               mean <- object@mean@.Data
@@ -35,25 +35,18 @@ setMethod("fakeBeta",
 
 ## makeFakeOutputPrior ###################################################################
 
-
+## HAS_TESTS
 setMethod("makeFakeOutputPrior",
           signature(prior = "FakeExchFixed",
-                    metadata = "MetaData"),
-          function(prior, metadata) {
-              scaleError <- prior@tau@.Data
-              list(scaleError = scaleError)
-          })
-
-setMethod("makeFakeOutputPrior",
-          signature(prior = "FakeExchFixed",
-                    metadata = "NULL"),
+                    metadata = "ANY"),
           function(prior, metadata) {
               mean <- prior@mean@.Data
-              scaleError <- prior@tau@.Data
+              sd <- prior@tau@.Data
               list(mean = mean,
-                   scaleError = scaleError)
+                   sd = sd)
           })
 
+## HAS_TESTS
 setMethod("makeFakeOutputPrior",
           signature(prior = "FakeExchNormZero",
                     metadata = "MetaData"),
@@ -62,22 +55,7 @@ setMethod("makeFakeOutputPrior",
               list(scaleError = scaleError)
           })
 
-setMethod("makeFakeOutputPrior",
-          signature(prior = "FakeDLMNoTrendNormZeroNoSeason",
-                    metadata = "MetaData"),
-          function(prior, metadata) {
-              omegaAlpha <- prior@omegaAlpha@.Data
-              phi <- prior@phi
-              tau <- prior@tau@.Data
-              level <- makeFakOutputLevelDLM(prior = prior,
-                                             metadata = metadata)
-              list(level = level,
-                   scaleLevel = omegaAlpha,
-                   damp = phi,
-                   scaleError = tau)
-          })
-
-
+## HAS_TESTS
 setMethod("makeFakeOutputPrior",
           signature(prior = "FakeDLMNoTrendNormZeroNoSeason",
                     metadata = "MetaData"),
@@ -86,14 +64,14 @@ setMethod("makeFakeOutputPrior",
               phi <- prior@phi
               tau <- prior@tau@.Data
               level <- makeFakeOutputLevelDLM(prior = prior,
-                                             metadata = metadata)
+                                              metadata = metadata)
               list(level = level,
                    scaleLevel = omegaAlpha,
                    damp = phi,
                    scaleError = tau)
           })
 
-
+## HAS_TESTS
 setMethod("makeFakeOutputPrior",
           signature(prior = "FakeDLMWithTrendNormZeroNoSeason",
                     metadata = "MetaData"),

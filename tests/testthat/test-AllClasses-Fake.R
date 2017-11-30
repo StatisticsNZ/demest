@@ -6,21 +6,20 @@ test.identity <- FALSE
 test.extended <- FALSE
 
 
-
-test_that("can create valid object of class FakeData", {
+test_that("can create valid object of class FakeModel", {
     y <- Counts(array(1:4, dim = 4, dimnames = list(age = 0:3)))
     theta <- y * 0.98
-    x <- new("FakeData",
+    x <- new("FakeModel",
              y = y,
              model = list(likelihood = list(theta = theta),
              prior = list(param = list("(Intercept)" = 3),
              sd = 1.2)))
 })
 
-test_that("validity tests for FakeData inherited from FakeData work", {
+test_that("validity tests for FakeModel inherited from FakeModel work", {
     y <- Counts(array(1:4, dim = 4, dimnames = list(age = 0:3)))
     theta <- y * 0.98
-    x <- new("FakeData",
+    x <- new("FakeModel",
              y = y,
              model = list(likelihood = list(theta = theta),
              prior = list(param = list("(Intercept)" = 3),
@@ -28,7 +27,7 @@ test_that("validity tests for FakeData inherited from FakeData work", {
     ## 'y' does not have iteration or quantile dimensions
     y <- Counts(array(1:8, dim = c(4, 2), dimnames = list(age = 0:3, iteration = 1:2)))
     theta <- y * 0.98
-    expect_error(new("FakeData",
+    expect_error(new("FakeModel",
                      y = y,
                      model = list(likelihood = list(theta = theta),
                      prior = list(param = list("(Intercept)" = 3),
@@ -42,11 +41,11 @@ test_that("validity tests for FakeData inherited from FakeData work", {
 })
 
 
-test_that("can create valid object of class FakeDataExposure", {
+test_that("can create valid object of class FakeModelExposure", {
     y <- Counts(array(1:4, dim = 4, dimnames = list(age = 0:3)))
     exposure <- y + 1
     theta <- y / exposure
-    x <- new("FakeDataExposure",
+    x <- new("FakeModelExposure",
              y = y,
              exposure = exposure,
              model = list(likelihood = list(theta = theta),
@@ -54,11 +53,11 @@ test_that("can create valid object of class FakeDataExposure", {
              sd = 1.2)))
 })
 
-test_that("validity tests for FakeDataExposure inherited from FakeDataExposure work", {
+test_that("validity tests for FakeModelExposure inherited from FakeModelExposure work", {
     y <- Counts(array(1:4, dim = 4, dimnames = list(age = 0:3)))
     exposure <- y + 1
     theta <- y / exposure
-    x <- new("FakeDataExposure",
+    x <- new("FakeModelExposure",
              y = y,
              exposure = exposure,
              model = list(likelihood = list(theta = theta),

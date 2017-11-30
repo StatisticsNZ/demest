@@ -223,6 +223,12 @@ setGeneric("fakeBeta",
            function(object)
                standardGeneric("fakeBeta"))
 
+#' @export
+setGeneric("fakeModel",
+           function(model, templateY, exposure = NULL,
+                    weights = NULL)
+               standardGeneric("fakeModel"))
+
 setGeneric("fakePrior",
            function(object, metadata, isSaturated)
                standardGeneric("fakePrior"))

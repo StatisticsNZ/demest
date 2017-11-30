@@ -1,8 +1,4 @@
 
-
-    
-    
-
 #' Generate Fake Data
 #' 
 #' Generate a simulated dataset, based on a hierarchical model.
@@ -140,11 +136,6 @@ NULL
 #' 
 NULL
 
-setGeneric("fakeData",
-           function(model, intercept, templateY, exposure = NULL,
-                    weights = NULL, uniform = TRUE)
-           standardGeneric("fakeData"))
-
 
 setGeneric("fetchInnerFake",
            function(object, nameObject, where)
@@ -172,113 +163,3 @@ makeFakeBetas <- function(y, formula, specPriors, namesSpecPriors, intercept) {
 }
 
 
-
-setMethod("fakeData",
-          signature(model = "SpecPoissonVarying",
-                    templateY = "Counts",
-                    exposure = "ANY",
-                    weights = "missing"),
-          function(model, templateY, exposure = NULL,
-                   weights = NULL) {
-              call <- model@call
-              formula <- model@formulaMu
-              use.expose <- model@useExpose@.Data
-              spec.priors <- model@specsPriors
-              names.spec.priors <- model@namesSpecsPriors
-              A.sigma <- model@ASigma@.Data
-              nu.sigma <- model@nuSigma@.Data
-              sigma.max <- model@sigmaMax@.Data
-              lower <- model@lower
-              upper <- model@upper
-              box.cox.param <- model@boxCoxParam
-              max.attempt <- model@maxAttempt
-              n <- length(templateY)
-              dim.y <- dim(templateY)
-              dimnames.y <- dimnames(templateY)
-              metadata.y <- templateY@metadata
-              exposure <- checkAndTidyExposure(exposure = exposure,
-                                               y = templateY)
-              has.exposure <- !is.null(exposure)
-              if (has.exposure && !use.expose)
-                  stop(gettextf("'%s' argument supplied, but model '%s' does not use exposure",
-                                "exposure", deparse(call[[2L]])))
-              if (!has.exposure && use.expose)
-                  stop(gettextf("model '%s' uses exposure, but no '%s' argument supplied",
-                                deparse(call[[2L]]), "exposure"))
-              margins <- makeFakeMargins(names = names.spec.priors,
-                                         y = templateY,
-                                         call = call)
-              s <- seq_along(dim.y)
-              is.saturated <- sapply(margins, identical, s)
-              priors.betas <- makeFakePriors(specs = specs.priors,
-                                             margins = margins,
-                                             metadata = metadata.y,
-                                             isSaturated = is.saturated)
-              betas <- lapply(priors.betas, makeFakeBeta)
-              names(betas) <- names.spec.priors
-              sigma <- rhalftTrunc1(df = nuSigma,
-                                    scale = ASigma,
-                                    max = sigmaMax)
-              iterator <- makeIteratorBetas(betas = betas,
-                                            namesBetas = names.betas,
-                                            y = templateY)
-              mu <- makeMu(n = n,
-                           betas = betas,
-                           iterator = iterator,
-                           useC = TRUE)
-              has.limits <- (lower > 0) || (upper < Inf)
-              if (has.limits) {
-                  lower <- log(lower)
-                  upper <- log(upper)
-                  for (i in seq_len(n)) {
-                      tr.theta <- rtnorm1(mean = mu[i],
-                                          sd = sigma,
-                                          lower = lower,
-                                          upper = upper,
-                                          useC = TRUE)
-                  }
-                  else
-                      tr.theta <- stats::rnorm(n = n,
-                                               mean = mu,
-                                               sd = sigma)
-              }
-              if (box.cox.param > 0)
-                  theta <- (box.cox.param * tr.theta + 1) ^ (1 / box.cox.param)
-              else
-                  theta <- exp(tr.theta)
-              lambda <- if (is.null(exposure)) theta else exposure * theta
-              .Data.y <- stats::rpois(n = n, lambda = lambda)
-              .Data.y <- array(.Data.y,
-                               dim = dim.y,
-                               dimnames = dimnames.y)
-              y <- methods::new("Counts",
-                                .Data = .Data.y,
-                                metadata = metadata.y)
-              .Data.theta <- array(theta, dim = dim.y, dimnames = dimnames.y)
-              if (is.null(exposure))
-                  theta <- methods::new("Counts",
-                                        .Data = .Data.theta,
-                                        metadata = metadata.y)
-              else
-                  theta <- methods::new("Values",
-                                        .Data = .Data.theta,
-                                        metadata = metadata.y)
-              likelihood <- list(mean = theta)
-              prior <- c(betas, list(mean = mu), list(sd = sigma))
-              hyper <- lapply(priors.betas, makeOutputFakePrior)
-              names(hyper) <- names.spec.priors
-              model <- list(likelihood = likelihood,
-                            prior = prior,
-                            hyper = hyper)
-              if (is.null(exposure))
-                  methods::new("FakeModel",
-                               call = call,
-                               y = y,
-                               model = model)
-              else
-                  methods::new("FakeModelExposure",
-                               call = call,
-                               y = y,
-                               exposure = exposure,
-                               model = model)
-          })

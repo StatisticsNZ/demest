@@ -820,6 +820,21 @@ initialFakeDLMWithTrend <- function(spec, metadata) {
 }
 
 ## HAS_TESTS
+makeFakeHyper <- function(priors, margins, metadata, names) {
+    ans <- vector(mode = "list", length = length(priors))
+    for (i in seq_along(priors)) {
+        prior <- priors[[i]]
+        margin <- margins[[i]]
+        is.intercept <- identical(margin, 0L)
+        metadata.i <- if (is.intercept) NULL else metadata[margin]
+        ans[[i]] <- makeFakeOutputPrior(prior,
+                                        metadata = metadata.i)
+    }
+    names(ans) <- names
+    ans
+}
+
+## HAS_TESTS
 makeFakeMargins <- function(namesSpecs, y, call) {
     names.y <- names(dimnames(y))
     if (!identical(namesSpecs[1L], "(Intercept)"))
@@ -897,9 +912,9 @@ makeFakePriors <- function(specs, margins, metadata, isSaturated) {
     ans <- vector(mode = "list", length = length(specs))
     for (i in seq_along(specs)) {
         spec <- specs[[i]]
-        margin <- margins[i]
+        margin <- margins[[i]]
         is.intercept <- identical(margin, 0L)
-        metadata.i<- if (is.intercept) NULL else metadata[margin]
+        metadata.i <- if (is.intercept) NULL else metadata[margin]
         is.saturated.i <- isSaturated[i]
         ans[[i]] <- fakePrior(spec,
                               metadata = metadata.i,
@@ -909,7 +924,7 @@ makeFakePriors <- function(specs, margins, metadata, isSaturated) {
 }
 
 ## HAS_TESTS
-makeFakeScale <- function(A, nu, scaleMax, functionName) {
+makeFakeScale <- function(A, nu, scaleMax, functionName, scaleName = "scale") {
     if (is.na(A))
         stop(gettextf("need to specify scale of half-t distribution for '%s' in call to function '%s'",
                       "scale", functionName))
@@ -4450,7 +4465,7 @@ checkUpdateBetaAndPriorBeta <- function(prior, vbar, n, sigma) {
 ## HAS_TESTS (INCLUDING FOR MIX)
 ## ADD TESTS FOR ICAR AND Cross WHEN CLASSES FINISHED
 betaHat <- function(prior, useC = FALSE) {
-    stopifnot(methods::is(prior, "Prior"))
+    stopifnot(methods::is(prior, "Prior") || methods::is(prior, "FakePrior"))
     stopifnot(methods::is(prior, "ComponentFlags"))
     if (useC) {
         .Call(betaHat_R, prior)

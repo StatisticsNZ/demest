@@ -1,9 +1,17 @@
 
+
+context("FakePrior-generators")
+
+n.test <- 5
+test.identity <- FALSE
+test.extended <- TRUE
+
+
 ## fakeBeta ###########################################################################
 
 test_that("fakeBeta works with FakeExchFixed", {
     fakeBeta <- demest:::fakeBeta
-    initialPrior <- demest:::initialPrior
+    fakePrior <- demest:::fakePrior
     spec <- ExchFixed(mean = 3, sd = 2)
     metadata <- new("MetaData",
                     nms = "region",
@@ -27,13 +35,120 @@ test_that("fakeBeta works with FakeExchNormZero", {
                     dimtypes = "state",
                     DimScales = list(new("Categories", dimvalues = c("a", "b", "c"))))
     prior <- fakePrior(spec,
-                          metadata = metadata)
+                       metadata = metadata,
+                       isSaturated = FALSE)
     set.seed(1)
     ans.obtained <- fakeBeta(prior)
     set.seed(1)
     ans.expected <- rnorm(3, sd = prior@tau@.Data)
     expect_identical(ans.obtained, ans.expected)
 })
+
+
+## makeFakeOutputPrior ######################################################################
+
+test_that("makeFakeOutputPrior works with FakeExchFixed", {
+    makeFakeOutputPrior <- demest:::makeFakeOutputPrior
+    fakePrior <- demest:::fakePrior
+    spec <- ExchFixed(mean = 3, sd = 2)
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = c("a", "b", "c"))))
+    prior <- fakePrior(spec,
+                       metadata = metadata,
+                       isSaturated = FALSE)
+    ans.obtained <- makeFakeOutputPrior(prior,
+                                        metadata = metadata)
+    ans.expected <- list(mean = prior@mean@.Data,
+                         sd = prior@tau@.Data)
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("makeFakeOutputPrior works with FakeExchNormZero", {
+    makeFakeOutputPrior <- demest:::makeFakeOutputPrior
+    spec <- Exch(error = Error(scale = HalfT(scale = 1.3)))
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = c("a", "b", "c"))))
+    prior <- fakePrior(spec,
+                       metadata = metadata,
+                       isSaturated = FALSE)
+    ans.obtained <- makeFakeOutputPrior(prior,
+                                        metadata = metadata)
+    ans.expected <- list(scaleError = prior@tau@.Data)
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("makeFakeOutputPrior works with FakeDLMNoTrendNormZeroNoSeason", {
+    makeFakeOutputPrior <- demest:::makeFakeOutputPrior
+    fakePrior <- demest:::fakePrior
+    spec <- DLM(level = Level(scale = HalfT(scale = 0.01)),
+                trend = NULL,
+                error = Error(scale = HalfT(scale = 0.01)))
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 1:10)))
+    prior <- fakePrior(spec,
+                       metadata = metadata,
+                       isSaturated = FALSE)
+    ans.obtained <- makeFakeOutputPrior(prior = prior,
+                                        metadata = metadata)
+    level <- array(prior@alphaDLM[-1L],
+                   dim = dim(metadata),
+                   dimnames = dimnames(metadata))
+    level <- new("Values",
+                 .Data = level,
+                 metadata = metadata)
+    ans.expected <- list(level = level,
+                         scaleLevel = prior@omegaAlpha@.Data,
+                         damp = prior@phi,
+                         scaleError = prior@tau@.Data)
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("makeFakeOutputPrior works with FakeDLMWithTrendNormZeroNoSeason", {
+    makeFakeOutputPrior <- demest:::makeFakeOutputPrior
+    fakePrior <- demest:::fakePrior
+    spec <- DLM(level = Level(scale = HalfT(scale = 0.01)),
+                trend = Trend(initial = Initial(sd = 0.1),
+                              scale = HalfT(scale = 0.01)),,
+                error = Error(scale = HalfT(scale = 0.01)))
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 1:10)))
+    prior <- fakePrior(spec,
+                       metadata = metadata,
+                       isSaturated = FALSE)
+    ans.obtained <- makeFakeOutputPrior(prior = prior,
+                                        metadata = metadata)
+    level <- array(prior@alphaDLM[-1L],
+                   dim = dim(metadata),
+                   dimnames = dimnames(metadata))
+    level <- new("Values",
+                 .Data = level,
+                 metadata = metadata)
+    trend <- array(prior@deltaDLM[-1L],
+                   dim = dim(metadata),
+                   dimnames = dimnames(metadata))
+    trend <- new("Values",
+                 .Data = trend,
+                 metadata = metadata)
+    ans.expected <- list(level = level,
+                         scaleLevel = prior@omegaAlpha@.Data,
+                         trend = trend,
+                         scaleTrend = prior@omegaDelta@.Data,
+                         damp = prior@phi,
+                         scaleError = prior@tau@.Data)
+    expect_identical(ans.obtained, ans.expected)
+})
+
+
+
+
 
 
 
@@ -397,63 +512,4 @@ test_that("fakeBeta works with FakeExchNormZero", {
 ##             expect_equal(ans.obtained, ans.expected)
 ##     }
 ## })          
-
-
-## ## fakeDLMErrors #####################################################################
-
-## test_that("fakeDLMErrors works with SpecPriorVarDLMNormKnown", {
-##     fakeDLMErrors <- demest:::fakeDLMErrors
-##     for (seed in seq_len(n.test)) {
-##         set.seed(seed)
-##         tau <- runif(1, 0.01, 3)
-##         spec <- new("SpecPriorVarDLMNormKnown",
-##                     tau = tau)
-##         set.seed(seed)
-##         ans.obtained <- fakeDLMErrors(spec = spec, J = 4L)
-##         set.seed(seed)
-##         ans.expected <- rnorm(n = 4, mean = 0, sd = tau)
-##         expect_identical(ans.obtained, ans.expected)
-##     }
-## })
-
-## test_that("fakeDLMErrors throws error with SpecPriorVarDLMNormUnknown", {
-##     fakeDLMErrors <- demest:::fakeDLMErrors
-##     spec <- new("SpecPriorVarDLMNormUnknown")
-##     expect_error(fakeDLMErrors(spec = spec, J = 4L),
-##                  "priors with unknown variance terms are not permitted when used in function 'fakeData'")
-## })
-
-## test_that("fakeDLMErrors works with SpecPriorVarDLMRobustKnown", {
-##     fakeDLMErrors <- demest:::fakeDLMErrors
-##     for (seed in seq_len(n.test)) {
-##         set.seed(seed)
-##         tau <- runif(1, 0.01, 3)
-##         spec <- new("SpecPriorVarDLMRobustKnown",
-##                     nu = 4, tau = tau)
-##         set.seed(seed)
-##         ans.obtained <- fakeDLMErrors(spec = spec, J = 10L)
-##         set.seed(seed)
-##         v <- 4 * tau^2 / rchisq(n = 10, df = 4)
-##         ans.expected <- rnorm(n = 10, mean = 0, sd = sqrt(v))
-##         if (test.identity)
-##             expect_identical(ans.obtained, ans.expected)
-##         else
-##             expect_equal(ans.obtained, ans.expected)
-##     }
-## })
-
-## test_that("fakeDLMErrors throws error with SpecPriorVarDLMRobustUnknown", {
-##     fakeDLMErrors <- demest:::fakeDLMErrors
-##     spec <- new("SpecPriorVarDLMRobustUnknown", nu = 4)
-##     expect_error(fakeDLMErrors(spec = spec, J = 4L),
-##                  "priors with unknown variance terms are not permitted when used in function 'fakeData'")
-## })
-
-## test_that("fakeDLMErrors works with SpecPriorVarDLMRobustKnown", {
-##     fakeDLMErrors <- demest:::fakeDLMErrors
-##     spec <- new("SpecPriorVarDLMZero")
-##     ans.obtained <- fakeDLMErrors(spec = spec, J = 10L)
-##     ans.expected <- rep(0, times = 10)
-##     expect_identical(ans.obtained, ans.expected)
-## })
 

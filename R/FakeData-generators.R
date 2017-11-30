@@ -1,5 +1,130 @@
 
 
+setMethod("fakeModel",
+          signature(model = "SpecPoissonVarying",
+                    templateY = "Counts",
+                    exposure = "ANY",
+                    weights = "missing"),
+          function(model, templateY, exposure = NULL,
+                   weights = NULL) {
+              call <- model@call
+              formula <- model@formulaMu
+              use.expose <- model@useExpose@.Data
+              specs.priors <- model@specsPriors
+              names.specs.priors <- model@namesSpecsPriors
+              A.sigma <- model@ASigma
+              nu.sigma <- model@nuSigma
+              sigma.max <- model@sigmaMax
+              lower <- model@lower
+              upper <- model@upper
+              box.cox.param <- model@boxCoxParam
+              max.attempt <- model@maxAttempt
+              n <- length(templateY)
+              dim.y <- dim(templateY)
+              dimnames.y <- dimnames(templateY)
+              metadata.y <- templateY@metadata
+              exposure <- checkAndTidyExposure(exposure = exposure,
+                                               y = templateY)
+              has.exposure <- !is.null(exposure)
+              if (has.exposure && !use.expose)
+                  stop(gettextf("'%s' argument supplied, but model '%s' does not use exposure",
+                                "exposure", deparse(call[[2L]])))
+              if (!has.exposure && use.expose)
+                  stop(gettextf("model '%s' uses exposure, but no '%s' argument supplied",
+                                deparse(call[[2L]]), "exposure"))
+              l <- makeFakeScale(A = A.sigma,
+                                 nu = nu.sigma,
+                                 scaleMax = sigma.max,
+                                 functionName = "Model",
+                                 scaleName = "priorSD")
+              sigma <- l$scale
+              margins <- makeFakeMargins(names = names.specs.priors,
+                                         y = templateY,
+                                         call = call)
+              s <- seq_along(dim.y)
+              is.saturated <- sapply(margins, identical, s)
+              priors.betas <- makeFakePriors(specs = specs.priors,
+                                             margins = margins,
+                                             metadata = metadata.y,
+                                             isSaturated = is.saturated)
+              betas <- lapply(priors.betas, fakeBeta)
+              names(betas) <- names.specs.priors
+              iterator <- makeIteratorBetas(betas = betas,
+                                            namesBetas = names.specs.priors,
+                                            y = templateY)
+              mu <- makeMu(n = n,
+                           betas = betas,
+                           iterator = iterator,
+                           useC = TRUE)
+              has.limits <- (lower > 0) || (upper < Inf)
+              if (has.limits) {
+                  if (box.cox.param > 0) {
+                      lower <- (lower ^ box.cox.param - 1) / box.cox.param
+                      upper <- (upper ^ box.cox.param - 1) / box.cox.param
+                  }
+                  else {
+                      lower <- log(lower)
+                      upper <- log(upper)
+                  }
+                  for (i in seq_len(n)) {
+                      tr.theta <- rtnorm1(mean = mu[i],
+                                          sd = sigma,
+                                          lower = lower,
+                                          upper = upper,
+                                          useC = TRUE)
+                  }
+              }
+              else {
+                  tr.theta <- stats::rnorm(n = n,
+                                           mean = mu,
+                                           sd = sigma)
+              }
+              if (box.cox.param > 0)
+                  theta <- (box.cox.param * tr.theta + 1) ^ (1 / box.cox.param)
+              else
+                  theta <- exp(tr.theta)
+              lambda <- if (is.null(exposure)) theta else exposure * theta
+              .Data.y <- stats::rpois(n = n, lambda = lambda)
+              .Data.y <- array(.Data.y,
+                               dim = dim.y,
+                               dimnames = dimnames.y)
+              y <- methods::new("Counts",
+                                .Data = .Data.y,
+                                metadata = metadata.y)
+              .Data.theta <- array(theta,
+                                   dim = dim.y,
+                                   dimnames = dimnames.y)
+              if (is.null(exposure))
+                  theta <- methods::new("Counts",
+                                        .Data = .Data.theta,
+                                        metadata = metadata.y)
+              else
+                  theta <- methods::new("Values",
+                                        .Data = .Data.theta,
+                                        metadata = metadata.y)
+              likelihood <- list(mean = theta)
+              prior <- c(betas, list(mean = mu), list(sd = sigma))
+              hyper <- makeFakeHyper(priors = priors.betas,
+                                     margins = margins,
+                                     metadata = metadata.y,
+                                     names = names.specs.priors)                              
+              model <- list(likelihood = likelihood,
+                            prior = prior,
+                            hyper = hyper)
+              if (is.null(exposure))
+                  methods::new("FakeModel",
+                               call = call,
+                               y = y,
+                               model = model)
+              else
+                  methods::new("FakeModelExposure",
+                               call = call,
+                               y = y,
+                               exposure = exposure,
+                               model = model)
+          })
+
+
 ## ## HAS_TESTS
 ## setMethod("fakeData",
 ##           signature(model = "SpecBinomialVaryingBench",

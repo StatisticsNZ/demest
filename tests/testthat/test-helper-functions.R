@@ -1293,6 +1293,42 @@ test_that("initialFakeDLMWithTrend works", {
     expect_identical(ans.obtained$hasLevel, new("LogicalFlag", TRUE))
 })
 
+test_that("makeFakeHyper works", {
+    makeFakeHyper <- demest:::makeFakeHyper
+    makeFakeOutputPrior <- demest:::makeFakeOutputPrior
+    fakePrior <- demest:::fakePrior
+    spec.int <- ExchFixed(mean = -1, sd = 0.1)
+    spec.time <- DLM(level = Level(scale = HalfT(scale = 0.01)),
+                trend = NULL,
+                error = Error(scale = HalfT(scale = 0.01)))
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 1:10)))
+    prior.int <- fakePrior(spec.int,
+                           metadata = NULL,
+                           isSaturated = FALSE)
+    prior.time <- fakePrior(spec.time,
+                            metadata = metadata,
+                            isSaturated = TRUE)
+    priors <- list(prior.int, prior.time)
+    names <- c("(Intercept)", "age")
+    ans.obtained <- makeFakeHyper(priors = priors,
+                                  margins = 0:1,
+                                  metadata = metadata,
+                                  names = names)
+    ans.expected <- list("(Intercept)" = list(mean = -1,
+                                              sd = 0.1),
+                         age = list(level = ValuesOne(prior.time@alphaDLM[-1],
+                                                      labels = 1:10,
+                                                      name = "time",
+                                                      dimscale = "Points"),
+                                    scaleLevel = prior.time@omegaAlpha@.Data,
+                                    damp = prior.time@phi,
+                                    scaleError = prior.time@tau@.Data))
+    expect_equal(ans.obtained, ans.expected)
+})
+
 test_that("makeFakeMargins works", {
     makeFakeMargins <- demest:::makeFakeMargins
     namesSpecs <- c("(Intercept)", "age", "sex", "age:sex")

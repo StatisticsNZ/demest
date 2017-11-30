@@ -80,11 +80,16 @@ setClass("FakeDLMWithTrendNormZeroNoSeason",
                       "FakeWithTrendMixin",
                       "ZeroMixin"))
 
-## HAS_TESTS
 setClass("FakeData",
-         slots = c(call = "call",
-             model = "list",
-             y = "DemographicArray"),
+         slots = c(call = "call"),
+         contains = "VIRTUAL")
+                      
+
+## HAS_TESTS
+setClass("FakeModel",
+         slots = c(model = "list",
+                   y = "DemographicArray"),
+         contains = "FakeData",
          validity = function(object) {
              y <- object@y
              model <- object@model
@@ -103,9 +108,8 @@ setClass("FakeData",
          })
 
 ## HAS_TESTS
-setClass("FakeDataExposure",
-         slots = c(call = "call",
-             model = "list", ## list all slots so that they show up correctly in listContents
+setClass("FakeModelExposure",
+         slots = c(model = "list", ## list all slots so that they show up correctly in listContents
              y = "DemographicArray",
              exposure = "Counts"),
          contains = "FakeData",
