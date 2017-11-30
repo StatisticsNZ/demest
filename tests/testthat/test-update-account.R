@@ -2936,14 +2936,14 @@ test_that("diffLogLikPopnPair works with CombinedAccountMovements", {
                                              iFirst = 6L,
                                              iterator = iterator,
                                              population = population,
-                                             model = datamodels[[2]],
+                                             model = data.models[[2]],
                                              dataset = datasets[[2]],
                                              transform = transforms[[2]]) +
         diffLogLikPopnOneDataset(diff = diff,
                                  iFirst = 5L,
                                  iterator = iterator,
                                  population = population,
-                                 model = datamodels[[2]],
+                                 model = data.models[[2]],
                                  dataset = datasets[[2]],
                                  transform = transforms[[2]])
     if (test.identity)
