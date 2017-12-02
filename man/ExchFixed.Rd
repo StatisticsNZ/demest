@@ -4,9 +4,11 @@
 \alias{ExchFixed}
 \title{Specify a simple exchangeable prior.}
 \usage{
-ExchFixed(sd = NULL, mult = 1)
+ExchFixed(mean = 0, sd = NULL, mult = 1)
 }
 \arguments{
+\item{mean}{Mean. Optional.}
+
 \item{sd}{Standard deviation.  Optional.}
 
 \item{mult}{Multiplier applied to \code{sd}, if \code{sd}
@@ -23,7 +25,12 @@ a known standard deviation.
 \details{
 The prior specified by \code{ExchFixed} has the form
 
-\code{parameter[j] ~ N(0, sd^2).}
+\code{parameter[j] ~ N(mean, sd^2).}
+
+\code{mean} defaults to 0. In most cases, non-zero means are ignored,
+with a warning, when the model is generated. The exception is when
+\code{ExchFixed} is being used to specify an intercept term,
+when generating fake data.
 
 If a value for \code{sd} is not supplied by the user, then a value is
 generated when function \code{\link{estimateModel}},

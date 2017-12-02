@@ -4,17 +4,12 @@
 \alias{estimateAccount}
 \title{Estimate demographic account and models from multiple noisy datasets.}
 \usage{
-estimateAccount(y, system, dataModels, datasets, filename = NULL,
-  nBurnin = 1000, nSim = 1000, nChain = 4, nThin = 1, parallel = TRUE,
-  outfile = NULL, nUpdateMax = 50, verbose = FALSE, useC = TRUE)
+estimateAccount(account, systemModels, dataModels, datasets, weights = list(),
+  dominant = c("Female", "Male"), filename = NULL, nBurnin = 1000,
+  nSim = 1000, nChain = 4, nThin = 1, parallel = TRUE, outfile = NULL,
+  nUpdateMax = 50, verbose = FALSE, useC = TRUE)
 }
 \arguments{
-\item{y}{An object of class
-\code{\link[dembase:DemographicAccount-class]{DemographicAccount}}.}
-
-\item{system}{A list of objects of class \code{\linkS4class{SpecModel}}
-specifying models for the demographic series.}
-
 \item{dataModels}{A list of objects of class
 \code{\linkS4class{SpecModel}} specifying models for the datasets.}
 
@@ -48,6 +43,12 @@ printed at the end of the calculations.}
 \item{useC}{Logical.  If \code{TRUE} (the default), the calculations
 are done in C.  Setting \code{useC} to \code{FALSE} may be useful
 for debugging.}
+
+\item{y}{An object of class
+\code{\link[dembase:DemographicAccount-class]{DemographicAccount}}.}
+
+\item{system}{A list of objects of class \code{\linkS4class{SpecModel}}
+specifying models for the demographic series.}
 }
 \description{
 Infer the contents of a demographic account, and fit models

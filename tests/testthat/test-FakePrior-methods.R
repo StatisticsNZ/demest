@@ -29,6 +29,7 @@ test_that("fakeBeta works with FakeExchFixed", {
 
 test_that("fakeBeta works with FakeExchNormZero", {
     fakeBeta <- demest:::fakeBeta
+    fakePrior <- demest:::fakePrior
     spec <- Exch(error = Error(scale = HalfT(scale = 1.3)))
     metadata <- new("MetaData",
                     nms = "region",
@@ -67,6 +68,7 @@ test_that("makeFakeOutputPrior works with FakeExchFixed", {
 
 test_that("makeFakeOutputPrior works with FakeExchNormZero", {
     makeFakeOutputPrior <- demest:::makeFakeOutputPrior
+    fakePrior <- demest:::fakePrior
     spec <- Exch(error = Error(scale = HalfT(scale = 1.3)))
     metadata <- new("MetaData",
                     nms = "region",

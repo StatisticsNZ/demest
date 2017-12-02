@@ -2,29 +2,33 @@
 % Please edit documentation in R/SpecPrior-generators.R
 \name{Norm}
 \alias{Norm}
-\title{Specify a normal distribution centered at 0.}
+\title{Specify a normal distribution.}
 \usage{
-Norm(scale = NULL)
+Norm(mean = 0, sd = NULL)
 }
 \arguments{
-\item{scale}{Standard deviation for the normal distribution.
-A positive number.}
+\item{mean}{Mean.}
+
+\item{sd}{Standard deviation. A positive number.}
 }
 \value{
 An object of class \code{\linkS4class{Norm}}.
 }
 \description{
-Specify a normal distribution with mean equal to 0 and standard
-deviation equal to \code{scale}.
+Specify a normal distribution with mean \code{mean}
+and standard deviation \code{sd}.
 }
 \details{
+The default for \code{mean} is always 0, but the default
+for \code{sd} depends on context.
+
 \code{Norm} is used to specify the prior for the intercept in
-function \code{\link{Covariates}}.  If a value for \code{scale}
+function \code{\link{Covariates}}.  If a value for \code{sd}
 is not specified, a default value is determined when function
 \code{\link{estimateModel}}, \code{\link{estimateCounts}}, or
 \code{\link{estimateAccount}} is called.  Let \eqn{s} be the standard
 deviation of data \eqn{y}, or of \code{log(y)} in the case of a Poisson
-model without exposure.  Then the default for \code{scale} is
+model without exposure.  Then the default for \code{sd} is
 determined as follows.
 
 \tabular{ll}{
@@ -34,10 +38,15 @@ determined as follows.
   binomial \tab \eqn{10} \cr
   normal \tab  \eqn{10s}
 }
+
+{Norm} is also used to specify a prior (on the log scale) for
+the dispersion parameter in a \code{\link{CMP}} model. In this
+case \code{sd} defaults to 1.
 }
 \examples{
 Norm()
-Norm(scale = 0.5)
+Norm(sd = 0.5)
+Norm(mean = 0.5, sd = 1.5)
 }
 \seealso{
 \code{Norm} is used in calls to function \code{\link{Covariates}}.
