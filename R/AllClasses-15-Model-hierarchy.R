@@ -51,6 +51,27 @@ setClass("Poisson",
              TRUE
          })
 
+## NO_TESTS
+setClass("CMP",
+         contains = c("VIRTUAL",
+                      "ASDLogNuCMPMixin",
+                      "MultSDLogNuCMPMixin",
+                      "NuSDLogNuCMPMixin",
+                      "SDLogNuCMPMixin",
+                      "SDMaxLogNuCMPMixin",
+                      "MeanLogNuCMPMixin",
+                      "MeanMeanLogNuCMPMixin",
+                      "SDMeanLogNuCMPMixin",                      
+                      "NuCMPMixin",
+                      "ScaleThetaMultiplierMixin"),
+         validity = function(object) {
+             theta <- object@theta
+             ## 'theta' is non-negative
+             if (any(theta < 0))
+                 return(gettextf("'%s' has negative values", "theta"))
+             TRUE
+         })
+
 ## HAS_TESTS
 setClass("NormalFixed",
          contains = c("Model", "MeanSDMixin", "MeanSDMetadataAllMixin"),
@@ -168,19 +189,43 @@ setClass("PoissonVarying",
              TRUE
          })
 
+## NO_TESTS
+setClass("CMPVarying",
+         contains = c("VIRTUAL",
+                      "Model",
+                      "CMP",
+                      "Varying"),
+         validity = function(object) {
+             theta <- object@theta
+             lower <- object@lower
+             upper <- object@upper
+             tolerance <- object@tolerance
+             lower.back.tr <- exp(lower)
+             upper.back.tr <- exp(upper)
+             ## 'theta' greater than or equal to back-transformed 'lower'
+             if (any(theta < lower.back.tr - tolerance))
+                 return(gettextf("'%s' has values that are less than '%s'",
+                                 "theta", "lower"))
+             ## 'theta' less than or equal to back-transformed 'upper'
+             if (any(theta > upper.back.tr + tolerance))
+                 return(gettextf("'%s' has values that are greater than '%s'",
+                                 "theta", "upper"))
+             TRUE
+         })
+
 ## HAS_TESTS
 ## HAS_UPDATE
 setClass("PoissonVaryingNotUseExp",
          prototype = prototype(slotsToExtract = c("theta",
-                                   "nFailedPropTheta",
-                                   "nAcceptTheta",
-                                   "betas",
-                                   "sigma",
-                                   "priorsBetas"),
-             iMethodModel = 6L,
-             nuSigma = methods::new("DegreesFreedom", 7)),
-        contains = c("PoissonVarying",
-             "NotUseExposure"))
+                                                  "nFailedPropTheta",
+                                                  "nAcceptTheta",
+                                                  "betas",
+                                                  "sigma",
+                                                  "priorsBetas"),
+                               iMethodModel = 6L,
+                               nuSigma = methods::new("DegreesFreedom", 7)),
+         contains = c("PoissonVarying",
+                      "NotUseExposure"))
 
 ## HAS_TESTS
 ## HAS_UPDATE
@@ -214,6 +259,32 @@ setClass("NormalFixedUseExp",
                       "UseExposure"),
          prototype = prototype(slotsToExtract = character(),
                                iMethodModel = 31L))
+
+## NO_TESTS
+setClass("CMPVaryingNotUseExp",
+         prototype = prototype(slotsToExtract = c("theta",
+                                                  "nFailedPropTheta",
+                                                  "nAcceptTheta",
+                                                  "nuCMP",
+                                                  "meanLogNuCMP",
+                                                  "sdLogNuCMP",
+                                                  "betas",
+                                                  "sigma",
+                                                  "priorsBetas"),
+                               iMethodModel = 32L,
+                               nuSigma = methods::new("DegreesFreedom", 7)),
+         contains = c("CMPVarying",
+                      "NotUseExposure"))
+
+## NO_TESTS
+setClass("CMPVaryingUseExp",
+         prototype = prototype(slotsToExtract = c("theta",
+                                                  "nFailedPropTheta", "nAcceptTheta",
+                                                  "betas", "sigma", "priorsBetas"),
+                               iMethodModel = 33L,
+                               nuSigma = methods::new("DegreesFreedom", 7)),
+         contains = c("CMPVarying",
+                      "UseExposure"))
 
 
 ## Models With Aggregate ##################################################################

@@ -6,6 +6,7 @@
 \alias{show-methods}
 \alias{show,DampKnown-method}
 \alias{show,DampUnknown-method}
+\alias{show,Dispersion-method}
 \alias{show,SpecAgPlaceholder-method}
 \alias{show,SpecAgCertain-method}
 \alias{show,SpecAgNormal-method}
@@ -44,6 +45,8 @@
 \S4method{show}{DampKnown}(object)
 
 \S4method{show}{DampUnknown}(object)
+
+\S4method{show}{Dispersion}(object)
 
 \S4method{show}{SpecAgPlaceholder}(object)
 

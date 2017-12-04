@@ -5,6 +5,12 @@ setClass("ASigmaMixin",
          slots = c(ASigma = "Scale"),
          contains = "VIRTUAL")
 
+
+## NO_TESTS
+setClass("ASDLogNuCMPMixin",
+         slots = c(ASDLogNuCMP = "Scale"),
+         contains = "VIRTUAL")
+
 ## NO_TESTS
 setClass("AVarsigmaMixin",
          slots = c(AVarsigma = "Scale"),
@@ -330,6 +336,18 @@ setClass("MaxAttemptMixin",
              TRUE
          })
 
+## NO_TESTS
+setClass("MeanMeanLogNuCMPMixin",
+         slots = c(meanMeanLogNuCMP = "Parameter"),
+         prototype = prototype(meanMeanLogNuCMP = new("Parameter", 0)),
+         contains = "VIRTUAL")
+
+## NO_TESTS
+setClass("MeanLogNuCMPMixin",
+         slots = c(meanLogNuCMP = "Parameter"),
+         prototype = prototype(meanLogNuCMP = new("Parameter", 0)),
+         contains = "VIRTUAL")
+
 ## HAS_TESTS
 setClass("MeanSDMixin",
          slots = c(mean = "ParameterVector",
@@ -415,6 +433,10 @@ setClass("MetadataY",
              TRUE
          })
 
+setClass("MultSDLogNuCMPMixin",
+         slots = c(multSDLogNuCMP = "Scale"),
+         contains = "VIRTUAL")
+
 ## HAS_TESTS
 setClass("NAcceptThetaMixin",
          slots = c(nAcceptTheta = "Counter"),
@@ -439,8 +461,27 @@ setClass("NameYMixin",
          contains = "VIRTUAL")
 
 ## NO_TESTS
+setClass("NuCMPMixin",
+         slots = c(nuCMP = "ParameterVector"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             nuCMP <- object@nuCMP@.Data
+             theta <- object@theta
+             ## 'nuCMP' has same length as 'theta'
+             if (!identical(length(nuCMP), length(theta)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "nuCMP", "theta"))
+             TRUE
+         })
+
+## NO_TESTS
 setClass("NuSigmaMixin",
          slots = c(nuSigma = "DegreesFreedom"),
+         contains = "VIRTUAL")
+
+## NO_TESTS
+setClass("NuSDLogNuCMPMixin",
+         slots = c(nuSDLogNuCMP = "DegreesFreedom"),
          contains = "VIRTUAL")
 
 ## NO_TESTS
@@ -551,6 +592,21 @@ setClass("ScaleThetaMixin",
 ## NO_TESTS
 setClass("ScaleThetaMultiplierMixin",
          slots = c(scaleThetaMultiplier = "Scale"),
+         contains = "VIRTUAL")
+
+## NO_TESTS
+setClass("SDLogNuCMPMixin",
+         slots = c(SDLogNuCMP = "Scale"),
+         contains = "VIRTUAL")
+
+## NO_TESTS
+setClass("SDMeanLogNuCMPMixin",
+         slots = c(sdMeanLogNuCMP = "Scale"),
+         contains = "VIRTUAL")
+
+## NO_TESTS
+setClass("SDMaxLogNuCMPMixin",
+         slots = c(sdMaxLogNuCMP = "Scale"),
          contains = "VIRTUAL")
 
 ## NO_TESTS

@@ -1,4 +1,41 @@
 
+
+#' S4 class to specify prior for dispersion parameter in CMP model.
+#'
+#' Specify the mean and standard deviation of (the log of) the
+#' dispersion parameter ('nu') in a CMP model.  Also specify
+#' the prior mean and standard deviation of the mean.
+#'
+#' @section Warning:
+#' In  normal usage, it should not be necessary to
+#' access, or even know about, the slots of a
+#' \code{Dispersion} object.  The slots are not part of
+#' the API of the package, and may change in future.
+#'
+#' @slot meanMeanLogNuCMP The prior mean of the mean.
+#' @slot sdMeanLogNuCMP The prior standard deviation of the mean.
+#' @slot ASDLogNuCMP Scale for truncated half-t prior for
+#' standard deviation.
+#' @slot nuSDLogNuCMP Degrees of freedom for truncated half-t prior
+#' for standard deviation.
+#' @slot sdMaxLogNuCMP Maximum value for truncated half-t prior
+#' for the standard deviation.
+#' @slot multLogNuCMP Multiplier applied to scale of
+#' truncated half-t prior for the standard deviation.
+#' 
+#' @seealso Objects of class \code{Dispersion} are created
+#' by calls to function \code{\link{Dispersion}}.
+#'
+#' @export
+setClass("Dispersion",
+         contains = c("MeanMeanLogNuCMPMixin",
+                      "SDMeanLogNuCMPMixin",
+                      "ASDLogNuCMPMixin",
+                      "MultSDLogNuCMPMixin",
+                      "NuSDLogNuCMPMixin",
+                      "SDMaxLogNuCMPMixin"))
+
+
 #' S4 classes to specify one or two levels of a model.
 #'
 #' Classes to specify the likelihood and, if the model
