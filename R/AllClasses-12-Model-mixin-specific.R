@@ -632,6 +632,12 @@ setClass("SlotsToExtract",
          slots = c(slotsToExtract = "character"),
          contains = "VIRTUAL")
 
+
+## NO_TESTS
+setClass("SpecASDLogNuCMPMixin",
+         slots = c(ASDLogNuCMP = "SpecScale"),
+         contains = "VIRTUAL")
+
 ## NO_TESTS
 setClass("SpecASigmaMixin",
          slots = c(ASigma = "SpecScale"),
@@ -656,6 +662,12 @@ setClass("SpecAgNotPoissonMixin",
 ## NO_TESTS
 setClass("SpecAggregateMixin",
          slots = c(aggregate = "SpecAggregate"),
+         contains = "VIRTUAL")
+
+
+## NO_TESTS
+setClass("SpecSDMaxLogNuCMPMixin",
+         slots = c(sdMaxLogNuCMP = "SpecScale"),
          contains = "VIRTUAL")
 
 ## HAS_TESTS

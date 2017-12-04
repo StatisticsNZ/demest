@@ -203,8 +203,8 @@ setMethod("show",
               A <- object@ASDLogNuCMP@.Data
               max <- object@sdMaxLogNuCMP@.Data
               cat("An object of class \"", class(object), "\"\n", sep = "")
-              cat("log(dispersion[i]) ~ N(mean[i], scale^2)\n")
-              cat("           mean[i] ~ N(", mean, ", ", squaredOrNA(sd), ")\n", sep = "")
+              cat("log(dispersion[i]) ~ N(mean, scale^2)\n")
+              cat("              mean ~ N(", mean, ", ", squaredOrNA(sd), ")\n", sep = "")
               cat("             scale ~ trunc-half-t(", nu, ", ", sep = "")
               cat(squaredOrNA(A), ", ", max, ")\n", sep = "")
           })

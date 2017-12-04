@@ -49,6 +49,7 @@ setMethod("initialModel",
                   scale.theta.multiplier <- 1.0
               scale.theta.multiplier <- methods::new("Scale", scale.theta.multiplier)
               theta <- stats::rgamma(n = length(y), shape = shape, rate = rate)
+              ## sigma
               if (has.exposure)
                   sY <- NULL
               else
@@ -62,7 +63,19 @@ setMethod("initialModel",
                                     min = 0,
                                     max = min(A.sigma@.Data, sigma.max@.Data))
               sigma <- methods::new("Scale", sigma)
-              ## need to avoid having all 'theta' equalling lower or upper bound
+              ## sdLogNu
+              A.sd.log.nu <- makeASigma(A = A.sigma,
+                                        sY = sY)
+              sigma.max <- makeScaleMax(scaleMax = sigma.max,
+                                        A = A.sigma,
+                                        nu = nu.sigma)
+              sigma <- stats::runif(n = 1L,
+                                    min = 0,
+                                    max = min(A.sigma@.Data, sigma.max@.Data))
+              sigma <- methods::new("Scale", sigma)
+
+              A
+
               is.too.low <- theta < lower
               n.too.low <- sum(is.too.low)
               width <- 0.2 * (upper - lower)
@@ -106,6 +119,21 @@ setMethod("initialModel",
               class <- if (has.exposure) "PoissonVaryingUseExp" else "PoissonVaryingNotUseExp"
               cellInLik <- rep(TRUE, times = length(theta))
               model <- methods::new(class,
+
+                                    ASDLogNuCMP
+                                    multSDLogNuCMP
+                                    nuSDLogNuCMP
+                                    SDLogNuCMP
+                                    sdMaxLogNuCMP
+                                    meanLogNuCMP
+                                    meanMeanLogNuCMP
+                                    sdMeanLogNuCMP
+                                    nuCMP
+                                                                     
+
+
+
+
                                     call = call,
                                     theta = theta,
                                     cellInLik = cellInLik,

@@ -30,10 +30,10 @@
 setClass("Dispersion",
          contains = c("MeanMeanLogNuCMPMixin",
                       "SDMeanLogNuCMPMixin",
-                      "ASDLogNuCMPMixin",
+                      "SpecASDLogNuCMPMixin",
                       "MultSDLogNuCMPMixin",
                       "NuSDLogNuCMPMixin",
-                      "SDMaxLogNuCMPMixin"))
+                      "SpecSDMaxLogNuCMPMixin"))
 
 
 #' S4 classes to specify one or two levels of a model.

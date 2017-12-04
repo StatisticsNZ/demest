@@ -29,8 +29,9 @@ is assumed to have a distribution
 The \code{mean} argument is used to specify the second equation,
 and the \code{scale} argument is used to specify the third.
 \code{M} in the second equation defaults to 0, and \code{S}
-defaults to 1. \code{df} in the third equation defaults to 7,
-and \code{A} defaults to 1.
+defaults to 1. \code{df} in the third equation defaults to 7.
+\code{A} defaults to 1 if the CMP model uses exposure,
+and a function of the variation in log(y) otherwise.
 }
 \examples{
 Dispersion()

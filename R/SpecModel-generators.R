@@ -12,8 +12,9 @@
 #' The \code{mean} argument is used to specify the second equation,
 #' and the \code{scale} argument is used to specify the third.
 #' \code{M} in the second equation defaults to 0, and \code{S}
-#' defaults to 1. \code{df} in the third equation defaults to 7,
-#' and \code{A} defaults to 1.
+#' defaults to 1. \code{df} in the third equation defaults to 7.
+#' \code{A} defaults to 1 if the CMP model uses exposure,
+#' and a function of the variation in log(y) otherwise.
 #' 
 #' @param mean An object of class \code{\linkS4class{Norm}}, specifying
 #' the prior for the mean of the (logged) dispersion parameter.
@@ -46,17 +47,14 @@ Dispersion <- function(mean = Norm(), scale = HalfT()) {
     if (!methods::is(scale, "HalfT"))
         stop(gettextf("'%s' has class \"%s\"",
                       scale, class(scale)))
-    A <- scale@A@.Data
-    if (is.na(A))
-        A <- 1
-    ASDLogNuCMP <- methods::new("Scale", A)
+    ASDLogNuCMP <- scale@A
     multSDLogNuCMP <- scale@mult
     nuSDLogNuCMP <- scale@nu
-    scaleMax <- scale@scaleMax@.Data
-    sdMaxLogNuCMP <- makeScaleMax(scaleMax = scaleMax,
+    sdMaxLogNuCMP <- scale@scaleMax@.Data
+    sdMaxLogNuCMP <- makeScaleMax(scaleMax = sdMaxLogNuCMP,
                                   A = ASDLogNuCMP,
                                   nu = nuSDLogNuCMP,
-                                  isSpec = FALSE)
+                                  isSpec = TRUE)
     methods::new("Dispersion",
                  meanMeanLogNuCMP = meanMeanLogNuCMP,
                  sdMeanLogNuCMP = sdMeanLogNuCMP,
