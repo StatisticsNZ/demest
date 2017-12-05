@@ -19,7 +19,11 @@
 ##     stopifnot(!is.na(nu))
 ##     stopifnot(nu >= 0L)
 ##                                         #
-##     gamma <- ifelse(gamma == 0, exp(-100), gamma)
+##     if(gamma == 0){
+##       gamma <- exp(-100)
+##     } else {
+##       gamma <- gamma
+##     }
 ##     if (useC) {
 ##         .Call(logDensCMP1_R, y, gamma, nu)
 ##     }
