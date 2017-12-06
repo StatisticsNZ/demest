@@ -1,7 +1,6 @@
 
 setClass("ComponentFlags",
          contains = c("VIRTUAL",
-             "HasAlphaMoveMixin",
              "HasAlphaDLMMixin",
              "HasAlphaICARMixin",
              "HasAlphaMixMixin",
@@ -43,13 +42,6 @@ setClass("MixPredictMixin",
                       "DimBetaOldMixin",
                       "JOldMixin",
                       "LevelComponentWeightOldMixMixin"))
-
-setClass("MoveMixin",
-         contains = c("VIRTUAL",
-             "AMoveMixin",
-             "AlphaMoveMixin",
-             "IndexClassAlphaMoveMixin",
-             "NElementClassAlphaMixin"))
 
 setClass("NoTrendMixin",
          contains = c("VIRTUAL",

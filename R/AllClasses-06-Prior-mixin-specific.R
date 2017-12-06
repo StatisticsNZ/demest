@@ -114,10 +114,6 @@ setClass("ALevelComponentWeightMixMixin",
          slots = c(ALevelComponentWeightMix = "Scale"),
          contains = "VIRTUAL")
 
-setClass("AMoveMixin",
-         slots = c(AMove = "Scale"),
-         contains = "VIRTUAL")
-
 setClass("ASDLogNuCMPMixin",
          slots = c(ASDLogNuCMP = "Scale"),
          contains = "VIRTUAL")
@@ -133,6 +129,46 @@ setClass("ATauMixin",
 setClass("AVectorsMixMixin",
          slots = c(AVectorsMix = "Scale"),
          contains = "VIRTUAL")
+
+setClass("AllStrucZeroMixin",
+         slots = c(allStrucZero = "logical"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             allStrucZero <- object@allStrucZero
+             J <- object@J@.Data
+             ## length 'J'
+             if (!identical(length(allStrucZero), J))
+                 return(gettextf("'%s' does not have length '%s'",
+                                 "allStrucZero", "J"))
+             ## no missing values
+             if (any(is.na(allStrucZero)))
+                 return(gettextf("'%s' has missing values",
+                                 "allStrucZero"))
+             ## not all TRUE
+             if (all(allStrucZero))
+                 return(gettext("'%s' all %s",
+                                "allStrucZero", "TRUE"))
+             TRUE
+         })
+
+setClass("AlongAllStrucZeroMixin",
+         validity = function(object) {
+             alongAllStrucZero <- object@alongAllStrucZero
+             L <- object@L@.Data
+             ## length 'J'
+             if (!identical(length(alongAllStrucZero), L))
+                 return(gettextf("'%s' does not have length '%s'",
+                                 "alongAllStrucZero", "L"))
+             ## no missing values
+             if (any(is.na(alongAllStrucZero)))
+                 return(gettextf("'%s' has missing values",
+                                 "alongAllStrucZero"))
+             ## not all TRUE
+             if (all(alongAllStrucZero))
+                 return(gettext("'%s' all %s",
+                                "alongAllStrucZero", "TRUE"))
+             TRUE
+         })
 
 setClass("AlongMixin",
          slots = c(along = "character"),
@@ -208,10 +244,6 @@ setClass("AlphaMixMixin",
                                  "alphaMix", "J"))
              TRUE
          })
-
-setClass("AlphaMoveMixin",
-         slots = c(alphaMove = "ParameterVector"),
-         contains = "VIRTUAL")
 
 setClass("CMixMixin",
          slots = c(CMix = "ParameterVector"),
@@ -474,10 +506,6 @@ setClass("HasAlphaMixMixin",
          slots = c(hasAlphaMix = "LogicalFlag"),
          contains = "VIRTUAL")
 
-setClass("HasAlphaMoveMixin",
-         slots = c(hasAlphaMove = "LogicalFlag"),
-         contains = "VIRTUAL")
-
 setClass("HasCovariatesMixin",
          slots = c(hasCovariates = "LogicalFlag"),
          contains = "VIRTUAL")
@@ -540,42 +568,6 @@ setClass("IAlongMixin",
 setClass("IMethodPrior",
          slots = c(iMethodPrior = "integer"),
          contains = "VIRTUAL")
-
-setClass("IndexClassAlphaMoveMixin",
-         slots = c(indexClassAlpha = "integer"),
-         contains = "VIRTUAL",
-         validity = function(object) {
-             indexClassAlpha <- object@indexClassAlpha
-             alphaMove <- object@alphaMove
-             J <- object@J@.Data
-             ## 'indexClassAlpha' has no missing values
-             if (is.na(indexClassAlpha))
-                 return(gettextf("'%s' has missing values",
-                                 "indexClassAlpha"))
-             ## 'indexClassAlpha' consists of consecutive numbers"
-             unique.values <- unique(indexClassAlpha)
-             diff.unique.values <- diff(unique.values)
-             if (any(diff.unique.values != 1L))
-                 return(gettextf("'%s' has gaps",
-                                 "indexClassAlpha"))
-             ## 'indexClassAlpha' has minimum value of 0 or 1
-             min <- min(indexClassAlpha)
-             if ((min != 0L) && (min != 1L))
-                 return(gettextf("minimum value of '%s' is not 0 or 1",
-                                 "indexClassAlpha"))
-             ## 'indexClassAlpha' has length 'J'
-             if (!identical(length(indexClassAlpha), as.integer(J)))
-                 return(gettextf("'%s' does not have length '%s'",
-                                 "indexClassAlpha", "J"))
-             ## non-zero indices form index for elements of 'alphaMove'
-             indices.nonzero <- indexClassAlpha[indexClassAlpha != 0L]
-             indices.obtained <- sort(unique(indices.nonzero))
-             indices.expected <- seq_along(alphaMove)
-             if (!identical(indices.obtained, indices.expected))
-                 return(gettextf("'%s' has missing or redundant indices",
-                                 "indexClassAlpha"))
-             TRUE
-         })
 
 setClass("IndexClassMaxMixMixin",
          slots = c(indexClassMaxMix = "Counter"),
@@ -1107,29 +1099,6 @@ setClass("MultTauMixin",
 setClass("MultVectorsMixMixin",
          slots = c(multVectorsMix = "Scale"),
          contains = "VIRTUAL")
-
-setClass("NElementClassAlphaMixin",
-         slots = c(nElementClassAlpha = "integer"),
-         contains = "VIRTUAL",
-         validity = function(object) {
-             nElementClassAlpha <- object@nElementClassAlpha
-             alphaMove <- object@alphaMove
-             indexClassAlpha <- object@indexClassAlpha
-             ## no missing values
-             if (any(is.na(nElementClassAlpha)))
-                 return(gettextf("'%s' has missing values",
-                                 "nElementClassAlpha"))
-             ## same number of elements as 'alphaMove'
-             if (!identical(length(nElementClassAlpha), length(alphaMove)))
-                 return(gettextf("'%s' and '%s' have different lengths",
-                                 "nElementClassAlpha", "alphaMove"))
-             ## consistent with 'indexClassAlpha'
-             index.expected <- sort(unique(indexClassAlpha[indexClassAlpha != 0L]))
-             if (!identical(indexClassAlpha, index.expected))
-                 return(gettextf("'%s' and '%s' inconsistent",
-                                 "nElementClassAlpha", "indexClassAlpha"))
-             TRUE
-         })
 
 setClass("NSeasonMixin",
          slots = c(nSeason = "Length"),
@@ -1886,6 +1855,7 @@ setClass("ZMixin",
              J <- object@J
              P <- object@P
              Z <- object@Z
+             allStrucZero <- object@allStrucZero
              ## 'Z' is double
              if (!is.double(Z))
                  return(gettextf("model matrix '%s' does not have type \"%s\"",
@@ -1903,8 +1873,8 @@ setClass("ZMixin",
                  return(gettextf("'%s' does not have '%s' columns",
                                  "Z", "P"))
              ## first column all 1s
-             first <- as.numeric(Z[, 1L])
-             if (!isTRUE(all.equal(first, rep(1, times = J))))
+             first <- as.numeric(Z[!allStrucZero, 1L])
+             if (!isTRUE(all.equal(first, rep(1, times = sum(!allStrucZero)))))
                  return(gettextf("first column of '%s' is not a vector of 1s",
                                  "Z"))
              TRUE

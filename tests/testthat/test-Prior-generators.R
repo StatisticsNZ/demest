@@ -18,30 +18,44 @@ test_that("generator function and initialPrior work with ExchFixed", {
     spec <- ExchFixed()
     expect_is(spec, "SpecExchFixed")
     beta <- rnorm(1)
+    strucZeroArray <- Counts(array(c(1L, 0L),
+                                   dim = c(2:3, 3),
+                                   dimnames = list(sex = c("f", "m"),
+                                                   eth_orig = c("a", "b", "c"),
+                                                   eth_dest = c("a", "b", "c"))))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = NULL,
                           sY = 50,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "ExchFixed")
     expect_identical(prior@J, new("Length", 1L))
     expect_identical(prior@tau, new("Scale", 500))
+    expect_identical(prior@allStrucZero, FALSE)
     ## length 2
     spec <- ExchFixed()
     expect_is(spec, "SpecExchFixed")
     beta <- rnorm(2)
     metadata <- new("MetaData",
                     nms = "sex",
-                    dimtypes = "state",
-                    DimScales = list(new("Categories", dimvalues = c("f", "m"))))
+                    dimtypes = "sex",
+                    DimScales = list(new("Sexes", dimvalues = c("f", "m"))))
+    strucZeroArray <- Counts(array(c(1L, 0L),
+                                   dim = c(2:3, 3),
+                                   dimnames = list(sex = c("f", "m"),
+                                                   eth_orig = c("a", "b", "c"),
+                                                   eth_dest = c("a", "b", "c"))))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "ExchFixed")
     expect_identical(prior@J, new("Length", 2L))
     expect_identical(prior@tau, new("Scale", 1.0))
+    expect_identical(prior@allStrucZero, c(FALSE, TRUE))
     ## no metadata but J > 1
     spec <- ExchFixed()
     expect_is(spec, "SpecExchFixed")
@@ -50,7 +64,8 @@ test_that("generator function and initialPrior work with ExchFixed", {
                               beta = beta,
                               metadata = NULL,
                               sY = 50,
-                              isSaturated = FALSE),
+                              isSaturated = FALSE,
+                              strucZeroArray = strucZeroArray),
                  "'metadata' is NULL but 'J' is greater than 1")
     ## has metadata but J == 1
     spec <- ExchFixed()
@@ -64,7 +79,8 @@ test_that("generator function and initialPrior work with ExchFixed", {
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              isSaturated = FALSE),
+                              isSaturated = FALSE,
+                              strucZeroArray = strucZeroArray),
                  "'metadata' is not NULL but 'J' is less than or equal to 1")
 })
 
@@ -75,6 +91,9 @@ test_that("generator function and initialPrior work with ExchNormZero", {
     spec <- Exch()
     expect_is(spec, "SpecExchNormZero")
     beta <- rnorm(10)
+    strucZeroArray <- Counts(array(c(rep(1L, 19), 0L),
+                                   dim = c(2, 10),
+                                   dimnames = list(sex = c("f", "m"), region = letters[1:10])))
     metadata <- new("MetaData",
                     nms = "region",
                     dimtypes = "state",
@@ -83,47 +102,58 @@ test_that("generator function and initialPrior work with ExchNormZero", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "ExchNormZero")
     expect_identical(prior@J, new("Length", 10L))
     expect_identical(prior@ATau, new("Scale", 1.0))
     expect_identical(prior@nuTau, new("DegreesFreedom", 7.0))
     expect_identical(prior@tauMax, new("Scale", qhalft(p = 0.999, df = 7, scale = 1)))
+    expect_identical(prior@allStrucZero, rep(FALSE, 10))
     ## interaction; sY is 1000
     spec <- Exch()
     expect_is(spec, "SpecExchNormZero")
     beta <- rnorm(20, mean = 200)
     metadata <- new("MetaData",
                     nms = c("region", "sex"),
-                    dimtypes = c("state", "state"),
+                    dimtypes = c("state", "sex"),
                     DimScales = list(new("Categories", dimvalues = letters[1:10]),
-                        new("Categories", dimvalues = c("f", "m"))))
+                                     new("Sexes", dimvalues = c("f", "m"))))
+    strucZeroArray <- Counts(array(c(rep(1L, 19), 0L),
+                                   dim = c(2, 10),
+                                   dimnames = list(sex = c("f", "m"), region = letters[1:10])))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = 1000,
                           multScale = 1,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "ExchNormZero")
     expect_identical(prior@J, new("Length", 20L))
     expect_identical(prior@ATau, new("Scale", 500))
     expect_identical(prior@nuTau, new("DegreesFreedom", 7.0))
     expect_identical(prior@tauMax, new("Scale", qhalft(p = 0.999, df = 7, scale = 500)))
+    expect_identical(prior@allStrucZero, c(rep(FALSE, 19), TRUE))
     ## ATau = 10; nuTau = 1
     spec <- Exch(error = Error(scale = HalfT(df = 1, scale = 10)))
     expect_is(spec, "SpecExchNormZero")
     beta <- rnorm(20, mean = 200)
     metadata <- new("MetaData",
                     nms = c("region", "sex"),
-                    dimtypes = c("state", "state"),
+                    dimtypes = c("state", "sex"),
                     DimScales = list(new("Categories", dimvalues = letters[1:10]),
-                        new("Categories", dimvalues = c("f", "m"))))
+                                     new("Sexes", dimvalues = c("f", "m"))))
+    strucZeroArray <- Counts(array(c(rep(1L, 19), 0L),
+                                   dim = c(2, 10),
+                                   dimnames = list(sex = c("f", "m"), region = letters[1:10])))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = 1000,
                           multScale = 1,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "ExchNormZero")
     expect_identical(prior@ATau, new("Scale", 10))
     expect_identical(prior@nuTau, new("DegreesFreedom", 1))
@@ -133,19 +163,24 @@ test_that("generator function and initialPrior work with ExchNormZero", {
     beta <- rnorm(20, mean = 200)
     metadata <- new("MetaData",
                     nms = c("region", "sex"),
-                    dimtypes = c("state", "state"),
+                    dimtypes = c("state", "sex"),
                     DimScales = list(new("Categories", dimvalues = letters[1:10]),
-                        new("Categories", dimvalues = c("f", "m"))))
+                                     new("Sexes", dimvalues = c("f", "m"))))
+    strucZeroArray <- Counts(array(rep(c(1L, 0L), times = 10),
+                                   dim = c(2, 10),
+                                   dimnames = list(sex = c("f", "m"), region = letters[1:10])))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
                           multScale = 1,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "ExchNormZero")
     expect_identical(prior@ATau, new("Scale", 0.5))
     expect_identical(prior@nuTau, new("DegreesFreedom", 7))
     expect_identical(prior@tauMax, new("Scale", 1.5))
+    expect_identical(prior@allStrucZero, rep(c(FALSE, TRUE), each = 10))
 })
 
 test_that("generator function and initialPrior work with ExchRobustZero", {
@@ -158,17 +193,22 @@ test_that("generator function and initialPrior work with ExchRobustZero", {
                     nms = "region",
                     dimtypes = "state",
                     DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(rep(c(1L, 0L), times = 10),
+                                   dim = c(2, 10),
+                                   dimnames = list(sex = c("f", "m"), region = letters[1:10])))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
                           multScale = 1,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "ExchRobustZero")
     expect_identical(prior@J, new("Length", 10L))
     expect_identical(prior@ATau, new("Scale", 1.0))
     expect_identical(prior@nuTau, new("DegreesFreedom", 7.0))
     expect_identical(prior@nuBeta, new("DegreesFreedom", 4.0))
+    expect_identical(prior@allStrucZero, rep(FALSE, 10))
 })
 
 test_that("generator function and initialPrior work with ExchNormCov", {
@@ -186,29 +226,36 @@ test_that("generator function and initialPrior work with ExchNormCov", {
     beta <- rnorm(20)
     metadata <- new("MetaData",
                     nms = c("region", "sex"),
-                    dimtypes = c("state", "state"),
+                    dimtypes = c("state", "sex"),
                     DimScales = list(new("Categories", dimvalues = letters[1:10]),
-                        new("Categories", dimvalues = c("f", "m"))))
+                                     new("Sexes", dimvalues = c("f", "m"))))
+    strucZeroArray <- Counts(array(rep(c(1L, 0L), times = c(18, 2)),
+                                   dim = c(2, 10),
+                                   dimnames = list(sex = c("f", "m"), region = letters[1:10])))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
                           multScale = 1,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "ExchNormCov")
     expect_identical(prior@J, new("Length", 20L))
     expect_identical(prior@ATau, new("Scale", 0.5))
     expect_identical(prior@nuTau, new("DegreesFreedom", 7.0))
     expect_identical(prior@contrastsArg, contrastsArg)
     expect_identical(prior@formula, formula)
+    expect_identical(prior@allStrucZero, rep(c(rep(FALSE, 9), TRUE), 2))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
                           multScale = 1,
-                          isSaturated = TRUE)
+                          isSaturated = TRUE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "ExchNormCov")
     expect_identical(prior@isSaturated, new("LogicalFlag", TRUE))
+    expect_identical(prior@allStrucZero, rep(c(rep(FALSE, 9), TRUE), 2))
 })
 
 test_that("generator function and initialPrior work with ExchRobustCov", {
@@ -227,15 +274,19 @@ test_that("generator function and initialPrior work with ExchRobustCov", {
     beta <- rnorm(20)
     metadata <- new("MetaData",
                     nms = c("region", "sex"),
-                    dimtypes = c("state", "state"),
+                    dimtypes = c("state", "sex"),
                     DimScales = list(new("Categories", dimvalues = letters[1:10]),
-                        new("Categories", dimvalues = c("f", "m"))))
+                        new("Sexes", dimvalues = c("f", "m"))))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(2, 10),
+                                   dimnames = list(sex = c("f", "m"), region = letters[1:10])))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
                           multScale = 1,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "ExchRobustCov")
     expect_identical(prior@J, new("Length", 20L))
     expect_identical(prior@ATau, new("Scale", 0.5))
@@ -243,6 +294,7 @@ test_that("generator function and initialPrior work with ExchRobustCov", {
     expect_identical(prior@nuTau, new("DegreesFreedom", 7.0))
     expect_identical(prior@contrastsArg, contrastsArg)
     expect_identical(prior@formula, formula)
+    expect_identical(prior@allStrucZero, rep(FALSE, 20))
 })
 
 test_that("generator function and initialPrior work with DLMNoTrendNormZeroNoSeason", {

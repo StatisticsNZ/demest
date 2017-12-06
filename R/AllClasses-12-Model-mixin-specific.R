@@ -663,6 +663,26 @@ setClass("SpecVarsigmaMaxMixin",
          slots = c(varsigmaMax = "SpecScale"),
          contains = "VIRTUAL")
 
+## NO_TESTS
+setClass("StructuralZerosMixin",
+         slots = c(structuralZeros = "ValuesOrNULL"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             structuralZeros <- object@structuralZeros
+             if (is.null(structuralZeros))
+                 TRUE
+             else if (identical(structuralZeros, new("Values")))
+                 TRUE
+             else {
+                 if (any(is.na(structuralZeros)))
+                     stop(gettextf("'%s' has missing values",
+                                   "structuralZeros"))
+                 if (all(structuralZeros != 0L))
+                     stop(gettextf("'%s' does not contain any zeros",
+                                   "structuralZeros"))
+                 TRUE
+             }
+         })
 
 ## HAS_TESTS
 setClass("Theta",

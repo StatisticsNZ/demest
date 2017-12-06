@@ -378,33 +378,6 @@ setClass("SpecKnownUncertain",
          contains = c("SpecKnown",
                       "AKnownVecMixin"))
 
-## SpecMove
-
-setClass("SpecMove",
-         contains = c("VIRTUAL",
-             "SpecPrior",
-             "ClassesMixin",
-             "MultMoveMixin",
-             "SpecAMoveMixin"))
-
-setClass("SpecMoveNormZero",
-         contains = c("SpecMove",
-             "SpecNormMixin"))
-
-setClass("SpecMoveNormCov",
-         contains = c("SpecMove",
-             "SpecCovariatesMixin",
-             "SpecNormMixin"))
-
-setClass("SpecMoveRobustZero",
-         contains = c("SpecMove",
-             "SpecRobustMixin"))
-
-setClass("SpecMoveRobustCov",
-         contains = c("SpecMove",
-             "SpecCovariatesMixin",
-             "SpecRobustMixin"))
-
 
 #' An S4 class to specify a Mix prior.
 #'

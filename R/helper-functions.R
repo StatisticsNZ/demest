@@ -241,6 +241,27 @@ checkAndTidyLevelComponentWeightMinMax <- function(minAR2, maxAR2) {
          maxLevelComponentWeight = maxAR2)
 }
 
+## HAS_TESTS
+checkAndTidyStructuralZeros <- function(structuralZeros) {
+    if (is.null(structuralZeros))
+        NULL
+    else if (identical(structuralZeros, "diag"))
+        new("Values")
+    else if (methods::is(structuralZeros, "Values")) {
+        length(structuralZeros) > 0L
+        if (any(is.na(structuralZeros)))
+            stop(gettextf("'%s' has missing values",
+                          "structuralZeros"))
+        if (!any(structuralZeros == 0L))
+            stop(gettextf("'%s' does not contain any zeros",
+                          "structuralZeros"))
+        structuralZeros
+    }
+    else {
+        stop(gettextf("'%s' has class \"%s\"",
+                      "structuralZeros", class(structuralZeros)))
+    }
+}
 
 ## HAS_TESTS
 checkLowerOrUpper <- function(value,
@@ -951,7 +972,7 @@ makeFakeScale <- function(A, nu, scaleMax, functionName, scaleName = "scale") {
 ## INITIAL VALUES - PRIORS ###################################################        
 
 ## HAS_TESTS            
-initialCov <- function(object, beta, metadata, sY) {
+initialCov <- function(object, beta, metadata, sY, allStrucZero) {
     AEtaCoef <- object@AEtaCoef
     AEtaIntercept <- object@AEtaIntercept
     contrastsArg <- object@contrastsArg
@@ -969,7 +990,8 @@ initialCov <- function(object, beta, metadata, sY) {
                data = data,
                metadata = metadata,
                contrastsArg = contrastsArg,
-               infant = infant)
+               infant = infant,
+               allStrucZero = allStrucZero)
     P <- makeP(Z)
     UEtaCoef <- makeU(nu = nuEtaCoef, A = AEtaCoef, n = P - 1L)
     eta <- makeEta(beta = beta, UEtaCoef = UEtaCoef)
@@ -1760,20 +1782,6 @@ initialRobustPredict <- function(prior, metadata) {
 
 
 ## NO_TESTS
-makeAMove <- function(A, metadata, sY, mult) {
-    if (is.na(A)) {
-        d <- length(metadata)
-        ans <- (0.5)^d # not d-1
-        if (!is.null(sY))
-            ans <- sY * ans
-        ans <- mult * ans
-    }
-    else
-        ans <- A
-    methods::new("Scale", ans)
-}
-
-## NO_TESTS
 makeAComponentMix <- function(A, metadata, sY, mult) {
     if (is.na(A)) {
         ans <- 0.5
@@ -1853,40 +1861,6 @@ makeEta <- function(beta, UEtaCoef) {
     sd <- c(1, sqrt(UEtaCoef))
     ans <- stats::rnorm(n = P, sd = sd)
     methods::new("ParameterVector", ans)
-}
-
-## NO_TESTS
-makeAlphaMove <- function(beta, indexClassAlpha, nElementClassAlpha) {
-    n.alpha <- length(nElementClassAlpha)
-    ans <- double(length = n.alpha)
-    for (j in seq_along(indexClassAlpha)) {
-        k <- indexClassAlpha[j]
-        if (k > 0L)
-            ans[k] <- ans[k] + beta[j]
-    }
-    ans <- ans / nElementClassAlpha
-    methods::new("ParameterVector", ans)
-}    
-
-## need to call 'alignPair' on 'y' at some point
-## NO_TESTS
-makeIndexClassAlpha <- function(classes, metadata) {
-    name.term <- paste(names(metadata), collapse = ":")
-    .Data <- array(0L,
-                   dim = dim(metadata),
-                   dimnames = dimnames(metadata))
-    template.beta <- methods::new("Values",
-                                  .Data = .Data,
-                                  metadata = metadata)
-    classes <- tryCatch(dembase::makeCompatible(x = classes,
-                                                y = template.beta,
-                                                subset = TRUE,
-                                                check = TRUE),
-                        error = function(e) e)
-    if (methods::is(classes, "error"))
-        stop(gettextf("problem aligning '%s' with interaction term '%s' : %s",
-                      "cl", name.term, classes$message))
-    as.integer(classes@.Data)
 }
 
 ## HAS_TESTS
@@ -2004,11 +1978,11 @@ makeScaleMax <- function(scaleMax, A, nu, isSpec = FALSE) {
 }        
 
 ## Expands factors into dummy variables, and then standardises as
-## described in Gelman, A., Jakulin, A., Pittau, M.G., and Su, Y.-S.
+## described in Gelman, A., Jakulin, A., Pittau, M. G., and Su, Y.-S.
 ## (2008). A weakly informative default prior distribution
 ## for logistic and other regression models.
 ## The Annals of Applied Statistics, pages 1360–1383.
-makeStandardizedVariables <- function(formula, inputs, namePrior, contrastsArg) {
+makeStandardizedVariables <- function(formula, inputs, namePrior, contrastsArg, allStrucZero) { ## NEW
     if (identical(contrastsArg, list()))
         contrastsArg <- NULL
     ans <- tryCatch(stats::model.matrix(object = formula,
@@ -2022,16 +1996,17 @@ makeStandardizedVariables <- function(formula, inputs, namePrior, contrastsArg) 
     terms <- stats::terms(formula)
     factors <- attr(terms, "factors")
     order.term <- attr(terms, "order")
+    ans[allStrucZero, ] <- NA
     for (j in seq_len(ncol(ans))[-1L]) {
         v <- ans[ , j]
         i.term <- which.term[j]
         is.main.effect <- order.term[i.term] == 1L
         if (is.main.effect) {
-            is.binary <- isTRUE(all.equal(sort(unique(v)), 0:1))
+            is.binary <- isTRUE(all.equal(sort(unique(na.omit(v))), 0:1))
             if (is.binary)
-                v <- v - mean(v)
+                v <- v - mean(v, na.rm = TRUE)
             else
-                v <- (v - mean(v)) / (2 * stats::sd(v))
+                v <- (v - mean(v, na.rm = TRUE)) / (2 * stats::sd(v, na.rm = TRUE))
         }
         else {
             i.main.effect.contributes <- which(factors[ , i.term] == 1L) + 1L
@@ -2040,9 +2015,150 @@ makeStandardizedVariables <- function(formula, inputs, namePrior, contrastsArg) 
         }
         ans[ , j] <- v
     }
+    ans[allStrucZero, ] <- 0
     array(ans, dim = dim(ans), dimnames = dimnames(ans))
 }
 
+## HAS_TESTS
+makeAllStrucZero <- function(strucZeroArray, metadata) {
+    .Data.prior <- array(0L,
+                         dim = dim(metadata),
+                         dimnames = dimnames(metadata))
+    array.prior <- new("Counts",
+                       .Data = .Data.prior,
+                       metadata = metadata)
+    array.zero <- tryCatch(makeCompatible(x = strucZeroArray,
+                                          y = array.prior,
+                                          subset = FALSE,
+                                          check = TRUE),
+                           error = function(e) e)
+    if (methods::is(array.zero, "error"))
+        stop(gettextf("problem assigning structural zeros to prior '%s' : %s",
+                      paste(names(metadata), collapse = ":"), array.zero$message))
+    as.logical(array.zero@.Data == 0L)
+}
+
+## HAS_TESTS
+makeAllStrucZeroError <- function(strucZeroArray, metadata, classPrior) {
+    all.struc.zero <- makeAllStrucZero(strucZeroArray = strucZeroArray,
+                                       metadata = metadata)
+    if (any(all.struc.zero)) {
+        name.prior <- paste(names(metadata), collapse = ":")
+        stop(gettextf("'%s' has elements where all contributing cells are structural zeros; priors with class \"%s\" cannot be used in such cases",
+                      name.prior, classPrior))
+    }
+    NULL
+}
+
+## HAS_TESTS
+makeAlongAllStrucZero <- function(strucZeroArray, metadata, iAlong) {
+    name.prior <- paste(names(metadata), collapse = ":")
+    metadata.along <- metadata[iAlong]
+    metadata.within <- metadata[-iAlong]
+    .Data.along <- array(0L,
+                         dim = dim(metadata.along),
+                         dimnames = dimnames(metadata.along))
+    .Data.within <- array(0L,
+                          dim = dim(metadata.within),
+                          dimnames = dimnames(metadata.within))
+    array.along <- new("Counts",
+                       .Data = .Data.along,
+                       metadata = metadata.along)
+    array.within <- new("Counts",
+                        .Data = .Data.within,
+                        metadata = metadata.within)
+    array.zero.along <- tryCatch(makeCompatible(x = strucZeroArray,
+                                                y = array.along,
+                                                subset = FALSE,
+                                                check = TRUE),
+                                 error = function(e) e)
+    array.zero.within <- tryCatch(makeCompatible(x = strucZeroArray,
+                                                 y = array.within,
+                                                 subset = FALSE,
+                                                 check = TRUE),
+                                  error = function(e) e)
+    if (methods::is(array.zero.along, "error"))
+        stop(gettextf("problem assigning structural zeros to prior '%s' : %s",
+                      name.prior, array.zero.along$message))
+    if (methods::is(array.zero.within, "error"))
+        stop(gettextf("problem assigning structural zeros to prior '%s' : %s",
+                      name.prior, array.zero.within$message))
+    along.is.zero <- as.logical(array.zero.along@.Data == 0L)
+    within.is.zero <- as.logical(array.zero.within@.Data == 0L)
+    if (any(along.is.zero)) {
+        labels <- dimnames(metadata.along)[[1L]]
+        i.first.zero <- which(along.is.zero)[1L]
+        name.along <- names(metadata.along)
+        stop(gettextf("all cells contributing to element \"%s\" of '%s\' dimension [\"%s\"] for prior '%s' are structural zeros",
+                      labels[i.first.zero], "along", name.along, name.prior))
+    }
+    within.is.zero
+}
+
+## HAS_TESTS
+makeStrucZeroArray <- function(structuralZeros, y) {
+    if (is.null(structuralZeros))
+        makeStrucZeroArrayNULL(y)
+    else if (identical(structuralZeros, new("Values")))
+        makeStrucZeroArrayDiag(y)
+    else
+        makeStrucZeroArrayGeneral(structuralZeros = structuralZeros,
+                                  y  = y)
+}
+
+## HAS_TESTS
+makeStrucZeroArrayNULL <- function(y) {
+    .Data <- array(1L,
+                   dim = dim(y),
+                   dimnames = dimnames(y))
+    metadata <- y@metadata
+    new("Counts",
+        .Data = .Data,
+        metadata = metadata)
+}
+
+## HAS_TESTS
+makeStrucZeroArrayDiag <- function(y) {
+    metadata <- y@metadata
+    names <- names(y)
+    dimtypes <- dimtypes(y, use.names = FALSE)
+    i.orig <- grep("origin", dimtypes)
+    has.orig <- length(i.orig) > 0L
+    if (!has.orig)
+        stop(gettextf("'%s' has no dimensions with %s \"%s\"",
+                      "y", "dimtype", "origin"))
+    names.orig <- names[i.orig]
+    base <- sub("_orig$", "", names.orig)
+    dembase::pairAligned(y, base = base)
+    .Data <- array(1L,
+                   dim = dim(y),
+                   dimnames = dimnames(y))
+    names.dest <- sprintf("%s_dest", base)
+    i.dest <- match(names.dest, names)
+    for (i in seq_along(i.orig)) {
+        is.diag <- slice.index(y, MARGIN = i.orig[i]) == slice.index(y, MARGIN = i.dest[i])
+        .Data[is.diag] <- 0L
+    }
+    new("Counts",
+        .Data = .Data,
+        metadata = metadata)
+}
+
+## HAS_TESTS
+makeStrucZeroArrayGeneral <- function(structuralZeros, y) {
+    ans <- tryCatch(makeCompatible(x = structuralZeros,
+                                   y = y,
+                                   subset = FALSE,
+                                   check = TRUE),
+                    error = function(e) e)
+    if (methods::is(ans, "error"))
+        stop(gettextf("problem expanding '%s' to make it compatible with '%s' : %s",
+                      "structuralZeros", "y", ans$message))
+    ans[] <- ifelse(ans == 0L, 0L, 1L)
+    ans <- as(ans, "Counts")
+    ans <- toInteger(ans)
+    ans
+}
 
 ## NO_TESTS
 makeTauExchFixedIntercept <- function(tau, sY) {
@@ -2073,10 +2189,11 @@ makeTauExchFixedNonIntercept <- function(tau, sY, mult) {
 }
 
 ## NO_TESTS
-makeU <- function(nu, A, n) {
+makeU <- function(nu, A, n, allStrucZero) {
     ans <- double(length = n)
     for (i in seq_len(n))
         ans[i] <- rinvchisq1(df = nu, scale = A^2)
+    ans[allStrucZero] <- 1
     methods::new("VarTDist", ans)
 }
 
@@ -2331,8 +2448,8 @@ makeUR <- function(K) {
     methods::new("FFBSList", ans)
 }
 
-
-makeZ <- function(formula, data, metadata, contrastsArg, infant) {
+## HAS_TESTS
+makeZ <- function(formula, data, metadata, contrastsArg, infant, allStrucZero) {
     namePrior <- paste(names(metadata), collapse = ":")
     ## infant
     if (infant@.Data) {
@@ -2375,7 +2492,8 @@ makeZ <- function(formula, data, metadata, contrastsArg, infant) {
     makeStandardizedVariables(formula = formula,
                               inputs = inputs,
                               namePrior = namePrior,
-                              contrastsArg = contrastsArg)
+                              contrastsArg = contrastsArg,
+                              allStrucZero = allStrucZero)
 }
 
 
@@ -8489,6 +8607,7 @@ printPoissonBinomialSpecEqns <- function(object) {
 printPoissonLikEqns <- function(object) {
     formulaMu <- object@formulaMu
     useExpose <- object@useExpose@.Data
+    structuralZeros <- object@structuralZeros
     terms <- expandTermsSpec(formulaMu)
     if (useExpose) {
         cat("            y[i] ~ Poisson(rate[i] * exposure[i])\n")
@@ -8498,6 +8617,7 @@ printPoissonLikEqns <- function(object) {
         cat("            y[i] ~ Poisson(count[i])\n")
         cat("   log(count[i]) ~ N(", terms, ", sd^2)\n", sep = "")
     }
+    cat("\nhas structural zeros: ", !is.null(structuralZeros), "\n", sep = "")
 }
 
 printPoissonModEqns <- function(object) {
@@ -8543,6 +8663,7 @@ printPoissonSpecEqns <- function(object) {
     lower <- object@lower
     upper <- object@upper
     useExpose <- object@useExpose@.Data
+    structuralZeros <- object@structuralZeros
     has.series <- !is.na(series)
     name.y <- sprintf("%13s", nameY)
     terms <- expandTermsSpec(formulaMu)
@@ -8564,6 +8685,7 @@ printPoissonSpecEqns <- function(object) {
         cat("\n")
         cat("   log(count[i]) ~ N(", terms, ", sd^2)  \n", sep = "")
     }
+    cat("\nhas structural zeros: ", !is.null(structuralZeros), "\n", sep = "")
 }
 
 printPriorsEqns <- function(object) {

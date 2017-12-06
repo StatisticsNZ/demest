@@ -265,35 +265,6 @@ updateAlphaMix <- function(prior, useC = FALSE) {
     }
 }
 
-updateAlphaMove <- function(prior, betaTilde, useC = FALSE) {
-    J <- prior@J@.Data
-    alpha <- prior@alphaMove@.Data
-    index.class <- prior@indexClassAlpha
-    n.element.class <- prior@nElementClassAlpha
-    A <- prior@AMove@.Data
-    A.sq <- A^2
-    v <- getV(prior)
-    n.alpha <- length(alpha)
-    sum.beta <- numeric(length = n.alpha)
-    for (j in seq_along(J)) {
-        k <- index.class[j]
-        if (k > 0L)
-            sum.beta[k] <- sum.beta[k] + betaTilde[j]
-    }
-    for (k in seq_len(n.alpha)) {
-        n <- n.element.class[k]
-        prec.data <- n / v
-        prec.prior <- 1 / A^2
-        var <- 1 / (prec.data + prec.prior)
-        beta.bar <- sum.beta[k] / n
-        mean <- (prec.data * beta.bar) * var
-        sd <- sqrt(var)
-        alpha[k] <- stats::rnorm(n = J, mean = mean, sd = sd)
-    }
-    prior@alphaMove@.Data <- alpha
-}
-
-
 
 ## TRANSLATED (AGAIN 16/7/2017)
 ## HAS_TESTS

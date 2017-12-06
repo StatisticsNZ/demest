@@ -26,16 +26,19 @@ setMethod("initialPrior",
                   stop(gettextf("using \"%s\" prior for highest-order term in saturated model",
                                 "ExchFixed"))
               isSaturated <- methods::new("LogicalFlag", isSaturated)
+              if (all(strucZeroArray == 0L))
+                  stop(gettext("data consists entirely of structural zeros"))
               methods::new("ExchFixed",
                            J = J,
                            tau = tau,
-                           isSaturated = isSaturated)
+                           isSaturated = isSaturated,
+                           allStrucZero = FALSE)
           })
 
 ## non-intercept
 setMethod("initialPrior",
           signature(object = "SpecExchFixed"),
-          function(object, beta, metadata, sY, isSaturated, ...) {
+          function(object, beta, metadata, sY, isSaturated, strucZeroArray, ...) {
               tau <- object@tau
               multTau <- object@multTau
               J <- makeJ(beta)
@@ -49,7 +52,10 @@ setMethod("initialPrior",
                   stop(gettextf("using \"%s\" prior for highest-order term in saturated model",
                                 "ExchFixed"))
               isSaturated <- methods::new("LogicalFlag", isSaturated)
+              allStrucZero <- makeAllStrucZero(strucZeroArray = strucZeroArray,
+                                               metadata = metadata)
               methods::new("ExchFixed",
+                           allStrucZero = allStrucZero,
                            isSaturated = isSaturated,
                            J = J,
                            tau = tau)
@@ -57,7 +63,7 @@ setMethod("initialPrior",
 
 setMethod("initialPrior",
           signature(object = "SpecExchNormZero"),
-          function(object, beta, metadata, sY, isSaturated, ...) {
+          function(object, beta, metadata, sY, isSaturated, strucZeroArray, ...) {
               ATau <- object@ATau
               multTau <- object@multTau
               nuTau <- object@nuTau
@@ -74,8 +80,11 @@ setMethod("initialPrior",
                                nu = nuTau,
                                scaleMax = tauMax)
               isSaturated <- methods::new("LogicalFlag", isSaturated)
+              allStrucZero <- makeAllStrucZero(strucZeroArray = strucZeroArray,
+                                               metadata = metadata)
               methods::new("ExchNormZero",
                            ATau = ATau,
+                           allStrucZero = allStrucZero,
                            isSaturated = isSaturated,
                            J = J,
                            nuTau = nuTau,
@@ -85,7 +94,7 @@ setMethod("initialPrior",
 
 setMethod("initialPrior",
           signature(object = "SpecExchRobustZero"),
-          function(object, beta, metadata, sY, isSaturated, ...) {
+          function(object, beta, metadata, sY, isSaturated, strucZeroArray, ...) {
               ATau <- object@ATau
               multTau <- object@multTau
               nuBeta <- object@nuBeta
@@ -99,7 +108,6 @@ setMethod("initialPrior",
               tauMax <- makeScaleMax(scaleMax = tauMax,
                                      A = ATau,
                                      nu = nuTau)
-              UBeta <- makeU(nu = nuBeta, A = ATau, n = J)
               tau <- makeScale(A = ATau,
                                nu = nuTau,
                                scaleMax = tauMax)
@@ -107,7 +115,14 @@ setMethod("initialPrior",
                   stop(gettextf("using prior with '%s = %s' for highest-order term in saturated model",
                                 "robust", "TRUE"))
               isSaturated <- methods::new("LogicalFlag", isSaturated)
+              allStrucZero <- makeAllStrucZero(strucZeroArray = strucZeroArray,
+                                               metadata = metadata)
+              UBeta <- makeU(nu = nuBeta,
+                             A = ATau,
+                             n = J,
+                             allStrucZero = allStrucZero)
               methods::new("ExchRobustZero",
+                           allStrucZero = allStrucZero,
                            ATau = ATau,
                            isSaturated = isSaturated,
                            J = J,
@@ -120,7 +135,7 @@ setMethod("initialPrior",
 
 setMethod("initialPrior",
           signature(object = "SpecExchNormCov"),
-          function(object, beta, metadata, sY, isSaturated, ...) {
+          function(object, beta, metadata, sY, isSaturated, strucZeroArray, ...) {
               ATau <- object@ATau
               multTau <- object@multTau
               nuTau <- object@nuTau
@@ -136,15 +151,19 @@ setMethod("initialPrior",
               tau <- makeScale(A = ATau,
                                nu = nuTau,
                                scaleMax = tauMax)
+              allStrucZero <- makeAllStrucZero(strucZeroArray = strucZeroArray,
+                                               metadata = metadata)
               l.cov <- initialCov(object = object,
                                   beta = beta,
                                   metadata = metadata,
-                                  sY = sY)
+                                  sY = sY,
+                                  allStrucZero = allStrucZero)
               isSaturated <- methods::new("LogicalFlag", isSaturated)
               methods::new("ExchNormCov",
                            AEtaCoef = l.cov$AEtaCoef,
                            AEtaIntercept = l.cov$AEtaIntercept,
                            ATau = ATau,
+                           allStrucZero = allStrucZero,
                            contrastsArg = l.cov$contrastsArg,
                            eta = l.cov$eta,
                            formula = l.cov$formula,
@@ -162,7 +181,7 @@ setMethod("initialPrior",
 
 setMethod("initialPrior",
           signature(object = "SpecExchRobustCov"),
-          function(object, beta, metadata, sY, isSaturated, ...) {
+          function(object, beta, metadata, sY, isSaturated, strucZeroArray, ...) {
               ATau <- object@ATau
               multTau <- object@multTau
               nuBeta <- object@nuBeta
@@ -179,11 +198,17 @@ setMethod("initialPrior",
               tau <- makeScale(A = ATau,
                                nu = nuTau,
                                scaleMax = tauMax)
+              allStrucZero <- makeAllStrucZero(strucZeroArray = strucZeroArray,
+                                               metadata = metadata)
               l.cov <- initialCov(object = object,
                                   beta = beta,
                                   metadata = metadata,
-                                  sY = sY)
-              UBeta <- makeU(nu = nuBeta, A = ATau, n = J)
+                                  sY = sY,
+                                  allStrucZero = allStrucZero)
+              UBeta <- makeU(nu = nuBeta,
+                             A = ATau,
+                             n = J,
+                             allStrucZero = allStrucZero)
               if (isSaturated)
                   stop(gettextf("using prior with '%s = %s' for highest-order term in saturated model",
                                 "robust", "TRUE"))
@@ -192,6 +217,7 @@ setMethod("initialPrior",
                            AEtaCoef = l.cov$AEtaCoef,
                            AEtaIntercept = l.cov$AEtaIntercept,
                            ATau = ATau,
+                           allStrucZero = allStrucZero,
                            contrastsArg = l.cov$contrastsArg,
                            eta = l.cov$eta,
                            formula = l.cov$formula,
@@ -208,6 +234,9 @@ setMethod("initialPrior",
                            UEtaCoef = l.cov$UEtaCoef,
                            Z = l.cov$Z)
           })
+
+## REWRITTEN TO HERE ############################
+
 
 ## DLM - Norm, Zero
 
@@ -1371,54 +1400,6 @@ setMethod("initialPrior",
               }
           })
 
-## Move
-
-## NOT FINISHED!!
-setMethod("initialPrior",
-          signature(object = "SpecMoveNormZero"),
-          function(object, beta, metadata, sY, isSaturated, ...) {
-              classes <- object@classes
-              AMove <- object@AMove
-              ATau <- object@ATau
-              multMove <- object@multMove
-              multTau <- object@multTau
-              nuTau <- object@nuTau
-              tauMax <- object@tauMax
-              J <- makeJ(beta)
-              indexClassAlpha <- makeIndexClassAlpha(classes = classes,
-                                                         metadata = metadata)
-              ## nElementClassAlpha <- makeNElementClassAlpha(indexClassAlpha)
-              alphaMove <- makeAlphaMove(beta = beta,
-                                         indexClassAlpha = indexClassAlpha,
-                                         nElementClassAlpha = nElementClassAlpha)
-              AMove <- makeAMove(A = AMove,
-                                 metadata = metadata,
-                                 sY = sY,
-                                 mult = multMove)
-              ATau <- makeAHalfT(A = ATau,
-                                 metadata = metadata,
-                                 sY = sY,
-                                 mult = multTau)
-              tauMax <- makeScaleMax(scaleMax = tauMax,
-                                     A = ATau,
-                                     nu = nuTau)
-              tau <- makeScale(A = ATau,
-                               nu = nuTau,
-                               scaleMax = tauMax)
-              isSaturated <- methods::new("LogicalFlag", isSaturated)
-              methods::new("MoveNormZero",
-                           alphaMove = alphaMove,
-                           AMove = AMove,
-                           ATau = ATau,
-                           indexClassAlpha = indexClassAlpha,
-                           isSaturated = isSaturated,
-                           J = J,
-                           nElementClassAlpha = nElementClassAlpha,
-                           nuTau = nuTau,
-                           tau = tau,
-                           tauMax = tauMax)
-          })
-
 
 ## Mix
 
@@ -1553,7 +1534,6 @@ setMethod("initialPriorPredict",
               A <- prior@ATau@.Data
               nu <- prior@nuBeta@.Data
               J <- makeJPredict(metadata)
-              UBeta <- makeU(nu = nu, A = A, n = J)
               methods::new("ExchRobustZero",
                            ATau = prior@ATau,
                            isSaturated = prior@isSaturated,
@@ -1619,7 +1599,10 @@ setMethod("initialPriorPredict",
                          contrastsArg = contrastsArg,
                          infant = infant)
               n <- J@.Data
-              UBeta <- makeU(nu = nuBeta, A = ATau, n = J)
+              UBeta <- makeU(nu = nuBeta,
+                             A = ATau,
+                             n = J,
+                             allStrucZero = allStrucZero)
               methods::new("ExchRobustCov",
                            AEtaCoef = prior@AEtaCoef,
                            AEtaIntercept = prior@AEtaIntercept,

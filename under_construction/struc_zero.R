@@ -41,63 +41,6 @@ makePriors <- function(betas, specs, namesSpecs, margins, y, sY, strucZeroArray)
 
 
 
-checkAndTidyStructuralZeros <- function(structuralZeros) {
-    if (is.null(structuralZeros))
-        NULL
-    else if (identical(structuralZeros), "diag")
-        data.frame()
-    else if (is.data.frame(structuralZeros)) {
-        if (nrow(structuralZeros) == 0L)
-            stop(gettextf("'%s' has %d rows",
-                          "structuralZeros", 0L))
-        structuralZeros[] <- lapply(structuralZeros, as.character)
-        if (any(is.na(structuralZeros)))
-            stop(gettextf("'%s' has missing values",
-                          "structuralZeros"))
-        if (any(!nzchar(unlist(structuralZeros))))
-            stop(gettextf("'%s' has blanks",
-                          "structuralZeros"))
-        if (any(duplicated(structuralZeros)))
-            stop(gettextf("'%s' contains duplicate rows",
-                          "structuralZeros"))
-        structuralZeros
-    }
-    else {
-        stop(gettextf("'%s' has class \"%s\"",
-                      "structuralZeros", class(structuralZeros)))
-    }
-}
-
-setClass("StructuralZerosMixin",
-         slots = c(structuralZeros = "dataframeOrNULL"),
-         contains = "VIRTUAL",
-         validity = function(object) {
-             structuralZeros <- object@structuralZeros
-             if (is.null(structuralZeros))
-                 TRUE
-             else if (identical(structuralZeros, data.frame()))
-                 TRUE
-             else {
-                 if (nrow(structuralZeros) == 0L)
-                     return(gettextf("'%s' has %d rows",
-                                     "structuralZeros", 0L))
-                 if (!all(sapply(structuralZeros, is.character)))
-                     return(gettextf("'%s' has columns not of type \"%s\"",
-                                     "structuralZeros", "character"))
-                 if (any(is.na(structuralZeros)))
-                     stop(gettextf("'%s' has missing values",
-                                   "structuralZeros"))
-                 if (any(!nzchar(unlist(structuralZeros))))
-                     stop(gettextf("'%s' has blanks",
-                                   "structuralZeros"))
-                 if (any(duplicated(structuralZeros)))
-                     stop(gettextf("'%s' contains duplicate rows",
-                                   "structuralZeros"))
-                 TRUE
-             }
-         })
-
-
 ## TRANSLATED
 ## HAS_TESTS
 ## Includes case where 'y' has subtotals.
@@ -404,51 +347,6 @@ setMethod("initialModel",
 
 
 
-setClass("AllStrucZeroMixin",
-         slots = c(allStrucZero = "logical"),
-         contains = "VIRTUAL",
-         validity = function(object) {
-             allStrucZero <- object@allStrucZero
-             ## no missing values
-             if (any(is.na(allStrucZero)))
-                 return(gettextf("'%s' has missing values",
-                                 "allStrucZero"))
-             ## not all TRUE
-             if (all(allStrucZero))
-                 return(gettext("'%s' all %s",
-                                "allStrucZero", "TRUE"))
-             TRUE
-         })
-
-
-setClass("AllStrucZeroExchMixin",
-         contains = c("VIRTUAL",
-                      "AllStrucZeroMixin")
-         validity = function(object) {
-             allStrucZero <- object@allStrucZero
-             J <- object@J@.Data
-             if (!identical(length(allStrucZero), J))
-                 return(gettextf("'%s' does not have length '%s'",
-                                 "allStrucZero", "J"))
-             TRUE
-         })
-
-setClass("AllStrucZeroDLMMixin",
-         contains = c("VIRTUAL",
-                      "AllStrucZeroMixin")
-         validity = function(object) {
-             allStrucZero <- object@allStrucZero
-             L <- object@L@.Data
-             if (!identical(length(allStrucZero), L))
-                 return(gettextf("'%s' does not have length '%s'",
-                                 "allStrucZero", "L"))
-             TRUE
-         })
-
-
-
-
-
 
 checkAndTidyYForStrucZero <- function(y, strucZeroArray) {
     if (!is.integer(y@.Data))
@@ -471,245 +369,6 @@ checkAndTidyYForStrucZero <- function(y, strucZeroArray) {
 }
 
 
-makeStrucZeroArray <- function(structuralZeros, y) {
-    if (is.null)
-        makeStrucZeroArrayNULL(y)
-    if (identical(structuralZeros, data.frame()))
-        makeStrucZeroArrayDiag(y)
-    else if (is.data.frame(stucturalZeros))
-        makeStrucZeroArrayGeneral(structuralZeros = structuralZeros,
-                                  y  = y)
-}
-
-makeStrucZeroArrayNULL <- function(y) {
-    .Data <- array(1L,
-                   dim = dim(y),
-                   dimnames = dimnames(y))
-    metadata <- y@metadata
-    new("Counts",
-        .Data = .Data,
-        metadata = metadata)
-}
-        
-makeStrucZeroArrayDiag <- function(y) {
-    metadata <- y@metadata
-    names <- names(y)
-    dimtypes <- dimtypes(y, use.names = FALSE)
-    i.orig <- grep("origin", dimtypes)
-    has.orig <- length(i.orig) > 0L
-    if (!has.orig)
-        stop(gettextf("'%s' has no dimensions with %s \"%s\"",
-                      "y", "origin"))
-    names.orig <- names[i.orig]
-    base <- sub("_orig$", "", names.orig)
-    dembase::pairAligned(y, base = base)
-    .Data <- array(1L,
-                   dim = dim(y),
-                   dimnames = dimnames(y))
-    names.dest <- sprintf("%s_dest", base)
-    i.dest <- match(names.dest, names)
-    for (i in seq_along(i.orig)) {
-        is.diag <- slice.index(y, MARGIN = i.orig[i]) == slice.index(y, MARGIN = i.dest[i])
-        .Data[is.diag] <- 0L
-    }
-    new("Counts",
-        .Data = .Data,
-        metadata = metadata)
-}
-
-makeStrucZeroArrayGeneral <- function(structuralZeros, y) {
-    names.zero <- names(structuralZeros)
-    names.y <- names(y)
-    dim.y <- dim(y)
-    dimnames.y <- dimnames(y)
-    vec.indices <- vector(model = "list", length = length(structuralZeros))
-    for (i.zero in seq_along(structuralZeros)) {
-        name.zero <- names.zero[[i]]
-        i.y <- match(name.zero, names.y, nomatch = 0L)
-        not.found <- i.y == 0L
-        if (not.found)
-            stop(gettextf("'%s' does not have a dimension called \"%s\"",
-                          "y", name.zero))
-        labels.zero <- structuralZeros[[name.zero]]
-        labels.y <- dimnames.y[[i.y]]
-        i.zero.to.y <- match(labels.zero, labels.y, nomatch = 0L)
-        in.zero.not.in.y <- i.zero.to.y == 0L
-        if (any(in.zero.not.in.y))
-            stop(gettextf("dimension \"%s\" of '%s' does not have element called \"%s\"",
-                          name.zero, "y", labels.zero[in.zero.not.in.y][1L]))
-        in.zero <- which(labels.y %in% labels.zero)
-        vec.indices[[i.zero]] <- slice.index(y, MARGIN = i.y) %in% in.zero
-    }
-    is.struc.zero <- Reduce(`&`, vec.indices)
-    .Data <- array(1L,
-                   dim = dim.y,
-                   dimnames = dimnames.y)
-    .Data[is.struc.zero] <- 0L
-    new("Counts",
-        .Data = .Data,
-        metadata = metadata)
-}
-
-        
-
-makeAllStrucZeroExch <- function(metadata) {
-    .Data.prior <- array(0L,
-                         dim = dim(metadata),
-                         dimnames = dimnames(metadata))
-    array.prior <- new("Counts",
-                       .Data = .Data.prior,
-                       metadata = metadata)
-    array.zero <- tryCatch(makeCompatible(y = strucZeroArray,
-                                          x = array.prior,
-                                          subset = FALSE,
-                                          check = TRUE),
-                           error = function(e) e)
-    if (methods::is(array.zero, "error"))
-        stop(gettextf("problem assigning structural zeros to prior '%s' : %s",
-                      paste(names(metadata), collapse = ":"), array.zero$message))
-    as.logical(array.zero@.Data == 0L)
-}
-
-makeAllStrucZeroDLM <- function(metadata, iAlong) {
-    name.prior <- paste(names(metadata), collapse = ":")
-    metadata.along <- metadata[iAlong]
-    metadata.within <- metadata[-iAlong]
-    .Data.along <- array(0L,
-                         dim = dim(metadata.along),
-                         dimnames = dimnames(metadata.along))
-    .Data.within <- array(0L,
-                          dim = dim(metadata.within),
-                          dimnames = dimnames(metadata.within))
-    array.along <- new("Counts",
-                       .Data = .Data.along,
-                       metadata = metadata.along)
-    array.within <- new("Counts",
-                        .Data = .Data.within,
-                        metadata = metadata.within)
-    array.zero.along <- tryCatch(makeCompatible(y = strucZeroArray,
-                                                x = array.along,
-                                                subset = FALSE,
-                                                check = TRUE),
-                                 error = function(e) e)
-    array.zero.within <- tryCatch(makeCompatible(y = strucZeroArray,
-                                                 x = array.within,
-                                                 subset = FALSE,
-                                                 check = TRUE),
-                                  error = function(e) e)
-    if (methods::is(array.zero.along, "error") || methods::is(array.zero.within, "error"))
-        stop(gettextf("problem assigning structural zeros to prior '%s' : %s",
-                      name.prior, array.zero$message))
-    along.is.zero <- as.logical(array.zero.along@.Data == 0L)
-    within.is.zero <- as.logical(array.zero.within@.Data == 0L)
-    if (any(along.is.zero)) {
-        labels <- dimnames(metadata.along)[[1L]]
-        i.first.zero <- which(along.is.zero)[1L]
-        name.along <- names(metadata.along)
-        stop(gettextf("element '%s' of '%s' dimension [\"%s\"] for prior '%s' has not data because of structural zeros",
-                      labels[i.first.zero], "along", name.along, name.prior))
-    }
-    within.is.zero
-}
-
-
-setMethod("makeStrucZero",
-          signature(prior = "Mix"),
-          function(prior, strucZeroArray, metadata) {
-              stop("sorry - mixture prior cannot deal with with structural zeros yet")
-          })
-
-
-
-makeZ <- function(formula, data, metadata, contrastsArg, infant) {
-    namePrior <- paste(names(metadata), collapse = ":")
-    ## infant
-    if (infant@.Data) {
-        data <- addInfantToData(metadata = metadata,
-                                data = data)
-        if (length(formula) == 0L)
-            formula <- ~ infant
-        else {
-            name.infant <- names(data)[length(data)]
-            formula <- deparse(formula)
-            formula <- paste(formula, name.infant, sep = " + ")
-            formula <- stats::as.formula(formula)
-        }
-    }
-    ## make required response
-    dimnames <- dimnames(metadata)
-    response.required <- expand.grid(dimnames)
-    response.required <- do.call(paste, response.required)
-    ## make response from 'data'
-    i.response <- match(names(metadata), names(data), nomatch = 0L)
-    unmatched <- i.response == 0L
-    if (any(unmatched))
-        stop(gettextf("could not find variable '%s' in covariate data for prior '%s'",
-                      names(metadata)[unmatched][1L], namePrior))
-    response.obtained <- data[i.response]
-    response.obtained <- do.call(paste, response.obtained)
-    ## get indices for rows of 'data'
-    i.row <- match(response.required, response.obtained, nomatch = 0L)
-    unmatched <- i.row == 0L
-    if (any(unmatched)) {
-        first.unmatched <- response.required[unmatched][1L]
-        stop(gettextf("no covariate data for element '%s' in prior for '%s'",
-                      first.unmatched, namePrior))
-    }
-    ## make 'inputs' - variables that covariates formed from
-    input.names <- rownames(attr(stats::terms(formula), "factors"))
-    inputs <- data[input.names]
-    inputs <- inputs[i.row, , drop = FALSE]
-    ## make Z
-    makeStandardizedVariables(formula = formula,
-                              inputs = inputs,
-                              namePrior = namePrior,
-                              contrastsArg = contrastsArg)
-}
-
-
-
-## Expands factors into dummy variables, and then standardises as
-## described in Gelman, A., Jakulin, A., Pittau, M. G., and Su, Y.-S.
-## (2008). A weakly informative default prior distribution
-## for logistic and other regression models.
-## The Annals of Applied Statistics, pages 1360–1383.
-makeStandardizedVariables <- function(formula, inputs, namePrior, contrastsArg, isStrucZero) { ## NEW
-    if (identical(contrastsArg, list()))
-        contrastsArg <- NULL
-    ans <- tryCatch(stats::model.matrix(object = formula,
-                                        data = inputs,
-                                        contrasts.arg = contrastsArg),
-                    error = function(e) e)
-    if (methods::is(ans, "error"))
-        stop(gettextf("problem constructing model matrix from formula '%s' in prior for '%s' : %s",
-                      deparse(formula), namePrior, ans$message))
-    which.term <- attr(ans, "assign")
-    terms <- stats::terms(formula)
-    factors <- attr(terms, "factors")
-    order.term <- attr(terms, "order")
-    ans[isStructZero , ] <- NA ## NEW
-    for (j in seq_len(ncol(ans))[-1L]) {
-        v <- ans[ , j]
-        i.term <- which.term[j]
-        is.main.effect <- order.term[i.term] == 1L
-        if (is.main.effect) {
-            is.binary <- isTRUE(all.equal(sort(unique(v)), 0:1))
-            if (is.binary)
-                v <- v - mean(v, na.rm = TRUE) ## NEW
-            else
-                v <- (v - mean(v, na.rm = TRUE)) / (2 * stats::sd(v, na.rm = TRUE)) ## NEW
-        }
-        else {
-            i.main.effect.contributes <- which(factors[ , i.term] == 1L) + 1L
-            v <- ans[, i.main.effect.contributes, drop = FALSE]
-            v <- apply(v, MARGIN = 1L, FUN = prod)
-        }
-        ans[ , j] <- v
-    }
-    array(ans, dim = dim(ans), dimnames = dimnames(ans))
-}
-
-
 
 
 ## TRANSLATED
@@ -729,7 +388,7 @@ betaHat <- function(prior, useC = FALSE) {
         has.alpha.mix <- prior@hasAlphaMix@.Data
         has.covariates <- prior@hasCovariates@.Data
         has.season <- prior@hasSeason@.Data
-        is.struc.zero <- prior@isStrucZero ## NEW
+        all.struc.zero <- prior@allStrucZero ## NEW
         ans <- rep(0, times = J)
         ## if (has.alpha.cross) {
         ##     alpha.cross <- prior@alphaCross@.Data
@@ -823,7 +482,7 @@ setMethod("updateBetaAndPriorBeta",
                       beta <- rep(0, times = J)
                   else {
                       tau <- prior@tau@.Data
-                      is.struc.zero <- prior@isStrucZero
+                      all.struc.zero <- prior@allStrucZero
                       J <- prior@J
                       prec.prior <- 1 / tau^2
                       for (i in seq_len(J)) {
@@ -891,7 +550,7 @@ updateTauNorm <- function(prior, beta, useC = FALSE) {
         tauMax <- prior@tauMax@.Data
         A <- prior@ATau@.Data
         nu <- prior@nuTau@.Data
-        is.struc.zero <- prior@isStrucZero
+        all.struc.zero <- prior@allStrucZero
         beta.hat <- betaHat(prior)
         V <- 0
         n <- 0
@@ -930,7 +589,7 @@ updateTauRobust <- function(prior, useC = FALSE) {
         tauMax <- prior@tauMax@.Data
         A <- prior@ATau@.Data
         nuTau <- prior@nuTau@.Data
-        is.struc.zero <- prior@isStrucZero
+        all.struc.zero <- prior@allStrucZero
         V <- 0
         n <- 0L
         for (i in seq_len(J)) {
@@ -970,7 +629,7 @@ updateUBeta <- function(prior, beta, useC = FALSE) {
         U <- prior@UBeta@.Data
         nu <- prior@nuBeta@.Data
         tau <- prior@tau@.Data
-        is.struc.zero <- prior@isStrucZero
+        all.struc.zero <- prior@allStrucZero
         beta.hat <- betaHat(prior)
         df <- nu + 1
         for (i in seq_len(J)) {
@@ -1249,7 +908,7 @@ updatePhi <- function(prior, withTrend, useC = FALSE) {
         phi.max <- prior@maxPhi@.Data
         shape1 <- prior@shape1Phi@.Data
         shape2 <- prior@shape2Phi@.Data
-        is.struc.zero <- prior@isStrucZero ## new
+        all.struc.zero <- prior@allStrucZero ## new
         iterator <- prior@iteratorState
         iterator <- resetA(iterator)
         numerator <- 0
@@ -1324,7 +983,7 @@ updateOmegaAlpha <- function(prior, withTrend, useC = FALSE) {
         else
             phi <- prior@phi
         iterator <- prior@iteratorState
-        is.struc.zero <- prior@isStrucZero ## NEW
+        all.struc.zero <- prior@allStrucZero ## NEW
         iterator <- resetA(iterator)
         V <- 0
         n <- 0L ## NEW?
@@ -1376,7 +1035,7 @@ updateOmegaDelta <- function(prior, useC = FALSE) {
         A <- prior@ADelta@.Data
         nu <- prior@nuDelta@.Data
         iterator <- prior@iteratorState
-        is.struc.zero <- prior@isStrucZero ## NEW
+        all.struc.zero <- prior@allStrucZero ## NEW
         iterator <- resetA(iterator)
         V <- 0
         n <- 0L ## NEW
@@ -1436,7 +1095,7 @@ updateSeason <- function(prior, betaTilde, useC = FALSE) {
         omega.sq <- omega^2
         iterator.s <- prior@iteratorState
         iterator.v <- prior@iteratorV
-        is.struc.zero <- prior@isStrucZero ## NEW
+        all.struc.zero <- prior@allStrucZero ## NEW
         iterator.s <- resetA(iterator.s)
         iterator.v <- resetA(iterator.v)
         for (l in seq_len(L)) {
@@ -1508,7 +1167,7 @@ updateOmegaSeason <- function(prior, useC = FALSE) {
         A <- prior@ASeason@.Data
         nu <- prior@nuSeason@.Data
         iterator <- prior@iteratorState
-        is.struc.zero <- prior@isStrucZero ## NEW
+        all.struc.zero <- prior@allStrucZero ## NEW
         iterator <- resetA(iterator)
         V <- 0
         n <- 0L ## NEW

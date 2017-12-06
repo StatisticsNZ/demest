@@ -64,6 +64,7 @@ setClass("SpecLikelihoodPoisson",
          contains = c("SpecLikelihood",
                       "BoxCoxParamMixin",
                       "FormulaMuMixin",
+                      "StructuralZerosMixin",
                       "UseExposeMixin"))
 
 #' @rdname SpecLikelihood-class
@@ -249,6 +250,7 @@ setClass("SpecNormalVaryingVarsigmaKnown",
 setClass("SpecPoissonVarying",
          prototype = prototype(useExpose = new("LogicalFlag", TRUE)),
          contains = c("SpecVarying",
+                      "StructuralZerosMixin",
                       "BoxCoxParamMixin"),
          validity = function(object) {
              lower <- object@lower
