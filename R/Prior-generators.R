@@ -235,19 +235,18 @@ setMethod("initialPrior",
                            Z = l.cov$Z)
           })
 
-## REWRITTEN TO HERE ############################
-
 
 ## DLM - Norm, Zero
 
 setMethod("initialPrior",
           signature(object = "SpecDLMNoTrendNormZeroNoSeason"),
-          function(object, beta, metadata, sY, isSaturated, ...) {
+          function(object, beta, metadata, sY, isSaturated, strucZeroArray, ...) {
               l.all <- initialDLMAll(object = object,
                                      beta = beta,
                                      metadata = metadata,
                                      sY = sY,
-                                     isSaturated = isSaturated)
+                                     isSaturated = isSaturated,
+                                     strucZeroArray = strucZeroArray)
               l.no.trend <- initialDLMNoTrend(object = object,
                                               metadata = metadata,
                                               sY = sY)
@@ -256,6 +255,8 @@ setMethod("initialPrior",
                            aNoTrend = l.no.trend$aNoTrend,
                            ATau = l.all$ATau,
                            alphaDLM = l.all$alphaDLM,
+                           allStrucZero = l.all$allStrucZero,
+                           alongAllStrucZero = l.all$alongAllStrucZero,
                            CNoTrend = l.no.trend$CNoTrend,
                            iAlong = l.all$iAlong,
                            isSaturated = l.all$isSaturated,
@@ -283,12 +284,13 @@ setMethod("initialPrior",
 
 setMethod("initialPrior",
           signature(object = "SpecDLMWithTrendNormZeroNoSeason"),
-          function(object, beta, metadata, sY, isSaturated, ...) {
+          function(object, beta, metadata, sY, isSaturated, strucZeroArray, ...) {
               l.all <- initialDLMAll(object = object,
                                      beta = beta,
                                      metadata = metadata,
                                      sY = sY,
-                                     isSaturated = isSaturated)
+                                     isSaturated = isSaturated,
+                                     strucZeroArray = strucZeroArray)
               l.with.trend <- initialDLMWithTrend(object = object,
                                                   beta = beta,
                                                   metadata = metadata,
@@ -300,6 +302,8 @@ setMethod("initialPrior",
                            ADelta0 = l.with.trend$ADelta0,
                            aWithTrend = l.with.trend$aWithTrend,
                            ATau = l.all$ATau,
+                           allStrucZero = l.all$allStrucZero,
+                           alongAllStrucZero = l.all$alongAllStrucZero,
                            alphaDLM = l.all$alphaDLM,
                            CWithTrend = l.with.trend$CWithTrend,
                            DC = l.with.trend$DC,
@@ -342,12 +346,13 @@ setMethod("initialPrior",
 
 setMethod("initialPrior",
           signature(object = "SpecDLMNoTrendNormZeroWithSeason"),
-          function(object, beta, metadata, sY, isSaturated, ...) {
+          function(object, beta, metadata, sY, isSaturated, strucZeroArray, ...) {
               l.all <- initialDLMAll(object = object,
                                      beta = beta,
                                      metadata = metadata,
                                      sY = sY,
-                                     isSaturated = isSaturated)
+                                     isSaturated = isSaturated,
+                                     strucZeroArray = strucZeroArray)
               l.no.trend <- initialDLMNoTrend(object = object,
                                               metadata = metadata,
                                               sY = sY)
@@ -361,6 +366,8 @@ setMethod("initialPrior",
                            aNoTrend = l.no.trend$aNoTrend,
                            aSeason = l.season$aSeason,
                            ATau = l.all$ATau,
+                           allStrucZero = l.all$allStrucZero,
+                           alongAllStrucZero = l.all$alongAllStrucZero,
                            alphaDLM = l.all$alphaDLM,
                            CNoTrend = l.no.trend$CNoTrend,
                            CSeason = l.season$CSeason,
@@ -398,12 +405,13 @@ setMethod("initialPrior",
 
 setMethod("initialPrior",
           signature(object = "SpecDLMWithTrendNormZeroWithSeason"),
-          function(object, beta, metadata, sY, isSaturated, ...) {
+          function(object, beta, metadata, sY, isSaturated, strucZeroArray, ...) {
               l.all <- initialDLMAll(object = object,
                                      beta = beta,
                                      metadata = metadata,
                                      sY = sY,
-                                     isSaturated = isSaturated)
+                                     isSaturated = isSaturated,
+                                     strucZeroArray = strucZeroArray)
               l.with.trend <- initialDLMWithTrend(object = object,
                                                   beta = beta,
                                                   metadata = metadata,
@@ -421,6 +429,8 @@ setMethod("initialPrior",
                            aWithTrend = l.with.trend$aWithTrend,
                            aSeason = l.season$aSeason,
                            ATau = l.all$ATau,
+                           allStrucZero = l.all$allStrucZero,
+                           alongAllStrucZero = l.all$alongAllStrucZero,
                            alphaDLM = l.all$alphaDLM,
                            CWithTrend = l.with.trend$CWithTrend,
                            CSeason = l.season$CSeason,
@@ -475,25 +485,29 @@ setMethod("initialPrior",
 
 setMethod("initialPrior",
           signature(object = "SpecDLMNoTrendNormCovNoSeason"),
-          function(object, beta, metadata, sY, isSaturated, ...) {
+          function(object, beta, metadata, sY, isSaturated, strucZeroArray, ...) {
               l.all <- initialDLMAll(object = object,
                                      beta = beta,
                                      metadata = metadata,
                                      sY = sY,
-                                     isSaturated = isSaturated)
+                                     isSaturated = isSaturated,
+                                     strucZeroArray = strucZeroArray)
               l.no.trend <- initialDLMNoTrend(object = object,
                                               metadata = metadata,
                                               sY = sY)
               l.cov <- initialCov(object = object,
                                   beta = beta,
                                   metadata = metadata,
-                                  sY = sY)
+                                  sY = sY,
+                                  allStrucZero = l.all$allStrucZero)
               methods::new("DLMNoTrendNormCovNoSeason",
                            AAlpha = l.all$AAlpha,
                            AEtaCoef = l.cov$AEtaCoef,
                            AEtaIntercept = l.cov$AEtaIntercept,
                            aNoTrend = l.no.trend$aNoTrend,
                            ATau = l.all$ATau,
+                           allStrucZero = l.all$allStrucZero,
+                           alongAllStrucZero = l.all$alongAllStrucZero,
                            alphaDLM = l.all$alphaDLM,
                            CNoTrend = l.no.trend$CNoTrend,
                            contrastsArg = l.cov$contrastsArg,
@@ -530,12 +544,13 @@ setMethod("initialPrior",
 
 setMethod("initialPrior",
           signature(object = "SpecDLMWithTrendNormCovNoSeason"),
-          function(object, beta, metadata, sY, isSaturated, ...) {
+          function(object, beta, metadata, sY, isSaturated, strucZeroArray, ...) {
               l.all <- initialDLMAll(object = object,
                                      beta = beta,
                                      metadata = metadata,
                                      sY = sY,
-                                     isSaturated = isSaturated)
+                                     isSaturated = isSaturated,
+                                     strucZeroArray = strucZeroArray)
               l.with.trend <- initialDLMWithTrend(object = object,
                                                   beta = beta,
                                                   metadata = metadata,
@@ -544,7 +559,8 @@ setMethod("initialPrior",
               l.cov <- initialCov(object = object,
                                   beta = beta,
                                   metadata = metadata,
-                                  sY = sY)
+                                  sY = sY,
+                                  allStrucZero = l.all$allStrucZero)
               methods::new("DLMWithTrendNormCovNoSeason",
                            AAlpha = l.all$AAlpha,
                            ADelta = l.with.trend$ADelta,
@@ -553,6 +569,8 @@ setMethod("initialPrior",
                            AEtaCoef = l.cov$AEtaCoef,
                            AEtaIntercept = l.cov$AEtaIntercept,
                            ATau = l.all$ATau,
+                           allStrucZero = l.all$allStrucZero,
+                           alongAllStrucZero = l.all$alongAllStrucZero,
                            alphaDLM = l.all$alphaDLM,
                            CWithTrend = l.with.trend$CWithTrend,
                            contrastsArg = l.cov$contrastsArg,
@@ -603,12 +621,13 @@ setMethod("initialPrior",
 
 setMethod("initialPrior",
           signature(object = "SpecDLMNoTrendNormCovWithSeason"),
-          function(object, beta, metadata, sY, isSaturated, ...) {
+          function(object, beta, metadata, sY, isSaturated, strucZeroArray, ...) {
               l.all <- initialDLMAll(object = object,
                                      beta = beta,
                                      metadata = metadata,
                                      sY = sY,
-                                     isSaturated = isSaturated)
+                                     isSaturated = isSaturated,
+                                     strucZeroArray = strucZeroArray)
               l.no.trend <- initialDLMNoTrend(object = object,
                                               metadata = metadata,
                                               sY = sY)
@@ -619,7 +638,8 @@ setMethod("initialPrior",
               l.cov <- initialCov(object = object,
                                   beta = beta,
                                   metadata = metadata,
-                                  sY = sY)
+                                  sY = sY,
+                                  allStrucZero = l.all$allStrucZero)
               methods::new("DLMNoTrendNormCovWithSeason",
                            AAlpha = l.all$AAlpha,
                            AEtaCoef = l.cov$AEtaCoef,
@@ -628,6 +648,8 @@ setMethod("initialPrior",
                            aNoTrend = l.no.trend$aNoTrend,
                            aSeason = l.season$aSeason,
                            ATau = l.all$ATau,
+                           allStrucZero = l.all$allStrucZero,
+                           alongAllStrucZero = l.all$alongAllStrucZero,
                            alphaDLM = l.all$alphaDLM,
                            CNoTrend = l.no.trend$CNoTrend,
                            CSeason = l.season$CSeason,
@@ -674,12 +696,13 @@ setMethod("initialPrior",
 
 setMethod("initialPrior",
           signature(object = "SpecDLMWithTrendNormCovWithSeason"),
-          function(object, beta, metadata, sY, isSaturated, ...) {
+          function(object, beta, metadata, sY, isSaturated, strucZeroArray, ...) {
               l.all <- initialDLMAll(object = object,
                                      beta = beta,
                                      metadata = metadata,
                                      sY = sY,
-                                     isSaturated = isSaturated)
+                                     isSaturated = isSaturated,
+                                     strucZeroArray = strucZeroArray)
               l.with.trend <- initialDLMWithTrend(object = object,
                                                   beta = beta,
                                                   metadata = metadata,
@@ -692,7 +715,8 @@ setMethod("initialPrior",
               l.cov <- initialCov(object = object,
                                   beta = beta,
                                   metadata = metadata,
-                                  sY = sY)
+                                  sY = sY,
+                                  allStrucZero = l.all$allStrucZero)
               methods::new("DLMWithTrendNormCovWithSeason",
                            AAlpha = l.all$AAlpha,
                            ADelta = l.with.trend$ADelta,
@@ -703,6 +727,8 @@ setMethod("initialPrior",
                            aWithTrend = l.with.trend$aWithTrend,
                            aSeason = l.season$aSeason,
                            ATau = l.all$ATau,
+                           allStrucZero = l.all$allStrucZero,
+                           alongAllStrucZero = l.all$alongAllStrucZero,
                            alphaDLM = l.all$alphaDLM,
                            CWithTrend = l.with.trend$CWithTrend,
                            CSeason = l.season$CSeason,
@@ -765,7 +791,7 @@ setMethod("initialPrior",
 
 setMethod("initialPrior",
           signature(object = "SpecDLMNoTrendRobustZeroNoSeason"),
-          function(object, beta, metadata, sY, isSaturated, ...) {
+          function(object, beta, metadata, sY, isSaturated, strucZeroArray, ...) {
               if (isSaturated)
                   stop(gettextf("using prior with '%s = %s' for highest-order term in saturated model",
                                 "robust", "TRUE"))
@@ -773,7 +799,8 @@ setMethod("initialPrior",
                                      beta = beta,
                                      metadata = metadata,
                                      sY = sY,
-                                     isSaturated = isSaturated)
+                                     isSaturated = isSaturated,
+                                     strucZeroArray = strucZeroArray)
               l.no.trend <- initialDLMNoTrend(object = object,
                                               metadata = metadata,
                                               sY = sY)
@@ -783,6 +810,8 @@ setMethod("initialPrior",
                            AAlpha = l.all$AAlpha,
                            aNoTrend = l.no.trend$aNoTrend,
                            ATau = l.all$ATau,
+                           allStrucZero = l.all$allStrucZero,
+                           alongAllStrucZero = l.all$alongAllStrucZero,
                            alphaDLM = l.all$alphaDLM,
                            CNoTrend = l.no.trend$CNoTrend,
                            iAlong = l.all$iAlong,
@@ -813,7 +842,7 @@ setMethod("initialPrior",
 
 setMethod("initialPrior",
           signature(object = "SpecDLMWithTrendRobustZeroNoSeason"),
-          function(object, beta, metadata, sY, isSaturated, ...) {
+          function(object, beta, metadata, sY, isSaturated, strucZeroArray, ...) {
               if (isSaturated)
                   stop(gettextf("using prior with '%s = %s' for highest-order term in saturated model",
                                 "robust", "TRUE"))
@@ -821,7 +850,8 @@ setMethod("initialPrior",
                                      beta = beta,
                                      metadata = metadata,
                                      sY = sY,
-                                     isSaturated = isSaturated)
+                                     isSaturated = isSaturated,
+                                     strucZeroArray = strucZeroArray)
               l.with.trend <- initialDLMWithTrend(object = object,
                                                   beta = beta,
                                                   metadata = metadata,
@@ -835,6 +865,8 @@ setMethod("initialPrior",
                            ADelta0 = l.with.trend$ADelta0,
                            aWithTrend = l.with.trend$aWithTrend,
                            ATau = l.all$ATau,
+                           allStrucZero = l.all$allStrucZero,
+                           alongAllStrucZero = l.all$alongAllStrucZero,
                            alphaDLM = l.all$alphaDLM,
                            CWithTrend = l.with.trend$CWithTrend,
                            DC = l.with.trend$DC,
@@ -879,7 +911,7 @@ setMethod("initialPrior",
 
 setMethod("initialPrior",
           signature(object = "SpecDLMNoTrendRobustZeroWithSeason"),
-          function(object, beta, metadata, sY, isSaturated, ...) {
+          function(object, beta, metadata, sY, isSaturated, strucZeroArray, ...) {
               if (isSaturated)
                   stop(gettextf("using prior with '%s = %s' for highest-order term in saturated model",
                                 "robust", "TRUE"))
@@ -887,7 +919,8 @@ setMethod("initialPrior",
                                      beta = beta,
                                      metadata = metadata,
                                      sY = sY,
-                                     isSaturated = isSaturated)
+                                     isSaturated = isSaturated,
+                                     strucZeroArray = strucZeroArray)
               l.no.trend <- initialDLMNoTrend(object = object,
                                               metadata = metadata,
                                               sY = sY)
@@ -903,6 +936,8 @@ setMethod("initialPrior",
                            aNoTrend = l.no.trend$aNoTrend,
                            aSeason = l.season$aSeason,
                            ATau = l.all$ATau,
+                           allStrucZero = l.all$allStrucZero,
+                           alongAllStrucZero = l.all$alongAllStrucZero,
                            alphaDLM = l.all$alphaDLM,
                            CNoTrend = l.no.trend$CNoTrend,
                            CSeason = l.season$CSeason,
@@ -942,7 +977,7 @@ setMethod("initialPrior",
 
 setMethod("initialPrior",
           signature(object = "SpecDLMWithTrendRobustZeroWithSeason"),
-          function(object, beta, metadata, sY, isSaturated, ...) {
+          function(object, beta, metadata, sY, isSaturated, strucZeroArray, ...) {
               if (isSaturated)
                   stop(gettextf("using prior with '%s = %s' for highest-order term in saturated model",
                                 "robust", "TRUE"))
@@ -950,7 +985,8 @@ setMethod("initialPrior",
                                      beta = beta,
                                      metadata = metadata,
                                      sY = sY,
-                                     isSaturated = isSaturated)
+                                     isSaturated = isSaturated,
+                                     strucZeroArray = strucZeroArray)
               l.with.trend <- initialDLMWithTrend(object = object,
                                                   beta = beta,
                                                   metadata = metadata,
@@ -970,6 +1006,8 @@ setMethod("initialPrior",
                            aWithTrend = l.with.trend$aWithTrend,
                            aSeason = l.season$aSeason,
                            ATau = l.all$ATau,
+                           allStrucZero = l.all$allStrucZero,
+                           alongAllStrucZero = l.all$alongAllStrucZero,
                            alphaDLM = l.all$alphaDLM,
                            CWithTrend = l.with.trend$CWithTrend,
                            CSeason = l.season$CSeason,
@@ -1026,7 +1064,7 @@ setMethod("initialPrior",
 
 setMethod("initialPrior",
           signature(object = "SpecDLMNoTrendRobustCovNoSeason"),
-          function(object, beta, metadata, sY, isSaturated, ...) {
+          function(object, beta, metadata, sY, isSaturated, strucZeroArray, ...) {
               if (isSaturated)
                   stop(gettextf("using prior with '%s = %s' for highest-order term in saturated model",
                                 "robust", "TRUE"))
@@ -1034,14 +1072,16 @@ setMethod("initialPrior",
                                      beta = beta,
                                      metadata = metadata,
                                      sY = sY,
-                                     isSaturated = isSaturated)
+                                     isSaturated = isSaturated,
+                                     strucZeroArray = strucZeroArray)
               l.no.trend <- initialDLMNoTrend(object = object,
                                               metadata = metadata,
                                               sY = sY)
               l.cov <- initialCov(object = object,
                                   beta = beta,
                                   metadata = metadata,
-                                  sY = sY)
+                                  sY = sY,
+                                  allStrucZero = l.all$allStrucZero)
               l.robust <- initialRobust(object = object,
                                         lAll = l.all)
               methods::new("DLMNoTrendRobustCovNoSeason",
@@ -1050,6 +1090,8 @@ setMethod("initialPrior",
                            AEtaIntercept = l.cov$AEtaIntercept,
                            aNoTrend = l.no.trend$aNoTrend,
                            ATau = l.all$ATau,
+                           allStrucZero = l.all$allStrucZero,
+                           alongAllStrucZero = l.all$alongAllStrucZero,
                            alphaDLM = l.all$alphaDLM,
                            CNoTrend = l.no.trend$CNoTrend,
                            contrastsArg = l.cov$contrastsArg,
@@ -1088,7 +1130,7 @@ setMethod("initialPrior",
 
 setMethod("initialPrior",
           signature(object = "SpecDLMWithTrendRobustCovNoSeason"),
-          function(object, beta, metadata, sY, isSaturated, ...) {
+          function(object, beta, metadata, sY, isSaturated, strucZeroArray, ...) {
               if (isSaturated)
                   stop(gettextf("using prior with '%s = %s' for highest-order term in saturated model",
                                 "robust", "TRUE"))
@@ -1096,7 +1138,8 @@ setMethod("initialPrior",
                                      beta = beta,
                                      metadata = metadata,
                                      sY = sY,
-                                     isSaturated = isSaturated)
+                                     isSaturated = isSaturated,
+                                     strucZeroArray = strucZeroArray)
               l.with.trend <- initialDLMWithTrend(object = object,
                                                   beta = beta,
                                                   metadata = metadata,
@@ -1105,7 +1148,8 @@ setMethod("initialPrior",
               l.cov <- initialCov(object = object,
                                   beta = beta,
                                   metadata = metadata,
-                                  sY = sY)
+                                  sY = sY,
+                                  allStrucZero = l.all$allStrucZero)
               l.robust <- initialRobust(object = object,
                                         lAll = l.all)
               methods::new("DLMWithTrendRobustCovNoSeason",
@@ -1116,6 +1160,8 @@ setMethod("initialPrior",
                            AEtaCoef = l.cov$AEtaCoef,
                            AEtaIntercept = l.cov$AEtaIntercept,
                            ATau = l.all$ATau,
+                           allStrucZero = l.all$allStrucZero,
+                           alongAllStrucZero = l.all$alongAllStrucZero,
                            alphaDLM = l.all$alphaDLM,
                            CWithTrend = l.with.trend$CWithTrend,
                            contrastsArg = l.cov$contrastsArg,
@@ -1168,7 +1214,7 @@ setMethod("initialPrior",
 
 setMethod("initialPrior",
           signature(object = "SpecDLMNoTrendRobustCovWithSeason"),
-          function(object, beta, metadata, sY, isSaturated, ...) {
+          function(object, beta, metadata, sY, isSaturated, strucZeroArray, ...) {
               if (isSaturated)
                   stop(gettextf("using prior with '%s = %s' for highest-order term in saturated model",
                                 "robust", "TRUE"))
@@ -1176,7 +1222,8 @@ setMethod("initialPrior",
                                      beta = beta,
                                      metadata = metadata,
                                      sY = sY,
-                                     isSaturated = isSaturated)
+                                     isSaturated = isSaturated,
+                                     strucZeroArray = strucZeroArray)
               l.no.trend <- initialDLMNoTrend(object = object,
                                               metadata = metadata,
                                               sY = sY)
@@ -1187,7 +1234,8 @@ setMethod("initialPrior",
               l.cov <- initialCov(object = object,
                                   beta = beta,
                                   metadata = metadata,
-                                  sY = sY)
+                                  sY = sY,
+                                  allStrucZero = l.all$allStrucZero)
               l.robust <- initialRobust(object = object,
                                         lAll = l.all)
               methods::new("DLMNoTrendRobustCovWithSeason",
@@ -1198,6 +1246,8 @@ setMethod("initialPrior",
                            aNoTrend = l.no.trend$aNoTrend,
                            aSeason = l.season$aSeason,
                            ATau = l.all$ATau,
+                           allStrucZero = l.all$allStrucZero,
+                           alongAllStrucZero = l.all$alongAllStrucZero,
                            alphaDLM = l.all$alphaDLM,
                            CNoTrend = l.no.trend$CNoTrend,
                            CSeason = l.season$CSeason,
@@ -1245,7 +1295,7 @@ setMethod("initialPrior",
 
 setMethod("initialPrior",
           signature(object = "SpecDLMWithTrendRobustCovWithSeason"),
-          function(object, beta, metadata, sY, isSaturated, ...) {
+          function(object, beta, metadata, sY, isSaturated, strucZeroArray, ...) {
               if (isSaturated)
                   stop(gettextf("using prior with '%s = %s' for highest-order term in saturated model",
                                 "robust", "TRUE"))
@@ -1253,7 +1303,8 @@ setMethod("initialPrior",
                                      beta = beta,
                                      metadata = metadata,
                                      sY = sY,
-                                     isSaturated = isSaturated)
+                                     isSaturated = isSaturated,
+                                     strucZeroArray = strucZeroArray)
               l.with.trend <- initialDLMWithTrend(object = object,
                                                   beta = beta,
                                                   metadata = metadata,
@@ -1266,7 +1317,8 @@ setMethod("initialPrior",
               l.cov <- initialCov(object = object,
                                   beta = beta,
                                   metadata = metadata,
-                                  sY = sY)
+                                  sY = sY,
+                                  allStrucZero = l.all$allStrucZero)
               l.robust <- initialRobust(object = object,
                                         lAll = l.all)
               methods::new("DLMWithTrendRobustCovWithSeason",
@@ -1279,6 +1331,8 @@ setMethod("initialPrior",
                            aWithTrend = l.with.trend$aWithTrend,
                            aSeason = l.season$aSeason,
                            ATau = l.all$ATau,
+                           allStrucZero = l.all$allStrucZero,
+                           alongAllStrucZero = l.all$alongAllStrucZero,
                            alphaDLM = l.all$alphaDLM,
                            CWithTrend = l.with.trend$CWithTrend,
                            CSeason = l.season$CSeason,
@@ -1343,7 +1397,7 @@ setMethod("initialPrior",
 
 setMethod("initialPrior",
           signature(object = "SpecKnown"),
-          function(object, beta, metadata, sY, isSaturated, ...) {
+          function(object, beta, metadata, sY, isSaturated, strucZeroArray, ...) {
               alpha.all <- object@alphaKnown@.Data
               metadata.all <- object@metadata
               J <- makeJ(beta)
@@ -1365,6 +1419,17 @@ setMethod("initialPrior",
                   stop(gettextf("metadata for '%s' prior for '%s' not compatible with metadata for '%s' : %s",
                                 "Known", paste(names(metadata), collapse = ":"), "y", alpha$message))
               alpha <- as.numeric(alpha)
+              allStrucZero <- makeAllStrucZero(strucZeroArray = strucZeroArray,
+                                               metadata = metadata)
+              struc.zero.but.non.zero <- allStrucZero & (alpha != 0)
+              if (any(struc.zero.but.non.zero)) {
+                  i.first <- which(struc.zero.but.non.zero)[1L]
+                  labels <- expand.grid(dimnames(metadata))
+                  label <- labels[i.first, ]
+                  label <- paste(label, collapse = ", ")
+                  stop(gettextf("all cells contributing to element '[%s]' of \"%s\" prior for '%s' are structural zeros, but element '[%s]' does not equal %d",
+                                label, "Known", paste(names(metadata), collapse = ":"), label, 0L))
+              }
               alphaKnown <- methods::new("ParameterVector", alpha)
               if (isSaturated)
                   stop(gettextf("using \"%s\" prior for highest-order term in saturated model",
@@ -1376,7 +1441,8 @@ setMethod("initialPrior",
                                alphaKnownAll = object@alphaKnown,
                                J = J,
                                isSaturated = isSaturated,
-                               metadataAll = object@metadata)
+                               metadataAll = object@metadata,
+                               allStrucZero = allStrucZero)
               }
               else {
                   A.all <- object@AKnownVec@.Data
@@ -1388,6 +1454,15 @@ setMethod("initialPrior",
                                     metadata = metadata.all)
                   A <- dembase::makeCompatible(x = A, y = beta, subset = TRUE)
                   A <- as.numeric(A)
+                  struc.zero.but.non.zero <- allStrucZero & (A != 0)
+                  if (any(struc.zero.but.non.zero)) {
+                      i.first <- which(struc.zero.but.non.zero)[1L]
+                      labels <- expand.grid(dimnames(metadata))
+                      label <- labels[i.first, ]
+                      label <- paste(label, collapse = ", ")
+                      stop(gettextf("all cells contributing to element '[%s]' of \"%s\" prior for '%s' are structural zeros, but element '[%s]' does not have standard deviation %d",
+                                    label, "Known", paste(names(metadata), collapse = ":"), label, 0L))
+                  }
                   AKnownVec <- methods::new("ScaleVec", A)
                   methods::new("KnownUncertain",
                                AKnownVec = AKnownVec,
@@ -1396,7 +1471,8 @@ setMethod("initialPrior",
                                alphaKnownAll = object@alphaKnown,
                                isSaturated = isSaturated,
                                J = J,
-                               metadataAll = object@metadata)
+                               metadataAll = object@metadata,
+                               allStrucZero = allStrucZero)
               }
           })
 
@@ -1405,12 +1481,13 @@ setMethod("initialPrior",
 
 setMethod("initialPrior",
           signature(object = "SpecMixNormZero"),
-          function(object, beta, metadata, sY, isSaturated, ...) {
+          function(object, beta, metadata, sY, isSaturated, strucZeroArray, ...) {
               l.all <- initialMixAll(object = object,
                                      beta = beta,
                                      metadata = metadata,
                                      sY = sY,
-                                     isSaturated = isSaturated)
+                                     isSaturated = isSaturated,
+                                     strucZeroArray = strucZeroArray)
               methods::new("MixNormZero",
                            AComponentWeightMix = l.all$AComponentWeightMix,
                            ALevelComponentWeightMix = l.all$ALevelComponentWeightMix,
@@ -1474,15 +1551,18 @@ setMethod("initialPrior",
 
 setMethod("initialPrior",
           signature(object = "SpecZero"),
-          function(object, beta, metadata, sY, isSaturated, ...) {
+          function(object, beta, metadata, sY, isSaturated, strucZeroArray, ...) {
               J <- makeJ(beta)
               if (isSaturated)
                   stop(gettextf("using \"%s\" prior for highest-order term in saturated model",
                                 "Zero"))
               isSaturated <- methods::new("LogicalFlag", isSaturated)
+              allStrucZero <- makeAllStrucZero(strucZeroArray = strucZeroArray,
+                                               metadata = metadata)
               methods::new("Zero",
                            isSaturated = isSaturated,
-                           J = J)
+                           J = J,
+                           allStrucZero = allStrucZero)
           })
 
 
@@ -1493,12 +1573,18 @@ setMethod("initialPrior",
 ## HAS_TESTS
 setMethod("initialPriorPredict",
           signature(prior = "ExchFixed"),
-          function(prior, data, metadata, name, along) {
+          function(prior, data, metadata, name, along, strucZeroArray) {
               if (!is.null(data))
                   stop(gettextf("covariate data supplied for prior for '%s', but prior does not use covariates",
                                 name))
               J <- makeJPredict(metadata)
+              if (is.null(metadata))
+                  allStrucZero <- FALSE
+              else
+                  allStrucZero <- makeAllStrucZero(strucZeroArray = strucZeroArray,
+                                                   metadata = metadata)
               methods::new("ExchFixed",
+                           allStrucZero = allStrucZero,
                            isSaturated = prior@isSaturated,
                            J = J,
                            tau = prior@tau)
@@ -1510,12 +1596,15 @@ setMethod("initialPriorPredict",
 ## HAS_TESTS
 setMethod("initialPriorPredict",
           signature(prior = "ExchNormZero"),
-          function(prior, data, metadata, name, along) {
+          function(prior, data, metadata, name, along, strucZeroArray) {
               if (!is.null(data))
                   stop(gettextf("covariate data supplied for prior for '%s', but prior does not use covariates",
                                 name))
               J <- makeJPredict(metadata)
+              allStrucZero <- makeAllStrucZero(strucZeroArray = strucZeroArray,
+                                               metadata = metadata)
               methods::new("ExchNormZero",
+                           allStrucZero = allStrucZero,
                            ATau = prior@ATau,
                            isSaturated = prior@isSaturated,
                            J = J,
@@ -1527,14 +1616,22 @@ setMethod("initialPriorPredict",
 ## HAS_TESTS
 setMethod("initialPriorPredict",
           signature(prior = "ExchRobustZero"),
-          function(prior, data, metadata, name, along) {
+          function(prior, data, metadata, name, along, strucZeroArray) {
               if (!is.null(data))
                   stop(gettextf("covariate data supplied for prior for '%s', but prior does not use covariates",
                                 name))
               A <- prior@ATau@.Data
               nu <- prior@nuBeta@.Data
               J <- makeJPredict(metadata)
+              allStrucZero <- makeAllStrucZero(strucZeroArray = strucZeroArray,
+                                               metadata = metadata)
+              n <- J@.Data
+              UBeta <- makeU(nu = nu,
+                             A = A,
+                             n = J,
+                             allStrucZero = allStrucZero)
               methods::new("ExchRobustZero",
+                           allStrucZero = allStrucZero,
                            ATau = prior@ATau,
                            isSaturated = prior@isSaturated,
                            J = J,
@@ -1548,7 +1645,7 @@ setMethod("initialPriorPredict",
 ## HAS_TESTS
 setMethod("initialPriorPredict",
           signature(prior = "ExchNormCov"),
-          function(prior, data, metadata, name, along) {
+          function(prior, data, metadata, name, along, strucZeroArray) {
               if (is.null(data))
                   stop(gettextf("prior for '%s' uses covariates, but no covariate data supplied",
                                 name))
@@ -1556,15 +1653,19 @@ setMethod("initialPriorPredict",
               contrastsArg <- prior@contrastsArg
               infant <- prior@infant
               J <- makeJPredict(metadata)
+              allStrucZero <- makeAllStrucZero(strucZeroArray = strucZeroArray,
+                                               metadata = metadata)
               Z <- makeZ(formula = formula[-2L],
                          data = data,
                          metadata = metadata,
                          contrastsArg = contrastsArg,
-                         infant = infant)
+                         infant = infant,
+                         allStrucZero = allStrucZero)
               methods::new("ExchNormCov",
                            AEtaCoef = prior@AEtaCoef,
                            AEtaIntercept = prior@AEtaIntercept,
                            ATau = prior@ATau,
+                           allStrucZero = allStrucZero,
                            contrastsArg = contrastsArg,
                            eta = prior@eta,
                            formula = formula,
@@ -1583,7 +1684,7 @@ setMethod("initialPriorPredict",
 ## HAS_TESTS
 setMethod("initialPriorPredict",
           signature(prior = "ExchRobustCov"),
-          function(prior, data, metadata, name, along) {
+          function(prior, data, metadata, name, along, strucZeroArray) {
               if (is.null(data))
                   stop(gettextf("prior for '%s' uses covariates, but no covariate data supplied",
                                 name))
@@ -1593,11 +1694,14 @@ setMethod("initialPriorPredict",
               infant <- prior@infant
               nuBeta <- prior@nuBeta@.Data
               J <- makeJPredict(metadata)
+              allStrucZero <- makeAllStrucZero(strucZeroArray = strucZeroArray,
+                                               metadata = metadata)
               Z <- makeZ(formula = formula[-2L],
                          data = data,
                          metadata = metadata,
                          contrastsArg = contrastsArg,
-                         infant = infant)
+                         infant = infant,
+                         allStrucZero = allStrucZero)
               n <- J@.Data
               UBeta <- makeU(nu = nuBeta,
                              A = ATau,
@@ -1607,6 +1711,7 @@ setMethod("initialPriorPredict",
                            AEtaCoef = prior@AEtaCoef,
                            AEtaIntercept = prior@AEtaIntercept,
                            ATau = prior@ATau,
+                           allStrucZero = allStrucZero,
                            contrastsArg = prior@contrastsArg,
                            eta = prior@eta,
                            formula = prior@formula,
@@ -1630,20 +1735,23 @@ setMethod("initialPriorPredict",
 ## HAS_TESTS
 setMethod("initialPriorPredict",
           signature(prior = "DLMNoTrendNormZeroNoSeason"),
-          function(prior, data, metadata, name, along) {
+          function(prior, data, metadata, name, along, strucZeroArray) {
               if (!is.null(data))
                   stop(gettextf("covariate data supplied for prior for '%s', but prior does not use covariates",
                                 name))
               l.all <- initialDLMAllPredict(prior = prior,
                                             metadata = metadata,
                                             name = name,
-                                            along = along)
+                                            along = along,
+                                            strucZeroArray = strucZeroArray)
               l.no.trend <- initialDLMNoTrendPredict(prior = prior,
                                                      metadata = metadata)
               methods::new("DLMNoTrendNormZeroNoSeasonPredict",
                            AAlpha = prior@AAlpha,
                            aNoTrend = l.no.trend$aNoTrend,
                            ATau = prior@ATau,
+                           allStrucZero = l.all$allStrucZero,
+                           alongAllStrucZero = l.all$alongAllStrucZero,
                            alphaDLM = l.all$alphaDLM,
                            CNoTrend = l.no.trend$CNoTrend,
                            iAlong = prior@iAlong,
@@ -1675,20 +1783,23 @@ setMethod("initialPriorPredict",
 ## HAS_TESTS
 setMethod("initialPriorPredict",
           signature(prior = "DLMWithTrendNormZeroNoSeason"),
-          function(prior, data, metadata, name, along) {
+          function(prior, data, metadata, name, along, strucZeroArray) {
               if (!is.null(data))
                   stop(gettextf("covariate data supplied for prior for '%s', but prior does not use covariates",
                                 name))
               l.all <- initialDLMAllPredict(prior = prior,
                                             metadata = metadata,
                                             name = name,
-                                            along = along)
+                                            along = along,
+                                            strucZeroArray = strucZeroArray)
               l.with.trend <- initialDLMWithTrendPredict(prior = prior,
                                                          metadata = metadata)
               methods::new("DLMWithTrendNormZeroNoSeasonPredict",
                            AAlpha = prior@AAlpha,
                            aWithTrend = l.with.trend$aWithTrend,
                            ATau = prior@ATau,
+                           allStrucZero = l.all$allStrucZero,
+                           alongAllStrucZero = l.all$alongAllStrucZero,
                            alphaDLM = l.all$alphaDLM,
                            CWithTrend = l.with.trend$CWithTrend,
                            DC = l.with.trend$DC,
@@ -1734,14 +1845,15 @@ setMethod("initialPriorPredict",
 ## HAS_TESTS
 setMethod("initialPriorPredict",
           signature(prior = "DLMNoTrendNormZeroWithSeason"),
-          function(prior, data, metadata, name, along) {
+          function(prior, data, metadata, name, along, strucZeroArray) {
               if (!is.null(data))
                   stop(gettextf("covariate data supplied for prior for '%s', but prior does not use covariates",
                                 name))
               l.all <- initialDLMAllPredict(prior = prior,
                                             metadata = metadata,
                                             name = name,
-                                            along = along)
+                                            along = along,
+                                            strucZeroArray = strucZeroArray)
               l.no.trend <- initialDLMNoTrendPredict(prior = prior,
                                                      metadata = metadata)
               l.season <- initialDLMSeasonPredict(prior = prior,
@@ -1752,6 +1864,8 @@ setMethod("initialPriorPredict",
                            aNoTrend = l.no.trend$aNoTrend,
                            aSeason = l.season$aSeason,
                            ATau = prior@ATau,
+                           allStrucZero = l.all$allStrucZero,
+                           alongAllStrucZero = l.all$alongAllStrucZero,
                            alphaDLM = l.all$alphaDLM,
                            CNoTrend = l.no.trend$CNoTrend,
                            CSeason = l.season$CSeason,
@@ -1792,14 +1906,15 @@ setMethod("initialPriorPredict",
 ## HAS_TESTS
 setMethod("initialPriorPredict",
           signature(prior = "DLMWithTrendNormZeroWithSeason"),
-          function(prior, data, metadata, name, along) {
+          function(prior, data, metadata, name, along, strucZeroArray) {
               if (!is.null(data))
                   stop(gettextf("covariate data supplied for prior for '%s', but prior does not use covariates",
                                 name))
               l.all <- initialDLMAllPredict(prior = prior,
                                             metadata = metadata,
                                             name = name,
-                                            along = along)
+                                            along = along,
+                                            strucZeroArray = strucZeroArray)
               l.with.trend <- initialDLMWithTrendPredict(prior = prior,
                                                          metadata = metadata)
               l.season <- initialDLMSeasonPredict(prior = prior,
@@ -1810,7 +1925,9 @@ setMethod("initialPriorPredict",
                            aSeason = l.season$aSeason,
                            aWithTrend = l.with.trend$aWithTrend,
                            ATau = prior@ATau,
-                           alphaDLM = l.all$alphaDLM,
+                           allStrucZero = l.all$allStrucZero,
+                           alongAllStrucZero = l.all$alongAllStrucZero,
+                          alphaDLM = l.all$alphaDLM,
                            CSeason = l.season$CSeason,
                            CWithTrend = l.with.trend$CWithTrend,
                            DC = l.with.trend$DC,
@@ -1866,25 +1983,29 @@ setMethod("initialPriorPredict",
 ## HAS_TESTS
 setMethod("initialPriorPredict",
           signature(prior = "DLMNoTrendNormCovNoSeason"),
-          function(prior, data, metadata, name, along) {
+          function(prior, data, metadata, name, along, strucZeroArray) {
               if (is.null(data))
                   stop(gettextf("prior for '%s' uses covariates, but no covariate data supplied",
                                 name))
               l.all <- initialDLMAllPredict(prior = prior,
                                             metadata = metadata,
                                             name = name,
-                                            along = along)
+                                            along = along,
+                                            strucZeroArray = strucZeroArray)
               l.no.trend <- initialDLMNoTrendPredict(prior = prior,
                                                      metadata = metadata)
               l.cov <- initialCovPredict(prior = prior,
                                          data = data,
-                                         metadata = metadata)
+                                         metadata = metadata,
+                                         allStrucZero = l.all$allStrucZero)
               methods::new("DLMNoTrendNormCovNoSeasonPredict",
                            AAlpha = prior@AAlpha,
                            AEtaCoef = prior@AEtaCoef,
                            AEtaIntercept = prior@AEtaIntercept,
                            aNoTrend = l.no.trend$aNoTrend,
                            ATau = prior@ATau,
+                           allStrucZero = l.all$allStrucZero,
+                           alongAllStrucZero = l.all$alongAllStrucZero,
                            alphaDLM = l.all$alphaDLM,
                            CNoTrend = l.no.trend$CNoTrend,
                            contrastsArg = prior@contrastsArg,
@@ -1924,25 +2045,28 @@ setMethod("initialPriorPredict",
 ## HAS_TESTS
 setMethod("initialPriorPredict",
           signature(prior = "DLMWithTrendNormCovNoSeason"),
-          function(prior, data, metadata, name, along) {
+          function(prior, data, metadata, name, along, strucZeroArray) {
               if (is.null(data))
                   stop(gettextf("prior for '%s' uses covariates, but no covariate data supplied",
                                 name))
               l.all <- initialDLMAllPredict(prior = prior,
                                             metadata = metadata,
                                             name = name,
-                                            along = along)
+                                            along = along, strucZeroArray = strucZeroArray)
               l.with.trend <- initialDLMWithTrendPredict(prior = prior,
                                                          metadata = metadata)
               l.cov <- initialCovPredict(prior = prior,
                                          data = data,
-                                         metadata = metadata)
+                                         metadata = metadata,
+                                         allStrucZero = l.all$allStrucZero)
               methods::new("DLMWithTrendNormCovNoSeasonPredict",
                            AAlpha = prior@AAlpha,
                            aWithTrend = l.with.trend$aWithTrend,
                            AEtaCoef = prior@AEtaCoef,
                            AEtaIntercept = prior@AEtaIntercept,
                            ATau = prior@ATau,
+                           allStrucZero = l.all$allStrucZero,
+                           alongAllStrucZero = l.all$alongAllStrucZero,
                            alphaDLM = l.all$alphaDLM,
                            contrastsArg = prior@contrastsArg,
                            CWithTrend = l.with.trend$CWithTrend,
@@ -1995,21 +2119,23 @@ setMethod("initialPriorPredict",
 ## HAS_TESTS
 setMethod("initialPriorPredict",
           signature(prior = "DLMNoTrendNormCovWithSeason"),
-          function(prior, data, metadata, name, along) {
+          function(prior, data, metadata, name, along, strucZeroArray) {
               if (is.null(data))
                   stop(gettextf("prior for '%s' uses covariates, but no covariate data supplied",
                                 name))
               l.all <- initialDLMAllPredict(prior = prior,
                                             metadata = metadata,
                                             name = name,
-                                            along = along)
+                                            along = along,
+                                            strucZeroArray = strucZeroArray)
               l.no.trend <- initialDLMNoTrendPredict(prior = prior,
                                                      metadata = metadata)
               l.season <- initialDLMSeasonPredict(prior = prior,
                                                   metadata = metadata)
               l.cov <- initialCovPredict(prior = prior,
                                          data = data,
-                                         metadata = metadata)
+                                         metadata = metadata,
+                                         allStrucZero = l.all$allStrucZero)
               methods::new("DLMNoTrendNormCovWithSeasonPredict",
                            AAlpha = prior@AAlpha,
                            ASeason = prior@ASeason,
@@ -2018,6 +2144,8 @@ setMethod("initialPriorPredict",
                            aNoTrend = l.no.trend$aNoTrend,
                            aSeason = l.season$aSeason,
                            ATau = prior@ATau,
+                           allStrucZero = l.all$allStrucZero,
+                           alongAllStrucZero = l.all$alongAllStrucZero,
                            alphaDLM = l.all$alphaDLM,
                            CNoTrend = l.no.trend$CNoTrend,
                            CSeason = l.season$CSeason,
@@ -2066,21 +2194,23 @@ setMethod("initialPriorPredict",
 ## HAS_TESTS
 setMethod("initialPriorPredict",
           signature(prior = "DLMWithTrendNormCovWithSeason"),
-          function(prior, data, metadata, name, along) {
+          function(prior, data, metadata, name, along, strucZeroArray) {
               if (is.null(data))
                   stop(gettextf("prior for '%s' uses covariates, but no covariate data supplied",
                                 name))
               l.all <- initialDLMAllPredict(prior = prior,
                                             metadata = metadata,
                                             name = name,
-                                            along = along)
+                                            along = along,
+                                            strucZeroArray = strucZeroArray)
               l.with.trend <- initialDLMWithTrendPredict(prior = prior,
                                                          metadata = metadata)
               l.season <- initialDLMSeasonPredict(prior = prior,
                                                   metadata = metadata)
               l.cov <- initialCovPredict(prior = prior,
                                          data = data,
-                                         metadata = metadata)
+                                         metadata = metadata,
+                                         allStrucZero = l.all$allStrucZero)
               methods::new("DLMWithTrendNormCovWithSeasonPredict",
                            AAlpha = prior@AAlpha,
                            ASeason = prior@ASeason,
@@ -2089,6 +2219,8 @@ setMethod("initialPriorPredict",
                            aSeason = l.season$aSeason,
                            aWithTrend = l.with.trend$aWithTrend,
                            ATau = prior@ATau,
+                           allStrucZero = l.all$allStrucZero,
+                           alongAllStrucZero = l.all$alongAllStrucZero,
                            alphaDLM = l.all$alphaDLM,
                            CSeason = l.season$CSeason,
                            CWithTrend = l.with.trend$CWithTrend,
@@ -2153,22 +2285,25 @@ setMethod("initialPriorPredict",
 ## HAS_TESTS
 setMethod("initialPriorPredict",
           signature(prior = "DLMNoTrendRobustZeroNoSeason"),
-          function(prior, data, metadata, name, along) {
+          function(prior, data, metadata, name, along, strucZeroArray) {
               if (!is.null(data))
                   stop(gettextf("covariate data supplied for prior for '%s', but prior does not use covariates",
                                 name))
               l.all <- initialDLMAllPredict(prior = prior,
                                             metadata = metadata,
                                             name = name,
-                                            along = along)
+                                            along = along, strucZeroArray = strucZeroArray)
               l.no.trend <- initialDLMNoTrendPredict(prior = prior,
                                                      metadata = metadata)
               l.robust <- initialRobustPredict(prior = prior,
-                                               metadata = metadata)
+                                               metadata = metadata,
+                                               allStrucZero = l.all$allStrucZero)
               methods::new("DLMNoTrendRobustZeroNoSeasonPredict",
                            AAlpha = prior@AAlpha,
                            aNoTrend = l.no.trend$aNoTrend,
                            ATau = prior@ATau,
+                           allStrucZero = l.all$allStrucZero,
+                           alongAllStrucZero = l.all$alongAllStrucZero,
                            alphaDLM = l.all$alphaDLM,
                            CNoTrend = l.no.trend$CNoTrend,
                            iAlong = prior@iAlong,
@@ -2202,22 +2337,26 @@ setMethod("initialPriorPredict",
 ## HAS_TESTS
 setMethod("initialPriorPredict",
           signature(prior = "DLMWithTrendRobustZeroNoSeason"),
-          function(prior, data, metadata, name, along) {
+          function(prior, data, metadata, name, along, strucZeroArray) {
               if (!is.null(data))
                   stop(gettextf("covariate data supplied for prior for '%s', but prior does not use covariates",
                                 name))
               l.all <- initialDLMAllPredict(prior = prior,
                                             metadata = metadata,
                                             name = name,
-                                            along = along)
+                                            along = along,
+                                            strucZeroArray = strucZeroArray)
               l.with.trend <- initialDLMWithTrendPredict(prior = prior,
                                                          metadata = metadata)
               l.robust <- initialRobustPredict(prior = prior,
-                                               metadata = metadata)
+                                               metadata = metadata,
+                                               allStrucZero = l.all$allStrucZero)
               methods::new("DLMWithTrendRobustZeroNoSeasonPredict",
                            AAlpha = prior@AAlpha,
                            aWithTrend = l.with.trend$aWithTrend,
                            ATau = prior@ATau,
+                           allStrucZero = l.all$allStrucZero,
+                           alongAllStrucZero = l.all$alongAllStrucZero,
                            alphaDLM = l.all$alphaDLM,
                            CWithTrend = l.with.trend$CWithTrend,
                            DC = l.with.trend$DC,
@@ -2264,26 +2403,30 @@ setMethod("initialPriorPredict",
 ## HAS_TESTS
 setMethod("initialPriorPredict",
           signature(prior = "DLMNoTrendRobustZeroWithSeason"),
-          function(prior, data, metadata, name, along) {
+          function(prior, data, metadata, name, along, strucZeroArray) {
               if (!is.null(data))
                   stop(gettextf("covariate data supplied for prior for '%s', but prior does not use covariates",
                                 name))
               l.all <- initialDLMAllPredict(prior = prior,
                                             metadata = metadata,
                                             name = name,
-                                            along = along)
+                                            along = along,
+                                            strucZeroArray = strucZeroArray)
               l.no.trend <- initialDLMNoTrendPredict(prior = prior,
                                                      metadata = metadata)
               l.season <- initialDLMSeasonPredict(prior = prior,
                                                   metadata = metadata)
               l.robust <- initialRobustPredict(prior = prior,
-                                               metadata = metadata)
+                                               metadata = metadata,
+                                               allStrucZero = l.all$allStrucZero)
               methods::new("DLMNoTrendRobustZeroWithSeasonPredict",
                            AAlpha = prior@AAlpha,
                            ASeason = prior@ASeason,
                            aNoTrend = l.no.trend$aNoTrend,
                            aSeason = l.season$aSeason,
                            ATau = prior@ATau,
+                           allStrucZero = l.all$allStrucZero,
+                           alongAllStrucZero = l.all$alongAllStrucZero,
                            alphaDLM = l.all$alphaDLM,
                            CNoTrend = l.no.trend$CNoTrend,
                            CSeason = l.season$CSeason,
@@ -2326,26 +2469,30 @@ setMethod("initialPriorPredict",
 ## HAS_TESTS
 setMethod("initialPriorPredict",
           signature(prior = "DLMWithTrendRobustZeroWithSeason"),
-          function(prior, data, metadata, name, along) {
+          function(prior, data, metadata, name, along, strucZeroArray) {
               if (!is.null(data))
                   stop(gettextf("covariate data supplied for prior for '%s', but prior does not use covariates",
                                 name))
               l.all <- initialDLMAllPredict(prior = prior,
                                             metadata = metadata,
                                             name = name,
-                                            along = along)
+                                            along = along,
+                                            strucZeroArray = strucZeroArray)
               l.with.trend <- initialDLMWithTrendPredict(prior = prior,
                                                          metadata = metadata)
               l.season <- initialDLMSeasonPredict(prior = prior,
                                                   metadata = metadata)
               l.robust <- initialRobustPredict(prior = prior,
-                                               metadata = metadata)
+                                               metadata = metadata,
+                                               allStrucZero = l.all$allStrucZero)
               methods::new("DLMWithTrendRobustZeroWithSeasonPredict",
                            AAlpha = prior@AAlpha,
                            ASeason = prior@ASeason,
                            aSeason = l.season$aSeason,
                            aWithTrend = l.with.trend$aWithTrend,
                            ATau = prior@ATau,
+                           allStrucZero = l.all$allStrucZero,
+                           alongAllStrucZero = l.all$alongAllStrucZero,
                            alphaDLM = l.all$alphaDLM,
                            CSeason = l.season$CSeason,
                            CWithTrend = l.with.trend$CWithTrend,
@@ -2399,33 +2546,37 @@ setMethod("initialPriorPredict",
           })
 
 
-
 ## DLM - Robust, Cov
 
 ## HAS_TESTS
 setMethod("initialPriorPredict",
           signature(prior = "DLMNoTrendRobustCovNoSeason"),
-          function(prior, data, metadata, name, along) {
+          function(prior, data, metadata, name, along, strucZeroArray) {
               if (is.null(data))
                   stop(gettextf("prior for '%s' uses covariates, but no covariate data supplied",
                                 name))
               l.all <- initialDLMAllPredict(prior = prior,
                                             metadata = metadata,
                                             name = name,
-                                            along = along)
+                                            along = along,
+                                            strucZeroArray = strucZeroArray)
               l.no.trend <- initialDLMNoTrendPredict(prior = prior,
                                                      metadata = metadata)
               l.cov <- initialCovPredict(prior = prior,
                                          data = data,
-                                         metadata = metadata)
+                                         metadata = metadata,
+                                         allStrucZero = l.all$allStrucZero)
               l.robust <- initialRobustPredict(prior = prior,
-                                               metadata = metadata)
+                                               metadata = metadata,
+                                               allStrucZero = l.all$allStrucZero)
               methods::new("DLMNoTrendRobustCovNoSeasonPredict",
                            AAlpha = prior@AAlpha,
                            AEtaCoef = prior@AEtaCoef,
                            AEtaIntercept = prior@AEtaIntercept,
                            aNoTrend = l.no.trend$aNoTrend,
                            ATau = prior@ATau,
+                           allStrucZero = l.all$allStrucZero,
+                           alongAllStrucZero = l.all$alongAllStrucZero,
                            alphaDLM = l.all$alphaDLM,
                            CNoTrend = l.no.trend$CNoTrend,
                            contrastsArg = prior@contrastsArg,
@@ -2467,27 +2618,31 @@ setMethod("initialPriorPredict",
 ## HAS_TESTS
 setMethod("initialPriorPredict",
           signature(prior = "DLMWithTrendRobustCovNoSeason"),
-          function(prior, data, metadata, name, along) {
+          function(prior, data, metadata, name, along, strucZeroArray) {
               if (is.null(data))
                   stop(gettextf("prior for '%s' uses covariates, but no covariate data supplied",
                                 name))
               l.all <- initialDLMAllPredict(prior = prior,
                                             metadata = metadata,
                                             name = name,
-                                            along = along)
+                                            along = along, strucZeroArray = strucZeroArray)
               l.with.trend <- initialDLMWithTrendPredict(prior = prior,
                                                          metadata = metadata)
               l.cov <- initialCovPredict(prior = prior,
                                          data = data,
-                                         metadata = metadata)
+                                         metadata = metadata,
+                                         allStrucZero = l.all$allStrucZero)
               l.robust <- initialRobustPredict(prior = prior,
-                                               metadata = metadata)
+                                               metadata = metadata,
+                                               allStrucZero = l.all$allStrucZero)
               methods::new("DLMWithTrendRobustCovNoSeasonPredict",
                            AAlpha = prior@AAlpha,
                            aWithTrend = l.with.trend$aWithTrend,
                            AEtaCoef = prior@AEtaCoef,
                            AEtaIntercept = prior@AEtaIntercept,
                            ATau = prior@ATau,
+                           allStrucZero = l.all$allStrucZero,
+                           alongAllStrucZero = l.all$alongAllStrucZero,
                            alphaDLM = l.all$alphaDLM,
                            contrastsArg = prior@contrastsArg,
                            CWithTrend = l.with.trend$CWithTrend,
@@ -2542,23 +2697,25 @@ setMethod("initialPriorPredict",
 ## HAS_TESTS
 setMethod("initialPriorPredict",
           signature(prior = "DLMNoTrendRobustCovWithSeason"),
-          function(prior, data, metadata, name, along) {
+          function(prior, data, metadata, name, along, strucZeroArray) {
               if (is.null(data))
                   stop(gettextf("prior for '%s' uses covariates, but no covariate data supplied",
                                 name))
               l.all <- initialDLMAllPredict(prior = prior,
                                             metadata = metadata,
                                             name = name,
-                                            along = along)
+                                            along = along, strucZeroArray = strucZeroArray)
               l.no.trend <- initialDLMNoTrendPredict(prior = prior,
                                                      metadata = metadata)
               l.season <- initialDLMSeasonPredict(prior = prior,
                                                   metadata = metadata)
               l.cov <- initialCovPredict(prior = prior,
                                          data = data,
-                                         metadata = metadata)
+                                         metadata = metadata,
+                                         allStrucZero = l.all$allStrucZero)
               l.robust <- initialRobustPredict(prior = prior,
-                                               metadata = metadata)
+                                               metadata = metadata,
+                                               allStrucZero = l.all$allStrucZero)
               methods::new("DLMNoTrendRobustCovWithSeasonPredict",
                            AAlpha = prior@AAlpha,
                            ASeason = prior@ASeason,
@@ -2567,6 +2724,8 @@ setMethod("initialPriorPredict",
                            aNoTrend = l.no.trend$aNoTrend,
                            aSeason = l.season$aSeason,
                            ATau = prior@ATau,
+                           allStrucZero = l.all$allStrucZero,
+                           alongAllStrucZero = l.all$alongAllStrucZero,
                            alphaDLM = l.all$alphaDLM,
                            CNoTrend = l.no.trend$CNoTrend,
                            CSeason = l.season$CSeason,
@@ -2617,23 +2776,25 @@ setMethod("initialPriorPredict",
 ## HAS_TESTS
 setMethod("initialPriorPredict",
           signature(prior = "DLMWithTrendRobustCovWithSeason"),
-          function(prior, data, metadata, name, along) {
+          function(prior, data, metadata, name, along, strucZeroArray) {
               if (is.null(data))
                   stop(gettextf("prior for '%s' uses covariates, but no covariate data supplied",
                                 name))
               l.all <- initialDLMAllPredict(prior = prior,
                                             metadata = metadata,
                                             name = name,
-                                            along = along)
+                                            along = along,
+                                            strucZeroArray = strucZeroArray)
               l.with.trend <- initialDLMWithTrendPredict(prior = prior,
                                                          metadata = metadata)
               l.season <- initialDLMSeasonPredict(prior = prior,
                                                   metadata = metadata)
               l.cov <- initialCovPredict(prior = prior,
                                          data = data,
-                                         metadata = metadata)
+                                         metadata = metadata,
+                                         allStrucZero = l.all$allStrucZero)
               l.robust <- initialRobustPredict(prior = prior,
-                                               metadata = metadata)
+                                               metadata = metadata, allStrucZero = l.all$allStrucZero)
               methods::new("DLMWithTrendRobustCovWithSeasonPredict",
                            AAlpha = prior@AAlpha,
                            ASeason = prior@ASeason,
@@ -2642,6 +2803,8 @@ setMethod("initialPriorPredict",
                            aSeason = l.season$aSeason,
                            aWithTrend = l.with.trend$aWithTrend,
                            ATau = prior@ATau,
+                           allStrucZero = l.all$allStrucZero,
+                           alongAllStrucZero = l.all$alongAllStrucZero,
                            alphaDLM = l.all$alphaDLM,
                            CSeason = l.season$CSeason,
                            CWithTrend = l.with.trend$CWithTrend,
@@ -2707,7 +2870,7 @@ setMethod("initialPriorPredict",
 ## HAS_TESTS
 setMethod("initialPriorPredict",
           signature(prior = "Known"),
-          function(prior, data, metadata, name, along) {
+          function(prior, data, metadata, name, along, strucZeroArray) {
               if (!is.null(data))
                   stop(gettextf("covariate data supplied for prior for '%s', but prior does not use covariates",
                                 name))
@@ -2732,9 +2895,21 @@ setMethod("initialPriorPredict",
                   stop(gettextf("metadata for '%s' prior for '%s' not compatible with metadata for '%s' : %s",
                                 "Known", paste(names(metadata), collapse = ":"), "y", alpha$message))
               alpha <- as.numeric(alpha)
+              allStrucZero <- makeAllStrucZero(strucZeroArray = strucZeroArray,
+                                               metadata = metadata)
+              struc.zero.but.non.zero <- allStrucZero & (alpha != 0)
+              if (any(struc.zero.but.non.zero)) {
+                  i.first <- which(struc.zero.but.non.zero)[1L]
+                  labels <- expand.grid(dimnames(metadata))
+                  label <- labels[i.first, ]
+                  label <- paste(label, collapse = ", ")
+                  stop(gettextf("all cells contributing to element '[%s]' of \"%s\" prior for '%s' are structural zeros, but element '[%s]' does not equal %d",
+                                label, "Known", paste(names(metadata), collapse = ":"), label, 0L))
+              }
               alphaKnown <- methods::new("ParameterVector", alpha)
               if (methods::is(prior, "KnownCertain")) {
                   methods::new("KnownCertain",
+                               allStrucZero = allStrucZero,
                                alphaKnown = alphaKnown,
                                alphaKnownAll = prior@alphaKnownAll,
                                isSaturated = prior@isSaturated,
@@ -2751,8 +2926,18 @@ setMethod("initialPriorPredict",
                                     metadata = metadata.all)
                   A <- dembase::makeCompatible(x = A, y = beta, subset = TRUE)
                   A <- as.numeric(A)
+                  struc.zero.but.non.zero <- allStrucZero & (A != 0)
+                  if (any(struc.zero.but.non.zero)) {
+                      i.first <- which(struc.zero.but.non.zero)[1L]
+                      labels <- expand.grid(dimnames(metadata))
+                      label <- labels[i.first, ]
+                      label <- paste(label, collapse = ", ")
+                      stop(gettextf("all cells contributing to element '[%s]' of \"%s\" prior for '%s' are structural zeros, but element '[%s]' does not have standard deviation %d",
+                                    label, "Known", paste(names(metadata), collapse = ":"), label, 0L))
+                  }
                   AKnownVec <- methods::new("ScaleVec", A)
                   methods::new("KnownUncertain",
+                               allStrucZero = allStrucZero,
                                AKnownVec = AKnownVec,
                                AKnownAllVec = prior@AKnownAllVec,
                                alphaKnown = alphaKnown,
@@ -2768,11 +2953,12 @@ setMethod("initialPriorPredict",
 
 setMethod("initialPriorPredict",
           signature(prior = "MixNormZero"),
-          function(prior, data, metadata, name, along) {
+          function(prior, data, metadata, name, along, strucZeroArray) {
               l.all <- initialMixAllPredict(prior = prior,
                                             metadata = metadata,
                                             name = name,
-                                            along = along)
+                                            along = along,
+                                            strucZeroArray = strucZeroArray)
               methods::new("MixNormZeroPredict",
                            AComponentWeightMix = prior@AComponentWeightMix,
                            ALevelComponentWeightMix = prior@ALevelComponentWeightMix,
@@ -2843,7 +3029,7 @@ setMethod("initialPriorPredict",
 ## NO_TESTS
 setMethod("initialPriorPredict",
           signature(prior = "Zero"),
-          function(prior, data, metadata, name, along) {
+          function(prior, data, metadata, name, along, strucZeroArray) {
               if (!is.null(data))
                   stop(gettextf("covariate data supplied for prior for '%s', but prior does not use covariates",
                                 name))

@@ -288,7 +288,7 @@ setGeneric("initialPrior",
                standardGeneric("initialPrior"))
 
 setGeneric("initialPriorPredict",
-           function(prior, data, metadata, name, along)
+           function(prior, data, metadata, name, along, strucZeroArray)
            standardGeneric("initialPriorPredict"))
 
 setGeneric("initialVarDLM",

@@ -541,7 +541,7 @@ predictCounts <- function(filenameEst, filenamePred, along = NULL, labels = NULL
 #' @inheritParams estimateCounts
 #' @param y An object of class
 #' \code{\link[dembase:DemographicAccount-class]{DemographicAccount}}.
-#' @param system A list of objects of class \code{\linkS4class{SpecModel}}
+#' @param systemModels A list of objects of class \code{\linkS4class{SpecModel}}
 #' specifying models for the demographic series.
 #' @param dataModels A list of objects of class
 #' \code{\linkS4class{SpecModel}} specifying models for the datasets.
@@ -552,7 +552,7 @@ predictCounts <- function(filenameEst, filenamePred, along = NULL, labels = NULL
 #' Subnational population estimation using multiple datasources. 2013.
 #' \emph{Bayesian Analysis}
 #' @export
-estimateAccount <- function(account, systemModels, dataModels, datasets,
+estimateAccount <- function(account, systemModels, datasets, dataModels, 
                             weights = list(), dominant = c("Female", "Male"),
                             filename = NULL, nBurnin = 1000, nSim = 1000,
                             nChain = 4, nThin = 1,

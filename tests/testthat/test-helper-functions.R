@@ -478,11 +478,17 @@ test_that("initialDLMAll works", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(2, 10),
+                                   dimnames = list(sex = c("f", "m"),
+                                                   time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     l <- initialDLMAll(spec,
                        beta = beta,
                        metadata = metadata,
                        sY = NULL,
-                       isSaturated = FALSE)
+                       isSaturated = FALSE,
+                       strucZeroArray = strucZeroArray)
     expect_identical(l$AAlpha, new("Scale", 1.0))
     expect_identical(l$ATau, new("Scale", 1.0))
     expect_identical(l$alphaDLM, new("ParameterVector", rep(0, 11L)))
@@ -503,6 +509,8 @@ test_that("initialDLMAll works", {
     expect_false(l$phiKnown@.Data)
     expect_identical(length(l$tau), 1L)
     expect_identical(l$tauMax, new("Scale", qhalft(0.999, 7, 1)))
+    expect_identical(l$allStrucZero, rep(FALSE, 10))
+    expect_false(l$alongAllStrucZero)
     ## sY is 100
     spec <- DLM(trend = NULL)
     beta <- rnorm(10, mean = 100)
@@ -510,11 +518,17 @@ test_that("initialDLMAll works", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(2, 10),
+                                   dimnames = list(sex = c("f", "m"),
+                                                   time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     l <- initialDLMAll(spec,
                        beta = beta,
                        metadata = metadata,
                        sY = 100,
-                       isSaturated = TRUE)
+                       isSaturated = TRUE,
+                       strucZeroArray = strucZeroArray)
     expect_identical(l$ATau, new("Scale", 100))
     expect_identical(l$AAlpha, new("Scale", 100))
     expect_identical(l$omegaAlphaMax, new("Scale", qhalft(0.999, 7, 100)))
@@ -528,11 +542,17 @@ test_that("initialDLMAll works", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(2, 10),
+                                   dimnames = list(sex = c("f", "m"),
+                                                   time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     l <- initialDLMAll(spec,
                        beta = beta,
                        metadata = metadata,
                        sY = NULL,
-                       isSaturated = TRUE)
+                       isSaturated = TRUE,
+                       strucZeroArray = strucZeroArray)
     expect_identical(l$ATau, new("Scale", 0.5))
     expect_identical(l$AAlpha, new("Scale", 0.5))
     expect_identical(l$omegaAlphaMax, new("Scale", qhalft(0.999, 7, 0.5)))
@@ -544,11 +564,17 @@ test_that("initialDLMAll works", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(2, 10),
+                                   dimnames = list(sex = c("f", "m"),
+                                                   time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     l <- initialDLMAll(spec,
                        beta = beta,
                        metadata = metadata,
                        sY = NULL,
-                       isSaturated = FALSE)
+                       isSaturated = FALSE,
+                       strucZeroArray = strucZeroArray)
     expect_identical(l$omegaAlpha@.Data, 0)
 })
 
@@ -563,19 +589,29 @@ test_that("initialDLMAllPredict works", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = TRUE)
+                          isSaturated = TRUE,
+                          strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 2011:2015)),
+                             dimscales = c(time = "Points"))
     l <- initialDLMAllPredict(prior = prior,
                               metadata = metadata.new,
                               name = "time",
-                              along = "time")
+                              along = "time",
+                              strucZeroArray = strucZeroArray)
     expect_identical(length(l$alphaDLM), 6L)
     expect_identical(l$iteratorState@indices, 1:6)
     expect_identical(l$iteratorStateOld@indices, 1:11)
@@ -591,22 +627,34 @@ test_that("initialDLMAllPredict works", {
                     nms = c("region", "time"),
                     dimtypes = c("state", "time"),
                     DimScales = list(new("Categories", dimvalues = letters[1:5]),
-                        new("Points", dimvalues = 1:10)))
+                                     new("Points", dimvalues = 1:10)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(5, 10),
+                                   dimnames = list(region = letters[1:5],
+                                                   time = 1:10)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = TRUE)
+                          isSaturated = TRUE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "DLMWithTrendNormZeroNoSeason")
     metadata.new <- new("MetaData",
                         nms = c("region", "time"),
                         dimtypes = c("state", "time"),
                         DimScales = list(new("Categories", dimvalues = letters[1:5]),
                             new("Points", dimvalues = 11:15)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(5, 5),
+                                   dimnames = list(region = letters[1:5],
+                                                   time = 11:15)),
+                             dimscales = c(time = "Points"))
     beta.new <- rnorm(25)
     l <- initialDLMAllPredict(prior = prior,
                               metadata = metadata.new,
-                              along = "time")
+                              along = "time",
+                              strucZeroArray = strucZeroArray)
     expect_identical(length(l$alphaDLM), 30L)
     expect_identical(l$iteratorState@indices, seq.int(from = 1, by = 5, length = 6))
     expect_identical(l$iteratorStateOld@indices, seq.int(from = 1, by = 5, length = 11))
@@ -977,6 +1025,12 @@ test_that("initialMixAll works", {
     ## main effect
     spec <- Mix(weights = Weights(mean = 0))
     beta <- rnorm(400)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(20, 2, 10),
+                                   dimnames = list(age = 0:19,
+                                                   sex = c("female", "male"),
+                                                   time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     metadata <- new("MetaData",
                     nms = c("age", "sex", "time"),
                     dimtypes = c("age", "sex", "time"),
@@ -987,7 +1041,8 @@ test_that("initialMixAll works", {
                        beta = beta,
                        metadata = metadata,
                        sY = NULL,
-                       isSaturated = TRUE)
+                       isSaturated = TRUE,
+                       strucZeroArray = strucZeroArray)
     stopifnot(identical(l$AComponentWeightMix, new("Scale", 0.5)))
     stopifnot(identical(l$ALevelComponentWeightMix, new("Scale", 0.25)))
     stopifnot(identical(l$ATau, new("Scale", 0.25)))
@@ -1071,21 +1126,31 @@ test_that("initialMixAllPredict works", {
                     DimScales = list(new("Intervals", dimvalues = 0:20),
                                      new("Sexes", dimvalues = c("female", "male")),
                                      new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(20, 2, 10),
+                                   dimnames = dimnames(metadata)),
+                             dimscales = c(age = "Intervals", time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = TRUE)
+                          isSaturated = TRUE,
+                          strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = c("age", "sex", "time"),
                         dimtypes = c("age", "sex", "time"),
                         DimScales = list(new("Intervals", dimvalues = 0:20),
                                          new("Sexes", dimvalues = c("female", "male")),
-                                         new("Points", dimvalues = 2011:2030)))
+                                         new("Points", dimvalues = 2011:2030)))    
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(20, 2, 20),
+                                   dimnames = dimnames(metadata.new)),
+                             dimscales = c(age = "Intervals", time = "Points"))
     l <- initialMixAllPredict(prior,
                               metadata = metadata.new,
                               along = 3L,
-                              name = "age:sex:time")
+                              name = "age:sex:time",
+                              strucZeroArray = strucZeroArray)
     stopifnot(identical(l$aMix, new("ParameterVector", rep(0, times = 19))))
     stopifnot(identical(length(l$alphaMix@.Data), l$J@.Data))
     stopifnot(identical(l$CMix, new("ParameterVector", rep(1, times = 20))))
@@ -1134,16 +1199,22 @@ test_that("initialRobust works", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(2, 10),
+                                   dimnames = list(sex = c("f", "m"),
+                                                   time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     lAll <- initialDLMAll(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     set.seed(1)
     l <- initialRobust(spec,
                        lAll = lAll)
     set.seed(1)
-    U <- makeU(nu = spec@nuBeta, A = lAll$ATau, n = lAll$J)
+    U <- makeU(nu = spec@nuBeta, A = lAll$ATau, n = lAll$J, allStrucZero = lAll$allStrucZero)
     expect_identical(l$nuBeta, spec@nuBeta)
     expect_identical(l$UBeta, U)
 })
@@ -1159,20 +1230,28 @@ test_that("initialRobustPredict works", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time", 
                         dimtypes = "time", 
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
     set.seed(1)
+    allStrucZero <- rep(FALSE, 5)
     l <- initialRobustPredict(prior,
-                              metadata = metadata.new)
+                              metadata = metadata.new,
+                              allStrucZero = allStrucZero)
     set.seed(1)
-    expect_identical(l, list(UBeta = makeU(nu = prior@nuBeta, A = prior@ATau, n = 5)))
+    ans.obtained <- list(UBeta = makeU(nu = prior@nuBeta, A = prior@ATau, n = 5, allStrucZero = allStrucZero))
+    expect_identical(l, ans.obtained)
 })
 
 test_that("checkAndTidyMeanOrProb works", {
@@ -1569,26 +1648,33 @@ test_that("initialCovPredict works", {
     beta <- rnorm(22)
     metadata <- new("MetaData",
                     nms = c("time", "sex"),
-                    dimtypes = c("time", "state"),
+                    dimtypes = c("time", "sex"),
                     DimScales = list(new("Points", dimvalues = seq(2000, 2050, 5)),
-                        new("Categories", dimvalues = c("f", "m"))))
+                                     new("Sexes", dimvalues = c("f", "m"))))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(11, 2),
+                                   dimnames = list(time = seq(2000, 2050, 5),
+                                                   sex = c("f", "m"))))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = TRUE)
+                          isSaturated = TRUE,
+                          strucZeroArray = strucZeroArray)
     data.new <- data.frame(time = seq(2055, 2080, 5),
                            sex = rep(c("f", "m"), each = 6),
                            income = rnorm(12),
                            cat = sample(c("x" ,"y", "z"), size = 12, replace = TRUE))
     metadata.new <- new("MetaData",
                         nms = c("time", "sex"),
-                        dimtypes = c("time", "state"),
+                        dimtypes = c("time", "sex"),
                         DimScales = list(new("Points", dimvalues = seq(2055, 2080, 5)),
-                            new("Categories", dimvalues = c("f", "m"))))
+                                         new("Sexes", dimvalues = c("f", "m"))))
+    allStrucZero <- rep(FALSE, 12)
     l <- initialCovPredict(prior,
                            data = data.new,
-                           metadata = metadata.new)
+                           metadata = metadata.new,
+                           allStrucZero = allStrucZero)
     expect_identical(dim(l$Z), c(12L, 8L))
 })
 
@@ -1712,7 +1798,7 @@ test_that("makeAlongAllStrucZero works", {
                                           iAlong = iAlong,
                                           metadata = metadata)
     ans.expected <- c(FALSE, FALSE)
-    expect_identical(ans.obtained, ans.expected
+    expect_identical(ans.obtained, ans.expected)
     strucZeroArray <- Counts(array(c(rep(1L, 12), rep(0L, 6)),
                                    dim = c(2:3, 3),
                                    dimnames = list(sex = c("f", "m"),
@@ -1913,7 +1999,7 @@ test_that("makeZ works", {
                           metadata = metadata,
                           contrastsArg = contrastsArg,
                           infant = infant,
-                          allStrucZero = rep(TRUE, 4))
+                          allStrucZero = rep(FALSE, 4))
     ans.expected <- cbind(`(Intercept)` = rep(1, 4),
                           infant = c(0.75, -0.25, -0.25, -0.25))
     rownames(ans.expected) <- 1:4
@@ -1933,12 +2019,13 @@ test_that("makeZ works", {
                           metadata = metadata,
                           contrastsArg = contrastsArg,
                           infant = infant,
-                          allStrucZero = rep(TRUE, 4))
+                          allStrucZero = rep(FALSE, 4))
     ans.expected <- makeStandardizedVariables(formula = ~ income + infant,
                                               inputs = data.frame(income = 1:4,
                                                                   infant = c(1, 0, 0, 0)),
                                               namePrior = "age",
-                                              contrastsArg = list())
+                                              contrastsArg = list(),
+                                              allStrucZero = rep(FALSE, 4))
     expect_identical(ans.obtained, ans.expected)
     ## infant = FALSE
         formula <- ~ income
@@ -1955,11 +2042,12 @@ test_that("makeZ works", {
                           metadata = metadata,
                           contrastsArg = contrastsArg,
                           infant = infant,
-                          allStrucZero = rep(TRUE, 4))
+                          allStrucZero = rep(FALSE, 4))
     ans.expected <- makeStandardizedVariables(formula = ~ income,
                                               inputs = data.frame(income = 1:4),
                                               namePrior = "age",
-                                              contrastsArg = list())
+                                              contrastsArg = list(),
+                                              allStrucZero = rep(FALSE, 4))
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -2930,7 +3018,7 @@ test_that("defaultPrior generates appropriate Specification objects from valid i
     metadata <- new("MetaData",
                     nms = c("sex", "time"),
                     dimtypes = c("state", "time"),
-                    DimScales = list(new("Categories", dimvalues = c("f", "m")),
+                    DimScales = list(new("Sexes", dimvalues = c("f", "m")),
                         new("Points", dimvalues = 2000:2004)))
     expect_identical(defaultPrior(beta = beta, metadata = metadata),
                      DLM(along = "time", trend = NULL))
@@ -5453,7 +5541,7 @@ test_that("betaHatAlphaDLM works", {
     metadata <- new("MetaData",
                     nms = c("sex", "time"),
                     dimtypes = c("state", "time"),
-                    DimScales = list(new("Categories", dimvalues = c("f", "m")),
+                    DimScales = list(new("Sexes", dimvalues = c("f", "m")),
                         new("Points", dimvalues = 1:10)))
     prior <- initialPrior(spec,
                           beta = beta,
@@ -5473,7 +5561,7 @@ test_that("R and C versions of betaHatAlphaDLM give same answer", {
     metadata <- new("MetaData",
                     nms = c("sex", "time"),
                     dimtypes = c("state", "time"),
-                    DimScales = list(new("Categories", dimvalues = c("f", "m")),
+                    DimScales = list(new("Sexes", dimvalues = c("f", "m")),
                         new("Points", dimvalues = 1:10)))
     prior <- initialPrior(spec,
                           beta = beta,
@@ -5495,9 +5583,9 @@ test_that("betaHatCovariates works", {
     beta <- rnorm(20)
     metadata <- new("MetaData",
                     nms = c("time", "sex"),
-                    dimtypes = c("time", "state"),
+                    dimtypes = c("time", "sex"),
                     DimScales = list(new("Points", dimvalues = 1:10),
-                        new("Categories", dimvalues = c("f", "m"))))
+                        new("Sexes", dimvalues = c("f", "m"))))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
@@ -5518,9 +5606,9 @@ test_that("R and C versions of betaHatCovariates give same answer", {
     beta <- rnorm(20)
     metadata <- new("MetaData",
                     nms = c("time", "sex"),
-                    dimtypes = c("time", "state"),
+                    dimtypes = c("time", "sex"),
                     DimScales = list(new("Points", dimvalues = 1:10),
-                        new("Categories", dimvalues = c("f", "m"))))
+                        new("Sexes", dimvalues = c("f", "m"))))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
@@ -5539,7 +5627,7 @@ test_that("betaHatSeason works", {
     metadata <- new("MetaData",
                     nms = c("sex", "time"),
                     dimtypes = c("state", "time"),
-                    DimScales = list(new("Categories", dimvalues = c("f", "m")),
+                    DimScales = list(new("Sexes", dimvalues = c("f", "m")),
                         new("Points", dimvalues = 1:10)))
     prior <- initialPrior(spec,
                           beta = beta,
@@ -5559,7 +5647,7 @@ test_that("R and C versions of betaHatSeason give same answer", {
     metadata <- new("MetaData",
                     nms = c("sex", "time"),
                     dimtypes = c("state", "time"),
-                    DimScales = list(new("Categories", dimvalues = c("f", "m")),
+                    DimScales = list(new("Sexes", dimvalues = c("f", "m")),
                         new("Points", dimvalues = 1:10)))
     prior <- initialPrior(spec,
                           beta = beta,
@@ -7352,7 +7440,7 @@ test_that("makeMetadataPredict works with Points", {
     metadata.old <- new("MetaData",
                         nms = c("sex", "time"),
                         dimtypes = c("state", "time"),
-                        DimScales = list(new("Categories", dimvalues = c("f", "m")),
+                        DimScales = list(new("Sexes", dimvalues = c("f", "m")),
                         new("Points", dimvalues = 1:5)))
     along <- 2L
     labels <- as.character(6:10)
@@ -7361,7 +7449,7 @@ test_that("makeMetadataPredict works with Points", {
     ans.expected <- new("MetaData",
                         nms = c("sex", "time"),
                         dimtypes = c("state", "time"),
-                        DimScales = list(new("Categories", dimvalues = c("f", "m")),
+                        DimScales = list(new("Sexes", dimvalues = c("f", "m")),
                         new("Points", dimvalues = as.numeric(6:10))))
     expect_identical(ans.obtained, ans.expected)
     ans.obtained <- makeMetadataPredict(metadata.old, along = along, labels = NULL,
@@ -7369,7 +7457,7 @@ test_that("makeMetadataPredict works with Points", {
     ans.expected <- new("MetaData",
                         nms = c("sex", "time"),
                         dimtypes = c("state", "time"),
-                        DimScales = list(new("Categories", dimvalues = c("f", "m")),
+                        DimScales = list(new("Sexes", dimvalues = c("f", "m")),
                         new("Points", dimvalues = 6:10)))
     expect_identical(ans.obtained, ans.expected)
     expect_warning(makeMetadataPredict(metadata.old, along = along,
@@ -7385,7 +7473,7 @@ test_that("makeMetadataPredict works with Intervals", {
     metadata.old <- new("MetaData",
                         nms = c("sex", "time"),
                         dimtypes = c("state", "time"),
-                        DimScales = list(new("Categories", dimvalues = c("f", "m")),
+                        DimScales = list(new("Sexes", dimvalues = c("f", "m")),
                         new("Intervals", dimvalues = 0:5)))
     along <- 2L
     labels <- as.character((-5):(-1))
@@ -7394,7 +7482,7 @@ test_that("makeMetadataPredict works with Intervals", {
     ans.expected <- new("MetaData",
                         nms = c("sex", "time"),
                         dimtypes = c("state", "time"),
-                        DimScales = list(new("Categories", dimvalues = c("f", "m")),
+                        DimScales = list(new("Sexes", dimvalues = c("f", "m")),
                         new("Intervals", dimvalues = as.numeric((-5):0))))
     expect_identical(ans.obtained, ans.expected)
     ans.obtained <- makeMetadataPredict(metadata.old, along = along,
@@ -7402,7 +7490,7 @@ test_that("makeMetadataPredict works with Intervals", {
     ans.expected <- new("MetaData",
                         nms = c("sex", "time"),
                         dimtypes = c("state", "time"),
-                        DimScales = list(new("Categories", dimvalues = c("f", "m")),
+                        DimScales = list(new("Sexes", dimvalues = c("f", "m")),
                         new("Intervals", dimvalues = (-5):0)))
     expect_identical(ans.obtained, ans.expected)
 })
@@ -7412,7 +7500,7 @@ test_that("makeMetadataPredict works with Categories", {
     metadata.old <- new("MetaData",
                         nms = c("sex", "region"),
                         dimtypes = c("state", "state"),
-                        DimScales = list(new("Categories", dimvalues = c("f", "m")),
+                        DimScales = list(new("Sexes", dimvalues = c("f", "m")),
                         new("Categories", dimvalues = c("a", "b" ,"c"))))
     along <- 2L
     labels <- c("d", "e", "f")
@@ -7421,7 +7509,7 @@ test_that("makeMetadataPredict works with Categories", {
     ans.expected <- new("MetaData",
                         nms = c("sex", "region"),
                         dimtypes = c("state", "state"),
-                        DimScales = list(new("Categories", dimvalues = c("f", "m")),
+                        DimScales = list(new("Sexes", dimvalues = c("f", "m")),
                         new("Categories", dimvalues = c("d", "e", "f"))))
     expect_identical(ans.obtained, ans.expected)
 })
@@ -10965,7 +11053,7 @@ test_that("changeInPos works", {
                   metadata = new("MetaData",
                   nms = "sex",
                   dimtypes = "state",
-                  DimScales = list(new("Categories", dimvalues = c("f", "m"))))),
+                  DimScales = list(new("Sexes", dimvalues = c("f", "m"))))),
                    b = 4)
     expect_identical(changeInPos(object), 2L)
     expect_identical(changeInPos(list()), 0L)
@@ -13544,7 +13632,7 @@ test_that("trimNULLsFromList works", {
 ##                metadata = new("MetaData",
 ##                nms = "sex",
 ##                dimtypes = "state",
-##                DimScales = list(new("Categories", dimvalues = c("f", "m")))),
+##                DimScales = list(new("Sexes", dimvalues = c("f", "m")))),
 ##                objClass = "Values")
 ##     ans.obtained <- fetchResults(obj,
 ##                                  filename = filename,
@@ -13561,7 +13649,7 @@ test_that("trimNULLsFromList works", {
 ##                metadata = new("MetaData",
 ##                nms = "sex",
 ##                dimtypes = "state",
-##                DimScales = list(new("Categories", dimvalues = c("f", "m")))),
+##                DimScales = list(new("Sexes", dimvalues = c("f", "m")))),
 ##                objClass = "Values")
 ##     ans.obtained <- fetchResults(obj,
 ##                                  filename = filename,
@@ -13640,6 +13728,12 @@ test_that("alignSystemModelsToAccount works", {
     expect_error(alignSystemModelsToAccount(systemModels = system.models.wrong,
                                             account = account),
                  "'systemModels' does not contain a model for series 'deaths' in 'account'")
+    ## model for population does not have exposure term
+    system.models.wrong <-  system.models
+    system.models.wrong[2] <- list(Model(population ~ Poisson(mean ~ eth, useExpose = TRUE)))
+    expect_error(alignSystemModelsToAccount(systemModels = system.models.wrong,
+                                            account = account),
+                 "system model for 'population' uses exposure")
 })
 
 test_that("checkAndTidySystemWeights works", {

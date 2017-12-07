@@ -152,10 +152,12 @@ setClass("AllStrucZeroMixin",
          })
 
 setClass("AlongAllStrucZeroMixin",
+         slots = c(alongAllStrucZero = "logical"),
+         contains = "VIRTUAL",
          validity = function(object) {
              alongAllStrucZero <- object@alongAllStrucZero
              L <- object@L@.Data
-             ## length 'J'
+             ## length 'L'
              if (!identical(length(alongAllStrucZero), L))
                  return(gettextf("'%s' does not have length '%s'",
                                  "alongAllStrucZero", "L"))

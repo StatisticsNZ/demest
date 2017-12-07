@@ -50,6 +50,7 @@ setClass("Known",
              alphaKnown <- object@alphaKnown@.Data
              J <- object@J@.Data
              isSaturated <- object@isSaturated@.Data
+             allStrucZero <- object@allStrucZero
              ## 'alphaKnown' has length 'J'
              if (!identical(length(alphaKnown), J))
                  return(gettextf("'%s' does not have length '%s'",
@@ -58,6 +59,10 @@ setClass("Known",
              if (isSaturated)
                  return(gettextf("prior has class \"%s\" but '%s' is %s",
                                  "Known", "isSaturated", "TRUE"))
+             ## 'alphaKnown' is zero if 'allStrucZero' is TRUE
+             if (any(allStrucZero & (alphaKnown != 0)))
+                 return(gettextf("elements where '%s' is %s but '%s' does not equal %d",
+                                 "allStrucZero", "TRUE", "alphaKnown", 0L))
              TRUE
          })
 
@@ -960,7 +965,7 @@ setClass("ICARRobustCov",
 
 setClass("KnownCertain",
          prototype = prototype(iMethodPrior = 29L,
-             slotsToExtract = character()),
+                               slotsToExtract = character()),
          contains = "Known")
 
 setClass("KnownUncertain",
@@ -972,10 +977,15 @@ setClass("KnownUncertain",
          validity = function(object) {
              AKnownVec <- object@AKnownVec
              J <- object@J@.Data
+             allStrucZero <- object@allStrucZero
              ## 'AKnownVec' has length 'J'
              if (!identical(length(AKnownVec), J))
                  return(gettextf("'%s' does not have length '%s'",
                                  "AKnownVec", "J"))
+             ## 'AKnownVec' is zero if 'allStrucZero' is TRUE
+             if (any(allStrucZero & (AKnownVec != 0)))
+                 return(gettextf("elements where '%s' is %s but '%s' does not equal %d",
+                                 "allStrucZero", "TRUE", "AKnownVec", 0L))
              TRUE
          })
 
@@ -1068,7 +1078,8 @@ setClass("MixRobustCov",
 setClass("Zero",
          prototype = prototype(iMethodPrior = 40L,
                                slotsToExtract = character()),
-         contains = "Prior",
+         contains = c("Prior",
+                      "AllStrucZeroMixin"),
          validity = function(object) {
              isSaturated <- object@isSaturated@.Data
              ## is not saturated

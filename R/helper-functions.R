@@ -1008,7 +1008,7 @@ initialCov <- function(object, beta, metadata, sY, allStrucZero) {
 }
 
 ## HAS_TESTS            
-initialCovPredict <- function(prior, data, metadata) {
+initialCovPredict <- function(prior, data, metadata, allStrucZero) {
     formula <- prior@formula
     contrastsArg <- prior@contrastsArg
     infant <- prior@infant
@@ -1016,12 +1016,14 @@ initialCovPredict <- function(prior, data, metadata) {
                data = data,
                metadata = metadata,
                contrastsArg = contrastsArg,
-               infant = infant)
+               infant = infant,
+               allStrucZero = allStrucZero)
     list(Z = Z)
 }
 
 ## HAS_TESTS
-initialDLMAll <- function(object, beta, metadata, sY, isSaturated, ...) {
+initialDLMAll <- function(object, beta, metadata, sY,
+                          isSaturated, strucZeroArray, ...) {
     AAlpha <- object@AAlpha
     ATau <- object@ATau
     along <- object@along
@@ -1081,11 +1083,18 @@ initialDLMAll <- function(object, beta, metadata, sY, isSaturated, ...) {
     phi <- makePhi(phi = phi,
                    phiKnown = phiKnown,
                    minPhi = minPhi,
-                   maxPhi = maxPhi)                             
+                   maxPhi = maxPhi)
+    allStrucZero <- makeAllStrucZero(strucZeroArray = strucZeroArray,
+                                     metadata = metadata)
+    alongAllStrucZero <- makeAlongAllStrucZero(strucZeroArray = strucZeroArray,
+                                               metadata = metadata,
+                                               iAlong = iAlong)
     isSaturated <- methods::new("LogicalFlag", isSaturated)
     list(AAlpha = AAlpha,
          ATau = ATau,
          alphaDLM = alphaDLM,
+         allStrucZero = allStrucZero,
+         alongAllStrucZero = alongAllStrucZero,
          iAlong = iAlong,
          isSaturated = isSaturated,
          iteratorState = iteratorState,
@@ -1108,7 +1117,7 @@ initialDLMAll <- function(object, beta, metadata, sY, isSaturated, ...) {
 }
 
 ## HAS_TESTS
-initialDLMAllPredict <- function(prior, metadata, name, along) {
+initialDLMAllPredict <- function(prior, metadata, name, along, strucZeroArray) {
     alpha.old <- prior@alphaDLM
     J.old <- prior@J
     K.old <- prior@K@.Data
@@ -1133,7 +1142,14 @@ initialDLMAllPredict <- function(prior, metadata, name, along) {
                                 iAlong = i.along.new)
     alpha.new <- makeStateDLM(K = K.new,
                               L = L)
+    allStrucZero <- makeAllStrucZero(strucZeroArray = strucZeroArray,
+                                     metadata = metadata)
+    alongAllStrucZero <- makeAlongAllStrucZero(strucZeroArray = strucZeroArray,
+                                               metadata = metadata,
+                                               iAlong = i.along.new)
     list(alphaDLM = alpha.new,
+         allStrucZero = allStrucZero,
+         alongAllStrucZero = alongAllStrucZero,
          iteratorState = iterator.state.new,
          iteratorStateOld = iterator.state.old,
          iteratorV = iterator.v,
@@ -1391,7 +1407,7 @@ initialDLMSeasonPredict <- function(prior, metadata) {
 }
 
 ## HAS_TESTS
-initialMixAll <- function(object, beta, metadata, sY, isSaturated, ...) {
+initialMixAll <- function(object, beta, metadata, sY, isSaturated, strucZeroArray, ...) {
     AComponentWeightMix <- object@AComponentWeightMix
     ALevelComponentWeightMix <- object@ALevelComponentWeightMix
     ATau <- object@ATau
@@ -1420,6 +1436,10 @@ initialMixAll <- function(object, beta, metadata, sY, isSaturated, ...) {
     shape1Phi <- object@shape1Phi
     shape2Phi <- object@shape2Phi
     tauMax <- object@tauMax
+    ## allStrucZero
+    makeAllStrucZeroError(strucZeroArray = strucZeroArray,
+                          metadata = metadata,
+                          classPrior = "Mix")                          
     ## AComponentWeightMix, omegaComponentWeightMaxMix, omegaComponentWeight
     AComponentWeightMix <-
         makeAComponentMix(A = AComponentWeightMix,
@@ -1666,8 +1686,12 @@ initialMixAll <- function(object, beta, metadata, sY, isSaturated, ...) {
 }
 
 ## HAS_TESTS
-initialMixAllPredict <- function(prior, metadata, name, along) {
+initialMixAllPredict <- function(prior, metadata, name, along, strucZeroArray) {
     index.class.max <- prior@indexClassMaxMix@.Data
+    ## allStrucZero
+    makeAllStrucZeroError(strucZeroArray = strucZeroArray,
+                          metadata = metadata,
+                          classPrior = "Mix")                          
     ## dimBeta
     dimBeta <- dim(metadata)
     ## J
@@ -1765,18 +1789,25 @@ initialRobust <- function(object, lAll) {
     nuBeta <- object@nuBeta
     J <- lAll$J
     ATau <- lAll$ATau
-    UBeta <- makeU(nu = nuBeta, A = ATau, n = J)
+    allStrucZero <- lAll$allStrucZero
+    UBeta <- makeU(nu = nuBeta,
+                   A = ATau,
+                   n = J,
+                   allStrucZero = allStrucZero)
     list(nuBeta = nuBeta,
          UBeta = UBeta)
 }
 
 
 ## HAS_TESTS
-initialRobustPredict <- function(prior, metadata) {
+initialRobustPredict <- function(prior, metadata, allStrucZero) {
     ATau <- prior@ATau
     nuBeta <- prior@nuBeta
     J <- makeJPredict(metadata)
-    UBeta <- makeU(nu = nuBeta, A = ATau, n = J)
+    UBeta <- makeU(nu = nuBeta,
+                   A = ATau,
+                   n = J,
+                   allStrucZero = allStrucZero)
     list(UBeta = UBeta)
 }
 
@@ -2052,6 +2083,8 @@ makeAllStrucZeroError <- function(strucZeroArray, metadata, classPrior) {
 
 ## HAS_TESTS
 makeAlongAllStrucZero <- function(strucZeroArray, metadata, iAlong) {
+    if (length(metadata) == 1L)
+        return(FALSE)
     name.prior <- paste(names(metadata), collapse = ":")
     metadata.along <- metadata[iAlong]
     metadata.within <- metadata[-iAlong]
@@ -9929,6 +9962,11 @@ alignSystemModelsToAccount <- function(systemModels, account) {
         i.sys <- match(name.series, names.sys.mod)
         ans[[i]] <- systemModels[[i.sys]]
     }
+    ## system model for 'population' does not have exposure term
+    popn.uses.exposure <- systemModels[[1L]]@useExpose@.Data
+    if (popn.uses.exposure)
+        stop(gettextf("system model for '%s' uses exposure",
+                      "population"))
     ans
 }
 

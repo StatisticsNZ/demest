@@ -7,8 +7,6 @@ test.identity <- FALSE
 test.extended <- TRUE
 
 
-
-
 ## test generator function and initialPrior together ############################################
 
 test_that("generator function and initialPrior work with ExchFixed", {
@@ -303,6 +301,11 @@ test_that("generator function and initialPrior work with DLMNoTrendNormZeroNoSea
     spec <- DLM(trend = NULL)
     expect_is(spec, "SpecDLMNoTrendNormZeroNoSeason")
     beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(2, 10),
+                                   dimnames = list(sex = c("f", "m"),
+                                                   time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     metadata <- new("MetaData",
                     nms = "time",
                     dimtypes = "time",
@@ -311,7 +314,8 @@ test_that("generator function and initialPrior work with DLMNoTrendNormZeroNoSea
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "DLMNoTrendNormZeroNoSeason")
 })
 
@@ -325,12 +329,18 @@ test_that("generator function and initialPrior work with DLMWithTrendNormZeroNoS
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(2, 10),
+                                   dimnames = list(sex = c("f", "m"),
+                                                   time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
                           multScale = 1,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "DLMWithTrendNormZeroNoSeason")
     spec <- DLM(trend = Trend(initial = Initial(mean = 0.02, sd = 0.05)))
     prior <- initialPrior(spec,
@@ -338,7 +348,8 @@ test_that("generator function and initialPrior work with DLMWithTrendNormZeroNoS
                           metadata = metadata,
                           sY = NULL,
                           multScale = 1,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_identical(prior@m0WithTrend[[1]], c(0, 0.02))
     expect_identical(prior@CWithTrend[[1]], diag(c(100, 0.05^2)))
 })
@@ -353,12 +364,18 @@ test_that("generator function and initialPrior work with DLMNoTrendNormZeroWithS
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(2, 10),
+                                   dimnames = list(sex = c("f", "m"),
+                                                   time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
                           multScale = 1,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "DLMNoTrendNormZeroWithSeason")
 })
 
@@ -368,6 +385,11 @@ test_that("generator function and initialPrior work with DLMWithTrendNormZeroWit
     spec <- DLM(season = Season(n = 4))
     expect_is(spec, "SpecDLMWithTrendNormZeroWithSeason")
     beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(2, 10),
+                                   dimnames = list(sex = c("f", "m"),
+                                                   time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     metadata <- new("MetaData",
                     nms = "time",
                     dimtypes = "time",
@@ -377,7 +399,8 @@ test_that("generator function and initialPrior work with DLMWithTrendNormZeroWit
                           metadata = metadata,
                           sY = NULL,
                           multScale = 1,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "DLMWithTrendNormZeroWithSeason")
 })
 
@@ -396,6 +419,11 @@ test_that("generator function and initialPrior work with DLMNoTrendNormZeroNoSea
                     contrastsArg = contrastsArg))
     expect_is(spec, "SpecDLMNoTrendNormCovNoSeason")
     beta <- rnorm(20)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(2, 10),
+                                   dimnames = list(reg = c("a", "b"),
+                                                   time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     metadata <- new("MetaData",
                     nms = c("time", "reg"),
                     dimtypes = c("time", "state"),
@@ -406,7 +434,8 @@ test_that("generator function and initialPrior work with DLMNoTrendNormZeroNoSea
                           metadata = metadata,
                           sY = 200,
                           multScale = 1,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "DLMNoTrendNormCovNoSeason")
 })
 
@@ -424,6 +453,11 @@ test_that("generator function and initialPrior work with DLMWithTrendNormCovNoSe
                     contrastsArg = contrastsArg))
     expect_is(spec, "SpecDLMWithTrendNormCovNoSeason")
     beta <- rnorm(20)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(2, 10),
+                                   dimnames = list(reg = c("a", "b"),
+                                                   time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     metadata <- new("MetaData",
                     nms = c("time", "reg"),
                     dimtypes = c("time", "state"),
@@ -434,7 +468,8 @@ test_that("generator function and initialPrior work with DLMWithTrendNormCovNoSe
                           metadata = metadata,
                           sY = 200,
                           multScale = 1,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "DLMWithTrendNormCovNoSeason")
 })
 
@@ -454,6 +489,11 @@ test_that("generator function and initialPrior work with DLMNoTrendNormCovWithSe
                     contrastsArg = contrastsArg))
     expect_is(spec, "SpecDLMNoTrendNormCovWithSeason")
     beta <- rnorm(20)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(2, 10),
+                                   dimnames = list(reg = c("a", "b"),
+                                                   time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     metadata <- new("MetaData",
                     nms = c("time", "reg"),
                     dimtypes = c("time", "state"),
@@ -464,7 +504,8 @@ test_that("generator function and initialPrior work with DLMNoTrendNormCovWithSe
                           metadata = metadata,
                           sY = 200,
                           multScale = 1,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "DLMNoTrendNormCovWithSeason")
 })
 
@@ -483,6 +524,11 @@ test_that("generator function and initialPrior work with DLMWithTrendNormCovWith
                     contrastsArg = contrastsArg))
     expect_is(spec, "SpecDLMWithTrendNormCovWithSeason")
     beta <- rnorm(20)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(2, 10),
+                                   dimnames = list(reg = c("a", "b"),
+                                                   time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     metadata <- new("MetaData",
                     nms = c("time", "reg"),
                     dimtypes = c("time", "state"),
@@ -493,7 +539,8 @@ test_that("generator function and initialPrior work with DLMWithTrendNormCovWith
                           metadata = metadata,
                           sY = 200,
                           multScale = 1,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "DLMWithTrendNormCovWithSeason")
 })
 
@@ -508,12 +555,18 @@ test_that("generator function and initialPrior work with DLMNoTrendRobustZeroNoS
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(2, 10),
+                                   dimnames = list(reg = c("a", "b"),
+                                                   time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
                           multScale = 1,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "DLMNoTrendRobustZeroNoSeason")
 })
 
@@ -523,6 +576,11 @@ test_that("generator function and initialPrior work with DLMWithTrendRobustZeroN
     spec <- DLM(error = Error(robust = TRUE))
     expect_is(spec, "SpecDLMWithTrendRobustZeroNoSeason")
     beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(2, 10),
+                                   dimnames = list(reg = c("a", "b"),
+                                                   time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     metadata <- new("MetaData",
                     nms = "time",
                     dimtypes = "time",
@@ -532,7 +590,8 @@ test_that("generator function and initialPrior work with DLMWithTrendRobustZeroN
                           metadata = metadata,
                           sY = NULL,
                           multScale = 1,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "DLMWithTrendRobustZeroNoSeason")
 })
 
@@ -548,12 +607,18 @@ test_that("generator function and initialPrior work with DLMNoTrendRobustZeroWit
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(2, 10),
+                                   dimnames = list(reg = c("a", "b"),
+                                                   time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
                           multScale = 1,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "DLMNoTrendRobustZeroWithSeason")
 })
 
@@ -568,12 +633,18 @@ test_that("generator function and initialPrior work with DLMWithTrendRobustZeroW
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(2, 10),
+                                   dimnames = list(reg = c("a", "b"),
+                                                   time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
                           multScale = 1,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "DLMWithTrendRobustZeroWithSeason")
 })
 
@@ -593,6 +664,11 @@ test_that("generator function and initialPrior work with DLMNoTrendRobustZeroNoS
                 error = Error(robust = TRUE))
     expect_is(spec, "SpecDLMNoTrendRobustCovNoSeason")
     beta <- rnorm(20)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(2, 10),
+                                   dimnames = list(reg = c("a", "b"),
+                                                   time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     metadata <- new("MetaData",
                     nms = c("time", "reg"),
                     dimtypes = c("time", "state"),
@@ -603,7 +679,8 @@ test_that("generator function and initialPrior work with DLMNoTrendRobustZeroNoS
                           metadata = metadata,
                           sY = 200,
                           multScale = 1,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "DLMNoTrendRobustCovNoSeason")
 })
 
@@ -627,12 +704,18 @@ test_that("generator function and initialPrior work with DLMWithTrendRobustCovNo
                     dimtypes = c("time", "state"),
                     DimScales = list(new("Points", dimvalues = 2001:2010),
                         new("Categories", dimvalues = c("a", "b"))))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(2, 10),
+                                   dimnames = list(reg = c("a", "b"),
+                                                   time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = 200,
                           multScale = 1,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "DLMWithTrendRobustCovNoSeason")
 })
 
@@ -653,6 +736,11 @@ test_that("generator function and initialPrior work with DLMNoTrendRobustCovWith
                 error = Error(robust = TRUE))
     expect_is(spec, "SpecDLMNoTrendRobustCovWithSeason")
     beta <- rnorm(20)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(2, 10),
+                                   dimnames = list(reg = c("a", "b"),
+                                                   time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     metadata <- new("MetaData",
                     nms = c("time", "reg"),
                     dimtypes = c("time", "state"),
@@ -663,7 +751,8 @@ test_that("generator function and initialPrior work with DLMNoTrendRobustCovWith
                           metadata = metadata,
                           sY = 200,
                           multScale = 1,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "DLMNoTrendRobustCovWithSeason")
     expect_identical(prior@isSaturated, new("LogicalFlag", FALSE))
     prior <- initialPrior(spec,
@@ -671,7 +760,8 @@ test_that("generator function and initialPrior work with DLMNoTrendRobustCovWith
                           metadata = metadata,
                           sY = 200,
                           multScale = 1,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "DLMNoTrendRobustCovWithSeason")
     expect_identical(prior@isSaturated, new("LogicalFlag", FALSE))
 })
@@ -692,6 +782,11 @@ test_that("generator function and initialPrior work with DLMWithTrendRobustCovWi
                 error = Error(robust = TRUE))
     expect_is(spec, "SpecDLMWithTrendRobustCovWithSeason")
     beta <- rnorm(20)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(2, 10),
+                                   dimnames = list(reg = c("a", "b"),
+                                                   time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     metadata <- new("MetaData",
                     nms = c("time", "reg"),
                     dimtypes = c("time", "state"),
@@ -702,7 +797,8 @@ test_that("generator function and initialPrior work with DLMWithTrendRobustCovWi
                           metadata = metadata,
                           sY = 200,
                           multScale = 1,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "DLMWithTrendRobustCovWithSeason")
 })
 
@@ -712,6 +808,10 @@ test_that("generator function and initialPrior work with KnownCertain", {
     spec <- Known(mean)
     expect_is(spec, "SpecKnownCertain")
     beta <- rnorm(4)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 4,
+                                   dimnames = list(age = 0:3)),
+                             dimscales = c(age = "Intervals"))
     metadata <- new("MetaData",
                     nms = "age",
                     dimtypes = "age",
@@ -720,7 +820,8 @@ test_that("generator function and initialPrior work with KnownCertain", {
                           beta = beta,
                           metadata = metadata,
                           sY = 50,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "KnownCertain")
     expect_identical(prior@J, new("Length", 4))
     ## 'mean' is "Values"
@@ -743,11 +844,42 @@ test_that("generator function and initialPrior work with KnownCertain", {
                     dimtypes = "age",
                     DimScales = list(new("Intervals", dimvalues = 1:6)))
     expect_error(initialPrior(spec,
+                              beta = beta,
+                              metadata = metadata,
+                              sY = 50,
+                              isSaturated = FALSE,
+                              strucZeroArray = strucZeroArray),
+                 "metadata for 'Known' prior for 'age' not compatible with metadata for 'y'")
+    ## includes structural zeros
+    mean <- ValuesOne(c(0L, 2:5), labels = 0:4, name = "age", dimscale = "Intervals")
+    spec <- Known(mean)
+    expect_is(spec, "SpecKnownCertain")
+    beta <- rnorm(4)
+    strucZeroArray <- Counts(array(c(0L, 1L, 1L, 1L),
+                                   dim = 4,
+                                   dimnames = list(age = 0:3)),
+                             dimscales = c(age = "Intervals"))
+    metadata <- new("MetaData",
+                    nms = "age",
+                    dimtypes = "age",
+                    DimScales = list(new("Intervals", dimvalues = 0:4)))
+    prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = 50,
-                          isSaturated = FALSE),
-                 "metadata for 'Known' prior for 'age' not compatible with metadata for 'y'")    
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
+    expect_true(validObject(prior))
+    expect_identical(prior@allStrucZero, c(TRUE, FALSE, FALSE, FALSE))
+    mean.wrong <- ValuesOne(1:5, labels = 0:4, name = "age", dimscale = "Intervals")
+    spec.wrong <- Known(mean.wrong)
+    expect_error(initialPrior(spec.wrong,
+                              beta = beta,
+                              metadata = metadata,
+                              sY = 50,
+                              isSaturated = FALSE,
+                              strucZeroArray = strucZeroArray),
+                 "all cells contributing to element '\\[0\\]' of \"Known\" prior for 'age' are structural zeros, but element '\\[0\\]' does not equal 0")
 })
 
 test_that("generator function and initialPrior work with KnownUncertain", {
@@ -763,11 +895,16 @@ test_that("generator function and initialPrior work with KnownUncertain", {
                     nms = "age",
                     dimtypes = "age",
                     DimScales = list(new("Intervals", dimvalues = 0:4)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 4,
+                                   dimnames = list(age = 0:3)),
+                             dimscales = c(age = "Intervals"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = 50,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "KnownUncertain")
     expect_identical(prior@J, new("Length", 4))
     ## 'sd' is numeric
@@ -785,7 +922,8 @@ test_that("generator function and initialPrior work with KnownUncertain", {
                           beta = beta,
                           metadata = metadata,
                           sY = 50,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "KnownUncertain")
     expect_identical(prior@J, new("Length", 4))
     ## 'sd' is compatible with 'mean'
@@ -819,6 +957,39 @@ test_that("generator function and initialPrior work with KnownUncertain", {
     mean <- ValuesOne(1:5, labels = 0:4, name = "age", dimscale = "Intervals")
     expect_error(Known(mean = mean, sd = "1"),
                  "'sd' has class \"character\"")
+    ## includes structural zeros
+    mean <- ValuesOne(c(0L, 2:5), labels = 0:4, name = "age", dimscale = "Intervals")
+    sd <- ValuesOne(0:4, labels = 0:4, name = "age", dimscale = "Intervals")
+    spec <- Known(mean = mean,
+                  sd = sd)
+    expect_is(spec, "SpecKnownUncertain")
+    beta <- rnorm(4)
+    strucZeroArray <- Counts(array(c(0L, 1L, 1L, 1L),
+                                   dim = 4,
+                                   dimnames = list(age = 0:3)),
+                             dimscales = c(age = "Intervals"))
+    metadata <- new("MetaData",
+                    nms = "age",
+                    dimtypes = "age",
+                    DimScales = list(new("Intervals", dimvalues = 0:4)))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = 50,
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
+    expect_true(validObject(prior))
+    expect_identical(prior@allStrucZero, c(TRUE, FALSE, FALSE, FALSE))
+    sd.wrong <- ValuesOne(1:5, labels = 0:4, name = "age", dimscale = "Intervals")
+    spec.wrong <- Known(mean = mean,
+                        sd = sd.wrong)
+    expect_error(initialPrior(spec.wrong,
+                              beta = beta,
+                              metadata = metadata,
+                              sY = 50,
+                              isSaturated = FALSE,
+                              strucZeroArray = strucZeroArray),
+                 "all cells contributing to element '\\[0\\]' of \"Known\" prior for 'age' are structural zeros, but element '\\[0\\]' does not have standard deviation 0")
 })
 
 
@@ -835,6 +1006,12 @@ test_that("generator function and initialPrior work with MixNormZero", {
                     DimScales = list(new("Points", dimvalues = 2001:2010),
                                      new("Categories", dimvalues = c("a", "b")),
                                      new("Intervals", dimvalues = as.numeric(0:10))))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(10, 2, 10),
+                                   dimnames = list(age = 0:9,
+                                                   reg = c("a", "b"),
+                                                   time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     ## all defaults
     spec <- Mix()
     expect_is(spec, "SpecMixNormZero")
@@ -843,7 +1020,8 @@ test_that("generator function and initialPrior work with MixNormZero", {
                           metadata = metadata,
                           sY = NULL,
                           multScale = 1,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "MixNormZero")
     ## nondefault
     spec <- Mix(along = "age",
@@ -860,7 +1038,8 @@ test_that("generator function and initialPrior work with MixNormZero", {
                           metadata = metadata,
                           sY = NULL,
                           multScale = 1,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_identical(prior@iAlong, 3L)
     expect_identical(prior@AVectorsMix, new("Scale", 0.5))
     expect_identical(prior@nuVectorsMix, new("DegreesFreedom", 4))
@@ -870,13 +1049,50 @@ test_that("generator function and initialPrior work with MixNormZero", {
     expect_identical(prior@ALevelComponentWeightMix, new("Scale", 0.125))
     expect_identical(prior@nuTau, new("DegreesFreedom", 6))
     expect_identical(prior@tolerance, new("Parameter", 1e-5))
+    ## has structural zeros
+    strucZeroArray.wrong <- Counts(array(c(1L, 0L),
+                                   dim = c(10, 2, 10),
+                                   dimnames = list(age = 0:9,
+                                                   reg = c("a", "b"),
+                                                   time = 2001:2010)),
+                             dimscales = c(time = "Points"))
+    expect_error(initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          multScale = 1,
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray.wrong),
+                 "'time\\:reg\\:age' has elements where all contributing cells are structural zeros; priors with class \"Mix\" cannot be used in such cases")
+})
+
+
+## Zero
+
+test_that("generator function and initialPrior work with Zero", {
+    initialPrior <- demest:::initialPrior
+    spec <- Zero()
+    expect_is(spec, "SpecZero")
+    beta <- rnorm(4)
+    metadata <- new("MetaData",
+                    nms = "age",
+                    dimtypes = "age",
+                    DimScales = list(new("Intervals", dimvalues = 0:4)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 4L,
+                                   dimnames = list(age = 0:3)))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = 50,
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "Zero")
 })
 
 
 
-
 ## initialPriorPredict ###############################################################
-
 
 test_that("initialPriorPredict works with ExchFixed", {
     set.seed(100)
@@ -888,34 +1104,41 @@ test_that("initialPriorPredict works with ExchFixed", {
                     nms = "region",
                     dimtypes = "state",
                     DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(region = letters[1:10])))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
                           multScale = 1,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "ExchFixed")
     metadata.new <- new("MetaData",
                         nms = "region",
                         dimtypes = "state",
                         DimScales = list(new("Categories", dimvalues = letters[11:15])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5L,
+                                   dimnames = list(region = letters[11:15])))
     beta.new <- rnorm(5)
     ans.obtained <- initialPriorPredict(prior,
                                         data = NULL,
                                         metadata = metadata.new,
                                         name = "region",
-                                        along = "region")
+                                        along = "region",
+                                        strucZeroArray = strucZeroArray)
     ans.expected <- initialPrior(spec,
                                  beta = beta.new,
                                  metadata = metadata.new,
                                  sY = NULL,
                                  multScale = 1,
-                                 isSaturated = FALSE)
+                                 isSaturated = FALSE,
+                                 strucZeroArray = strucZeroArray)
     ans.expected@tau <- prior@tau
     expect_identical(ans.obtained, ans.expected)
 })
-
-
 
 test_that("initialPriorPredict workw with ExchNormZero", {
     set.seed(100)
@@ -927,29 +1150,38 @@ test_that("initialPriorPredict workw with ExchNormZero", {
                     nms = "region",
                     dimtypes = "state",
                     DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(region = letters[1:10])))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
                           multScale = 1,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "ExchNormZero")
     metadata.new <- new("MetaData",
                         nms = "region",
                         dimtypes = "state",
                         DimScales = list(new("Categories", dimvalues = letters[11:15])))
     beta.new <- rnorm(5)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5L,
+                                   dimnames = list(region = letters[11:15])))
     ans.obtained <- initialPriorPredict(prior,
                                         data = NULL,
                                         metadata = metadata.new,
                                         name = "region",
-                                        along = "region")
+                                        along = "region",
+                                        strucZeroArray = strucZeroArray)
     ans.expected <- initialPrior(spec,
                                  beta = beta.new,
                                  metadata = metadata.new,
                                  sY = NULL,
                                  multScale = 1,
-                                 isSaturated = FALSE)
+                                 isSaturated = FALSE,
+                                 strucZeroArray = strucZeroArray)
     ans.expected@tau <- prior@tau
     expect_identical(ans.obtained, ans.expected)
 })
@@ -964,23 +1196,31 @@ test_that("initialPriorPredict works with ExchRobustZero", {
                     nms = "region",
                     dimtypes = "state",
                     DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(region = letters[1:10])))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
                           multScale = 1,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "ExchRobustZero")
     metadata.new <- new("MetaData",
                         nms = "region",
                         dimtypes = "state",
                         DimScales = list(new("Categories", dimvalues = letters[11:15])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5L,
+                                   dimnames = list(region = letters[11:15])))
     beta.new <- rnorm(5)
     prior.new <- initialPriorPredict(prior,
                                      data = NULL,
                                      metadata = metadata.new,
                                      name = "region",
-                                     along = "region")
+                                     along = "region",
+                                     strucZeroArray = strucZeroArray)
     expect_identical(prior.new@J@.Data, 5L)
     expect_identical(prior.new@nuTau, prior@nuTau)
     expect_identical(prior.new@ATau, prior@ATau)
@@ -1003,23 +1243,32 @@ test_that("initialPriorPredict works with ExchNormCov", {
                      data = data, contrastsArg = contrastsArg))
     expect_is(spec, "SpecExchNormCov")
     beta <- rnorm(20)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(10L, 2L),
+                                   dimnames = list(region = letters[1:10],
+                                                   sex = c("f", "m"))))
     metadata <- new("MetaData",
                     nms = c("region", "sex"),
-                    dimtypes = c("state", "state"),
+                    dimtypes = c("state", "sex"),
                     DimScales = list(new("Categories", dimvalues = letters[1:10]),
-                        new("Categories", dimvalues = c("f", "m"))))
+                        new("Sexes", dimvalues = c("f", "m"))))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
                           multScale = 1,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "ExchNormCov")
     metadata.new <- new("MetaData",
                         nms = c("region", "sex"),
-                        dimtypes = c("state", "state"),
+                        dimtypes = c("state", "sex"),
                         DimScales = list(new("Categories", dimvalues = letters[11:15]),
-                            new("Categories", dimvalues = c("f", "m"))))
+                            new("Sexes", dimvalues = c("f", "m"))))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(5L, 2L),
+                                   dimnames = list(region = letters[11:15],
+                                                   sex = c("f", "m"))))
     data <- data.frame(region = rep(letters[11:15], times = 2),
                              sex = rep(c("f", "m"), each = 5),
                              income = rnorm(10),
@@ -1029,7 +1278,8 @@ test_that("initialPriorPredict works with ExchNormCov", {
                                      data = data,
                                      metadata = metadata.new,
                                      name = "region:sex",
-                                     along = "region")
+                                     along = "region",
+                                     strucZeroArray = strucZeroArray)
     expect_identical(prior.new@J@.Data, 10L)
     expect_identical(prior.new@nuTau, prior@nuTau)
     expect_identical(prior.new@ATau, prior@ATau)
@@ -1056,23 +1306,32 @@ test_that("initialPriorPredict works with ExchRobustCov", {
                  error = Error(robust = TRUE))
     expect_is(spec, "SpecExchRobustCov")
     beta <- rnorm(20)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(10L, 2L),
+                                   dimnames = list(region = letters[1:10],
+                                                   sex = c("f", "m"))))
     metadata <- new("MetaData",
                     nms = c("region", "sex"),
-                    dimtypes = c("state", "state"),
+                    dimtypes = c("state", "sex"),
                     DimScales = list(new("Categories", dimvalues = letters[1:10]),
-                        new("Categories", dimvalues = c("f", "m"))))
+                        new("Sexes", dimvalues = c("f", "m"))))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
                           multScale = 1,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "ExchRobustCov")
     metadata.new <- new("MetaData",
                         nms = c("region", "sex"),
-                        dimtypes = c("state", "state"),
+                        dimtypes = c("state", "sex"),
                         DimScales = list(new("Categories", dimvalues = letters[11:15]),
-                            new("Categories", dimvalues = c("f", "m"))))
+                            new("Sexes", dimvalues = c("f", "m"))))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(5L, 2L),
+                                   dimnames = list(region = letters[11:15],
+                                                   sex = c("f", "m"))))
     data <- data.frame(region = rep(letters[11:15], times = 2),
                              sex = rep(c("f", "m"), each = 5),
                              income = rnorm(10),
@@ -1082,7 +1341,8 @@ test_that("initialPriorPredict works with ExchRobustCov", {
                                      data = data,
                                      metadata = metadata.new,
                                      name = "region:sex",
-                                     along = "region")
+                                     along = "region",
+                                     strucZeroArray = strucZeroArray)
     expect_identical(prior.new@J@.Data, 10L)
     expect_identical(prior.new@nuTau, prior@nuTau)
     expect_identical(prior.new@ATau, prior@ATau)
@@ -1109,22 +1369,32 @@ test_that("initialPriorPredict works with DLMNoTrendNormZeroNoSeason", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
                           multScale = 1,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "DLMNoTrendNormZeroNoSeason")
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 2011:2015)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior,
                                      data = NULL,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L,
+                                     strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMNoTrendNormZeroNoSeason")
     expect_identical(prior.new@J@.Data, 5L)
     expect_identical(prior.new@K@.Data, 5L)
@@ -1146,22 +1416,32 @@ test_that("initialPriorPredict works with DLMWithTrendNormZeroNoSeason", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
                           multScale = 1,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "DLMWithTrendNormZeroNoSeason")
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 2011:2015)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior,
                                      data = NULL,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L,
+                                     strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMWithTrendNormZeroNoSeason")
     expect_identical(prior.new@J@.Data, 5L)
     expect_identical(prior.new@K@.Data, 5L)
@@ -1184,22 +1464,32 @@ test_that("initialPriorPredict works with DLMNoTrendNormZeroWithSeason", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
                           multScale = 1,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "DLMNoTrendNormZeroWithSeason")
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 2011:2015)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior,
                                      data = NULL,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L,
+                                     strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMNoTrendNormZeroWithSeason")
     expect_identical(prior.new@J@.Data, 5L)
     expect_identical(prior.new@K@.Data, 5L)
@@ -1219,6 +1509,10 @@ test_that("initialPriorPredict works with DLMWithTrendNormZeroWithSeason", {
     spec <- DLM(season = Season(n = 4))
     expect_is(spec, "SpecDLMWithTrendNormZeroWithSeason")
     beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     metadata <- new("MetaData",
                     nms = "time",
                     dimtypes = "time",
@@ -1228,17 +1522,23 @@ test_that("initialPriorPredict works with DLMWithTrendNormZeroWithSeason", {
                           metadata = metadata,
                           sY = NULL,
                           multScale = 1,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "DLMWithTrendNormZeroWithSeason")
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 2011:2015)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior,
                                      data = NULL,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L,
+                                     strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMWithTrendNormZeroWithSeason")
     expect_identical(prior.new@J@.Data, 5L)
     expect_identical(prior.new@K@.Data, 5L)
@@ -1268,12 +1568,17 @@ test_that("initialPriorPredict works with DLMNoTrendNormCovNoSeason", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
                           multScale = 1,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "DLMNoTrendNormCovNoSeason")
     data.new <- data.frame(time = 2011:2015,
                            income = rnorm(5))
@@ -1281,11 +1586,16 @@ test_that("initialPriorPredict works with DLMNoTrendNormCovNoSeason", {
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 2011:2015)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior,
                                      data = data.new,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L,
+                                     strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMNoTrendNormCovNoSeason")
     expect_identical(prior.new@J@.Data, 5L)
     expect_identical(prior.new@K@.Data, 5L)
@@ -1311,15 +1621,24 @@ test_that("initialPriorPredict works with DLMWithTrendNormCovNoSeason", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
                           multScale = 1,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "DLMWithTrendNormCovNoSeason")
     data.new <- data.frame(time = 2011:2015,
                            income = rnorm(5))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 2011:2015)),
+                             dimscales = c(time = "Points"))
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -1328,7 +1647,8 @@ test_that("initialPriorPredict works with DLMWithTrendNormCovNoSeason", {
                                      data = data.new,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L,
+                                     strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMWithTrendNormCovNoSeason")
     expect_identical(prior.new@J@.Data, 5L)
     expect_identical(prior.new@K@.Data, 5L)
@@ -1356,12 +1676,17 @@ test_that("initialPriorPredict works with DLMNoTrendNormCovWithSeason", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
                           multScale = 1,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "DLMNoTrendNormCovWithSeason")
     data.new <- data.frame(time = 2011:2015,
                            income = rnorm(5))
@@ -1369,11 +1694,16 @@ test_that("initialPriorPredict works with DLMNoTrendNormCovWithSeason", {
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 2011:2015)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior,
                                      data = data.new,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L,
+                                     strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMNoTrendNormCovWithSeason")
     expect_identical(prior.new@J@.Data, 5L)
     expect_identical(prior.new@K@.Data, 5L)
@@ -1402,12 +1732,17 @@ test_that("initialPriorPredict works with DLMWithTrendNormCovWithSeason", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
                           multScale = 1,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "DLMWithTrendNormCovWithSeason")
     data.new <- data.frame(time = 2011:2015,
                            income = rnorm(5))
@@ -1415,11 +1750,16 @@ test_that("initialPriorPredict works with DLMWithTrendNormCovWithSeason", {
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 2011:2015)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior,
                                      data = data.new,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L,
+                                     strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMWithTrendNormCovWithSeason")
     expect_identical(prior.new@J@.Data, 5L)
     expect_identical(prior.new@K@.Data, 5L)
@@ -1447,22 +1787,32 @@ test_that("initialPriorPredict works with DLMNoTrendRobustZeroNoSeason", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
                           multScale = 1,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "DLMNoTrendRobustZeroNoSeason")
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 2011:2015)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior,
                                      data = NULL,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L,
+                                     strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMNoTrendRobustZeroNoSeason")
     expect_identical(prior.new@J@.Data, 5L)
     expect_identical(prior.new@K@.Data, 5L)
@@ -1484,22 +1834,32 @@ test_that("initialPriorPredict works with DLMWithTrendRobustZeroNoSeason", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
                           multScale = 1,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "DLMWithTrendRobustZeroNoSeason")
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 2011:2015)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior,
                                      data = NULL,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L,
+                                     strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMWithTrendRobustZeroNoSeason")
     expect_identical(prior.new@J@.Data, 5L)
     expect_identical(prior.new@K@.Data, 5L)
@@ -1523,13 +1883,22 @@ test_that("initialPriorPredict works with DLMNoTrendRobustZeroWithSeason", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
                           multScale = 1,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "DLMNoTrendRobustZeroWithSeason")
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 2011:2015)),
+                             dimscales = c(time = "Points"))
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -1538,7 +1907,8 @@ test_that("initialPriorPredict works with DLMNoTrendRobustZeroWithSeason", {
                                      data = NULL,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L,
+                                     strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMNoTrendRobustZeroWithSeason")
     expect_identical(prior.new@J@.Data, 5L)
     expect_identical(prior.new@K@.Data, 5L)
@@ -1563,13 +1933,22 @@ test_that("initialPriorPredict works with DLMWithTrendRobustZeroWithSeason", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
                           multScale = 1,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "DLMWithTrendRobustZeroWithSeason")
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 2011:2015)),
+                             dimscales = c(time = "Points"))
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -1578,7 +1957,8 @@ test_that("initialPriorPredict works with DLMWithTrendRobustZeroWithSeason", {
                                      data = NULL,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L,
+                                     strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMWithTrendRobustZeroWithSeason")
     expect_identical(prior.new@J@.Data, 5L)
     expect_identical(prior.new@K@.Data, 5L)
@@ -1609,15 +1989,24 @@ test_that("initialPriorPredict works with DLMNoTrendRobustCovNoSeason", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
                           multScale = 1,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "DLMNoTrendRobustCovNoSeason")
     data.new <- data.frame(time = 2011:2015,
                            income = rnorm(5))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 2011:2015)),
+                             dimscales = c(time = "Points"))
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -1626,7 +2015,7 @@ test_that("initialPriorPredict works with DLMNoTrendRobustCovNoSeason", {
                                      data = data.new,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMNoTrendRobustCovNoSeason")
     expect_identical(prior.new@J@.Data, 5L)
     expect_identical(prior.new@K@.Data, 5L)
@@ -1649,6 +2038,10 @@ test_that("initialPriorPredict works with DLMWithTrendRobustCovNoSeason", {
                 error = Error(robust = TRUE))
     expect_is(spec, "SpecDLMWithTrendRobustCovNoSeason")
     beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     metadata <- new("MetaData",
                     nms = "time",
                     dimtypes = "time",
@@ -1658,10 +2051,15 @@ test_that("initialPriorPredict works with DLMWithTrendRobustCovNoSeason", {
                           metadata = metadata,
                           sY = NULL,
                           multScale = 1,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "DLMWithTrendRobustCovNoSeason")
     data.new <- data.frame(time = 2011:2015,
                            income = rnorm(5))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 2011:2015)),
+                             dimscales = c(time = "Points"))
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -1670,7 +2068,7 @@ test_that("initialPriorPredict works with DLMWithTrendRobustCovNoSeason", {
                                      data = data.new,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMWithTrendRobustCovNoSeason")
     expect_identical(prior.new@J@.Data, 5L)
     expect_identical(prior.new@K@.Data, 5L)
@@ -1695,6 +2093,10 @@ test_that("initialPriorPredict works with DLMNoTrendRobustCovWithSeason", {
                 error = Error(robust = TRUE))
     expect_is(spec, "SpecDLMNoTrendRobustCovWithSeason")
     beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     metadata <- new("MetaData",
                     nms = "time",
                     dimtypes = "time",
@@ -1704,10 +2106,15 @@ test_that("initialPriorPredict works with DLMNoTrendRobustCovWithSeason", {
                           metadata = metadata,
                           sY = NULL,
                           multScale = 1,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "DLMNoTrendRobustCovWithSeason")
     data.new <- data.frame(time = 2011:2015,
-                           income = rnorm(5))
+                           income = rnorm(5)) 
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 2011:2015)),
+                             dimscales = c(time = "Points"))
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -1716,7 +2123,7 @@ test_that("initialPriorPredict works with DLMNoTrendRobustCovWithSeason", {
                                      data = data.new,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMNoTrendRobustCovWithSeason")
     expect_identical(prior.new@J@.Data, 5L)
     expect_identical(prior.new@K@.Data, 5L)
@@ -1746,15 +2153,24 @@ test_that("initialPriorPredict works with DLMWithTrendRobustCovWithSeason", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
                           multScale = 1,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "DLMWithTrendRobustCovWithSeason")
     data.new <- data.frame(time = 2011:2015,
                            income = rnorm(5))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 2011:2015)),
+                             dimscales = c(time = "Points"))
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -1763,7 +2179,7 @@ test_that("initialPriorPredict works with DLMWithTrendRobustCovWithSeason", {
                                      data = data.new,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMWithTrendRobustCovWithSeason")
     expect_identical(prior.new@J@.Data, 5L)
     expect_identical(prior.new@K@.Data, 5L)
@@ -1791,25 +2207,38 @@ test_that("initialPriorPredict works with MixNormZeroPredict", {
                     DimScales = list(new("Points", dimvalues = 2001:2010),
                                      new("Categories", dimvalues = c("a", "b")),
                                      new("Intervals", dimvalues = as.numeric(0:10))))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = dim(metadata),
+                                   dimnames = dimnames(metadata)),
+                             dimscales = c(time = "Points", age = "Intervals"))
     spec <- Mix()
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
                           multScale = 1,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = c("time", "reg", "age"),
                         dimtypes = c("time", "state", "age"),
                         DimScales = list(new("Points", dimvalues = 2011:2030),
                                          new("Categories", dimvalues = c("a", "b")),
                                          new("Intervals", dimvalues = as.numeric(0:10))))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = dim(metadata.new),
+                                   dimnames = dimnames(metadata.new)),
+                             dimscales = c(time = "Points", age = "Intervals"))
     prior.pred <- initialPriorPredict(prior,
                                       metadata = metadata.new,
                                       name = "time:reg:age",
-                                      along = 1L)
+                                      along = 1L,
+                                      strucZeroArray = strucZeroArray)
     expect_is(prior.pred, "MixNormZeroPredict")
 })
+
+
+## Known
 
 test_that("initialPriorPredict works with KnownCertain", {
     initialPrior <- demest:::initialPrior
@@ -1822,20 +2251,30 @@ test_that("initialPriorPredict works with KnownCertain", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Intervals", dimvalues = 0:5)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 0:4)),
+                             dimscales = c(time = "Intervals"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Intervals", dimvalues = 5:10)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 5:9)),
+                             dimscales = c(time = "Intervals"))
     prior.pred <- initialPriorPredict(prior,
                                       metadata = metadata.new,
                                       name = "time",
                                       along = 1L,
-                                      data = NULL)
+                                      data = NULL,
+                                      strucZeroArray = strucZeroArray)
     expect_is(prior.pred, "KnownCertain")
     metadata.wrong <- new("MetaData",
                           nms = "time",
@@ -1860,20 +2299,30 @@ test_that("initialPriorPredict works with KnownUncertain", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Intervals", dimvalues = 0:5)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 0:4)),
+                             dimscales = c(time = "Intervals"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Intervals", dimvalues = 5:10)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 5:9)),
+                             dimscales = c(time = "Intervals"))
     prior.pred <- initialPriorPredict(prior,
                                       metadata = metadata.new,
                                       name = "time",
                                       along = 1L,
-                                      data = NULL)
+                                      data = NULL,
+                                      strucZeroArray = strucZeroArray)
     expect_is(prior.pred, "KnownUncertain")
     metadata.wrong <- new("MetaData",
                           nms = "time",
@@ -1888,22 +2337,5 @@ test_that("initialPriorPredict works with KnownUncertain", {
 })
 
 
-## Zero
 
-test_that("generator function and initialPrior work with Zero", {
-    initialPrior <- demest:::initialPrior
-    spec <- Zero()
-    expect_is(spec, "SpecZero")
-    beta <- rnorm(4)
-    metadata <- new("MetaData",
-                    nms = "age",
-                    dimtypes = "age",
-                    DimScales = list(new("Intervals", dimvalues = 0:4)))
-    prior <- initialPrior(spec,
-                          beta = beta,
-                          metadata = metadata,
-                          sY = 50,
-                          isSaturated = FALSE)
-    expect_is(prior, "Zero")
-})
 
