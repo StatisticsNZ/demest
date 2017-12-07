@@ -42,7 +42,8 @@ setClass("Normal",
 setClass("Poisson",
          contains = c("VIRTUAL",
                       "BoxCoxParamMixin",
-                      "ScaleThetaMultiplierMixin"),
+                      "ScaleThetaMultiplierMixin",
+                      "StrucZeroArrayMixin"),
          validity = function(object) {
              theta <- object@theta
              ## 'theta' is non-negative

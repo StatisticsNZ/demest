@@ -384,6 +384,38 @@ test_that("checkAndTidyStructuralZeros works", {
                  "'structuralZeros' has class \"character\"")
 })
 
+test_that("checkAndTidyYForStrucZero works", {
+    checkAndTidyYForStrucZero <- demest:::checkAndTidyYForStrucZero
+    y <- Counts(matrix(c(0L, 1L, 2L, 0L),
+                       nr = 2,
+                       dimnames = list(reg_orig = c("a", "b"), reg_dest = c("a", "b"))))
+    strucZeroArray <- Counts(matrix(c(0L, 1L, 1L, 0L),
+                                    nr = 2,
+                                    dimnames = list(reg_orig = c("a", "b"), reg_dest = c("a", "b"))))
+    ans.obtained <- checkAndTidyYForStrucZero(y = y, strucZeroArray = strucZeroArray)
+    ans.expected <- y
+    expect_identical(ans.obtained, ans.expected)
+    y <- Counts(matrix(c(NA, 1L, 2L, NA),
+                       nr = 2,
+                       dimnames = list(reg_orig = c("a", "b"), reg_dest = c("a", "b"))))
+    strucZeroArray <- Counts(matrix(c(0L, 1L, 1L, 0L),
+                                    nr = 2,
+                                    dimnames = list(reg_orig = c("a", "b"), reg_dest = c("a", "b"))))
+    ans.obtained <- checkAndTidyYForStrucZero(y = y, strucZeroArray = strucZeroArray)
+    ans.expected <- y
+    ans.expected[c(1, 4)] <- 0L
+    expect_identical(ans.obtained, ans.expected)
+    y.wrong <- Counts(matrix(c(NA, 1L, 2L, 1L),
+                       nr = 2,
+                       dimnames = list(reg_orig = c("a", "b"), reg_dest = c("a", "b"))))
+    strucZeroArray <- Counts(matrix(c(0L, 1L, 1L, 0L),
+                                    nr = 2,
+                                    dimnames = list(reg_orig = c("a", "b"), reg_dest = c("a", "b"))))
+    expect_error(checkAndTidyYForStrucZero(y = y.wrong, strucZeroArray = strucZeroArray),
+                 "cell '\\[b, b\\]' of 'y' is a structural zero but has value 1")
+})
+
+
 test_that("checkLowerOrUpper works", {
     checkLowerOrUpper <- demest:::checkLowerOrUpper
     expect_identical(checkLowerOrUpper(value = 0.1,
@@ -488,6 +520,7 @@ test_that("initialDLMAll works", {
                        metadata = metadata,
                        sY = NULL,
                        isSaturated = FALSE,
+                       margin = 2L,
                        strucZeroArray = strucZeroArray)
     expect_identical(l$AAlpha, new("Scale", 1.0))
     expect_identical(l$ATau, new("Scale", 1.0))
@@ -528,6 +561,7 @@ test_that("initialDLMAll works", {
                        metadata = metadata,
                        sY = 100,
                        isSaturated = TRUE,
+                       margin = 2L,
                        strucZeroArray = strucZeroArray)
     expect_identical(l$ATau, new("Scale", 100))
     expect_identical(l$AAlpha, new("Scale", 100))
@@ -552,6 +586,7 @@ test_that("initialDLMAll works", {
                        metadata = metadata,
                        sY = NULL,
                        isSaturated = TRUE,
+                       margin = 2L,
                        strucZeroArray = strucZeroArray)
     expect_identical(l$ATau, new("Scale", 0.5))
     expect_identical(l$AAlpha, new("Scale", 0.5))
@@ -574,6 +609,7 @@ test_that("initialDLMAll works", {
                        metadata = metadata,
                        sY = NULL,
                        isSaturated = FALSE,
+                       margin = 2L,
                        strucZeroArray = strucZeroArray)
     expect_identical(l$omegaAlpha@.Data, 0)
 })
@@ -598,6 +634,7 @@ test_that("initialDLMAllPredict works", {
                           metadata = metadata,
                           sY = NULL,
                           isSaturated = TRUE,
+                          margin = 1L,
                           strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time",
@@ -611,6 +648,7 @@ test_that("initialDLMAllPredict works", {
                               metadata = metadata.new,
                               name = "time",
                               along = "time",
+                              margin = 1L,
                               strucZeroArray = strucZeroArray)
     expect_identical(length(l$alphaDLM), 6L)
     expect_identical(l$iteratorState@indices, 1:6)
@@ -638,6 +676,7 @@ test_that("initialDLMAllPredict works", {
                           metadata = metadata,
                           sY = NULL,
                           isSaturated = TRUE,
+                          margin = 1:2,
                           strucZeroArray = strucZeroArray)
     expect_is(prior, "DLMWithTrendNormZeroNoSeason")
     metadata.new <- new("MetaData",
@@ -654,6 +693,7 @@ test_that("initialDLMAllPredict works", {
     l <- initialDLMAllPredict(prior = prior,
                               metadata = metadata.new,
                               along = "time",
+                              margin = 1:2,
                               strucZeroArray = strucZeroArray)
     expect_identical(length(l$alphaDLM), 30L)
     expect_identical(l$iteratorState@indices, seq.int(from = 1, by = 5, length = 6))
@@ -710,10 +750,16 @@ test_that("initialDLMNoTrendPredict works", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray,
                           isSaturated = TRUE)
     metadata.new <- new("MetaData",
                         nms = "time",
@@ -735,10 +781,17 @@ test_that("initialDLMNoTrendPredict works", {
                     dimtypes = c("state", "time"),
                     DimScales = list(new("Categories", dimvalues = letters[1:5]),
                         new("Points", dimvalues = 1:10)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(5, 10),
+                                   dimnames = list(region = letters[1:5],
+                                                   time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
+                          margin = 1:2,
+                          strucZeroArray = strucZeroArray,
                           isSaturated = FALSE)
     expect_is(prior, "DLMNoTrendNormZeroNoSeason")
     metadata.new <- new("MetaData",
@@ -767,10 +820,16 @@ test_that("initialDLMWithTrend works", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     lAll <- initialDLMAll(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray,
                           isSaturated = TRUE)
     l <- initialDLMWithTrend(spec,
                              beta = beta,
@@ -842,6 +901,8 @@ test_that("initialDLMWithTrend works", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
+                          strucZeroArray = strucZeroArray,
+                          margin = 1L,
                           isSaturated = TRUE)
     l <- initialDLMWithTrend(spec,
                              beta = beta,
@@ -863,10 +924,16 @@ test_that("initialDLMWithTrendPredict works", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
+                          strucZeroArray = strucZeroArray,
+                          margin = 1L,
                           isSaturated = TRUE)
     metadata.new <- new("MetaData",
                         nms = "time",
@@ -892,10 +959,17 @@ test_that("initialDLMWithTrendPredict works", {
                     dimtypes = c("state", "time"),
                     DimScales = list(new("Categories", dimvalues = letters[1:5]),
                         new("Points", dimvalues = 1:10)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(5, 10),
+                                   dimnames = list(region = letters[1:5],
+                                                   time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
+                          strucZeroArray = strucZeroArray,
+                          margin = 1:2,
                           isSaturated = TRUE)
     expect_is(prior, "DLMWithTrendNormZeroNoSeason")
     metadata.new <- new("MetaData",
@@ -965,6 +1039,10 @@ test_that("initialDLMSeasonPredict works", {
     ## main effect
     spec <- DLM(season = Season(n = 4))
     beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     metadata <- new("MetaData",
                     nms = "time",
                     dimtypes = "time",
@@ -973,6 +1051,8 @@ test_that("initialDLMSeasonPredict works", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
+                          strucZeroArray = strucZeroArray,
+                          margin = 1L,
                           isSaturated = TRUE)
     metadata.new <- new("MetaData",
                         nms = "time",
@@ -995,10 +1075,17 @@ test_that("initialDLMSeasonPredict works", {
                     dimtypes = c("state", "time"),
                     DimScales = list(new("Categories", dimvalues = letters[1:5]),
                                      new("Points", dimvalues = 1:10)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(5, 10),
+                                   dimnames = list(region = letters[1:5],
+                                                   time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
+                          margin = 1:2,
+                          strucZeroArray = strucZeroArray,
                           isSaturated = TRUE)
     expect_is(prior, "DLMWithTrendNormZeroWithSeason")
     metadata.new <- new("MetaData",
@@ -1042,6 +1129,7 @@ test_that("initialMixAll works", {
                        metadata = metadata,
                        sY = NULL,
                        isSaturated = TRUE,
+                       margin = 1:3,
                        strucZeroArray = strucZeroArray)
     stopifnot(identical(l$AComponentWeightMix, new("Scale", 0.5)))
     stopifnot(identical(l$ALevelComponentWeightMix, new("Scale", 0.25)))
@@ -1135,6 +1223,7 @@ test_that("initialMixAllPredict works", {
                           metadata = metadata,
                           sY = NULL,
                           isSaturated = TRUE,
+                          margin = 1:3,
                           strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = c("age", "sex", "time"),
@@ -1150,6 +1239,7 @@ test_that("initialMixAllPredict works", {
                               metadata = metadata.new,
                               along = 3L,
                               name = "age:sex:time",
+                              margin = 1:3,
                               strucZeroArray = strucZeroArray)
     stopifnot(identical(l$aMix, new("ParameterVector", rep(0, times = 19))))
     stopifnot(identical(length(l$alphaMix@.Data), l$J@.Data))
@@ -1209,6 +1299,7 @@ test_that("initialRobust works", {
                           metadata = metadata,
                           sY = NULL,
                           isSaturated = FALSE,
+                          margin = 1L,
                           strucZeroArray = strucZeroArray)
     set.seed(1)
     l <- initialRobust(spec,
@@ -1239,6 +1330,7 @@ test_that("initialRobustPredict works", {
                           metadata = metadata,
                           sY = NULL,
                           isSaturated = FALSE,
+                          margin = 1L,
                           strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time", 
@@ -1660,6 +1752,7 @@ test_that("initialCovPredict works", {
                           metadata = metadata,
                           sY = NULL,
                           isSaturated = TRUE,
+                          margin = 1:2,
                           strucZeroArray = strucZeroArray)
     data.new <- data.frame(time = seq(2055, 2080, 5),
                            sex = rep(c("f", "m"), each = 6),
@@ -1718,33 +1811,41 @@ test_that("makeAllStrucZero works", {
                     nms = "sex",
                     dimtypes = "sex",
                     DimScales = list(new("Sexes", dimvalues = c("f", "m"))))
+    margin <- 1L
     ans.obtained <- makeAllStrucZero(strucZeroArray = strucZeroArray,
+                                     margin = margin,
                                      metadata = metadata)
     ans.expected <- c(FALSE, TRUE)
     expect_identical(ans.obtained, ans.expected)
-    strucZeroArray <- Counts(array(1L - diag(3),
-                                   dim = c(3, 3),
-                                   dimnames = list(eth_orig = c("a", "b", "c"),
+    strucZeroArray <- Counts(array(rep(1L - diag(3), each = 2),
+                                   dim = c(2:3, 3),
+                                   dimnames = list(sex = c("f", "m"),
+                                                   eth_orig = c("a", "b", "c"),
                                                    eth_dest = c("a", "b", "c"))))
     metadata <- new("MetaData",
                     nms = c("eth_orig", "eth_dest"),
                     dimtypes = c("origin", "destination"),
                     DimScales = list(new("Categories", dimvalues = c("a", "b", "c")),
                                      new("Categories", dimvalues = c("a", "b", "c"))))
+    margin <- 2:3
     ans.obtained <- makeAllStrucZero(strucZeroArray = strucZeroArray,
+                                     margin = margin,
                                      metadata = metadata)
     ans.expected <- as.logical(diag(3))
     expect_identical(ans.obtained, ans.expected)
-    strucZeroArray <- Counts(array(1L - diag(3),
-                                   dim = c(3, 3),
-                                   dimnames = list(eth_orig = c("a", "b", "c"),
+    strucZeroArray <- Counts(array(rep(1L - diag(3), each = 2),
+                                   dim = c(2:3, 3),
+                                   dimnames = list(sex = c("f", "m"),
+                                                   eth_orig = c("a", "b", "c"),
                                                    eth_dest = c("a", "b", "c"))))
     metadata <- new("MetaData",
                     nms = c("eth_orig", "eth_dest"),
                     dimtypes = c("origin", "destination"),
                     DimScales = list(new("Categories", dimvalues = c("a", "b", "c")),
                                      new("Categories", dimvalues = c("a", "b", "wrong"))))
+    margin <- 1:4
     expect_error(makeAllStrucZero(strucZeroArray = strucZeroArray,
+                                  margin = margin,
                                   metadata = metadata),
                  "problem assigning structural zeros to prior")
 })
@@ -1761,6 +1862,7 @@ test_that("makeAllStrucZeroError works", {
                     dimtypes = "sex",
                     DimScales = list(new("Sexes", dimvalues = c("f", "m"))))
     ans.obtained <- makeAllStrucZeroError(strucZeroArray = strucZeroArray,
+                                          margin = 1L,
                                           metadata = metadata,
                                           classPrior = "MixNormZero")
     ans.expected <- NULL
@@ -1775,7 +1877,8 @@ test_that("makeAllStrucZeroError works", {
                     dimtypes = "sex",
                     DimScales = list(new("Sexes", dimvalues = c("f", "m"))))
     expect_error(makeAllStrucZeroError(strucZeroArray = strucZeroArray,
-                                          metadata = metadata,
+                                       margin = 1L,
+                                       metadata = metadata,
                                        classPrior = "MixNormZero"),
                  "'sex' has elements where all contributing cells are structural zeros; priors with class \"MixNormZero\" cannot be used in such cases")
 })
@@ -1796,6 +1899,7 @@ test_that("makeAlongAllStrucZero works", {
     iAlong <- 2L
     ans.obtained <- makeAlongAllStrucZero(strucZeroArray = strucZeroArray,
                                           iAlong = iAlong,
+                                          margin = 1:2,
                                           metadata = metadata)
     ans.expected <- c(FALSE, FALSE)
     expect_identical(ans.obtained, ans.expected)
@@ -1810,29 +1914,13 @@ test_that("makeAlongAllStrucZero works", {
                     DimScales = list(new("Intervals", dimvalues = c(2000, 2005, 2010, 2015)),
                                      new("Categories", dimvalues = c("a", "b", "c"))))
     iAlong <- 1L
+    margin <- 2:3
     ans.obtained <- makeAlongAllStrucZero(strucZeroArray = strucZeroArray,
                                           iAlong = iAlong,
+                                          margin = margin,
                                           metadata = metadata)
     ans.expected <- c(FALSE, FALSE, TRUE)
     expect_identical(ans.obtained, ans.expected)
-    metadata.wrong <- new("MetaData",
-                    nms = c("time", "eth"),
-                    dimtypes = c("time", "state"),
-                    DimScales = list(new("Intervals", dimvalues = c(2000, 2005, 2010, 2016)),
-                                     new("Categories", dimvalues = c("a", "b", "c"))))
-    expect_error(makeAlongAllStrucZero(strucZeroArray = strucZeroArray,
-                                       iAlong = iAlong,
-                                       metadata = metadata.wrong),
-                 "problem assigning structural zeros to prior 'time:eth'")
-    metadata.wrong <- new("MetaData",
-                    nms = c("time", "eth"),
-                    dimtypes = c("time", "state"),
-                    DimScales = list(new("Intervals", dimvalues = c(2000, 2005, 2010, 2015)),
-                                     new("Categories", dimvalues = c("a", "b", "wrong"))))
-    expect_error(makeAlongAllStrucZero(strucZeroArray = strucZeroArray,
-                                       iAlong = iAlong,
-                                       metadata = metadata.wrong),
-                 "problem assigning structural zeros to prior 'time:eth'")
     strucZeroArray.wrong <- Counts(array(rep(c(1L, 1L, 0L, 0L, 1L, 1L), times = 3),
                                    dim = c(2:3, 3),
                                    dimnames = list(sex = c("f", "m"),
@@ -1840,6 +1928,7 @@ test_that("makeAlongAllStrucZero works", {
                                                    eth = c("a", "b", "c"))))
     expect_error(makeAlongAllStrucZero(strucZeroArray = strucZeroArray.wrong,
                                        iAlong = iAlong,
+                                       margin = 2:3,
                                        metadata = metadata),
                  "all cells contributing to element \"2006-2010\" of 'along' dimension \\[\"time\"\\] for prior 'time:eth' are structural zeros")
 })
@@ -3373,13 +3462,30 @@ test_that("initialDataModels works", {
 })
 
 test_that("jitterBetas works", {
-    jitterBetas <- demest:::jitterBetas
+    ## jitterBetas <- demest:::jitterBetas
+    initialPrior <- demest:::initialPrior
+    strucZeroArray <- CountsOne(0:9, labels = letters[1:10], name = "reg")
     for (i in seq_len(n.test)) {
-        betas <- lapply(c(1, 5, 10, 20),
-                        function(x) rnorm(n = x))
-        betas.jittered <- jitterBetas(betas)
-        cor <- cor(unlist(betas), unlist(betas.jittered))
-        expect_true((cor < 0.99) && (cor > 0.9))
+        betas <- list(rnorm(1), rnorm(10))
+        prior1 <- initialPrior(ExchFixed(),
+                               beta = betas[[1]],
+                               metadata = NULL,
+                               sY = NULL,
+                               isSaturated = FALSE,
+                               margin = 0L,
+                               strucZeroArray = strucZeroArray)
+        prior2 <- initialPrior(Exch(),
+                               beta = betas[[2]],
+                               metadata = strucZeroArray@metadata,
+                               sY = NULL,
+                               isSaturated = TRUE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
+        priors <- list(prior1, prior2)
+        betas.jittered <- jitterBetas(betas = betas, priorsBetas = priors)
+        expect_true(betas.jittered[[1]] != 0)
+        expect_true(betas.jittered[[2]][1] == 0)
+        expect_true(all(betas.jittered[[2]][-1] != 0))
     }
 })
 
@@ -3966,6 +4072,9 @@ test_that("makePriors works when given valid inputs", {
     y <- Counts(array(rpois(n = 20, lambda = 20),
                       dim = c(5, 4),
                       dimnames = list(age = 0:4, region = letters[1:4])))
+    strucZeroArray <- Counts(array(rep(c(0L, 1L), times = c(5, 15)),
+                                   dim = c(5, 4),
+                                   dimnames = list(age = 0:4, region = letters[1:4])))
     sY <- sd(y)
     set.seed(1)
     ans.obtained <- makePriors(betas = betas,
@@ -3973,23 +4082,30 @@ test_that("makePriors works when given valid inputs", {
                                namesSpecs = namesSpecs,
                                margins = margins,
                                y = y,
-                               sY = sY)
+                               sY = sY,
+                               strucZeroArray = strucZeroArray)
     set.seed(1)
     ans.expected <- list(initialPrior(ExchFixed(),
                                       beta = betas[[1]],
                                       metadata = NULL,
                                       sY = sY,
-                                      isSaturated = FALSE),
+                                      isSaturated = FALSE,
+                                      margin = 0L,
+                                      strucZeroArray = strucZeroArray),
                          initialPrior(DLM(trend = NULL),
                                       beta = betas[[2]],
                                       metadata = y@metadata[1],
                                       sY = sY,
-                                      isSaturated = FALSE),
+                                      isSaturated = FALSE,
+                                      margin = 1L,
+                                      strucZeroArray = strucZeroArray),
                          initialPrior(Exch(),
                                       beta = betas[[3]],
                                       metadata = y@metadata[2],
                                       sY = sY,
-                                      isSaturated = FALSE))
+                                      isSaturated = FALSE,
+                                      margin = 2L,
+                                      strucZeroArray = strucZeroArray))
     expect_identical(ans.obtained, ans.expected)
     ## main effects, order of formula different from y
     betas <- list("(Intercept)" = rnorm(1),
@@ -4001,29 +4117,39 @@ test_that("makePriors works when given valid inputs", {
     y <- Counts(array(rpois(n = 20, lambda = 20),
                       dim = c(5, 4),
                       dimnames = list(age = 0:4, region = letters[1:4])))
+    strucZeroArray <- Counts(array(rep(c(0L, 1L), times = c(5, 15)),
+                                   dim = c(5, 4),
+                                   dimnames = list(age = 0:4, region = letters[1:4])))
     set.seed(1)
     ans.obtained <- makePriors(betas = betas,
                                specs = specs,
                                namesSpecs = namesSpecs,
                                margins = margins,
                                y = y,
-                               sY = NULL)
+                               sY = NULL,
+                               strucZeroArray = strucZeroArray)
     set.seed(1)
     ans.expected <- list(initialPrior(ExchFixed(),
                                       beta = betas[[1]],
                                       metadata = NULL,
                                       sY = NULL,
-                                      isSaturated = FALSE),
+                                      isSaturated = FALSE,
+                                      margin = 0L,
+                                      strucZeroArray = strucZeroArray),
                          initialPrior(Exch(),
                                       beta = betas[[2]],
                                       metadata = y@metadata[2],
                                       sY = NULL,
-                                      isSaturated = FALSE),
+                                      isSaturated = FALSE,
+                                      margin = 2L,
+                                      strucZeroArray = strucZeroArray),
                          initialPrior(DLM(),
                                       beta = betas[[3]],
                                       metadata = y@metadata[1],
                                       sY = NULL,
-                                      isSaturated = FALSE))
+                                      isSaturated = FALSE,
+                                      margin = 1L,
+                                      strucZeroArray = strucZeroArray))
     expect_identical(ans.obtained, ans.expected)
     ## intercept only
     betas <- list("(Intercept)" = rnorm(1))
@@ -4032,6 +4158,9 @@ test_that("makePriors works when given valid inputs", {
     y <- Counts(array(rpois(n = 20, lambda = 20),
                       dim = c(5, 4),
                       dimnames = list(age = 0:4, region = letters[1:4])))
+    strucZeroArray <- Counts(array(rep(c(0L, 1L), times = c(5, 15)),
+                                   dim = c(5, 4),
+                                   dimnames = list(age = 0:4, region = letters[1:4])))
     sY <- sd(y)
     set.seed(1)
     ans.obtained <- makePriors(betas = betas,
@@ -4039,13 +4168,16 @@ test_that("makePriors works when given valid inputs", {
                                namesSpecs = namesSpecs,
                                margins = margins,
                                y = y,
-                               sY = sY)
+                               sY = sY,
+                               strucZeroArray = strucZeroArray)
     set.seed(1)
     ans.expected <- list(initialPrior(ExchFixed(),
                                       beta = betas[[1]],
                                       metadata = NULL,
                                       sY = sY,
-                                      isSaturated = FALSE))
+                                      isSaturated = FALSE,
+                                      margin = 0L,
+                                      strucZeroArray = strucZeroArray))
     expect_identical(ans.obtained, ans.expected)
     ## single dimension only
     betas <- list("(Intercept)" = rnorm(1),
@@ -4056,24 +4188,32 @@ test_that("makePriors works when given valid inputs", {
     y <- Counts(array(rpois(n = 20, lambda = 20),
                       dim = c(5, 4),
                       dimnames = list(age = 0:4, region = letters[1:4])))
+    strucZeroArray <- Counts(array(rep(c(0L, 1L), times = c(5, 15)),
+                                   dim = c(5, 4),
+                                   dimnames = list(age = 0:4, region = letters[1:4])))
     set.seed(1)
     ans.obtained <- makePriors(betas = betas,
                                specs = specs,
                                namesSpecs = namesSpecs,
                                margins = margins,
                                y = y,
-                               sY = NULL)
+                               sY = NULL,
+                               strucZeroArray = strucZeroArray)
     set.seed(1)
     ans.expected <- list(initialPrior(ExchFixed(),
                                       beta = betas[[1]],
                                       metadata = NULL,
                                       sY = NULL,
-                                      isSaturated = FALSE),
+                                      isSaturated = FALSE,
+                                      margin = 0L,
+                                      strucZeroArray = strucZeroArray),
                          initialPrior(Exch(),
                                       beta = betas[[2]],
                                       metadata = y@metadata[2],
                                       sY = NULL,
-                                      isSaturated = FALSE))
+                                      isSaturated = FALSE,
+                                      margin = 2L,
+                                      strucZeroArray = strucZeroArray))
     expect_identical(ans.obtained, ans.expected)
     ## orig-dest dimensions
     betas <- list("(Intercept)" = rnorm(1),
@@ -4090,13 +4230,18 @@ test_that("makePriors works when given valid inputs", {
                       dim = c(5, 4, 4),
                       dimnames = list(age = 0:4, region_orig = letters[1:4],
                           region_dest = letters[1:4])))
+    strucZeroArray <- Counts(array(rep(as.integer(1 - diag(4)), times = 5),
+                                   dim = c(5, 4, 4),
+                                   dimnames = list(age = 0:4, region_orig = letters[1:4],
+                                                   region_dest = letters[1:4])))
     set.seed(1)
     ans.obtained <- makePriors(betas = betas,
                                specs = specs,
                                namesSpecs = namesSpecs,
                                margins = margins,
                                y = y,
-                               sY = NULL)
+                               sY = NULL,
+                               strucZeroArray = strucZeroArray)
     set.seed(1)
     metadata.reg.main <- new("MetaData",
                              nms = "region",
@@ -4111,27 +4256,37 @@ test_that("makePriors works when given valid inputs", {
                                       beta = betas[[1]],
                                       metadata = NULL,
                                       sY = NULL,
-                                      isSaturated = FALSE),
+                                      isSaturated = FALSE,
+                                      margin = 0L,
+                                      strucZeroArray = strucZeroArray),
                          initialPrior(DLM(trend = NULL),
                                       beta = betas[[2]],
                                       metadata = y@metadata[1],
                                       sY = NULL,
-                                      isSaturated = FALSE),
+                                      isSaturated = FALSE,
+                                      margin = 1L,
+                                      strucZeroArray = strucZeroArray),
                          initialPrior(Exch(),
                                       beta = betas[[3]],
                                       metadata = metadata.reg.main,
                                       sY = NULL,
-                                      isSaturated = FALSE),
+                                      isSaturated = FALSE,
+                                      margin = 2L,
+                                      strucZeroArray = strucZeroArray),
                          initialPrior(Exch(),
                                       beta = betas[[4]],
                                       metadata = metadata.reg.main,
                                       sY = NULL,
-                                      isSaturated = FALSE),
+                                      isSaturated = FALSE,
+                                      margin = 3L,
+                                      strucZeroArray = strucZeroArray),
                          initialPrior(Exch(),
                                       beta = betas[[5]],
                                       metadata = metadata.reg.inter,
                                       sY = NULL,
-                                      isSaturated = FALSE))
+                                      isSaturated = FALSE,
+                                      margin = 2:3,
+                                      strucZeroArray = strucZeroArray))
     expect_identical(ans.obtained, ans.expected)
     ## saturated model
     betas <- list("(Intercept)" = rnorm(1),
@@ -4151,28 +4306,37 @@ test_that("makePriors works when given valid inputs", {
                                namesSpecs = namesSpecs,
                                margins = margins,
                                y = y,
-                               sY = sY)
+                               sY = sY,
+                               strucZeroArray = strucZeroArray)
     set.seed(1)
     ans.expected <- list(initialPrior(ExchFixed(),
                                       beta = betas[[1]],
                                       metadata = NULL,
                                       sY = sY,
-                                      isSaturated = FALSE),
+                                      isSaturated = FALSE,
+                                      margin = 0L,
+                                      strucZeroArray = strucZeroArray),
                          initialPrior(DLM(trend = NULL),
                                       beta = betas[[2]],
                                       metadata = y@metadata[1],
                                       sY = sY,
-                                      isSaturated = FALSE),
+                                      isSaturated = FALSE,
+                                      margin = 1L,
+                                      strucZeroArray = strucZeroArray),
                          initialPrior(Exch(),
                                       beta = betas[[3]],
                                       metadata = y@metadata[2],
                                       sY = sY,
-                                      isSaturated = FALSE),
+                                      isSaturated = FALSE,
+                                      margin = 2L,
+                                      strucZeroArray = strucZeroArray),
                          initialPrior(Exch(),
                                       beta = betas[[4]],
                                       metadata = y@metadata,
                                       sY = sY,
-                                      isSaturated = TRUE))
+                                      isSaturated = TRUE,
+                                      margin = 1:2,
+                                      strucZeroArray = strucZeroArray))
     expect_identical(ans.obtained, ans.expected)
 })
 

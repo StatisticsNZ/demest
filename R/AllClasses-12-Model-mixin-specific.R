@@ -684,6 +684,33 @@ setClass("StructuralZerosMixin",
              }
          })
 
+
+setClass("StrucZeroArrayMixin",
+         slots = c(strucZeroArray = "Counts"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             strucZeroArray <- object@strucZeroArray
+             ## 'strucZeroArray' is integer
+             if (!is.integer(strucZeroArray))
+                 return(gettextf("'%s' does not have type \"%s\"",
+                                 "strucZeroArray", "integer"))
+             ## 'strucZeroArray' has no missing values
+             if (any(is.na(strucZeroArray)))
+                 return(gettextf("'%s' has missing values",
+                                 "strucZeroArray"))
+             ## 'strucZeroArray' composed entirely of 1s and 0s
+             if (!all(strucZeroArray@.Data %in% 0:1))
+                 return(gettextf("'%s' has values other than 0 and 1",
+                                 "strucZeroArray"))
+             ## 'strucZeroArray' not all 0s
+             if (!all(strucZeroArray@.Data == 0L))
+                 return(gettextf("'%s' consists entirely of 0s",
+                                 "strucZeroArray"))
+             TRUE
+         })
+
+
+
 ## HAS_TESTS
 setClass("Theta",
          slots = c(theta = "numeric"),

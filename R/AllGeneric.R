@@ -284,11 +284,11 @@ setGeneric("initialModelPredict",
            standardGeneric("initialModelPredict"))
 
 setGeneric("initialPrior",
-           function(object, beta, metadata, sY, isSaturated, strucZeroArray, ...)
+           function(object, beta, metadata, sY, isSaturated, margin, strucZeroArray, ...)
                standardGeneric("initialPrior"))
 
 setGeneric("initialPriorPredict",
-           function(prior, data, metadata, name, along, strucZeroArray)
+           function(prior, data, metadata, name, along, margin, strucZeroArray)
            standardGeneric("initialPriorPredict"))
 
 setGeneric("initialVarDLM",

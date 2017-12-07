@@ -302,6 +302,28 @@ checkLowerOrUpper <- function(value,
 }    
 
 ## HAS_TESTS
+checkAndTidyYForStrucZero <- function(y, strucZeroArray) {
+    if (!is.integer(y@.Data))
+        stop(gettextf("'%s' does not have type \"%s\"",
+                      "y", "integer"))
+    should.be.struc.zero <- strucZeroArray@.Data == 0L
+    is.na.or.0 <- is.na(y@.Data) | (y@.Data == 0L)
+    is.invalid <- should.be.struc.zero & !is.na.or.0
+    if (any(is.invalid)) {
+        i.first.invalid <- which(is.invalid)[1L]
+        all.labels <- expand.grid(dimnames(y))
+        label <- all.labels[i.first.invalid, ]
+        label[] <- lapply(label, as.character)
+        label <- paste(label, collapse = ", ")
+        stop(gettextf("cell '[%s]' of '%s' is a structural zero but has value %d",
+                      label, "y", y@.Data[[i.first.invalid]]))
+    }
+    y[should.be.struc.zero] <- 0L # fix up any NAs
+    y
+}
+
+
+## HAS_TESTS
 checkLowerAndUpper <- function(lower, upper,
                                distribution = c("Binomial", "Normal", "Poisson")) {
     distribution <- match.arg(distribution)
@@ -1023,7 +1045,7 @@ initialCovPredict <- function(prior, data, metadata, allStrucZero) {
 
 ## HAS_TESTS
 initialDLMAll <- function(object, beta, metadata, sY,
-                          isSaturated, strucZeroArray, ...) {
+                          isSaturated, margin, strucZeroArray, ...) {
     AAlpha <- object@AAlpha
     ATau <- object@ATau
     along <- object@along
@@ -1085,9 +1107,11 @@ initialDLMAll <- function(object, beta, metadata, sY,
                    minPhi = minPhi,
                    maxPhi = maxPhi)
     allStrucZero <- makeAllStrucZero(strucZeroArray = strucZeroArray,
+                                     margin = margin,
                                      metadata = metadata)
     alongAllStrucZero <- makeAlongAllStrucZero(strucZeroArray = strucZeroArray,
                                                metadata = metadata,
+                                               margin = margin,
                                                iAlong = iAlong)
     isSaturated <- methods::new("LogicalFlag", isSaturated)
     list(AAlpha = AAlpha,
@@ -1117,7 +1141,7 @@ initialDLMAll <- function(object, beta, metadata, sY,
 }
 
 ## HAS_TESTS
-initialDLMAllPredict <- function(prior, metadata, name, along, strucZeroArray) {
+initialDLMAllPredict <- function(prior, metadata, name, along, margin, strucZeroArray) {
     alpha.old <- prior@alphaDLM
     J.old <- prior@J
     K.old <- prior@K@.Data
@@ -1143,8 +1167,10 @@ initialDLMAllPredict <- function(prior, metadata, name, along, strucZeroArray) {
     alpha.new <- makeStateDLM(K = K.new,
                               L = L)
     allStrucZero <- makeAllStrucZero(strucZeroArray = strucZeroArray,
+                                     margin = margin,
                                      metadata = metadata)
     alongAllStrucZero <- makeAlongAllStrucZero(strucZeroArray = strucZeroArray,
+                                               margin = margin,
                                                metadata = metadata,
                                                iAlong = i.along.new)
     list(alphaDLM = alpha.new,
@@ -1407,7 +1433,7 @@ initialDLMSeasonPredict <- function(prior, metadata) {
 }
 
 ## HAS_TESTS
-initialMixAll <- function(object, beta, metadata, sY, isSaturated, strucZeroArray, ...) {
+initialMixAll <- function(object, beta, metadata, sY, isSaturated, margin, strucZeroArray, ...) {
     AComponentWeightMix <- object@AComponentWeightMix
     ALevelComponentWeightMix <- object@ALevelComponentWeightMix
     ATau <- object@ATau
@@ -1438,6 +1464,7 @@ initialMixAll <- function(object, beta, metadata, sY, isSaturated, strucZeroArra
     tauMax <- object@tauMax
     ## allStrucZero
     makeAllStrucZeroError(strucZeroArray = strucZeroArray,
+                          margin = margin,
                           metadata = metadata,
                           classPrior = "Mix")                          
     ## AComponentWeightMix, omegaComponentWeightMaxMix, omegaComponentWeight
@@ -1686,11 +1713,12 @@ initialMixAll <- function(object, beta, metadata, sY, isSaturated, strucZeroArra
 }
 
 ## HAS_TESTS
-initialMixAllPredict <- function(prior, metadata, name, along, strucZeroArray) {
+initialMixAllPredict <- function(prior, metadata, name, along, margin, strucZeroArray) {
     index.class.max <- prior@indexClassMaxMix@.Data
     ## allStrucZero
     makeAllStrucZeroError(strucZeroArray = strucZeroArray,
                           metadata = metadata,
+                          margin = margin,
                           classPrior = "Mix")                          
     ## dimBeta
     dimBeta <- dim(metadata)
@@ -2051,17 +2079,9 @@ makeStandardizedVariables <- function(formula, inputs, namePrior, contrastsArg, 
 }
 
 ## HAS_TESTS
-makeAllStrucZero <- function(strucZeroArray, metadata) {
-    .Data.prior <- array(0L,
-                         dim = dim(metadata),
-                         dimnames = dimnames(metadata))
-    array.prior <- new("Counts",
-                       .Data = .Data.prior,
-                       metadata = metadata)
-    array.zero <- tryCatch(makeCompatible(x = strucZeroArray,
-                                          y = array.prior,
-                                          subset = FALSE,
-                                          check = TRUE),
+makeAllStrucZero <- function(strucZeroArray, metadata, margin) {
+    array.zero <- tryCatch(collapseDimension(strucZeroArray,
+                                             margin = margin),
                            error = function(e) e)
     if (methods::is(array.zero, "error"))
         stop(gettextf("problem assigning structural zeros to prior '%s' : %s",
@@ -2070,9 +2090,10 @@ makeAllStrucZero <- function(strucZeroArray, metadata) {
 }
 
 ## HAS_TESTS
-makeAllStrucZeroError <- function(strucZeroArray, metadata, classPrior) {
+makeAllStrucZeroError <- function(strucZeroArray, metadata, margin, classPrior) {
     all.struc.zero <- makeAllStrucZero(strucZeroArray = strucZeroArray,
-                                       metadata = metadata)
+                                       metadata = metadata,
+                                       margin = margin)
     if (any(all.struc.zero)) {
         name.prior <- paste(names(metadata), collapse = ":")
         stop(gettextf("'%s' has elements where all contributing cells are structural zeros; priors with class \"%s\" cannot be used in such cases",
@@ -2082,7 +2103,7 @@ makeAllStrucZeroError <- function(strucZeroArray, metadata, classPrior) {
 }
 
 ## HAS_TESTS
-makeAlongAllStrucZero <- function(strucZeroArray, metadata, iAlong) {
+makeAlongAllStrucZero <- function(strucZeroArray, metadata, margin, iAlong) {
     if (length(metadata) == 1L)
         return(FALSE)
     name.prior <- paste(names(metadata), collapse = ":")
@@ -2100,15 +2121,11 @@ makeAlongAllStrucZero <- function(strucZeroArray, metadata, iAlong) {
     array.within <- new("Counts",
                         .Data = .Data.within,
                         metadata = metadata.within)
-    array.zero.along <- tryCatch(makeCompatible(x = strucZeroArray,
-                                                y = array.along,
-                                                subset = FALSE,
-                                                check = TRUE),
+    array.zero.along <- tryCatch(collapseDimension(strucZeroArray,
+                                                   margin = margin[iAlong]),
                                  error = function(e) e)
-    array.zero.within <- tryCatch(makeCompatible(x = strucZeroArray,
-                                                 y = array.within,
-                                                 subset = FALSE,
-                                                 check = TRUE),
+    array.zero.within <- tryCatch(collapseDimension(strucZeroArray,
+                                                    margin = margin[-iAlong]),
                                   error = function(e) e)
     if (methods::is(array.zero.along, "error"))
         stop(gettextf("problem assigning structural zeros to prior '%s' : %s",
@@ -3450,17 +3467,21 @@ initialDataModels <- function(dataModels, datasets, y, transforms) {
 }
 
 ## HAS_TESTS
-jitterBetas <- function(betas) {
+jitterBetas <- function(betas, priorsBetas) {
     kIntercept <- 0.1
     kTerms <- 0.25
     betas[[1L]] <- stats::rnorm(n = 1L,
-                         mean = betas[[1L]],
-                         sd = kIntercept * abs(betas[[1L]]))
+                                mean = betas[[1L]],
+                                sd = kIntercept * abs(betas[[1L]]))
     if (length(betas) > 1L) {
         for (i in seq_along(betas)[-1L]) {
-            betas[[i]] <- stats::rnorm(n = length(betas[[i]]),
-                                mean = betas[[i]],
+            val <- stats::rnorm(n = length(betas[[i]]),
+                                       mean = betas[[i]],
                                 sd = kTerms * stats::sd(betas[[i]]))
+            prior <- priors[[i]]
+            all.struc.zero <- prior@allStrucZero
+            val[all.struc.zero] <- 0
+            betas[[i]] <- val
         }
     }
     betas
@@ -3679,7 +3700,7 @@ makeNamesSpecsPriors <- function(dots) {
 
 ## HAS_TESTS
 ## priors follow order implied by formula - not order implied by metadatax
-makePriors <- function(betas, specs, namesSpecs, margins, y, sY) {
+makePriors <- function(betas, specs, namesSpecs, margins, y, sY, strucZeroArray) {
     n.beta <- length(betas)
     ans <- vector(mode = "list", length = n.beta)
     names.betas <- names(betas)
@@ -3710,7 +3731,9 @@ makePriors <- function(betas, specs, namesSpecs, margins, y, sY) {
                                  beta = beta,
                                  metadata = metadata,
                                  sY = sY,
-                                 isSaturated = is.saturated)
+                                 isSaturated = is.saturated,
+                                 margin = margin,
+                                 strucZeroArray = strucZeroArray)
     }
     ans
 }

@@ -1,44 +1,5 @@
 
 
-## HAS_TESTS
-## priors follow order implied by formula - not order implied by metadatax
-makePriors <- function(betas, specs, namesSpecs, margins, y, sY, strucZeroArray) {
-    n.beta <- length(betas)
-    ans <- vector(mode = "list", length = n.beta)
-    names.betas <- names(betas)
-    dim.y <- dim(y)
-    s <- seq_along(dim.y)
-    metadata.y <- y@metadata
-    for (i in seq_len(n.beta)) {
-        beta <- betas[[i]]
-        beta <- as.double(beta)
-        name <- names.betas[i]
-        if (any(is.na(beta)))
-            stop(gettextf("'%s' for \"%s\" has missing values",
-                          "beta", name))
-        margin <- margins[[i]]
-        if (identical(margin, 0L))
-            metadata <- NULL
-        else
-            metadata <- metadata.y[margin]
-        is.saturated <- identical(sort(margin), s)
-        i.spec <- match(name, namesSpecs, nomatch = 0L)
-        has.spec <- i.spec > 0L
-        if (has.spec)
-            spec <- specs[[i.spec]]
-        else
-            spec <- defaultPrior(beta = beta,
-                                 metadata = metadata)
-        ans[[i]] <- initialPrior(object = spec,
-                                 beta = beta,
-                                 metadata = metadata,
-                                 sY = sY,
-                                 isSaturated = is.saturated,
-                                 strucZeroArray = strucZeroArray)
-    }
-    ans
-}
-
 
 
 ## TRANSLATED
@@ -192,7 +153,7 @@ setMethod("initialModel",
               formula.mu <- object@formulaMu
               specs.priors <- object@specsPriors
               names.specs.priors <- object@namesSpecsPriors
-              structural.zeros <- object@structuralZeros ## NEW
+              structural.zeros <- object@structuralZeros
               box.cox.param <- object@boxCoxParam
               scale.theta <- object@scaleTheta
               lower <- object@lower
@@ -208,10 +169,10 @@ setMethod("initialModel",
               checkLengthDimInFormula(y = y, formula = formula.mu)
               metadataY <- y@metadata
               dim <- dim(y)
-              struc.zero.array <- makeStrucZeroArray(structuralZeros = structural.zeros, ## NEW
-                                                     y = y) ## NEW
-              y <- checkAndTidyYForStrucZero(y = y, ## NEW
-                                             strucZeroArray = struc.zero.array) ## NEW
+              struc.zero.array <- makeStrucZeroArray(structuralZeros = structural.zeros, 
+                                                     y = y) 
+              y <- checkAndTidyYForStrucZero(y = y, 
+                                             strucZeroArray = struc.zero.array) 
               has.exposure <- !is.null(exposure)
               if (has.exposure && !use.expose)
                   stop(gettextf("'%s' argument supplied, but model '%s' does not use exposure",
@@ -219,15 +180,15 @@ setMethod("initialModel",
               if (!has.exposure && use.expose)
                   stop(gettextf("model '%s' uses exposure, but no '%s' argument supplied",
                                 deparse(call[[2L]]), "exposure"))
-              is.obs <- is.na(y@.Data) & (struc.zero.array != 0L) ## NEW
-              if (any(is.obs)) ##
-                  mean.y.obs <- mean(y@.Data[is.obs]) ## NEW
+              is.obs <- is.na(y@.Data) & (struc.zero.array != 0L) 
+              if (any(is.obs))
+                  mean.y.obs <- mean(y@.Data[is.obs]) 
               else
                   mean.y.obs <- 0.5
-              shape <- ifelse(is.obs, 0.5 * mean.y.obs + 0.5 * y@.Data, mean.y.obs) ## NEW
+              shape <- ifelse(is.obs, 0.5 * mean.y.obs + 0.5 * y@.Data, mean.y.obs)
               if (has.exposure) {
                   mean.expose.obs <- mean(exposure[is.obs])
-                  rate <- ifelse(is.obs, 0.5 * mean.expose.obs + 0.5 * exposure, mean.expose.obs) ## NEW
+                  rate <- ifelse(is.obs, 0.5 * mean.expose.obs + 0.5 * exposure, mean.expose.obs)
               }
               else
                   rate <- 1
@@ -276,7 +237,7 @@ setMethod("initialModel",
                   betas <- convertToFormulaOrder(betas = betas, formulaMu = formula.mu)
               }
               theta <- as.numeric(theta)
-              theta[struc.zero.array == 0L] <- 0 ## NEW
+              theta[struc.zero.array == 0L] <- 0
               names.betas <- names(betas)
               margins <- makeMargins(betas = betas, y = y)
               priors.betas <- makePriors(betas = betas,
@@ -285,7 +246,7 @@ setMethod("initialModel",
                                          margins = margins,
                                          y = y,
                                          sY = sY,
-                                         strucZeroArray = struc.zero.array) ## NEW
+                                         strucZeroArray = struc.zero.array)
               is.saturated <- sapply(priors.betas, function(x) x@isSaturated@.Data)
               if (any(is.saturated)) {
                   i.saturated <- which(is.saturated)
@@ -296,8 +257,8 @@ setMethod("initialModel",
                   sigma <- prior.saturated@tau
               }
               betas <- unname(lapply(betas, as.numeric))
-              betas <- jitterBetas(betas = betas, ## NEW 
-                                   priors = priors) ## NEW
+              betas <- jitterBetas(betas = betas,
+                                   priorsBetas = priors.betas)
               iterator.betas <- BetaIterator(dim = dim, margins = margins)
               dims <- makeDims(dim = dim, margins = margins)
               class <- if (has.exposure) "PoissonVaryingUseExp" else "PoissonVaryingNotUseExp"
@@ -306,6 +267,7 @@ setMethod("initialModel",
                                     call = call,
                                     theta = theta,
                                     cellInLik = cellInLik,
+                                    strucZeroArray = strucZeroArray,
                                     metadataY = metadataY,
                                     scaleTheta = scale.theta,
                                     scaleThetaMultiplier = scale.theta.multiplier,
@@ -341,32 +303,9 @@ setMethod("initialModel",
                              defaultWeights = default.weights)
               model <- makeCellInLik(model = model,
                                      y = y,
-                                     strucZerosArray = struc.zeros.array) ## NEW
+                                     strucZeroArray = struc.zero.array) ## NEW
               model
           })
-
-
-
-
-checkAndTidyYForStrucZero <- function(y, strucZeroArray) {
-    if (!is.integer(y@.Data))
-        stop(gettextf("'%s' does not have type \"%s\"",
-                      "y", "integer"))
-    should.be.struc.zero <- strucZeroArray@.Data == 0L
-    is.na.or.0 <- is.na(y@.Data) | (y@.Data == 0L)
-    is.invalid <- should.be.struc.zero & !is.na.or.0
-    if (any(is.invalid)) {
-        i.first.invalid <- which(is.invalid)[1L]
-        all.labels <- expand.grid(dimnames(y))
-        label <- all.labels[i, ]
-        label <- paste(label, collapse = ", ")
-        label <- paste0("[", label, "]")
-        stop(gettextf("cell '%s' is structural zero but has value %d",
-                      label, y@.Data[[i.first.invalid]]))
-    }
-    y[should.be.struc.zero] <- 0L # fix up any NAs
-    y
-}
 
 
 
