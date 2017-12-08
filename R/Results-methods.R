@@ -247,6 +247,7 @@ setMethod("whereMetropStat",
           function(object, FUN) {
               final <- object@final[[1L]]
               model <- final@model
+              y <- final@y
               dataModels <- final@dataModels
               names.datasets <- final@namesDatasets
               ans.model <- FUN(model)
@@ -256,6 +257,9 @@ setMethod("whereMetropStat",
                   for (i in seq_along(ans.model))
                       ans.model[[i]] <- c("model", ans.model[[i]])
               }
+              ans.y <- FUN(y)
+              if (identical(ans.y, list(NULL)))
+                  ans.y <- NULL
               ans.dataModels <- lapply(dataModels, FUN)
               is.null <- sapply(ans.dataModels,
                                 function(x) identical(x, list(NULL)))
@@ -272,5 +276,58 @@ setMethod("whereMetropStat",
                                                 names[i],
                                                 ans.dataModels[[i]])
               }
-              c(ans.model, ans.dataModels)
+              c(ans.model, ans.y, ans.dataModels)
           })
+
+
+setMethod("whereMetropStat",
+          signature(object = "ResultsAccount"),
+          function(object, FUN) {
+              final <- object@final[[1L]]
+              account <- final@account
+              system.models <- final@systemModels
+              data.models <- final@dataModels
+              names.series <- c("population", account@namesComponents)
+              names.datasets <- final@namesDatasets
+              ans.account <- FUN(account)
+              if (identical(ans.account, list(NULL)))
+                  ans.account <- NULL
+              else {
+                  ans.account <- lapply(ans.account[[1L]],
+                                        function(x) c("account", x))
+              }
+              ans.system.models <- lapply(system.models, FUN)
+              is.null <- sapply(ans.system.models,
+                                function(x) identical(x, list(NULL)))
+              if (all(is.null))
+                  ans.system.models <- NULL
+              else {
+                  ans.system.models <- ans.system.models[!is.null]
+                  names <- names.series[!is.null]
+                  times <- sapply(ans.system.models, length)
+                  names <- rep(names, times = times)
+                  ans.system.models <- unlist(ans.system.models, recursive = FALSE)
+                  for (i in seq_along(ans.system.models))
+                      ans.system.models[[i]] <- c("systemModels",
+                                                  names[i],
+                                                  ans.system.models[[i]])
+              }
+              ans.data.models <- lapply(data.models, FUN)
+              is.null <- sapply(ans.data.models,
+                                function(x) identical(x, list(NULL)))
+              if (all(is.null))
+                  ans.data.models <- NULL
+              else {
+                  ans.data.models <- ans.data.models[!is.null]
+                  names <- names.datasets[!is.null]
+                  times <- sapply(ans.data.models, length)
+                  names <- rep(names, times = times)
+                  ans.data.models <- unlist(ans.data.models, recursive = FALSE)
+                  for (i in seq_along(ans.data.models))
+                      ans.data.models[[i]] <- c("dataModels",
+                                                names[i],
+                                                ans.data.models[[i]])
+              }
+              c(ans.account, ans.system.models, ans.data.models)
+          })
+

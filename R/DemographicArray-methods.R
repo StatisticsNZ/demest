@@ -554,3 +554,36 @@ setMethod("sweepAllMargins",
               methods::new("Values", .Data = .Data, metadata = metadata)
           })
 
+
+## whereAcceptance ####################################################################
+
+## HAS_TESTS
+setMethod("whereAcceptance",
+          signature(object = "Counts"),
+          function(object) list(NULL))
+
+
+## whereAutocorr ####################################################################
+
+## HAS_TESTS
+setMethod("whereAutocorr",
+          signature(object = "Counts"),
+          function(object) list(NULL))
+
+
+## whereJump ####################################################################
+
+## HAS_TESTS
+setMethod("whereJump",
+          signature(object = "Counts"),
+          function(object) list(NULL))
+
+
+## whereEstimated ####################################################################
+
+## NO_TESTS
+setMethod("whereEstimated",
+          signature(object = "Counts"),
+          function(object) {
+              list("y")
+          })
