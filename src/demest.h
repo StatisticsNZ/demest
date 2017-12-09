@@ -325,7 +325,8 @@ SEXP
   iComp_sym,
   iPopnNext_sym,
   iPopnNextOther_sym,
-  diffProp_sym;
+  diffProp_sym,
+  isIncrement_sym;
   
   
   
@@ -883,7 +884,7 @@ double diffLogLikCellsNet(int diff, int iComp_r,
                         SEXP component_R, SEXP dataModels_R, 
                         SEXP datasets_R, SEXP seriesIndices_R, 
                         SEXP transforms_R);
-                        
+double diffLogLikAccountMoveComp(SEXP combined_R);                        
                         
                         
                         

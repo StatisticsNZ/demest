@@ -1570,7 +1570,7 @@ diffLogLikCellsNet <- function(diff, iComp, iCellAdd, iCellSub,
 
 
 
-## READY_TO_TRANSLATE
+## READY_TO_TRANSLATE - JAH Translated but some tests failing on check diff not NA in diffLogLikPopn
 ## HAS_TESTS
 diffLogLikAccountMoveComp <- function(combined, useC = FALSE) {
     stopifnot(methods::is(combined, "CombinedAccountMovements"))

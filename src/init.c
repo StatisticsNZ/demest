@@ -1553,6 +1553,10 @@ diffLogLikCellsNet_R(SEXP diff_R, SEXP iComp_R,
     return ScalarReal(ans);
 }
 
+
+/* wrapper for diffLogLikAccountMoveComp */
+DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogLikAccountMoveComp);
+
 /* ******************************************************************************* */
 /* Create table describing R-visible versions of C functions ********************* */
 /* ******************************************************************************* */
@@ -1926,6 +1930,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(diffLogLikCellsPool_R, 9),
   CALLDEF(diffLogLikAccountMoveNet_R, 1),
   CALLDEF(diffLogLikCellsNet_R, 9),
+  CALLDEF(diffLogLikAccountMoveComp_R, 1),
   
   {NULL}
 };
@@ -2256,6 +2261,7 @@ R_init_demest(DllInfo *info)
   ADD_SYM(iPopnNext);
   ADD_SYM(iPopnNextOther);
   ADD_SYM(diffProp);
+  ADD_SYM(isIncrement);
   
   
 #undef ADD_SYM

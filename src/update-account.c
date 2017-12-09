@@ -558,3 +558,144 @@ diffLogLikCellsNet(int diff, int iComp_r, int iCellAdd_r, int iCellSub_r,
     
     return ans;
 }
+
+/*
+## READY_TO_TRANSLATE
+## HAS_TESTS
+diffLogLikAccountMoveComp <- function(combined, useC = FALSE) {
+    stopifnot(methods::is(combined, "CombinedAccountMovements"))
+    if (useC) {
+        .Call(diffLogLikAccountMoveComp_R, combined)
+    }
+    else {
+        account <- combined@account
+        i.comp <- combined@iComp
+        component <- combined@account@components[[i.comp]]
+        population <- combined@account@population
+        iterator <- combined@iteratorPopn
+        data.models <- combined@dataModels
+        datasets <- combined@datasets
+        series.indices <- combined@seriesIndices
+        transforms <- combined@transforms
+        i.cell <- combined@iCell
+        i.popn.next <- combined@iPopnNext
+        diff <- combined@diffProp
+        is.increment <- combined@isIncrement[i.comp]
+        diff.log.lik.cell <- diffLogLikCellComp(diff = diff,
+                                                iComp = i.comp,
+                                                iCell = i.cell,
+                                                component = component,
+                                                dataModels = data.models,
+                                                datasets = datasets,
+                                                seriesIndices = series.indices,
+                                                transforms = transforms)
+        if (is.infinite(diff.log.lik.cell))
+            return(diff.log.lik.cell)
+        diff.popn <- if (is.increment) diff else -diff
+        diff.log.lik.popn <- diffLogLikPopn(diff = diff.popn,
+                                            iFirst = i.popn.next,
+                                            iterator = iterator,
+                                            population = population,
+                                            dataModels = data.models,
+                                            datasets = datasets,
+                                            seriesIndices = series.indices,
+                                            transforms = transforms)
+        if (is.infinite(diff.log.lik.popn))
+            return(diff.log.lik.popn)
+        diff.log.lik.cell + diff.log.lik.popn
+    }
+}
+
+*/
+
+
+double 
+diffLogLikAccountMoveComp(SEXP combined_R)
+{
+    /*        account <- combined@account
+        i.comp <- combined@iComp
+        component <- combined@account@components[[i.comp]]
+        population <- combined@account@population
+        iterator <- combined@iteratorPopn
+        data.models <- combined@dataModels
+        datasets <- combined@datasets
+        series.indices <- combined@seriesIndices
+        transforms <- combined@transforms
+        i.cell <- combined@iCell
+        i.popn.next <- combined@iPopnNext
+        diff <- combined@diffProp
+        is.increment <- combined@isIncrement[i.comp]
+*/
+    SEXP account_R = GET_SLOT(combined_R, account_sym);
+    int iComp_r = *INTEGER(GET_SLOT(combined_R, iComp_sym));
+    
+    SEXP component_R = VECTOR_ELT(GET_SLOT(account_R, components_sym), iComp_r - 1);
+    
+    SEXP population_R = GET_SLOT(account_R, population_sym);
+    SEXP iterator_R = GET_SLOT(combined_R, iteratorPopn_sym);
+
+    SEXP dataModels_R = GET_SLOT(combined_R, dataModels_sym);
+    SEXP datasets_R = GET_SLOT(combined_R, datasets_sym);
+    SEXP seriesIndices_R = GET_SLOT(combined_R, seriesIndices_sym);
+    SEXP transforms_R = GET_SLOT(combined_R, transforms_sym);
+    int iCell_r = *INTEGER(GET_SLOT(combined_R, iCell_sym));
+    int iPopnNext_r = *INTEGER(GET_SLOT(combined_R, iPopnNext_sym));
+    int diff = *INTEGER(GET_SLOT(combined_R, diffProp_sym));
+    
+    int * isIncrementVec = LOGICAL(GET_SLOT(combined_R, isIncrement_sym));
+    int isIncrement = isIncrementVec[iComp_r - 1];
+    
+    /* is.increment <- combined@isIncrement[i.comp] */
+    
+    double ans = 0;
+    /*diff.log.lik.cell <- diffLogLikCellComp(diff = diff,
+                                                iComp = i.comp,
+                                                iCell = i.cell,
+                                                component = component,
+                                                dataModels = data.models,
+                                                datasets = datasets,
+                                                seriesIndices = series.indices,
+                                                transforms = transforms)*/
+    
+    double diffLogLikCell = diffLogLikCellComp( diff, iComp_r,
+                                        iCell_r, component_R, 
+                                        dataModels_R, datasets_R, 
+                                        seriesIndices_R, transforms_R);
+    if (R_finite(diffLogLikCell) ) {
+
+        ans += diffLogLikCell;
+        
+        /*diff.popn <- if (is.increment) diff else -diff
+        diff.log.lik.popn <- diffLogLikPopn(diff = diff.popn,
+                                            iFirst = i.popn.next,
+                                            iterator = iterator,
+                                            population = population,
+                                            dataModels = data.models,
+                                            datasets = datasets,
+                                            seriesIndices = series.indices,
+                                            transforms = transforms)
+        */
+        
+        double diffPopn = ( isIncrement ? diff : -diff );
+        
+        double diffLogLikPopnValue = diffLogLikPopn( diffPopn,
+                                iPopnNext_r, 
+                                iterator_R, population_R, 
+                                dataModels_R, datasets_R, 
+                                seriesIndices_R, transforms_R);
+    
+        if (R_finite(diffLogLikPopnValue) ) {
+            ans += diffLogLikPopnValue;
+           
+        }
+        else { /* infinite */
+            ans = diffLogLikPopnValue;
+        }    
+    }
+    else { /* infinite */
+        ans = diffLogLikCell;
+    }
+    
+    return ans;
+}
+
