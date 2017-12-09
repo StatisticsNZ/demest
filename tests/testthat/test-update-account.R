@@ -3993,51 +3993,59 @@ test_that("R and C versions of diffLogDensPopn give same answer", {
     diffLogDensPopn <- demest:::diffLogDensPopn
     diffLogDensPopnOneCohort <- demest:::diffLogDensPopnOneCohort
     updateProposalAccountMoveComp <- demest:::updateProposalAccountMoveComp
+    updateProposalAccountMovePopn <- demest:::updateProposalAccountMovePopn
     initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
-    population <- CountsOne(values = seq(100, 200, 10),
-                            labels = seq(2000, 2100, 10),
-                            name = "time")
-    births <- CountsOne(values = rpois(n = 10, lambda = 15),
-                        labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
-                        name = "time")
-    deaths <- CountsOne(values = rpois(n = 10, lambda = 5),
-                        labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
-                        name = "time")
-    account <- Movements(population = population,
-                         births = births,
-                         exits = list(deaths = deaths))
-    account <- makeConsistent(account)
-    systemModels <- list(Model(population ~ Poisson(mean ~ time, useExpose = FALSE)),
-                         Model(births ~ Poisson(mean ~ 1)),
-                         Model(deaths ~ Poisson(mean ~ 1)))
-    systemWeights <- rep(list(NULL), 3)
-    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
-                              Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
-    seriesIndices <- c(2L, 0L)
-    datasets <- list(Counts(array(7L,
-                                  dim = 10,
-                                  dimnames = list(time = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-")))),
-                     Counts(array(seq.int(110L, 210L, 10L),
-                                  dim = 11,
-                                  dimnames = list(time = seq(2000, 2100, 10)))))
-    namesDatasets <- c("tax", "census")
-    transforms <- list(makeTransform(x = deaths, y = datasets[[1]], subset = TRUE),
-                       makeTransform(x = population, y = datasets[[2]], subset = TRUE))
-    transforms <- lapply(transforms, makeCollapseTransformExtra)
-    x <- initialCombinedAccount(account = account,
-                                systemModels = systemModels,
-                                systemWeights = systemWeights,
-                                dataModels = data.models,
-                                seriesIndices = seriesIndices,
-                                datasets = datasets,
-                                namesDatasets = namesDatasets,
-                                transforms = transforms)
+    
     for (seed in seq_len(n.test)) {
         set.seed(seed)
+        population <- CountsOne(values = seq(100, 200, 10),
+                                labels = seq(2000, 2100, 10),
+                                name = "time")
+        births <- CountsOne(values = rpois(n = 10, lambda = 15),
+                            labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
+                            name = "time")
+        deaths <- CountsOne(values = rpois(n = 10, lambda = 5),
+                            labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
+                            name = "time")
+        account <- Movements(population = population,
+                             births = births,
+                             exits = list(deaths = deaths))
+        account <- makeConsistent(account)
+        systemModels <- list(Model(population ~ Poisson(mean ~ time, useExpose = FALSE)),
+                             Model(births ~ Poisson(mean ~ 1)),
+                             Model(deaths ~ Poisson(mean ~ 1)))
+        systemWeights <- rep(list(NULL), 3)
+        data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
+                                  Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
+        seriesIndices <- c(2L, 0L)
+        datasets <- list(Counts(array(7L,
+                                      dim = 10,
+                                      dimnames = list(time = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-")))),
+                         Counts(array(seq.int(110L, 210L, 10L),
+                                      dim = 11,
+                                      dimnames = list(time = seq(2000, 2100, 10)))))
+        namesDatasets <- c("tax", "census")
+        transforms <- list(makeTransform(x = deaths, y = datasets[[1]], subset = TRUE),
+                           makeTransform(x = population, y = datasets[[2]], subset = TRUE))
+        transforms <- lapply(transforms, makeCollapseTransformExtra)
+        x <- initialCombinedAccount(account = account,
+                                    systemModels = systemModels,
+                                    systemWeights = systemWeights,
+                                    dataModels = data.models,
+                                    seriesIndices = seriesIndices,
+                                    datasets = datasets,
+                                    namesDatasets = namesDatasets,
+                                    transforms = transforms)
         ## population
         x@iComp <- 0L
+        max.attempts <- 1000L
+        i.attempt <- 0
         x <- updateProposalAccountMovePopn(x)
+        while( ! x@generatedNewProposal && i.attempt < max.attempts) {
+            x <- updateProposalAccountMovePopn(x)
+            i.attempt = i.attempt + 1
+        }
         if (x@generatedNewProposal) {
             ans.R <- diffLogDensPopn(x, useC = FALSE)
             ans.C <- diffLogDensPopn(x, useC = TRUE)
@@ -4048,7 +4056,12 @@ test_that("R and C versions of diffLogDensPopn give same answer", {
         }
         ## deaths
         x@iComp <- 2L
+        i.attempt <- 0
         x <- updateProposalAccountMoveComp(x)
+        while( ! x@generatedNewProposal && i.attempt < max.attempts) {
+            x <- updateProposalAccountMoveComp(x)
+            i.attempt = i.attempt + 1
+        }
         if (x@generatedNewProposal) {
             ans.R <- diffLogDensPopn(x, useC = FALSE)
             ans.C <- diffLogDensPopn(x, useC = TRUE)
@@ -5154,6 +5167,7 @@ test_that("R and C versions of diffLogDensExpOrigDestPoolNet give same answer - 
 test_that("diffLogDensExpOneOrigDestParChPool works", {
     diffLogDensExpOneOrigDestParChPool <- demest:::diffLogDensExpOneOrigDestParChPool
     updateProposalAccountMoveOrigDest <- demest:::updateProposalAccountMoveOrigDest
+    getICellCompFromExp <- demest:::getICellCompFromExp
     initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     population <- Counts(array(seq(1000L, 1500L, 100L),
@@ -5202,7 +5216,6 @@ test_that("diffLogDensExpOneOrigDestParChPool works", {
                                                                hasAge = FALSE,
                                                                ageTimeStep = x@ageTimeStep,
                                                                updatedPopn = FALSE,
-                                                               ageTimeStep = x@ageTimeStep,
                                                                component = x@account@components[[1L]],
                                                                theta = x@systemModels[[2]]@theta,
                                                                iteratorComp = x@iteratorsComp[[1L]],

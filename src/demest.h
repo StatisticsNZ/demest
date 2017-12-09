@@ -325,8 +325,12 @@ SEXP
   iComp_sym,
   iPopnNext_sym,
   iPopnNextOther_sym,
+  iOrigDest_sym,
+  iPool_sym,
+  iIntNet_sym,
   diffProp_sym,
-  isIncrement_sym;
+  isIncrement_sym,
+  systemModels_sym;
   
   
   
@@ -884,8 +888,19 @@ double diffLogLikCellsNet(int diff, int iComp_r,
                         SEXP component_R, SEXP dataModels_R, 
                         SEXP datasets_R, SEXP seriesIndices_R, 
                         SEXP transforms_R);
-double diffLogLikAccountMoveComp(SEXP combined_R);                        
-                        
+double diffLogLikAccountMoveComp(SEXP combined_R);     
+
+double diffLogDensPopn(SEXP combined_R);
+double diffLogDensPopnOneCohort (int diff, SEXP population_R, int i_r, 
+                        SEXP iterator_R, double * theta);                   
+
+double diffLogDensExpOneOrigDestParChPool(int iCell_r, int hasAge, 
+                        double ageTimeStep, int updatedPopn,
+                        SEXP component_R, double * theta,
+                        SEXP iteratorComp_R, 
+                        int iExpFirst_r, double * exposure,
+                        SEXP iteratorExposure_R,
+                        int diff);
                         
                         
 /* pointers for routines from dembase package 
