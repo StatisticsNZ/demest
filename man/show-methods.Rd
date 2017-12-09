@@ -6,6 +6,7 @@
 \alias{show-methods}
 \alias{show,DampKnown-method}
 \alias{show,DampUnknown-method}
+\alias{show,Dispersion-method}
 \alias{show,SpecAgPlaceholder-method}
 \alias{show,SpecAgCertain-method}
 \alias{show,SpecAgNormal-method}
@@ -29,6 +30,7 @@
 \alias{show,HalfT-method}
 \alias{show,Initial-method}
 \alias{show,Level-method}
+\alias{show,Norm-method}
 \alias{show,Trend-method}
 \alias{show,Season-method}
 \alias{show,SpecDLM-method}
@@ -43,6 +45,8 @@
 \S4method{show}{DampKnown}(object)
 
 \S4method{show}{DampUnknown}(object)
+
+\S4method{show}{Dispersion}(object)
 
 \S4method{show}{SpecAgPlaceholder}(object)
 
@@ -89,6 +93,8 @@
 \S4method{show}{Initial}(object)
 
 \S4method{show}{Level}(object)
+
+\S4method{show}{Norm}(object)
 
 \S4method{show}{Trend}(object)
 

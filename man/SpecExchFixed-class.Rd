@@ -7,13 +7,15 @@
 \description{
 An object of class \code{SpecExchFixed} specifies
 a prior in which
-  parameter[j] ~ N(0, sd^2).
+  parameter[j] ~ N(mean, sd^2).
 For details, see the documentation for function
 \code{\link{ExchFixed}}.
 }
 \section{Slots}{
 
 \describe{
+\item{\code{mean}}{Mean.}
+
 \item{\code{tau}}{Standard deviation.}
 
 \item{\code{multTau}}{Multiplier applied to default value for \code{tau}.}

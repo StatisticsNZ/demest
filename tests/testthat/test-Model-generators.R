@@ -590,13 +590,14 @@ test_that("initialModel creates object of class BinomialVarying from valid input
                    shape1 = m * (nu/sigma^2 -1) + y,
                    shape2 = (1-m) * (nu/sigma^2 - 1) + exposure - y)
     sigma <- new("Scale", sigma)
-    betas <- list(mean(log(theta / (1 - theta))))
+    betas <- list("(Intercept)" = mean(log(theta / (1 - theta))))
     priors <- makePriors(betas = betas,
                          specs = spec@specsPriors,
                          namesSpecs = spec@namesSpecsPriors,
                          margins = list(0L),
                          y = y,
                          sY = NULL)
+    betas <- unname(betas)
     betas <- jitterBetas(betas)
     expect_identical(x@sigma, sigma)
     expect_identical(x@theta, theta)

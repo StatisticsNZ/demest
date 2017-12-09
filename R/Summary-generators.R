@@ -29,8 +29,8 @@ setMethod("summary",
               dimensions <- names(metadata)
               nCell <- last - first + 1L
               methods::new("SummarySeries",
-                  dimensions = dimensions,
-                  nCell = nCell)
+                           dimensions = dimensions,
+                           nCell = nCell)
           })
 
 ## HAS_TESTS
@@ -99,6 +99,37 @@ setMethod("summary",
                            datasets = datasets.summary,
                            namesDatasets = names.datasets)
           })
+
+## NO_TESTS
+setMethod("summary",
+          signature(object = "ResultsAccount"),
+          function(object, filename, iteration = NULL) {
+              mcmc <- object@mcmc
+              final <- object@final[[1L]]
+              model <- final@model
+              account <- object@account
+              datasets <- final@datasets
+              dataModels <- final@dataModels
+              names.datasets <- final@namesDatasets
+              parameters <- makeParameters(object = object, filename = filename)
+              gelman.diag <- makeGelmanDiag(object = object, filename = filename)
+              metropolis <- makeMetropolis(object = object, filename = filename)
+              model.summary <- summary(model)
+              y.summary <- summary(y)
+              dataModels.summary <- lapply(dataModels, summary)
+              datasets.summary <- lapply(datasets, summaryDataset)
+              methods::new("SummaryResultsCounts",
+                           mcmc = mcmc,
+                           parameters = parameters,
+                           gelmanDiag = gelman.diag,
+                           metropolis = metropolis,
+                           model = model.summary,
+                           y = y.summary,
+                           dataModels = dataModels.summary,
+                           datasets = datasets.summary,
+                           namesDatasets = names.datasets)
+          })
+
 
 
 

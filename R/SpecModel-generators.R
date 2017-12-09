@@ -1,4 +1,71 @@
 
+
+#' Specify the prior for the dispersion parameter in a CMP model.
+#'
+#' Specify the prior for the dispersion parameter (often denoted
+#' 'nu') in a CMP or COM-Poisson model. The dispersion parameter
+#' is assumed to have a distribution
+#' \deqn{log \nu_i \sim N(\mu_i, \sigma^2)}
+#' \deqn{\mu_i \sim N(M, S^2)}
+#' \deqn{\sigma \sim trunc-half-t(df, A, max)}
+#'
+#' The \code{mean} argument is used to specify the second equation,
+#' and the \code{scale} argument is used to specify the third.
+#' \code{M} in the second equation defaults to 0, and \code{S}
+#' defaults to 1. \code{df} in the third equation defaults to 7.
+#' \code{A} defaults to 1 if the CMP model uses exposure,
+#' and a function of the variation in log(y) otherwise.
+#' 
+#' @param mean An object of class \code{\linkS4class{Norm}}, specifying
+#' the prior for the mean of the (logged) dispersion parameter.
+#' @param scale An object of class \code{\linkS4class{HalfT}},
+#' specifying the prior for the standard deviation of the (logged)
+#' dispersion parameter.
+#'
+#' @return An object of class \code{\linkS4class{Dispersion}}.
+#'
+#' @seealso CMP models are specified with function \code{\link{CMP}}.
+#'
+#' @examples
+#' Dispersion()
+#' Dispersion(mean = Norm(mean = -1, sd = 0.1))
+#' Dispersion(mean = Norm(mean = -1, sd = 0.1),
+#'            scale = HalfT(scale = 0.1))
+#' @export
+Dispersion <- function(mean = Norm(), scale = HalfT()) {
+    ## mean
+    if (!methods::is(mean, "Norm"))
+        stop(gettextf("'%s' has class \"%s\"",
+                      mean, class(mean)))
+    meanMeanLogNuCMP <- mean@mean
+    sdMeanLogNuCMP <- mean@A@.Data
+    if (is.na(sdMeanLogNuCMP))
+        sdMeanLogNuCMP <- new("Scale", 1)
+    else
+        sdMeanLogNuCMP <- new("Scale", sdMeanLogNuCMP)
+    ## scale
+    if (!methods::is(scale, "HalfT"))
+        stop(gettextf("'%s' has class \"%s\"",
+                      scale, class(scale)))
+    ASDLogNuCMP <- scale@A
+    multSDLogNuCMP <- scale@mult
+    nuSDLogNuCMP <- scale@nu
+    sdMaxLogNuCMP <- scale@scaleMax@.Data
+    sdMaxLogNuCMP <- makeScaleMax(scaleMax = sdMaxLogNuCMP,
+                                  A = ASDLogNuCMP,
+                                  nu = nuSDLogNuCMP,
+                                  isSpec = TRUE)
+    methods::new("Dispersion",
+                 meanMeanLogNuCMP = meanMeanLogNuCMP,
+                 sdMeanLogNuCMP = sdMeanLogNuCMP,
+                 ASDLogNuCMP = ASDLogNuCMP,
+                 multSDLogNuCMP = multSDLogNuCMP,
+                 nuSDLogNuCMP = nuSDLogNuCMP,
+                 sdMaxLogNuCMP = sdMaxLogNuCMP)
+}
+
+
+
 #' Specify first two levels of hierarchical model.
 #'
 #' Specify the likelihood and part of the prior for a

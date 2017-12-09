@@ -118,10 +118,6 @@ setClass("AMoveMixin",
          slots = c(AMove = "Scale"),
          contains = "VIRTUAL")
 
-setClass("ASDLogNuCMPMixin",
-         slots = c(ASDLogNuCMP = "Scale"),
-         contains = "VIRTUAL")
-
 setClass("ASeasonMixin",
          slots = c(ASeason = "Scale"),
          contains = "VIRTUAL")
@@ -1021,16 +1017,6 @@ setClass("MeanMixin",
 setClass("MeanDelta0Mixin",
          slots = c(meanDelta0 = "Parameter"),
          prototype = prototype(meanDelta0 = new("Parameter", 0)),
-         contains = "VIRTUAL")
-
-setClass("MeanMeanLogNuCMPMixin",
-         slots = c(meanMeanLogNuCMP = "Parameter"),
-         prototype = prototype(meanMeanLogNuCMP = new("Parameter", 0)),
-         contains = "VIRTUAL")
-
-setClass("MeanLogNuCMPMixin",
-         slots = c(meanLogNuCMP = "Parameter"),
-         prototype = prototype(meanLogNuCMP = new("Parameter", 0)),
          contains = "VIRTUAL")
 
 setClass("MetadataMixin",

@@ -3527,7 +3527,7 @@ makeNamesSpecsPriors <- function(dots) {
 }
 
 ## HAS_TESTS
-## priors follow order implied by formula - not order implied by metadata
+## priors follow order implied by formula - not order implied by metadatax
 makePriors <- function(betas, specs, namesSpecs, margins, y, sY) {
     n.beta <- length(betas)
     ans <- vector(mode = "list", length = n.beta)
@@ -3553,7 +3553,8 @@ makePriors <- function(betas, specs, namesSpecs, margins, y, sY) {
         if (has.spec)
             spec <- specs[[i.spec]]
         else
-            spec <- defaultPrior(beta = beta, metadata = metadata)
+            spec <- defaultPrior(beta = beta,
+                                 metadata = metadata)
         ans[[i]] <- initialPrior(object = spec,
                                  beta = beta,
                                  metadata = metadata,

@@ -6,12 +6,13 @@
 \title{An S4 class to specify a normal distribution.}
 \description{
 An object of class \code{Norm} specifies a normal
-distribution with mean 0.  It is used as a
-prior distribution.
+distribution.  It is used as a prior distribution.
 }
 \section{Slots}{
 
 \describe{
+\item{\code{mean}}{Mean.}
+
 \item{\code{A}}{Standard deviation.}
 }}
 

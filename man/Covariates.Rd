@@ -92,9 +92,10 @@ are shrunk towards 0.  The rules for choosing default values for the scale
 parameters are described in the' documentation for \code{\link{HalfT}}.
 Shrinking coefficient' estimates towards 0 protects against over-fitting.
 
-The intercept term is assumed to have a diffuse normal distribution centered
-at 0.  The rules for choosing default values for the standard deviation are
-described in the documentation for \code{\link{Norm}}.
+The intercept term is assumed to have a diffuse normal distribution.
+The rules for choosing default values for the standard deviation are
+described in the documentation for \code{\link{Norm}}. \code{mean}
+must equal 0 (the default).
 
 The help for \code{\link[stats]{model.matrix}} contains a discussion of
 contrasts.  With Bayesian models that have informative priors, such as the
@@ -112,7 +113,7 @@ Covariates(mean ~ income + area,
 ## intercept and coefficients
 Covariates(mean ~ income + area,
            data = reg.data,
-           intercept = Norm(scale = 5),
+           intercept = Norm(sd = 5),
            coef = HalfT(scale = 0.25))
 
 ## override the default 'treatment' contrast
