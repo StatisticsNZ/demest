@@ -553,12 +553,16 @@ test_that("fetchResults works with object of class SkeletonAccept", {
     filename <- tempfile()
     con <- file(filename, "wb")
     results <- new("ResultsModelEst")
+    adjustments <- new.env(hash = TRUE)
     results <- serialize(results, connection = NULL)
+    adjustments <- serialize(adjustments, connection = NULL)
     size.results <- length(results)
+    size.adjustments <- length(adjustments)
     writeBin(size.results, con)
     writeBin(10L, con)
     writeBin(results, con)
     writeBin(data, con)
+    writeBin(adjustments, con)
     close(con)
     ans.obtained <- fetchResults(object = object,
                                  nameObject = "obj",

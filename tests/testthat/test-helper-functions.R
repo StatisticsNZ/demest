@@ -12723,12 +12723,16 @@ test_that("R and C versions of getDataFromFile give same answer with gaps in ite
     filename <- tempfile()
     con <- file(filename, "wb")
     results <- new("ResultsModelEst")
+    adjustments <- new.env(hash = TRUE)
     results <- serialize(results, connection = NULL)
+    adjustments <- serialize(adjustments, connection = NULL)
     size.results <- length(results)
+    size.adjustments <- length(adjustments)
     writeBin(size.results, con)
-    writeBin(10L, con) ## size of 'adjustments' (which we don't actually include in file)
+    writeBin(size.adjustments, con)
     writeBin(results, con)
     writeBin(data, con)
+    writeBin(adjustments, con)
     close(con)
     ans.R <- getDataFromFile(filename = filename,
                              first = 10L,
