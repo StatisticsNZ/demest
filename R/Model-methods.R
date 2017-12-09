@@ -262,11 +262,12 @@ setMethod("logLikelihood",
 setMethod("makeCellInLik",
           signature(model = "ANY",
                     y = "HasSubtotals"),
-          function(model, y) {
+          function(model, y, strucZeroArray = NULL) {
               transform <- y@transformSubtotals
               y <- y@.Data
               model@cellInLik <- makeCellInLikHelper(transform = transform,
-                                                      y = y)
+                                                     y = y,
+                                                     strucZeroArray = strucZeroArray)
               model
           })
 
@@ -274,11 +275,12 @@ setMethod("makeCellInLik",
 setMethod("makeCellInLik",
           signature(model = "TransformAgMixin",
                     y = "ANY"),
-          function(model, y) {
+          function(model, y, strucZeroArray = NULL) {
               transform <- model@transformAg
               y <- y@.Data
               model@cellInLik <- makeCellInLikHelper(transform = transform,
-                                                      y = y)
+                                                     y = y,
+                                                     strucZeroArray = strucZeroArray)
               model
           })
 
@@ -286,11 +288,12 @@ setMethod("makeCellInLik",
 setMethod("makeCellInLik",
           signature(model = "PoissonVaryingUseExpAgLife",
                     y = "ANY"),
-          function(model, y) {
+          function(model, y, strucZeroArray = NULL) {
               transform <- model@transformThetaToMxAg
               y <- y@.Data
               model@cellInLik <- makeCellInLikHelper(transform = transform,
-                                                      y = y)
+                                                     y = y,
+                                                     strucZeroArray = strucZeroArray)
               model
           })
 
@@ -308,7 +311,8 @@ setMethod("makeCellInLik",
               transform <- model@transformAg
               y <- rep(NA, times = prod(dim(metadata.y)))
               model@cellInLik <- makeCellInLikHelper(transform = transform,
-                                                     y = y)
+                                                     y = y,
+                                                     strucZeroArray = strucZeroArray)
               model
           })
 

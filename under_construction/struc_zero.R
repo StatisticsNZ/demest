@@ -142,170 +142,87 @@ updateTheta_PoissonVaryingUseExp <- function(object, y, exposure, useC = FALSE) 
     }
 }
 
+    
+
+
 ## HAS_TESTS
-setMethod("initialModel",
-          signature(object = "SpecPoissonVarying",
-                    y = "Counts",
-                    exposure = "ANY",
-                    weights = "missing"),
-          function(object, y, exposure) {
-              call <- object@call
-              formula.mu <- object@formulaMu
-              specs.priors <- object@specsPriors
-              names.specs.priors <- object@namesSpecsPriors
-              structural.zeros <- object@structuralZeros
-              box.cox.param <- object@boxCoxParam
-              scale.theta <- object@scaleTheta
-              lower <- object@lower
-              upper <- object@upper
-              tolerance <- object@tolerance
-              max.attempt <- object@maxAttempt
-              nu.sigma <- object@nuSigma
-              A.sigma <- object@ASigma@.Data
-              sigma.max <- object@sigmaMax@.Data
-              use.expose <- object@useExpose@.Data
-              aggregate <- object@aggregate
-              checkTermsFromFormulaFound(y = y, formula = formula.mu)
-              checkLengthDimInFormula(y = y, formula = formula.mu)
-              metadataY <- y@metadata
-              dim <- dim(y)
-              struc.zero.array <- makeStrucZeroArray(structuralZeros = structural.zeros, 
-                                                     y = y) 
-              y <- checkAndTidyYForStrucZero(y = y, 
-                                             strucZeroArray = struc.zero.array) 
-              has.exposure <- !is.null(exposure)
-              if (has.exposure && !use.expose)
-                  stop(gettextf("'%s' argument supplied, but model '%s' does not use exposure",
-                                "exposure", deparse(call[[2L]])))
-              if (!has.exposure && use.expose)
-                  stop(gettextf("model '%s' uses exposure, but no '%s' argument supplied",
-                                deparse(call[[2L]]), "exposure"))
-              is.obs <- is.na(y@.Data) & (struc.zero.array != 0L) 
-              if (any(is.obs))
-                  mean.y.obs <- mean(y@.Data[is.obs]) 
-              else
-                  mean.y.obs <- 0.5
-              shape <- ifelse(is.obs, 0.5 * mean.y.obs + 0.5 * y@.Data, mean.y.obs)
-              if (has.exposure) {
-                  mean.expose.obs <- mean(exposure[is.obs])
-                  rate <- ifelse(is.obs, 0.5 * mean.expose.obs + 0.5 * exposure, mean.expose.obs)
-              }
-              else
-                  rate <- 1
-              if (has.exposure)
-                  scale.theta.multiplier <- sqrt(mean.y.obs + 1)
-              else
-                  scale.theta.multiplier <- 1.0
-              scale.theta.multiplier <- methods::new("Scale", scale.theta.multiplier)
-              theta <- stats::rgamma(n = length(y), shape = shape, rate = rate)
-              if (has.exposure)
-                  sY <- NULL
-              else
-                  sY <-  stats::sd(log(as.numeric(y) + 1), na.rm = TRUE)
-              A.sigma <- makeASigma(A = A.sigma,
-                                    sY = sY)
-              sigma.max <- makeScaleMax(scaleMax = sigma.max,
-                                        A = A.sigma,
-                                        nu = nu.sigma)
-              sigma <- stats::runif(n = 1L,
-                                    min = 0,
-                                    max = min(A.sigma@.Data, sigma.max@.Data))
-              sigma <- methods::new("Scale", sigma)
-              ## need to avoid having all 'theta' equalling lower or upper bound
-              is.too.low <- theta < lower
-              n.too.low <- sum(is.too.low)
-              width <- 0.2 * (upper - lower)
-              if (is.infinite(width))
-                  width <- 100
-              theta[is.too.low] <- stats::runif(n = n.too.low, min = lower, max = lower + width)
-              is.too.high <- theta > upper
-              n.too.high <- sum(is.too.high)
-              theta[is.too.high] <- stats::runif(n = n.too.high, min = upper - width, max = upper)
-              if (box.cox.param > 0) {
-                  lower <- (lower ^ box.cox.param - 1) / box.cox.param
-                  upper <- (upper ^ box.cox.param - 1) / box.cox.param
-              }
-              else {
-                  lower <- log(lower)
-                  upper <- log(upper)
-              }
-              theta <- array(theta, dim = dim(y), dimnames = dimnames(y))
-              if (formulaIsInterceptOnly(formula.mu))
-                  betas <- list("(Intercept)" = mean(log(theta)))
-              else {
-                  betas <- MASS::loglm(formula.mu, data = theta)$param
-                  betas <- convertToFormulaOrder(betas = betas, formulaMu = formula.mu)
-              }
-              theta <- as.numeric(theta)
-              theta[struc.zero.array == 0L] <- 0
-              names.betas <- names(betas)
-              margins <- makeMargins(betas = betas, y = y)
-              priors.betas <- makePriors(betas = betas,
-                                         specs = specs.priors,
-                                         namesSpecs = names.specs.priors,
-                                         margins = margins,
-                                         y = y,
-                                         sY = sY,
-                                         strucZeroArray = struc.zero.array)
-              is.saturated <- sapply(priors.betas, function(x) x@isSaturated@.Data)
-              if (any(is.saturated)) {
-                  i.saturated <- which(is.saturated)
-                  prior.saturated <- priors.betas[[i.saturated]]
-                  A.sigma <- prior.saturated@ATau
-                  nu.sigma <- prior.saturated@nuTau
-                  sigma.max <- prior.saturated@tauMax
-                  sigma <- prior.saturated@tau
-              }
-              betas <- unname(lapply(betas, as.numeric))
-              betas <- jitterBetas(betas = betas,
-                                   priorsBetas = priors.betas)
-              iterator.betas <- BetaIterator(dim = dim, margins = margins)
-              dims <- makeDims(dim = dim, margins = margins)
-              class <- if (has.exposure) "PoissonVaryingUseExp" else "PoissonVaryingNotUseExp"
-              cellInLik <- rep(TRUE, times = length(theta))
-              model <- methods::new(class,
-                                    call = call,
-                                    theta = theta,
-                                    cellInLik = cellInLik,
-                                    strucZeroArray = strucZeroArray,
-                                    metadataY = metadataY,
-                                    scaleTheta = scale.theta,
-                                    scaleThetaMultiplier = scale.theta.multiplier,
-                                    boxCoxParam = box.cox.param,
-                                    lower = lower,
-                                    upper = upper,
-                                    tolerance = tolerance,
-                                    nAcceptTheta = methods::new("Counter", 0L),
-                                    nFailedPropTheta = methods::new("Counter", 0L),
-                                    maxAttempt = max.attempt,
-                                    sigma = sigma,
-                                    sigmaMax = sigma.max,
-                                    ASigma = A.sigma,
-                                    nuSigma = nu.sigma,
-                                    betas = betas,
-                                    priorsBetas = priors.betas,
-                                    namesBetas = names.betas,
-                                    margins = margins,
-                                    iteratorBetas = iterator.betas,
-                                    dims = dims)
-              if (has.exposure)
-                  default.weights <- exposure
-              else {
-                  .Data <- array(1.0,
-                                 dim = dim(metadataY),
-                                 dimnames = dimnames(metadataY))
-                  default.weights <- methods::new("Counts",
-                                                  .Data = .Data,
-                                                  metadata = metadataY)
-              }
-              model <- addAg(model = model,
-                             aggregate = aggregate,
-                             defaultWeights = default.weights)
-              model <- makeCellInLik(model = model,
-                                     y = y,
-                                     strucZeroArray = struc.zero.array) ## NEW
-              model
-          })
+initialModelPredictHelper <- function(model, along, labels, n, offsetModel,
+                                      covariates) {
+    theta.old <- model@theta
+    metadata.first <- model@metadataY
+    betas <- model@betas
+    priors.betas <- model@priorsBetas
+    names.betas <- model@namesBetas
+    margins <- model@margins
+    dims <- model@dims
+    i.method.model.first <- model@iMethodModel
+    struc.zero.array.first <- model@strucZeroArray
+    n.beta <- length(betas)
+    metadata.pred <- makeMetadataPredict(metadata = metadata.first,
+                                         along = along,
+                                         labels = labels,
+                                         n = n)
+    struc.zero.array.pred <- makeStrucZeroArrayPredict()
+    
+    theta <- rep(mean(theta.old), times = prod(dim(metadata.pred)))
+    cell.in.lik <- rep(FALSE, times = prod(dim(metadata.pred)))
+    beta.is.predicted <- logical(length = n.beta)
+    for (i in seq_len(n.beta)) {
+        margin <- margins[[i]]
+        prior <- priors.betas[[i]]
+        beta.is.predicted[i] <- along %in% margin
+        if (beta.is.predicted[i]) {
+            metadata.pred.i <- metadata.pred[margin]
+            dim.i <- dim(metadata.pred.i)
+            J <- prod(dim.i)
+            dims[[i]] <- dim.i
+            betas[[i]] <- rep(0, length = J)
+            covariates.i <- covariates[[names.betas[i]]]
+            along.margin <- match(along, margin)
+            priors.betas[[i]] <- initialPriorPredict(prior = prior,
+                                                     data = covariates.i,
+                                                     metadata = metadata.pred.i,
+                                                     name = names.betas[i],
+                                                     along = along.margin)            
+        }
+        else {
+            J <- length(betas[[i]])
+            J <- methods::new("Length", J)
+            isSaturated <- methods::new("LogicalFlag", FALSE)
+            priors.betas[[i]] <- methods::new("TimeInvariant",
+                                              J = J,
+                                              isSaturated = isSaturated)
+        }
+    }
+    names.predicted <- names.betas[beta.is.predicted]
+    names.covariates <- names(covariates)
+    for (name in names.covariates) {
+        if (!(name %in% names.betas))
+            stop(gettextf("'%s' includes data for '%s', but '%s' is not a term in the model",
+                          "covariates", name, name))
+        if (!name %in% names.predicted)
+            stop(gettextf("'%s' includes data for '%s', but '%s' is not predicted",
+                          "covariates", name, name))
+    }
+    dim <- dim(metadata.pred)
+    iterator.betas <- BetaIterator(dim = dim, margins = margins)
+    offsets.betas <- makeOffsetsBetas(model, offsetModel = offsetModel)
+    offsets.priors.betas <- makeOffsetsPriorsBetas(model, offsetModel = offsetModel)
+    offsets.sigma <- makeOffsetsSigma(model, offsetModel = offsetModel)
+    i.method.model <- i.method.model.first + 100L
+    list(theta = theta,
+         metadataY = metadata.pred,
+         cellInLik = cell.in.lik,
+         betas = betas,
+         priorsBetas = priors.betas,
+         iteratorBetas = iterator.betas,
+         dims = dims,
+         betaIsPredicted = beta.is.predicted,
+         offsetsBetas = offsets.betas,
+         offsetsPriorsBetas = offsets.priors.betas,
+         offsetsSigma = offsets.sigma,
+         iMethodModel = i.method.model)         
+}    
 
 
 

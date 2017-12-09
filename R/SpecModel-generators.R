@@ -655,6 +655,7 @@ setMethod("SpecModel",
               formula.mu <- specInner@formulaMu
               useExpose <- specInner@useExpose
               boxCoxParam <- specInner@boxCoxParam
+              structuralZeros <- specInner@structuralZeros
               specs.priors <- makeSpecsPriors(dots)
               names.specs.priors <- makeNamesSpecsPriors(dots)
               if (is.null(lower))
@@ -701,6 +702,7 @@ setMethod("SpecModel",
                            scaleTheta = scale.theta,
                            series = series,
                            sigmaMax = sigma.max,
+                           structuralZeros = structuralZeros,
                            upper = upper,
                            useExpose = useExpose,
                            aggregate = aggregate)

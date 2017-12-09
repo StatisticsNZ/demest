@@ -551,14 +551,18 @@ test_that("initialModel creates object of class BinomialVarying from valid input
                    shape2 = (1-m) * (nu/sigma@.Data^2 - 1)  + exposure - y)
     logit.theta <- array(log(theta / (1 - theta)), dim = dim(y), dimnames = dimnames(y))
     betas <- makeLinearBetas(theta = logit.theta, formula = prob ~ age + region)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(5, 4),
+                                   dimnames = list(age = 0:4, region = letters[1:4])))
     priors <- makePriors(betas = betas,
                          specs = spec@specsPriors,
                          namesSpecs = spec@namesSpecsPriors,
                          margins = list(0L, 1L, 2L),
                          y = y,
-                         sY = NULL)
+                         sY = NULL,
+                         strucZeroArray = strucZeroArray)
     betas <- unname(lapply(betas, as.numeric))
-    betas <- jitterBetas(betas)
+    betas <- jitterBetas(betas, priors)
     expect_identical(x@sigma, sigma)
     expect_identical(x@theta, theta)
     expect_identical(x@betas, betas)
@@ -591,14 +595,18 @@ test_that("initialModel creates object of class BinomialVarying from valid input
                    shape2 = (1-m) * (nu/sigma^2 - 1) + exposure - y)
     sigma <- new("Scale", sigma)
     betas <- list("(Intercept)" = mean(log(theta / (1 - theta))))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(5, 4),
+                                   dimnames = list(age = 0:4, region = letters[1:4])))
     priors <- makePriors(betas = betas,
                          specs = spec@specsPriors,
                          namesSpecs = spec@namesSpecsPriors,
                          margins = list(0L),
                          y = y,
-                         sY = NULL)
+                         sY = NULL,
+                         strucZeroArray = strucZeroArray)
     betas <- unname(betas)
-    betas <- jitterBetas(betas)
+    betas <- jitterBetas(betas, priors)
     expect_identical(x@sigma, sigma)
     expect_identical(x@theta, theta)
     expect_identical(x@betas, betas)
@@ -693,14 +701,18 @@ test_that("initialModel creates object of class NormalVaryingVarsigmaKnown from 
     theta <- array(theta, dim = dim(y), dimnames = dimnames(y))
     betas <- makeLinearBetas(theta = theta, formula = mean ~ age + region)
     theta <- as.numeric(theta)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(5, 4),
+                                   dimnames = list(age = 0:4, region = letters[1:4])))
     priors <- makePriors(betas = betas,
                          specs = spec@specsPriors,
                          namesSpecs = spec@namesSpecsPriors,
                          margins = list(0L, 1L, 2L),
                          y = y,
-                         sY = sd(y))
+                         sY = sd(y),
+                         strucZeroArray = strucZeroArray)
     betas <- unname(lapply(betas, as.numeric))
-    betas <- jitterBetas(betas)
+    betas <- jitterBetas(betas, priors)
     expect_is(x, "NormalVaryingVarsigmaKnown")
     expect_identical(x@theta, theta)
     expect_identical(x@varsigma, new("Scale", varsigma))
@@ -770,14 +782,18 @@ test_that("initialModel creates object of class NormalVaryingVarsigmaKnown from 
     theta <- array(theta, dim = dim(y), dimnames = dimnames(y))
     betas <- makeLinearBetas(theta = theta, formula = mean ~ age + region)
     theta <- as.numeric(theta)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(5, 4),
+                                   dimnames = list(age = 0:4, region = letters[1:4])))
     priors <- makePriors(betas = betas,
                          specs = spec@specsPriors,
                          namesSpecs = spec@namesSpecsPriors,
                          margins = list(0L, 1L, 2L),
                          y = y,
-                         sY = sd(y, na.rm = T))
+                         sY = sd(y, na.rm = T),
+                         strucZeroArray = strucZeroArray)
     betas <- unname(lapply(betas, as.numeric))
-    betas <- jitterBetas(betas)
+    betas <- jitterBetas(betas, priors)
     expect_is(x, "NormalVaryingVarsigmaKnown")
     expect_identical(x@theta, theta)
     expect_identical(x@varsigma, new("Scale", varsigma))
@@ -843,14 +859,18 @@ test_that("initialModel creates object of class NormalVaryingVarsigmaUnknown fro
     theta <- array(theta, dim = dim(y), dimnames = dimnames(y))
     betas <- makeLinearBetas(theta = theta, formula = mean ~ age + region)
     theta <- as.numeric(theta)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(5, 4),
+                                   dimnames = list(age = 0:4, region = letters[1:4])))
     priors <- makePriors(betas = betas,
                          specs = spec@specsPriors,
                          namesSpecs = spec@namesSpecsPriors,
                          margins = list(0L, 1L, 2L),
                          y = y,
-                         sY = sd(y))
+                         sY = sd(y),
+                         strucZeroArray = strucZeroArray)
     betas <- unname(lapply(betas, as.numeric))
-    betas <- jitterBetas(betas)
+    betas <- jitterBetas(betas, priors)
     expect_is(x, "NormalVaryingVarsigmaUnknown")
     expect_identical(x@theta, theta)
     expect_identical(x@varsigma, new("Scale", varsigma))
@@ -918,14 +938,18 @@ test_that("initialModel creates object of class NormalVaryingVarsigmaUnknown fro
     theta <- array(theta, dim = dim(y), dimnames = dimnames(y))
     betas <- makeLinearBetas(theta = theta, formula = mean ~ age + region)
     theta <- as.numeric(theta)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(5, 4),
+                                   dimnames = list(age = 0:4, region = letters[1:4])))
     priors <- makePriors(betas = betas,
                          specs = spec@specsPriors,
                          namesSpecs = spec@namesSpecsPriors,
                          margins = list(0L, 1L, 2L),
                          y = y,
-                         sY = sd(y, na.rm = T))
+                         sY = sd(y, na.rm = T),
+                         strucZeroArray = strucZeroArray)
     betas <- unname(lapply(betas, as.numeric))
-    betas <- jitterBetas(betas)
+    betas <- jitterBetas(betas, priors)
     expect_is(x, "NormalVaryingVarsigmaUnknown")
     expect_identical(x@theta, theta)
     expect_identical(x@varsigma, new("Scale", varsigma))
@@ -975,14 +999,18 @@ test_that("initialModel creates object of class PoissonVaryingUseExp from valid 
     theta <- array(theta, dim = dim(y), dimnames = dimnames(y))
     betas <- loglm(~ age + region, theta)$param
     theta <- as.numeric(theta)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(5, 4),
+                                   dimnames = list(age = 0:4, region = letters[1:4])))
     priors <- makePriors(betas = betas,
                          specs = spec@specsPriors,
                          namesSpecs = spec@namesSpecsPriors,
                          margins = list(0L, 1L, 2L),
                          y = y,
-                         sY = NULL)
+                         sY = NULL,
+                         strucZeroArray = strucZeroArray)
     betas <- unname(lapply(betas, as.numeric))
-    betas <- jitterBetas(betas)
+    betas <- jitterBetas(betas, priors)
     expect_is(x, "PoissonVaryingUseExp")
     expect_identical(x@sigma, new("Scale", sigma))
     expect_identical(x@theta, theta)
@@ -1050,14 +1078,18 @@ test_that("initialModel creates object of class PoissonVaryingUseExp from valid 
     theta <- array(theta, dim = dim(y), dimnames = dimnames(y))
     betas <- loglm(~ age + region, theta)$param
     theta <- as.numeric(theta)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(5, 4),
+                                   dimnames = list(age = 0:4, region = letters[1:4])))
     priors <- makePriors(betas = betas,
                          specs = spec@specsPriors,
                          namesSpecs = spec@namesSpecsPriors,
                          margins = list(0L, 1L, 2L),
                          y = y,
-                         sY = NULL)
+                         sY = NULL,
+                         strucZeroArray = strucZeroArray)
     betas <- unname(lapply(betas, as.numeric))
-    betas <- jitterBetas(betas)
+    betas <- jitterBetas(betas, priors)
     expect_is(x, "PoissonVaryingUseExp")
     expect_identical(x@sigma, new("Scale", sigma))
     expect_identical(x@theta, theta)

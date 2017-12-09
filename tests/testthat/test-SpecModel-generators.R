@@ -522,6 +522,7 @@ test_that("SpecModel works with SpecLikelihoodPoisson", {
                         tolerance = 1e-5,
                         maxAttempt = 100L,
                         specsPriors = list(Exch()),
+                        structuralZeros = NULL,
                         namesSpecsPriors = "age",
                         nuSigma = new("DegreesFreedom", 7),
                         series = new("SpecName", as.character(NA)),
@@ -566,9 +567,10 @@ test_that("SpecModel works with SpecLikelihoodPoisson", {
         expect_identical(ans.obtained, ans.expected)
     else
         expect_equal(ans.obtained, ans.expected)
-    spec.inner <- Poisson(mean ~ age + sex)
+    structuralZeros = ValuesOne(1:0, labels = c("f", "m"), name = "sex")
+    spec.inner <- Poisson(mean ~ age + sex, structuralZeros = structuralZeros)
     call <- call("Model",
-                 quote(reg.birth ~ Poisson(mean ~ age + sex)),
+                 quote(reg.birth ~ Poisson(mean ~ age + sex, structuralZeros = structuralZeros)),
                  quote(age ~ DLM()))
     ans.obtained <- SpecModel(specInner = spec.inner,
                               call = call,
@@ -589,6 +591,7 @@ test_that("SpecModel works with SpecLikelihoodPoisson", {
                         lower = 0.1,
                         upper = 10,
                         tolerance = 1e-5,
+                        structuralZeros = structuralZeros,
                         maxAttempt = 100L,
                         specsPriors = list(DLM()),
                         namesSpecsPriors = "age",

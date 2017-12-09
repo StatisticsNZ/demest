@@ -3476,9 +3476,9 @@ jitterBetas <- function(betas, priorsBetas) {
     if (length(betas) > 1L) {
         for (i in seq_along(betas)[-1L]) {
             val <- stats::rnorm(n = length(betas[[i]]),
-                                       mean = betas[[i]],
+                                mean = betas[[i]],
                                 sd = kTerms * stats::sd(betas[[i]]))
-            prior <- priors[[i]]
+            prior <- priorsBetas[[i]]
             all.struc.zero <- prior@allStrucZero
             val[all.struc.zero] <- 0
             betas[[i]] <- val
@@ -3488,7 +3488,7 @@ jitterBetas <- function(betas, priorsBetas) {
 }
 
 ## HAS_TESTS
-makeCellInLikHelper <- function(transform, y) {
+makeCellInLikHelper <- function(transform, y, strucZeroArray) {
     ans <- logical(length = length(y))
     for (i in seq_along(y)) {
         is.missing <- is.na(y[i])
@@ -3502,6 +3502,10 @@ makeCellInLikHelper <- function(transform, y) {
         }
         else
             ans[i] <- TRUE
+    }
+    if (!is.null(strucZeroArray)) {
+        is.zero <- strucZeroArray == 0L
+        ans[is.zero] <- FALSE
     }
     ans
 }
@@ -5628,12 +5632,17 @@ initialModelPredictHelper <- function(model, along, labels, n, offsetModel,
     names.betas <- model@namesBetas
     margins <- model@margins
     dims <- model@dims
+    struc.zero.array.first <- model@strucZeroArray
     i.method.model.first <- model@iMethodModel
     n.beta <- length(betas)
     metadata.pred <- makeMetadataPredict(metadata = metadata.first,
                                          along = along,
                                          labels = labels,
                                          n = n)
+    labels <- dimnames(metadata.pred[along])[[1L]]
+    struc.zero.array.pred <- makeStrucZeroArrayPredict(strucZeroArray = struc.zero.array.first,
+                                                       along = along,
+                                                       labels = labels)
     theta <- rep(mean(theta.old), times = prod(dim(metadata.pred)))
     cell.in.lik <- rep(FALSE, times = prod(dim(metadata.pred)))
     beta.is.predicted <- logical(length = n.beta)
@@ -5653,7 +5662,8 @@ initialModelPredictHelper <- function(model, along, labels, n, offsetModel,
                                                      data = covariates.i,
                                                      metadata = metadata.pred.i,
                                                      name = names.betas[i],
-                                                     along = along.margin)            
+                                                     along = along.margin,
+                                                     strucZeroArray = struc.zero.array.pred)            
         }
         else {
             J <- length(betas[[i]])
@@ -5685,6 +5695,7 @@ initialModelPredictHelper <- function(model, along, labels, n, offsetModel,
          cellInLik = cell.in.lik,
          betas = betas,
          priorsBetas = priors.betas,
+         strucZeroArray = struc.zero.array.pred,
          iteratorBetas = iterator.betas,
          dims = dims,
          betaIsPredicted = beta.is.predicted,
@@ -5839,6 +5850,20 @@ makeOffsetsVarsigma <- function(model, offsetModel) {
     stop(gettextf("slot \"%s\" not found",
                   "varsigma"))
 }
+
+
+## NO_TESTS
+makeStrucZeroArrayPredict <- function(strucZeroArray, along, labels) {
+    ans <- dembase:::extrapolate(strucZeroArray,
+                                 along = along,
+                                 labels = labels)
+    ans <- dembase:::slab(ans,
+                          dimension = along,
+                          elements = labels)
+    ans <- toInteger(ans)
+    ans
+}
+
 
 ## TRANSLATED
 ## HAS_TESTS

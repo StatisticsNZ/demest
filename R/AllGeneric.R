@@ -301,9 +301,13 @@ setGeneric("logLikelihood",
 
 ## HAS_TESTS
 setGeneric("makeCellInLik",
-           function(model, y) {
+           function(model, y, strucZeroArray = NULL) {
                y <- as.numeric(y)
                model@cellInLik <- !is.na(y)
+               if (!is.null(strucZeroArray)) {
+                   is.zero <- strucZeroArray == 0L
+                   model@cellInLik[is.zero] <- FALSE
+               }
                model
            })
 

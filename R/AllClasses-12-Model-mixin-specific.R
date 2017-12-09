@@ -677,14 +677,14 @@ setClass("StructuralZerosMixin",
                  if (any(is.na(structuralZeros)))
                      stop(gettextf("'%s' has missing values",
                                    "structuralZeros"))
-                 if (all(structuralZeros != 0L))
-                     stop(gettextf("'%s' does not contain any zeros",
+                 if (all(structuralZeros@.Data == 0L))
+                     stop(gettextf("'%s' consists entirely of zeros",
                                    "structuralZeros"))
                  TRUE
              }
          })
 
-
+## NO_TESTS
 setClass("StrucZeroArrayMixin",
          slots = c(strucZeroArray = "Counts"),
          contains = "VIRTUAL",
@@ -703,8 +703,8 @@ setClass("StrucZeroArrayMixin",
                  return(gettextf("'%s' has values other than 0 and 1",
                                  "strucZeroArray"))
              ## 'strucZeroArray' not all 0s
-             if (!all(strucZeroArray@.Data == 0L))
-                 return(gettextf("'%s' consists entirely of 0s",
+             if (all(strucZeroArray@.Data == 0L))
+                 return(gettextf("'%s' consists entirely of zeros",
                                  "strucZeroArray"))
              TRUE
          })

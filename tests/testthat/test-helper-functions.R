@@ -3462,7 +3462,7 @@ test_that("initialDataModels works", {
 })
 
 test_that("jitterBetas works", {
-    ## jitterBetas <- demest:::jitterBetas
+    jitterBetas <- demest:::jitterBetas
     initialPrior <- demest:::initialPrior
     strucZeroArray <- CountsOne(0:9, labels = letters[1:10], name = "reg")
     for (i in seq_len(n.test)) {
@@ -3491,6 +3491,28 @@ test_that("jitterBetas works", {
 
 test_that("makeCellInLikHelper works", {
     makeCellInLikHelper <- demest:::makeCellInLikHelper
+    makeCollapseTransformExtra <- dembase:::makeCollapseTransformExtra
+    y <- Counts(array(rbinom(n = 20, size = 10, prob = 0.5),
+                      dim = c(5, 4),
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    y[c(1, 20)] <- NA
+    value <- Counts(array(c(0.1, 0.2, 0.3),
+                          dim = 3,
+                          dimnames = list(region = letters[1:3])))
+    transform <- makeTransform(x = y, y = value, subset = TRUE)
+    transform <- makeCollapseTransformExtra(transform)
+    strucZeroArray <- Values(array(rep(c(0L, 1L), times = c(2, 18)),
+                                   dim = c(5, 4),
+                                   dimnames = list(age = 0:4, region = letters[1:4])))
+    ans.obtained <- makeCellInLikHelper(transform = transform,
+                                        y = y,
+                                        strucZeroArray = strucZeroArray)
+    ans.expected <- rep(c(FALSE, TRUE, FALSE), times = c(2, 17, 1))
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("makeCellInLikHelper works", {
+    makeCellInLikHelper <- demest:::makeCellInLikHelper
     initialModel <- demest:::initialModel
     exposure <- Counts(array(rpois(n = 20, lambda = 20),
                              dim = c(5, 4),
@@ -3503,13 +3525,17 @@ test_that("makeCellInLikHelper works", {
                           dim = 3,
                           dimnames = list(region = letters[1:3])))
     aggregate <- AgCertain(value = value)
-    spec <- Model(y ~ Binomial(mean ~ age + region),
+    spec <- Model(y ~ Poisson(mean ~ age + region),
                   aggregate = aggregate)
     x <- initialModel(spec, y = y, exposure = exposure)
     transform <- x@transformAg
+    strucZeroArray <- Values(array(rep(c(0L, 1L), times = c(2, 18)),
+                                   dim = c(5, 4),
+                                   dimnames = list(age = 0:4, region = letters[1:4])))
     ans.obtained <- makeCellInLikHelper(transform = transform,
-                                        y = y)
-    ans.expected <- rep(c(TRUE, FALSE), times = c(19, 1))
+                                        y = y,
+                                        strucZeroArray = strucZeroArray)
+    ans.expected <- rep(c(FALSE, TRUE, FALSE), times = c(2, 17, 1))
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -7750,6 +7776,22 @@ test_that("makeOffsetsVarsigma works", {
     offset <- 20L + 1L + 1L
     ans.expected <- new("Offsets", c(offset, offset))
     expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("makeStrucZeroArrayPredict works", {
+    makeStrucZeroArrayPredict <- demest:::makeStrucZeroArrayPredict
+    strucZeroArray <- Counts(array(1:0,
+                                   dim = c(2, 3),
+                                   dimnames = list(sex = c("f", "m"),
+                                                   time = c(2000, 2005, 2010))))
+    ans.obtained <- makeStrucZeroArrayPredict(strucZeroArray,
+                                              along = "time",
+                                              labels = c("2015", "2020"))
+    ans.expected <- Counts(array(1:0,
+                                 dim = c(2, 2),
+                                 dimnames = list(sex = c("f", "m"),
+                                                 time = c(2015, 2020))))
+    expect_identical(ans.obtained, ans.expected)                             
 })
 
 test_that("predictAlphaDLMNoTrend works", {
