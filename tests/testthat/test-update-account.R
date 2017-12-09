@@ -5377,10 +5377,10 @@ test_that("diffLogDensExpOneComp works", {
                                           exposure = expose,
                                           iteratorExposure = iteratorExposure,
                                           diff = diff)
-    ans.expected <- (dpois(deaths[4], lambda = theta[4] * (expose[4] - 3/2), log = TRUE)
-        - dpois(deaths[4], lambda = theta[4] * expose[4], log = TRUE)
-        + sum(dpois(deaths[5:10], lambda = theta[5:10] * (expose[5:10] - 3), log = TRUE))
-        - sum(dpois(deaths[5:10], lambda = theta[5:10] * expose[5:10], log = TRUE)))
+    ans.expected <- unname(dpois(deaths[4], lambda = theta[4] * (expose[4] - 3/2 * 10), log = TRUE)
+                           - dpois(deaths[4], lambda = theta[4] * expose[4], log = TRUE)
+                           + sum(dpois(deaths[5:10], lambda = theta[5:10] * (expose[5:10] - 3 * 10), log = TRUE))
+                           - sum(dpois(deaths[5:10], lambda = theta[5:10] * expose[5:10], log = TRUE)))
     if (test.identity)
         expect_identical(ans.obtained, ans.expected)
     else
