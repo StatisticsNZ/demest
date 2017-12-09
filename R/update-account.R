@@ -1570,7 +1570,7 @@ diffLogLikCellsNet <- function(diff, iComp, iCellAdd, iCellSub,
 
 
 
-## READY_TO_TRANSLATE - JAH Translated but some tests failing on check diff not NA in diffLogLikPopn
+## TRANSLATED
 ## HAS_TESTS
 diffLogLikAccountMoveComp <- function(combined, useC = FALSE) {
     stopifnot(methods::is(combined, "CombinedAccountMovements"))
@@ -1741,7 +1741,7 @@ diffLogDensPopnOneCohort <- function(diff, population, i, iterator, theta,
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 ## Difference in log-density of current values for
 ## all components attributable to change in exposure,
@@ -1855,7 +1855,7 @@ diffLogDensExpPopn <- function(combined, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 diffLogDensExpOneOrigDestParChPool <- function(iCell, hasAge, ageTimeStep, updatedPopn,
                                                component, theta, iteratorComp, 
@@ -1956,11 +1956,12 @@ diffLogDensExpOneOrigDestParChPool <- function(iCell, hasAge, ageTimeStep, updat
             iteratorComp <- advanceCODPCP(iteratorComp)
             iteratorExposure <- advanceCC(iteratorExposure)
         }
+        ans <- unname(ans) ## JAH added this line 9/12/2017
         ans
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 diffLogDensExpOneComp <- function(iCell, hasAge, ageTimeStep, updatedPopn,
                                   component, theta, iteratorComp, 
@@ -2054,6 +2055,7 @@ diffLogDensExpOneComp <- function(iCell, hasAge, ageTimeStep, updatedPopn,
             iteratorComp <- advanceCC(iteratorComp)
             iteratorExposure <- advanceCC(iteratorExposure)
         }
+        ans <- unname(ans) ## JAH added this line 9/12/2017
         ans
     }
 }

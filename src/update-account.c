@@ -932,6 +932,149 @@ diffLogDensExpPopn <- function(combined, useC = FALSE) {
 */
 
 
+double 
+diffLogDensExpPopn(SEXP combined_R)
+{
+    double ans = 0;
+    
+    SEXP account_R = GET_SLOT(combined_R, account_sym);
+    
+    SEXP components_R = GET_SLOT(account_R, components_sym);
+    int nComponents = LENGTH(components_R);
+    
+    SEXP iteratorsComp_R = GET_SLOT(combined_R, iteratorsComp_sym);
+    
+    int * modelUsesExposure = LOGICAL(GET_SLOT(combined_R, modelUsesExposure_sym));
+    SEXP mappingsFromExp_R = GET_SLOT(combined_R, mappingsFromExp_sym);
+    
+    int iExpFirst_r = *INTEGER(GET_SLOT(combined_R, iExpFirst_sym));
+    SEXP iteratorExposure_R = GET_SLOT(combined_R, iteratorExposure_sym);
+    
+    int diff = *INTEGER(GET_SLOT(combined_R, diffProp_sym));
+    
+    int iOrigDest_r = *INTEGER(GET_SLOT(combined_R, iOrigDest_sym));
+    int iPool_r = *INTEGER(GET_SLOT(combined_R, iPool_sym));
+    
+    int iBirths_r = *INTEGER(GET_SLOT(combined_R, iBirths_sym));
+    int iParCh_r = *INTEGER(GET_SLOT(combined_R, iParCh_sym));
+    
+    double * exposure = REAL(GET_SLOT(combined_R, exposure_sym));
+    
+    SEXP systemModels_R = GET_SLOT(combined_R, systemModels_sym);
+    
+    int hasAge = *LOGICAL(GET_SLOT(combined_R, hasAge_sym));
+    double ageTimeStep = *REAL(GET_SLOT(combined_R, ageTimeStep_sym));
+    
+    int updatedPopnTrue = 1;
+    
+    
+    for (int i = 0; i < nComponents; ++i) {
+        
+        int next_i = i + 1;
+        
+        int usesExp = modelUsesExposure[next_i];
+        
+        if(usesExp) {
+        
+            SEXP component_R = VECTOR_ELT(components_R, i);
+            
+            SEXP thisModel_R = VECTOR_ELT(systemModels_R, next_i);
+            double * theta = REAL(GET_SLOT(thisModel_R, theta_sym));
+            
+            SEXP iteratorComp_R = VECTOR_ELT(iteratorsComp_R, i);
+            SEXP mappingFromExp_R = VECTOR_ELT(mappingsFromExp_R, i);
+            
+            int i_r = i + 1;
+            int isOrigDest = (i_r == iOrigDest_r);
+            int isPool = (i_r == iPool_r);
+            int isBirths = (i_r == iBirths_r);  
+            int isParCh = (i_r == iParCh_r);    
+            
+            if(isOrigDest || isPool) {
+                
+                int iCell_r = getICellCompFromExp(iExpFirst_r, mappingFromExp_R);
+                
+                double diffLog = diffLogDensExpOneOrigDestParChPool(iCell_r, 
+                                        hasAge, ageTimeStep, updatedPopnTrue,
+                                        component_R, theta, 
+                                        iteratorComp_R, iExpFirst_r, 
+                                        exposure, iteratorExposure_R,
+                                        diff);
+    
+                if (R_finite(diffLog) ) {
+                    ans += diffLog;
+                }
+                else { /* infinite */
+                    ans = diffLog;
+                    break; /* break out of for loop */
+                }
+            }
+            else if(isBirths) {
+                
+                int iCell_r = getICellBirthsFromExp(iExpFirst_r, mappingFromExp_R);
+                
+                int cellIsAffected = (iCell_r > 0);
+                if (cellIsAffected) {
+                    
+                    double diffLog = 0;
+                    
+                    if(isParCh) {
+                        
+                        diffLog = diffLogDensExpOneOrigDestParChPool(iCell_r, 
+                                        hasAge, ageTimeStep, updatedPopnTrue,
+                                        component_R, theta, 
+                                        iteratorComp_R, iExpFirst_r, 
+                                        exposure, iteratorExposure_R,
+                                        diff);
+                    }
+                    
+                    else {
+                        
+                        diffLog = diffLogDensExpOneComp(iCell_r, 
+                                        hasAge, ageTimeStep, updatedPopnTrue,
+                                        component_R, theta, 
+                                        iteratorComp_R, iExpFirst_r, 
+                                        exposure, iteratorExposure_R,
+                                        diff);
+                    }
+                    
+                    if (R_finite(diffLog) ) {
+                        ans += diffLog;
+                    }
+                    else { /* infinite */
+                        ans = diffLog;
+                        break; /* break out of for loop */
+                    }
+                }
+            }
+            else {
+                int iCell_r = getICellCompFromExp(iExpFirst_r, mappingFromExp_R);
+                
+                double diffLog = diffLogDensExpOneComp(iCell_r, 
+                                        hasAge, ageTimeStep, updatedPopnTrue,
+                                        component_R, theta, 
+                                        iteratorComp_R, iExpFirst_r, 
+                                        exposure, iteratorExposure_R,
+                                        diff);
+
+                if (R_finite(diffLog) ) {
+                    ans += diffLog;
+                }
+                else { /* infinite */
+                    ans = diffLog;
+                    break; /* break out of for loop */
+                }
+                
+            }
+        }
+        
+    } /* end loop through components */
+    
+    return ans;
+}
+
+
+
 double
 diffLogDensExpOneOrigDestParChPool(int iCell_r, int hasAge, 
                         double ageTimeStep, int updatedPopn,
@@ -956,172 +1099,153 @@ diffLogDensExpOneOrigDestParChPool(int iCell_r, int hasAge,
     
     int * finishedComp_ptr = LOGICAL(GET_SLOT(iteratorComp_R, finished_sym)); 
     
-       int keepGoing = 1;
-       while (keepGoing) { 
+    int keepGoing = 1;
+    while (keepGoing) { 
+       
+       int iExp_r = *iExp_ptr;
+       
+       double diffExposure = 0;
+       
+       if (hasAge) {
+           diffExposure = 0.5 * diff * ageTimeStep;
+       }
+       else {
            
-           int iExp_r = *iExp_ptr;
-           
-           double diffExposure = 0;
-           
-           if (hasAge) {
+           int isFirstCell = (iExp_r == iExpFirst_r);
+           if (isFirstCell && !updatedPopn) {
                diffExposure = 0.5 * diff * ageTimeStep;
            }
-           else {
-               
-               int isFirstCell = (iExp_r == iExpFirst_r);
-               if (isFirstCell && !updatedPopn) {
-                   diffExposure = 0.5 * diff * ageTimeStep;
-               }
-                else {
-                   diffExposure = diff * ageTimeStep;
-                }
+            else {
+               diffExposure = diff * ageTimeStep;
             }
-            double exposureCurr = exposure[iExp_r - 1];
-            double exposureProp = exposureCurr + diffExposure;
+        }
+        double exposureCurr = exposure[iExp_r - 1];
+        double exposureProp = exposureCurr + diffExposure;
+        
+        int j = 0;
+        
+        while (j < lengthVec && keepGoing ) {
+            int iComp = iCompVec[j] - 1;
+            int compCurr = component[iComp];
             
-            int j = 0;
+            if ( (compCurr > 0) && !(exposureProp > 0) ) {
+                
+                ans = R_NegInf;
+                keepGoing = 0;
+                
+            }
+            else {
+                double thetaCurr = theta[iComp];
+                double lambdaProp = thetaCurr * exposureProp;
+                double lambdaCurr = thetaCurr * exposureCurr;
+                double diffLogLik = dpois(compCurr, lambdaProp, USE_LOG)
+                             -
+                             dpois(compCurr, lambdaCurr, USE_LOG);
+                ans += diffLogLik;
+                
+            }
             
-            while (j < lengthVec && keepGoing ) {
-                int iComp = iCompVec[j] - 1;
-                int compCurr = component[iComp];
-                
-                if ( (compCurr > 0) && !(exposureProp > 0) ) {
-                    
-                    ans = R_NegInf;
-                    keepGoing = 0;
-                    
-                }
-                else {
-                    double thetaCurr = theta[iComp];
-                    double lambdaProp = thetaCurr * exposureProp;
-                    double lambdaCurr = thetaCurr * exposureCurr;
-                    double diffLogLik = dpois(compCurr, lambdaProp, USE_LOG)
-                                 -
-                                 dpois(compCurr, lambdaCurr, USE_LOG);
-                    ans += diffLogLik;
-                    
-                }
-                
-                ++j;
-            } 
-    
-            if (keepGoing) {
-                int finishedComp = *finishedComp_ptr;
-                if (finishedComp) {
-                    keepGoing = 0;
-                }
-                else {
-                    advanceCODPCP(iteratorComp_R);
-                    advanceCC(iteratorExposure_R);
-                }
-            }  
-           
-       } /* end main while loop */
+            ++j;
+        } 
+
+        if (keepGoing) {
+            int finishedComp = *finishedComp_ptr;
+            if (finishedComp) {
+                keepGoing = 0;
+            }
+            else {
+                advanceCODPCP(iteratorComp_R);
+                advanceCC(iteratorExposure_R);
+            }
+        }  
+       
+    } /* end main while loop */
     
     return ans;
 }
 
 
-
-/*
-## READY_TO_TRANSLATE
-## HAS_TESTS
-diffLogDensExpOneComp <- function(iCell, hasAge, ageTimeStep, updatedPopn,
-                                  component, theta, iteratorComp, 
-                                  iExpFirst, exposure, iteratorExposure,
-                                  diff, useC = FALSE) {
-    ## iCell
-    stopifnot(identical(length(iCell), 1L))
-    stopifnot(is.integer(iCell))
-    stopifnot(!is.na(iCell))
-    stopifnot(iCell > 0L)
-    ## hasAge
-    stopifnot(identical(length(hasAge), 1L))
-    stopifnot(is.logical(hasAge))
-    stopifnot(!is.na(hasAge))
-    ## ageTimeStep
-    stopifnot(is.double(ageTimeStep))
-    stopifnot(identical(length(ageTimeStep), 1L))
-    stopifnot(!is.na(ageTimeStep))
-    stopifnot(ageTimeStep > 0)
-    ## updatedPopn
-    stopifnot(identical(length(updatedPopn), 1L))
-    stopifnot(is.logical(updatedPopn))
-    stopifnot(!is.na(updatedPopn))
-    ## component
-    stopifnot(is(component, "Component"))
-    ## theta
-    stopifnot(is.double(theta))
-    stopifnot(!any(is.na(theta)))
-    stopifnot(all(theta >= 0))
-    ## iteratorComp
-    stopifnot(is(iteratorComp, "CohortIteratorComponent"))
-    ## iExpFirst
-    stopifnot(identical(length(iExpFirst), 1L))
-    stopifnot(is.integer(iExpFirst))
-    stopifnot(!is.na(iExpFirst))
-    stopifnot(iExpFirst > 0L)
-    ## exposure
-    stopifnot(is(exposure, "Exposure"))
-    stopifnot(is.double(exposure))
-    stopifnot(!any(is.na(exposure)))
-    stopifnot(all(exposure >= 0))
-    ## iteratorExposure
-    stopifnot(methods::is(iteratorExposure, "CohortIteratorComponent"))
-    ## diff
-    stopifnot(identical(length(diff), 1L))
-    stopifnot(is.integer(diff))
-    stopifnot(!is.na(diff))
-    ## iCell and component
-    stopifnot(iCell <= length(component))
-    ## iExpFirst and exposure
-    stopifnot(iExpFirst <= length(exposure))
-    ## component and theta
-    stopifnot(identical(length(component), length(theta)))
-    if (useC) {
-        .Call(diffLogDensExpOneComp_R,
-              iCell, hasAge, ageTimeStep, updatedPopn,
-              component, theta, iteratorComp,
-              iExpFirst, exposure, iteratorExposure, diff)
-    }
-    else {
-        iteratorComp <- resetCC(iteratorComp, i = iCell)
-        iteratorExposure <- resetCC(iteratorExposure, i = iExpFirst)
-        ans <- 0
-        repeat {
-            i.c <- iteratorComp@i
-            i.e <- iteratorExposure@i
-            comp.curr <- component[i.c]
-            theta.curr <- theta[i.c]
-            if (hasAge)
-                diff.exposure <- 0.5 * diff * ageTimeStep
+double
+diffLogDensExpOneComp(int iCell_r, int hasAge, 
+                        double ageTimeStep, int updatedPopn,
+                        SEXP component_R, double * theta,
+                        SEXP iteratorComp_R, 
+                        int iExpFirst_r, double * exposure,
+                        SEXP iteratorExposure_R,
+                        int diff)
+{
+    double ans = 0;
+    
+    int * component = INTEGER(component_R);
+    
+    resetCC(iteratorComp_R, iCell_r);
+    resetCC(iteratorExposure_R, iExpFirst_r);
+    
+    int * iExp_ptr = INTEGER(GET_SLOT(iteratorExposure_R, i_sym)); 
+    int * iComp_ptr = INTEGER(GET_SLOT(iteratorComp_R, i_sym)); 
+    
+    int * finishedComp_ptr = LOGICAL(GET_SLOT(iteratorComp_R, finished_sym)); 
+    
+    int keepGoing = 1;
+    
+    while (keepGoing) { 
+       
+       int iComp_r = *iComp_ptr;
+       int iExp = *iExp_ptr - 1;
+       int iComp = iComp_r - 1;
+       
+       int compCurr = component[iComp];
+       
+       double diffExposure = 0;
+       
+       if (hasAge) {
+           diffExposure = 0.5 * diff * ageTimeStep;
+       }
+       else {
+           
+           int isFirstCell = (iComp_r == iCell_r);
+           if (isFirstCell && !updatedPopn) {
+               diffExposure = 0.5 * diff * ageTimeStep;
+           }
             else {
-                is.first.cell <- i.c == iCell
-                if (is.first.cell && !updatedPopn)
-                    diff.exposure <- 0.5 * diff * ageTimeStep
-                else
-                    diff.exposure <- diff * ageTimeStep
+               diffExposure = diff * ageTimeStep;
             }
-            exposure.curr <- exposure[i.e]
-            exposure.prop <- exposure.curr + diff.exposure
-            if ((comp.curr > 0L) && !(exposure.prop > 0)) ## testing for exposure.prop == 0, since exposure.prop should be >= 0
-                return(-Inf)
-            diff.log.lik <- (dpois(x = comp.curr,
-                                   lambda = theta.curr * exposure.prop,
-                                   log = TRUE)
-                - dpois(x = comp.curr,
-                        lambda = theta.curr * exposure.curr,
-                        log = TRUE))
-            ans <- ans + diff.log.lik
-            if (iteratorComp@finished)
-                break
-            iteratorComp <- advanceCC(iteratorComp)
-            iteratorExposure <- advanceCC(iteratorExposure)
         }
-        ans
-    }
+        double exposureCurr = exposure[iExp];
+        double exposureProp = exposureCurr + diffExposure;
+        
+        if ( (compCurr > 0) && !(exposureProp > 0) ) {
+            
+            ans = R_NegInf;
+            keepGoing = 0;
+            
+        }
+        else {
+            double thetaCurr = theta[iComp];
+            double lambdaProp = thetaCurr * exposureProp;
+            double lambdaCurr = thetaCurr * exposureCurr;
+            double diffLogLik = dpois(compCurr, lambdaProp, USE_LOG)
+                         -
+                         dpois(compCurr, lambdaCurr, USE_LOG);
+            ans += diffLogLik;
+            
+        }
+        
+        if (keepGoing) {
+            int finishedComp = *finishedComp_ptr;
+            if (finishedComp) {
+                keepGoing = 0;
+            }
+            else {
+                advanceCC(iteratorComp_R);
+                advanceCC(iteratorExposure_R);
+            }
+        }  
+       
+    } /* end main while loop */
+    
+    return ans;
 }
-*/
 
 
 
