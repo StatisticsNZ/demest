@@ -5521,6 +5521,9 @@ test_that("betaHat gives valid answer with prior of class Exch - no covariates",
     initialPrior <- demest:::initialPrior
     spec <- Exch()
     beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
     metadata <- new("MetaData",
                     nms = "region",
                     dimtypes = "state",
@@ -5529,7 +5532,9 @@ test_that("betaHat gives valid answer with prior of class Exch - no covariates",
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     ans.obtained <- betaHat(prior)
     ans.expected <- rep(0, 10)
     expect_identical(ans.obtained, ans.expected)
@@ -5540,6 +5545,9 @@ test_that("R and C versions of betaHat give same answer with prior of class Exch
     initialPrior <- demest:::initialPrior
     spec <- Exch()
     beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
     metadata <- new("MetaData",
                     nms = "region",
                     dimtypes = "state",
@@ -5548,7 +5556,9 @@ test_that("R and C versions of betaHat give same answer with prior of class Exch
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     ans.R <- betaHat(prior, useC = FALSE)
     ans.C <- betaHat(prior, useC = TRUE)
     expect_identical(ans.R, ans.C)
@@ -5560,6 +5570,9 @@ test_that("betaHat gives valid answer with prior of class Exch - with covariates
     data <- data.frame(region = letters[10:1], income = rnorm(10))
     spec <- Exch(covariates = Covariates(mean ~ income, data = data))
     beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
     metadata <- new("MetaData",
                     nms = "region",
                     dimtypes = "state",
@@ -5568,7 +5581,9 @@ test_that("betaHat gives valid answer with prior of class Exch - with covariates
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     ans.obtained <- betaHat(prior)
     ans.expected <- unname(drop(prior@Z %*% prior@eta@.Data))
     expect_identical(ans.obtained, ans.expected)
@@ -5584,11 +5599,16 @@ test_that("R and C versions of betaHat give same answer with prior of class Exch
                     nms = "region",
                     dimtypes = "state",
                     DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     ans.R <- betaHat(prior, useC = FALSE)
     ans.C <- betaHat(prior, useC = TRUE)
     if (test.identity)
@@ -5606,11 +5626,16 @@ test_that("betaHat gives valid answer with prior of class DLM - no season", {
                     nms = "region",
                     dimtypes = "state",
                     DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     ans.obtained <- betaHat(prior)
     ans.expected <- prior@alphaDLM@.Data[-1]
     expect_identical(ans.obtained, ans.expected)
@@ -5625,11 +5650,16 @@ test_that("R and C versions of betaHat give same answer with prior of class DLM 
                     nms = "region",
                     dimtypes = "state",
                     DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     ans.R <- betaHat(prior, useC = FALSE)
     ans.C <- betaHat(prior, useC = TRUE)
     if (test.identity)
@@ -5647,11 +5677,16 @@ test_that("betaHat gives valid answer with prior of class DLM - with season", {
                     nms = "region",
                     dimtypes = "state",
                     DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     ans.obtained <- betaHat(prior)
     ans.expected <- prior@alphaDLM@.Data[-1] + sapply(prior@s@.Data[-1], function(x) x[1])
     expect_identical(ans.obtained, ans.expected)
@@ -5666,11 +5701,16 @@ test_that("R and C versions of betaHat give same answer with prior of class DLM 
                     nms = "region",
                     dimtypes = "state",
                     DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     ans.R <- betaHat(prior, useC = FALSE)
     ans.C <- betaHat(prior, useC = TRUE)
     if (test.identity)
@@ -5689,13 +5729,21 @@ test_that("betaHat gives valid answer with prior of class Mix", {
                     DimScales = list(new("Points", dimvalues = 2001:2010),
                                      new("Categories", dimvalues = c("a", "b")),
                                      new("Intervals", dimvalues = as.numeric(0:10))))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(10, 2, 10),
+                                   dimnames = list(time = 2001:2010,
+                                                   reg = c("a", "b"),
+                                                   age = 0:9)),
+                             dimscales = c(time = "Points", age = "Intervals"))
     spec <- Mix()
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
                           multScale = 1,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     ans.obtained <- betaHat(prior)
     ans.expected <- prior@alphaMix@.Data
     expect_identical(ans.obtained, ans.expected)
@@ -5711,13 +5759,21 @@ test_that("R and C versions of betaHat give same answer with prior of class Mix"
                     DimScales = list(new("Points", dimvalues = 2001:2010),
                                      new("Categories", dimvalues = c("a", "b")),
                                      new("Intervals", dimvalues = as.numeric(0:10))))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(10, 2, 10),
+                                   dimnames = list(time = 2001:2010,
+                                                   reg = c("a", "b"),
+                                                   age = 0:9)),
+                             dimscales = c(time = "Points", age = "Intervals"))
     spec <- Mix()
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
                           multScale = 1,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray,
+                          margin = 1L)
     ans.R <- betaHat(prior, useC = FALSE)
     ans.C <- betaHat(prior, useC = TRUE)
     expect_identical(ans.R, ans.C)
@@ -5730,16 +5786,24 @@ test_that("betaHatAlphaDLM works", {
     beta <- rnorm(20)
     metadata <- new("MetaData",
                     nms = c("sex", "time"),
-                    dimtypes = c("state", "time"),
+                    dimtypes = c("sex", "time"),
                     DimScales = list(new("Sexes", dimvalues = c("f", "m")),
                         new("Points", dimvalues = 1:10)))
+    strucZeroArray <- Counts(array(1:0,
+                                   dim = c(2, 10),
+                                   dimnames = list(sex = c("f", "m"),
+                                                   time = 1:10)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          margin = 1:2,
+                          strucZeroArray = strucZeroArray)
     ans.obtained <- betaHatAlphaDLM(prior)
-    ans.expected <- as.numeric(matrix(prior@alphaDLM, nr = 2)[,-1])
+    ans.expected <- c(matrix(prior@alphaDLM, nr = 2)[1,-1],
+                      rep(0, 10))
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -5750,14 +5814,21 @@ test_that("R and C versions of betaHatAlphaDLM give same answer", {
     beta <- rnorm(20)
     metadata <- new("MetaData",
                     nms = c("sex", "time"),
-                    dimtypes = c("state", "time"),
+                    dimtypes = c("sex", "time"),
                     DimScales = list(new("Sexes", dimvalues = c("f", "m")),
                         new("Points", dimvalues = 1:10)))
+    strucZeroArray <- Counts(array(1:0,
+                                   dim = c(2, 10),
+                                   dimnames = list(sex = c("f", "m"),
+                                                   time = 1:10)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          strucZeroArray = strucZeroArray,
+                          margin = 1:2)
     ans.R <- betaHatAlphaDLM(prior, useC = FALSE)
     ans.C <- betaHatAlphaDLM(prior, useC = TRUE)
     expect_identical(ans.R, ans.C)
@@ -5776,11 +5847,18 @@ test_that("betaHatCovariates works", {
                     dimtypes = c("time", "sex"),
                     DimScales = list(new("Points", dimvalues = 1:10),
                         new("Sexes", dimvalues = c("f", "m"))))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(2, 10),
+                                   dimnames = list(sex = c("f", "m"),
+                                                   time = 1:10)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          margin = 1:2,
+                          strucZeroArray = strucZeroArray)
     ans.obtained <- betaHatCovariates(prior)
     ans.expected <- unname(drop(prior@Z %*% prior@eta@.Data))
     expect_identical(ans.obtained, ans.expected)
@@ -5799,11 +5877,18 @@ test_that("R and C versions of betaHatCovariates give same answer", {
                     dimtypes = c("time", "sex"),
                     DimScales = list(new("Points", dimvalues = 1:10),
                         new("Sexes", dimvalues = c("f", "m"))))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(2, 10),
+                                   dimnames = list(sex = c("f", "m"),
+                                                   time = 1:10)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          margin = 1:2,
+                          strucZeroArray = strucZeroArray)
     ans.R <- betaHatCovariates(prior, useC = FALSE)
     ans.C <- betaHatCovariates(prior, useC = TRUE)
     expect_identical(ans.R, ans.C)
@@ -5816,16 +5901,24 @@ test_that("betaHatSeason works", {
     beta <- rnorm(20)
     metadata <- new("MetaData",
                     nms = c("sex", "time"),
-                    dimtypes = c("state", "time"),
+                    dimtypes = c("sex", "time"),
                     DimScales = list(new("Sexes", dimvalues = c("f", "m")),
                         new("Points", dimvalues = 1:10)))
+    strucZeroArray <- Counts(array(1:0,
+                                   dim = c(2, 10),
+                                   dimnames = list(sex = c("f", "m"),
+                                                   time = 1:10)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          margin = 1:2,
+                          strucZeroArray = strucZeroArray)
     ans.obtained <- betaHatSeason(prior)
-    ans.expected <- as.numeric(matrix(sapply(prior@s, function(x) x[1]), nr = 2)[,-1])
+    ans.expected <- c(matrix(sapply(prior@s, function(x) x[1]), nr = 2)[1,-1],
+                      rep(0, 10))
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -5834,16 +5927,23 @@ test_that("R and C versions of betaHatSeason give same answer", {
     initialPrior <- demest:::initialPrior
     spec <- DLM(season = Season(n = 2))
     beta <- rnorm(20)
+    strucZeroArray <- Counts(array(1:0,
+                                   dim = c(2, 10),
+                                   dimnames = list(sex = c("f", "m"),
+                                                   time = 1:10)),
+                             dimscales = c(time = "Points"))
     metadata <- new("MetaData",
                     nms = c("sex", "time"),
-                    dimtypes = c("state", "time"),
+                    dimtypes = c("sex", "time"),
                     DimScales = list(new("Sexes", dimvalues = c("f", "m")),
                         new("Points", dimvalues = 1:10)))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          margin = 1:2,
+                          strucZeroArray = strucZeroArray)
     ans.R <- betaHatSeason(prior, useC = FALSE)
     ans.C <- betaHatSeason(prior, useC = TRUE)
     expect_identical(ans.R, ans.C)
@@ -7518,7 +7618,11 @@ test_that("initialModelPredictHelper works", {
                       dimnames = list(time = 2001:2005, region = 1:4)),
                 dimscales = c(time = "Intervals"))
     spec <- Model(y ~ Binomial(mean ~ time + region))
-    mod <- initialModel(spec, y = y, exposure = exposure)
+    mod <- initialModel(spec, y = y, exposure = exposure) 
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(4, 4),
+                                   dimnames = list(time = 2006:2009, region = 1:4)),
+                             dimscales = c(time = "Intervals"))
     set.seed(1)
     ans.obtained <- initialModelPredictHelper(model = mod,
                                               along = 1L,
@@ -7529,37 +7633,40 @@ test_that("initialModelPredictHelper works", {
     set.seed(1)
     ans.expected <- list(theta = rep(mean(mod@theta), times = 16),
                          metadataY = new("MetaData",
-                             nms = c("time", "region"),
-                             dimtypes = c("time", "state"),
-                             DimScales = list(new("Intervals",
-                                 dimvalues = as.numeric(2005:2009)),
-                                 new("Categories", dimvalues = as.character(1:4)))),
+                                         nms = c("time", "region"),
+                                         dimtypes = c("time", "state"),
+                                         DimScales = list(new("Intervals",
+                                                              dimvalues = as.numeric(2005:2009)),
+                                                          new("Categories", dimvalues = as.character(1:4)))),
                          cellInLik = rep(FALSE, 16),
                          betas = list(mod@betas[[1]], rep(0, 4), mod@betas[[3]]),
+                         strucZeroArray = strucZeroArray,
                          priorsBetas = list(new("TimeInvariant", J = new("Length", 1L),
                                                 isSaturated = new("LogicalFlag", FALSE)),
-                             initialPriorPredict(prior = mod@priorsBetas[[2]],
-                                                 data = NULL,
-                                                 metadata = new("MetaData",
-                                                     nms = "time",
-                                                     dimtypes = "time",
-                                                     DimScales = list(new("Intervals",
-                                                         dimvalues =
-                                                             as.numeric(2005:2009)))),
-                                                 name = "time",
-                                                 along = 1L),
-                             new("TimeInvariant", J = new("Length", 4L),
-                             isSaturated = new("LogicalFlag", FALSE))),
+                                            initialPriorPredict(prior = mod@priorsBetas[[2]],
+                                                                data = NULL,
+                                                                metadata = new("MetaData",
+                                                                               nms = "time",
+                                                                               dimtypes = "time",
+                                                                               DimScales = list(new("Intervals",
+                                                                                                    dimvalues =
+                                                                                                        as.numeric(2005:2009)))),
+                                                                name = "time",
+                                                                along = 1L,
+                                                                margin = 1L,
+                                                                strucZeroArray = strucZeroArray),
+                                            new("TimeInvariant", J = new("Length", 4L),
+                                                isSaturated = new("LogicalFlag", FALSE))),
                          iteratorBetas = BetaIterator(dim = c(4L, 4L),
-                             margins = c(0L, 1L, 2L)),
+                                                      margins = c(0L, 1L, 2L)),
                          dims = list(0L, 4L, 4L),
                          betaIsPredicted = c(FALSE, TRUE, FALSE),
                          offsetsBetas = makeOffsetsBetas(model = mod,
-                             offsetModel = 1L),
+                                                         offsetModel = 1L),
                          offsetsPriorsBetas = makeOffsetsPriorsBetas(model = mod,
-                             offsetModel = 1L),
+                                                                     offsetModel = 1L),
                          offsetsSigma = makeOffsetsSigma(model = mod,
-                             offsetModel = 1L),
+                                                         offsetModel = 1L),
                          iMethodModel = 109L)
     expect_identical(ans.obtained, ans.expected)
 })
@@ -7778,13 +7885,13 @@ test_that("makeOffsetsVarsigma works", {
     expect_identical(ans.obtained, ans.expected)
 })
 
-test_that("makeStrucZeroArrayPredict works", {
-    makeStrucZeroArrayPredict <- demest:::makeStrucZeroArrayPredict
+test_that("extrapolateStrucZeroArray works", {
+    extrapolateStrucZeroArray <- demest:::extrapolateStrucZeroArray
     strucZeroArray <- Counts(array(1:0,
                                    dim = c(2, 3),
                                    dimnames = list(sex = c("f", "m"),
                                                    time = c(2000, 2005, 2010))))
-    ans.obtained <- makeStrucZeroArrayPredict(strucZeroArray,
+    ans.obtained <- extrapolateStrucZeroArray(strucZeroArray,
                                               along = "time",
                                               labels = c("2015", "2020"))
     ans.expected <- Counts(array(1:0,

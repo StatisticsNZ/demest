@@ -8,6 +8,7 @@ test.extended <- TRUE
 test_that("updateBetaAndPriorBeta works with ExchFixed - not saturated", {
     updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
     initialPrior <- demest:::initialPrior
+    ## 'allStrucZero' all FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         spec <- ExchFixed()
@@ -16,11 +17,14 @@ test_that("updateBetaAndPriorBeta works with ExchFixed - not saturated", {
                         nms = "sex",
                         dimtypes = "state",
                         DimScales = list(new("Categories", dimvalues = c("f", "m"))))
+        strucZeroArray <- ValuesOne(c(1L, 1L), labels = c("f", "m"), name = "sex")
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
                                sY = NULL,
-                               isSaturated = FALSE)
+                               isSaturated = FALSE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "ExchFixed")
         vbar <- rnorm(2)
         n <- rep(10L, 2)
@@ -33,9 +37,48 @@ test_that("updateBetaAndPriorBeta works with ExchFixed - not saturated", {
         beta1 <- l[[1]]
         prior1 <- l[[2]]
         set.seed(seed)
-        beta2 <- rnorm(2,
-                       mean = (n*vbar/sigma^2)/(n/sigma^2+1/prior0@tau@.Data^2),
-                       sd = 1/sqrt(n/sigma^2+1/prior0@tau@.Data^2))
+        beta2 <- rep(0, 2)
+        for (i in 1:2) {
+            beta2[i] <- rnorm(1,
+                              mean = (n[i]*vbar[i]/sigma^2)/(n[i]/sigma^2+1/prior0@tau@.Data^2),
+                              sd = 1/sqrt(n[i]/sigma^2+1/prior0@tau@.Data^2))
+        }
+        expect_identical(prior1, prior0)
+        expect_equal(beta2, beta1)
+    }
+    ## 'allStrucZero' has TRUE
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        spec <- ExchFixed()
+        beta0 <- rnorm(2)
+        metadata <- new("MetaData",
+                        nms = "sex",
+                        dimtypes = "state",
+                        DimScales = list(new("Categories", dimvalues = c("f", "m"))))
+        strucZeroArray <- ValuesOne(c(1L, 0L), labels = c("f", "m"), name = "sex")
+        prior0 <- initialPrior(spec,
+                               beta = beta0,
+                               metadata = metadata,
+                               sY = NULL,
+                               isSaturated = FALSE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
+        expect_is(prior0, "ExchFixed")
+        vbar <- c(rnorm(1), 0)
+        n <- c(10L, 0L)
+        sigma <- runif(1)
+        set.seed(seed)
+        l <- updateBetaAndPriorBeta(prior0,
+                                    vbar = vbar,
+                                    n = n,
+                                    sigma = sigma)
+        beta1 <- l[[1]]
+        prior1 <- l[[2]]
+        set.seed(seed)
+        beta2 <- c(rnorm(1,
+                         mean = (n[1]*vbar[1]/sigma^2)/(n[1]/sigma^2+1/prior0@tau@.Data^2),
+                         sd = 1/sqrt(n[1]/sigma^2+1/prior0@tau@.Data^2)),
+                   0)
         expect_identical(prior1, prior0)
         expect_equal(beta2, beta1)
     }
@@ -45,6 +88,7 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with Exch
     updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
+        ## 'allStrucZero' all FALSE
         set.seed(seed)
         spec <- ExchFixed()
         beta0 <- rnorm(2)
@@ -52,11 +96,50 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with Exch
                         nms = "sex",
                         dimtypes = "state",
                         DimScales = list(new("Categories", dimvalues = c("f", "m"))))
+        strucZeroArray <- ValuesOne(c(1L, 1L), labels = c("f", "m"), name = "sex")
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
                                sY = NULL,
-                               isSaturated = FALSE)
+                               isSaturated = FALSE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
+        expect_is(prior0, "ExchFixed")
+        vbar <- rnorm(2)
+        n <- rep(10L, 2)
+        sigma <- runif(1)
+        set.seed(seed)
+        ans.R <- updateBetaAndPriorBeta(prior0,
+                                        vbar = vbar,
+                                        n = n,
+                                        sigma = sigma, 
+                                        useC = FALSE)
+        set.seed(seed)
+        ans.C <- updateBetaAndPriorBeta(prior0,
+                                        vbar = vbar,
+                                        n = n,
+                                        sigma = sigma, 
+                                        useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+        ## some 'allStrucZero' TRUE
+        set.seed(seed)
+        spec <- ExchFixed()
+        beta0 <- rnorm(2)
+        metadata <- new("MetaData",
+                        nms = "sex",
+                        dimtypes = "state",
+                        DimScales = list(new("Categories", dimvalues = c("f", "m"))))
+        strucZeroArray <- ValuesOne(c(1L, 0L), labels = c("f", "m"), name = "sex")
+        prior0 <- initialPrior(spec,
+                               beta = beta0,
+                               metadata = metadata,
+                               sY = NULL,
+                               isSaturated = FALSE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "ExchFixed")
         vbar <- rnorm(2)
         n <- rep(10L, 2)

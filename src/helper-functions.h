@@ -48,7 +48,6 @@
                 int* inputSecond, int nInputSecond);
     
     void betaHat(double *betaHat, SEXP prior_R, int J);
-    void betaHat_AlphaCrossInternal(double *betaHat, SEXP prior_R, int J);
     void betaHat_AlphaDLMInternal(double *betaHat, SEXP prior_R, int J);
     void betaHat_AlphaICARInternal(double *betaHat, SEXP prior_R, int J);
     void betaHat_AlphaMixInternal(double *beta_hat, SEXP prior_R, int J);

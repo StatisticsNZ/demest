@@ -23,16 +23,26 @@ setMethod("updateBetaAndPriorBeta",
                       beta <- rep(0, times = J)
                   else {
                       tau <- prior@tau@.Data
-                      prec.data <- n / sigma^2 # vector
+                      all.struc.zero <- prior@allStrucZero
+                      J <- prior@J
+                      beta <- numeric(length = J)
                       prec.prior <- 1 / tau^2
-                      var <- 1 / (prec.data + prec.prior) 
-                      mean <- prec.data * vbar * var # vector
-                      sd <- sqrt(var) # vector
-                      beta <- stats::rnorm(n = J, mean = mean, sd = sd)
+                      for (i in seq_len(J)) {
+                          if (all.struc.zero[i])
+                              beta[i] <- 0
+                          else {
+                              prec.data <- n[i] / sigma^2
+                              var <- 1 / (prec.data + prec.prior) 
+                              mean <- prec.data * vbar[i] * var
+                              sd <- sqrt(var)
+                              beta[i] <- stats::rnorm(n = 1L, mean = mean, sd = sd)
+                          }
+                      }
                   }
                   list(beta, prior)
               }
           })
+
 
 
 ## Exch

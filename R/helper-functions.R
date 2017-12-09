@@ -4642,7 +4642,7 @@ checkUpdateBetaAndPriorBeta <- function(prior, vbar, n, sigma) {
 
 ## TRANSLATED
 ## HAS_TESTS (INCLUDING FOR MIX)
-## ADD TESTS FOR ICAR AND Cross WHEN CLASSES FINISHED
+## ADD TESTS FOR ICAR WHEN CLASSES FINISHED
 betaHat <- function(prior, useC = FALSE) {
     stopifnot(methods::is(prior, "Prior") || methods::is(prior, "FakePrior"))
     stopifnot(methods::is(prior, "ComponentFlags"))
@@ -4651,39 +4651,30 @@ betaHat <- function(prior, useC = FALSE) {
     }
     else {
         J <- prior@J@.Data
-        has.alpha.cross <- prior@hasAlphaMove@.Data
         has.alpha.dlm <- prior@hasAlphaDLM@.Data
         has.alpha.icar <- prior@hasAlphaICAR@.Data
         has.alpha.mix <- prior@hasAlphaMix@.Data
         has.covariates <- prior@hasCovariates@.Data
         has.season <- prior@hasSeason@.Data
         ans <- rep(0, times = J)
-        if (has.alpha.cross) {
-            alpha.cross <- prior@alphaCross@.Data
-            indices.cross <- prior@indicesCross
-            for (j in seq_len(J)) {
-                index.cross <- indices.cross[j]
-                if (is.infinite(index.cross))
-                    ans[j] <- if (index.cross < 0) -Inf else Inf
-                else
-                    ans[j] <- ans[j] + alpha.cross[index.cross]
-            }
-        }
         if (has.alpha.dlm) {
             alpha.dlm <- prior@alphaDLM@.Data
             K <- prior@K@.Data
             L <- prior@L@.Data
+            along.all.struc.zero <- prior@alongAllStrucZero
             iterator.alpha <- prior@iteratorState
             iterator.v <- prior@iteratorV
             iterator.alpha <- resetA(iterator.alpha)
             iterator.v <- resetA(iterator.v)
             for (l in seq_len(L)) {
-                indices.alpha <- iterator.alpha@indices
-                indices.v <- iterator.v@indices
-                for (k in seq_len(K)) {
-                    i.alpha <- indices.alpha[k + 1L]
-                    i.ans <- indices.v[k]
-                    ans[i.ans] <- ans[i.ans] + alpha.dlm[i.alpha]
+                if (!along.all.struc.zero[l]) {
+                    indices.alpha <- iterator.alpha@indices
+                    indices.v <- iterator.v@indices
+                    for (k in seq_len(K)) {
+                        i.alpha <- indices.alpha[k + 1L]
+                        i.ans <- indices.v[k]
+                        ans[i.ans] <- ans[i.ans] + alpha.dlm[i.alpha]
+                    }
                 }
                 iterator.alpha <- advanceA(iterator.alpha)
                 iterator.v <- advanceA(iterator.v)
@@ -4706,19 +4697,21 @@ betaHat <- function(prior, useC = FALSE) {
             s <- prior@s@.Data
             K <- prior@K@.Data
             L <- prior@L@.Data
+            along.all.struc.zero <- prior@alongAllStrucZero
             iterator.s <- prior@iteratorState
             iterator.v <- prior@iteratorV
             iterator.s <- resetA(iterator.s)
             iterator.v <- resetA(iterator.v)
             for (l in seq_len(L)) {
-                indices.s <- iterator.s@indices
-                indices.v <- iterator.v@indices
-                for (k in seq_len(K)) {
-                    i.s <- indices.s[k + 1L]
-                    i.ans <- indices.v[k]
-                    ans[i.ans] <- ans[i.ans] + s[[i.s]][1L]
+                if (!along.all.struc.zero[l]) {
+                    indices.s <- iterator.s@indices
+                    indices.v <- iterator.v@indices
+                    for (k in seq_len(K)) {
+                        i.s <- indices.s[k + 1L]
+                        i.ans <- indices.v[k]
+                        ans[i.ans] <- ans[i.ans] + s[[i.s]][1L]
+                    }
                 }
-                ## changed these 2 lines - JAH 18/4/2016
                 iterator.s <- advanceA(iterator.s)
                 iterator.v <- advanceA(iterator.v)
             }
@@ -4726,29 +4719,6 @@ betaHat <- function(prior, useC = FALSE) {
         ans
     }
 }
-
-## ## NO_TESTS
-## betaHatAlphaCross <- function(prior, useC = TRUE) {
-##     stopifnot(methods::is(prior, "Prior"))
-##     stopifnot(methods::is(prior, "ComponentFlags"))
-##     stopifnot(prior@hasAlphaMove)
-##     if (useC) {
-##         .Call(betaHatAlphaCross_R, prior)
-##     }
-##     else {
-##         ans <- rep(0, times = J)
-##         alpha <- prior@alphaCross@.Data
-##         indices <- prior@indicesCross
-##         for (j in seq_len(J)) {
-##             i.alpha <- indices[j]
-##             if (is.infinite(i.alpha))
-##                 ans[j] <- if (i.alpha < 0) -Inf else Inf
-##             else
-##                 ans[j] <- alpha[i.alpha]
-##         }
-##         ans
-##     }
-## }
 
 ## TRANSLATED
 ## HAS TESTS
@@ -4765,17 +4735,20 @@ betaHatAlphaDLM <- function(prior, useC = FALSE) {
         alpha.dlm <- prior@alphaDLM@.Data
         K <- prior@K@.Data
         L <- prior@L@.Data
+        along.all.struc.zero <- prior@alongAllStrucZero
         iterator.alpha <- prior@iteratorState
         iterator.v <- prior@iteratorV
         iterator.alpha <- resetA(iterator.alpha)
         iterator.v <- resetA(iterator.v)
         for (l in seq_len(L)) {
-            indices.alpha <- iterator.alpha@indices
-            indices.v <- iterator.v@indices
-            for (k in seq_len(K)) {
-                i.alpha <- indices.alpha[k + 1L]
-                i.ans <- indices.v[k]
-                ans[i.ans] <- ans[i.ans] + alpha.dlm[i.alpha]
+            if (!along.all.struc.zero[l]) {
+                indices.alpha <- iterator.alpha@indices
+                indices.v <- iterator.v@indices
+                for (k in seq_len(K)) {
+                    i.alpha <- indices.alpha[k + 1L]
+                    i.ans <- indices.v[k]
+                    ans[i.ans] <- ans[i.ans] + alpha.dlm[i.alpha]
+                }
             }
             iterator.alpha <- advanceA(iterator.alpha)
             iterator.v <- advanceA(iterator.v)
@@ -4829,17 +4802,20 @@ betaHatSeason <- function(prior, useC = FALSE) {
         s <- prior@s@.Data
         K <- prior@K@.Data
         L <- prior@L@.Data
+        along.all.struc.zero <- prior@alongAllStrucZero
         iterator.s <- prior@iteratorState
         iterator.v <- prior@iteratorV
         iterator.s <- resetA(iterator.s)
         iterator.v <- resetA(iterator.v)
         for (l in seq_len(L)) {
-            indices.s <- iterator.s@indices
-            indices.v <- iterator.v@indices
-            for (k in seq_len(K)) {
-                i.s <- indices.s[k + 1L]
-                i.ans <- indices.v[k]
-                ans[i.ans] <- ans[i.ans] + s[[i.s]][1L]
+            if (!along.all.struc.zero[l]) {
+                indices.s <- iterator.s@indices
+                indices.v <- iterator.v@indices
+                for (k in seq_len(K)) {
+                    i.s <- indices.s[k + 1L]
+                    i.ans <- indices.v[k]
+                    ans[i.ans] <- ans[i.ans] + s[[i.s]][1L]
+                }
             }
             iterator.s <- advanceA(iterator.s)
             iterator.v <- advanceA(iterator.v)
@@ -5632,17 +5608,30 @@ initialModelPredictHelper <- function(model, along, labels, n, offsetModel,
     names.betas <- model@namesBetas
     margins <- model@margins
     dims <- model@dims
-    struc.zero.array.first <- model@strucZeroArray
     i.method.model.first <- model@iMethodModel
     n.beta <- length(betas)
     metadata.pred <- makeMetadataPredict(metadata = metadata.first,
                                          along = along,
                                          labels = labels,
                                          n = n)
-    labels <- dimnames(metadata.pred[along])[[1L]]
-    struc.zero.array.pred <- makeStrucZeroArrayPredict(strucZeroArray = struc.zero.array.first,
-                                                       along = along,
-                                                       labels = labels)
+    DimScale.along <- DimScales(metadata.pred)[along][[1L]]
+    extrapolate.struc.zero <- (methods::is(model, "StrucZeroArrayMixin")
+        && (methods::is(DimScale.along, "Intervals") || methods::is(DimScale.along, "Points")))
+    if (extrapolate.struc.zero) {
+        struc.zero.array.first <- model@strucZeroArray
+        labels <- labels(DimScale.along)
+        struc.zero.array.pred <- extrapolateStrucZeroArray(struc.zero.array.first,
+                                                           along = along,
+                                                           labels = labels)
+    }
+    else {
+        .Data <- array(1L,
+                       dim = dim(metadata.pred),
+                       dimnames = dimnames(metadata.pred))
+        struc.zero.array.pred <- new("Counts",
+                                     .Data = .Data,
+                                     metadata = metadata.pred)
+    }
     theta <- rep(mean(theta.old), times = prod(dim(metadata.pred)))
     cell.in.lik <- rep(FALSE, times = prod(dim(metadata.pred)))
     beta.is.predicted <- logical(length = n.beta)
@@ -5663,6 +5652,7 @@ initialModelPredictHelper <- function(model, along, labels, n, offsetModel,
                                                      metadata = metadata.pred.i,
                                                      name = names.betas[i],
                                                      along = along.margin,
+                                                     margin = margin,
                                                      strucZeroArray = struc.zero.array.pred)            
         }
         else {
@@ -5694,8 +5684,8 @@ initialModelPredictHelper <- function(model, along, labels, n, offsetModel,
          metadataY = metadata.pred,
          cellInLik = cell.in.lik,
          betas = betas,
-         priorsBetas = priors.betas,
          strucZeroArray = struc.zero.array.pred,
+         priorsBetas = priors.betas,
          iteratorBetas = iterator.betas,
          dims = dims,
          betaIsPredicted = beta.is.predicted,
@@ -5852,8 +5842,11 @@ makeOffsetsVarsigma <- function(model, offsetModel) {
 }
 
 
-## NO_TESTS
-makeStrucZeroArrayPredict <- function(strucZeroArray, along, labels) {
+## HAS_TESTS
+extrapolateStrucZeroArray <- function(strucZeroArray, along, labels) {
+    DimScales <- DimScales(strucZeroArray)
+    DS.along <- DimScales[[along]]
+    if (methods::is(DS.along, "Points") || methods::is(DS.along, "Intervals")) {
     ans <- dembase:::extrapolate(strucZeroArray,
                                  along = along,
                                  labels = labels)
@@ -5861,6 +5854,11 @@ makeStrucZeroArrayPredict <- function(strucZeroArray, along, labels) {
                           dimension = along,
                           elements = labels)
     ans <- toInteger(ans)
+    }
+    else {
+        
+    }
+        
     ans
 }
 

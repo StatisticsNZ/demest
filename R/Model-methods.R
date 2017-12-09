@@ -310,11 +310,37 @@ setMethod("makeCellInLik",
               metadata.y <- model@metadataY
               transform <- model@transformAg
               y <- rep(NA, times = prod(dim(metadata.y)))
+              .Data <- array(1L,
+                             dim = dim(metadata.y),
+                             dimnames = dimnames(metadata.y))
+              strucZeroArray <- new("Counts",
+                                    .Data = .Data,
+                                    metadata = metadata.y)
               model@cellInLik <- makeCellInLikHelper(transform = transform,
                                                      y = y,
                                                      strucZeroArray = strucZeroArray)
               model
           })
+
+
+## NO_TESTS
+setMethod("makeCellInLik",
+          signature(model = "TransformAgMixin",
+                    y = "missing",
+                    strucZeroArray = "Counts"),
+          function(model, strucZeroArray) {
+              if (!methods::is(model, "BetaIsPredicted"))
+                  stop(gettextf("'%s' has class \"%s\"",
+                                "model", class(model)))
+              metadata.y <- model@metadataY
+              transform <- model@transformAg
+              y <- rep(NA, times = prod(dim(metadata.y)))
+              model@cellInLik <- makeCellInLikHelper(transform = transform,
+                                                     y = y,
+                                                     strucZeroArray = strucZeroArray)
+              model
+          })
+
 
 ## ## NO_TESTS
 ## setMethod("makeCellInLik",

@@ -1202,6 +1202,7 @@ setMethod("initialModelPredict",
                                   nFailedPropTheta = methods::new("Counter", 0L),
                                   betas = l$betas,
                                   priorsBetas = l$priorsBetas,
+                                  strucZeroArray = l$strucZeroArray,
                                   iteratorBetas = l$iteratorBetas,
                                   dims = l$dims,
                                   betaIsPredicted = l$betaIsPredicted,
@@ -1219,7 +1220,8 @@ setMethod("initialModelPredict",
                   ans <- addAg(model = ans,
                                aggregate = aggregate,
                                defaultWeights = default.weights)
-                  ans <- makeCellInLik(ans)
+                  ans <- makeCellInLik(model = ans,
+                                       strucZeroArray = l$strucZeroArray)
               }
               ans
           })

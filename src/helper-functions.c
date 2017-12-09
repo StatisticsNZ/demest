@@ -590,98 +590,9 @@ int intersect(int* intersect, int nIntersect,
 /* ** UPDATING ************************************************************* */
 /* *************************************************************************** */
 
-/*## READY_TO_TRANSLATE (AGAIN)
-## HAS_TESTS (INCLUDING FOR MIX)
-## ADD TESTS FOR ICAR AND Cross WHEN CLASSES FINISHED
-betaHat <- function(prior, useC = FALSE) {
-    stopifnot(methods::is(prior, "Prior"))
-    stopifnot(methods::is(prior, "ComponentFlags"))
-    if (useC) {
-        .Call(betaHat_R, prior)
-    }
-    else {
-        J <- prior@J@.Data
-        has.alpha.cross <- prior@hasAlphaMove@.Data
-        has.alpha.dlm <- prior@hasAlphaDLM@.Data
-        has.alpha.icar <- prior@hasAlphaICAR@.Data
-        has.alpha.mix <- prior@hasAlphaMix@.Data ## NEW
-        has.covariates <- prior@hasCovariates@.Data
-        has.season <- prior@hasSeason@.Data
-        ans <- rep(0, times = J)
-        if (has.alpha.cross) {
-            alpha.cross <- prior@alphaCross@.Data
-            indices.cross <- prior@indicesCross
-            for (j in seq_len(J)) {
-                index.cross <- indices.cross[j]
-                if (is.infinite(index.cross))
-                    ans[j] <- if (index.cross < 0) -Inf else Inf
-                else
-                    ans[j] <- ans[j] + alpha.cross[index.cross]
-            }
-        }
-        if (has.alpha.dlm) {
-            alpha.dlm <- prior@alphaDLM@.Data
-            K <- prior@K@.Data
-            L <- prior@L@.Data
-            iterator.alpha <- prior@iteratorState
-            iterator.v <- prior@iteratorV
-            iterator.alpha <- resetA(iterator.alpha)
-            iterator.v <- resetA(iterator.v)
-            for (l in seq_len(L)) {
-                indices.alpha <- iterator.alpha@indices
-                indices.v <- iterator.v@indices
-                for (k in seq_len(K)) {
-                    i.alpha <- indices.alpha[k + 1L]
-                    i.ans <- indices.v[k]
-                    ans[i.ans] <- ans[i.ans] + alpha.dlm[i.alpha]
-                }
-                iterator.alpha <- advanceA(iterator.alpha)
-                iterator.v <- advanceA(iterator.v)
-            }
-        }
-        if (has.alpha.icar) {
-            alpha.icar <- prior@alphaICAR@.Data
-            ans <- ans + alpha.icar
-        }
-        if (has.alpha.mix) { ## NEW
-            alpha.mix <- prior@alphaMix@.Data ## NEW
-            ans <- ans + alpha.mix ## NEW
-        } ## NEW
-        if (has.covariates) {
-            Z <- unname(prior@Z)
-            eta <- prior@eta@.Data
-            ans <- ans + drop(Z %*% eta)
-        }
-        if (has.season) {
-            s <- prior@s@.Data
-            K <- prior@K@.Data
-            L <- prior@L@.Data
-            iterator.s <- prior@iteratorState
-            iterator.v <- prior@iteratorV
-            iterator.s <- resetA(iterator.s)
-            iterator.v <- resetA(iterator.v)
-            for (l in seq_len(L)) {
-                indices.s <- iterator.s@indices
-                indices.v <- iterator.v@indices
-                for (k in seq_len(K)) {
-                    i.s <- indices.s[k + 1L]
-                    i.ans <- indices.v[k]
-                    ans[i.ans] <- ans[i.ans] + s[[i.s]][1L]
-                }
-                ## changed these 2 lines - JAH 18/4/2016
-                iterator.s <- advanceA(iterator.s)
-                iterator.v <- advanceA(iterator.v)
-            }
-        }
-        ans
-    }
-}
-*/
-
 void
 betaHat(double *beta_hat, SEXP prior_R, int J)
 {
-    int hasAlphaMove = *LOGICAL(GET_SLOT(prior_R, hasAlphaMove_sym));
     int hasAlphaDLM = *LOGICAL(GET_SLOT(prior_R, hasAlphaDLM_sym));
     int hasAlphaICAR = *LOGICAL(GET_SLOT(prior_R, hasAlphaICAR_sym));
     int hasAlphaMix = *LOGICAL(GET_SLOT(prior_R, hasAlphaMix_sym));
@@ -691,8 +602,6 @@ betaHat(double *beta_hat, SEXP prior_R, int J)
     memset(beta_hat, 0, J * sizeof(double));
     
     #ifdef DEBUGGING
-    PrintValue(mkString("hasAlphaMove"));
-    PrintValue(ScalarLogical(hasAlphaMove));
     PrintValue(mkString("hasAlphaDLM"));
     PrintValue(ScalarLogical(hasAlphaDLM));
     PrintValue(mkString("hasAlphaICAR"));
@@ -703,11 +612,6 @@ betaHat(double *beta_hat, SEXP prior_R, int J)
     PrintValue(ScalarLogical(hasSeason));
     #endif
     
-    if(hasAlphaMove) {
-        betaHat_AlphaCrossInternal(beta_hat, prior_R, J);
-    }
-
-
     if(hasAlphaDLM) {
         betaHat_AlphaDLMInternal(beta_hat, prior_R, J);
     }
@@ -729,31 +633,14 @@ betaHat(double *beta_hat, SEXP prior_R, int J)
     }   
 }
 
-
-void
-betaHat_AlphaCrossInternal(double *beta_hat, SEXP prior_R, int J)
-{
-    double *alphaCross = REAL(GET_SLOT(prior_R, alphaCross_sym));
-    int *indicesCross = INTEGER(GET_SLOT(prior_R, indicesCross_sym));
-    
-    for (int j = 0; j < J; ++j) {
-        int indexCross = indicesCross[j];
-        if (!R_finite(indexCross)) {
-            beta_hat[j] = ((indexCross < 0) ? R_NegInf : R_PosInf);
-        }
-        else {
-            beta_hat[j] += alphaCross[indexCross - 1];
-        }
-    }
-}
-
 void
 betaHat_AlphaDLMInternal(double *beta_hat, SEXP prior_R, int J)
 {
     double *alphaDLM = REAL(GET_SLOT(prior_R, alphaDLM_sym));
     int K = *INTEGER(GET_SLOT(prior_R, K_sym));
     int L = *INTEGER(GET_SLOT(prior_R, L_sym));
-    
+    int *alongAllStrucZero = INTEGER(GET_SLOT(prior_R, alongAllStrucZero_sym));
+	
     /* AlongIterators */
     SEXP iteratorAlpha = GET_SLOT(prior_R, iteratorState_sym);
     SEXP iteratorV = GET_SLOT(prior_R, iteratorV_sym);
@@ -764,13 +651,13 @@ betaHat_AlphaDLMInternal(double *beta_hat, SEXP prior_R, int J)
     int *indicesV = INTEGER(GET_SLOT(iteratorV, indices_sym));
     
     for (int l = 0; l < L; ++l) {
-    
-            for (int k = 0; k < K; ++k) {
-            int iAlpha = indicesAlpha[k+1];
-            int iBetaHat = indicesV[k];
-            beta_hat[iBetaHat - 1] += alphaDLM[iAlpha - 1]; 
+	if (!alongAllStrucZero[l]) {
+	    for (int k = 0; k < K; ++k) {
+		int iAlpha = indicesAlpha[k+1];
+		int iBetaHat = indicesV[k];
+		beta_hat[iBetaHat - 1] += alphaDLM[iAlpha - 1]; 
+	    }
         }
-        
         advanceA(iteratorAlpha);
         advanceA(iteratorV);
     }
@@ -834,6 +721,7 @@ betaHat_SeasonInternal(double *beta_hat, SEXP prior_R, int J)
     SEXP s_R = GET_SLOT(prior_R, s_sym);
     int K = *INTEGER(GET_SLOT(prior_R, K_sym));
     int L = *INTEGER(GET_SLOT(prior_R, L_sym));
+    int *alongAllStrucZero = INTEGER(GET_SLOT(prior_R, alongAllStrucZero_sym));
     
     /* AlongIterators */
     SEXP iteratorS = GET_SLOT(prior_R, iteratorState_sym);
@@ -845,14 +733,14 @@ betaHat_SeasonInternal(double *beta_hat, SEXP prior_R, int J)
     int *indicesV = INTEGER(GET_SLOT(iteratorV, indices_sym));
         
     for (int l = 0; l < L; ++l) {
-        
-        for (int k = 0; k < K; ++k) {
-            int iS = indicesS[k+1];
-            int iBetaHat = indicesV[k];
-            double *isVec = REAL(VECTOR_ELT(s_R, iS-1));
-            beta_hat[iBetaHat - 1] += isVec[0]; 
+	if (!alongAllStrucZero[l]) {
+	    for (int k = 0; k < K; ++k) {
+		int iS = indicesS[k+1];
+		int iBetaHat = indicesV[k];
+		double *isVec = REAL(VECTOR_ELT(s_R, iS-1));
+		beta_hat[iBetaHat - 1] += isVec[0]; 
+	    }
         }
-        
         advanceA(iteratorS);
         advanceA(iteratorV);
     }
@@ -866,6 +754,7 @@ betaHatAlphaDLM(double *beta_hat, SEXP prior_R, int J)
     double *alphaDLM = REAL(GET_SLOT(prior_R, alphaDLM_sym));
     int K = *INTEGER(GET_SLOT(prior_R, K_sym));
     int L = *INTEGER(GET_SLOT(prior_R, L_sym));
+    int *alongAllStrucZero = INTEGER(GET_SLOT(prior_R, alongAllStrucZero_sym));
     
     /* AlongIterators */
     SEXP iteratorAlpha = GET_SLOT(prior_R, iteratorState_sym);
@@ -877,13 +766,13 @@ betaHatAlphaDLM(double *beta_hat, SEXP prior_R, int J)
     int *indicesV = INTEGER(GET_SLOT(iteratorV, indices_sym));
     
     for (int l = 0; l < L; ++l) {
-    
-        for (int k = 0; k < K; ++k) {
-            int iAlpha = indicesAlpha[k+1];
-            int iBetaHat = indicesV[k];
-            beta_hat[iBetaHat - 1] += alphaDLM[iAlpha - 1]; 
+	if (!alongAllStrucZero[l]) {
+	    for (int k = 0; k < K; ++k) {
+		int iAlpha = indicesAlpha[k+1];
+		int iBetaHat = indicesV[k];
+		beta_hat[iBetaHat - 1] += alphaDLM[iAlpha - 1]; 
+	    }
         }
-        
         advanceA(iteratorAlpha);
         advanceA(iteratorV);
     }
@@ -929,6 +818,7 @@ betaHatSeason(double *beta_hat, SEXP prior_R, int J)
     SEXP s_R = GET_SLOT(prior_R, s_sym);
     int K = *INTEGER(GET_SLOT(prior_R, K_sym));
     int L = *INTEGER(GET_SLOT(prior_R, L_sym));
+    int *alongAllStrucZero = INTEGER(GET_SLOT(prior_R, alongAllStrucZero_sym));
     
     /* AlongIterators */
     SEXP iteratorS = GET_SLOT(prior_R, iteratorState_sym);
@@ -940,14 +830,14 @@ betaHatSeason(double *beta_hat, SEXP prior_R, int J)
     int *indicesV = INTEGER(GET_SLOT(iteratorV, indices_sym));
     
     for (int l = 0; l < L; ++l) {
-        
-        for (int k = 0; k < K; ++k) {
-            int iS = indicesS[k+1];
-            int iBetaHat = indicesV[k];
-            double *isVec = REAL(VECTOR_ELT(s_R, iS-1));
-            beta_hat[iBetaHat - 1] += isVec[0]; 
+        if (!alongAllStrucZero[l]) {
+	    for (int k = 0; k < K; ++k) {
+		int iS = indicesS[k+1];
+		int iBetaHat = indicesV[k];
+		double *isVec = REAL(VECTOR_ELT(s_R, iS-1));
+		beta_hat[iBetaHat - 1] += isVec[0]; 
+	    }
         }
-        
         advanceA(iteratorS);
         advanceA(iteratorV);
     }

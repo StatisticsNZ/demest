@@ -455,15 +455,26 @@ if (test.extended) {
                         DimScales = list(new("Categories",
                             dimvalues = c("a", "b", "c", "d")),
                             new("Points", dimvalues = 1:10)))
+        strucZeroArray <- Counts(array(c(1L, 1L, 1L, 0L),
+                                       dim = c(4, 10),
+                                       dimnames = list(region = letters[1:4],
+                                                       time = 1:10)),
+                                 dimscales = c(time = "Points"))
         alpha.obtained <- array(dim = c(4, 11, 1000))
         delta.obtained <- array(dim = c(4, 11, 1000))
         alpha.expected <- array(0, dim = c(4, 11, 1000))
         delta.expected <- array(0, dim = c(4, 11, 1000))
         set.seed(1)
         for (sim in 1:1000) {
-            beta <- rnorm(n = 40, mean = rep(1:10, each = 4))
+            beta <- c(rnorm(n = 30, mean = rep(1:10, each = 4)), rep(0, 10))
             betaTilde <- rnorm(n = 40, mean = rep(1:10, each = 4))
-            prior <- initialPrior(spec, beta = beta, metadata = metadata, sY = NULL, isSaturated = FALSE)
+            prior <- initialPrior(spec,
+                                  beta = beta,
+                                  metadata = metadata,
+                                  sY = NULL,
+                                  isSaturated = FALSE,
+                                  margin = 1:2,
+                                  strucZeroArray = strucZeroArray)
             set.seed(1 + sim)
             ans.obtained <- updateAlphaDeltaDLMWithTrend(prior = prior,
                                                          betaTilde = betaTilde,
@@ -471,7 +482,7 @@ if (test.extended) {
             alpha.obtained[ , , sim] <- ans.obtained@alphaDLM@.Data
             delta.obtained[ , , sim] <- ans.obtained@deltaDLM@.Data
             set.seed(sim + 1)
-            for (i in 2:4) {
+            for (i in 1:3) {
                 ans <- ffbs(beta = matrix(betaTilde, nr = 4)[i,],
                             alphaDelta = replicate(n = 11, c(0, 0), simplify = FALSE),
                             m = prior@mWithTrend@.Data,
@@ -488,8 +499,8 @@ if (test.extended) {
         delta.obtained <- apply(delta.obtained, 1:2, sum)/1000
         alpha.expected <- apply(alpha.expected, 1:2, sum)/1000
         delta.expected <- apply(delta.expected, 1:2, sum)/1000
-        expect_equal(alpha.obtained[-1,-1], alpha.expected[-1,-1], tol = 0.03)
-        expect_equal(delta.obtained[-1,-1], delta.expected[-1,-1], tol = 0.03)
+        expect_equal(alpha.obtained[-1,-1], alpha.expected[-1,-1], tol = 0.02)
+        expect_equal(delta.obtained[-1,-1], delta.expected[-1,-1], tol = 0.02)
     })
 }
 
@@ -503,16 +514,24 @@ test_that("R and C versions of updateAlphaDeltaDLMWithTrend give same answer wit
                         nms = c("region", "time"),
                         dimtypes = c("state", "time"),
                         DimScales = list(new("Categories",
-                            dimvalues = c("a", "b", "c", "d")),
-                            new("Points", dimvalues = 1:10)))
+                                             dimvalues = c("a", "b", "c", "d")),
+                                         new("Points", dimvalues = 1:10)))
         set.seed(seed)
         beta <- rnorm(40)
         betaTilde <- rnorm(40)
+        strucZeroArray <- Counts(array(c(1L, 1L, 1L, 0L),
+                                       dim = c(4, 10),
+                                       dimnames = list(region = letters[1:4],
+                                                       time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, isSaturated = FALSE,
-                              multScale = 1)
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              multScale = 1,
+                              strucZeroArray = strucZeroArray,
+                              margin = 1:2)
         set.seed(seed)
         ans.R <- updateAlphaDeltaDLMWithTrend(prior = prior,
                                               betaTilde = betaTilde,
@@ -531,14 +550,21 @@ test_that("R and C versions of updateAlphaDeltaDLMWithTrend give same answer wit
                         nms = "age",
                         dimtypes = "age",
                         DimScales = list(new("Intervals", dimvalues = 0:5)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 5,
+                                       dimnames = list(age = 0:4)),
+                                 dimscales = c(age = "Intervals"))
         set.seed(seed)
         beta <- rnorm(5)
         betaTilde <- rnorm(5)
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, isSaturated = FALSE,
-                              multScale = 1)
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              multScale = 1,
+                              margin = 1L,
+                              strucZeroArray = strucZeroArray)
         set.seed(seed)
         ans.R <- updateAlphaDeltaDLMWithTrend(prior = prior,
                                               betaTilde = betaTilde,
@@ -557,17 +583,26 @@ test_that("R and C versions of updateAlphaDeltaDLMWithTrend give same answer wit
                         nms = c("region", "time", "age"),
                         dimtypes = c("state", "time", "age"),
                         DimScales = list(new("Categories",
-                            dimvalues = c("a", "b", "c", "d", "e", "f")),
-                            new("Points", dimvalues = 1:6),
-                            new("Intervals", dimvalues = 0:10)))
+                                             dimvalues = c("a", "b", "c", "d", "e", "f")),
+                                         new("Points", dimvalues = 1:6),
+                                         new("Intervals", dimvalues = 0:10)))
+        strucZeroArray <- Counts(array(c(rep(1L, 5), 0L),
+                                       dim = c(6, 6, 10),
+                                       dimnames = list(region = letters[1:6],
+                                                       time = 1:6,
+                                                       age = 0:9)),
+                                 dimscales = c(time = "Points", age = "Intervals"))
         set.seed(seed)
         beta <- rnorm(360)
         betaTilde <- rnorm(360)
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, isSaturated = FALSE,
-                              multScale = 1)
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              multScale = 1,
+                              margin = 1:3,
+                              strucZeroArray = strucZeroArray)
         set.seed(seed)
         ans.R <- updateAlphaDeltaDLMWithTrend(prior = prior,
                                               betaTilde = betaTilde,
@@ -632,6 +667,11 @@ if (test.extended) {
                         DimScales = list(new("Categories",
                                              dimvalues = c("a", "b", "c", "d")),
                                          new("Points", dimvalues = 1:10)))
+        strucZeroArray <- Counts(array(c(1L, 1L, 1L, 0L),
+                                       dim = c(4, 10),
+                                       dimnames = list(region = letters[1:4],
+                                                       time = 1:10)),
+                                 dimscales = c(time = "Points"))
         alpha.obtained <- array(dim = c(4, 11, n.sim))
         delta.obtained <- array(dim = c(4, 11, n.sim))
         alpha.expected <- array(0, dim = c(4, 11, n.sim))
@@ -640,8 +680,12 @@ if (test.extended) {
         for (sim in 1:n.sim) {
             beta <- rnorm(n = 40, mean = rep(1:10, each = 4))
             betaTilde <- rnorm(n = 40, mean = rep(1:10, each = 4))
-            prior <- initialPrior(spec, beta = beta, metadata = metadata, sY = NULL,
-                                  isSaturated = FALSE)
+            prior <- initialPrior(spec, beta = beta,
+                                  metadata = metadata,
+                                  sY = NULL,
+                                  isSaturated = FALSE,
+                                  margin = 1:2,
+                                  strucZeroArray = strucZeroArray)
             prior@omegaAlpha@.Data <- 0
             set.seed(1 + sim)
             ans.obtained <- updateAlphaDeltaDLMWithTrend(prior = prior,
@@ -650,7 +694,7 @@ if (test.extended) {
             alpha.obtained[ , , sim] <- ans.obtained@alphaDLM@.Data
             delta.obtained[ , , sim] <- ans.obtained@deltaDLM@.Data
             set.seed(sim + 1)
-            for (i in 2:4) {
+            for (i in 1:3) {
                 ans <- ffbs(beta = matrix(betaTilde, nr = 4)[i,],
                             alphaDelta = replicate(n = 11, c(0, 0), simplify = FALSE),
                             m = prior@mWithTrend@.Data,
@@ -667,8 +711,8 @@ if (test.extended) {
         delta.obtained.mean <- apply(delta.obtained, 1:2, sum)/n.sim
         alpha.expected.mean <- apply(alpha.expected, 1:2, sum)/n.sim
         delta.expected.mean <- apply(delta.expected, 1:2, sum)/n.sim
-        expect_equal(alpha.obtained.mean[-1,-1], alpha.expected.mean[-1,-1], tol = 0.03)
-        expect_equal(delta.obtained.mean[-1,-1], delta.expected.mean[-1,-1], tol = 0.03)        
+        expect_equal(alpha.obtained.mean[-1,-1], alpha.expected.mean[-1,-1], tol = 0.02)
+        expect_equal(delta.obtained.mean[-1,-1], delta.expected.mean[-1,-1], tol = 0.02)        
     })
 }
 
@@ -682,16 +726,24 @@ test_that("R and C versions of updateAlphaDeltaDLMWithTrend give same answer wit
                         nms = c("region", "time"),
                         dimtypes = c("state", "time"),
                         DimScales = list(new("Categories",
-                            dimvalues = c("a", "b", "c", "d")),
-                            new("Points", dimvalues = 1:10)))
+                                             dimvalues = c("a", "b", "c", "d")),
+                                         new("Points", dimvalues = 1:10)))
         set.seed(seed)
         beta <- rnorm(40)
         betaTilde <- rnorm(40)
+        strucZeroArray <- Counts(array(c(1L, 1L, 1L, 0L),
+                                       dim = c(4, 10),
+                                       dimnames = list(region = letters[1:4],
+                                                       time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, isSaturated = FALSE,
-                              multScale = 1)
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              multScale = 1,
+                              strucZeroArray = strucZeroArray,
+                              margin = 1:2)
         set.seed(seed)
         ans.R <- updateAlphaDeltaDLMWithTrend(prior = prior,
                                               betaTilde = betaTilde,
@@ -710,14 +762,21 @@ test_that("R and C versions of updateAlphaDeltaDLMWithTrend give same answer wit
                         nms = "age",
                         dimtypes = "age",
                         DimScales = list(new("Intervals", dimvalues = 0:5)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 5,
+                                       dimnames = list(age = 0:4)),
+                                 dimscales = c(age = "Intervals"))
         set.seed(seed)
         beta <- rnorm(5)
         betaTilde <- rnorm(5)
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, isSaturated = FALSE,
-                              multScale = 1)
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              multScale = 1,
+                              strucZeroArray = strucZeroArray,
+                              margin = 1L)
         set.seed(seed)
         ans.R <- updateAlphaDeltaDLMWithTrend(prior = prior,
                                               betaTilde = betaTilde,
@@ -736,17 +795,26 @@ test_that("R and C versions of updateAlphaDeltaDLMWithTrend give same answer wit
                         nms = c("region", "time", "age"),
                         dimtypes = c("state", "time", "age"),
                         DimScales = list(new("Categories",
-                            dimvalues = c("a", "b", "c", "d", "e", "f")),
-                            new("Points", dimvalues = 1:6),
-                            new("Intervals", dimvalues = 0:10)))
+                                             dimvalues = c("a", "b", "c", "d", "e", "f")),
+                                         new("Points", dimvalues = 1:6),
+                                         new("Intervals", dimvalues = 0:10)))
+        strucZeroArray <- Counts(array(c(rep(1L, 5), 0L),
+                                       dim = c(6, 6, 10),
+                                       dimnames = list(region = letters[1:6],
+                                                       time = 1:6,
+                                                       age = 0:9)),
+                                 dimscales = c(time = "Points", age = "Intervals"))
         set.seed(seed)
         beta <- rnorm(360)
         betaTilde <- rnorm(360)
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, isSaturated = FALSE,
-                              multScale = 1)
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              multScale = 1,
+                              strucZeroArray = strucZeroArray,
+                              margin = 1:3)
         set.seed(seed)
         ans.R <- updateAlphaDeltaDLMWithTrend(prior = prior,
                                               betaTilde = betaTilde,
@@ -1204,8 +1272,8 @@ test_that("R and C versions of updateAlphaDLMNoTrend give same answer - phi == 1
     }
 })
 
-test_that("updateBeta gives valid answer", {
-    updateBeta <- demest:::updateBeta
+test_that("updateBeta gives valid answer with allStrucZero all FALSE", {
+    ## updateBeta <- demest:::updateBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         spec <- DLM()
@@ -1214,12 +1282,17 @@ test_that("updateBeta gives valid answer", {
                         nms = "region",
                         dimtypes = "state",
                         DimScales = list(new("Categories", dimvalues = letters[1:10])))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(region = letters[1:10])))
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
                               isSaturated = FALSE,
-                              multScale = 1)
+                              multScale = 1,
+                              margin = 1L,
+                              strucZeroArray = strucZeroArray)
         vbar <- rnorm(10)
         n <- c(4L, rep(5L, 9))
         sigma <- runif(1)
@@ -1230,7 +1303,7 @@ test_that("updateBeta gives valid answer", {
                                    sigma = sigma)
         set.seed(seed)
         mean <- (((n/sigma^2) * vbar + (1/prior@tau@.Data^2) * prior@alphaDLM@.Data[-1]) 
-                 / ((n/sigma^2) + (1/prior@tau@.Data^2)))
+            / ((n/sigma^2) + (1/prior@tau@.Data^2)))
         sd <- 1 / sqrt((n/sigma^2) + (1/prior@tau@.Data^2))
         ans.expected <- rnorm(n = 10, mean = mean, sd = sd)
         if (test.identity)
@@ -3111,22 +3184,29 @@ test_that("updateTauNorm gives valid answer", {
                         nms = "region",
                         dimtypes = "state",
                         DimScales = list(new("Categories", dimvalues = letters[1:10])))
+        strucZeroArray <- Counts(array(c(0L, rep(1L, 9)),
+                                       dim = 10,
+                                       dimnames = list(region = letters[1:10])))
         prior0 <- initialPrior(spec,
                                beta = beta,
                                metadata = metadata,
-                               sY = NULL, isSaturated = FALSE, multScale = 1)
+                               sY = NULL,
+                               isSaturated = FALSE,
+                               multScale = 1,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "ExchNormCov")
         beta <- rnorm(10)
         set.seed(seed)
         ans.obtained <- updateTauNorm(prior = prior0, beta = beta)
         set.seed(seed)
         ans.expected <- prior0
-        V <- sum((beta - prior0@Z %*% prior0@eta)^2)
+        V <- sum((beta[-1] - (prior0@Z %*% prior0@eta)[-1])^2)
         ans.expected@tau@.Data <- updateSDNorm(sigma = prior0@tau@.Data,
                                                A = prior0@ATau@.Data,
                                                nu = prior0@nuTau@.Data,
                                                V = V,
-                                               n = 10L,
+                                               n = 9L,
                                                max = prior0@tauMax@.Data)
         if (test.identity)
             expect_identical(ans.obtained, ans.expected)
@@ -3155,10 +3235,17 @@ test_that("R and C versions of updateTauNorm give same answer", {
                         nms = "region",
                         dimtypes = "state",
                         DimScales = list(new("Categories", dimvalues = letters[1:10])))
+        strucZeroArray <- Counts(array(c(0L, rep(1L, 9)),
+                                       dim = 10,
+                                       dimnames = list(region = letters[1:10])))
         prior0 <- initialPrior(spec,
                                beta = beta,
                                metadata = metadata,
-                               sY = NULL, isSaturated = FALSE, multScale = 1)
+                               sY = NULL,
+                               isSaturated = FALSE,
+                               multScale = 1,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "ExchNormCov")
         beta <- rnorm(10)
         set.seed(seed)
@@ -3195,24 +3282,30 @@ test_that("updateTauRobust gives valid answer", {
                         nms = "region",
                         dimtypes = "state",
                         DimScales = list(new("Categories", dimvalues = letters[1:10])))
+        strucZeroArray <- Counts(array(c(0L, rep(1L, 9)),
+                                       dim = 10,
+                                       dimnames = list(region = letters[1:10])))
         prior0 <- initialPrior(spec,
                                beta = beta,
                                metadata = metadata,
-                               sY = NULL, isSaturated = FALSE,
-                               multScale = 1)
+                               sY = NULL,
+                               isSaturated = FALSE,
+                               multScale = 1,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "ExchRobustCov")
         beta <- rnorm(10)
         set.seed(seed)
         ans.obtained <- updateTauRobust(prior = prior0)
         set.seed(seed)
         ans.expected <- prior0
-        V <- sum(1/prior0@UBeta@.Data)
+        V <- sum(1/prior0@UBeta@.Data[-1])
         ans.expected@tau@.Data <- updateSDRobust(sigma = prior0@tau@.Data,
                                                  A = prior0@ATau@.Data,
                                                  nuBeta = prior0@nuBeta@.Data,
                                                  nuTau = prior0@nuTau@.Data,
                                                  V = V,
-                                                 n = 10L,
+                                                 n = 9L,
                                                  max = prior0@tauMax@.Data)
         if (test.identity)
             expect_identical(ans.obtained, ans.expected)
@@ -3244,10 +3337,17 @@ test_that("R and C versions of updateTauRobust give same answer", {
                         nms = "region",
                         dimtypes = "state",
                         DimScales = list(new("Categories", dimvalues = letters[1:10])))
+        strucZeroArray <- Counts(array(c(0L, rep(1L, 9)),
+                                       dim = 10,
+                                       dimnames = list(region = letters[1:10])))
         prior0 <- initialPrior(spec,
                                beta = beta,
                                metadata = metadata,
-                               sY = NULL, isSaturated = FALSE, multScale = 1)
+                               sY = NULL,
+                               isSaturated = FALSE,
+                               multScale = 1,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "ExchRobustCov")
         beta <- rnorm(10)
         set.seed(seed)

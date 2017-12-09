@@ -2127,17 +2127,14 @@ R_init_demest(DllInfo *info)
   /*new priors */
   ADD_SYM(ATau);
   ADD_SYM(nuTau);
-  ADD_SYM(hasAlphaMove);
   ADD_SYM(hasAlphaDLM);
   ADD_SYM(hasAlphaICAR);
   ADD_SYM(hasAlphaMix);
   ADD_SYM(hasCovariates);
   ADD_SYM(hasSeason);
-  ADD_SYM(alphaCross);
   ADD_SYM(alphaDLM);
   ADD_SYM(alphaICAR);
   ADD_SYM(alphaMix);
-  ADD_SYM(indicesCross);
   ADD_SYM(iteratorState);
   ADD_SYM(iteratorStateOld);
   ADD_SYM(K);
@@ -2147,6 +2144,8 @@ R_init_demest(DllInfo *info)
   ADD_SYM(nuBeta);
   ADD_SYM(isRobust);
   ADD_SYM(isSaturated);
+  ADD_SYM(allStrucZero);
+  ADD_SYM(alongAllStrucZero);
   ADD_SYM(mNoTrend);
   ADD_SYM(m0NoTrend);
   ADD_SYM(CNoTrend);
