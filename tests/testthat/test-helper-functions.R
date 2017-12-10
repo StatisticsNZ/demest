@@ -5779,7 +5779,7 @@ test_that("R and C versions of betaHat give same answer with prior of class Mix"
                           multScale = 1,
                           isSaturated = FALSE,
                           strucZeroArray = strucZeroArray,
-                          margin = 1L)
+                          margin = 1:3)
     ans.R <- betaHat(prior, useC = FALSE)
     ans.C <- betaHat(prior, useC = TRUE)
     expect_identical(ans.R, ans.C)
@@ -6598,11 +6598,16 @@ test_that("getV gives valid answer with prior of class NormMixin", {
                     nms = "region",
                     dimtypes = "state",
                     DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     ans.obtained <- getV(prior)
     ans.expected <- rep(prior@tau@.Data^2, 10)
     expect_identical(ans.obtained, ans.expected)
@@ -6617,11 +6622,16 @@ test_that("R and C versions of getV give same answer with prior of class NormMix
                     nms = "region",
                     dimtypes = "state",
                     DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     ans.R <- getV(prior, useC = FALSE)
     ans.C <- getV(prior, useC = TRUE)
     if (test.identity)
@@ -6635,6 +6645,9 @@ test_that("getV gives valid answer with prior of class RobustMixin", {
     initialPrior <- demest:::initialPrior
     spec <- Exch(error = Error(robust = TRUE))
     beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
     metadata <- new("MetaData",
                     nms = "region",
                     dimtypes = "state",
@@ -6643,7 +6656,9 @@ test_that("getV gives valid answer with prior of class RobustMixin", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     ans.obtained <- getV(prior)
     ans.expected <- prior@UBeta@.Data
     expect_identical(ans.obtained, ans.expected)
@@ -6654,6 +6669,9 @@ test_that("R and C versions of getV give same answer with prior of class RobustM
     initialPrior <- demest:::initialPrior
     spec <- Exch(error = Error(robust = TRUE))
     beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
     metadata <- new("MetaData",
                     nms = "region",
                     dimtypes = "state",
@@ -6662,7 +6680,9 @@ test_that("R and C versions of getV give same answer with prior of class RobustM
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     ans.R <- getV(prior, useC = FALSE)
     ans.C <- getV(prior, useC = TRUE)
     if (test.identity)
@@ -7697,11 +7717,16 @@ test_that("lengthValues works", {
                     nms = "region",
                     dimtypes = "state",
                     DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     ans.obtained <- lengthValues(prior)
     ans.expected <- 1L
     expect_identical(ans.obtained, ans.expected)
@@ -7712,11 +7737,16 @@ test_that("lengthValues works", {
                     nms = "region",
                     dimtypes = "state",
                     DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     ans.obtained <- lengthValues(prior)
     ans.expected <- 1L
     expect_identical(ans.obtained, ans.expected)
@@ -7728,11 +7758,17 @@ test_that("lengthValues works", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 1:10)))
+    strucZeroArray = Counts(array(1L,
+                                  dim = 10,
+                                  dimnames = list(time = 1:10)),
+                            dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     ans.obtained <- lengthValues(prior)
     ans.expected <- 11L + 11L + 4L*11L + 4L + 1L
     expect_identical(ans.obtained, ans.expected)
@@ -7742,7 +7778,7 @@ test_that("makeMetadataPredict works with Points", {
     makeMetadataPredict <- demest:::makeMetadataPredict
     metadata.old <- new("MetaData",
                         nms = c("sex", "time"),
-                        dimtypes = c("state", "time"),
+                        dimtypes = c("sex", "time"),
                         DimScales = list(new("Sexes", dimvalues = c("f", "m")),
                         new("Points", dimvalues = 1:5)))
     along <- 2L
@@ -7751,7 +7787,7 @@ test_that("makeMetadataPredict works with Points", {
                                         n = NULL)
     ans.expected <- new("MetaData",
                         nms = c("sex", "time"),
-                        dimtypes = c("state", "time"),
+                        dimtypes = c("sex", "time"),
                         DimScales = list(new("Sexes", dimvalues = c("f", "m")),
                         new("Points", dimvalues = as.numeric(6:10))))
     expect_identical(ans.obtained, ans.expected)
@@ -7759,7 +7795,7 @@ test_that("makeMetadataPredict works with Points", {
                                         n = 5)
     ans.expected <- new("MetaData",
                         nms = c("sex", "time"),
-                        dimtypes = c("state", "time"),
+                        dimtypes = c("sex", "time"),
                         DimScales = list(new("Sexes", dimvalues = c("f", "m")),
                         new("Points", dimvalues = 6:10)))
     expect_identical(ans.obtained, ans.expected)
@@ -7775,7 +7811,7 @@ test_that("makeMetadataPredict works with Intervals", {
     makeMetadataPredict <- demest:::makeMetadataPredict
     metadata.old <- new("MetaData",
                         nms = c("sex", "time"),
-                        dimtypes = c("state", "time"),
+                        dimtypes = c("sex", "time"),
                         DimScales = list(new("Sexes", dimvalues = c("f", "m")),
                         new("Intervals", dimvalues = 0:5)))
     along <- 2L
@@ -7802,7 +7838,7 @@ test_that("makeMetadataPredict works with Categories", {
     makeMetadataPredict <- demest:::makeMetadataPredict
     metadata.old <- new("MetaData",
                         nms = c("sex", "region"),
-                        dimtypes = c("state", "state"),
+                        dimtypes = c("sex", "state"),
                         DimScales = list(new("Sexes", dimvalues = c("f", "m")),
                         new("Categories", dimvalues = c("a", "b" ,"c"))))
     along <- 2L
@@ -7916,11 +7952,17 @@ test_that("predictAlphaDLMNoTrend works", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 1:10)))
+    strucZeroArray = Counts(array(1L,
+                                  dim = 10,
+                                  dimnames = list(time = 1:10)),
+                            dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     prior@alphaDLM@.Data[1] <- rnorm(1)
     set.seed(1)
     ans.obtained <- predictAlphaDLMNoTrend(prior)
@@ -7940,17 +7982,23 @@ test_that("R and C versions of predictAlphaDLMNoTrend give same answer", {
     initialPrior <- demest:::initialPrior
     spec <- DLM(trend = NULL)
     for (seed in seq_len(n.test)) {
-    set.seed(seed)
+        set.seed(seed)
         beta <- rnorm(10)
         metadata <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 1:10)))
+        strucZeroArray = Counts(array(1L,
+                                      dim = 10,
+                                      dimnames = list(time = 1:10)),
+                                dimscales = c(time = "Points"))
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE,
+                              margin = 1L,
+                              strucZeroArray = strucZeroArray)
         set.seed(seed+1)
         ans.R <- predictAlphaDLMNoTrend(prior, useC = FALSE)
         set.seed(seed+1)
@@ -7972,11 +8020,17 @@ test_that("predictAlphaDeltaDLMWithTrend works", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 1:10)))
+    strucZeroArray <- Counts(array(1L,
+                                  dim = 10,
+                                  dimnames = list(time = 1:10)),
+                            dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     prior@alphaDLM@.Data[1] <- rnorm(1)
     prior@deltaDLM@.Data[1] <- rnorm(1)
     set.seed(1)
@@ -7997,6 +8051,10 @@ test_that("predictAlphaDeltaDLMWithTrend works", {
     ## no level
     spec <- DLM(level = NULL)
     beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 1:10)),
+                             dimscales = c(time = "Points"))
     metadata <- new("MetaData",
                     nms = "time",
                     dimtypes = "time",
@@ -8005,7 +8063,9 @@ test_that("predictAlphaDeltaDLMWithTrend works", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     prior@alphaDLM@.Data[1] <- rnorm(1)
     prior@deltaDLM@.Data[1] <- rnorm(1)
     set.seed(1)
@@ -8028,17 +8088,23 @@ test_that("R and C versions of predictAlphaDeltaDLMWithTrend give same answer", 
     ## has level
     spec <- DLM()
     for (seed in seq_len(n.test)) {
-    set.seed(seed)
+        set.seed(seed)
         beta <- rnorm(10)
         metadata <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 1:10)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE,
+                              margin = 1L,
+                              strucZeroArray = strucZeroArray)
         set.seed(seed+1)
         ans.R <- predictAlphaDeltaDLMWithTrend(prior, useC = FALSE)
         set.seed(seed+1)
@@ -8051,17 +8117,23 @@ test_that("R and C versions of predictAlphaDeltaDLMWithTrend give same answer", 
     ## no level
     spec <- DLM(level = NULL)
     for (seed in seq_len(n.test)) {
-    set.seed(seed)
+        set.seed(seed)
         beta <- rnorm(10)
         metadata <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 1:10)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE,
+                              margin = 1L,
+                              strucZeroArray = strucZeroArray)
         set.seed(seed+1)
         ans.R <- predictAlphaDeltaDLMWithTrend(prior, useC = FALSE)
         set.seed(seed+1)
@@ -8083,11 +8155,16 @@ test_that("predictBeta gives valid answer", {
                     nms = "region",
                     dimtypes = "state",
                     DimScales = list(new("Categories", dimvalues = c("o", "ns"))))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 2,
+                                   dimnames = list(region = c("o", "ns"))))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     set.seed(1)
     ans.obtained <- predictBeta(prior)
     set.seed(1)
@@ -8100,11 +8177,16 @@ test_that("predictBeta gives valid answer", {
                     nms = "region",
                     dimtypes = "state",
                     DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     set.seed(1)
     ans.obtained <- predictBeta(prior)
     set.seed(1)
@@ -8118,11 +8200,17 @@ test_that("predictBeta gives valid answer", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2005:2009)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 2005:2009)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     set.seed(1)
     ans.obtained <- predictBeta(prior)
     set.seed(1)
@@ -8136,11 +8224,17 @@ test_that("predictBeta gives valid answer", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2005:2009)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 2005:2009)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     set.seed(1)
     ans.obtained <- predictBeta(prior)
     set.seed(1)
@@ -8153,11 +8247,16 @@ test_that("predictBeta gives valid answer", {
                     nms = "region",
                     dimtypes = "state",
                     DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     set.seed(1)
     ans.obtained <- predictBeta(prior)
     set.seed(1)
@@ -8170,11 +8269,16 @@ test_that("predictBeta gives valid answer", {
                     nms = "region",
                     dimtypes = "state",
                     DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     set.seed(1)
     ans.obtained <- predictBeta(prior)
     set.seed(1)
@@ -8194,11 +8298,16 @@ test_that("R and C versions of predictBeta give same answer", {
                         nms = "region",
                         dimtypes = "state",
                         DimScales = list(new("Categories", dimvalues = c("o", "ns"))))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 2,
+                                       dimnames = list(region = c("o", "ns"))))
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE,
+                              margin = 1L,
+                              strucZeroArray = strucZeroArray)
         set.seed(seed + 1)
         ans.R <- predictBeta(prior, useC = FALSE)
         set.seed(seed + 1)
@@ -8214,11 +8323,16 @@ test_that("R and C versions of predictBeta give same answer", {
                         nms = "region",
                         dimtypes = "state",
                         DimScales = list(new("Categories", dimvalues = letters[1:10])))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(region = letters[1:10])))
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE,
+                              margin = 1L,
+                              strucZeroArray = strucZeroArray)
         set.seed(1)
         ans.R <- predictBeta(prior, useC = FALSE)
         set.seed(1)
@@ -8232,11 +8346,17 @@ test_that("R and C versions of predictBeta give same answer", {
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2005:2009)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 5,
+                                       dimnames = list(time = 2005:2009)),
+                                 dimscales = c(time = "Points"))
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE,
+                              margin = 1L,
+                              strucZeroArray = strucZeroArray)
         set.seed(1)
         ans.R <- predictBeta(prior, useC = FALSE)
         set.seed(1)
@@ -8250,11 +8370,17 @@ test_that("R and C versions of predictBeta give same answer", {
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2005:2009)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 5,
+                                       dimnames = list(time = 2005:2009)),
+                                 dimscales = c(time = "Points"))
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE,
+                              margin = 1L,
+                              strucZeroArray = strucZeroArray)
         set.seed(1)
         ans.R <- predictBeta(prior, useC = FALSE)
         set.seed(1)
@@ -8267,11 +8393,16 @@ test_that("R and C versions of predictBeta give same answer", {
                         nms = "region",
                         dimtypes = "state",
                         DimScales = list(new("Categories", dimvalues = letters[1:10])))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(region = letters[1:10])))
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE,
+                              margin = 1L,
+                              strucZeroArray = strucZeroArray)
         set.seed(seed + 1)
         ans.R <- predictBeta(prior, useC = FALSE)
         set.seed(seed + 1)
@@ -8287,11 +8418,16 @@ test_that("R and C versions of predictBeta give same answer", {
                         nms = "region",
                         dimtypes = "state",
                         DimScales = list(new("Categories", dimvalues = letters[1:10])))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(region = letters[1:10])))
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE,
+                              margin = 1L,
+                              strucZeroArray = strucZeroArray)
         set.seed(seed + 1)
         ans.R <- predictBeta(prior, useC = FALSE)
         set.seed(seed + 1)
@@ -8399,23 +8535,39 @@ test_that("predictComponentWeightMix works", {
                     DimScales = list(new("Points", dimvalues = 2001:2010),
                                      new("Categories", dimvalues = c("a", "b")),
                                      new("Intervals", dimvalues = as.numeric(0:10))))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(10, 2, 10),
+                                   dimnames = list(time = 2001:2010,
+                                                   reg = c("a", "b"),
+                                                   age = 0:9)),
+                             dimscales = c(time = "Points", age = "Intervals"))
     spec <- Mix()
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
                               multScale = 1,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE,
+                              margin = 1:3,
+                              strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = c("time", "reg", "age"),
                         dimtypes = c("time", "state", "age"),
                         DimScales = list(new("Points", dimvalues = 2011:2030),
                                          new("Categories", dimvalues = c("a", "b")),
                                          new("Intervals", dimvalues = as.numeric(0:10))))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(20, 2, 10),
+                                   dimnames = list(time = 2011:2030,
+                                                   reg = c("a", "b"),
+                                                   age = 0:9)),
+                             dimscales = c(time = "Points", age = "Intervals"))
     prior.new <- initialPriorPredict(prior.old,
                                      metadata = metadata.new,
                                      name = "time:reg:age",
-                                     along = 1L)
+                                     along = 1L,
+                                     margin = 1:3,
+                                     strucZeroArray = strucZeroArray)
     prior.new <- transferParamPrior(prior = prior.new,
                                     values = extractValues(prior.old))
     set.seed(1)
@@ -8455,23 +8607,38 @@ test_that("R and C versions of predictComponentWeightMix give same answer", {
                                      new("Categories", dimvalues = c("a", "b")),
                                      new("Intervals", dimvalues = as.numeric(0:10))))
     spec <- Mix()
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(10, 2, 10),
+                                   dimnames = list(time = 2001:2010,
+                                                   reg = c("a", "b"),
+                                                   age = 0:9)),
+                             dimscales = c(time = "Points", age = "Intervals"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
                               multScale = 1,
-                              isSaturated = FALSE
-                              )
+                              isSaturated = FALSE,
+                              margin = 1:3,
+                              strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = c("time", "reg", "age"),
                         dimtypes = c("time", "state", "age"),
                         DimScales = list(new("Points", dimvalues = 2011:2030),
                                          new("Categories", dimvalues = c("a", "b")),
                                          new("Intervals", dimvalues = as.numeric(0:10))))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(20, 2, 10),
+                                   dimnames = list(time = 2011:2030,
+                                                   reg = c("a", "b"),
+                                                   age = 0:9)),
+                             dimscales = c(time = "Points", age = "Intervals"))
     prior.new <- initialPriorPredict(prior.old,
                                      metadata = metadata.new,
                                      name = "time:reg:age",
-                                     along = 1L)
+                                     along = 1L,
+                              margin = 1:3,
+                              strucZeroArray = strucZeroArray)
     prior.new <- transferParamPrior(prior = prior.new,
                                     values = extractValues(prior.old))
     set.seed(1)
@@ -8502,22 +8669,38 @@ test_that("predictIndexClassMix works", {
                                      new("Categories", dimvalues = c("a", "b")),
                                      new("Intervals", dimvalues = as.numeric(0:10))))
     spec <- Mix()
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(10, 2, 10),
+                                   dimnames = list(time = 2001:2010,
+                                                   reg = c("a", "b"),
+                                                   age = 0:9)),
+                             dimscales = c(time = "Points", age = "Intervals"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
                               multScale = 1,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE,
+                              margin = 1:3,
+                              strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = c("time", "reg", "age"),
                         dimtypes = c("time", "state", "age"),
                         DimScales = list(new("Points", dimvalues = 2011:2030),
                                          new("Categories", dimvalues = c("a", "b")),
                                          new("Intervals", dimvalues = as.numeric(0:10))))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(20, 2, 10),
+                                   dimnames = list(time = 2011:2030,
+                                                   reg = c("a", "b"),
+                                                   age = 0:9)),
+                             dimscales = c(time = "Points", age = "Intervals"))
     prior.new <- initialPriorPredict(prior.old,
                                      metadata = metadata.new,
                                      name = "time:reg:age",
-                                     along = 1L)
+                                     along = 1L,
+                              margin = 1:3,
+                              strucZeroArray = strucZeroArray)
     prior.new <- transferParamPrior(prior = prior.new,
                                     values = extractValues(prior.old))
     prior.new@weightMix@.Data <- runif(n = 200, max = 0.1)
@@ -8542,23 +8725,38 @@ test_that("R and C versions of predictIndexClassMix give same answer", {
                                      new("Categories", dimvalues = c("a", "b")),
                                      new("Intervals", dimvalues = as.numeric(0:10))))
     spec <- Mix()
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(10, 2, 10),
+                                   dimnames = list(time = 2001:2010,
+                                                   reg = c("a", "b"),
+                                                   age = 0:9)),
+                             dimscales = c(time = "Points", age = "Intervals"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
                               multScale = 1,
-                              isSaturated = FALSE
-                              )
+                              isSaturated = FALSE,
+                              margin = 1:3,
+                              strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = c("time", "reg", "age"),
                         dimtypes = c("time", "state", "age"),
                         DimScales = list(new("Points", dimvalues = 2011:2030),
                                          new("Categories", dimvalues = c("a", "b")),
                                          new("Intervals", dimvalues = as.numeric(0:10))))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(20, 2, 10),
+                                   dimnames = list(time = 2011:2030,
+                                                   reg = c("a", "b"),
+                                                   age = 0:9)),
+                             dimscales = c(time = "Points", age = "Intervals"))
     prior.new <- initialPriorPredict(prior.old,
                                      metadata = metadata.new,
                                      name = "time:reg:age",
-                                     along = 1L)
+                                     along = 1L,
+                                     margin = 1:3,
+                                     strucZeroArray = strucZeroArray)
     prior.new <- transferParamPrior(prior = prior.new,
                                     values = extractValues(prior.old))
     prior.new@weightMix@.Data <- runif(n = 200, max = 0.1)
@@ -8589,22 +8787,38 @@ test_that("predictLevelComponentWeightMix works", {
                                      new("Categories", dimvalues = c("a", "b")),
                                      new("Intervals", dimvalues = as.numeric(0:10))))
     spec <- Mix()
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(10, 2, 10),
+                                   dimnames = list(time = 2001:2010,
+                                                   reg = c("a", "b"),
+                                                   age = 0:9)),
+                             dimscales = c(time = "Points", age = "Intervals"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
                               multScale = 1,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE,
+                              margin = 1:3,
+                              strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = c("time", "reg", "age"),
                         dimtypes = c("time", "state", "age"),
                         DimScales = list(new("Points", dimvalues = 2011:2030),
                                          new("Categories", dimvalues = c("a", "b")),
                                          new("Intervals", dimvalues = as.numeric(0:10))))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(20, 2, 10),
+                                   dimnames = list(time = 2011:2030,
+                                                   reg = c("a", "b"),
+                                                   age = 0:9)),
+                             dimscales = c(time = "Points", age = "Intervals"))
     prior.new <- initialPriorPredict(prior.old,
-                                      metadata = metadata.new,
-                                      name = "time:reg:age",
-                                      along = 1L)
+                                     metadata = metadata.new,
+                                     name = "time:reg:age",
+                                     along = 1L,
+                                     margin = 1:3,
+                                     strucZeroArray = strucZeroArray)
     prior.new <- transferParamPrior(prior = prior.new,
                                     values = extractValues(prior.old))
     set.seed(1)
@@ -8645,22 +8859,38 @@ test_that("R and C versions of predictLevelComponentWeightMix give same answer",
                                      new("Categories", dimvalues = c("a", "b")),
                                      new("Intervals", dimvalues = as.numeric(0:10))))
     spec <- Mix()
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(10, 2, 10),
+                                   dimnames = list(time = 2001:2010,
+                                                   reg = c("a", "b"),
+                                                   age = 0:9)),
+                             dimscales = c(time = "Points", age = "Intervals"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
                               multScale = 1,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE,
+                              margin = 1:3,
+                              strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = c("time", "reg", "age"),
                         dimtypes = c("time", "state", "age"),
                         DimScales = list(new("Points", dimvalues = 2011:2030),
                                          new("Categories", dimvalues = c("a", "b")),
                                          new("Intervals", dimvalues = as.numeric(0:10))))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(20, 2, 10),
+                                   dimnames = list(time = 2011:2030,
+                                                   reg = c("a", "b"),
+                                                   age = 0:9)),
+                             dimscales = c(time = "Points", age = "Intervals"))
     prior.new <- initialPriorPredict(prior.old,
-                                      metadata = metadata.new,
-                                      name = "time:reg:age",
-                                      along = 1L)
+                                     metadata = metadata.new,
+                                     name = "time:reg:age",
+                                     along = 1L,
+                                     margin = 1:3,
+                                     strucZeroArray = strucZeroArray)
     prior.new <- transferParamPrior(prior = prior.new,
                                     values = extractValues(prior.old))
     set.seed(1)
@@ -8846,11 +9076,17 @@ test_that("predictSeason works", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 1:10)))
+    strucZeroArray = Counts(array(1L,
+                                  dim = 10,
+                                  dimnames = list(time = 1:10)),
+                            dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     prior@s@.Data[[1]] <- rnorm(4)
     set.seed(1)
     ans.obtained <- predictSeason(prior)
@@ -8874,11 +9110,17 @@ test_that("R and C versions of predictSeason give same answer", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 1:10)))
+    strucZeroArray = Counts(array(1L,
+                                  dim = 10,
+                                  dimnames = list(time = 1:10)),
+                            dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     prior@s@.Data[[1]] <- rnorm(4)
     set.seed(1)
     ans.R <- predictSeason(prior, useC = FALSE)
@@ -8901,11 +9143,16 @@ test_that("predictUBeta gives valid answer", {
                     nms = "region",
                     dimtypes = "state",
                     DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     set.seed(1)
     ans.obtained <- predictUBeta(prior)
     set.seed(1)
@@ -8925,11 +9172,16 @@ test_that("R and C versions of predictUBeta give same answer", {
                     nms = "region",
                     dimtypes = "state",
                     DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     set.seed(1)
     ans.R <- predictUBeta(prior, useC = FALSE)
     set.seed(1)

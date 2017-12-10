@@ -1815,6 +1815,9 @@ test_that("predictPrior works with ExchFixed", {
     initialPrior <- demest:::initialPrior
     spec <- ExchFixed()
     beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
     metadata <- new("MetaData",
                     nms = "region",
                     dimtypes = "state",
@@ -1823,7 +1826,9 @@ test_that("predictPrior works with ExchFixed", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     ans.obtained <- predictPrior(prior)
     ans.expected <- prior
     expect_identical(ans.obtained, ans.expected)
@@ -1834,6 +1839,9 @@ test_that("R and C versions of predictPrior give same answer with ExchFixed", {
     initialPrior <- demest:::initialPrior
     spec <- ExchFixed()
     beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
     metadata <- new("MetaData",
                     nms = "region",
                     dimtypes = "state",
@@ -1842,7 +1850,9 @@ test_that("R and C versions of predictPrior give same answer with ExchFixed", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     ans.R <- predictPrior(prior, useC = FALSE)
     ans.C.generic <- predictPrior(prior, useC = TRUE, useSpecific = FALSE)
     ans.C.specific <- predictPrior(prior, useC = TRUE, useSpecific = TRUE)
@@ -1862,11 +1872,16 @@ test_that("predictPrior works with ExchNormZero", {
                     nms = "region",
                     dimtypes = "state",
                     DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     ans.obtained <- predictPrior(prior)
     ans.expected <- prior
     expect_identical(ans.obtained, ans.expected)
@@ -1877,6 +1892,9 @@ test_that("R and C versions of predictPrior give same answer with ExchNormZero",
     initialPrior <- demest:::initialPrior
     spec <- Exch()
     beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
     metadata <- new("MetaData",
                     nms = "region",
                     dimtypes = "state",
@@ -1885,7 +1903,7 @@ test_that("R and C versions of predictPrior give same answer with ExchNormZero",
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     ans.R <- predictPrior(prior, useC = FALSE)
     ans.C.generic <- predictPrior(prior, useC = TRUE, useSpecific = FALSE)
     ans.C.specific <- predictPrior(prior, useC = TRUE, useSpecific = TRUE)
@@ -1899,6 +1917,9 @@ test_that("predictPrior works with ExchRobustZero", {
     initialPrior <- demest:::initialPrior
     spec <- Exch(error = Error(robust = TRUE))
     beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
     metadata <- new("MetaData",
                     nms = "region",
                     dimtypes = "state",
@@ -1907,7 +1928,7 @@ test_that("predictPrior works with ExchRobustZero", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior, "ExchRobustZero")
     set.seed(1)
     ans.obtained <- predictPrior(prior)
@@ -1926,11 +1947,14 @@ test_that("R and C versions of predictPrior give same answer with ExchRobustZero
                     nms = "region",
                     dimtypes = "state",
                     DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior, "ExchRobustZero")
     set.seed(1)
     ans.R <- predictPrior(prior, useC = FALSE)
@@ -1959,6 +1983,9 @@ test_that("predictPrior works with ExchNormCov", {
                              contrastsArg = contrastsArg)
     spec <- Exch(covariates = covariates)
     beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
     metadata <- new("MetaData",
                     nms = "region",
                     dimtypes = "state",
@@ -1967,7 +1994,7 @@ test_that("predictPrior works with ExchNormCov", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     ans.obtained <- predictPrior(prior)
     ans.expected <- prior
     expect_identical(ans.obtained, ans.expected)
@@ -1987,6 +2014,9 @@ test_that("R and C versions of predictPrior give same answer with ExchNormCov", 
                              contrastsArg = contrastsArg)
     spec <- Exch(covariates = covariates)
     beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
     metadata <- new("MetaData",
                     nms = "region",
                     dimtypes = "state",
@@ -1995,7 +2025,7 @@ test_that("R and C versions of predictPrior give same answer with ExchNormCov", 
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     ans.R <- predictPrior(prior, useC = FALSE)
     ans.C.generic <- predictPrior(prior, useC = TRUE, useSpecific = FALSE)
     ans.C.specific <- predictPrior(prior, useC = TRUE, useSpecific = TRUE)
@@ -2018,6 +2048,9 @@ test_that("predictPrior works with ExchRobustCov", {
                              contrastsArg = contrastsArg)
     spec <- Exch(covariates = covariates, error = Error(robust = TRUE))
     beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
     metadata <- new("MetaData",
                     nms = "region",
                     dimtypes = "state",
@@ -2026,7 +2059,7 @@ test_that("predictPrior works with ExchRobustCov", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     set.seed(1)
     ans.obtained <- predictPrior(prior)
     set.seed(1)
@@ -2048,6 +2081,9 @@ test_that("R and C versions of predictPrior give same answer with ExchRobustCov"
                              contrastsArg = contrastsArg)
     spec <- Exch(covariates = covariates, error = Error(robust = TRUE))
     beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
     metadata <- new("MetaData",
                     nms = "region",
                     dimtypes = "state",
@@ -2056,7 +2092,7 @@ test_that("R and C versions of predictPrior give same answer with ExchRobustCov"
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     set.seed(1)
     ans.R <- predictPrior(prior, useC = FALSE)
     set.seed(1)
@@ -2084,20 +2120,30 @@ test_that("predictPrior works with DLMNoTrendNormZeroNoSeason", {
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 1:10)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata.old,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 11:15)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior.old,
                                      data = NULL,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L,
+                                     margin = 1L,
+                                     strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMNoTrendNormZeroNoSeasonPredict")
     set.seed(1)
     ans.obtained <- predictPrior(prior.new)
@@ -2112,6 +2158,10 @@ test_that("R and C versions of predictPrior give same answer with DLMNoTrendNorm
     initialPriorPredict <- demest:::initialPriorPredict
     spec <- DLM(trend = NULL)
     beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 1:10)),
+                             dimscales = c(time = "Points"))
     metadata.old <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -2120,7 +2170,11 @@ test_that("R and C versions of predictPrior give same answer with DLMNoTrendNorm
                               beta = beta,
                               metadata = metadata.old,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 11:15)),
+                             dimscales = c(time = "Points"))
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -2129,7 +2183,7 @@ test_that("R and C versions of predictPrior give same answer with DLMNoTrendNorm
                                      data = NULL,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMNoTrendNormZeroNoSeasonPredict")
     set.seed(1)
     ans.R <- predictPrior(prior.new, useC = FALSE)
@@ -2155,20 +2209,28 @@ test_that("predictPrior works with DLMWithTrendNormZeroNoSeason", {
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 1:10)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata.old,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 11:15)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior.old,
                                      data = NULL,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMWithTrendNormZeroNoSeasonPredict")
     set.seed(1)
     ans.obtained <- predictPrior(prior.new)
@@ -2187,20 +2249,28 @@ test_that("R and C versions of predictPrior give same answer with DLMWithTrendNo
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 1:10)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata.old,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 11:15)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior.old,
                                      data = NULL,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMWithTrendNormZeroNoSeasonPredict")
     set.seed(1)
     ans.R <- predictPrior(prior.new, useC = FALSE)
@@ -2227,20 +2297,28 @@ test_that("predictPrior works with DLMNoTrendNormZeroWithSeason", {
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 1:10)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata.old,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 11:15)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior.old,
                                      data = NULL,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMNoTrendNormZeroWithSeasonPredict")
     set.seed(1)
     ans.obtained <- predictPrior(prior.new)
@@ -2260,20 +2338,28 @@ test_that("R and C versions of predictPrior give same answer with DLMNoTrendNorm
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 1:10)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata.old,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 11:15)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior.old,
                                      data = NULL,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMNoTrendNormZeroWithSeasonPredict")
     set.seed(1)
     ans.R <- predictPrior(prior.new, useC = FALSE)
@@ -2300,20 +2386,28 @@ test_that("predictPrior works with DLMWithTrendNormZeroWithSeason", {
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 1:10)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata.old,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 11:15)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior.old,
                                      data = NULL,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMWithTrendNormZeroWithSeasonPredict")
     set.seed(1)
     ans.obtained <- predictPrior(prior.new)
@@ -2333,20 +2427,28 @@ test_that("R and C versions of predictPrior give same answer with DLMWithTrendNo
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 1:10)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata.old,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 11:15)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior.old,
                                      data = NULL,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMWithTrendNormZeroWithSeasonPredict")
     set.seed(1)
     ans.R <- predictPrior(prior.new, useC = FALSE)
@@ -2381,22 +2483,30 @@ test_that("predictPrior works with DLMNoTrendNormCovNoSeason", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 1:10)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 11:15)),
+                             dimscales = c(time = "Points"))
     data.new <- data.frame(time = 2011:2015,
                            income = rnorm(5))
     prior.new <- initialPriorPredict(prior = prior.old,
                                      data = data.new,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMNoTrendNormCovNoSeasonPredict")
     set.seed(1)
     ans.obtained <- predictPrior(prior.new)
@@ -2417,6 +2527,10 @@ test_that("R and C versions of predictPrior give same answer with DLMNoTrendNorm
     spec <- DLM(trend = NULL,
                 covariates = covariates)
     beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 1:10)),
+                             dimscales = c(time = "Points"))
     metadata <- new("MetaData",
                     nms = "time",
                     dimtypes = "time",
@@ -2425,7 +2539,11 @@ test_that("R and C versions of predictPrior give same answer with DLMNoTrendNorm
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 11:15)),
+                             dimscales = c(time = "Points"))
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -2436,7 +2554,7 @@ test_that("R and C versions of predictPrior give same answer with DLMNoTrendNorm
                                      data = data.new,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMNoTrendNormCovNoSeasonPredict")
     set.seed(1)
     ans.R <- predictPrior(prior.new, useC = FALSE)
@@ -2467,22 +2585,30 @@ test_that("predictPrior works with DLMWithTrendNormCovNoSeason", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 1:10)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
     data.new <- data.frame(time = 2011:2015,
                            income = rnorm(5))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 11:15)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior.old,
                                      data = data.new,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMWithTrendNormCovNoSeasonPredict")
     set.seed(1)
     ans.obtained <- predictPrior(prior.new)
@@ -2502,6 +2628,10 @@ test_that("R and C versions of predictPrior give same answer with DLMWithTrendNo
                              data = data)
     spec <- DLM(covariates = covariates)
     beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 1:10)),
+                             dimscales = c(time = "Points"))
     metadata <- new("MetaData",
                     nms = "time",
                     dimtypes = "time",
@@ -2510,7 +2640,11 @@ test_that("R and C versions of predictPrior give same answer with DLMWithTrendNo
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 11:15)),
+                             dimscales = c(time = "Points"))
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -2521,7 +2655,7 @@ test_that("R and C versions of predictPrior give same answer with DLMWithTrendNo
                                      data = data.new,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMWithTrendNormCovNoSeasonPredict")
     set.seed(1)
     ans.R <- predictPrior(prior.new, useC = FALSE)
@@ -2556,22 +2690,30 @@ test_that("predictPrior works with DLMNoTrendNormCovWithSeason", {
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 1:10)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata.old,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     data.new <- data.frame(time = 2011:2015,
                            income = rnorm(5))
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 11:15)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior.old,
                                      data = data.new,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMNoTrendNormCovWithSeasonPredict")
     set.seed(1)
     ans.obtained <- predictPrior(prior.new)
@@ -2595,6 +2737,10 @@ test_that("R and C versions of predictPrior give same answer with DLMNoTrendNorm
                 season = season,
                 covariates = covariates)
     beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 1:10)),
+                             dimscales = c(time = "Points"))
     metadata.old <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -2603,7 +2749,11 @@ test_that("R and C versions of predictPrior give same answer with DLMNoTrendNorm
                               beta = beta,
                               metadata = metadata.old,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 11:15)),
+                             dimscales = c(time = "Points"))
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -2614,7 +2764,7 @@ test_that("R and C versions of predictPrior give same answer with DLMNoTrendNorm
                                      data = data.new,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMNoTrendNormCovWithSeasonPredict")
     set.seed(1)
     ans.R <- predictPrior(prior.new, useC = FALSE)
@@ -2644,6 +2794,10 @@ test_that("predictPrior works with DLMWithTrendNormCovWithSeason", {
     spec <- DLM(season = season,
                 covariates = covariates)
     beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 1:10)),
+                             dimscales = c(time = "Points"))
     metadata.old <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -2652,7 +2806,11 @@ test_that("predictPrior works with DLMWithTrendNormCovWithSeason", {
                               beta = beta,
                               metadata = metadata.old,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 11:15)),
+                             dimscales = c(time = "Points"))
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -2663,7 +2821,7 @@ test_that("predictPrior works with DLMWithTrendNormCovWithSeason", {
                                      data = data.new,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMWithTrendNormCovWithSeasonPredict")
     set.seed(1)
     ans.obtained <- predictPrior(prior.new)
@@ -2687,6 +2845,10 @@ test_that("R and C versions of predictPrior give same answer with DLMWithTrendNo
                 covariates = covariates)
     beta <- rnorm(10)
     beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 1:10)),
+                             dimscales = c(time = "Points"))
     metadata.old <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -2695,9 +2857,13 @@ test_that("R and C versions of predictPrior give same answer with DLMWithTrendNo
                               beta = beta,
                               metadata = metadata.old,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     data.new <- data.frame(time = 2011:2015,
                            income = rnorm(5))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 11:15)),
+                             dimscales = c(time = "Points"))
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -2706,7 +2872,7 @@ test_that("R and C versions of predictPrior give same answer with DLMWithTrendNo
                                      data = data.new,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMWithTrendNormCovWithSeasonPredict")
     set.seed(1)
     ans.R <- predictPrior(prior.new, useC = FALSE)
@@ -2733,6 +2899,10 @@ test_that("predictPrior works with DLMNoTrendRobustZeroNoSeason", {
     error <- Error(robust = TRUE)
     spec <- DLM(trend = NULL, error = error)
     beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 1:10)),
+                             dimscales = c(time = "Points"))
     metadata.old <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -2741,7 +2911,11 @@ test_that("predictPrior works with DLMNoTrendRobustZeroNoSeason", {
                               beta = beta,
                               metadata = metadata.old,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 11:15)),
+                             dimscales = c(time = "Points"))
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -2750,7 +2924,7 @@ test_that("predictPrior works with DLMNoTrendRobustZeroNoSeason", {
                                      data = NULL,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMNoTrendRobustZeroNoSeasonPredict")
     set.seed(1)
     ans.obtained <- predictPrior(prior.new)
@@ -2771,20 +2945,28 @@ test_that("R and C versions of predictPrior give same answer with DLMNoTrendRobu
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 1:10)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata.old,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 11:15)),
+                             dimscales = c(time = "Points")) 
     prior.new <- initialPriorPredict(prior = prior.old,
                                      data = NULL,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMNoTrendRobustZeroNoSeasonPredict")
     set.seed(1)
     ans.R <- predictPrior(prior.new, useC = FALSE)
@@ -2812,20 +2994,28 @@ test_that("predictPrior works with DLMWithTrendRobustZeroNoSeason", {
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 1:10)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata.old,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 11:15)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior.old,
                                      data = NULL,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMWithTrendRobustZeroNoSeasonPredict")
     set.seed(1)
     ans.obtained <- predictPrior(prior.new)
@@ -2842,6 +3032,10 @@ test_that("R and C versions of predictPrior give same answer with DLMWithTrendRo
     error <- Error(robust = TRUE)
     spec <- DLM(error = error)
     beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 1:10)),
+                             dimscales = c(time = "Points"))
     metadata.old <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -2850,7 +3044,11 @@ test_that("R and C versions of predictPrior give same answer with DLMWithTrendRo
                               beta = beta,
                               metadata = metadata.old,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 11:15)),
+                             dimscales = c(time = "Points"))
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -2859,7 +3057,7 @@ test_that("R and C versions of predictPrior give same answer with DLMWithTrendRo
                                      data = NULL,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMWithTrendRobustZeroNoSeasonPredict")
     set.seed(1)
     ans.R <- predictPrior(prior.new, useC = FALSE)
@@ -2888,20 +3086,28 @@ test_that("predictPrior works with DLMNoTrendRobustZeroWithSeason", {
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 1:10)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata.old,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 11:15)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior.old,
                                      data = NULL,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMNoTrendRobustZeroWithSeasonPredict")
     set.seed(1)
     ans.obtained <- predictPrior(prior.new)
@@ -2923,20 +3129,28 @@ test_that("R and C versions of predictPrior give same answer with DLMNoTrendRobu
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 1:10)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata.old,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 11:15)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior.old,
                                      data = NULL,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMNoTrendRobustZeroWithSeasonPredict")
     set.seed(1)
     ans.R <- predictPrior(prior.new, useC = FALSE)
@@ -2965,20 +3179,28 @@ test_that("predictPrior works with DLMWithTrendRobustZeroWithSeason", {
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 1:10)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata.old,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 11:15)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior.old,
                                      data = NULL,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMWithTrendRobustZeroWithSeasonPredict")
     set.seed(1)
     ans.obtained <- predictPrior(prior.new)
@@ -3000,11 +3222,19 @@ test_that("R and C versions of predictPrior give same answer with DLMWithTrendRo
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 1:10)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata.old,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 11:15)),
+                             dimscales = c(time = "Points"))
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -3013,7 +3243,7 @@ test_that("R and C versions of predictPrior give same answer with DLMWithTrendRo
                                      data = NULL,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMWithTrendRobustZeroWithSeasonPredict")
     set.seed(1)
     ans.R <- predictPrior(prior.new, useC = FALSE)
@@ -3051,11 +3281,19 @@ test_that("predictPrior works with DLMNoTrendRobustCovNoSeason", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 1:10)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 11:15)),
+                             dimscales = c(time = "Points"))
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -3066,7 +3304,7 @@ test_that("predictPrior works with DLMNoTrendRobustCovNoSeason", {
                                      data = data.new,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMNoTrendRobustCovNoSeasonPredict")
     set.seed(1)
     ans.obtained <- predictPrior(prior.new)
@@ -3094,22 +3332,30 @@ test_that("R and C versions of predictPrior give same answer with DLMNoTrendRobu
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 1:10)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 11:15)),
+                             dimscales = c(time = "Points"))
     data.new <- data.frame(time = 2011:2015,
                            income = rnorm(5))
     prior.new <- initialPriorPredict(prior = prior.old,
                                      data = data.new,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMNoTrendRobustCovNoSeasonPredict")
     set.seed(1)
     ans.R <- predictPrior(prior.new, useC = FALSE)
@@ -3139,6 +3385,10 @@ test_that("predictPrior works with DLMWithTrendRobustCovNoSeason", {
     spec <- DLM(covariates = covariates,
                 error = error)
     beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 1:10)),
+                             dimscales = c(time = "Points"))
     metadata <- new("MetaData",
                     nms = "time",
                     dimtypes = "time",
@@ -3147,7 +3397,11 @@ test_that("predictPrior works with DLMWithTrendRobustCovNoSeason", {
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 11:15)),
+                             dimscales = c(time = "Points"))
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -3158,7 +3412,7 @@ test_that("predictPrior works with DLMWithTrendRobustCovNoSeason", {
                                      data = data.new,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMWithTrendRobustCovNoSeasonPredict")
     set.seed(1)
     ans.obtained <- predictPrior(prior.new)
@@ -3185,22 +3439,30 @@ test_that("R and C versions of predictPrior give same answer with DLMWithTrendRo
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 1:10)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
     data.new <- data.frame(time = 2011:2015,
                            income = rnorm(5))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 11:15)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior.old,
                                      data = data.new,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMWithTrendRobustCovNoSeasonPredict")
     set.seed(1)
     ans.R <- predictPrior(prior.new, useC = FALSE)
@@ -3234,6 +3496,10 @@ test_that("predictPrior works with DLMNoTrendRobustCovWithSeason", {
                 covariates = covariates,
                 error = error)
     beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 1:10)),
+                             dimscales = c(time = "Points"))
     metadata.old <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -3242,9 +3508,13 @@ test_that("predictPrior works with DLMNoTrendRobustCovWithSeason", {
                               beta = beta,
                               metadata = metadata.old,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     data.new <- data.frame(time = 2011:2015,
                            income = rnorm(5))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 11:15)),
+                             dimscales = c(time = "Points"))
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -3253,7 +3523,7 @@ test_that("predictPrior works with DLMNoTrendRobustCovWithSeason", {
                                      data = data.new,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMNoTrendRobustCovWithSeasonPredict")
     set.seed(1)
     ans.obtained <- predictPrior(prior.new)
@@ -3284,22 +3554,30 @@ test_that("R and C versions of predictPrior give same answer with DLMNoTrendRobu
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 1:10)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata.old,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
     data.new <- data.frame(time = 2011:2015,
                            income = rnorm(5))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 11:15)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior.old,
                                      data = data.new,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMNoTrendRobustCovWithSeasonPredict")
     set.seed(1)
     ans.R <- predictPrior(prior.new, useC = FALSE)
@@ -3336,22 +3614,30 @@ test_that("predictPrior works with DLMWithTrendRobustCovWithSeason", {
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 1:10)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata.old,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
     data.new <- data.frame(time = 2011:2015,
                            income = rnorm(5))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 11:15)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior.old,
                                      data = data.new,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMWithTrendRobustCovWithSeasonPredict")
     set.seed(1)
     ans.obtained <- predictPrior(prior.new)
@@ -3382,22 +3668,30 @@ test_that("R and C versions of predictPrior give same answer with DLMWithTrendRo
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 1:10)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata.old,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     data.new <- data.frame(time = 2011:2015,
                            income = rnorm(5))
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 11:15)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior.old,
                                      data = data.new,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMWithTrendRobustCovWithSeasonPredict")
     set.seed(1)
     ans.R <- predictPrior(prior.new, useC = FALSE)
@@ -3422,11 +3716,14 @@ test_that("predictPrior works with KnownCertain", {
                     nms = "region",
                     dimtypes = "state",
                     DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     ans.obtained <- predictPrior(prior)
     ans.expected <- prior
     expect_identical(ans.obtained, ans.expected)
@@ -3442,11 +3739,14 @@ test_that("R and C versions of predictPrior give same answer with KnownCertain",
                     nms = "region",
                     dimtypes = "state",
                     DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     ans.R <- predictPrior(prior, useC = FALSE)
     ans.C.generic <- predictPrior(prior, useC = TRUE, useSpecific = FALSE)
     ans.C.specific <- predictPrior(prior, useC = TRUE, useSpecific = TRUE)
@@ -3464,11 +3764,14 @@ test_that("predictPrior works with KnownUncertain", {
                     nms = "region",
                     dimtypes = "state",
                     DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     ans.obtained <- predictPrior(prior)
     ans.expected <- prior
     expect_identical(ans.obtained, ans.expected)
@@ -3480,6 +3783,9 @@ test_that("R and C versions of predictPrior give same answer with KnownUncertain
     mean <- ValuesOne(1:10, labels = letters[1:10], name = "region")
     spec <- Known(mean, sd = 1)
     beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
     metadata <- new("MetaData",
                     nms = "region",
                     dimtypes = "state",
@@ -3488,7 +3794,7 @@ test_that("R and C versions of predictPrior give same answer with KnownUncertain
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     ans.R <- predictPrior(prior, useC = FALSE)
     ans.C.generic <- predictPrior(prior, useC = TRUE, useSpecific = FALSE)
     ans.C.specific <- predictPrior(prior, useC = TRUE, useSpecific = TRUE)
@@ -3511,22 +3817,38 @@ test_that("predictPrior works with MixNormZero", {
                                      new("Categories", dimvalues = c("a", "b")),
                                      new("Intervals", dimvalues = as.numeric(0:10))))
     spec <- Mix(weights = Weights())
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(10, 2, 10),
+                                   dimnames = list(time = 2001:2010,
+                                                   reg = c("a", "b"),
+                                                   age = 0:9)),
+                             dimscales = c(time = "Points", age = "Intervals"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
                               multScale = 1,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE,
+                              margin = 1:3,
+                              strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = c("time", "reg", "age"),
                         dimtypes = c("time", "state", "age"),
                         DimScales = list(new("Points", dimvalues = 2011:2030),
                                          new("Categories", dimvalues = c("a", "b")),
                                          new("Intervals", dimvalues = as.numeric(0:10))))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(20, 2, 10),
+                                   dimnames = list(time = 2011:2030,
+                                                   reg = c("a", "b"),
+                                                   age = 0:9)),
+                             dimscales = c(time = "Points", age = "Intervals"))
     prior.new <- initialPriorPredict(prior.old,
                                      metadata = metadata.new,
                                      name = "time:reg:age",
-                                     along = 1L)
+                                     along = 1L,
+                                     margin = 1:3,
+                                     strucZeroArray = strucZeroArray)
     expect_is(prior.new, "MixNormZeroPredict")
     prior.new <- transferParamPrior(prior = prior.new,
                                     values = extractValues(prior.old))
@@ -3552,23 +3874,39 @@ test_that("R and C versions of predictPrior give same answer MixNormZero", {
                     DimScales = list(new("Points", dimvalues = 2001:2010),
                                      new("Categories", dimvalues = c("a", "b")),
                                      new("Intervals", dimvalues = as.numeric(0:10))))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(10, 2, 10),
+                                   dimnames = list(time = 2001:2010,
+                                                   reg = c("a", "b"),
+                                                   age = 0:9)),
+                             dimscales = c(time = "Points", age = "Intervals"))
     spec <- Mix()
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
                               multScale = 1,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE,
+                              margin = 1:3,
+                              strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = c("time", "reg", "age"),
                         dimtypes = c("time", "state", "age"),
                         DimScales = list(new("Points", dimvalues = 2011:2030),
                                          new("Categories", dimvalues = c("a", "b")),
                                          new("Intervals", dimvalues = as.numeric(0:10))))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(20, 2, 10),
+                                   dimnames = list(time = 2011:2030,
+                                                   reg = c("a", "b"),
+                                                   age = 0:9)),
+                             dimscales = c(time = "Points", age = "Intervals"))
     prior.new <- initialPriorPredict(prior.old,
                                      metadata = metadata.new,
                                      name = "time:reg:age",
-                                     along = 1L)
+                                     along = 1L,
+                                     margin = 1:3,
+                                     strucZeroArray = strucZeroArray)
     expect_is(prior.new, "MixNormZeroPredict")
     prior.new <- transferParamPrior(prior = prior.new,
                                     values = extractValues(prior.old))
@@ -3594,11 +3932,14 @@ test_that("predictPrior works with Zero", {
                     nms = "region",
                     dimtypes = "state",
                     DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     ans.obtained <- predictPrior(prior)
     ans.expected <- prior
     expect_identical(ans.obtained, ans.expected)
@@ -3613,11 +3954,14 @@ test_that("R and C versions of predictPrior give same answer with Zero", {
                     nms = "region",
                     dimtypes = "state",
                     DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     ans.R <- predictPrior(prior, useC = FALSE)
     ans.C.generic <- predictPrior(prior, useC = TRUE, useSpecific = FALSE)
     ans.C.specific <- predictPrior(prior, useC = TRUE, useSpecific = TRUE)
@@ -3637,6 +3981,10 @@ test_that("rescalePairPriors works with Exchangeable-Exchangeable", {
     spec.low <- Exch()
     beta.high <- rnorm(10)
     beta.low <- rnorm(2)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(5, 2),
+                                   dimnames = list(country = letters[1:5],
+                                                   sex = c("F", "M"))))
     metadata.high <- new("MetaData",
                          nms = c("country", "sex"),
                          dimtypes = c("state", "sex"),
@@ -3650,12 +3998,12 @@ test_that("rescalePairPriors works with Exchangeable-Exchangeable", {
                                beta = beta.high,
                                metadata = metadata.high,
                                sY = NULL,
-                               isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
+                               isSaturated = FALSE, margin = 1:2, strucZeroArray = strucZeroArray)
     prior.low <- initialPrior(spec.low,
                               beta = beta.low,
                               metadata = metadata.low,
                               sY = NULL,
-                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
+                              isSaturated = FALSE, margin = 2L, strucZeroArray = strucZeroArray)
     skeleton.beta.high <- SkeletonBetaTerm(first = 10L,
                                            metadata = metadata.high)
     skeleton.beta.low <- SkeletonBetaTerm(first = 30L,
@@ -3722,6 +4070,11 @@ test_that("rescalePairPriors works with Exchangeable-DLM", {
     spec.low <- DLM(damp = NULL)
     beta.high <- rnorm(10)
     beta.low <- rnorm(5)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(5, 2),
+                                   dimnames = list(time = 2001:2005,
+                                                   sex = c("F", "M"))),
+                             dimscales = c(time = "Points"))
     metadata.high <- new("MetaData",
                          nms = c("time", "sex"),
                          dimtypes = c("time", "sex"),
@@ -3735,7 +4088,7 @@ test_that("rescalePairPriors works with Exchangeable-DLM", {
                                beta = beta.high,
                                metadata = metadata.high,
                                sY = NULL,
-                               isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
+                               isSaturated = FALSE, margin = 1:2, strucZeroArray = strucZeroArray)
     prior.low <- initialPrior(spec.low,
                               beta = beta.low,
                               metadata = metadata.low,
@@ -3810,6 +4163,11 @@ test_that("rescalePairPriors works with DLM-Exchangeable", {
     spec.low <- Exch()
     beta.high <- rnorm(10)
     beta.low <- rnorm(2)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(5, 2),
+                                   dimnames = list(time = 2001:2005,
+                                                   sex = c("F", "M"))),
+                             dimscales = c(time = "Points"))
     metadata.high <- new("MetaData",
                          nms = c("time", "sex"),
                          dimtypes = c("time", "sex"),
@@ -3823,12 +4181,12 @@ test_that("rescalePairPriors works with DLM-Exchangeable", {
                                beta = beta.high,
                                metadata = metadata.high,
                                sY = NULL,
-                               isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
+                               isSaturated = FALSE, margin = 1:2, strucZeroArray = strucZeroArray)
     prior.low <- initialPrior(spec.low,
                               beta = beta.low,
                               metadata = metadata.low,
                               sY = NULL,
-                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
+                              isSaturated = FALSE, margin = 2L, strucZeroArray = strucZeroArray)
     skeleton.beta.high <- SkeletonBetaTerm(first = 10L,
                                            metadata = metadata.high)
     skeleton.beta.low <- SkeletonBetaTerm(first = 30L,
@@ -3901,6 +4259,10 @@ test_that("rescalePred works with Zero", {
     SkeletonBetaTerm <- demest:::SkeletonBetaTerm
     spec <- Zero()
     beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(5, 2),
+                                   dimnames = list(region = letters[1:5],
+                                                   sex = c("F", "M"))))
     metadata <- new("MetaData",
                     nms = c("country", "sex"),
                     dimtypes = c("state", "sex"),
@@ -3910,7 +4272,7 @@ test_that("rescalePred works with Zero", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
+                          isSaturated = FALSE, margin = 1:2, strucZeroArray = strucZeroArray)
     skeleton <- SkeletonBetaTerm(first = 10L,
                                  metadata = metadata)
     nIteration <- 20L
@@ -3944,8 +4306,6 @@ test_that("rescalePred works with Zero", {
     expect_equal(ans.obtained, ans.expected)
 })
 
-
-
 test_that("rescalePred works with Exchangeable", {
     rescalePred <- demest:::rescalePred
     makeOutputPrior <- demest:::makeOutputPrior
@@ -3953,6 +4313,10 @@ test_that("rescalePred works with Exchangeable", {
     SkeletonBetaTerm <- demest:::SkeletonBetaTerm
     spec <- Exch()
     beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(5, 2),
+                                   dimnames = list(region = letters[1:5],
+                                                   sex = c("F", "M"))))
     metadata <- new("MetaData",
                     nms = c("country", "sex"),
                     dimtypes = c("state", "sex"),
@@ -3962,7 +4326,7 @@ test_that("rescalePred works with Exchangeable", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
+                          isSaturated = FALSE, margin = 1:2, strucZeroArray = strucZeroArray)
     skeleton <- SkeletonBetaTerm(first = 10L,
                                  metadata = metadata)
     nIteration <- 20L
@@ -4017,6 +4381,10 @@ test_that("rescalePriorIntercept works with Exchangeable - with covariates", {
     spec.int <- ExchFixed()
     beta.term <- rnorm(10)
     beta.int <- rnorm(1)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(5, 2),
+                                   dimnames = list(region = letters[1:5],
+                                                   sex = c("F", "M"))))
     metadata.term <- new("MetaData",
                          nms = c("country", "sex"),
                          dimtypes = c("state", "sex"),
@@ -4026,12 +4394,12 @@ test_that("rescalePriorIntercept works with Exchangeable - with covariates", {
                                beta = beta.term,
                                metadata = metadata.term,
                                sY = NULL,
-                               isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
+                               isSaturated = FALSE, margin = 1:2, strucZeroArray = strucZeroArray)
     prior.int <- initialPrior(spec.int,
                               beta = beta.int,
                               metadata = NULL,
                               sY = NULL,
-                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
+                              isSaturated = FALSE, margin = 0L, strucZeroArray = strucZeroArray)
     skeleton.beta.term <- SkeletonBetaTerm(first = 10L,
                                            metadata = metadata.term)
     skeleton.beta.int <- SkeletonBetaIntercept(first = 30L)
@@ -4095,6 +4463,10 @@ test_that("rescalePriorIntercept works with Exchangeable - without covariates", 
     spec.int <- ExchFixed()
     beta.term <- rnorm(10)
     beta.int <- rnorm(1)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(5, 2),
+                                   dimnames = list(region = letters[1:5],
+                                                   sex = c("F", "M"))))
     metadata.term <- new("MetaData",
                          nms = c("country", "sex"),
                          dimtypes = c("state", "sex"),
@@ -4104,12 +4476,12 @@ test_that("rescalePriorIntercept works with Exchangeable - without covariates", 
                                beta = beta.term,
                                metadata = metadata.term,
                                sY = NULL,
-                               isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
+                               isSaturated = FALSE, margin = 1:2, strucZeroArray = strucZeroArray)
     prior.int <- initialPrior(spec.int,
                               beta = beta.int,
                               metadata = NULL,
                               sY = NULL,
-                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
+                              isSaturated = FALSE, margin = 0L, strucZeroArray = strucZeroArray)
     skeleton.beta.term <- SkeletonBetaTerm(first = 10L,
                                            metadata = metadata.term)
     skeleton.beta.int <- SkeletonBetaIntercept(first = 30L)
@@ -4175,6 +4547,11 @@ test_that("rescalePriorIntercept works with DLM - with covariates", {
     spec.int <- ExchFixed()
     beta.term <- rnorm(10)
     beta.int <- rnorm(1)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(5, 2),
+                                   dimnames = list(time = 2001:2005,
+                                                   sex = c("F", "M"))),
+                             dimscales = c(time = "Points"))
     metadata.term <- new("MetaData",
                          nms = c("time", "sex"),
                          dimtypes = c("time", "sex"),
@@ -4184,12 +4561,12 @@ test_that("rescalePriorIntercept works with DLM - with covariates", {
                                beta = beta.term,
                                metadata = metadata.term,
                                sY = NULL,
-                               isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
+                               isSaturated = FALSE, margin = 1:2, strucZeroArray = strucZeroArray)
     prior.int <- initialPrior(spec.int,
                               beta = beta.int,
                               metadata = NULL,
                               sY = NULL,
-                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
+                              isSaturated = FALSE, margin = 0L, strucZeroArray = strucZeroArray)
     skeleton.beta.term <- SkeletonBetaTerm(first = 10L,
                                            metadata = metadata.term)
     skeleton.beta.int <- SkeletonBetaIntercept(first = 30L)
@@ -4260,6 +4637,11 @@ test_that("rescalePriorIntercept works with DLM - without covariates", {
     spec.int <- ExchFixed()
     beta.term <- rnorm(10)
     beta.int <- rnorm(1)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(5, 2),
+                                   dimnames = list(time = 2001:2005,
+                                                   sex = c("F", "M"))),
+                             dimscales = c(time = "Points"))
     metadata.term <- new("MetaData",
                          nms = c("time", "sex"),
                          dimtypes = c("time", "sex"),
@@ -4269,12 +4651,12 @@ test_that("rescalePriorIntercept works with DLM - without covariates", {
                                beta = beta.term,
                                metadata = metadata.term,
                                sY = NULL,
-                               isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
+                               isSaturated = FALSE, margin = 1:2, strucZeroArray = strucZeroArray)
     prior.int <- initialPrior(spec.int,
                               beta = beta.int,
                               metadata = NULL,
                               sY = NULL,
-                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
+                              isSaturated = FALSE, margin = 0L, strucZeroArray = strucZeroArray)
     skeleton.beta.term <- SkeletonBetaTerm(first = 10L,
                                            metadata = metadata.term)
     skeleton.beta.int <- SkeletonBetaIntercept(first = 30L)
@@ -4331,8 +4713,6 @@ test_that("rescalePriorIntercept works with DLM - without covariates", {
 })
 
 
-
-
 ## rescaleSeason ######################################################################
 
 test_that("rescaleSeason works with SeasonMixin", {
@@ -4343,6 +4723,10 @@ test_that("rescaleSeason works with SeasonMixin", {
     spec <- DLM(trend = NULL,
                 season = Season(n = 4))
     beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 1:10)),
+                             dimscales = c(time = "Points"))
     metadata <- new("MetaData",
                     nms = "time",
                     dimtypes = "time",
@@ -4405,6 +4789,9 @@ test_that("transferParamPrior works with ExchNormZero", {
     initialPrior <- demest:::initialPrior
     spec <- Exch()
     beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
     metadata <- new("MetaData",
                     nms = "region",
                     dimtypes = "state",
@@ -4413,7 +4800,7 @@ test_that("transferParamPrior works with ExchNormZero", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     values <- runif(1)
     ans.obtained <- transferParamPrior(prior = prior,
                                        values = values)
@@ -4427,6 +4814,9 @@ test_that("R and C versions of transferParamPrior give same answer with ExchNorm
     initialPrior <- demest:::initialPrior
     spec <- Exch()
     beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
     metadata <- new("MetaData",
                     nms = "region",
                     dimtypes = "state",
@@ -4435,7 +4825,7 @@ test_that("R and C versions of transferParamPrior give same answer with ExchNorm
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     values <- runif(1)
     ans.R <- transferParamPrior(prior = prior,
                                 values = values,
@@ -4466,6 +4856,9 @@ test_that("transferParamPrior works with ExchNormCov", {
                              contrastsArg = contrastsArg)
     spec <- Exch(covariates = covariates)
     beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
     metadata <- new("MetaData",
                     nms = "region",
                     dimtypes = "state",
@@ -4474,7 +4867,7 @@ test_that("transferParamPrior works with ExchNormCov", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     values <- c(rnorm(8), runif(1))
     ans.obtained <- transferParamPrior(prior = prior,
                                        values = values)
@@ -4498,6 +4891,9 @@ test_that("R and C versions of transferParamPrior give same answer with ExchNorm
                              contrastsArg = contrastsArg)
     spec <- Exch(covariates = covariates)
     beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
     metadata <- new("MetaData",
                     nms = "region",
                     dimtypes = "state",
@@ -4506,7 +4902,7 @@ test_that("R and C versions of transferParamPrior give same answer with ExchNorm
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     values <- c(rnorm(8), runif(1))
     ans.R <- transferParamPrior(prior = prior,
                                 values = values,
@@ -4528,6 +4924,9 @@ test_that("transferParamPrior works with ExchRobustZero", {
     initialPrior <- demest:::initialPrior
     spec <- Exch(error = Error(robust = TRUE))
     beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
     metadata <- new("MetaData",
                     nms = "region",
                     dimtypes = "state",
@@ -4536,7 +4935,7 @@ test_that("transferParamPrior works with ExchRobustZero", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     values <- runif(1)
     ans.obtained <- transferParamPrior(prior = prior,
                                        values = values)
@@ -4554,11 +4953,14 @@ test_that("R and C versions of transferParamPrior give same answer with ExchRobu
                     nms = "region",
                     dimtypes = "state",
                     DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     values <- runif(1)
     ans.R <- transferParamPrior(prior = prior,
                                 values = values,
@@ -4589,6 +4991,9 @@ test_that("transferParamPrior works with ExchRobustCov", {
                              contrastsArg = contrastsArg)
     spec <- Exch(covariates = covariates, error = Error(robust = TRUE))
     beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
     metadata <- new("MetaData",
                     nms = "region",
                     dimtypes = "state",
@@ -4597,7 +5002,7 @@ test_that("transferParamPrior works with ExchRobustCov", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     values <- runif(9)
     ans.obtained <- transferParamPrior(prior = prior,
                                        values = values)
@@ -4620,6 +5025,9 @@ test_that("R and C versions of transferParamPrior give same answer with ExchRobu
     covariates <- Covariates(formula = formula,
                              data = data,
                              contrastsArg = contrastsArg)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
     spec <- Exch(covariates = covariates, error = Error(robust = TRUE))
     beta <- rnorm(10)
     metadata <- new("MetaData",
@@ -4630,7 +5038,7 @@ test_that("R and C versions of transferParamPrior give same answer with ExchRobu
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     values <- runif(9)
     ans.R <- transferParamPrior(prior = prior,
                                 values = values,
@@ -4662,20 +5070,28 @@ test_that("transferParamPrior works with DLMNoTrendNormZeroNoSeason", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 2011:2015)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior.old,
                                      data = NULL,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMNoTrendNormZeroNoSeasonPredict")
     ans.obtained <- transferParamPrior(prior = prior.new,
                                        values = extractValues(prior.old))
@@ -4699,11 +5115,19 @@ test_that("R and C versions of transferParamPrior give same answer with DLMNoTre
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 2011:2015)),
+                             dimscales = c(time = "Points"))
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -4712,7 +5136,7 @@ test_that("R and C versions of transferParamPrior give same answer with DLMNoTre
                                      data = NULL,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMNoTrendNormZeroNoSeasonPredict")
     ans.R <- transferParamPrior(prior = prior.new,
                                 values = extractValues(prior.old),
@@ -4741,20 +5165,28 @@ test_that("transferParamPrior works with DLMWithTrendNormZeroNoSeason", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 2011:2015)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior.old,
                                      data = NULL,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMWithTrendNormZeroNoSeasonPredict")
     ans.obtained <- transferParamPrior(prior = prior.new,
                                        values = extractValues(prior.old))
@@ -4780,20 +5212,28 @@ test_that("R and C versions of transferParamPrior give same answer with DLMWithT
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 2011:2015)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior.old,
                                      data = NULL,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMWithTrendNormZeroNoSeasonPredict")
     ans.R <- transferParamPrior(prior = prior.new,
                                 values = extractValues(prior.old),
@@ -4822,20 +5262,28 @@ test_that("transferParamPrior works with DLMNoTrendNormZeroWithSeason", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 2011:2015)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior.old,
                                      data = NULL,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMNoTrendNormZeroWithSeasonPredict")
     ans.obtained <- transferParamPrior(prior = prior.new,
                                        values = extractValues(prior.old))
@@ -4861,20 +5309,28 @@ test_that("R and C versions of transferParamPrior give same answer with DLMNoTre
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 2011:2015)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior.old,
                                      data = NULL,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMNoTrendNormZeroWithSeasonPredict")
     ans.R <- transferParamPrior(prior = prior.new,
                                 values = extractValues(prior.old),
@@ -4903,20 +5359,28 @@ test_that("transferParamPrior works with DLMWithTrendNormZeroWithSeason", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 2011:2015)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior.old,
                                      data = NULL,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMWithTrendNormZeroWithSeasonPredict")
     ans.obtained <- transferParamPrior(prior = prior.new,
                                        values = extractValues(prior.old))
@@ -4944,20 +5408,28 @@ test_that("R and C versions of transferParamPrior give same answer with DLMWithT
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 2011:2015)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior.old,
                                      data = NULL,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMWithTrendNormZeroWithSeasonPredict")
     ans.R <- transferParamPrior(prior = prior.new,
                                 values = extractValues(prior.old),
@@ -4995,22 +5467,30 @@ test_that("transferParamPrior works with DLMNoTrendNormCovNoSeason", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
     data.new <- data.frame(time = 2011:2015,
                            income = rnorm(5))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 2011:2015)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior.old,
                                      data = data.new,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMNoTrendNormCovNoSeasonPredict")
     ans.obtained <- transferParamPrior(prior = prior.new,
                                        values = extractValues(prior.old))
@@ -5040,22 +5520,30 @@ test_that("R and C versions of transferParamPrior give same answer with DLMNoTre
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
     data.new <- data.frame(time = 2011:2015,
                            income = rnorm(5))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 2011:2015)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior.old,
                                      data = data.new,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMNoTrendNormCovNoSeasonPredict")
     ans.R <- transferParamPrior(prior = prior.new,
                                 values = extractValues(prior.old),
@@ -5089,22 +5577,30 @@ test_that("transferParamPrior works with DLMWithTrendNormCovNoSeason", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
     data.new <- data.frame(time = 2011:2015,
                            income = rnorm(5))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 2011:2015)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior.old,
                                      data = data.new,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMWithTrendNormCovNoSeasonPredict")
     ans.obtained <- transferParamPrior(prior = prior.new,
                                        values = extractValues(prior.old))
@@ -5135,22 +5631,30 @@ test_that("R and C versions of transferParamPrior give same answer with DLMWithT
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
     data.new <- data.frame(time = 2011:2015,
                            income = rnorm(5))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 2011:2015)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior.old,
                                      data = data.new,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMWithTrendNormCovNoSeasonPredict")
     ans.R <- transferParamPrior(prior = prior.new,
                                 values = extractValues(prior.old),
@@ -5186,22 +5690,30 @@ test_that("transferParamPrior works with DLMNoTrendNormCovWithSeason", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
     data.new <- data.frame(time = 2011:2015,
                            income = rnorm(5))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 2011:2015)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior.old,
                                      data = data.new,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMNoTrendNormCovWithSeasonPredict")
     ans.obtained <- transferParamPrior(prior = prior.new,
                                        values = extractValues(prior.old))
@@ -5235,22 +5747,30 @@ test_that("R and C versions of transferParamPrior give same answer with DLMNoTre
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
     data.new <- data.frame(time = 2011:2015,
                            income = rnorm(5))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 2011:2015)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior.old,
                                      data = data.new,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMNoTrendNormCovWithSeasonPredict")
     ans.R <- transferParamPrior(prior = prior.new,
                                 values = extractValues(prior.old),
@@ -5285,22 +5805,30 @@ test_that("transferParamPrior works with DLMWithTrendNormCovWithSeason", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
     data.new <- data.frame(time = 2011:2015,
                            income = rnorm(5))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 2011:2015)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior.old,
                                      data = data.new,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMWithTrendNormCovWithSeasonPredict")
     ans.obtained <- transferParamPrior(prior = prior.new,
                                        values = extractValues(prior.old))
@@ -5335,22 +5863,30 @@ test_that("R and C versions of transferParamPrior give same answer with DLMWithT
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
     data.new <- data.frame(time = 2011:2015,
                            income = rnorm(5))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 2011:2015)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior.old,
                                      data = data.new,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMWithTrendNormCovWithSeasonPredict")
     ans.R <- transferParamPrior(prior = prior.new,
                                 values = extractValues(prior.old),
@@ -5382,20 +5918,28 @@ test_that("transferParamPrior works with DLMNoTrendRobustZeroNoSeason", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 2011:2015)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior.old,
                                      data = NULL,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMNoTrendRobustZeroNoSeasonPredict")
     ans.obtained <- transferParamPrior(prior = prior.new,
                                        values = extractValues(prior.old))
@@ -5419,20 +5963,28 @@ test_that("R and C versions of transferParamPrior give same answer with DLMNoTre
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 2011:2015)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior.old,
                                      data = NULL,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMNoTrendRobustZeroNoSeasonPredict")
     ans.R <- transferParamPrior(prior = prior.new,
                                 values = extractValues(prior.old),
@@ -5461,20 +6013,28 @@ test_that("transferParamPrior works with DLMWithTrendRobustZeroNoSeason", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 2011:2015)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior.old,
                                      data = NULL,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMWithTrendRobustZeroNoSeasonPredict")
     ans.obtained <- transferParamPrior(prior = prior.new,
                                        values = extractValues(prior.old))
@@ -5500,20 +6060,28 @@ test_that("R and C versions of transferParamPrior give same answer with DLMWithT
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 2011:2015)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior.old,
                                      data = NULL,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMWithTrendRobustZeroNoSeasonPredict")
     ans.R <- transferParamPrior(prior = prior.new,
                                 values = extractValues(prior.old),
@@ -5542,20 +6110,28 @@ test_that("transferParamPrior works with DLMNoTrendRobustZeroWithSeason", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 2011:2015)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior.old,
                                      data = NULL,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMNoTrendRobustZeroWithSeasonPredict")
     ans.obtained <- transferParamPrior(prior = prior.new,
                                        values = extractValues(prior.old))
@@ -5581,20 +6157,28 @@ test_that("R and C versions of transferParamPrior give same answer with DLMNoTre
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 2011:2015)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior.old,
                                      data = NULL,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMNoTrendRobustZeroWithSeasonPredict")
     ans.R <- transferParamPrior(prior = prior.new,
                                 values = extractValues(prior.old),
@@ -5623,20 +6207,28 @@ test_that("transferParamPrior works with DLMWithTrendRobustZeroWithSeason", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 2011:2015)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior.old,
                                      data = NULL,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMWithTrendRobustZeroWithSeasonPredict")
     ans.obtained <- transferParamPrior(prior = prior.new,
                                        values = extractValues(prior.old))
@@ -5664,11 +6256,19 @@ test_that("R and C versions of transferParamPrior give same answer with DLMWithT
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 2011:2015)),
+                             dimscales = c(time = "Points"))
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -5677,7 +6277,7 @@ test_that("R and C versions of transferParamPrior give same answer with DLMWithT
                                      data = NULL,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMWithTrendRobustZeroWithSeasonPredict")
     ans.R <- transferParamPrior(prior = prior.new,
                                 values = extractValues(prior.old),
@@ -5716,22 +6316,30 @@ test_that("transferParamPrior works with DLMNoTrendRobustCovNoSeason", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
     data.new <- data.frame(time = 2011:2015,
                            income = rnorm(5))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 2011:2015)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior.old,
                                      data = data.new,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMNoTrendRobustCovNoSeasonPredict")
     ans.obtained <- transferParamPrior(prior = prior.new,
                                        values = extractValues(prior.old))
@@ -5762,22 +6370,30 @@ test_that("R and C versions of transferParamPrior give same answer with DLMNoTre
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
     data.new <- data.frame(time = 2011:2015,
                            income = rnorm(5))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 2011:2015)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior.old,
                                      data = data.new,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMNoTrendRobustCovNoSeasonPredict")
     ans.R <- transferParamPrior(prior = prior.new,
                                 values = extractValues(prior.old),
@@ -5812,22 +6428,30 @@ test_that("transferParamPrior works with DLMWithTrendRobustCovNoSeason", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
     data.new <- data.frame(time = 2011:2015,
                            income = rnorm(5))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 2011:2015)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior.old,
                                      data = data.new,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMWithTrendRobustCovNoSeasonPredict")
     ans.obtained <- transferParamPrior(prior = prior.new,
                                        values = extractValues(prior.old))
@@ -5859,22 +6483,30 @@ test_that("R and C versions of transferParamPrior give same answer with DLMWithT
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
     data.new <- data.frame(time = 2011:2015,
                            income = rnorm(5))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 2011:2015)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior.old,
                                      data = data.new,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMWithTrendRobustCovNoSeasonPredict")
     ans.R <- transferParamPrior(prior = prior.new,
                                 values = extractValues(prior.old),
@@ -5911,22 +6543,30 @@ test_that("transferParamPrior works with DLMNoTrendRobustCovWithSeason", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
     data.new <- data.frame(time = 2011:2015,
                            income = rnorm(5))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 2011:2015)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior.old,
                                      data = data.new,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMNoTrendRobustCovWithSeasonPredict")
     ans.obtained <- transferParamPrior(prior = prior.new,
                                        values = extractValues(prior.old))
@@ -5961,22 +6601,30 @@ test_that("R and C versions of transferParamPrior give same answer with DLMNoTre
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
     data.new <- data.frame(time = 2011:2015,
                            income = rnorm(5))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 2011:2015)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior.old,
                                      data = data.new,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMNoTrendRobustCovWithSeasonPredict")
     ans.R <- transferParamPrior(prior = prior.new,
                                 values = extractValues(prior.old),
@@ -6012,22 +6660,30 @@ test_that("transferParamPrior works with DLMWithTrendRobustCovWithSeason", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
     data.new <- data.frame(time = 2011:2015,
                            income = rnorm(5))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 2011:2015)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior.old,
                                      data = data.new,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMWithTrendRobustCovWithSeasonPredict")
     ans.obtained <- transferParamPrior(prior = prior.new,
                                        values = extractValues(prior.old))
@@ -6063,22 +6719,30 @@ test_that("R and C versions of transferParamPrior give same answer with DLMWithT
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2011:2015)))
     data.new <- data.frame(time = 2011:2015,
                            income = rnorm(5))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5,
+                                   dimnames = list(time = 2011:2015)),
+                             dimscales = c(time = "Points"))
     prior.new <- initialPriorPredict(prior = prior.old,
                                      data = data.new,
                                      metadata = metadata.new,
                                      name = "time",
-                                     along = 1L)
+                                     along = 1L, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "DLMWithTrendRobustCovWithSeasonPredict")
     ans.R <- transferParamPrior(prior = prior.new,
                                 values = extractValues(prior.old),
@@ -6110,12 +6774,24 @@ test_that("transferParamPrior works with MixNormZeroPredict", {
                                      new("Categories", dimvalues = c("a", "b")),
                                      new("Intervals", dimvalues = as.numeric(0:10))))
     spec <- Mix()
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(10, 2, 10),
+                                   dimnames = list(time = 2001:2010,
+                                                   reg = c("a", "b"),
+                                                   age = 0:9)),
+                             dimscales = c(time = "Points", age = "Intervals"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
-                              isSaturated = FALSE,
+                              isSaturated = FALSE, margin = 1:3, strucZeroArray = strucZeroArray,
                               multScale = 1)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(20, 2, 10),
+                                   dimnames = list(time = 2011:2030,
+                                                   reg = c("a", "b"),
+                                                   age = 0:9)),
+                             dimscales = c(time = "Points", age = "Intervals"))
     metadata.new <- new("MetaData",
                         nms = c("time", "reg", "age"),
                         dimtypes = c("time", "state", "age"),
@@ -6125,7 +6801,7 @@ test_that("transferParamPrior works with MixNormZeroPredict", {
     prior.new <- initialPriorPredict(prior.old,
                                      metadata = metadata.new,
                                      name = "time:reg:age",
-                                     along = 1L)
+                                     along = 1L, margin = 1:3, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "MixNormZeroPredict")
     ## create 'prior.updated' that does not have same values as prior.new
     ## for slots where values are transferred
@@ -6169,22 +6845,34 @@ test_that("R and C versions of transferParamPrior give same answer with MixNormZ
                                      new("Categories", dimvalues = c("a", "b")),
                                      new("Intervals", dimvalues = as.numeric(0:10))))
     spec <- Mix()
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(10, 2, 10),
+                                   dimnames = list(time = 2001:2010,
+                                                   reg = c("a", "b"),
+                                                   age = 0:9)),
+                             dimscales = c(time = "Points", age = "Intervals"))
     prior.old <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
                               multScale = 1,
-                              isSaturated = FALSE)
+                              isSaturated = FALSE, margin = 1:3, strucZeroArray = strucZeroArray)
     metadata.new <- new("MetaData",
                         nms = c("time", "reg", "age"),
                         dimtypes = c("time", "state", "age"),
                         DimScales = list(new("Points", dimvalues = 2011:2030),
                                          new("Categories", dimvalues = c("a", "b")),
                                          new("Intervals", dimvalues = as.numeric(0:10))))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(20, 2, 10),
+                                   dimnames = list(time = 2011:2030,
+                                                   reg = c("a", "b"),
+                                                   age = 0:9)),
+                             dimscales = c(time = "Points", age = "Intervals"))
     prior.new <- initialPriorPredict(prior.old,
                                      metadata = metadata.new,
                                      name = "time:reg:age",
-                                     along = 1L)
+                                     along = 1L, margin = 1:3, strucZeroArray = strucZeroArray)
     expect_is(prior.new, "MixNormZeroPredict")
     ## create 'prior.updated' that does not have same values as prior.new
     ## for slots where values are transferred
