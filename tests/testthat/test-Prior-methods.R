@@ -10,19 +10,19 @@ test.extended <- TRUE
 test_that("betaIsEstimated works in default case", {
     betaIsEstimated <- demest:::betaIsEstimated
     x <- new("ExchFixed",
-             isSaturated = new("LogicalFlag", FALSE))
+             isSaturated = new("LogicalFlag", FALSE),
+             allStrucZero = FALSE)
     expect_false(betaIsEstimated(x))
 })
 
 test_that("betaIsEstimated works with Zero prior", {
     betaIsEstimated <- demest:::betaIsEstimated
     x <- new("Zero",
-             isSaturated = new("LogicalFlag", FALSE))
+             isSaturated = new("LogicalFlag", FALSE),
+             J = new("Length", 2L),
+             allStrucZero = c(FALSE, FALSE))
     expect_false(betaIsEstimated(x))
 })
-
-
-
 
 
 
@@ -38,11 +38,16 @@ test_that("makeOutputPrior works with ExchFixed", {
     beta <- rnorm(1)
     metadata <- NULL
     sY <- NULL
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(region = letters[1:10])))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = sY,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          margin = 0L,
+                          strucZeroArray = strucZeroArray)
     ans.obtained <- makeOutputPrior(prior)
     ans.expected <- list(scaleError = prior@tau@.Data)
     expect_identical(ans.obtained, ans.expected)
@@ -61,11 +66,16 @@ test_that("makeOutputPrior works with ExchNormZero", {
                     nms = "region",
                     dimtypes = "state",
                     DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(region = letters[1:10])))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     ans.obtained <- makeOutputPrior(prior = prior,
                                     metadata = metadata,
                                     pos = 3L)
@@ -86,11 +96,16 @@ test_that("makeOutputPrior works with ExchCovZero", {
                        income = rnorm(10),
                        cat = rep(c("a", "b"), each = 5))
     spec <- Exch(covariate = Covariates(mean ~ income + cat, data = data))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(region = letters[1:10])))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     ans.obtained <- makeOutputPrior(prior = prior,
                                     metadata = metadata,
                                     pos = 3L)
@@ -116,11 +131,16 @@ test_that("makeOutputPrior works with ExchRobustZero", {
                     nms = "region",
                     dimtypes = "state",
                     DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(region = letters[1:10])))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     ans.obtained <- makeOutputPrior(prior = prior,
                                     metadata = metadata,
                                     pos = 3L)
@@ -137,6 +157,9 @@ test_that("makeOutputPrior works with ExchRobustCov", {
                     nms = "region",
                     dimtypes = "state",
                     DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(region = letters[1:10])))
     data <- data.frame(region = letters[1:10],
                        income = rnorm(10),
                        cat = rep(c("a", "b"), each = 5))
@@ -146,7 +169,9 @@ test_that("makeOutputPrior works with ExchRobustCov", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = FALSE)
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     ans.obtained <- makeOutputPrior(prior = prior,
                                     metadata = metadata,
                                     pos = 3L)
@@ -174,11 +199,17 @@ test_that("makeOutputPrior works with DLMNoTrendNormZeroNoSeason", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 1:10)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 1:10)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = new("LogicalFlag", FALSE))
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     ans.obtained <- makeOutputPrior(prior = prior,
                                     metadata = metadata,
                                     pos = 3L)
@@ -212,11 +243,17 @@ test_that("makeOutputPrior works with DLMWithTrendNormZeroNoSeason", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 1:10)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 1:10)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = new("LogicalFlag", FALSE))
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     ans.obtained <- makeOutputPrior(prior = prior,
                                     metadata = metadata,
                                     pos = 3L)
@@ -258,7 +295,7 @@ test_that("makeOutputPrior works with DLMWithTrendNormZeroNoSeason", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = new("LogicalFlag", FALSE))
+                          isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     ans.obtained <- makeOutputPrior(prior = prior,
                                     metadata = metadata,
                                     pos = 3L)
@@ -302,11 +339,17 @@ test_that("makeOutputPrior works with DLMNoTrendNormZeroWithSeason", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 1:10)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 1:10)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = new("LogicalFlag", FALSE))
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     ans.obtained <- makeOutputPrior(prior = prior,
                                     metadata = metadata,
                                     pos = 3L)
@@ -359,11 +402,17 @@ test_that("makeOutputPrior works with DLMWithTrendNormZeroWithSeason", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 1:10)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 1:10)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = new("LogicalFlag", FALSE))
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     ans.obtained <- makeOutputPrior(prior = prior,
                                     metadata = metadata,
                                     pos = 3L)
@@ -424,7 +473,7 @@ test_that("makeOutputPrior works with DLMWithTrendNormZeroWithSeason", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = new("LogicalFlag", FALSE))
+                          isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     ans.obtained <- makeOutputPrior(prior = prior,
                                     metadata = metadata,
                                     pos = 3L)
@@ -492,11 +541,17 @@ test_that("makeOutputPrior works with DLMNoTrendNormCovNoSeason", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 1:10)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 1:10)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = new("LogicalFlag", FALSE))
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     ans.obtained <- makeOutputPrior(prior = prior,
                                     metadata = metadata,
                                     pos = 3L)
@@ -541,11 +596,17 @@ test_that("makeOutputPrior works with DLMWithTrendNormCovNoSeason", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 1:10)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 1:10)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = new("LogicalFlag", FALSE))
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     ans.obtained <- makeOutputPrior(prior = prior,
                                     metadata = metadata,
                                     pos = 3L)
@@ -599,7 +660,7 @@ test_that("makeOutputPrior works with DLMWithTrendNormCovNoSeason", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = new("LogicalFlag", FALSE))
+                          isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     ans.obtained <- makeOutputPrior(prior = prior,
                                     metadata = metadata,
                                     pos = 3L)
@@ -655,11 +716,17 @@ test_that("makeOutputPrior works with DLMNoTrendNormCovWithSeason", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 1:10)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 1:10)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = new("LogicalFlag", FALSE))
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     ans.obtained <- makeOutputPrior(prior = prior,
                                     metadata = metadata,
                                     pos = 3L)
@@ -724,11 +791,17 @@ test_that("makeOutputPrior works with DLMWithTrendNormCovWithSeason", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 1:10)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 1:10)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = new("LogicalFlag", FALSE))
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     ans.obtained <- makeOutputPrior(prior = prior,
                                     metadata = metadata,
                                     pos = 3L)
@@ -802,7 +875,7 @@ test_that("makeOutputPrior works with DLMWithTrendNormCovWithSeason", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = new("LogicalFlag", FALSE))
+                          isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     ans.obtained <- makeOutputPrior(prior = prior,
                                     metadata = metadata,
                                     pos = 3L)
@@ -875,11 +948,17 @@ test_that("makeOutputPrior works with DLMNoTrendRobustZeroNoSeason", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 1:10)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 1:10)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = new("LogicalFlag", FALSE))
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     ans.obtained <- makeOutputPrior(prior = prior,
                                     metadata = metadata,
                                     pos = 3L)
@@ -913,11 +992,17 @@ test_that("makeOutputPrior works with DLMWithTrendRobustZeroNoSeason", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 1:10)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 1:10)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = new("LogicalFlag", FALSE))
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     ans.obtained <- makeOutputPrior(prior = prior,
                                     metadata = metadata,
                                     pos = 3L)
@@ -955,11 +1040,17 @@ test_that("makeOutputPrior works with DLMWithTrendRobustZeroNoSeason", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 1:10)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 1:10)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = new("LogicalFlag", FALSE))
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     ans.obtained <- makeOutputPrior(prior = prior,
                                     metadata = metadata,
                                     pos = 3L)
@@ -1004,11 +1095,17 @@ test_that("makeOutputPrior works with DLMNoTrendRobustZeroWithSeason", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 1:10)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 1:10)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = new("LogicalFlag", FALSE))
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     ans.obtained <- makeOutputPrior(prior = prior,
                                     metadata = metadata,
                                     pos = 3L)
@@ -1062,11 +1159,17 @@ test_that("makeOutputPrior works with DLMWithTrendRobustZeroWithSeason", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 1:10)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 1:10)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = new("LogicalFlag", FALSE))
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     ans.obtained <- makeOutputPrior(prior = prior,
                                     metadata = metadata,
                                     pos = 3L)
@@ -1129,7 +1232,7 @@ test_that("makeOutputPrior works with DLMWithTrendRobustZeroWithSeason", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = new("LogicalFlag", FALSE))
+                          isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     ans.obtained <- makeOutputPrior(prior = prior,
                                     metadata = metadata,
                                     pos = 3L)
@@ -1186,11 +1289,17 @@ test_that("makeOutputPrior works with DLMNoTrendRobustCovNoSeason", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 1:10)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 1:10)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = new("LogicalFlag", FALSE))
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     ans.obtained <- makeOutputPrior(prior = prior,
                                     metadata = metadata,
                                     pos = 3L)
@@ -1236,11 +1345,17 @@ test_that("makeOutputPrior works with DLMWithTrendRobustCovNoSeason", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 1:10)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 1:10)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = new("LogicalFlag", FALSE))
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     ans.obtained <- makeOutputPrior(prior = prior,
                                     metadata = metadata,
                                     pos = 3L)
@@ -1299,7 +1414,7 @@ test_that("makeOutputPrior works with DLMWithTrendRobustCovNoSeason", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = new("LogicalFlag", FALSE))
+                          isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     ans.obtained <- makeOutputPrior(prior = prior,
                                     metadata = metadata,
                                     pos = 3L)
@@ -1352,11 +1467,17 @@ test_that("makeOutputPrior works with DLMNoTrendRobustCovWithSeason", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 1:10)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 1:10)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = new("LogicalFlag", FALSE))
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     ans.obtained <- makeOutputPrior(prior = prior,
                                     metadata = metadata,
                                     pos = 3L)
@@ -1422,11 +1543,17 @@ test_that("makeOutputPrior works with DLMWithTrendRobustCovWithSeason", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 1:10)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 1:10)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = new("LogicalFlag", FALSE))
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     ans.obtained <- makeOutputPrior(prior = prior,
                                     metadata = metadata,
                                     pos = 3L)
@@ -1501,7 +1628,7 @@ test_that("makeOutputPrior works with DLMWithTrendRobustCovWithSeason", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = new("LogicalFlag", FALSE))
+                          isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     ans.obtained <- makeOutputPrior(prior = prior,
                                     metadata = metadata,
                                     pos = 3L)
@@ -1571,12 +1698,17 @@ test_that("makeOutputPrior works with KnownCertain", {
                     DimScales = list(new("Categories", dimvalues = letters[1:4])))
     mean <- ValuesOne(1:6, labels = letters[1:6], name = "region")
     spec <- Known(mean = mean)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 4,
+                                   dimnames = list(region = letters[1:4])))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
                           multScale = 1,
-                          isSaturated = new("LogicalFlag", FALSE))
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     ans.obtained <- makeOutputPrior(prior = prior,
                                     metadata = metadata,
                                     pos = 101L)
@@ -1595,12 +1727,17 @@ test_that("makeOutputPrior works with KnownUncertain", {
     mean <- ValuesOne(1:6, labels = letters[1:6], name = "region")
     sd <- ValuesOne(1:6, labels = letters[1:6], name = "region")
     spec <- Known(mean = mean, sd = sd)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 4,
+                                   dimnames = list(region = letters[1:4])))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
                           multScale = 1,
-                          isSaturated = new("LogicalFlag", FALSE))
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     ans.obtained <- makeOutputPrior(prior = prior,
                                     metadata = metadata,
                                     pos = 101L)
@@ -1621,13 +1758,21 @@ test_that("makeOutputPrior works with MixNormZero", {
                     DimScales = list(new("Points", dimvalues = 2001:2010),
                                      new("Categories", dimvalues = c("a", "b")),
                                      new("Intervals", dimvalues = as.numeric(0:10))))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(10, 2, 10),
+                                   dimnames = list(time = 2001:2010,
+                                                   reg = c("a", "b"),
+                                                   age = 0:9)),
+                             dimscales = c(time = "Points", age = "Intervals"))
     spec <- Mix(weights = Weights(mean = -10))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
                           multScale = 1,
-                          isSaturated = new("LogicalFlag", FALSE))
+                          isSaturated = FALSE,
+                          margin = 1:3,
+                          strucZeroArray = strucZeroArray)
     ans.obtained <- makeOutputPrior(prior = prior,
                                     metadata = metadata,
                                     pos = 101L)
@@ -1659,7 +1804,6 @@ test_that("makeOutputPrior works with MixNormZero", {
     expect_identical(ans.obtained, ans.expected)
 })
 
-
           
 ## predictPrior ######################################################################
 
@@ -1679,7 +1823,7 @@ test_that("predictPrior works with ExchFixed", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = new("LogicalFlag", FALSE))
+                          isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     ans.obtained <- predictPrior(prior)
     ans.expected <- prior
     expect_identical(ans.obtained, ans.expected)
@@ -1698,7 +1842,7 @@ test_that("R and C versions of predictPrior give same answer with ExchFixed", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = new("LogicalFlag", FALSE))
+                          isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     ans.R <- predictPrior(prior, useC = FALSE)
     ans.C.generic <- predictPrior(prior, useC = TRUE, useSpecific = FALSE)
     ans.C.specific <- predictPrior(prior, useC = TRUE, useSpecific = TRUE)
@@ -3506,12 +3650,12 @@ test_that("rescalePairPriors works with Exchangeable-Exchangeable", {
                                beta = beta.high,
                                metadata = metadata.high,
                                sY = NULL,
-                               isSaturated = new("LogicalFlag", FALSE))
+                               isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     prior.low <- initialPrior(spec.low,
                               beta = beta.low,
                               metadata = metadata.low,
                               sY = NULL,
-                              isSaturated = new("LogicalFlag", FALSE))
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     skeleton.beta.high <- SkeletonBetaTerm(first = 10L,
                                            metadata = metadata.high)
     skeleton.beta.low <- SkeletonBetaTerm(first = 30L,
@@ -3591,12 +3735,12 @@ test_that("rescalePairPriors works with Exchangeable-DLM", {
                                beta = beta.high,
                                metadata = metadata.high,
                                sY = NULL,
-                               isSaturated = new("LogicalFlag", FALSE))
+                               isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     prior.low <- initialPrior(spec.low,
                               beta = beta.low,
                               metadata = metadata.low,
                               sY = NULL,
-                              isSaturated = new("LogicalFlag", FALSE))
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     skeleton.beta.high <- SkeletonBetaTerm(first = 10L,
                                            metadata = metadata.high)
     skeleton.beta.low <- SkeletonBetaTerm(first = 30L,
@@ -3679,12 +3823,12 @@ test_that("rescalePairPriors works with DLM-Exchangeable", {
                                beta = beta.high,
                                metadata = metadata.high,
                                sY = NULL,
-                               isSaturated = new("LogicalFlag", FALSE))
+                               isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     prior.low <- initialPrior(spec.low,
                               beta = beta.low,
                               metadata = metadata.low,
                               sY = NULL,
-                              isSaturated = new("LogicalFlag", FALSE))
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     skeleton.beta.high <- SkeletonBetaTerm(first = 10L,
                                            metadata = metadata.high)
     skeleton.beta.low <- SkeletonBetaTerm(first = 30L,
@@ -3766,7 +3910,7 @@ test_that("rescalePred works with Zero", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = new("LogicalFlag", FALSE))
+                          isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     skeleton <- SkeletonBetaTerm(first = 10L,
                                  metadata = metadata)
     nIteration <- 20L
@@ -3818,7 +3962,7 @@ test_that("rescalePred works with Exchangeable", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = new("LogicalFlag", FALSE))
+                          isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     skeleton <- SkeletonBetaTerm(first = 10L,
                                  metadata = metadata)
     nIteration <- 20L
@@ -3882,12 +4026,12 @@ test_that("rescalePriorIntercept works with Exchangeable - with covariates", {
                                beta = beta.term,
                                metadata = metadata.term,
                                sY = NULL,
-                               isSaturated = new("LogicalFlag", FALSE))
+                               isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     prior.int <- initialPrior(spec.int,
                               beta = beta.int,
                               metadata = NULL,
                               sY = NULL,
-                              isSaturated = new("LogicalFlag", FALSE))
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     skeleton.beta.term <- SkeletonBetaTerm(first = 10L,
                                            metadata = metadata.term)
     skeleton.beta.int <- SkeletonBetaIntercept(first = 30L)
@@ -3960,12 +4104,12 @@ test_that("rescalePriorIntercept works with Exchangeable - without covariates", 
                                beta = beta.term,
                                metadata = metadata.term,
                                sY = NULL,
-                               isSaturated = new("LogicalFlag", FALSE))
+                               isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     prior.int <- initialPrior(spec.int,
                               beta = beta.int,
                               metadata = NULL,
                               sY = NULL,
-                              isSaturated = new("LogicalFlag", FALSE))
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     skeleton.beta.term <- SkeletonBetaTerm(first = 10L,
                                            metadata = metadata.term)
     skeleton.beta.int <- SkeletonBetaIntercept(first = 30L)
@@ -4040,12 +4184,12 @@ test_that("rescalePriorIntercept works with DLM - with covariates", {
                                beta = beta.term,
                                metadata = metadata.term,
                                sY = NULL,
-                               isSaturated = new("LogicalFlag", FALSE))
+                               isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     prior.int <- initialPrior(spec.int,
                               beta = beta.int,
                               metadata = NULL,
                               sY = NULL,
-                              isSaturated = new("LogicalFlag", FALSE))
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     skeleton.beta.term <- SkeletonBetaTerm(first = 10L,
                                            metadata = metadata.term)
     skeleton.beta.int <- SkeletonBetaIntercept(first = 30L)
@@ -4125,12 +4269,12 @@ test_that("rescalePriorIntercept works with DLM - without covariates", {
                                beta = beta.term,
                                metadata = metadata.term,
                                sY = NULL,
-                               isSaturated = new("LogicalFlag", FALSE))
+                               isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     prior.int <- initialPrior(spec.int,
                               beta = beta.int,
                               metadata = NULL,
                               sY = NULL,
-                              isSaturated = new("LogicalFlag", FALSE))
+                              isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     skeleton.beta.term <- SkeletonBetaTerm(first = 10L,
                                            metadata = metadata.term)
     skeleton.beta.int <- SkeletonBetaIntercept(first = 30L)
@@ -4207,7 +4351,7 @@ test_that("rescaleSeason works with SeasonMixin", {
                           beta = beta,
                           metadata = metadata,
                           sY = NULL,
-                          isSaturated = new("LogicalFlag", FALSE))
+                          isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     prior@alphaDLM@.Data <- 1:11
     for (i in 1:11)
         prior@s@.Data[[i]] <- rnorm(4)

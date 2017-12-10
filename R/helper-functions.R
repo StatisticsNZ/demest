@@ -1463,10 +1463,10 @@ initialMixAll <- function(object, beta, metadata, sY, isSaturated, margin, struc
     shape2Phi <- object@shape2Phi
     tauMax <- object@tauMax
     ## allStrucZero
-    makeAllStrucZeroError(strucZeroArray = strucZeroArray,
-                          margin = margin,
-                          metadata = metadata,
-                          classPrior = "Mix")                          
+    allStrucZero <- makeAllStrucZeroError(strucZeroArray = strucZeroArray,
+                                          margin = margin,
+                                          metadata = metadata,
+                                          classPrior = "Mix")                          
     ## AComponentWeightMix, omegaComponentWeightMaxMix, omegaComponentWeight
     AComponentWeightMix <-
         makeAComponentMix(A = AComponentWeightMix,
@@ -1658,6 +1658,7 @@ initialMixAll <- function(object, beta, metadata, sY, isSaturated, margin, struc
          ATau = ATau,
          AVectorsMix = AVectorsMix,
          aMix = aMix,
+         allStrucZero = allStrucZero,
          alphaMix = alphaMix,
          CMix = CMix,
          componentWeightMix = componentWeightMix,
@@ -1716,10 +1717,10 @@ initialMixAll <- function(object, beta, metadata, sY, isSaturated, margin, struc
 initialMixAllPredict <- function(prior, metadata, name, along, margin, strucZeroArray) {
     index.class.max <- prior@indexClassMaxMix@.Data
     ## allStrucZero
-    makeAllStrucZeroError(strucZeroArray = strucZeroArray,
-                          metadata = metadata,
-                          margin = margin,
-                          classPrior = "Mix")                          
+    allStrucZero <- makeAllStrucZeroError(strucZeroArray = strucZeroArray,
+                                          metadata = metadata,
+                                          margin = margin,
+                                          classPrior = "Mix")                          
     ## dimBeta
     dimBeta <- dim(metadata)
     ## J
@@ -1791,6 +1792,7 @@ initialMixAllPredict <- function(prior, metadata, name, along, margin, strucZero
     alphaMix <- rep(0, times = J@.Data)
     alphaMix <- methods::new("ParameterVector", alphaMix)
     list(aMix = aMix,
+         allStrucZero = allStrucZero,
          alphaMix = alphaMix,
          CMix = CMix,
          componentWeightMix = componentWeightMix,
@@ -2099,7 +2101,7 @@ makeAllStrucZeroError <- function(strucZeroArray, metadata, margin, classPrior) 
         stop(gettextf("'%s' has elements where all contributing cells are structural zeros; priors with class \"%s\" cannot be used in such cases",
                       name.prior, classPrior))
     }
-    NULL
+    all.struc.zero
 }
 
 ## HAS_TESTS

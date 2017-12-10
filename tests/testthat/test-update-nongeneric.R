@@ -369,11 +369,19 @@ test_that("updateAlphaMix gives valid answer", {
                     DimScales = list(new("Categories", dimvalues = letters[1:20]),
                                      new("Points", dimvalues = 2001:2010)))
     spec <- Mix(weights = Weights(mean = -20))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(20, 10),
+                                   dimnames = list(reg = letters[1:20],
+                                                   time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL, isSaturated = FALSE,
-                          multScale = 1)
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          multScale = 1,
+                          margin = 1:2,
+                          strucZeroArray = strucZeroArray)
     beta.tilde <- rnorm(200)
     prior <- updateVectorsMixAndProdVectorsMix(prior = prior,
                                                betaTilde = beta.tilde)
@@ -401,11 +409,19 @@ test_that("R and C versions of updateAlphaMix give same answer", {
                     DimScales = list(new("Categories", dimvalues = letters[1:20]),
                                      new("Points", dimvalues = 2001:2010)))
     spec <- Mix(weights = Weights(mean = -20))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(20, 10),
+                                   dimnames = list(reg = letters[1:20],
+                                                   time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL, isSaturated = FALSE,
-                          multScale = 1)
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          multScale = 1,
+                          margin = 1:2,
+                          strucZeroArray = strucZeroArray)
     beta.tilde <- rnorm(200)
     prior <- updateVectorsMixAndProdVectorsMix(prior = prior,
                                                betaTilde = beta.tilde)
@@ -866,18 +882,26 @@ test_that("updateAlphaDLMNoTrend gives valid answer - phi < 1", {
                             new("Points", dimvalues = 1:10)))
         set.seed(seed)
         beta <- rnorm(40)
+        strucZeroArray <- Counts(array(c(1L, 1L, 1L, 0L),
+                                       dim = c(4, 10),
+                                       dimnames = list(region = letters[1:4],
+                                                       time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, isSaturated = FALSE,
-                              multScale = 1)
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              multScale = 1,
+                              strucZeroArray = strucZeroArray,
+                              margin = 1:2)
         set.seed(seed)
         ans.obtained <- updateAlphaDLMNoTrend(prior = prior,
                                               betaTilde = beta)
         ans.expected <- prior
         alpha <- matrix(0, nr = 4, ncol = 11)
         set.seed(seed)
-        for (i in 1:4) {
+        for (i in 1:3) {
             ans <- ffbs(beta = matrix(beta, nr = 4)[i,],
                         alpha = matrix(prior@alphaDLM, nr = 4)[i,],
                         m = prior@mNoTrend@.Data,
@@ -900,11 +924,18 @@ test_that("updateAlphaDLMNoTrend gives valid answer - phi < 1", {
                         DimScales = list(new("Intervals", dimvalues = 0:5)))
         set.seed(seed)
         beta <- rnorm(5)
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 5,
+                                       dimnames = list(age = 0:4)),
+                                 dimscales = c(age = "Intervals"))
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, isSaturated = FALSE,
-                              multScale = 1)
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              multScale = 1,
+                              margin = 1L,
+                              strucZeroArray = strucZeroArray)
         set.seed(seed)
         ans.obtained <- updateAlphaDLMNoTrend(prior = prior,
                                               beta = beta)
@@ -924,6 +955,12 @@ test_that("updateAlphaDLMNoTrend gives valid answer - phi < 1", {
             expect_equal(ans.obtained, ans.expected)
         ## dim = c(6, 6, 10); along = 2
         spec <- DLM(trend = NULL)
+        strucZeroArray <- Counts(array(c(rep(1L, 5), 0L),
+                                       dim = c(6, 6, 10),
+                                       dimnames = list(region = letters[1:6],
+                                                       time = 1:6,
+                                                       age = 0:9)),
+                                 dimscales = c(time = "Points", age = "Intervals"))
         metadata <- new("MetaData",
                         nms = c("region", "time", "age"),
                         dimtypes = c("state", "time", "age"),
@@ -936,8 +973,11 @@ test_that("updateAlphaDLMNoTrend gives valid answer - phi < 1", {
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, isSaturated = FALSE,
-                              multScale = 1)
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              multScale = 1,
+                              strucZeroArray = strucZeroArray,
+                              margin = 1:3)
         set.seed(seed)
         ans.obtained <- updateAlphaDLMNoTrend(prior = prior,
                                               beta = beta)
@@ -945,7 +985,7 @@ test_that("updateAlphaDLMNoTrend gives valid answer - phi < 1", {
         alpha <- array(0, dim = c(6, 7, 10))
         set.seed(seed)
         for (j in 1:10) {
-            for (i in 1:6) {
+            for (i in 1:5) {
                 ans <- ffbs(beta = array(beta, dim = c(6, 6, 10))[i, , j],
                             alpha = array(prior@alphaDLM@.Data, dim = c(6, 7, 10))[i, , j],
                             m = prior@mNoTrend@.Data,
@@ -974,15 +1014,23 @@ test_that("R and C versions of updateAlphaDLMNoTrend give same answer - phi < 1"
                         nms = c("region", "time"),
                         dimtypes = c("state", "time"),
                         DimScales = list(new("Categories",
-                            dimvalues = c("a", "b", "c", "d")),
-                            new("Points", dimvalues = 1:10)))
+                                             dimvalues = c("a", "b", "c", "d")),
+                                         new("Points", dimvalues = 1:10)))
         set.seed(seed)
         beta <- rnorm(40)
+        strucZeroArray <- Counts(array(c(1L, 1L, 1L, 0L),
+                                       dim = c(4, 10),
+                                       dimnames = list(region = letters[1:4],
+                                                       time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, isSaturated = FALSE,
-                              multScale = 1)
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              multScale = 1,
+                              strucZeroArray = strucZeroArray,
+                              margin = 1:2)
         set.seed(seed)
         ans.R <- updateAlphaDLMNoTrend(prior = prior,
                                        betaTilde = beta,
@@ -1003,11 +1051,18 @@ test_that("R and C versions of updateAlphaDLMNoTrend give same answer - phi < 1"
                         DimScales = list(new("Intervals", dimvalues = 0:5)))
         set.seed(seed)
         beta <- rnorm(5)
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 5,
+                                       dimnames = list(age = 0:4)),
+                                 dimscales = c(age = "Intervals"))
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, isSaturated = FALSE,
-                              multScale = 1)
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              multScale = 1,
+                              margin = 1L,
+                              strucZeroArray = strucZeroArray)
         set.seed(seed)
         ans.R <- updateAlphaDLMNoTrend(prior = prior,
                                        betaTilde = beta,
@@ -1026,16 +1081,25 @@ test_that("R and C versions of updateAlphaDLMNoTrend give same answer - phi < 1"
                         nms = c("region", "time", "age"),
                         dimtypes = c("state", "time", "age"),
                         DimScales = list(new("Categories",
-                            dimvalues = c("a", "b", "c", "d", "e", "f")),
-                            new("Points", dimvalues = 1:6),
-                            new("Intervals", dimvalues = 0:10)))
+                                             dimvalues = c("a", "b", "c", "d", "e", "f")),
+                                         new("Points", dimvalues = 1:6),
+                                         new("Intervals", dimvalues = 0:10)))
+        strucZeroArray <- Counts(array(c(rep(1L, 5), 0L),
+                                       dim = c(6, 6, 10),
+                                       dimnames = list(region = letters[1:6],
+                                                       time = 1:6,
+                                                       age = 0:9)),
+                                 dimscales = c(time = "Points", age = "Intervals"))
         set.seed(seed)
         beta <- rnorm(360)
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, isSaturated = FALSE,
-                              multScale = 1)
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              multScale = 1,
+                              strucZeroArray = strucZeroArray,
+                              margin = 1:3)
         set.seed(seed)
         ans.R <- updateAlphaDLMNoTrend(prior = prior,
                                        betaTilde = beta,
@@ -1087,18 +1151,26 @@ test_that("updateAlphaDLMNoTrend gives valid answer - phi == 1", {
                             new("Points", dimvalues = 1:10)))
         set.seed(seed)
         beta <- rnorm(40)
+        strucZeroArray <- Counts(array(c(1L, 1L, 1L, 0L),
+                                       dim = c(4, 10),
+                                       dimnames = list(region = letters[1:4],
+                                                       time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, isSaturated = FALSE,
-                              multScale = 1)
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              multScale = 1,
+                              margin = 1:2,
+                              strucZeroArray = strucZeroArray)
         set.seed(seed)
         ans.obtained <- updateAlphaDLMNoTrend(prior = prior,
                                               betaTilde = beta)
         ans.expected <- prior
         alpha <- matrix(0, nr = 4, ncol = 11)
         set.seed(seed)
-        for (i in 1:4) {
+        for (i in 1:3) {
             ans <- ffbs(beta = matrix(beta, nr = 4)[i,],
                         alpha = matrix(prior@alphaDLM, nr = 4)[i,],
                         m = prior@mNoTrend@.Data,
@@ -1121,11 +1193,18 @@ test_that("updateAlphaDLMNoTrend gives valid answer - phi == 1", {
                         DimScales = list(new("Intervals", dimvalues = 0:5)))
         set.seed(seed)
         beta <- rnorm(5)
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 5,
+                                       dimnames = list(age = 0:4)),
+                                 dimscales = c(age = "Intervals"))
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, isSaturated = FALSE,
-                              multScale = 1)
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              multScale = 1,
+                              strucZeroArray = strucZeroArray,
+                              margin = 1L)
         set.seed(seed)
         ans.obtained <- updateAlphaDLMNoTrend(prior = prior,
                                               beta = beta)
@@ -1153,12 +1232,21 @@ test_that("updateAlphaDLMNoTrend gives valid answer - phi == 1", {
                             new("Points", dimvalues = 1:6),
                             new("Intervals", dimvalues = 0:10)))
         set.seed(seed)
+        strucZeroArray <- Counts(array(c(rep(1L, 5), 0L),
+                                       dim = c(6, 6, 10),
+                                       dimnames = list(region = letters[1:6],
+                                                       time = 1:6,
+                                                       age = 0:9)),
+                                 dimscales = c(time = "Points", age = "Intervals"))
         beta <- rnorm(360)
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, isSaturated = FALSE,
-                              multScale = 1)
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              multScale = 1,
+                              strucZeroArray = strucZeroArray,
+                              margin = 1:3)
         set.seed(seed)
         ans.obtained <- updateAlphaDLMNoTrend(prior = prior,
                                               beta = beta)
@@ -1166,7 +1254,7 @@ test_that("updateAlphaDLMNoTrend gives valid answer - phi == 1", {
         alpha <- array(0, dim = c(6, 7, 10))
         set.seed(seed)
         for (j in 1:10) {
-            for (i in 1:6) {
+            for (i in 1:5) {
                 ans <- ffbs(beta = array(beta, dim = c(6, 6, 10))[i, , j],
                             alpha = array(prior@alphaDLM@.Data, dim = c(6, 7, 10))[i, , j],
                             m = prior@mNoTrend@.Data,
@@ -1199,11 +1287,19 @@ test_that("R and C versions of updateAlphaDLMNoTrend give same answer - phi == 1
                             new("Points", dimvalues = 1:10)))
         set.seed(seed)
         beta <- rnorm(40)
+        strucZeroArray <- Counts(array(c(1L, 1L, 1L, 0L),
+                                       dim = c(4, 10),
+                                       dimnames = list(region = letters[1:4],
+                                                       time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, isSaturated = FALSE,
-                              multScale = 1)
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              multScale = 1,
+                              strucZeroArray = strucZeroArray,
+                              margin = 1:2)
         set.seed(seed)
         ans.R <- updateAlphaDLMNoTrend(prior = prior,
                                        betaTilde = beta,
@@ -1224,11 +1320,18 @@ test_that("R and C versions of updateAlphaDLMNoTrend give same answer - phi == 1
                         DimScales = list(new("Intervals", dimvalues = 0:5)))
         set.seed(seed)
         beta <- rnorm(5)
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 5,
+                                       dimnames = list(age = 0:4)),
+                                 dimscales = c(age = "Intervals"))
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, isSaturated = FALSE,
-                              multScale = 1)
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              multScale = 1,
+                              strucZeroArray = strucZeroArray,
+                              margin = 1L)
         set.seed(seed)
         ans.R <- updateAlphaDLMNoTrend(prior = prior,
                                        betaTilde = beta,
@@ -1252,11 +1355,20 @@ test_that("R and C versions of updateAlphaDLMNoTrend give same answer - phi == 1
                             new("Intervals", dimvalues = 0:10)))
         set.seed(seed)
         beta <- rnorm(360)
+        strucZeroArray <- Counts(array(c(rep(1L, 5), 0L),
+                                       dim = c(6, 6, 10),
+                                       dimnames = list(region = letters[1:6],
+                                                       time = 1:6,
+                                                       age = 0:9)),
+                                 dimscales = c(time = "Points", age = "Intervals"))
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, isSaturated = FALSE,
-                              multScale = 1)
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              multScale = 1,
+                              strucZeroArray = strucZeroArray,
+                              margin = 1:3)
         set.seed(seed)
         ans.R <- updateAlphaDLMNoTrend(prior = prior,
                                        betaTilde = beta,
@@ -1273,7 +1385,7 @@ test_that("R and C versions of updateAlphaDLMNoTrend give same answer - phi == 1
 })
 
 test_that("updateBeta gives valid answer with allStrucZero all FALSE", {
-    ## updateBeta <- demest:::updateBeta
+    updateBeta <- demest:::updateBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         spec <- DLM()
@@ -1324,12 +1436,17 @@ test_that("R and C versions of updateBeta give same answer", {
                         nms = "region",
                         dimtypes = "state",
                         DimScales = list(new("Categories", dimvalues = letters[1:10])))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(region = letters[1:10])))
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
                               sY = NULL,
                               isSaturated = FALSE,
-                              multScale = 1)
+                              multScale = 1,
+                              strucZeroArray = strucZeroArray,
+                              margin = 1L)
         vbar <- rnorm(10)
         n <- c(rep(5L, 8), 3L, 4L)
         sigma <- runif(1)
@@ -1448,11 +1565,20 @@ test_that("updateComponentWeightMix gives valid answer", {
                                      new("Points", dimvalues = 2001:2010),
                                      new("Intervals", dimvalues = as.numeric(0:10))))
     spec <- Mix(weights = Weights(scale2 = HalfT(mult = 2)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(2, 10, 10),
+                                   dimnames = list(reg = c("a", "b"),
+                                                   time = 2001:2010,
+                                                   age = 0:9)),
+                             dimscales = c(time = "Points", age = "Intervals"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL, isSaturated = FALSE,
-                          multScale = 1)
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          multScale = 1,
+                          strucZeroArray = strucZeroArray,
+                          margin = 1:2)
     set.seed(2)
     ans.obtained <- updateComponentWeightMix(prior)
     set.seed(2)
@@ -1503,12 +1629,21 @@ test_that("R and C versions of updateComponentWeightMix give same answer", {
                         DimScales = list(new("Categories", dimvalues = c("a", "b")),
                                          new("Points", dimvalues = 2001:2010),
                                          new("Intervals", dimvalues = as.numeric(0:10))))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(2, 10, 10),
+                                   dimnames = list(reg = c("a", "b"),
+                                                   time = 2001:2010,
+                                                   age = 0:9)),
+                             dimscales = c(age = "Intervals", time = "Points"))
         spec <- Mix(weights = Weights(scale2 = HalfT(mult = 2)))
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, isSaturated = FALSE,
-                              multScale = 1)
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              multScale = 1,
+                              margin = 1:3,
+                              strucZeroArray = strucZeroArray)
         set.seed(seed+1)
         ans.R <- updateComponentWeightMix(prior, useC = FALSE)
         set.seed(seed+1)
@@ -1539,12 +1674,17 @@ test_that("updateEta gives valid answer", {
                         nms = "region",
                         dimtypes = "state",
                         DimScales = list(new("Categories", dimvalues = letters[1:10])))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(region = letters[1:10])))
         prior0 <- initialPrior(spec,
                                beta = beta,
                                metadata = metadata,
                                sY = NULL,
                                isSaturated = FALSE,
-                               multScale = 1)
+                               multScale = 1,
+                               strucZeroArray = strucZeroArray,
+                               margin = 1L)
         expect_is(prior0, "ExchNormCov")
         beta <- rnorm(10)
         set.seed(seed)
@@ -1585,12 +1725,17 @@ test_that("R and C versions of updateEta give same answer", {
                         nms = "region",
                         dimtypes = "state",
                         DimScales = list(new("Categories", dimvalues = letters[1:10])))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(region = letters[1:10])))
         prior0 <- initialPrior(spec,
                                beta = beta,
                                metadata = metadata,
-                              sY = NULL,
-                              isSaturated = FALSE,
-                              multScale = 1)
+                               sY = NULL,
+                               isSaturated = FALSE,
+                               multScale = 1,
+                               strucZeroArray = strucZeroArray,
+                               margin = 1L)
         expect_is(prior0, "ExchNormCov")
         beta <- rnorm(10)
         set.seed(seed)
@@ -1613,12 +1758,18 @@ test_that("updateGWithTrend works", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                              sY = NULL,
-                              isSaturated = FALSE,
-                              multScale = 1)
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          multScale = 1,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     expect_is(prior, "DLMWithTrendNormZeroNoSeason")
     prior@phi <- runif(1, 0.8, 0.98)
     ans.obtained <- updateGWithTrend(prior)
@@ -1636,10 +1787,18 @@ test_that("R and C versions of updateGWithTrend give same answer", {
                     nms = "time",
                     dimtypes = "time",
                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL, isSaturated = FALSE, multScale = 1)
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          multScale = 1,
+                          strucZeroArray = strucZeroArray,
+                          margin = 1L)
     expect_is(prior, "DLMWithTrendNormZeroNoSeason")
     prior@phi <- runif(1, 0.8, 0.98)
     ans.R <- updateGWithTrend(prior, useC = FALSE)
@@ -1657,12 +1816,20 @@ test_that("updateIndexClassMix gives valid answer", {
                     dimtypes = c("state", "time"),
                     DimScales = list(new("Categories", dimvalues = letters[1:20]),
                                      new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(20, 10),
+                                   dimnames = list(reg = letters[1:20],
+                                                   time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     spec <- Mix(weights = Weights(mean = -20))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL, isSaturated = FALSE,
-                          multScale = 1)
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          multScale = 1,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         beta.tilde <- rnorm(200)
@@ -1687,11 +1854,19 @@ test_that("R and C versions of updateIndexClassMix give same answer", {
                     DimScales = list(new("Categories", dimvalues = letters[1:20]),
                                      new("Points", dimvalues = 2001:2010)))
     spec <- Mix(weights = Weights(mean = -20))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(20, 10),
+                                   dimnames = list(reg = letters[1:20],
+                                                   time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL, isSaturated = FALSE,
-                          multScale = 1)
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          multScale = 1,
+                          strucZeroArray = strucZeroArray,
+                          margin = 1L)
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         beta.tilde <- rnorm(200)
@@ -1718,11 +1893,19 @@ test_that("updateIndexClassMaxPossibleMix gives valid answer", {
                     DimScales = list(new("Categories", dimvalues = letters[1:20]),
                                      new("Points", dimvalues = 2001:2010)))
     spec <- Mix(weights = Weights(mean = -20))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(20, 10),
+                                   dimnames = list(reg = letters[1:20],
+                                                   time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL, isSaturated = FALSE,
-                          multScale = 1)
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          multScale = 1,
+                          margin = 1:2,
+                          strucZeroArray = strucZeroArray)
     found <- 0L
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -1760,11 +1943,19 @@ test_that("R and C versions of updateIndexClassMaxPossibleMix give same answer",
                     DimScales = list(new("Categories", dimvalues = letters[1:20]),
                                      new("Points", dimvalues = 2001:2010)))
     spec <- Mix(weights = Weights(mean = -5))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(20, 10),
+                                   dimnames = list(reg = letters[1:20],
+                                                   time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL, isSaturated = FALSE,
-                          multScale = 1)
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          multScale = 1,
+                          margin = 1:2,
+                          strucZeroArray = strucZeroArray)
     found <- 0L
     nochanges <- 0L
     for (seed in seq_len(n.test * 2)) {
@@ -1796,12 +1987,20 @@ test_that("updateIndexClassMaxUsedMix gives valid answer", {
                     dimtypes = c("state", "time"),
                     DimScales = list(new("Categories", dimvalues = letters[1:20]),
                                      new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(20, 10),
+                                   dimnames = list(reg = letters[1:20],
+                                                   time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     spec <- Mix(weights = Weights(mean = -20))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL, isSaturated = FALSE,
-                          multScale = 1)
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          multScale = 1,
+                          margin = 1:2,
+                          strucZeroArray = strucZeroArray)
     max.old <- prior@indexClassMaxUsedMix@.Data ## 10
     max.new <- max.old - 2L
     prior@indexClassMix[prior@indexClassMix > max.new] <- max.new
@@ -1820,11 +2019,19 @@ test_that("R and C versions of updateIndexClassMaxUsedMix give same answer", {
                     DimScales = list(new("Categories", dimvalues = letters[1:20]),
                                      new("Points", dimvalues = 2001:2010)))
     spec <- Mix(weights = Weights(mean = -20))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(20, 10),
+                                   dimnames = list(reg = letters[1:20],
+                                                   time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL, isSaturated = FALSE,
-                          multScale = 1)
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          multScale = 1,
+                          strucZeroArray = strucZeroArray,
+                          margin = 1:2)
     max.old <- prior@indexClassMaxUsedMix@.Data ## 10
     max.new <- max.old - 2L
     prior@indexClassMix[prior@indexClassMix > max.new] <- max.new
@@ -1844,11 +2051,19 @@ test_that("updateLatentWeightMix gives valid answer", {
                     DimScales = list(new("Categories", dimvalues = letters[1:20]),
                                      new("Points", dimvalues = 2001:2010)))
     spec <- Mix(weights = Weights(mean = -20))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(20, 10),
+                                   dimnames = list(reg = letters[1:20],
+                                                   time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL, isSaturated = FALSE,
-                          multScale = 1)
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          multScale = 1,
+                          strucZeroArray = strucZeroArray,
+                          margin = 1:2)
     set.seed(2)
     ans.obtained <- updateLatentWeightMix(prior)
     lw.old <- prior@latentWeightMix@.Data
@@ -1873,11 +2088,19 @@ test_that("R and C versions of updateLatentWeightMix give same answer", {
                     DimScales = list(new("Categories", dimvalues = letters[1:20]),
                                      new("Points", dimvalues = 2001:2010)))
     spec <- Mix(weights = Weights(mean = -20))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(20, 10),
+                                   dimnames = list(reg = letters[1:20],
+                                                   time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL, isSaturated = FALSE,
-                          multScale = 1)
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          multScale = 1,
+                          strucZeroArray = strucZeroArray,
+                          margin = 1:2)
     set.seed(2)
     ans.R <- updateLatentWeightMix(prior, useC = FALSE)
     set.seed(2)
@@ -1899,11 +2122,19 @@ test_that("updateLatentComponentWeightMix gives valid answer", {
                     DimScales = list(new("Categories", dimvalues = letters[1:20]),
                                      new("Points", dimvalues = 2001:2010)))
     spec <- Mix(weights = Weights(mean = -20))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(20, 10),
+                                   dimnames = list(reg = letters[1:20],
+                                                   time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL, isSaturated = FALSE,
-                          multScale = 1)
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          multScale = 1,
+                          strucZeroArray = strucZeroArray,
+                          margin = 1:2)
     set.seed(2)
     ans.obtained <- updateLatentComponentWeightMix(prior)
     lcw.old <- matrix(prior@latentComponentWeightMix@.Data,
@@ -1931,11 +2162,19 @@ test_that("R and C versions of updateLatentComponentWeightMix give same answer",
                     DimScales = list(new("Categories", dimvalues = letters[1:20]),
                                      new("Points", dimvalues = 2001:2010)))
     spec <- Mix(weights = Weights(mean = -20))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(20, 10),
+                                   dimnames = list(reg = letters[1:20],
+                                                   time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL, isSaturated = FALSE,
-                          multScale = 1)
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          multScale = 1,
+                          strucZeroArray = strucZeroArray,
+                          margin = 1:2)
     set.seed(2)
     ans.R <- updateLatentComponentWeightMix(prior, useC = FALSE)
     set.seed(2)
@@ -1957,11 +2196,19 @@ test_that("updateLevelComponentWeightMix gives valid answer", {
                     DimScales = list(new("Categories", dimvalues = letters[1:20]),
                                      new("Points", dimvalues = 2001:2010)))
     spec <- Mix()
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(20, 10),
+                                   dimnames = list(reg = letters[1:20],
+                                                   time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL, isSaturated = FALSE,
-                          multScale = 1)
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          multScale = 1,
+                          strucZeroArray = strucZeroArray,
+                          margin = 1:2)
     prior@indexClassMaxPossibleMix@.Data <- 8L
     prior@indexClassMix[prior@indexClassMix > 8L] <- 8L
     set.seed(2)
@@ -2040,14 +2287,22 @@ test_that("R and C versions of updateLevelComponentWeightMix give same answer", 
                     DimScales = list(new("Categories", dimvalues = letters[1:20]),
                                      new("Points", dimvalues = 2001:2010)))
     spec <- Mix(weights = Weights(mean = -20))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(20, 10),
+                                   dimnames = list(reg = letters[1:20],
+                                                   time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     for (seed in seq_len(n.test)) {
         set.seed(seed + 1)
         beta <- rnorm(200)
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, isSaturated = FALSE,
-                              multScale = 1)
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              multScale = 1,
+                              strucZeroArray = strucZeroArray,
+                              margin = 1:2)
         max.val <- sample(7:10, 1)
         prior@indexClassMaxUsedMix@.Data <- max.val
         prior@indexClassMix[prior@indexClassMix > max.val] <- max.val
@@ -2073,11 +2328,19 @@ test_that("updateMeanLevelComponentWeightMix gives valid answer", {
                     DimScales = list(new("Categories", dimvalues = letters[1:20]),
                                      new("Points", dimvalues = 2001:2010)))
     spec <- Mix(weights = Weights(mean = -20))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(20, 10),
+                                   dimnames = list(reg = letters[1:20],
+                                                   time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL, isSaturated = FALSE,
-                          multScale = 1)
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          multScale = 1,
+                          strucZeroArray = strucZeroArray,
+                          margin = 1:2)
     set.seed(1)
     ans.obtained <- updateMeanLevelComponentWeightMix(prior)
     set.seed(1)
@@ -2106,21 +2369,28 @@ test_that("updateMeanLevelComponentWeightMix gives valid answer", {
 test_that("R and C versions of updateMeanLevelComponentWeightMix give same answer", {
     updateMeanLevelComponentWeightMix <- demest:::updateMeanLevelComponentWeightMix
     initialPrior <- demest:::initialPrior
-    
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         beta <- rnorm(200)
         metadata <- new("MetaData",
-                    nms = c("reg", "time"),
-                    dimtypes = c("state", "time"),
-                    DimScales = list(new("Categories", dimvalues = letters[1:20]),
-                                     new("Points", dimvalues = 2001:2010)))
+                        nms = c("reg", "time"),
+                        dimtypes = c("state", "time"),
+                        DimScales = list(new("Categories", dimvalues = letters[1:20]),
+                                         new("Points", dimvalues = 2001:2010)))
         spec <- Mix(weights = Weights(mean = -20))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = c(20, 10),
+                                       dimnames = list(reg = letters[1:20],
+                                                       time = 2001:2010)),
+                                 dimscales = c(time = "Points"))
         prior <- initialPrior(spec,
-                          beta = beta,
-                          metadata = metadata,
-                          sY = NULL, isSaturated = FALSE,
-                          multScale = 1)
+                              beta = beta,
+                              metadata = metadata,
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              multScale = 1,
+                              strucZeroArray = strucZeroArray,
+                              margin = 1:2)
         set.seed(seed+1)
         ans.R <- updateMeanLevelComponentWeightMix(prior, useC = FALSE)
         set.seed(seed+1)
@@ -2146,11 +2416,18 @@ test_that("updateOmegaAlpha works", {
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2001:2010)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 2001:2010)),
+                                 dimscales = c(time = "Points"))
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, isSaturated = FALSE,
-                              multScale = 1)
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              multScale = 1,
+                              strucZeroArray = strucZeroArray,
+                              margin = 1L)
         expect_is(prior, "DLMWithTrendNormZeroNoSeason")
         prior <- updateAlphaDeltaDLMWithTrend(prior = prior,
                                               betaTilde = beta)
@@ -2178,11 +2455,18 @@ test_that("updateOmegaAlpha works", {
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2001:2010)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 2001:2010)),
+                                 dimscales = c(time = "Points"))
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, isSaturated = FALSE,
-                              multScale = 1)
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              multScale = 1,
+                              strucZeroArray = strucZeroArray,
+                              margin = 1L)
         expect_is(prior, "DLMWithTrendNormZeroNoSeason")
         prior <- updateAlphaDeltaDLMWithTrend(prior = prior,
                                               betaTilde = beta)
@@ -2196,10 +2480,18 @@ test_that("updateOmegaAlpha works", {
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2001:2010)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 2001:2010)),
+                                 dimscales = c(time = "Points"))
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, isSaturated = FALSE, multScale = 1)
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              multScale = 1,
+                              strucZeroArray = strucZeroArray,
+                              margin = 1L)
         expect_is(prior, "DLMNoTrendNormZeroNoSeason")
         prior <- updateAlphaDLMNoTrend(prior = prior,
                                        betaTilde = beta)
@@ -2229,18 +2521,25 @@ test_that("R and C versions of updateOmegaAlpha give same answer", {
     updateAlphaDeltaDLMWithTrend <- demest:::updateAlphaDeltaDLMWithTrend
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
-		## withTrend = TRUE, hasLevel = TRUE
+        ## withTrend = TRUE, hasLevel = TRUE
         spec <- DLM()
         beta <- rnorm(10)
         metadata <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2001:2010)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 2001:2010)),
+                                 dimscales = c(time = "Points"))
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, isSaturated = FALSE,
-                              multScale = 1)
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              multScale = 1,
+                              strucZeroArray = strucZeroArray,
+                              margin = 1L)
         prior <- updateAlphaDeltaDLMWithTrend(prior = prior,
                                               betaTilde = beta)
         set.seed(seed)
@@ -2254,6 +2553,10 @@ test_that("R and C versions of updateOmegaAlpha give same answer", {
         ## withTrend = TRUE, hasLevel = FALSE
         spec <- DLM(level = NULL)
         beta <- rnorm(10)
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 2001:2010)),
+                                 dimscales = c(time = "Points"))
         metadata <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -2261,8 +2564,11 @@ test_that("R and C versions of updateOmegaAlpha give same answer", {
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, isSaturated = FALSE,
-                              multScale = 1)
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              multScale = 1,
+                              strucZeroArray = strucZeroArray,
+                              margin = 1L)
         expect_is(prior, "DLMWithTrendNormZeroNoSeason")
         prior <- updateAlphaDeltaDLMWithTrend(prior = prior,
                                               betaTilde = beta)
@@ -2279,7 +2585,11 @@ test_that("R and C versions of updateOmegaAlpha give same answer", {
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, isSaturated = FALSE, multScale = 1)
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              multScale = 1,
+                              strucZeroArray = strucZeroArray,
+                              margin = 1L)
         prior <- updateAlphaDLMNoTrend(prior = prior,
                                        betaTilde = beta)
         expect_is(prior, "DLMNoTrendNormZeroNoSeason")
@@ -2306,12 +2616,21 @@ test_that("updateOmegaComponentWeightMix gives valid answer", {
                     DimScales = list(new("Categories", dimvalues = c("a", "b")),
                                      new("Points", dimvalues = 2001:2010),
                                      new("Intervals", dimvalues = as.numeric(0:10))))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(2, 10, 10),
+                                   dimnames = list(reg = c("a", "b"),
+                                                   time = 2001:2010,
+                                                   age = 0:9)),
+                             dimscales = c(time = "Points", age = "Intervals"))
     spec <- Mix()
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL, isSaturated = FALSE,
-                          multScale = 1)
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          multScale = 1,
+                          strucZeroArray = strucZeroArray,
+                          margin = 1:3)
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         ans.obtained <- updateOmegaComponentWeightMix(prior)
@@ -2358,11 +2677,20 @@ test_that("R and C versions of updateOmegaComponentWeightMix give same answer", 
                                      new("Points", dimvalues = 2001:2010),
                                      new("Intervals", dimvalues = as.numeric(0:10))))
     spec <- Mix()
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(2, 10, 10),
+                                   dimnames = list(reg = c("a", "b"),
+                                                   time = 2001:2010,
+                                                   age = 0:9)),
+                             dimscales = c(time = "Points", age = "Intervals"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL, isSaturated = FALSE,
-                          multScale = 1)
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          multScale = 1,
+                          strucZeroArray = strucZeroArray,
+                          margin = 1:3)
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         ans.R <- updateOmegaComponentWeightMix(prior, useC = FALSE)
@@ -2387,11 +2715,18 @@ test_that("updateOmegaDelta works", {
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2001:2010)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 2001:2010)),
+                                 dimscales = c(time = "Points"))
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, isSaturated = FALSE,
-                              multScale = 1)
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              multScale = 1,
+                              strucZeroArray = strucZeroArray,
+                              margin = 1L)
         expect_is(prior, "DLMWithTrendNormZeroNoSeason")
         prior <- updateAlphaDeltaDLMWithTrend(prior = prior,
                                               betaTilde = beta)
@@ -2426,11 +2761,18 @@ test_that("R and C versions of updateOmegaDelta give same answer", {
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2001:2010)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 2001:2010)),
+                                 dimscales = c(time = "Points"))
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, isSaturated = FALSE,
-                              multScale = 1)
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              multScale = 1,
+                              strucZeroArray = strucZeroArray,
+                              margin = 1L)
         expect_is(prior, "DLMWithTrendNormZeroNoSeason")
         prior <- updateAlphaDeltaDLMWithTrend(prior = prior,
                                               betaTilde = beta)
@@ -2457,12 +2799,21 @@ test_that("updateOmegaLevelComponentWeightMix gives valid answer", {
                     DimScales = list(new("Categories", dimvalues = c("a", "b")),
                                      new("Points", dimvalues = 2001:2010),
                                      new("Intervals", dimvalues = as.numeric(0:10))))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(2, 10, 10),
+                                   dimnames = list(reg = c("a", "b"),
+                                                   time = 2001:2010,
+                                                   age = 0:9)),
+                             dimscales = c(time = "Points", age = "Intervals"))
     spec <- Mix()
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL, isSaturated = FALSE,
-                          multScale = 1)
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          multScale = 1,
+                          margin = 1:3,
+                          strucZeroArray = strucZeroArray)
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         ans.obtained <- updateOmegaLevelComponentWeightMix(prior)
@@ -2509,12 +2860,21 @@ test_that("R and C versions of updateOmegaLevelComponentWeightMix give same answ
                     DimScales = list(new("Categories", dimvalues = c("a", "b")),
                                      new("Points", dimvalues = 2001:2010),
                                      new("Intervals", dimvalues = as.numeric(0:10))))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(2, 10, 10),
+                                   dimnames = list(reg = c("a", "b"),
+                                                   time = 2001:2010,
+                                                   age = 0:9)),
+                             dimscales = c(time = "Points", age = "Intervals"))
     spec <- Mix()
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL, isSaturated = FALSE,
-                          multScale = 1)
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          multScale = 1,
+                          strucZeroArray = strucZeroArray,
+                          margin = 1:3)
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         ans.R <- updateOmegaLevelComponentWeightMix(prior, useC = FALSE)
@@ -2540,11 +2900,18 @@ test_that("updateOmegaSeason works", {
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2001:2010)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 2001:2010)),
+                                 dimscales = c(time = "Points"))
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, isSaturated = FALSE,
-                              multScale = 1)
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              multScale = 1,
+                              margin = 1L,
+                              strucZeroArray = strucZeroArray)
         expect_is(prior, "DLMWithTrendNormZeroWithSeason")
         prior <- updateAlphaDeltaDLMWithTrend(prior = prior,
                                               betaTilde = beta)
@@ -2585,10 +2952,18 @@ test_that("R and C versions of updateOmegaSeason give same answer", {
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2001:2010)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 2001:2010)),
+                                 dimscales = c(time = "Points"))
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, isSaturated = FALSE, multScale = 1)
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              multScale = 1,
+                              strucZeroArray = strucZeroArray,
+                              margin = 1L)
         expect_is(prior, "DLMWithTrendNormZeroWithSeason")
         prior <- updateAlphaDeltaDLMWithTrend(prior = prior,
                                               betaTilde = beta)
@@ -2617,12 +2992,21 @@ test_that("updateOmegaVectorsMix gives valid answer", {
                     DimScales = list(new("Categories", dimvalues = c("a", "b")),
                                      new("Points", dimvalues = 2001:2010),
                                      new("Intervals", dimvalues = as.numeric(0:10))))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(2, 10, 10),
+                                   dimnames = list(reg = c("a", "b"),
+                                                   time = 2001:2010,
+                                                   age = 0:9)),
+                             dimscales = c(time = "Points", age = "Intervals"))
     spec <- Mix()
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL, isSaturated = FALSE,
-                          multScale = 1)
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          multScale = 1,
+                          margin = 1:3,
+                          strucZeroArray = strucZeroArray)
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         ans.obtained <- updateOmegaVectorsMix(prior)
@@ -2662,12 +3046,21 @@ test_that("R and C versions of updateOmegaVectorsMix give same answer", {
                     DimScales = list(new("Categories", dimvalues = c("a", "b")),
                                      new("Points", dimvalues = 2001:2010),
                                      new("Intervals", dimvalues = as.numeric(0:10))))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(2, 10, 10),
+                                   dimnames = list(reg = c("a", "b"),
+                                                   time = 2001:2010,
+                                                   age = 0:9)),
+                             dimscales = c(time = "Points", age = "Intervals"))
     spec <- Mix()
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL, isSaturated = FALSE,
-                          multScale = 1)
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          multScale = 1,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         ans.R <- updateOmegaVectorsMix(prior, useC = FALSE)
@@ -2696,10 +3089,18 @@ test_that("updatePhi works", {
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2001:2010)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 2001:2010)),
+                                 dimscales = c(time = "Points"))
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, isSaturated = FALSE, multScale = 1)
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              multScale = 1,
+                              strucZeroArray = strucZeroArray,
+                              margin = 1L)
         expect_is(prior, "DLMWithTrendNormZeroNoSeason")
         prior <- updateAlphaDeltaDLMWithTrend(prior, betaTilde = beta, useC = TRUE)
         set.seed(seed)
@@ -2732,11 +3133,18 @@ test_that("updatePhi works", {
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2001:2010)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 2001:2010)),
+                                 dimscales = c(time = "Points"))
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, isSaturated = FALSE,
-                              multScale = 1)
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              multScale = 1,
+                              strucZeroArray = strucZeroArray,
+                              margin = 1L)
         expect_is(prior, "DLMNoTrendNormZeroNoSeason")
         prior <- updateAlphaDLMNoTrend(prior, betaTilde = beta, useC = TRUE)
         set.seed(seed)
@@ -2751,11 +3159,18 @@ test_that("updatePhi works", {
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2001:2010)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 2001:2010)),
+                                 dimscales = c(time = "Points"))
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, isSaturated = FALSE,
-                              multScale = 1)
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              multScale = 1,
+                              strucZeroArray = strucZeroArray,
+                              margin = 1L)
         expect_is(prior, "DLMNoTrendNormZeroNoSeason")
         prior <- updateAlphaDLMNoTrend(prior, betaTilde = beta, useC = TRUE)
         set.seed(seed)
@@ -2803,10 +3218,18 @@ test_that("R and C versions of updatePhi give same answer", {
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2001:2010)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 2001:2010)),
+                                 dimscales = c(time = "Points"))
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, isSaturated = FALSE, multScale = 1)
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              multScale = 1,
+                              strucZeroArray = strucZeroArray,
+                              margin = 1L)
         expect_is(prior, "DLMWithTrendNormZeroNoSeason")
         prior <- updateAlphaDeltaDLMWithTrend(prior = prior,
                                               betaTilde = beta)
@@ -2827,10 +3250,18 @@ test_that("R and C versions of updatePhi give same answer", {
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2001:2010)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 2001:2010)),
+                                 dimscales = c(time = "Points"))
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, isSaturated = FALSE, multScale = 1)
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              multScale = 1,
+                              strucZeroArray = strucZeroArray,
+                              margin = 1L)
         expect_is(prior, "DLMNoTrendNormZeroNoSeason")
         prior <- updateAlphaDLMNoTrend(prior = prior,
                                        betaTilde = beta)
@@ -2852,7 +3283,11 @@ test_that("R and C versions of updatePhi give same answer", {
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, isSaturated = FALSE, multScale = 1)
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              multScale = 1,
+                              strucZeroArray = strucZeroArray,
+                              margin = 1L)
         expect_is(prior, "DLMNoTrendNormZeroNoSeason")
         prior <- updateAlphaDLMNoTrend(prior = prior,
                                        betaTilde = beta)
@@ -2884,11 +3319,20 @@ test_that("updatePhiMix gives valid answer", {
                     DimScales = list(new("Categories", dimvalues = letters[1:20]),
                                      new("Points", dimvalues = 2001:2010)))
     spec <- Mix(weights = Weights(mean = -20))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(2, 10, 10),
+                                   dimnames = list(reg = c("a", "b"),
+                                                   time = 2001:2010,
+                                                   age = 0:9)),
+                             dimscales = c(time = "Points", age = "Intervals"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL, isSaturated = FALSE,
-                          multScale = 1)
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          multScale = 1,
+                          strucZeroArray = strucZeroArray,
+                          margin = 1:3)
     updated <- 0L
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -2908,12 +3352,21 @@ test_that("R and C versions of updatePhiMix give same answer", {
                     dimtypes = c("state", "time"),
                     DimScales = list(new("Categories", dimvalues = letters[1:20]),
                                      new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(2, 10, 10),
+                                   dimnames = list(reg = c("a", "b"),
+                                                   time = 2001:2010,
+                                                   age = 0:9)),
+                             dimscales = c(time = "Points", age = "Intervals"))
     spec <- Mix()
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL, isSaturated = FALSE,
-                          multScale = 1)
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          multScale = 1,
+                          strucZeroArray = strucZeroArray,
+                          margin = 1:3)
     updated <- 0L
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -2928,11 +3381,20 @@ test_that("R and C versions of updatePhiMix give same answer", {
     }
     expect_true(updated > 0L)
     spec <- Mix(weights = Weights(damp = Damp(min = 0.9, shape1 = 5, shape2 = 1)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(2, 10, 10),
+                                   dimnames = list(reg = c("a", "b"),
+                                                   time = 2001:2010,
+                                                   age = 0:9)),
+                             dimscales = c(time = "Points", age = "Intervals"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL, isSaturated = FALSE,
-                          multScale = 1)
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          multScale = 1,
+                          strucZeroArray = strucZeroArray,
+                          margin = 1:3)
     updated <- 0L
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -2988,22 +3450,30 @@ test_that("updateSeason gives valid answer", {
                         nms = c("region", "time"),
                         dimtypes = c("state", "time"),
                         DimScales = list(new("Categories",
-                            dimvalues = c("a", "b", "c", "d")),
-                            new("Points", dimvalues = 1:10)))
+                                             dimvalues = c("a", "b", "c", "d")),
+                                         new("Points", dimvalues = 1:10)))
         set.seed(seed)
         beta <- rnorm(40)
+        strucZeroArray <- Counts(array(c(1L, 1L, 1L, 0L),
+                                       dim = c(4, 10),
+                                       dimnames = list(region = letters[1:4],
+                                                       time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, isSaturated = FALSE,
-                              multScale = 1)
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              multScale = 1,
+                              strucZeroArray = strucZeroArray,
+                              margin = 1:2)
         set.seed(seed)
         ans.obtained <- updateSeason(prior = prior,
                                      betaTilde = beta)
         ans.expected <- prior
         season <- matrix(replicate(n = 44, c(0,0,0,0), simplify = FALSE), nr = 4, nc = 11)
         set.seed(seed)
-        for (i in 1:4) {
+        for (i in 1:3) {
             ans <- ffbs(beta = matrix(beta, nr = 4)[i,],
                         s = matrix(prior@s, nr = 4)[i,],
                         m = prior@mSeason@.Data,
@@ -3026,11 +3496,18 @@ test_that("updateSeason gives valid answer", {
                         DimScales = list(new("Intervals", dimvalues = 0:5)))
         set.seed(seed)
         beta <- rnorm(5)
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 5,
+                                       dimnames = list(age = 0:4)),
+                                 dimscales = c(age = "Intervals"))
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, isSaturated = FALSE,
-                              multScale = 1)
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              multScale = 1,
+                              strucZeroArray = strucZeroArray,
+                              margin = 1L)
         set.seed(seed)
         ans.obtained <- updateSeason(prior = prior,
                                      beta = beta)
@@ -3053,16 +3530,25 @@ test_that("updateSeason gives valid answer", {
                         nms = c("region", "time", "age"),
                         dimtypes = c("state", "time", "age"),
                         DimScales = list(new("Categories",
-                            dimvalues = c("a", "b", "c", "d", "e", "f")),
-                            new("Points", dimvalues = 1:6),
-                            new("Intervals", dimvalues = 0:10)))
+                                             dimvalues = c("a", "b", "c", "d", "e", "f")),
+                                         new("Points", dimvalues = 1:6),
+                                         new("Intervals", dimvalues = 0:10)))
         set.seed(seed)
         beta <- rnorm(360)
+        strucZeroArray <- Counts(array(c(rep(1L, 5), 0L),
+                                       dim = c(6, 6, 10),
+                                       dimnames = list(region = letters[1:6],
+                                                       time = 1:6,
+                                                       age = 0:9)),
+                                 dimscales = c(time = "Points", age = "Intervals"))
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, isSaturated = FALSE,
-                              multScale = 1)
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              multScale = 1,
+                              strucZeroArray = strucZeroArray,
+                              margin = 1:3)
         set.seed(seed)
         ans.obtained <- updateSeason(prior = prior,
                                      beta = beta)
@@ -3070,7 +3556,7 @@ test_that("updateSeason gives valid answer", {
         season <- array(replicate(n = 420, c(0,0,0), simplify = FALSE), dim = c(6, 7, 10))
         set.seed(seed)
         for (j in 1:10) {
-            for (i in 1:6) {
+            for (i in 1:5) {
                 ans <- ffbs(beta = array(beta, dim = c(6, 6, 10))[i, , j],
                             s = array(prior@s@.Data, dim = c(6, 7, 10))[i, , j],
                             m = prior@mSeason@.Data,
@@ -3103,11 +3589,19 @@ test_that("R and C versions of updateSeason give same answer", {
                             new("Points", dimvalues = 1:10)))
         set.seed(seed)
         beta <- rnorm(40)
+        strucZeroArray <- Counts(array(c(1L, 1L, 1L, 0L),
+                                       dim = c(4, 10),
+                                       dimnames = list(region = letters[1:4],
+                                                       time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, isSaturated = FALSE,
-                              multScale = 1)
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              multScale = 1,
+                              strucZeroArray = strucZeroArray,
+                              margin = 1:2)
         set.seed(seed)
         ans.R <- updateSeason(prior = prior, betaTilde = beta, useC = FALSE)
         set.seed(seed)
@@ -3124,11 +3618,18 @@ test_that("R and C versions of updateSeason give same answer", {
                         DimScales = list(new("Intervals", dimvalues = 0:5)))
         set.seed(seed)
         beta <- rnorm(5)
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 5,
+                                       dimnames = list(age = 0:4)),
+                                 dimscales = c(age = "Intervals"))
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, isSaturated = FALSE,
-                              multScale = 1)
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              multScale = 1,
+                              strucZeroArray = strucZeroArray,
+                              margin = 1L)
         set.seed(seed)
         ans.R <- updateSeason(prior = prior, betaTilde = beta, useC = FALSE)
         set.seed(seed)
@@ -3148,11 +3649,20 @@ test_that("R and C versions of updateSeason give same answer", {
                             new("Intervals", dimvalues = 0:10)))
         set.seed(seed)
         beta <- rnorm(360)
+        strucZeroArray <- Counts(array(c(rep(1L, 5), 0L),
+                                       dim = c(6, 6, 10),
+                                       dimnames = list(region = letters[1:6],
+                                                       time = 1:6,
+                                                       age = 0:9)),
+                                 dimscales = c(time = "Points", age = "Intervals"))
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, isSaturated = FALSE,
-                              multScale = 1)
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              multScale = 1,
+                              strucZeroArray = strucZeroArray,
+                              margin = 1:3)
         set.seed(seed)
         ans.R <- updateSeason(prior = prior, betaTilde = beta, useC = FALSE)
         set.seed(seed)
@@ -3377,6 +3887,9 @@ test_that("updateUBeta gives valid answer", {
                                              data = data, contrastsArg = contrastsArg),
                      error = Error(robust = TRUE))
         beta <- rnorm(10)
+        strucZeroArray <- Counts(array(c(rep(1L, 9), 0L),
+                                       dim = 10,
+                                       dimnames = list(region = letters[1:10])))
         metadata <- new("MetaData",
                         nms = "region",
                         dimtypes = "state",
@@ -3384,16 +3897,20 @@ test_that("updateUBeta gives valid answer", {
         prior0 <- initialPrior(spec,
                                beta = beta,
                                metadata = metadata,
-                               sY = NULL, isSaturated = FALSE, multScale = 1)
+                               sY = NULL,
+                               isSaturated = FALSE,
+                               multScale = 1,
+                               strucZeroArray = strucZeroArray,
+                               margin = 1L)
         expect_is(prior0, "ExchRobustCov")
         beta <- rnorm(10)
         set.seed(seed)
         ans.obtained <- updateUBeta(prior = prior0, beta = beta)
         set.seed(seed)
         ans.expected <- prior0
-        U <- numeric(10)
+        U <- prior0@UBeta@.Data
         beta.hat <- prior0@Z@.Data %*% prior0@eta@.Data
-        for (i in 1:10) {
+        for (i in 1:9) {
             U[i] <- rinvchisq1(df = prior0@nuBeta@.Data + 1,
                                scale = ((prior0@nuBeta@.Data * prior0@tau@.Data^2 + (beta[i] - beta.hat[i])^2)
                                         / (prior0@nuBeta@.Data + 1)))
@@ -3423,10 +3940,17 @@ test_that("R and C versions of updateUBeta give same answer", {
                         nms = "region",
                         dimtypes = "state",
                         DimScales = list(new("Categories", dimvalues = letters[1:10])))
+        strucZeroArray <- Counts(array(c(rep(1L, 9), 0L),
+                                       dim = 10,
+                                       dimnames = list(region = letters[1:10])))
         prior0 <- initialPrior(spec,
                                beta = beta,
                                metadata = metadata,
-                               sY = NULL, isSaturated = FALSE, multScale = 1)
+                               sY = NULL,
+                               isSaturated = FALSE,
+                               multScale = 1,
+                               strucZeroArray = strucZeroArray,
+                               margin = 1L)
         expect_is(prior0, "ExchRobustCov")
         beta <- rnorm(10)
         set.seed(seed)
@@ -3460,10 +3984,17 @@ test_that("updateUEtaCoef gives valid answer", {
                         nms = "region",
                         dimtypes = "state",
                         DimScales = list(new("Categories", dimvalues = letters[1:10])))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(region = letters[1:10])))
         prior0 <- initialPrior(spec,
                                beta = beta,
                                metadata = metadata,
-                               sY = NULL, isSaturated = FALSE, multScale = 1)
+                               sY = NULL,
+                               isSaturated = FALSE,
+                               multScale = 1,
+                               strucZeroArray = strucZeroArray,
+                               margin = 1L)
         expect_is(prior0, "ExchRobustCov")
         beta <- rnorm(10)
         set.seed(seed)
@@ -3474,7 +4005,7 @@ test_that("updateUEtaCoef gives valid answer", {
         for (i in 1:7) {
             U[i] <- rinvchisq1(df = prior0@nuEtaCoef + 1,
                                scale = ((prior0@nuEtaCoef * prior0@AEtaCoef^2 + prior0@eta[i+1]^2)
-                                        / (prior0@nuEtaCoef + 1)))
+                                   / (prior0@nuEtaCoef + 1)))
         }
         ans.expected@UEtaCoef@.Data <- U
         expect_identical(ans.obtained, ans.expected)
@@ -3501,10 +4032,17 @@ test_that("R and C versions of updateUEtaCoef give same answer", {
                         nms = "region",
                         dimtypes = "state",
                         DimScales = list(new("Categories", dimvalues = letters[1:10])))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(region = letters[1:10])))
         prior0 <- initialPrior(spec,
                                beta = beta,
                                metadata = metadata,
-                               sY = NULL, isSaturated = FALSE, multScale = 1)
+                               sY = NULL,
+                               isSaturated = FALSE,
+                               multScale = 1,
+                               strucZeroArray = strucZeroArray,
+                               margin = 1L)
         expect_is(prior0, "ExchRobustCov")
         beta <- rnorm(10)
         set.seed(seed)
@@ -3530,11 +4068,20 @@ test_that("updateVectorsMixAndProdVectorsMix gives valid answer", {
                                      new("Points", dimvalues = 2001:2010),
                                      new("Intervals", dimvalues = as.numeric(0:10))))
     spec <- Mix()
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(2, 10, 10),
+                                   dimnames = list(reg = c("a", "b"),
+                                                   time = 2001:2010,
+                                                   age = 0:9)),
+                             dimscales = c(time = "Points", age = "Intervals"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL, isSaturated = FALSE,
-                          multScale = 1)
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          multScale = 1,
+                          strucZeroArray = strucZeroArray,
+                          margin = 1:3)
     beta.tilde <- rnorm(200)
     set.seed(2)
     ans.obtained <- updateVectorsMixAndProdVectorsMix(prior = prior,
@@ -3616,12 +4163,21 @@ test_that("R and C versions of updateVectorsMixAndProdVectorsMix give same answe
                     DimScales = list(new("Categories", dimvalues = c("a", "b")),
                                      new("Points", dimvalues = 2001:2010),
                                      new("Intervals", dimvalues = as.numeric(0:10))))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(2, 10, 10),
+                                   dimnames = list(reg = c("a", "b"),
+                                                   time = 2001:2010,
+                                                   age = 0:9)),
+                             dimscales = c(time = "Points", age = "Intervals"))
     spec <- Mix()
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL, isSaturated = FALSE,
-                          multScale = 1)
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          multScale = 1,
+                          margin = 1:3,
+                          strucZeroArray = strucZeroArray)
     beta.tilde <- rnorm(200)
     set.seed(2)
     ans.R <- updateVectorsMixAndProdVectorsMix(prior = prior,
@@ -3637,36 +4193,6 @@ test_that("R and C versions of updateVectorsMixAndProdVectorsMix give same answe
         expect_equal(ans.R, ans.C)
 })
 
-## test_that("updateVectorsMixAndProdVectorsMix_additive gives valid answer", {
-##     updateVectorsMixAndProdVectorsMix <- demest:::updateVectorsMixAndProdVectorsMix
-##     set.seed(100)
-##     initialPrior <- demest:::initialPrior
-##     beta <- rnorm(200)
-##     metadata <- new("MetaData",
-##                     nms = c("reg", "time", "age"),
-##                     dimtypes = c("state", "time", "age"),
-##                     DimScales = list(new("Categories", dimvalues = c("a", "b")),
-##                                      new("Points", dimvalues = 2001:2010),
-##                                      new("Intervals", dimvalues = as.numeric(0:10))))
-##     spec <- Mix()
-##     prior <- initialPrior(spec,
-##                           beta = beta,
-##                           metadata = metadata,
-##                           sY = NULL, isSaturated = FALSE,
-##                           multScale = 1)
-##     beta.tilde <- rnorm(200)
-##     set.seed(2)
-##     ans.obtained <- updateVectorsMixAndProdVectorsMix_additive(prior = prior,
-##                                                       betaTilde = beta.tilde)
-##     for (i in 1:3)
-##         expect_true(all(ans.obtained@vectorsMix[[i]] != prior@vectorsMix[[i]]))
-##     vec.reg <- matrix(ans.obtained@vectorsMix[[1]], nc = 10)
-##     vec.age <- matrix(ans.obtained@vectorsMix[[3]], nc = 10)
-##     prod.vec <- lapply(1:10, function(i) outer(vec.reg[,i], vec.age[,i], FUN = "+"))
-##     prod.vec <- unlist(prod.vec)
-##     expect_equal(ans.obtained@prodVectorsMix@.Data, prod.vec)
-## })
-
 test_that("updateWSqrt works", {
     updateWSqrt <- demest:::updateWSqrt
     initialPrior <- demest:::initialPrior
@@ -3677,10 +4203,18 @@ test_that("updateWSqrt works", {
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2001:2010)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 2001:2010)),
+                                 dimscales = c(time = "Points"))
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, isSaturated = FALSE, multScale = 1)
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              multScale = 1,
+                              strucZeroArray = strucZeroArray,
+                              margin = 1L)
         expect_is(prior, "DLMWithTrendNormZeroNoSeason")
         prior@omegaAlpha@.Data <- runif(1, 0.1, 1)
         prior@omegaDelta@.Data <- runif(1, 0.1, 1)
@@ -3705,10 +4239,18 @@ test_that("R and C versions of updateWSqrt give same answer", {
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2001:2010)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 2001:2010)),
+                                 dimscales = c(time = "Points"))
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, isSaturated = FALSE, multScale = 1)
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              multScale = 1,
+                              strucZeroArray = strucZeroArray,
+                              margin = 1L)
         expect_is(prior, "DLMWithTrendNormZeroNoSeason")
         prior@omegaAlpha@.Data <- runif(1, 0.1, 1)
         prior@omegaDelta@.Data <- runif(1, 0.1, 1)
@@ -3731,10 +4273,18 @@ test_that("updateWSqrtInvG works", {
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2001:2010)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 2001:2010)),
+                                 dimscales = c(time = "Points"))
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, isSaturated = FALSE, multScale = 1)
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              multScale = 1,
+                              strucZeroArray = strucZeroArray,
+                              margin = 1L)
         expect_is(prior, "DLMWithTrendNormZeroNoSeason")
         prior@omegaAlpha@.Data <- runif(1, 0.1, 1)
         prior@omegaDelta@.Data <- runif(1, 0.1, 1)
@@ -3759,10 +4309,18 @@ test_that("R and C versions of updateWSqrtInvG give same answer", {
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 2001:2010)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 2001:2010)),
+                                 dimscales = c(time = "Points"))
         prior <- initialPrior(spec,
                               beta = beta,
                               metadata = metadata,
-                              sY = NULL, isSaturated = FALSE, multScale = 1)
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              multScale = 1,
+                              margin = 1L,
+                              strucZeroArray = strucZeroArray)
         expect_is(prior, "DLMWithTrendNormZeroNoSeason")
         prior@omegaAlpha@.Data <- runif(1, 0.1, 1)
         prior@omegaDelta@.Data <- runif(1, 0.1, 1)
@@ -3786,11 +4344,19 @@ test_that("updateWeightMix gives valid answer", {
                     DimScales = list(new("Categories", dimvalues = letters[1:20]),
                                      new("Points", dimvalues = 2001:2010)))
     spec <- Mix(weights = Weights(mean = -20))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(20, 10),
+                                   dimnames = list(reg = letters[1:20],
+                                                   time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL, isSaturated = FALSE,
-                          multScale = 1)
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          multScale = 1,
+                          margin = 1:2,
+                          strucZeroArray = strucZeroArray)
     ## deterministic, so no seed required
     ans.obtained <- updateWeightMix(prior)
     W <- matrix(prior@componentWeightMix@.Data,
@@ -3813,6 +4379,11 @@ test_that("R and C versions of updateWeightMix give same answer", {
     set.seed(100)
     initialPrior <- demest:::initialPrior
     beta <- rnorm(200)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(20, 10),
+                                   dimnames = list(reg = letters[1:20],
+                                                   time = 2001:2010)),
+                             dimscales = c(time = "Points"))
     metadata <- new("MetaData",
                     nms = c("reg", "time"),
                     dimtypes = c("state", "time"),
@@ -3822,8 +4393,11 @@ test_that("R and C versions of updateWeightMix give same answer", {
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,
-                          sY = NULL, isSaturated = FALSE,
-                          multScale = 1)
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          multScale = 1,
+                          strucZeroArray = strucZeroArray,
+                          margin = 1:2)
     ## deterministic, so no seed required
     ans.R <- updateWeightMix(prior, useC = FALSE)
     ans.C <- updateWeightMix(prior, useC = TRUE)
@@ -5741,15 +6315,15 @@ test_that("updateTheta_PoissonVaryingNotUseExp gives valid answer", {
         set.seed(seed + 1)
         ans.expected <- model
         mu <- (model@betas[[1]]
-               + model@betas[[2]]
-               + rep(model@betas[[3]], each = 2))
+            + model@betas[[2]]
+            + rep(model@betas[[3]], each = 2))
         for (i in seq_along(model@theta)) {
             theta.curr <- model@theta[i]
             theta.prop <- exp(rnorm(1, mean = log(theta.curr), sd = model@scaleTheta))
             log.diff <- dpois(y[i], lambda = theta.prop, log = TRUE) -
                 dpois(y[i], lambda = theta.curr, log = TRUE) +
-                    dnorm(x = log(theta.prop), mean = mu[i], sd = model@sigma, log = TRUE) -
-                        dnorm(x = log(theta.curr), mean = mu[i], sd = model@sigma, log = TRUE)
+                dnorm(x = log(theta.prop), mean = mu[i], sd = model@sigma, log = TRUE) -
+                dnorm(x = log(theta.curr), mean = mu[i], sd = model@sigma, log = TRUE)
             if ((log.diff >= 0) || (runif(1) < exp(log.diff))) {
                 ans.expected@nAcceptTheta <- ans.expected@nAcceptTheta + 1L
                 ans.expected@theta[i] <- theta.prop
@@ -5777,16 +6351,16 @@ test_that("updateTheta_PoissonVaryingNotUseExp gives valid answer", {
         set.seed(seed + 1)
         ans.expected <- model
         mu <- (model@betas[[1]]
-               + model@betas[[2]]
-               + rep(model@betas[[3]], each = 2))
+            + model@betas[[2]]
+            + rep(model@betas[[3]], each = 2))
         ans.expected@theta[1:5] <- exp(rnorm(n = 5, mean = mu[1:5], sd = model@sigma))
         for (i in 6:20) {
             theta.curr <- model@theta[i]
             theta.prop <- exp(rnorm(1, mean = log(theta.curr), sd = model@scaleTheta))
             log.diff <- dpois(y[i], lambda = theta.prop, log = TRUE) -
                 dpois(y[i], lambda = theta.curr, log = TRUE) +
-                    dnorm(x = log(theta.prop), mean = mu[i], sd = model@sigma, log = TRUE) -
-                        dnorm(x = log(theta.curr), mean = mu[i], sd = model@sigma, log = TRUE)
+                dnorm(x = log(theta.prop), mean = mu[i], sd = model@sigma, log = TRUE) -
+                dnorm(x = log(theta.curr), mean = mu[i], sd = model@sigma, log = TRUE)
             if ((log.diff >= 0) || (runif(1) < exp(log.diff))) {
                 ans.expected@nAcceptTheta <- ans.expected@nAcceptTheta + 1L
                 ans.expected@theta[i] <- theta.prop
@@ -5816,15 +6390,15 @@ test_that("updateTheta_PoissonVaryingNotUseExp gives valid answer", {
         set.seed(seed + 1)
         ans.expected <- model
         mu <- (model@betas[[1]]
-               + model@betas[[2]]
-               + rep(model@betas[[3]], each = 2))
+            + model@betas[[2]]
+            + rep(model@betas[[3]], each = 2))
         for (i in 1:10) {
             theta.curr <- ans.expected@theta[i]
             theta.prop <- exp(rnorm(1, mean = log(theta.curr), sd = model@scaleTheta))
             log.diff <- dpois(subtotals, lambda = sum(ans.expected@theta[1:10]) + theta.prop - theta.curr, log = TRUE) -
                 dpois(subtotals, lambda = sum(ans.expected@theta[1:10]), log = TRUE) +
-                    dnorm(x = log(theta.prop), mean = mu[i], sd = model@sigma, log = TRUE) -
-                        dnorm(x = log(theta.curr), mean = mu[i], sd = model@sigma, log = TRUE)
+                dnorm(x = log(theta.prop), mean = mu[i], sd = model@sigma, log = TRUE) -
+                dnorm(x = log(theta.curr), mean = mu[i], sd = model@sigma, log = TRUE)
             if ((log.diff >= 0) || (runif(1) < exp(log.diff))) {
                 ans.expected@nAcceptTheta <- ans.expected@nAcceptTheta + 1L
                 ans.expected@theta[i] <- theta.prop
@@ -5836,8 +6410,8 @@ test_that("updateTheta_PoissonVaryingNotUseExp gives valid answer", {
             theta.prop <- exp(rnorm(1, mean = log(theta.curr), sd = model@scaleTheta))
             log.diff <- dpois(y[i], lambda = theta.prop, log = TRUE) -
                 dpois(y[i], lambda = theta.curr, log = TRUE) +
-                    dnorm(x = log(theta.prop), mean = mu[i], sd = model@sigma, log = TRUE) -
-                        dnorm(x = log(theta.curr), mean = mu[i], sd = model@sigma, log = TRUE)
+                dnorm(x = log(theta.prop), mean = mu[i], sd = model@sigma, log = TRUE) -
+                dnorm(x = log(theta.curr), mean = mu[i], sd = model@sigma, log = TRUE)
             if ((log.diff >= 0) || (runif(1) < exp(log.diff))) {
                 ans.expected@nAcceptTheta <- ans.expected@nAcceptTheta + 1L
                 ans.expected@theta[i] <- theta.prop
@@ -5873,15 +6447,15 @@ test_that("updateTheta_PoissonVaryingNotUseExp gives valid answer", {
         set.seed(seed + 1)
         ans.expected <- model
         mu <- (model@betas[[1]]
-               + model@betas[[2]]
-               + rep(model@betas[[3]], each = 2))
+            + model@betas[[2]]
+            + rep(model@betas[[3]], each = 2))
         for (i in 1:8) {
             theta.curr <- ans.expected@theta[i]
             theta.prop <- exp(rnorm(1, mean = log(theta.curr), sd = model@scaleTheta))
             log.diff <- dpois(y@subtotalsNet, lambda = sum(ans.expected@theta[1:8]) + theta.prop - theta.curr, log = TRUE) -
                 dpois(y@subtotalsNet, lambda = sum(ans.expected@theta[1:8]), log = TRUE) +
-                    dnorm(x = log(theta.prop), mean = mu[i], sd = model@sigma, log = TRUE) -
-                        dnorm(x = log(theta.curr), mean = mu[i], sd = model@sigma, log = TRUE)
+                dnorm(x = log(theta.prop), mean = mu[i], sd = model@sigma, log = TRUE) -
+                dnorm(x = log(theta.curr), mean = mu[i], sd = model@sigma, log = TRUE)
             if ((log.diff >= 0) || (runif(1) < exp(log.diff))) {
                 ans.expected@nAcceptTheta <- ans.expected@nAcceptTheta + 1L
                 ans.expected@theta[i] <- theta.prop
@@ -5892,8 +6466,8 @@ test_that("updateTheta_PoissonVaryingNotUseExp gives valid answer", {
             theta.prop <- exp(rnorm(1, mean = log(theta.curr), sd = model@scaleTheta))
             log.diff <- dpois(y[i], lambda = theta.prop, log = TRUE) -
                 dpois(y[i], lambda = theta.curr, log = TRUE) +
-                    dnorm(x = log(theta.prop), mean = mu[i], sd = model@sigma, log = TRUE) -
-                        dnorm(x = log(theta.curr), mean = mu[i], sd = model@sigma, log = TRUE)
+                dnorm(x = log(theta.prop), mean = mu[i], sd = model@sigma, log = TRUE) -
+                dnorm(x = log(theta.curr), mean = mu[i], sd = model@sigma, log = TRUE)
             if ((log.diff >= 0) || (runif(1) < exp(log.diff))) {
                 ans.expected@nAcceptTheta <- ans.expected@nAcceptTheta + 1L
                 ans.expected@theta[i] <- theta.prop
@@ -5905,8 +6479,8 @@ test_that("updateTheta_PoissonVaryingNotUseExp gives valid answer", {
             theta.prop <- exp(rnorm(1, mean = log(theta.curr), sd = model@scaleTheta))
             log.diff <- dpois(y[i], lambda = theta.prop, log = TRUE) -
                 dpois(y[i], lambda = theta.curr, log = TRUE) +
-                    dnorm(x = log(theta.prop), mean = mu[i], sd = model@sigma, log = TRUE) -
-                        dnorm(x = log(theta.curr), mean = mu[i], sd = model@sigma, log = TRUE)
+                dnorm(x = log(theta.prop), mean = mu[i], sd = model@sigma, log = TRUE) -
+                dnorm(x = log(theta.curr), mean = mu[i], sd = model@sigma, log = TRUE)
             if ((log.diff >= 0) || (runif(1) < exp(log.diff))) {
                 ans.expected@nAcceptTheta <- ans.expected@nAcceptTheta + 1L
                 ans.expected@theta[i] <- theta.prop
@@ -5968,6 +6542,37 @@ test_that("updateTheta_PoissonVaryingNotUseExp gives valid answer", {
             expect_identical(ans.obtained, ans.expected)
         else
             expect_equal(ans.obtained, ans.expected)        
+        ## has structural zeros
+        y <- Counts(array(as.integer(rpois(n = 20, lambda = 30)),
+                          dim = c(2, 10),
+                          dimnames = list(sex = c("f", "m"), age = 0:9)))
+        y[2,] <- 0L
+        structuralZeros <- ValuesOne(c(1, 0), labels = c("f", "m"), name = "sex")
+        spec <- Model(y ~ Poisson(mean ~ sex + age, useExpose = FALSE, structuralZeros = structuralZeros))
+        model <- initialModel(spec, y = y, exposure = NULL)
+        set.seed(seed + 1)
+        ans.obtained <- updateTheta_PoissonVaryingNotUseExp(model, y = y)
+        set.seed(seed + 1)
+        ans.expected <- model
+        mu <- (model@betas[[1]]
+            + model@betas[[2]]
+            + rep(model@betas[[3]], each = 2))
+        for (i in seq(1, 19, 2)) {
+            theta.curr <- model@theta[i]
+            theta.prop <- exp(rnorm(1, mean = log(theta.curr), sd = model@scaleTheta))
+            log.diff <- dpois(y[i], lambda = theta.prop, log = TRUE) -
+                dpois(y[i], lambda = theta.curr, log = TRUE) +
+                dnorm(x = log(theta.prop), mean = mu[i], sd = model@sigma, log = TRUE) -
+                dnorm(x = log(theta.curr), mean = mu[i], sd = model@sigma, log = TRUE)
+            if ((log.diff >= 0) || (runif(1) < exp(log.diff))) {
+                ans.expected@nAcceptTheta <- ans.expected@nAcceptTheta + 1L
+                ans.expected@theta[i] <- theta.prop
+            }
+        }
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
     }
 })
 
@@ -6085,6 +6690,18 @@ test_that("R and C versions of updateTheta_PoissonVaryingNotUseExp give same ans
             expect_identical(ans.R, ans.C)
         else
             expect_equal(ans.R, ans.C)
+        ## has structural zeros
+        y <- Counts(array(as.integer(rpois(n = 20, lambda = 30)),
+                          dim = c(2, 10),
+                          dimnames = list(sex = c("f", "m"), age = 0:9)))
+        y[2,] <- 0L
+        structuralZeros <- ValuesOne(c(1, 0), labels = c("f", "m"), name = "sex")
+        spec <- Model(y ~ Poisson(mean ~ sex + age, useExpose = FALSE, structuralZeros = structuralZeros))
+        model <- initialModel(spec, y = y, exposure = NULL)
+        set.seed(seed + 1)
+        ans.R <- updateTheta_PoissonVaryingNotUseExp(model, y = y, useC = FALSE)
+        set.seed(seed + 1)
+        ans.C <- updateTheta_PoissonVaryingNotUseExp(model, y = y, useC = TRUE)
     }
 })
 
@@ -6365,7 +6982,46 @@ test_that("updateTheta_PoissonVaryingUseExp gives valid answer", {
         if (test.identity)
             expect_identical(ans.obtained, ans.expected)
         else
-            expect_equal(ans.obtained, ans.expected)        
+            expect_equal(ans.obtained, ans.expected)
+        ## has structural zeros
+        exposure <- Counts(array(10 * rbeta(n = 20, shape1 = 20, shape2 = 5),
+                                 dim = c(5, 4),
+                                 dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        y <- Counts(array(as.integer(rpois(n = 20, lambda = 0.5 * exposure)),
+                          dim = c(5, 4),
+                          dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        y[,4] <- 0L
+        structuralZeros <- ValuesOne(c(1, 1, 1, 0), labels = c("a", "b", "c", "d"), name = "region")
+        spec <- Model(y ~ Poisson(mean ~ age + region, structuralZeros = structuralZeros))
+        model <- initialModel(spec, y = y, exposure = exposure)
+        set.seed(seed + 1)
+        ans.obtained <- updateTheta_PoissonVaryingUseExp(model, y = y, exposure = exposure)
+        set.seed(seed + 1)
+        ans.expected <- model
+        mu <- (model@betas[[1]]
+            + model@betas[[2]]
+            + rep(model@betas[[3]], each = 5))
+        for (i in seq_along(ans.expected@theta)) {
+            if (!(i %in% 16:20)) {
+                theta.curr <- ans.expected@theta[i]
+                theta.prop <- exp(rnorm(1, mean = log(theta.curr),
+                                        sd = model@scaleTheta*model@scaleThetaMultiplier/sqrt(1+y[i])))
+                log.diff <- dpois(y[i], lambda = theta.prop * exposure[i], log = TRUE) -
+                    dpois(y[i], lambda = theta.curr * exposure[i], log = TRUE) +
+                    dnorm(x = log(theta.prop), mean = mu[i], sd = model@sigma, log = TRUE) -
+                    dnorm(x = log(theta.curr), mean = mu[i], sd = model@sigma, log = TRUE)
+                if ((log.diff >= 0) || (runif(1) < exp(log.diff))) {
+                    ans.expected@nAcceptTheta <- ans.expected@nAcceptTheta + 1L
+                    ans.expected@theta[i] <- theta.prop
+                }
+            }
+        }
+        if (ans.expected@nAcceptTheta == 0L)
+            warning("no proposals accepted")
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
     }
 })
 
@@ -6486,6 +7142,25 @@ test_that("R and C versions of updateTheta_PoissonVaryingUseExp give same answer
                           dim = c(5, 4),
                           dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
         spec <- Model(y ~ Poisson(mean ~ age + region, boxcox = 0.7))
+        model <- initialModel(spec, y = y, exposure = exposure)
+        set.seed(seed + 1)
+        ans.R <- updateTheta_PoissonVaryingUseExp(model, y = y, exposure = exposure, useC = FALSE)
+        set.seed(seed + 1)
+        ans.C <- updateTheta_PoissonVaryingUseExp(model, y = y, exposure = exposure, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+        ## has structural zeros
+        exposure <- Counts(array(10 * rbeta(n = 20, shape1 = 20, shape2 = 5),
+                                 dim = c(5, 4),
+                                 dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        y <- Counts(array(as.integer(rpois(n = 20, lambda = 0.5 * exposure)),
+                          dim = c(5, 4),
+                          dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        y[,4] <- 0L
+        structuralZeros <- ValuesOne(c(1, 1, 1, 0), labels = c("a", "b", "c", "d"), name = "region")
+        spec <- Model(y ~ Poisson(mean ~ age + region, structuralZeros = structuralZeros))
         model <- initialModel(spec, y = y, exposure = exposure)
         set.seed(seed + 1)
         ans.R <- updateTheta_PoissonVaryingUseExp(model, y = y, exposure = exposure, useC = FALSE)

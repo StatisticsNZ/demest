@@ -175,11 +175,16 @@ test_that("updateBetaAndPriorBeta works with ExchNormZero - not saturated", {
                         nms = "region",
                         dimtypes = "state",
                         DimScales = list(new("Categories", dimvalues = letters[1:10])))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(region = letters[1:10])))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
                                sY = NULL,
-                               isSaturated = FALSE)
+                               isSaturated = FALSE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "ExchNormZero")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -204,11 +209,16 @@ test_that("updateBetaAndPriorBeta works with ExchNormZero - not saturated", {
                         nms = "region",
                         dimtypes = "state",
                         DimScales = list(new("Categories", dimvalues = letters[1:10])))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(region = letters[1:10])))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
                                sY = NULL,
-                               isSaturated = FALSE)
+                               isSaturated = FALSE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "ExchNormZero")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -240,11 +250,16 @@ test_that("R and C versions of updateBetaAndPriorBeta give same ansewr with Exch
                         nms = "region",
                         dimtypes = "state",
                         DimScales = list(new("Categories", dimvalues = letters[1:10])))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(region = letters[1:10])))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
                                sY = NULL,
-                               isSaturated = FALSE)
+                               isSaturated = FALSE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "ExchNormZero")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -273,11 +288,16 @@ test_that("R and C versions of updateBetaAndPriorBeta give same ansewr with Exch
                         nms = "region",
                         dimtypes = "state",
                         DimScales = list(new("Categories", dimvalues = letters[1:10])))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(region = letters[1:10])))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
                                sY = NULL,
-                               isSaturated = FALSE)
+                               isSaturated = FALSE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "ExchNormZero")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -313,11 +333,16 @@ test_that("updateBetaAndPriorBeta works with ExchNormZero - is saturated", {
                         nms = "region",
                         dimtypes = "state",
                         DimScales = list(new("Categories", dimvalues = letters[1:10])))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(region = letters[1:10])))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
                                sY = NULL,
-                               isSaturated = TRUE)
+                               isSaturated = TRUE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "ExchNormZero")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -343,11 +368,16 @@ test_that("updateBetaAndPriorBeta works with ExchNormZero - is saturated", {
                         nms = "region",
                         dimtypes = "state",
                         DimScales = list(new("Categories", dimvalues = letters[1:10])))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(region = letters[1:10])))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
                                sY = NULL,
-                               isSaturated = TRUE)
+                               isSaturated = TRUE,
+                               strucZeroArray = strucZeroArray,
+                               margin = 1L)
         expect_is(prior0, "ExchNormZero")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -380,11 +410,16 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with Exch
                         nms = "region",
                         dimtypes = "state",
                         DimScales = list(new("Categories", dimvalues = letters[1:10])))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(region = letters[1:10])))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
                                sY = NULL,
-                               isSaturated = TRUE)
+                               isSaturated = TRUE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "ExchNormZero")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -413,11 +448,16 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with Exch
                         nms = "region",
                         dimtypes = "state",
                         DimScales = list(new("Categories", dimvalues = letters[1:10])))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(region = letters[1:10])))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
                                sY = NULL,
-                               isSaturated = TRUE)
+                               isSaturated = TRUE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "ExchNormZero")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -452,11 +492,16 @@ test_that("updateBetaAndPriorBeta works with ExchRobustZero", {
                         nms = "region",
                         dimtypes = "state",
                         DimScales = list(new("Categories", dimvalues = letters[1:10])))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(region = letters[1:10])))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
                                sY = NULL,
-                               isSaturated = FALSE)
+                               isSaturated = FALSE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "ExchRobustZero")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -490,11 +535,16 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with Exch
                         nms = "region",
                         dimtypes = "state",
                         DimScales = list(new("Categories", dimvalues = letters[1:10])))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(region = letters[1:10])))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
                                sY = NULL,
-                               isSaturated = FALSE)
+                               isSaturated = FALSE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "ExchRobustZero")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -538,11 +588,16 @@ test_that("updateBetaAndPriorBeta works with ExchNormCov - not saturated", {
                         nms = "region",
                         dimtypes = "state",
                         DimScales = list(new("Categories", dimvalues = letters[1:10])))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(region = letters[1:10])))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
                                sY = NULL,
-                               isSaturated = FALSE)
+                               isSaturated = FALSE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "ExchNormCov")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -591,11 +646,16 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with Exch
                         nms = "region",
                         dimtypes = "state",
                         DimScales = list(new("Categories", dimvalues = letters[1:10])))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(region = letters[1:10])))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
                                sY = NULL,
-                               isSaturated = FALSE)
+                               isSaturated = FALSE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "ExchNormCov")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -640,11 +700,16 @@ test_that("updateBetaAndPriorBeta works with ExchNormCov - is saturated", {
                         nms = "region",
                         dimtypes = "state",
                         DimScales = list(new("Categories", dimvalues = letters[1:10])))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(region = letters[1:10])))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
                                sY = NULL,
-                               isSaturated = TRUE)
+                               isSaturated = TRUE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "ExchNormCov")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -695,11 +760,16 @@ test_that("updateBetaAndPriorBeta works with ExchRobustCov", {
                         nms = "region",
                         dimtypes = "state",
                         DimScales = list(new("Categories", dimvalues = letters[1:10])))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(region = letters[1:10])))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
                                sY = NULL,
-                               isSaturated = FALSE)
+                               isSaturated = FALSE,
+                               strucZeroArray = strucZeroArray,
+                               margin = 1L)
         expect_is(prior0, "ExchRobustCov")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -753,11 +823,16 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with Exch
                         nms = "region",
                         dimtypes = "state",
                         DimScales = list(new("Categories", dimvalues = letters[1:10])))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(region = letters[1:10])))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
                                sY = NULL,
-                               isSaturated = FALSE)
+                               isSaturated = FALSE,
+                               strucZeroArray = strucZeroArray,
+                               margin = 1L)
         expect_is(prior0, "ExchRobustCov")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -795,11 +870,17 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendNormZeroNoSeason - is not
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 1:10)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
                                sY = NULL,
-                               isSaturated = FALSE)
+                               isSaturated = FALSE,
+                               strucZeroArray = strucZeroArray,
+                               margin = 1L)
         expect_is(prior0, "DLMNoTrendNormZeroNoSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -845,11 +926,17 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTre
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 1:10)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
                                sY = NULL,
-                               isSaturated = FALSE)
+                               isSaturated = FALSE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendNormZeroNoSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -886,11 +973,17 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendNormZeroNoSeason - is sat
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 1:10)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
                                sY = NULL,
-                               isSaturated = TRUE)
+                               isSaturated = TRUE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendNormZeroNoSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -936,11 +1029,17 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTre
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 1:10)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
                                sY = NULL,
-                               isSaturated = TRUE)
+                               isSaturated = TRUE,
+                               strucZeroArray = strucZeroArray,
+                               margin = 1L)
         expect_is(prior0, "DLMNoTrendNormZeroNoSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -975,11 +1074,17 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendNormZeroNoSeason - is n
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 1:10)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
                                sY = NULL,
-                               isSaturated = FALSE)
+                               isSaturated = FALSE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendNormZeroNoSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -1034,11 +1139,17 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithT
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 1:10)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
                                sY = NULL,
-                               isSaturated = FALSE)
+                               isSaturated = FALSE,
+                               strucZeroArray = strucZeroArray,
+                               margin = 1L)
         expect_is(prior0, "DLMWithTrendNormZeroNoSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -1075,11 +1186,17 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendNormZeroNoSeason - is s
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 1:10)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
                                sY = NULL,
-                               isSaturated = TRUE)
+                               isSaturated = TRUE,
+                               strucZeroArray = strucZeroArray,
+                               margin = 1L)
         expect_is(prior0, "DLMWithTrendNormZeroNoSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -1133,11 +1250,17 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithT
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 1:10)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
                                sY = NULL,
-                               isSaturated = TRUE)
+                               isSaturated = TRUE,
+                               strucZeroArray = strucZeroArray,
+                               margin = 1L)
         expect_is(prior0, "DLMWithTrendNormZeroNoSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -1172,11 +1295,17 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendNormZeroWithSeason - is n
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 1:10)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
                                sY = NULL,
-                               isSaturated = FALSE)
+                               isSaturated = FALSE,
+                               strucZeroArray = strucZeroArray,
+                               margin = 1L)
         expect_is(prior0, "DLMNoTrendNormZeroWithSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -1232,11 +1361,17 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTre
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 1:10)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
                                sY = NULL,
-                               isSaturated = FALSE)
+                               isSaturated = FALSE,
+                               strucZeroArray = strucZeroArray,
+                               margin = 1L)
         expect_is(prior0, "DLMNoTrendNormZeroWithSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -1272,11 +1407,17 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendNormZeroWithSeason - is s
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 1:10)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
                                sY = NULL,
-                               isSaturated = TRUE)
+                               isSaturated = TRUE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendNormZeroWithSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -1333,11 +1474,17 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTre
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 1:10)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
                                sY = NULL,
-                               isSaturated = TRUE)
+                               isSaturated = TRUE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendNormZeroWithSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -1372,11 +1519,17 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendNormZeroWithSeason - is
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 1:10)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
                                sY = NULL,
-                               isSaturated = FALSE)
+                               isSaturated = FALSE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendNormZeroWithSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -1448,11 +1601,17 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithT
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 1:10)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
                                sY = NULL,
-                               isSaturated = FALSE)
+                               isSaturated = FALSE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendNormZeroWithSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -1488,11 +1647,17 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendNormZeroWithSeason - is
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 1:10)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
                                sY = NULL,
-                               isSaturated = TRUE)
+                               isSaturated = TRUE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendNormZeroWithSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -1558,11 +1723,17 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithT
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 1:10)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
                                sY = NULL,
-                               isSaturated = TRUE)
+                               isSaturated = TRUE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendNormZeroWithSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -1613,10 +1784,16 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendNormCovNoSeason - is not 
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 1:10)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
                                sY = NULL,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray,
                                isSaturated = FALSE)
         expect_is(prior0, "DLMNoTrendNormCovNoSeason")
         vbar <- rnorm(10)
@@ -1680,11 +1857,17 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMN
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 1:10)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
                                sY = NULL,
-                               isSaturated = FALSE)
+                               isSaturated = FALSE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendNormCovNoSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -1737,6 +1920,10 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendNormCovNoSeason - is satu
                     damp = Damp(min = 0),
                     covariates = covariates)
         beta0 <- rnorm(10)
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 1:10)),
+                                 dimscales = c(time = "Points"))
         metadata <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -1745,7 +1932,9 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendNormCovNoSeason - is satu
                                beta = beta0,
                                metadata = metadata,
                                sY = NULL,
-                               isSaturated = TRUE)
+                               isSaturated = TRUE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendNormCovNoSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -1808,11 +1997,17 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMN
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 1:10)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
                                sY = NULL,
-                               isSaturated = TRUE)
+                               isSaturated = TRUE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendNormCovNoSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -1865,11 +2060,17 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendNormCovNoSeason - is no
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 1:10)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
                                sY = NULL,
-                               isSaturated = FALSE)
+                               isSaturated = FALSE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendNormCovNoSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -1945,11 +2146,17 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMW
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 1:10)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
                                sY = NULL,
-                               isSaturated = FALSE)
+                               isSaturated = FALSE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendNormCovNoSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -2003,11 +2210,17 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendNormCovNoSeason - is sa
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 1:10)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
                                sY = NULL,
-                               isSaturated = TRUE)
+                               isSaturated = TRUE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendNormCovNoSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -2083,11 +2296,17 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMW
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 1:10)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
                                sY = NULL,
-                               isSaturated = TRUE)
+                               isSaturated = TRUE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendNormCovNoSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -2139,6 +2358,10 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendNormCovWithSeason - is no
                     covariates = covariates,
                     season = Season(n = 2))
         beta0 <- rnorm(10)
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 1:10)),
+                                 dimscales = c(time = "Points"))
         metadata <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -2147,7 +2370,9 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendNormCovWithSeason - is no
                                beta = beta0,
                                metadata = metadata,
                                sY = NULL,
-                               isSaturated = FALSE)
+                               isSaturated = FALSE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendNormCovWithSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -2216,11 +2441,17 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMN
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 1:10)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
                                sY = NULL,
-                               isSaturated = FALSE)
+                               isSaturated = FALSE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendNormCovWithSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -2277,11 +2508,17 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendNormCovWithSeason - is sa
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 1:10)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
                                sY = NULL,
-                               isSaturated = TRUE)
+                               isSaturated = TRUE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendNormCovWithSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -2350,11 +2587,17 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMN
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 1:10)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
                                sY = NULL,
-                               isSaturated = TRUE)
+                               isSaturated = TRUE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendNormCovWithSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -2410,11 +2653,17 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendNormCovWithSeason - is 
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 1:10)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
                                sY = NULL,
-                               isSaturated = FALSE)
+                               isSaturated = FALSE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendNormCovWithSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -2489,11 +2738,17 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMW
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 1:10)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
                                sY = NULL,
-                               isSaturated = FALSE)
+                               isSaturated = FALSE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendNormCovWithSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -2549,11 +2804,17 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendNormCovWithSeason - is 
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 1:10)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
                                sY = NULL,
-                               isSaturated = TRUE)
+                               isSaturated = TRUE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendNormCovWithSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -2628,11 +2889,17 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMW
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 1:10)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
                                sY = NULL,
-                               isSaturated = TRUE)
+                               isSaturated = TRUE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendNormCovWithSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -2683,10 +2950,16 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendRobustZeroNoSeason", {
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 1:10)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL, isSaturated = FALSE)
+                               sY = NULL, isSaturated = FALSE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendRobustZeroNoSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -2737,10 +3010,17 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTre
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 1:10)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL, isSaturated = FALSE)
+                               sY = NULL,
+                               isSaturated = FALSE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendRobustZeroNoSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -2777,10 +3057,17 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendRobustZeroNoSeason", {
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 1:10)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL, isSaturated = FALSE)
+                               sY = NULL,
+                               isSaturated = FALSE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendRobustZeroNoSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -2837,10 +3124,17 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithT
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 1:10)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL, isSaturated = FALSE)
+                               sY = NULL,
+                               isSaturated = FALSE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendRobustZeroNoSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -2875,10 +3169,17 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendRobustZeroWithSeason", {
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 1:10)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL, isSaturated = FALSE)
+                               sY = NULL,
+                               isSaturated = FALSE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendRobustZeroWithSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -2938,10 +3239,17 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTre
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 1:10)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL, isSaturated = FALSE)
+                               sY = NULL,
+                               isSaturated = FALSE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendRobustZeroWithSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -2976,10 +3284,17 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendRobustZeroWithSeason", 
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 1:10)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL, isSaturated = FALSE)
+                               sY = NULL,
+                               isSaturated = FALSE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendRobustZeroWithSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -3037,10 +3352,17 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithT
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 1:10)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL, isSaturated = FALSE)
+                               sY = NULL,
+                               isSaturated = FALSE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendRobustZeroWithSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -3088,10 +3410,17 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendRobustCovNoSeason", {
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 1:10)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL, isSaturated = FALSE)
+                               sY = NULL,
+                               isSaturated = FALSE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendRobustCovNoSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -3155,10 +3484,17 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTre
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 1:10)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL, isSaturated = FALSE)
+                               sY = NULL,
+                               isSaturated = FALSE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendRobustCovNoSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -3205,10 +3541,17 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendRobustCovNoSeason", {
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 1:10)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL, isSaturated = FALSE)
+                               sY = NULL,
+                               isSaturated = FALSE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendRobustCovNoSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -3281,10 +3624,17 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithT
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 1:10)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL, isSaturated = FALSE)
+                               sY = NULL,
+                               isSaturated = FALSE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendRobustCovNoSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -3327,6 +3677,10 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendRobustCovWithSeason", {
         error <- Error(robust = TRUE)
         spec <- DLM(trend = NULL, season = season, covariates = covariates, error = error)
         beta0 <- rnorm(10)
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 1:10)),
+                                 dimscales = c(time = "Points"))
         metadata <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -3334,7 +3688,10 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendRobustCovWithSeason", {
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL, isSaturated = FALSE)
+                               sY = NULL,
+                               isSaturated = FALSE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendRobustCovWithSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -3402,6 +3759,10 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTre
         error <- Error(robust = TRUE)
         spec <- DLM(trend = NULL, season = season, covariates = covariates, error = error)
         beta0 <- rnorm(10)
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 1:10)),
+                                 dimscales = c(time = "Points"))
         metadata <- new("MetaData",
                         nms = "time",
                         dimtypes = "time",
@@ -3409,7 +3770,10 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTre
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL, isSaturated = FALSE)
+                               sY = NULL,
+                               isSaturated = FALSE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendRobustCovWithSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -3457,10 +3821,17 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendRobustCovWithSeason", {
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 1:10)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL, isSaturated = FALSE)
+                               sY = NULL,
+                               isSaturated = FALSE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendRobustCovWithSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -3539,10 +3910,17 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithT
                         nms = "time",
                         dimtypes = "time",
                         DimScales = list(new("Points", dimvalues = 1:10)))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(time = 1:10)),
+                                 dimscales = c(time = "Points"))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL, isSaturated = FALSE)
+                               sY = NULL,
+                               isSaturated = FALSE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendRobustCovWithSeason")
         vbar <- rnorm(10)
         n <- rep(5L, 10)
@@ -3581,10 +3959,16 @@ test_that("updateBetaAndPriorBeta works with KnownCertain", {
                         nms = "sex",
                         dimtypes = "sex",
                         DimScales = list(new("Sexes", dimvalues = c("f", "m"))))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 2,
+                                       dimnames = list(sex = c("f", "m"))))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL, isSaturated = FALSE)
+                               sY = NULL,
+                               isSaturated = FALSE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "KnownCertain")
         vbar <- rnorm(2)
         n <- 9:10
@@ -3615,10 +3999,16 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with Know
                         nms = "sex",
                         dimtypes = "sex",
                         DimScales = list(new("Sexes", dimvalues = c("f", "m"))))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 2,
+                                       dimnames = list(sex = c("f", "m"))))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL, isSaturated = FALSE)
+                               sY = NULL,
+                               isSaturated = FALSE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "KnownCertain")
         vbar <- rnorm(2)
         n <- 9:10
@@ -3654,10 +4044,16 @@ test_that("updateBetaAndPriorBeta works with KnownUncertain", {
                         nms = "sex",
                         dimtypes = "sex",
                         DimScales = list(new("Sexes", dimvalues = c("f", "m"))))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 2,
+                                       dimnames = list(sex = c("f", "m"))))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL, isSaturated = FALSE)
+                               sY = NULL,
+                               isSaturated = FALSE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "KnownUncertain")
         vbar <- rnorm(2)
         n <- 9:10
@@ -3691,10 +4087,16 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with Know
                         nms = "sex",
                         dimtypes = "sex",
                         DimScales = list(new("Sexes", dimvalues = c("f", "m"))))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 2,
+                                       dimnames = list(sex = c("f", "m"))))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL, isSaturated = FALSE)
+                               sY = NULL,
+                               isSaturated = FALSE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "KnownUncertain")
         vbar <- rnorm(2)
         n <- 9:10
@@ -3734,13 +4136,21 @@ test_that("updateBetaAndPriorBeta updates correct slots with MixNormZero - is no
                     DimScales = list(new("Categories", dimvalues = c("a", "b")),
                                      new("Points", dimvalues = 2001:2010),
                                      new("Intervals", dimvalues = as.numeric(0:10))))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(2, 10, 10),
+                                   dimnames = list(reg = c("a", "b"),
+                                                   time = 2001:2010,
+                                                   age = 0:9)),
+                             dimscales = c(time = "Points", age = "Intervals"))
     spec <- Mix(weights = Weights(mean = -10))
     prior0 <- initialPrior(spec,
                            beta = beta0,
                            metadata = metadata,
                            sY = NULL,
                            multScale = 1,
-                           isSaturated = FALSE)
+                           isSaturated = FALSE,
+                           margin = 1:3,
+                           strucZeroArray = strucZeroArray)
     vbar <- rnorm(200)
     n <- rep(5L, 200)
     sigma <- runif(1)
@@ -3812,6 +4222,12 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with MixN
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         set.seed(seed)
+        strucZeroArray <- Counts(array(1L,
+                                       dim = c(2, 10, 10),
+                                       dimnames = list(reg = c("a", "b"),
+                                                       time = 2001:2010,
+                                                       age = 0:9)),
+                                 dimscales = c(time = "Points", age = "Intervals"))
         metadata <- new("MetaData",
                         nms = c("reg", "time", "age"),
                         dimtypes = c("state", "time", "age"),
@@ -3825,7 +4241,9 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with MixN
                                metadata = metadata,
                                sY = NULL,
                                multScale = 1,
-                               isSaturated = FALSE)
+                               isSaturated = FALSE,
+                               margin = 1:3,
+                               strucZeroArray = strucZeroArray)
         vbar <- rnorm(200)
         n <- rep(5L, 200)
         sigma <- runif(1)
@@ -3854,6 +4272,12 @@ test_that("updateBetaAndPriorBeta updates correct slots with MixNormZero - is sa
     betaHat <- demest:::betaHat
     set.seed(1)
     beta0 <- rnorm(200)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(2, 10, 10),
+                                   dimnames = list(reg = c("a", "b"),
+                                                   time = 2001:2010,
+                                                   age = 0:9)),
+                             dimscales = c(time = "Points", age = "Intervals"))
     metadata <- new("MetaData",
                     nms = c("reg", "time", "age"),
                     dimtypes = c("state", "time", "age"),
@@ -3866,7 +4290,9 @@ test_that("updateBetaAndPriorBeta updates correct slots with MixNormZero - is sa
                            metadata = metadata,
                            sY = NULL,
                            multScale = 1,
-                           isSaturated = TRUE)
+                           isSaturated = TRUE,
+                           strucZeroArray = strucZeroArray,
+                           margin = 1:3)
     vbar <- rnorm(200)
     n <- rep(5L, 200)
     sigma <- runif(1)
@@ -3944,6 +4370,12 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with MixN
                         DimScales = list(new("Categories", dimvalues = c("a", "b")),
                                          new("Points", dimvalues = 2001:2010),
                                          new("Intervals", dimvalues = as.numeric(0:10))))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = c(2, 10, 10),
+                                       dimnames = list(reg = c("a", "b"),
+                                                       time = 2001:2010,
+                                                       age = 0:9)),
+                                 dimscales = c(time = "Points", age = "Intervals"))
         spec <- Mix(weights = Weights(mean = -10))
         beta0 <- rnorm(200)
         prior0 <- initialPrior(spec,
@@ -3951,7 +4383,9 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with MixN
                                metadata = metadata,
                                sY = NULL,
                                multScale = 1,
-                               isSaturated = TRUE)
+                               isSaturated = TRUE,
+                               margin = 1:3,
+                               strucZeroArray = strucZeroArray)
         vbar <- rnorm(200)
         n <- rep(5L, 200)
         sigma <- runif(1)
@@ -3988,10 +4422,16 @@ test_that("updateBetaAndPriorBeta works with Zero", {
                         nms = "sex",
                         dimtypes = "sex",
                         DimScales = list(new("Sexes", dimvalues = c("f", "m"))))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 2,
+                                       dimnames = list(sex = c("f", "m"))))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL, isSaturated = FALSE)
+                               sY = NULL,
+                               isSaturated = FALSE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "Zero")
         vbar <- rnorm(2)
         n <- 9:10
@@ -4021,10 +4461,16 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with Zero
                         nms = "sex",
                         dimtypes = "sex",
                         DimScales = list(new("Sexes", dimvalues = c("f", "m"))))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 2,
+                                       dimnames = list(sex = c("f", "m"))))
         prior0 <- initialPrior(spec,
                                beta = beta0,
                                metadata = metadata,
-                               sY = NULL, isSaturated = FALSE)
+                               sY = NULL,
+                               isSaturated = FALSE,
+                               margin = 1L,
+                               strucZeroArray = strucZeroArray)
         expect_is(prior0, "Zero")
         vbar <- rnorm(2)
         n <- 9:10

@@ -1131,6 +1131,7 @@ test_that("initialMixAll works", {
                        isSaturated = TRUE,
                        margin = 1:3,
                        strucZeroArray = strucZeroArray)
+    stopifnot(identical(l$allStrucZero, rep(FALSE, 20 * 2 * 10)))
     stopifnot(identical(l$AComponentWeightMix, new("Scale", 0.5)))
     stopifnot(identical(l$ALevelComponentWeightMix, new("Scale", 0.25)))
     stopifnot(identical(l$ATau, new("Scale", 0.25)))
@@ -1242,6 +1243,7 @@ test_that("initialMixAllPredict works", {
                               margin = 1:3,
                               strucZeroArray = strucZeroArray)
     stopifnot(identical(l$aMix, new("ParameterVector", rep(0, times = 19))))
+    stopifnot(identical(l$allStrucZero, rep(FALSE, 20*2*20)))
     stopifnot(identical(length(l$alphaMix@.Data), l$J@.Data))
     stopifnot(identical(l$CMix, new("ParameterVector", rep(1, times = 20))))
     stopifnot(identical(length(l$componentWeightMix), 20L * 10L))
@@ -1865,7 +1867,7 @@ test_that("makeAllStrucZeroError works", {
                                           margin = 1L,
                                           metadata = metadata,
                                           classPrior = "MixNormZero")
-    ans.expected <- NULL
+    ans.expected <- rep(FALSE, times = 2)
     expect_identical(ans.obtained, ans.expected)
     strucZeroArray <- Counts(array(c(1L, 0L),
                                    dim = c(2:3, 3),
@@ -3106,7 +3108,7 @@ test_that("defaultPrior generates appropriate Specification objects from valid i
     beta <- rnorm(10)
     metadata <- new("MetaData",
                     nms = c("sex", "time"),
-                    dimtypes = c("state", "time"),
+                    dimtypes = c("sex", "time"),
                     DimScales = list(new("Sexes", dimvalues = c("f", "m")),
                         new("Points", dimvalues = 2000:2004)))
     expect_identical(defaultPrior(beta = beta, metadata = metadata),
@@ -4378,12 +4380,16 @@ test_that("makePriors throws appropriate errors", {
     y <- Counts(array(rpois(n = 20, lambda = 20),
                       dim = c(5, 4),
                       dimnames = list(age = 0:4, region = letters[1:4])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(5, 4),
+                                   dimnames = list(age = 0:4, region = letters[1:4])))
     expect_error(makePriors(betas = betas,
                             specs = specs,
                             namesSpecs = namesSpecs,
                             margins = margins,
                             y = y,
-                            sY = NULL),
+                            sY = NULL,
+                            strucZeroArray = strucZeroArray),
                  "'beta' for \"age\" has missing values")
 })
 
@@ -5742,7 +5748,7 @@ test_that("betaHat gives valid answer with prior of class Mix", {
                           sY = NULL,
                           multScale = 1,
                           isSaturated = FALSE,
-                          margin = 1L,
+                          margin = 1:3,
                           strucZeroArray = strucZeroArray)
     ans.obtained <- betaHat(prior)
     ans.expected <- prior@alphaMix@.Data

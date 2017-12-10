@@ -774,7 +774,8 @@ updateAlphaDLMNoTrend(SEXP prior_R, double *betaTilde, int J)
 {
     int K = *INTEGER(GET_SLOT(prior_R, K_sym));
     int L = *INTEGER(GET_SLOT(prior_R, L_sym));
-    
+    int *alongAllStrucZero = INTEGER(GET_SLOT(prior_R, alongAllStrucZero_sym));
+ 
     double *alpha = REAL(GET_SLOT(prior_R, alphaDLM_sym)); /* vector, length (K+1)L */
     /* m0 a list of vector of doubles, len L, each vector length 1 */
     SEXP m0_R = GET_SLOT(prior_R, m0NoTrend_sym);
@@ -810,42 +811,45 @@ updateAlphaDLMNoTrend(SEXP prior_R, double *betaTilde, int J)
     int *indices_v = INTEGER(GET_SLOT(iterator_v_R, indices_sym)); 
  
     for (int l = 0; l < L; ++l) {
-        
-    m[0] = *REAL(VECTOR_ELT(m0_R, l));
-            
-    /* forward filter */
-    for (int i = 0; i < K; ++i) {
-        int index_v = indices_v[i] - 1;
-        double this_a = phi * m[i];
-        a[i] = this_a;
-        double this_R = phiSq * C[i] + omegaSq;
-        R[i] = this_R;
-        double q = this_R + v[index_v];
-        double e = betaTilde[index_v] - this_a;
-        double A = this_R/q;
-        m[i+1] = this_a + A*e;
-        C[i+1] = this_R - A*A*q;
-    }
-             
-    int index_a = indices_a[K] - 1;
-    double last_alpha = rnorm( m[K], sqrt(C[K]) );
-    alpha[index_a] = last_alpha;
 
-    /* backward sample */
-    for (int i = K-1; i >= 0; --i) {
-        if ((i > 0) || (C[0] > tolerance)) {
-        double B = C[i] * phi / R[i];
-        double mStar = m[i] + B * (last_alpha - a[i]);
-        double CStar = C[i] - B*B*R[i];
-        index_a = indices_a[i] - 1;
-        last_alpha = rnorm( mStar, sqrt(CStar) );
-        alpha[index_a] = last_alpha;
-        }
-    }
+	if (!alongAllStrucZero[l]) {
         
-        advanceA(iterator_a_R);
-        advanceA(iterator_v_R);
-    }
+	    m[0] = *REAL(VECTOR_ELT(m0_R, l));
+            
+	    /* forward filter */
+	    for (int i = 0; i < K; ++i) {
+		int index_v = indices_v[i] - 1;
+		double this_a = phi * m[i];
+		a[i] = this_a;
+		double this_R = phiSq * C[i] + omegaSq;
+		R[i] = this_R;
+		double q = this_R + v[index_v];
+		double e = betaTilde[index_v] - this_a;
+		double A = this_R/q;
+		m[i+1] = this_a + A*e;
+		C[i+1] = this_R - A*A*q;
+	    }
+             
+	    int index_a = indices_a[K] - 1;
+	    double last_alpha = rnorm( m[K], sqrt(C[K]) );
+	    alpha[index_a] = last_alpha;
+
+	    /* backward sample */
+	    for (int i = K-1; i >= 0; --i) {
+		if ((i > 0) || (C[0] > tolerance)) {
+		    double B = C[i] * phi / R[i];
+		    double mStar = m[i] + B * (last_alpha - a[i]);
+		    double CStar = C[i] - B*B*R[i];
+		    index_a = indices_a[i] - 1;
+		    last_alpha = rnorm( mStar, sqrt(CStar) );
+		    alpha[index_a] = last_alpha;
+		}
+	    }
+	} /* end if (!alongAllStrucZero[l]) */
+	advanceA(iterator_a_R);
+	advanceA(iterator_v_R);
+    } /* end for (int l = 0; l < L; l++) */
+
     /* only alphaDLM gets updated in the prior */
 }
 
@@ -1743,7 +1747,8 @@ updateOmegaAlpha(SEXP prior_R, int isWithTrend)
     
         int K = *INTEGER(GET_SLOT(prior_R, K_sym));
         int L = *INTEGER(GET_SLOT(prior_R, L_sym));
-        
+	int *alongAllStrucZero = INTEGER(GET_SLOT(prior_R, alongAllStrucZero_sym));
+	    
         double *alpha = REAL(GET_SLOT(prior_R, alphaDLM_sym)); /* vector, length (K+1)L */
         double omega = *REAL(GET_SLOT(prior_R, omegaAlpha_sym));
         double omegaMax = *REAL(GET_SLOT(prior_R, omegaAlphaMax_sym));
@@ -1770,24 +1775,29 @@ updateOmegaAlpha(SEXP prior_R, int isWithTrend)
         int n = 0;
         
         for (int l = 0; l < L; ++l) {
-            for (int i = 0; i < K; ++i) {
-            int k_curr = indices[i + 1] - 1; /* C style indices */
-            int k_prev = indices[i] - 1;
+
+	    if (!alongAllStrucZero[l]) {
+
+		for (int i = 0; i < K; ++i) {
+		    int k_curr = indices[i + 1] - 1; /* C style indices */
+		    int k_prev = indices[i] - 1;
                     
-            double alpha_k_curr = alpha[k_curr];
-            double alpha_k_prev = alpha[k_prev];
+		    double alpha_k_curr = alpha[k_curr];
+		    double alpha_k_prev = alpha[k_prev];
                     
-            double toSq = 0;
+		    double toSq = 0;
                     
-            if (isWithTrend) {
-                toSq = alpha_k_curr - alpha_k_prev - delta[k_prev];
-            }
-            else { 
-                toSq = alpha_k_curr - phi * alpha_k_prev;
-            }
-            V += toSq*toSq;
-            n += 1;
-            }
+		    if (isWithTrend) {
+			toSq = alpha_k_curr - alpha_k_prev - delta[k_prev];
+		    }
+		    else { 
+			toSq = alpha_k_curr - phi * alpha_k_prev;
+		    }
+		    V += toSq*toSq;
+		    n += 1;
+		}
+		
+	    } /* end if (!alongAllStrucZero[l]) */
             advanceA(iterator_R); 
         }
 
@@ -1799,7 +1809,6 @@ updateOmegaAlpha(SEXP prior_R, int isWithTrend)
         }
     } /* end if !returnUnchanged */
 }
-
 
 void
 updateOmegaComponentWeightMix(SEXP prior_R)
@@ -1844,7 +1853,8 @@ updateOmegaDelta(SEXP prior_R)
 {
     int K = *INTEGER(GET_SLOT(prior_R, K_sym));
     int L = *INTEGER(GET_SLOT(prior_R, L_sym));
-    
+    int *alongAllStrucZero = INTEGER(GET_SLOT(prior_R, alongAllStrucZero_sym));
+	
     double *delta = REAL(GET_SLOT(prior_R, deltaDLM_sym)); /* vector, length (K+1)L */
     double phi = *REAL(GET_SLOT(prior_R, phi_sym));
     double omega = *REAL(GET_SLOT(prior_R, omegaDelta_sym));
@@ -1862,15 +1872,19 @@ updateOmegaDelta(SEXP prior_R)
     int n = 0;
     
     for (int l = 0; l < L; ++l) {
+
+	if (!alongAllStrucZero[l]) {
         
-    for (int i = 0; i < K; ++i) {
-        int k_curr = indices[i + 1] - 1; /* C style indices */
-        int k_prev = indices[i] - 1;
+	    for (int i = 0; i < K; ++i) {
+		int k_curr = indices[i + 1] - 1; /* C style indices */
+		int k_prev = indices[i] - 1;
                 
-        double toSq = delta[k_curr] - phi * delta[k_prev];
-        V += toSq*toSq;
-        n += 1;
-    }
+		double toSq = delta[k_curr] - phi * delta[k_prev];
+		V += toSq*toSq;
+		n += 1;
+	    }
+	    
+	}
         advanceA(iterator_R); 
     }
     
@@ -1943,6 +1957,7 @@ updateOmegaSeason(SEXP prior_R)
     int J = *INTEGER(GET_SLOT(prior_R, J_sym));
     int K = *INTEGER(GET_SLOT(prior_R, K_sym));
     int L = *INTEGER(GET_SLOT(prior_R, L_sym));
+    int *alongAllStrucZero = INTEGER(GET_SLOT(prior_R, alongAllStrucZero_sym));
     
     /* s is FFBS list */
     SEXP s_R = GET_SLOT(prior_R, s_sym);
@@ -1962,19 +1977,21 @@ updateOmegaSeason(SEXP prior_R)
     double V = 0;
     
     for (int l = 0; l < L; ++l) {
-        
-    for (int i = 0; i < K; ++i) {
-        int i_curr = indices[i + 1] - 1; /* C style indices */
-        int i_prev = indices[i] - 1;
+
+	if (!alongAllStrucZero[l]) {
+	    for (int i = 0; i < K; ++i) {
+		int i_curr = indices[i + 1] - 1; /* C style indices */
+		int i_prev = indices[i] - 1;
                 
-        double *s_curr = REAL(VECTOR_ELT(s_R, i_curr));
-        double *s_prev = REAL(VECTOR_ELT(s_R, i_prev));
-        double curr = s_curr[0];
-        double prev = s_prev[nSeason-1];
-        double toSq = curr - prev;
-        V += toSq*toSq;
-    }
-        
+		double *s_curr = REAL(VECTOR_ELT(s_R, i_curr));
+		double *s_prev = REAL(VECTOR_ELT(s_R, i_prev));
+		double curr = s_curr[0];
+		double prev = s_prev[nSeason-1];
+		double toSq = curr - prev;
+		V += toSq*toSq;
+	    }
+        }
+	
         advanceA(iterator_R); 
     }
     
@@ -2027,34 +2044,34 @@ updateOmegaVectorsMix(SEXP prior_R)
     
     int successfullyUpdated = (omega > 0);
     if(successfullyUpdated) {
-    SET_DOUBLESCALE_SLOT(prior_R, omegaVectorsMix_sym, omega);
+	SET_DOUBLESCALE_SLOT(prior_R, omegaVectorsMix_sym, omega);
     }
 }
 
 void
-updatePhi(SEXP prior_R, int isWithTrend)
-{
+updatePhi(SEXP prior_R, int isWithTrend) {
 
     int isPhiKnown = *LOGICAL(GET_SLOT(prior_R, phiKnown_sym));
     
     if (!isPhiKnown) {
 
-    double phiCurr = *REAL(GET_SLOT(prior_R, phi_sym));
+	double phiCurr = *REAL(GET_SLOT(prior_R, phi_sym));
     
         int K = *INTEGER(GET_SLOT(prior_R, K_sym));
         int L = *INTEGER(GET_SLOT(prior_R, L_sym));
-        
+	int *alongAllStrucZero = INTEGER(GET_SLOT(prior_R, alongAllStrucZero_sym));
+    
         double *state = NULL;
         double omega = 0;
         
         if (isWithTrend) {
-            state = REAL(GET_SLOT(prior_R, deltaDLM_sym)); /* vector, length (K+1)L */
-            omega = *REAL(GET_SLOT(prior_R, omegaDelta_sym));
-        }
+	    state = REAL(GET_SLOT(prior_R, deltaDLM_sym)); /* vector, length (K+1)L */
+	    omega = *REAL(GET_SLOT(prior_R, omegaDelta_sym));
+	}
         else {
-            state = REAL(GET_SLOT(prior_R, alphaDLM_sym)); /* vector, length (K+1)L */
-            omega = *REAL(GET_SLOT(prior_R, omegaAlpha_sym));
-        }
+	    state = REAL(GET_SLOT(prior_R, alphaDLM_sym)); /* vector, length (K+1)L */
+	    omega = *REAL(GET_SLOT(prior_R, omegaAlpha_sym));
+	}
         
         double minPhi = *REAL(GET_SLOT(prior_R, minPhi_sym));
         double maxPhi = *REAL(GET_SLOT(prior_R, maxPhi_sym));
@@ -2071,36 +2088,39 @@ updatePhi(SEXP prior_R, int isWithTrend)
         double denominator = 0;
 
         for (int l = 0; l < L; ++l) {
+
+	    if (!alongAllStrucZero[l]) {
             
-        for (int i = 0; i < K; ++i) {
-        int k_curr = indices[i + 1] - 1; /* C style indices */
-        int k_prev = indices[i] - 1;
+		for (int i = 0; i < K; ++i) {
+		    int k_curr = indices[i + 1] - 1; /* C style indices */
+		    int k_prev = indices[i] - 1;
                     
-        double state_k_prev = state[k_prev];
-        numerator += state[k_curr] * state_k_prev;
-        denominator += state_k_prev * state_k_prev;
-        }
-            
-            advanceA(iterator_R); 
-        }
+		    double state_k_prev = state[k_prev];
+		    numerator += state[k_curr] * state_k_prev;
+		    denominator += state_k_prev * state_k_prev;
+		}
+	    }
+
+	    advanceA(iterator_R); 
+	}
         
         double mean = numerator/denominator;
         double sd = omega/sqrt(denominator);
         
-    double phiProp = rtnorm1(mean, sd, minPhi, maxPhi);
+	double phiProp = rtnorm1(mean, sd, minPhi, maxPhi);
     
-    double phiPropTr = (phiProp - minPhi) / (maxPhi - minPhi);
-    double phiCurrTr = (phiCurr - minPhi) / (maxPhi - minPhi);
+	double phiPropTr = (phiProp - minPhi) / (maxPhi - minPhi);
+	double phiCurrTr = (phiCurr - minPhi) / (maxPhi - minPhi);
 
-    double logDensProp = dbeta(phiPropTr, shape1, shape2, USE_LOG);
-    double logDensCurr = dbeta(phiCurrTr, shape1, shape2, USE_LOG);
+	double logDensProp = dbeta(phiPropTr, shape1, shape2, USE_LOG);
+	double logDensCurr = dbeta(phiCurrTr, shape1, shape2, USE_LOG);
     
-    double logDiff = logDensProp - logDensCurr;
+	double logDiff = logDensProp - logDensCurr;
     
-    int accept = (!(logDiff < 0) || (runif(0, 1) < exp(logDiff)));  
-    if (accept) {
-        SET_DOUBLESCALE_SLOT(prior_R, phi_sym, phiProp);
-    }
+	int accept = (!(logDiff < 0) || (runif(0, 1) < exp(logDiff)));  
+	if (accept) {
+	    SET_DOUBLESCALE_SLOT(prior_R, phi_sym, phiProp);
+	}
 
     }/* end !isPhiKnown */
     
@@ -2180,11 +2200,13 @@ updatePhiMix(SEXP prior_R)
     }
 }
 
+
 void
 updateSeason(SEXP prior_R, double *betaTilde, int J)
 {
     int K = *INTEGER(GET_SLOT(prior_R, K_sym));
     int L = *INTEGER(GET_SLOT(prior_R, L_sym));
+    int *alongAllStrucZero = INTEGER(GET_SLOT(prior_R, alongAllStrucZero_sym));
     int nSeason = *INTEGER(GET_SLOT(prior_R, nSeason_sym));
     
     /* s is length (K+1)L list of vectors of length nSeason*/
@@ -2228,87 +2250,90 @@ updateSeason(SEXP prior_R, double *betaTilde, int J)
     double *last_C = REAL(VECTOR_ELT(C_R, K));
             
     for (int l = 0; l < L; ++l) {
+
+	if (!alongAllStrucZero[l]) {
         
-    /*m[[1L]] <- m0[[l]]*/
-    double *m0_l = REAL(VECTOR_ELT(m0_R, l));
-    double *m_first = REAL(VECTOR_ELT(m_R, 0));
-    memcpy(m_first, m0_l, nSeason*sizeof(double));
+	    /*m[[1L]] <- m0[[l]]*/
+	    double *m0_l = REAL(VECTOR_ELT(m0_R, l));
+	    double *m_first = REAL(VECTOR_ELT(m_R, 0));
+	    memcpy(m_first, m0_l, nSeason*sizeof(double));
             
-    /* forward filter */
-    for (int i = 0; i < K; ++i) {
+	    /* forward filter */
+	    for (int i = 0; i < K; ++i) {
                 
-        int index_j = indices_v[i] - 1;
+		int index_j = indices_v[i] - 1;
                 
-        double *this_m = REAL(VECTOR_ELT(m_R, i));
-        double *this_C = REAL(VECTOR_ELT(C_R, i));
-        double *this_a = REAL(VECTOR_ELT(a_R, i));
-        double *this_R = REAL(VECTOR_ELT(R_R, i));
+		double *this_m = REAL(VECTOR_ELT(m_R, i));
+		double *this_C = REAL(VECTOR_ELT(C_R, i));
+		double *this_a = REAL(VECTOR_ELT(a_R, i));
+		double *this_R = REAL(VECTOR_ELT(R_R, i));
                 
-        double *next_m = REAL(VECTOR_ELT(m_R, i+1));
-        double *next_C = REAL(VECTOR_ELT(C_R, i+1));
+		double *next_m = REAL(VECTOR_ELT(m_R, i+1));
+		double *next_C = REAL(VECTOR_ELT(C_R, i+1));
                 
-        for (int i_n = 0; i_n < nSeason-1; ++i_n) {
-        this_a[i_n + 1] = this_m[i_n];
-        this_R[i_n + 1] = this_C[i_n];
-        }
+		for (int i_n = 0; i_n < nSeason-1; ++i_n) {
+		    this_a[i_n + 1] = this_m[i_n];
+		    this_R[i_n + 1] = this_C[i_n];
+		}
                 
-        double curr_a = this_m[nSeason-1];
-        double curr_R = this_C[nSeason-1] + omegaSq;
-        this_a[0] = curr_a;
-        this_R[0] = curr_R;
+		double curr_a = this_m[nSeason-1];
+		double curr_R = this_C[nSeason-1] + omegaSq;
+		this_a[0] = curr_a;
+		this_R[0] = curr_R;
                 
-        double q = curr_R + v[index_j];
-        double e = betaTilde[index_j] - curr_a;
+		double q = curr_R + v[index_j];
+		double e = betaTilde[index_j] - curr_a;
                 
-        double Ae1 = curr_R * e/q;
-        memcpy(next_m, this_a, nSeason*sizeof(double));
-        next_m[0] += Ae1;
+		double Ae1 = curr_R * e/q;
+		memcpy(next_m, this_a, nSeason*sizeof(double));
+		next_m[0] += Ae1;
                 
-        double AAq1 = curr_R * curr_R/q;
-        memcpy(next_C, this_R, nSeason*sizeof(double));
-        next_C[0] -= AAq1;
-    }
+		double AAq1 = curr_R * curr_R/q;
+		memcpy(next_C, this_R, nSeason*sizeof(double));
+		next_C[0] -= AAq1;
+	    }
             
-    int i_curr = indices_s[K] - 1;
-    double *this_s = REAL(VECTOR_ELT(s_R, i_curr));
+	    int i_curr = indices_s[K] - 1;
+	    double *this_s = REAL(VECTOR_ELT(s_R, i_curr));
                 
-    for (int i_n = 0; i_n < nSeason; ++i_n) {
-        double mean = last_m[i_n];
-        double sd = sqrt(last_C[i_n]);
-        double s = rnorm( mean, sd);
-        this_s[i_n] = s;
-    }     
+	    for (int i_n = 0; i_n < nSeason; ++i_n) {
+		double mean = last_m[i_n];
+		double sd = sqrt(last_C[i_n]);
+		double s = rnorm( mean, sd);
+		this_s[i_n] = s;
+	    }     
             
-    /* backward smooth */
-    for (int i = K-1; i >= 0; --i) {
+	    /* backward smooth */
+	    for (int i = K-1; i >= 0; --i) {
                 
-        int i_prev = indices_s[i+1] - 1;
-        int i_curr = indices_s[i] - 1;
+		int i_prev = indices_s[i+1] - 1;
+		int i_curr = indices_s[i] - 1;
                 
-        double *this_C = REAL(VECTOR_ELT(C_R, i));
-        double thisC_last = this_C[nSeason-1];
-        double *this_m = REAL(VECTOR_ELT(m_R, i));
-        double thism_last = this_m[nSeason-1];
+		double *this_C = REAL(VECTOR_ELT(C_R, i));
+		double thisC_last = this_C[nSeason-1];
+		double *this_m = REAL(VECTOR_ELT(m_R, i));
+		double thism_last = this_m[nSeason-1];
                 
-        double *s_prev = REAL(VECTOR_ELT(s_R, i_prev));
-        double *s_curr = REAL(VECTOR_ELT(s_R, i_curr));
+		double *s_prev = REAL(VECTOR_ELT(s_R, i_prev));
+		double *s_curr = REAL(VECTOR_ELT(s_R, i_curr));
                 
-        /*s[[i.curr]][-n.season] <- s[[i.prev]][-1L]
-         * copy from last nSeason-1 elements of s_prev
-         * into first nSeason-1 elements of s_curr */
-        memcpy(s_curr, (s_prev+1), (nSeason-1)*sizeof(double));
+		/*s[[i.curr]][-n.season] <- s[[i.prev]][-1L]
+		 * copy from last nSeason-1 elements of s_prev
+		 * into first nSeason-1 elements of s_curr */
+		memcpy(s_curr, (s_prev+1), (nSeason-1)*sizeof(double));
                 
-        double lambda = thisC_last/(thisC_last + omegaSq);
-        double s_prev_first = s_prev[0];
+		double lambda = thisC_last/(thisC_last + omegaSq);
+		double s_prev_first = s_prev[0];
                 
-        double mean = lambda * s_prev_first + (1 - lambda)*thism_last;
-        double sd = sqrt(lambda) * omega;
-        s_curr[nSeason-1] = rnorm(mean, sd);
+		double mean = lambda * s_prev_first + (1 - lambda)*thism_last;
+		double sd = sqrt(lambda) * omega;
+		s_curr[nSeason-1] = rnorm(mean, sd);
                 
-    }
+	    }
             
-        advanceA(iterator_s_R);
-        advanceA(iterator_v_R);
+	} /* end if (!alongAllStrucZero[l]) */
+	advanceA(iterator_s_R);
+	advanceA(iterator_v_R);
     }
     /* only s gets updated in the prior */
     
@@ -2597,19 +2622,22 @@ updateUBeta(SEXP prior_R, double *beta, int J)
     double *U = REAL(GET_SLOT(prior_R, UBeta_sym));
     double nu = *REAL(GET_SLOT(prior_R, nuBeta_sym));
     double tau = *REAL(GET_SLOT(prior_R, tau_sym));
-    
+    int *allStrucZero = INTEGER(GET_SLOT(prior_R, allStrucZero_sym));
+	
     double *beta_hat = (double *)R_alloc(J, sizeof(double));
     betaHat(beta_hat, prior_R, J);
     
     double df = nu + 1;
     
     double nuTimesTauSq = nu * tau * tau;
+    double thisScale = 0;
     
     for (int j = 0; j < J; ++j) {
-        double diff = beta[j] - beta_hat[j];
-        double thisScale = (nuTimesTauSq + diff*diff)/df;
-        
-        U[j] = rinvchisq1(df, thisScale);
+	if (!allStrucZero[j]) {
+	    double diff = beta[j] - beta_hat[j];
+	    thisScale = (nuTimesTauSq + diff*diff)/df;
+	    U[j] = rinvchisq1(df, thisScale);
+        }
     }
 }
 
@@ -4359,7 +4387,8 @@ updateTheta_PoissonVaryingNotUseExp(SEXP object, SEXP y_R)
     SEXP theta_R = GET_SLOT(object, theta_sym);
     double *theta = REAL(theta_R);
     int n_theta = LENGTH(theta_R);
-    /* n_theta and length of y_R are all identical */
+    int *cellInLik = LOGICAL(GET_SLOT(object, cellInLik_sym));
+    /* n_theta and length of y_R and cellInLik are all identical */
 
     double lower = *REAL(GET_SLOT(object, lower_sym));
     double upper = *REAL(GET_SLOT(object, upper_sym));
@@ -4408,131 +4437,135 @@ updateTheta_PoissonVaryingNotUseExp(SEXP object, SEXP y_R)
     int n_failed_prop_theta = 0;
 
     for (int i = 0; i < n_theta; ++i) {
-        
-        int ir = i + 1; /* R index */
-        
-        /* get 'mu' */
-        double mu = 0.0;
-        for (int b = 0; b < n_beta; ++b) {
-            double *this_beta = betas[b];
-            mu += this_beta[indices[b]-1];
-        }
 
         int this_y = y[i];
-        
-        double mean = 0;
-        double sd = 0;
-        double theta_curr = theta[i];
-        double log_th_curr = log(theta_curr);
-        double transformedThetaCurr = log_th_curr;
-            
         int y_is_missing = yMissing[i];
         
-        int use_subtotal = 0;
-        int ir_after = 0;
-        if (y_is_missing && has_subtotals) {
+	int is_struc_zero = !cellInLik[i] && !y_is_missing && (this_y == 0);
+
+	if (!is_struc_zero) {
+	
+	    int ir = i + 1; /* R index */
+        
+	    /* get 'mu' */
+	    double mu = 0.0;
+	    for (int b = 0; b < n_beta; ++b) {
+		double *this_beta = betas[b];
+		mu += this_beta[indices[b]-1];
+	    }
+
+	    double mean = 0;
+	    double sd = 0;
+	    double theta_curr = theta[i];
+	    double log_th_curr = log(theta_curr);
+	    double transformedThetaCurr = log_th_curr;
             
-            ir_after = dembase_getIAfter(ir, transformSubtotals_R);
-            use_subtotal = (ir_after > 0);
-        }
-        
-        int draw_straight_from_prior = (y_is_missing && !use_subtotal);
-        
-        if (draw_straight_from_prior) {
-            mean = mu;
-            sd = sigma;
-        }
-        else {
-            if (usesBoxCoxTransformation) {
-                transformedThetaCurr = (pow(theta_curr, boxCoxParam) - 1) / boxCoxParam;
-            }
-            mean = transformedThetaCurr;
-            sd = scale;
-        
-        }
-
-        double transformedThetaProp = 0.0;
-        
-        int attempt = 0;
-        int found_prop = 0;
-
-        while( (!found_prop) && (attempt < maxAttempt) ) {
-
-            ++attempt;
+	    int use_subtotal = 0;
+	    int ir_after = 0;
+	    if (y_is_missing && has_subtotals) {
             
-            transformedThetaProp = rnorm(mean, sd);
-            found_prop = ( (transformedThetaProp > lower + tolerance) &&
-                            (transformedThetaProp < upper - tolerance));
-         }
+		ir_after = dembase_getIAfter(ir, transformSubtotals_R);
+		use_subtotal = (ir_after > 0);
+	    }
+        
+	    int draw_straight_from_prior = (y_is_missing && !use_subtotal);
+        
+	    if (draw_straight_from_prior) {
+		mean = mu;
+		sd = sigma;
+	    }
+	    else {
+		if (usesBoxCoxTransformation) {
+		    transformedThetaCurr = (pow(theta_curr, boxCoxParam) - 1) / boxCoxParam;
+		}
+		mean = transformedThetaCurr;
+		sd = scale;
+        
+	    }
 
-        if (found_prop) {
+	    double transformedThetaProp = 0.0;
+        
+	    int attempt = 0;
+	    int found_prop = 0;
+
+	    while( (!found_prop) && (attempt < maxAttempt) ) {
+
+		++attempt;
             
-        double theta_prop = 0;
-            if (usesBoxCoxTransformation) {
-                theta_prop = pow(boxCoxParam * transformedThetaProp + 1, 1/boxCoxParam);
-            }
-            else {
-                theta_prop = exp(transformedThetaProp);
-            }
+		transformedThetaProp = rnorm(mean, sd);
+		found_prop = ( (transformedThetaProp > lower + tolerance) &&
+			       (transformedThetaProp < upper - tolerance));
+	    }
+
+	    if (found_prop) {
+            
+		double theta_prop = 0;
+		if (usesBoxCoxTransformation) {
+		    theta_prop = pow(boxCoxParam * transformedThetaProp + 1, 1/boxCoxParam);
+		}
+		else {
+		    theta_prop = exp(transformedThetaProp);
+		}
            
-            if (draw_straight_from_prior) {
-                theta[i] = theta_prop;
-            }
-            else {
+		if (draw_straight_from_prior) {
+		    theta[i] = theta_prop;
+		}
+		else {
                 
-                double log_lik_prop = 0;
-                double log_lik_curr = 0;
+		    double log_lik_prop = 0;
+		    double log_lik_curr = 0;
                 
-                if(use_subtotal) {
+		    if(use_subtotal) {
             
-                    int *subtotals = INTEGER(GET_SLOT(y_R, subtotalsNet_sym));
-                    int i_after = ir_after -1;
-                    int subtotal = subtotals[i_after];
+			int *subtotals = INTEGER(GET_SLOT(y_R, subtotalsNet_sym));
+			int i_after = ir_after -1;
+			int subtotal = subtotals[i_after];
                     
-                    SEXP ir_shared_R;
-                    PROTECT( ir_shared_R 
-                                = dembase_getIShared(ir, transformSubtotals_R) ); 
+			SEXP ir_shared_R;
+			PROTECT( ir_shared_R 
+				 = dembase_getIShared(ir, transformSubtotals_R) ); 
                 
-                    int n_ir_shared = LENGTH(ir_shared_R);
-                    int *ir_shared = INTEGER(ir_shared_R);
+			int n_ir_shared = LENGTH(ir_shared_R);
+			int *ir_shared = INTEGER(ir_shared_R);
         
-                    double lambda_curr = 0;
-                    for (int j = 0; j < n_ir_shared; ++j) {
-                        int shared_index = ir_shared[j] - 1;
-                        if (yMissing[shared_index]) {
-                            lambda_curr += theta[shared_index];
-                        }
-                    }
+			double lambda_curr = 0;
+			for (int j = 0; j < n_ir_shared; ++j) {
+			    int shared_index = ir_shared[j] - 1;
+			    if (yMissing[shared_index]) {
+				lambda_curr += theta[shared_index];
+			    }
+			}
                     
-                    UNPROTECT(1); /* ir_shared_R */
+			UNPROTECT(1); /* ir_shared_R */
                     
-                    double lambda_prop = lambda_curr + theta_prop - theta_curr;
-                    log_lik_prop = dpois(subtotal, lambda_prop, USE_LOG);
-                    log_lik_curr = dpois(subtotal, lambda_curr, USE_LOG);
+			double lambda_prop = lambda_curr + theta_prop - theta_curr;
+			log_lik_prop = dpois(subtotal, lambda_prop, USE_LOG);
+			log_lik_curr = dpois(subtotal, lambda_curr, USE_LOG);
                     
-                }
-                else {
+		    }
+		    else {
                 
-                    log_lik_prop = dpois(this_y, theta_prop, USE_LOG);
-                    log_lik_curr = dpois(this_y, theta_curr, USE_LOG);
-                }
+			log_lik_prop = dpois(this_y, theta_prop, USE_LOG);
+			log_lik_curr = dpois(this_y, theta_curr, USE_LOG);
+		    }
                 
-                double log_dens_prop = dnorm(transformedThetaProp, mu, sigma, USE_LOG);
-                double log_dens_curr = dnorm(transformedThetaCurr, mu, sigma, USE_LOG);
-                double log_diff = (log_lik_prop + log_dens_prop
-                                        - log_lik_curr - log_dens_curr);
+		    double log_dens_prop = dnorm(transformedThetaProp, mu, sigma, USE_LOG);
+		    double log_dens_curr = dnorm(transformedThetaCurr, mu, sigma, USE_LOG);
+		    double log_diff = (log_lik_prop + log_dens_prop
+				       - log_lik_curr - log_dens_curr);
                 
-                int accept = (!(log_diff < 0) || (runif(0, 1) < exp(log_diff)));
-                if (accept) {
-                    ++n_accept_theta;
-                    theta[i] = theta_prop;
-                }
-            }
-        }
-        else { /* not found prop */
-            ++n_failed_prop_theta;
-        }
-        
+		    int accept = (!(log_diff < 0) || (runif(0, 1) < exp(log_diff)));
+		    if (accept) {
+			++n_accept_theta;
+			theta[i] = theta_prop;
+		    }
+		}
+	    }
+	    else { /* not found prop */
+		++n_failed_prop_theta;
+	    }
+
+	} /* end if (!is_struc_zero) */
         advanceB(iteratorBetas_R);
     } /* end loop through thetas */
 
@@ -4557,7 +4590,8 @@ updateTheta_PoissonVaryingUseExp(SEXP object, SEXP y_R, SEXP exposure_R)
     SEXP theta_R = GET_SLOT(object, theta_sym);
     double *theta = REAL(theta_R);
     int n_theta = LENGTH(theta_R);
-    /* n_theta and length of y_R and exposure_R are all identical */
+    int *cellInLik = LOGICAL(GET_SLOT(object, cellInLik_sym));
+    /* n_theta and length of y_R, cellInLik, and exposure_R are all identical */
 
     double lower = *REAL(GET_SLOT(object, lower_sym));
     double upper = *REAL(GET_SLOT(object, upper_sym));
@@ -4611,142 +4645,146 @@ updateTheta_PoissonVaryingUseExp(SEXP object, SEXP y_R, SEXP exposure_R)
     
     for (int i = 0; i < n_theta; ++i) {
 
-        
-        int ir = i + 1; /* R index */
-        
-        /* get 'mu' */
-        double mu = 0.0;
-        for (int b = 0; b < n_beta; ++b) {
-            double *this_beta = betas[b];
-            mu += this_beta[indices[b]-1];
-        }
-
         int this_y = y[i];
-        
-        double mean = 0;
-        double sd = 0;
-        double theta_curr = theta[i];
-        double log_th_curr = log(theta_curr);
-        double transformedThetaCurr = log_th_curr;
-            
         int y_is_missing = yMissing[i];
         
-        int use_subtotal = 0;
-        int ir_after = 0;
-        if (y_is_missing && has_subtotals) {
-            ir_after = dembase_getIAfter(ir, transformSubtotals_R);
-            use_subtotal = (ir_after > 0);
-        }
-        
-        int draw_straight_from_prior = (y_is_missing && !use_subtotal);
-        
-        if (draw_straight_from_prior) {
-            mean = mu;
-            sd = sigma;
-        }
-        else {
-            
-            if (usesBoxCoxTransformation) {
-                transformedThetaCurr = (pow(theta_curr, boxCoxParam) - 1) / boxCoxParam;
-            }
-            
-            mean = transformedThetaCurr;
-            
-            if (y_is_missing) {
-                sd = scale / scale_multiplier;
-            }
-            else {
-                sd = scale / sqrt(1 + y[i]);
-            }
-        }
+	int is_struc_zero = !cellInLik[i] && !y_is_missing && (this_y == 0);
 
-        int attempt = 0;
-        int found_prop = 0;
+	if (!is_struc_zero) {
+	
+	    int ir = i + 1; /* R index */
         
-        double transformedThetaProp = 0.0;
-        
-        while( (!found_prop) && (attempt < maxAttempt) ) {
+	    /* get 'mu' */
+	    double mu = 0.0;
+	    for (int b = 0; b < n_beta; ++b) {
+		double *this_beta = betas[b];
+		mu += this_beta[indices[b]-1];
+	    }
 
-            ++attempt;
+        
+	    double mean = 0;
+	    double sd = 0;
+	    double theta_curr = theta[i];
+	    double log_th_curr = log(theta_curr);
+	    double transformedThetaCurr = log_th_curr;
             
-            transformedThetaProp = rnorm(mean, sd);
-            found_prop = ( (transformedThetaProp > lower + tolerance) &&
-                            (transformedThetaProp < upper - tolerance));
+	    int use_subtotal = 0;
+	    int ir_after = 0;
+	    if (y_is_missing && has_subtotals) {
+		ir_after = dembase_getIAfter(ir, transformSubtotals_R);
+		use_subtotal = (ir_after > 0);
+	    }
+        
+	    int draw_straight_from_prior = (y_is_missing && !use_subtotal);
+        
+	    if (draw_straight_from_prior) {
+		mean = mu;
+		sd = sigma;
+	    }
+	    else {
+            
+		if (usesBoxCoxTransformation) {
+		    transformedThetaCurr = (pow(theta_curr, boxCoxParam) - 1) / boxCoxParam;
+		}
+            
+		mean = transformedThetaCurr;
+            
+		if (y_is_missing) {
+		    sd = scale / scale_multiplier;
+		}
+		else {
+		    sd = scale / sqrt(1 + y[i]);
+		}
+	    }
+
+	    int attempt = 0;
+	    int found_prop = 0;
+        
+	    double transformedThetaProp = 0.0;
+        
+	    while( (!found_prop) && (attempt < maxAttempt) ) {
+
+		++attempt;
+            
+		transformedThetaProp = rnorm(mean, sd);
+		found_prop = ( (transformedThetaProp > lower + tolerance) &&
+			       (transformedThetaProp < upper - tolerance));
  
-        }
+	    }
                     
-        if (found_prop) {
+	    if (found_prop) {
             
-            double theta_prop = 0;
-            if (usesBoxCoxTransformation) {
-                theta_prop = pow(boxCoxParam * transformedThetaProp + 1, 1/boxCoxParam);
-            }
-            else {
-                theta_prop = exp(transformedThetaProp);
-            }
+		double theta_prop = 0;
+		if (usesBoxCoxTransformation) {
+		    theta_prop = pow(boxCoxParam * transformedThetaProp + 1, 1/boxCoxParam);
+		}
+		else {
+		    theta_prop = exp(transformedThetaProp);
+		}
             
-            if (draw_straight_from_prior) {
-                theta[i] = theta_prop;
-            }
-            else {
+		if (draw_straight_from_prior) {
+		    theta[i] = theta_prop;
+		}
+		else {
                 
-                double log_lik_prop = 0;
-                double log_lik_curr = 0;
+		    double log_lik_prop = 0;
+		    double log_lik_curr = 0;
                 
-                double this_exposure = exposure[i];
+		    double this_exposure = exposure[i];
                 
-                if(use_subtotal) {
+		    if(use_subtotal) {
             
-                    int *subtotals = INTEGER(GET_SLOT(y_R, subtotalsNet_sym));
-                    int i_after = ir_after -1;
-                    int subtotal = subtotals[i_after];
+			int *subtotals = INTEGER(GET_SLOT(y_R, subtotalsNet_sym));
+			int i_after = ir_after -1;
+			int subtotal = subtotals[i_after];
                     
-                    SEXP ir_shared_R;
-                    PROTECT( ir_shared_R 
-                         = dembase_getIShared(ir, transformSubtotals_R) ); 
-                    int n_ir_shared = LENGTH(ir_shared_R);
-                    int *ir_shared = INTEGER(ir_shared_R);
+			SEXP ir_shared_R;
+			PROTECT( ir_shared_R 
+				 = dembase_getIShared(ir, transformSubtotals_R) ); 
+			int n_ir_shared = LENGTH(ir_shared_R);
+			int *ir_shared = INTEGER(ir_shared_R);
                     
-                    double lambda_curr = 0;
-                    for (int j = 0; j < n_ir_shared; ++j) {
-                        int shared_index = ir_shared[j] - 1;
-                        if (yMissing[shared_index]) {
-                            lambda_curr += theta[shared_index] 
-                                        * exposure[ shared_index ];
-                        }
-                    }
+			double lambda_curr = 0;
+			for (int j = 0; j < n_ir_shared; ++j) {
+			    int shared_index = ir_shared[j] - 1;
+			    if (yMissing[shared_index]) {
+				lambda_curr += theta[shared_index] 
+				    * exposure[ shared_index ];
+			    }
+			}
                     
-                    UNPROTECT(1); /* ir_shared_R */
+			UNPROTECT(1); /* ir_shared_R */
                     
-                    double lambda_prop = lambda_curr 
-                                + (theta_prop - theta_curr) * this_exposure;
-                    log_lik_prop = dpois(subtotal, lambda_prop, USE_LOG);
-                    log_lik_curr = dpois(subtotal, lambda_curr, USE_LOG);
+			double lambda_prop = lambda_curr 
+			    + (theta_prop - theta_curr) * this_exposure;
+			log_lik_prop = dpois(subtotal, lambda_prop, USE_LOG);
+			log_lik_curr = dpois(subtotal, lambda_curr, USE_LOG);
                     
-                }
-                else {
+		    }
+		    else {
                     
-                    log_lik_prop = dpois(this_y, theta_prop*this_exposure, USE_LOG);
-                    log_lik_curr = dpois(this_y, theta_curr*this_exposure, USE_LOG);
-                }
+			log_lik_prop = dpois(this_y, theta_prop*this_exposure, USE_LOG);
+			log_lik_curr = dpois(this_y, theta_curr*this_exposure, USE_LOG);
+		    }
                 
-                double log_dens_prop = dnorm(transformedThetaProp, mu, sigma, USE_LOG);
-                double log_dens_curr = dnorm(transformedThetaCurr, mu, sigma, USE_LOG);
+		    double log_dens_prop = dnorm(transformedThetaProp, mu, sigma, USE_LOG);
+		    double log_dens_curr = dnorm(transformedThetaCurr, mu, sigma, USE_LOG);
                 
-                double log_diff = (log_lik_prop + log_dens_prop
-                                        - log_lik_curr - log_dens_curr);
+		    double log_diff = (log_lik_prop + log_dens_prop
+				       - log_lik_curr - log_dens_curr);
                 
-                int accept = (!(log_diff < 0) || (runif(0, 1) < exp(log_diff)));
-                if (accept) {
-                    ++n_accept_theta;
-                    theta[i] = theta_prop;
-                }
-            }
-        }
-        else { /* not found prop */
-            ++n_failed_prop_theta;
-        }
-        
+		    int accept = (!(log_diff < 0) || (runif(0, 1) < exp(log_diff)));
+		    if (accept) {
+			++n_accept_theta;
+			theta[i] = theta_prop;
+		    }
+		}
+	    }
+	    else { /* not found prop */
+		++n_failed_prop_theta;
+	    }
+
+	} /* end if (!is_struc_zero) */
         advanceB(iteratorBetas_R);
     } /* end loop through thetas */
 
@@ -4755,6 +4793,8 @@ updateTheta_PoissonVaryingUseExp(SEXP object, SEXP y_R, SEXP exposure_R)
     SET_INTSCALE_SLOT(object, nAcceptTheta_sym, n_accept_theta);
     SET_INTSCALE_SLOT(object, nFailedPropTheta_sym, n_failed_prop_theta);
 }
+
+
 
 /* y_R a Counts object,
  * y_R is integer,

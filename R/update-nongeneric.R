@@ -452,6 +452,7 @@ updateAlphaDLMNoTrend <- function(prior, betaTilde, useC = FALSE) {
         phi.sq <- phi^2
         omega <- prior@omegaAlpha@.Data
         omega.sq <- omega^2
+        along.all.struc.zero <- prior@alongAllStrucZero
         v <- getV(prior)              # numeric vector length KL
         tolerance <- prior@tolerance@.Data
         iterator.a <- prior@iteratorState
@@ -459,31 +460,32 @@ updateAlphaDLMNoTrend <- function(prior, betaTilde, useC = FALSE) {
         iterator.a <- resetA(iterator.a)
         iterator.v <- resetA(iterator.v)
         for (l in seq_len(L)) {
-            indices.a <- iterator.a@indices
-            indices.v <- iterator.v@indices
-            m[[1L]] <- m0[[l]]
-            ## forward filter
-            for (i in seq_len(K)) {
-                a[[i]] <- phi * m[[i]]
-                R[[i]] <- phi.sq * C[[i]] + omega.sq
-                q <- R[[i]] + v[indices.v[i]]
-                e <- betaTilde[indices.v[i]] - a[[i]]
-                A <- R[[i]] / q
-                m[[i + 1L]] <- a[[i]] + A * e
-                C[[i + 1L]] <- R[[i]] - A^2 * q
-            }
-            ## draw gamma_K
-            alpha[indices.a[K + 1L]] <- stats::rnorm(n = 1L,
-                                                     mean = m[[K + 1L]], 
-                                                     sd = sqrt(C[[K + 1L]]))
-            ## backward sample
-            ## for (i in seq.int(from = K - 1L, to = non.stationary)) { # if nonstationary, alpha0 = 0
-            for (i in seq.int(from = K - 1L, to = 0L)) { # if nonstationary, alpha0 = 0
-                if ((i > 0L) || (C[[1L]] > tolerance)) {
-                    B <- C[[i + 1L]] * phi / R[[i + 1L]]
-                    m.star <- m[[i + 1L]] + B * (alpha[indices.a[i + 2L]] - a[[i + 1L]])
-                    C.star <- C[[i + 1L]] - B^2 * R[[i + 1L]]
-                    alpha[indices.a[i + 1L]] <- stats::rnorm(n = 1L, mean = m.star, sd = sqrt(C.star))
+            if (!along.all.struc.zero[l]) {
+                indices.a <- iterator.a@indices
+                indices.v <- iterator.v@indices
+                m[[1L]] <- m0[[l]]
+                ## forward filter
+                for (i in seq_len(K)) {
+                    a[[i]] <- phi * m[[i]]
+                    R[[i]] <- phi.sq * C[[i]] + omega.sq
+                    q <- R[[i]] + v[indices.v[i]]
+                    e <- betaTilde[indices.v[i]] - a[[i]]
+                    A <- R[[i]] / q
+                    m[[i + 1L]] <- a[[i]] + A * e
+                    C[[i + 1L]] <- R[[i]] - A^2 * q
+                }
+                ## draw gamma_K
+                alpha[indices.a[K + 1L]] <- stats::rnorm(n = 1L,
+                                                         mean = m[[K + 1L]], 
+                                                         sd = sqrt(C[[K + 1L]]))
+                ## backward sample
+                for (i in seq.int(from = K - 1L, to = 0L)) {
+                    if ((i > 0L) || (C[[1L]] > tolerance)) {
+                        B <- C[[i + 1L]] * phi / R[[i + 1L]]
+                        m.star <- m[[i + 1L]] + B * (alpha[indices.a[i + 2L]] - a[[i + 1L]])
+                        C.star <- C[[i + 1L]] - B^2 * R[[i + 1L]]
+                        alpha[indices.a[i + 1L]] <- stats::rnorm(n = 1L, mean = m.star, sd = sqrt(C.star))
+                    }
                 }
             }
             iterator.a <- advanceA(iterator.a)
@@ -512,10 +514,10 @@ updateBeta <- function(prior, vbar, n, sigma, useC = FALSE) {
         beta.hat <- betaHat(prior)
         ans <- numeric(length = J)
         for (i in seq_len(J)) {
-            if (all.struct.zero)
+            if (all.struct.zero[i])
                 ans[i] <- 0
             else {
-                prec.data <- n[i] / sigma^2 ## now a vector
+                prec.data <- n[i] / sigma^2
                 prec.prior <- 1 / v[i]
                 var <- 1 / (prec.data + prec.prior)
                 mean <- (prec.data * vbar[i] + prec.prior * beta.hat[i]) * var
@@ -1042,8 +1044,9 @@ updateMeanLevelComponentWeightMix <- function(prior, useC = FALSE) {
     }
 }
 
-## TRANSLATED (AGAIN 16/7/2017)
+## TRANSLATED
 ## HAS_TESTS
+
 updateOmegaAlpha <- function(prior, withTrend, useC = FALSE) {
     ## 'prior'
     stopifnot(methods::is(prior, "DLM"))
@@ -1067,6 +1070,7 @@ updateOmegaAlpha <- function(prior, withTrend, useC = FALSE) {
         J <- prior@J@.Data
         K <- prior@K@.Data
         L <- prior@L@.Data
+        along.all.struc.zero <- prior@alongAllStrucZero
         alpha <- prior@alphaDLM@.Data
         omega <- prior@omegaAlpha@.Data
         omegaMax <- prior@omegaAlphaMax@.Data
@@ -1081,15 +1085,17 @@ updateOmegaAlpha <- function(prior, withTrend, useC = FALSE) {
         V <- 0
         n <- 0L
         for (l in seq_len(L)) {
-            indices <- iterator@indices
-            for (i in seq_len(K)) {
-                k.curr <- indices[i + 1]
-                k.prev <- indices[i]
-                if (withTrend)
-                    V <- V + (alpha[k.curr] - alpha[k.prev] - delta[k.prev])^2
-                else
-                    V <- V + (alpha[k.curr] - phi * alpha[k.prev])^2
-                n <- n + 1L
+            if (!along.all.struc.zero[l]) {
+                indices <- iterator@indices
+                for (i in seq_len(K)) {
+                    k.curr <- indices[i + 1]
+                    k.prev <- indices[i]
+                    if (withTrend)
+                        V <- V + (alpha[k.curr] - alpha[k.prev] - delta[k.prev])^2
+                    else
+                        V <- V + (alpha[k.curr] - phi * alpha[k.prev])^2
+                    n <- n + 1L
+                }
             }
             iterator <- advanceA(iterator)
         }
@@ -1105,6 +1111,7 @@ updateOmegaAlpha <- function(prior, withTrend, useC = FALSE) {
         prior
     }
 }
+
 
 ## TRANSLATED
 ## HAS_TESTS
@@ -1166,16 +1173,19 @@ updateOmegaDelta <- function(prior, useC = FALSE) {
         A <- prior@ADelta@.Data
         nu <- prior@nuDelta@.Data
         iterator <- prior@iteratorState
+        along.all.struc.zero <- prior@alongAllStrucZero
         iterator <- resetA(iterator)
         V <- 0
         n <- 0L
         for (l in seq_len(L)) {
-            indices <- iterator@indices
-            for (i in seq_len(K)) {
-                k.curr <- indices[i + 1]
-                k.prev <- indices[i]
-                V <- V + (delta[k.curr] - phi * delta[k.prev])^2
-                n <- n + 1L
+            if (!along.all.struc.zero[l]) {
+                indices <- iterator@indices
+                for (i in seq_len(K)) {
+                    k.curr <- indices[i + 1]
+                    k.prev <- indices[i]
+                    V <- V + (delta[k.curr] - phi * delta[k.prev])^2
+                    n <- n + 1L
+                }
             }
             iterator <- advanceA(iterator)
         }
@@ -1249,6 +1259,7 @@ updateOmegaSeason <- function(prior, useC = FALSE) {
         J <- prior@J@.Data
         K <- prior@K@.Data
         L <- prior@L@.Data
+        along.all.struc.zero <- prior@alongAllStrucZero
         s <- prior@s@.Data
         n.season <- prior@nSeason@.Data
         omega <- prior@omegaSeason@.Data
@@ -1258,14 +1269,18 @@ updateOmegaSeason <- function(prior, useC = FALSE) {
         iterator <- prior@iteratorState
         iterator <- resetA(iterator)
         V <- 0
+        n <- 0L
         for (l in seq_len(L)) {
-            indices <- iterator@indices
-            for (i in seq_len(K)) {
-                i.curr <- indices[i + 1L]
-                i.prev <- indices[i]
-                curr <- s[[i.curr]][1L]
-                prev <- s[[i.prev]][n.season]
-                V <- V + (curr - prev)^2
+            if (!along.all.struc.zero[l]) {
+                indices <- iterator@indices
+                for (i in seq_len(K)) {
+                    i.curr <- indices[i + 1L]
+                    i.prev <- indices[i]
+                    curr <- s[[i.curr]][1L]
+                    prev <- s[[i.prev]][n.season]
+                    V <- V + (curr - prev)^2
+                    n <- n + 1L
+                }
             }
             iterator <- advanceA(iterator)
         }
@@ -1273,7 +1288,7 @@ updateOmegaSeason <- function(prior, useC = FALSE) {
                               A = A,
                               nu = nu,
                               V = V,
-                              n = J,
+                              n = n,
                               max = omegaMax)
         successfully.updated <- omega > 0
         if (successfully.updated)
@@ -1348,6 +1363,7 @@ updatePhi <- function(prior, withTrend, useC = FALSE) {
         phi.curr <- prior@phi
         K <- prior@K@.Data
         L <- prior@L@.Data
+        along.all.struc.zero <- prior@alongAllStrucZero
         if (withTrend) {
             state <- prior@deltaDLM@.Data
             omega <- prior@omegaDelta@.Data
@@ -1365,12 +1381,14 @@ updatePhi <- function(prior, withTrend, useC = FALSE) {
         numerator <- 0
         denominator <- 0
         for (l in seq_len(L)) {
-            indices <- iterator@indices
-            for (i in seq_len(K)) {
-                k.curr <- indices[i + 1]
-                k.prev <- indices[i]
-                numerator <- numerator + state[k.curr] * state[k.prev]
-                denominator <- denominator + (state[k.prev])^2
+            if (!along.all.struc.zero[l]) {
+                indices <- iterator@indices
+                for (i in seq_len(K)) {
+                    k.curr <- indices[i + 1]
+                    k.prev <- indices[i]
+                    numerator <- numerator + state[k.curr] * state[k.prev]
+                    denominator <- denominator + (state[k.prev])^2
+                }
             }
             iterator <- advanceA(iterator)
         }
@@ -1507,6 +1525,7 @@ updateSeason <- function(prior, betaTilde, useC = FALSE) {
     else {    
         K <- prior@K@.Data
         L <- prior@L@.Data
+        along.all.struc.zero <- prior@alongAllStrucZero
         n.season <- prior@nSeason@.Data 
         s <- prior@s@.Data       # length (K+1)L list of vectors of length nSeason
         m <- prior@mSeason@.Data # length K+1 list of vectors of length nSeason
@@ -1522,43 +1541,45 @@ updateSeason <- function(prior, betaTilde, useC = FALSE) {
         iterator.s <- resetA(iterator.s)
         iterator.v <- resetA(iterator.v)
         for (l in seq_len(L)) {
-            indices.s <- iterator.s@indices
-            indices.v <- iterator.v@indices
-            m[[1L]] <- m0[[l]]
-            ## forward filter
-            for (i in seq_len(K)) {
-                j <- indices.v[i]
-                for (i.n in seq_len(n.season - 1L)) {
-                    a[[i]][i.n + 1L] <- m[[i]][i.n]
-                    R[[i]][i.n + 1L] <- C[[i]][i.n]
+            if (!along.all.struc.zero[l]) {
+                indices.s <- iterator.s@indices
+                indices.v <- iterator.v@indices
+                m[[1L]] <- m0[[l]]
+                ## forward filter
+                for (i in seq_len(K)) {
+                    j <- indices.v[i]
+                    for (i.n in seq_len(n.season - 1L)) {
+                        a[[i]][i.n + 1L] <- m[[i]][i.n]
+                        R[[i]][i.n + 1L] <- C[[i]][i.n]
+                    }
+                    a[[i]][1L] <- m[[i]][n.season]
+                    R[[i]][1L] <- C[[i]][n.season] + omega^2
+                    q <- R[[i]][1L] + v[j]
+                    e <- betaTilde[j] - a[[i]][1L]
+                    Ae1 <- R[[i]][1L] * e / q
+                    m[[i + 1L]] <- a[[i]]
+                    m[[i + 1L]][1L] <- m[[i + 1L]][1L] + Ae1
+                    AAq1 <- (R[[i]][1L])^2 / q
+                    C[[i + 1L]] <- R[[i]]
+                    C[[i + 1L]][1L] <- C[[i + 1L]][1L] - AAq1 
+                }                
+                ## draw final value for 's'
+                for (i.n in seq_len(n.season)) {
+                    i.curr <- indices.s[K + 1L]
+                    mean <- m[[K + 1L]][i.n]
+                    sd <- sqrt(C[[K + 1L]][i.n])
+                    s[[i.curr]][i.n] <- stats::rnorm(n = 1L, mean = mean, sd = sd)
                 }
-                a[[i]][1L] <- m[[i]][n.season]
-                R[[i]][1L] <- C[[i]][n.season] + omega^2
-                q <- R[[i]][1L] + v[j]
-                e <- betaTilde[j] - a[[i]][1L]
-                Ae1 <- R[[i]][1L] * e / q
-                m[[i + 1L]] <- a[[i]]
-                m[[i + 1L]][1L] <- m[[i + 1L]][1L] + Ae1
-                AAq1 <- (R[[i]][1L])^2 / q
-                C[[i + 1L]] <- R[[i]]
-                C[[i + 1L]][1L] <- C[[i + 1L]][1L] - AAq1 
-            }                
-            ## draw final value for 's'
-            for (i.n in seq_len(n.season)) {
-                i.curr <- indices.s[K + 1L]
-                mean <- m[[K + 1L]][i.n]
-                sd <- sqrt(C[[K + 1L]][i.n])
-                s[[i.curr]][i.n] <- stats::rnorm(n = 1L, mean = mean, sd = sd)
-            }
-            ## backward smooth
-            for (i in seq.int(from = K, to = 1L)) {
-                i.prev <- indices.s[i + 1L]
-                i.curr <- indices.s[i]
-                s[[i.curr]][-n.season] <- s[[i.prev]][-1L]
-                lambda <- C[[i]][n.season] / (C[[i]][n.season] + omega.sq)
-                mean <- lambda * s[[i.prev]][1L] + (1 - lambda) * m[[i]][n.season]
-                sd <- sqrt(lambda) * omega
-                s[[i.curr]][n.season] <- stats::rnorm(n = 1L, mean = mean, sd = sd)
+                ## backward smooth
+                for (i in seq.int(from = K, to = 1L)) {
+                    i.prev <- indices.s[i + 1L]
+                    i.curr <- indices.s[i]
+                    s[[i.curr]][-n.season] <- s[[i.prev]][-1L]
+                    lambda <- C[[i]][n.season] / (C[[i]][n.season] + omega.sq)
+                    mean <- lambda * s[[i.prev]][1L] + (1 - lambda) * m[[i]][n.season]
+                    sd <- sqrt(lambda) * omega
+                    s[[i.curr]][n.season] <- stats::rnorm(n = 1L, mean = mean, sd = sd)
+                }
             }
             iterator.s <- advanceA(iterator.s)
             iterator.v <- advanceA(iterator.v)
@@ -1664,22 +1685,27 @@ updateUBeta <- function(prior, beta, useC = FALSE) {
     stopifnot(identical(length(beta), as.integer(prior@J)))
     stopifnot(!any(is.na(beta)))
     if (useC) {
-            .Call(updateUBeta_R, prior, beta)
+        .Call(updateUBeta_R, prior, beta)
     }
     else {
         J <- prior@J@.Data
         U <- prior@UBeta@.Data
         nu <- prior@nuBeta@.Data
         tau <- prior@tau@.Data
+        all.struc.zero <- prior@allStrucZero
         beta.hat <- betaHat(prior)
         df <- nu + 1
-        scale <- (nu * tau^2 + (beta - beta.hat)^2) / df
-        for (j in seq_len(J))
-            U[j] <- rinvchisq1(df = df, scale = scale[j])
+        for (i in seq_len(J)) {
+            if (!all.struc.zero[i]) {
+                scale <- (nu * tau^2 + (beta[i] - beta.hat[i])^2) / df
+                U[i] <- rinvchisq1(df = df, scale = scale)
+            }
+        }
         prior@UBeta@.Data <- U
         prior
     }
 }
+
 
 ## TRANSLATED
 ## HAS_TESTS
@@ -2984,6 +3010,7 @@ updateTheta_PoissonVaryingNotUseExp <- function(object, y, useC = FALSE) {
         }
         theta <- object@theta
         box.cox.param <- object@boxCoxParam
+        cell.in.lik <- object@cellInLik
         scale <- object@scaleTheta
         lower <- object@lower
         upper <- object@upper
@@ -2996,78 +3023,81 @@ updateTheta_PoissonVaryingNotUseExp <- function(object, y, useC = FALSE) {
         n.accept.theta <- 0L
         iterator <- resetB(iterator)
         for (i in seq_along(theta)) {
-            indices <- iterator@indices
-            mu <- 0
-            for (b in seq_along(betas))
-                mu <- mu + betas[[b]][indices[b]]
-            found.prop <- FALSE
-            attempt <- 0L
-            y.is.missing <- is.na(y[i])
-            if (y.is.missing && y.has.subtotals) {
-                i.after <- dembase::getIAfter(i = i,
-                                              transform = transform,
-                                              check = FALSE,
-                                              useC = TRUE)
-                use.subtotal <- i.after > 0L
-            }
-            else
-                use.subtotal <- FALSE
-            draw.straight.from.prior <- y.is.missing && !use.subtotal
-            if (draw.straight.from.prior) {
-                mean <- mu
-                sd <- sigma
-            }
-            else {
-                th.curr <- theta[i]
-                if (box.cox.param > 0)
-                    tr.th.curr <- (th.curr ^ box.cox.param - 1) / box.cox.param # ('tr' short for 'transformed')
+            is.struc.zero <- !cell.in.lik[i] && !is.na(y[i]) && (y[i] == 0L)
+            if (!is.struc.zero) {
+                indices <- iterator@indices
+                mu <- 0
+                for (b in seq_along(betas))
+                    mu <- mu + betas[[b]][indices[b]]
+                found.prop <- FALSE
+                attempt <- 0L
+                y.is.missing <- is.na(y[i])
+                if (y.is.missing && y.has.subtotals) {
+                    i.after <- dembase::getIAfter(i = i,
+                                                  transform = transform,
+                                                  check = FALSE,
+                                                  useC = TRUE)
+                    use.subtotal <- i.after > 0L
+                }
                 else
-                    tr.th.curr <- log(th.curr)
-                mean <- tr.th.curr
-                sd <- scale
-            }
-            while (!found.prop && (attempt < max.attempt)) {
-                attempt <- attempt + 1L
-                tr.th.prop <- stats::rnorm(n = 1L, mean = mean, sd = sd)
-                found.prop <- ((tr.th.prop > lower + tolerance)
-                               && (tr.th.prop < upper - tolerance))
-            }
-            if (found.prop) {
-                if (box.cox.param > 0)
-                    th.prop <- (box.cox.param * tr.th.prop + 1) ^ (1 / box.cox.param)
-                else
-                    th.prop <- exp(tr.th.prop)
-                if (draw.straight.from.prior)
-                    theta[i] <- th.prop
+                    use.subtotal <- FALSE
+                draw.straight.from.prior <- y.is.missing && !use.subtotal
+                if (draw.straight.from.prior) {
+                    mean <- mu
+                    sd <- sigma
+                }
                 else {
-                    if (use.subtotal) {
-                        subtotal <- subtotals[i.after]
-                        i.shared <- dembase::getIShared(i = i, transform = transform)
-                        lambda.curr <- 0 
-                        for (i.s in i.shared) { 
-                            if (is.na(y[i.s])) 
-                                lambda.curr <- lambda.curr + theta[i.s]  
-                        } 
-                        lambda.prop <- lambda.curr + th.prop - th.curr
-                        log.lik.prop <- stats::dpois(x = subtotal, lambda = lambda.prop, log = TRUE)
-                        log.lik.curr <- stats::dpois(x = subtotal, lambda = lambda.curr, log = TRUE)
-                    }
-                    else {
-                        log.lik.prop <- stats::dpois(y[i], lambda = th.prop, log = TRUE)
-                        log.lik.curr <- stats::dpois(y[i], lambda = th.curr, log = TRUE)
-                    }
-                    log.dens.prop <- stats::dnorm(x = tr.th.prop, mean = mu, sd = sigma, log = TRUE)
-                    log.dens.curr <- stats::dnorm(x = tr.th.curr, mean = mu, sd = sigma, log = TRUE)
-                    log.diff <- log.lik.prop + log.dens.prop - log.lik.curr - log.dens.curr
-                    accept <- (log.diff >= 0) || (stats::runif(n = 1L) < exp(log.diff))
-                    if (accept) {
-                        n.accept.theta <- n.accept.theta + 1L
+                    th.curr <- theta[i]
+                    if (box.cox.param > 0)
+                        tr.th.curr <- (th.curr ^ box.cox.param - 1) / box.cox.param # ('tr' short for 'transformed')
+                    else
+                        tr.th.curr <- log(th.curr)
+                    mean <- tr.th.curr
+                    sd <- scale
+                }
+                while (!found.prop && (attempt < max.attempt)) {
+                    attempt <- attempt + 1L
+                    tr.th.prop <- stats::rnorm(n = 1L, mean = mean, sd = sd)
+                    found.prop <- ((tr.th.prop > lower + tolerance)
+                        && (tr.th.prop < upper - tolerance))
+                }
+                if (found.prop) {
+                    if (box.cox.param > 0)
+                        th.prop <- (box.cox.param * tr.th.prop + 1) ^ (1 / box.cox.param)
+                    else
+                        th.prop <- exp(tr.th.prop)
+                    if (draw.straight.from.prior)
                         theta[i] <- th.prop
+                    else {
+                        if (use.subtotal) {
+                            subtotal <- subtotals[i.after]
+                            i.shared <- dembase::getIShared(i = i, transform = transform)
+                            lambda.curr <- 0 
+                            for (i.s in i.shared) { 
+                                if (is.na(y[i.s])) 
+                                    lambda.curr <- lambda.curr + theta[i.s]  
+                            } 
+                            lambda.prop <- lambda.curr + th.prop - th.curr
+                            log.lik.prop <- stats::dpois(x = subtotal, lambda = lambda.prop, log = TRUE)
+                            log.lik.curr <- stats::dpois(x = subtotal, lambda = lambda.curr, log = TRUE)
+                        }
+                        else {
+                            log.lik.prop <- stats::dpois(y[i], lambda = th.prop, log = TRUE)
+                            log.lik.curr <- stats::dpois(y[i], lambda = th.curr, log = TRUE)
+                        }
+                        log.dens.prop <- stats::dnorm(x = tr.th.prop, mean = mu, sd = sigma, log = TRUE)
+                        log.dens.curr <- stats::dnorm(x = tr.th.curr, mean = mu, sd = sigma, log = TRUE)
+                        log.diff <- log.lik.prop + log.dens.prop - log.lik.curr - log.dens.curr
+                        accept <- (log.diff >= 0) || (stats::runif(n = 1L) < exp(log.diff))
+                        if (accept) {
+                            n.accept.theta <- n.accept.theta + 1L
+                            theta[i] <- th.prop
+                        }
                     }
                 }
+                else
+                    n.failed.prop.theta <- n.failed.prop.theta + 1L
             }
-            else
-                n.failed.prop.theta <- n.failed.prop.theta + 1L
             iterator <- advanceB(iterator)
         }
         object@theta <- theta
@@ -3115,6 +3145,7 @@ updateTheta_PoissonVaryingUseExp <- function(object, y, exposure, useC = FALSE) 
         }
         theta <- object@theta
         box.cox.param <- object@boxCoxParam
+        cell.in.lik <- object@cellInLik
         scale <- object@scaleTheta
         scale.multiplier <- object@scaleThetaMultiplier
         lower <- object@lower
@@ -3129,81 +3160,84 @@ updateTheta_PoissonVaryingUseExp <- function(object, y, exposure, useC = FALSE) 
         iterator <- resetB(iterator)
         scale <- scale * scale.multiplier
         for (i in seq_along(theta)) {
-            indices <- iterator@indices
-            mu <- 0
-            for (b in seq_along(betas))
-                mu <- mu + betas[[b]][indices[b]]
-            found.prop <- FALSE
-            attempt <- 0L
-            y.is.missing <- is.na(y[i])
-            if (y.is.missing && y.has.subtotals) {
-                i.after <- dembase::getIAfter(i = i,
-                                              transform = transform,
-                                              check = FALSE,
-                                              useC = TRUE)
-                use.subtotal <- i.after > 0L
-            }
-            else
-                use.subtotal <- FALSE
-            draw.straight.from.prior <- y.is.missing && !use.subtotal
-            if (draw.straight.from.prior) {
-                mean <- mu
-                sd <- sigma
-            }
-            else {
-                th.curr <- theta[i]
-                if (box.cox.param > 0)
-                    tr.th.curr <- (th.curr ^ box.cox.param - 1) / box.cox.param # ('tr' short for 'transformed')
+            is.struc.zero <- !cell.in.lik[i] && !is.na(y[i]) && (y[i] == 0L)
+            if (!is.struc.zero) {
+                indices <- iterator@indices
+                mu <- 0
+                for (b in seq_along(betas))
+                    mu <- mu + betas[[b]][indices[b]]
+                found.prop <- FALSE
+                attempt <- 0L
+                y.is.missing <- is.na(y[i])
+                if (y.is.missing && y.has.subtotals) {
+                    i.after <- dembase::getIAfter(i = i,
+                                                  transform = transform,
+                                                  check = FALSE,
+                                                  useC = TRUE)
+                    use.subtotal <- i.after > 0L
+                }
                 else
-                    tr.th.curr <- log(th.curr)
-                mean <- tr.th.curr
-                if (y.is.missing)
-                    sd <- scale / scale.multiplier
-                else
-                    sd <- scale / sqrt(1 + y[i])
-            }
-            while (!found.prop && (attempt < max.attempt)) {
-                attempt <- attempt + 1L
-                tr.th.prop <- stats::rnorm(n = 1L, mean = mean, sd = sd)
-                found.prop <- ((tr.th.prop > lower + tolerance)
-                               && (tr.th.prop < upper - tolerance))
-            }
-            if (found.prop) {
-                if (box.cox.param > 0)
-                    th.prop <- (box.cox.param * tr.th.prop + 1) ^ (1 / box.cox.param)
-                else
-                    th.prop <- exp(tr.th.prop)
-                if (draw.straight.from.prior)
-                    theta[i] <- th.prop
+                    use.subtotal <- FALSE
+                draw.straight.from.prior <- y.is.missing && !use.subtotal
+                if (draw.straight.from.prior) {
+                    mean <- mu
+                    sd <- sigma
+                }
                 else {
-                    if (use.subtotal) {
-                        subtotal <- subtotals[i.after]
-                        i.shared <- dembase::getIShared(i = i, transform = transform)
-                        lambda.curr <- 0
-                        for (i.s in i.shared) {
-                            if (is.na(y[i.s]))
-                                lambda.curr <- lambda.curr + theta[i.s] * exposure[i.s]
-                        }
-                        lambda.prop <- lambda.curr + (th.prop - th.curr) * exposure[i]
-                        log.lik.prop <- stats::dpois(x = subtotal, lambda = lambda.prop, log = TRUE)
-                        log.lik.curr <- stats::dpois(x = subtotal, lambda = lambda.curr, log = TRUE)
-                    }
-                    else {
-                        log.lik.prop <- stats::dpois(y[i], lambda = th.prop * exposure[i], log = TRUE)
-                        log.lik.curr <- stats::dpois(y[i], lambda = th.curr * exposure[i], log = TRUE)
-                    }
-                    log.dens.prop <- stats::dnorm(x = tr.th.prop, mean = mu, sd = sigma, log = TRUE)
-                    log.dens.curr <- stats::dnorm(x = tr.th.curr, mean = mu, sd = sigma, log = TRUE)
-                    log.diff <- log.lik.prop + log.dens.prop - log.lik.curr - log.dens.curr
-                    accept <- (log.diff >= 0) || (stats::runif(n = 1L) < exp(log.diff))
-                    if (accept) {
-                        n.accept.theta <- n.accept.theta + 1L
+                    th.curr <- theta[i]
+                    if (box.cox.param > 0)
+                        tr.th.curr <- (th.curr ^ box.cox.param - 1) / box.cox.param # ('tr' short for 'transformed')
+                    else
+                        tr.th.curr <- log(th.curr)
+                    mean <- tr.th.curr
+                    if (y.is.missing)
+                        sd <- scale / scale.multiplier
+                    else
+                        sd <- scale / sqrt(1 + y[i])
+                }
+                while (!found.prop && (attempt < max.attempt)) {
+                    attempt <- attempt + 1L
+                    tr.th.prop <- stats::rnorm(n = 1L, mean = mean, sd = sd)
+                    found.prop <- ((tr.th.prop > lower + tolerance)
+                        && (tr.th.prop < upper - tolerance))
+                }
+                if (found.prop) {
+                    if (box.cox.param > 0)
+                        th.prop <- (box.cox.param * tr.th.prop + 1) ^ (1 / box.cox.param)
+                    else
+                        th.prop <- exp(tr.th.prop)
+                    if (draw.straight.from.prior)
                         theta[i] <- th.prop
+                    else {
+                        if (use.subtotal) {
+                            subtotal <- subtotals[i.after]
+                            i.shared <- dembase::getIShared(i = i, transform = transform)
+                            lambda.curr <- 0
+                            for (i.s in i.shared) {
+                                if (is.na(y[i.s]))
+                                    lambda.curr <- lambda.curr + theta[i.s] * exposure[i.s]
+                            }
+                            lambda.prop <- lambda.curr + (th.prop - th.curr) * exposure[i]
+                            log.lik.prop <- stats::dpois(x = subtotal, lambda = lambda.prop, log = TRUE)
+                            log.lik.curr <- stats::dpois(x = subtotal, lambda = lambda.curr, log = TRUE)
+                        }
+                        else {
+                            log.lik.prop <- stats::dpois(y[i], lambda = th.prop * exposure[i], log = TRUE)
+                            log.lik.curr <- stats::dpois(y[i], lambda = th.curr * exposure[i], log = TRUE)
+                        }
+                        log.dens.prop <- stats::dnorm(x = tr.th.prop, mean = mu, sd = sigma, log = TRUE)
+                        log.dens.curr <- stats::dnorm(x = tr.th.curr, mean = mu, sd = sigma, log = TRUE)
+                        log.diff <- log.lik.prop + log.dens.prop - log.lik.curr - log.dens.curr
+                        accept <- (log.diff >= 0) || (stats::runif(n = 1L) < exp(log.diff))
+                        if (accept) {
+                            n.accept.theta <- n.accept.theta + 1L
+                            theta[i] <- th.prop
+                        }
                     }
                 }
+                else
+                    n.failed.prop.theta <- n.failed.prop.theta + 1L
             }
-            else
-                n.failed.prop.theta <- n.failed.prop.theta + 1L
             iterator <- advanceB(iterator)
         }
         object@theta <- theta
@@ -3212,6 +3246,8 @@ updateTheta_PoissonVaryingUseExp <- function(object, y, exposure, useC = FALSE) 
         object
     }
 }
+
+
 
 ## TRANSLATED
 ## HAS_TESTS
