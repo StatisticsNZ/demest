@@ -1553,6 +1553,97 @@ diffLogLikCellsNet_R(SEXP diff_R, SEXP iComp_R,
     return ScalarReal(ans);
 }
 
+
+/* wrapper for diffLogLikAccountMoveComp */
+DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogLikAccountMoveComp);
+
+/* wrapper for diffLogDensPopn */
+DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensPopn);
+
+/* one-off wrapper for diffLogDensPopnOneCohort */
+SEXP
+diffLogDensPopnOneCohort_R(SEXP diff_R, SEXP population_R, SEXP i_R, 
+                            SEXP iterator_R, SEXP theta_R)
+{
+    int diff = *INTEGER(diff_R);
+    int i_r = *INTEGER(i_R);
+    double * theta = REAL(theta_R);
+    SEXP iteratornew_R;
+    PROTECT(iteratornew_R = duplicate(iterator_R));
+    double ans = diffLogDensPopnOneCohort (diff, population_R, i_r, 
+                        iteratornew_R, theta);
+    UNPROTECT(1);
+    return ScalarReal(ans);
+}
+
+/* wrapper for diffLogDensExpPopn */
+DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensExpPopn);
+
+/* diffLogDensExpOneOrigDestParChPool */
+SEXP diffLogDensExpOneOrigDestParChPool_R(SEXP iCell_R, SEXP hasAge_R, 
+                        SEXP ageTimeStep_R, SEXP updatedPopn_R,
+                        SEXP component_R, SEXP theta_R,
+                        SEXP iteratorComp_R, 
+                        SEXP iExpFirst_R, SEXP exposure_R,
+                        SEXP iteratorExposure_R,
+                        SEXP diff_R)
+{
+    int diff = *INTEGER(diff_R);
+    int iCell_r = *INTEGER(iCell_R);
+    int hasAge = *LOGICAL(hasAge_R);
+    double ageTimeStep = *REAL(ageTimeStep_R);
+    int updatedPopn = *LOGICAL(updatedPopn_R);
+    double * theta = REAL(theta_R);
+    double * exposure = REAL(exposure_R);
+    int iExpFirst_r = *INTEGER(iExpFirst_R);
+    SEXP iteratorCompNew_R;
+    PROTECT(iteratorCompNew_R = duplicate(iteratorComp_R));
+    SEXP iteratorExpNew_R;
+    PROTECT(iteratorExpNew_R = duplicate(iteratorExposure_R));
+    double ans = diffLogDensExpOneOrigDestParChPool(iCell_r, hasAge, 
+                        ageTimeStep, updatedPopn,
+                        component_R, theta,
+                        iteratorCompNew_R, 
+                        iExpFirst_r, exposure,
+                        iteratorExpNew_R,
+                        diff);
+    UNPROTECT(2);
+    return ScalarReal(ans);
+}
+
+
+/* diffLogDensExpOneComp */
+SEXP diffLogDensExpOneComp_R(SEXP iCell_R, SEXP hasAge_R, 
+                        SEXP ageTimeStep_R, SEXP updatedPopn_R,
+                        SEXP component_R, SEXP theta_R,
+                        SEXP iteratorComp_R, 
+                        SEXP iExpFirst_R, SEXP exposure_R,
+                        SEXP iteratorExposure_R,
+                        SEXP diff_R)
+{
+    int diff = *INTEGER(diff_R);
+    int iCell_r = *INTEGER(iCell_R);
+    int hasAge = *LOGICAL(hasAge_R);
+    double ageTimeStep = *REAL(ageTimeStep_R);
+    int updatedPopn = *LOGICAL(updatedPopn_R);
+    double * theta = REAL(theta_R);
+    double * exposure = REAL(exposure_R);
+    int iExpFirst_r = *INTEGER(iExpFirst_R);
+    SEXP iteratorCompNew_R;
+    PROTECT(iteratorCompNew_R = duplicate(iteratorComp_R));
+    SEXP iteratorExpNew_R;
+    PROTECT(iteratorExpNew_R = duplicate(iteratorExposure_R));
+    double ans = diffLogDensExpOneComp(iCell_r, hasAge, 
+                        ageTimeStep, updatedPopn,
+                        component_R, theta,
+                        iteratorCompNew_R, 
+                        iExpFirst_r, exposure,
+                        iteratorExpNew_R,
+                        diff);
+    UNPROTECT(2);
+    return ScalarReal(ans);
+}
+
 /* ******************************************************************************* */
 /* Create table describing R-visible versions of C functions ********************* */
 /* ******************************************************************************* */
@@ -1926,6 +2017,13 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(diffLogLikCellsPool_R, 9),
   CALLDEF(diffLogLikAccountMoveNet_R, 1),
   CALLDEF(diffLogLikCellsNet_R, 9),
+  CALLDEF(diffLogLikAccountMoveComp_R, 1),
+  
+  CALLDEF(diffLogDensPopn_R, 1),
+  CALLDEF(diffLogDensPopnOneCohort_R, 5),
+  CALLDEF(diffLogDensExpPopn_R, 1),
+  CALLDEF(diffLogDensExpOneOrigDestParChPool_R, 11),
+  CALLDEF(diffLogDensExpOneComp_R, 11),
   
   {NULL}
 };
@@ -2249,13 +2347,26 @@ R_init_demest(DllInfo *info)
   ADD_SYM(population);
   ADD_SYM(components);
   ADD_SYM(iteratorPopn);
+  ADD_SYM(iteratorExposure);
   ADD_SYM(iCell);
   ADD_SYM(iCellOther);
   ADD_SYM(iComp);
   ADD_SYM(iPopnNext);
   ADD_SYM(iPopnNextOther);
+  ADD_SYM(iOrigDest);
+  ADD_SYM(iPool);
+  ADD_SYM(iIntNet);
+  ADD_SYM(iBirths);
+  ADD_SYM(iParCh);
   ADD_SYM(diffProp);
-  
+  ADD_SYM(isIncrement);
+  ADD_SYM(systemModels);
+  ADD_SYM(modelUsesExposure);
+  ADD_SYM(mappingsFromExp);
+  ADD_SYM(iExpFirst); 
+  ADD_SYM(ageTimeStep);
+  ADD_SYM(iteratorsComp);
+    
   
 #undef ADD_SYM
 

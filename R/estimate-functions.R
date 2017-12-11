@@ -396,10 +396,11 @@ predictModel <- function(filenameEst, filenamePred, along = NULL, labels = NULL,
 #' health <- Counts(health, dimscales = c(year = "Points"))
 #' survey <- Counts(survey)
 #' y <- health + 10
-#' model <- Model(y ~ Poisson(mean ~ age + sex + region))
+#' model <- Model(y ~ Poisson(mean ~ age + sex + region,
+#'                            useExpose = FALSE))
 #' dataModels <- list(Model(nat ~ PoissonBinomial(prob = 0.98)),
-#'                     Model(health ~ Poisson(mean ~ age)),
-#'                     Model(survey ~ Binomial(mean ~ 1)))
+#'                    Model(health ~ Poisson(mean ~ age)),
+#'                    Model(survey ~ Binomial(mean ~ 1)))
 #' datasets <- list(nat = nat, health = health, survey = survey)
 #' filename <- tempfile()
 #' ## in a real example, nBurnin and nSim would be much larger

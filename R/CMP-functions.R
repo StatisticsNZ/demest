@@ -18,6 +18,12 @@
 ##     stopifnot(identical(length(nu), 1L))
 ##     stopifnot(!is.na(nu))
 ##     stopifnot(nu >= 0L)
+##                                         #
+##     if(gamma == 0){
+##       gamma <- exp(-100)
+##     } else {
+##       gamma <- gamma
+##     }
 ##     if (useC) {
 ##         .Call(logDensCMP1_R, y, gamma, nu)
 ##     }
@@ -45,6 +51,11 @@
 ##     stopifnot(!is.na(maxAttempt))
 ##     stopifnot(maxAttempt >= 0L)
 ##                                         #
+##     if( mu == 0){
+##       lmu <- exp(-100)
+##     } else {
+##       lmu <- log(mu)
+##     }
 ##     fl <- floor(mu)
 ##     logm <- lgamma(fl + 1)
 ##     for (i in seq_len(maxAttempt)) {
@@ -77,6 +88,13 @@
 ##     stopifnot(!is.na(maxAttempt))
 ##     stopifnot(maxAttempt >= 1L)
 ##                                         #
+##     if( mu == 0){
+##        lmu <- exp(-100)
+##        p <- 0.99999
+##     } else {
+##        lmu <- log(mu)
+##        p <- 2 * nu / (2 * mu * nu + 1 + nu)
+##     }
 ##     p <- 2 * nu / (2 * mu * nu + 1 + nu)
 ##     fl <- floor(mu / ((1 - p)^(1 / nu)))
 ##     logfl <- lgamma(fl + 1)

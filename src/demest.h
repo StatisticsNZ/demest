@@ -319,13 +319,25 @@ SEXP
   population_sym,
   components_sym,
   iteratorPopn_sym,
+  iteratorExposure_sym,
   iCell_sym,
   iCellOther_sym,
   iComp_sym,
   iPopnNext_sym,
   iPopnNextOther_sym,
-  diffProp_sym;
-  
+  iOrigDest_sym,
+  iPool_sym,
+  iIntNet_sym,
+  iBirths_sym,
+  iParCh_sym,
+  diffProp_sym,
+  isIncrement_sym,
+  systemModels_sym,
+  modelUsesExposure_sym,
+  mappingsFromExp_sym,
+  iExpFirst_sym, 
+  ageTimeStep_sym,
+  iteratorsComp_sym;
   
   
 /* Priors-methods */
@@ -882,9 +894,26 @@ double diffLogLikCellsNet(int diff, int iComp_r,
                         SEXP component_R, SEXP dataModels_R, 
                         SEXP datasets_R, SEXP seriesIndices_R, 
                         SEXP transforms_R);
-                        
-                        
-                        
+double diffLogLikAccountMoveComp(SEXP combined_R);     
+
+double diffLogDensPopn(SEXP combined_R);
+double diffLogDensPopnOneCohort (int diff, SEXP population_R, int i_r, 
+                        SEXP iterator_R, double * theta);                   
+double diffLogDensExpPopn(SEXP combined_R);
+double diffLogDensExpOneOrigDestParChPool(int iCell_r, int hasAge, 
+                        double ageTimeStep, int updatedPopn,
+                        SEXP component_R, double * theta,
+                        SEXP iteratorComp_R, 
+                        int iExpFirst_r, double * exposure,
+                        SEXP iteratorExposure_R,
+                        int diff);
+double diffLogDensExpOneComp(int iCell_r, int hasAge, 
+                        double ageTimeStep, int updatedPopn,
+                        SEXP component_R, double * theta,
+                        SEXP iteratorComp_R, 
+                        int iExpFirst_r, double * exposure,
+                        SEXP iteratorExposure_R,
+                        int diff);                        
                         
 /* pointers for routines from dembase package 
  * 

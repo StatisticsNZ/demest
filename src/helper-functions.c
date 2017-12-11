@@ -3175,6 +3175,11 @@ SEXP getDataFromFile_R(SEXP filename_R,
     long nDoubleRead = (size - sizeof(int) - sizeResultsBytes - sizeAdjustmentsBytes - skipBytes)
                         /sizeof(double);
 
+    /* SHOULD THE PREVIOUS LINE BE... */
+    /* long nDoubleRead = (size - 2 * sizeof(int) - sizeResultsBytes - sizeAdjustmentsBytes - skipBytes) */
+    /*                     /sizeof(double); */
+    /* 2, because we record the size of the results object and the adjustments object */
+    
     double *buffer = (double*)R_alloc(nDoubleRead, sizeof(double));
     size_t nRead2 = fread(buffer, sizeof(double), nDoubleRead, fp);
 

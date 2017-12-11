@@ -1570,7 +1570,7 @@ diffLogLikCellsNet <- function(diff, iComp, iCellAdd, iCellSub,
 
 
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 diffLogLikAccountMoveComp <- function(combined, useC = FALSE) {
     stopifnot(methods::is(combined, "CombinedAccountMovements"))
@@ -1621,7 +1621,7 @@ diffLogLikAccountMoveComp <- function(combined, useC = FALSE) {
 
 ## LOG DENSITY ################################################################
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 diffLogDensPopn <- function(combined, useC = FALSE) {
     stopifnot(methods::is(combined, "CombinedAccountMovements"))
@@ -1691,7 +1691,7 @@ diffLogDensPopn <- function(combined, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 diffLogDensPopnOneCohort <- function(diff, population, i, iterator, theta,
                                      useC = FALSE) {
@@ -1719,25 +1719,29 @@ diffLogDensPopnOneCohort <- function(diff, population, i, iterator, theta,
     ## population and theta
     stopifnot(identical(length(population), length(theta)))
     if (useC) {
-        .Call(diffLogDensAccountMove_R, combined)
+        .Call(diffLogDensPopnOneCohort_R, diff, population, i, iterator, theta)
     }
-    iterator <- resetCP(iterator, i = i)
-    ans <- 0
-    repeat {
-        i <- iterator@i
-        val.curr <- population[i]
-        val.prop <- val.curr + diff
-        lambda <- theta[i]
-        log.dens.prop <- dpois(x = val.prop, lambda = lambda, log = TRUE)
-        log.dens.curr <- dpois(x = val.curr, lambda = lambda, log = TRUE)
-        ans <- ans + log.dens.prop - log.dens.curr
-        if (iterator@finished)
-            break
-        iterator <- advanceCP(iterator)
+    else {
+        iterator <- resetCP(iterator, i = i)
+        ans <- 0
+        repeat {
+            i <- iterator@i
+            val.curr <- population[i]
+            val.prop <- val.curr + diff
+            lambda <- theta[i]
+            log.dens.prop <- dpois(x = val.prop, lambda = lambda, log = TRUE)
+            log.dens.curr <- dpois(x = val.curr, lambda = lambda, log = TRUE)
+            ans <- ans + log.dens.prop - log.dens.curr
+            if (iterator@finished)
+                break
+            iterator <- advanceCP(iterator)
+        }
+        ans <- unname(ans) ## JAH added this line 9/12/2017
+        ans
     }
-    ans
 }
-## READY_TO_TRANSLATE
+
+## TRANSLATED
 ## HAS_TESTS
 ## Difference in log-density of current values for
 ## all components attributable to change in exposure,
@@ -1851,7 +1855,7 @@ diffLogDensExpPopn <- function(combined, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 diffLogDensExpOneOrigDestParChPool <- function(iCell, hasAge, ageTimeStep, updatedPopn,
                                                component, theta, iteratorComp, 
@@ -1952,11 +1956,12 @@ diffLogDensExpOneOrigDestParChPool <- function(iCell, hasAge, ageTimeStep, updat
             iteratorComp <- advanceCODPCP(iteratorComp)
             iteratorExposure <- advanceCC(iteratorExposure)
         }
+        ans <- unname(ans) ## JAH added this line 9/12/2017
         ans
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 diffLogDensExpOneComp <- function(iCell, hasAge, ageTimeStep, updatedPopn,
                                   component, theta, iteratorComp, 
@@ -2050,6 +2055,7 @@ diffLogDensExpOneComp <- function(iCell, hasAge, ageTimeStep, updatedPopn,
             iteratorComp <- advanceCC(iteratorComp)
             iteratorExposure <- advanceCC(iteratorExposure)
         }
+        ans <- unname(ans) ## JAH added this line 9/12/2017
         ans
     }
 }

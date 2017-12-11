@@ -13716,6 +13716,42 @@ if (test.extended) {
     }
 }
 
+test_that("R and C versions of getDataFromFile give same answer with gaps in iterations", {
+    set.seed(1L)
+    getDataFromFile <- demest:::getDataFromFile
+    filename <- tempfile()
+    accept <- rep(c(0, 1), times = 5)
+    data <- matrix(rnorm(90), ncol = 10)
+    data <- as.double(rbind(data, accept))
+    filename <- tempfile()
+    con <- file(filename, "wb")
+    results <- new("ResultsModelEst")
+    adjustments <- new.env(hash = TRUE)
+    results <- serialize(results, connection = NULL)
+    adjustments <- serialize(adjustments, connection = NULL)
+    size.results <- length(results)
+    size.adjustments <- length(adjustments)
+    writeBin(size.results, con)
+    writeBin(size.adjustments, con)
+    writeBin(results, con)
+    writeBin(data, con)
+    writeBin(adjustments, con)
+    close(con)
+    ans.R <- getDataFromFile(filename = filename,
+                             first = 10L,
+                             last = 10L,
+                             lengthIter = 10L,
+                             iterations = c(2:5, 7:10),
+                             useC = FALSE)
+    ans.C <- getDataFromFile(filename = filename,
+                             first = 10L,
+                             last = 10L,
+                             lengthIter = 10L,
+                             iterations = c(2:5, 7:10),
+                             useC = TRUE)
+    expect_identical(ans.R, ans.C)
+})
+
 test_that("getOneIterFromFile gives valid answer", {
     getOneIterFromFile <- demest:::getOneIterFromFile
     data <- as.double(rep((1:20) * 100, each = 10) + 1:10)
