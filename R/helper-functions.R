@@ -5876,20 +5876,23 @@ predictAlphaDLMNoTrend <- function(prior, useC = FALSE) {
     else {
         K <- prior@K@.Data
         L <- prior@L@.Data
+        along.all.struc.zero <- prior@alongAllStrucZero
         alpha <- prior@alphaDLM@.Data # numeric vector length (K+1)L
         phi <- prior@phi
         omega <- prior@omegaAlpha@.Data
         iterator <- prior@iteratorState
         iterator <- resetA(iterator)
         for (l in seq_len(L)) {
-            indices <- iterator@indices
-            for (i in seq_len(K)) {
-                k.curr <- indices[i + 1L]
-                k.prev <- indices[i]
-                mean <- phi * alpha[k.prev]
-                alpha[k.curr] <- stats::rnorm(n = 1L,
-                                       mean = mean,
-                                       sd = omega)
+            if (!along.all.struc.zero[l]) {
+                indices <- iterator@indices
+                for (i in seq_len(K)) {
+                    k.curr <- indices[i + 1L]
+                    k.prev <- indices[i]
+                    mean <- phi * alpha[k.prev]
+                    alpha[k.curr] <- stats::rnorm(n = 1L,
+                                                  mean = mean,
+                                                  sd = omega)
+                }
             }
             iterator <- advanceA(iterator)
         }
@@ -5909,6 +5912,7 @@ predictAlphaDeltaDLMWithTrend <- function(prior, useC = FALSE) {
     else {
         K <- prior@K@.Data
         L <- prior@L@.Data
+        along.all.struc.zero <- prior@alongAllStrucZero
         alpha <- prior@alphaDLM@.Data # numeric vector length (K+1)L
         delta <- prior@deltaDLM@.Data # numeric vector length (K+1)L
         phi <- prior@phi
@@ -5918,21 +5922,23 @@ predictAlphaDeltaDLMWithTrend <- function(prior, useC = FALSE) {
         has.level <- prior@hasLevel@.Data
         iterator <- resetA(iterator)
         for (l in seq_len(L)) {
-            indices <- iterator@indices
-            for (i in seq_len(K)) {
-                k.curr <- indices[i + 1L]
-                k.prev <- indices[i]
-                mean.delta <- phi * delta[k.prev]
-                delta[k.curr] <- stats::rnorm(n = 1L,
-                                              mean = mean.delta,
-                                              sd = omega.delta)
-                mean.alpha <- alpha[k.prev] + delta[k.prev]
-                if (has.level)
-                    alpha[k.curr] <- stats::rnorm(n = 1L,
-                                                  mean = mean.alpha,
-                                                  sd = omega.alpha)
-                else
-                    alpha[k.curr] <- mean.alpha
+            if (!along.all.struc.zero[l]) {
+                indices <- iterator@indices
+                for (i in seq_len(K)) {
+                    k.curr <- indices[i + 1L]
+                    k.prev <- indices[i]
+                    mean.delta <- phi * delta[k.prev]
+                    delta[k.curr] <- stats::rnorm(n = 1L,
+                                                  mean = mean.delta,
+                                                  sd = omega.delta)
+                    mean.alpha <- alpha[k.prev] + delta[k.prev]
+                    if (has.level)
+                        alpha[k.curr] <- stats::rnorm(n = 1L,
+                                                      mean = mean.alpha,
+                                                      sd = omega.alpha)
+                    else
+                        alpha[k.curr] <- mean.alpha
+                }
             }
             iterator <- advanceA(iterator)
         }
@@ -6181,22 +6187,25 @@ predictSeason <- function(prior, useC = FALSE) {
     else {
         K <- prior@K@.Data
         L <- prior@L@.Data
+        along.all.struc.zero <- prior@alongAllStrucZero
         s <- prior@s@.Data # list length (K+1)L
         n.season <- prior@nSeason@.Data
         omega <- prior@omegaSeason@.Data
         iterator <- prior@iteratorState
         iterator <- resetA(iterator)
         for (l in seq_len(L)) {
-            indices <- iterator@indices
-            for (i in seq_len(K)) {
-                k.curr <- indices[i + 1L]
-                k.prev <- indices[i]
-                mean <- s[[k.prev]][n.season]
-                s[[k.curr]][1L] <- stats::rnorm(n = 1L,
-                                                mean = mean,
-                                                sd = omega)
-                for (j in seq.int(from = 2L, to = n.season))
-                    s[[k.curr]][j] <- s[[k.prev]][j - 1L]
+            if (!along.all.struc.zero) {
+                indices <- iterator@indices
+                for (i in seq_len(K)) {
+                    k.curr <- indices[i + 1L]
+                    k.prev <- indices[i]
+                    mean <- s[[k.prev]][n.season]
+                    s[[k.curr]][1L] <- stats::rnorm(n = 1L,
+                                                    mean = mean,
+                                                    sd = omega)
+                    for (j in seq.int(from = 2L, to = n.season))
+                        s[[k.curr]][j] <- s[[k.prev]][j - 1L]
+                }
             }
             iterator <- advanceA(iterator)
         }
@@ -6220,9 +6229,12 @@ predictUBeta <- function(prior, useC = FALSE) {
         nu <- prior@nuBeta@.Data
         tau <- prior@tau@.Data
         U <- prior@UBeta@.Data
+        allStrucZero <- prior@allStrucZero
         scale <- tau^2
-        for (j in seq_len(J))
-            U[j] <- rinvchisq1(df = nu, scale = scale)
+        for (j in seq_len(J)) {
+            if (!allStrucZero[j])
+                U[j] <- rinvchisq1(df = nu, scale = scale)
+        }
         prior@UBeta@.Data <- U
         prior
     }
@@ -10011,7 +10023,7 @@ alignSystemModelsToAccount <- function(systemModels, account) {
         ans[[i]] <- systemModels[[i.sys]]
     }
     ## system model for 'population' does not have exposure term
-    popn.uses.exposure <- systemModels[[1L]]@useExpose@.Data
+    popn.uses.exposure <- ans[[1L]]@useExpose@.Data
     if (popn.uses.exposure)
         stop(gettextf("system model for '%s' uses exposure",
                       "population"))

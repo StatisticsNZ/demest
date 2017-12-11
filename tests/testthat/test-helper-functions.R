@@ -7820,7 +7820,7 @@ test_that("makeMetadataPredict works with Intervals", {
                                         labels = labels, n = NULL)
     ans.expected <- new("MetaData",
                         nms = c("sex", "time"),
-                        dimtypes = c("state", "time"),
+                        dimtypes = c("sex", "time"),
                         DimScales = list(new("Sexes", dimvalues = c("f", "m")),
                         new("Intervals", dimvalues = as.numeric((-5):0))))
     expect_identical(ans.obtained, ans.expected)
@@ -7828,7 +7828,7 @@ test_that("makeMetadataPredict works with Intervals", {
                                         labels = NULL, n = -5)
     ans.expected <- new("MetaData",
                         nms = c("sex", "time"),
-                        dimtypes = c("state", "time"),
+                        dimtypes = c("sex", "time"),
                         DimScales = list(new("Sexes", dimvalues = c("f", "m")),
                         new("Intervals", dimvalues = (-5):0)))
     expect_identical(ans.obtained, ans.expected)
@@ -7847,7 +7847,7 @@ test_that("makeMetadataPredict works with Categories", {
                                         n = NULL)
     ans.expected <- new("MetaData",
                         nms = c("sex", "region"),
-                        dimtypes = c("state", "state"),
+                        dimtypes = c("sex", "state"),
                         DimScales = list(new("Sexes", dimvalues = c("f", "m")),
                         new("Categories", dimvalues = c("d", "e", "f"))))
     expect_identical(ans.obtained, ans.expected)
@@ -9143,7 +9143,7 @@ test_that("predictUBeta gives valid answer", {
                     nms = "region",
                     dimtypes = "state",
                     DimScales = list(new("Categories", dimvalues = letters[1:10])))
-    strucZeroArray <- Counts(array(1L,
+    strucZeroArray <- Counts(array(c(rep(1L, 9), 0L),
                                    dim = 10,
                                    dimnames = list(region = letters[1:10])))
     prior <- initialPrior(spec,
@@ -9157,9 +9157,9 @@ test_that("predictUBeta gives valid answer", {
     ans.obtained <- predictUBeta(prior)
     set.seed(1)
     ans.expected <- prior
-    ans.expected@UBeta@.Data <- replicate(n = 10,
-                                          rinvchisq1(df = ans.expected@nuBeta@.Data,
-                                                     scale = ans.expected@tau@.Data^2))
+    ans.expected@UBeta@.Data[1:9] <- replicate(n = 9,
+                                               rinvchisq1(df = ans.expected@nuBeta@.Data,
+                                                          scale = ans.expected@tau@.Data^2))
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -9172,7 +9172,7 @@ test_that("R and C versions of predictUBeta give same answer", {
                     nms = "region",
                     dimtypes = "state",
                     DimScales = list(new("Categories", dimvalues = letters[1:10])))
-    strucZeroArray <- Counts(array(1L,
+    strucZeroArray <- Counts(array(c(rep(1L, 9), 0L),
                                    dim = 10,
                                    dimnames = list(region = letters[1:10])))
     prior <- initialPrior(spec,
@@ -11623,7 +11623,7 @@ test_that("changeInPos works", {
                   last = 4L,
                   metadata = new("MetaData",
                   nms = "sex",
-                  dimtypes = "state",
+                  dimtypes = "sex",
                   DimScales = list(new("Sexes", dimvalues = c("f", "m"))))),
                    b = 4)
     expect_identical(changeInPos(object), 2L)
@@ -12895,7 +12895,6 @@ test_that("recordAdjustments works", {
 
 test_that("rescalePriorsHelper works with Exchangeable", {
     rescalePriorsHelper <- demest:::rescalePriorsHelper
-
     makeOutputPrior <- demest:::makeOutputPrior
     initialPrior <- demest:::initialPrior
     SkeletonBetaTerm <- demest:::SkeletonBetaTerm
@@ -12913,26 +12912,38 @@ test_that("rescalePriorsHelper works with Exchangeable", {
                     dimtypes = c("state", "sex"),
                     DimScales = list(new("Categories", dimvalues = letters[1:5]),
                                      new("Sexes", dimvalues = c("F", "M"))))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(5, 2),
+                                   dimnames = list(country = letters[1:5],
+                                                   sex = c("F", "M"))))
     prior.int <- initialPrior(spec.int,
                               beta = beta.int,
                               metadata = NULL,
                               sY = NULL,
-                              isSaturated = new("LogicalFlag", FALSE))
+                              isSaturated = FALSE,
+                              margin = 0L,
+                              strucZeroArray = strucZeroArray)
     prior.country <- initialPrior(spec.country,
                                   beta = beta.country,
                                   metadata = metadata[1],
                                   sY = NULL,
-                                  isSaturated = new("LogicalFlag", FALSE))
+                                  isSaturated = FALSE,
+                                  margin = 1L,
+                                  strucZeroArray = strucZeroArray)
     prior.sex <- initialPrior(spec.sex,
-                              beta = beta.country,
+                              beta = beta.sex,
                               metadata = metadata[2],
                               sY = NULL,
-                              isSaturated = new("LogicalFlag", FALSE))
+                              isSaturated = FALSE,
+                              margin = 2L,
+                              strucZeroArray = strucZeroArray)
     prior.country.sex <- initialPrior(spec.country.sex,
                                       beta = beta.country.sex,
                                       metadata = metadata,
                                       sY = NULL,
-                                      isSaturated = new("LogicalFlag", FALSE))
+                                      isSaturated = FALSE,
+                                      margin = 1:2,
+                                      strucZeroArray = strucZeroArray)
     priors <- list(prior.int,
                    prior.country,
                    prior.sex,
@@ -12985,7 +12996,6 @@ test_that("rescalePriorsHelper works with Exchangeable", {
                          paste("model.prior",
                                c("(Intercept)", "country", "sex", "country:sex"),
                                sep = ".")))
-               
 })
 
 test_that("setCoefInterceptToZeroOnFile works", {

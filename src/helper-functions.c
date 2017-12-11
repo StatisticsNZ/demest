@@ -1806,6 +1806,7 @@ predictAlphaDLMNoTrend(SEXP prior_R)
 {
     int K = *INTEGER(GET_SLOT(prior_R, K_sym));
     int L = *INTEGER(GET_SLOT(prior_R, L_sym));
+    int *alongAllStrucZero = INTEGER(GET_SLOT(prior_R, alongAllStrucZero_sym));
     
     double *alpha = REAL(GET_SLOT(prior_R, alphaDLM_sym)); /* vector, length (K+1)L */
     
@@ -1819,15 +1820,17 @@ predictAlphaDLMNoTrend(SEXP prior_R)
     int *indices = INTEGER(GET_SLOT(iterator_R, indices_sym)); 
     
     for (int l = 0; l < L; ++l) {
-        
-        for (int i = 0; i < K; ++i) {
+
+	if (!alongAllStrucZero[l]) {
+	    for (int i = 0; i < K; ++i) {
             
-            int k_curr = indices[i+1] - 1;
-            int k_prev = indices[i] - 1;
+		int k_curr = indices[i+1] - 1;
+		int k_prev = indices[i] - 1;
             
-            double mean = phi * alpha[k_prev];
-            alpha[k_curr] = rnorm(mean, omega);
-        }
+		double mean = phi * alpha[k_prev];
+		alpha[k_curr] = rnorm(mean, omega);
+	    }
+	}
             
         advanceA(iterator_R);
     }
@@ -1839,7 +1842,8 @@ predictAlphaDeltaDLMWithTrend(SEXP prior_R)
 {
     int K = *INTEGER(GET_SLOT(prior_R, K_sym));
     int L = *INTEGER(GET_SLOT(prior_R, L_sym));
-    
+    int *alongAllStrucZero = INTEGER(GET_SLOT(prior_R, alongAllStrucZero_sym));
+	
     double *alpha = REAL(GET_SLOT(prior_R, alphaDLM_sym)); /* vector, length (K+1)L */
     double *delta = REAL(GET_SLOT(prior_R, deltaDLM_sym)); /* vector, length (K+1)L */
     
@@ -1856,26 +1860,27 @@ predictAlphaDeltaDLMWithTrend(SEXP prior_R)
     int *indices = INTEGER(GET_SLOT(iterator_R, indices_sym)); 
 
     for (int l = 0; l < L; ++l) {
-        
-        for (int i = 0; i < K; ++i) {
+	
+        if (!alongAllStrucZero[l]) {
+	    for (int i = 0; i < K; ++i) {
             
-            int k_curr = indices[i+1] - 1;
-            int k_prev = indices[i] - 1;
+		int k_curr = indices[i+1] - 1;
+		int k_prev = indices[i] - 1;
             
-            double delta_k_prev = delta[k_prev];
+		double delta_k_prev = delta[k_prev];
             
-            double meanDelta = phi * delta_k_prev;
-            delta[k_curr] = rnorm(meanDelta, omegaDelta);
+		double meanDelta = phi * delta_k_prev;
+		delta[k_curr] = rnorm(meanDelta, omegaDelta);
             
-            double meanAlpha = alpha[k_prev] + delta_k_prev;
-            if (hasLevel) {
-                alpha[k_curr] = rnorm(meanAlpha, omegaAlpha);
-            }
-            else {
-                alpha[k_curr] = meanAlpha;
-            }
-        }
-            
+		double meanAlpha = alpha[k_prev] + delta_k_prev;
+		if (hasLevel) {
+		    alpha[k_curr] = rnorm(meanAlpha, omegaAlpha);
+		}
+		else {
+		    alpha[k_curr] = meanAlpha;
+		}
+	    }
+	}
         advanceA(iterator_R);
     }
 }
@@ -2137,6 +2142,7 @@ predictSeason(SEXP prior_R)
     SEXP s_R = GET_SLOT(prior_R, s_sym);
     int K = *INTEGER(GET_SLOT(prior_R, K_sym));
     int L = *INTEGER(GET_SLOT(prior_R, L_sym));
+    int *alongAllStrucZero = INTEGER(GET_SLOT(prior_R, alongAllStrucZero_sym));
     
     int nSeason = *INTEGER(GET_SLOT(prior_R, nSeason_sym));
     double omega = *REAL(GET_SLOT(prior_R, omegaSeason_sym));
@@ -2148,25 +2154,25 @@ predictSeason(SEXP prior_R)
     int *indices = INTEGER(GET_SLOT(iteratorS, indices_sym));
     
     for (int l = 0; l < L; ++l) {
-        
-        for (int k = 0; k < K; ++k) {
+	if (!alongAllStrucZero[l]) {
+	    for (int k = 0; k < K; ++k) {
             
-            int k_curr = indices[k + 1] - 1; /* C style indices */
-            int k_prev = indices[k] - 1;
+		int k_curr = indices[k + 1] - 1; /* C style indices */
+		int k_prev = indices[k] - 1;
             
-            double *s_curr = REAL(VECTOR_ELT(s_R, k_curr));
-            double *s_prev = REAL(VECTOR_ELT(s_R, k_prev));
+		double *s_curr = REAL(VECTOR_ELT(s_R, k_curr));
+		double *s_prev = REAL(VECTOR_ELT(s_R, k_prev));
             
-            double mean = s_prev[nSeason - 1];
+		double mean = s_prev[nSeason - 1];
             
-            s_curr[0] = rnorm(mean, omega);
+		s_curr[0] = rnorm(mean, omega);
 
-            /* copy nSeason-1 values from s_prev (starting at first)
-             * to s_curr (starting at second) */
-            memcpy((s_curr+1), s_prev, (nSeason-1)*sizeof(double));
+		/* copy nSeason-1 values from s_prev (starting at first)
+		 * to s_curr (starting at second) */
+		memcpy((s_curr+1), s_prev, (nSeason-1)*sizeof(double));
                         
+	    }
         }
-        
         advanceA(iteratorS);
 
     }
@@ -2180,16 +2186,17 @@ predictUBeta(SEXP prior_R)
     int J = *INTEGER(GET_SLOT(prior_R, J_sym));
     double nu = *REAL(GET_SLOT(prior_R, nuBeta_sym));
     double tau = *REAL(GET_SLOT(prior_R, tau_sym));
+    int *allStrucZero = INTEGER(GET_SLOT(prior_R, allStrucZero_sym));
     
     double *U = REAL(GET_SLOT(prior_R, UBeta_sym));
     
     double scale = tau*tau;
     
     for (int j = 0; j < J; ++j) {
-        
-        U[j] = rinvchisq1(nu, scale);
+	if (!allStrucZero[j]) {
+	    U[j] = rinvchisq1(nu, scale);
+	}
     }
-
 }
 
 
