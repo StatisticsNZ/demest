@@ -4574,6 +4574,126 @@ test_that("R and C versions of updateThetaAndValueAgFun_Binomial same answer - m
 })
 
 
+
+## updateTheta_CMPVaryingUseExp
+
+test_that("updateTheta_CMPVaryingUseExp gives valid answer", {
+    ## updateTheta_CMPVaryingUseExp <- demest:::updateTheta_CMPVaryingUseExp
+    initialModel <- demest:::initialModel
+    for (seed in seq_len(n.test)) {
+        ## no missing values
+        exposure <- Counts(array(10 * rbeta(n = 20, shape1 = 20, shape2 = 5),
+                                 dim = c(5, 4),
+                                 dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        y <- Counts(array(as.integer(rpois(n = 20, lambda = 0.5 * exposure)),
+                          dim = c(5, 4),
+                          dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        spec <- Model(y ~ CMP(mean ~ age + region))
+        model <- initialModel(spec, y = y, exposure = exposure)
+        set.seed(seed + 1)
+        ans.obtained <- updateTheta_CMPVaryingUseExp(model, y = y, exposure = exposure)
+        set.seed(seed + 1)
+        ans.expected <- model
+        mu <- (model@betas[[1]]
+            + model@betas[[2]]
+            + rep(model@betas[[3]], each = 5))
+        for (i in seq_along(ans.expected@theta)) {
+            theta.curr <- ans.expected@theta[i]
+            theta.prop <- exp(rnorm(1, mean = log(theta.curr),
+                                    sd = model@scaleTheta*model@scaleThetaMultiplier/sqrt(1+y[i])))
+            log.diff <- dpois(y[i], lambda = theta.prop * exposure[i], log = TRUE) -
+                dpois(y[i], lambda = theta.curr * exposure[i], log = TRUE) +
+                dnorm(x = log(theta.prop), mean = mu[i], sd = model@sigma, log = TRUE) -
+                dnorm(x = log(theta.curr), mean = mu[i], sd = model@sigma, log = TRUE)
+            if ((log.diff >= 0) || (runif(1) < exp(log.diff))) {
+                ans.expected@nAcceptTheta <- ans.expected@nAcceptTheta + 1L
+                ans.expected@theta[i] <- theta.prop
+            }
+        }
+        if (ans.expected@nAcceptTheta == 0L)
+            warning("no proposals accepted")
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+        expect_identical(ans.obtained@betas, model@betas)
+        expect_identical(ans.obtained@priorsBetas, model@priorsBetas)
+        expect_identical(ans.obtained@sigma, model@sigma)
+        expect_identical(ans.obtained@iteratorBetas, model@iteratorBetas)
+        ## has missing values
+        exposure <- Counts(array(10 * rbeta(n = 20, shape1 = 20, shape2 = 5),
+                                 dim = c(5, 4),
+                                 dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        y <- Counts(array(as.integer(rpois(n = 20, lambda = 0.5 * exposure)),
+                          dim = c(5, 4),
+                          dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        y[1:5] <- NA
+        spec <- Model(y ~ CMP(mean ~ age + region))
+        model <- initialModel(spec, y = y, exposure = exposure)
+        set.seed(seed + 1)
+        ans.obtained <- updateTheta_CMPVaryingUseExp(model, y = y, exposure = exposure)
+        set.seed(seed + 1)
+        ans.expected <- model
+        mu <- (model@betas[[1]]
+            + model@betas[[2]]
+            + rep(model@betas[[3]], each = 5))
+        ans.expected@theta[1:5] <- exp(rnorm(n = 5, mean = mu[1:5], sd = model@sigma))
+        for (i in 6:20) {
+            theta.curr <- ans.expected@theta[i]
+            theta.prop <- exp(rnorm(1, mean = log(theta.curr),
+                                    sd = model@scaleTheta*model@scaleThetaMultiplier/sqrt(1+y[i])))
+            log.diff <- dpois(y[i], lambda = theta.prop * exposure[i], log = TRUE) -
+                dpois(y[i], lambda = theta.curr * exposure[i], log = TRUE) +
+                dnorm(x = log(theta.prop), mean = mu[i], sd = model@sigma, log = TRUE) -
+                dnorm(x = log(theta.curr), mean = mu[i], sd = model@sigma, log = TRUE)
+            if ((log.diff >= 0) || (runif(1) < exp(log.diff))) {
+                ans.expected@nAcceptTheta <- ans.expected@nAcceptTheta + 1L
+                ans.expected@theta[i] <- theta.prop
+            }
+        }
+        if (ans.expected@nAcceptTheta == 0L)
+            warning("no proposals accepted")
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+        expect_identical(ans.obtained@betas, model@betas)
+        expect_identical(ans.obtained@priorsBetas, model@priorsBetas)
+        expect_identical(ans.obtained@sigma, model@sigma)
+        expect_identical(ans.obtained@iteratorBetas, model@iteratorBetas)
+        ## has lower, upper
+        exposure <- Counts(array(10 * rbeta(n = 20, shape1 = 20, shape2 = 5),
+                                 dim = c(5, 4),
+                                 dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        y <- Counts(array(as.integer(rpois(n = 20, lambda = 0.5 * exposure)),
+                          dim = c(5, 4),
+                          dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        y[1:12] <- NA
+        subtotals <- Counts(array(30:31, dim = 2, dimnames = list(region = c("a", "b"))))
+        y <- attachSubtotals(y, subtotals = subtotals)
+        spec <- Model(y ~ CMP(mean ~ age + region), lower = 0.3, upper = 0.6)
+        model <- initialModel(spec, y = y, exposure = exposure)
+        set.seed(seed + 1)
+        ans.obtained <- updateTheta_CMPVaryingUseExp(model, y = y, exposure = exposure)
+        expect_true(all((ans.obtained@theta > 0.3) & ans.obtained@theta < 0.6))
+    }
+})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## updateTheta_NormalVarying
 
 test_that("updateTheta_NormalVarying, no limits, gives valid answer", {

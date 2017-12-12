@@ -1,5 +1,34 @@
 
 
+#' @export
+CMP <- function(formula, dispersion = Dispersion(), useExpose = TRUE) {
+    ## formula
+    checkFormulaMu(formula)
+    checkForMarginalTerms(formula)
+    ## dispersion
+    if (!methods::is(dispersion, "Dispersion"))
+        stop(gettextf("'%s' has class \"%s\"",
+                      dispersion, class(dispersion)))
+    meanMeanLogNuCMP <- dispersion@meanMeanLogNuCMP
+    sdMeanLogNuCMP <- dispersion@sdMeanLogNuCMP
+    ASDLogNuCMP <- dispersion@ASDLogNuCMP
+    nuSDLogNuCMP <- dispersion@nuSDLogNuCMP
+    sdMaxLogNuCMP <- dispersion@sdMaxLogNuCMP
+    ## useExpose
+    useExpose <- checkAndTidyLogicalFlag(x = useExpose,
+                                         name = "useExpose")
+    methods::new("SpecLikelihoodCMP",
+                 formulaMu = formula,
+                 meanMeanLogNuCMP = meanMeanLogNuCMP,
+                 sdMeanLogNuCMP = sdMeanLogNuCMP,
+                 ASDLogNuCMP = ASDLogNuCMP,
+                 nuSDLogNuCMP = nuSDLogNuCMP,
+                 sdMaxLogNuCMP = sdMaxLogNuCMP,
+                 useExpose = useExpose)
+}
+
+
+
 #' Specify the prior for the dispersion parameter in a CMP model.
 #'
 #' Specify the prior for the dispersion parameter (often denoted
@@ -47,19 +76,21 @@ Dispersion <- function(mean = Norm(), scale = HalfT()) {
     if (!methods::is(scale, "HalfT"))
         stop(gettextf("'%s' has class \"%s\"",
                       scale, class(scale)))
-    ASDLogNuCMP <- scale@A
-    multSDLogNuCMP <- scale@mult
+    ASDLogNuCMP <- scale@A@.Data
+    mult <- scale@mult@.Data
     nuSDLogNuCMP <- scale@nu
     sdMaxLogNuCMP <- scale@scaleMax@.Data
+    if (is.na(ASDLogNuCMP))
+        ASDLogNuCMP <- mult
+    ASDLogNuCMP <- new("Scale", ASDLogNuCMP)
     sdMaxLogNuCMP <- makeScaleMax(scaleMax = sdMaxLogNuCMP,
                                   A = ASDLogNuCMP,
                                   nu = nuSDLogNuCMP,
-                                  isSpec = TRUE)
+                                  isSpec = FALSE)
     methods::new("Dispersion",
                  meanMeanLogNuCMP = meanMeanLogNuCMP,
                  sdMeanLogNuCMP = sdMeanLogNuCMP,
                  ASDLogNuCMP = ASDLogNuCMP,
-                 multSDLogNuCMP = multSDLogNuCMP,
                  nuSDLogNuCMP = nuSDLogNuCMP,
                  sdMaxLogNuCMP = sdMaxLogNuCMP)
 }
@@ -447,7 +478,7 @@ NormalFixed <- function(mean, sd, useExpose = TRUE) {
 Model <- function(formula, ..., lower = NULL, upper = NULL,
                   priorSD = NULL, jump = NULL, series = NULL,
                   aggregate = NULL) {
-    kValidDistributions <- c("Poisson", "Binomial", "Normal",
+    kValidDistributions <- c("Poisson", "Binomial", "Normal", "CMP",
                              "PoissonBinomial", "NormalFixed")
     call <- match.call()
     dots <- list(...)
@@ -596,6 +627,75 @@ setMethod("SpecModel",
                            upper = upper,
                            aggregate = aggregate)
           })
+
+
+## HAS_TESTS
+setMethod("SpecModel",
+          signature(specInner = "SpecLikelihoodCMP"),
+          function(specInner, call, nameY, dots, lower, upper,
+                   priorSD, jump, series, aggregate) {
+              formula.mu <- specInner@formulaMu
+              useExpose <- specInner@useExpose
+              meanMeanLogNuCMP <- specInner@meanMeanLogNuCMP
+              sdMeanLogNuCMP <- specInner@sdMeanLogNuCMP
+              ASDLogNuCMP <- specInner@ASDLogNuCMP
+              nuSDLogNuCMP <- specInner@nuSDLogNuCMP
+              sdMaxLogNuCMP <- specInner@sdMaxLogNuCMP
+              specs.priors <- makeSpecsPriors(dots)
+              names.specs.priors <- makeNamesSpecsPriors(dots)
+              if (is.null(lower))
+                  lower <- 0
+              if (is.null(upper))
+                  upper <- Inf
+              checkLowerAndUpper(lower = lower,
+                                 upper = upper,
+                                 distribution = "Poisson")
+              if (is.null(priorSD))
+                  priorSD <- HalfT()
+              else {
+                  if (!methods::is(priorSD, "HalfT"))
+                      stop(gettextf("'%s' has class \"%s\"",
+                                    "priorSD", class(priorSD)))
+              }
+              A.sigma <- priorSD@A
+              nu.sigma <- priorSD@nu
+              sigma.max <- priorSD@scaleMax
+              scale.theta <- checkAndTidyJump(jump)
+              series <- checkAndTidySeries(series)
+              has.series <- !is.na(series@.Data)
+              if (has.series) {
+                  A.sigma <- makeASigma(A = A.sigma,
+                                        sY = NULL,
+                                        isSpec = TRUE)
+                  sigma.max <- makeScaleMax(scaleMax = sigma.max,
+                                            A = A.sigma,
+                                            nu = nu.sigma,
+                                            isSpec = TRUE)
+              }
+              if (is.null(aggregate))
+                  aggregate <- methods::new("SpecAgPlaceholder")
+              methods::new("SpecCMPVarying",
+                           ASigma = A.sigma,
+                           call = call,
+                           formulaMu = formula.mu,
+                           lower = lower,
+                           specsPriors = specs.priors,
+                           namesSpecsPriors = names.specs.priors,
+                           nameY = nameY,
+                           nuSigma = nu.sigma,
+                           scaleTheta = scale.theta,
+                           series = series,
+                           sigmaMax = sigma.max,
+                           upper = upper,
+                           useExpose = useExpose,
+                           meanMeanLogNuCMP = meanMeanLogNuCMP,
+                           sdMeanLogNuCMP = sdMeanLogNuCMP,
+                           ASDLogNuCMP = ASDLogNuCMP,
+                           nuSDLogNuCMP = nuSDLogNuCMP,
+                           sdMaxLogNuCMP = sdMaxLogNuCMP,
+                           aggregate = aggregate)
+          })
+
 
 ## HAS_TESTS
 setMethod("SpecModel",

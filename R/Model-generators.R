@@ -12,6 +12,22 @@ setMethod("addAg",
               model
           })
 
+## NO_TESTS
+setMethod("addAg",
+          signature(model = "CMPVaryingNotUseExp",
+                    aggregate = "SpecAgPlaceholder"),
+          function(model, aggregate) {
+              model
+          })
+
+## NO_TESTS
+setMethod("addAg",
+          signature(model = "CMPVaryingUseExp",
+                    aggregate = "SpecAgPlaceholder"),
+          function(model, aggregate) {
+              model
+          })
+
 ## HAS_TESTS
 setMethod("addAg",
           signature(model = "NormalVaryingVarsigmaKnown",
@@ -624,6 +640,181 @@ setMethod("initialModel",
                                      y = y)
               model
           })
+
+
+## NO_TESTS
+setMethod("initialModel",
+          signature(object = "SpecCMPVarying",
+                    y = "Counts",
+                    exposure = "ANY",
+                    weights = "missing"),
+          function(object, y, exposure) {
+              call <- object@call
+              formula.mu <- object@formulaMu
+              specs.priors <- object@specsPriors
+              names.specs.priors <- object@namesSpecsPriors
+              scale.theta <- object@scaleTheta
+              lower <- object@lower
+              upper <- object@upper
+              tolerance <- object@tolerance
+              max.attempt <- object@maxAttempt
+              nu.sigma <- object@nuSigma
+              A.sigma <- object@ASigma@.Data
+              sigma.max <- object@sigmaMax@.Data
+              use.expose <- object@useExpose@.Data
+              aggregate <- object@aggregate
+              meanMeanLogNuCMP <- object@meanMeanLogNuCMP
+              sdMeanLogNuCMP <- object@sdMeanLogNuCMP
+              ASDLogNuCMP <- object@ASDLogNuCMP
+              nuSDLogNuCMP <- object@nuSDLogNuCMP
+              sdMaxLogNuCMP <- object@sdMaxLogNuCMP
+              checkTermsFromFormulaFound(y = y, formula = formula.mu)
+              checkLengthDimInFormula(y = y, formula = formula.mu)
+              metadataY <- y@metadata
+              dim <- dim(y)
+              has.exposure <- !is.null(exposure)
+              if (has.exposure && !use.expose)
+                  stop(gettextf("'%s' argument supplied, but model '%s' does not use exposure",
+                                "exposure", deparse(call[[2L]])))
+              if (!has.exposure && use.expose)
+                  stop(gettextf("model '%s' uses exposure, but no '%s' argument supplied",
+                                deparse(call[[2L]]), "exposure"))
+              y.missing <- is.na(y@.Data)
+              if (!all(y.missing))
+                  mean.y.obs <- mean(y@.Data[!y.missing])
+              else
+                  mean.y.obs <- 0.5
+              shape <- ifelse(y.missing, mean.y.obs, 0.5 * mean.y.obs + 0.5 * y@.Data)
+              if (has.exposure) {
+                  mean.expose.obs <- mean(exposure[!y.missing])
+                  rate <- ifelse(y.missing, mean.expose.obs, 0.5 * mean.expose.obs + 0.5 * exposure)
+              }
+              else
+                  rate <- 1
+              if (has.exposure)
+                  scale.theta.multiplier <- sqrt(mean.y.obs + 1)
+              else
+                  scale.theta.multiplier <- 1.0
+              scale.theta.multiplier <- methods::new("Scale", scale.theta.multiplier)
+              theta <- stats::rgamma(n = length(y), shape = shape, rate = rate)
+              if (has.exposure)
+                  sY <- NULL
+              else
+                  sY <-  stats::sd(log(as.numeric(y) + 1), na.rm = TRUE)
+              A.sigma <- makeASigma(A = A.sigma,
+                                    sY = sY)
+              sigma.max <- makeScaleMax(scaleMax = sigma.max,
+                                        A = A.sigma,
+                                        nu = nu.sigma)
+              sigma <- stats::runif(n = 1L,
+                                    min = 0,
+                                    max = min(A.sigma@.Data, sigma.max@.Data))
+              sigma <- methods::new("Scale", sigma)
+              ## need to avoid having all 'theta' equalling lower or upper bound
+              is.too.low <- theta < lower
+              n.too.low <- sum(is.too.low)
+              width <- 0.2 * (upper - lower)
+              if (is.infinite(width))
+                  width <- 100
+              theta[is.too.low] <- stats::runif(n = n.too.low, min = lower, max = lower + width)
+              is.too.high <- theta > upper
+              n.too.high <- sum(is.too.high)
+              theta[is.too.high] <- stats::runif(n = n.too.high, min = upper - width, max = upper)
+              lower <- log(lower)
+              upper <- log(upper)
+              theta <- array(theta, dim = dim(y), dimnames = dimnames(y))
+              if (formulaIsInterceptOnly(formula.mu))
+                  betas <- list("(Intercept)" = mean(log(theta)))
+              else {
+                  betas <- MASS::loglm(formula.mu, data = theta)$param
+                  betas <- convertToFormulaOrder(betas = betas, formulaMu = formula.mu)
+              }
+              theta <- as.numeric(theta)
+              SDLogNuCMP <- stats::runif(n = 1L,
+                                         min = 0,
+                                         max = min(ASDLogNuCMP@.Data, sdMaxLogNuCMP@.Data))
+              SDLogNuCMP <- methods::new("Scale", SDLogNuCMP)
+              meanLogNuCMP <- stats::rnorm(n = 1L,
+                                           mean = meanMeanLogNuCMP@.Data,
+                                           sd = sdMeanLogNuCMP@.Data)
+              meanLogNuCMP <- methods::new("Parameter", meanLogNuCMP)
+              logNuCMP <- stats::rnorm(n = length(theta),
+                                       mean = meanLogNuCMP@.Data,
+                                       sd = SDLogNuCMP)
+              nuCMP <- exp(logNuCMP)
+              nuCMP <- new("ParameterVector", nuCMP)              
+              names.betas <- names(betas)
+              margins <- makeMargins(betas = betas, y = y)
+              priors.betas <- makePriors(betas = betas,
+                                         specs = specs.priors,
+                                         namesSpecs = names.specs.priors,
+                                         margins = margins,
+                                         y = y,
+                                         sY = sY)
+              is.saturated <- sapply(priors.betas, function(x) x@isSaturated@.Data)
+              if (any(is.saturated)) {
+                  i.saturated <- which(is.saturated)
+                  prior.saturated <- priors.betas[[i.saturated]]
+                  A.sigma <- prior.saturated@ATau
+                  nu.sigma <- prior.saturated@nuTau
+                  sigma.max <- prior.saturated@tauMax
+                  sigma <- prior.saturated@tau
+              }
+              betas <- unname(lapply(betas, as.numeric))
+              betas <- jitterBetas(betas)
+              iterator.betas <- BetaIterator(dim = dim, margins = margins)
+              dims <- makeDims(dim = dim, margins = margins)
+              class <- if (has.exposure) "CMPVaryingUseExp" else "CMPVaryingNotUseExp"
+              cellInLik <- rep(TRUE, times = length(theta))
+              model <- methods::new(class,
+                                    call = call,
+                                    theta = theta,
+                                    cellInLik = cellInLik,
+                                    metadataY = metadataY,
+                                    scaleTheta = scale.theta,
+                                    scaleThetaMultiplier = scale.theta.multiplier,
+                                    lower = lower,
+                                    upper = upper,
+                                    tolerance = tolerance,
+                                    nAcceptTheta = methods::new("Counter", 0L),
+                                    nFailedPropTheta = methods::new("Counter", 0L),
+                                    maxAttempt = max.attempt,
+                                    sigma = sigma,
+                                    sigmaMax = sigma.max,
+                                    ASigma = A.sigma,
+                                    nuSigma = nu.sigma,
+                                    ASDLogNuCMP = ASDLogNuCMP,
+                                    nuSDLogNuCMP = nuSDLogNuCMP,
+                                    SDLogNuCMP = SDLogNuCMP,
+                                    sdMaxLogNuCMP = sdMaxLogNuCMP,
+                                    meanLogNuCMP = meanLogNuCMP,
+                                    meanMeanLogNuCMP = meanMeanLogNuCMP,
+                                    sdMeanLogNuCMP = sdMeanLogNuCMP,
+                                    nuCMP = nuCMP,
+                                    betas = betas,
+                                    priorsBetas = priors.betas,
+                                    namesBetas = names.betas,
+                                    margins = margins,
+                                    iteratorBetas = iterator.betas,
+                                    dims = dims)
+              if (has.exposure)
+                  default.weights <- exposure
+              else {
+                  .Data <- array(1.0,
+                                 dim = dim(metadataY),
+                                 dimnames = dimnames(metadataY))
+                  default.weights <- methods::new("Counts",
+                                                  .Data = .Data,
+                                                  metadata = metadataY)
+              }
+              model <- addAg(model = model,
+                             aggregate = aggregate,
+                             defaultWeights = default.weights)
+              model <- makeCellInLik(model = model,
+                                     y = y)
+              model
+          })
+
 
 ## HAS_TESTS
 setMethod("initialModel",

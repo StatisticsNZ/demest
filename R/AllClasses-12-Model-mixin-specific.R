@@ -433,10 +433,6 @@ setClass("MetadataY",
              TRUE
          })
 
-setClass("MultSDLogNuCMPMixin",
-         slots = c(multSDLogNuCMP = "Scale"),
-         contains = "VIRTUAL")
-
 ## HAS_TESTS
 setClass("NAcceptThetaMixin",
          slots = c(nAcceptTheta = "Counter"),
@@ -455,6 +451,10 @@ setClass("NFailedPropThetaMixin",
          slots = c(nFailedPropTheta = "Counter"),
          contains = "VIRTUAL")
 
+setClass("NFailedPropYStarMixin",
+         slots = c(nFailedPropYStar = "Counter"),
+         contains = "VIRTUAL")
+
 ## NO_TESTS
 setClass("NameYMixin",
          slots = c(nameY = "Name"),
@@ -471,6 +471,10 @@ setClass("NuCMPMixin",
              if (!identical(length(nuCMP), length(theta)))
                  return(gettextf("'%s' and '%s' have different lengths",
                                  "nuCMP", "theta"))
+             ## 'nuCMP' non-negative
+             if (any(nuCMP < 0))
+                 return(gettextf("'%s' has negative values",
+                                 "nuCMP"))
              TRUE
          })
 
@@ -634,11 +638,6 @@ setClass("SlotsToExtract",
 
 
 ## NO_TESTS
-setClass("SpecASDLogNuCMPMixin",
-         slots = c(ASDLogNuCMP = "SpecScale"),
-         contains = "VIRTUAL")
-
-## NO_TESTS
 setClass("SpecASigmaMixin",
          slots = c(ASigma = "SpecScale"),
          contains = "VIRTUAL")
@@ -664,11 +663,6 @@ setClass("SpecAggregateMixin",
          slots = c(aggregate = "SpecAggregate"),
          contains = "VIRTUAL")
 
-
-## NO_TESTS
-setClass("SpecSDMaxLogNuCMPMixin",
-         slots = c(sdMaxLogNuCMP = "SpecScale"),
-         contains = "VIRTUAL")
 
 ## HAS_TESTS
 setClass("SpecSeriesMixin",

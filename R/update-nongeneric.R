@@ -2494,6 +2494,123 @@ updateThetaAndValueAgFun_Binomial <- function(object, y, exposure, useC = FALSE)
     }
 }
 
+updateTheta_CMPVaryingUseExp <- function(object, y, exposure, useC = FALSE) {
+    ## object
+    stopifnot(methods::is(object, "CMPVaryingUseExp"))
+    stopifnot(methods::validObject(object))
+    ## y
+    stopifnot(identical(length(y), length(object@theta)))
+    stopifnot(is.integer(y))
+    stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0L))
+    ## exposure
+    stopifnot(is.double(exposure))
+    stopifnot(all(exposure@.Data[!is.na(exposure@.Data)] >= 0))
+    ## y and exposure
+    stopifnot(identical(length(exposure), length(y)))
+    stopifnot(all(is.na(exposure) <= is.na(y)))
+    stopifnot(all(y@.Data[!is.na(y@.Data)][exposure@.Data[!is.na(y@.Data)] == 0] == 0L))
+    if (useC) {
+        .Call(updateTheta_CMPVaryingUseExp_R, object, y, exposure)
+    }
+    else {
+        theta <- object@theta
+        scale <- object@scaleTheta
+        scale.multiplier <- object@scaleThetaMultiplier
+        lower <- object@lower
+        upper <- object@upper
+        tolerance <- object@tolerance
+        sigma <- object@sigma@.Data
+        nu <- object@nuCMP # vector same length as 'theta'
+        sigma <- object@sigma@.Data
+        mean.log.nu <- object@meanLogNuCMP@.Data # scalar
+        sd.log.nu <- object@SDLogNuCMP@.Data # scalar
+        betas <- object@betas
+        iterator <- object@iteratorBetas
+        max.attempt <- object@maxAttempt
+        n.failed.prop.y.star <- 0L
+        n.failed.prop.theta <- 0L
+        n.accept.theta <- 0L
+        iterator <- resetB(iterator)
+        scale <- scale * scale.multiplier
+        for (i in seq_along(theta)) {
+            indices <- iterator@indices
+            mu <- 0
+            for (b in seq_along(betas))
+                mu <- mu + betas[[b]][indices[b]]
+            y.is.missing <- is.na(y[i]) 
+            if (y.is.missing) {
+                mean <- mu
+                sd <- sigma
+            }
+            else {
+                th.curr <- theta[i]
+                log.th.curr <- log(th.curr)
+                mean <- log.th.curr
+                sd <- scale
+            }
+            found.prop.theta <- FALSE
+            attempt <- 0L
+            while (!found.prop.theta && (attempt < max.attempt)) {
+                attempt <- attempt + 1L
+                log.th.prop <- stats::rnorm(n = 1L, mean = mean, sd = sd)
+                found.prop.theta <- ((log.th.prop > lower + tolerance)
+                    && (log.th.prop < upper - tolerance))
+            }
+            if (found.prop.theta) {
+                th.prop <- exp(log.th.prop)
+                if (y.is.missing)
+                    theta[i] <- th.prop
+                else {
+                    nu.curr <- nu[i]
+                    log.nu.curr <- log(nu.curr)
+                    log.nu.prop <- stats::rnorm(n = 1L,
+                                                mean = mean.log.nu,
+                                                sd = sd.log.nu)
+                    nu.prop <- exp(log.nu.prop)
+                    y.star <- rcmp1(mu = th.prop,
+                                    nu = nu.prop,
+                                    max = max.attempt)
+                    found.y.star <- is.finite(y.star)
+                    if (found.y.star) {
+                        log.lik.curr <- logDensCMPUnnormalised1(x = y[i], gamma = th.curr, nu = nu.curr)
+                        log.lik.prop <- logDensCMPUnnormalised1(x = y[i], gamma = th.prop, nu = nu.prop)
+                        log.lik.curr.star <- logDensCMPUnnormalised1(x = y.star, gamma = th.curr, nu = nu.curr)
+                        log.lik.prop.star <- logDensCMPUnnormalised1(x = y.star, gamma = th.prop, nu = nu.prop)
+                        log.dens.th.curr <- stats::dnorm(x = log.th.curr, mean = mu, sd = sigma, log = TRUE) 
+                        log.dens.th.prop <- stats::dnorm(x = log.th.prop, mean = mu, sd = sigma, log = TRUE)
+                        log.dens.nu.curr <- stats::dnorm(x = log.nu.curr, mean = mean.log.nu, sd = sd.log.nu, log = TRUE) 
+                        log.dens.nu.prop <- stats::dnorm(x = log.nu.prop, mean = mean.log.nu, sd = sd.log.nu, log = TRUE)
+                        log.diff <- log.lik.prop - log.lik.curr + log.lik.curr.star - log.lik.prop.star 
+                        + log.dens.th.prop - log.dens.th.curr + log.dens.nu.prop - log.dens.nu.curr
+                        accept <- (log.diff >= 0) || (stats::runif(n = 1L) < exp(log.diff))
+                        if (accept) {
+                            n.accept.theta <- n.accept.theta + 1L
+                            theta[i] <- th.prop
+                            nu[i] <- nu.prop
+                        }
+                    }
+                    else {
+                        n.failed.prop.y.star <- n.failed.prop.y.star + 1L
+                    }
+                }
+            }
+            else
+                n.failed.prop.theta <- n.failed.prop.theta + 1L
+            iterator <- advanceB(iterator)
+        }
+        object@theta <- theta
+        object@nuCMP <- nu
+        object@nFailedPropYStar@.Data <- n.failed.prop.y.star
+        object@nFailedPropTheta@.Data <- n.failed.prop.theta
+        object@nAcceptTheta@.Data <- n.accept.theta
+        object
+    }
+}
+
+
+
+
+
 ## TRANSLATED
 ## HAS_TESTS
 updateTheta_NormalVarying <- function(object, y, useC = FALSE) {

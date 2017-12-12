@@ -103,6 +103,11 @@ setMethod("printSpecAgValEqns",
           function(object, aggregate) invisible())
 
 setMethod("printSpecAgValEqns",
+          signature(object = "SpecCMPVarying",
+                    aggregate = "SpecAgPlaceholder"),
+          function(object, aggregate) invisible())
+
+setMethod("printSpecAgValEqns",
           signature(object = "SpecBinomialVarying",
                     aggregate = "SpecAggregate"),
           function(object, aggregate) {
@@ -276,6 +281,15 @@ setMethod("show",
 #' @rdname show-methods
 #' @export
 setMethod("show",
+          signature(object = "SpecLikelihoodCMP"),
+          function(object) {
+              cat("An object of class \"", class(object), "\"\n\n", sep = "")
+              printCMPLikEqns(object)
+          })
+
+#' @rdname show-methods
+#' @export
+setMethod("show",
           signature(object = "SpecLikelihoodNormalVarsigmaKnown"),
           function(object) {
               cat("An object of class \"", class(object), "\"\n\n", sep = "")
@@ -325,6 +339,20 @@ setMethod("show",
           function(object) {
               cat("An object of class \"", class(object), "\"\n\n", sep = "")
               printBinomialSpecEqns(object)
+              cat("\n")
+              printSpecsPriorsEqns(object)
+              printSDEqns(object)
+              printSpecAggregateEqns(object)
+              printJump(object)
+          })
+
+#' @rdname show-methods
+#' @export
+setMethod("show",
+          signature(object = "SpecCMPVarying"),
+          function(object) {
+              cat("An object of class \"", class(object), "\"\n\n", sep = "")
+              printCMPSpecEqns(object)
               cat("\n")
               printSpecsPriorsEqns(object)
               printSDEqns(object)
@@ -414,6 +442,19 @@ setMethod("stringScaleTheta",
           function(object) {
               scale <- object@scaleTheta@.Data
               sprintf("    prob[i]: %s\n", scale)
+          })
+
+
+setMethod("stringScaleTheta",
+          signature(object = "SpecCMPVarying"),
+          function(object) {
+              scale <- object@scaleTheta@.Data
+              series <- object@series@.Data
+              has.series <- !is.na(series)
+              if (has.series)
+                  sprintf("    rate[i]: %s\n", scale)
+              else
+                  sprintf("    rate[i] or count[i]: %s\n", scale)
           })
 
 setMethod("stringScaleTheta",

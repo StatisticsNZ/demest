@@ -4,6 +4,7 @@
 \name{SpecModel-class}
 \alias{SpecModel-class}
 \alias{SpecBinomialVarying-class}
+\alias{SpecCMPVarying-class}
 \alias{SpecNormalVaryingVarsigmaUnknown-class}
 \alias{SpecNormalVaryingVarsigmaKnown-class}
 \alias{SpecPoissonVarying-class}

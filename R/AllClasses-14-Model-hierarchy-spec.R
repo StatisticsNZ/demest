@@ -30,10 +30,9 @@
 setClass("Dispersion",
          contains = c("MeanMeanLogNuCMPMixin",
                       "SDMeanLogNuCMPMixin",
-                      "SpecASDLogNuCMPMixin",
-                      "MultSDLogNuCMPMixin",
+                      "ASDLogNuCMPMixin",
                       "NuSDLogNuCMPMixin",
-                      "SpecSDMaxLogNuCMPMixin"))
+                      "SDMaxLogNuCMPMixin"))
 
 
 #' S4 classes to specify one or two levels of a model.
@@ -77,6 +76,18 @@ setClass("SpecLikelihood",
 setClass("SpecLikelihoodBinomial",
          contains = c("SpecLikelihood",
                       "FormulaMuMixin"))
+
+#' @rdname SpecLikelihood-class
+#' @export
+setClass("SpecLikelihoodCMP",
+         prototype = prototype(useExpose = new("LogicalFlag", TRUE)),
+         contains = c("MeanMeanLogNuCMPMixin",
+                      "SDMeanLogNuCMPMixin",
+                      "ASDLogNuCMPMixin",
+                      "NuSDLogNuCMPMixin",
+                      "SDMaxLogNuCMPMixin",
+                      "FormulaMuMixin",
+                      "UseExposeMixin"))
 
 #' @rdname SpecLikelihood-class
 #' @export
@@ -253,6 +264,26 @@ setClass("SpecBinomialVarying",
              if (upper > 1)
                  return(gettextf("'%s' is greater than %d",
                                  "upper", 1L))
+             TRUE
+         })
+
+
+#' @rdname SpecModel-class
+#' @export
+setClass("SpecCMPVarying",
+         prototype = prototype(useExpose = new("LogicalFlag", TRUE)),
+         contains = c("SpecVarying",
+                      "MeanMeanLogNuCMPMixin",
+                      "SDMeanLogNuCMPMixin",
+                      "ASDLogNuCMPMixin",
+                      "NuSDLogNuCMPMixin",
+                      "SDMaxLogNuCMPMixin"),
+         validity = function(object) {
+             lower <- object@lower
+             ## 'lower' non-negative
+             if (lower < 0)
+                 return(gettextf("'%s' is less than %d",
+                                 "lower", 0L))
              TRUE
          })
 
