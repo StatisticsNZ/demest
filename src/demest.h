@@ -338,7 +338,10 @@ SEXP
   mappingsFromExp_sym,
   iExpFirst_sym, 
   ageTimeStep_sym,
-  iteratorsComp_sym;
+  iteratorsComp_sym,
+  expectedExposure_sym,
+  iExposure_sym,
+  isLowerTriangle_sym;
   
   
 /* Priors-methods */
@@ -915,6 +918,8 @@ double diffLogDensExpOneComp(int iCell_r, int hasAge,
                         int iExpFirst_r, double * exposure,
                         SEXP iteratorExposure_R,
                         int diff);                        
+double diffLogDensJumpOrigDest(SEXP combined_R);
+
                         
 /* pointers for routines from dembase package 
  * 

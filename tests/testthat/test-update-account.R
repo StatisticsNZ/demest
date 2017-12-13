@@ -4470,6 +4470,7 @@ test_that("diffLogDensJumpOrigDest works with CombinedAccountMovements - no age"
 
 test_that("R and C versions of diffLogDensJumpOrigDest give same answer - no age", {
     diffLogDensJumpOrigDest <- demest:::diffLogDensJumpOrigDest
+    updateProposalAccountMoveOrigDest <- demest:::updateProposalAccountMoveOrigDest
     initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     population <- Counts(array(seq(1000L, 1500L, 100L),
@@ -4506,15 +4507,25 @@ test_that("R and C versions of diffLogDensJumpOrigDest give same answer - no age
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
-    updated <- FALSE
     x@iComp <- 1L
-    ans.R <- diffLogDensJumpOrigDest(x, useC = FALSE)
-    ans.C <- diffLogDensJumpOrigDest(x, useC = TRUE)
-    if (test.identity)
-        expect_identical(ans.R, ans.C)
-    else
-        expect_equal(ans.R, ans.C)
+    updated <- FALSE
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        x <- updateProposalAccountMoveOrigDest(x)
+        if (x@generatedNewProposal@.Data) {
+            updated <- TRUE
+            ans.R <- diffLogDensJumpOrigDest(x, useC = FALSE)
+            ans.C <- diffLogDensJumpOrigDest(x, useC = TRUE)
+            if (test.identity)
+                expect_identical(ans.R, ans.C)
+            else
+                expect_equal(ans.R, ans.C)
+        }
+    }
+    if (!updated)
+        warning("not updated")
 })
+
 
 test_that("diffLogDensJumpOrigDest works - with age", {
     diffLogDensJumpOrigDest <- demest:::diffLogDensJumpOrigDest
