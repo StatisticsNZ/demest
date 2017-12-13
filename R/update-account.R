@@ -2060,7 +2060,7 @@ diffLogDensExpOneComp <- function(iCell, hasAge, ageTimeStep, updatedPopn,
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 ## function called only if component uses exposure
 ## (otherwise ratios cancel)
