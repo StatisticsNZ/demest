@@ -2104,7 +2104,7 @@ diffLogDensJumpOrigDest <- function(combined, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 ## Difference in log-density of current values for
 ## all components attributable to change in exposure,

@@ -1193,205 +1193,275 @@ diffLogDensJumpOrigDest(SEXP combined_R)
 }
 
 
-/*
-## READY_TO_TRANSLATE
-## HAS_TESTS
-## Difference in log-density of current values for
-## all components attributable to change in exposure,
-## where the change in exposure is due to a change in
-## a cell in an Orig-Dest, Pool, or Net component
-## (ie a component that potentially affects two cohorts).
-diffLogDensExpOrigDestPoolNet <- function(combined, useC = FALSE) {
-    stopifnot(methods::is(combined, "CombinedAccountMovements"))
-    if (useC) {
-        .Call(diffLogDensExpOrigDestPoolNet_R, combined)
-    }
-    else {
-        components <- combined@account@components
-        iterators.comp <- combined@iteratorsComp
-        model.uses.exposure <- combined@modelUsesExposure
-        mappings.from.exp <- combined@mappingsFromExp
-        i.exp.first.orig <- combined@iExpFirst
-        i.exp.first.dest <- combined@iExpFirstOther
-        iterator.exposure <- combined@iteratorExposure
-        diff <- combined@diffProp
-        i.comp <- combined@iComp
-        i.orig.dest <- combined@iOrigDest
-        i.pool <- combined@iPool
-        i.int.net <- combined@iIntNet
-        i.births <- combined@iBirths
-        i.par.ch <- combined@iParCh
-        exposure <- combined@exposure
-        systemModels <- combined@systemModels
-        has.age <- combined@hasAge
-        age.time.step <- combined@ageTimeStep
-        no.exposure.affected <- (i.exp.first.orig == 0L) || (i.exp.first.orig == i.exp.first.dest)
-        if (no.exposure.affected)
-            return(0)
-        ans <- 0
-        comp.is.int.net <- i.comp == i.int.net
-        if (comp.is.int.net) {
-            diff.orig <- diff
-            diff.dest <- -diff
+double 
+diffLogDensExpOrigDestPoolNet(SEXP combined_R)
+{
+    SEXP account_R = GET_SLOT(combined_R, account_sym);
+    SEXP components_R = GET_SLOT(account_R, components_sym);
+    int nComponents = LENGTH(components_R);
+    
+    SEXP iteratorsComp_R = GET_SLOT(combined_R, iteratorsComp_sym);
+    
+    int * modelUsesExposure = LOGICAL(GET_SLOT(combined_R, modelUsesExposure_sym));
+    SEXP mappingsFromExposure_R = GET_SLOT(combined_R, mappingsFromExp_sym);
+    
+    int iExpFirstOrig_r = *INTEGER(GET_SLOT(combined_R, iExpFirst_sym));
+    int iExpFirstDest_r = *INTEGER(GET_SLOT(combined_R, iExpFirstOther_sym));
+    
+    SEXP iteratorExposure_R = GET_SLOT(combined_R, iteratorExposure_sym);
+    
+    int diff = *INTEGER(GET_SLOT(combined_R, diffProp_sym));
+    
+    int iComp_r = *INTEGER(GET_SLOT(combined_R, iComp_sym));
+    int iOrigDest_r = *INTEGER(GET_SLOT(combined_R, iOrigDest_sym));
+    int iPool_r = *INTEGER(GET_SLOT(combined_R, iPool_sym));
+    int iIntNet_r = *INTEGER(GET_SLOT(combined_R, iIntNet_sym));
+    
+    int iBirths_r = *INTEGER(GET_SLOT(combined_R, iBirths_sym));
+    int iParCh_r = *INTEGER(GET_SLOT(combined_R, iParCh_sym));
+    
+    double * exposure = REAL(GET_SLOT(combined_R, exposure_sym));
+    
+    SEXP systemModels_R = GET_SLOT(combined_R, systemModels_sym);
+    
+    int hasAge = *LOGICAL(GET_SLOT(combined_R, hasAge_sym));
+    double ageTimeStep = *REAL(GET_SLOT(combined_R, ageTimeStep_sym));
+    
+    int updatedPopnFalse = 0;
+    
+    double ans = 0;
+    
+    int noExposureAffected = ( (iExpFirstOrig_r == 0) 
+                                || (iExpFirstOrig_r == iExpFirstDest_r) );
+    if(!noExposureAffected) {
+        
+        int diffOrig = -diff;
+        int diffDest = diff;
+        
+        int compIsIntNet = (iComp_r == iIntNet_r);
+        
+        if(compIsIntNet) {
+            diffOrig = diff;
+            diffDest = -diff;
         }
-        else {
-            diff.orig <- -diff
-            diff.dest <- diff
-        }
-        for (i in seq_along(components)) {
-            if (model.uses.exposure[i + 1]) { ## note that 'net' components never use exposure
-                component <- components[[i]]
-                theta <- systemModels[[i + 1L]]@theta
-                iterator.comp <- iterators.comp[[i]]
-                mapping.from.exp <- mappings.from.exp[[i]]
-                is.orig.dest <- i == i.orig.dest
-                is.pool <- i == i.pool
-                is.births <- i == i.births
-                is.par.ch <- i == i.par.ch
-                if (is.orig.dest || is.pool) {
-                    i.cell.orig <- getICellCompFromExp(i = i.exp.first.orig,
-                                                       mapping = mapping.from.exp)
-                    i.cell.dest <- getICellCompFromExp(i = i.exp.first.dest,
-                                                       mapping = mapping.from.exp)
-                    diff.log.orig <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell.orig,
-                                                                        hasAge = has.age,
-                                                                        ageTimeStep = age.time.step,
-                                                                        updatedPopn = FALSE,
-                                                                        component = component,
-                                                                        theta = theta,
-                                                                        iteratorComp = iterator.comp,
-                                                                        iExpFirst = i.exp.first.orig,
-                                                                        exposure = exposure,
-                                                                        iteratorExposure = iterator.exposure,
-                                                                        diff = diff.orig)
-                    if (is.infinite(diff.log.orig))
-                        return(diff.log.orig)
-                    ans <- ans + diff.log.orig
-                    diff.log.dest <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell.dest,
-                                                                        hasAge = has.age,
-                                                                        ageTimeStep = age.time.step,
-                                                                        updatedPopn = FALSE,
-                                                                        component = component,
-                                                                        theta = theta,
-                                                                        iteratorComp = iterator.comp,
-                                                                        iExpFirst = i.exp.first.dest,
-                                                                        exposure = exposure,
-                                                                        iteratorExposure = iterator.exposure,
-                                                                        diff = diff.dest)
-                    if (is.infinite(diff.log.dest))
-                        return(diff.log.dest)
-                    ans <- ans + diff.log.dest
-                }
-                else if (is.births) {
-                    i.cell.orig <- getICellBirthsFromExp(i = i.exp.first.orig,
-                                                         mapping = mapping.from.exp)
-                    i.cell.dest <- getICellBirthsFromExp(i = i.exp.first.dest,
-                                                         mapping = mapping.from.exp)
-                    cell.is.affected <- i.cell.orig > 0L
-                    if (cell.is.affected) {
-                        if (is.par.ch) {
-                            diff.log.orig <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell.orig,
-                                                                                hasAge = has.age,
-                                                                                ageTimeStep = age.time.step,
-                                                                                updatedPopn = FALSE,
-                                                                                component = component,
-                                                                                theta = theta,
-                                                                                iteratorComp = iterator.comp,
-                                                                                iExpFirst = i.exp.first.orig,
-                                                                                exposure = exposure,
-                                                                                iteratorExposure = iterator.exposure,
-                                                                                diff = diff.orig)
-                            if (is.infinite(diff.log.orig))
-                                return(diff.log.orig)
-                            ans <- ans + diff.log.orig
-                            diff.log.dest <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell.dest,
-                                                                                hasAge = has.age,
-                                                                                ageTimeStep = age.time.step,
-                                                                                updatedPopn = FALSE,
-                                                                                component = component,
-                                                                                theta = theta,
-                                                                                iteratorComp = iterator.comp,
-                                                                                iExpFirst = i.exp.first.dest,
-                                                                                exposure = exposure,
-                                                                                iteratorExposure = iterator.exposure,
-                                                                                diff = diff.dest)
-                            if (is.infinite(diff.log.dest))
-                                return(diff.log.dest)
-                            ans <- ans + diff.log.dest
+        
+        for(int i = 0; i < nComponents; ++i) {
+            
+            int thisModelUsesExposure = modelUsesExposure[i + 1];
+            if(thisModelUsesExposure) {
+                SEXP component_R = VECTOR_ELT(components_R, i);
+                SEXP thisSystemModel_R = VECTOR_ELT(systemModels_R, i+1);
+                double * theta = REAL(GET_SLOT(thisSystemModel_R, theta_sym));
+                SEXP iteratorComp_R = VECTOR_ELT(iteratorsComp_R, i);
+                SEXP mappingFromExposure_R = VECTOR_ELT(mappingsFromExposure_R, i);
+                
+                int isOrigDest = (i == iOrigDest_r - 1);
+                int isPool = (i == iPool_r - 1);
+                int isBirths = (i == iBirths_r - 1);
+                int isParCh = (i == iParCh_r - 1);
+                
+                if (isOrigDest || isPool) {
+                    
+                    int iCellOrig_r = getICellCompFromExp(iExpFirstOrig_r, 
+                                                mappingFromExposure_R);
+                    int iCellDest_r = getICellCompFromExp(iExpFirstDest_r, 
+                                                mappingFromExposure_R);
+                    double diffLogOrig 
+                            = diffLogDensExpOneOrigDestParChPool(iCellOrig_r,
+                                                    hasAge, ageTimeStep,
+                                                    updatedPopnFalse,
+                                                    component_R, theta,
+                                                    iteratorComp_R,
+                                                    iExpFirstOrig_r,
+                                                    exposure,
+                                                    iteratorExposure_R,
+                                                    diffOrig);
+                    if (R_finite(diffLogOrig)) {
+                        
+                        ans += diffLogOrig;
+                        
+                        double diffLogDest 
+                            = diffLogDensExpOneOrigDestParChPool(iCellDest_r,
+                                                    hasAge, ageTimeStep,
+                                                    updatedPopnFalse,
+                                                    component_R, theta,
+                                                    iteratorComp_R,
+                                                    iExpFirstDest_r,
+                                                    exposure,
+                                                    iteratorExposure_R,
+                                                    diffDest);
+                        if (R_finite(diffLogDest)) {
+                        
+                            ans += diffLogDest;
                         }
                         else {
-                            diff.log.orig <- diffLogDensExpOneComp(iCell = i.cell.orig,
-                                                                   hasAge = has.age,
-                                                                   ageTimeStep = age.time.step,
-                                                                   updatedPopn = FALSE,
-                                                                   component = component,
-                                                                   theta = theta,
-                                                                   iteratorComp = iterator.comp,
-                                                                   iExpFirst = i.exp.first.orig,
-                                                                   exposure = exposure,
-                                                                   iteratorExposure = iterator.exposure,
-                                                                   diff = diff.orig)
-                            if (is.infinite(diff.log.orig))
-                                return(diff.log.orig)
-                            ans <- ans + diff.log.orig
-                            diff.log.dest <- diffLogDensExpOneComp(iCell = i.cell.dest,
-                                                                   hasAge = has.age,
-                                                                   ageTimeStep = age.time.step,
-                                                                   updatedPopn = FALSE,
-                                                                   component = component,
-                                                                   theta = theta,
-                                                                   iteratorComp = iterator.comp,
-                                                                   iExpFirst = i.exp.first.dest,
-                                                                   exposure = exposure,
-                                                                   iteratorExposure = iterator.exposure,
-                                                                   diff = diff.dest)
-                            if (is.infinite(diff.log.dest))
-                                return(diff.log.dest)
-                            ans <- ans + diff.log.dest
+                            ans = diffLogDest;
+                            break;
+                            /* break out of loop through components */
                         }
                     }
-                }
-                else { ## is net
-                    i.cell.orig <- getICellCompFromExp(i = i.exp.first.orig,
-                                                       mapping = mapping.from.exp)
-                    i.cell.dest <- getICellCompFromExp(i = i.exp.first.dest,
-                                                       mapping = mapping.from.exp)
-                    diff.log.orig <- diffLogDensExpOneComp(iCell = i.cell.orig,
-                                                           hasAge = has.age,
-                                                           ageTimeStep = age.time.step,
-                                                           updatedPopn = FALSE,
-                                                           component = component,
-                                                           theta = theta,
-                                                           iteratorComp = iterator.comp,
-                                                           iExpFirst = i.exp.first.orig,
-                                                           exposure = exposure,
-                                                           iteratorExposure = iterator.exposure,
-                                                           diff = diff.orig)
-                    if (is.infinite(diff.log.orig))
-                        return(diff.log.orig)
-                    ans <- ans + diff.log.orig
-                    diff.log.dest <- diffLogDensExpOneComp(iCell = i.cell.dest,
-                                                           hasAge = has.age,
-                                                           ageTimeStep = age.time.step,
-                                                           updatedPopn = FALSE,
-                                                           component = component,
-                                                           theta = theta,
-                                                           iteratorComp = iterator.comp,
-                                                           iExpFirst = i.exp.first.dest,
-                                                           exposure = exposure,
-                                                           iteratorExposure = iterator.exposure,
-                                                           diff = diff.dest)
-                    if (is.infinite(diff.log.dest))
-                        return(diff.log.dest)
-                    ans <- ans + diff.log.dest
-                }
-            }
-        }
-        ans
-    }
+                    else {
+                        ans = diffLogOrig;
+                        break;
+                        /* break out of loop through components */
+                    }
+                    
+                } /* end if isOrigDest || isPool */
+                
+                else if(isBirths) {
+                    int iCellOrig_r = getICellBirthsFromExp(iExpFirstOrig_r,
+                                                mappingFromExposure_R);
+                    int iCellDest_r = getICellBirthsFromExp(iExpFirstDest_r,
+                                                mappingFromExposure_R);
+                    
+                    int cellIsAffected = (iCellOrig_r > 0);
+                    if(cellIsAffected) {
+                        if (isParCh) {
+                            
+                            double diffLogOrig 
+                            = diffLogDensExpOneOrigDestParChPool(iCellOrig_r,
+                                                    hasAge, ageTimeStep,
+                                                    updatedPopnFalse,
+                                                    component_R, theta,
+                                                    iteratorComp_R,
+                                                    iExpFirstOrig_r,
+                                                    exposure,
+                                                    iteratorExposure_R,
+                                                    diffOrig);
+                                                    
+                            if (R_finite(diffLogOrig)) {
+                        
+                                ans += diffLogOrig;
+                                
+                                double diffLogDest 
+                                    = diffLogDensExpOneOrigDestParChPool(iCellDest_r,
+                                                            hasAge, ageTimeStep,
+                                                            updatedPopnFalse,
+                                                            component_R, theta,
+                                                            iteratorComp_R,
+                                                            iExpFirstDest_r,
+                                                            exposure,
+                                                            iteratorExposure_R,
+                                                            diffDest);
+                                if (R_finite(diffLogDest)) {
+                                
+                                    ans += diffLogDest;
+                                }
+                                else {
+                                    ans = diffLogDest;
+                                    break;
+                                    /* break out of loop through components */
+                                }
+                            }
+                            else {
+                                ans = diffLogOrig;
+                                break;
+                                /* break out of loop through components */
+                            }
+                        }
+                        else { /* not isParCh */
+                            
+                            double diffLogOrig 
+                            = diffLogDensExpOneComp(iCellOrig_r,
+                                                    hasAge, ageTimeStep,
+                                                    updatedPopnFalse,
+                                                    component_R, theta,
+                                                    iteratorComp_R,
+                                                    iExpFirstOrig_r,
+                                                    exposure,
+                                                    iteratorExposure_R,
+                                                    diffOrig);
+                                                    
+                            if (R_finite(diffLogOrig)) {
+                        
+                                ans += diffLogOrig;
+                                
+                                double diffLogDest 
+                                    = diffLogDensExpOneComp(iCellDest_r,
+                                                            hasAge, ageTimeStep,
+                                                            updatedPopnFalse,
+                                                            component_R, theta,
+                                                            iteratorComp_R,
+                                                            iExpFirstDest_r,
+                                                            exposure,
+                                                            iteratorExposure_R,
+                                                            diffDest);
+                                if (R_finite(diffLogDest)) {
+                                
+                                    ans += diffLogDest;
+                                }
+                                else {
+                                    ans = diffLogDest;
+                                    break;
+                                    /* break out of loop through components */
+                                }
+                            }
+                            else {
+                                ans = diffLogOrig;
+                                break;
+                                /* break out of loop through components */
+                            }
+                            
+                        }
+                    } /* end cellIsAffected */
+                    
+                } /* end if isBirths */
+                
+                else { /* is net */
+                    
+                    int iCellOrig_r = getICellCompFromExp(iExpFirstOrig_r,
+                                                mappingFromExposure_R);
+                    int iCellDest_r = getICellCompFromExp(iExpFirstDest_r,
+                                                mappingFromExposure_R);
+                    
+                    double diffLogOrig 
+                            = diffLogDensExpOneComp(iCellOrig_r,
+                                                    hasAge, ageTimeStep,
+                                                    updatedPopnFalse,
+                                                    component_R, theta,
+                                                    iteratorComp_R,
+                                                    iExpFirstOrig_r,
+                                                    exposure,
+                                                    iteratorExposure_R,
+                                                    diffOrig);
+                                                    
+                    if (R_finite(diffLogOrig)) {
+                
+                        ans += diffLogOrig;
+                        
+                        double diffLogDest 
+                            = diffLogDensExpOneComp(iCellDest_r,
+                                                    hasAge, ageTimeStep,
+                                                    updatedPopnFalse,
+                                                    component_R, theta,
+                                                    iteratorComp_R,
+                                                    iExpFirstDest_r,
+                                                    exposure,
+                                                    iteratorExposure_R,
+                                                    diffDest);
+                        if (R_finite(diffLogDest)) {
+                        
+                            ans += diffLogDest;
+                        }
+                        else {
+                            ans = diffLogDest;
+                            break;
+                            /* break out of loop through components */
+                        }
+                    }
+                    else {
+                        ans = diffLogOrig;
+                        break;
+                        /* break out of loop through components */
+                    }
+                }/* end else */                              
+            } /* end modelUsesExposure */
+        } /* end for loop through components */
+    } /* end not noExposureAffected */    
+    /* if noExposureAffected ans will be default 0 */
+    
+    return ans;
 }
-*/
-
 
 
 /*

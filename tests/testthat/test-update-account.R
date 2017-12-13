@@ -4754,6 +4754,7 @@ test_that("R and C versions of diffLogDensJumpOrigDest give same answer - with a
 test_that("diffLogDensExpOrigDestPoolNet works with CombinedAccountMovements - no age", {
     diffLogDensExpOrigDestPoolNet <- demest:::diffLogDensExpOrigDestPoolNet
     updateProposalAccountMoveOrigDest <- demest:::updateProposalAccountMoveOrigDest
+    diffLogDensExpOneOrigDestParChPool <- demest:::diffLogDensExpOneOrigDestParChPool
     initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     getICellCompFromExp <- demest:::getICellCompFromExp
@@ -4806,6 +4807,7 @@ test_that("diffLogDensExpOrigDestPoolNet works with CombinedAccountMovements - n
         set.seed(seed)
         x <- updateProposalAccountMoveOrigDest(x0)
         if (x@generatedNewProposal@.Data) {
+            updated <- TRUE
             ans.obtained <- diffLogDensExpOrigDestPoolNet(x)
             i.cell.orig <- getICellCompFromExp(x@iExpFirst, x@mappingsFromExp[[1]])
             i.cell.dest <- getICellCompFromExp(x@iExpFirstOther, x@mappingsFromExp[[1]])
@@ -4896,6 +4898,7 @@ test_that("R and C versions of diffLogDensExpOrigDestPoolNet give same answer wi
         set.seed(seed)
         x <- updateProposalAccountMoveOrigDest(x0)
         if (x@generatedNewProposal@.Data) {
+            updated <- TRUE
             ans.R <- diffLogDensExpOrigDestPoolNet(x, useC = FALSE)
             ans.C <- diffLogDensExpOrigDestPoolNet(x, useC = TRUE)
             if (test.identity)

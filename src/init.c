@@ -1645,6 +1645,7 @@ SEXP diffLogDensExpOneComp_R(SEXP iCell_R, SEXP hasAge_R,
 }
 
 DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensJumpOrigDest);
+DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensExpOrigDestPoolNet);
 
 /* ******************************************************************************* */
 /* Create table describing R-visible versions of C functions ********************* */
@@ -2027,6 +2028,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(diffLogDensExpOneOrigDestParChPool_R, 11),
   CALLDEF(diffLogDensExpOneComp_R, 11),
   CALLDEF(diffLogDensJumpOrigDest_R, 1),
+  CALLDEF(diffLogDensExpOrigDestPoolNet_R, 1),
   
   {NULL}
 };
@@ -2367,7 +2369,8 @@ R_init_demest(DllInfo *info)
   ADD_SYM(systemModels);
   ADD_SYM(modelUsesExposure);
   ADD_SYM(mappingsFromExp);
-  ADD_SYM(iExpFirst); 
+  ADD_SYM(iExpFirst);
+  ADD_SYM(iExpFirstOther); 
   ADD_SYM(ageTimeStep);
   ADD_SYM(iteratorsComp);
   ADD_SYM(expectedExposure);

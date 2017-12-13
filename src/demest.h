@@ -336,7 +336,8 @@ SEXP
   systemModels_sym,
   modelUsesExposure_sym,
   mappingsFromExp_sym,
-  iExpFirst_sym, 
+  iExpFirst_sym,
+  iExpFirstOther_sym, 
   ageTimeStep_sym,
   iteratorsComp_sym,
   expectedExposure_sym,
@@ -919,7 +920,7 @@ double diffLogDensExpOneComp(int iCell_r, int hasAge,
                         SEXP iteratorExposure_R,
                         int diff);                        
 double diffLogDensJumpOrigDest(SEXP combined_R);
-
+double diffLogDensExpOrigDestPoolNet(SEXP combined_R);
                         
 /* pointers for routines from dembase package 
  * 
