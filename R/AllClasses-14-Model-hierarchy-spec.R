@@ -18,7 +18,7 @@
 #' standard deviation.
 #' @slot nuSDLogNuCMP Degrees of freedom for truncated half-t prior
 #' for standard deviation.
-#' @slot sdMaxLogNuCMP Maximum value for truncated half-t prior
+#' @slot sdLogNuMaxCMP Maximum value for truncated half-t prior
 #' for the standard deviation.
 #' @slot multLogNuCMP Multiplier applied to scale of
 #' truncated half-t prior for the standard deviation.
@@ -81,7 +81,9 @@ setClass("SpecLikelihoodBinomial",
 #' @export
 setClass("SpecLikelihoodCMP",
          prototype = prototype(useExpose = new("LogicalFlag", TRUE)),
-         contains = c("MeanMeanLogNuCMPMixin",
+         contains = c("SpecLikelihood",
+                      "BoxCoxParamMixin",
+                      "MeanMeanLogNuCMPMixin",
                       "SDMeanLogNuCMPMixin",
                       "ASDLogNuCMPMixin",
                       "NuSDLogNuCMPMixin",
@@ -273,6 +275,7 @@ setClass("SpecBinomialVarying",
 setClass("SpecCMPVarying",
          prototype = prototype(useExpose = new("LogicalFlag", TRUE)),
          contains = c("SpecVarying",
+                      "BoxCoxParamMixin",
                       "MeanMeanLogNuCMPMixin",
                       "SDMeanLogNuCMPMixin",
                       "ASDLogNuCMPMixin",

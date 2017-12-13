@@ -6610,6 +6610,51 @@ logLikelihood_Binomial <- function(model, count, dataset, i, useC = FALSE) {
 }
 
 
+## READY_TO_TRANSLATE
+## HAS_TESTS
+## *************************************************************
+## NOTE THAT THIS FUNCTION RETURNS THE UNNORMALISED LIKELIHOOD.
+## THIS IS FINE WHEN THE FUNCTION IS BEING USED TO DECIDE WHETHER
+## TO ACCEPT A PROPOSED VALUE FOR 'count' BUT WILL NOT WORK WHEN
+## DECIDING TO ACCEPT A PROPOSED VALUE FOR 'theta', OR FOR CALCULATING
+## LIKELIHOODS MORE GENERALLY.
+## *************************************************************
+## Calling function should test that dataset[i] is not missing
+logLikelihood_CMP <- function(model, count, dataset, i, useC = FALSE) {
+    ## model
+    stopifnot(methods::is(model, "Model"))
+    stopifnot(methods::is(model, "UseExposure"))
+    ## count
+    stopifnot(identical(length(count), 1L))
+    stopifnot(is.integer(count))
+    stopifnot(!is.na(count))
+    stopifnot(count >= 0L)
+    ## dataset
+    stopifnot(is.integer(dataset))
+    stopifnot(all(dataset[!is.na(dataset)] >= 0L))
+    ## i
+    stopifnot(identical(length(i), 1L))
+    stopifnot(is.integer(i))
+    stopifnot(!is.na(i))
+    stopifnot(i >= 1L)
+    ## dataset and i
+    stopifnot(i <= length(dataset))
+    stopifnot(!is.na(dataset@.Data[i]))
+    ## model and dataset
+    stopifnot(identical(length(model@theta), length(dataset)))
+    ## model and i
+    stopifnot(i <= length(model@theta))
+    if (useC) {
+        .Call(logLikelihood_CMP_R, model, count, dataset, i)
+    }
+    else {
+        x <- dataset[[i]]
+        gamma <- model@theta[i] * count
+        nu <- model@nuCMP[i]
+        nu * (x * log(gamma) - lgamma(x + 1))
+    }
+}
+
 ## TRANSLATED
 ## HAS_TESTS
 ## Calling function should test that dataset[i] is not missing
@@ -7932,7 +7977,7 @@ printCMPSpecEqns <- function(object) {
     sd <- object@sdMeanLogNuCMP@.Data
     nu <- object@nuSDLogNuCMP@.Data
     A <- object@ASDLogNuCMP@.Data
-    max <- object@sdMaxLogNuCMP@.Data
+    max <- object@sdLogNuMaxCMP@.Data
     has.series <- !is.na(series)
     name.y <- sprintf("%15s", nameY)
     terms <- expandTermsSpec(formulaMu)
@@ -7967,7 +8012,7 @@ printCMPLikEqns <- function(object) {
     sd <- object@sdMeanLogNuCMP@.Data
     nu <- object@nuSDLogNuCMP@.Data
     A <- object@ASDLogNuCMP@.Data
-    max <- object@sdMaxLogNuCMP@.Data
+    max <- object@sdLogNuMaxCMP@.Data
     terms <- expandTermsSpec(formulaMu)
     if (useExpose) {
         cat("              y[i] ~ CMP(rate[i] * exposure[i], dispersion[i])\n")

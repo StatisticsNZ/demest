@@ -600,7 +600,7 @@ setClass("ScaleThetaMultiplierMixin",
 
 ## NO_TESTS
 setClass("SDLogNuCMPMixin",
-         slots = c(SDLogNuCMP = "Scale"),
+         slots = c(sdLogNuCMP = "Scale"),
          contains = "VIRTUAL")
 
 ## NO_TESTS
@@ -610,7 +610,7 @@ setClass("SDMeanLogNuCMPMixin",
 
 ## NO_TESTS
 setClass("SDMaxLogNuCMPMixin",
-         slots = c(sdMaxLogNuCMP = "Scale"),
+         slots = c(sdLogNuMaxCMP = "Scale"),
          contains = "VIRTUAL")
 
 ## NO_TESTS
