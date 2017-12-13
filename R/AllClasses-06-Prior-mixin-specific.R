@@ -1534,7 +1534,7 @@ setClass("SMixin",
          })
 
 setClass("SDLogNuCMPMixin",
-         slots = c(SDLogNuCMP = "Scale"),
+         slots = c(sdLogNuCMP = "Scale"),
          contains = "VIRTUAL")
 
 setClass("SpecAMixin",
@@ -1639,7 +1639,7 @@ setClass("SpecPhiMixin",
          })
 
 setClass("SpecSDLogNuCMPMixin",
-         slots = c(SDLogNuCMP = "SpecScale"),
+         slots = c(sdLogNuCMP = "SpecScale"),
          contains = "VIRTUAL")
 
 setClass("SpecScaleMaxMixin",

@@ -250,6 +250,50 @@ test_that("R, C-generic, and C-specific versions of logLikelihood give same answ
     }
 })
 
+test_that("R, C-generic, and C-specific versions of logLikelihood give same answer with CMPVaryingUseExp", {
+    logLikelihood <- demest:::logLikelihood
+    initialModel <- demest:::initialModel
+    BetaIterator <- demest:::BetaIterator
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        exposure <- Counts(array(20 * rpois(n = 20, lambda = 10),
+                                 dim = c(5, 4),
+                                 dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        y <- Counts(array(rbinom(n = 20, size = exposure, prob = 0.5),
+                          dim = c(5, 4),
+                          dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        spec <- Model(y ~ CMP(mean ~ age + region))
+        model <- initialModel(spec, y = y, exposure = exposure)
+        dataset <- Counts(array(as.integer(rpois(n = 20, lambda = 20)),
+                                dim = c(2, 10),
+                                dimnames = list(sex = c("f", "m"), age = 0:9)))
+        i <- sample.int(20, size = 1)
+        count <- as.integer(rpois(n = 1, lambda = dataset[i]))
+        ans.R <- logLikelihood(model = model,
+                               count = count,
+                               dataset = dataset,
+                               i = i,
+                               useC = FALSE)
+        ans.C.generic <- logLikelihood(model = model,
+                                       count = count,
+                                       dataset = dataset,
+                                       i = i,
+                                       useC = TRUE,
+                                       useSpecific = FALSE)
+        ans.C.specific <- logLikelihood(model = model,
+                                        count = count,
+                                        dataset = dataset,
+                                        i = i,
+                                        useC = TRUE,
+                                        useSpecific = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C.generic)
+        else
+            expect_equal(ans.R, ans.C.generic)
+        expect_identical(ans.C.generic, ans.C.specific)
+    }
+})
+
 test_that("R, C-generic, and C-specific versions of logLikelihood give same answer with PoissonVaryingUseExp", {
     logLikelihood <- demest:::logLikelihood
     initialModel <- demest:::initialModel
@@ -3115,6 +3159,60 @@ test_that("R, C-specific, and C-generic methods for transferParamModel give same
 
 ## updateModelNotUseExp ##############################################################
 
+
+## Only test that appropriate slots are updated.  Check that values are correct in
+## the tests for the 'updateTheta' etc
+test_that("updateModelNotUseExp for CMPVaryingNotUseExp updates the correct slots", {
+    updateModelNotUseExp <- demest:::updateModelNotUseExp
+    initialModel <- demest:::initialModel
+    for (seed in seq_len(n.test)) {
+        y <- Counts(array(as.integer(rpois(n = 20, lambda = 20)),
+                          dim = 5:4,
+                          dimnames = list(age = 0:4, region = letters[1:4])))
+        spec <- Model(y ~ CMP(mean ~ age + region, useExpose = FALSE),
+                      age ~ Exch())                      
+        x0 <- initialModel(spec, y = y, exposure = NULL)
+        set.seed(seed + 1)
+        x1 <- updateModelNotUseExp(x0, y = y, useC = FALSE)
+        expect_identical(sum(x1@theta != x0@theta), x1@nAcceptTheta@.Data)
+        expect_false(all(x1@nuCMP == x0@nuCMP))
+        expect_true(x1@meanLogNuCMP != x0@meanLogNuCMP)
+        expect_true(x1@sdLogNuCMP != x0@sdLogNuCMP)
+        for (b in seq_along(x1@betas)) {
+            expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
+            if (!is(x1@priorsBetas[[b]], "ExchFixed"))
+                expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
+        }
+        for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
+                       "scaleTheta", "iteratorBetas", "dims"))
+            expect_identical(slot(x1, name), slot(x0, name))
+    }
+})
+
+test_that("R and C versions of updateModelNotUseExp give same answer with CMPVaryingNotUseExp", {
+    updateModelNotUseExp <- demest:::updateModelNotUseExp
+    initialModel <- demest:::initialModel
+    for (seed in seq_len(n.test)) {
+        y <- Counts(array(as.integer(rpois(n = 20, lambda = 20)),
+                          dim = 5:4,
+                          dimnames = list(age = 0:4, region = letters[1:4])))
+        spec <- Model(y ~ CMP(mean ~ age + region, useExpose = FALSE),
+                      age ~ Exch())                      
+        x <- initialModel(spec, y = y, exposure = NULL)
+        set.seed(seed + 1)
+        ans.R <- updateModelNotUseExp(x, y = y, useC = FALSE)
+        set.seed(seed + 1)
+        ans.C.generic <- updateModelNotUseExp(x, y = y, useC = TRUE, useSpecific = FALSE)
+        set.seed(seed + 1)
+        ans.C.specific <- updateModelNotUseExp(x, y = y, useC = TRUE, useSpecific = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C.generic)
+        else
+            expect_equal(ans.R, ans.C.generic)
+        expect_identical(ans.C.generic, ans.C.specific)
+    }
+})
+
 ## Only test that appropriate slots are updated.  Check that values are correct in
 ## the tests for the 'updateTheta' etc
 test_that("updateModelNotUseExp for NormalVaryingVarsigmaKnown updates the correct slots", {
@@ -3294,7 +3392,7 @@ test_that("R, generic C, and specific C versions updateModelNotUseExp method for
 })
 
 
-## updateModelUseExp for NormalVaryingVarsigmaKnownAgCertain
+## updateModelNotUseExp for NormalVaryingVarsigmaKnownAgCertain
 
 test_that("updateModelNotUseExp for NormalVaryingVarsigmaKnownAgCertain updates the correct slots", {
     updateModelNotUseExp <- demest:::updateModelNotUseExp
@@ -3352,7 +3450,7 @@ test_that("R, generic C, and specific C versions updateModelNotUseExp method for
     }
 })
 
-## updateModelUseExp for NormalVaryingVarsigmaUnknownAgCertain
+## updateModelNotUseExp for NormalVaryingVarsigmaUnknownAgCertain
 
 test_that("updateModelNotUseExp for NormalVaryingVarsigmaUnknownAgCertain updates the correct slots", {
     updateModelNotUseExp <- demest:::updateModelNotUseExp
@@ -3960,6 +4058,67 @@ test_that("R, generic C, and specific C versions updateModelUseExp method for Bi
         expect_identical(ans.C.generic, ans.C.specific)
     }
 })
+
+
+## Only test that appropriate slots are updated.  Check that values are correct in
+## the tests for the 'updateTheta' etc
+test_that("updateModelUseExp for CMPVaryingUseExp updates the correct slots", {
+    updateModelUseExp <- demest:::updateModelUseExp
+    initialModel <- demest:::initialModel
+    for (seed in seq_len(n.test)) {
+        exposure <- Counts(array(runif(n = 20, max = 10),
+                                dim = 5:4,
+                                dimnames = list(age = 0:4, region = letters[1:4])))
+        y <- Counts(array(as.integer(rpois(n = 20, lambda = 2 * exposure)),
+                          dim = 5:4,
+                          dimnames = list(age = 0:4, region = letters[1:4])))
+        spec <- Model(y ~ CMP(mean ~ age + region),
+                      age ~ Exch())                      
+        x0 <- initialModel(spec, y = y, exposure = exposure)
+        set.seed(seed + 1)
+        x1 <- updateModelUseExp(x0, y = y, exposure = exposure, useC = FALSE)
+        expect_identical(sum(x1@theta != x0@theta), x1@nAcceptTheta@.Data)
+        expect_false(all(x1@nuCMP == x0@nuCMP))
+        expect_true(x1@meanLogNuCMP != x0@meanLogNuCMP)
+        expect_true(x1@sdLogNuCMP != x0@sdLogNuCMP)
+        for (b in seq_along(x1@betas)) {
+            expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
+            if (!is(x1@priorsBetas[[b]], "ExchFixed"))
+                expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
+        }
+        for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
+                       "scaleTheta", "iteratorBetas", "dims"))
+            expect_identical(slot(x1, name), slot(x0, name))
+    }
+})
+
+test_that("R and C versions of updateModelUseExp give same answer with CMPVaryingUseExp", {
+    updateModelUseExp <- demest:::updateModelUseExp
+    initialModel <- demest:::initialModel
+    for (seed in seq_len(n.test)) {
+        exposure <- Counts(array(runif(n = 20, max = 10),
+                                dim = 5:4,
+                                dimnames = list(age = 0:4, region = letters[1:4])))
+        y <- Counts(array(as.integer(rpois(n = 20, lambda = 2 * exposure)),
+                          dim = 5:4,
+                          dimnames = list(age = 0:4, region = letters[1:4])))
+        spec <- Model(y ~ CMP(mean ~ age + region),
+                      age ~ Exch())                      
+        x <- initialModel(spec, y = y, exposure = exposure)
+        set.seed(seed + 1)
+        ans.R <- updateModelUseExp(x, y = y, exposure = exposure, useC = FALSE)
+        set.seed(seed + 1)
+        ans.C.generic <- updateModelUseExp(x, y = y, exposure = exposure, useC = TRUE, useSpecific = FALSE)
+        set.seed(seed + 1)
+        ans.C.specific <- updateModelUseExp(x, y = y, exposure = exposure, useC = TRUE, useSpecific = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C.generic)
+        else
+            expect_equal(ans.R, ans.C.generic)
+        expect_identical(ans.C.generic, ans.C.specific)
+    }
+})
+
 
 ## Only test that appropriate slots are updated.  Check that values are correct in
 ## the tests for the 'updateTheta' etc

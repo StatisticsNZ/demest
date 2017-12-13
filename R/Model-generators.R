@@ -642,7 +642,7 @@ setMethod("initialModel",
           })
 
 
-## NO_TESTS
+## HAS_TESTS
 setMethod("initialModel",
           signature(object = "SpecCMPVarying",
                     y = "Counts",
@@ -653,6 +653,7 @@ setMethod("initialModel",
               formula.mu <- object@formulaMu
               specs.priors <- object@specsPriors
               names.specs.priors <- object@namesSpecsPriors
+              box.cox.param <- object@boxCoxParam
               scale.theta <- object@scaleTheta
               lower <- object@lower
               upper <- object@upper
@@ -667,7 +668,7 @@ setMethod("initialModel",
               sdMeanLogNuCMP <- object@sdMeanLogNuCMP
               ASDLogNuCMP <- object@ASDLogNuCMP
               nuSDLogNuCMP <- object@nuSDLogNuCMP
-              sdMaxLogNuCMP <- object@sdMaxLogNuCMP
+              sdLogNuMaxCMP <- object@sdLogNuMaxCMP
               checkTermsFromFormulaFound(y = y, formula = formula.mu)
               checkLengthDimInFormula(y = y, formula = formula.mu)
               metadataY <- y@metadata
@@ -720,8 +721,14 @@ setMethod("initialModel",
               is.too.high <- theta > upper
               n.too.high <- sum(is.too.high)
               theta[is.too.high] <- stats::runif(n = n.too.high, min = upper - width, max = upper)
-              lower <- log(lower)
-              upper <- log(upper)
+              if (box.cox.param > 0) {
+                  lower <- (lower ^ box.cox.param - 1) / box.cox.param
+                  upper <- (upper ^ box.cox.param - 1) / box.cox.param
+              }
+              else {
+                  lower <- log(lower)
+                  upper <- log(upper)
+              }
               theta <- array(theta, dim = dim(y), dimnames = dimnames(y))
               if (formulaIsInterceptOnly(formula.mu))
                   betas <- list("(Intercept)" = mean(log(theta)))
@@ -730,17 +737,17 @@ setMethod("initialModel",
                   betas <- convertToFormulaOrder(betas = betas, formulaMu = formula.mu)
               }
               theta <- as.numeric(theta)
-              SDLogNuCMP <- stats::runif(n = 1L,
+              sdLogNuCMP <- stats::runif(n = 1L,
                                          min = 0,
-                                         max = min(ASDLogNuCMP@.Data, sdMaxLogNuCMP@.Data))
-              SDLogNuCMP <- methods::new("Scale", SDLogNuCMP)
+                                         max = min(ASDLogNuCMP@.Data, sdLogNuMaxCMP@.Data))
+              sdLogNuCMP <- methods::new("Scale", sdLogNuCMP)
               meanLogNuCMP <- stats::rnorm(n = 1L,
                                            mean = meanMeanLogNuCMP@.Data,
                                            sd = sdMeanLogNuCMP@.Data)
               meanLogNuCMP <- methods::new("Parameter", meanLogNuCMP)
               logNuCMP <- stats::rnorm(n = length(theta),
                                        mean = meanLogNuCMP@.Data,
-                                       sd = SDLogNuCMP)
+                                       sd = sdLogNuCMP)
               nuCMP <- exp(logNuCMP)
               nuCMP <- new("ParameterVector", nuCMP)              
               names.betas <- names(betas)
@@ -773,6 +780,7 @@ setMethod("initialModel",
                                     metadataY = metadataY,
                                     scaleTheta = scale.theta,
                                     scaleThetaMultiplier = scale.theta.multiplier,
+                                    boxCoxParam = box.cox.param,
                                     lower = lower,
                                     upper = upper,
                                     tolerance = tolerance,
@@ -785,8 +793,8 @@ setMethod("initialModel",
                                     nuSigma = nu.sigma,
                                     ASDLogNuCMP = ASDLogNuCMP,
                                     nuSDLogNuCMP = nuSDLogNuCMP,
-                                    SDLogNuCMP = SDLogNuCMP,
-                                    sdMaxLogNuCMP = sdMaxLogNuCMP,
+                                    sdLogNuCMP = sdLogNuCMP,
+                                    sdLogNuMaxCMP = sdLogNuMaxCMP,
                                     meanLogNuCMP = meanLogNuCMP,
                                     meanMeanLogNuCMP = meanMeanLogNuCMP,
                                     sdMeanLogNuCMP = sdMeanLogNuCMP,

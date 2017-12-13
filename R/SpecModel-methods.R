@@ -206,7 +206,7 @@ setMethod("show",
               sd <- object@sdMeanLogNuCMP@.Data
               nu <- object@nuSDLogNuCMP@.Data
               A <- object@ASDLogNuCMP@.Data
-              max <- object@sdMaxLogNuCMP@.Data
+              max <- object@sdLogNuMaxCMP@.Data
               cat("An object of class \"", class(object), "\"\n", sep = "")
               cat("log(dispersion[i]) ~ N(mean, scale^2)\n")
               cat("              mean ~ N(", mean, ", ", squaredOrNA(sd), ")\n", sep = "")

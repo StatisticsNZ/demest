@@ -1,7 +1,7 @@
 
 
 #' @export
-CMP <- function(formula, dispersion = Dispersion(), useExpose = TRUE) {
+CMP <- function(formula, dispersion = Dispersion(), useExpose = TRUE, boxcox = 0) {
     ## formula
     checkFormulaMu(formula)
     checkForMarginalTerms(formula)
@@ -13,7 +13,7 @@ CMP <- function(formula, dispersion = Dispersion(), useExpose = TRUE) {
     sdMeanLogNuCMP <- dispersion@sdMeanLogNuCMP
     ASDLogNuCMP <- dispersion@ASDLogNuCMP
     nuSDLogNuCMP <- dispersion@nuSDLogNuCMP
-    sdMaxLogNuCMP <- dispersion@sdMaxLogNuCMP
+    sdLogNuMaxCMP <- dispersion@sdLogNuMaxCMP
     ## useExpose
     useExpose <- checkAndTidyLogicalFlag(x = useExpose,
                                          name = "useExpose")
@@ -23,8 +23,9 @@ CMP <- function(formula, dispersion = Dispersion(), useExpose = TRUE) {
                  sdMeanLogNuCMP = sdMeanLogNuCMP,
                  ASDLogNuCMP = ASDLogNuCMP,
                  nuSDLogNuCMP = nuSDLogNuCMP,
-                 sdMaxLogNuCMP = sdMaxLogNuCMP,
-                 useExpose = useExpose)
+                 sdLogNuMaxCMP = sdLogNuMaxCMP,
+                 useExpose = useExpose,
+                 boxCoxParam = boxcox)
 }
 
 
@@ -79,11 +80,11 @@ Dispersion <- function(mean = Norm(), scale = HalfT()) {
     ASDLogNuCMP <- scale@A@.Data
     mult <- scale@mult@.Data
     nuSDLogNuCMP <- scale@nu
-    sdMaxLogNuCMP <- scale@scaleMax@.Data
+    sdLogNuMaxCMP <- scale@scaleMax@.Data
     if (is.na(ASDLogNuCMP))
         ASDLogNuCMP <- mult
     ASDLogNuCMP <- new("Scale", ASDLogNuCMP)
-    sdMaxLogNuCMP <- makeScaleMax(scaleMax = sdMaxLogNuCMP,
+    sdLogNuMaxCMP <- makeScaleMax(scaleMax = sdLogNuMaxCMP,
                                   A = ASDLogNuCMP,
                                   nu = nuSDLogNuCMP,
                                   isSpec = FALSE)
@@ -92,7 +93,7 @@ Dispersion <- function(mean = Norm(), scale = HalfT()) {
                  sdMeanLogNuCMP = sdMeanLogNuCMP,
                  ASDLogNuCMP = ASDLogNuCMP,
                  nuSDLogNuCMP = nuSDLogNuCMP,
-                 sdMaxLogNuCMP = sdMaxLogNuCMP)
+                 sdLogNuMaxCMP = sdLogNuMaxCMP)
 }
 
 
@@ -636,11 +637,12 @@ setMethod("SpecModel",
                    priorSD, jump, series, aggregate) {
               formula.mu <- specInner@formulaMu
               useExpose <- specInner@useExpose
+              boxCoxParam <- specInner@boxCoxParam
               meanMeanLogNuCMP <- specInner@meanMeanLogNuCMP
               sdMeanLogNuCMP <- specInner@sdMeanLogNuCMP
               ASDLogNuCMP <- specInner@ASDLogNuCMP
               nuSDLogNuCMP <- specInner@nuSDLogNuCMP
-              sdMaxLogNuCMP <- specInner@sdMaxLogNuCMP
+              sdLogNuMaxCMP <- specInner@sdLogNuMaxCMP
               specs.priors <- makeSpecsPriors(dots)
               names.specs.priors <- makeNamesSpecsPriors(dots)
               if (is.null(lower))
@@ -676,6 +678,7 @@ setMethod("SpecModel",
                   aggregate <- methods::new("SpecAgPlaceholder")
               methods::new("SpecCMPVarying",
                            ASigma = A.sigma,
+                           boxCoxParam = boxCoxParam,
                            call = call,
                            formulaMu = formula.mu,
                            lower = lower,
@@ -692,7 +695,7 @@ setMethod("SpecModel",
                            sdMeanLogNuCMP = sdMeanLogNuCMP,
                            ASDLogNuCMP = ASDLogNuCMP,
                            nuSDLogNuCMP = nuSDLogNuCMP,
-                           sdMaxLogNuCMP = sdMaxLogNuCMP,
+                           sdLogNuMaxCMP = sdLogNuMaxCMP,
                            aggregate = aggregate)
           })
 

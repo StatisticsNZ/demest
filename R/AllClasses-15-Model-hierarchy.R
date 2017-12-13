@@ -54,6 +54,7 @@ setClass("Poisson",
 ## NO_TESTS
 setClass("CMP",
          contains = c("VIRTUAL",
+                      "BoxCoxParamMixin",
                       "ASDLogNuCMPMixin",
                       "NuSDLogNuCMPMixin",
                       "SDLogNuCMPMixin",
@@ -200,8 +201,15 @@ setClass("CMPVarying",
              lower <- object@lower
              upper <- object@upper
              tolerance <- object@tolerance
-             lower.back.tr <- exp(lower)
-             upper.back.tr <- exp(upper)
+             boxCoxParam <- object@boxCoxParam
+             if (boxCoxParam > 0) {
+                 lower.back.tr <- (boxCoxParam * lower + 1) ^ (1 / boxCoxParam)
+                 upper.back.tr <- (boxCoxParam * upper + 1) ^ (1 / boxCoxParam)
+             }
+             else {
+                 lower.back.tr <- exp(lower)
+                 upper.back.tr <- exp(upper)
+             }
              ## 'theta' greater than or equal to back-transformed 'lower'
              if (any(theta < lower.back.tr - tolerance))
                  return(gettextf("'%s' has values that are less than '%s'",

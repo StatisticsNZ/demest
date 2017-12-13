@@ -720,7 +720,7 @@ test_that("initialModel creates object of class CMPVaryingUseExp from valid inpu
     expect_identical(x@maxAttempt, 100L)
     expect_identical(x@nFailedPropTheta, new("Counter", 0L))
     expect_identical(x@meanLogNuCMP, new("Parameter", meanNu))
-    expect_identical(x@SDLogNuCMP, new("Scale", sdNu))
+    expect_identical(x@sdLogNuCMP, new("Scale", sdNu))
     ## intercept only
     exposure <- Counts(array(rpois(n = 20, lambda = 20),
                              dim = c(5, 4),
