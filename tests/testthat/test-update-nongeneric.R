@@ -4411,6 +4411,113 @@ test_that("R and C versions of updateWeightMix give same answer", {
 
 ## UPDATING MODELS ################################################################
 
+test_that("updateMeanLogNu gives valid answer", {
+    updateMeanLogNu <- demest:::updateMeanLogNu
+    initialModel <- demest:::initialModel
+    for (seed in seq_len(n.test)) {
+        y <- Counts(array(as.integer(rpois(n = 20, lambda = 10)),
+                          dim = c(5, 4),
+                          dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        spec <- Model(y ~ CMP(mean ~ age + region,
+                              dispersion = Dispersion(mean = Norm(-0.5, 0.3),
+                                                      scale = HalfT(scale = 0.25)),
+                              useExpose = FALSE))
+        model <- initialModel(spec, y = y, exposure = NULL)
+        set.seed(seed + 1)
+        ans.obtained <- updateMeanLogNu(model)
+        set.seed(seed + 1)
+        var <- 1 / (20/model@sdLogNuCMP@.Data^2 + 1/model@sdMeanLogNuCMP^2)
+        mean <- ((20/model@sdLogNuCMP@.Data^2) * mean(log(model@nuCMP)) + (1/model@sdMeanLogNuCMP^2) * model@meanMeanLogNuCMP) * var
+        ans.expected <- model
+        ans.expected@meanLogNuCMP@.Data <- rnorm(n = 1, mean = mean, sd = sqrt(var))
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+  }
+})
+
+test_that("R and C versions of updateMeanLogNu give same answer", {
+    updateMeanLogNu <- demest:::updateMeanLogNu
+    initialModel <- demest:::initialModel
+    for (seed in seq_len(n.test)) {
+        y <- Counts(array(as.integer(rpois(n = 20, lambda = 10)),
+                          dim = c(5, 4),
+                          dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        spec <- Model(y ~ CMP(mean ~ age + region,
+                              dispersion = Dispersion(mean = Norm(-0.5, 0.3),
+                                                      scale = HalfT(scale = 0.25)),
+                              useExpose = FALSE))
+        model <- initialModel(spec, y = y, exposure = NULL)
+        set.seed(seed + 1)
+        ans.R <- updateMeanLogNu(model, useC = FALSE)
+        set.seed(seed + 1)
+        ans.C <- updateMeanLogNu(model, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+  }
+})
+
+test_that("updateSDLogNu gives valid answer", {
+    updateSDLogNu <- demest:::updateSDLogNu
+    initialModel <- demest:::initialModel
+    updateSDNorm <- demest:::updateSDNorm
+    for (seed in seq_len(n.test)) {
+        y <- Counts(array(as.integer(rpois(n = 20, lambda = 10)),
+                          dim = c(5, 4),
+                          dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        spec <- Model(y ~ CMP(mean ~ age + region,
+                              dispersion = Dispersion(mean = Norm(-0.5, 0.3),
+                                                      scale = HalfT(scale = 0.25)),
+                              useExpose = FALSE))
+        model <- initialModel(spec, y = y, exposure = NULL)
+        set.seed(seed + 1)
+        ans.obtained <- updateSDLogNu(model)
+        set.seed(seed + 1)
+        ans.expected <- model
+        V <- sum((log(model@nuCMP - model@meanLogNuCMP@.Data))^2)
+        sd <- updateSDNorm(sigma = model@sdLogNuCMP@.Data,
+                           A = model@ASDLogNuCMP@.Data,
+                           nu = model@nuLogNuCMP@.Data,
+                           V = V,
+                           n = 20L,
+                           max = model@sdLogNuMaxCMP@.Data)
+        model@sdLogNuMaxCMP@.Data <- sd
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+  }
+})
+
+
+test_that("R and C versions of updateSDLogNu give same answer", {
+    updateSDLogNu <- demest:::updateSDLogNu
+    initialModel <- demest:::initialModel
+    updateSDNorm <- demest:::updateSDNorm
+    for (seed in seq_len(n.test)) {
+        y <- Counts(array(as.integer(rpois(n = 20, lambda = 10)),
+                          dim = c(5, 4),
+                          dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        spec <- Model(y ~ CMP(mean ~ age + region,
+                              dispersion = Dispersion(mean = Norm(-0.5, 0.3),
+                                                      scale = HalfT(scale = 0.25)),
+                              useExpose = FALSE))
+        model <- initialModel(spec, y = y, exposure = NULL)
+        set.seed(seed + 1)
+        ans.R <- updateSDLogNu(model, useC = FALSE)
+        set.seed(seed + 1)
+        ans.C <- updateSDLogNu(model, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+  }
+})
+
+
 test_that("updateSigma_Varying gives valid answer - no Box-Cox", {
     updateSigma_Varying <- demest:::updateSigma_Varying
     updateSDNorm <- demest:::updateSDNorm
@@ -5244,6 +5351,289 @@ test_that("R and C versions of updateThetaAndValueAgFun_Binomial same answer - m
             was.updated <- TRUE
         if (!was.updated)
             warning("aggregate value was not updated")
+    }
+})
+
+
+## updateThetaAndNu_CMPVaryingNotUseExp
+
+test_that("updateThetaAndNu_CMPVaryingNotUseExp gives valid answer", {
+    updateThetaAndNu_CMPVaryingNotUseExp <- demest:::updateThetaAndNu_CMPVaryingNotUseExp
+    initialModel <- demest:::initialModel
+    for (seed in seq_len(n.test)) {
+        ## no missing values
+        y <- Counts(array(as.integer(rpois(n = 20, lambda = 10)),
+                          dim = c(5, 4),
+                          dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        spec <- Model(y ~ CMP(mean ~ age + region, useExpose = FALSE))
+        model <- initialModel(spec, y = y, exposure = NULL)
+        ans.obtained <- updateThetaAndNu_CMPVaryingNotUseExp(model, y = y)
+        expect_true(validObject(ans.obtained))
+        expect_true(any(ans.obtained@theta != model@theta))
+        expect_true(any(ans.obtained@nuCMP != model@nuCMP))
+        ## has missing values
+        exposure <- Counts(array(10 * rbeta(n = 20, shape1 = 20, shape2 = 5),
+                                 dim = c(5, 4),
+                                 dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        y <- Counts(array(as.integer(rpois(n = 20, lambda = 10)),
+                          dim = c(5, 4),
+                          dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        y[1:5] <- NA
+        spec <- Model(y ~ CMP(mean ~ age + region, useExpose = FALSE))
+        model <- initialModel(spec, y = y, exposure = NULL)
+        ans.obtained <- updateThetaAndNu_CMPVaryingNotUseExp(model, y = y)
+        expect_true(validObject(ans.obtained))
+        expect_true(any(ans.obtained@theta != model@theta))
+        expect_true(any(ans.obtained@nuCMP != model@nuCMP))
+        ## has lower, upper
+        exposure <- Counts(array(10 * rbeta(n = 20, shape1 = 20, shape2 = 5),
+                                 dim = c(5, 4),
+                                 dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        y <- Counts(array(as.integer(rpois(n = 20, lambda = 10)),
+                          dim = c(5, 4),
+                          dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        y[1:12] <- NA
+        subtotals <- Counts(array(30:31, dim = 2, dimnames = list(region = c("a", "b"))))
+        spec <- Model(y ~ CMP(mean ~ age + region, useExpose = FALSE), lower = 0.3, upper = 0.6)
+        model <- initialModel(spec, y = y, exposure = NULL)
+        set.seed(seed + 1)
+        ans.obtained <- updateThetaAndNu_CMPVaryingNotUseExp(model, y = y)
+        expect_true(all((ans.obtained@theta > 0.3) & ans.obtained@theta < 0.6))
+        expect_true(any(ans.obtained@theta != model@theta))
+        expect_true(any(ans.obtained@nuCMP != model@nuCMP))
+        ## boxcox 
+        exposure <- Counts(array(10 * rbeta(n = 20, shape1 = 20, shape2 = 5),
+                                 dim = c(5, 4),
+                                 dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        y <- Counts(array(as.integer(rpois(n = 20, lambda = 10)),
+                          dim = c(5, 4),
+                          dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        y[1:12] <- NA
+        subtotals <- Counts(array(30:31, dim = 2, dimnames = list(region = c("a", "b"))))
+        spec <- Model(y ~ CMP(mean ~ age + region, useExpose = FALSE, boxcox = 0.9))
+        model <- initialModel(spec, y = y, exposure = NULL)
+        set.seed(seed + 1)
+        ans.obtained <- updateThetaAndNu_CMPVaryingNotUseExp(model, y = y)
+        expect_true(validObject(ans.obtained))
+        expect_true(any(ans.obtained@theta != model@theta))
+        expect_true(any(ans.obtained@nuCMP != model@nuCMP))
+    }
+})
+
+
+test_that("R and C versions of updateThetaAndNu_CMPVaryingNotUseExp give same answer", {
+    updateThetaAndNu_CMPVaryingNotUseExp <- demest:::updateThetaAndNu_CMPVaryingNotUseExp
+    initialModel <- demest:::initialModel
+    for (seed in seq_len(n.test)) {
+        ## no missing values
+        y <- Counts(array(as.integer(rpois(n = 20, lambda = 10)),
+                          dim = c(5, 4),
+                          dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        spec <- Model(y ~ CMP(mean ~ age + region, useExpose = FALSE))
+        model <- initialModel(spec, y = y, exposure = NULL)
+        set.seed(seed + 1)
+        ans.R <- updateThetaAndNu_CMPVaryingNotUseExp(model, y = y, useC = FALSE)
+        set.seed(seed + 1)
+        ans.C <- updateThetaAndNu_CMPVaryingNotUseExp(model, y = y, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+        ## has missing values
+        exposure <- Counts(array(10 * rbeta(n = 20, shape1 = 20, shape2 = 5),
+                                 dim = c(5, 4),
+                                 dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        y <- Counts(array(as.integer(rpois(n = 20, lambda = 10)),
+                          dim = c(5, 4),
+                          dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        y[1:5] <- NA
+        spec <- Model(y ~ CMP(mean ~ age + region, useExpose = FALSE))
+        model <- initialModel(spec, y = y, exposure = NULL)
+        set.seed(seed + 1)
+        ans.R <- updateThetaAndNu_CMPVaryingNotUseExp(model, y = y, useC = FALSE)
+        set.seed(seed + 1)
+        ans.C <- updateThetaAndNu_CMPVaryingNotUseExp(model, y = y, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+        ## has lower, upper
+        exposure <- Counts(array(10 * rbeta(n = 20, shape1 = 20, shape2 = 5),
+                                 dim = c(5, 4),
+                                 dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        y <- Counts(array(as.integer(rpois(n = 20, lambda = 10)),
+                          dim = c(5, 4),
+                          dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        y[1:12] <- NA
+        subtotals <- Counts(array(30:31, dim = 2, dimnames = list(region = c("a", "b"))))
+        spec <- Model(y ~ CMP(mean ~ age + region, useExpose = FALSE), lower = 0.3, upper = 0.6)
+        model <- initialModel(spec, y = y, exposure = NULL)
+        set.seed(seed + 1)
+        ans.R <- updateThetaAndNu_CMPVaryingNotUseExp(model, y = y, useC = FALSE)
+        set.seed(seed + 1)
+        ans.C <- updateThetaAndNu_CMPVaryingNotUseExp(model, y = y, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+        ## boxcox
+        y <- Counts(array(as.integer(rpois(n = 20, lambda = 10)),
+                          dim = c(5, 4),
+                          dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        spec <- Model(y ~ CMP(mean ~ age + region, useExpose = FALSE, boxcox = 0.7))
+        model <- initialModel(spec, y = y, exposure = NULL)
+        set.seed(seed + 1)
+        ans.R <- updateThetaAndNu_CMPVaryingNotUseExp(model, y = y, useC = FALSE)
+        set.seed(seed + 1)
+        ans.C <- updateThetaAndNu_CMPVaryingNotUseExp(model, y = y, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
+
+## updateThetaAndNu_CMPVaryingUseExp
+
+test_that("updateThetaAndNu_CMPVaryingUseExp gives valid answer", {
+    updateThetaAndNu_CMPVaryingUseExp <- demest:::updateThetaAndNu_CMPVaryingUseExp
+    initialModel <- demest:::initialModel
+    for (seed in seq_len(n.test)) {
+        ## no missing values
+        exposure <- Counts(array(10 * rbeta(n = 20, shape1 = 20, shape2 = 5),
+                                 dim = c(5, 4),
+                                 dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        y <- Counts(array(as.integer(rpois(n = 20, lambda = 0.5 * exposure)),
+                          dim = c(5, 4),
+                          dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        spec <- Model(y ~ CMP(mean ~ age + region))
+        model <- initialModel(spec, y = y, exposure = exposure)
+        ans.obtained <- updateThetaAndNu_CMPVaryingUseExp(model, y = y, exposure = exposure)
+        expect_true(validObject(ans.obtained))
+        expect_true(any(ans.obtained@theta != model@theta))
+        expect_true(any(ans.obtained@nuCMP != model@nuCMP))
+        ## has missing values
+        exposure <- Counts(array(10 * rbeta(n = 20, shape1 = 20, shape2 = 5),
+                                 dim = c(5, 4),
+                                 dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        y <- Counts(array(as.integer(rpois(n = 20, lambda = 0.5 * exposure)),
+                          dim = c(5, 4),
+                          dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        y[1:5] <- NA
+        spec <- Model(y ~ CMP(mean ~ age + region))
+        model <- initialModel(spec, y = y, exposure = exposure)
+        ans.obtained <- updateThetaAndNu_CMPVaryingUseExp(model, y = y, exposure = exposure)
+        expect_true(validObject(ans.obtained))
+        expect_true(any(ans.obtained@theta != model@theta))
+        expect_true(any(ans.obtained@nuCMP != model@nuCMP))
+        ## has lower, upper
+        exposure <- Counts(array(10 * rbeta(n = 20, shape1 = 20, shape2 = 5),
+                                 dim = c(5, 4),
+                                 dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        y <- Counts(array(as.integer(rpois(n = 20, lambda = 0.5 * exposure)),
+                          dim = c(5, 4),
+                          dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        y[1:12] <- NA
+        subtotals <- Counts(array(30:31, dim = 2, dimnames = list(region = c("a", "b"))))
+        spec <- Model(y ~ CMP(mean ~ age + region), lower = 0.3, upper = 0.6)
+        model <- initialModel(spec, y = y, exposure = exposure)
+        set.seed(seed + 1)
+        ans.obtained <- updateThetaAndNu_CMPVaryingUseExp(model, y = y, exposure = exposure)
+        expect_true(all((ans.obtained@theta > 0.3) & ans.obtained@theta < 0.6))
+        expect_true(any(ans.obtained@theta != model@theta))
+        expect_true(any(ans.obtained@nuCMP != model@nuCMP))
+        ## boxcox
+        exposure <- Counts(array(10 * rbeta(n = 20, shape1 = 20, shape2 = 5),
+                                 dim = c(5, 4),
+                                 dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        y <- Counts(array(as.integer(rpois(n = 20, lambda = 0.5 * exposure)),
+                          dim = c(5, 4),
+                          dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        spec <- Model(y ~ CMP(mean ~ age + region, boxcox = 0.7))
+        model <- initialModel(spec, y = y, exposure = exposure)
+        ans.obtained <- updateThetaAndNu_CMPVaryingUseExp(model, y = y, exposure = exposure)
+        expect_true(validObject(ans.obtained))
+        expect_true(any(ans.obtained@theta != model@theta))
+        expect_true(any(ans.obtained@nuCMP != model@nuCMP))
+    }
+})
+
+
+test_that("R and C versions of updateThetaAndNu_CMPVaryingUseExp give same answer", {
+    updateThetaAndNu_CMPVaryingUseExp <- demest:::updateThetaAndNu_CMPVaryingUseExp
+    initialModel <- demest:::initialModel
+    for (seed in seq_len(n.test)) {
+        ## no missing values
+        exposure <- Counts(array(10 * rbeta(n = 20, shape1 = 20, shape2 = 5),
+                                 dim = c(5, 4),
+                                 dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        y <- Counts(array(as.integer(rpois(n = 20, lambda = 0.5 * exposure)),
+                          dim = c(5, 4),
+                          dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        spec <- Model(y ~ CMP(mean ~ age + region))
+        model <- initialModel(spec, y = y, exposure = exposure)
+        set.seed(seed + 1)
+        ans.R <- updateThetaAndNu_CMPVaryingUseExp(model, y = y, exposure = exposure, useC = FALSE)
+        set.seed(seed + 1)
+        ans.C <- updateThetaAndNu_CMPVaryingUseExp(model, y = y, exposure = exposure, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+        ## has missing values
+        exposure <- Counts(array(10 * rbeta(n = 20, shape1 = 20, shape2 = 5),
+                                 dim = c(5, 4),
+                                 dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        y <- Counts(array(as.integer(rpois(n = 20, lambda = 0.5 * exposure)),
+                          dim = c(5, 4),
+                          dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        y[1:5] <- NA
+        spec <- Model(y ~ CMP(mean ~ age + region))
+        model <- initialModel(spec, y = y, exposure = exposure)
+        set.seed(seed + 1)
+        ans.R <- updateThetaAndNu_CMPVaryingUseExp(model, y = y, exposure = exposure, useC = FALSE)
+        set.seed(seed + 1)
+        ans.C <- updateThetaAndNu_CMPVaryingUseExp(model, y = y, exposure = exposure, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+        ## has lower, upper
+        exposure <- Counts(array(10 * rbeta(n = 20, shape1 = 20, shape2 = 5),
+                                 dim = c(5, 4),
+                                 dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        y <- Counts(array(as.integer(rpois(n = 20, lambda = 0.5 * exposure)),
+                          dim = c(5, 4),
+                          dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        y[1:12] <- NA
+        subtotals <- Counts(array(30:31, dim = 2, dimnames = list(region = c("a", "b"))))
+        spec <- Model(y ~ CMP(mean ~ age + region), lower = 0.3, upper = 0.6)
+        model <- initialModel(spec, y = y, exposure = exposure)
+        set.seed(seed + 1)
+        ans.R <- updateThetaAndNu_CMPVaryingUseExp(model, y = y, exposure = exposure, useC = FALSE)
+        set.seed(seed + 1)
+        ans.C <- updateThetaAndNu_CMPVaryingUseExp(model, y = y, exposure = exposure, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+        ## boxcox
+        exposure <- Counts(array(10 * rbeta(n = 20, shape1 = 20, shape2 = 5),
+                                 dim = c(5, 4),
+                                 dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        y <- Counts(array(as.integer(rpois(n = 20, lambda = 0.5 * exposure)),
+                          dim = c(5, 4),
+                          dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        spec <- Model(y ~ CMP(mean ~ age + region, boxcox = 0.7))
+        model <- initialModel(spec, y = y, exposure = exposure)
+        set.seed(seed + 1)
+        ans.R <- updateThetaAndNu_CMPVaryingUseExp(model, y = y, exposure = exposure, useC = FALSE)
+        set.seed(seed + 1)
+        ans.C <- updateThetaAndNu_CMPVaryingUseExp(model, y = y, exposure = exposure, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
     }
 })
 

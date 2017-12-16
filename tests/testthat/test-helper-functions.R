@@ -10365,6 +10365,76 @@ test_that("R, and C versions of logLikelihood_Binomial give same answer", {
     }
 })
 
+
+test_that("logLikelihood_CMP gives valid answer", {
+    initialModel <- demest:::initialModel
+    logLikelihood_CMP <- demest:::logLikelihood_CMP
+    logDensCMPUnnormalised1 <- demest:::logDensCMPUnnormalised1
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        exposure <- Counts(array(20 * rpois(n = 20, lambda = 10),
+                                 dim = c(5, 4),
+                                 dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        y <- Counts(array(rbinom(n = 20, size = exposure, prob = 0.5),
+                          dim = c(5, 4),
+                          dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        spec <- Model(y ~ CMP(mean ~ age + region))
+        model <- initialModel(spec, y = y, exposure = exposure)
+        dataset <- Counts(array(as.integer(rpois(n = 20, lambda = 20)),
+                                dim = c(2, 10),
+                                dimnames = list(sex = c("f", "m"), age = 0:9)))
+        i <- sample.int(20, size = 1)
+        count <- as.integer(rpois(n = 1, lambda = dataset[i]))
+        ans.obtained <- logLikelihood_CMP(model = model,
+                                          count = count,
+                                          dataset = dataset,
+                                          i = i)
+        ans.expected <- logDensCMPUnnormalised1(x = dataset[i],
+                                                gamma = count * model@theta[i],
+                                                nu = model@nuCMP[i])
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of logLikelihood_CMP give same answer", {
+    initialModel <- demest:::initialModel
+    logLikelihood_CMP <- demest:::logLikelihood_CMP
+    logDensCMPUnnormalised1 <- demest:::logDensCMPUnnormalised1
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        exposure <- Counts(array(20 * rpois(n = 20, lambda = 10),
+                                 dim = c(5, 4),
+                                 dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        y <- Counts(array(rbinom(n = 20, size = exposure, prob = 0.5),
+                          dim = c(5, 4),
+                          dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+        spec <- Model(y ~ CMP(mean ~ age + region))
+        model <- initialModel(spec, y = y, exposure = exposure)
+        dataset <- Counts(array(as.integer(rpois(n = 20, lambda = 20)),
+                                dim = c(2, 10),
+                                dimnames = list(sex = c("f", "m"), age = 0:9)))
+        i <- sample.int(20, size = 1)
+        count <- as.integer(rpois(n = 1, lambda = dataset[i]))
+        ans.R <- logLikelihood_CMP(model = model,
+                                   count = count,
+                                   dataset = dataset,
+                                   i = i,
+                                   useC = FALSE)
+        ans.C <- logLikelihood_CMP(model = model,
+                                   count = count,
+                                   dataset = dataset,
+                                   i = i,
+                                   useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
+
 test_that("logLikelihood_Poisson gives valid answer", {
     initialModel <- demest:::initialModel
     logLikelihood_Poisson <- demest:::logLikelihood_Poisson

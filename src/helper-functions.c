@@ -142,6 +142,29 @@ rcateg1(double *cumProb)
 
 
 double
+rhalftTrunc1(double df, double scale, double max)
+{
+    int kMaxAttempt = 1000;
+    int i = 0;
+    double ans = 0;
+    int found = 0;
+    while(!found && (i < kMaxAttempt)) {
+        
+        double t = rt(df);
+        ans = scale * fabs(t);
+        if (ans < max) {
+            found = 1;
+        }
+        ++i;
+    }
+    if (!found) {
+        error("unable to generate value for truncated half-t (consider using higher maximum value)");
+    
+    }
+    return ans;
+}
+
+double
 rinvchisq1(double df, double scale)
 {
     double x = rgamma(df / 2.0, 2.0);
@@ -2612,6 +2635,26 @@ logLikelihood_Binomial(SEXP model_R, int count,
     
     return dbinom(x, count, prob, USE_LOG);
 }
+
+
+double
+logLikelihood_CMP(SEXP model_R, int count, 
+                                SEXP dataset_R, int i)
+{
+    int i_c = i - 1;
+    int *dataset = INTEGER(dataset_R);
+    double x = dataset[i_c];
+    double *theta = REAL(GET_SLOT(model_R,theta_sym));
+    double gamma = (theta[i_c])*count;
+    
+    double *nuVec = REAL(GET_SLOT(model_R, nuCMP_sym));
+    double nu = nuVec[i_c];
+    
+    double ans = nu * (x * log(gamma) - lgammafn(x + 1));
+    
+    return ans;
+}
+
 
 double
 logLikelihood_Poisson(SEXP model_R, int count, 

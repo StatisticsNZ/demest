@@ -13,6 +13,7 @@
 \alias{show,SpecAgFun-method}
 \alias{show,SpecAgPoisson-method}
 \alias{show,SpecLikelihoodBinomial-method}
+\alias{show,SpecLikelihoodCMP-method}
 \alias{show,SpecLikelihoodNormalVarsigmaKnown-method}
 \alias{show,SpecLikelihoodNormalVarsigmaUnknown-method}
 \alias{show,SpecLikelihoodPoisson-method}
@@ -59,6 +60,8 @@
 \S4method{show}{SpecAgPoisson}(object)
 
 \S4method{show}{SpecLikelihoodBinomial}(object)
+
+\S4method{show}{SpecLikelihoodCMP}(object)
 
 \S4method{show}{SpecLikelihoodNormalVarsigmaKnown}(object)
 

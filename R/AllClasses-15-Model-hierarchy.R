@@ -55,8 +55,8 @@ setClass("Poisson",
 ## NO_TESTS
 setClass("CMP",
          contains = c("VIRTUAL",
+                      "BoxCoxParamMixin",
                       "ASDLogNuCMPMixin",
-                      "MultSDLogNuCMPMixin",
                       "NuSDLogNuCMPMixin",
                       "SDLogNuCMPMixin",
                       "SDMaxLogNuCMPMixin",
@@ -64,7 +64,8 @@ setClass("CMP",
                       "MeanMeanLogNuCMPMixin",
                       "SDMeanLogNuCMPMixin",                      
                       "NuCMPMixin",
-                      "ScaleThetaMultiplierMixin"),
+                      "ScaleThetaMultiplierMixin",
+                      "NFailedPropYStarMixin"),
          validity = function(object) {
              theta <- object@theta
              ## 'theta' is non-negative
@@ -201,8 +202,15 @@ setClass("CMPVarying",
              lower <- object@lower
              upper <- object@upper
              tolerance <- object@tolerance
-             lower.back.tr <- exp(lower)
-             upper.back.tr <- exp(upper)
+             boxCoxParam <- object@boxCoxParam
+             if (boxCoxParam > 0) {
+                 lower.back.tr <- (boxCoxParam * lower + 1) ^ (1 / boxCoxParam)
+                 upper.back.tr <- (boxCoxParam * upper + 1) ^ (1 / boxCoxParam)
+             }
+             else {
+                 lower.back.tr <- exp(lower)
+                 upper.back.tr <- exp(upper)
+             }
              ## 'theta' greater than or equal to back-transformed 'lower'
              if (any(theta < lower.back.tr - tolerance))
                  return(gettextf("'%s' has values that are less than '%s'",
@@ -265,6 +273,7 @@ setClass("NormalFixedUseExp",
 setClass("CMPVaryingNotUseExp",
          prototype = prototype(slotsToExtract = c("theta",
                                                   "nFailedPropTheta",
+                                                  "nFailedPropYStar",
                                                   "nAcceptTheta",
                                                   "nuCMP",
                                                   "meanLogNuCMP",
@@ -280,8 +289,15 @@ setClass("CMPVaryingNotUseExp",
 ## NO_TESTS
 setClass("CMPVaryingUseExp",
          prototype = prototype(slotsToExtract = c("theta",
-                                                  "nFailedPropTheta", "nAcceptTheta",
-                                                  "betas", "sigma", "priorsBetas"),
+                                                  "nFailedPropTheta",
+                                                  "nFailedPropYStar",
+                                                  "nAcceptTheta",
+                                                  "nuCMP",
+                                                  "meanLogNuCMP",
+                                                  "sdLogNuCMP",
+                                                  "betas",
+                                                  "sigma",
+                                                  "priorsBetas"),
                                iMethodModel = 33L,
                                nuSigma = methods::new("DegreesFreedom", 7)),
          contains = c("CMPVarying",
@@ -551,8 +567,17 @@ setClass("NormalFixedUseExpPredict",
          prototype = prototype(iMethodModel = 131L),
          contains = "NormalFixedUseExp")
 
+## NO_TESTS
+setClass("CMPVaryingNotUseExpPredict",
+         prototype = prototype(iMethodModel = 132L),
+         contains = c("CMPVaryingNotUseExp", "BetaIsPredicted", "OffsetsBetas",
+             "OffsetsPriorsBetas", "OffsetsSigma"))
 
-
+## NO_TESTS
+setClass("CMPVaryingUseExpPredict",
+         prototype = prototype(iMethodModel = 133L),
+         contains = c("CMPVaryingUseExp", "BetaIsPredicted", "OffsetsBetas",
+             "OffsetsPriorsBetas", "OffsetsSigma"))
 
 
 ## Predicted Models - Aggregate #############################################################

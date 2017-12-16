@@ -1066,6 +1066,16 @@ rcateg1_R(SEXP cumProb_R)
     return ScalarInteger(ans + 1); /* return in R-index form */
 }
 
+/* create one-off R version wrapper for rhalftTrunc1_R */ 
+SEXP
+rhalftTrunc1_R(SEXP df_R, SEXP scale_R, SEXP max_R)
+{
+    GetRNGstate();
+    double ans = rhalftTrunc1(*REAL(df_R), *REAL(scale_R), *REAL(max_R));
+    PutRNGstate();
+    return ScalarReal(ans);
+}
+
 /* create one-off R version wrapper for rinvchisq1_R */ 
 SEXP
 rinvchisq1_R(SEXP df_R, SEXP scale_R)
@@ -1303,6 +1313,7 @@ UPDATECOMBINEDOBJECT_WRAPPER_R(updateCombined_CombinedCountsBinomial);
 
 /* wrap loglikelihood functions */
 LOGLIKELIHOOD_WRAPPER_R(logLikelihood_Binomial);
+LOGLIKELIHOOD_WRAPPER_R(logLikelihood_CMP);
 LOGLIKELIHOOD_WRAPPER_R(logLikelihood_Poisson);
 LOGLIKELIHOOD_WRAPPER_R(logLikelihood_PoissonBinomialMixture);
 LOGLIKELIHOOD_WRAPPER_R(logLikelihood_NormalFixedUseExp);
@@ -1644,6 +1655,19 @@ SEXP diffLogDensExpOneComp_R(SEXP iCell_R, SEXP hasAge_R,
     return ScalarReal(ans);
 }
 
+DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensJumpOrigDest);
+DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensExpOrigDestPoolNet);
+DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensJumpPoolWithExpose);
+DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensJumpPoolNoExpose);
+DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensJumpNet);
+DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensJumpComp);
+DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensExpComp);
+
+UPDATEOBJECT_NOPRNG_WRAPPER_R(updateCellMove);
+UPDATEOBJECT_NOPRNG_WRAPPER_R(updateSubsequentPopnMove);
+UPDATEOBJECT_NOPRNG_WRAPPER_R(updateSubsequentAccMove);
+UPDATEOBJECT_NOPRNG_WRAPPER_R(updateSubsequentExpMove);
+
 /* ******************************************************************************* */
 /* Create table describing R-visible versions of C functions ********************* */
 /* ******************************************************************************* */
@@ -1716,6 +1740,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(invlogit1_R, 1),
   CALLDEF(rcateg1_R, 1),
   CALLDEF(rinvchisq1_R, 2),
+  CALLDEF(rhalftTrunc1_R, 3),
   CALLDEF(rmvnorm1_R, 2),
   CALLDEF(rmvnorm2_R, 2),
   CALLDEF(rnormTruncated_R, 8),
@@ -1766,6 +1791,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(centerA_R, 2),
   CALLDEF(diff_R, 2),
   CALLDEF(logLikelihood_Binomial_R,4),
+  CALLDEF(logLikelihood_CMP_R,4),
   CALLDEF(logLikelihood_Poisson_R,4),
   CALLDEF(logLikelihood_PoissonBinomialMixture_R,4),
   CALLDEF(logLikelihood_NormalFixedUseExp_R, 4),
@@ -2024,6 +2050,18 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(diffLogDensExpPopn_R, 1),
   CALLDEF(diffLogDensExpOneOrigDestParChPool_R, 11),
   CALLDEF(diffLogDensExpOneComp_R, 11),
+  CALLDEF(diffLogDensJumpOrigDest_R, 1),
+  CALLDEF(diffLogDensExpOrigDestPoolNet_R, 1),
+  CALLDEF(diffLogDensJumpPoolWithExpose_R, 1),
+  CALLDEF(diffLogDensJumpPoolNoExpose_R, 1),
+  CALLDEF(diffLogDensJumpNet_R, 1),
+  CALLDEF(diffLogDensJumpComp_R, 1),
+  CALLDEF(diffLogDensExpComp_R, 1),
+  
+  CALLDEF(updateCellMove_R, 1),
+  CALLDEF(updateSubsequentPopnMove_R, 1),
+  CALLDEF(updateSubsequentAccMove_R, 1),
+  CALLDEF(updateSubsequentExpMove_R, 1),
   
   {NULL}
 };
@@ -2337,6 +2375,7 @@ R_init_demest(DllInfo *info)
   ADD_SYM(updateSeriesDLM);
   ADD_SYM(alphaKnown);
   ADD_SYM(AKnownVec);
+  ADD_SYM(nuCMP);
   /* skeleton */
   ADD_SYM(first);
   ADD_SYM(last);
@@ -2345,14 +2384,18 @@ R_init_demest(DllInfo *info)
   /* accounts and combined accounts*/
   ADD_SYM(account);
   ADD_SYM(population);
+  ADD_SYM(accession);
   ADD_SYM(components);
   ADD_SYM(iteratorPopn);
+  ADD_SYM(iteratorAcc);
   ADD_SYM(iteratorExposure);
   ADD_SYM(iCell);
   ADD_SYM(iCellOther);
   ADD_SYM(iComp);
   ADD_SYM(iPopnNext);
   ADD_SYM(iPopnNextOther);
+  ADD_SYM(iAccNext);
+  ADD_SYM(iAccNextOther);
   ADD_SYM(iOrigDest);
   ADD_SYM(iPool);
   ADD_SYM(iIntNet);
@@ -2363,9 +2406,14 @@ R_init_demest(DllInfo *info)
   ADD_SYM(systemModels);
   ADD_SYM(modelUsesExposure);
   ADD_SYM(mappingsFromExp);
-  ADD_SYM(iExpFirst); 
+  ADD_SYM(iExpFirst);
+  ADD_SYM(iExpFirstOther); 
   ADD_SYM(ageTimeStep);
   ADD_SYM(iteratorsComp);
+  ADD_SYM(expectedExposure);
+  ADD_SYM(iExposure);
+  ADD_SYM(iExposureOther);
+  ADD_SYM(isLowerTriangle);
     
   
 #undef ADD_SYM

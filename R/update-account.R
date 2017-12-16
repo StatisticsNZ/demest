@@ -2060,7 +2060,7 @@ diffLogDensExpOneComp <- function(iCell, hasAge, ageTimeStep, updatedPopn,
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 ## function called only if component uses exposure
 ## (otherwise ratios cancel)
@@ -2100,11 +2100,15 @@ diffLogDensJumpOrigDest <- function(combined, useC = FALSE) {
             - dpois(x = val.curr, lambda = lambda.dens.prop, log = TRUE))
         diff.log.jump <- (dpois(x = val.curr, lambda = lambda.jump, log = TRUE)
             - dpois(x = val.prop, lambda = lambda.jump, log = TRUE))
-        diff.log.dens + diff.log.jump
+        ## JAH changed to unname the answer
+        ans <- diff.log.dens + diff.log.jump
+        ans <- unname(ans)
+        ans
+
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 ## Difference in log-density of current values for
 ## all components attributable to change in exposure,
@@ -2301,7 +2305,7 @@ diffLogDensExpOrigDestPoolNet <- function(combined, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 diffLogDensJumpPoolWithExpose <- function(combined, useC = FALSE) {
     stopifnot(methods::is(combined, "CombinedAccountMovements"))
@@ -2356,11 +2360,14 @@ diffLogDensJumpPoolWithExpose <- function(combined, useC = FALSE) {
                           - dpois(x = val.in.curr, lambda = lambda.dens.in.curr, log = TRUE))
         diff.log.jump <- (dpois(x = val.out.curr, lambda = lambda.jump, log = TRUE)
                           - dpois(x = val.out.prop, lambda = lambda.jump, log = TRUE))
-        diff.log.dens + diff.log.jump
+        ## JAH changed to unname the answer
+        ans <- diff.log.dens + diff.log.jump
+        ans <- unname(ans)
+        ans
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 diffLogDensJumpPoolNoExpose <- function(combined, useC = FALSE) {
     stopifnot(methods::is(combined, "CombinedAccountMovements"))
@@ -2376,12 +2383,15 @@ diffLogDensJumpPoolNoExpose <- function(combined, useC = FALSE) {
         theta.in <- theta[i.cell.in]
         val.in.curr <- component[i.cell.in]
         val.in.prop <- val.in.curr + diff
-        (dpois(x = val.in.prop, lambda = theta.in, log = TRUE)
+        ## JAH changed to unname the answer
+        ans <- (dpois(x = val.in.prop, lambda = theta.in, log = TRUE)
             - dpois(x = val.in.curr, lambda = theta.in, log = TRUE))
+        ans <- unname(ans)
+        ans
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 diffLogDensJumpNet <- function(combined, useC = FALSE) {
     stopifnot(methods::is(combined, "CombinedAccountMovements"))
@@ -2402,7 +2412,8 @@ diffLogDensJumpNet <- function(combined, useC = FALSE) {
         sd.sub <- varsigma / sqrt(w.sub)
         val.sub.curr <- component[i.cell.sub]
         val.sub.prop <- val.sub.curr - diff
-        (dnorm(x = val.sub.prop,
+        ## JAH changed to unname the answer
+        ans <- (dnorm(x = val.sub.prop,
                mean = mean.sub,
                sd = sd.sub,
                log = TRUE)
@@ -2410,10 +2421,12 @@ diffLogDensJumpNet <- function(combined, useC = FALSE) {
                     mean = mean.sub,
                     sd = sd.sub,
                     log = TRUE))
+        ans <- unname(ans)
+        ans
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 ## function called only if component uses exposure
 ## (otherwise ratios cancel)
@@ -2462,12 +2475,15 @@ diffLogDensJumpComp <- function(combined, useC = FALSE) {
             - dpois(x = val.curr, lambda = lambda.dens.prop, log = TRUE))
         diff.log.jump <- (dpois(x = val.curr, lambda = lambda.jump, log = TRUE)
             - dpois(x = val.prop, lambda = lambda.jump, log = TRUE))
-        diff.log.dens + diff.log.jump
+        ## JAH changed to unname the answer
+        ans <- diff.log.dens + diff.log.jump
+        ans <- unname(ans)
+        ans
     }
 }
 
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 ## Difference in log-density of current values for
 ## all components attributable to change in exposure,
@@ -2597,7 +2613,7 @@ diffLogDensExpComp <- function(combined, useC = FALSE) {
 ## UPDATE VALUES ################################################################
 
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 updateCellMove <- function(combined, useC = FALSE) {
     stopifnot(methods::is(combined, "CombinedAccountMovements"))
@@ -2639,7 +2655,7 @@ updateCellMove <- function(combined, useC = FALSE) {
 
 
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 ## there is always at least one subsequent population value to update
 updateSubsequentPopnMove <- function(combined, useC = FALSE) {
@@ -2656,10 +2672,6 @@ updateSubsequentPopnMove <- function(combined, useC = FALSE) {
         iterator <- combined@iteratorPopn
         diff <- combined@diffProp
         is.increment <- combined@isIncrement
-        i.comp <- combined@iComp
-        i.orig.dest <- combined@iOrigDest
-        i.pool <- combined@iPool
-        i.int.net <- combined@iIntNet
         is.popn <- i.comp == 0L
         is.orig.dest <- i.comp == i.orig.dest
         is.pool <- i.comp == i.pool
@@ -2715,7 +2727,7 @@ updateSubsequentPopnMove <- function(combined, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 updateSubsequentAccMove <- function(combined, useC = FALSE) {
     stopifnot(is(combined, "CombinedAccountMovementsHasAge"))
@@ -2731,10 +2743,6 @@ updateSubsequentAccMove <- function(combined, useC = FALSE) {
         iterator <- combined@iteratorAcc
         diff <- combined@diffProp
         is.increment <- combined@isIncrement
-        i.comp <- combined@iComp
-        i.orig.dest <- combined@iOrigDest
-        i.pool <- combined@iPool
-        i.int.net <- combined@iIntNet
         no.subsequent.accession <- i.acc.next == 0L
         if (no.subsequent.accession)
             return(combined)
@@ -2792,7 +2800,7 @@ updateSubsequentAccMove <- function(combined, useC = FALSE) {
         combined
     }
 }
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 updateSubsequentExpMove <- function(combined, useC = FALSE) {
     stopifnot(methods::is(combined, "CombinedAccountMovements"))

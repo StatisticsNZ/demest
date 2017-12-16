@@ -977,7 +977,8 @@ makeFakeScale <- function(A, nu, scaleMax, functionName, scaleName = "scale") {
                              isSpec = FALSE)
     scale <- tryCatch(rhalftTrunc1(df = nu@.Data,
                                    scale = A@.Data,
-                                   max = scaleMax@.Data),
+                                   max = scaleMax@.Data,
+                                   useC = TRUE),
                       error = function(e) e)
     if (methods::is(scale, "error"))
         stop(gettextf("problem generating scale parameter within function '%s' : %s",
@@ -4223,7 +4224,7 @@ plotHalfT <- function(df = 7, scale = 1, max = 0.999,
     }
 }
 
-## READY_TO_TRANSLATE_FIRST
+## TRANSLATED
 ## HAS_TESTS
 rhalftTrunc1 <- function(df, scale, max, useC = FALSE) {
     ## df
@@ -6824,6 +6825,51 @@ logLikelihood_Binomial <- function(model, count, dataset, i, useC = FALSE) {
 
 ## TRANSLATED
 ## HAS_TESTS
+## *************************************************************
+## NOTE THAT THIS FUNCTION RETURNS THE UNNORMALISED LIKELIHOOD.
+## THIS IS FINE WHEN THE FUNCTION IS BEING USED TO DECIDE WHETHER
+## TO ACCEPT A PROPOSED VALUE FOR 'count' BUT WILL NOT WORK WHEN
+## DECIDING TO ACCEPT A PROPOSED VALUE FOR 'theta', OR FOR CALCULATING
+## LIKELIHOODS MORE GENERALLY.
+## *************************************************************
+## Calling function should test that dataset[i] is not missing
+logLikelihood_CMP <- function(model, count, dataset, i, useC = FALSE) {
+    ## model
+    stopifnot(methods::is(model, "Model"))
+    stopifnot(methods::is(model, "UseExposure"))
+    ## count
+    stopifnot(identical(length(count), 1L))
+    stopifnot(is.integer(count))
+    stopifnot(!is.na(count))
+    stopifnot(count >= 0L)
+    ## dataset
+    stopifnot(is.integer(dataset))
+    stopifnot(all(dataset[!is.na(dataset)] >= 0L))
+    ## i
+    stopifnot(identical(length(i), 1L))
+    stopifnot(is.integer(i))
+    stopifnot(!is.na(i))
+    stopifnot(i >= 1L)
+    ## dataset and i
+    stopifnot(i <= length(dataset))
+    stopifnot(!is.na(dataset@.Data[i]))
+    ## model and dataset
+    stopifnot(identical(length(model@theta), length(dataset)))
+    ## model and i
+    stopifnot(i <= length(model@theta))
+    if (useC) {
+        .Call(logLikelihood_CMP_R, model, count, dataset, i)
+    }
+    else {
+        x <- dataset[[i]]
+        gamma <- model@theta[i] * count
+        nu <- model@nuCMP[i]
+        nu * (x * log(gamma) - lgamma(x + 1))
+    }
+}
+
+## TRANSLATED
+## HAS_TESTS
 ## Calling function should test that dataset[i] is not missing
 logLikelihood_Poisson <- function(model, count, dataset, i, useC = FALSE) {
     ## model
@@ -8132,6 +8178,69 @@ printBinomialSpecEqns <- function(object) {
     cat("\n")
     cat("  logit(prob[i]) ~ N(", terms, ", sd^2)\n", sep = "")
 }
+
+printCMPSpecEqns <- function(object) {
+    formulaMu <- object@formulaMu
+    nameY <- object@nameY
+    series <- object@series@.Data
+    lower <- object@lower
+    upper <- object@upper
+    useExpose <- object@useExpose@.Data
+    mean <- object@meanMeanLogNuCMP@.Data
+    sd <- object@sdMeanLogNuCMP@.Data
+    nu <- object@nuSDLogNuCMP@.Data
+    A <- object@ASDLogNuCMP@.Data
+    max <- object@sdLogNuMaxCMP@.Data
+    has.series <- !is.na(series)
+    name.y <- sprintf("%15s", nameY)
+    terms <- expandTermsSpec(formulaMu)
+    if (useExpose) {
+        if (has.series)
+            exposure <- series
+        else
+            exposure <- "exposure"
+        cat(name.y, "[i] ~ CMP(rate[i] * ", exposure, "[i], dispersion[i])", sep = "")
+        if (lower > 0 || is.finite(upper))
+            cat(",  ", format(lower, digits = 4), "< rate[i] <", format(upper, digits = 4))
+        cat("\n")
+        cat("      log(rate[i]) ~ N(", terms, ", sd^2)\n", sep = "")
+    }
+    else {
+        cat("              y[i] ~ CMP(count[i], dispersion[i])")
+        if (lower > 0 || is.finite(upper))
+            cat(",  ", format(lower, digits = 4), "< count[i] <", format(upper, digits = 4))
+        cat("\n")
+        cat("     log(count[i]) ~ N(", terms, ", sd^2)  \n", sep = "")
+    }
+    cat("log(dispersion[i]) ~ N(mean[i], scale^2)\n")
+    cat("           mean[i] ~ N(", mean, ", ", squaredOrNA(sd), ")\n", sep = "")
+    cat("             scale ~ trunc-half-t(", nu, ", ", sep = "")
+    cat(squaredOrNA(A), ", ", max, ")\n", sep = "")
+}
+
+printCMPLikEqns <- function(object) {
+    formulaMu <- object@formulaMu
+    useExpose <- object@useExpose@.Data
+    mean <- object@meanMeanLogNuCMP@.Data
+    sd <- object@sdMeanLogNuCMP@.Data
+    nu <- object@nuSDLogNuCMP@.Data
+    A <- object@ASDLogNuCMP@.Data
+    max <- object@sdLogNuMaxCMP@.Data
+    terms <- expandTermsSpec(formulaMu)
+    if (useExpose) {
+        cat("              y[i] ~ CMP(rate[i] * exposure[i], dispersion[i])\n")
+        cat("      log(rate[i]) ~ N(", terms, ", sd^2)\n", sep = "")
+    }
+    else {
+        cat("              y[i] ~ CMP(count[i], dispersion[i])\n")
+        cat("     log(count[i]) ~ N(", terms, ", sd^2)\n", sep = "")
+    }
+    cat("log(dispersion[i]) ~ N(mean[i], scale^2)\n")
+    cat("           mean[i] ~ N(", mean, ", ", squaredOrNA(sd), ")\n", sep = "")
+    cat("             scale ~ trunc-half-t(", nu, ", ", sep = "")
+    cat(squaredOrNA(A), ", ", max, ")\n", sep = "")
+}
+
 
 printCovariatesEqns <- function(object) {
     AEtaIntercept <- object@AEtaIntercept@.Data

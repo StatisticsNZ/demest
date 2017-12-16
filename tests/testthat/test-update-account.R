@@ -4470,6 +4470,7 @@ test_that("diffLogDensJumpOrigDest works with CombinedAccountMovements - no age"
 
 test_that("R and C versions of diffLogDensJumpOrigDest give same answer - no age", {
     diffLogDensJumpOrigDest <- demest:::diffLogDensJumpOrigDest
+    updateProposalAccountMoveOrigDest <- demest:::updateProposalAccountMoveOrigDest
     initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     population <- Counts(array(seq(1000L, 1500L, 100L),
@@ -4506,15 +4507,25 @@ test_that("R and C versions of diffLogDensJumpOrigDest give same answer - no age
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
-    updated <- FALSE
     x@iComp <- 1L
-    ans.R <- diffLogDensJumpOrigDest(x, useC = FALSE)
-    ans.C <- diffLogDensJumpOrigDest(x, useC = TRUE)
-    if (test.identity)
-        expect_identical(ans.R, ans.C)
-    else
-        expect_equal(ans.R, ans.C)
+    updated <- FALSE
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        x <- updateProposalAccountMoveOrigDest(x)
+        if (x@generatedNewProposal@.Data) {
+            updated <- TRUE
+            ans.R <- diffLogDensJumpOrigDest(x, useC = FALSE)
+            ans.C <- diffLogDensJumpOrigDest(x, useC = TRUE)
+            if (test.identity)
+                expect_identical(ans.R, ans.C)
+            else
+                expect_equal(ans.R, ans.C)
+        }
+    }
+    if (!updated)
+        warning("not updated")
 })
+
 
 test_that("diffLogDensJumpOrigDest works - with age", {
     diffLogDensJumpOrigDest <- demest:::diffLogDensJumpOrigDest
@@ -4743,6 +4754,7 @@ test_that("R and C versions of diffLogDensJumpOrigDest give same answer - with a
 test_that("diffLogDensExpOrigDestPoolNet works with CombinedAccountMovements - no age", {
     diffLogDensExpOrigDestPoolNet <- demest:::diffLogDensExpOrigDestPoolNet
     updateProposalAccountMoveOrigDest <- demest:::updateProposalAccountMoveOrigDest
+    diffLogDensExpOneOrigDestParChPool <- demest:::diffLogDensExpOneOrigDestParChPool
     initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     getICellCompFromExp <- demest:::getICellCompFromExp
@@ -4758,9 +4770,9 @@ test_that("diffLogDensExpOrigDestPoolNet works with CombinedAccountMovements - n
                                              reg_dest = c("a", "b", "c"),
                                              time = "2001-2005")))
     net.mig <- Counts(array(c(5L, -1L, 10L),
-                             dim = c(3, 1),
-                             dimnames = list(reg = c("a", "b", "c"),
-                                             time = "2001-2005")))
+                            dim = c(3, 1),
+                            dimnames = list(reg = c("a", "b", "c"),
+                                            time = "2001-2005")))
     account <- Movements(population = population,
                          internal = internal,
                          net = list(net.mig = net.mig))
@@ -4773,7 +4785,7 @@ test_that("diffLogDensExpOrigDestPoolNet works with CombinedAccountMovements - n
                                                    dimnames = list(reg = c("a", "b", "c"),
                                                                    time = "2001-2005"))))
     data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
-                              Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
+                        Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
     datasets <- list(internal + 10L,
                      population - 5L)
@@ -4795,31 +4807,37 @@ test_that("diffLogDensExpOrigDestPoolNet works with CombinedAccountMovements - n
         set.seed(seed)
         x <- updateProposalAccountMoveOrigDest(x0)
         if (x@generatedNewProposal@.Data) {
+            updated <- TRUE
             ans.obtained <- diffLogDensExpOrigDestPoolNet(x)
-            i.cell.orig <- getICellCompFromExp(x@iExpFirst, x@mappingsFromExp[[1]])
-            i.cell.dest <- getICellCompFromExp(x@iExpFirstOther, x@mappingsFromExp[[1]])
-            ans.expected <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell.orig,
-                                                               hasAge = FALSE,
-                                                               updatedPopn = FALSE,
-                                                               ageTimeStep = x@ageTimeStep,
-                                                               component = x@account@components[[1]],
-                                                               theta = x@systemModels[[2]]@theta,
-                                                               iteratorComp = x@iteratorsComp[[1]],
-                                                               iExpFirst = x@iExpFirst,
-                                                               exposure = x@exposure,
-                                                               iteratorExposure = x@iteratorExposure,
-                                                               diff = -x@diffProp) +
-                diffLogDensExpOneOrigDestParChPool(iCell = i.cell.dest,
-                                                   hasAge = FALSE,
-                                                   updatedPopn = FALSE,
-                                                   ageTimeStep = x@ageTimeStep,
-                                                   component = x@account@components[[1]],
-                                                   theta = x@systemModels[[2]]@theta,
-                                                   iteratorComp = x@iteratorsComp[[1]],
-                                                   iExpFirst = x@iExpFirstOther,
-                                                   exposure = x@exposure,
-                                                   iteratorExposure = x@iteratorExposure,
-                                                   diff = x@diffProp)
+            no.exposure.affected <- (x@iExpFirst == 0L) || (x@iExpFirst == x@iExpFirstOther)
+            if (no.exposure.affected)
+                ans.expected <- 0
+            else {
+                i.cell.orig <- getICellCompFromExp(x@iExpFirst, x@mappingsFromExp[[1]])
+                i.cell.dest <- getICellCompFromExp(x@iExpFirstOther, x@mappingsFromExp[[1]])
+                ans.expected <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell.orig,
+                                                                   hasAge = FALSE,
+                                                                   updatedPopn = FALSE,
+                                                                   ageTimeStep = x@ageTimeStep,
+                                                                   component = x@account@components[[1]],
+                                                                   theta = x@systemModels[[2]]@theta,
+                                                                   iteratorComp = x@iteratorsComp[[1]],
+                                                                   iExpFirst = x@iExpFirst,
+                                                                   exposure = x@exposure,
+                                                                   iteratorExposure = x@iteratorExposure,
+                                                                   diff = -x@diffProp) +
+                    diffLogDensExpOneOrigDestParChPool(iCell = i.cell.dest,
+                                                       hasAge = FALSE,
+                                                       updatedPopn = FALSE,
+                                                       ageTimeStep = x@ageTimeStep,
+                                                       component = x@account@components[[1]],
+                                                       theta = x@systemModels[[2]]@theta,
+                                                       iteratorComp = x@iteratorsComp[[1]],
+                                                       iExpFirst = x@iExpFirstOther,
+                                                       exposure = x@exposure,
+                                                       iteratorExposure = x@iteratorExposure,
+                                                       diff = x@diffProp)
+            }
             if (test.identity)
                 expect_identical(ans.obtained, ans.expected)
             else
@@ -4885,6 +4903,7 @@ test_that("R and C versions of diffLogDensExpOrigDestPoolNet give same answer wi
         set.seed(seed)
         x <- updateProposalAccountMoveOrigDest(x0)
         if (x@generatedNewProposal@.Data) {
+            updated <- TRUE
             ans.R <- diffLogDensExpOrigDestPoolNet(x, useC = FALSE)
             ans.C <- diffLogDensExpOrigDestPoolNet(x, useC = TRUE)
             if (test.identity)
@@ -5921,7 +5940,7 @@ test_that("R and C versions of diffLogDensJumpComp give same answer - no age", {
         if (x@generatedNewProposal@.Data) {
             updated <- TRUE
             ans.R <- diffLogDensJumpComp(x, useC = FALSE)
-            ans.C <- diffLogDensJumpComp(x, useC = FALSE)
+            ans.C <- diffLogDensJumpComp(x, useC = TRUE)
             if (test.identity)
                 expect_identical(ans.R, ans.C)
             else
@@ -6144,7 +6163,7 @@ test_that("R and C versions of diffLogDensJumpComp give same answer - with age",
         if (x@generatedNewProposal@.Data) {
             updated <- TRUE
             ans.R <- diffLogDensJumpComp(x, useC = FALSE)
-            ans.C <- diffLogDensJumpComp(x, useC = FALSE)
+            ans.C <- diffLogDensJumpComp(x, useC = TRUE)
             if (test.identity)
                 expect_identical(ans.R, ans.C)
             else
@@ -6159,7 +6178,11 @@ test_that("R and C versions of diffLogDensJumpComp give same answer - with age",
 
 test_that("diffLogDensExpComp works", {
     diffLogDensExpComp <- demest:::diffLogDensExpComp
+    getICellBirthsFromExp <- demest:::getICellBirthsFromExp
+    getICellCompFromExp <- demest:::getICellCompFromExp
     updateProposalAccountMoveComp <- demest:::updateProposalAccountMoveComp
+    diffLogDensExpOneComp <- demest:::diffLogDensExpOneComp
+    diffLogDensExpOneOrigDestParChPool <- demest:::diffLogDensExpOneOrigDestParChPool
     initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     popn <- Counts(array(rpois(n = 90, lambda = 100),
@@ -6378,7 +6401,7 @@ test_that("R and C versions of diffLogDensExpComp give same value", {
             updated <- TRUE
             ans.R <- diffLogDensExpComp(x, useC = FALSE)
             ans.C <- diffLogDensExpComp(x, useC = TRUE)
-            if (test.R)
+            if (test.identity)
                 expect_identical(ans.R, ans.C)
             else
                 expect_equal(ans.R, ans.C)
@@ -6392,6 +6415,11 @@ test_that("R and C versions of diffLogDensExpComp give same value", {
 test_that("diffLogDensExpComp works with CombinedAccountMovements - Parent-Child dimensions", {
     updateProposalAccountMoveBirths <- demest:::updateProposalAccountMoveBirths
     initialCombinedAccount <- demest:::initialCombinedAccount
+    diffLogDensExpComp <- demest:::diffLogDensExpComp
+    getICellBirthsFromExp <- demest:::getICellBirthsFromExp
+    getICellCompFromExp <- demest:::getICellCompFromExp
+    diffLogDensExpOneComp <- demest:::diffLogDensExpOneComp
+    diffLogDensExpOneOrigDestParChPool <- demest:::diffLogDensExpOneOrigDestParChPool
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     population <- Counts(array(c(200L, 220L, 190L,
                                  220L, 180L, 190L),
@@ -6486,6 +6514,7 @@ test_that("diffLogDensExpComp works with CombinedAccountMovements - Parent-Child
 test_that("R and C versions of diffLogDensExpComp give same answer with CombinedAccountMovements - Parent-Child dimensions", {
     updateProposalAccountMoveBirths <- demest:::updateProposalAccountMoveBirths
     initialCombinedAccount <- demest:::initialCombinedAccount
+    diffLogDensExpComp <- demest:::diffLogDensExpComp
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     population <- Counts(array(c(200L, 220L, 190L,
                                  220L, 180L, 190L),
@@ -6542,7 +6571,7 @@ test_that("R and C versions of diffLogDensExpComp give same answer with Combined
             updated <- TRUE
             ans.R <- diffLogDensExpComp(x, useC = FALSE)
             ans.C <- diffLogDensExpComp(x, useC = TRUE)
-            if (test.R)
+            if (test.identity)
                 expect_identical(ans.R, ans.C)
             else
                 expect_equal(ans.R, ans.C)
@@ -6559,6 +6588,7 @@ test_that("R and C versions of diffLogDensExpComp give same answer with Combined
 
 test_that("updateCellMove works", {
     updateCellMove <- demest:::updateCellMove
+    updateProposalAccountMovePool <- demest:::updateProposalAccountMovePool
     updateProposalAccountMovePopn <- demest:::updateProposalAccountMovePopn
     updateProposalAccountMoveComp <- demest:::updateProposalAccountMoveComp
     updateProposalAccountMoveOrigDest <- demest:::updateProposalAccountMoveOrigDest
@@ -6685,6 +6715,7 @@ test_that("updateCellMove works", {
 
 test_that("R and C versions of updateCellMove give same answer", {
     updateCellMove <- demest:::updateCellMove
+    updateProposalAccountMovePool <- demest:::updateProposalAccountMovePool
     updateProposalAccountMovePopn <- demest:::updateProposalAccountMovePopn
     updateProposalAccountMoveComp <- demest:::updateProposalAccountMoveComp
     updateProposalAccountMoveOrigDest <- demest:::updateProposalAccountMoveOrigDest

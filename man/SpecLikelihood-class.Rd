@@ -4,6 +4,7 @@
 \name{SpecLikelihood-class}
 \alias{SpecLikelihood-class}
 \alias{SpecLikelihoodBinomial-class}
+\alias{SpecLikelihoodCMP-class}
 \alias{SpecLikelihoodNormalVarsigmaKnown-class}
 \alias{SpecLikelihoodNormalVarsigmaUnknown-class}
 \alias{SpecLikelihoodPoisson-class}

@@ -679,6 +679,162 @@ test_that("initialModel methods for Varying model can cope with orig-dest dimtyp
     expect_true(validObject(x))
 })
 
+
+test_that("initialModel creates object of class CMPVaryingUseExp from valid inputs", {
+    initialModel <- demest:::initialModel
+    makeSigmaInitialPoisson <- demest:::makeSigmaInitialPoisson
+    loglm <- MASS:::loglm
+    makePriors <- demest:::makePriors
+    jitterBetas <- demest:::jitterBetas
+    ## no missing values
+    exposure <- Counts(array(rpois(n = 20, lambda = 20),
+                             dim = c(5, 4),
+                             dimnames = list(age = 0:4, region = letters[1:4])))
+    y <- Counts(array(rpois(n = 20, lambda = 0.3 * exposure),
+                      dim = c(5, 4),
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    spec <- Model(y ~ CMP(mean ~ age + region))
+    set.seed(1)
+    x <- initialModel(spec, y = y, exposure = exposure)
+    set.seed(1)
+    theta <- rgamma(n = 20,
+                    shape = 0.5 * mean(y) + 0.5 * y,
+                    rate = 0.5 * mean(exposure) + 0.5 * exposure)
+    sigma <- runif(1, max = 1)
+    theta <- array(theta, dim = dim(y), dimnames = dimnames(y))
+    betas <- loglm(~ age + region, theta)$param
+    theta <- as.numeric(theta)
+    sdNu <- runif(1, max = 1)
+    meanNu <- rnorm(n = 1, mean = spec@meanMeanLogNuCMP, sd = spec@sdMeanLogNuCMP)
+    nuCMP <- rnorm(n = length(theta), mean = meanNu, sd = sdNu)
+    priors <- makePriors(betas = betas,
+                         specs = spec@specsPriors,
+                         namesSpecs = spec@namesSpecsPriors,
+                         margins = list(0L, 1L, 2L),
+                         y = y,
+                         sY = NULL)
+    betas <- unname(lapply(betas, as.numeric))
+    betas <- jitterBetas(betas)
+    expect_is(x, "CMPVaryingUseExp")
+    expect_identical(x@sigma, new("Scale", sigma))
+    expect_identical(x@theta, theta)
+    expect_identical(x@betas, betas)
+    expect_true(all(sapply(x@priorsBetas, is, "Prior")))
+    expect_is(x@priorsBetas[[1]], "ExchFixed")
+    expect_identical(x@ASigma, new("Scale", 1))
+    expect_identical(x@nuSigma, new("DegreesFreedom", 7))
+    expect_identical(x@sigmaMax, new("Scale", qhalft(0.999, df = 7, scale = 1)))
+    expect_identical(x@tolerance, 1e-5)
+    expect_identical(x@maxAttempt, 100L)
+    expect_identical(x@nFailedPropTheta, new("Counter", 0L))
+    expect_identical(x@meanLogNuCMP, new("Parameter", meanNu))
+    expect_identical(x@sdLogNuCMP, new("Scale", sdNu))
+    ## intercept only
+    exposure <- Counts(array(rpois(n = 20, lambda = 20),
+                             dim = c(5, 4),
+                             dimnames = list(age = 0:4, region = letters[1:4])))
+    y <- Counts(array(rpois(n = 20, lambda = 0.3 * exposure),
+                      dim = c(5, 4),
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    spec <- Model(y ~ CMP(mean ~ 1))
+    set.seed(1)
+    x <- initialModel(spec, y = y, exposure = exposure)
+    set.seed(1)
+    theta <- rgamma(n = 20,
+                    shape = 0.5 * mean(y) + 0.5 * y,
+                    rate = 0.5 * mean(exposure) + 0.5 * exposure)
+    sigma <- runif(1, max = 1)
+    expect_identical(x@sigma, new("Scale", sigma))
+    expect_identical(x@theta, theta)
+    expect_identical(sapply(x@priorsBetas, class), "ExchFixed")
+    ## specify upper and lower
+    exposure <- Counts(array(rpois(n = 20, lambda = 20),
+                             dim = c(5, 4),
+                             dimnames = list(age = 0:4, region = letters[1:4])))
+    y <- Counts(array(rpois(n = 20, lambda = 0.3 * exposure),
+                      dim = c(5, 4),
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    spec <- Model(y ~ CMP(mean ~ age + region), lower = 0.01, upper = 2)
+    set.seed(1)
+    x <- initialModel(spec, y = y, exposure = exposure)
+    expect_true(all(x@theta >= 0.01))
+    expect_true(all(x@theta <= 2))
+    expect_equal(x@lower, log(0.01))
+    expect_equal(x@upper, log(2))
+    ## has missing values
+    exposure <- Counts(array(rpois(n = 20, lambda = 20),
+                             dim = c(5, 4),
+                             dimnames = list(age = 0:4, region = letters[1:4])))
+    y <- Counts(array(rpois(n = 20, lambda = 0.3 * exposure),
+                      dim = c(5, 4),
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    y[1:5] <- NA
+    spec <- Model(y ~ CMP(mean ~ age + region))
+    set.seed(1)
+    x <- initialModel(spec, y = y, exposure = exposure)
+    set.seed(1)
+    mean.y <- mean(y[6:20])
+    mean.expose <- mean(exposure[6:20])
+    shape <- 0.5 * mean.y + 0.5 * y
+    shape[1:5] <- mean.y
+    rate <- 0.5 * mean.expose + 0.5 * exposure
+    rate[1:5] <- mean.expose
+    theta <- rgamma(n = 20, shape = shape, rate = rate)
+    sigma <- runif(1)
+    theta <- array(theta, dim = dim(y), dimnames = dimnames(y))
+    betas <- loglm(~ age + region, theta)$param
+    theta <- as.numeric(theta)
+    sdNu <- runif(1, max = 1)
+    meanNu <- rnorm(n = 1, mean = spec@meanMeanLogNuCMP, sd = spec@sdMeanLogNuCMP)
+    nuCMP <- rnorm(n = length(theta), mean = meanNu, sd = sdNu)
+    priors <- makePriors(betas = betas,
+                         specs = spec@specsPriors,
+                         namesSpecs = spec@namesSpecsPriors,
+                         margins = list(0L, 1L, 2L),
+                         y = y,
+                         sY = NULL)
+    betas <- unname(lapply(betas, as.numeric))
+    betas <- jitterBetas(betas)
+    expect_is(x, "CMPVaryingUseExp")
+    expect_identical(x@sigma, new("Scale", sigma))
+    expect_identical(x@theta, theta)
+    expect_identical(x@betas, betas)
+    expect_true(all(sapply(x@priorsBetas, is, "Prior")))
+    expect_is(x@priorsBetas[[1]], "ExchFixed")
+    expect_identical(x@nuSigma, new("DegreesFreedom", 7))
+    expect_identical(x@ASigma, new("Scale", 1))
+    expect_identical(x@tolerance, 1e-5)
+    expect_identical(x@sigma, new("Scale", sigma))
+    expect_identical(x@maxAttempt, 100L)
+    expect_identical(x@nFailedPropTheta, new("Counter", 0L))
+    ## saturated model
+    exposure <- Counts(array(rpois(n = 20, lambda = 20),
+                             dim = c(5, 4),
+                             dimnames = list(age = 0:4, region = letters[1:4])))
+    y <- Counts(array(rpois(n = 20, lambda = 0.3 * exposure),
+                      dim = c(5, 4),
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    spec <- Model(y ~ CMP(mean ~ age * region),
+                  age:region ~ Exch(error = Error(scale = HalfT(df = 3, scale = 0.1, max = 0.6))))
+    x <- initialModel(spec, y = y, exposure = exposure)
+    expect_identical(x@ASigma, x@priorsBetas[[4]]@ATau)
+    expect_identical(x@sigmaMax, x@priorsBetas[[4]]@tauMax)
+    expect_identical(x@nuSigma, x@priorsBetas[[4]]@nuTau)
+    ## must have exposure
+    exposure <- Counts(array(rpois(n = 20, lambda = 20),
+                             dim = c(5, 4),
+                             dimnames = list(age = 0:4, region = letters[1:4])))
+    y <- Counts(array(rpois(n = 20, lambda = 0.3 * exposure),
+                      dim = c(5, 4),
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    spec <- Model(y ~ CMP(mean ~ age * region))
+    expect_error(initialModel(spec, y = y, exposure = NULL),
+                 "model 'y ~ CMP\\(mean ~ age \\* region\\)' uses exposure, but no 'exposure' argument supplied")
+})
+
+
+
+
 test_that("initialModel creates object of class NormalVaryingVarsigmaKnown from valid inputs", {
     initialModel <- demest:::initialModel
     makeLinearBetas <- demest:::makeLinearBetas

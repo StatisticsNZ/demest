@@ -79,6 +79,12 @@ setMethod("getTransform",
           })
 
 setMethod("getTransform",
+          signature = "CMPVarying",
+          function(object) {
+              log
+          })
+
+setMethod("getTransform",
           signature = "NormalVarying",
           function(object) {
               function(x) x
@@ -95,7 +101,7 @@ setMethod("getTransform",
 
 
 ## 'logLikelihood' is only used with data models (as part of updating counts or
-## account. PoissonNotUseExp models are not used for data models,
+## account. CMPNotUseExp and PoissonNotUseExp models are not used for data models,
 ## so there are no 'logLikelihood' methods for them.
 
 ## TRANSLATED
@@ -136,6 +142,54 @@ setMethod("logLikelihood",
                                          count = count,
                                          dataset = dataset,
                                          i = i)
+              }
+          })
+
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+## *************************************************************
+## NOTE THAT THIS FUNCTION RETURNS THE UNNORMALISED LIKELIHOOD.
+## THIS IS FINE WHEN THE FUNCTION IS BEING USED TO DECIDE WHETHER
+## TO ACCEPT A PROPOSED VALUE FOR 'count' BUT WILL NOT WORK WHEN
+## DECIDING TO ACCEPT A PROPOSED VALUE FOR 'theta', OR FOR CALCULATING
+## LIKELIHOODS MORE GENERALLY.
+## *************************************************************
+## Calling function should test that dataset[i] is not missing
+setMethod("logLikelihood",
+          signature(model = "CMPVaryingUseExp",
+                    count = "integer",
+                    dataset = "Counts",
+                    i = "integer"),
+          function(model, count, dataset, i, useC = FALSE, useSpecific = FALSE) {
+              ## count
+              stopifnot(identical(length(count), 1L))
+              stopifnot(!is.na(count))
+              stopifnot(count >= 0)
+              ## dataset
+              stopifnot(all(dataset[!is.na(dataset)] >= 0))
+              ## i
+              stopifnot(identical(length(i), 1L))
+              stopifnot(!is.na(i))
+              stopifnot(i >= 1L)
+              ## model and dataset
+              stopifnot(identical(length(model@theta), length(dataset)))
+              ## model and i
+              stopifnot(i <= length(model@theta))
+              ## dataset and i
+              stopifnot(i <= length(dataset))
+              stopifnot(!is.na(dataset@.Data[i]))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(logLikelihood_Poisson_R, model, count, dataset, i)
+                  else
+                      .Call(logLikelihood_R, model, count, dataset, i)
+              }
+              else {
+                  logLikelihood_CMP(model = model,
+                                    count = count,
+                                    dataset = dataset,
+                                    i = i)
               }
           })
 
@@ -1587,6 +1641,33 @@ setMethod("transferParamModel",
 
 ## updateModelNotUseExp ##############################################################
 
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("updateModelNotUseExp",
+          signature(object = "CMPVaryingNotUseExp"),
+          function(object, y, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(is.integer(y))
+              stopifnot(identical(length(y), length(object@theta)))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(updateModelNotUseExp_CMPVaryingNotUseExp_R, object, y)
+                  else
+                      .Call(updateModelNotUseExp_R, object, y)
+              }
+              else {
+                  object <- updateThetaAndNu_CMPVaryingNotUseExp(object, y = y)
+                  object <- updateSigma_Varying(object, g = log)
+                  object <- updateMeanLogNu(object)
+                  object <- updateSDLogNu(object)
+                  object <- updateBetasAndPriorsBetas(object, g = log)
+                  object
+              }
+          })
+
 ## TRANSLATED
 ## HAS_TESTS
 setMethod("updateModelNotUseExp",
@@ -1978,6 +2059,40 @@ setMethod("updateModelUseExp",
                                                         exposure = exposure)
                   object <- updateSigma_Varying(object, g = logit)
                   object <- updateBetasAndPriorsBetas(object, g = logit)
+                  object
+              }
+          })
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("updateModelUseExp",
+          signature(object = "CMPVaryingUseExp"),
+          function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(is.integer(y))
+              stopifnot(identical(length(y), length(object@theta)))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
+              ## exposure
+              stopifnot(is.double(exposure))
+              stopifnot(all(exposure[!is.na(exposure)] >= 0))
+              ## y and exposure
+              stopifnot(identical(length(exposure), length(y)))
+              stopifnot(all(is.na(exposure) <= is.na(y)))
+              stopifnot(all(y@.Data[!is.na(y@.Data)][exposure[!is.na(y)] == 0] == 0))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(updateModelUseExp_CMPVaryingUseExp_R, object, y, exposure)
+                  else
+                      .Call(updateModelUseExp_R, object, y, exposure)
+              }
+              else {
+                  object <- updateThetaAndNu_CMPVaryingUseExp(object, y = y, exposure)
+                  object <- updateSigma_Varying(object, g = log)
+                  object <- updateMeanLogNu(object)
+                  object <- updateSDLogNu(object)
+                  object <- updateBetasAndPriorsBetas(object, g = log)
                   object
               }
           })
