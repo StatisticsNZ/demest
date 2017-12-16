@@ -4770,9 +4770,9 @@ test_that("diffLogDensExpOrigDestPoolNet works with CombinedAccountMovements - n
                                              reg_dest = c("a", "b", "c"),
                                              time = "2001-2005")))
     net.mig <- Counts(array(c(5L, -1L, 10L),
-                             dim = c(3, 1),
-                             dimnames = list(reg = c("a", "b", "c"),
-                                             time = "2001-2005")))
+                            dim = c(3, 1),
+                            dimnames = list(reg = c("a", "b", "c"),
+                                            time = "2001-2005")))
     account <- Movements(population = population,
                          internal = internal,
                          net = list(net.mig = net.mig))
@@ -4785,7 +4785,7 @@ test_that("diffLogDensExpOrigDestPoolNet works with CombinedAccountMovements - n
                                                    dimnames = list(reg = c("a", "b", "c"),
                                                                    time = "2001-2005"))))
     data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
-                              Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
+                        Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
     datasets <- list(internal + 10L,
                      population - 5L)
@@ -4809,30 +4809,35 @@ test_that("diffLogDensExpOrigDestPoolNet works with CombinedAccountMovements - n
         if (x@generatedNewProposal@.Data) {
             updated <- TRUE
             ans.obtained <- diffLogDensExpOrigDestPoolNet(x)
-            i.cell.orig <- getICellCompFromExp(x@iExpFirst, x@mappingsFromExp[[1]])
-            i.cell.dest <- getICellCompFromExp(x@iExpFirstOther, x@mappingsFromExp[[1]])
-            ans.expected <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell.orig,
-                                                               hasAge = FALSE,
-                                                               updatedPopn = FALSE,
-                                                               ageTimeStep = x@ageTimeStep,
-                                                               component = x@account@components[[1]],
-                                                               theta = x@systemModels[[2]]@theta,
-                                                               iteratorComp = x@iteratorsComp[[1]],
-                                                               iExpFirst = x@iExpFirst,
-                                                               exposure = x@exposure,
-                                                               iteratorExposure = x@iteratorExposure,
-                                                               diff = -x@diffProp) +
-                diffLogDensExpOneOrigDestParChPool(iCell = i.cell.dest,
-                                                   hasAge = FALSE,
-                                                   updatedPopn = FALSE,
-                                                   ageTimeStep = x@ageTimeStep,
-                                                   component = x@account@components[[1]],
-                                                   theta = x@systemModels[[2]]@theta,
-                                                   iteratorComp = x@iteratorsComp[[1]],
-                                                   iExpFirst = x@iExpFirstOther,
-                                                   exposure = x@exposure,
-                                                   iteratorExposure = x@iteratorExposure,
-                                                   diff = x@diffProp)
+            no.exposure.affected <- (x@iExpFirst == 0L) || (x@iExpFirst == x@iExpFirstOther)
+            if (no.exposure.affected)
+                ans.expected <- 0
+            else {
+                i.cell.orig <- getICellCompFromExp(x@iExpFirst, x@mappingsFromExp[[1]])
+                i.cell.dest <- getICellCompFromExp(x@iExpFirstOther, x@mappingsFromExp[[1]])
+                ans.expected <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell.orig,
+                                                                   hasAge = FALSE,
+                                                                   updatedPopn = FALSE,
+                                                                   ageTimeStep = x@ageTimeStep,
+                                                                   component = x@account@components[[1]],
+                                                                   theta = x@systemModels[[2]]@theta,
+                                                                   iteratorComp = x@iteratorsComp[[1]],
+                                                                   iExpFirst = x@iExpFirst,
+                                                                   exposure = x@exposure,
+                                                                   iteratorExposure = x@iteratorExposure,
+                                                                   diff = -x@diffProp) +
+                    diffLogDensExpOneOrigDestParChPool(iCell = i.cell.dest,
+                                                       hasAge = FALSE,
+                                                       updatedPopn = FALSE,
+                                                       ageTimeStep = x@ageTimeStep,
+                                                       component = x@account@components[[1]],
+                                                       theta = x@systemModels[[2]]@theta,
+                                                       iteratorComp = x@iteratorsComp[[1]],
+                                                       iExpFirst = x@iExpFirstOther,
+                                                       exposure = x@exposure,
+                                                       iteratorExposure = x@iteratorExposure,
+                                                       diff = x@diffProp)
+            }
             if (test.identity)
                 expect_identical(ans.obtained, ans.expected)
             else

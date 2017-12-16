@@ -627,7 +627,7 @@ setMethod("updateSystemModels",
                           transform <- transforms.exp.to.comp[[i]]
                           if (!is.null(transform))
                               exposure <- extend(exposure,
-                                                 transform = transforms.exp.to.comp[i])
+                                                 transform = transforms.exp.to.comp[[i]])
                           model <- updateModelUseExp(object = model,
                                                      y = component,
                                                      exposure = exposure)

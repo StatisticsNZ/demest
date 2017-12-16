@@ -2672,10 +2672,6 @@ updateSubsequentPopnMove <- function(combined, useC = FALSE) {
         iterator <- combined@iteratorPopn
         diff <- combined@diffProp
         is.increment <- combined@isIncrement
-        i.comp <- combined@iComp
-        i.orig.dest <- combined@iOrigDest
-        i.pool <- combined@iPool
-        i.int.net <- combined@iIntNet
         is.popn <- i.comp == 0L
         is.orig.dest <- i.comp == i.orig.dest
         is.pool <- i.comp == i.pool
@@ -2747,10 +2743,6 @@ updateSubsequentAccMove <- function(combined, useC = FALSE) {
         iterator <- combined@iteratorAcc
         diff <- combined@diffProp
         is.increment <- combined@isIncrement
-        i.comp <- combined@iComp
-        i.orig.dest <- combined@iOrigDest
-        i.pool <- combined@iPool
-        i.int.net <- combined@iIntNet
         no.subsequent.accession <- i.acc.next == 0L
         if (no.subsequent.accession)
             return(combined)
