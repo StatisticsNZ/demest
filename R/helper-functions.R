@@ -4043,7 +4043,7 @@ plotHalfT <- function(df = 7, scale = 1, max = 0.999,
     }
 }
 
-## READY_TO_TRANSLATE_FIRST
+## TRANSLATED
 ## HAS_TESTS
 rhalftTrunc1 <- function(df, scale, max, useC = FALSE) {
     ## df
@@ -6610,7 +6610,7 @@ logLikelihood_Binomial <- function(model, count, dataset, i, useC = FALSE) {
 }
 
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 ## *************************************************************
 ## NOTE THAT THIS FUNCTION RETURNS THE UNNORMALISED LIKELIHOOD.

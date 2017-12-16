@@ -5935,7 +5935,7 @@ test_that("R and C versions of diffLogDensJumpComp give same answer - no age", {
         if (x@generatedNewProposal@.Data) {
             updated <- TRUE
             ans.R <- diffLogDensJumpComp(x, useC = FALSE)
-            ans.C <- diffLogDensJumpComp(x, useC = FALSE)
+            ans.C <- diffLogDensJumpComp(x, useC = TRUE)
             if (test.identity)
                 expect_identical(ans.R, ans.C)
             else
@@ -6158,7 +6158,7 @@ test_that("R and C versions of diffLogDensJumpComp give same answer - with age",
         if (x@generatedNewProposal@.Data) {
             updated <- TRUE
             ans.R <- diffLogDensJumpComp(x, useC = FALSE)
-            ans.C <- diffLogDensJumpComp(x, useC = FALSE)
+            ans.C <- diffLogDensJumpComp(x, useC = TRUE)
             if (test.identity)
                 expect_identical(ans.R, ans.C)
             else
@@ -6173,7 +6173,11 @@ test_that("R and C versions of diffLogDensJumpComp give same answer - with age",
 
 test_that("diffLogDensExpComp works", {
     diffLogDensExpComp <- demest:::diffLogDensExpComp
+    getICellBirthsFromExp <- demest:::getICellBirthsFromExp
+    getICellCompFromExp <- demest:::getICellCompFromExp
     updateProposalAccountMoveComp <- demest:::updateProposalAccountMoveComp
+    diffLogDensExpOneComp <- demest:::diffLogDensExpOneComp
+    diffLogDensExpOneOrigDestParChPool <- demest:::diffLogDensExpOneOrigDestParChPool
     initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     popn <- Counts(array(rpois(n = 90, lambda = 100),
@@ -6392,7 +6396,7 @@ test_that("R and C versions of diffLogDensExpComp give same value", {
             updated <- TRUE
             ans.R <- diffLogDensExpComp(x, useC = FALSE)
             ans.C <- diffLogDensExpComp(x, useC = TRUE)
-            if (test.R)
+            if (test.identity)
                 expect_identical(ans.R, ans.C)
             else
                 expect_equal(ans.R, ans.C)
@@ -6406,6 +6410,11 @@ test_that("R and C versions of diffLogDensExpComp give same value", {
 test_that("diffLogDensExpComp works with CombinedAccountMovements - Parent-Child dimensions", {
     updateProposalAccountMoveBirths <- demest:::updateProposalAccountMoveBirths
     initialCombinedAccount <- demest:::initialCombinedAccount
+    diffLogDensExpComp <- demest:::diffLogDensExpComp
+    getICellBirthsFromExp <- demest:::getICellBirthsFromExp
+    getICellCompFromExp <- demest:::getICellCompFromExp
+    diffLogDensExpOneComp <- demest:::diffLogDensExpOneComp
+    diffLogDensExpOneOrigDestParChPool <- demest:::diffLogDensExpOneOrigDestParChPool
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     population <- Counts(array(c(200L, 220L, 190L,
                                  220L, 180L, 190L),
@@ -6500,6 +6509,7 @@ test_that("diffLogDensExpComp works with CombinedAccountMovements - Parent-Child
 test_that("R and C versions of diffLogDensExpComp give same answer with CombinedAccountMovements - Parent-Child dimensions", {
     updateProposalAccountMoveBirths <- demest:::updateProposalAccountMoveBirths
     initialCombinedAccount <- demest:::initialCombinedAccount
+    diffLogDensExpComp <- demest:::diffLogDensExpComp
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     population <- Counts(array(c(200L, 220L, 190L,
                                  220L, 180L, 190L),
@@ -6556,7 +6566,7 @@ test_that("R and C versions of diffLogDensExpComp give same answer with Combined
             updated <- TRUE
             ans.R <- diffLogDensExpComp(x, useC = FALSE)
             ans.C <- diffLogDensExpComp(x, useC = TRUE)
-            if (test.R)
+            if (test.identity)
                 expect_identical(ans.R, ans.C)
             else
                 expect_equal(ans.R, ans.C)
@@ -6573,6 +6583,7 @@ test_that("R and C versions of diffLogDensExpComp give same answer with Combined
 
 test_that("updateCellMove works", {
     updateCellMove <- demest:::updateCellMove
+    updateProposalAccountMovePool <- demest:::updateProposalAccountMovePool
     updateProposalAccountMovePopn <- demest:::updateProposalAccountMovePopn
     updateProposalAccountMoveComp <- demest:::updateProposalAccountMoveComp
     updateProposalAccountMoveOrigDest <- demest:::updateProposalAccountMoveOrigDest
@@ -6699,6 +6710,7 @@ test_that("updateCellMove works", {
 
 test_that("R and C versions of updateCellMove give same answer", {
     updateCellMove <- demest:::updateCellMove
+    updateProposalAccountMovePool <- demest:::updateProposalAccountMovePool
     updateProposalAccountMovePopn <- demest:::updateProposalAccountMovePopn
     updateProposalAccountMoveComp <- demest:::updateProposalAccountMoveComp
     updateProposalAccountMoveOrigDest <- demest:::updateProposalAccountMoveOrigDest

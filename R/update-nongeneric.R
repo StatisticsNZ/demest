@@ -1954,7 +1954,7 @@ updateSDLogNu <- function(object, useC = FALSE) {
     }
 }
 
-## TRANSLATED (AGAIN)
+## TRANSLATED
 ## HAS_TESTS
 updateSigma_Varying <- function(object, g, useC = FALSE) {
     ## object

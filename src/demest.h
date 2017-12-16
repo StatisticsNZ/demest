@@ -305,6 +305,8 @@ SEXP
   maxLevelComponentWeight_sym,
   updateSeriesDLM_sym,
   
+  nuCMP_sym,
+  
   alphaKnown_sym,
   AKnownVec_sym,  
   
@@ -318,14 +320,18 @@ SEXP
   /* accounts  and combined accounts*/
   account_sym,
   population_sym,
+  accession_sym,
   components_sym,
   iteratorPopn_sym,
+  iteratorAcc_sym,
   iteratorExposure_sym,
   iCell_sym,
   iCellOther_sym,
   iComp_sym,
   iPopnNext_sym,
   iPopnNextOther_sym,
+  iAccNext_sym,
+  iAccNextOther_sym,
   iOrigDest_sym,
   iPool_sym,
   iIntNet_sym,
@@ -342,6 +348,7 @@ SEXP
   iteratorsComp_sym,
   expectedExposure_sym,
   iExposure_sym,
+  iExposureOther_sym,
   isLowerTriangle_sym;
   
   
@@ -459,6 +466,7 @@ SEXP makeMu(int n, SEXP betas_R, SEXP iterator_R);
 double dpoibin1(int x, int size, double prob, int use_log);
 double invlogit1(double x);
 int rcateg1(double* cumProb);
+double rhalftTrunc1(double df, double scale, double max);
 double rinvchisq1(double df, double scale);
 
 SEXP rmvnorm1(SEXP mean_R, SEXP var_R);
@@ -550,6 +558,8 @@ int makeIOther(int i, SEXP transform_R);
 
 /* loglikelihood */
 double logLikelihood_Binomial(SEXP model_R, int count, 
+                                SEXP dataset_R, int i);
+double logLikelihood_CMP(SEXP model_R, int count, 
                                 SEXP dataset_R, int i);
 double logLikelihood_Poisson(SEXP model_R, int count, 
                                 SEXP dataset_R, int i);
@@ -921,6 +931,17 @@ double diffLogDensExpOneComp(int iCell_r, int hasAge,
                         int diff);                        
 double diffLogDensJumpOrigDest(SEXP combined_R);
 double diffLogDensExpOrigDestPoolNet(SEXP combined_R);
+double diffLogDensJumpPoolWithExpose(SEXP combined_R);
+double diffLogDensJumpPoolNoExpose(SEXP combined_R);
+double diffLogDensJumpNet(SEXP combined_R);
+double diffLogDensJumpComp(SEXP combined_R);
+double diffLogDensExpComp(SEXP combined_R);
+
+void updateCellMove(SEXP combined_R);
+void updateSubsequentPopnMove(SEXP combined_R);
+void updateSubsequentAccMove(SEXP combined_R);
+void updateSubsequentExpMove(SEXP combined_R);
+
                         
 /* pointers for routines from dembase package 
  * 
