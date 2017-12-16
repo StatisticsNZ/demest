@@ -52,7 +52,7 @@ setMethod("show",
 setMethod("show",
           signature(object = "SummaryResultsModelEst"),
           function(object) {
-              kDigits <- 4L
+              kDigits <- 3L
               kDivider <- paste(paste(rep("-", times = 50), collapse = ""), "\n", collapse = "")
               mcmc <- object@mcmc
               parameters <- object@parameters
@@ -78,7 +78,7 @@ setMethod("show",
               }
               if (!is.null(gelmanDiag)) {
                   cat("\nparameters:\n")
-                  parameters <- round(parameters, digits = kDigits)
+                  parameters[] <- lapply(parameters, formatC, digits = kDigits, format = "fg")
                   Rhat <- round(gelmanDiag, digits = kDigits - 1L)
                   dot <- ifelse(Rhat < 1.1, "", ".")
                   df <- data.frame(" " = dot,
@@ -95,7 +95,7 @@ setMethod("show",
 setMethod("show",
           signature(object = "SummaryResultsModelPred"),
           function(object) {
-              kDigits <- 4L
+              kDigits <- 3L
               kDivider <- paste(paste(rep("-", times = 50), collapse = ""), "\n", collapse = "")
               mcmc <- object@mcmc
               parameters <- object@parameters
@@ -110,7 +110,7 @@ setMethod("show",
                   "\n")
               cat(kDivider)
               cat("parameters:\n")
-              parameters <- round(parameters, digits = kDigits)
+              parameters[] <- lapply(parameters, formatC, digits = kDigits, format = "fg")
               print(parameters)
               cat(kDivider)
           })
@@ -120,7 +120,7 @@ setMethod("show",
 setMethod("show",
           signature(object = "SummaryResultsCounts"),
           function(object) {
-              kDigits <- 4L
+              kDigits <- 3L
               kDivider <- paste(paste(rep("-", times = 50),
                                       collapse = ""),
                                 "\n",
@@ -164,7 +164,7 @@ setMethod("show",
               }
               if (!is.null(gelmanDiag)) {
                   cat("\nparameters:\n")
-                  parameters <- round(parameters, digits = kDigits)
+                  parameters[] <- lapply(parameters, formatC, digits = kDigits, format = "fg")
                   Rhat <- round(gelmanDiag, digits = kDigits - 1L)
                   dot <- ifelse(Rhat < 1.1, "", ".")
                   df <- data.frame(" " = dot,
@@ -175,6 +175,77 @@ setMethod("show",
               }
               cat(kDivider)
           })
+
+
+
+#' @rdname SummaryResults-class
+#' @export
+setMethod("show",
+          signature(object = "SummaryResultsAccount"),
+          function(object) {
+              kDigits <- 3L
+              kDivider <- paste(paste(rep("-", times = 50),
+                                      collapse = ""),
+                                "\n",
+                                collapse = "")
+              mcmc <- object@mcmc
+              metropolis <- object@metropolis
+              gelmanDiag <- object@gelmanDiag
+              parameters <- object@parameters
+              account <- object@account
+              system.models <- object@systemModels
+              names.series <- object@namesSeries
+              datasets <- object@datasets
+              data.models <- object@dataModels
+              names.datasets <- object@namesDatasets
+              cat(kDivider)
+              cat("Account:\n")
+              for (i in seq_along(account)) {
+                  cat("*", names.series[i], "*\n", sep = "")
+                  print(account[[i]])
+              }
+              cat(kDivider)
+              cat("System models:\n")
+              for (i in seq_along(system.models)) {
+                  cat("*", names.series[i], "*\n", sep = "")
+                  print(system.models[[i]])
+              }
+              cat(kDivider)
+              cat("Datasets:\n")
+              for (i in seq_along(datasets)) {
+                  cat("*", names.datasets[i], "*\n", sep = "")
+                  print(datasets[[i]])
+              }
+              cat(kDivider)
+              cat("Data models:\n")
+              for (i in seq_along(data.models)) {
+                  cat("*", names.datasets[i], "*\n", sep = "")
+                  print(data.models[[i]])
+              }
+              cat(kDivider)
+              cat("MCMC statistics:\n")
+              cat(paste(paste(names(mcmc), mcmc, sep = ": "),
+                        collapse = ",  "),
+                  "\n")
+              if (!is.null(metropolis)) {
+                  cat("\nMetropolis-Hastings updates:\n")
+                  metropolis <- round(metropolis, digits = kDigits)
+                  print(metropolis)
+              }
+              if (!is.null(gelmanDiag)) {
+                  cat("\nparameters:\n")
+                  parameters[] <- lapply(parameters, formatC, digits = kDigits, format = "fg")
+                  Rhat <- round(gelmanDiag, digits = kDigits - 1L)
+                  dot <- ifelse(Rhat < 1.1, "", ".")
+                  df <- data.frame(" " = dot,
+                                   Rhat = Rhat,
+                                   parameters,
+                                   check.names = FALSE)
+                  print(df)
+              }
+              cat(kDivider)
+          })
+
 
 
 

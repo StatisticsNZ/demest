@@ -1,4 +1,30 @@
 
+## getSeriesForDataset #############################################################
+
+## NO_TESTS
+setMethod("getSeriesForDataset",
+          signature(combined = "CombinedCounts"),
+          function(combined, dataset, filename) {
+              fetch(filename, where = "y")
+          })
+
+## NO_TESTS
+setMethod("getSeriesForDataset",
+          signature(combined = "CombinedAccount"),
+          function(combined, dataset, filename) {
+              names.datasets <- combined@namesDatasets
+              series.indices <- combined@seriesIndices
+              names.components <- combined@account@namesComponents
+              i.dataset <- match(dataset, names.datasets)
+              i.series <- series.indices[i.dataset]
+              if (i.series == 0L)
+                  series <- "population"
+              else
+                  series <- names.components[i.series]
+              where <- c("account", series)
+              fetch(filename, where = where)
+          })
+
 
 ## predictCombined #################################################################
 

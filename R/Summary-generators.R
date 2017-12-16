@@ -106,27 +106,29 @@ setMethod("summary",
           function(object, filename, iteration = NULL) {
               mcmc <- object@mcmc
               final <- object@final[[1L]]
-              model <- final@model
               account <- object@account
+              system.models <- final@systemModels
               datasets <- final@datasets
-              dataModels <- final@dataModels
+              data.models <- final@dataModels
               names.datasets <- final@namesDatasets
               parameters <- makeParameters(object = object, filename = filename)
               gelman.diag <- makeGelmanDiag(object = object, filename = filename)
               metropolis <- makeMetropolis(object = object, filename = filename)
-              model.summary <- summary(model)
-              y.summary <- summary(y)
-              dataModels.summary <- lapply(dataModels, summary)
+              account.summary <- lapply(account, summary)
+              system.models.summary <- lapply(system.models, summary)
+              names.series <- names(account)
               datasets.summary <- lapply(datasets, summaryDataset)
-              methods::new("SummaryResultsCounts",
+              data.models.summary <- lapply(data.models, summary)
+              methods::new("SummaryResultsAccount",
                            mcmc = mcmc,
                            parameters = parameters,
                            gelmanDiag = gelman.diag,
                            metropolis = metropolis,
-                           model = model.summary,
-                           y = y.summary,
-                           dataModels = dataModels.summary,
+                           account = account.summary,
+                           systemModels = system.models.summary,
+                           namesSeries = names.series,
                            datasets = datasets.summary,
+                           dataModels = data.models.summary,
                            namesDatasets = names.datasets)
           })
 

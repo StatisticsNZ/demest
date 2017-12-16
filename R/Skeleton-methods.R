@@ -172,10 +172,12 @@ setMethod("fetchResults",
                   iterations <- seq_len(nIteration)
               n.iter <- length(iterations)
               metadata <- dembase::addIterationsToMetadata(metadata, iterations = iterations)
-              n.dim <- length(dim(metadata))
+              dim <- dim(metadata)
+              n.dim <- length(dim)
               betas <- vector(mode = "list", length = length(margins))
               .Data.ans <- array(0, dim = dim(metadata), dimnames = dimnames(metadata))
               ans <- methods::new("Values", .Data = .Data.ans, metadata = metadata)
+              dim.after <- dim(ans)
               for (i in seq_along(margins)) {
                   ## get unadjusted beta estimates
                   first <- offsets[[i]][1L]
@@ -185,18 +187,29 @@ setMethod("fetchResults",
                                                 last = last,
                                                 lengthIter = lengthIter,
                                                 iterations = iterations)
-                  ## make Values object
-                  if (identical(margins[[i]], 0L))
-                      margin <- n.dim
-                  else
+                  ## extend to match dims of answer, then add to answer
+                  is.intercept <- i == 1L
+                  if (is.intercept)
+                      beta <- rep(.Data.beta, each = length(ans) / length(.Data.beta))
+                  else {
                       margin <- c(margins[[i]], n.dim)
-                  metadata.beta <- metadata[margin]
-                  .Data.beta <- array(.Data.beta,
-                                      dim = dim(metadata.beta),
-                                      dimnames = dimnames(metadata.beta))
-                  beta <- methods::new("Values",
-                                       .Data = .Data.beta,
-                                       metadata = metadata.beta)
+                      dim.before <- dim[margin]
+                      dims <- integer(length = n.dim)
+                      indices <- vector(mode = "list", length = n.dim)
+                      for (i in seq_len(n.dim)) {
+                          i.before <- match(i, margin, nomatch = 0L)
+                          dims[i] <- i.before
+                          dim.included <- i.before > 0L
+                          indices[[i]] <- if (dim.included) seq_len(dim.after[i]) else rep(1L, times = dim.after[i])
+                      }
+                      transform <- methods::new("ExtendTransform",
+                                                dims = dims,
+                                                indices = indices,
+                                                dimBefore = dim.before,
+                                                dimAfter = dim.after)
+                      .Data.beta <- array(.Data.beta, dim = dim.before)
+                      beta <- dembase::extend(.Data.beta, transform = transform)
+                  }                  
                   ans <- ans + beta
               }
               ans

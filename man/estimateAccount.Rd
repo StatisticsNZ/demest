@@ -4,17 +4,20 @@
 \alias{estimateAccount}
 \title{Estimate demographic account and models from multiple noisy datasets.}
 \usage{
-estimateAccount(account, systemModels, dataModels, datasets, weights = list(),
+estimateAccount(account, systemModels, datasets, dataModels, weights = list(),
   dominant = c("Female", "Male"), filename = NULL, nBurnin = 1000,
   nSim = 1000, nChain = 4, nThin = 1, parallel = TRUE, outfile = NULL,
   nUpdateMax = 50, verbose = FALSE, useC = TRUE)
 }
 \arguments{
-\item{dataModels}{A list of objects of class
-\code{\linkS4class{SpecModel}} specifying models for the datasets.}
+\item{systemModels}{A list of objects of class \code{\linkS4class{SpecModel}}
+specifying models for the demographic series.}
 
 \item{datasets}{A named list of objects of class
 \code{\link[dembase:DemographicArray-class]{Counts}}.}
+
+\item{dataModels}{A list of objects of class
+\code{\linkS4class{SpecModel}} specifying models for the datasets.}
 
 \item{filename}{The name of a file where output is collected.}
 
@@ -46,9 +49,6 @@ for debugging.}
 
 \item{y}{An object of class
 \code{\link[dembase:DemographicAccount-class]{DemographicAccount}}.}
-
-\item{system}{A list of objects of class \code{\linkS4class{SpecModel}}
-specifying models for the demographic series.}
 }
 \description{
 Infer the contents of a demographic account, and fit models

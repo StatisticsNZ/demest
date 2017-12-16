@@ -167,14 +167,16 @@ setMethod("initialCombinedModelPredict",
                                            lower = lower,
                                            upper = upper)
               metadata <- model@metadataY
-              .Data <- array(as.integer(NA),
+              struc.zero.array <- model@strucZeroArray@.Data
+              .Data <- ifelse(struc.zero.array == 0L, 0L, NA_integer_)
+              .Data <- array(.Data,
                              dim = dim(metadata),
                              dimnames = dimnames(metadata))
               class.y <- if (yIsCounts) "Counts" else "Values"
               y <- methods::new(class.y, .Data = .Data, metadata = metadata)
               methods::new("CombinedModelPoissonNotHasExp",
-                  model = model,
-                  y = y)
+                           model = model,
+                           y = y)
           })
 
 ## HAS_TESTS
@@ -221,19 +223,26 @@ setMethod("initialCombinedModelPredict",
                                            lower = lower,
                                            upper = upper)
               metadata <- model@metadataY
-              .Data.y <- array(as.integer(NA),
-                             dim = dim(metadata),
-                             dimnames = dimnames(metadata))
+              struc.zero.array <- model@strucZeroArray@.Data
+              .Data.y <- ifelse(struc.zero.array == 0L, 0L, NA_integer_)
+              .Data.exp <- ifelse(struc.zero.array == 0L, 0, as.numeric(NA))
+              .Data.y <- array(.Data.y,
+                               dim = dim(metadata),
+                               dimnames = dimnames(metadata))
+              .Data.exp <- array(.Data.exp,
+                                 dim = dim(metadata),
+                                 dimnames = dimnames(metadata))
               class.y <- if (yIsCounts) "Counts" else "Values"
-              y <- methods::new(class.y, .Data = .Data.y, metadata = metadata)
-              .Data.exp <- array(as.double(NA),
-                             dim = dim(metadata),
-                             dimnames = dimnames(metadata))
-              exposure <- methods::new("Counts", .Data = .Data.exp, metadata = metadata)
+              y <- methods::new(class.y,
+                                .Data = .Data.y,
+                                metadata = metadata)
+              exposure <- methods::new("Counts",
+                                       .Data = .Data.exp,
+                                       metadata = metadata)
               methods::new("CombinedModelPoissonHasExp",
-                  model = model,
-                  y = y,
-                  exposure = exposure)
+                           model = model,
+                           y = y,
+                           exposure = exposure)
           })
 
 

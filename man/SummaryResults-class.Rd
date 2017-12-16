@@ -9,6 +9,7 @@
 \alias{show,SummaryResultsModelEst-method}
 \alias{show,SummaryResultsModelPred-method}
 \alias{show,SummaryResultsCounts-method}
+\alias{show,SummaryResultsAccount-method}
 \title{S4 class summarizing results from estimation or prediction.}
 \usage{
 \S4method{show}{SummaryModel}(object)
@@ -22,6 +23,8 @@
 \S4method{show}{SummaryResultsModelPred}(object)
 
 \S4method{show}{SummaryResultsCounts}(object)
+
+\S4method{show}{SummaryResultsAccount}(object)
 }
 \arguments{
 \item{object}{Object of class \code{SummaryResults}.}

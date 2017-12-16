@@ -1920,7 +1920,7 @@ updateWeightMix <- function(prior, useC = FALSE) {
 ## UPDATING MODELS ##################################################################
 
 
-## TRANSLATED (AGAIN)
+## TRANSLATED
 ## HAS_TESTS
 updateSigma_Varying <- function(object, g, useC = FALSE) {
     ## object
@@ -1939,6 +1939,7 @@ updateSigma_Varying <- function(object, g, useC = FALSE) {
         theta <- object@theta
         betas <- object@betas
         iterator <- object@iteratorBetas
+        cell.in.lik <- object@cellInLik
         if (identical(g, log)) { 
             box.cox.param <- object@boxCoxParam 
             uses.box.cox.transform <- box.cox.param > 0 
@@ -1946,18 +1947,21 @@ updateSigma_Varying <- function(object, g, useC = FALSE) {
         else 
             uses.box.cox.transform <- FALSE 
         iterator <- resetB(iterator)
-        n <- length(theta)
         V <- 0
-        for (i in seq_len(n)) {
-            if (uses.box.cox.transform) 
-                transformed.theta <- (theta[i] ^ box.cox.param - 1) / box.cox.param 
-            else 
-                transformed.theta <- g(theta[i]) 
-            indices <- iterator@indices
-            mu <- 0
-            for (b in seq_along(betas))
-                mu <- mu + betas[[b]][indices[b]]
-            V <- V + (transformed.theta - mu)^2
+        n <- 0L
+        for (i in seq_along(theta)) {
+            if (cell.in.lik[i]) {
+                if (uses.box.cox.transform) 
+                    transformed.theta <- (theta[i] ^ box.cox.param - 1) / box.cox.param 
+                else 
+                    transformed.theta <- g(theta[i]) 
+                indices <- iterator@indices
+                mu <- 0
+                for (b in seq_along(betas))
+                    mu <- mu + betas[[b]][indices[b]]
+                V <- V + (transformed.theta - mu)^2
+                n <- n + 1L
+            }
             iterator <- advanceB(iterator)
         }
         sigma <- updateSDNorm(sigma = sigma,

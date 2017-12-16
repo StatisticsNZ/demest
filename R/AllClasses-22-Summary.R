@@ -211,6 +211,43 @@ setClass("SummaryResultsCounts",
              TRUE
          })
 
+
+## NO_TESTS
+setClass("SummaryResultsAccount",
+         slots = c(gelmanDiag = "numeric",
+                   metropolis = "dataframeOrNULL",
+                   account = "list",
+                   systemModels = "list",
+                   namesSeries = "character",
+                   datasets = "list",
+                   dataModels = "list",
+                   namesDatasets = "character"),
+         contains = "SummaryResults",
+         validity = function(object) {
+             account <- object@account
+             systemModels <- object@systemModels
+             datasets <- object@datasets
+             dataModels <- object@dataModels
+             ## all elements of 'account' have class "SummarySeries"
+             if (!all(sapply(account, is, "SummarySeries")))
+                 return(gettextf("'%s' has elements not of class \"%s\"",
+                                 "systemModels", "SummarySeries"))
+             ## all elements of 'systemModels' have class "SummaryModel"
+             if (!all(sapply(systemModels, is, "SummaryModel")))
+                 return(gettextf("'%s' has elements not of class \"%s\"",
+                                 "systemModels", "SummaryModel"))
+             ## all elements of 'datasets' have class "SummaryDataset"
+             if (!all(sapply(datasets, is, "SummaryDataset")))
+                 return(gettextf("'%s' has elements not of class \"%s\"",
+                                 "datasets", "SummaryDataset"))
+             ## all elements of 'dataModels' have class "SummaryModel"
+             if (!all(sapply(dataModels, is, "SummaryModel")))
+                 return(gettextf("'%s' has elements not of class \"%s\"",
+                                 "dataModels", "SummaryModel"))
+             TRUE
+         })
+
+
 ## HAS_TESTS
 #' S4 class to hold finite-population standard deviations.
 #'

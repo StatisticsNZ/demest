@@ -245,6 +245,10 @@ setGeneric("finiteSDObject",
 
 setGeneric("formula")
 
+setGeneric("getSeriesForDataset",
+           function(combined, dataset, filename)
+               standardGeneric("getSeriesForDataset"))
+
 setGeneric("getTransform",
            function(object)
            standardGeneric("getTransform"))

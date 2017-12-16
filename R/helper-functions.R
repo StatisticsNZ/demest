@@ -5634,7 +5634,8 @@ initialModelPredictHelper <- function(model, along, labels, n, offsetModel,
                                      .Data = .Data,
                                      metadata = metadata.pred)
     }
-    theta <- rep(mean(theta.old), times = prod(dim(metadata.pred)))
+    theta <- ifelse(struc.zero.array.pred@.Data == 0L, 0, mean(theta.old))
+    theta <- as.double(theta)
     cell.in.lik <- rep(FALSE, times = prod(dim(metadata.pred)))
     beta.is.predicted <- logical(length = n.beta)
     for (i in seq_len(n.beta)) {

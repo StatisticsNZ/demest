@@ -857,6 +857,8 @@ void
 updateBeta(double *beta, int J, SEXP prior_R, 
                         double *vbar, int *n_vec, double sigma)
 {
+    int *allStrucZero = INTEGER(GET_SLOT(prior_R, allStrucZero_sym));
+
     double *work = (double*)R_alloc(2*J, sizeof(double));
     
     double *beta_hat = work;
@@ -874,24 +876,31 @@ updateBeta(double *beta, int J, SEXP prior_R,
     #endif
     
     double sigmaSq = sigma*sigma;
-    
+    double thisPrecPrior = 0;
+    double thisPrecData = 0;
+    double thisVar = 0;
+    double thisMean = 0;
+    double thisSD = 0;
+
     for (int i = 0; i < J; ++i) {
-        
-        double thisPrecPrior =1/v[i];
-        double thisPrecData = n_vec[i]/sigmaSq;
-        double thisVar = 1/(thisPrecData + thisPrecPrior);
-        
-        double thisMean = (thisPrecData * vbar[i] + thisPrecPrior * beta_hat[i])*thisVar;
-        double thisSD = sqrt(thisVar);
-        
-        beta[i] = rnorm(thisMean, thisSD);
+	if (allStrucZero[i]) {
+	    beta[i] = 0;
+	}
+	else {
+	    thisPrecPrior =1/v[i];
+	    thisPrecData = n_vec[i]/sigmaSq;
+	    thisVar = 1/(thisPrecData + thisPrecPrior);
+	    thisMean = (thisPrecData * vbar[i] + thisPrecPrior * beta_hat[i])*thisVar;
+	    thisSD = sqrt(thisVar);
+	    beta[i] = rnorm(thisMean, thisSD);
+	}
     }
-    #ifdef DEBUGGING
+#ifdef DEBUGGING
     PrintValue(mkString("beta"));
     printDblArray(beta, J);
     PrintValue(mkString("end updateBeta"));
     PrintValue(mkString(""));
-    #endif
+#endif
     
 }
 
@@ -2714,6 +2723,8 @@ updateSigma_Varying_General(SEXP object, double (*g)(double))
     double *theta = REAL(theta_R);
     int n_theta = LENGTH(theta_R);
 
+    int *cellInLik = LOGICAL(GET_SLOT(object, cellInLik_sym));
+    
     SEXP betas_R = GET_SLOT(object, betas_sym);
     int n_beta =  LENGTH(betas_R);
     
@@ -2728,28 +2739,35 @@ updateSigma_Varying_General(SEXP object, double (*g)(double))
     }
 
     double V = 0.0;
+    int n = 0;
+    
     for (int i = 0; i < n_theta; ++i) {
+
+	if (cellInLik[i]) {
         
-        double mu = 0.0;
-        for (int b = 0; b < n_beta; ++b) {
-            double *this_beta = betas[b];
-            mu += this_beta[indices[b]-1];
-        }
+	    double mu = 0.0;
+	    for (int b = 0; b < n_beta; ++b) {
+		double *this_beta = betas[b];
+		mu += this_beta[indices[b]-1];
+	    }
         
-        double transformedTheta = 0;
-        if(usesBoxCoxTransform) {
-            transformedTheta = ( pow(theta[i], boxCoxParam) - 1)/boxCoxParam; 
-        }
-        else {
-            transformedTheta = g( theta[i] );
-        }
+	    double transformedTheta = 0;
+	    if(usesBoxCoxTransform) {
+		transformedTheta = ( pow(theta[i], boxCoxParam) - 1)/boxCoxParam; 
+	    }
+	    else {
+		transformedTheta = g( theta[i] );
+	    }
         
-        double tmp = transformedTheta - mu;
-        V += (tmp * tmp);
+	    double tmp = transformedTheta - mu;
+	    V += (tmp * tmp);
+	    n += 1;
+
+	}
         advanceB(iteratorBetas_R);
     }
 
-    sigma = updateSDNorm(sigma, A, nu, V, n_theta, sigmaMax);
+    sigma = updateSDNorm(sigma, A, nu, V, n, sigmaMax);
     
     int successfullyUpdated = (sigma > 0);
 

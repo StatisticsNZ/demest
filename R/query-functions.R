@@ -305,6 +305,96 @@ fetchBoth <- function(filenameEst, filenamePred, where, iterations = NULL,
     ans
 }
 
+#' Obtain the coverage ratio for a dataset.
+#'
+#' After running \code{\link{estimateCounts}} or \code{\link{estimateAccount}},
+#' calculate the coverage ratio for a particular dataset.  The coverage
+#' ratio is the ratio between counts in the dataset and counts in the
+#' series being modelled.  For instance, if the dataset is the census
+#' and the series being modelled is population, then the coverage ratio
+#' is the number of people (of a given age, sex, geography, etc) measured
+#' in the census, divided by the number of people in the true population.
+#'
+#' Only the name of the dataset is needed. With \code{estimateCounts},
+#' the denominator is always \code{y}.  With \code{estimateAccount},
+#' the denominator depends on the data model used for the particular dataset.
+#'
+#' Note that a coverage ratio is a finite-population estimate, in that it is
+#' defined in terms of actual (potentially observable) numbers of people or
+#' events, rather than underlying (unobservable) parameters.  Some data models,
+#' such as Poisson models, yield rates or probabilities that can be
+#' interpreted as super-population counterparts of coverage ratios.
+#' These can be extracted using function \code{\link{fetch}}.
+#'
+#' @inheritParams fetch
+#' @param dataset The name of the dataset to be used as the numerator
+#' of the ratios.
+#'
+#' @return An object of class \code{\link[dembase:DemographicArray-class]{Values}}.
+#'
+#' @seealso Coverage ratios can also be calculated by a couple of calls
+#' to \code{\link{fetch}}.
+#'
+#' @examples
+#' nat <- demdata::sim.admin.nat
+#' health <- demdata::sim.admin.health
+#' survey <- demdata::sim.admin.survey
+#' nat <- Counts(nat, dimscales = c(year = "Points"))
+#' health <- Counts(health, dimscales = c(year = "Points"))
+#' survey <- Counts(survey)
+#' y <- health + 10
+#' model <- Model(y ~ Poisson(mean ~ age + sex + region,
+#'                            useExpose = FALSE))
+#' dataModels <- list(Model(nat ~ PoissonBinomial(prob = 0.98)),
+#'                    Model(health ~ Poisson(mean ~ age)),
+#'                    Model(survey ~ Binomial(mean ~ 1)))
+#' datasets <- list(nat = nat, health = health, survey = survey)
+#' filename <- tempfile()
+#' ## in a real example, nBurnin and nSim would be much larger
+#' \dontrun{
+#' estimateCounts(model = model,
+#'                y = y,
+#'                dataModels = dataModels,
+#'                datasets = datasets,
+#'                filename = filename,
+#'                nBurnin = 5,
+#'                nSim = 5,
+#'                nThin = 2,
+#'                nChain = 2,
+#'                parallel = FALSE)
+#' cover.nat <- fetchCoverage(filename, "nat")
+#' summary(cover.nat)
+#' }
+#' @export
+fetchCoverage <- function(filename, dataset) {
+    ## dataset has length 1
+    if (!identical(length(dataset), 1L))
+        stop(gettextf("'%s' does not have length %d",
+                      "dataset", 1L))
+    ## dataset is not missing
+    if (is.na(dataset))
+        stop(gettextf("'%s' is missing",
+                      "dataset"))
+    ## dataset is not blank
+    if (!nzchar(dataset))
+        stop(gettextf("'%s' is blank",
+                      "dataset"))
+    combined <- fetch(filename = filename,
+                      where = "final")[[1L]]
+    names.datasets <- combined@namesDatasets
+    i.dataset <- pmatch(dataset, names.datasets, nomatch = 0L)
+    has.dataset <- i.dataset > 0L
+    if (!has.dataset)
+        stop(gettextf("could not find dataset called \"%s\" : choices are %s",
+                      dataset, paste(dQuote(names.datasets), collapse = ", ")))
+    series <- getSeriesForDataset(combined = combined,
+                                  dataset = dataset,
+                                  filename = filename)
+    dataset <- fetch(filename,
+                     where = c("datasets", dataset))
+    suppressMessages(dataset / series)
+}
+
 ## HAS_TESTS
 #' Create a list of objects for analysis with package "coda".
 #' 
