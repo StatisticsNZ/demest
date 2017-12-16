@@ -934,7 +934,8 @@ makeFakeScale <- function(A, nu, scaleMax, functionName, scaleName = "scale") {
                              isSpec = FALSE)
     scale <- tryCatch(rhalftTrunc1(df = nu@.Data,
                                    scale = A@.Data,
-                                   max = scaleMax@.Data),
+                                   max = scaleMax@.Data,
+                                   useC = TRUE),
                       error = function(e) e)
     if (methods::is(scale, "error"))
         stop(gettextf("problem generating scale parameter within function '%s' : %s",
