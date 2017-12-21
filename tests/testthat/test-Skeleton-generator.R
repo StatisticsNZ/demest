@@ -28,6 +28,19 @@ test_that("Skeleton creates valid object of class SkeletonManyValues from metada
                          metadata = metadata,
                          first = 3L,
                          last = 4L))
+    expect_identical(x@indicesStrucZero, integer())
+    strucZeroArray <- Counts(array(c(1L, 0L),
+                                   dim = c(2, 2),
+                                   dimnames = list(age = c("0-4", "5-9"),
+                                                   sex = c("f", "m"))))
+    x <- Skeleton(object = object, first = 3L, strucZeroArray = strucZeroArray)
+    expect_true(validObject(x))
+    expect_identical(x,
+                     new("SkeletonManyValues",
+                         metadata = object@metadata,
+                         first = 3L,
+                         last = 4L,
+                         indicesStrucZero = 2L))
 })
 
 test_that("Skeleton creates valid object of class SkeletonManyCounts from object, first", {
@@ -52,6 +65,19 @@ test_that("Skeleton creates valid object of class SkeletonManyValues from object
                          metadata = object@metadata,
                          first = 3L,
                          last = 4L))
+    expect_identical(x@indicesStrucZero, integer())
+    strucZeroArray <- Counts(array(c(1L, 0L),
+                                   dim = c(2, 2),
+                                   dimnames = list(age = c("0-4", "5-9"),
+                                                   sex = c("f", "m"))))
+    x <- Skeleton(object = object, first = 3L, strucZeroArray = strucZeroArray)
+    expect_true(validObject(x))
+    expect_identical(x,
+                     new("SkeletonManyValues",
+                         metadata = object@metadata,
+                         first = 3L,
+                         last = 4L,
+                         indicesStrucZero = 2L))
 })
 
 test_that("SkeletonBetaIntercept creates valid object of class SkeletonBetaIntercept", {
@@ -100,6 +126,25 @@ test_that("SkeletonBetaTerm creates valid object of class SkeletonBetaTerm", {
                         last = 24L,
                         metadata = metadata)
     expect_identical(ans.obtained, ans.expected)
+    metadata <- new("MetaData",
+                    nms = c("age", "region"),
+                    dimtypes = c("age", "state"),
+                    DimScales = list(new("Intervals", dimvalues = c(0, 5, 10, 15)),
+                                     new("Categories", dimvalues = letters[1:5])))
+    strucZeroArray <- Counts(array(c(0L, 1L, 1L),
+                                   dim = c(3, 5, 2),
+                                   dimnames = list(age = c("0-4", "5-9", "10-14"),
+                                                   region = letters[1:5],
+                                                   sex = c("f", "m"))))
+    ans.obtained <- SkeletonBetaTerm(first = 10L,
+                                     metadata = metadata,
+                                     strucZeroArray = strucZeroArray)
+    ans.expected <- new("SkeletonBetaTerm",
+                        first = 10L,
+                        last = 24L,
+                        metadata = metadata,
+                        indicesStrucZero = c(1L, 4L, 7L, 10L, 13L))
+    expect_identical(ans.obtained, ans.expected)
 })
 
 test_that("SkeletonMu creates valid object of class SkeletonMu", {
@@ -143,6 +188,26 @@ test_that("SkeletonMu creates valid object of class SkeletonMu", {
                         margins = margins,
                         metadata = metadata,
                         offsets = list(new("Offsets", c(10L, 10L))))
+    expect_identical(ans.obtained, ans.expected)
+    ## strucZeroArray
+    strucZeroArray <- Counts(array(c(1L, 0L),
+                                   dim = 2:4,
+                                   dimnames = list(sex = c("f", "m"),
+                                                   age = c("0-4", "5-9", "10+"),
+                                                   region = letters[1:4])))
+    margins <- list(0L)
+    betas <- list(rnorm(1))
+    first <- 10L
+    ans.obtained <- SkeletonMu(betas = betas,
+                               margins = margins,
+                               first = first,
+                               metadata = metadata,
+                               strucZeroArray = strucZeroArray)
+    ans.expected <- new("SkeletonMu",
+                        margins = margins,
+                        metadata = metadata,
+                        offsets = list(new("Offsets", c(10L, 10L))),
+                        indicesStrucZero = seq(from = 2L, by = 2L, to = 24L))
     expect_identical(ans.obtained, ans.expected)
 })
 

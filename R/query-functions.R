@@ -412,11 +412,15 @@ fetchCoverage <- function(filename, dataset) {
 #' \code{fetchMCMC} extracts 25 randomly-chosen elements.  However, users can
 #' control the selection of parameters throught the \code{sample} argument.
 #' See below for an example.
+#'
+#' If a model contains structuralZeros (\code{\link{Poisson}}),
+#' then, unless an explicit \code{sample} is supplied,
+#' cells corresponding to structural zeros are omitted from the sample.
 #' 
 #' If \code{thinned} is \code{TRUE}, then the \code{thin} argument in
 #' \pkg{coda} function \code{\link[coda]{mcmc}} is set to 1; otherwise
 #' \code{thin} is set to \code{nThin}, extracted from \code{object}.
-#' 
+#'
 #' @param filename The name of the file where the output from the
 #' \code{estimate} function is kept.
 #' @param where A character vector used to select a single parameter or batch

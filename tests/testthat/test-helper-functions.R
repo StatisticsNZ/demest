@@ -11876,6 +11876,31 @@ test_that("indicesShow works - nSeason is non-NULL", {
     expect_identical(ans.obtained, ans.expected)
 })
 
+test_that("makeIndicesStrucZero works", {
+    makeIndicesStrucZero <- demest:::makeIndicesStrucZero
+    metadata <- new("MetaData",
+                    nms = "sex", 
+                    dimtypes =  "sex", 
+                    DimScales = list(new("Sexes", dimvalues = c("Female", "Male"))))
+    strucZeroArray <- NULL
+    ans.obtained <- makeIndicesStrucZero(metadata = metadata,
+                                         strucZeroArray = strucZeroArray)
+    ans.expected <- integer()
+    expect_identical(ans.obtained, ans.expected)
+    metadata <- new("MetaData",
+                    nms = "sex", 
+                    dimtypes =  "sex", 
+                    DimScales = list(new("Sexes", dimvalues = c("f", "m"))))
+    strucZeroArray <- Counts(array(c(0L, 1L),
+                                   dim = c(2, 3),
+                                   dimnames = list(sex = c("f", "m"), region = c("a", "b", "c"))))
+    ans.obtained <- makeIndicesStrucZero(metadata = metadata,
+                                         strucZeroArray = strucZeroArray)
+    ans.expected <- 1L
+    expect_identical(ans.obtained, ans.expected)
+})
+
+
 test_that("makeMetadata0 works", {
     makeMetadata0 <- demest:::makeMetadata0
     ## length(metadata) > 1, nSeason is NULL

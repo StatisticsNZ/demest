@@ -154,6 +154,24 @@ Dispersion <- function(mean = Norm(), scale = HalfT()) {
 #' functions \code{\link{estimateModel}},
 #' \code{\link{estimateCounts}}, or \code{\link{estimateAccount}}.
 #'
+#' Poisson models can allow for structural zeros in the data,
+#' that is, cells whose value must be zero by definition.
+#' Examples include the number of pregnant males or the
+#' number of people transitioning straight from "single"
+#' to "divorced". The most general way to specify structural zeros
+#' is to supply an object of class \code{\link[dembase:Values-class]{Values}},
+#' with zeros in the places where structural zeros are expected,
+#' and non-zero values elsewhere. The Values object only has to
+#' contain enough dimensions to specify the positions where the structural
+#' zeros appear: other dimensions will be added as needed.  See below
+#' for an example.
+#'
+#' The most common situation where structural zeros
+#' are required is when the data has origin and destination dimensions,
+#' and values on the diagonal are always zero.  Setting
+#' \code{structuralZeros} to \code{"diag"} is equivalent to
+#' supplying a Values object with zeros on the diagonal.
+#'
 #' @param formula A \code{\link[stats]{formula}} with response
 #' \code{mean} and names of dimensions of demographic
 #' series or dataset being modelled.
@@ -165,6 +183,9 @@ Dispersion <- function(mean = Norm(), scale = HalfT()) {
 #' likelihood for the normal model.
 #' @param useExpose Whether the model includes an
 #' exposure term. Defaults to \code{TRUE}.
+#' @param structuralZeros Location of any structural zeros
+#' in the data. An object of class \code{\link[dembase:Values-class]{Values}},
+#' or, for the typical case, the word \code{"diag"}.
 #'
 #' @return An object of class \code{\linkS4class{SpecLikelihood}}.
 #'
@@ -191,6 +212,23 @@ Dispersion <- function(mean = Norm(), scale = HalfT()) {
 #' Normal(mean ~ age + education + income,
 #'        priorSD = HalfT(scale = 100))
 #'
+#' ## Specify structural zero on the diagonal
+#' struc.zeros <- Values(array(c(0, 1, 1,
+#'                               1, 0, 1,
+#'                               1, 1, 0),
+#'                             dim = c(3, 3),
+#'                             dimnames = list(region_orig = c("A", "B", "C"),
+#'                                           region_dest = c("A", "B", "C"))))
+#' ## Note that the model contains age and sex dimensions. These
+#' ## The pattern of zeros specified by 'struc.zeros' will be
+#' ## replicated for each combination of these dimensions.
+#' Poisson(mean ~ region_orig * region_dest + age * sex,
+#'         structuralZeros = struc.zeros)
+#' ## The same pattern of structural zeros, with zeros on the diagonal
+#' ## formed by the origina and destination dimensions, can be specified
+#' ## by using the word "diag"
+#' Poisson(mean ~ region_orig * region_dest + age * sex,
+#'         structuralZeros = "diag")
 #' @name likelihood
 #' @aliases Binomial Normal Poisson
 NULL

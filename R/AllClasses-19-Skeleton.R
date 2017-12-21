@@ -232,6 +232,65 @@ setClass("SkeletonMissingDataset",
              TRUE
          })
 
+## HAS_TESTS
+setClass("SkeletonIndicesStrucZero",
+         slots = c(indicesStrucZero = "integer"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             indicesStrucZero <- object@indicesStrucZero
+             metadata <- object@metadata
+             ## 'indicesStrucZero' has no missing values
+             if (any(is.na(indicesStrucZero)))
+                 return(gettextf("'%s' has missing values",
+                                 "indicesStrucZero"))
+             ## 'indicesStrucZero' has no duplicates
+             if (any(duplicated(indicesStrucZero)))
+                 return(gettextf("'%s' has duplicates",
+                                 "indicesStrucZero"))
+             ## 'indicesStrucZero' picks out indices of array
+             ## specified by 'metadata'
+             s <- seq_len(prod(dim(metadata)))
+             if (!all(indicesStrucZero %in% s))
+                 return(gettextf("'%s' outside valid range",
+                                 "indicesStrucZero"))
+             TRUE
+         })
+
+
+## HAS_TESTS
+setClass("SkeletonIndicesAlongStrucZero",
+         slots = c(indicesAlongStrucZero = "integer"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             indicesAlongStrucZero <- object@indicesAlongStrucZero
+             metadata0 <- object@metadata0
+             if (is.null(metadata0)) {
+                 ## if 'metadata0' is NULL, 'indicesAlongStrucZero' has length 0
+                 if (!identical(length(indicesAlongStrucZero), 0L))
+                     return(gettextf("'%s' is %s but '%s' does not have length %d",
+                                     "metadata0", "NULL", "indicesAlongStrucZero", 0L))
+             }
+             else {
+                 ## 'indicesAlongStrucZero' has no missing values
+                 if (any(is.na(indicesAlongStrucZero)))
+                     return(gettextf("'%s' has missing values",
+                                     "indicesAlongStrucZero"))
+                 ## 'indicesAlongStrucZero' has no duplicates
+                 if (any(duplicated(indicesAlongStrucZero)))
+                     return(gettextf("'%s' has duplicates",
+                                     "indicesAlongStrucZero"))
+                 ## 'indicesAlongStrucZero' picks out indices of array
+                 ## specified by 'metadata0'
+                 s <- seq_len(prod(dim(metadata0)))
+                 if (!all(indicesAlongStrucZero %in% s))
+                     return(gettextf("'%s' outside valid range",
+                                     "indicesAlongStrucZero"))
+             }
+             TRUE
+         })
+
+
+
 
 ## NON-VIRTUAL CLASSES ########################################################
 
@@ -268,7 +327,11 @@ setClass("SkeletonManyCounts",
 ## HAS_TESTS
 ## HAS_FETCH
 setClass("SkeletonManyValues",
-         contains = c("SkeletonMany", "SkeletonDemographic", "SkeletonMetadata"),
+         contains = c("SkeletonMany",
+                      "SkeletonDemographic",
+                      "SkeletonMetadata",
+                      "SkeletonIndicesStrucZero"),
+         prototype = prototype(indicesStrucZero = integer()),
          validity = function(object) {
              metadata <- object@metadata
              first <- object@first
@@ -318,8 +381,12 @@ setClass("SkeletonBetaTerm",
 ## HAS_FETCH
 setClass("SkeletonMu",
          slots = c(margins = "list",
-                        offsets = "list"),
-         contains = c("Skeleton", "SkeletonMetadata", "Margins"),
+                   offsets = "list"),
+         contains = c("Skeleton",
+                      "SkeletonMetadata",
+                      "Margins",
+                      "SkeletonIndicesStrucZero"),
+         prototype = prototype(indicesStrucZero = integer()),
          validity = function(object) {
              margins <- object@margins
              offsets <- object@offsets
@@ -368,6 +435,7 @@ setClass("SkeletonStateDLM",
                       "SkeletonMetadata",
                       "SkeletonMetadata0",
                       "SkeletonMetadataIncl0",
+                      "SkeletonIndicesAlongStrucZero",
                       "IAlongMixin"))
 
 ## HAS_TESTS

@@ -38,7 +38,7 @@ setGeneric("Mapping",
                standardGeneric("Mapping"))
 
 setGeneric("Skeleton",
-           function(object, metadata, first)
+           function(object, metadata, first, strucZeroArray = NULL)
            standardGeneric("Skeleton"))
 
 setGeneric("SkeletonAccept",
@@ -245,6 +245,12 @@ setGeneric("finiteSDObject",
 
 setGeneric("formula")
 
+
+setGeneric("getIndicesStrucZeros",
+           function(object) {
+               integer()
+           })
+
 setGeneric("getSeriesForDataset",
            function(combined, dataset, filename)
                standardGeneric("getSeriesForDataset"))
@@ -336,9 +342,6 @@ setGeneric("makeOutputPrior",
            standardGeneric("makeOutputPrior"))
 
 setGeneric("modelUsesWeights",
-           function(object) FALSE)
-
-setGeneric("needToCenter",
            function(object) FALSE)
 
 setGeneric("predictBeta",

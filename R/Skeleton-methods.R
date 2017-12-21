@@ -764,9 +764,11 @@ setMethod("fetchResults",
           })
 
 
-## needToCenter #########################################################
+## getIndicesStrucZero #########################################################
 
-## HAS_TESTS
-setMethod("needToCenter",
-          signature(object = "SkeletonBetaTerm"),
-          function(object) TRUE)
+setMethod("getIndicesStrucZeros",
+          signature(object = "SkeletonIndicesStrucZero"),
+          function(object) {
+              object@indicesStrucZero
+          })
+

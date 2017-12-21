@@ -20,6 +20,7 @@
 \alias{show,SpecLikelihoodPoissonBinomialMixture-method}
 \alias{show,SpecLikelihoodNormalFixed-method}
 \alias{show,SpecBinomialVarying-method}
+\alias{show,SpecCMPVarying-method}
 \alias{show,SpecNormalVaryingVarsigmaKnown-method}
 \alias{show,SpecNormalVaryingVarsigmaUnknown-method}
 \alias{show,SpecPoissonVarying-method}
@@ -74,6 +75,8 @@
 \S4method{show}{SpecLikelihoodNormalFixed}(object)
 
 \S4method{show}{SpecBinomialVarying}(object)
+
+\S4method{show}{SpecCMPVarying}(object)
 
 \S4method{show}{SpecNormalVaryingVarsigmaKnown}(object)
 

@@ -22,7 +22,7 @@ standard deviation.}
 \item{\code{nuSDLogNuCMP}}{Degrees of freedom for truncated half-t prior
 for standard deviation.}
 
-\item{\code{sdMaxLogNuCMP}}{Maximum value for truncated half-t prior
+\item{\code{sdLogNuMaxCMP}}{Maximum value for truncated half-t prior
 for the standard deviation.}
 
 \item{\code{multLogNuCMP}}{Multiplier applied to scale of

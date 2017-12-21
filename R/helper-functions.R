@@ -7292,6 +7292,24 @@ indicesShow <- function(iterator, nSeason = NULL, dim, iAlong) {
 }
 
 ## HAS_TESTS
+makeIndicesStrucZero <- function(metadata, strucZeroArray) {
+    if (is.null(strucZeroArray))
+        integer()
+    else {
+        .Data.tmp <- array(1L,
+                           dim = dim(metadata),
+                           dimnames = dimnames(metadata))
+        tmp <- new("Values",
+                   .Data = .Data.tmp,
+                   metadata = metadata)
+        indices.struc.zero <- makeCompatible(x = strucZeroArray,
+                                             y = tmp,
+                                             subset = FALSE)
+        unname(which(indices.struc.zero@.Data == 0L))
+    }
+}
+
+## HAS_TESTS
 makeMetadata0 <- function(metadata, iAlong, nSeason) {
     dim <- dim(metadata)
     names <- names(metadata)

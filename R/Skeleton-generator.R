@@ -6,7 +6,7 @@ setMethod("Skeleton",
                     first = "integer"),
           function(first) {
               methods::new("SkeletonOneValues",
-                  first = first)
+                           first = first)
           })
 
 ## HAS_TESTS
@@ -14,12 +14,15 @@ setMethod("Skeleton",
           signature(object = "missing",
                     metadata = "MetaData",
                     first = "integer"),
-          function(metadata, first) {
+          function(metadata, first, strucZeroArray = NULL) {
               last <- first + as.integer(prod(dim(metadata))) - 1L
+              indices.struc.zero <- makeIndicesStrucZero(metadata = metadata,
+                                                         strucZeroArray = strucZeroArray)
               methods::new("SkeletonManyValues",
-                  first = first,
-                  last = last,
-                  metadata = metadata)
+                           first = first,
+                           last = last,
+                           metadata = metadata,
+                           indicesStrucZero = indices.struc.zero)
           })
 
 ## HAS_TESTS
@@ -31,9 +34,9 @@ setMethod("Skeleton",
               metadata <- object@metadata
               last <- first + as.integer(prod(dim(metadata))) - 1L
               methods::new("SkeletonManyCounts",
-                  first = first,
-                  last = last,
-                  metadata = metadata)
+                           first = first,
+                           last = last,
+                           metadata = metadata)
           })
 
 ## HAS_TESTS
@@ -41,17 +44,21 @@ setMethod("Skeleton",
           signature(object = "Values",
                     metadata = "missing",
                     first = "integer"),
-          function(object, first) {
+          function(object, first, strucZeroArray = NULL) {
               metadata <- object@metadata
               last <- first + as.integer(prod(dim(metadata))) - 1L
+              indices.struc.zero <- makeIndicesStrucZero(metadata = metadata,
+                                                         strucZeroArray = strucZeroArray)
               methods::new("SkeletonManyValues",
-                  first = first,
-                  last = last,
-                  metadata = metadata)
+                           first = first,
+                           last = last,
+                           metadata = metadata,
+                           indicesStrucZero = indices.struc.zero)
           })
 
+
 ## HAS_TESTS
-SkeletonMu <- function(betas, margins, first, metadata) {
+SkeletonMu <- function(betas, margins, first, metadata, strucZeroArray = NULL) {
     n <- length(betas)
     offsets <- vector(mode = "list", length = n)
     pos <- first
@@ -61,10 +68,13 @@ SkeletonMu <- function(betas, margins, first, metadata) {
         last <- pos - 1L
         offsets[[i]] <- methods::new("Offsets", c(first, last))
     }
+    indices.struc.zero <- makeIndicesStrucZero(metadata = metadata,
+                                               strucZeroArray = strucZeroArray)
     methods::new("SkeletonMu",
                  margins = margins,
                  metadata = metadata,
-                 offsets = offsets)
+                 offsets = offsets,
+                 indicesStrucZero = indices.struc.zero)
 }
 
 ## HAS_TESTS
@@ -75,12 +85,15 @@ SkeletonBetaIntercept <- function(first) {
 }
 
 ## HAS_TESTS
-SkeletonBetaTerm <- function(first, metadata) {
+SkeletonBetaTerm <- function(first, metadata, strucZeroArray = NULL) {
     last <- first + as.integer(prod(dim(metadata))) - 1L
+    indices.struc.zero <- makeIndicesStrucZero(metadata = metadata,
+                                               strucZeroArray = strucZeroArray)
     methods::new("SkeletonBetaTerm",
                  first = first,
                  last = last,
-                 metadata = metadata)
+                 metadata = metadata,
+                 indicesStrucZero = indices.struc.zero)
 }
 
 ## HAS_TESTS

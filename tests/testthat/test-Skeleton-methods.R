@@ -164,6 +164,7 @@ test_that("fetchResults works with object of class SkeletonManyValues", {
     expect_identical(ans.obtained, ans.expected)
 })
 
+
 test_that("fetchResults works with object of class SkeletonBetaIntercept", {
     fetchResults <- demest:::fetchResults
     object <- new("SkeletonBetaIntercept",
@@ -1327,24 +1328,5 @@ test_that("fetchResults works with object of class SkeletonMissingDatasetPoisson
 })
 
 
-## needToCenter ##############################################################
-
-test_that("default method for needToCenter works", {
-    needToCenter <- demest:::needToCenter
-    object <- new("SkeletonManyValues")
-    expect_false(needToCenter(object))
-})
-
-test_that("SkeletonBetaTerm method for needToCenter works", {
-    needToCenter <- demest:::needToCenter
-    object <- new("SkeletonBetaTerm")
-    expect_true(needToCenter(object))
-})
-
-test_that("SkeletonStateDLM method for needToCenter works", {
-    needToCenter <- demest:::needToCenter
-    object <- new("SkeletonStateDLM")
-    expect_false(needToCenter(object))
-})
-
+## getIndicesStrucZero ##############################################################
 

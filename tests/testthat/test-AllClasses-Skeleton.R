@@ -135,6 +135,32 @@ test_that("validity tests for SkeletonManyValues inherited from SkeletonManyValu
                  "'metadata', 'first', and 'last' inconsistent")
 })
 
+test_that("validity tests for SkeletonManyValues inherited from SkeletonManyValuesStrucZero work", {
+    x <- new("SkeletonManyValues",
+             first = 2L,
+             last = 5L,
+             metadata = new("MetaData", nms = "region", dimtypes = "state",
+                            DimScales = list(new("Categories", dimvalues = c("a", "b", "c", "d")))),
+             indicesStrucZero = 1L)
+    expect_true(validObject(x))
+    ## 'indicesStrucZero' has no missing values
+    x.wrong <- x
+    x.wrong@indicesStrucZero <- c(1L, NA)
+    expect_error(validObject(x.wrong),
+                 "'indicesStrucZero' has missing values")
+    ## 'indicesStrucZero' has no duplicates
+    x.wrong <- x
+    x.wrong@indicesStrucZero <- c(1L, 1L)
+    expect_error(validObject(x.wrong),
+                 "'indicesStrucZero' has duplicates")
+    ## 'indicesStrucZero' picks out indices of array
+    ## specified by 'metadata'
+    x.wrong <- x
+    x.wrong@indicesStrucZero <- 100L
+    expect_error(validObject(x.wrong),
+                 "'indicesStrucZero' outside valid range")
+})
+
 test_that("can create valid object of class SkeletonBetaIntercept", {
     x <- new("SkeletonBetaIntercept",
              first = 2L,
@@ -283,7 +309,8 @@ test_that("can create valid object of class SkeletonStateDLM", {
                  dimtypes = "state",
                  DimScales = list(new("Categories", dimvalues = as.character(1:11)))),
              indices0 = 1L,
-             indicesShow = 2:11)
+             indicesShow = 2:11,
+             indicesAlongStrucZero = integer())
     expect_true(validObject(x))
     x <- new("SkeletonStateDLM",
              first = 40L,
@@ -294,13 +321,18 @@ test_that("can create valid object of class SkeletonStateDLM", {
                             dimtypes = c("state", "time"),
                             DimScales = list(new("Categories", dimvalues = c("f", "m")),
                                              new("Points", dimvalues = 1:10))),
+             metadata0 = new("MetaData",
+                 nms = "sex",
+                 dimtypes = "sex",
+                 DimScales = list(new("Sexes", dimvalues = c("f", "m")))),
              metadataIncl0 = new("MetaData",
                  nms = c("sex", "time"),
                  dimtypes = c("sex", "state"),
                  DimScales = list(new("Sexes", dimvalues = c("f", "m")),
                                   new("Categories", dimvalues = as.character(1:11)))),
              indices0 = c(1L, 12L),
-             indicesShow = c(2:11, 13:22))
+             indicesShow = c(2:11, 13:22),
+             indicesAlongStrucZero = 2L)
     expect_true(validObject(x))
 })
 
@@ -368,6 +400,67 @@ test_that("validity tests for SkeletonStateDLM inherited from SkeletonIndicesSho
     x.wrong@indicesShow[1] <- -1L
     expect_error(validObject(x.wrong),
                  "'indicesShow' has elements outside valid range")
+})
+
+
+test_that("can create valid object of class SkeletonStateDLM", {
+    x <- new("SkeletonStateDLM",
+             first = 40L,
+             last = 50L,
+             iAlong = 1L,
+             metadata = new("MetaData",
+                            nms = "time",
+                            dimtypes = "time",
+                            DimScales = list(new("Points", dimvalues = 1:10))),
+             metadataIncl0 = new("MetaData",
+                                 nms = "time",
+                                 dimtypes = "state",
+                                 DimScales = list(new("Categories", dimvalues = as.character(1:11)))),
+             indices0 = 1L,
+             indicesShow = 2:11,
+             indicesAlongStrucZero = integer())
+    ## if 'metadata0' is NULL, 'indicesAlongStrucZero' has length 0
+    x.wrong <- x
+    x.wrong@indicesAlongStrucZero <- 1L
+    expect_error(validObject(x.wrong),
+                 "'metadata0' is NULL but 'indicesAlongStrucZero' does not have length 0")
+    x <- new("SkeletonStateDLM",
+             first = 40L,
+             last = 61L,
+             iAlong = 2L,
+             metadata = new("MetaData",
+                            nms = c("sex", "time"),
+                            dimtypes = c("state", "time"),
+                            DimScales = list(new("Categories", dimvalues = c("f", "m")),
+                                             new("Points", dimvalues = 1:10))),
+             metadata0 = new("MetaData",
+                             nms = "sex",
+                             dimtypes = "sex",
+                             DimScales = list(new("Sexes", dimvalues = c("f", "m")))),
+             metadataIncl0 = new("MetaData",
+                                 nms = c("sex", "time"),
+                                 dimtypes = c("sex", "state"),
+                                 DimScales = list(new("Sexes", dimvalues = c("f", "m")),
+                                                  new("Categories", dimvalues = as.character(1:11)))),
+             indices0 = c(1L, 12L),
+             indicesShow = c(2:11, 13:22),
+             indicesAlongStrucZero = 2L)
+    ## 'indicesAlongStrucZero' has no missing values
+    x.wrong <- x
+    x.wrong@indicesAlongStrucZero <- c(1L, NA)
+    expect_error(validObject(x.wrong),
+                 "'indicesAlongStrucZero' has missing values")
+   ## 'indicesAlongStrucZero' has no duplicates
+    x.wrong <- x
+    x.wrong@indicesAlongStrucZero <- c(1L, 1L)
+    expect_error(validObject(x.wrong),
+                 "'indicesAlongStrucZero' has duplicates")
+    ## 'indicesAlongStrucZero' picks out indices of array
+    ## specified by 'metadata0'
+    x.wrong <- x
+    x.wrong@indicesAlongStrucZero <- 100L
+    expect_error(validObject(x.wrong),
+                 "'indicesAlongStrucZero' outside valid range")
 })
 
 test_that("can create valid object of class SkeletonAccept", {
