@@ -1,7 +1,8 @@
 
 
 #' @export
-CMP <- function(formula, dispersion = Dispersion(), useExpose = TRUE, boxcox = 0) {
+CMP <- function(formula, dispersion = Dispersion(), useExpose = TRUE,
+                structuralZeros = NULL, boxcox = 0) {
     ## formula
     checkFormulaMu(formula)
     checkForMarginalTerms(formula)
@@ -17,6 +18,8 @@ CMP <- function(formula, dispersion = Dispersion(), useExpose = TRUE, boxcox = 0
     ## useExpose
     useExpose <- checkAndTidyLogicalFlag(x = useExpose,
                                          name = "useExpose")
+    ## structural zeros
+    structuralZeros <- checkAndTidyStructuralZeros(structuralZeros)
     methods::new("SpecLikelihoodCMP",
                  formulaMu = formula,
                  meanMeanLogNuCMP = meanMeanLogNuCMP,
@@ -25,7 +28,8 @@ CMP <- function(formula, dispersion = Dispersion(), useExpose = TRUE, boxcox = 0
                  nuSDLogNuCMP = nuSDLogNuCMP,
                  sdLogNuMaxCMP = sdLogNuMaxCMP,
                  useExpose = useExpose,
-                 boxCoxParam = boxcox)
+                 boxCoxParam = boxcox,
+                 structuralZeros = structuralZeros)
 }
 
 
@@ -154,7 +158,7 @@ Dispersion <- function(mean = Norm(), scale = HalfT()) {
 #' functions \code{\link{estimateModel}},
 #' \code{\link{estimateCounts}}, or \code{\link{estimateAccount}}.
 #'
-#' Poisson models can allow for structural zeros in the data,
+#' Poisson and CMP models allow structural zeros in the data,
 #' that is, cells whose value must be zero by definition.
 #' Examples include the number of pregnant males or the
 #' number of people transitioning straight from "single"
@@ -679,6 +683,7 @@ setMethod("SpecModel",
               formula.mu <- specInner@formulaMu
               useExpose <- specInner@useExpose
               boxCoxParam <- specInner@boxCoxParam
+              structuralZeros <- specInner@structuralZeros
               meanMeanLogNuCMP <- specInner@meanMeanLogNuCMP
               sdMeanLogNuCMP <- specInner@sdMeanLogNuCMP
               ASDLogNuCMP <- specInner@ASDLogNuCMP
@@ -730,6 +735,7 @@ setMethod("SpecModel",
                            scaleTheta = scale.theta,
                            series = series,
                            sigmaMax = sigma.max,
+                           structuralZeros = structuralZeros,
                            upper = upper,
                            useExpose = useExpose,
                            meanMeanLogNuCMP = meanMeanLogNuCMP,

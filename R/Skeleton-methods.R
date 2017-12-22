@@ -766,7 +766,7 @@ setMethod("fetchResults",
 
 ## getIndicesStrucZero #########################################################
 
-setMethod("getIndicesStrucZeros",
+setMethod("getIndicesStrucZero",
           signature(object = "SkeletonIndicesStrucZero"),
           function(object) {
               object@indicesStrucZero

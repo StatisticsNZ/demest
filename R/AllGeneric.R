@@ -246,7 +246,7 @@ setGeneric("finiteSDObject",
 setGeneric("formula")
 
 
-setGeneric("getIndicesStrucZeros",
+setGeneric("getIndicesStrucZero",
            function(object) {
                integer()
            })
@@ -338,7 +338,7 @@ setGeneric("makeOutputModel",
            standardGeneric("makeOutputModel"))
 
 setGeneric("makeOutputPrior",
-           function(prior, metadata, pos)
+           function(prior, metadata, pos, strucZeroArray = NULL)
            standardGeneric("makeOutputPrior"))
 
 setGeneric("modelUsesWeights",

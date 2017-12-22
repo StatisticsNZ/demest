@@ -310,7 +310,7 @@ test_that("can create valid object of class SkeletonStateDLM", {
                  DimScales = list(new("Categories", dimvalues = as.character(1:11)))),
              indices0 = 1L,
              indicesShow = 2:11,
-             indicesAlongStrucZero = integer())
+             indicesStrucZero = integer())
     expect_true(validObject(x))
     x <- new("SkeletonStateDLM",
              first = 40L,
@@ -332,7 +332,7 @@ test_that("can create valid object of class SkeletonStateDLM", {
                                   new("Categories", dimvalues = as.character(1:11)))),
              indices0 = c(1L, 12L),
              indicesShow = c(2:11, 13:22),
-             indicesAlongStrucZero = 2L)
+             indicesStrucZero = seq.int(from = 2L, to = 20L, by = 2L))
     expect_true(validObject(x))
 })
 
@@ -418,12 +418,7 @@ test_that("can create valid object of class SkeletonStateDLM", {
                                  DimScales = list(new("Categories", dimvalues = as.character(1:11)))),
              indices0 = 1L,
              indicesShow = 2:11,
-             indicesAlongStrucZero = integer())
-    ## if 'metadata0' is NULL, 'indicesAlongStrucZero' has length 0
-    x.wrong <- x
-    x.wrong@indicesAlongStrucZero <- 1L
-    expect_error(validObject(x.wrong),
-                 "'metadata0' is NULL but 'indicesAlongStrucZero' does not have length 0")
+             indicesStrucZero = integer())
     x <- new("SkeletonStateDLM",
              first = 40L,
              last = 61L,
@@ -444,23 +439,23 @@ test_that("can create valid object of class SkeletonStateDLM", {
                                                   new("Categories", dimvalues = as.character(1:11)))),
              indices0 = c(1L, 12L),
              indicesShow = c(2:11, 13:22),
-             indicesAlongStrucZero = 2L)
-    ## 'indicesAlongStrucZero' has no missing values
+             indicesStrucZero = 2L)
+    ## 'indicesStrucZero' has no missing values
     x.wrong <- x
-    x.wrong@indicesAlongStrucZero <- c(1L, NA)
+    x.wrong@indicesStrucZero <- c(1L, NA)
     expect_error(validObject(x.wrong),
-                 "'indicesAlongStrucZero' has missing values")
-   ## 'indicesAlongStrucZero' has no duplicates
+                 "'indicesStrucZero' has missing values")
+   ## 'indicesStrucZero' has no duplicates
     x.wrong <- x
-    x.wrong@indicesAlongStrucZero <- c(1L, 1L)
+    x.wrong@indicesStrucZero <- c(1L, 1L)
     expect_error(validObject(x.wrong),
-                 "'indicesAlongStrucZero' has duplicates")
-    ## 'indicesAlongStrucZero' picks out indices of array
+                 "'indicesStrucZero' has duplicates")
+    ## 'indicesStrucZero' picks out indices of array
     ## specified by 'metadata0'
     x.wrong <- x
-    x.wrong@indicesAlongStrucZero <- 100L
+    x.wrong@indicesStrucZero <- 100L
     expect_error(validObject(x.wrong),
-                 "'indicesAlongStrucZero' outside valid range")
+                 "'indicesStrucZero' outside valid range")
 })
 
 test_that("can create valid object of class SkeletonAccept", {

@@ -2163,6 +2163,7 @@ test_that("addAgCertain works", {
     addAgCertain <- demest:::addAgCertain
     initialModel <- demest:::initialModel
     makeWeightAg <- demest:::makeWeightAg
+    makeCollapseTransformExtra <- dembase:::makeCollapseTransformExtra
     exposure <- Counts(array(rpois(n = 20, lambda = 20),
                              dim = c(5, 4),
                              dimnames = list(age = 0:4, region = letters[1:4])))
@@ -2222,6 +2223,7 @@ test_that("addAgNormal works", {
     addAgNormal <- demest:::addAgNormal
     initialModel <- demest:::initialModel
     makeWeightAg <- demest:::makeWeightAg
+    makeCollapseTransformExtra <- dembase:::makeCollapseTransformExtra
     exposure <- Counts(array(rpois(n = 20, lambda = 20),
                              dim = c(5, 4),
                              dimnames = list(age = 0:4, region = letters[1:4])))
@@ -2286,6 +2288,7 @@ test_that("addAgPoisson works", {
     addAgPoisson <- demest:::addAgPoisson
     initialModel <- demest:::initialModel
     makeWeightAg <- demest:::makeWeightAg
+    makeCollapseTransformExtra <- dembase:::makeCollapseTransformExtra
     exposure <- Counts(array(rpois(n = 20, lambda = 20),
                              dim = c(5, 4),
                              dimnames = list(age = 0:4, region = letters[1:4])))
@@ -2351,6 +2354,7 @@ test_that("addAgFun works", {
     initialModel <- demest:::initialModel
     makeWeightAg <- demest:::makeWeightAg
     makeMetaDataSubarraysBefore <- dembase::makeMetaDataSubarraysBefore
+    makeCollapseTransformExtra <- dembase:::makeCollapseTransformExtra
     exposure <- Counts(array(rpois(n = 20, lambda = 20),
                              dim = c(5, 4),
                              dimnames = list(age = 0:4, region = letters[1:4])),
@@ -2455,6 +2459,7 @@ test_that("addAgFun works", {
 test_that("addAgFun throws appropriate errors", {
     addAgFun <- demest:::addAgFun
     initialModel <- demest:::initialModel
+    makeCollapseTransformExtra <- dembase:::makeCollapseTransformExtra
     exposure <- Counts(array(rpois(n = 20, lambda = 20),
                              dim = c(5, 4),
                              dimnames = list(age = 0:4, region = letters[1:4])),
@@ -2507,6 +2512,7 @@ test_that("addAgLife works", {
     addAgLife <- demest:::addAgLife
     makeLifeExpBirth <- demest:::makeLifeExpBirth
     initialModel <- demest:::initialModel
+    makeCollapseTransformExtra <- dembase:::makeCollapseTransformExtra
     expose <- Counts(array(rpois(n = 20, lambda = 20),
                              dim = c(5, 4),
                              dimnames = list(age = 0:4, region = letters[1:4])),
@@ -12226,6 +12232,7 @@ test_that("makeOutputStateDLM works with Trend", {
 test_that("makeOutputStateDLM works with Season", {
     makeOutputStateDLM <- demest:::makeOutputStateDLM
     AlongIterator <- demest:::AlongIterator
+    ## no structural zeros
     metadata <- new("MetaData",
                     nms = "time",
                     dimtypes = "time",
@@ -12253,7 +12260,47 @@ test_that("makeOutputStateDLM works with Season", {
                         last = 46L,
                         iAlong = 1L,
                         indicesShow = seq.int(5L, 41L, 4L),
-                        indices0 = 1:4)
+                        indices0 = 1:4,
+                        indicesStrucZero = integer())
+    expect_identical(ans.obtained, ans.expected)
+    ## no with zeros
+    metadata <- new("MetaData",
+                    nms = c("time", "sex"),
+                    dimtypes = c("time", "sex"),
+                    DimScales = list(new("Points", dimvalues = 1:10),
+                                     new("Sexes", dimvalues = c("Female", "Male"))))
+    iterator <- AlongIterator(dim = c(11L, 2L), iAlong = 1L)
+    strucZeroArray <- Counts(array(rep(c(1L, 0L), each = 10L),
+                                   dim = c(10, 2),
+                                   dimnames = list(time = 1:10, sex = c("Female", "Male"))),
+                             dimscales = c(time = "Points"))
+    ans.obtained <- makeOutputStateDLM(iterator = iterator,
+                                       metadata = metadata,
+                                       nSeason = 4L,
+                                       iAlong = 1L,
+                                       pos = 3L,
+                                       strucZeroArray = strucZeroArray)
+    metadata0 <- new("MetaData",
+                     nms = c("season", "sex"),
+                     dimtypes = c("state", "sex"),
+                     DimScales = list(new("Categories", dimvalues = as.character(1:4)),
+                                      new("Sexes", dimvalues = c("Female", "Male"))))
+    metadataIncl0 <- new("MetaData",
+                         nms = c("season", "time", "sex"),
+                         dimtypes = c("state", "state", "sex"),
+                         DimScales = list(new("Categories", dimvalues = as.character(1:4)),
+                                          new("Categories", dimvalues = as.character(1:11)),
+                                          new("Sexes", dimvalues = c("Female", "Male"))))
+    ans.expected <- new("SkeletonStateDLM",
+                        metadata = metadata,
+                        metadata0 = metadata0,
+                        metadataIncl0 = metadataIncl0,
+                        first = 3L,
+                        last = 90L,
+                        iAlong = 1L,
+                        indicesShow = c(seq.int(5L, 41L, 4L), seq.int(49L, 85L, 4L)),
+                        indices0 = c(1:4, 45:48),
+                        indicesStrucZero = 11:20)
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -13462,6 +13509,7 @@ test_that("fetchSkeleton and fetchSkeletonInner work with ResultsModel from Bino
 
 test_that("MCMCDemographic works", {
     MCMCDemographic <- demest:::MCMCDemographic
+    Skeleton <- demest:::Skeleton
     mcmc.list <- coda:::mcmc.list
     mcmc <- coda:::mcmc
     x <- Counts(array(1:12, dim = c(2, 6), dimnames = list(sex = c("f", "m"), iteration = 1:6)))
@@ -13512,6 +13560,21 @@ test_that("MCMCDemographic works", {
                                     nrow = 2,
                                     dimnames = list(NULL, c("0-4", "5-9", "10+"))))))
     expect_identical(MCMCDemographic(x, nChain = 1), y)
+    ## has structural zeros
+    x <- Values(array(1:12, dim = c(2, 6), dimnames = list(sex = c("f", "m"), iteration = 1:6)))
+    strucZeroArray <- CountsOne(c(1L, 0L), labels = c("f", "m"), name = "sex")
+    object <- ValuesOne(0, labels = c("f", "m"), name = "sex")
+    skeleton <- Skeleton(object, first = 10L, strucZeroArray = strucZeroArray)
+    ans.obtained <- MCMCDemographic(x, nChain = 2, nThin = 3, skeleton = skeleton)
+    ans.expected <- mcmc.list(list(mcmc(matrix(c(1L, 3L, 5L),
+                                               nrow = 3,
+                                               dimnames = list(NULL, "f")),
+                                        thin = 3),
+                                   mcmc(matrix(c(7L, 9L, 11L),
+                                               nrow = 3,
+                                               dimnames = list(NULL, "f")),
+                                        thin = 3)))
+    expect_identical(ans.obtained, ans.expected)
 })
 
 test_that("checkAndTidyTotalOrSampled works", {

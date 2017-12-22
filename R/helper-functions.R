@@ -7454,7 +7454,7 @@ makeOutputPriorScale <- function(pos) {
 }
 
 ## HAS_TESTS
-makeOutputStateDLM <- function(iterator, metadata, nSeason, iAlong, pos) {
+makeOutputStateDLM <- function(iterator, metadata, nSeason, iAlong, pos, strucZeroArray = NULL) {
     indices <- iterator@indices
     n.within <- iterator@nWithin
     n.between <- iterator@nBetween
@@ -7480,12 +7480,15 @@ makeOutputStateDLM <- function(iterator, metadata, nSeason, iAlong, pos) {
     metadata.incl.0 <- makeMetadataIncl0(metadata = metadata,
                                          iAlong = iAlong,
                                          nSeason = nSeason)
+    indices.struc.zero <- makeIndicesStrucZero(metadata = metadata,
+                                               strucZeroArray = strucZeroArray)
     methods::new("SkeletonStateDLM",
                  first = first,
                  last = last,
                  iAlong = iAlong,
                  indicesShow = indices.show,
                  indices0 = indices.0,
+                 indicesStrucZero = indices.struc.zero,
                  metadata = metadata,
                  metadata0 = metadata0,
                  metadataIncl0 = metadata.incl.0)
@@ -9065,7 +9068,7 @@ squaredOrNA <- function(x) {
 ## INSPECT RESULTS ###################################################################
 
 ## HAS_TESTS
-MCMCDemographic <- function(object, sample = NULL, nChain, nThin = 1L) {
+MCMCDemographic <- function(object, sample = NULL, nChain, nThin = 1L, skeleton = NULL) {
     if (!methods::is(object, "DemographicArray"))
         stop(gettextf("'%s' has class \"%s\"",
                       "object", class(object)))
@@ -9079,14 +9082,19 @@ MCMCDemographic <- function(object, sample = NULL, nChain, nThin = 1L) {
     n.data <- length(.Data)
     n.iter <- dim[i.iter]
     n.slice <- n.data / n.iter  ## number of values in one iteration
+    s <- seq_len(n.slice)
     if (is.null(sample)) {
-        if (kDefaultSize >= n.slice)
-            sample <- seq_len(n.slice)
+        indices.struc.zero <- getIndicesStrucZero(skeleton)
+        s <- setdiff(s, indices.struc.zero)
+        n.s <- length(s)
+        if ((n.s == 1L) || (kDefaultSize >= n.s))
+            sample <- s
         else
-            sample <- sort(sample.int(n.slice, size = kDefaultSize))
+            sample <- sample(s, size = kDefaultSize, replace = FALSE)
+        sample <- sort(sample)
     }
     else {
-        if (!all(sample %in% seq_len(n.slice)))
+        if (!all(sample %in% s))
             stop(gettextf("'%s' has values outside the valid range", "sample"))
     }
     for (name in c("nChain", "nThin")) {

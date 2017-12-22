@@ -83,6 +83,7 @@ setClass("SpecLikelihoodCMP",
          prototype = prototype(useExpose = new("LogicalFlag", TRUE)),
          contains = c("SpecLikelihood",
                       "BoxCoxParamMixin",
+                      "StructuralZerosMixin",
                       "MeanMeanLogNuCMPMixin",
                       "SDMeanLogNuCMPMixin",
                       "ASDLogNuCMPMixin",
@@ -281,7 +282,8 @@ setClass("SpecCMPVarying",
                       "SDMeanLogNuCMPMixin",
                       "ASDLogNuCMPMixin",
                       "NuSDLogNuCMPMixin",
-                      "SDMaxLogNuCMPMixin"),
+                      "SDMaxLogNuCMPMixin",
+                      "StructuralZerosMixin"),
          validity = function(object) {
              lower <- object@lower
              ## 'lower' non-negative

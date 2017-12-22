@@ -784,9 +784,6 @@ setClass("Theta",
              if (!is.double(theta))
                  return(gettextf("'%s' does not have type \"%s\"",
                                  "theta", "double"))
-             ## 'theta' has no missing values
-             if (any(is.na(theta)))
-                 return(gettextf("'%s' has missing values", "theta"))
              ## dimensions of 'metadataY' consistent with length of 'theta'
              if (!identical(as.integer(prod(dim(metadataY))), length(theta)))
                  return(gettextf("dimensions of '%s' inconsistent with length of '%s'",

@@ -707,14 +707,18 @@ test_that("initialModel creates object of class CMPVaryingUseExp from valid inpu
     sdNu <- runif(1, max = 1)
     meanNu <- rnorm(n = 1, mean = spec@meanMeanLogNuCMP, sd = spec@sdMeanLogNuCMP)
     nuCMP <- rnorm(n = length(theta), mean = meanNu, sd = sdNu)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(5, 4),
+                                   dimnames = list(age = 0:4, region = letters[1:4])))
     priors <- makePriors(betas = betas,
                          specs = spec@specsPriors,
                          namesSpecs = spec@namesSpecsPriors,
                          margins = list(0L, 1L, 2L),
                          y = y,
-                         sY = NULL)
+                         sY = NULL,
+                         strucZeroArray = strucZeroArray)
     betas <- unname(lapply(betas, as.numeric))
-    betas <- jitterBetas(betas)
+    betas <- jitterBetas(betas, priorsBetas = priors)
     expect_is(x, "CMPVaryingUseExp")
     expect_identical(x@sigma, new("Scale", sigma))
     expect_identical(x@theta, theta)
@@ -792,9 +796,10 @@ test_that("initialModel creates object of class CMPVaryingUseExp from valid inpu
                          namesSpecs = spec@namesSpecsPriors,
                          margins = list(0L, 1L, 2L),
                          y = y,
-                         sY = NULL)
+                         sY = NULL,
+                         strucZeroArray = strucZeroArray)
     betas <- unname(lapply(betas, as.numeric))
-    betas <- jitterBetas(betas)
+    betas <- jitterBetas(betas, priorsBetas = priors)
     expect_is(x, "CMPVaryingUseExp")
     expect_identical(x@sigma, new("Scale", sigma))
     expect_identical(x@theta, theta)

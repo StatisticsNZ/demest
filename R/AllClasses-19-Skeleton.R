@@ -257,40 +257,6 @@ setClass("SkeletonIndicesStrucZero",
          })
 
 
-## HAS_TESTS
-setClass("SkeletonIndicesAlongStrucZero",
-         slots = c(indicesAlongStrucZero = "integer"),
-         contains = "VIRTUAL",
-         validity = function(object) {
-             indicesAlongStrucZero <- object@indicesAlongStrucZero
-             metadata0 <- object@metadata0
-             if (is.null(metadata0)) {
-                 ## if 'metadata0' is NULL, 'indicesAlongStrucZero' has length 0
-                 if (!identical(length(indicesAlongStrucZero), 0L))
-                     return(gettextf("'%s' is %s but '%s' does not have length %d",
-                                     "metadata0", "NULL", "indicesAlongStrucZero", 0L))
-             }
-             else {
-                 ## 'indicesAlongStrucZero' has no missing values
-                 if (any(is.na(indicesAlongStrucZero)))
-                     return(gettextf("'%s' has missing values",
-                                     "indicesAlongStrucZero"))
-                 ## 'indicesAlongStrucZero' has no duplicates
-                 if (any(duplicated(indicesAlongStrucZero)))
-                     return(gettextf("'%s' has duplicates",
-                                     "indicesAlongStrucZero"))
-                 ## 'indicesAlongStrucZero' picks out indices of array
-                 ## specified by 'metadata0'
-                 s <- seq_len(prod(dim(metadata0)))
-                 if (!all(indicesAlongStrucZero %in% s))
-                     return(gettextf("'%s' outside valid range",
-                                     "indicesAlongStrucZero"))
-             }
-             TRUE
-         })
-
-
-
 
 ## NON-VIRTUAL CLASSES ########################################################
 
@@ -435,7 +401,7 @@ setClass("SkeletonStateDLM",
                       "SkeletonMetadata",
                       "SkeletonMetadata0",
                       "SkeletonMetadataIncl0",
-                      "SkeletonIndicesAlongStrucZero",
+                      "SkeletonIndicesStrucZero",
                       "IAlongMixin"))
 
 ## HAS_TESTS

@@ -7,89 +7,90 @@ test.extended <- TRUE
 
 ## getSeriesForDataset #############################################################
 
-test_that("getSeriesForDataset works with CombinedModelPoissonNotHasExp", {
-    initialCombinedCounts <- demest:::initialCombinedCounts
-    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
-    updateCombined <- demest:::updateCombined
-    set.seed(100)
-    y <- Counts(array(c(1:11, 20L),
-                      dim = c(6, 2),
-                      dimnames = list(age = 0:5, sex = c("f", "m"))))
-    model <- Model(y ~ Poisson(mean ~ age, useExpose = FALSE))
-    data.models <- list(Model(register ~ PoissonBinomial(prob = 0.98)),
-                              Model(tax ~ Binomial(mean ~ 1)))
-    datasets <- list(Counts(array(c(0L, 2:12), dim = c(6, 2),
-                                  dimnames = list(age = 0:5, sex = c("f", "m")))),
-                         Counts(array(c(1:5, NA), dim = 6, dimnames = list(age = 0:5))))
-    namesDatasets <- c("register", "tax")
-    transforms <- list(makeTransform(x = y, y = datasets[[1]]),
-                       makeTransform(x = y, y = datasets[[2]]))
-    transforms <- lapply(transforms, makeCollapseTransformExtra)
-    combined <- initialCombinedCounts(model,
-                               y = y,
-                               exposure = NULL,
-                               dataModels = data.models,
-                               datasets = datasets,
-                               namesDatasets = namesDatasets,
-                               transforms = transforms)
-    ans.obtained <- getSeriesForDataset(combined = combined, dataset = "register")
-    ans.expected <- combined@y
-    expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- getSeriesForDataset(combined = combined, dataset = "tax")
-    ans.expected <- combined@y
-    expect_identical(ans.obtained, ans.expected)
-})
+## test_that("getSeriesForDataset works with CombinedModelPoissonNotHasExp", {
+##     getSeriesForDataset <- demest:::getSeriesForDataset
+##     initialCombinedCounts <- demest:::initialCombinedCounts
+##     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+##     updateCombined <- demest:::updateCombined
+##     set.seed(100)
+##     y <- Counts(array(c(1:11, 20L),
+##                       dim = c(6, 2),
+##                       dimnames = list(age = 0:5, sex = c("f", "m"))))
+##     model <- Model(y ~ Poisson(mean ~ age, useExpose = FALSE))
+##     data.models <- list(Model(register ~ PoissonBinomial(prob = 0.98)),
+##                               Model(tax ~ Binomial(mean ~ 1)))
+##     datasets <- list(Counts(array(c(0L, 2:12), dim = c(6, 2),
+##                                   dimnames = list(age = 0:5, sex = c("f", "m")))),
+##                          Counts(array(c(1:5, NA), dim = 6, dimnames = list(age = 0:5))))
+##     namesDatasets <- c("register", "tax")
+##     transforms <- list(makeTransform(x = y, y = datasets[[1]]),
+##                        makeTransform(x = y, y = datasets[[2]]))
+##     transforms <- lapply(transforms, makeCollapseTransformExtra)
+##     combined <- initialCombinedCounts(model,
+##                                y = y,
+##                                exposure = NULL,
+##                                dataModels = data.models,
+##                                datasets = datasets,
+##                                namesDatasets = namesDatasets,
+##                                transforms = transforms)
+##     ans.obtained <- getSeriesForDataset(combined = combined, dataset = "register")
+##     ans.expected <- combined@y
+##     expect_identical(ans.obtained, ans.expected)
+##     ans.obtained <- getSeriesForDataset(combined = combined, dataset = "tax")
+##     ans.expected <- combined@y
+##     expect_identical(ans.obtained, ans.expected)
+## })
 
-test_that("getSeriesForDataset works with CombinedAccountMovements", {
-    getSeriesForDataset <- demest:::getSeriesForDataset
-    initialCombinedAccount <- demest:::initialCombinedAccount
-    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
-    set.seed(1)
-    population <- CountsOne(values = seq(200, 300, 10),
-                            labels = seq(2000, 2100, 10),
-                            name = "time")
-    births <- CountsOne(values = rpois(n = 10, lambda = 5),
-                        labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
-                        name = "time")
-    deaths <- CountsOne(values = rpois(n = 10, lambda = 5),
-                        labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
-                        name = "time")
-    account <- Movements(population = population,
-                         births = births,
-                         exits = list(deaths = deaths))
-    account <- makeConsistent(account)
-    systemModels <- list(Model(population ~ Poisson(mean ~ time, useExpose = FALSE)),
-                         Model(births ~ Poisson(mean ~ 1)),
-                         Model(deaths ~ Poisson(mean ~ 1)))
-    systemWeights <- rep(list(NULL), 3)
-    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
-                              Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
-    seriesIndices <- c(2L, 0L)
-    datasets <- list(Counts(array(7L,
-                                  dim = 10,
-                                  dimnames = list(time = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-")))),
-                     Counts(array(seq.int(110L, 210L, 10L),
-                                  dim = 11,
-                                  dimnames = list(time = seq(2000, 2100, 10)))))
-    namesDatasets <- c("tax", "census")
-    transforms <- list(makeTransform(x = deaths, y = datasets[[1]], subset = TRUE),
-                       makeTransform(x = population, y = datasets[[2]], subset = TRUE))
-    transforms <- lapply(transforms, makeCollapseTransformExtra)
-    x <- initialCombinedAccount(account = account,
-                                 systemModels = systemModels,
-                                 systemWeights = systemWeights,
-                                 dataModels = data.models,
-                                 seriesIndices = seriesIndices,
-                                 datasets = datasets,
-                                 namesDatasets = namesDatasets,
-                                transforms = transforms)
-    ans.obtained <- getSeriesForDataset(combined = x, dataset = "tax")
-    ans.expected <- x@account@components[[2]]
-    expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- getSeriesForDataset(combined = x, dataset = "census")
-    ans.expected <- x@account@population
-    expect_identical(ans.obtained, ans.expected)
-})
+## test_that("getSeriesForDataset works with CombinedAccountMovements", {
+##     getSeriesForDataset <- demest:::getSeriesForDataset
+##     initialCombinedAccount <- demest:::initialCombinedAccount
+##     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+##     set.seed(1)
+##     population <- CountsOne(values = seq(200, 300, 10),
+##                             labels = seq(2000, 2100, 10),
+##                             name = "time")
+##     births <- CountsOne(values = rpois(n = 10, lambda = 5),
+##                         labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
+##                         name = "time")
+##     deaths <- CountsOne(values = rpois(n = 10, lambda = 5),
+##                         labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
+##                         name = "time")
+##     account <- Movements(population = population,
+##                          births = births,
+##                          exits = list(deaths = deaths))
+##     account <- makeConsistent(account)
+##     systemModels <- list(Model(population ~ Poisson(mean ~ time, useExpose = FALSE)),
+##                          Model(births ~ Poisson(mean ~ 1)),
+##                          Model(deaths ~ Poisson(mean ~ 1)))
+##     systemWeights <- rep(list(NULL), 3)
+##     data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
+##                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
+##     seriesIndices <- c(2L, 0L)
+##     datasets <- list(Counts(array(7L,
+##                                   dim = 10,
+##                                   dimnames = list(time = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-")))),
+##                      Counts(array(seq.int(110L, 210L, 10L),
+##                                   dim = 11,
+##                                   dimnames = list(time = seq(2000, 2100, 10)))))
+##     namesDatasets <- c("tax", "census")
+##     transforms <- list(makeTransform(x = deaths, y = datasets[[1]], subset = TRUE),
+##                        makeTransform(x = population, y = datasets[[2]], subset = TRUE))
+##     transforms <- lapply(transforms, makeCollapseTransformExtra)
+##     x <- initialCombinedAccount(account = account,
+##                                  systemModels = systemModels,
+##                                  systemWeights = systemWeights,
+##                                  dataModels = data.models,
+##                                  seriesIndices = seriesIndices,
+##                                  datasets = datasets,
+##                                  namesDatasets = namesDatasets,
+##                                 transforms = transforms)
+##     ans.obtained <- getSeriesForDataset(combined = x, dataset = "tax")
+##     ans.expected <- x@account@components[[2]]
+##     expect_identical(ans.obtained, ans.expected)
+##     ans.obtained <- getSeriesForDataset(combined = x, dataset = "census")
+##     ans.expected <- x@account@population
+##     expect_identical(ans.obtained, ans.expected)
+## })
 
 
 

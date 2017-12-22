@@ -421,6 +421,11 @@ fetchCoverage <- function(filename, dataset) {
 #' \pkg{coda} function \code{\link[coda]{mcmc}} is set to 1; otherwise
 #' \code{thin} is set to \code{nThin}, extracted from \code{object}.
 #'
+#' If the model in question contains structural zeros (see \code{\link{Poisson}}),
+#' some parameters of the model may be undefined. These parameters are omitted
+#' from the results, unless they are specifically requested via the
+#' \code{sample} argument.
+#' 
 #' @param filename The name of the file where the output from the
 #' \code{estimate} function is kept.
 #' @param where A character vector used to select a single parameter or batch
@@ -510,10 +515,12 @@ fetchMCMC <- function(filename, where = NULL, sample = NULL, thinned = TRUE) {
             for (i in seq_len(n.where)) {
                 where <- where.mcmc[[i]]
                 obj <- fetch(filename, where = where)
+                skeleton <- fetchSkeleton(object, where = where)
                 ans[[i]] <- MCMCDemographic(object = obj,
                                             sample = sample,
                                             nChain = n.chain,
-                                            nThin = n.thin)
+                                            nThin = n.thin,
+                                            skeleton = skeleton)
             }
             names(ans) <- sapply(where.mcmc, paste, collapse = ".")
             ans
@@ -533,6 +540,7 @@ fetchMCMC <- function(filename, where = NULL, sample = NULL, thinned = TRUE) {
                         nThin = n.thin)
     }
 }
+
 
 
 ## NO_TESTS

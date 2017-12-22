@@ -847,6 +847,7 @@ setMethod("makeOutputModel",
               names.betas <- model@namesBetas
               margins <- model@margins
               dims <- model@dims
+              struc.zero.array <- model@strucZeroArray
               n.beta <- length(betas.obj)
               n.attempt <- as.integer(prod(dim(metadata)))
               nChain <- mcmc["nChain"]
@@ -856,9 +857,15 @@ setMethod("makeOutputModel",
               first <- pos
               pos <- first + length(theta)
               class <- if (uses.exposure) "Values" else "Counts"
-              .Data <- array(theta, dim = dim(metadata), dimnames = dimnames(metadata))
-              theta <- methods::new(class, .Data = .Data, metadata = metadata)
-              theta <- Skeleton(object = theta, first = first)
+              .Data <- array(theta,
+                             dim = dim(metadata),
+                             dimnames = dimnames(metadata))
+              theta <- methods::new(class,
+                                    .Data = .Data,
+                                    metadata = metadata)
+              theta <- Skeleton(object = theta,
+                                first = first,
+                                strucZeroArray = struc.zero.array)
               ## make nFailedPropTheta
               first <- pos
               pos <- first + 1L
@@ -879,7 +886,8 @@ setMethod("makeOutputModel",
               mu <- SkeletonMu(betas = betas.obj,
                                margins = margins,
                                first = first,
-                               metadata = metadata)
+                               metadata = metadata,
+                               strucZeroArray = struc.zero.array)
               betas <- vector(mode = "list", length = n.beta)
               betas[[1L]] <- SkeletonBetaIntercept(first = first)
               if (n.beta > 1L) {
@@ -888,7 +896,8 @@ setMethod("makeOutputModel",
                       pos <- first + length(betas.obj[[i]])
                       margin <- margins[[i]]
                       betas[[i]] <- SkeletonBetaTerm(first = first,
-                                                     metadata = metadata[margin])
+                                                     metadata = metadata[margin],
+                                                     strucZeroArray = struc.zero.array)
                   }
               }
               names(betas) <- names.betas
@@ -907,7 +916,8 @@ setMethod("makeOutputModel",
                   }
                   hyper[i] <- list(makeOutputPrior(priors.betas[[i]],
                                                    metadata = metadata.i,
-                                                   pos = pos))
+                                                   pos = pos,
+                                                   strucZeroArray = struc.zero.array))
                   pos <- pos + changeInPos(hyper[[i]])
               }
               names(hyper) <- names.betas

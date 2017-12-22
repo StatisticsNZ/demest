@@ -65,7 +65,8 @@ setClass("CMP",
                       "SDMeanLogNuCMPMixin",                      
                       "NuCMPMixin",
                       "ScaleThetaMultiplierMixin",
-                      "NFailedPropYStarMixin"),
+                      "NFailedPropYStarMixin",
+                      "StrucZeroArrayMixin"),
          validity = function(object) {
              theta <- object@theta
              ## 'theta' is non-negative

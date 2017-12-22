@@ -656,6 +656,7 @@ setMethod("initialModel",
               formula.mu <- object@formulaMu
               specs.priors <- object@specsPriors
               names.specs.priors <- object@namesSpecsPriors
+              structural.zeros <- object@structuralZeros
               box.cox.param <- object@boxCoxParam
               scale.theta <- object@scaleTheta
               lower <- object@lower
@@ -676,6 +677,10 @@ setMethod("initialModel",
               checkLengthDimInFormula(y = y, formula = formula.mu)
               metadataY <- y@metadata
               dim <- dim(y)
+              struc.zero.array <- makeStrucZeroArray(structuralZeros = structural.zeros, 
+                                                     y = y) 
+              y <- checkAndTidyYForStrucZero(y = y, 
+                                             strucZeroArray = struc.zero.array) 
               has.exposure <- !is.null(exposure)
               if (has.exposure && !use.expose)
                   stop(gettextf("'%s' argument supplied, but model '%s' does not use exposure",
@@ -684,14 +689,15 @@ setMethod("initialModel",
                   stop(gettextf("model '%s' uses exposure, but no '%s' argument supplied",
                                 deparse(call[[2L]]), "exposure"))
               y.missing <- is.na(y@.Data)
-              if (!all(y.missing))
-                  mean.y.obs <- mean(y@.Data[!y.missing])
+              is.obs <- !is.na(y@.Data) & (struc.zero.array != 0L) 
+              if (any(is.obs))
+                  mean.y.obs <- mean(y@.Data[is.obs]) 
               else
                   mean.y.obs <- 0.5
-              shape <- ifelse(y.missing, mean.y.obs, 0.5 * mean.y.obs + 0.5 * y@.Data)
+              shape <- ifelse(is.obs, 0.5 * mean.y.obs + 0.5 * y@.Data, mean.y.obs)
               if (has.exposure) {
-                  mean.expose.obs <- mean(exposure[!y.missing])
-                  rate <- ifelse(y.missing, mean.expose.obs, 0.5 * mean.expose.obs + 0.5 * exposure)
+                  mean.expose.obs <- mean(exposure[is.obs])
+                  rate <- ifelse(is.obs, 0.5 * mean.expose.obs + 0.5 * exposure, mean.expose.obs)
               }
               else
                   rate <- 1
@@ -740,6 +746,7 @@ setMethod("initialModel",
                   betas <- convertToFormulaOrder(betas = betas, formulaMu = formula.mu)
               }
               theta <- as.numeric(theta)
+              theta[struc.zero.array == 0L] <- NA
               sdLogNuCMP <- stats::runif(n = 1L,
                                          min = 0,
                                          max = min(ASDLogNuCMP@.Data, sdLogNuMaxCMP@.Data))
@@ -760,7 +767,8 @@ setMethod("initialModel",
                                          namesSpecs = names.specs.priors,
                                          margins = margins,
                                          y = y,
-                                         sY = sY)
+                                         sY = sY,
+                                         strucZeroArray = struc.zero.array)
               is.saturated <- sapply(priors.betas, function(x) x@isSaturated@.Data)
               if (any(is.saturated)) {
                   i.saturated <- which(is.saturated)
@@ -771,7 +779,8 @@ setMethod("initialModel",
                   sigma <- prior.saturated@tau
               }
               betas <- unname(lapply(betas, as.numeric))
-              betas <- jitterBetas(betas)
+              betas <- jitterBetas(betas = betas,
+                                   priorsBetas = priors.betas)
               iterator.betas <- BetaIterator(dim = dim, margins = margins)
               dims <- makeDims(dim = dim, margins = margins)
               class <- if (has.exposure) "CMPVaryingUseExp" else "CMPVaryingNotUseExp"
@@ -780,6 +789,7 @@ setMethod("initialModel",
                                     call = call,
                                     theta = theta,
                                     cellInLik = cellInLik,
+                                    strucZeroArray = struc.zero.array,
                                     metadataY = metadataY,
                                     scaleTheta = scale.theta,
                                     scaleThetaMultiplier = scale.theta.multiplier,
@@ -822,7 +832,8 @@ setMethod("initialModel",
                              aggregate = aggregate,
                              defaultWeights = default.weights)
               model <- makeCellInLik(model = model,
-                                     y = y)
+                                     y = y,
+                                     strucZeroArray = struc.zero.array)
               model
           })
 
@@ -1152,7 +1163,7 @@ setMethod("initialModel",
                   betas <- convertToFormulaOrder(betas = betas, formulaMu = formula.mu)
               }
               theta <- as.numeric(theta)
-              theta[struc.zero.array == 0L] <- 0
+              theta[struc.zero.array == 0L] <- NA
               names.betas <- names(betas)
               margins <- makeMargins(betas = betas, y = y)
               priors.betas <- makePriors(betas = betas,
