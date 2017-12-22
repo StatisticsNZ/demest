@@ -431,11 +431,11 @@ getIExposureFromBirths(int i, SEXP mapping_R)
     }
 
     for (int d = 0; d < nDimShared; ++d) {
-	int nShared = nSharedVec[d];
-	int stepSharedBirths = stepSharedBirthsVec[d];
-	int stepSharedExp = stepSharedExpVec[d];
-	int iShared = (iMinus1/stepSharedBirths) % nShared; 
-	iExp_r += iShared * stepSharedExp;
+    int nShared = nSharedVec[d];
+    int stepSharedBirths = stepSharedBirthsVec[d];
+    int stepSharedExp = stepSharedExpVec[d];
+    int iShared = (iMinus1/stepSharedBirths) % nShared; 
+    iExp_r += iShared * stepSharedExp;
     }
     
     return iExp_r;
@@ -557,33 +557,33 @@ getIExpFirstFromComp(int i, SEXP mapping_R)
         int isLower = (iTriangleComp == 0);
 
         int iAgeExp = iAgeComp;
-	int iTriangleExp = iTriangleComp;
+    int iTriangleExp = iTriangleComp;
 
-	if (!isLower) {
-	    if (iAgeComp == (nAge - 1)) {
-		if (iTimeComp == (nTime - 1))
-		    return 0;
-		iTimeExp++;
-	    }
-	    else {
-		iAgeExp++;
-		iTriangleExp = 0;
-	    }
-	}
-	
-	iExp_r += iAgeExp * stepAgeExp;
-	iExp_r += iTriangleExp * stepTriangleExp;
-	
+    if (!isLower) {
+        if (iAgeComp == (nAge - 1)) {
+        if (iTimeComp == (nTime - 1))
+            return 0;
+        iTimeExp++;
+        }
+        else {
+        iAgeExp++;
+        iTriangleExp = 0;
+        }
+    }
+    
+    iExp_r += iAgeExp * stepAgeExp;
+    iExp_r += iTriangleExp * stepTriangleExp;
+    
     }
     
     iExp_r += iTimeExp * stepTimeExp;
         
     for (int d = 0; d < nDimShared; ++d) {
-	int nShared = nSharedVec[d];
-	int stepSharedComp = stepSharedCompVec[d];
-	int stepSharedExp = stepSharedExpVec[d];
-	int iShared = (iMinus1 / stepSharedComp ) % nShared;
-	iExp_r += iShared * stepSharedExp;
+    int nShared = nSharedVec[d];
+    int stepSharedComp = stepSharedCompVec[d];
+    int stepSharedExp = stepSharedExpVec[d];
+    int iShared = (iMinus1 / stepSharedComp ) % nShared;
+    iExp_r += iShared * stepSharedExp;
     }
                 
     return iExp_r;
@@ -621,13 +621,13 @@ getIExpFirstFromBirths(int i, SEXP mapping_R)
 }
 
 SEXP
-getIExpFirstFromOrigDest(int i, SEXP mapping_R)
+getIExpFirstPairFromOrigDest(int i, SEXP mapping_R)
 {
     SEXP ans_R;
     PROTECT(ans_R = allocVector(INTSXP, 2));
     int *ans = INTEGER(ans_R);
     
-    getIExpFirstFromOrigDestInternal(ans, i, mapping_R);
+    getIExpFirstPairFromOrigDestInternal(ans, i, mapping_R);
     
     UNPROTECT(1); /* ans_R */
     return ans_R;
@@ -635,7 +635,7 @@ getIExpFirstFromOrigDest(int i, SEXP mapping_R)
 
 /* ans must have 2 elements */
 void
-getIExpFirstFromOrigDestInternal(int *ans, int i, SEXP mapping_R)
+getIExpFirstPairFromOrigDestInternal(int *ans, int i, SEXP mapping_R)
 {
     int nTime  = *INTEGER(GET_SLOT(mapping_R, nTimeCurrent_sym));
     int stepTimeComp  = *INTEGER(GET_SLOT(mapping_R, stepTimeCurrent_sym));
@@ -676,56 +676,56 @@ getIExpFirstFromOrigDestInternal(int *ans, int i, SEXP mapping_R)
         
         int iAgeComp = (iMinus1 / stepAgeComp) % nAge;
         int iTriangleComp = (iMinus1 / stepTriangleComp) % 2;
-	
+    
         int isLower = (iTriangleComp == 0);
     
         int iAgeExp = iAgeComp;
-	int iTriangleExp = iTriangleComp;
+    int iTriangleExp = iTriangleComp;
 
         if (!isLower) {
-	    if (iAgeComp == (nAge - 1)) {
-		if (iTimeComp == (nTime - 1)) {
-		    ans[0] = 0;
-		    ans[1] = 0;
-		    return ;
-		}
-		iTimeExp++;
-	    }
-	    else {
-		iAgeExp++;
-		iTriangleExp = 0;
-	    }
-	}
-		    
-	iExp += iAgeExp * stepAgeExp;
-	iExp += iTriangleExp * stepTriangleExp;
+        if (iAgeComp == (nAge - 1)) {
+        if (iTimeComp == (nTime - 1)) {
+            ans[0] = 0;
+            ans[1] = 0;
+            return ;
+        }
+        iTimeExp++;
+        }
+        else {
+        iAgeExp++;
+        iTriangleExp = 0;
+        }
+    }
+            
+    iExp += iAgeExp * stepAgeExp;
+    iExp += iTriangleExp * stepTriangleExp;
 
     }
 
     iExp += iTimeExp * stepTimeExp;
     
     for (int d = 0; d < nDimShared; ++d) {
-	int nShared = nSharedVec[d];
-	int stepSharedComp = stepSharedCompVec[d];
-	int stepSharedExp = stepSharedExpVec[d];
-	int iShared = (iMinus1 / stepSharedComp ) % nShared;
-	iExp += iShared * stepSharedExp;
+    int nShared = nSharedVec[d];
+    int stepSharedComp = stepSharedCompVec[d];
+    int stepSharedExp = stepSharedExpVec[d];
+    int iShared = (iMinus1 / stepSharedComp ) % nShared;
+    iExp += iShared * stepSharedExp;
     }
         
     iExpOrig_r = iExp;
     iExpDest_r = iExp;
         
     for (int d = 0; d < nDimOrigDest; ++d) {
-	int nOrigDest = nOrigDestVec[d];
-	int stepOrigComp = stepOrigCompVec[d];
-	int stepDestComp = stepDestCompVec[d];
-	int stepOrigDestExp = stepOrigDestExpVec[d];
+    int nOrigDest = nOrigDestVec[d];
+    int stepOrigComp = stepOrigCompVec[d];
+    int stepDestComp = stepDestCompVec[d];
+    int stepOrigDestExp = stepOrigDestExpVec[d];
             
-	int iOrig = (iMinus1/stepOrigComp) % nOrigDest; 
-	int iDest = (iMinus1/stepDestComp) % nOrigDest; 
+    int iOrig = (iMinus1/stepOrigComp) % nOrigDest; 
+    int iDest = (iMinus1/stepDestComp) % nOrigDest; 
             
-	iExpOrig_r += iOrig * stepOrigDestExp;
-	iExpDest_r += iDest * stepOrigDestExp;
+    iExpOrig_r += iOrig * stepOrigDestExp;
+    iExpDest_r += iDest * stepOrigDestExp;
     }
 
     ans[0] = iExpOrig_r;

@@ -889,7 +889,7 @@ MAPPING_GET_I_WRAPPER(getIExposureFromBirths);
 MAPPING_GET_I_WRAPPER(getIExposureFromOrigDest);
 MAPPING_GET_I_WRAPPER(getIExpFirstFromComp);
 MAPPING_GET_I_WRAPPER(getIExpFirstFromBirths);
-MAPPING_GET_IVEC_WRAPPER(getIExpFirstFromOrigDest);
+MAPPING_GET_IVEC_WRAPPER(getIExpFirstPairFromOrigDest);
 MAPPING_GET_I_WRAPPER(getICellCompFromExp);
 MAPPING_GET_I_WRAPPER(getICellBirthsFromExp);
 
@@ -1401,6 +1401,23 @@ RCMP_WRAPPER_R(rcmpOver);
 RCMP_WRAPPER_R(rcmp1);
 
 /* *************************** update-account -------------------------- */
+
+#define UPDATEOBJECT_WRAPPER_TO_EXTERNAL_R(name)         \
+    SEXP name##_R(SEXP object) {    \
+    SEXP ans_R;               \
+    PROTECT(ans_R = duplicate(object));   \
+    GetRNGstate();      \
+    name##_external(ans_R);          \
+    PutRNGstate();          \
+    UNPROTECT(1);               \
+    return ans_R;             \
+    }
+
+
+UPDATEOBJECT_WRAPPER_TO_EXTERNAL_R(updateProposalAccountMovePopn);
+UPDATEOBJECT_WRAPPER_TO_EXTERNAL_R(updateProposalAccountMoveBirths);
+UPDATEOBJECT_WRAPPER_TO_EXTERNAL_R(updateProposalAccountMoveOrigDest);
+UPDATEOBJECT_WRAPPER_TO_EXTERNAL_R(updateProposalAccountMovePool);
 
 /* wrapper for diffLogLik functions with parameter combined */ 
 #define DIFFLOGLIKCOMBINED_WRAPPER_R(name)         \
@@ -1969,7 +1986,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(getIExposureFromOrigDest_R, 2),
   CALLDEF(getIExpFirstFromComp_R, 2),
   CALLDEF(getIExpFirstFromBirths_R, 2),
-  CALLDEF(getIExpFirstFromOrigDest_R, 2),
+  CALLDEF(getIExpFirstPairFromOrigDest_R, 2),
   CALLDEF(getICellCompFromExp_R, 2),
   CALLDEF(getICellBirthsFromExp_R, 2),
   
@@ -2031,6 +2048,11 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(rcmp1_R, 3),
 
   /* update-account */
+  CALLDEF(updateProposalAccountMovePopn_R, 1),
+  CALLDEF(updateProposalAccountMoveBirths_R, 1),
+  CALLDEF(updateProposalAccountMoveOrigDest_R, 1),
+  CALLDEF(updateProposalAccountMovePool_R, 1),
+  
   CALLDEF(diffLogLikAccountMovePopn_R, 1),
   CALLDEF(diffLogLikPopn_R, 8),
   CALLDEF(diffLogLikPopnOneDataset_R, 7),
@@ -2386,6 +2408,7 @@ R_init_demest(DllInfo *info)
   ADD_SYM(population);
   ADD_SYM(accession);
   ADD_SYM(components);
+  ADD_SYM(descriptions);
   ADD_SYM(iteratorPopn);
   ADD_SYM(iteratorAcc);
   ADD_SYM(iteratorExposure);
@@ -2406,6 +2429,9 @@ R_init_demest(DllInfo *info)
   ADD_SYM(systemModels);
   ADD_SYM(modelUsesExposure);
   ADD_SYM(mappingsFromExp);
+  ADD_SYM(mappingsToExp);
+  ADD_SYM(mappingsToPopn);
+  ADD_SYM(mappingsToAcc);
   ADD_SYM(iExpFirst);
   ADD_SYM(iExpFirstOther); 
   ADD_SYM(ageTimeStep);
@@ -2414,6 +2440,7 @@ R_init_demest(DllInfo *info)
   ADD_SYM(iExposure);
   ADD_SYM(iExposureOther);
   ADD_SYM(isLowerTriangle);
+  ADD_SYM(generatedNewProposal);
     
   
 #undef ADD_SYM

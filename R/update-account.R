@@ -96,7 +96,7 @@ updateAccount <- function(object, useC = FALSE) {
 
 ## Updating proposals ############################################################
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 updateProposalAccountMovePopn <- function(combined, useC = FALSE) {
     stopifnot(methods::is(combined, "CombinedAccountMovements"))
@@ -145,7 +145,7 @@ updateProposalAccountMovePopn <- function(combined, useC = FALSE) {
                                 maxAttempt = max.attempt)
         found.value <- !is.na(val.prop)
         if (found.value) {
-            diff.prop <- val.prop - val.curr
+            diff.prop <- unname(val.prop - val.curr) ## JAH changed 22/12/2017
             generated.new.proposal <- diff.prop != 0L
         }
         else
@@ -160,7 +160,7 @@ updateProposalAccountMovePopn <- function(combined, useC = FALSE) {
             if (has.age) {
                 combined@iAccNext <- i.acc.next
                 combined@iAccNextOther <- NA_integer_
-                combined@isLowerTriangle <- NA
+                combined@isLowerTriangle@.Data <- NA ## changed JAH 22/12/2017
             }
             combined@iExposure <- i.exposure
             combined@iExposureOther <- NA_integer_
@@ -177,7 +177,7 @@ updateProposalAccountMovePopn <- function(combined, useC = FALSE) {
             if (has.age) {
                 combined@iAccNext <- NA_integer_
                 combined@iAccNextOther <- NA_integer_
-                combined@isLowerTriangle <- NA
+                combined@isLowerTriangle@.Data <- NA ## changed JAH 22/12/2017
             }
             combined@iExposure <- NA_integer_
             combined@iExposureOther <- NA_integer_
@@ -189,12 +189,12 @@ updateProposalAccountMovePopn <- function(combined, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 updateProposalAccountMoveBirths <- function(combined, useC = FALSE) {
     stopifnot(methods::is(combined, "CombinedAccountMovements"))
     if (useC) {
-        .Call(updateProposalAccountBirths_R, combined)
+        .Call(updateProposalAccountMoveBirths_R, combined)
     }
     else {
         account <- combined@account
@@ -257,7 +257,7 @@ updateProposalAccountMoveBirths <- function(combined, useC = FALSE) {
                                 maxAttempt = max.attempt)
         found.value <- !is.na(val.prop)
         if (found.value) {
-            diff.prop <- val.prop - val.curr
+            diff.prop <- unname(val.prop - val.curr) ## JAH changed 22/12/2017
             generated.new.proposal <- diff.prop != 0L
         }
         else
@@ -271,7 +271,7 @@ updateProposalAccountMoveBirths <- function(combined, useC = FALSE) {
             if (has.age) {
                 combined@iAccNext <- i.acc.next
                 combined@iAccNextOther <- NA_integer_
-                combined@isLowerTriangle <- is.lower.triangle
+                combined@isLowerTriangle@.Data <- NA ## changed JAH 22/12/2017
             }
             if (uses.exposure) {
                 combined@iExposure <- i.exposure
@@ -294,7 +294,7 @@ updateProposalAccountMoveBirths <- function(combined, useC = FALSE) {
             if (has.age) {
                 combined@iAccNext <- NA_integer_
                 combined@iAccNextOther <- NA_integer_
-                combined@isLowerTriangle <- NA
+                combined@isLowerTriangle@.Data <- NA ## changed JAH 22/12/2017
             }
             combined@iExposure <- NA_integer_
             combined@iExposureOther <- NA_integer_
@@ -306,7 +306,7 @@ updateProposalAccountMoveBirths <- function(combined, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 updateProposalAccountMoveOrigDest <- function(combined, useC = FALSE) {
     stopifnot(methods::is(combined, "CombinedAccountMovements"))
@@ -391,7 +391,7 @@ updateProposalAccountMoveOrigDest <- function(combined, useC = FALSE) {
             found.value <- !is.na(val.prop)
         }
         if (found.value) {
-            diff.prop <- val.prop - val.curr
+            diff.prop <- unname(val.prop - val.curr) ## JAH changed 22/12/2017
             generated.new.proposal <- diff.prop != 0L
         }
         else
@@ -405,7 +405,7 @@ updateProposalAccountMoveOrigDest <- function(combined, useC = FALSE) {
             if (has.age) {
                 combined@iAccNext <- i.acc.next.orig
                 combined@iAccNextOther <- i.acc.next.dest
-                combined@isLowerTriangle <- is.lower.triangle
+                combined@isLowerTriangle@.Data <- is.lower.triangle ## changed JAH 22/12/2017
             }
             if (uses.exposure) {
                 combined@iExposure <- i.exposure
@@ -427,7 +427,7 @@ updateProposalAccountMoveOrigDest <- function(combined, useC = FALSE) {
             if (has.age) {
                 combined@iAccNext <- NA_integer_
                 combined@iAccNextOther <- NA_integer_
-                combined@isLowerTriangle <- NA
+                combined@isLowerTriangle@.Data <- NA ## changed JAH 22/12/2017
             }
             combined@iExposure <- NA_integer_
             combined@iExposureOther <- NA_integer_
@@ -439,7 +439,7 @@ updateProposalAccountMoveOrigDest <- function(combined, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 updateProposalAccountMovePool <- function(combined, useC = FALSE) {
     stopifnot(methods::is(combined, "CombinedAccountMovements"))
@@ -529,7 +529,7 @@ updateProposalAccountMovePool <- function(combined, useC = FALSE) {
             found.value <- !is.na(val.prop.out)
         }
         if (found.value) {
-            diff.prop <- val.prop.out - val.curr.out
+            diff.prop <- unname(val.prop.out - val.curr.out) ## JAH changed 22/12/2017
             generated.new.proposal <- diff.prop != 0L
         }
         else
@@ -543,7 +543,7 @@ updateProposalAccountMovePool <- function(combined, useC = FALSE) {
             if (has.age) {
                 combined@iAccNext <- i.acc.next.out
                 combined@iAccNextOther <- i.acc.next.in
-                combined@isLowerTriangle <- is.lower.triangle
+                combined@isLowerTriangle@.Data <- is.lower.triangle ## JAH changed 22/12/2017
             }
             if (uses.exposure) {
                 combined@iExposure <- i.exposure.out
@@ -565,7 +565,7 @@ updateProposalAccountMovePool <- function(combined, useC = FALSE) {
             if (has.age) {
                 combined@iAccNext <- NA_integer_
                 combined@iAccNextOther <- NA_integer_
-                combined@isLowerTriangle <- NA
+                combined@isLowerTriangle@.Data <- NA ## JAH changed 22/12/2017
             }
             combined@iExposure <- NA_integer_
             combined@iExposureOther <- NA_integer_
