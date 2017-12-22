@@ -5295,6 +5295,8 @@ test_that("findOneRootLogPostSigmaNorm works", {
     }
 })
 
+## NOTE: C version of this function can give different results due
+## to effect of kEpsilon test for deriv near zero.
 test_that("R and C versions of findOneRootLogPostSigmaNorm give same answer", {
     findOneRootLogPostSigmaNorm <- demest:::findOneRootLogPostSigmaNorm
     for (seed in seq_len(n.test)) {
@@ -5442,6 +5444,8 @@ test_that("findOneRootLogPostSigmaRobust works", {
     }
 })
 
+## NOTE: C version of this function can give different results due
+## to effect of kEpsilon test for deriv near zero.
 test_that("R and C versions of findOneRootLogPostSigmaRobust give same answer", {
     findOneRootLogPostSigmaRobust <- demest:::findOneRootLogPostSigmaRobust
     for (seed in seq_len(n.test)) {

@@ -322,6 +322,7 @@ SEXP
   population_sym,
   accession_sym,
   components_sym,
+  descriptions_sym,
   iteratorPopn_sym,
   iteratorAcc_sym,
   iteratorExposure_sym,
@@ -342,6 +343,9 @@ SEXP
   systemModels_sym,
   modelUsesExposure_sym,
   mappingsFromExp_sym,
+  mappingsToExp_sym,
+  mappingsToPopn_sym,
+  mappingsToAcc_sym,
   iExpFirst_sym,
   iExpFirstOther_sym, 
   ageTimeStep_sym,
@@ -349,7 +353,8 @@ SEXP
   expectedExposure_sym,
   iExposure_sym,
   iExposureOther_sym,
-  isLowerTriangle_sym;
+  isLowerTriangle_sym,
+  generatedNewProposal_sym;
   
   
 /* Priors-methods */
@@ -865,7 +870,7 @@ int getIExposureFromBirths(int i, SEXP mapping_R);
 int getIExposureFromOrigDest(int i, SEXP mapping_R);
 int getIExpFirstFromComp(int i, SEXP mapping_R);
 int getIExpFirstFromBirths(int i, SEXP mapping_R);
-SEXP getIExpFirstFromOrigDest(int i, SEXP mapping_R);
+SEXP getIExpFirstPairFromOrigDest(int i, SEXP mapping_R);
 int getICellCompFromExp(int i, SEXP mapping_R);
 int getICellBirthsFromExp(int i, SEXP mapping_R);
 
@@ -876,6 +881,15 @@ double rcmpOver(double mu, double nu, int maxAttempt);
 double rcmp1(double mu, double nu, int maxAttempt);
 
 /* update-account */
+void updateProposalAccountMovePopn_external(SEXP combined_R);
+void updateProposalAccountMovePopn(SEXP combined_R);
+void updateProposalAccountMoveBirths_external(SEXP combined_R);
+void updateProposalAccountMoveBirths(SEXP combined_R);
+void updateProposalAccountMoveOrigDest_external(SEXP combined_R);
+void updateProposalAccountMoveOrigDest(SEXP combined_R);
+void updateProposalAccountMovePool_external(SEXP combined_R);
+void updateProposalAccountMovePool(SEXP combined_R);
+
 double diffLogLikAccountMovePopn(SEXP combined_R);
 double diffLogLikPopn(int diff, int iFirst_r, SEXP iterator_R, 
                         SEXP population_R, SEXP dataModels_R, 
