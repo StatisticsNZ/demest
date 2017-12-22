@@ -580,7 +580,7 @@ getIExpFirstPairFromOrigDest <- function(i, mapping, useC = FALSE) {
     ## 'mapping'
     stopifnot(methods::is(mapping, "MappingOrigDestToExp"))
     if (useC) {
-        .Call(getIExpFirstFromOrigDest_R, i, mapping)
+        .Call(getIExpFirstPairFromOrigDest_R, i, mapping)
     }
     else {
         n.time <- mapping@nTimeCurrent
