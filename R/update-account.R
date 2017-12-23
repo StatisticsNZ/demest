@@ -150,7 +150,6 @@ updateProposalAccountMovePopn <- function(combined, useC = FALSE) {
         }
         else
             generated.new.proposal <- FALSE
-        combined@generatedNewProposal@.Data <- generated.new.proposal
         if (generated.new.proposal) {
             combined@generatedNewProposal@.Data <- TRUE
             combined@iCell <- i.cell
@@ -271,14 +270,14 @@ updateProposalAccountMoveBirths <- function(combined, useC = FALSE) {
             if (has.age) {
                 combined@iAccNext <- i.acc.next
                 combined@iAccNextOther <- NA_integer_
-                combined@isLowerTriangle@.Data <- NA ## changed JAH 22/12/2017
+                combined@isLowerTriangle@.Data <- is.lower.triangle ## changed JAH 22/12/2017
             }
             if (uses.exposure) {
                 combined@iExposure <- i.exposure
                 combined@iExposureOther <- NA_integer_
             }
             else {
-                combined@iExposure <- NA_integer_
+                combined@iExposure <- 0L
                 combined@iExposureOther <- NA_integer_
             }
             combined@iExpFirst <- i.exp.first

@@ -204,8 +204,12 @@ updateProposalAccountMoveBirths(SEXP combined_R)
     int minVal = getMinValCohortPopulation(iPopnNext_r, population_R,
                                                         iteratorPopn_R);
     int iAccNext_r = 0;
+    int isLowerTriangleValueValue = 0;
 
     if (hasAge) {
+        
+        isLowerTriangleValueValue = isLowerTriangle(iCell_r, description_R);
+        
         SEXP accession_R = GET_SLOT(combined_R, accession_sym);
         SEXP iteratorAcc_R = GET_SLOT(combined_R, iteratorAcc_sym);
         
@@ -265,12 +269,10 @@ updateProposalAccountMoveBirths(SEXP combined_R)
          iCell_r = NA_INTEGER;
          iPopnNext_r = NA_INTEGER;
          iAccNext_r = NA_INTEGER;
+         isLowerTriangleValueValue = NA_LOGICAL;
          iExposure_r = NA_INTEGER;
          iExpFirst_r = NA_INTEGER;
          diffProp = NA_INTEGER;
-    }
-    else if (!usesExposure) {
-        iExposure_r = NA_INTEGER;
     }
     
     SET_INTSCALE_SLOT(combined_R, iCell_sym, iCell_r);
@@ -281,7 +283,7 @@ updateProposalAccountMoveBirths(SEXP combined_R)
     if (hasAge) {
         SET_INTSCALE_SLOT(combined_R, iAccNext_sym, iAccNext_r);
         SET_INTSCALE_SLOT(combined_R, iAccNextOther_sym, NA_INTEGER);
-        SET_LOGICALSCALE_SLOT(combined_R, isLowerTriangle_sym, NA_LOGICAL);
+        SET_LOGICALSCALE_SLOT(combined_R, isLowerTriangle_sym, isLowerTriangleValueValue);
     }
 
     SET_INTSCALE_SLOT(combined_R, iExposure_sym, iExposure_r);
