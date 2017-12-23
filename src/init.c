@@ -1406,22 +1406,39 @@ RCMP_WRAPPER_R(rcmp1);
 
 /* *************************** update-account -------------------------- */
 
-#define UPDATEOBJECT_WRAPPER_TO_EXTERNAL_R(name)         \
-    SEXP name##_R(SEXP object) {    \
+/* wrapper for update-accounts update proposal functions that 
+ * need to have the Popn and Acc iterators duplicated and originals replaced */
+#define UPDATEOBJECT_WRAPPER_UPDATEPROPOSAL_R(name)         \
+    SEXP name##_R(SEXP combined_R) {    \
     SEXP ans_R;               \
-    PROTECT(ans_R = duplicate(object));   \
+    PROTECT(ans_R = duplicate(combined_R));   \
+    SEXP iteratorPopn_R = GET_SLOT(combined_R, iteratorPopn_sym);    \
+    SEXP iteratorPopnDup_R = NULL;    \
+    PROTECT(iteratorPopnDup_R = duplicate(iteratorPopn_R));    \
+    int nProtected = 2;    \
+    int hasAge = *LOGICAL(GET_SLOT(combined_R, hasAge_sym));    \
+    SEXP iteratorAccDup_R = NULL;    \
+    if(hasAge) {    \
+        SEXP iteratorAcc_R = GET_SLOT(combined_R, iteratorAcc_sym);    \
+        PROTECT(iteratorAccDup_R = duplicate(iteratorAcc_R));    \
+        ++nProtected;    \
+    }    \
     GetRNGstate();      \
-    name##_external(ans_R);          \
+    name(ans_R);    \
     PutRNGstate();          \
-    UNPROTECT(1);               \
+    SET_SLOT(ans_R, iteratorPopn_sym, iteratorPopnDup_R);    \
+    if(hasAge) {    \
+        SET_SLOT(ans_R, iteratorAcc_sym, iteratorAccDup_R);    \
+    }    \
+    UNPROTECT(nProtected);    \
     return ans_R;             \
     }
 
 
-UPDATEOBJECT_WRAPPER_TO_EXTERNAL_R(updateProposalAccountMovePopn);
-UPDATEOBJECT_WRAPPER_TO_EXTERNAL_R(updateProposalAccountMoveBirths);
-UPDATEOBJECT_WRAPPER_TO_EXTERNAL_R(updateProposalAccountMoveOrigDest);
-UPDATEOBJECT_WRAPPER_TO_EXTERNAL_R(updateProposalAccountMovePool);
+UPDATEOBJECT_WRAPPER_UPDATEPROPOSAL_R(updateProposalAccountMovePopn);
+UPDATEOBJECT_WRAPPER_UPDATEPROPOSAL_R(updateProposalAccountMoveBirths);
+UPDATEOBJECT_WRAPPER_UPDATEPROPOSAL_R(updateProposalAccountMoveOrigDest);
+UPDATEOBJECT_WRAPPER_UPDATEPROPOSAL_R(updateProposalAccountMovePool);
 
 /* wrapper for diffLogLik functions with parameter combined */ 
 #define DIFFLOGLIKCOMBINED_WRAPPER_R(name)         \
@@ -1685,9 +1702,65 @@ DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensJumpComp);
 DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensExpComp);
 
 UPDATEOBJECT_NOPRNG_WRAPPER_R(updateCellMove);
-UPDATEOBJECT_NOPRNG_WRAPPER_R(updateSubsequentPopnMove);
-UPDATEOBJECT_NOPRNG_WRAPPER_R(updateSubsequentAccMove);
-UPDATEOBJECT_NOPRNG_WRAPPER_R(updateSubsequentExpMove);
+
+/* duplicates the iterator and replaces the unused iterator when finished
+ * used when calling the code directly from R */
+SEXP
+updateSubsequentPopnMove_R(SEXP combined_R)
+{
+    SEXP ans_R;
+    PROTECT(ans_R = duplicate(combined_R));
+    SEXP iterator_R = GET_SLOT(combined_R, iteratorPopn_sym);
+    SEXP iteratorDup_R = NULL;
+    PROTECT(iteratorDup_R = duplicate(iterator_R));
+
+    updateSubsequentPopnMove(ans_R);
+    
+    SET_SLOT(ans_R, iteratorPopn_sym, iteratorDup_R);
+    
+    UNPROTECT(2);
+    return ans_R;
+}
+
+
+/* duplicates the iterator and replaces the unused iterator when finished
+ * used when calling the code directly from R */
+SEXP
+updateSubsequentAccMove_R(SEXP combined_R)
+{
+    SEXP ans_R;
+    PROTECT(ans_R = duplicate(combined_R));
+    SEXP iterator_R = GET_SLOT(combined_R, iteratorAcc_sym);
+    SEXP iteratorDup_R = NULL;
+    PROTECT(iteratorDup_R = duplicate(iterator_R));
+
+    updateSubsequentAccMove(ans_R);
+    
+    SET_SLOT(ans_R, iteratorAcc_sym, iteratorDup_R);
+    
+    UNPROTECT(2);
+    return ans_R;
+}
+
+/* duplicates the iterator and replaces the unused iterator when finished
+ * used when calling the code directly from R */
+SEXP
+updateSubsequentExpMove_R(SEXP combined_R)
+{
+    SEXP ans_R;
+    PROTECT(ans_R = duplicate(combined_R));
+    SEXP iterator_R = GET_SLOT(combined_R, iteratorExposure_sym);
+    SEXP iteratorDup_R = NULL;
+    PROTECT(iteratorDup_R = duplicate(iterator_R));
+
+    updateSubsequentExpMove(ans_R);
+    
+    SET_SLOT(ans_R, iteratorExposure_sym, iteratorDup_R);
+    
+    UNPROTECT(2);
+    return ans_R;
+}
+
 
 /* ******************************************************************************* */
 /* Create table describing R-visible versions of C functions ********************* */

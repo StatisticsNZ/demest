@@ -571,7 +571,7 @@ double logLikelihood_Poisson(SEXP model_R, int count,
 double logLikelihood_PoissonBinomialMixture(SEXP model_R, int count, 
                                 SEXP dataset_R, int i);
 double logLikelihood_Round3(SEXP model_R, int count, 
-			    SEXP dataset_R, int i);
+                SEXP dataset_R, int i);
 double logLikelihood_NormalFixedUseExp(SEXP model_R, int count, 
                                 SEXP dataset_R, int i);
 double logLikelihood(SEXP model_R, int count, 
@@ -888,13 +888,9 @@ double rcmpOver(double mu, double nu, int maxAttempt);
 double rcmp1(double mu, double nu, int maxAttempt);
 
 /* update-account */
-void updateProposalAccountMovePopn_external(SEXP combined_R);
 void updateProposalAccountMovePopn(SEXP combined_R);
-void updateProposalAccountMoveBirths_external(SEXP combined_R);
 void updateProposalAccountMoveBirths(SEXP combined_R);
-void updateProposalAccountMoveOrigDest_external(SEXP combined_R);
 void updateProposalAccountMoveOrigDest(SEXP combined_R);
-void updateProposalAccountMovePool_external(SEXP combined_R);
 void updateProposalAccountMovePool(SEXP combined_R);
 
 double diffLogLikAccountMovePopn(SEXP combined_R);

@@ -8,37 +8,6 @@
 /* ****************** Updating proposals *************************** */
 
 
-/* duplicates the iterators and replaces the unused iterators when finished
- * used when calling the code directly from R */
-void
-updateProposalAccountMovePopn_external(SEXP combined_R)
-{
-    SEXP iteratorPopn_R = GET_SLOT(combined_R, iteratorPopn_sym);
-    SEXP iteratorPopnDup_R = NULL;
-    PROTECT(iteratorPopnDup_R = duplicate(iteratorPopn_R));
-    int nProtected = 1;
-    int hasAge = *LOGICAL(GET_SLOT(combined_R, hasAge_sym));
-    
-    SEXP iteratorAccDup_R = NULL;
-    if(hasAge) {
-        SEXP iteratorAcc_R = GET_SLOT(combined_R, iteratorAcc_sym);
-        
-        PROTECT(iteratorAccDup_R = duplicate(iteratorAcc_R));
-    
-        ++nProtected;
-    }
-        
-    updateProposalAccountMovePopn(combined_R);
-    
-    SET_SLOT(combined_R, iteratorPopn_sym, iteratorPopnDup_R);
-    
-    if(hasAge) {
-        SET_SLOT(combined_R, iteratorAcc_sym, iteratorAccDup_R);
-    }
-    
-    UNPROTECT(nProtected);
-}
-
 void
 updateProposalAccountMovePopn(SEXP combined_R)
 {
@@ -132,38 +101,6 @@ updateProposalAccountMovePopn(SEXP combined_R)
     SET_INTSCALE_SLOT(combined_R, iExpFirstOther_sym, NA_INTEGER);
     SET_INTSCALE_SLOT(combined_R, diffProp_sym, diffProp);
 }
-
-/* duplicates the iterators and replaces the unused iterators when finished
- * used when calling the code directly from R */
-void
-updateProposalAccountMoveBirths_external(SEXP combined_R)
-{
-    SEXP iteratorPopn_R = GET_SLOT(combined_R, iteratorPopn_sym);
-    SEXP iteratorPopnDup_R = NULL;
-    PROTECT(iteratorPopnDup_R = duplicate(iteratorPopn_R));
-    int nProtected = 1;
-    int hasAge = *LOGICAL(GET_SLOT(combined_R, hasAge_sym));
-    
-    SEXP iteratorAccDup_R = NULL;
-    if(hasAge) {
-        SEXP iteratorAcc_R = GET_SLOT(combined_R, iteratorAcc_sym);
-        
-        PROTECT(iteratorAccDup_R = duplicate(iteratorAcc_R));
-    
-        ++nProtected;
-    }
-        
-    updateProposalAccountMoveBirths(combined_R);
-    
-    SET_SLOT(combined_R, iteratorPopn_sym, iteratorPopnDup_R);
-    
-    if(hasAge) {
-        SET_SLOT(combined_R, iteratorAcc_sym, iteratorAccDup_R);
-    }
-    
-    UNPROTECT(nProtected);
-}
-
 
 void
 updateProposalAccountMoveBirths(SEXP combined_R)
@@ -291,38 +228,6 @@ updateProposalAccountMoveBirths(SEXP combined_R)
     SET_INTSCALE_SLOT(combined_R, iExpFirst_sym, iExpFirst_r);
     SET_INTSCALE_SLOT(combined_R, iExpFirstOther_sym, NA_INTEGER);
     SET_INTSCALE_SLOT(combined_R, diffProp_sym, diffProp);
-}
-
-
-/* duplicates the iterators and replaces the unused iterators when finished
- * used when calling the code directly from R */
-void
-updateProposalAccountMoveOrigDest_external(SEXP combined_R)
-{
-    SEXP iteratorPopn_R = GET_SLOT(combined_R, iteratorPopn_sym);
-    SEXP iteratorPopnDup_R = NULL;
-    PROTECT(iteratorPopnDup_R = duplicate(iteratorPopn_R));
-    int nProtected = 1;
-    int hasAge = *LOGICAL(GET_SLOT(combined_R, hasAge_sym));
-    
-    SEXP iteratorAccDup_R = NULL;
-    if(hasAge) {
-        SEXP iteratorAcc_R = GET_SLOT(combined_R, iteratorAcc_sym);
-        
-        PROTECT(iteratorAccDup_R = duplicate(iteratorAcc_R));
-    
-        ++nProtected;
-    }
-        
-    updateProposalAccountMoveOrigDest(combined_R);
-    
-    SET_SLOT(combined_R, iteratorPopn_sym, iteratorPopnDup_R);
-    
-    if(hasAge) {
-        SET_SLOT(combined_R, iteratorAcc_sym, iteratorAccDup_R);
-    }
-    
-    UNPROTECT(nProtected);
 }
 
 
@@ -483,38 +388,6 @@ updateProposalAccountMoveOrigDest(SEXP combined_R)
     SET_INTSCALE_SLOT(combined_R, iExpFirst_sym, iExpFirstOrig_r);
     SET_INTSCALE_SLOT(combined_R, iExpFirstOther_sym, iExpFirstDest_r);
     SET_INTSCALE_SLOT(combined_R, diffProp_sym, diffProp);
-}
-
-
-/* duplicates the iterators and replaces the unused iterators when finished
- * used when calling the code directly from R */
-void
-updateProposalAccountMovePool_external(SEXP combined_R)
-{
-    SEXP iteratorPopn_R = GET_SLOT(combined_R, iteratorPopn_sym);
-    SEXP iteratorPopnDup_R = NULL;
-    PROTECT(iteratorPopnDup_R = duplicate(iteratorPopn_R));
-    int nProtected = 1;
-    int hasAge = *LOGICAL(GET_SLOT(combined_R, hasAge_sym));
-    
-    SEXP iteratorAccDup_R = NULL;
-    if(hasAge) {
-        SEXP iteratorAcc_R = GET_SLOT(combined_R, iteratorAcc_sym);
-        
-        PROTECT(iteratorAccDup_R = duplicate(iteratorAcc_R));
-    
-        ++nProtected;
-    }
-        
-    updateProposalAccountMovePool(combined_R);
-    
-    SET_SLOT(combined_R, iteratorPopn_sym, iteratorPopnDup_R);
-    
-    if(hasAge) {
-        SET_SLOT(combined_R, iteratorAcc_sym, iteratorAccDup_R);
-    }
-    
-    UNPROTECT(nProtected);
 }
 
 
@@ -2789,8 +2662,7 @@ updateSubsequentPopnMove(SEXP combined_R)
     int iIntNet_r = *INTEGER(GET_SLOT(combined_R, iIntNet_sym));
     int iPopnNext_r = *INTEGER(GET_SLOT(combined_R, iPopnNext_sym));
     
-    SEXP iterator_R;
-    PROTECT(iterator_R = duplicate(GET_SLOT(combined_R, iteratorPopn_sym)));
+    SEXP iterator_R = GET_SLOT(combined_R, iteratorPopn_sym);
    
     int diff = *INTEGER(GET_SLOT(combined_R, diffProp_sym));
     
@@ -2883,9 +2755,7 @@ updateSubsequentPopnMove(SEXP combined_R)
         }
         
     }
-    UNPROTECT(1); /* iterator_R */
 }
-
 
 void 
 updateSubsequentAccMove(SEXP combined_R)
@@ -2900,8 +2770,7 @@ updateSubsequentAccMove(SEXP combined_R)
     
     if (!noSubsequentAccession) {
     
-        SEXP iterator_R;
-        PROTECT(iterator_R = duplicate(GET_SLOT(combined_R, iteratorAcc_sym)));
+        SEXP iterator_R = GET_SLOT(combined_R, iteratorAcc_sym);
        
         int diff = *INTEGER(GET_SLOT(combined_R, diffProp_sym));
         
@@ -2993,11 +2862,8 @@ updateSubsequentAccMove(SEXP combined_R)
             }
             
         }
-        UNPROTECT(1); /* iterator_R */
     } /* end if !noSubsequentAccession */
 }
-
-
 
 void 
 updateSubsequentExpMove(SEXP combined_R)
@@ -3012,8 +2878,7 @@ updateSubsequentExpMove(SEXP combined_R)
     
     if (!noSubsequentExposure) {
     
-        SEXP iterator_R;
-        PROTECT(iterator_R = duplicate(GET_SLOT(combined_R, iteratorExposure_sym)));
+        SEXP iterator_R = GET_SLOT(combined_R, iteratorExposure_sym);
        
         int diff = *INTEGER(GET_SLOT(combined_R, diffProp_sym));
         
@@ -3128,7 +2993,6 @@ updateSubsequentExpMove(SEXP combined_R)
             }
             
         }
-        UNPROTECT(1); /* iterator_R */
     } /* end if !noSubsequentExposure */
 }
 
