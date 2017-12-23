@@ -273,7 +273,10 @@ setClass("SkeletonOneValues",
 ## HAS_TESTS
 ## HAS_FETCH
 setClass("SkeletonManyCounts",
-         contains = c("SkeletonMany", "SkeletonDemographic", "SkeletonMetadata"),
+         contains = c("SkeletonMany",
+                      "SkeletonDemographic",
+                      "SkeletonMetadata",
+                      "SkeletonIndicesStrucZero"),
          validity = function(object) {
              metadata <- object@metadata
              first <- object@first

@@ -4855,41 +4855,44 @@ updateCountsPoissonNotUseExp <- function(y, model, dataModels, datasets,
               dataModels, datasets, transforms)
     }
     else {
-        ##y, model, dataModels, datasets, transforms
+        ## y, model, dataModels, datasets, transforms
         theta <- model@theta
+        struc.zero.array <- model@strucZeroArray
         has.subtotals <- methods::is(y, "HasSubtotals")
         if (has.subtotals) {
             transform.subtotals <- y@transformSubtotals
         }
         for (i in seq_along(y)) {
-            if (has.subtotals) {
-                i.other <- makeIOther(i = i, transform = transform.subtotals)
-                if (i.other > 0L) { ## found other cell with same subtotal
-                    i <- c(i, i.other)
-                    sum.y <- sum(y[i])
-                    y.prop <- as.integer(stats::rmultinom(n = 1L, size = sum.y, prob = theta[i]))
+            if (struc.zero.array[i] != 0L) {
+                if (has.subtotals) {
+                    i.other <- makeIOther(i = i, transform = transform.subtotals)
+                    if (i.other > 0L) { ## found other cell with same subtotal
+                        i <- c(i, i.other)
+                        sum.y <- sum(y[i])
+                        y.prop <- as.integer(stats::rmultinom(n = 1L, size = sum.y, prob = theta[i]))
+                    }
+                    else if (i.other == 0L) { ## subtotal refers to single cell
+                        next
+                    }
+                    else { ## cell not included in any subtotal
+                        ## as.integer needed for R < 3.0
+                        y.prop <- as.integer(stats::rpois(n = 1L, lambda = theta[i]))
+                    }
                 }
-                else if (i.other == 0L) { ## subtotal refers to single cell
-                    next
-                }
-                else { ## cell not included in any subtotal
+                else {
                     ## as.integer needed for R < 3.0
                     y.prop <- as.integer(stats::rpois(n = 1L, lambda = theta[i]))
                 }
+                diff.log.lik <- diffLogLik(yProp = y.prop,
+                                           y = y,
+                                           indicesY = i,
+                                           dataModels = dataModels,
+                                           datasets = datasets,
+                                           transforms = transforms)
+                accept <- (diff.log.lik >= 0) || (stats::runif(n = 1L) < exp(diff.log.lik))
+                if (accept)
+                    y[i] <- y.prop
             }
-            else {
-                ## as.integer needed for R < 3.0
-                y.prop <- as.integer(stats::rpois(n = 1L, lambda = theta[i]))
-            }
-            diff.log.lik <- diffLogLik(yProp = y.prop,
-                                       y = y,
-                                       indicesY = i,
-                                       dataModels = dataModels,
-                                       datasets = datasets,
-                                       transforms = transforms)
-            accept <- (diff.log.lik >= 0) || (stats::runif(n = 1L) < exp(diff.log.lik))
-            if (accept)
-                y[i] <- y.prop
         }
         y
     }
@@ -4944,33 +4947,36 @@ updateCountsPoissonUseExp <- function(y, model, exposure, dataModels, datasets,
     else {
         theta <- model@theta
         has.subtotals <- methods::is(y, "HasSubtotals")
+        struc.zero.array <- model@strucZeroArray
         if (has.subtotals)
             transform.subtotals <- y@transformSubtotals
         for (i in seq_along(y)) {
-            if (has.subtotals) {
-                i.other <- makeIOther(i = i, transform = transform.subtotals)
-                if (i.other > 0L) { ## other cell found
-                    i <- c(i, i.other)
-                    sum.y <- sum(y[i])
-                    ## as.integer needed for R < 3.0
-                    y.prop <- as.integer(stats::rmultinom(n = 1L, size = sum.y, prob = theta[i] * exposure[i]))
+            if (struc.zero.array[i] != 0L) {
+                if (has.subtotals) {
+                    i.other <- makeIOther(i = i, transform = transform.subtotals)
+                    if (i.other > 0L) { ## other cell found
+                        i <- c(i, i.other)
+                        sum.y <- sum(y[i])
+                        ## as.integer needed for R < 3.0
+                        y.prop <- as.integer(stats::rmultinom(n = 1L, size = sum.y, prob = theta[i] * exposure[i]))
+                    }
+                    else if (i.other == 0L) ## subtotal refers to single cell
+                        next
+                    else ## not included in subtotal; as.integer needed for R < 3.0
+                        y.prop <- as.integer(stats::rpois(n = 1L, lambda = theta[i] * exposure[i]))
                 }
-                else if (i.other == 0L) ## subtotal refers to single cell
-                    next
-                else ## not included in subtotal; as.integer needed for R < 3.0
+                else ## as.integer needed for R < 3.0
                     y.prop <- as.integer(stats::rpois(n = 1L, lambda = theta[i] * exposure[i]))
+                diff.log.lik <- diffLogLik(yProp = y.prop,
+                                           y = y,
+                                           indicesY = i,
+                                           dataModels = dataModels,
+                                           datasets = datasets,
+                                           transforms = transforms)
+                accept <- (diff.log.lik >= 0) || (stats::runif(n = 1L) < exp(diff.log.lik))
+                if (accept)
+                    y[i] <- y.prop
             }
-            else ## as.integer needed for R < 3.0
-                y.prop <- as.integer(stats::rpois(n = 1L, lambda = theta[i] * exposure[i]))
-            diff.log.lik <- diffLogLik(yProp = y.prop,
-                                       y = y,
-                                       indicesY = i,
-                                       dataModels = dataModels,
-                                       datasets = datasets,
-                                       transforms = transforms)
-            accept <- (diff.log.lik >= 0) || (stats::runif(n = 1L) < exp(diff.log.lik))
-            if (accept)
-                y[i] <- y.prop
         }
         y
     }

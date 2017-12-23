@@ -95,7 +95,7 @@ in calls to function \code{\link{Model}}, or to
 functions \code{\link{estimateModel}},
 \code{\link{estimateCounts}}, or \code{\link{estimateAccount}}.
 
-Poisson models can allow for structural zeros in the data,
+Poisson and CMP models allow structural zeros in the data,
 that is, cells whose value must be zero by definition.
 Examples include the number of pregnant males or the
 number of people transitioning straight from "single"

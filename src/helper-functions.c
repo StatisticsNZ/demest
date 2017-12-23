@@ -2680,6 +2680,28 @@ logLikelihood_PoissonBinomialMixture(SEXP model_R, int count,
 }
 
 double
+logLikelihood_Round3(SEXP model_R, int count, 
+                                SEXP dataset_R, int i)
+{
+    int *dataset = INTEGER(dataset_R);
+    double x = dataset[i-1];
+
+    int diff = fabs(x - count);
+    if (diff > 2) {
+	return R_NegInf;
+    }
+    else if (diff == 2) {
+	return -log(3);
+    }
+    else if (diff == 1) {
+	return log(2) - log(3);
+    }
+    else {
+	return 0;
+    }
+}
+
+double
 logLikelihood_NormalFixedUseExp(SEXP model_R, int count, 
                                 SEXP dataset_R, int i)
 {

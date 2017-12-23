@@ -306,6 +306,43 @@ setMethod("logLikelihood",
               }
           })
 
+## TRANSLATED
+## HAS_TESTS
+## Calling function should test that dataset[i] is not missing
+setMethod("logLikelihood",
+          signature(model = "Round3",
+                    count = "integer",
+                    dataset = "Counts",
+                    i = "integer"),
+          function(model, count, dataset, i, useC = FALSE, useSpecific = FALSE) {
+              ## count
+              stopifnot(identical(length(count), 1L))
+              stopifnot(!is.na(count))
+              ## dataset
+              stopifnot(is.integer(dataset))
+              stopifnot(all(dataset[!is.na(dataset)] %% 3L == 0L))
+              ## i
+              stopifnot(identical(length(i), 1L))
+              stopifnot(!is.na(i))
+              stopifnot(i >= 1L)
+              ## dataset and i
+              stopifnot(i <= length(dataset))
+              stopifnot(!is.na(dataset@.Data[i]))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(logLikelihood_Round3_R, model, count, dataset, i)
+                  else
+                      .Call(logLikelihood_R, model, count, dataset, i)
+              }
+              else {
+                  logLikelihood_Round3(model = model,
+                                       count = count,
+                                       dataset = dataset,
+                                       i = i)
+              }
+          })
+
+
 
 
 ## makeCellInLik ################################################################
@@ -964,7 +1001,7 @@ setMethod("makeOutputModel",
 setMethod("makeOutputModel",
           signature(model = "Round3"),
           function(model) {
-              NULL
+              list("<none>" = NULL)
           })
 
 ## NormalFixed
@@ -1199,6 +1236,8 @@ setMethod("predictModelUseExp",
               }
           })
 
+## TRANSLATED
+## HAS_TESTS
 setMethod("predictModelUseExp",
           signature(object = "Round3Predict"),
           function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
@@ -1252,6 +1291,7 @@ setMethod("predictModelUseExp",
                   object
               }
           })
+
 
 
 ## printAgAccuracyEqns #####################################################
@@ -1682,6 +1722,25 @@ setMethod("transferParamModel",
               if (useC) {
                   if (useSpecific)
                       .Call(transferParamModel_NormalFixedUseExpPredict_R,
+                            model, filename, lengthIter, iteration)
+                  else
+                      .Call(transferParamModel_R,
+                            model, filename, lengthIter, iteration)
+              }
+              else {
+                  model
+              }
+          })
+
+## TRANSLATED
+## HAS_TESTS
+setMethod("transferParamModel",
+          signature(model = "Round3Predict"),
+          function(model, filename, lengthIter, iteration,
+                   useC = FALSE, useSpecific = FALSE) {
+              if (useC) {
+                  if (useSpecific)
+                      .Call(transferParamModel_Round3_R,
                             model, filename, lengthIter, iteration)
                   else
                       .Call(transferParamModel_R,
@@ -2214,6 +2273,35 @@ setMethod("updateModelUseExp",
 ## TRANSLATED
 ## HAS_TESTS
 setMethod("updateModelUseExp",
+          signature(object = "Round3"),
+          function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(is.integer(y))
+              stopifnot(all(dataset[!is.na(dataset)] %% 3L == 0L))
+              ## exposure
+              stopifnot(is.integer(exposure))
+              stopifnot(all(exposure[!is.na(exposure)] >= 0L))
+              ## y and exposure
+              stopifnot(identical(length(exposure), length(y)))
+              stopifnot(all(is.na(exposure) <= is.na(y)))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(updateModelUseExp_Round3_R, object, y, exposure)
+                  else
+                      .Call(updateModelUseExp_R, object, y, exposure)
+              }
+              else {
+                  ## object is not updated
+                  object
+              }
+          })
+
+
+## TRANSLATED
+## HAS_TESTS
+setMethod("updateModelUseExp",
           signature(object = "BinomialVaryingAgCertain"),
           function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
               ## object
@@ -2502,6 +2590,34 @@ setMethod("updateModelUseExp",
                   object
               }
           })
+
+
+setMethod("updateModelUseExp",
+          signature(object = "Round3"),
+          function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(is.integer(y))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
+              ## exposure
+              stopifnot(is.integer(exposure))
+              stopifnot(all(exposure[!is.na(exposure)] >= 0L))
+              ## y and exposure
+              stopifnot(identical(length(exposure), length(y)))
+              stopifnot(all(is.na(exposure) <= is.na(y)))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(updateModelUseExp_Round3_R, object, y, exposure)
+                  else
+                      .Call(updateModelUseExp_R, object, y, exposure)
+              }
+              else {
+                  ## object is not updated
+                  object
+              }
+          })
+
 
 
 

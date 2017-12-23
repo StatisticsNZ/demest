@@ -30,13 +30,17 @@ setMethod("Skeleton",
           signature(object = "Counts",
                     metadata = "missing",
                     first = "integer"),
-          function(object, first) {
+          function(object, first, strucZeroArray = NULL) {
               metadata <- object@metadata
               last <- first + as.integer(prod(dim(metadata))) - 1L
+              margin <- seq_along(dim(metadata))
+              indices.struc.zero <- makeIndicesStrucZero(strucZeroArray = strucZeroArray,
+                                                         margin = margin)
               methods::new("SkeletonManyCounts",
                            first = first,
                            last = last,
-                           metadata = metadata)
+                           metadata = metadata,
+                           indicesStrucZero = indices.struc.zero)
           })
 
 ## HAS_TESTS

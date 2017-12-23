@@ -1246,6 +1246,7 @@ TRANSFERPARAM_WRAPPER_R(transferParamModel_PoissonVaryingNotUseExpPredict);
 TRANSFERPARAM_WRAPPER_R(transferParamModel_BinomialVaryingPredict);
 TRANSFERPARAM_WRAPPER_R(transferParamModel_PoissonVaryingUseExpPredict);
 TRANSFERPARAM_WRAPPER_R(transferParamModel_PoissonBinomialMixture);
+TRANSFERPARAM_WRAPPER_R(transferParamModel_Round3);
 TRANSFERPARAM_WRAPPER_R(transferParamModel_NormalFixedNotUseExpPredict);
 TRANSFERPARAM_WRAPPER_R(transferParamModel_NormalFixedUseExpPredict);
 
@@ -1258,6 +1259,7 @@ UPDATEOBJECT_NOEXP_WRAPPER_R(predictModelNotUseExp);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(predictModelUseExp_BinomialVaryingPredict);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(predictModelUseExp_PoissonVaryingUseExpPredict);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(predictModelUseExp_PoissonBinomialMixturePredict);
+UPDATEOBJECT_WITHEXP_WRAPPER_R(predictModelUseExp_Round3Predict);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(predictModelUseExp_NormalFixedUseExpPredict);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(predictModelUseExp);
 
@@ -1281,6 +1283,7 @@ UPDATEOBJECT_NOEXP_WRAPPER_R(updateModelNotUseExp);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_BinomialVarying);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_PoissonVarying);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_PoissonBinomialMixture);
+UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_Round3);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_BinomialVaryingAgCertain);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_BinomialVaryingAgNormal);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_BinomialVaryingAgFun);
@@ -1316,6 +1319,7 @@ LOGLIKELIHOOD_WRAPPER_R(logLikelihood_Binomial);
 LOGLIKELIHOOD_WRAPPER_R(logLikelihood_CMP);
 LOGLIKELIHOOD_WRAPPER_R(logLikelihood_Poisson);
 LOGLIKELIHOOD_WRAPPER_R(logLikelihood_PoissonBinomialMixture);
+LOGLIKELIHOOD_WRAPPER_R(logLikelihood_Round3);
 LOGLIKELIHOOD_WRAPPER_R(logLikelihood_NormalFixedUseExp);
 LOGLIKELIHOOD_WRAPPER_R(logLikelihood);
 
@@ -1811,6 +1815,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(logLikelihood_CMP_R,4),
   CALLDEF(logLikelihood_Poisson_R,4),
   CALLDEF(logLikelihood_PoissonBinomialMixture_R,4),
+  CALLDEF(logLikelihood_Round3_R,4),
   CALLDEF(logLikelihood_NormalFixedUseExp_R, 4),
   CALLDEF(diffLogLik_R,6),
   CALLDEF(makeIOther_R,2),
@@ -1891,6 +1896,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(transferParamModel_BinomialVaryingPredict_R, 4),
   CALLDEF(transferParamModel_PoissonVaryingUseExpPredict_R, 4),
   CALLDEF(transferParamModel_PoissonBinomialMixture_R, 4),
+  CALLDEF(transferParamModel_Round3_R, 4),
   CALLDEF(transferParamModel_NormalFixedNotUseExpPredict_R, 4),
   CALLDEF(transferParamModel_NormalFixedUseExpPredict_R, 4),
 
@@ -1903,6 +1909,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(predictModelUseExp_BinomialVaryingPredict_R, 3),
   CALLDEF(predictModelUseExp_PoissonVaryingUseExpPredict_R, 3),
   CALLDEF(predictModelUseExp_PoissonBinomialMixturePredict_R, 3),
+  CALLDEF(predictModelUseExp_Round3Predict_R, 3),
   CALLDEF(predictModelUseExp_NormalFixedUseExpPredict_R, 3),
   CALLDEF(predictModelUseExp_R, 3),
   
@@ -1925,6 +1932,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateModelUseExp_BinomialVarying_R, 3),
   CALLDEF(updateModelUseExp_PoissonVarying_R, 3),
   CALLDEF(updateModelUseExp_PoissonBinomialMixture_R, 3),
+  CALLDEF(updateModelUseExp_Round3_R, 3),
   CALLDEF(updateModelUseExp_BinomialVaryingAgCertain_R, 3),
   CALLDEF(updateModelUseExp_BinomialVaryingAgNormal_R, 3),
   CALLDEF(updateModelUseExp_BinomialVaryingAgFun_R, 3),
@@ -2304,6 +2312,7 @@ R_init_demest(DllInfo *info)
   ADD_SYM(isSaturated);
   ADD_SYM(allStrucZero);
   ADD_SYM(alongAllStrucZero);
+  ADD_SYM(strucZeroArray);
   ADD_SYM(mNoTrend);
   ADD_SYM(m0NoTrend);
   ADD_SYM(CNoTrend);

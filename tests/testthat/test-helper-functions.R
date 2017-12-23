@@ -10652,6 +10652,98 @@ test_that("R and C versions of logLikelihood give same answer with NormalFixedUs
     }
 })
 
+test_that("logLikelihood gives valid answer with Round3", {
+    logLikelihood_Round3 <- demest:::logLikelihood_Round3
+    initialModel <- demest:::initialModel
+    count <- CountsOne(0:6, labels = letters[1:7], name = "region")
+    dataset <- CountsOne(c(0L,
+                           0L, 3L, 3L,
+                           3L, 6L, 9L),
+                         labels = letters[1:7], name = "region")
+    spec <- Model(y ~ Round3())
+    model <- initialModel(spec, y = dataset, exposure = count)
+    ## 0
+    ans.obtained <- logLikelihood_Round3(model = model,
+                                         count = count[1L],
+                                         dataset = dataset,
+                                         i = 1L)
+    ans.expected <- 0
+    expect_equal(ans.obtained, ans.expected)
+    ## 1
+    ans.obtained <- logLikelihood_Round3(model = model,
+                                         count = count[2L],
+                                         dataset = dataset,
+                                         i = 2L)
+    ans.expected <- log(2/3)
+    expect_equal(ans.obtained, ans.expected)
+    ## 2
+    ans.obtained <- logLikelihood_Round3(model = model,
+                                         count = count[3L],
+                                         dataset = dataset,
+                                         i = 3L)
+    ans.expected <- log(2/3)
+    expect_equal(ans.obtained, ans.expected)
+    ## 3
+    ans.obtained <- logLikelihood_Round3(model = model,
+                                         count = count[4L],
+                                         dataset = dataset,
+                                         i = 4L)
+    ans.expected <- 0
+    expect_equal(ans.obtained, ans.expected)
+    ## 4
+    ans.obtained <- logLikelihood_Round3(model = model,
+                                         count = count[5L],
+                                         dataset = dataset,
+                                         i = 5L)
+    ans.expected <- log(2/3)
+    expect_equal(ans.obtained, ans.expected)
+    ## 5
+    ans.obtained <- logLikelihood_Round3(model = model,
+                                         count = count[6L],
+                                         dataset = dataset,
+                                         i = 6L)
+    ans.expected <- log(2/3)
+    expect_equal(ans.obtained, ans.expected)
+    ## 6
+    ans.obtained <- logLikelihood_Round3(model = model,
+                                         count = count[7L],
+                                         dataset = dataset,
+                                         i = 7L)
+    ans.expected <- -Inf
+    expect_equal(ans.obtained, ans.expected)
+})
+
+test_that("R and C versions of logLikelihood give same answer with Round3", {
+    logLikelihood_Round3 <- demest:::logLikelihood_Round3
+    initialModel <- demest:::initialModel
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        counts <- Counts(array(as.integer(rpois(n = 20, lambda = 3)),
+                               dim = c(2, 10),
+                               dimnames = list(sex = c("f", "m"), age = 0:9)))
+        dataset <- round3(counts)
+        spec <- Model(y ~ Round3())
+        model <- initialModel(spec, y = dataset, exposure = counts)
+        for (i in seq_len(20)) {
+            count <- counts[[i]]
+            ans.R <- logLikelihood_Round3(model = model,
+                                          count = count,
+                                          dataset = dataset,
+                                          i = i,
+                                          useC = FALSE)
+            ans.C <- logLikelihood_Round3(model = model,
+                                          count = count,
+                                          dataset = dataset,
+                                          i = i,
+                                          useC = TRUE)
+            if (test.identity)
+                expect_identical(ans.R, ans.C)
+            else
+                expect_equal(ans.R, ans.C)
+        }
+    }
+})
+
 test_that("makeIOther gives valid answers", {
     makeIOther <- demest:::makeIOther
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra

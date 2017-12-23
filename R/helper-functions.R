@@ -6979,6 +6979,44 @@ logLikelihood_NormalFixedUseExp <- function(model, count, dataset, i, useC = FAL
 }
 
 
+## Calling function should test that dataset[i] is not missing.
+## Assume that 'dataset' is composed entirely of values divisible by 3
+logLikelihood_Round3 <- function(model, count, dataset, i, useC = FALSE) {
+    ## model
+    stopifnot(methods::is(model, "Model"))
+    stopifnot(methods::is(model, "Round3"))
+    ## count
+    stopifnot(identical(length(count), 1L))
+    stopifnot(is.integer(count))
+    stopifnot(!is.na(count))
+    ## dataset
+    stopifnot(is.integer(dataset))
+    stopifnot(all(dataset[!is.na(dataset)] %% 3L == 0L))
+    ## i
+    stopifnot(identical(length(i), 1L))
+    stopifnot(is.integer(i))
+    stopifnot(!is.na(i))
+    stopifnot(i >= 1L)
+    ## dataset and i
+    stopifnot(i <= length(dataset))
+    stopifnot(!is.na(dataset@.Data[i]))
+    if (useC) {
+        .Call(logLikelihood_Round3_R, model, count, dataset, i)
+    }
+    else {
+        x <- dataset[[i]]
+        diff <- abs(x - count)
+        if (diff > 2L)
+            -Inf
+        else if (diff == 2L)
+            -log(3)
+        else if (diff == 1L)
+            log(2) - log(3)
+        else
+            0
+    }
+}
+
 
 ## TRANSLATED
 ## HAS_TESTS
@@ -7635,6 +7673,9 @@ makeResultsCounts <- function(finalCombineds, mcmcArgs, controlArgs, seed) {
     datasets <- combined@datasets
     names.datasets <- combined@namesDatasets
     transforms <- combined@transforms
+    has.struc.zero.array <- methods::is(model, "StrucZeroArrayMixin")
+    if (has.struc.zero.array)
+        struc.zero.array <- model@strucZeroArray
     mcmc <- makeOutputMCMC(mcmcArgs = mcmcArgs,
                            finalCombineds = finalCombineds)
     n.sim <- mcmc[["nSim"]]
@@ -7645,7 +7686,13 @@ makeResultsCounts <- function(finalCombineds, mcmcArgs, controlArgs, seed) {
     }
     else
         model <- list()
-    output.y <- Skeleton(y, first = pos)
+    if (has.struc.zero.array)
+        output.y <- Skeleton(y,
+                             first = pos,
+                             strucZeroArray = struc.zero.array)
+    else
+        output.y <- Skeleton(y,
+                             first = pos)
     pos <- pos + changeInPos(output.y)
     has.exposure <- methods::is(combined, "HasExposure")
     if (has.exposure)
@@ -7674,26 +7721,26 @@ makeResultsCounts <- function(finalCombineds, mcmcArgs, controlArgs, seed) {
     names(final) <- paste("chain", seq_along(final), sep = "")
     if (has.exposure) {
         methods::new("ResultsCountsExposureEst",
-            model = output.model,
-            y = output.y,
-            exposure = exposure,
-            dataModels = output.data.models,
-            datasets = datasets,
-            mcmc = mcmc,
-            control = controlArgs,
-            seed = seed,
-            final = final)
+                     model = output.model,
+                     y = output.y,
+                     exposure = exposure,
+                     dataModels = output.data.models,
+                     datasets = datasets,
+                     mcmc = mcmc,
+                     control = controlArgs,
+                     seed = seed,
+                     final = final)
     }
     else
         methods::new("ResultsCountsEst",
-            model = output.model,
-            y = output.y,
-            dataModels = output.data.models,
-            datasets = datasets,
-            mcmc = mcmc,
-            control = controlArgs,
-            seed = seed,
-            final = final)
+                     model = output.model,
+                     y = output.y,
+                     dataModels = output.data.models,
+                     datasets = datasets,
+                     mcmc = mcmc,
+                     control = controlArgs,
+                     seed = seed,
+                     final = final)
 }
 
 ## HAS_TESTS

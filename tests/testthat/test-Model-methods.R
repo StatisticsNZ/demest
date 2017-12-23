@@ -397,6 +397,72 @@ test_that("R, C-generic, and C-specific versions of logLikelihood give same answ
     }
 })
 
+test_that("logLikelihood gives valid answer with Round3", {
+    logLikelihood <- demest:::logLikelihood
+    logLikelihood_Round3 <- demest:::logLikelihood_Round3
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        model <- new("Round3")
+        counts <- Counts(array(as.integer(rpois(n = 20, lambda = 20)),
+                               dim = c(2, 10),
+                               dimnames = list(sex = c("f", "m"), age = 0:9)))
+        dataset <- round3(counts)
+        for (i in 1:20) {
+            ans.obtained <- logLikelihood(model = model,
+                                          count = counts[[i]],
+                                          dataset = dataset,
+                                          i = i)
+            ans.expected <- logLikelihood_Round3(model = model,
+                                                 count = counts[[i]],
+                                                 dataset = dataset,
+                                                 i = i)
+            if (test.identity)
+                expect_identical(ans.obtained, ans.expected)
+            else
+                expect_equal(ans.obtained, ans.expected)
+        }
+    }
+})
+
+test_that("R and C versions of logLikelihood give same answer with Round3", {
+    logLikelihood <- demest:::logLikelihood
+    logLikelihood_Round3 <- demest:::logLikelihood_Round3
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        model <- new("Round3")
+        counts <- Counts(array(as.integer(rpois(n = 20, lambda = 20)),
+                               dim = c(2, 10),
+                               dimnames = list(sex = c("f", "m"), age = 0:9)))
+        dataset <- round3(counts)
+        for (i in 1:20) {
+            ans.R <- logLikelihood(model = model,
+                                   count = counts[[i]],
+                                   dataset = dataset,
+                                   i = i,
+                                   useC = FALSE)
+            ans.C.generic <- logLikelihood(model = model,
+                                           count = counts[[i]],
+                                           dataset = dataset,
+                                           i = i,
+                                           useC = TRUE,
+                                           useSpecific = FALSE)
+            ans.C.specific <- logLikelihood(model = model,
+                                            count = counts[[i]],
+                                            dataset = dataset,
+                                            i = i,
+                                            useC = TRUE,
+                                            useSpecific = TRUE)
+            if (test.identity)
+                expect_identical(ans.R, ans.C.generic)
+            else
+                expect_equal(ans.R, ans.C.generic)
+            expect_identical(ans.C.generic, ans.C.specific)
+        }
+    }
+})
+
+
+
 test_that("R, C-generic, and C-specific versions of logLikelihood give same answer with NormalFixedUseExp", {
     logLikelihood <- demest:::logLikelihood
     initialModel <- demest:::initialModel
@@ -2283,6 +2349,57 @@ test_that("R, generic C, and specific C versions predictModelUseExp method for P
     expect_identical(ans.C.generic, ans.C.specific)
 })
 
+test_that("predictModelUseExp method for PoissonBinomialMixture works", {
+    predictModelUseExp <- demest:::predictModelUseExp
+    initialModel <- demest:::initialModel
+    initialModelPredict <- demest:::initialModelPredict
+    exposure.est <- Counts(array(as.integer(rpois(n = 20, lambda = 50)),
+                                 dim = c(5, 4),
+                                 dimnames = list(age = 0:4, region = letters[1:4])))
+    exposure.pred <- Counts(array(as.integer(NA),
+                                  dim = c(10, 4),
+                                  dimnames = list(age = 5:14, region = letters[1:4])))
+    y.est <- round3(exposure.est)
+    y.pred <- round3(exposure.pred)
+    spec <- Model(y ~ Round3())
+    model <- initialModel(spec, y = y.est, exposure = exposure.est)
+    model <- initialModelPredict(model,
+                                 along = 1L,
+                                 labels = NULL,
+                                 n = 10,
+                                 offsetModel = 1L)
+    ans <- predictModelUseExp(model, y = y.pred, exposure = exposure.pred)
+    expect_identical(ans, model)
+})
+
+test_that("R, generic C, and specific C versions predictModelUseExp method for Round3 give same answer", {
+    predictModelUseExp <- demest:::predictModelUseExp
+    initialModel <- demest:::initialModel
+    initialModelPredict <- demest:::initialModelPredict
+    exposure.est <- Counts(array(as.integer(rpois(n = 20, lambda = 50)),
+                                 dim = c(5, 4),
+                                 dimnames = list(age = 0:4, region = letters[1:4])))
+    exposure.pred <- Counts(array(as.integer(NA),
+                                  dim = c(10, 4),
+                                  dimnames = list(age = 5:14, region = letters[1:4])))
+    y.est <- round3(exposure.est)
+    y.pred <- round3(exposure.pred)
+    spec <- Model(y ~ Round3())
+    model <- initialModel(spec, y = y.est, exposure = exposure.est)
+    model <- initialModelPredict(model,
+                                 along = 1L,
+                                 labels = NULL,
+                                 n = 10,
+                                 offsetModel = 1L)
+    ans.R <- predictModelUseExp(model, y = y.pred, exposure = exposure.pred,
+                                useC = FALSE)
+    ans.C.specific <- predictModelUseExp(model, y = y.pred, exposure = exposure.pred,
+                                         useC = TRUE, useSpecific = TRUE)
+    ans.C.generic <- predictModelUseExp(model, y = y.pred, exposure = exposure.pred,
+                                        useC = TRUE, useSpecific = FALSE)
+    expect_identical(ans.R, ans.C.specific)
+    expect_identical(ans.C.generic, ans.C.specific)
+})
 
 test_that("predictModelUseExp gives valid answer with NormalFixed", {
     initialModel <- demest:::initialModel
@@ -2976,6 +3093,75 @@ test_that("R, generic C, and specific C versions transferParamModel method for P
     expect_identical(ans.R, ans.C.specific)
     expect_identical(ans.C.generic, ans.C.specific)
 })
+
+test_that("transferParamModel method for Round3Predict works", {
+    transferParamModel <- demest:::transferParamModel
+    initialModel <- demest:::initialModel
+    initialModelPredict <- demest:::initialModelPredict
+    exposure.est <- Counts(array(as.integer(rpois(n = 20, lambda = 50)),
+                                 dim = c(5, 4),
+                                 dimnames = list(age = 0:4, region = letters[1:4])))
+    exposure.pred <- Counts(array(as.integer(NA),
+                                  dim = c(10, 4),
+                                  dimnames = list(age = 5:14, region = letters[1:4])))
+    y.est <- round3(exposure.est)
+    y.pred <- round3(exposure.pred)
+    spec <- Model(y ~ Round3())
+    model <- initialModel(spec, y = y.est, exposure = exposure.est)
+    model <- initialModelPredict(model,
+                                 along = 1L,
+                                 labels = NULL,
+                                 n = 10,
+                                 offsetModel = 1L)
+    ans <- transferParamModel(model,
+                              filename = "file",
+                              lengthIter = 100L,
+                              iteration = 1L)                              
+    expect_identical(ans, model)
+})
+
+
+test_that("R, generic C, and specific C versions transferParamModel method for Round3Predict give same answer", {
+    transferParamModel <- demest:::transferParamModel
+    initialModel <- demest:::initialModel
+    initialModelPredict <- demest:::initialModelPredict
+    exposure.est <- Counts(array(as.integer(rpois(n = 20, lambda = 50)),
+                                 dim = c(5, 4),
+                                 dimnames = list(age = 0:4, region = letters[1:4])))
+    exposure.pred <- Counts(array(as.integer(NA),
+                                  dim = c(10, 4),
+                                  dimnames = list(age = 5:14, region = letters[1:4])))
+    y.est <- round3(exposure.est)
+    y.pred <- round3(exposure.pred)
+    spec <- Model(y ~ Round3())
+    model <- initialModel(spec, y = y.est, exposure = exposure.est)
+    model <- initialModelPredict(model,
+                                 along = 1L,
+                                 labels = NULL,
+                                 n = 10,
+                                 offsetModel = 1L)
+    ans.R <- transferParamModel(model,
+                                filename = "file",
+                                lengthIter = 100L,
+                                iteration = 1L,
+                                useC = FALSE)                              
+    ans.C.specific <- transferParamModel(model,
+                                         filename = "file",
+                                         lengthIter = 100L,
+                                         iteration = 1L,
+                                         useC = TRUE,
+                                         useSpecific = TRUE)
+    ans.C.generic <- transferParamModel(model,
+                                        filename = "file",
+                                        lengthIter = 100L,
+                                        iteration = 1L,
+                                        useC = TRUE,
+                                        useSpecific = FALSE)
+    expect_identical(ans.R, ans.C.specific)
+    expect_identical(ans.C.generic, ans.C.specific)
+})
+
+
 
 test_that("transferParamModel gives valid answer with NormalFixedNotUseExpPredict", {
     initialModel <- demest:::initialModel
@@ -4196,6 +4382,24 @@ test_that("R, C specific and C generic versions of updateModelUseExp for Poisson
     expect_identical(updateModelUseExp(x, y = y, exposure = exposure, useC = TRUE, useSpecific = TRUE),
                      x)
 })
+
+
+test_that("R, C specific and C generic versions of updateModelUseExp for Round3 return object unchanged", {
+    updateModelUseExp <- demest:::updateModelUseExp
+    initialModel <- demest:::initialModel
+    x <- new("Round3")
+    exposure <- Counts(array(as.integer(rpois(n = 20, lambda = 10)),
+                             dim = c(5, 4),
+                             dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+    y <- round3(exposure)
+    expect_identical(updateModelUseExp(x, y = y, exposure = exposure, useC = FALSE),
+                     x)
+    expect_identical(updateModelUseExp(x, y = y, exposure = exposure, useC = TRUE, useSpecific = FALSE),
+                     x)
+    expect_identical(updateModelUseExp(x, y = y, exposure = exposure, useC = TRUE, useSpecific = TRUE),
+                     x)
+})
+
 
 ## updateModelUseExp for BinomialVaryingAgCertain
 

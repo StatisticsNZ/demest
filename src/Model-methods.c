@@ -33,6 +33,9 @@ logLikelihood(SEXP model_R, int count, SEXP dataset_R, int i)
             ans = logLikelihood_NormalFixedUseExp(
                                         model_R, count, dataset_R, i);
             break;
+         case 34: /* Round3 */
+            ans = logLikelihood_Round3(model_R, count, dataset_R, i);
+            break;
          default:
             error("unknown iMethodModel: %d", iMethodModel);
             break;
@@ -103,6 +106,13 @@ transferParamModel_PoissonBinomialMixture_i(SEXP model_R, const char *filename,
 }
 
 static __inline__ void
+transferParamModel_Round3_i(SEXP model_R, const char *filename,
+                                int lengthIter, int iteration)
+{
+    /* null op */
+}
+
+static __inline__ void
 transferParamModel_NormalFixedNotUseExpPredict_i(SEXP model_R, const char *filename,
                                 int lengthIter, int iteration)
 {
@@ -157,6 +167,10 @@ transferParamModel(SEXP model_R, const char *filename,
             transferParamModel_NormalFixedUseExpPredict_i(model_R, 
                         filename, lengthIter, iteration);
             break;
+        case 134: 
+            transferParamModel_Round3_i(model_R, 
+			filename, lengthIter, iteration);
+            break;
         default:
             error("unknown i_method_model in transferParamModel: %d", 
                                                         i_method_model);
@@ -210,6 +224,14 @@ transferParamModel_PoissonBinomialMixture(SEXP model_R, const char *filename,
                                 int lengthIter, int iteration)
 {
     transferParamModel_PoissonBinomialMixture_i(model_R, filename, 
+                                lengthIter, iteration);
+}
+
+void
+transferParamModel_Round3(SEXP model_R, const char *filename,
+                                int lengthIter, int iteration)
+{
+    transferParamModel_Round3_i(model_R, filename, 
                                 lengthIter, iteration);
 }
 
@@ -311,6 +333,12 @@ predictModelUseExp_PoissonBinomialMixturePredict_i(SEXP object, SEXP y_R, SEXP e
 }
 
 static __inline__ void
+predictModelUseExp_Round3Predict_i(SEXP object, SEXP y_R, SEXP exposure_R)
+{
+    /*  do nothing */
+}
+
+static __inline__ void
 predictModelUseExp_NormalFixedUseExpPredict_i(SEXP object, SEXP y_R, SEXP exposure_R)
 {
     /*  do nothing */
@@ -375,7 +403,9 @@ predictModelUseExp_Internal(SEXP object, SEXP y_R, SEXP exposure_R,
         case 131:
             predictModelUseExp_NormalFixedUseExpPredict_i(object, y_R, exposure_R);
             break;
-            
+        case 134:
+            predictModelUseExp_Round3Predict_i(object, y_R, exposure_R);
+            break;
         default:
             error("unknown i_method_model: %d", i_method_model);
             break;
@@ -430,6 +460,13 @@ void
 predictModelUseExp_PoissonBinomialMixturePredict(SEXP object, SEXP y_R, SEXP exposure_R)
 {
     predictModelUseExp_PoissonBinomialMixturePredict_i(object, y_R, exposure_R);
+    
+}
+
+void
+predictModelUseExp_Round3Predict(SEXP object, SEXP y_R, SEXP exposure_R)
+{
+    predictModelUseExp_Round3Predict_i(object, y_R, exposure_R);
     
 }
 
@@ -574,9 +611,6 @@ updateModelNotUseExp_NormalFixedNotUseExp_i(SEXP object, SEXP y_R)
 
 /* models using exposure */
 
-
-
-
 static __inline__ void
 updateModelUseExp_BinomialVarying_i(SEXP object, SEXP y_R, SEXP exposure_R)
 {
@@ -597,6 +631,12 @@ updateModelUseExp_PoissonVarying_i(SEXP object, SEXP y_R, SEXP exposure_R)
 static __inline__ void
 updateModelUseExp_PoissonBinomialMixture_i
                                 (SEXP object, SEXP y_R, SEXP exposure_R)
+{
+    /* do nothing */
+}
+
+static __inline__ void
+updateModelUseExp_Round3_i(SEXP object, SEXP y_R, SEXP exposure_R)
 {
     /* do nothing */
 }
@@ -789,6 +829,9 @@ updateModelUseExp_Internal(SEXP object, SEXP y_R, SEXP exposure_R,
         case 31:    
             updateModelUseExp_NormalFixedUseExp_i(object, y_R, exposure_R);
             break;
+        case 34:    
+            updateModelUseExp_Round3_i(object, y_R, exposure_R);
+            break;
         default:
             error("unknown i_method_model: %d", i_method_model);
             break;
@@ -903,6 +946,12 @@ updateModelUseExp_PoissonBinomialMixture
                                 (SEXP object, SEXP y_R, SEXP exposure_R)
 {
     updateModelUseExp_PoissonBinomialMixture_i(object, y_R, exposure_R);
+}
+
+void
+updateModelUseExp_Round3(SEXP object, SEXP y_R, SEXP exposure_R)
+{
+    updateModelUseExp_Round3_i(object, y_R, exposure_R);
 }
 
 void

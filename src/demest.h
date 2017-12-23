@@ -211,6 +211,7 @@ SEXP
   isSaturated_sym,
   allStrucZero_sym,
   alongAllStrucZero_sym,
+  strucZeroArray_sym,
   mNoTrend_sym,
   m0NoTrend_sym,
   CNoTrend_sym,
@@ -569,6 +570,8 @@ double logLikelihood_Poisson(SEXP model_R, int count,
                                 SEXP dataset_R, int i);
 double logLikelihood_PoissonBinomialMixture(SEXP model_R, int count, 
                                 SEXP dataset_R, int i);
+double logLikelihood_Round3(SEXP model_R, int count, 
+			    SEXP dataset_R, int i);
 double logLikelihood_NormalFixedUseExp(SEXP model_R, int count, 
                                 SEXP dataset_R, int i);
 double logLikelihood(SEXP model_R, int count, 
@@ -743,6 +746,8 @@ void transferParamModel_NormalFixedNotUseExpPredict(SEXP model_R,
         const char *filename, int lengthIter, int iteration);
 void transferParamModel_NormalFixedUseExpPredict(SEXP model_R, 
         const char *filename, int lengthIter, int iteration);
+void transferParamModel_Round3(SEXP model_R, 
+        const char *filename, int lengthIter, int iteration);
 
 
 /* predict models not using exposure*/
@@ -755,6 +760,7 @@ void predictModelNotUseExp(SEXP object, SEXP y_R);
 void predictModelUseExp_BinomialVaryingPredict(SEXP object, SEXP y_R, SEXP exposure_R);
 void predictModelUseExp_PoissonVaryingUseExpPredict(SEXP object, SEXP y_R, SEXP exposure_R);
 void predictModelUseExp_PoissonBinomialMixturePredict(SEXP object, SEXP y_R, SEXP exposure_R);
+void predictModelUseExp_Round3Predict(SEXP object, SEXP y_R, SEXP exposure_R);
 void predictModelUseExp_NormalFixedUseExpPredict(SEXP object, SEXP y_R, SEXP exposure_R);
 void predictModelUseExp(SEXP object, SEXP y_R, SEXP exposure_R);
 
@@ -780,6 +786,8 @@ void updateModelUseExp_BinomialVarying(SEXP object, SEXP y_R, SEXP exposure_R);
 void updateModelUseExp_PoissonVarying(SEXP object, SEXP y_R, SEXP exposure_R);
 void updateModelUseExp_PoissonBinomialMixture
                                 (SEXP object, SEXP y_R, SEXP exposure_R);
+void updateModelUseExp_Round3
+                        (SEXP object, SEXP y_R, SEXP exposure_R);
 void updateModelUseExp_BinomialVaryingAgCertain
                             (SEXP object, SEXP y_R, SEXP exposure_R);
 void updateModelUseExp_BinomialVaryingAgNormal

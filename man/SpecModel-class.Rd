@@ -8,8 +8,9 @@
 \alias{SpecNormalVaryingVarsigmaUnknown-class}
 \alias{SpecNormalVaryingVarsigmaKnown-class}
 \alias{SpecPoissonVarying-class}
-\alias{SpecPoissonBinomialMixture-class}
 \alias{SpecNormalFixed-class}
+\alias{SpecPoissonBinomialMixture-class}
+\alias{SpecRound3-class}
 \title{S4 classes to specify a model.}
 \description{
 Classes describing all the parts of a model that can

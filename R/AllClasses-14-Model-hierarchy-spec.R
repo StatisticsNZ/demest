@@ -359,6 +359,7 @@ setClass("SpecPoissonBinomialMixture",
 #' @rdname SpecModel-class
 #' @export
 setClass("SpecRound3",
+         prototype = prototype(useExpose = new("LogicalFlag", TRUE)),
          contains = c("SpecModel", "SpecSeriesMixin"))
 
 

@@ -10,6 +10,7 @@
 \alias{SpecLikelihoodPoisson-class}
 \alias{SpecLikelihoodPoissonBinomialMixture-class}
 \alias{SpecLikelihoodNormalFixed-class}
+\alias{SpecLikelihoodRound3-class}
 \title{S4 classes to specify one or two levels of a model.}
 \description{
 Classes to specify the likelihood and, if the model

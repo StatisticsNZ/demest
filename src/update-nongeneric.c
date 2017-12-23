@@ -6745,6 +6745,7 @@ updateCountsPoissonNotUseExp(SEXP y_R, SEXP model_R, SEXP dataModels_R,
     double *theta = REAL(GET_SLOT(model_R, theta_sym));
     int n_y = LENGTH(y_R);
     int *y = INTEGER(y_R);
+    int *strucZeroArray = INTEGER(GET_SLOT(model_R, strucZeroArray_sym));
 
     int has_subtotals = 0;
 
@@ -6764,6 +6765,8 @@ updateCountsPoissonNotUseExp(SEXP y_R, SEXP model_R, SEXP dataModels_R,
     #endif
 
     for (int ir = 1; ir <= n_y; ++ir) {
+
+	if (strucZeroArray[ir - 1] != 0) {
 
         #ifdef DEBUGGING
         PrintValue(ScalarInteger(200));
@@ -6881,7 +6884,7 @@ updateCountsPoissonNotUseExp(SEXP y_R, SEXP model_R, SEXP dataModels_R,
         PrintValue(ScalarInteger(10000));
         PrintValue(y_R);
         #endif
-
+	}
     }
 
 }
@@ -6897,7 +6900,8 @@ updateCountsPoissonUseExp(SEXP y_R, SEXP model_R,
     double *exposure = REAL(exposure_R);
     int n_y = LENGTH(y_R);
     int *y = INTEGER(y_R);
-
+    int *strucZeroArray = INTEGER(GET_SLOT(model_R, strucZeroArray_sym));
+    
     int has_subtotals = 0;
     SEXP transformSubtotals_R = NULL;
     if (R_has_slot(y_R, transformSubtotals_sym)) {
@@ -6907,7 +6911,9 @@ updateCountsPoissonUseExp(SEXP y_R, SEXP model_R,
 
     for (int ir = 1; ir <= n_y; ++ir) {
 
-        int nInd = 2; /* number of indices (proposals) to deal with */
+	if (strucZeroArray[ir - 1] != 0) {
+
+	int nInd = 2; /* number of indices (proposals) to deal with */
         int yProp[nInd]; /* make space > 1 (may only need one)  */
         int indices[nInd]; /* make space > 1 (may only need one) */
         /* put ir into first pos in indices
@@ -6956,6 +6962,8 @@ updateCountsPoissonUseExp(SEXP y_R, SEXP model_R,
                 y[ indices[i] - 1] = yProp[i];
             }
         }
+
+	}
 
     }
 

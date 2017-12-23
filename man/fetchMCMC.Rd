@@ -40,9 +40,18 @@ If a batch of parameters has more than 25 elements, then, by default,
 control the selection of parameters throught the \code{sample} argument.
 See below for an example.
 
+If a model contains structuralZeros (\code{\link{Poisson}}),
+then, unless an explicit \code{sample} is supplied,
+cells corresponding to structural zeros are omitted from the sample.
+
 If \code{thinned} is \code{TRUE}, then the \code{thin} argument in
 \pkg{coda} function \code{\link[coda]{mcmc}} is set to 1; otherwise
 \code{thin} is set to \code{nThin}, extracted from \code{object}.
+
+If the model in question contains structural zeros (see \code{\link{Poisson}}),
+some parameters of the model may be undefined. These parameters are omitted
+from the results, unless they are specifically requested via the
+\code{sample} argument.
 }
 \examples{
 library(demdata)
