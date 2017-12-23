@@ -14,10 +14,10 @@ setMethod("Skeleton",
           signature(object = "missing",
                     metadata = "MetaData",
                     first = "integer"),
-          function(metadata, first, strucZeroArray = NULL) {
+          function(metadata, first, strucZeroArray = NULL, margin = NULL) {
               last <- first + as.integer(prod(dim(metadata))) - 1L
-              indices.struc.zero <- makeIndicesStrucZero(metadata = metadata,
-                                                         strucZeroArray = strucZeroArray)
+              indices.struc.zero <- makeIndicesStrucZero(strucZeroArray = strucZeroArray,
+                                                         margin = margin)
               methods::new("SkeletonManyValues",
                            first = first,
                            last = last,
@@ -44,11 +44,11 @@ setMethod("Skeleton",
           signature(object = "Values",
                     metadata = "missing",
                     first = "integer"),
-          function(object, first, strucZeroArray = NULL) {
+          function(object, first, strucZeroArray = NULL, margin = NULL) {
               metadata <- object@metadata
               last <- first + as.integer(prod(dim(metadata))) - 1L
-              indices.struc.zero <- makeIndicesStrucZero(metadata = metadata,
-                                                         strucZeroArray = strucZeroArray)
+              indices.struc.zero <- makeIndicesStrucZero(strucZeroArray = strucZeroArray,
+                                                         margin = margin)
               methods::new("SkeletonManyValues",
                            first = first,
                            last = last,
@@ -68,8 +68,9 @@ SkeletonMu <- function(betas, margins, first, metadata, strucZeroArray = NULL) {
         last <- pos - 1L
         offsets[[i]] <- methods::new("Offsets", c(first, last))
     }
-    indices.struc.zero <- makeIndicesStrucZero(metadata = metadata,
-                                               strucZeroArray = strucZeroArray)
+    margin <- seq_along(dim(metadata))
+    indices.struc.zero <- makeIndicesStrucZero(strucZeroArray = strucZeroArray,
+                                               margin = margin)
     methods::new("SkeletonMu",
                  margins = margins,
                  metadata = metadata,
@@ -85,10 +86,11 @@ SkeletonBetaIntercept <- function(first) {
 }
 
 ## HAS_TESTS
-SkeletonBetaTerm <- function(first, metadata, strucZeroArray = NULL) {
+SkeletonBetaTerm <- function(first, metadata, strucZeroArray = NULL,
+                             margin = NULL) {
     last <- first + as.integer(prod(dim(metadata))) - 1L
-    indices.struc.zero <- makeIndicesStrucZero(metadata = metadata,
-                                               strucZeroArray = strucZeroArray)
+    indices.struc.zero <- makeIndicesStrucZero(strucZeroArray = strucZeroArray,
+                                               margin = margin)
     methods::new("SkeletonBetaTerm",
                  first = first,
                  last = last,

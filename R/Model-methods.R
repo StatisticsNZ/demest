@@ -863,9 +863,11 @@ setMethod("makeOutputModel",
               theta <- methods::new(class,
                                     .Data = .Data,
                                     metadata = metadata)
+              s <- seq_along(dim(metadata))
               theta <- Skeleton(object = theta,
                                 first = first,
-                                strucZeroArray = struc.zero.array)
+                                strucZeroArray = struc.zero.array,
+                                margin = s)
               ## make nFailedPropTheta
               first <- pos
               pos <- first + 1L
@@ -897,7 +899,8 @@ setMethod("makeOutputModel",
                       margin <- margins[[i]]
                       betas[[i]] <- SkeletonBetaTerm(first = first,
                                                      metadata = metadata[margin],
-                                                     strucZeroArray = struc.zero.array)
+                                                     strucZeroArray = struc.zero.array,
+                                                     margin = margin)
                   }
               }
               names(betas) <- names.betas
@@ -917,7 +920,8 @@ setMethod("makeOutputModel",
                   hyper[i] <- list(makeOutputPrior(priors.betas[[i]],
                                                    metadata = metadata.i,
                                                    pos = pos,
-                                                   strucZeroArray = struc.zero.array))
+                                                   strucZeroArray = struc.zero.array,
+                                                   margin = margin))
                   pos <- pos + changeInPos(hyper[[i]])
               }
               names(hyper) <- names.betas

@@ -33,7 +33,7 @@ test_that("Skeleton creates valid object of class SkeletonManyValues from metada
                                    dim = c(2, 2),
                                    dimnames = list(age = c("0-4", "5-9"),
                                                    sex = c("f", "m"))))
-    x <- Skeleton(metadata = metadata, first = 3L, strucZeroArray = strucZeroArray)
+    x <- Skeleton(metadata = metadata, first = 3L, strucZeroArray = strucZeroArray, margin = 1L)
     expect_true(validObject(x))
     expect_identical(x,
                      new("SkeletonManyValues",
@@ -70,7 +70,7 @@ test_that("Skeleton creates valid object of class SkeletonManyValues from object
                                    dim = c(2, 2),
                                    dimnames = list(age = c("0-4", "5-9"),
                                                    sex = c("f", "m"))))
-    x <- Skeleton(object = object, first = 3L, strucZeroArray = strucZeroArray)
+    x <- Skeleton(object = object, first = 3L, strucZeroArray = strucZeroArray, margin = 1L)
     expect_true(validObject(x))
     expect_identical(x,
                      new("SkeletonManyValues",
@@ -138,7 +138,8 @@ test_that("SkeletonBetaTerm creates valid object of class SkeletonBetaTerm", {
                                                    sex = c("f", "m"))))
     ans.obtained <- SkeletonBetaTerm(first = 10L,
                                      metadata = metadata,
-                                     strucZeroArray = strucZeroArray)
+                                     strucZeroArray = strucZeroArray,
+                                     margin = 1:2)
     ans.expected <- new("SkeletonBetaTerm",
                         first = 10L,
                         last = 24L,

@@ -514,9 +514,7 @@ updateBeta <- function(prior, vbar, n, sigma, useC = FALSE) {
         beta.hat <- betaHat(prior)
         ans <- numeric(length = J)
         for (i in seq_len(J)) {
-            if (all.struct.zero[i])
-                ans[i] <- 0
-            else {
+            if (!all.struct.zero[i]) {
                 prec.data <- n[i] / sigma^2
                 prec.prior <- 1 / v[i]
                 var <- 1 / (prec.data + prec.prior)
@@ -1961,7 +1959,7 @@ updateSDLogNu <- function(object, useC = FALSE) {
         mean <- object@meanLogNuCMP@.Data
         A <- object@ASDLogNuCMP@.Data
         nu <- object@nuSDLogNuCMP@.Data
-        nu.cmp <- object@nuCMP
+        nu.cmp <- object@nuCMP@.Data
         n <- length(nu.cmp)
         V <- 0
         for (i in seq_len(n)) {

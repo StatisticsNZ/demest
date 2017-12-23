@@ -171,11 +171,6 @@ test_that("validity tests for PoissonVaryingNotUseExp inherited from Theta work"
     x.wrong@theta <- 1:20
     expect_error(validObject(x.wrong),
                  "'theta' does not have type \"double\"")
-    ## 'theta' has no missing values
-    x.wrong <- x
-    x.wrong@theta[1] <- NA
-    expect_error(validObject(x.wrong),
-                 "'theta' has missing values")
     ## dimensions of 'metadataY' consistent with length of 'theta'
     x.wrong <- x
     x.wrong@theta <- x.wrong@theta[-1]
@@ -494,11 +489,6 @@ test_that("validity tests for PoissonVaryingNotUseExp inherited from Betas work"
     x.wrong@betas[[1]] <- as.integer(x.wrong@betas[[1]])
     expect_error(validObject(x.wrong),
                  "'betas' has elements not of type \"double\"")
-    ## 'betas' has no missing values
-    x.wrong <- x
-    x.wrong@betas[[1]] <- as.double(NA)
-    expect_error(validObject(x.wrong),
-                 "'betas' has missing values")
     ## 'betas' does not have names
     x.wrong <- x
     names(x.wrong@betas) <- c("a", "b", "c")

@@ -130,8 +130,8 @@ setClass("Betas",
              priors <- object@priorsBetas
              iteratorBetas <- object@iteratorBetas
              dims <- object@dims
-             hasMissing <- function(x) any(is.na(x))
              hasNonPositive <- function(x) any(x <= 0L)
+             hasMissing <- function(x) any(is.na(x))
              I <- length(object@theta)
              ## 'betas' has at least one element
              if (identical(length(betas), 0L))
@@ -140,10 +140,6 @@ setClass("Betas",
              if (!all(sapply(betas, is.double)))
                  return(gettextf("'%s' has elements not of type \"%s\"",
                                  "betas", "double"))
-             ## 'betas' does not have missing values
-             if (any(sapply(betas, hasMissing)))
-                 return(gettextf("'%s' has missing values",
-                                 "betas"))
              ## 'betas' does not have names
              if (!is.null(names(betas)))
                  return(gettextf("'%s' has names", "betas"))

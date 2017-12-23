@@ -47,7 +47,7 @@ setClass("Poisson",
          validity = function(object) {
              theta <- object@theta
              ## 'theta' is non-negative
-             if (any(theta < 0))
+             if (any(theta[!is.na(theta)] < 0))
                  return(gettextf("'%s' has negative values", "theta"))
              TRUE
          })
@@ -70,7 +70,7 @@ setClass("CMP",
          validity = function(object) {
              theta <- object@theta
              ## 'theta' is non-negative
-             if (any(theta < 0))
+             if (any(theta[!is.na(theta)] < 0))
                  return(gettextf("'%s' has negative values", "theta"))
              TRUE
          })
@@ -182,11 +182,11 @@ setClass("PoissonVarying",
                  upper.back.tr <- exp(upper)
              }
              ## 'theta' greater than or equal to back-transformed 'lower'
-             if (any(theta < lower.back.tr - tolerance))
+             if (any(theta[!is.na(theta)] < lower.back.tr - tolerance))
                  return(gettextf("'%s' has values that are less than '%s'",
                                  "theta", "lower"))
              ## 'theta' less than or equal to back-transformed 'upper'
-             if (any(theta > upper.back.tr + tolerance))
+             if (any(theta[!is.na(theta)] > upper.back.tr + tolerance))
                  return(gettextf("'%s' has values that are greater than '%s'",
                                  "theta", "upper"))
              TRUE
@@ -213,11 +213,11 @@ setClass("CMPVarying",
                  upper.back.tr <- exp(upper)
              }
              ## 'theta' greater than or equal to back-transformed 'lower'
-             if (any(theta < lower.back.tr - tolerance))
+             if (any(theta[!is.na(theta)] < lower.back.tr - tolerance))
                  return(gettextf("'%s' has values that are less than '%s'",
                                  "theta", "lower"))
              ## 'theta' less than or equal to back-transformed 'upper'
-             if (any(theta > upper.back.tr + tolerance))
+             if (any(theta[!is.na(theta)] > upper.back.tr + tolerance))
                  return(gettextf("'%s' has values that are greater than '%s'",
                                  "theta", "upper"))
              TRUE

@@ -1578,7 +1578,7 @@ test_that("updateComponentWeightMix gives valid answer", {
                           isSaturated = FALSE,
                           multScale = 1,
                           strucZeroArray = strucZeroArray,
-                          margin = 1:2)
+                          margin = 1:3)
     set.seed(2)
     ans.obtained <- updateComponentWeightMix(prior)
     set.seed(2)
@@ -1828,7 +1828,7 @@ test_that("updateIndexClassMix gives valid answer", {
                           sY = NULL,
                           isSaturated = FALSE,
                           multScale = 1,
-                          margin = 1L,
+                          margin = 1:2,
                           strucZeroArray = strucZeroArray)
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -1866,7 +1866,7 @@ test_that("R and C versions of updateIndexClassMix give same answer", {
                           isSaturated = FALSE,
                           multScale = 1,
                           strucZeroArray = strucZeroArray,
-                          margin = 1L)
+                          margin = 1:2)
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         beta.tilde <- rnorm(200)
@@ -3059,7 +3059,7 @@ test_that("R and C versions of updateOmegaVectorsMix give same answer", {
                           sY = NULL,
                           isSaturated = FALSE,
                           multScale = 1,
-                          margin = 1L,
+                          margin = 1:3,
                           strucZeroArray = strucZeroArray)
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -4477,14 +4477,15 @@ test_that("updateSDLogNu gives valid answer", {
         ans.obtained <- updateSDLogNu(model)
         set.seed(seed + 1)
         ans.expected <- model
-        V <- sum((log(model@nuCMP - model@meanLogNuCMP@.Data))^2)
+        V <- sum((log(model@nuCMP@.Data) - model@meanLogNuCMP@.Data)^2)
         sd <- updateSDNorm(sigma = model@sdLogNuCMP@.Data,
                            A = model@ASDLogNuCMP@.Data,
-                           nu = model@nuLogNuCMP@.Data,
+                           nu = model@nuSDLogNuCMP@.Data,
                            V = V,
                            n = 20L,
                            max = model@sdLogNuMaxCMP@.Data)
-        model@sdLogNuMaxCMP@.Data <- sd
+        if (sd > 0)
+            ans.expected@sdLogNuCMP@.Data <- sd
         if (test.identity)
             expect_identical(ans.obtained, ans.expected)
         else

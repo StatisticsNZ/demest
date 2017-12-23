@@ -102,7 +102,7 @@ setMethod("makeOutputPrior",
 setMethod("makeOutputPrior",
           signature(prior = "DLMNoTrendNormZeroNoSeason",
                     metadata = "MetaData"),
-          function(prior, metadata, pos) {
+          function(prior, metadata, pos, strucZeroArray = NULL, margin = NULL) {
               J <- prior@J@.Data
               K <- prior@K@.Data
               L <- prior@L@.Data
@@ -114,7 +114,9 @@ setMethod("makeOutputPrior",
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
-                                          pos = pos)
+                                          pos = pos,
+                                          strucZeroArray = strucZeroArray,
+                                          margin = margin)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -131,7 +133,7 @@ setMethod("makeOutputPrior",
 setMethod("makeOutputPrior",
           signature(prior = "DLMWithTrendNormZeroNoSeason",
                     metadata = "MetaData"),
-          function(prior, metadata, pos) {
+          function(prior, metadata, pos, strucZeroArray = NULL, margin = NULL) {
               J <- prior@J@.Data
               K <- prior@K@.Data
               L <- prior@L@.Data
@@ -144,7 +146,9 @@ setMethod("makeOutputPrior",
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
-                                          pos = pos)
+                                          pos = pos,
+                                          strucZeroArray = strucZeroArray,
+                                          margin = margin)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -152,7 +156,9 @@ setMethod("makeOutputPrior",
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
-                                          pos = pos)
+                                          pos = pos,
+                                          strucZeroArray = strucZeroArray,
+                                          margin = margin)
               pos <- pos + (K + 1L) * L
               scaleTrend <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -171,7 +177,7 @@ setMethod("makeOutputPrior",
 setMethod("makeOutputPrior",
           signature(prior = "DLMNoTrendNormZeroWithSeason",
                     metadata = "MetaData"),
-          function(prior, metadata, pos) {
+          function(prior, metadata, pos, strucZeroArray = NULL, margin = NULL) {
               J <- prior@J@.Data
               K <- prior@K@.Data
               L <- prior@L@.Data
@@ -184,7 +190,9 @@ setMethod("makeOutputPrior",
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
-                                          pos = pos)
+                                          pos = pos,
+                                          strucZeroArray = strucZeroArray,
+                                          margin = margin)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -194,7 +202,9 @@ setMethod("makeOutputPrior",
                                            metadata = metadata,
                                            nSeason = nSeason,
                                            iAlong = iAlong,
-                                           pos = pos)
+                                           pos = pos,
+                                           strucZeroArray = strucZeroArray,
+                                           margin = margin)
               pos <- pos + (K + 1L) * L * nSeason
               scaleSeason <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -211,7 +221,7 @@ setMethod("makeOutputPrior",
 setMethod("makeOutputPrior",
           signature(prior = "DLMWithTrendNormZeroWithSeason",
                     metadata = "MetaData"),
-          function(prior, metadata, pos) {
+          function(prior, metadata, pos, strucZeroArray = NULL, margin = NULL) {
               J <- prior@J@.Data
               K <- prior@K@.Data
               L <- prior@L@.Data
@@ -225,7 +235,9 @@ setMethod("makeOutputPrior",
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
-                                          pos = pos)
+                                          pos = pos,
+                                          strucZeroArray = strucZeroArray,
+                                          margin = margin)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -233,7 +245,9 @@ setMethod("makeOutputPrior",
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
-                                          pos = pos)
+                                          pos = pos,
+                                          strucZeroArray = strucZeroArray,
+                                          margin = margin)
               pos <- pos + (K + 1L) * L
               scaleTrend <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -243,7 +257,9 @@ setMethod("makeOutputPrior",
                                            metadata = metadata,
                                            nSeason = nSeason,
                                            iAlong = iAlong,
-                                           pos = pos)
+                                           pos = pos,
+                                           strucZeroArray = strucZeroArray,
+                                           margin = margin)
               pos <- pos + (K + 1L) * L * nSeason
               scaleSeason <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -265,7 +281,7 @@ setMethod("makeOutputPrior",
 setMethod("makeOutputPrior",
           signature(prior = "DLMNoTrendNormCovNoSeason",
                     metadata = "MetaData"),
-          function(prior, metadata, pos) {
+          function(prior, metadata, pos, strucZeroArray = NULL, margin = NULL) {
               J <- prior@J@.Data
               K <- prior@K@.Data
               L <- prior@L@.Data
@@ -279,7 +295,9 @@ setMethod("makeOutputPrior",
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
-                                          pos = pos)
+                                          pos = pos,
+                                          strucZeroArray = strucZeroArray,
+                                          margin = margin)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -300,7 +318,7 @@ setMethod("makeOutputPrior",
 setMethod("makeOutputPrior",
           signature(prior = "DLMWithTrendNormCovNoSeason",
                     metadata = "MetaData"),
-          function(prior, metadata, pos) {
+          function(prior, metadata, pos, strucZeroArray = NULL, margin = NULL) {
               J <- prior@J@.Data
               K <- prior@K@.Data
               L <- prior@L@.Data
@@ -315,7 +333,9 @@ setMethod("makeOutputPrior",
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
-                                          pos = pos)
+                                          pos = pos,
+                                          strucZeroArray = strucZeroArray,
+                                          margin = margin)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -323,7 +343,9 @@ setMethod("makeOutputPrior",
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
-                                          pos = pos)
+                                          pos = pos,
+                                          strucZeroArray = strucZeroArray,
+                                          margin = margin)
               pos <- pos + (K + 1L) * L
               scaleTrend <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -346,7 +368,7 @@ setMethod("makeOutputPrior",
 setMethod("makeOutputPrior",
           signature(prior = "DLMNoTrendNormCovWithSeason",
                     metadata = "MetaData"),
-          function(prior, metadata, pos) {
+          function(prior, metadata, pos, strucZeroArray = NULL, margin = NULL) {
               J <- prior@J@.Data
               K <- prior@K@.Data
               L <- prior@L@.Data
@@ -361,7 +383,9 @@ setMethod("makeOutputPrior",
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
-                                          pos = pos)
+                                          pos = pos,
+                                          strucZeroArray = strucZeroArray,
+                                          margin = margin)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -371,7 +395,9 @@ setMethod("makeOutputPrior",
                                            metadata = metadata,
                                            nSeason = nSeason,
                                            iAlong = iAlong,
-                                           pos = pos)
+                                           pos = pos,
+                                           strucZeroArray = strucZeroArray,
+                                           margin = margin)
               pos <- pos + (K + 1L) * L * nSeason
               scaleSeason <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -392,7 +418,7 @@ setMethod("makeOutputPrior",
 setMethod("makeOutputPrior",
           signature(prior = "DLMWithTrendNormCovWithSeason",
                     metadata = "MetaData"),
-          function(prior, metadata, pos) {
+          function(prior, metadata, pos, strucZeroArray = NULL, margin = NULL) {
               J <- prior@J@.Data
               K <- prior@K@.Data
               L <- prior@L@.Data
@@ -408,7 +434,9 @@ setMethod("makeOutputPrior",
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
-                                          pos = pos)
+                                          pos = pos,
+                                          strucZeroArray = strucZeroArray,
+                                          margin = margin)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -416,7 +444,9 @@ setMethod("makeOutputPrior",
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
-                                          pos = pos)
+                                          pos = pos,
+                                          strucZeroArray = strucZeroArray,
+                                          margin = margin)
               pos <- pos + (K + 1L) * L
               scaleTrend <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -426,7 +456,9 @@ setMethod("makeOutputPrior",
                                            metadata = metadata,
                                            nSeason = nSeason,
                                            iAlong = iAlong,
-                                           pos = pos)
+                                           pos = pos,
+                                           strucZeroArray = strucZeroArray,
+                                           margin = margin)
               pos <- pos + (K + 1L) * L * nSeason
               scaleSeason <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -452,7 +484,7 @@ setMethod("makeOutputPrior",
 setMethod("makeOutputPrior",
           signature(prior = "DLMNoTrendRobustZeroNoSeason",
                     metadata = "MetaData"),
-          function(prior, metadata, pos) {
+          function(prior, metadata, pos, strucZeroArray = NULL, margin = NULL) {
               K <- prior@K@.Data
               L <- prior@L@.Data
               iAlong <- prior@iAlong
@@ -463,7 +495,9 @@ setMethod("makeOutputPrior",
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
-                                          pos = pos)
+                                          pos = pos,
+                                          strucZeroArray = strucZeroArray,
+                                          margin = margin)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -480,7 +514,7 @@ setMethod("makeOutputPrior",
 setMethod("makeOutputPrior",
           signature(prior = "DLMWithTrendRobustZeroNoSeason",
                     metadata = "MetaData"),
-          function(prior, metadata, pos) {
+          function(prior, metadata, pos, strucZeroArray = NULL, margin = NULL) {
               K <- prior@K@.Data
               L <- prior@L@.Data
               iAlong <- prior@iAlong
@@ -492,7 +526,9 @@ setMethod("makeOutputPrior",
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
-                                          pos = pos)
+                                          pos = pos,
+                                          strucZeroArray = strucZeroArray,
+                                          margin = margin)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -500,7 +536,9 @@ setMethod("makeOutputPrior",
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
-                                          pos = pos)
+                                          pos = pos,
+                                          strucZeroArray = strucZeroArray,
+                                          margin = margin)
               pos <- pos + (K + 1L) * L
               scaleTrend <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -519,7 +557,7 @@ setMethod("makeOutputPrior",
 setMethod("makeOutputPrior",
           signature(prior = "DLMNoTrendRobustZeroWithSeason",
                     metadata = "MetaData"),
-          function(prior, metadata, pos) {
+          function(prior, metadata, pos, strucZeroArray = NULL, margin = NULL) {
               K <- prior@K@.Data
               L <- prior@L@.Data
               iAlong <- prior@iAlong
@@ -531,7 +569,9 @@ setMethod("makeOutputPrior",
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
-                                          pos = pos)
+                                          pos = pos,
+                                          strucZeroArray = strucZeroArray,
+                                          margin = margin)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -541,7 +581,9 @@ setMethod("makeOutputPrior",
                                            metadata = metadata,
                                            nSeason = nSeason,
                                            iAlong = iAlong,
-                                           pos = pos)
+                                           pos = pos,
+                                           strucZeroArray = strucZeroArray,
+                                           margin = margin)
               pos <- pos + (K + 1L) * L * nSeason
               scaleSeason <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -558,7 +600,7 @@ setMethod("makeOutputPrior",
 setMethod("makeOutputPrior",
           signature(prior = "DLMWithTrendRobustZeroWithSeason",
                     metadata = "MetaData"),
-          function(prior, metadata, pos) {
+          function(prior, metadata, pos, strucZeroArray = NULL, margin = NULL) {
               K <- prior@K@.Data
               L <- prior@L@.Data
               iAlong <- prior@iAlong
@@ -571,7 +613,9 @@ setMethod("makeOutputPrior",
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
-                                          pos = pos)
+                                          pos = pos,
+                                          strucZeroArray = strucZeroArray,
+                                          margin = margin)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -579,7 +623,9 @@ setMethod("makeOutputPrior",
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
-                                          pos = pos)
+                                          pos = pos,
+                                          strucZeroArray = strucZeroArray,
+                                          margin = margin)
               pos <- pos + (K + 1L) * L
               scaleTrend <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -589,7 +635,9 @@ setMethod("makeOutputPrior",
                                            metadata = metadata,
                                            nSeason = nSeason,
                                            iAlong = iAlong,
-                                           pos = pos)
+                                           pos = pos,
+                                           strucZeroArray = strucZeroArray,
+                                           margin = margin)
               pos <- pos + (K + 1L) * L * nSeason
               scaleSeason <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -611,7 +659,7 @@ setMethod("makeOutputPrior",
 setMethod("makeOutputPrior",
           signature(prior = "DLMNoTrendRobustCovNoSeason",
                     metadata = "MetaData"),
-          function(prior, metadata, pos) {
+          function(prior, metadata, pos, strucZeroArray = NULL, margin = NULL) {
               K <- prior@K@.Data
               L <- prior@L@.Data
               P <- prior@P@.Data
@@ -624,7 +672,9 @@ setMethod("makeOutputPrior",
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
-                                          pos = pos)
+                                          pos = pos,
+                                          strucZeroArray = strucZeroArray,
+                                          margin = margin)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -645,7 +695,7 @@ setMethod("makeOutputPrior",
 setMethod("makeOutputPrior",
           signature(prior = "DLMWithTrendRobustCovNoSeason",
                     metadata = "MetaData"),
-          function(prior, metadata, pos) {
+          function(prior, metadata, pos, strucZeroArray = NULL, margin = NULL) {
               K <- prior@K@.Data
               L <- prior@L@.Data
               P <- prior@P@.Data
@@ -659,7 +709,9 @@ setMethod("makeOutputPrior",
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
-                                          pos = pos)
+                                          pos = pos,
+                                          strucZeroArray = strucZeroArray,
+                                          margin = margin)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -667,7 +719,9 @@ setMethod("makeOutputPrior",
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
-                                          pos = pos)
+                                          pos = pos,
+                                          strucZeroArray = strucZeroArray,
+                                          margin = margin)
               pos <- pos + (K + 1L) * L
               scaleTrend <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -690,7 +744,7 @@ setMethod("makeOutputPrior",
 setMethod("makeOutputPrior",
           signature(prior = "DLMNoTrendRobustCovWithSeason",
                     metadata = "MetaData"),
-          function(prior, metadata, pos) {
+          function(prior, metadata, pos, strucZeroArray = NULL, margin = NULL) {
               K <- prior@K@.Data
               L <- prior@L@.Data
               P <- prior@P@.Data
@@ -704,7 +758,9 @@ setMethod("makeOutputPrior",
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
-                                          pos = pos)
+                                          pos = pos,
+                                          strucZeroArray = strucZeroArray,
+                                          margin = margin)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -714,7 +770,9 @@ setMethod("makeOutputPrior",
                                            metadata = metadata,
                                            nSeason = nSeason,
                                            iAlong = iAlong,
-                                           pos = pos)
+                                           pos = pos,
+                                           strucZeroArray = strucZeroArray,
+                                           margin = margin)
               pos <- pos + (K + 1L) * L * nSeason
               scaleSeason <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -735,7 +793,7 @@ setMethod("makeOutputPrior",
 setMethod("makeOutputPrior",
           signature(prior = "DLMWithTrendRobustCovWithSeason",
                     metadata = "MetaData"),
-          function(prior, metadata, pos) {
+          function(prior, metadata, pos, strucZeroArray = NULL, margin = NULL) {
               K <- prior@K@.Data
               L <- prior@L@.Data
               P <- prior@P@.Data
@@ -750,7 +808,9 @@ setMethod("makeOutputPrior",
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
-                                          pos = pos)
+                                          pos = pos,
+                                          strucZeroArray = strucZeroArray,
+                                          margin = margin)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -758,7 +818,9 @@ setMethod("makeOutputPrior",
                                           metadata = metadata,
                                           nSeason = NULL,
                                           iAlong = iAlong,
-                                          pos = pos)
+                                          pos = pos,
+                                          strucZeroArray = strucZeroArray,
+                                          margin = margin)
               pos <- pos + (K + 1L) * L
               scaleTrend <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -768,7 +830,9 @@ setMethod("makeOutputPrior",
                                            metadata = metadata,
                                            nSeason = nSeason,
                                            iAlong = iAlong,
-                                           pos = pos)
+                                           pos = pos,
+                                           strucZeroArray = strucZeroArray,
+                                           margin = margin)
               pos <- pos + (K + 1L) * L * nSeason
               scaleSeason <- makeOutputPriorScale(pos = pos)
               pos <- pos + 1L
@@ -1496,7 +1560,8 @@ setMethod("rescalePairPriors",
               names.high.only <- setdiff(names.high, names.low)
               means.shared <- collapseDimension(beta.high,
                                                 dimension = names.high.only,
-                                                weights = 1)
+                                                weights = 1,
+                                                na.rm = TRUE)
               rescaleAndWriteBetas(high = beta.high,
                                    low = beta.low,
                                    adj = means.shared,
@@ -1558,7 +1623,8 @@ setMethod("rescalePairPriors",
               names.high.only <- setdiff(names.high, names.low)
               means.shared <- collapseDimension(beta.high,
                                                 dimension = names.high.only,
-                                                weights = 1)
+                                                weights = 1,
+                                                na.rm = TRUE)
               rescaleAndWriteBetas(high = beta.high,
                                    low = beta.low,
                                    adj = means.shared,
@@ -1632,7 +1698,8 @@ setMethod("rescalePairPriors",
               names.high.only <- setdiff(names.high, names.low)
               means.shared <- collapseDimension(level.0.high,
                                                 dimension = names.high.only,
-                                                weights = 1)
+                                                weights = 1,
+                                                na.rm = TRUE)
               rescaleAndWriteBetas(high = beta.high,
                                    low = beta.low,
                                    adj = means.shared,
@@ -1737,7 +1804,8 @@ setMethod("rescalePairPriors",
               names.high.only <- setdiff(names.high, names.low)
               means.shared.level <- collapseDimension(level.0.high,
                                                       dimension = names.high.only,
-                                                      weights = 1)
+                                                      weights = 1,
+                                                      na.rm = TRUE)
               ## rescale betas and record them
               rescaleAndWriteBetas(high = beta.high,
                                    low = beta.low,
@@ -1821,7 +1889,7 @@ setMethod("rescalePriorIntercept",
                                                lengthIter = lengthIter)
               }
               else {
-                  adj <- mean(beta.term)
+                  adj <- mean(beta.term, na.rm = TRUE)
               }
               rescaleAndWriteBetas(high = beta.term,
                                    low = beta.intercept,
@@ -1881,7 +1949,7 @@ setMethod("rescalePriorIntercept",
                                                        nIteration = nIteration,
                                                        lengthIter = lengthIter,
                                                        only0 = TRUE)
-                  mean.level.0 <- mean(level.0.term)
+                  mean.level.0 <- mean(level.0.term, na.rm = TRUE)
                   rescaleAndWriteBetas(high = beta.term,
                                        low = beta.intercept,
                                        adj = mean.level.0,
@@ -1987,7 +2055,8 @@ setMethod("rescaleSeason",
                                             only0 = FALSE)
               means <- collapseDimension(season.0,
                                          dimension = 1L,
-                                         weights = 1)
+                                         weights = 1,
+                                         na.rm = TRUE)
               season <- season - means
               level <- level + means
               overwriteValuesOnFile(object = season,

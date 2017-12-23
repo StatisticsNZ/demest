@@ -11888,25 +11888,27 @@ test_that("indicesShow works - nSeason is non-NULL", {
 
 test_that("makeIndicesStrucZero works", {
     makeIndicesStrucZero <- demest:::makeIndicesStrucZero
-    metadata <- new("MetaData",
-                    nms = "sex", 
-                    dimtypes =  "sex", 
-                    DimScales = list(new("Sexes", dimvalues = c("Female", "Male"))))
+    margin <- 2L
     strucZeroArray <- NULL
-    ans.obtained <- makeIndicesStrucZero(metadata = metadata,
-                                         strucZeroArray = strucZeroArray)
+    ans.obtained <- makeIndicesStrucZero(strucZeroArray = strucZeroArray,
+                                         margin = margin)
     ans.expected <- integer()
     expect_identical(ans.obtained, ans.expected)
-    metadata <- new("MetaData",
-                    nms = "sex", 
-                    dimtypes =  "sex", 
-                    DimScales = list(new("Sexes", dimvalues = c("f", "m"))))
     strucZeroArray <- Counts(array(c(0L, 1L),
                                    dim = c(2, 3),
                                    dimnames = list(sex = c("f", "m"), region = c("a", "b", "c"))))
-    ans.obtained <- makeIndicesStrucZero(metadata = metadata,
-                                         strucZeroArray = strucZeroArray)
+    margin <- 1L
+    ans.obtained <- makeIndicesStrucZero(strucZeroArray = strucZeroArray,
+                                         margin = margin)
     ans.expected <- 1L
+    expect_identical(ans.obtained, ans.expected)
+    strucZeroArray <- Counts(array(c(0L, 1L),
+                                   dim = c(2, 3),
+                                   dimnames = list(sex = c("f", "m"), region = c("a", "b", "c"))))
+    margin <- 1:2
+    ans.obtained <- makeIndicesStrucZero(strucZeroArray = strucZeroArray,
+                                         margin = margin)
+    ans.expected <- c(1L, 3L, 5L)
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -12267,7 +12269,7 @@ test_that("makeOutputStateDLM works with Season", {
                         indices0 = 1:4,
                         indicesStrucZero = integer())
     expect_identical(ans.obtained, ans.expected)
-    ## no with zeros
+    ## with structural zeros
     metadata <- new("MetaData",
                     nms = c("time", "sex"),
                     dimtypes = c("time", "sex"),
@@ -12283,7 +12285,8 @@ test_that("makeOutputStateDLM works with Season", {
                                        nSeason = 4L,
                                        iAlong = 1L,
                                        pos = 3L,
-                                       strucZeroArray = strucZeroArray)
+                                       strucZeroArray = strucZeroArray,
+                                       margin = 1:2)
     metadata0 <- new("MetaData",
                      nms = c("season", "sex"),
                      dimtypes = c("state", "sex"),

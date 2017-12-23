@@ -883,10 +883,7 @@ updateBeta(double *beta, int J, SEXP prior_R,
     double thisSD = 0;
 
     for (int i = 0; i < J; ++i) {
-	if (allStrucZero[i]) {
-	    beta[i] = 0;
-	}
-	else {
+	if (!allStrucZero[i]) { /* leave elements with all structural zeros unchanged (at missing) */
 	    thisPrecPrior =1/v[i];
 	    thisPrecData = n_vec[i]/sigmaSq;
 	    thisVar = 1/(thisPrecData + thisPrecPrior);

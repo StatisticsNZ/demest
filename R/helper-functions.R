@@ -3483,7 +3483,7 @@ jitterBetas <- function(betas, priorsBetas) {
                                 sd = kTerms * stats::sd(betas[[i]]))
             prior <- priorsBetas[[i]]
             all.struc.zero <- prior@allStrucZero
-            val[all.struc.zero] <- 0
+            val[all.struc.zero] <- NA
             betas[[i]] <- val
         }
     }
@@ -7298,19 +7298,27 @@ indicesShow <- function(iterator, nSeason = NULL, dim, iAlong) {
 }
 
 ## HAS_TESTS
-makeIndicesStrucZero <- function(metadata, strucZeroArray) {
+## assume that no subsetting and no permuting of elements within dimensions occurs
+makeIndicesStrucZero <- function(strucZeroArray, margin) {
     if (is.null(strucZeroArray))
         integer()
     else {
-        .Data.tmp <- array(1L,
-                           dim = dim(metadata),
-                           dimnames = dimnames(metadata))
-        tmp <- new("Values",
-                   .Data = .Data.tmp,
-                   metadata = metadata)
-        indices.struc.zero <- makeCompatible(x = strucZeroArray,
-                                             y = tmp,
-                                             subset = FALSE)
+        dim.before <- dim(strucZeroArray)
+        dim.after <- dim.before[margin]
+        s <- seq_along(dim.before)
+        dims <- match(s, margin, nomatch = 0L)
+        indices <- lapply(dim.before, seq_len)
+        for (i in seq_along(dims)) {
+            if (dims[i] == 0L)
+                indices[[i]] <- rep(1L, times = dim.before[i])
+        }
+        transform <- methods::new("CollapseTransform",
+                                  indices = indices,
+                                  dims = dims,
+                                  dimBefore = dim.before,
+                                  dimAfter = dim.after)
+        .Data <- strucZeroArray@.Data
+        indices.struc.zero <- dembase::collapse(.Data, transform = transform)
         unname(which(indices.struc.zero@.Data == 0L))
     }
 }
@@ -7460,7 +7468,7 @@ makeOutputPriorScale <- function(pos) {
 }
 
 ## HAS_TESTS
-makeOutputStateDLM <- function(iterator, metadata, nSeason, iAlong, pos, strucZeroArray = NULL) {
+makeOutputStateDLM <- function(iterator, metadata, nSeason, iAlong, pos, strucZeroArray = NULL, margin = NULL) {
     indices <- iterator@indices
     n.within <- iterator@nWithin
     n.between <- iterator@nBetween
@@ -7486,8 +7494,8 @@ makeOutputStateDLM <- function(iterator, metadata, nSeason, iAlong, pos, strucZe
     metadata.incl.0 <- makeMetadataIncl0(metadata = metadata,
                                          iAlong = iAlong,
                                          nSeason = nSeason)
-    indices.struc.zero <- makeIndicesStrucZero(metadata = metadata,
-                                               strucZeroArray = strucZeroArray)
+    indices.struc.zero <- makeIndicesStrucZero(strucZeroArray = strucZeroArray,
+                                               margin = margin)
     methods::new("SkeletonStateDLM",
                  first = first,
                  last = last,

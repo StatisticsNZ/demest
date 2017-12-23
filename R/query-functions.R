@@ -534,10 +534,12 @@ fetchMCMC <- function(filename, where = NULL, sample = NULL, thinned = TRUE) {
         if (!("iteration" %in% dembase::dimtypes(obj)))
             stop(gettextf("'%s' does not have dimension with dimtype \"%s\"",
                           where[length(where)], "iteration"))
+        skeleton <- fetchSkeleton(object, where = where)
         MCMCDemographic(object = obj,
                         sample = sample,
                         nChain = n.chain,
-                        nThin = n.thin)
+                        nThin = n.thin,
+                        skeleton = skeleton)
     }
 }
 

@@ -38,7 +38,7 @@ setGeneric("Mapping",
                standardGeneric("Mapping"))
 
 setGeneric("Skeleton",
-           function(object, metadata, first, strucZeroArray = NULL)
+           function(object, metadata, first, strucZeroArray = NULL, margin = NULL)
            standardGeneric("Skeleton"))
 
 setGeneric("SkeletonAccept",
@@ -338,7 +338,7 @@ setGeneric("makeOutputModel",
            standardGeneric("makeOutputModel"))
 
 setGeneric("makeOutputPrior",
-           function(prior, metadata, pos, strucZeroArray = NULL)
+           function(prior, metadata, pos, strucZeroArray = NULL, margin = NULL)
            standardGeneric("makeOutputPrior"))
 
 setGeneric("modelUsesWeights",
