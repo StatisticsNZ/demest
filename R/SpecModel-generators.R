@@ -525,7 +525,8 @@ Model <- function(formula, ..., lower = NULL, upper = NULL,
                   priorSD = NULL, jump = NULL, series = NULL,
                   aggregate = NULL) {
     kValidDistributions <- c("Poisson", "Binomial", "Normal", "CMP",
-                             "PoissonBinomial", "NormalFixed")
+                             "PoissonBinomial", "NormalFixed",
+                             "Round3")
     call <- match.call()
     dots <- list(...)
     correct.length <- identical(length(formula), 3L)
@@ -613,6 +614,32 @@ PoissonBinomial <- function(prob) {
     methods::new("SpecLikelihoodPoissonBinomialMixture",
         prob = prob)
 }
+
+
+#' Specify a data model for random rounding to base 3.
+#'
+#' Specify a model in which the rounded value \code{x[i]} is obtained from the
+#' original value \code{q[i]} using the rule described in
+#' \code{\link[dembase:Values-class]{Values}}.
+#'
+#' The model is useful for analysing data that have been
+#' confidentialised to base 3. It is used as a data model
+#' in calls to \code{\link{estimateCount}}, and
+#' \code{\link{estimateAccount}}.
+#'
+#' @return An object of class \code{\linkS4class{SpecLikelihood}}.
+#' 
+#' @seealso \code{Round3} is typically used as
+#' part of a call to function \code{\link{Model}}.
+#'
+#' @examples
+#' Round3()
+#' @export
+Round3 <- function() {
+    new("SpecLikelihoodRound3")
+}
+
+
 
 
 ## SpecModel ############################################################
@@ -943,6 +970,27 @@ setMethod("SpecModel",
                            nameY = nameY,
                            series = series,
                            prob = prob)
+          })
+
+## HAS_TESTS
+setMethod("SpecModel",
+          signature(specInner = "SpecLikelihoodRound3"),
+          function(specInner, call, nameY, dots, lower, upper,
+                   priorSD, jump, series, aggregate) {
+              if (length(dots) > 0L)
+                  stop(gettextf("priors specified, but model is %s",
+                                "Round3"))
+              for (name in c("lower", "upper", "priorSD", "jump", "aggregate")) {
+                  value <- get(name)
+                  if (!is.null(value))
+                      stop(gettextf("'%s' specified, but model is %s",
+                                    name, "Round3"))
+              }
+              series <- checkAndTidySeries(series)
+              methods::new("SpecRound3",
+                           call = call,
+                           nameY = nameY,
+                           series = series)
           })
 
 ## HAS_TESTS

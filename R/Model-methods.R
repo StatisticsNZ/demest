@@ -959,6 +959,14 @@ setMethod("makeOutputModel",
           })
 
 
+## Round3
+
+setMethod("makeOutputModel",
+          signature(model = "Round3"),
+          function(model) {
+              NULL
+          })
+
 ## NormalFixed
 
 ## HAS_TESTS
@@ -1181,6 +1189,32 @@ setMethod("predictModelUseExp",
               if (useC) {
                   if (useSpecific)
                       .Call(predictModelUseExp_PoissonBinomialMixturePredict_R,
+                            object, y, exposure)
+                  else
+                      .Call(predictModelUseExp_R,
+                            object, y, exposure)
+              }
+              else {
+                  object
+              }
+          })
+
+setMethod("predictModelUseExp",
+          signature(object = "Round3Predict"),
+          function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(is.integer(y))
+              stopifnot(all(is.na(y)))
+              ## exposure
+              stopifnot(is.integer(exposure))
+              stopifnot(all(is.na(exposure)))
+              ## y and exposure
+              stopifnot(identical(length(exposure), length(y)))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(predictModelUseExp_Round3Predict_R,
                             object, y, exposure)
                   else
                       .Call(predictModelUseExp_R,
@@ -1424,6 +1458,12 @@ setMethod("showModelHelper",
           signature(object = "PoissonBinomialMixture"),
           function(object) {
               printPoissonBinomialModEqns(object)
+          })
+
+setMethod("showModelHelper",
+          signature(object = "Round3"),
+          function(object) {
+              printRound3ModEqns(object)
           })
 
 setMethod("showModelHelper",
@@ -2556,6 +2596,9 @@ setMethod("whereAcceptance",
           signature(object = "PoissonVaryingUseExpPredict"),
           function(object) list(NULL))
 
+setMethod("whereAcceptance",
+          signature(object = "Round3"),
+          function(object) list(NULL))
 
 setMethod("whereAcceptance",
           signature(object = "NormalFixed"),
@@ -2651,6 +2694,10 @@ setMethod("whereAutocorr",
 ## HAS_TESTS
 setMethod("whereAutocorr",
           signature(object = "PoissonVaryingUseExpPredict"),
+          function(object) list(NULL))
+
+setMethod("whereAutocorr",
+          signature(object = "Round3"),
           function(object) list(NULL))
 
 ## HAS_TESTS
@@ -2750,9 +2797,13 @@ setMethod("whereJump",
           signature(object = "PoissonBinomialMixture"),
           function(object) list(NULL))
 
+setMethod("whereJump",
+          signature(object = "PoissonBinomialMixture"),
+          function(object) list(NULL))
+
 ## HAS_TESTS
 setMethod("whereJump",
-          signature(object = "BinomialVaryingPredict"),
+          signature(object = "Round3"),
           function(object) list(NULL))
 
 ## HAS_TESTS
@@ -2919,6 +2970,12 @@ setMethod("whereEstimated",
               list(NULL)
           })
 
+setMethod("whereEstimated",
+          signature(object = "Round3"),
+          function(object) {
+              list(NULL)
+          })
+
 ## HAS_TESTS
 setMethod("whereEstimated",
           signature(object = "NormalFixed"),
@@ -3059,6 +3116,10 @@ setMethod("whereNoProposal",
           signature(object = "PoissonBinomialMixture"),
           function(object) list(NULL))
 
+setMethod("whereNoProposal",
+          signature(object = "Round3"),
+          function(object) list(NULL))
+
 ## HAS_TESTS
 setMethod("whereNoProposal",
           signature(object = "NormalFixed"),
@@ -3092,6 +3153,13 @@ setMethod("whereTheta",
 ## HAS_TESTS
 setMethod("whereTheta",
           signature(object = "PoissonBinomialMixture"),
+          function(object) {
+              stop(gettextf("'%s' has class \"%s\"",
+                            "object", class(object)))
+          })
+
+setMethod("whereTheta",
+          signature(object = "Round3"),
           function(object) {
               stop(gettextf("'%s' has class \"%s\"",
                             "object", class(object)))

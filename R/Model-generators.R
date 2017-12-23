@@ -1310,6 +1310,23 @@ setMethod("initialModel",
                            metadataAll = metadataAll)
           })
 
+## HAS_TESTS
+setMethod("initialModel",
+          signature(object = "SpecRound3",
+                    y = "Counts",
+                    exposure = "Counts",
+                    weights = "missing"),
+          function(object, y, exposure) {
+              call <- object@call
+              metadataY <- y@metadata
+              if (any((y@.Data[!is.na(y@.Data)] %% 3L) != 0L))
+                  stop(gettextf("using '%s' data model, but data contains values not divisible by %d",
+                                "Round3", 3L))
+              methods::new("Round3",
+                           call = call,
+                           metadataY = metadataY)
+          })
+
 
 
 ## initialModelPredict ################################################################
@@ -1524,6 +1541,23 @@ setMethod("initialModelPredict",
               i.method.model.second <- i.method.model.first + 100L
               methods::new("PoissonBinomialMixturePredict",
                            prob = model@prob,
+                           metadataY = metadata.second,
+                           iMethodModel = i.method.model.second)
+          })
+
+## HAS_TESTS
+setMethod("initialModelPredict",
+          signature(model = "Round3"),
+          function(model, along, labels, n, offsetModel,
+                   covariates, aggregate, lower, upper) {
+              metadata.first <- model@metadataY
+              i.method.model.first <- model@iMethodModel
+              metadata.second <- makeMetadataPredict(metadata = metadata.first,
+                                                     along = along,
+                                                     labels = labels,
+                                                     n = n)
+              i.method.model.second <- i.method.model.first + 100L
+              methods::new("Round3Predict",
                            metadataY = metadata.second,
                            iMethodModel = i.method.model.second)
           })

@@ -357,6 +357,17 @@ test_that("tests for SpecNormalFixed inherited from MeanSDMetadataMixin work", {
                  "'mean' and 'metadata' inconsistent")    
 })
 
-
-
-
+test_that("can create valid object of class SpecPoissonBinomialMixture", {
+    ## nameY and series supplied
+    x <- new("SpecRound3",
+             call = call("Model", reg.deaths ~ Round3()),
+             nameY = new("Name", "reg.deaths"),
+             series = new("SpecName", "deaths"))
+    expect_true(validObject(x))
+    ## series NULL
+    x <- new("SpecRound3",
+             call = call("Model", y ~ Round3()),
+             nameY = new("Name", "y"),
+             series = new("SpecName", as.character(NA)))
+    expect_true(validObject(x))
+})

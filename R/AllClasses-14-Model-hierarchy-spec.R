@@ -132,6 +132,11 @@ setClass("SpecLikelihoodNormalFixed",
                       "MeanSDMetadataMixin",
                       "UseExposeMixin"))
 
+#' @rdname SpecLikelihood-class
+#' @export
+setClass("SpecLikelihoodRound3",
+         contains = "SpecLikelihood")
+
 
 #' S4 classes to specify a model.
 #'
@@ -334,6 +339,15 @@ setClass("SpecPoissonVarying",
              TRUE
          })
 
+
+## HAS_TESTS
+#' @rdname SpecModel-class
+#' @export
+setClass("SpecNormalFixed",
+         prototype = prototype(useExpose = new("LogicalFlag", TRUE)),
+         contains = c("SpecModel", "MeanSDMetadataMixin",
+                      "SpecSeriesMixin"))
+
 ## HAS_TESTS
 #' @rdname SpecModel-class
 #' @export
@@ -344,11 +358,8 @@ setClass("SpecPoissonBinomialMixture",
 ## HAS_TESTS
 #' @rdname SpecModel-class
 #' @export
-setClass("SpecNormalFixed",
-         prototype = prototype(useExpose = new("LogicalFlag", TRUE)),
-         contains = c("SpecModel", "MeanSDMetadataMixin",
-                      "SpecSeriesMixin"))
-
+setClass("SpecRound3",
+         contains = c("SpecModel", "SpecSeriesMixin"))
 
 
 

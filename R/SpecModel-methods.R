@@ -326,6 +326,15 @@ setMethod("show",
 #' @rdname show-methods
 #' @export
 setMethod("show",
+          signature(object = "SpecLikelihoodRound3"),
+          function(object) {
+              cat("An object of class \"", class(object), "\"\n\n", sep = "")
+              printRound3LikEqns(object)
+          })
+
+#' @rdname show-methods
+#' @export
+setMethod("show",
           signature(object = "SpecLikelihoodNormalFixed"),
           function(object) {
               cat("An object of class \"", class(object), "\"\n\n", sep = "")
@@ -414,6 +423,15 @@ setMethod("show",
 #' @rdname show-methods
 #' @export
 setMethod("show",
+          signature(object = "SpecRound3"),
+          function(object) {
+              cat("An object of class \"", class(object), "\"\n\n", sep = "")
+              printRound3SpecEqns(object)
+          })
+
+#' @rdname show-methods
+#' @export
+setMethod("show",
           signature(object = "SpecNormalFixed"),
           function(object) {
               cat("An object of class \"", class(object), "\"\n\n", sep = "")
@@ -487,4 +505,13 @@ setMethod("stringScaleTheta",
 
 setMethod("stringScaleTheta",
           signature(object = "SpecPoissonBinomialMixture"),
+          function(object) "")
+
+
+setMethod("stringScaleTheta",
+          signature(object = "SpecNormalFixed"),
+          function(object) "")
+
+setMethod("stringScaleTheta",
+          signature(object = "SpecRound3"),
           function(object) "")

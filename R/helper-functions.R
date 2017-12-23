@@ -8926,6 +8926,39 @@ printPoissonSpecEqns <- function(object) {
     cat("\nhas structural zeros: ", !is.null(structuralZeros), "\n", sep = "")
 }
 
+printRound3LikEqns <- function(object) {
+    cat("            y[i] ~ round3(exposure[i])\n")
+}
+
+
+printRound3ModEqns <- function(object) {
+    call <- object@call
+    series <- call$series
+    name.y <- deparse(call$formula[[2L]])
+    if (is.null(series)) {
+        if (identical(name.y, "y"))
+            exposure <- "exposure"
+        else
+            exposure <- "y"
+    }
+    else
+        exposure <- series
+    name.y <- sprintf("%13s", name.y)
+    cat(name.y, "[i] ~ round3(", exposure, "[i])\n", sep = "")
+}
+
+printRound3SpecEqns <- function(object) {
+    nameY <- object@nameY
+    series <- object@series@.Data
+    has.series <- !is.na(series)
+    name.y <- sprintf("%13s", nameY)
+    if (has.series)
+        exposure <- series        
+    else
+        exposure <- "exposure"
+    cat(name.y, "[i] ~ round3(", exposure, "[i])\n", sep = "")
+}
+
 printPriorsEqns <- function(object) {
     stopifnot(methods::is(object, "Varying"))
     priors <- object@priorsBetas

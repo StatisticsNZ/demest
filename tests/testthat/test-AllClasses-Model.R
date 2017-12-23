@@ -1203,6 +1203,17 @@ test_that("can create valid object of class NormalFixedUseExp", {
 })
 
 
+test_that("can create valid object of class Round3", {
+    expect_true(validObject(new("Round3",
+                                metadataY = new("MetaData",
+                                                nms = c("age", "region"),
+                                                dimtypes = c("age", "state"),
+                                                DimScales = list(new("Intervals", dimvalues = 0:5),
+                                                                 new("Categories", dimvalues = c("a", "b", "c", "d")))))))
+})
+
+
+
 
 
 ## Binomial - Aggregate
@@ -5600,6 +5611,17 @@ test_that("can create a valid objects of class PoissonVaryingUseExpPredictAgNorm
 })
 
 
+test_that("can create valid object of class Round3Predict", {
+    expect_true(validObject(new("Round3Predict",
+                                metadataY = new("MetaData",
+                                                nms = c("age", "region"),
+                                                dimtypes = c("age", "state"),
+                                                DimScales = list(new("Intervals", dimvalues = 0:5),
+                                                                 new("Categories", dimvalues = c("a", "b", "c", "d")))))))
+})
+
+
+
 
 ## test iMethodModel
 
@@ -5660,6 +5682,12 @@ test_that("Model classes have correct value for iMethodModel", {
     expect_identical(x@iMethodModel, 28L)
     x <- new("PoissonVaryingUseExpAgLife")
     expect_identical(x@iMethodModel, 29L)
+    x <- new("CMPVaryingNotUseExp")
+    expect_identical(x@iMethodModel, 32L)
+    x <- new("CMPVaryingUseExp")
+    expect_identical(x@iMethodModel, 33L)
+    x <- new("Round3")
+    expect_identical(x@iMethodModel, 34L)
     ## Predict
     x <- new("NormalVaryingVarsigmaKnownPredict")
     expect_identical(x@iMethodModel, 104L)
@@ -5700,5 +5728,11 @@ test_that("Model classes have correct value for iMethodModel", {
     expect_identical(x@iMethodModel, 122L)
     x <- new("PoissonVaryingUseExpPredictAgPoisson")
     expect_identical(x@iMethodModel, 123L)
+    x <- new("CMPVaryingNotUseExpPredict")
+    expect_identical(x@iMethodModel, 132L)
+    x <- new("CMPVaryingUseExpPredict")
+    expect_identical(x@iMethodModel, 133L)
+    x <- new("Round3Predict")
+    expect_identical(x@iMethodModel, 134L)
 })
 

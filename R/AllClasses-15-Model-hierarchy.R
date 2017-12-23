@@ -305,6 +305,14 @@ setClass("CMPVaryingUseExp",
                       "UseExposure"))
 
 
+## HAS_TESTS
+setClass("Round3",
+         contains = c("Model",
+                      "UseExposure"),
+         prototype = prototype(slotsToExtract = character(),
+                               iMethodModel = 34L))
+
+
 ## Models With Aggregate ##################################################################
 
 ## HAS_TESTS
@@ -517,7 +525,6 @@ setClass("PoissonVaryingUseExpAgLife",
 
 
 
-
 ## Predicted Models - Basic #############################################################
 
 ## iMethodModel for 'Predict' classes equals iMethodModel for
@@ -578,7 +585,14 @@ setClass("CMPVaryingNotUseExpPredict",
 setClass("CMPVaryingUseExpPredict",
          prototype = prototype(iMethodModel = 133L),
          contains = c("CMPVaryingUseExp", "BetaIsPredicted", "OffsetsBetas",
-             "OffsetsPriorsBetas", "OffsetsSigma"))
+                      "OffsetsPriorsBetas", "OffsetsSigma"))
+
+## HAS_TESTS
+setClass("Round3Predict",
+         contains = "Round3",
+         prototype = prototype(slotsToExtract = character(),
+                               iMethodModel = 134L))
+
 
 
 ## Predicted Models - Aggregate #############################################################

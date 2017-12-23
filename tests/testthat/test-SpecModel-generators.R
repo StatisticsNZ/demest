@@ -654,6 +654,54 @@ test_that("SpecModel works with SpecPoissonBinomialMixture", {
         expect_equal(ans.obtained, ans.expected)
 })
 
+test_that("SpecModel works with SpecRound3", {
+    SpecModel <- demest:::SpecModel
+    spec.inner <- Round3()
+    call <- call("Model",
+                 formula = y ~ Round3())
+    ans.obtained <- SpecModel(specInner = spec.inner,
+                              call = call,
+                              nameY = new("Name", "y"),
+                              dots = list(),
+                              lower = NULL,
+                              upper = NULL,
+                              priorSD = NULL,
+                              jump = NULL,
+                              series = NULL,
+                              aggregate = NULL)
+    ans.expected <- new("SpecRound3",
+                        call = call,
+                        nameY = new("Name", "y"),
+                        series = new("SpecName", as.character(NA)))
+    if (test.identity)
+        expect_identical(ans.obtained, ans.expected)
+    else
+        expect_equal(ans.obtained, ans.expected)
+    spec.inner <- Round3()
+    call <- call("Model",
+                 formula = deaths.reg ~ Round3(),
+                 series = "deaths")
+    ans.obtained <- SpecModel(specInner = spec.inner,
+                              call = call,
+                              nameY = new("Name", "deaths.reg"),
+                              dots = list(),
+                              lower = NULL,
+                              upper = NULL,
+                              priorSD = NULL,
+                              jump = NULL,
+                              series = "deaths",
+                              aggregate = NULL)
+    ans.expected <- new("SpecRound3",
+                        call = call,
+                        nameY = new("Name", "deaths.reg"),
+                        series = new("SpecName", "deaths"))
+    if (test.identity)
+        expect_identical(ans.obtained, ans.expected)
+    else
+        expect_equal(ans.obtained, ans.expected)
+})
+
+
 
 test_that("SpecModel works with SpecNormalFixed", {
     SpecModel <- demest:::SpecModel
