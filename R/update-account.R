@@ -395,8 +395,8 @@ updateProposalAccountMoveOrigDest <- function(combined, useC = FALSE) {
         }
         else
             generated.new.proposal <- FALSE
-        combined@generatedNewProposal@.Data <- generated.new.proposal
         if (generated.new.proposal) {
+            combined@generatedNewProposal@.Data <- TRUE
             combined@iCell <- i.cell
             combined@iCellOther <- NA_integer_
             combined@iPopnNext <- i.popn.next.orig
@@ -419,6 +419,7 @@ updateProposalAccountMoveOrigDest <- function(combined, useC = FALSE) {
             combined@diffProp <- diff.prop
         }
         else {
+            combined@generatedNewProposal@.Data <- FALSE
             combined@iCell <- NA_integer_
             combined@iCellOther <- NA_integer_
             combined@iPopnNext <- NA_integer_
@@ -533,8 +534,8 @@ updateProposalAccountMovePool <- function(combined, useC = FALSE) {
         }
         else
             generated.new.proposal <- FALSE
-        combined@generatedNewProposal@.Data <- generated.new.proposal
         if (generated.new.proposal) {
+            combined@generatedNewProposal@.Data <- TRUE
             combined@iCell <- i.cell.out
             combined@iCellOther <- i.cell.in
             combined@iPopnNext <- i.popn.next.out
@@ -557,6 +558,7 @@ updateProposalAccountMovePool <- function(combined, useC = FALSE) {
             combined@diffProp <- diff.prop
         }
         else {
+            combined@generatedNewProposal@.Data <- FALSE
             combined@iCell <- NA_integer_
             combined@iCellOther <- NA_integer_
             combined@iPopnNext <- NA_integer_
@@ -576,7 +578,7 @@ updateProposalAccountMovePool <- function(combined, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 updateProposalAccountMoveNet <- function(combined, useC = FALSE) {
     stopifnot(methods::is(combined, "CombinedAccountMovements"))
@@ -658,13 +660,13 @@ updateProposalAccountMoveNet <- function(combined, useC = FALSE) {
             found.value <- !is.na(val.prop.add)
         }
         if (found.value) {
-            diff.prop <- val.prop.add - val.curr.add
+            diff.prop <- unname(val.prop.add - val.curr.add) ## JAH changed 24/12/2017
             generated.new.proposal <- diff.prop != 0L
         }
         else
             generated.new.proposal <- FALSE
-        combined@generatedNewProposal@.Data <- generated.new.proposal
         if (generated.new.proposal) {
+            combined@generatedNewProposal@.Data <- TRUE
             combined@iCell <- i.cell.add
             combined@iCellOther <- i.cell.sub
             combined@iPopnNext <- i.popn.next.add
@@ -672,7 +674,7 @@ updateProposalAccountMoveNet <- function(combined, useC = FALSE) {
             if (has.age) {
                 combined@iAccNext <- i.acc.next.add
                 combined@iAccNextOther <- i.acc.next.sub
-                combined@isLowerTriangle <- is.lower.triangle
+                combined@isLowerTriangle@.Data <- is.lower.triangle ## JAH changed 24/12/2017
             }
             combined@iExposure <- NA_integer_
             combined@iExposureOther <- NA_integer_
@@ -681,6 +683,7 @@ updateProposalAccountMoveNet <- function(combined, useC = FALSE) {
             combined@diffProp <- diff.prop
         }
         else {
+            combined@generatedNewProposal@.Data <- FALSE
             combined@iCell <- NA_integer_
             combined@iCellOther <- NA_integer_
             combined@iPopnNext <- NA_integer_
@@ -688,7 +691,7 @@ updateProposalAccountMoveNet <- function(combined, useC = FALSE) {
             if (has.age) {
                 combined@iAccNext <- NA_integer_
                 combined@iAccNextOther <- NA_integer_
-                combined@isLowerTriangle <- NA
+                combined@isLowerTriangle@.Data <- NA ## JAH changed 24/12/2017
             }
             combined@iExposure <- NA_integer_
             combined@iExposureOther <- NA_integer_
@@ -700,7 +703,7 @@ updateProposalAccountMoveNet <- function(combined, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 updateProposalAccountMoveComp <- function(combined, useC = FALSE) {
     stopifnot(methods::is(combined, "CombinedAccountMovements"))
@@ -725,7 +728,9 @@ updateProposalAccountMoveComp <- function(combined, useC = FALSE) {
         uses.exposure <- combined@modelUsesExposure[i.comp + 1L]
         mapping.to.exp <- combined@mappingsToExp[[i.comp]]
         description <- combined@descriptions[[i.comp + 1L]]
-        theta <- combined@systemModels[[i.comp + 1L]]@theta
+        sys.mod.comp <- combined@systemModels[[i.comp + 1L]] ## new JAH 24/12/2017
+        ##theta <- combined@systemModels[[i.comp + 1L]]@theta
+        theta <- sys.mod.comp@theta ## Changed JAH 24/12/2017
         is.net <- combined@isNet[i.comp]
         if (is.net) {
             varsigma.comp <- sys.mod.comp@varsigma
@@ -791,7 +796,7 @@ updateProposalAccountMoveComp <- function(combined, useC = FALSE) {
         }
         found.value <- !is.na(val.prop)
         if (found.value) {
-            diff.prop <- val.prop - val.curr
+            diff.prop <- unname(val.prop - val.curr) ## JAH changed 24/12/2017
             generated.new.proposal <- diff.prop != 0L
         }
         else
@@ -805,7 +810,7 @@ updateProposalAccountMoveComp <- function(combined, useC = FALSE) {
             if (has.age) {
                 combined@iAccNext <- i.acc.next
                 combined@iAccNextOther <- NA_integer_
-                combined@isLowerTriangle <- is.lower.triangle
+                combined@isLowerTriangle@.Data <- is.lower.triangle ## JAH changed 24/12/2017
             }
             if (uses.exposure) {
                 combined@iExposure <- i.exposure
@@ -828,7 +833,7 @@ updateProposalAccountMoveComp <- function(combined, useC = FALSE) {
             if (has.age) {
                 combined@iAccNext <- NA_integer_
                 combined@iAccNextOther <- NA_integer_
-                combined@isLowerTriangle <- NA
+                combined@isLowerTriangle@.Data <- NA ## JAH changed 24/12/2017
             }
             combined@iExposure <- NA_integer_
             combined@iExposureOther <- NA_integer_

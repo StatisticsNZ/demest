@@ -340,6 +340,7 @@ SEXP
   iParCh_sym,
   diffProp_sym,
   isIncrement_sym,
+  isNet_sym,
   systemModels_sym,
   modelUsesExposure_sym,
   mappingsFromExp_sym,
@@ -354,7 +355,9 @@ SEXP
   iExposure_sym,
   iExposureOther_sym,
   isLowerTriangle_sym,
-  generatedNewProposal_sym;
+  generatedNewProposal_sym,
+  probPopn_sym,
+  cumProbComp_sym;
   
   
 /* Priors-methods */
@@ -829,6 +832,15 @@ void updateCombined_CombinedModelPoissonNotHasExp(SEXP object_R, int nUpdate);
 void updateCombined_CombinedModelPoissonHasExp(SEXP object_R, int nUpdate);
 void updateCombined(SEXP object_R, int nUpdate);
 
+void updateProposalAccount_CombinedAccountMovements(SEXP object_R);
+void updateProposalAccount(SEXP object_R);
+double diffLogLikAccount_CombinedAccountMovements(SEXP object_R);
+double diffLogLikAccount(SEXP object_R);
+double diffLogDensAccount_CombinedAccountMovements(SEXP object_R);
+double diffLogDensAccount(SEXP object_R);
+void updateValuesAccount_CombinedAccountMovements(SEXP object_R);
+void updateValuesAccount(SEXP object_R);
+
 /* update combined counts */
 void updateCombined_CombinedCountsPoissonNotHasExp(SEXP object_R,
                                                         int nUpdate);
@@ -888,10 +900,13 @@ double rcmpOver(double mu, double nu, int maxAttempt);
 double rcmp1(double mu, double nu, int maxAttempt);
 
 /* update-account */
+void updateAccount(SEXP combined_R);
 void updateProposalAccountMovePopn(SEXP combined_R);
 void updateProposalAccountMoveBirths(SEXP combined_R);
 void updateProposalAccountMoveOrigDest(SEXP combined_R);
 void updateProposalAccountMovePool(SEXP combined_R);
+void updateProposalAccountMoveNet(SEXP combined_R);
+void updateProposalAccountMoveComp(SEXP combined_R);
 
 double diffLogLikAccountMovePopn(SEXP combined_R);
 double diffLogLikPopn(int diff, int iFirst_r, SEXP iterator_R, 

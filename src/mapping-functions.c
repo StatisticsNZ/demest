@@ -19,7 +19,7 @@ getIPopnNextFromComp(int i, SEXP mapping_R)
     int stepTimeComp  = *INTEGER(GET_SLOT(mapping_R, stepTimeCurrent_sym));
     int stepTimePopn  = *INTEGER(GET_SLOT(mapping_R, stepTimeTarget_sym));
     
-    int hasAge  = *INTEGER(GET_SLOT(mapping_R, hasAge_sym));
+    int hasAge  = *LOGICAL(GET_SLOT(mapping_R, hasAge_sym));
     
     int nDimShared = LENGTH(nSharedVec_R);
     
@@ -85,7 +85,7 @@ getIPopnNextFromOrigDestInternal(int *ans, int i, SEXP mapping_R)
     int stepTimeComp  = *INTEGER(GET_SLOT(mapping_R, stepTimeCurrent_sym));
     int stepTimePopn  = *INTEGER(GET_SLOT(mapping_R, stepTimeTarget_sym));
     
-    int hasAge  = *INTEGER(GET_SLOT(mapping_R, hasAge_sym));
+    int hasAge  = *LOGICAL(GET_SLOT(mapping_R, hasAge_sym));
     
     SEXP nOrigDestVec_R = GET_SLOT(mapping_R, nOrigDestVec_sym);
     int *nOrigDestVec  = INTEGER(nOrigDestVec_R);
@@ -159,7 +159,7 @@ getIAccNextFromComp(int i, SEXP mapping_R)
     int *stepSharedCompVec  = INTEGER(GET_SLOT(mapping_R, stepSharedCurrentVec_sym));
     int *stepSharedAccVec  = INTEGER(GET_SLOT(mapping_R, stepSharedTargetVec_sym));
     
-    int hasAge  = *INTEGER(GET_SLOT(mapping_R, hasAge_sym));
+    int hasAge  = *LOGICAL(GET_SLOT(mapping_R, hasAge_sym));
     int isBirths = 1-hasAge;
     
     int nDimShared = LENGTH(nSharedVec_R);
@@ -354,7 +354,7 @@ getIExposureFromCompNotOneToOne(int i, SEXP mapping_R)
     int nTime  = *INTEGER(GET_SLOT(mapping_R, nTimeCurrent_sym));
     int stepTimeComp  = *INTEGER(GET_SLOT(mapping_R, stepTimeCurrent_sym));
     int stepTimeExp  = *INTEGER(GET_SLOT(mapping_R, stepTimeTarget_sym));
-    int hasAge  = *INTEGER(GET_SLOT(mapping_R, hasAge_sym));
+    int hasAge  = *LOGICAL(GET_SLOT(mapping_R, hasAge_sym));
     
     SEXP nSharedVec_R = GET_SLOT(mapping_R, nSharedVec_sym);
     int *nSharedVec  = INTEGER(nSharedVec_R);
@@ -399,7 +399,7 @@ getIExposureFromBirths(int i, SEXP mapping_R)
     int nTime  = *INTEGER(GET_SLOT(mapping_R, nTimeCurrent_sym));
     int stepTimeBirths  = *INTEGER(GET_SLOT(mapping_R, stepTimeCurrent_sym));
     int stepTimeExp  = *INTEGER(GET_SLOT(mapping_R, stepTimeTarget_sym));
-    int hasAge  = *INTEGER(GET_SLOT(mapping_R, hasAge_sym));
+    int hasAge  = *LOGICAL(GET_SLOT(mapping_R, hasAge_sym));
     
     SEXP nSharedVec_R = GET_SLOT(mapping_R, nSharedVec_sym);
     int *nSharedVec  = INTEGER(nSharedVec_R);
@@ -461,7 +461,7 @@ getIExposureFromOrigDestNotOneToOne(int i, SEXP mapping_R)
     int nTime  = *INTEGER(GET_SLOT(mapping_R, nTimeCurrent_sym));
     int stepTimeComp  = *INTEGER(GET_SLOT(mapping_R, stepTimeCurrent_sym));
     int stepTimeExp  = *INTEGER(GET_SLOT(mapping_R, stepTimeTarget_sym));
-    int hasAge  = *INTEGER(GET_SLOT(mapping_R, hasAge_sym));
+    int hasAge  = *LOGICAL(GET_SLOT(mapping_R, hasAge_sym));
     
     SEXP nSharedVec_R = GET_SLOT(mapping_R, nSharedVec_sym);
     int *nSharedVec  = INTEGER(nSharedVec_R);
@@ -533,7 +533,7 @@ getIExpFirstFromComp(int i, SEXP mapping_R)
     int *stepSharedCompVec  = INTEGER(GET_SLOT(mapping_R, stepSharedCurrentVec_sym));
     int *stepSharedExpVec  = INTEGER(GET_SLOT(mapping_R, stepSharedTargetVec_sym));
     
-    int hasAge  = *INTEGER(GET_SLOT(mapping_R, hasAge_sym));
+    int hasAge  = *LOGICAL(GET_SLOT(mapping_R, hasAge_sym));
     
     int nDimShared = LENGTH(nSharedVec_R);
     int iMinus1 = i - 1;
@@ -646,7 +646,7 @@ getIExpFirstPairFromOrigDestInternal(int *ans, int i, SEXP mapping_R)
     int *stepSharedCompVec  = INTEGER(GET_SLOT(mapping_R, stepSharedCurrentVec_sym));
     int *stepSharedExpVec  = INTEGER(GET_SLOT(mapping_R, stepSharedTargetVec_sym));
     
-    int hasAge = *INTEGER(GET_SLOT(mapping_R, hasAge_sym));
+    int hasAge = *LOGICAL(GET_SLOT(mapping_R, hasAge_sym));
     
     SEXP nOrigDestVec_R = GET_SLOT(mapping_R, nOrigDestVec_sym);
     int *nOrigDestVec  = INTEGER(nOrigDestVec_R);
@@ -776,7 +776,7 @@ getICellBirthsFromExp(int i, SEXP mapping_R)
     int nTime  = *INTEGER(GET_SLOT(mapping_R, nTimeCurrent_sym));
     int stepTimeExp  = *INTEGER(GET_SLOT(mapping_R, stepTimeCurrent_sym));
     int stepTimeBirths  = *INTEGER(GET_SLOT(mapping_R, stepTimeTarget_sym));
-    int hasAge  = *INTEGER(GET_SLOT(mapping_R, hasAge_sym));
+    int hasAge  = *LOGICAL(GET_SLOT(mapping_R, hasAge_sym));
     
     SEXP nSharedVec_R = GET_SLOT(mapping_R, nSharedVec_sym);
     int *nSharedVec  = INTEGER(nSharedVec_R);

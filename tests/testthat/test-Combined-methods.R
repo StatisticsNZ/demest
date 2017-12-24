@@ -1541,6 +1541,8 @@ test_that("R and C versions of updateProposalAccount give same answer with Combi
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         ans.R <- updateProposalAccount(x0, useC = FALSE)
+        if (ans.R@generatedNewProposal@.Data)
+            updated <- TRUE
         set.seed(seed)
         ans.C.generic <- updateProposalAccount(x0, useC = TRUE, useSpecific = FALSE)
         set.seed(seed)

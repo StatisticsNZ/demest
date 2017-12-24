@@ -5,8 +5,48 @@
 /* File "update-accounts.c" contains C versions of functions 
  * from "update-accounts.R". */
 
-/* ****************** Updating proposals *************************** */
 
+/* ****************** Overall update *************************** */
+
+
+/*## READY_TO_TRANSLATE
+## HAS_TESTS
+updateAccount <- function(object, useC = FALSE) {
+    stopifnot(methods::is(object, "CombinedAccount"))
+    stopifnot(methods::validObject(object))
+    if (useC) {
+        .Call(updateAccount_R, object)
+    }
+    else {
+        n.cell.account <- object@nCellAccount@.Data
+        for (i in seq_len(n.cell.account)) {
+            object <- updateProposalAccount(object)
+            generated.new.proposal <- object@generatedNewProposal@.Data
+            if (generated.new.proposal) {
+                diff.log.lik <- diffLogLikAccount(object)
+                if (is.finite(diff.log.lik)) {
+                    diff.log.dens <- diffLogDensAccount(object)
+                    if (is.finite(diff.log.dens)) {
+                        log.r <- diff.log.lik + diff.log.dens
+                        accept <- (log.r > 0) || (runif(n = 1L) < exp(log.r))
+                        if (accept)
+                            object <- updateValuesAccount(object)
+                    }
+                }
+            }
+        }
+        object
+    }
+}
+*/
+
+void
+updateAccount(SEXP combined_R)
+{
+    
+}
+
+/* ****************** Updating proposals *************************** */
 
 void
 updateProposalAccountMovePopn(SEXP combined_R)
@@ -559,276 +599,316 @@ updateProposalAccountMovePool(SEXP combined_R)
 }
 
 
+void
+updateProposalAccountMoveNet(SEXP combined_R)
+{
+    SEXP account_R = GET_SLOT(combined_R, account_sym);
+    SEXP population_R = GET_SLOT(account_R, population_sym);
+    int iComp_r = *INTEGER(GET_SLOT(combined_R, iComp_sym));
+    int iComp = iComp_r - 1;
+    
+    SEXP components_R = GET_SLOT(account_R, components_sym);
+    SEXP component_R = VECTOR_ELT(components_R, iComp);
+    
+    /* maxAttempts not used */
+    int hasAge = *LOGICAL(GET_SLOT(combined_R, hasAge_sym));
 
-/*
-## READY_TO_TRANSLATE
-## HAS_TESTS
-updateProposalAccountMoveNet <- function(combined, useC = FALSE) {
-    stopifnot(methods::is(combined, "CombinedAccountMovements"))
-    if (useC) {
-        .Call(updateProposalAccountMoveNet_R, combined)
+    SEXP mappingsToPopn_R = GET_SLOT(combined_R, mappingsToPopn_sym);
+    SEXP mappingToPopn_R = VECTOR_ELT(mappingsToPopn_R, iComp);
+    
+    SEXP iteratorPopn_R = GET_SLOT(combined_R, iteratorPopn_sym);
+    
+    SEXP mappingsToExp_R = GET_SLOT(combined_R, mappingsToExp_sym);
+    SEXP mappingToExp_R = VECTOR_ELT(mappingsToExp_R, iComp);
+    
+    SEXP descriptions_R = GET_SLOT(combined_R, descriptions_sym);
+    SEXP description_R = VECTOR_ELT(descriptions_R, iComp + 1);
+    
+    SEXP systemModels_R = GET_SLOT(combined_R, systemModels_sym);
+    SEXP thisSystemModel_R = VECTOR_ELT(systemModels_R, iComp + 1);
+    double * theta = REAL(GET_SLOT(thisSystemModel_R, theta_sym));
+    double varsigma = *REAL(GET_SLOT(thisSystemModel_R, varsigma_sym));
+    double * w = REAL(GET_SLOT(thisSystemModel_R, w_sym));
+    
+    int pairArray[2]; 
+    
+    chooseICellSubAddNetInternal(pairArray, description_R);
+    
+    int iCellAdd_r = pairArray[0];
+    int iCellSub_r = pairArray[1];
+    
+    int iExpFirstAdd_r = getIExpFirstFromComp(iCellAdd_r, mappingToExp_R);
+    int iExpFirstSub_r = getIExpFirstFromComp(iCellSub_r, mappingToExp_R);
+    
+    int iPopnNextAdd_r = getIPopnNextFromComp(iCellAdd_r, mappingToPopn_R);
+    int iPopnNextSub_r = getIPopnNextFromComp(iCellSub_r, mappingToPopn_R);
+    
+    int minValAdd = getMinValCohortPopulation(iPopnNextAdd_r, population_R,
+                                                        iteratorPopn_R);
+    int minValSub = getMinValCohortPopulation(iPopnNextSub_r, population_R,
+                                                        iteratorPopn_R);
+    int iAccNextAdd_r = 0;
+    int iAccNextSub_r = 0;
+    
+    int isLowerTriangleValue = 0;
+    
+    if (hasAge) {
+        
+        isLowerTriangleValue = isLowerTriangle(iCellAdd_r, description_R);
+        
+        SEXP accession_R = GET_SLOT(combined_R, accession_sym);
+        SEXP iteratorAcc_R = GET_SLOT(combined_R, iteratorAcc_sym);
+        
+        SEXP mappingsToAcc_R = GET_SLOT(combined_R, mappingsToAcc_sym);
+        SEXP mappingToAcc_R = VECTOR_ELT(mappingsToAcc_R, iComp);
+    
+        iAccNextAdd_r = getIAccNextFromComp(iCellAdd_r, mappingToAcc_R);
+        iAccNextSub_r = getIAccNextFromComp(iCellSub_r, mappingToAcc_R);
+        
+        int hasLaterAccession = (iAccNextAdd_r > 0);
+        
+        if (hasLaterAccession) {
+            
+            int minAccAdd = getMinValCohortAccession(iAccNextAdd_r, 
+                                        accession_R, iteratorAcc_R);
+            int minAccSub = getMinValCohortAccession(iAccNextSub_r, 
+                                        accession_R, iteratorAcc_R);
+            if (minAccAdd < minValAdd) {
+                minValAdd = minAccAdd;
+            }
+            if (minAccSub < minValSub) {
+                minValSub = minAccSub;
+            }                                             
+        }
+    } /* end hasAge */
+    
+    int * component = INTEGER(component_R);
+    int iCellAdd = iCellAdd_r - 1;
+    int iCellSub = iCellSub_r - 1;
+    
+    int valCurrAdd = component[iCellAdd];
+    int valCurrSub = component[iCellSub];
+    int lower = valCurrSub - minValSub;
+    int upper = valCurrAdd + minValAdd;
+    
+    double meanAdd = theta[iCellAdd];
+        
+    int foundValue = 0;
+    int valPropAdd = 0;
+    
+    if (!(lower > upper)) {
+        
+        double wAdd = w[iCellAdd];
+        double sdAdd = varsigma/sqrt(wAdd);
+        
+        valPropAdd = rnormIntTrunc1(meanAdd, sdAdd, lower, upper);
+    
+        foundValue = !(valPropAdd == NA_INTEGER);
     }
-    else {
-        account <- combined@account
-        population <- account@population
-        i.comp <- combined@iComp
-        component <- account@components[[i.comp]]
-        max.attempt <- combined@maxAttempt
-        has.age <- combined@hasAge
-        if (has.age) {
-            accession <- combined@accession
-            iterator.acc <- combined@iteratorAcc
-            mapping.to.acc <- combined@mappingsToAcc[[i.comp]]
-        }        
-        mapping.to.popn <- combined@mappingsToPopn[[i.comp]]
-        iterator.popn <- combined@iteratorPopn
-        mapping.to.exp <- combined@mappingsToExp[[i.comp]]
-        description <- combined@descriptions[[i.comp + 1L]]
-        system.model <- combined@systemModels[[i.comp + 1L]]
-        theta <- system.model@theta
-        varsigma <- system.model@varsigma
-        w <- system.model@w
-        pair.cell <- chooseICellSubAddNet(description)
-        i.cell.add <- pair.cell[1L] # 'diffProp' added to this cell
-        i.cell.sub <- pair.cell[2L] # 'diffProp' subtracted from this cell
-        if (has.age) {
-            is.lower.triangle <- isLowerTriangle(i = i.cell.add,
-                                                 description = description)
-        }
-        i.exp.first.add <- getIExpFirstFromComp(i = i.cell.add,
-                                                mapping = mapping.to.exp)
-        i.exp.first.sub <- getIExpFirstFromComp(i = i.cell.sub,
-                                                mapping = mapping.to.exp)
-        i.popn.next.add <- getIPopnNextFromComp(i = i.cell.add,
-                                                mapping = mapping.to.popn)
-        i.popn.next.sub <- getIPopnNextFromComp(i = i.cell.sub,
-                                                mapping = mapping.to.popn)
-        min.val.add <- getMinValCohortPopulation(i = i.popn.next.add,
-                                                 series = population,
-                                                 iterator = iterator.popn)
-        min.val.sub <- getMinValCohortPopulation(i = i.popn.next.sub,
-                                                 series = population,
-                                                 iterator = iterator.popn)
-        if (has.age) {
-            i.acc.next.add <- getIAccNextFromComp(i = i.cell.add,
-                                                  mapping = mapping.to.acc)
-            i.acc.next.sub <- getIAccNextFromComp(i = i.cell.sub,
-                                                  mapping = mapping.to.acc)
-            has.later.accession <- i.acc.next.add > 0L
-            if (has.later.accession) {
-                min.acc.add <- getMinValCohortAccession(i = i.acc.next.add,
-                                                        series = accession,
-                                                        iterator = iterator.acc)
-                min.acc.sub <- getMinValCohortAccession(i = i.acc.next.sub,
-                                                        series = accession,
-                                                        iterator = iterator.acc)
-                min.val.add <- min(min.val.add, min.acc.add)
-                min.val.sub <- min(min.val.sub, min.acc.sub)
-            }
-        }
-        mean.add <- theta[i.cell.add]
-        val.curr.add <- component[i.cell.add]
-        val.curr.sub <- component[i.cell.sub]
-        lower <- val.curr.sub - min.val.sub
-        upper <- val.curr.add + min.val.add
-        if (lower > upper)
-            found.value <- FALSE
-        else {
-            w.add <- w[i.cell.add]
-            sd.add <- varsigma / sqrt(w.add)
-            val.prop.add <- rnormIntTrunc1(mean = mean.add,
-                                           sd = sd.add,
-                                           lower = lower,
-                                           upper = upper)
-            found.value <- !is.na(val.prop.add)
-        }
-        if (found.value) {
-            diff.prop <- val.prop.add - val.curr.add
-            generated.new.proposal <- diff.prop != 0L
-        }
-        else
-            generated.new.proposal <- FALSE
-        combined@generatedNewProposal@.Data <- generated.new.proposal
-        if (generated.new.proposal) {
-            combined@iCell <- i.cell.add
-            combined@iCellOther <- i.cell.sub
-            combined@iPopnNext <- i.popn.next.add
-            combined@iPopnNextOther <- i.popn.next.sub
-            if (has.age) {
-                combined@iAccNext <- i.acc.next.add
-                combined@iAccNextOther <- i.acc.next.sub
-                combined@isLowerTriangle <- is.lower.triangle
-            }
-            combined@iExposure <- NA_integer_
-            combined@iExposureOther <- NA_integer_
-            combined@iExpFirst <- i.exp.first.add
-            combined@iExpFirstOther <- i.exp.first.sub
-            combined@diffProp <- diff.prop
-        }
-        else {
-            combined@iCell <- NA_integer_
-            combined@iCellOther <- NA_integer_
-            combined@iPopnNext <- NA_integer_
-            combined@iPopnNextOther <- NA_integer_
-            if (has.age) {
-                combined@iAccNext <- NA_integer_
-                combined@iAccNextOther <- NA_integer_
-                combined@isLowerTriangle <- NA
-            }
-            combined@iExposure <- NA_integer_
-            combined@iExposureOther <- NA_integer_
-            combined@iExpFirst <- NA_integer_
-            combined@iExpFirstOther <- NA_integer_
-            combined@diffProp <- NA_integer_
-        }
-        combined
+    
+    int generatedNewProposal = 0; 
+    int diffProp = 0;
+    
+    if(foundValue) {
+        diffProp = valPropAdd - valCurrAdd;
+        generatedNewProposal = (diffProp != 0);
     }
-}
-*/
+    
+    SET_LOGICALSCALE_SLOT(combined_R, generatedNewProposal_sym, generatedNewProposal);
+    
+    if (!generatedNewProposal) {
+         iCellAdd_r = NA_INTEGER;
+         iCellSub_r = NA_INTEGER;
+         iPopnNextAdd_r = NA_INTEGER;
+         iPopnNextSub_r = NA_INTEGER;
+         iAccNextAdd_r = NA_INTEGER;
+         iAccNextSub_r = NA_INTEGER;
+         isLowerTriangleValue = NA_LOGICAL;
+         iExpFirstAdd_r = NA_INTEGER;
+         iExpFirstSub_r = NA_INTEGER;
+         diffProp = NA_INTEGER;
+    }
+    
+    SET_INTSCALE_SLOT(combined_R, iCell_sym, iCellAdd_r);
+    SET_INTSCALE_SLOT(combined_R, iCellOther_sym, iCellSub_r);
+    SET_INTSCALE_SLOT(combined_R, iPopnNext_sym, iPopnNextAdd_r);
+    SET_INTSCALE_SLOT(combined_R, iPopnNextOther_sym, iPopnNextSub_r);
 
+    if (hasAge) {
+        SET_INTSCALE_SLOT(combined_R, iAccNext_sym, iAccNextAdd_r);
+        SET_INTSCALE_SLOT(combined_R, iAccNextOther_sym, iAccNextSub_r);
+        SET_LOGICALSCALE_SLOT(combined_R, isLowerTriangle_sym, isLowerTriangleValue);
+    }
 
-/*
-## READY_TO_TRANSLATE
-## HAS_TESTS
-updateProposalAccountMoveComp <- function(combined, useC = FALSE) {
-    stopifnot(methods::is(combined, "CombinedAccountMovements"))
-    if (useC) {
-        .Call(updateProposalAccountMoveComp_R, combined)
-    }
-    else {
-        account <- combined@account
-        population <- account@population
-        i.comp <- combined@iComp
-        component <- account@components[[i.comp]]
-        is.increment <- combined@isIncrement[[i.comp]]
-        max.attempt <- combined@maxAttempt
-        has.age <- combined@hasAge@.Data
-        if (has.age) {
-            accession <- combined@accession
-            iterator.acc <- combined@iteratorAcc
-            mapping.to.acc <- combined@mappingsToAcc[[i.comp]]
-        }        
-        mapping.to.popn <- combined@mappingsToPopn[[i.comp]]
-        iterator.popn <- combined@iteratorPopn
-        uses.exposure <- combined@modelUsesExposure[i.comp + 1L]
-        mapping.to.exp <- combined@mappingsToExp[[i.comp]]
-        description <- combined@descriptions[[i.comp + 1L]]
-        theta <- combined@systemModels[[i.comp + 1L]]@theta
-        is.net <- combined@isNet[i.comp]
-        if (is.net) {
-            varsigma.comp <- sys.mod.comp@varsigma
-            w.comp <- sys.mod.comp@w
-        }
-        i.cell <- chooseICellComp(description)
-        if (has.age)
-            is.lower.triangle <- isLowerTriangle(i = i.cell,
-                                                 description = description)
-        if (uses.exposure) {
-            expected.exposure <- combined@expectedExposure
-            i.exposure <- getIExposureFromComp(i = i.cell,
-                                               mapping = mapping.to.exp)
-        }
-        i.exp.first <- getIExpFirstFromComp(i = i.cell,
-                                            mapping = mapping.to.exp)
-        i.popn.next <- getIPopnNextFromComp(i = i.cell,
-                                            mapping = mapping.to.popn)
-        min.val <- getMinValCohortPopulation(i = i.popn.next,
-                                             series = population,
-                                             iterator = iterator.popn)
-        if (has.age) {
-            i.acc.next <- getIAccNextFromComp(i = i.cell,
-                                              mapping = mapping.to.acc)
-            has.later.accession <- i.acc.next > 0L
-            if (has.later.accession) {
-                min.acc <- getMinValCohortAccession(i = i.acc.next,
-                                                    series = accession,
-                                                    iterator = iterator.acc)
-                min.val <- min(min.val, min.acc)
-            }
-        }
-        val.curr <- component[i.cell]
-        if (is.increment) {
-            lower <- val.curr - min.val
-            upper <- NA_integer_
-        }
-        else {
-            lower <- NA_integer_
-            upper <- val.curr + min.val
-        }
-        if (is.net) {
-            mean <- theta[i.cell]
-            w.cell <- w.comp[i.cell]
-            sd <- varsigma.comp / sqrt(w.cell)
-            val.prop <- rnormIntTrunc1(mean = mean,
-                                       sd = sd,
-                                       lower = lower,
-                                       upper = upper)
-        }
-        else {
-            theta.cell <- theta[i.cell]
-            if (uses.exposure) {
-                expected.exposure.cell <- expected.exposure[i.exposure]
-                lambda <- theta.cell * expected.exposure.cell
-            }
-            else
-                lambda <- theta.cell
-            val.prop <- rpoisTrunc1(lambda = lambda,
-                                    lower = lower,
-                                    upper = upper,
-                                    maxAttempt = max.attempt)
-        }
-        found.value <- !is.na(val.prop)
-        if (found.value) {
-            diff.prop <- val.prop - val.curr
-            generated.new.proposal <- diff.prop != 0L
-        }
-        else
-            generated.new.proposal <- FALSE
-        if (generated.new.proposal) {
-            combined@generatedNewProposal@.Data <- TRUE
-            combined@iCell <- i.cell
-            combined@iCellOther <- NA_integer_
-            combined@iPopnNext <- i.popn.next
-            combined@iPopnNextOther <- NA_integer_
-            if (has.age) {
-                combined@iAccNext <- i.acc.next
-                combined@iAccNextOther <- NA_integer_
-                combined@isLowerTriangle <- is.lower.triangle
-            }
-            if (uses.exposure) {
-                combined@iExposure <- i.exposure
-                combined@iExposureOther <- NA_integer_
-            }
-            else {
-                combined@iExposure <- 0L
-                combined@iExposureOther <- NA_integer_
-            }
-            combined@iExpFirst <- i.exp.first
-            combined@iExpFirstOther <- NA_integer_
-            combined@diffProp <- diff.prop
-        }
-        else {
-            combined@generatedNewProposal@.Data <- FALSE
-            combined@iCell <- NA_integer_
-            combined@iCellOther <- NA_integer_
-            combined@iPopnNext <- NA_integer_
-            combined@iPopnNextOther <- NA_integer_
-            if (has.age) {
-                combined@iAccNext <- NA_integer_
-                combined@iAccNextOther <- NA_integer_
-                combined@isLowerTriangle <- NA
-            }
-            combined@iExposure <- NA_integer_
-            combined@iExposureOther <- NA_integer_
-            combined@iExpFirst <- NA_integer_
-            combined@iExpFirstOther <- NA_integer_
-            combined@diffProp <- NA_integer_
-        }
-        combined
-    }
+    SET_INTSCALE_SLOT(combined_R, iExposure_sym, NA_INTEGER);
+    SET_INTSCALE_SLOT(combined_R, iExposureOther_sym, NA_INTEGER);
+    SET_INTSCALE_SLOT(combined_R, iExpFirst_sym, iExpFirstAdd_r);
+    SET_INTSCALE_SLOT(combined_R, iExpFirstOther_sym, iExpFirstSub_r);
+    SET_INTSCALE_SLOT(combined_R, diffProp_sym, diffProp);
 }
 
-*/
+
+void
+updateProposalAccountMoveComp(SEXP combined_R)
+{
+    SEXP account_R = GET_SLOT(combined_R, account_sym);
+    SEXP population_R = GET_SLOT(account_R, population_sym);
+    int iComp_r = *INTEGER(GET_SLOT(combined_R, iComp_sym));
+    int iComp = iComp_r - 1;
+    
+    SEXP components_R = GET_SLOT(account_R, components_sym);
+    SEXP component_R = VECTOR_ELT(components_R, iComp);
+
+    int * isIncrementVec = LOGICAL(GET_SLOT(combined_R, isIncrement_sym)); 
+    int isIncrement = isIncrementVec[iComp];
+    
+    int maxAttempt = *INTEGER(GET_SLOT(combined_R, maxAttempt_sym));
+    int hasAge = *LOGICAL(GET_SLOT(combined_R, hasAge_sym));
+
+    SEXP mappingsToPopn_R = GET_SLOT(combined_R, mappingsToPopn_sym);
+    SEXP mappingToPopn_R = VECTOR_ELT(mappingsToPopn_R, iComp);
+    
+    SEXP iteratorPopn_R = GET_SLOT(combined_R, iteratorPopn_sym);
+    
+    int * usesExposureVec = LOGICAL(GET_SLOT(combined_R, modelUsesExposure_sym));
+    int usesExposure = usesExposureVec[iComp + 1];
+    
+    SEXP mappingsToExp_R = GET_SLOT(combined_R, mappingsToExp_sym);
+    SEXP mappingToExp_R = VECTOR_ELT(mappingsToExp_R, iComp);
+    
+    SEXP descriptions_R = GET_SLOT(combined_R, descriptions_sym);
+    SEXP description_R = VECTOR_ELT(descriptions_R, iComp + 1);
+    
+    SEXP systemModels_R = GET_SLOT(combined_R, systemModels_sym);
+    SEXP thisSystemModel_R = VECTOR_ELT(systemModels_R, iComp + 1);
+    double * theta = REAL(GET_SLOT(thisSystemModel_R, theta_sym));
+    
+    int * isNetVec = LOGICAL(GET_SLOT(combined_R, isNet_sym)); 
+    int isNet = isNetVec[iComp];
+    
+    int iCell_r = chooseICellComp(description_R);
+    
+    int iExpFirst_r = getIExpFirstFromComp(iCell_r, mappingToExp_R);
+    
+    int iPopnNext_r = getIPopnNextFromComp(iCell_r, mappingToPopn_R);
+    
+    int minVal = getMinValCohortPopulation(iPopnNext_r, population_R,
+                                                        iteratorPopn_R);
+    
+    int iAccNext_r = 0;
+    
+    int isLowerTriangleValue = 0;
+    
+    if (hasAge) {
+        
+        isLowerTriangleValue = isLowerTriangle(iCell_r, description_R);
+        
+        SEXP accession_R = GET_SLOT(combined_R, accession_sym);
+        SEXP iteratorAcc_R = GET_SLOT(combined_R, iteratorAcc_sym);
+        
+        SEXP mappingsToAcc_R = GET_SLOT(combined_R, mappingsToAcc_sym);
+        SEXP mappingToAcc_R = VECTOR_ELT(mappingsToAcc_R, iComp);
+    
+        iAccNext_r = getIAccNextFromComp(iCell_r, mappingToAcc_R);
+        
+        int hasLaterAccession = (iAccNext_r > 0);
+        
+        if (hasLaterAccession) {
+            
+            int minAcc = getMinValCohortAccession(iAccNext_r, 
+                                        accession_R, iteratorAcc_R);
+            if (minAcc < minVal) {
+                minVal = minAcc;
+            }
+        }
+    } /* end hasAge */
+    
+    int * component = INTEGER(component_R);
+    int iCell = iCell_r - 1;
+    
+    int valCurr = component[iCell];
+    
+    int lower = NA_INTEGER;
+    int upper = valCurr + minVal;
+    
+    if (isIncrement) {
+        lower = valCurr - minVal;
+        upper = NA_INTEGER;
+    }
+    
+    int valProp = 0;
+    int iExposure_r = 0;
+    if(usesExposure) {
+        
+        iExposure_r = getIExposureFromComp(iCell_r, mappingToExp_R);
+        
+    }
+
+    if (isNet) {
+    
+        double varsigmaComp = *REAL(GET_SLOT(thisSystemModel_R, varsigma_sym));
+        double * wComp = REAL(GET_SLOT(thisSystemModel_R, w_sym));
+        
+        double mean = theta[iCell];
+        double wCell = wComp[iCell];
+        double sd = varsigmaComp/sqrt(wCell);
+        valProp = rnormIntTrunc1(mean, sd, lower, upper);
+    }
+    else {
+        
+        double thetaCell = theta[iCell];
+        double lambda = thetaCell;
+        
+        if(usesExposure) {
+            double * expectedExposure = REAL(GET_SLOT(combined_R, expectedExposure_sym));
+            double expectedExposureCell = expectedExposure[iExposure_r - 1];
+            lambda *= expectedExposureCell;
+        }
+        
+        valProp = rpoisTrunc1(lambda, lower, upper, maxAttempt);
+    }
+    
+    int foundValue = !(valProp == NA_INTEGER);
+    
+    int generatedNewProposal = 0; 
+    int diffProp = 0;
+    
+    if(foundValue) {
+        diffProp = valProp - valCurr;
+        generatedNewProposal = (diffProp != 0);
+    }
+    
+    SET_LOGICALSCALE_SLOT(combined_R, generatedNewProposal_sym, generatedNewProposal);
+    
+    if (!generatedNewProposal) {
+         iCell_r = NA_INTEGER;
+         iPopnNext_r = NA_INTEGER;
+         iAccNext_r = NA_INTEGER;
+         isLowerTriangleValue = NA_LOGICAL;
+         iExposure_r = NA_INTEGER;
+         iExpFirst_r = NA_INTEGER;
+         diffProp = NA_INTEGER;
+    }
+    
+    SET_INTSCALE_SLOT(combined_R, iCell_sym, iCell_r);
+    SET_INTSCALE_SLOT(combined_R, iCellOther_sym, NA_INTEGER);
+    SET_INTSCALE_SLOT(combined_R, iPopnNext_sym, iPopnNext_r);
+    SET_INTSCALE_SLOT(combined_R, iPopnNextOther_sym, NA_INTEGER);
+
+    if (hasAge) {
+        SET_INTSCALE_SLOT(combined_R, iAccNext_sym, iAccNext_r);
+        SET_INTSCALE_SLOT(combined_R, iAccNextOther_sym, NA_INTEGER);
+        SET_LOGICALSCALE_SLOT(combined_R, isLowerTriangle_sym, isLowerTriangleValue);
+    }
+
+    SET_INTSCALE_SLOT(combined_R, iExposure_sym, iExposure_r);
+    SET_INTSCALE_SLOT(combined_R, iExposureOther_sym, NA_INTEGER);
+    SET_INTSCALE_SLOT(combined_R, iExpFirst_sym, iExpFirst_r);
+    SET_INTSCALE_SLOT(combined_R, iExpFirstOther_sym, NA_INTEGER);
+    SET_INTSCALE_SLOT(combined_R, diffProp_sym, diffProp);
+}
+
+
 
 
 /* ******************** Log-Likelihood ********************** */

@@ -482,6 +482,56 @@ SEXP name##_R(SEXP prior_R, SEXP vbar_R, SEXP n_R, SEXP sigma_R) {    \
     return ScalarReal(ans);      \
 }
 
+/* wrapper for rcmp functions with parameters mu, nu, maxAttempts */ 
+#define RCMP_WRAPPER_R(name)         \
+    SEXP name##_R(SEXP mu_R, SEXP nu_R, SEXP maxAttempts_R) {    \
+    double mu = *REAL(mu_R);         \
+    double nu = *REAL(nu_R);         \
+    int maxAttempts = *INTEGER(maxAttempts_R);         \
+    GetRNGstate();         \
+    double ans = name(mu, nu, maxAttempts);         \
+    PutRNGstate();         \
+    return ScalarReal(ans);         \
+    }
+
+/* wrapper for update-accounts update proposal functions that 
+ * need to have the Popn and Acc iterators duplicated and originals replaced */
+#define UPDATEOBJECT_WRAPPER_UPDATEPROPOSAL_R(name)         \
+    SEXP name##_R(SEXP combined_R) {    \
+    SEXP ans_R;               \
+    PROTECT(ans_R = duplicate(combined_R));   \
+    SEXP iteratorPopn_R = GET_SLOT(combined_R, iteratorPopn_sym);    \
+    SEXP iteratorPopnDup_R = NULL;    \
+    PROTECT(iteratorPopnDup_R = duplicate(iteratorPopn_R));    \
+    int nProtected = 2;    \
+    int hasAge = *LOGICAL(GET_SLOT(combined_R, hasAge_sym));    \
+    SEXP iteratorAccDup_R = NULL;    \
+    if(hasAge) {    \
+        SEXP iteratorAcc_R = GET_SLOT(combined_R, iteratorAcc_sym);    \
+        PROTECT(iteratorAccDup_R = duplicate(iteratorAcc_R));    \
+        ++nProtected;    \
+    }    \
+    GetRNGstate();      \
+    name(ans_R);    \
+    PutRNGstate();          \
+    SET_SLOT(ans_R, iteratorPopn_sym, iteratorPopnDup_R);    \
+    if(hasAge) {    \
+        SET_SLOT(ans_R, iteratorAcc_sym, iteratorAccDup_R);    \
+    }    \
+    UNPROTECT(nProtected);    \
+    return ans_R;             \
+    }
+
+/* wrapper for diffLogLik functions with parameter combined */ 
+#define DIFFLOGLIKCOMBINED_WRAPPER_R(name)         \
+    SEXP name##_R(SEXP combined_R) {    \
+    SEXP combinednew_R;    \
+    PROTECT(combinednew_R = duplicate(combined_R));    \
+    double ans = name(combinednew_R);         \
+    UNPROTECT(1);         \
+    return ScalarReal(ans);         \
+    }
+
 
 
 /* one-off wrapper for makeMu */
@@ -1063,7 +1113,7 @@ rcateg1_R(SEXP cumProb_R)
     GetRNGstate();
     int ans = rcateg1( REAL(cumProb_R) );
     PutRNGstate();
-    return ScalarInteger(ans + 1); /* return in R-index form */
+    return ScalarInteger(ans); 
 }
 
 /* create one-off R version wrapper for rhalftTrunc1_R */ 
@@ -1309,6 +1359,52 @@ UPDATECOMBINEDOBJECT_WRAPPER_R(updateCombined_CombinedModelPoissonNotHasExp);
 UPDATECOMBINEDOBJECT_WRAPPER_R(updateCombined_CombinedModelPoissonHasExp);
 UPDATECOMBINEDOBJECT_WRAPPER_R(updateCombined);
 
+/* combined objects with update-accounts functions */
+DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensAccount_CombinedAccountMovements);
+DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensAccount);
+DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogLikAccount_CombinedAccountMovements);
+DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogLikAccount);
+UPDATEOBJECT_WRAPPER_UPDATEPROPOSAL_R(updateProposalAccount_CombinedAccountMovements);
+UPDATEOBJECT_WRAPPER_UPDATEPROPOSAL_R(updateProposalAccount);
+
+UPDATEOBJECT_NOPRNG_WRAPPER_R(updateValuesAccount);
+
+SEXP
+updateValuesAccount_CombinedAccountMovements_R(SEXP object_R)
+{
+    SEXP ans_R;
+    PROTECT(ans_R = duplicate(object_R));
+    SEXP iteratorPopn_R = GET_SLOT(object_R, iteratorPopn_sym);
+    SEXP iteratorPopnDup_R = NULL;
+    PROTECT(iteratorPopnDup_R = duplicate(iteratorPopn_R));
+    SEXP iteratorExposure_R = GET_SLOT(object_R, iteratorExposure_sym);
+    SEXP iteratorExposureDup_R = NULL;
+    PROTECT(iteratorExposureDup_R = duplicate(iteratorExposure_R));
+
+    int hasAge = *LOGICAL(GET_SLOT(object_R, hasAge_sym));
+    int nProtected = 3;
+    
+    SEXP iteratorAccDup_R = NULL;
+    if (hasAge) {
+        SEXP iteratorAcc_R = GET_SLOT(object_R, iteratorAcc_sym);
+        PROTECT(iteratorAccDup_R = duplicate(iteratorAcc_R));
+        ++nProtected;
+    }
+
+    updateValuesAccount_CombinedAccountMovements(ans_R);
+    
+    SET_SLOT(ans_R, iteratorPopn_sym, iteratorPopnDup_R);
+    SET_SLOT(ans_R, iteratorExposure_sym, iteratorExposureDup_R);
+    
+    if (hasAge) {
+        SET_SLOT(ans_R, iteratorAcc_sym, iteratorAccDup_R);
+    }
+    
+    UNPROTECT(nProtected);
+    return ans_R;
+}
+
+
 /* wrap repetitive update of combined counts functions */
 UPDATECOMBINEDOBJECT_WRAPPER_R(updateCombined_CombinedCountsPoissonNotHasExp);
 UPDATECOMBINEDOBJECT_WRAPPER_R(updateCombined_CombinedCountsPoissonHasExp);
@@ -1388,17 +1484,6 @@ SEXP logDensCMPUnnormalised1_R(SEXP x_R, SEXP gamma_R, SEXP nu_R)
     return ScalarReal(ans);
 }
 
-/* wrapper for rcmp functions with parameters mu, nu, maxAttempts */ 
-#define RCMP_WRAPPER_R(name)         \
-    SEXP name##_R(SEXP mu_R, SEXP nu_R, SEXP maxAttempts_R) {    \
-    double mu = *REAL(mu_R);         \
-    double nu = *REAL(nu_R);         \
-    int maxAttempts = *INTEGER(maxAttempts_R);         \
-    GetRNGstate();         \
-    double ans = name(mu, nu, maxAttempts);         \
-    PutRNGstate();         \
-    return ScalarReal(ans);         \
-    }
 
 RCMP_WRAPPER_R(rcmpUnder);
 RCMP_WRAPPER_R(rcmpOver);
@@ -1406,49 +1491,13 @@ RCMP_WRAPPER_R(rcmp1);
 
 /* *************************** update-account -------------------------- */
 
-/* wrapper for update-accounts update proposal functions that 
- * need to have the Popn and Acc iterators duplicated and originals replaced */
-#define UPDATEOBJECT_WRAPPER_UPDATEPROPOSAL_R(name)         \
-    SEXP name##_R(SEXP combined_R) {    \
-    SEXP ans_R;               \
-    PROTECT(ans_R = duplicate(combined_R));   \
-    SEXP iteratorPopn_R = GET_SLOT(combined_R, iteratorPopn_sym);    \
-    SEXP iteratorPopnDup_R = NULL;    \
-    PROTECT(iteratorPopnDup_R = duplicate(iteratorPopn_R));    \
-    int nProtected = 2;    \
-    int hasAge = *LOGICAL(GET_SLOT(combined_R, hasAge_sym));    \
-    SEXP iteratorAccDup_R = NULL;    \
-    if(hasAge) {    \
-        SEXP iteratorAcc_R = GET_SLOT(combined_R, iteratorAcc_sym);    \
-        PROTECT(iteratorAccDup_R = duplicate(iteratorAcc_R));    \
-        ++nProtected;    \
-    }    \
-    GetRNGstate();      \
-    name(ans_R);    \
-    PutRNGstate();          \
-    SET_SLOT(ans_R, iteratorPopn_sym, iteratorPopnDup_R);    \
-    if(hasAge) {    \
-        SET_SLOT(ans_R, iteratorAcc_sym, iteratorAccDup_R);    \
-    }    \
-    UNPROTECT(nProtected);    \
-    return ans_R;             \
-    }
-
-
+UPDATEOBJECT_WRAPPER_UPDATEPROPOSAL_R(updateAccount);
 UPDATEOBJECT_WRAPPER_UPDATEPROPOSAL_R(updateProposalAccountMovePopn);
 UPDATEOBJECT_WRAPPER_UPDATEPROPOSAL_R(updateProposalAccountMoveBirths);
 UPDATEOBJECT_WRAPPER_UPDATEPROPOSAL_R(updateProposalAccountMoveOrigDest);
 UPDATEOBJECT_WRAPPER_UPDATEPROPOSAL_R(updateProposalAccountMovePool);
-
-/* wrapper for diffLogLik functions with parameter combined */ 
-#define DIFFLOGLIKCOMBINED_WRAPPER_R(name)         \
-    SEXP name##_R(SEXP combined_R) {    \
-    SEXP combinednew_R;    \
-    PROTECT(combinednew_R = duplicate(combined_R));    \
-    double ans = name(combinednew_R);         \
-    UNPROTECT(1);         \
-    return ScalarReal(ans);         \
-    }
+UPDATEOBJECT_WRAPPER_UPDATEPROPOSAL_R(updateProposalAccountMoveNet);
+UPDATEOBJECT_WRAPPER_UPDATEPROPOSAL_R(updateProposalAccountMoveComp);
 
 /* wrapper for diffLogLikAccountMovePopn */
 DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogLikAccountMovePopn);
@@ -2037,6 +2086,14 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateCombined_CombinedCountsPoissonHasExp_R, 2),
   CALLDEF(updateCombined_CombinedCountsBinomial_R, 2),
   
+  CALLDEF(diffLogDensAccount_CombinedAccountMovements_R, 1),
+  CALLDEF(diffLogDensAccount_R, 1),
+  CALLDEF(diffLogLikAccount_CombinedAccountMovements_R, 1),
+  CALLDEF(diffLogLikAccount_R, 1),
+  CALLDEF(updateProposalAccount_CombinedAccountMovements_R, 1),
+  CALLDEF(updateProposalAccount_R, 1),
+  CALLDEF(updateValuesAccount_CombinedAccountMovements_R, 1),
+  CALLDEF(updateValuesAccount_R, 1),
   
   CALLDEF(estimateOneChain_R, 6),
   
@@ -2129,10 +2186,13 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(rcmp1_R, 3),
 
   /* update-account */
+  CALLDEF(updateAccount_R, 1),
   CALLDEF(updateProposalAccountMovePopn_R, 1),
   CALLDEF(updateProposalAccountMoveBirths_R, 1),
   CALLDEF(updateProposalAccountMoveOrigDest_R, 1),
   CALLDEF(updateProposalAccountMovePool_R, 1),
+  CALLDEF(updateProposalAccountMoveNet_R, 1),
+  CALLDEF(updateProposalAccountMoveComp_R, 1),
   
   CALLDEF(diffLogLikAccountMovePopn_R, 1),
   CALLDEF(diffLogLikPopn_R, 8),
@@ -2508,6 +2568,7 @@ R_init_demest(DllInfo *info)
   ADD_SYM(iParCh);
   ADD_SYM(diffProp);
   ADD_SYM(isIncrement);
+  ADD_SYM(isNet);
   ADD_SYM(systemModels);
   ADD_SYM(modelUsesExposure);
   ADD_SYM(mappingsFromExp);
@@ -2523,6 +2584,8 @@ R_init_demest(DllInfo *info)
   ADD_SYM(iExposureOther);
   ADD_SYM(isLowerTriangle);
   ADD_SYM(generatedNewProposal);
+  ADD_SYM(probPopn);
+  ADD_SYM(cumProbComp);
     
   
 #undef ADD_SYM

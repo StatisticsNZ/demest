@@ -289,7 +289,7 @@ advanceCP(SEXP iterator_R)
     int nTime = *INTEGER(GET_SLOT(iterator_R, nTime_sym));
     int * iTime_ptr = INTEGER(GET_SLOT(iterator_R, iTime_sym));
     int iTime = *iTime_ptr;
-    int hasAge = *INTEGER(GET_SLOT(iterator_R, hasAge_sym));
+    int hasAge = *LOGICAL(GET_SLOT(iterator_R, hasAge_sym));
    
     ++iTime;
     i += stepTime;
@@ -323,7 +323,7 @@ advanceCC(SEXP iterator_R)
     int stepTime = *INTEGER(GET_SLOT(iterator_R, stepTime_sym));
     int nTime = *INTEGER(GET_SLOT(iterator_R, nTime_sym));
     int * iTime_ptr = INTEGER(GET_SLOT(iterator_R, iTime_sym));
-    int hasAge = *INTEGER(GET_SLOT(iterator_R, hasAge_sym));
+    int hasAge = *LOGICAL(GET_SLOT(iterator_R, hasAge_sym));
    
     int i = *i_ptr;
     int iTime = *iTime_ptr;
@@ -429,7 +429,7 @@ resetCP(SEXP iterator_R, int i)
 {
     int stepTime = *INTEGER(GET_SLOT(iterator_R, stepTime_sym));
     int nTime = *INTEGER(GET_SLOT(iterator_R, nTime_sym));
-    int hasAge = *INTEGER(GET_SLOT(iterator_R, hasAge_sym));
+    int hasAge = *LOGICAL(GET_SLOT(iterator_R, hasAge_sym));
     
     int iTime_R = (((i - 1) / stepTime) % nTime) + 1; /* R-style */
     
@@ -453,7 +453,7 @@ resetCP(SEXP iterator_R, int i)
 {
     int stepTime = *INTEGER(GET_SLOT(iterator_R, stepTime_sym));
     int nTime = *INTEGER(GET_SLOT(iterator_R, nTime_sym));
-    int hasAge = *INTEGER(GET_SLOT(iterator_R, hasAge_sym));
+    int hasAge = *LOGICAL(GET_SLOT(iterator_R, hasAge_sym));
     
     int iTime_R = (((i - 1) / stepTime) % nTime) + 1; /* R-style */
     
@@ -482,7 +482,7 @@ resetCC(SEXP iterator_R, int i)
 {
     int stepTime = *INTEGER(GET_SLOT(iterator_R, stepTime_sym));
     int nTime = *INTEGER(GET_SLOT(iterator_R, nTime_sym));
-    int hasAge = *INTEGER(GET_SLOT(iterator_R, hasAge_sym));
+    int hasAge = *LOGICAL(GET_SLOT(iterator_R, hasAge_sym));
     
     int iTime_R = ((i - 1)/stepTime) % nTime  + 1;
 

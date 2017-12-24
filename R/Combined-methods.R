@@ -425,7 +425,7 @@ setMethod("updateCombined",
 
 ## Accounts ##############################################################################
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("diffLogDensAccount",
           signature(combined = "CombinedAccountMovements"),
@@ -474,14 +474,14 @@ setMethod("diffLogDensAccount",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("diffLogLikAccount",
           signature(object = "CombinedAccountMovements"),
           function(object, useC = FALSE, useSpecific = FALSE) {
               if (useC) {
                   if (useSpecific)
-                      .Call(diffLogLikAccount_CombineAccountMovements_R, object)
+                      .Call(diffLogLikAccount_CombinedAccountMovements_R, object)
                   else
                       .Call(diffLogLikAccount_R, object)
               }
@@ -504,7 +504,7 @@ setMethod("diffLogLikAccount",
           })
 
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("updateProposalAccount",
           signature(object = "CombinedAccountMovements"),

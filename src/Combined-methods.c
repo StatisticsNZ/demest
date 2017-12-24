@@ -34,27 +34,6 @@ predictCombined_CombinedModelPoissonNotHasExp(SEXP object_R,
 }
 
 
-/*if (useC) {
-                  if (useSpecific)
-                      .Call(predictCombined_CombinedModelBinomial_R,
-                            object, filename, lengthIter, iteration)
-                  else
-                      .Call(predictCombined_R,
-                            object, filename, lengthIter, iteration)
-              }
-              else {
-                  model <- object@model
-                  y <- object@y
-                  exposure <- object@exposure
-                  model <- transferParamModel(model = model,
-                                              filename = filename,
-                                              lengthIter = lengthIter,
-                                              iteration = iteration)
-                  model <- predictModelUseExp(model, y = y, exposure = exposure)
-                  object@model <- model
-                  object
-              }*/
-
 void
 predictCombined_CombinedModelBinomial(SEXP object_R, 
         const char *filename, int lengthIter, int iteration)
@@ -227,33 +206,6 @@ updateCombined_CombinedCountsPoissonNotHasExp(SEXP object_R,
     }
 }
 
-/*                  y <- object@y
-                  model <- object@model
-                  exposure <- object@exposure
-                  dataModels <- object@dataModels
-                  datasets <- object@datasets
-                  transforms <- object@transforms
-                  for (i in seq_len(nUpdate)) {
-                      y <- updateCountsPoissonUseExp(y = y,
-                                                     model = model,
-                                                     exposure = exposure,
-                                                     dataModels = dataModels,
-                                                     datasets = datasets,
-                                                     transforms = transforms)
-                      model <- updateModelUseExp(object = model,
-                                                 y = y,
-                                                 exposure = exposure)
-                      dataModels <- updateDataModelsCounts(dataModels = dataModels,
-                                                             datasets = datasets,
-                                                             transforms = transforms,
-                                                             y = y)
-                  }
-                  object@y <- y
-                  object@model <- model
-                  object@dataModels <- dataModels
-                  object
-*/
-
 
 void
 updateCombined_CombinedCountsPoissonHasExp(SEXP object_R, int nUpdate)
@@ -269,21 +221,6 @@ updateCombined_CombinedCountsPoissonHasExp(SEXP object_R, int nUpdate)
     
     while (nUpdate > 0) {
 
-/*                                           y <- updateCountsPoissonUseExp(y = y,
-                                                     model = model,
-                                                     exposure = exposure,
-                                                     dataModels = dataModels,
-                                                     datasets = datasets,
-                                                     transforms = transforms)
-                      model <- updateModelUseExp(object = model,
-                                                 y = y,
-                                                 exposure = exposure)
-                      dataModels <- updateDataModelsCounts(dataModels = dataModels,
-                                                             datasets = datasets,
-                                                             transforms = transforms,
-                                                             y = y)
-
- */                
         updateCountsPoissonUseExp(y_R, model_R, 
                                 exposure_R, dataModels_R,
                                 datasets_R, transforms_R);
@@ -309,22 +246,6 @@ updateCombined_CombinedCountsBinomial(SEXP object_R, int nUpdate)
     
     while (nUpdate > 0) {
 
-/*                        y <- updateCountsBinomial(y = y,
-                                                model = model,
-                                                exposure = exposure,
-                                                dataModels = dataModels,
-                                                datasets = datasets,
-                                                transforms = transforms)
-                      model <- updateModelUseExp(object = model,
-                                                 y = y,
-                                                 exposure = exposure)
-                      dataModels <- updateDataModelsCounts(dataModels = dataModels,
-                                                             datasets = datasets,
-                                                             transforms = transforms,
-                                                             y = y)
-
- */                
-        
         updateCountsBinomial(y_R, model_R, 
                                 exposure_R, dataModels_R,
                                 datasets_R, transforms_R);
@@ -376,4 +297,273 @@ updateCombined(SEXP object_R, int nUpdate)
     }
 }
 
+/* generic diffLogDens account object method */
+double 
+diffLogDensAccount(SEXP object_R)
+{
+    int i_method_combined = *(INTEGER(GET_SLOT(
+                                    object_R, iMethodCombined_sym)));
+    double ans = 0;    
+    switch(i_method_combined)
+    {
+        case 9: case 10:  /*  */
+            ans = diffLogDensAccount_CombinedAccountMovements(object_R);
+            break;
+        default:
+            error("unknown iMethodCombined for diffLogDensAccount: %d", i_method_combined);
+            break;
+    }
+    
+    return ans;
+}
 
+
+double 
+diffLogDensAccount_CombinedAccountMovements(SEXP object_R)
+{
+    int iComp_r = *INTEGER(GET_SLOT(object_R, iComp_sym));
+    int iOrigDest_r = *INTEGER(GET_SLOT(object_R, iOrigDest_sym));
+    int iPool_r = *INTEGER(GET_SLOT(object_R, iPool_sym));
+    int iIntNet_r = *INTEGER(GET_SLOT(object_R, iIntNet_sym));
+    
+    int isPopn = (iComp_r == 0);
+    int isOrigDest = (iComp_r == iOrigDest_r);
+    int isPool = (iComp_r == iPool_r);
+    int isIntNet = (iComp_r == iIntNet_r);     
+    
+    double ans = diffLogDensPopn(object_R);
+    
+    if(isPopn) {
+        ans += diffLogDensExpPopn(object_R);
+    }
+    else {
+        
+        int * usesExposureVec = LOGICAL(GET_SLOT(object_R, modelUsesExposure_sym));
+        int usesExposure = usesExposureVec[iComp_r - 1];
+
+        if(isOrigDest) {
+            if(usesExposure) {
+                ans += diffLogDensJumpOrigDest(object_R);
+            }
+            ans += diffLogDensExpOrigDestPoolNet(object_R);
+        } 
+        else if(isPool) {
+            if(usesExposure) {
+                ans += diffLogDensJumpPoolWithExpose(object_R);
+            }
+            else {
+                ans += diffLogDensJumpPoolNoExpose(object_R);
+            }
+            ans += diffLogDensExpOrigDestPoolNet(object_R);
+        }
+        else if(isIntNet) {
+            ans += diffLogDensJumpNet(object_R);
+            ans += diffLogDensExpOrigDestPoolNet(object_R);
+        } 
+        else {
+            if(usesExposure) {
+                ans += diffLogDensJumpComp(object_R);
+            }
+            ans += diffLogDensExpComp(object_R);
+        }
+    }
+    return ans; 
+}
+
+
+/* generic diffLogLik account object method */
+double 
+diffLogLikAccount(SEXP object_R)
+{
+    int i_method_combined = *(INTEGER(GET_SLOT(
+                                    object_R, iMethodCombined_sym)));
+    double ans = 0;    
+    switch(i_method_combined)
+    {
+        case 9: case 10:  /*  */
+            ans = diffLogLikAccount_CombinedAccountMovements(object_R);
+            break;
+        default:
+            error("unknown iMethodCombined for diffLogLikAccount: %d", i_method_combined);
+            break;
+    }
+    
+    return ans;
+}
+
+double 
+diffLogLikAccount_CombinedAccountMovements(SEXP object_R)
+{
+    
+    double ans = 0;
+    
+    int iComp_r = *INTEGER(GET_SLOT(object_R, iComp_sym));
+    int iOrigDest_r = *INTEGER(GET_SLOT(object_R, iOrigDest_sym));
+    int iPool_r = *INTEGER(GET_SLOT(object_R, iPool_sym));
+    int iIntNet_r = *INTEGER(GET_SLOT(object_R, iIntNet_sym));
+
+    if(iComp_r == 0) {
+        ans = diffLogLikAccountMovePopn(object_R);
+    } 
+    else if(iComp_r == iOrigDest_r) {
+        ans = diffLogLikAccountMoveOrigDest(object_R);
+    } 
+    else if(iComp_r == iPool_r) {
+        ans = diffLogLikAccountMovePool(object_R);
+    } 
+    else if(iComp_r == iIntNet_r) {
+        ans = diffLogLikAccountMoveNet(object_R);
+    } 
+    else {
+        ans = diffLogLikAccountMoveComp(object_R);
+    }
+    return ans; 
+}
+
+
+/* generic update proposal account object method */
+void
+updateProposalAccount(SEXP object_R)
+{
+    int i_method_combined = *(INTEGER(GET_SLOT(
+                                    object_R, iMethodCombined_sym)));
+        
+    switch(i_method_combined)
+    {
+        case 9: case 10:  /*  */
+            updateProposalAccount_CombinedAccountMovements(object_R);
+            break;
+        default:
+            error("unknown iMethodCombined for updateProposalAccount: %d", i_method_combined);
+            break;
+    }
+}
+
+void
+updateProposalAccount_CombinedAccountMovements(SEXP object_R)
+{
+    
+    double probPopn = *REAL(GET_SLOT(object_R, probPopn_sym));
+    
+    double u = runif(0, 1);
+    int updatePopn = (u < probPopn);
+    
+    if(updatePopn) {
+        SET_INTSCALE_SLOT(object_R, iComp_sym, 0);
+        updateProposalAccountMovePopn(object_R);
+    }
+    else {
+        
+        double * cumProb = REAL(GET_SLOT(object_R, cumProbComp_sym));
+        int iBirths_r = *INTEGER(GET_SLOT(object_R, iBirths_sym));
+        int iOrigDest_r = *INTEGER(GET_SLOT(object_R, iOrigDest_sym));
+        int iPool_r = *INTEGER(GET_SLOT(object_R, iPool_sym));
+        int iIntNet_r = *INTEGER(GET_SLOT(object_R, iIntNet_sym));
+        
+        int iComp_r = rcateg1(cumProb); 
+        SET_INTSCALE_SLOT(object_R, iComp_sym, iComp_r);
+        
+        if(iComp_r == iBirths_r) {
+            updateProposalAccountMoveBirths(object_R);
+        } 
+        else if(iComp_r == iOrigDest_r) {
+            updateProposalAccountMoveOrigDest(object_R);
+        } 
+        else if(iComp_r == iPool_r) {
+            updateProposalAccountMovePool(object_R);
+        } 
+        else if(iComp_r == iIntNet_r) {
+            updateProposalAccountMoveNet(object_R);
+        } 
+        else {
+            updateProposalAccountMoveComp(object_R);
+        }
+    } 
+}
+
+
+
+/* generic update proposal account object method */
+void
+updateValuesAccount(SEXP object_R)
+{
+    int i_method_combined = *(INTEGER(GET_SLOT(
+                                    object_R, iMethodCombined_sym)));
+    
+    int nProtected = 0;
+        
+    switch(i_method_combined)
+    {
+        case 9: case 10:  /*  */
+        #if(0) 
+            SEXP iteratorPopn_R = GET_SLOT(object_R, iteratorPopn_sym);
+            SEXP iteratorPopnDup_R = NULL;
+            PROTECT(iteratorPopnDup_R = duplicate(iteratorPopn_R));
+            SEXP iteratorExposure_R = GET_SLOT(object_R, iteratorExposure_sym);
+            SEXP iteratorExposureDup_R = NULL;
+            PROTECT(iteratorExposureDup_R = duplicate(iteratorExposure_R));
+
+            int hasAge = *LOGICAL(GET_SLOT(object_R, hasAge_sym));
+            nProtected = 2;
+            
+            SEXP iteratorAccDup_R = NULL;
+            if (hasAge) {
+                SEXP iteratorAcc_R = GET_SLOT(object_R, iteratorAcc_sym);
+                PROTECT(iteratorAccDup_R = duplicate(iteratorAcc_R));
+                ++nProtected;
+            }
+
+            updateValuesAccount_CombinedAccountMovements(object_R);
+            
+            SET_SLOT(object_R, iteratorPopn_sym, iteratorPopnDup_R);
+            SET_SLOT(object_R, iteratorExposure_sym, iteratorExposureDup_R);
+            
+            if (hasAge) {
+                SET_SLOT(object_R, iteratorAcc_sym, iteratorAccDup_R);
+            }
+    #endif
+                    
+            break;
+        default:
+            error("unknown iMethodCombined for updateProposalAccount: %d", i_method_combined);
+            break;
+    }
+    UNPROTECT(nProtected);
+}
+
+/*## READY_T0_TRANSLATE
+## HAS_TESTS
+setMethod("updateValuesAccount",
+          signature(combined = "CombinedAccountMovements"),
+          function(combined, useC = FALSE, useSpecific = FALSE) {
+              stopifnot(methods::validObject(combined))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(updateValuesAccount_CombinedAccountMovements_R, combined)
+                  else
+                      .Call(updateValuesAccount_R, combined)
+              }
+              else {
+                  has.age <- combined@hasAge
+                  combined <- updateCellMove(combined)
+                  combined <- updateSubsequentPopnMove(combined)
+                  combined <- updateSubsequentExpMove(combined)
+                  if (has.age)
+                      combined <- updateSubsequentAccMove(combined)
+                  combined
+              }
+          })
+*/
+
+void
+updateValuesAccount_CombinedAccountMovements(SEXP object_R)
+{
+    int hasAge = *LOGICAL(GET_SLOT(object_R, hasAge_sym));
+    updateCellMove(object_R);
+    updateSubsequentPopnMove(object_R);
+    updateSubsequentExpMove(object_R);
+    
+    if (hasAge) {
+        updateSubsequentAccMove(object_R);
+    }
+}
