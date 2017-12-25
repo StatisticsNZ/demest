@@ -1328,5 +1328,80 @@ test_that("fetchResults works with object of class SkeletonMissingDatasetPoisson
 })
 
 
-## getIndicesStrucZero ##############################################################
+test_that("fetchResults works with object of class SkeletonMissingDatasetRound3", {
+    fetchResults <- demest:::fetchResults
+    SkeletonMissingDataset <- demest:::SkeletonMissingDataset
+    Skeleton <- demest:::Skeleton
+    object <- Counts(array(c(3L, NA),
+                           dim = 2:3,
+                           dimnames = list(sex = c("f", "m"),
+                                           age = 0:2)))
+    y <- Counts(array(3L,
+                      dim = c(2:3, 2),
+                      dimnames = list(sex = c("f", "m"),
+                                      age = 0:2, region = c("a", "b"))))
+    transformComponent <- makeTransform(x = y, y = object)
+    model <- new("Round3")
+    outputModel <- list("<none>" = NULL)
+    skeletonComponent <-  Skeleton(first = 1L, object = y)
+    skeleton <- SkeletonMissingDataset(object = object,
+                                       model = model,
+                                       outputModel = outputModel,
+                                       skeletonComponent = skeletonComponent,
+                                       transformComponent = transformComponent)
+    filename <- tempfile()
+    con <- file(filename, "wb")
+    results <- new("ResultsModelEst")
+    results <- serialize(results, connection = NULL)
+    size.results <- length(results)
+    writeBin(size.results, con)
+    writeBin(10L, con)
+    writeBin(results, con)
+    writeBin(as.double(1:1000), con)
+    close(con)
+    ## impute is FALSE
+    ans.obtained <- fetchResults(object = skeleton,
+                                 nameObject = "y",
+                                 filename = filename,
+                                 iterations = 1:10,
+                                 nIteration = 10L,
+                                 lengthIter = 100L,
+                                 impute = FALSE)
+    ans.expected <- object
+    expect_identical(ans.obtained, ans.expected)
+    ## impute is TRUE
+    set.seed(1)
+    ans.obtained <- fetchResults(object = skeleton,
+                                 nameObject = "y",
+                                 filename = filename,
+                                 iterations = 1:10,
+                                 nIteration = 10L,
+                                 lengthIter = 100L,
+                                 impute = TRUE)
+    set.seed(1)
+    ans.expected <- Counts(array(c(3L, NA),
+                                 dim = c(2:3, 10),
+                                 dimnames = list(sex = c("f", "m"),
+                                                 age = 0:2,
+                                                 iteration = 1:10)))
+    exposure <- 1:12 + rep(seq.int(from = 0, by = 100, length = 10), each = 12)
+    exposure <- Counts(array(exposure,
+                             dim = c(2:3, 2, 10),
+                             dimnames = list(sex = c("f", "m"),
+                                             age = 0:2,
+                                             region = c("a", "b"),
+                                             iteration = 1:10)))
+    exposure <- collapseDimension(exposure, dim = "region")
+    ans.expected[ 2, , ] <- dembase:::round3(exposure[2, , ])
+    if (test.identity)
+        expect_identical(ans.obtained, ans.expected)
+    else
+        expect_equal(ans.obtained, ans.expected)
+})
+
+
+
+
+
+
 

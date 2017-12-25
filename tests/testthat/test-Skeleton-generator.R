@@ -508,6 +508,34 @@ test_that("SkeletonMissingDataset creates valid object of class SkeletonMissingD
                         transformComponent = transformComponent)
     expect_identical(ans.obtained, ans.expected)
 })
+
+test_that("SkeletonMissingDataset creates valid object of class SkeletonMissingDatasetRound3", {
+    SkeletonMissingDataset <- demest:::SkeletonMissingDataset
+    Skeleton <- demest:::Skeleton
+    object <- Counts(array(c(3L, NA),
+                           dim = 2:3,
+                           dimnames = list(sex = c("f", "m"),
+                               age = 0:2)))
+    y <- Counts(array(3L,
+                      dim = c(2:3, 2),
+                      dimnames = list(sex = c("f", "m"),
+                          age = 0:2, region = c("a", "b"))))
+    transformComponent <- makeTransform(x = y, y = object)
+    model <- new("Round3")
+    outputModel <- list("<none>" = NULL)
+    skeletonComponent <-  Skeleton(first = 1L, object = y)
+    ans.obtained <- SkeletonMissingDataset(object = object,
+                                           model = model,
+                                           outputModel = outputModel,
+                                           skeletonComponent = skeletonComponent,
+                                           transformComponent = transformComponent)
+    ans.expected <- new("SkeletonMissingDatasetRound3",
+                        data = object,
+                        offsetsComponent = new("Offsets", c(1L, 12L)),
+                        transformComponent = transformComponent)
+    expect_identical(ans.obtained, ans.expected)
+})
+
                         
     
 

@@ -844,5 +844,21 @@ test_that("can create valid object of class SkeletonMissingDatasetPoissonBinomia
     expect_true(validObject(x))
 })
 
+test_that("can create valid object of class SkeletonMissingDatasetRound3", {
+    x <- new("SkeletonMissingDatasetRound3",
+             data = Counts(array(c(1:5, NA),
+                 dim = 2:3,
+                 dimnames = list(sex = c("f", "m"),
+                     age = 0:2))),
+             offsetsComponent = new("Offsets", c(1L, 12L)),
+             transformComponent = new("CollapseTransform",
+                 indices = list(c(1L, 1L), 1:2, 1:3),
+                 dims = c(0L, 1L, 2L),
+                 dimBefore = c(2L, 2L, 3L),
+                 dimAfter = c(2L, 3L)))                 
+    expect_true(validObject(x))
+})
+
+
 
  

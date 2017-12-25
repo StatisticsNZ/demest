@@ -539,6 +539,14 @@ setClass("SkeletonMissingDatasetBinomial",
 setClass("SkeletonMissingDatasetPoissonBinomial",
          contains = c("SkeletonMissingDataset", "Prob"))
 
+## HAS_TESTS
+## HAS_FETCH
+setClass("SkeletonMissingDatasetRound3",
+         contains = "SkeletonMissingDataset")
+
+
 
 setClassUnion("DemographicOrSkeletonMissingData",
               members = c("DemographicArray", "SkeletonMissingData"))
+
+

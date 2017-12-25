@@ -261,6 +261,10 @@ setMethod("initialCombinedCounts",
                     transforms = "list"),
           function(object, y, exposure, dataModels, datasets,
                    namesDatasets, transforms) {
+              struc.zeros <- model@structuralZeros
+              struc.zero.array <- makeStrucZeroArray(structuralZeros = struc.zeros,
+                                                     y = y)
+              y[struc.zero.array@.Data == 0L] <- 0L
               y <- imputeCountsInternal(y)
               for (i in seq_along(dataModels)) {
                   y.collapsed <- dembase::collapse(y, transform = transforms[[i]])

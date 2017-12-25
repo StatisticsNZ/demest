@@ -279,6 +279,17 @@ setMethod("SkeletonMissingDataset",
                   offsetsComponent = offsets.component)
           })
 
-
-
-
+## HAS_TESTS
+setMethod("SkeletonMissingDataset",
+          signature(object = "Counts",
+                    model = "Round3",
+                    outputModel = "list",
+                    transformComponent = "CollapseTransform",
+                    skeletonComponent = "SkeletonMany"),
+          function(object, model, outputModel, transformComponent, skeletonComponent) {
+              offsets.component <- methods::new("Offsets", c(skeletonComponent@first, skeletonComponent@last))
+              methods::new("SkeletonMissingDatasetRound3",
+                           data = object,
+                           transformComponent = transformComponent,
+                           offsetsComponent = offsets.component)
+          })

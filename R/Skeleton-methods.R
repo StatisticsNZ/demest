@@ -764,6 +764,44 @@ setMethod("fetchResults",
           })
 
 
+## HAS_TESTS
+setMethod("fetchResults",
+          signature(object = "SkeletonMissingDatasetRound3"),
+          function(object, nameObject, filename, iterations,
+                   nIteration, lengthIter,
+                   impute = FALSE) {
+              data <- object@data
+              if (impute) {
+                  offsets <- object@offsetsComponent
+                  transform <- object@transformComponent
+                  if (is.null(iterations))
+                      iterations <- seq_len(nIteration)
+                  metadata <- data@metadata
+                  metadata <- dembase::addIterationsToMetadata(metadata, iterations = iterations)
+                  n.iter <- length(iterations)
+                  transform <- addIterationsToTransform(transform, nIter = n.iter)
+                  .Data <- array(data@.Data,
+                                 dim = dim(metadata),
+                                 dimnames = dimnames(metadata))
+                  exposure <- getDataFromFile(filename = filename,
+                                              first = offsets[1L],
+                                              last = offsets[2L],
+                                              lengthIter = lengthIter,
+                                              iterations = iterations)
+                  exposure <- array(exposure, dim = transform@dimBefore)
+                  exposure <- dembase::collapse(exposure, transform = transform)
+                  is.missing <- is.na(.Data)
+                  exposure <- exposure[is.missing]
+                  rounded <- dembase:::round3(exposure)
+                  .Data[is.missing] <- rounded
+                  methods::new("Counts", .Data = .Data, metadata = metadata)
+              }
+              else
+                  data
+          })
+
+
+
 ## getIndicesStrucZero #########################################################
 
 setMethod("getIndicesStrucZero",
