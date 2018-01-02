@@ -1404,7 +1404,6 @@ updateValuesAccount_CombinedAccountMovements_R(SEXP object_R)
     return ans_R;
 }
 
-
 /* wrap repetitive update of combined counts functions */
 UPDATECOMBINEDOBJECT_WRAPPER_R(updateCombined_CombinedCountsPoissonNotHasExp);
 UPDATECOMBINEDOBJECT_WRAPPER_R(updateCombined_CombinedCountsPoissonHasExp);
@@ -2586,6 +2585,7 @@ R_init_demest(DllInfo *info)
   ADD_SYM(generatedNewProposal);
   ADD_SYM(probPopn);
   ADD_SYM(cumProbComp);
+  ADD_SYM(nCellAccount);
     
   
 #undef ADD_SYM

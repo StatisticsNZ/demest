@@ -481,8 +481,6 @@ updateProposalAccount_CombinedAccountMovements(SEXP object_R)
     } 
 }
 
-
-
 /* generic update proposal account object method */
 void
 updateValuesAccount(SEXP object_R)
@@ -495,7 +493,7 @@ updateValuesAccount(SEXP object_R)
     switch(i_method_combined)
     {
         case 9: case 10:  /*  */
-        #if(0) 
+        {
             SEXP iteratorPopn_R = GET_SLOT(object_R, iteratorPopn_sym);
             SEXP iteratorPopnDup_R = NULL;
             PROTECT(iteratorPopnDup_R = duplicate(iteratorPopn_R));
@@ -521,9 +519,8 @@ updateValuesAccount(SEXP object_R)
             if (hasAge) {
                 SET_SLOT(object_R, iteratorAcc_sym, iteratorAccDup_R);
             }
-    #endif
-                    
             break;
+        }
         default:
             error("unknown iMethodCombined for updateProposalAccount: %d", i_method_combined);
             break;
@@ -531,29 +528,6 @@ updateValuesAccount(SEXP object_R)
     UNPROTECT(nProtected);
 }
 
-/*## READY_T0_TRANSLATE
-## HAS_TESTS
-setMethod("updateValuesAccount",
-          signature(combined = "CombinedAccountMovements"),
-          function(combined, useC = FALSE, useSpecific = FALSE) {
-              stopifnot(methods::validObject(combined))
-              if (useC) {
-                  if (useSpecific)
-                      .Call(updateValuesAccount_CombinedAccountMovements_R, combined)
-                  else
-                      .Call(updateValuesAccount_R, combined)
-              }
-              else {
-                  has.age <- combined@hasAge
-                  combined <- updateCellMove(combined)
-                  combined <- updateSubsequentPopnMove(combined)
-                  combined <- updateSubsequentExpMove(combined)
-                  if (has.age)
-                      combined <- updateSubsequentAccMove(combined)
-                  combined
-              }
-          })
-*/
 
 void
 updateValuesAccount_CombinedAccountMovements(SEXP object_R)
