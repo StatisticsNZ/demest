@@ -357,7 +357,8 @@ SEXP
   isLowerTriangle_sym,
   generatedNewProposal_sym,
   probPopn_sym,
-  cumProbComp_sym;
+  cumProbComp_sym,
+  nCellAccount_sym;
   
   
 /* Priors-methods */

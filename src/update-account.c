@@ -41,9 +41,32 @@ updateAccount <- function(object, useC = FALSE) {
 */
 
 void
-updateAccount(SEXP combined_R)
+updateAccount(SEXP object_R)
 {
+    int nCellAccount = *INTEGER(GET_SLOT(object_R, nCellAccount_sym));
     
+    for (int i = 0; i < nCellAccount; ++i) {
+        updateProposalAccount(object_R);
+        int generatedNewProposal = *LOGICAL(GET_SLOT(object_R, generatedNewProposal_sym));
+        
+        if(generatedNewProposal) {
+            double diffLogLik = diffLogLikAccount(object_R);
+            
+            if( R_finite(diffLogLik) ) {
+                double diffLogDens = diffLogDensAccount(object_R);
+                
+                if( R_finite(diffLogDens) ) {
+                    double log_r = diffLogLik + diffLogDens;
+                    
+                    int accept = ( log_r > 0 ) || ( runif(0,1) < exp(log_r) );
+                    if (accept) {
+                        updateValuesAccount(object_R);
+                    }
+                    
+                }      
+            }    
+        }
+    } 
 }
 
 /* ****************** Updating proposals *************************** */

@@ -546,7 +546,7 @@ setMethod("updateProposalAccount",
               }
           })
 
-## READY_T0_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("updateValuesAccount",
           signature(combined = "CombinedAccountMovements"),
