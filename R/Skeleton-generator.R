@@ -293,3 +293,22 @@ setMethod("SkeletonMissingDataset",
                            transformComponent = transformComponent,
                            offsetsComponent = offsets.component)
           })
+
+## HAS_TESTS
+setMethod("SkeletonMissingDataset",
+          signature(object = "Counts",
+                    model = "NormalFixedUseExp",
+                    outputModel = "list",
+                    transformComponent = "CollapseTransform",
+                    skeletonComponent = "SkeletonMany"),
+          function(object, model, outputModel, transformComponent, skeletonComponent) {
+              offsets.component <- methods::new("Offsets", c(skeletonComponent@first, skeletonComponent@last))
+              methods::new("SkeletonMissingDatasetNormalFixedUseExp",
+                           mean = model@mean,
+                           sd = model@sd,
+                           metadata = model@metadataY,
+                           data = object,
+                           transformComponent = transformComponent,
+                           offsetsComponent = offsets.component)
+          })
+

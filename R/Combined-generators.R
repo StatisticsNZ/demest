@@ -261,7 +261,7 @@ setMethod("initialCombinedCounts",
                     transforms = "list"),
           function(object, y, exposure, dataModels, datasets,
                    namesDatasets, transforms) {
-              struc.zeros <- model@structuralZeros
+              struc.zeros <- object@structuralZeros
               struc.zero.array <- makeStrucZeroArray(structuralZeros = struc.zeros,
                                                      y = y)
               y[struc.zero.array@.Data == 0L] <- 0L

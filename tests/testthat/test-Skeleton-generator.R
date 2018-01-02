@@ -536,6 +536,45 @@ test_that("SkeletonMissingDataset creates valid object of class SkeletonMissingD
     expect_identical(ans.obtained, ans.expected)
 })
 
+
+test_that("SkeletonMissingDataset creates valid object of class SkeletonMissingDatasetNormalFixedUseExp", {
+    SkeletonMissingDataset <- demest:::SkeletonMissingDataset
+    Skeleton <- demest:::Skeleton
+    initialModel <- demest:::initialModel
+    makeOutputModel <- demest:::makeOutputModel
+    mean <- Values(array(1:6,
+                         dim = 2:3,
+                         dimnames = list(sex = c("f", "m"),
+                                         age = 0:2)))
+    object <- Counts(array(c(NA, 1L),
+                           dim = 2:3,
+                           dimnames = list(sex = c("f", "m"),
+                                           age = 0:2)))
+    y <- Counts(array(3L,
+                      dim = c(2:3, 2),
+                      dimnames = list(sex = c("f", "m"),
+                                      age = 0:2, region = c("a", "b"))))
+    transformComponent <- makeTransform(x = y, y = object)
+    spec <- Model(dataset ~ NormalFixed(mean = mean, sd = 1, useExpose = TRUE))
+    model <- initialModel(spec, y = object, exposure = collapseDimension(y, dim = "region"))
+    outputModel <- list()
+    skeletonComponent <-  Skeleton(first = 1L, object = y)
+    ans.obtained <- SkeletonMissingDataset(object = object,
+                                           model = model,
+                                           outputModel = outputModel,
+                                           skeletonComponent = skeletonComponent,
+                                           transformComponent = transformComponent)
+    ans.expected <- new("SkeletonMissingDatasetNormalFixedUseExp",
+                        mean = model@mean,
+                        sd = model@sd,
+                        metadata = model@metadataY,
+                        data = object,
+                        offsetsComponent = new("Offsets", c(1L, 12L)),
+                        transformComponent = transformComponent)
+    expect_identical(ans.obtained, ans.expected)
+})
+
+
                         
     
 

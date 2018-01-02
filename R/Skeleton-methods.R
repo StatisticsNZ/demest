@@ -801,6 +801,50 @@ setMethod("fetchResults",
           })
 
 
+## HAS_TESTS
+setMethod("fetchResults",
+          signature(object = "SkeletonMissingDatasetNormalFixedUseExp"),
+          function(object, nameObject, filename, iterations,
+                   nIteration, lengthIter,
+                   impute = FALSE) {
+              data <- object@data
+              if (impute) {
+                  offsets <- object@offsetsComponent
+                  transform <- object@transformComponent
+                  mean <- object@mean@.Data
+                  sd <- object@sd@.Data
+                  if (is.null(iterations))
+                      iterations <- seq_len(nIteration)
+                  metadata <- data@metadata
+                  metadata <- dembase::addIterationsToMetadata(metadata, iterations = iterations)
+                  n.iter <- length(iterations)
+                  transform <- addIterationsToTransform(transform, nIter = n.iter)
+                  .Data <- array(data@.Data,
+                                 dim = dim(metadata),
+                                 dimnames = dimnames(metadata))
+                  exposure <- getDataFromFile(filename = filename,
+                                              first = offsets[1L],
+                                              last = offsets[2L],
+                                              lengthIter = lengthIter,
+                                              iterations = iterations)
+                  exposure <- array(exposure, dim = transform@dimBefore)
+                  exposure <- dembase::collapse(exposure, transform = transform)
+                  mean <- rep(mean, times = n.iter)
+                  sd <- rep(sd, times = n.iter)
+                  is.missing <- is.na(.Data)
+                  mean <- mean[is.missing] * exposure[is.missing]
+                  sd <- sd[is.missing]
+                  n <- sum(is.missing)
+                  imputed <- stats::rnorm(n = n, mean = mean, sd = sd)
+                  .Data[is.missing] <- imputed
+                  methods::new("Counts", .Data = .Data, metadata = metadata)
+              }
+              else
+                  data
+          })
+
+
+
 
 ## getIndicesStrucZero #########################################################
 

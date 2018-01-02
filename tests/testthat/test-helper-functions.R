@@ -1959,6 +1959,7 @@ test_that("makeStrucZeroArray works", {
                                       eth_dest = c("a", "b", "c"))))
     ans.expected[slice.index(ans.expected, 2) == slice.index(ans.expected, 3)] <- 0L
     expect_identical(ans.obtained, ans.expected)
+    ## Values
     structuralZeros <- ValuesOne(0:1, labels = c("m", "f"), name = "sex")
     ans.obtained <- makeStrucZeroArray(structuralZeros = structuralZeros, y = y)
     ans.expected <- Counts(array(1:0,
@@ -2691,7 +2692,6 @@ test_that("checkAndTidyDatasets works", {
     ans.expected <- x
     expect_identical(ans.obtained, ans.expected)
 })
-
 test_that("checkAndTidyExposure works", {
     checkAndTidyExposure <- demest:::checkAndTidyExposure
     exposure <- Counts(array((1:24) * 1.0,
@@ -2718,6 +2718,79 @@ test_that("checkAndTidyExposure works", {
     y <- aperm(exposure, perm = c("sex", "age", "region"))
     expect_identical(checkAndTidyExposure(exposure = exposure, y = y),
                      y)
+})
+
+test_that("checkAndTidyListArgForEstimateFun works", {
+    ## checkAndTidyListArgForEstimateFun <- demest:::checkAndTidyListArgForEstimateFun
+    ans.obtained <- checkAndTidyListArgForEstimateFun(arg = list(),
+                                                      name = "data",
+                                                      isCounts = TRUE)
+    ans.expected <- NULL
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- checkAndTidyListArgForEstimateFun(arg = list(model = list(),
+                                                                 dataModels = list()),
+                                                      name = "data",
+                                                      isCounts = TRUE)
+    ans.expected <- list(model = list(),
+                         dataModels = list())
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- checkAndTidyListArgForEstimateFun(arg = list(systemModels = list(),
+                                                                 dataModels = list()),
+                                                      name = "data",
+                                                      isCounts = FALSE)
+    ans.expected <- list(systemModels = list(),
+                         dataModels = list())
+    expect_identical(ans.obtained, ans.expected)
+    expect_error(checkAndTidyListArgForEstimateFun(arg = list(list(),
+                                                              list()),
+                                                      name = "data",
+                                                   isCounts = TRUE),
+                 "'data' does not have names")
+    expect_error(checkAndTidyListArgForEstimateFun(arg = list(list(),
+                                                              list()),
+                                                      name = "data",
+                                                   isCounts = TRUE),
+                 "'data' does not have names")
+    expect_error(checkAndTidyListArgForEstimateFun(arg = list(model = list(),
+                                                              list()),
+                                                      name = "data",
+                                                   isCounts = TRUE),
+                 "names for 'data' have blanks")
+    expect_error(checkAndTidyListArgForEstimateFun(arg = list(model = list(),
+                                                              model = list()),
+                                                      name = "data",
+                                                   isCounts = TRUE),
+                 "names for 'data' have duplicates")
+    expect_error(checkAndTidyListArgForEstimateFun(arg = list(model = list(),
+                                                              wrong = list()),
+                                                      name = "data",
+                                                   isCounts = TRUE),
+                 "invalid name for 'data' : \"wrong\"")
+    expect_error(checkAndTidyListArgForEstimateFun(arg = list(model = list(),
+                                                              dataModels = list()),
+                                                      name = "data",
+                                                   isCounts = FALSE),
+                 "invalid name for 'data' : \"model\"")
+    expect_error(checkAndTidyListArgForEstimateFun(arg = list(systemModels = 1,
+                                                              dataModels = list()),
+                                                      name = "data",
+                                                   isCounts = FALSE),
+                 "element \"systemModels\" of 'data' does not have class \"list\"")
+    expect_error(checkAndTidyListArgForEstimateFun(arg = list(systemModels = list(),
+                                                              dataModels = 1),
+                                                      name = "data",
+                                                   isCounts = FALSE),
+                 "element \"dataModels\" of 'data' does not have class \"list\"")
+    expect_error(checkAndTidyListArgForEstimateFun(arg = list(model = 1,
+                                                              dataModels = list()),
+                                                      name = "aggregate",
+                                                   isCounts = TRUE),
+                 "'aggregate' contains elements not of class \"SpecAggregate\"")
+    expect_error(checkAndTidyListArgForEstimateFun(arg = list(model = "a",
+                                                              dataModels = list()),
+                                                      name = "upper",
+                                                   isCounts = TRUE),
+                 "'upper' contains elements not of type \"numeric\"")
 })
 
 test_that("checkAndTidySDAg works", {
@@ -3600,6 +3673,29 @@ test_that("makeComponentWeightMix works", {
         expect_identical(ans.obtained, ans.expected)
     else
         expect_equal(ans.obtained, ans.expected)
+})
+
+test_that("makeCountsPred works", {
+    makeCountsPred <- demest:::makeCountsPred
+    initialModel <- demest:::initialModel
+    exposure <- Counts(array(rpois(n = 20, lambda = 20),
+                             dim = c(5, 4),
+                             dimnames = list(age = 0:4, region = letters[1:4])))
+    y <- Counts(array(rpois(n = 20, lambda = 0.3 * exposure),
+                      dim = c(5, 4),
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    y[,1] <- 0L
+    structuralZeros = ValuesOne(c(0, 1, 1, 1), labels = letters[1:4], name = "region")
+    spec <- Model(y ~ Poisson(mean ~ age + region, structuralZeros = structuralZeros))
+    set.seed(1)
+    x <- initialModel(spec, y = y, exposure = exposure)
+    ## makeCountsPred designed for PoissonVaryingUseExpPredict, but should work with non-predict version
+    ans.obtained <- makeCountsPred(x)
+    ans.expected <- Counts(array(NA_integer_,
+                                 dim = c(5, 4),
+                                 dimnames = list(age = 0:4, region = letters[1:4])))
+    ans.expected[,1] <- 0L
+    expect_identical(ans.obtained, ans.expected)
 })
 
 test_that("makeDims works with valid inputs", {

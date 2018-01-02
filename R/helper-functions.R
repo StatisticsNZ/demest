@@ -3003,6 +3003,58 @@ checkAndTidyExposure <- function(exposure, y) {
 }
 
 ## HAS_TESTS
+checkAndTidyListArgForEstimateFun <- function(arg, name = c("data", "aggregate", "lower", "upper"),
+                                              isCounts = TRUE) {
+    name <- match.arg(name)
+    if (isCounts)
+        names.expected <- c("model", "dataModels")
+    else
+        names.expected <- c("systemModels", "dataModels")
+    if (!is.list(arg))
+        stop(gettextf("'%s' has class \"%s\"",
+                      name))
+    if (identical(length(arg), 0L))
+        return(NULL)
+    names <- names(arg)
+    if (is.null(names))
+        stop(gettextf("'%s' does not have names",
+                      name))
+    if (any(is.na(names)))
+        stop(gettextf("names for '%s' have missing values",
+                      name))
+    if (any(!nzchar(names)))
+        stop(gettextf("names for '%s' have blanks",
+                      name))
+    if (any(duplicated(names)))
+        stop(gettextf("names for '%s' have duplicates",
+                      name))
+    is.valid.name <- names %in% names.expected
+    if (any(!is.valid.name))
+        stop(gettextf("invalid name for '%s' : \"%s\"",
+                      name, names[!is.valid.name][1L]))
+    if (!isCounts) {
+        systemModels <- arg[["systemModels"]]
+        if (!is.list(systemModels))
+            stop(gettextf("element \"%s\" of '%s' does not have class \"%s\"",
+                          "systemModels", name, "list"))
+    }
+    dataModels <- arg[["dataModels"]]
+    if (!is.list(dataModels))
+        stop(gettextf("element \"%s\" of '%s' does not have class \"%s\"",
+                      "dataModels", name, "list"))
+    if (name == "aggregate")
+        if (!all(sapply(unlist(arg), methods::is, "SpecAggregate")))
+            stop(gettextf("'%s' contains elements not of class \"%s\"",
+                          name, "SpecAggregate"))
+    if (name %in% c("lower", "upper"))
+        if (!all(sapply(unlist(arg), is.numeric)))
+            stop(gettextf("'%s' contains elements not of type \"%s\"",
+                          name, "numeric"))
+    arg
+}
+
+
+## HAS_TESTS
 checkAndTidySDAg <- function(sd, value, metadata) {
     length.sd <- length(sd)
     length.value <- length(value)
@@ -3524,6 +3576,22 @@ makeComponentWeightMix <- function(dimBeta, iAlong, indexClassMaxMix,
                                        mean = levelComponent,
                                        sd = omegaComponent)
     methods::new("ParameterVector", componentWeightMix)
+}
+
+## HAS_TESTS
+makeCountsPred <- function(modelPred) {
+    metadata <- modelPred@metadataY
+    .Data <- array(NA_integer_,
+                   dim = dim(metadata),
+                   dimnames = dimnames(metadata))
+    has.struc.zero <- methods::is(modelPred, "StrucZeroArrayMixin")
+    if (has.struc.zero) {
+        struc.zero.array <- modelPred@strucZeroArray@.Data
+        .Data[struc.zero.array == 0L] <- 0L
+    }
+    methods::new("Counts",
+                 .Data = .Data,
+                 metadata = metadata)
 }
 
 ## HAS_TESTS
@@ -5856,19 +5924,17 @@ makeOffsetsVarsigma <- function(model, offsetModel) {
 extrapolateStrucZeroArray <- function(strucZeroArray, along, labels) {
     DimScales <- DimScales(strucZeroArray)
     DS.along <- DimScales[[along]]
-    if (methods::is(DS.along, "Points") || methods::is(DS.along, "Intervals")) {
+    if (!(methods::is(DS.along, "Points") || methods::is(DS.along, "Intervals")))
+        stop(gettextf("%s for '%s' dimension has class \"%s\"",
+                      "dimscales", "along", class(DS.along)))
     ans <- dembase:::extrapolate(strucZeroArray,
                                  along = along,
                                  labels = labels)
     ans <- dembase:::slab(ans,
                           dimension = along,
-                          elements = labels)
+                          elements = labels,
+                          drop = FALSE)
     ans <- toInteger(ans)
-    }
-    else {
-        
-    }
-        
     ans
 }
 

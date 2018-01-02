@@ -1665,7 +1665,6 @@ test_that("R and C versions of updateValuesAccount give same answer with Combine
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
     expect_true(validObject(x))
-    updated <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         while (!x@generatedNewProposal@.Data)
@@ -1679,8 +1678,6 @@ test_that("R and C versions of updateValuesAccount give same answer with Combine
             expect_equal(ans.R, ans.C.generic)
         expect_identical(ans.C.specific, ans.C.generic)
     }
-    if (!updated)
-        warning("not updated")
 })
 
 

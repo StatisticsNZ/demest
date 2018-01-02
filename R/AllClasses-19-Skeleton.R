@@ -258,6 +258,28 @@ setClass("SkeletonIndicesStrucZero",
 
 
 
+setClass("SkeletonMeanSD",
+         slots = c(mean = "ParameterVector",
+                   sd = "ScaleVec"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             mean <- object@mean@.Data
+             sd <- object@sd@.Data
+             metadata <- object@metadata
+             ## 'mean' and 'sd' have same length
+             if (!identical(length(mean), length(sd)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "mean", "sd"))
+             ## length of 'mean' consistent with 'metadata'
+             if (!identical(length(mean), as.integer(prod(dim(metadata)))))
+                 return(gettextf("'%s' and '%s' inconsistent",
+                                 "mean", "metadata"))
+             TRUE
+         })
+
+
+
+
 ## NON-VIRTUAL CLASSES ########################################################
 
 ## HAS_TESTS
@@ -543,6 +565,15 @@ setClass("SkeletonMissingDatasetPoissonBinomial",
 ## HAS_FETCH
 setClass("SkeletonMissingDatasetRound3",
          contains = "SkeletonMissingDataset")
+
+
+## HAS_TESTS
+## HAS_FETCH
+setClass("SkeletonMissingDatasetNormalFixedUseExp",
+         contains = c("SkeletonMissingDataset",
+                      "SkeletonMetadata",
+                      "SkeletonMeanSD"))
+
 
 
 

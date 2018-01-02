@@ -317,9 +317,9 @@ setMethod("updateCombined",
                       model <- updateModelNotUseExp(object = model,
                                                     y = y)
                       dataModels <- updateDataModelsCounts(dataModels = dataModels,
-                                                                   datasets = datasets,
-                                                                   transforms = transforms,
-                                                                   y = y)
+                                                           datasets = datasets,
+                                                           transforms = transforms,
+                                                           y = y)
                   }
                   object@y <- y
                   object@model <- model

@@ -859,6 +859,63 @@ test_that("can create valid object of class SkeletonMissingDatasetRound3", {
     expect_true(validObject(x))
 })
 
+test_that("can create valid object of class SkeletonMissingDatasetNormalFixedUseExp", {
+    x <- new("SkeletonMissingDatasetNormalFixedUseExp",
+             data = Counts(array(c(1:5, NA),
+                                 dim = 2:3,
+                                 dimnames = list(sex = c("f", "m"),
+                                                 age = 0:2))),
+             mean = new("ParameterVector", c(0, 1:5)),
+             sd = new("ScaleVec", c(1, 1:5)),
+             metadata = new("MetaData",
+                            nms = c("sex", "age"),
+                            dimtypes = c("sex", "age"),
+                            DimScales = list(new("Sexes", dimvalues = c("f", "m")),
+                                             new("Intervals", dimvalues = 0:3))),
+             offsetsComponent = new("Offsets", c(1L, 12L)),
+             transformComponent = new("CollapseTransform",
+                                      indices = list(c(1L, 1L), 1:2, 1:3),
+                                      dims = c(0L, 1L, 2L),
+                                      dimBefore = c(2L, 2L, 3L),
+                                      dimAfter = c(2L, 3L)))                 
+    expect_true(validObject(x))
+})
+
+test_that("validity tests for SkeletonMissingDatasetNormalFixedUseExp inherited from SkeletonMeanSD work", {
+    x <- new("SkeletonMissingDatasetNormalFixedUseExp",
+             data = Counts(array(c(1:5, NA),
+                                 dim = 2:3,
+                                 dimnames = list(sex = c("f", "m"),
+                                                 age = 0:2))),
+             mean = new("ParameterVector", c(0, 1:5)),
+             sd = new("ScaleVec", c(1, 1:5)),
+             metadata = new("MetaData",
+                            nms = c("sex", "age"),
+                            dimtypes = c("sex", "age"),
+                            DimScales = list(new("Sexes", dimvalues = c("f", "m")),
+                                             new("Intervals", dimvalues = 0:3))),
+             offsetsComponent = new("Offsets", c(1L, 12L)),
+             transformComponent = new("CollapseTransform",
+                                      indices = list(c(1L, 1L), 1:2, 1:3),
+                                      dims = c(0L, 1L, 2L),
+                                      dimBefore = c(2L, 2L, 3L),
+                                      dimAfter = c(2L, 3L)))
+    ## 'mean' and 'sd' have same length
+    x.wrong <- x 
+    x.wrong@mean@.Data <- x.wrong@mean@.Data[-1]
+    expect_error(validObject(x.wrong),
+                 "'mean' and 'sd' have different lengths")
+    ## length of 'mean' consistent with 'metadata'
+    x.wrong <- x 
+    x.wrong@mean@.Data <- x.wrong@mean@.Data[-1]
+    x.wrong@sd@.Data <- x.wrong@sd@.Data[-1]
+    expect_error(validObject(x.wrong),
+                 "'mean' and 'metadata' inconsistent")
+    expect_true(validObject(x))
+})
+
+
+
 
 
  

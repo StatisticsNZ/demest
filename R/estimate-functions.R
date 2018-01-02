@@ -363,10 +363,10 @@ predictModel <- function(filenameEst, filenamePred, along = NULL, labels = NULL,
 }
 
 
-#' Estimate counts and model from multiple noisy datasets.
+#' Estimate counts and model from one or more noisy datasets.
 #'
 #' Infer the contents of a demographic array, and fit a model describing
-#' the array, using multiple noisy datasets.
+#' the array, using one or more noisy datasets.
 #'
 #' See the documentation for \code{\link{estimateModel}} for details on
 #' model output and on MCMC settings.
