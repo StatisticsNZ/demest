@@ -841,6 +841,8 @@ double diffLogDensAccount_CombinedAccountMovements(SEXP object_R);
 double diffLogDensAccount(SEXP object_R);
 void updateValuesAccount_CombinedAccountMovements(SEXP object_R);
 void updateValuesAccount(SEXP object_R);
+void updateExpectedExposure_CombinedAccountMovements(SEXP object_R);
+void updateExpectedExposure(SEXP object_R);
 
 /* update combined counts */
 void updateCombined_CombinedCountsPoissonNotHasExp(SEXP object_R,

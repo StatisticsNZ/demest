@@ -488,44 +488,15 @@ updateValuesAccount(SEXP object_R)
     int i_method_combined = *(INTEGER(GET_SLOT(
                                     object_R, iMethodCombined_sym)));
     
-    int nProtected = 0;
-        
     switch(i_method_combined)
     {
         case 9: case 10:  /*  */
-        {
-            SEXP iteratorPopn_R = GET_SLOT(object_R, iteratorPopn_sym);
-            SEXP iteratorPopnDup_R = NULL;
-            PROTECT(iteratorPopnDup_R = duplicate(iteratorPopn_R));
-            SEXP iteratorExposure_R = GET_SLOT(object_R, iteratorExposure_sym);
-            SEXP iteratorExposureDup_R = NULL;
-            PROTECT(iteratorExposureDup_R = duplicate(iteratorExposure_R));
-
-            int hasAge = *LOGICAL(GET_SLOT(object_R, hasAge_sym));
-            nProtected = 2;
-            
-            SEXP iteratorAccDup_R = NULL;
-            if (hasAge) {
-                SEXP iteratorAcc_R = GET_SLOT(object_R, iteratorAcc_sym);
-                PROTECT(iteratorAccDup_R = duplicate(iteratorAcc_R));
-                ++nProtected;
-            }
-
             updateValuesAccount_CombinedAccountMovements(object_R);
-            
-            SET_SLOT(object_R, iteratorPopn_sym, iteratorPopnDup_R);
-            SET_SLOT(object_R, iteratorExposure_sym, iteratorExposureDup_R);
-            
-            if (hasAge) {
-                SET_SLOT(object_R, iteratorAcc_sym, iteratorAccDup_R);
-            }
             break;
-        }
         default:
             error("unknown iMethodCombined for updateProposalAccount: %d", i_method_combined);
             break;
     }
-    UNPROTECT(nProtected);
 }
 
 
@@ -541,3 +512,157 @@ updateValuesAccount_CombinedAccountMovements(SEXP object_R)
         updateSubsequentAccMove(object_R);
     }
 }
+
+/* generic update expected exposure object method */
+void
+updateExpectedExposure(SEXP object_R)
+{
+    int i_method_combined = *(INTEGER(GET_SLOT(
+                                    object_R, iMethodCombined_sym)));
+    
+    switch(i_method_combined)
+    {
+        case 9: case 10:  /*  */
+            updateExpectedExposure_CombinedAccountMovements(object_R);
+            break;
+        default:
+            error("unknown iMethodCombined for updateExpectedExposure: %d", i_method_combined);
+            break;
+    }
+}
+
+void
+updateExpectedExposure_CombinedAccountMovements(SEXP combined_R)
+{
+    double * expectedExposure = REAL(GET_SLOT(combined_R, expectedExposure_sym));
+    
+    SEXP systemModels_R = GET_SLOT(combined_R, systemModels_sym);
+    SEXP thisSystemModel_R = VECTOR_ELT(systemModels_R, 0);
+    double * theta = REAL(GET_SLOT(thisSystemModel_R, theta_sym));
+    
+    SEXP descriptions_R = GET_SLOT(combined_R, descriptions_sym);
+    SEXP description_R = VECTOR_ELT(descriptions_R, 0);
+    
+    int lengthPopn = *INTEGER(GET_SLOT(description_R, length_sym));
+    
+    double ageTimeStep = *REAL(GET_SLOT(combined_R, ageTimeStep_sym));
+    int nTimePopn = *INTEGER(GET_SLOT(description_R, nTime_sym));
+    int stepTime = *INTEGER(GET_SLOT(description_R, stepTime_sym));
+    int hasAge = *LOGICAL(GET_SLOT(combined_R, hasAge_sym));
+    
+    int nTimeExp = nTimePopn - 1;
+
+    int lengthExpNoTri = (lengthPopn / nTimePopn) * nTimeExp;
+    int lengthSlicePopn = nTimePopn * stepTime;
+    int lengthSliceExp = nTimeExp * stepTime;
+    
+    double halfAgeTimeStep = 0.5 * ageTimeStep;
+    
+    for (int i = 0; i < lengthExpNoTri; ++i) {
+
+        int iPopnStart = (i / lengthSliceExp) * lengthSlicePopn
+                        + i % lengthSliceExp; /* C style */
+        int iPopnEnd = iPopnStart + stepTime;
+        double expStart = halfAgeTimeStep * theta[iPopnStart];
+        double expEnd = halfAgeTimeStep * theta[iPopnEnd];
+        
+        if (hasAge) {
+            expectedExposure[i + lengthExpNoTri] = expStart;
+            expectedExposure[i] = expEnd;
+        }
+        else {
+            expectedExposure[i] = expStart + expEnd;
+        }
+            
+    }
+}  
+    /*
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("updateSystemModels",
+          signature(combined = "CombinedAccountMovements"),
+          function(combined, useC = FALSE, useSpecific = FALSE) {
+              if (useC) {
+                  if (useSpecific)
+                      .Call(updateSystemModels_CombinedAccountMovements_R, object)
+                  else
+                      .Call(updateSystemModels_R, object)
+              }
+              else {
+                  system.models <- combined@systemModels
+                  population <- combined@account@population
+                  components <- combined@account@components
+                  has.age <- combined@hasAge
+                  model.uses.exposure <- combined@modelUsesExposure
+                  transforms.exp.to.comp <- combined@transformsExpToComp
+                  transform.exp.to.births <- combined@transformExpToBirths
+                  i.births <- combined@iBirths
+                  model <- system.models[[1L]]
+                  model <- updateModelNotUseExp(model,
+                                                y = population)
+                  system.models[[1L]] <- model
+                  for (i in seq_along(components)) {
+                      model <- system.models[[i + 1L]]
+                      component <- components[[i]]
+                      uses.exposure <- model.uses.exposure[i + 1L]
+                      if (uses.exposure) {
+                          exposure <- combined@exposure@.Data
+                          is.births <- i == i.births
+                          if (is.births)
+                              exposure <- collapse(exposure,
+                                                   transform = transform.exp.to.births)
+                          transform <- transforms.exp.to.comp[[i]]
+                          if (!is.null(transform))
+                              exposure <- extend(exposure,
+                                                 transform = transforms.exp.to.comp[[i]])
+                          model <- updateModelUseExp(object = model,
+                                                     y = component,
+                                                     exposure = exposure)
+                      }
+                      else {
+                          if (methods::is(model, "Normal"))
+                              component <- toDouble(component)
+                          model <- updateModelNotUseExp(object = model,
+                                                        y = component)
+                      }
+                      system.models[[i + 1L]] <- model
+                  }
+                  combined@systemModels <- system.models
+                  combined
+              }
+          })
+
+*/
+
+
+
+/*
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("updateCombined",
+          signature(object = "CombinedAccountMovements"),
+          function(object, nUpdate = 1L, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## nUpdate
+              stopifnot(identical(length(nUpdate), 1L))
+              stopifnot(is.integer(nUpdate))
+              stopifnot(!is.na(nUpdate))
+              stopifnot(nUpdate >= 0L)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(updateCombined_CombinedAccount_R, object, nUpdate)
+                  else
+                      .Call(updateCombined_R, object, nUpdate)
+              }
+              else {
+                  for (i in seq_len(nUpdate)) {
+                      object <- updateAccount(object)
+                      object <- updateSystemModels(object)
+                      object <- updateExpectedExposure(object)
+                      object <- updateDataModelsAccount(object)
+                  }
+                  object
+              }
+          })
+*/
