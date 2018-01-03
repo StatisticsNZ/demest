@@ -6,40 +6,6 @@
  * from "update-accounts.R". */
 
 
-/* ****************** Overall update *************************** */
-
-
-/*## READY_TO_TRANSLATE
-## HAS_TESTS
-updateAccount <- function(object, useC = FALSE) {
-    stopifnot(methods::is(object, "CombinedAccount"))
-    stopifnot(methods::validObject(object))
-    if (useC) {
-        .Call(updateAccount_R, object)
-    }
-    else {
-        n.cell.account <- object@nCellAccount@.Data
-        for (i in seq_len(n.cell.account)) {
-            object <- updateProposalAccount(object)
-            generated.new.proposal <- object@generatedNewProposal@.Data
-            if (generated.new.proposal) {
-                diff.log.lik <- diffLogLikAccount(object)
-                if (is.finite(diff.log.lik)) {
-                    diff.log.dens <- diffLogDensAccount(object)
-                    if (is.finite(diff.log.dens)) {
-                        log.r <- diff.log.lik + diff.log.dens
-                        accept <- (log.r > 0) || (runif(n = 1L) < exp(log.r))
-                        if (accept)
-                            object <- updateValuesAccount(object)
-                    }
-                }
-            }
-        }
-        object
-    }
-}
-*/
-
 void
 updateAccount(SEXP object_R)
 {

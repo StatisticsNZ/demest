@@ -1367,7 +1367,60 @@ DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogLikAccount);
 UPDATEOBJECT_WRAPPER_UPDATEPROPOSAL_R(updateProposalAccount_CombinedAccountMovements);
 UPDATEOBJECT_WRAPPER_UPDATEPROPOSAL_R(updateProposalAccount);
 
-UPDATEOBJECT_NOPRNG_WRAPPER_R(updateValuesAccount);
+/* generic update account values object method */
+SEXP
+updateValuesAccount_R(SEXP object_R)
+{
+    SEXP ans_R;
+    PROTECT(ans_R = duplicate(object_R));
+    int nProtected = 1;
+    
+    SEXP iteratorPopnDup_R = NULL;
+    int hasIteratorPopn = 0;
+    if(R_has_slot(object_R, iteratorPopn_sym)) {
+        SEXP iteratorPopn_R = GET_SLOT(object_R, iteratorPopn_sym);
+    
+        PROTECT(iteratorPopnDup_R = duplicate(iteratorPopn_R));
+        hasIteratorPopn = 1;
+        ++nProtected;
+    }
+    
+    SEXP iteratorExposureDup_R = NULL;
+    int hasIteratorExposure = 0;
+    if(R_has_slot(object_R, iteratorExposure_sym)) {
+        SEXP iteratorExposure_R = GET_SLOT(object_R, iteratorExposure_sym);
+    
+        PROTECT(iteratorExposureDup_R = duplicate(iteratorExposure_R));
+        hasIteratorExposure = 1;
+        ++nProtected;
+    }
+        
+    SEXP iteratorAccDup_R = NULL;
+    int hasIteratorAcc = 0;
+    if(R_has_slot(object_R, iteratorAcc_sym)) {
+        SEXP iteratorAcc_R = GET_SLOT(object_R, iteratorAcc_sym);
+    
+        PROTECT(iteratorAccDup_R = duplicate(iteratorAcc_R));
+        hasIteratorAcc = 1;
+        ++nProtected;
+    }
+
+    updateValuesAccount(ans_R);
+    
+    if (hasIteratorPopn) {
+        SET_SLOT(ans_R, iteratorPopn_sym, iteratorPopnDup_R);
+    }
+    if (hasIteratorExposure) {
+        SET_SLOT(ans_R, iteratorExposure_sym, iteratorExposureDup_R);
+    }
+    if (hasIteratorAcc) {
+        SET_SLOT(ans_R, iteratorAcc_sym, iteratorAccDup_R);
+    }
+    
+    UNPROTECT(nProtected);
+    return ans_R;
+}
+
 
 SEXP
 updateValuesAccount_CombinedAccountMovements_R(SEXP object_R)
@@ -1403,6 +1456,9 @@ updateValuesAccount_CombinedAccountMovements_R(SEXP object_R)
     UNPROTECT(nProtected);
     return ans_R;
 }
+
+UPDATEOBJECT_NOPRNG_WRAPPER_R(updateExpectedExposure);
+UPDATEOBJECT_NOPRNG_WRAPPER_R(updateExpectedExposure_CombinedAccountMovements);
 
 /* wrap repetitive update of combined counts functions */
 UPDATECOMBINEDOBJECT_WRAPPER_R(updateCombined_CombinedCountsPoissonNotHasExp);
@@ -1490,7 +1546,77 @@ RCMP_WRAPPER_R(rcmp1);
 
 /* *************************** update-account -------------------------- */
 
-UPDATEOBJECT_WRAPPER_UPDATEPROPOSAL_R(updateAccount);
+
+/* generic update account object method */
+SEXP
+updateAccount_R(SEXP object_R)
+{
+    SEXP ans_R;
+    PROTECT(ans_R = duplicate(object_R));
+    int nProtected = 1;
+    
+    SEXP iteratorPopnDup_R = NULL;
+    int hasIteratorPopn = 0;
+    if(R_has_slot(object_R, iteratorPopn_sym)) {
+        SEXP iteratorPopn_R = GET_SLOT(object_R, iteratorPopn_sym);
+    
+        PROTECT(iteratorPopnDup_R = duplicate(iteratorPopn_R));
+        hasIteratorPopn = 1;
+        ++nProtected;
+    }
+    
+    SEXP iteratorExposureDup_R = NULL;
+    int hasIteratorExposure = 0;
+    if(R_has_slot(object_R, iteratorExposure_sym)) {
+        SEXP iteratorExposure_R = GET_SLOT(object_R, iteratorExposure_sym);
+    
+        PROTECT(iteratorExposureDup_R = duplicate(iteratorExposure_R));
+        hasIteratorExposure = 1;
+        ++nProtected;
+    }
+    
+    SEXP iteratorsCompDup_R = NULL;
+    int hasIteratorsComp = 0;
+    if(R_has_slot(object_R, iteratorsComp_sym)) {
+        SEXP iteratorsComp_R = GET_SLOT(object_R, iteratorsComp_sym);
+    
+        PROTECT(iteratorsCompDup_R = duplicate(iteratorsComp_R));
+        hasIteratorsComp = 1;
+        ++nProtected;
+    }
+        
+    SEXP iteratorAccDup_R = NULL;
+    int hasIteratorAcc = 0;
+    if(R_has_slot(object_R, iteratorAcc_sym)) {
+        SEXP iteratorAcc_R = GET_SLOT(object_R, iteratorAcc_sym);
+    
+        PROTECT(iteratorAccDup_R = duplicate(iteratorAcc_R));
+        hasIteratorAcc = 1;
+        ++nProtected;
+    }
+
+    GetRNGstate();
+    updateAccount(ans_R);
+    PutRNGstate();
+    
+    if (hasIteratorPopn) {
+        SET_SLOT(ans_R, iteratorPopn_sym, iteratorPopnDup_R);
+    }
+    if (hasIteratorExposure) {
+        SET_SLOT(ans_R, iteratorExposure_sym, iteratorExposureDup_R);
+    }
+    if (hasIteratorsComp) {
+        SET_SLOT(ans_R, iteratorsComp_sym, iteratorsCompDup_R);
+    }
+    if (hasIteratorAcc) {
+        SET_SLOT(ans_R, iteratorAcc_sym, iteratorAccDup_R);
+    }
+    
+    UNPROTECT(nProtected);
+    return ans_R;
+}
+
+
 UPDATEOBJECT_WRAPPER_UPDATEPROPOSAL_R(updateProposalAccountMovePopn);
 UPDATEOBJECT_WRAPPER_UPDATEPROPOSAL_R(updateProposalAccountMoveBirths);
 UPDATEOBJECT_WRAPPER_UPDATEPROPOSAL_R(updateProposalAccountMoveOrigDest);
@@ -2093,6 +2219,8 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateProposalAccount_R, 1),
   CALLDEF(updateValuesAccount_CombinedAccountMovements_R, 1),
   CALLDEF(updateValuesAccount_R, 1),
+  CALLDEF(updateExpectedExposure_CombinedAccountMovements_R, 1),
+  CALLDEF(updateExpectedExposure_R, 1),
   
   CALLDEF(estimateOneChain_R, 6),
   

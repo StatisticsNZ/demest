@@ -64,7 +64,7 @@
 
 ## Overall update ############################################################
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 updateAccount <- function(object, useC = FALSE) {
     stopifnot(methods::is(object, "CombinedAccount"))

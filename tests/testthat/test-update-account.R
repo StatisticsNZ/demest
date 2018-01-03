@@ -126,15 +126,96 @@ test_that("R and C versions of updateAccount give same answer with CombinedAccou
                                  transforms = transforms)
     expect_true(validObject(x0))
     set.seed(1)
+    updated <- FALSE
     ans.R <- updateAccount(x0, useC = FALSE)
+    if (ans.R@generatedNewProposal@.Data)
+        updated <- TRUE
     set.seed(1)
     ans.C <- updateAccount(x0, useC = TRUE)
     if (test.identity)
         expect_identical(ans.R, ans.C)
     else
         expect_equal(ans.R, ans.C)
+    if (!updated)
+        warning("not updated")
 })
 
+## tries to test for not updated as well as updated
+if (test.extended) {
+    test_that("R and C versions of updateAccount give same answer with CombinedAccountMovements", {
+        updateAccount <- demest:::updateAccount
+        updateProposalAccount <- demest:::updateProposalAccount
+        diffLogLikAccount <- demest:::diffLogLikAccount
+        diffLogDensAccount <- demest:::diffLogDensAccount
+        updateValuesAccount <- demest:::updateValuesAccount
+        initialCombinedAccount <- demest:::initialCombinedAccount
+        makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+        n.updated = 0L
+        n.not.updated = 0L
+        n.try = n.test * 20L
+        i.try <- 0L
+        while (i.try < n.test || ((i.try < n.try) && ((n.updated == 0) || (n.not.updated == 0L)))) {
+            i.try <- i.try + 1L
+            seed <- i.try
+            set.seed(seed)
+            population <- CountsOne(values = seq(100, 200, 10),
+                                    labels = seq(2000, 2100, 10),
+                                    name = "time")
+            births <- CountsOne(values = rpois(n = 10, lambda = 15),
+                                labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
+                                name = "time")
+            deaths <- CountsOne(values = rpois(n = 10, lambda = 5),
+                                labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
+                                name = "time")
+            account <- Movements(population = population,
+                                 births = births,
+                                 exits = list(deaths = deaths))
+            account <- makeConsistent(account)
+            systemModels <- list(Model(population ~ Poisson(mean ~ time, useExpose = FALSE)),
+                                 Model(births ~ Poisson(mean ~ 1)),
+                                 Model(deaths ~ Poisson(mean ~ 1)))
+            systemWeights <- rep(list(NULL), 3)
+            data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
+                                      Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
+            seriesIndices <- c(2L, 0L)
+            datasets <- list(Counts(array(7L,
+                                          dim = 10,
+                                          dimnames = list(time = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-")))),
+                             Counts(array(seq.int(110L, 210L, 10L),
+                                          dim = 11,
+                                          dimnames = list(time = seq(2000, 2100, 10)))))
+            namesDatasets <- c("tax", "census")
+            transforms <- list(makeTransform(x = deaths, y = datasets[[1]], subset = TRUE),
+                               makeTransform(x = population, y = datasets[[2]], subset = TRUE))
+            transforms <- lapply(transforms, makeCollapseTransformExtra)
+            x0 <- initialCombinedAccount(account = account,
+                                         systemModels = systemModels,
+                                         systemWeights = systemWeights,
+                                         dataModels = data.models,
+                                         seriesIndices = seriesIndices,
+                                         datasets = datasets,
+                                         namesDatasets = namesDatasets,
+                                         transforms = transforms)
+            expect_true(validObject(x0))
+            set.seed(seed+1)
+            ans.R <- updateAccount(x0, useC = FALSE)
+            if (ans.R@generatedNewProposal@.Data)
+                n.updated <- n.updated + 1L
+            else
+                n.not.updated <- n.not.updated + 1L
+            set.seed(seed+1)
+            ans.C <- updateAccount(x0, useC = TRUE)
+            if (test.identity)
+                expect_identical(ans.R, ans.C)
+            else
+                expect_equal(ans.R, ans.C)
+        }
+        if (n.updated == 0L)
+            warning("not updated")
+        if (n.not.updated == 0L) 
+            warning ("could not test not updated - try increasing n.test")
+    })
+}
 
 
 

@@ -569,7 +569,7 @@ setMethod("updateValuesAccount",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATE
 ## HAS_TESTS
 ## 'expectedExposure' equals result of calling 'exposure' on
 ## 'population', so dimensions in same order, except for
