@@ -196,9 +196,9 @@ setClassUnion("ResultsModel",
 ## HAS_TESTS
 setClass("ResultsCountsEst",
          slots = c(model = "list",
-                        y = "Skeleton",
-                        dataModels = "list",
-                        datasets = "list"),
+                   y = "Skeleton",
+                   dataModels = "list",
+                   datasets = "list"),
          contains = "ResultsEst",
          validity = function(object) {
              model <- object@model

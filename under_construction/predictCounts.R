@@ -216,11 +216,27 @@ setMethod("predictCombined",
                                               filename = filename,
                                               lengthIter = lengthIter,
                                               iteration = iteration)
-                  model <- predictModelUseExp(model, y = y, exposure = exposure)
+                  model <- predictModelUseExp(model,
+                                              y = y,
+                                              exposure = exposure)
+                  y <- updateCountsPoissonUseExp(y = y,
+                                                 model = model,
+                                                 exposure = exposure,
+                                                 dataModels = data.models,
+                                                 datasets = datasets,
+                                                 transforms = transforms)
+                  for (i in seq_along(data.models)) {
+                      data.model <- data.models[[i]]
+                      dataset <- datasets[[i]] ## all NA
+                      data.model <- predictModelUseExp(object = data.model,
+                                                       y = dataset,
+                                                       exposure = dataset)
+                      data.models[[i]] <- data.model
+                  }
                   object@model <- model
-                  
-                  object
+                  object@y <- y
+                  object@dataModels = data.models
               }
           })
 
-
+                                                       
