@@ -1459,6 +1459,8 @@ updateValuesAccount_CombinedAccountMovements_R(SEXP object_R)
 
 UPDATEOBJECT_NOPRNG_WRAPPER_R(updateExpectedExposure);
 UPDATEOBJECT_NOPRNG_WRAPPER_R(updateExpectedExposure_CombinedAccountMovements);
+UPDATEOBJECT_NOPRNG_WRAPPER_R(updateSystemModels);
+UPDATEOBJECT_NOPRNG_WRAPPER_R(updateSystemModels_CombinedAccountMovements);
 
 /* wrap repetitive update of combined counts functions */
 UPDATECOMBINEDOBJECT_WRAPPER_R(updateCombined_CombinedCountsPoissonNotHasExp);
@@ -2221,6 +2223,8 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateValuesAccount_R, 1),
   CALLDEF(updateExpectedExposure_CombinedAccountMovements_R, 1),
   CALLDEF(updateExpectedExposure_R, 1),
+  CALLDEF(updateSystemModels_CombinedAccountMovements_R, 1),
+  CALLDEF(updateSystemModels_R, 1),
   
   CALLDEF(estimateOneChain_R, 6),
   
@@ -2378,6 +2382,7 @@ R_init_demest(DllInfo *info)
   /* populate pointers declared in header file demest.h
    * see http://tolstoy.newcastle.edu.au/R/e5/devel/08/11/0646.html */
   dembase_Collapse_R = (SEXP(*)(SEXP,SEXP)) R_GetCCallable("dembase", "collapse_R"); 
+  dembase_Extend_R = (SEXP(*)(SEXP,SEXP)) R_GetCCallable("dembase", "extend_R"); 
   
   dembase_getIAfter = (int(*)(int, SEXP)) R_GetCCallable("dembase", "getIAfter"); 
   dembase_getIBefore = (SEXP(*)(int, SEXP)) R_GetCCallable("dembase", "getIBefore"); 
@@ -2681,6 +2686,8 @@ R_init_demest(DllInfo *info)
   ADD_SYM(iteratorPopn);
   ADD_SYM(iteratorAcc);
   ADD_SYM(iteratorExposure);
+  ADD_SYM(transformsExpToComp);
+  ADD_SYM(transformExpToBirths);
   ADD_SYM(iCell);
   ADD_SYM(iCellOther);
   ADD_SYM(iComp);

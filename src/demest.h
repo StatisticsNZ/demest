@@ -326,6 +326,8 @@ SEXP
   iteratorPopn_sym,
   iteratorAcc_sym,
   iteratorExposure_sym,
+  transformsExpToComp_sym,
+  transformExpToBirths_sym,
   iCell_sym,
   iCellOther_sym,
   iComp_sym,
@@ -843,6 +845,8 @@ void updateValuesAccount_CombinedAccountMovements(SEXP object_R);
 void updateValuesAccount(SEXP object_R);
 void updateExpectedExposure_CombinedAccountMovements(SEXP object_R);
 void updateExpectedExposure(SEXP object_R);
+void updateSystemModels_CombinedAccountMovements(SEXP combined_R);
+void updateSystemModels(SEXP object_R);
 
 /* update combined counts */
 void updateCombined_CombinedCountsPoissonNotHasExp(SEXP object_R,
@@ -981,7 +985,8 @@ void updateSubsequentExpMove(SEXP combined_R);
 /* pointers for routines from dembase package 
  * 
  * these have to be populated with R_GetCCallable in the initialisation function */
-SEXP (*dembase_Collapse_R)(SEXP ,SEXP); 
+SEXP (*dembase_Collapse_R)(SEXP ,SEXP);
+SEXP (*dembase_Extend_R)(SEXP ,SEXP); 
 int (*dembase_getIAfter)(int, SEXP);
 SEXP (*dembase_getIBefore)(int, SEXP);
 SEXP (*dembase_getIShared)(int, SEXP);
