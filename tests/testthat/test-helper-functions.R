@@ -2721,7 +2721,7 @@ test_that("checkAndTidyExposure works", {
 })
 
 test_that("checkAndTidyListArgForEstimateFun works", {
-    ## checkAndTidyListArgForEstimateFun <- demest:::checkAndTidyListArgForEstimateFun
+    checkAndTidyListArgForEstimateFun <- demest:::checkAndTidyListArgForEstimateFun
     ans.obtained <- checkAndTidyListArgForEstimateFun(arg = list(),
                                                       name = "data",
                                                       isCounts = TRUE)
@@ -3565,7 +3565,7 @@ test_that("jitterBetas works", {
         priors <- list(prior1, prior2)
         betas.jittered <- jitterBetas(betas = betas, priorsBetas = priors)
         expect_true(betas.jittered[[1]] != 0)
-        expect_true(betas.jittered[[2]][1] == 0)
+        expect_true(is.na(betas.jittered[[2]][1]))
         expect_true(all(betas.jittered[[2]][-1] != 0))
     }
 })
