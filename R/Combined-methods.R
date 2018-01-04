@@ -569,7 +569,7 @@ setMethod("updateValuesAccount",
               }
           })
 
-## TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 ## 'expectedExposure' equals result of calling 'exposure' on
 ## 'population', so dimensions in same order, except for
@@ -623,9 +623,9 @@ setMethod("updateSystemModels",
           function(combined, useC = FALSE, useSpecific = FALSE) {
               if (useC) {
                   if (useSpecific)
-                      .Call(updateSystemModels_CombinedAccountMovements_R, object)
+                      .Call(updateSystemModels_CombinedAccountMovements_R, combined)
                   else
-                      .Call(updateSystemModels_R, object)
+                      .Call(updateSystemModels_R, combined)
               }
               else {
                   system.models <- combined@systemModels

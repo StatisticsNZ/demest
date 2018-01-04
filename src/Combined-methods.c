@@ -575,7 +575,26 @@ updateExpectedExposure_CombinedAccountMovements(SEXP combined_R)
         }
             
     }
-}  
+}
+
+/* generic update SystemModels object method */
+void
+updateSystemModels(SEXP object_R)
+{
+    int i_method_combined = *(INTEGER(GET_SLOT(
+                                    object_R, iMethodCombined_sym)));
+    
+    switch(i_method_combined)
+    {
+        case 9: case 10:  /*  */
+            updateSystemModels_CombinedAccountMovements(object_R);
+            break;
+        default:
+            error("unknown iMethodCombined for updateSystemModels: %d", i_method_combined);
+            break;
+    }
+}
+  
     /*
 ## READY_TO_TRANSLATE
 ## HAS_TESTS
@@ -634,6 +653,127 @@ setMethod("updateSystemModels",
 
 */
 
+void
+updateSystemModels_CombinedAccountMovements(SEXP combined_R)
+{
+    /*system.models <- combined@systemModels
+                  population <- combined@account@population
+                  components <- combined@account@components
+                  has.age <- combined@hasAge
+                  model.uses.exposure <- combined@modelUsesExposure
+                  transforms.exp.to.comp <- combined@transformsExpToComp
+                  transform.exp.to.births <- combined@transformExpToBirths
+                  i.births <- combined@iBirths
+                  model <- system.models[[1L]]
+                  model <- updateModelNotUseExp(model,
+                                                y = population)
+                  system.models[[1L]] <- model*/
+                  
+    SEXP systemModels_R = GET_SLOT(combined_R, systemModels_sym);
+        
+    SEXP account_R = GET_SLOT(combined_R, account_sym);
+    SEXP population_R = GET_SLOT(account_R, population_sym);
+    SEXP components_R = GET_SLOT(account_R, components_sym);
+    int nComponents = LENGTH(components_R);
+    
+    int hasAge = *LOGICAL(GET_SLOT(combined_R, hasAge_sym));
+    
+    int * modelUsesExposureVec = LOGICAL(GET_SLOT(combined_R, modelUsesExposure_sym));
+    
+    SEXP transformsExpToComp_R = GET_SLOT(combined_R, transformsExpToComp_sym); /* list */
+    SEXP transformExpToBirths_R = GET_SLOT(combined_R, transformExpToBirths_sym);
+    
+    int iBirths_r = *INTEGER(GET_SLOT(combined_R, iBirths_sym));
+    
+    SEXP firstModel_R = VECTOR_ELT(systemModels_R, 0);
+    
+    updateModelNotUseExp(firstModel_R, population_R);
+    
+    /*for (i in seq_along(components)) {
+                      model <- system.models[[i + 1L]]
+                      component <- components[[i]]
+                      uses.exposure <- model.uses.exposure[i + 1L]
+                      if (uses.exposure) {
+                          exposure <- combined@exposure@.Data
+                          is.births <- i == i.births*/
+                          
+    for(int i = 0; i < nComponents; ++i) {
+        
+        SEXP model_R = VECTOR_ELT(systemModels_R, i+1);
+        SEXP component_R = VECTOR_ELT(components_R, i);
+        int usesExposure = modelUsesExposureVec[i+1];
+        
+        if (usesExposure) {
+            
+            SEXP transform_R = VECTOR_ELT(transformsExpToComp_R, i);
+            int haveTransform = !isNull(transform_R);
+            
+            SEXP exposure_R = GET_SLOT(combined_R, exposure_sym);
+            int isBirths = (i == (iBirths_r - 1));
+                
+        /*                if (is.births)
+                              exposure <- collapse(exposure,
+                                                   transform = transform.exp.to.births)
+                          transform <- transforms.exp.to.comp[[i]]
+                          if (!is.null(transform))
+                              exposure <- extend(exposure,
+                                                 transform = transforms.exp.to.comp[[i]])
+                          model <- updateModelUseExp(object = model,
+                                                     y = component,
+                                                     exposure = exposure)
+                      }*/
+            
+            if(isBirths) {
+                SEXP newExposure_R = NULL;
+                PROTECT(newExposure_R = dembase_Collapse_R(exposure_R, 
+                                        transformExpToBirths_R));
+                if(haveTransform) {
+                    SEXP anotherNewExposure_R = NULL;
+                    PROTECT(anotherNewExposure_R = dembase_Extend_R(newExposure_R, 
+                                        transform_R));
+                    updateModelUseExp(model_R, component_R, anotherNewExposure_R);
+                    UNPROTECT(1); /* anotherNewExposure */
+                }
+                else {
+                    updateModelUseExp(model_R, component_R, newExposure_R);
+                }
+                UNPROTECT(1); /* newExposure */
+            }
+            else if (haveTransform) {
+                SEXP newExposure_R = NULL;
+                PROTECT(newExposure_R = dembase_Extend_R(exposure_R, 
+                                    transform_R));
+                updateModelUseExp(model_R, component_R, newExposure_R);
+                UNPROTECT(1); /* newExposure */
+            }
+            else {
+                updateModelUseExp(model_R, component_R, exposure_R);
+            }
+        } /* end if usesExposure */
+        
+        /*else {
+                          if (methods::is(model, "Normal"))
+                              component <- toDouble(component)
+                          model <- updateModelNotUseExp(object = model,
+                                                        y = component)
+                      }*/
+            
+        else {
+            const char *class_name = CHAR(STRING_ELT(GET_SLOT((model_R), R_ClassSymbol), 0));
+            char *found = NULL;
+            found = strstr(class_name, "Normal");
+            if (found) {
+                SEXP componentDouble_R;
+                PROTECT(componentDouble_R = coerceVector(component_R, REALSXP));
+                updateModelNotUseExp(model_R, componentDouble_R);
+                UNPROTECT(1);
+            }
+            else {
+                updateModelNotUseExp(model_R, component_R);
+            }
+        }
+    }
+}  
 
 
 /*
