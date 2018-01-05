@@ -369,15 +369,6 @@ setMethod("initialCombinedAccount",
               i.pool <- if (any(is.pool)) which(is.pool) else 0L
               i.int.net <- if (any(is.int.net)) which(is.int.net) else 0L
               is.net <- is.int.net | is.net.move
-              if (has.age) {
-                  accession <- dembase::accession(account,
-                                                  births = FALSE)
-                  accession <- new("Accession",
-                                   .Data = accession@.Data,
-                                   metadata = accession@metadata)
-                  iterator.acc <- CohortIterator(accession)
-                  mappings.to.acc <- lapply(components, function(x) Mapping(x, accession))
-              }
               exposure <- dembase::exposure(population,
                                             triangles = has.age)
               exposure <- new("Exposure",
@@ -465,6 +456,21 @@ setMethod("initialCombinedAccount",
                       }
                   }
               }
+              struc.zero.array <- systemModels[[1L]]@strucZeroArray@.Data
+              if (any(struc.zero.array == 0L)) {
+                  population@.Data[struc.zero.array == 0L] <- 0L
+                  account@population <- population
+                  exposure@.Data <- dembase::exposure(population, triangles = has.age)@.Data
+              }
+              for (i in seq_along(components)) {
+                  sys.mod <- systemModels[[i + 1L]]
+                  has.struc.zeros <- methods::is(sys.mod, "StrucZeroArrayMixin")
+                  if (has.struc.zeros) {
+                      struc.zero.array <- sys.mod@strucZeroArray@.Data
+                      if (any(struc.zero.array == 0L))
+                          account@components[[i]]@.Data[struc.zero.array == 0L] <- 0L
+                  }
+              }
               .Data.theta.popn <- array(systemModels[[1L]]@theta,
                                         dim = dim(population),
                                         dimnames = dimnames(population))
@@ -486,10 +492,23 @@ setMethod("initialCombinedAccount",
                       series.collapsed <- dembase::toDouble(series.collapsed)
                   dataset <- datasets[[i]]
                   dataModels[[i]] <- initialModel(model,
-                                                         y = dataset,
-                                                         exposure = series.collapsed)
+                                                  y = dataset,
+                                                  exposure = series.collapsed)
+                  has.struc.zeros <- methods::is(model, "StrucZeroArrayMixin")
+                  if (has.struc.zeros) {
+                      struc.zero.array <- model@strucZeroArray@.Data
+                      dataset@.Data[struc.zero.array == 0L] <- 0L
+                      datasets[[i]] <- dataset
+                  }
               }
               if (has.age) {
+                  accession <- dembase::accession(account,
+                                                  births = FALSE)
+                  accession <- new("Accession",
+                                   .Data = accession@.Data,
+                                   metadata = accession@metadata)
+                  iterator.acc <- CohortIterator(accession)
+                  mappings.to.acc <- lapply(components, function(x) Mapping(x, accession))
                   methods::new("CombinedAccountMovementsHasAge",
                                accession = accession,
                                account = account,

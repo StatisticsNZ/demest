@@ -2293,13 +2293,13 @@ test_that("updateSystemModels works with CombinedAccountMovements", {
                          Model(deaths ~ Poisson(mean ~ reg)))
     systemWeights <- list(NULL,
                           Counts(array(1,
-                                             dim = c(3, 1),
-                                             dimnames = list(reg = c("a", "b", "c"),
-                                                             time = "2001-2005"))),
+                                       dim = c(3, 1),
+                                       dimnames = list(reg = c("a", "b", "c"),
+                                                       time = "2001-2005"))),
                           NULL)
     mean <- ValuesOne(1, labels = "2001-2005", name = "time")
     data.models <- list(Model(tax ~ NormalFixed(mean = mean, sd = 0.1), series = "internal"),
-                              Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
+                        Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
     datasets <- list(internal + 10L,
                      population - 5L)
@@ -2321,9 +2321,9 @@ test_that("updateSystemModels works with CombinedAccountMovements", {
     set.seed(1)
     ans.expected <- x1
     ans.expected@systemModels[[1L]] <- updateModelNotUseExp(ans.expected@systemModels[[1]],
-                                                   y = ans.expected@account@population)
+                                                            y = ans.expected@account@population)
     ans.expected@systemModels[[2L]] <- updateModelNotUseExp(ans.expected@systemModels[[2]],
-                                                   y = toDouble(ans.expected@account@components[[1]]))
+                                                            y = toDouble(ans.expected@account@components[[1]]))
     ans.expected@systemModels[[3L]] <- updateModelUseExp(ans.expected@systemModels[[3]],
                                                          y = ans.expected@account@components[[2]],
                                                          exposure = ans.expected@exposure)

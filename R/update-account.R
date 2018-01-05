@@ -145,7 +145,7 @@ updateProposalAccountMovePopn <- function(combined, useC = FALSE) {
                                 maxAttempt = max.attempt)
         found.value <- !is.na(val.prop)
         if (found.value) {
-            diff.prop <- unname(val.prop - val.curr) ## JAH changed 22/12/2017
+            diff.prop <- unname(val.prop - val.curr)
             generated.new.proposal <- diff.prop != 0L
         }
         else
