@@ -833,6 +833,7 @@ void updateCombined_CombinedModelBinomial(SEXP object_R, int nUpdate);
 void updateCombined_CombinedModelNormal(SEXP object_R, int nUpdate);
 void updateCombined_CombinedModelPoissonNotHasExp(SEXP object_R, int nUpdate);
 void updateCombined_CombinedModelPoissonHasExp(SEXP object_R, int nUpdate);
+void updateCombined_CombinedAccount(SEXP object_R, int nUpdate);
 void updateCombined(SEXP object_R, int nUpdate);
 
 void updateProposalAccount_CombinedAccountMovements(SEXP object_R);

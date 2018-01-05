@@ -2391,6 +2391,7 @@ test_that("R and C versions of updateSystemModels give same answer with Combined
     ans.R <- updateSystemModels(x1, useC = FALSE)
     set.seed(1)
     ans.C.specific <- updateSystemModels(x1, useC = TRUE, useSpecific = TRUE)
+    set.seed(1)
     ans.C.generic <- updateSystemModels(x1, useC = TRUE, useSpecific = FALSE)
     if (test.identity)
         expect_identical(ans.R, ans.C.specific)

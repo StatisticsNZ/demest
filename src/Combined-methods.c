@@ -291,6 +291,9 @@ updateCombined(SEXP object_R, int nUpdate)
         case 8: /* binomial counts */
             updateCombined_CombinedCountsBinomial(object_R, nUpdate);
             break;
+        case 9: case 10: /* combined account movements (no age and has age) */
+            updateCombined_CombinedAccount(object_R, nUpdate);
+            break;
         default:
             error("unknown iMethodCombined for updateCombined: %d", i_method_combined);
             break;
@@ -653,6 +656,8 @@ setMethod("updateSystemModels",
 
 */
 
+//#define MYDEBUG
+
 void
 updateSystemModels_CombinedAccountMovements(SEXP combined_R)
 {
@@ -676,8 +681,6 @@ updateSystemModels_CombinedAccountMovements(SEXP combined_R)
     SEXP components_R = GET_SLOT(account_R, components_sym);
     int nComponents = LENGTH(components_R);
     
-    int hasAge = *LOGICAL(GET_SLOT(combined_R, hasAge_sym));
-    
     int * modelUsesExposureVec = LOGICAL(GET_SLOT(combined_R, modelUsesExposure_sym));
     
     SEXP transformsExpToComp_R = GET_SLOT(combined_R, transformsExpToComp_sym); /* list */
@@ -696,7 +699,6 @@ updateSystemModels_CombinedAccountMovements(SEXP combined_R)
                       if (uses.exposure) {
                           exposure <- combined@exposure@.Data
                           is.births <- i == i.births*/
-                          
     for(int i = 0; i < nComponents; ++i) {
         
         SEXP model_R = VECTOR_ELT(systemModels_R, i+1);
@@ -733,9 +735,17 @@ updateSystemModels_CombinedAccountMovements(SEXP combined_R)
                                         transform_R));
                     updateModelUseExp(model_R, component_R, anotherNewExposure_R);
                     UNPROTECT(1); /* anotherNewExposure */
+                    
+                    #ifdef MYDEBUG
+                    PrintValue(mkString("is Births and have transform"));
+                    #endif
                 }
                 else {
                     updateModelUseExp(model_R, component_R, newExposure_R);
+                    
+                    #ifdef MYDEBUG
+                    PrintValue(mkString("isBirths, no transform"));
+                    #endif
                 }
                 UNPROTECT(1); /* newExposure */
             }
@@ -745,9 +755,17 @@ updateSystemModels_CombinedAccountMovements(SEXP combined_R)
                                     transform_R));
                 updateModelUseExp(model_R, component_R, newExposure_R);
                 UNPROTECT(1); /* newExposure */
+                
+                #ifdef MYDEBUG
+                    PrintValue(mkString("not isBirths, has transform"));
+                #endif
             }
             else {
                 updateModelUseExp(model_R, component_R, exposure_R);
+                
+                #ifdef MYDEBUG
+                    PrintValue(mkString("not isBirths, no transform"));
+                #endif
             }
         } /* end if usesExposure */
         
@@ -767,42 +785,35 @@ updateSystemModels_CombinedAccountMovements(SEXP combined_R)
                 PROTECT(componentDouble_R = coerceVector(component_R, REALSXP));
                 updateModelNotUseExp(model_R, componentDouble_R);
                 UNPROTECT(1);
+                #ifdef MYDEBUG
+                    PrintValue(mkString("not use exp, normal"));
+                #endif
             }
             else {
                 updateModelNotUseExp(model_R, component_R);
+                #ifdef MYDEBUG
+                    PrintValue(mkString("not use exp, not normal"));
+                #endif
             }
+            
         }
     }
+    
 }  
 
 
-/*
-## READY_TO_TRANSLATE
-## HAS_TESTS
-setMethod("updateCombined",
-          signature(object = "CombinedAccountMovements"),
-          function(object, nUpdate = 1L, useC = FALSE, useSpecific = FALSE) {
-              ## object
-              stopifnot(methods::validObject(object))
-              ## nUpdate
-              stopifnot(identical(length(nUpdate), 1L))
-              stopifnot(is.integer(nUpdate))
-              stopifnot(!is.na(nUpdate))
-              stopifnot(nUpdate >= 0L)
-              if (useC) {
-                  if (useSpecific)
-                      .Call(updateCombined_CombinedAccount_R, object, nUpdate)
-                  else
-                      .Call(updateCombined_R, object, nUpdate)
-              }
-              else {
-                  for (i in seq_len(nUpdate)) {
-                      object <- updateAccount(object)
+void
+updateCombined_CombinedAccount(SEXP object_R, int nUpdate)
+{
+    /*                      object <- updateAccount(object)
                       object <- updateSystemModels(object)
                       object <- updateExpectedExposure(object)
                       object <- updateDataModelsAccount(object)
-                  }
-                  object
-              }
-          })
-*/
+*/  
+    for (int i = 0; i < nUpdate; ++i) {
+        updateAccount(object_R);
+        updateSystemModels(object_R);
+        updateExpectedExposure(object_R);
+        updateDataModelsAccount(object_R);
+    }
+}
