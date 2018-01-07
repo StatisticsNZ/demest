@@ -1917,7 +1917,7 @@ updateWeightMix <- function(prior, useC = FALSE) {
 
 ## UPDATING MODELS ##################################################################
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 updateMeanLogNu <- function(object, useC = FALSE) {
     stopifnot(methods::is(object, "CMPVarying"))
@@ -1945,7 +1945,7 @@ updateMeanLogNu <- function(object, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 updateSDLogNu <- function(object, useC = FALSE) {
     stopifnot(methods::is(object, "CMPVarying"))

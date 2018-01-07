@@ -1258,6 +1258,9 @@ UPDATEPRIORWITHBETA_WRAPPER_R(updateSeason);
 /* wrap update betas and zetas*/
 UPDATEOBJECT_WRAPPER_R(updateBetasAndPriorsBetas);
 
+UPDATEOBJECT_WRAPPER_R(updateMeanLogNu);
+UPDATEOBJECT_WRAPPER_R(updateSDLogNu);
+
 /* wrap update sigma generic functions */
 UPDATEOBJECT_WRAPPER_R(updateSigma_Varying);
 
@@ -2256,6 +2259,8 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateAlphaDeltaDLMWithTrend_R, 2), 
   CALLDEF(updateSeason_R, 2),
   
+  CALLDEF(updateMeanLogNu_R, 1),
+  CALLDEF(updateSDLogNu_R, 1),
   CALLDEF(updateSigma_Varying_R, 1),
   
   CALLDEF(updateTheta_BinomialVarying_R, 3),
@@ -2827,6 +2832,13 @@ R_init_demest(DllInfo *info)
   ADD_SYM(alphaKnown);
   ADD_SYM(AKnownVec);
   ADD_SYM(nuCMP);
+  ADD_SYM(sdLogNuCMP);
+  ADD_SYM(sdLogNuMaxCMP);
+  ADD_SYM(meanMeanLogNuCMP);
+  ADD_SYM(sdMeanLogNuCMP);
+  ADD_SYM(meanLogNuCMP);
+  ADD_SYM(ASDLogNuCMP);
+  ADD_SYM(nuSDLogNuCMP);
   /* skeleton */
   ADD_SYM(first);
   ADD_SYM(last);
