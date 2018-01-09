@@ -1942,15 +1942,16 @@ DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensPopn);
 /* one-off wrapper for diffLogDensPopnOneCohort */
 SEXP
 diffLogDensPopnOneCohort_R(SEXP diff_R, SEXP population_R, SEXP i_R, 
-                            SEXP iterator_R, SEXP theta_R)
+			   SEXP iterator_R, SEXP theta_R, SEXP strucZeroArray_R)
 {
     int diff = *INTEGER(diff_R);
     int i_r = *INTEGER(i_R);
     double * theta = REAL(theta_R);
+    int * strucZeroArray = INTEGER(strucZeroArray_R);
     SEXP iteratornew_R;
     PROTECT(iteratornew_R = duplicate(iterator_R));
     double ans = diffLogDensPopnOneCohort (diff, population_R, i_r, 
-                        iteratornew_R, theta);
+					   iteratornew_R, theta, strucZeroArray);
     UNPROTECT(1);
     return ScalarReal(ans);
 }
@@ -1962,6 +1963,7 @@ DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensExpPopn);
 SEXP diffLogDensExpOneOrigDestParChPool_R(SEXP iCell_R, SEXP hasAge_R, 
                         SEXP ageTimeStep_R, SEXP updatedPopn_R,
                         SEXP component_R, SEXP theta_R,
+			  SEXP strucZeroArray_R,
                         SEXP iteratorComp_R, 
                         SEXP iExpFirst_R, SEXP exposure_R,
                         SEXP iteratorExposure_R,
@@ -1973,6 +1975,7 @@ SEXP diffLogDensExpOneOrigDestParChPool_R(SEXP iCell_R, SEXP hasAge_R,
     double ageTimeStep = *REAL(ageTimeStep_R);
     int updatedPopn = *LOGICAL(updatedPopn_R);
     double * theta = REAL(theta_R);
+    int * strucZeroArray = INTEGER(strucZeroArray_R);
     double * exposure = REAL(exposure_R);
     int iExpFirst_r = *INTEGER(iExpFirst_R);
     SEXP iteratorCompNew_R;
@@ -1981,7 +1984,7 @@ SEXP diffLogDensExpOneOrigDestParChPool_R(SEXP iCell_R, SEXP hasAge_R,
     PROTECT(iteratorExpNew_R = duplicate(iteratorExposure_R));
     double ans = diffLogDensExpOneOrigDestParChPool(iCell_r, hasAge, 
                         ageTimeStep, updatedPopn,
-                        component_R, theta,
+  		    component_R, theta, strucZeroArray,
                         iteratorCompNew_R, 
                         iExpFirst_r, exposure,
                         iteratorExpNew_R,
@@ -1994,7 +1997,7 @@ SEXP diffLogDensExpOneOrigDestParChPool_R(SEXP iCell_R, SEXP hasAge_R,
 /* diffLogDensExpOneComp */
 SEXP diffLogDensExpOneComp_R(SEXP iCell_R, SEXP hasAge_R, 
                         SEXP ageTimeStep_R, SEXP updatedPopn_R,
-                        SEXP component_R, SEXP theta_R,
+			     SEXP component_R, SEXP theta_R, SEXP strucZeroArray_R,
                         SEXP iteratorComp_R, 
                         SEXP iExpFirst_R, SEXP exposure_R,
                         SEXP iteratorExposure_R,
@@ -2006,6 +2009,7 @@ SEXP diffLogDensExpOneComp_R(SEXP iCell_R, SEXP hasAge_R,
     double ageTimeStep = *REAL(ageTimeStep_R);
     int updatedPopn = *LOGICAL(updatedPopn_R);
     double * theta = REAL(theta_R);
+    int * strucZeroArray = INTEGER(strucZeroArray_R);
     double * exposure = REAL(exposure_R);
     int iExpFirst_r = *INTEGER(iExpFirst_R);
     SEXP iteratorCompNew_R;
@@ -2014,7 +2018,7 @@ SEXP diffLogDensExpOneComp_R(SEXP iCell_R, SEXP hasAge_R,
     PROTECT(iteratorExpNew_R = duplicate(iteratorExposure_R));
     double ans = diffLogDensExpOneComp(iCell_r, hasAge, 
                         ageTimeStep, updatedPopn,
-                        component_R, theta,
+				       component_R, theta, strucZeroArray,
                         iteratorCompNew_R, 
                         iExpFirst_r, exposure,
                         iteratorExpNew_R,
@@ -2495,10 +2499,10 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(diffLogLikAccountMoveComp_R, 1),
   
   CALLDEF(diffLogDensPopn_R, 1),
-  CALLDEF(diffLogDensPopnOneCohort_R, 5),
+  CALLDEF(diffLogDensPopnOneCohort_R, 6),
   CALLDEF(diffLogDensExpPopn_R, 1),
-  CALLDEF(diffLogDensExpOneOrigDestParChPool_R, 11),
-  CALLDEF(diffLogDensExpOneComp_R, 11),
+  CALLDEF(diffLogDensExpOneOrigDestParChPool_R, 12),
+  CALLDEF(diffLogDensExpOneComp_R, 12),
   CALLDEF(diffLogDensJumpOrigDest_R, 1),
   CALLDEF(diffLogDensExpOrigDestPoolNet_R, 1),
   CALLDEF(diffLogDensJumpPoolWithExpose_R, 1),

@@ -2222,8 +2222,7 @@ makeTauExchFixedIntercept <- function(tau, sY) {
             ans <- 10 * sY
     }
     else
-        stop(gettextf("prior for intercept but '%s' is not %s",
-                      "tau", "NA"))
+        ans <- tau
     ans <- methods::new("Scale", ans)
 }
 
@@ -10847,7 +10846,7 @@ makeIteratorCAP <- function(dim, iTime, iAge, accession) {
 }
 
 ## HAS_TESTS
-makeIteratorCC <- function(dim, iTime, iAge, iTriangle) {
+makeIteratorCC <- function(dim, iTime, iAge, iTriangle, lastAgeGroupOpen) {
     n.time <- dim[iTime]
     step.time <- 1L
     for (d in seq_len(iTime - 1L))
@@ -10883,11 +10882,12 @@ makeIteratorCC <- function(dim, iTime, iAge, iTriangle) {
         iAge = i.age,
         stepTriangle = step.triangle,
         iTriangle = i.triangle,
-        finished = finished)
+        finished = finished,
+        lastAgeGroupOpen = lastAgeGroupOpen)
 }
 
 ## HAS_TESTS
-makeIteratorCODPCP <- function(dim, iTime, iAge, iTriangle, iMultiple) {
+makeIteratorCODPCP <- function(dim, iTime, iAge, iTriangle, iMultiple, lastAgeGroupOpen) {
     n.time <- dim[iTime]
     step.time <- 1L
     for (d in seq_len(iTime - 1L))
@@ -10939,7 +10939,8 @@ makeIteratorCODPCP <- function(dim, iTime, iAge, iTriangle, iMultiple) {
                  iVec = i.vec,
                  lengthVec = length.vec,
                  increment = increment,
-                 finished = finished)
+                 finished = finished,
+                 lastAgeGroupOpen = lastAgeGroupOpen)
 }
 
 

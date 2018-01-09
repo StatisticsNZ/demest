@@ -217,28 +217,29 @@ setClass("CohortIteratorPopulation",
 ## HAS_TESTS
 setClass("CohortIteratorComponent",
          slots = c(stepTriangle = "integer",
-                        iTriangle = "integer"),
+                   iTriangle = "integer",
+                   lastAgeGroupOpen = "logical"),
          contains = "CohortIterator",
          validity = function(object) {
              hasAge <- object@hasAge
-             for (name in c("stepTriangle", "iTriangle")) {
+             for (name in c("stepTriangle", "iTriangle", "lastAgeGroupOpen")) {
                  value <- methods::slot(object, name)
                  ## stepTriangle, iTriangle have length 1
                  if (!identical(length(value), 1L))
                      return(gettextf("'%s' does not have length %d",
                                      name, 1L))
                  if (hasAge) {
-                     ## if hasAge is TRUE: stepTriangle, iTriangle not missing
+                     ## if hasAge is TRUE: stepTriangle, iTriangle, lastAgeGroupOpen not missing
                      if (is.na(value))
                          return(gettextf("'%s' is missing",
                                          name))
                      ## if hasAge is TRUE: stepTriangle, iTriangle positive
-                     if (value < 1L)
+                     if ((name %in% c("stepTriangle", "iTriangle") && (value < 1L))
                          return(gettextf("'%s' is non-positive",
                                          name))
                  }
                  else {
-                     ## if hasAge is FALSE: stepTriangle, iTriangle missing
+                     ## if hasAge is FALSE: stepTriangle, iTriangle, lastAgeGroupOpen missing
                      if (!is.na(value))
                          return(gettextf("'%s' is %s but '%s' is not missing",
                                          "hasAge", FALSE, name))

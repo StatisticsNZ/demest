@@ -84,15 +84,25 @@ setMethod("CohortIterator",
           function(object) {
               dim <- dim(object)
               dimtypes <- dembase::dimtypes(object, use.names = FALSE)
+              DimScales <- dembase:::DimScales(object, use.names = FALSE)
               i.time <- match("time", dimtypes)
               i.age <- match("age", dimtypes, nomatch = 0L)
               i.triangle <- match("triangle", dimtypes, nomatch = 0L)
               i.dest <- grep("child", dimtypes)
+              if (i.age > 0L) {
+                  DimScale.age <- DimScales[[i.age]]
+                  dimvalues.age <- DimScale.age@dimvalues
+                  n.age <- length(dimvalues.age)
+                  last.age.group.open <- is.infinite(dimvalues.age[n.age])
+              }
+              else
+                  last.age.group.open <- NA
               makeIteratorCODPCP(dim = dim,
                                  iTime = i.time,
                                  iAge = i.age,
                                  iTriangle = i.triangle,
-                                 iMultiple = i.dest)
+                                 iMultiple = i.dest,
+                                 lastAgeGroupOpen = last.age.group.open)
           })
 
 ## HAS_TESTS
@@ -101,13 +111,23 @@ setMethod("CohortIterator",
           function(object) {
               dim <- dim(object)
               dimtypes <- dembase::dimtypes(object, use.names = FALSE)
+              DimScales <- dembase:::DimScales(object, use.names = FALSE)
               i.time <- match("time", dimtypes)
               i.age <- match("age", dimtypes, nomatch = 0L)
               i.triangle <- match("triangle", dimtypes, nomatch = 0L)
+              if (i.age > 0L) {
+                  DimScale.age <- DimScales[[i.age]]
+                  dimvalues.age <- DimScale.age@dimvalues
+                  n.age <- length(dimvalues.age)
+                  last.age.group.open <- is.infinite(dimvalues.age[n.age])
+              }
+              else
+                  last.age.group.open <- NA
               makeIteratorCC(dim = dim,
                              iTime = i.time,
                              iAge = i.age,
-                             iTriangle = i.triangle)
+                             iTriangle = i.triangle,
+                             lastAgeGroupOpen = last.age.group.open)
           })
 
 ## HAS_TESTS
@@ -122,7 +142,8 @@ setMethod("CohortIterator",
               makeIteratorCC(dim = dim,
                              iTime = i.time,
                              iAge = i.age,
-                             iTriangle = i.triangle)
+                             iTriangle = i.triangle,
+                             lastAgeGroupOpen = TRUE)
           })
 
 ## HAS_TESTS

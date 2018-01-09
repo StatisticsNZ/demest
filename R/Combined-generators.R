@@ -459,8 +459,8 @@ setMethod("initialCombinedAccount",
               struc.zero.array <- systemModels[[1L]]@strucZeroArray@.Data
               if (any(struc.zero.array == 0L)) {
                   population@.Data[struc.zero.array == 0L] <- 0L
-                  account@population <- population
                   exposure@.Data <- dembase::exposure(population, triangles = has.age)@.Data
+                  account@population <- population
               }
               for (i in seq_along(components)) {
                   sys.mod <- systemModels[[i + 1L]]

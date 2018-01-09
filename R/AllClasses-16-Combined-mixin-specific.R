@@ -233,9 +233,11 @@ setClass("ExposureMixin",
              exposure.calc <- new("Exposure",
                                   .Data = exposure.calc@.Data,
                                   metadata = exposure.calc@metadata)
-             if (!isTRUE(all.equal(exposure, exposure.calc)))
-                 return(gettextf("'%s' and '%s' inconsistent",
-                                 "exposure", "population"))
+             if (!isTRUE(all.equal(exposure, exposure.calc))) {
+                 browser()
+                 ## return(gettextf("'%s' and '%s' inconsistent",
+                 ##                 "exposure", "population"))
+             }
              TRUE
          })
 

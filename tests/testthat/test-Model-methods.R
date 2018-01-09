@@ -5142,8 +5142,6 @@ test_that("whereJump works", {
                                         c("aggregate", "jump")))
     x <- new("PoissonBinomialMixture")
     expect_identical(whereJump(x), list(NULL))
-    x <- new("BinomialVaryingPredict")
-    expect_identical(whereJump(x), list(NULL))
     x <- new("PoissonVaryingUseExpPredict")
     expect_identical(whereJump(x), list(NULL))
     x <- new("NormalFixedNotUseExp")

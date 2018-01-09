@@ -104,7 +104,7 @@ test_that("R and C versions of updateAccount give same answer with CombinedAccou
                          Model(deaths ~ Poisson(mean ~ 1)))
     systemWeights <- rep(list(NULL), 3)
     data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
-                              Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
+                        Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(2L, 0L)
     datasets <- list(Counts(array(7L,
                                   dim = 10,
@@ -127,15 +127,18 @@ test_that("R and C versions of updateAccount give same answer with CombinedAccou
     expect_true(validObject(x0))
     set.seed(1)
     updated <- FALSE
-    ans.R <- updateAccount(x0, useC = FALSE)
-    if (ans.R@generatedNewProposal@.Data)
-        updated <- TRUE
-    set.seed(1)
-    ans.C <- updateAccount(x0, useC = TRUE)
-    if (test.identity)
-        expect_identical(ans.R, ans.C)
-    else
-        expect_equal(ans.R, ans.C)
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.R <- updateAccount(x0, useC = FALSE)
+        if (ans.R@generatedNewProposal@.Data)
+            updated <- TRUE
+        set.seed(seed)
+        ans.C <- updateAccount(x0, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
     if (!updated)
         warning("not updated")
 })
@@ -5275,7 +5278,8 @@ test_that("diffLogDensPopn works", {
                                                      population = x@account@population,
                                                      i = x@iCell,
                                                      iterator = x@iteratorPopn,
-                                                     theta = x@systemModels[[1]]@theta)
+                                                     theta = x@systemModels[[1]]@theta,
+                                                     strucZeroArray = x@systemModels[[1]]@strucZeroArray)
             if (test.identity)
                 expect_identical(ans.obtained, ans.expected)
             else
@@ -5290,7 +5294,8 @@ test_that("diffLogDensPopn works", {
                                                      population = x@account@population,
                                                      i = x@iPopnNext,
                                                      iterator = x@iteratorPopn,
-                                                     theta = x@systemModels[[1]]@theta)
+                                                     theta = x@systemModels[[1]]@theta,
+                                                     strucZeroArray = x@systemModels[[1]]@strucZeroArray)
             if (test.identity)
                 expect_identical(ans.obtained, ans.expected)
             else
@@ -5305,8 +5310,7 @@ test_that("R and C versions of diffLogDensPopn give same answer", {
     updateProposalAccountMoveComp <- demest:::updateProposalAccountMoveComp
     updateProposalAccountMovePopn <- demest:::updateProposalAccountMovePopn
     initialCombinedAccount <- demest:::initialCombinedAccount
-    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
-    
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra    
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         population <- CountsOne(values = seq(100, 200, 10),
@@ -5396,22 +5400,30 @@ test_that("diffLogDensPopnOneCohort works", {
                                          reg = 1:5,
                                          time = c(2000, 2005, 2010))))
     popn <- Population(popn)
+    strucZeroArray <- Counts(array(c(0L, 1L, 1L),
+                                   dim = c(3, 2, 5, 3),
+                                   dimnames = list(age = c("0-4", "5-9", "10+"),
+                                                   sex = c("f", "m"),
+                                                   reg = 1:5,
+                                                   time = c(2000, 2005, 2010))))
     iterator <- CohortIterator(popn)
     theta <- Values(array(rpois(n = 90, lambda = popn),
                           dim = dim(popn),
                           dimnames = dimnames(popn))) + 0.01
+    theta[strucZeroArray == 0L] <- NA
     ans.obtained <- diffLogDensPopnOneCohort(diff = 3L,
                                              population = popn,
                                              i = 7L,
                                              iterator = iterator,
-                                             theta = theta)
+                                             theta = theta,
+                                             strucZeroArray = strucZeroArray)
     ii <- c(7, 38, 69)
     ans.expected <- (sum(dpois(x = popn[ii] + 3,
                                lambda = theta[ii],
-                               log = TRUE))
+                               log = TRUE), na.rm = TRUE)
         - sum(dpois(x = popn[ii],
                     lambda = theta[ii],
-                    log = TRUE)))
+                    log = TRUE), na.rm = TRUE))
     if (test.identity)
         expect_identical(ans.obtained, ans.expected)
     else {
@@ -5429,23 +5441,32 @@ test_that("R and C versions of diffLogDensPopnOneCohort give same answer", {
                                          sex = c("f", "m"),
                                          reg = 1:5,
                                          time = c(2000, 2005, 2010))))
+    strucZeroArray <- Counts(array(c(0L, 1L, 1L),
+                                   dim = c(3, 2, 5, 3),
+                                   dimnames = list(age = c("0-4", "5-9", "10+"),
+                                                   sex = c("f", "m"),
+                                                   reg = 1:5,
+                                                   time = c(2000, 2005, 2010))))
     popn <- Population(popn)
     iterator <- CohortIterator(popn)
     theta <- Values(array(rpois(n = 90, lambda = popn),
                           dim = dim(popn),
                           dimnames = dimnames(popn))) + 0.01
+    theta[strucZeroArray == 0L] <- NA
     for (i in 1:12) {
         ans.R <- diffLogDensPopnOneCohort(diff = 3L,
                                           population = popn,
                                           i = 7L,
                                           iterator = iterator,
                                           theta = theta,
+                                          strucZeroArray = strucZeroArray,
                                           useC = FALSE)
         ans.C <- diffLogDensPopnOneCohort(diff = 3L,
                                           population = popn,
                                           i = 7L,
                                           iterator = iterator,
                                           theta = theta,
+                                          strucZeroArray = strucZeroArray,
                                           useC = TRUE)
         if (test.identity)
             expect_identical(ans.R, ans.C)
@@ -5487,6 +5508,7 @@ test_that("diffLogDensExpPopn works", {
                                              reg_dest = 1:5,
                                              time = c("2001-2005", "2006-2010"),
                                              triangle = c("TL", "TU"))))
+    internal[slice.index(internal, 3) == slice.index(internal, 4)] <- 0L
     deaths <- Counts(array(rpois(n = 72, lambda = 10),
                            dim = c(3, 2, 5, 2, 2),
                            dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -5501,7 +5523,7 @@ test_that("diffLogDensExpPopn works", {
     account <- makeConsistent(account)
     systemModels <- list(Model(population ~ Poisson(mean ~ age + sex, useExpose = FALSE)),
                          Model(births ~ Poisson(mean ~ 1)),
-                         Model(internal ~ Poisson(mean ~ reg_orig + reg_dest)),
+                         Model(internal ~ Poisson(mean ~ reg_orig + reg_dest, structuralZeros = "diag")),
                          Model(deaths ~ Poisson(mean ~ 1)))
     systemWeights <- list(NULL, NULL, NULL, NULL)
     census <- subarray(popn, time == "2000", drop = FALSE) + 2L
@@ -5556,6 +5578,7 @@ test_that("diffLogDensExpPopn works", {
                                                                      ageTimeStep = x@ageTimeStep,
                                                                      component = x@account@components[[1]],
                                                                      theta = x@systemModels[[2]]@theta,
+                                                                     strucZeroArray = x@systemModels[[2]]@strucZeroArray,
                                                                      iteratorComp = x@iteratorsComp[[1]],
                                                                      iExpFirst = x@iExpFirst,
                                                                      exposure = x@exposure,
@@ -5568,6 +5591,7 @@ test_that("diffLogDensExpPopn works", {
                                                                               ageTimeStep = x@ageTimeStep,
                                                                               component = x@account@components[[2]],
                                                                               theta = x@systemModels[[3]]@theta,
+                                                                              strucZeroArray = x@systemModels[[3]]@strucZeroArray,
                                                                               iteratorComp = x@iteratorsComp[[2]],
                                                                               iExpFirst = x@iExpFirst,
                                                                               exposure = x@exposure,
@@ -5580,6 +5604,7 @@ test_that("diffLogDensExpPopn works", {
                                                                      ageTimeStep = x@ageTimeStep,
                                                                      component = x@account@components[[3]],
                                                                      theta = x@systemModels[[4]]@theta,
+                                                                     strucZeroArray = x@systemModels[[4]]@strucZeroArray,
                                                                      iteratorComp = x@iteratorsComp[[3]],
                                                                      iExpFirst = x@iExpFirst,
                                                                      exposure = x@exposure,
@@ -5600,7 +5625,6 @@ test_that("R and C versions of diffLogDensExpPopn give same answer", {
     updateProposalAccountMovePopn <- demest:::updateProposalAccountMovePopn
     initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
-    
     updated <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -5625,6 +5649,7 @@ test_that("R and C versions of diffLogDensExpPopn give same answer", {
                                                  reg_dest = 1:5,
                                                  time = c("2001-2005", "2006-2010"),
                                                  triangle = c("TL", "TU"))))
+        internal[slice.index(internal, 3) == slice.index(internal, 4)] <- 0L
         deaths <- Counts(array(rpois(n = 72, lambda = 10),
                                dim = c(3, 2, 5, 2, 2),
                                dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -5639,7 +5664,7 @@ test_that("R and C versions of diffLogDensExpPopn give same answer", {
         account <- makeConsistent(account)
         systemModels <- list(Model(population ~ Poisson(mean ~ age + sex, useExpose = FALSE)),
                              Model(births ~ Poisson(mean ~ 1)),
-                             Model(internal ~ Poisson(mean ~ reg_orig + reg_dest)),
+                             Model(internal ~ Poisson(mean ~ reg_orig + reg_dest, structuralZeros = "diag")),
                              Model(deaths ~ Poisson(mean ~ 1)))
         systemWeights <- list(NULL, NULL, NULL, NULL)
         census <- subarray(popn, time == "2000", drop = FALSE) + 2L
@@ -6077,7 +6102,7 @@ test_that("diffLogDensExpOrigDestPoolNet works with CombinedAccountMovements - n
                          net = list(net.mig = net.mig))
     account <- makeConsistent(account)
     systemModels <- list(Model(population ~ Poisson(mean ~ reg, useExpose = FALSE)),
-                         Model(internal ~ Poisson(mean ~ 1)),
+                         Model(internal ~ Poisson(mean ~ 1, structuralZeros = "diag")),
                          Model(net.mig ~ Normal(mean ~ 1)))
     systemWeights <- list(NULL, NULL, Counts(array(1,
                                                    dim = c(3, 1),
@@ -6120,6 +6145,7 @@ test_that("diffLogDensExpOrigDestPoolNet works with CombinedAccountMovements - n
                                                                    ageTimeStep = x@ageTimeStep,
                                                                    component = x@account@components[[1]],
                                                                    theta = x@systemModels[[2]]@theta,
+                                                                   strucZeroArray = x@systemModels[[2]]@strucZeroArray,
                                                                    iteratorComp = x@iteratorsComp[[1]],
                                                                    iExpFirst = x@iExpFirst,
                                                                    exposure = x@exposure,
@@ -6131,6 +6157,7 @@ test_that("diffLogDensExpOrigDestPoolNet works with CombinedAccountMovements - n
                                                        ageTimeStep = x@ageTimeStep,
                                                        component = x@account@components[[1]],
                                                        theta = x@systemModels[[2]]@theta,
+                                                       strucZeroArray = x@systemModels[[2]]@strucZeroArray,
                                                        iteratorComp = x@iteratorsComp[[1]],
                                                        iExpFirst = x@iExpFirstOther,
                                                        exposure = x@exposure,
@@ -6247,6 +6274,7 @@ test_that("diffLogDensExpOrigDestPoolNet works - with age", {
                                              reg_dest = 1:5,
                                              time = c("2001-2005", "2006-2010"),
                                              triangle = c("TL", "TU"))))
+    internal[slice.index(internal, 3) == slice.index(internal, 4)] <- 0L
     deaths <- Counts(array(rpois(n = 72, lambda = 10),
                            dim = c(3, 2, 5, 2, 2),
                            dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -6261,7 +6289,7 @@ test_that("diffLogDensExpOrigDestPoolNet works - with age", {
     account <- makeConsistent(account)
     systemModels <- list(Model(population ~ Poisson(mean ~ age + sex, useExpose = FALSE)),
                          Model(births ~ Poisson(mean ~ 1)),
-                         Model(internal ~ Poisson(mean ~ reg_orig + reg_dest)),
+                         Model(internal ~ Poisson(mean ~ reg_orig + reg_dest, structuralZeros = "diag")),
                          Model(deaths ~ Poisson(mean ~ 1)))
     systemWeights <- list(NULL, NULL, NULL, NULL)
     census <- subarray(popn, time == "2000", drop = FALSE) + 2L
@@ -6316,6 +6344,7 @@ test_that("diffLogDensExpOrigDestPoolNet works - with age", {
                                                          ageTimeStep = x@ageTimeStep,
                                                          component = x@account@components[[1]],
                                                          theta = x@systemModels[[2]]@theta,
+                                                         strucZeroArray = x@systemModels[[2]]@strucZeroArray,
                                                          iteratorComp = x@iteratorsComp[[1]],
                                                          iExpFirst = x@iExpFirst,
                                                          exposure = x@exposure,
@@ -6327,6 +6356,7 @@ test_that("diffLogDensExpOrigDestPoolNet works - with age", {
                                           ageTimeStep = x@ageTimeStep,
                                           component = x@account@components[[1]],
                                           theta = x@systemModels[[2]]@theta,
+                                          strucZeroArray = x@systemModels[[2]]@strucZeroArray,
                                           iteratorComp = x@iteratorsComp[[1]],
                                           iExpFirst = x@iExpFirstOther,
                                           exposure = x@exposure,
@@ -6343,6 +6373,7 @@ test_that("diffLogDensExpOrigDestPoolNet works - with age", {
                                                                     ageTimeStep = x@ageTimeStep,
                                                                     component = x@account@components[[2]],
                                                                     theta = x@systemModels[[3]]@theta,
+                                                                    strucZeroArray = x@systemModels[[3]]@strucZeroArray,
                                                                     iteratorComp = x@iteratorsComp[[2]],
                                                                     iExpFirst = x@iExpFirst,
                                                                     exposure = x@exposure,
@@ -6354,6 +6385,7 @@ test_that("diffLogDensExpOrigDestPoolNet works - with age", {
                                                    ageTimeStep = x@ageTimeStep,
                                                    component = x@account@components[[2]],
                                                    theta = x@systemModels[[3]]@theta,
+                                                   strucZeroArray = x@systemModels[[3]]@strucZeroArray,
                                                    iteratorComp = x@iteratorsComp[[2]],
                                                    iExpFirst = x@iExpFirstOther,
                                                    exposure = x@exposure,
@@ -6367,6 +6399,7 @@ test_that("diffLogDensExpOrigDestPoolNet works - with age", {
                                                      ageTimeStep = x@ageTimeStep,
                                                      component = x@account@components[[3]],
                                                      theta = x@systemModels[[4]]@theta,
+                                                     strucZeroArray = x@systemModels[[4]]@strucZeroArray,
                                                      iteratorComp = x@iteratorsComp[[3]],
                                                      iExpFirst = x@iExpFirst,
                                                      exposure = x@exposure,
@@ -6378,6 +6411,7 @@ test_that("diffLogDensExpOrigDestPoolNet works - with age", {
                                       ageTimeStep = x@ageTimeStep,
                                       component = x@account@components[[3]],
                                       theta = x@systemModels[[4]]@theta,
+                                      strucZeroArray = x@systemModels[[4]]@strucZeroArray,
                                       iteratorComp = x@iteratorsComp[[3]],
                                       iExpFirst = x@iExpFirstOther,
                                       exposure = x@exposure,
@@ -6425,6 +6459,7 @@ test_that("R and C versions of diffLogDensExpOrigDestPoolNet give same answer - 
                                              reg_dest = 1:5,
                                              time = c("2001-2005", "2006-2010"),
                                              triangle = c("TL", "TU"))))
+    internal[slice.index(internal, 3) == slice.index(internal, 4)] <- 0L
     deaths <- Counts(array(rpois(n = 72, lambda = 10),
                            dim = c(3, 2, 5, 2, 2),
                            dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -6439,7 +6474,7 @@ test_that("R and C versions of diffLogDensExpOrigDestPoolNet give same answer - 
     account <- makeConsistent(account)
     systemModels <- list(Model(population ~ Poisson(mean ~ age + sex, useExpose = FALSE)),
                          Model(births ~ Poisson(mean ~ 1)),
-                         Model(internal ~ Poisson(mean ~ reg_orig + reg_dest)),
+                         Model(internal ~ Poisson(mean ~ reg_orig + reg_dest, structuralZeros = "diag")),
                          Model(deaths ~ Poisson(mean ~ 1)))
     systemWeights <- list(NULL, NULL, NULL, NULL)
     census <- subarray(popn, time == "2000", drop = FALSE) + 2L
@@ -6519,7 +6554,7 @@ test_that("diffLogDensExpOneOrigDestParChPool works", {
                          internal = internal)
     account <- makeConsistent(account)
     systemModels <- list(Model(population ~ Poisson(mean ~ reg, useExpose = FALSE)),
-                         Model(internal ~ Poisson(mean ~ 1)))
+                         Model(internal ~ Poisson(mean ~ 1, structuralZeros = "diag")))
     systemWeights <- list(NULL, NULL)
     data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
@@ -6552,6 +6587,7 @@ test_that("diffLogDensExpOneOrigDestParChPool works", {
                                                                updatedPopn = FALSE,
                                                                component = x@account@components[[1L]],
                                                                theta = x@systemModels[[2]]@theta,
+                                                               strucZeroArray = x@systemModels[[2]]@strucZeroArray@.Data,
                                                                iteratorComp = x@iteratorsComp[[1L]],
                                                                iExpFirst = x@iExpFirst,
                                                                exposure = x@exposure,
@@ -6561,10 +6597,10 @@ test_that("diffLogDensExpOneOrigDestParChPool works", {
                                           mapping = x@mappingsFromExp[[1]])
             ans.expected <- sum(dpois(x = internal[i.cell + c(0, 3, 6)],
                                       lambda = (x@exposure[i.cell] + 2.5 * x@diffProp) * x@systemModels[[2]]@theta[i.cell + c(0, 3, 6)],
-                                      log = TRUE)) -
+                                      log = TRUE), na.rm = TRUE) -
                 sum(dpois(x = internal[i.cell + c(0, 3, 6)],
                           lambda = x@exposure[i.cell] * x@systemModels[[2]]@theta[i.cell + c(0, 3, 6)],
-                          log = TRUE))
+                          log = TRUE), na.rm = TRUE)
             if (test.identity)
                 expect_identical(ans.obtained, ans.expected)
             else
@@ -6597,10 +6633,10 @@ test_that("R and C versions of diffLogDensExpOneOrigDestParChPool give same answ
                          internal = internal)
     account <- makeConsistent(account)
     systemModels <- list(Model(population ~ Poisson(mean ~ reg, useExpose = FALSE)),
-                         Model(internal ~ Poisson(mean ~ 1)))
+                         Model(internal ~ Poisson(mean ~ 1, structuralZeros = "diag")))
     systemWeights <- list(NULL, NULL)
     data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
-                              Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
+                        Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
     datasets <- list(internal + 10L,
                      population - 5L)
@@ -6630,6 +6666,7 @@ test_that("R and C versions of diffLogDensExpOneOrigDestParChPool give same answ
                                                         ageTimeStep = x@ageTimeStep,
                                                         component = x@account@components[[1L]],
                                                         theta = x@systemModels[[2]]@theta,
+                                                        strucZeroArray = x@systemModels[[2]]@strucZeroArray,
                                                         iteratorComp = x@iteratorsComp[[1L]],
                                                         iExpFirst = x@iExpFirst,
                                                         exposure = x@exposure,
@@ -6643,6 +6680,7 @@ test_that("R and C versions of diffLogDensExpOneOrigDestParChPool give same answ
                                                         ageTimeStep = x@ageTimeStep,
                                                         component = x@account@components[[1L]],
                                                         theta = x@systemModels[[2]]@theta,
+                                                        strucZeroArray = x@systemModels[[2]]@strucZeroArray,
                                                         iteratorComp = x@iteratorsComp[[1L]],
                                                         iExpFirst = x@iExpFirst,
                                                         exposure = x@exposure,
@@ -6674,6 +6712,9 @@ test_that("diffLogDensExpOneComp works", {
                   .Data = deaths@.Data,
                   metadata = deaths@metadata)
     theta <- ValuesOne(runif(n = 10), labels = dimnames(deaths)$time, name = "time")
+    strucZeroArray <- CountsOne(values = c(rep(1L, 9L), 0L),
+                                labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
+                                name = "time")
     iteratorComp <- CohortIterator(deaths)
     iCell <- 4L
     iExpFirst <- 4L
@@ -6690,6 +6731,7 @@ test_that("diffLogDensExpOneComp works", {
                                           ageTimeStep = 10,
                                           component = deaths,
                                           theta = theta,
+                                          strucZeroArray = strucZeroArray,
                                           iteratorComp = iteratorComp,
                                           iExpFirst = iExpFirst,
                                           exposure = expose,
@@ -6697,8 +6739,8 @@ test_that("diffLogDensExpOneComp works", {
                                           diff = diff)
     ans.expected <- unname(dpois(deaths[4], lambda = theta[4] * (expose[4] - 3/2 * 10), log = TRUE)
                            - dpois(deaths[4], lambda = theta[4] * expose[4], log = TRUE)
-                           + sum(dpois(deaths[5:10], lambda = theta[5:10] * (expose[5:10] - 3 * 10), log = TRUE))
-                           - sum(dpois(deaths[5:10], lambda = theta[5:10] * expose[5:10], log = TRUE)))
+                           + sum(dpois(deaths[5:9], lambda = theta[5:9] * (expose[5:9] - 3 * 10), log = TRUE))
+                           - sum(dpois(deaths[5:9], lambda = theta[5:9] * expose[5:9], log = TRUE)))
     if (test.identity)
         expect_identical(ans.obtained, ans.expected)
     else
@@ -6718,6 +6760,9 @@ test_that("R and C versions of diffLogDensExpOneComp give same answer", {
                   .Data = deaths@.Data,
                   metadata = deaths@metadata)
     theta <- ValuesOne(runif(n = 10), labels = dimnames(deaths)$time, name = "time")
+    strucZeroArray <- CountsOne(values = c(rep(1L, 9L), 0L),
+                                labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
+                                name = "time")
     iteratorComp <- CohortIterator(deaths)
     iCell <- 4L
     iExpFirst <- 4L
@@ -6734,6 +6779,7 @@ test_that("R and C versions of diffLogDensExpOneComp give same answer", {
                                    ageTimeStep = 10,
                                    component = deaths,
                                    theta = theta,
+                                   strucZeroArray = strucZeroArray,
                                    iteratorComp = iteratorComp,
                                    iExpFirst = iExpFirst,
                                    exposure = expose,
@@ -6746,6 +6792,7 @@ test_that("R and C versions of diffLogDensExpOneComp give same answer", {
                                    ageTimeStep = 10,
                                    component = deaths,
                                    theta = theta,
+                                   strucZeroArray = strucZeroArray,
                                    iteratorComp = iteratorComp,
                                    iExpFirst = iExpFirst,
                                    exposure = expose,
@@ -7178,6 +7225,7 @@ test_that("diffLogDensJumpComp works - no age", {
                 - dpois(x@account@components[[2]][x@iCell] + x@diffProp,
                         lambda = x@expectedExposure[x@iExposure] * x@systemModels[[3]]@theta[x@iCell],
                         log = TRUE))
+            ans.expected <- unname(ans.expected)
             expect_equal(ans.obtained, ans.expected)
             if (test.identity)
                 expect_identical(ans.obtained, ans.expected)
@@ -7505,6 +7553,7 @@ test_that("diffLogDensExpComp works", {
                                              reg_dest = 1:5,
                                              time = c("2001-2005", "2006-2010"),
                                              triangle = c("TL", "TU"))))
+    internal[slice.index(internal, 3) == slice.index(internal, 4)] <- 0L
     deaths <- Counts(array(rpois(n = 72, lambda = 10),
                            dim = c(3, 2, 5, 2, 2),
                            dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -7574,6 +7623,7 @@ test_that("diffLogDensExpComp works", {
                                                                      ageTimeStep = x@ageTimeStep,
                                                                      component = x@account@components[[1]],
                                                                      theta = x@systemModels[[2]]@theta,
+                                                                     strucZeroArray = x@systemModels[[2]]@strucZeroArray,
                                                                      iteratorComp = x@iteratorsComp[[1]],
                                                                      iExpFirst = x@iExpFirst,
                                                                      exposure = x@exposure,
@@ -7586,6 +7636,7 @@ test_that("diffLogDensExpComp works", {
                                                                               ageTimeStep = x@ageTimeStep,
                                                                               component = x@account@components[[2]],
                                                                               theta = x@systemModels[[3]]@theta,
+                                                                              strucZeroArray = x@systemModels[[3]]@strucZeroArray,
                                                                               iteratorComp = x@iteratorsComp[[2]],
                                                                               iExpFirst = x@iExpFirst,
                                                                               exposure = x@exposure,
@@ -7598,6 +7649,7 @@ test_that("diffLogDensExpComp works", {
                                                                  ageTimeStep = x@ageTimeStep,
                                                                  component = x@account@components[[3]],
                                                                  theta = x@systemModels[[4]]@theta,
+                                                                 strucZeroArray = x@systemModels[[4]]@strucZeroArray,
                                                                  iteratorComp = x@iteratorsComp[[3]],
                                                                  iExpFirst = x@iExpFirst,
                                                                  exposure = x@exposure,
@@ -7639,6 +7691,7 @@ test_that("R and C versions of diffLogDensExpComp give same value", {
                                              reg_dest = 1:5,
                                              time = c("2001-2005", "2006-2010"),
                                              triangle = c("TL", "TU"))))
+    internal[slice.index(internal, 3) == slice.index(internal, 4)] <- 0L
     deaths <- Counts(array(rpois(n = 72, lambda = 10),
                            dim = c(3, 2, 5, 2, 2),
                            dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -7653,7 +7706,7 @@ test_that("R and C versions of diffLogDensExpComp give same value", {
     account <- makeConsistent(account)
     systemModels <- list(Model(population ~ Poisson(mean ~ age + sex, useExpose = FALSE)),
                          Model(births ~ Poisson(mean ~ 1)),
-                         Model(internal ~ Poisson(mean ~ reg_orig + reg_dest)),
+                         Model(internal ~ Poisson(mean ~ reg_orig + reg_dest, structuralZeros = "diag")),
                          Model(deaths ~ Poisson(mean ~ 1)))
     systemWeights <- list(NULL, NULL, NULL, NULL)
     census <- subarray(popn, time == "2000", drop = FALSE) + 2L
@@ -7783,6 +7836,7 @@ test_that("diffLogDensExpComp works with CombinedAccountMovements - Parent-Child
                                                                                   ageTimeStep = x@ageTimeStep,
                                                                                   component = x@account@components[[1]],
                                                                                   theta = x@systemModels[[2]]@theta,
+                                                                                  strucZeroArray = x@systemModels[[2]]@strucZeroArray,
                                                                                   iteratorComp = x@iteratorsComp[[1]],
                                                                                   iExpFirst = x@iExpFirst,
                                                                                   exposure = x@exposure,
@@ -7795,6 +7849,7 @@ test_that("diffLogDensExpComp works with CombinedAccountMovements - Parent-Child
                                                                  ageTimeStep = x@ageTimeStep,
                                                                  component = x@account@components[[2]],
                                                                  theta = x@systemModels[[3]]@theta,
+                                                                 strucZeroArray = x@systemModels[[3]]@strucZeroArray,
                                                                  iteratorComp = x@iteratorsComp[[2]],
                                                                  iExpFirst = x@iExpFirst,
                                                                  exposure = x@exposure,

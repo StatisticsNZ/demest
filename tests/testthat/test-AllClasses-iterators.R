@@ -285,6 +285,7 @@ test_that("can create valid object of class CohortIteratorComponent", {
              iAge = 1L,
              stepTriangle = 12L,
              iTriangle = 1L,
+             lastAgeGroupOpen = TRUE,
              finished = FALSE)
     expect_true(validObject(x))
     x <- new("CohortIteratorComponent",
@@ -298,6 +299,7 @@ test_that("can create valid object of class CohortIteratorComponent", {
              iAge = 2L,
              stepTriangle = 15L,
              iTriangle = 2L,
+             lastAgeGroupOpen = TRUE,
              finished = FALSE)
     expect_true(validObject(x))
     x <- new("CohortIteratorComponent",
@@ -311,6 +313,7 @@ test_that("can create valid object of class CohortIteratorComponent", {
              iAge = as.integer(NA),
              stepTriangle = as.integer(NA),
              iTriangle = as.integer(NA),
+             lastAgeGroupOpen = NA,
              finished = FALSE)
     expect_true(validObject(x))
 })
@@ -327,6 +330,7 @@ test_that("validity tests for CohortIteratorComponent inherited from CohortItera
              iAge = 1L,
              stepTriangle = 12L,
              iTriangle = 1L,
+             lastAgeGroupOpen = TRUE,
              finished = FALSE)
     ## stepTriangle, iTriangle have length 1
     x.wrong <- x
@@ -375,6 +379,7 @@ test_that("can create valid object of class CohortIteratorOrigDestParChPool", {
              iVec = c(1L, 19L, 37L),
              lengthVec = 3L,
              increment = c(0L, 18L, 36L),
+             lastAgeGroupOpen = TRUE,
              finished = FALSE)
     expect_true(validObject(x))
     a <- array(1:1728,
@@ -400,6 +405,7 @@ test_that("can create valid object of class CohortIteratorOrigDestParChPool", {
              iVec = as.integer(a["5-9","2",,"TU","3",,2]),
              lengthVec = 12L,
              increment = rep(seq.int(from = 0L, to = 36L, by = 12L), times = 3) + rep(c(0L, 288L, 576L), each = 4),
+             lastAgeGroupOpen = TRUE,
              finished = TRUE)
     expect_true(validObject(x))
     a <- array(1:27,
@@ -421,6 +427,7 @@ test_that("can create valid object of class CohortIteratorOrigDestParChPool", {
              iVec = as.integer(a["2011-2020","3",]),
              lengthVec = 3L,
              increment = c(0L, 9L, 18L),
+             lastAgeGroupOpen = NA,
              finished = FALSE)
     expect_true(validObject(x))
 })

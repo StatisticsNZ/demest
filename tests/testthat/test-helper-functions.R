@@ -13758,8 +13758,8 @@ test_that("MCMCDemographic works", {
     ## has structural zeros
     x <- Values(array(1:12, dim = c(2, 6), dimnames = list(sex = c("f", "m"), iteration = 1:6)))
     strucZeroArray <- CountsOne(c(1L, 0L), labels = c("f", "m"), name = "sex")
-    object <- ValuesOne(0, labels = c("f", "m"), name = "sex")
-    skeleton <- Skeleton(object, first = 10L, strucZeroArray = strucZeroArray)
+    object <- ValuesOne(rep(0, 2), labels = c("f", "m"), name = "sex")
+    skeleton <- Skeleton(object, first = 10L, strucZeroArray = strucZeroArray, margin = 1L)
     ans.obtained <- MCMCDemographic(x, nChain = 2, nThin = 3, skeleton = skeleton)
     ans.expected <- mcmc.list(list(mcmc(matrix(c(1L, 3L, 5L),
                                                nrow = 3,
@@ -16134,7 +16134,8 @@ test_that("makeIteratorCAP creates objects from valid inputs - Population", {
 test_that("makeIteratorCC creates objects from valid inputs", {
     makeIteratorCC <- demest:::makeIteratorCC 
     ## dim = 3:4, iAge = 1L, iTime = 2L
-    ans.obtained <- makeIteratorCC(dim = c(3:5, 2L), iTime = 1L, iAge = 2L, iTriangle = 4L)
+    ans.obtained <- makeIteratorCC(dim = c(3:5, 2L), iTime = 1L, iAge = 2L, iTriangle = 4L,
+                                   lastAgeGroupOpen = FALSE)
     ans.expected <- new("CohortIteratorComponent",
                         i = 1L,
                         nTime = 3L,
@@ -16146,10 +16147,12 @@ test_that("makeIteratorCC creates objects from valid inputs", {
                         iAge = 1L,
                         stepTriangle = 60L,
                         iTriangle = 1L,
-                        finished = FALSE)
+                        finished = FALSE,
+                        lageAgeGroupOpen = FALSE)
     expect_identical(ans.obtained, ans.expected)
     ## dim = 3:4, iAge = 2L, iTime = 1L 
-    ans.obtained <- makeIteratorCC(dim = 2:4, iTime = 2L, iAge = 3L, iTriangle = 1L)
+    ans.obtained <- makeIteratorCC(dim = 2:4, iTime = 2L, iAge = 3L, iTriangle = 1L,
+                                   lastAgeGroupOpen = TRUE)
     ans.expected <- new("CohortIteratorComponent",
                         i = 1L,
                         nTime = 3L,
@@ -16161,10 +16164,12 @@ test_that("makeIteratorCC creates objects from valid inputs", {
                         iAge = 1L,
                         stepTriangle = 1L,
                         iTriangle = 1L,
-                        finished = FALSE)
+                        finished = FALSE,
+                        lastAgeGroupOpen = TRUE)
     expect_identical(ans.obtained, ans.expected)
     ## dim = 3:4, iAge = 0L, iTime = 2L 
-    ans.obtained <- makeIteratorCC(dim = 3:4, iTime = 2L, iAge = 0L, iTriangle = 0L)
+    ans.obtained <- makeIteratorCC(dim = 3:4, iTime = 2L, iAge = 0L, iTriangle = 0L,
+                                   lastAgeGroupOpen = NA)
     ans.expected <- new("CohortIteratorComponent",
                         i = 1L,
                         nTime = 4L,
@@ -16176,10 +16181,12 @@ test_that("makeIteratorCC creates objects from valid inputs", {
                         iAge = as.integer(NA),
                         stepTriangle = as.integer(NA),
                         iTriangle = as.integer(NA),
-                        finished = FALSE)
+                        finished = FALSE,
+                        lastAgeGroupOpen = NA)
     expect_identical(ans.obtained, ans.expected)
     ## dim = 2:5, iTime = 4L, iAge = 3L, iTriangle = 1L
-    ans.obtained <- makeIteratorCC(dim = 2:5, iTime = 4L, iAge = 3L, iTriangle = 1L)
+    ans.obtained <- makeIteratorCC(dim = 2:5, iTime = 4L, iAge = 3L, iTriangle = 1L,
+                                   lastAgeGroupOpen = TRUE)
     ans.expected <- new("CohortIteratorComponent",
                         i = 1L,
                         nTime = 5L,
@@ -16191,14 +16198,16 @@ test_that("makeIteratorCC creates objects from valid inputs", {
                         iAge = 1L,
                         stepTriangle = 1L,
                         iTriangle = 1L,
-                        finished = FALSE)
+                        finished = FALSE,
+                        lastAgeGroupOpen = TRUE)
     expect_identical(ans.obtained, ans.expected)
 })
 
 test_that("makeIteratorCODPCP creates objects from valid inputs", {
     makeIteratorCODPCP <- demest:::makeIteratorCODPCP 
     ans.obtained <- makeIteratorCODPCP(dim = c(3:5, 5L, 2L), iTime = 1L, iAge = 2L,
-                                       iMultiple = 4L, iTriangle = 5L)
+                                       iMultiple = 4L, iTriangle = 5L,
+                                       lastAgeGroupOpen = TRUE)
     ans.expected <- new("CohortIteratorOrigDestParChPool",
                         i = 1L,
                         nTime = 3L,
@@ -16213,11 +16222,13 @@ test_that("makeIteratorCODPCP creates objects from valid inputs", {
                         iVec = c(1L, 61L, 121L, 181L, 241L),
                         lengthVec = 5L,
                         increment = c(0L, 60L, 120L, 180L, 240L),
-                        finished = FALSE)
+                        finished = FALSE,
+                        lastAgeGroupOpen = TRUE)
     expect_identical(ans.obtained, ans.expected)
     ## dim = 3:4, iAge = 2L, iTime = 1L 
     ans.obtained <- makeIteratorCODPCP(dim = c(2:4, 3L, 3L), iTime = 2L, iAge = 3L, iTriangle = 1L,
-                                       iMultiple = 4L)
+                                       iMultiple = 4L,
+                        lastAgeGroupOpen = TRUE)
     ans.expected <- new("CohortIteratorOrigDestParChPool",
                         i = 1L,
                         nTime = 3L,
@@ -16232,11 +16243,13 @@ test_that("makeIteratorCODPCP creates objects from valid inputs", {
                         iVec = c(1L, 25L, 49L),
                         lengthVec = 3L,
                         increment = c(0L, 24L, 48L),
+                        lastAgeGroupOpen = TRUE,
                         finished = FALSE)
     expect_identical(ans.obtained, ans.expected)
     ## dim = 3:4, iAge = 0L, iTime = 2L 
     ans.obtained <- makeIteratorCODPCP(dim = c(3:4, 3L, 3L, 2L, 2L), iTime = 2L, iAge = 0L,
-                                       iTriangle = 0L, iMult = c(4L, 6L))
+                                       iTriangle = 0L, iMult = c(4L, 6L),
+                        lastAgeGroupOpen = NA)
     ans.expected <- new("CohortIteratorOrigDestParChPool",
                         i = 1L,
                         nTime = 4L,
@@ -16251,6 +16264,7 @@ test_that("makeIteratorCODPCP creates objects from valid inputs", {
                         iVec = c(1L, 37L, 73L, 217L, 253L, 289L),
                         lengthVec = 6L,
                         increment = c(0L, 36L, 72L, 216L, 252L, 288L),
+                        lastAgeGroupOpen = NA,
                         finished = FALSE)
     expect_identical(ans.obtained, ans.expected)
     ## dim = 2:5, iTime = 4L, iAge = 3L, iTriangle = 1L, iMult = c(2L, 7L)
@@ -16270,6 +16284,7 @@ test_that("makeIteratorCODPCP creates objects from valid inputs", {
                         iVec = c(1L, 3L, 5L, 721L, 723L, 725L),
                         lengthVec = 6L,
                         increment = c(0L, 2L, 4L, 720L, 722L, 724L),
+                        lastAgeGroupOpen = FALSE,
                         finished = FALSE)
     expect_identical(ans.obtained, ans.expected)
 })
