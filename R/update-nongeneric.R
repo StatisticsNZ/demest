@@ -2701,7 +2701,7 @@ updateThetaAndNu_CMPVaryingNotUseExp <- function(object, y, useC = FALSE) {
 }
 
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 updateThetaAndNu_CMPVaryingUseExp <- function(object, y, exposure, useC = FALSE) {
     ## object
@@ -2798,8 +2798,8 @@ updateThetaAndNu_CMPVaryingUseExp <- function(object, y, exposure, useC = FALSE)
                         log.dens.th.prop <- stats::dnorm(x = tr.th.prop, mean = mu, sd = sigma, log = TRUE)
                         log.dens.nu.curr <- stats::dnorm(x = log.nu.curr, mean = mean.log.nu, sd = sd.log.nu, log = TRUE) 
                         log.dens.nu.prop <- stats::dnorm(x = log.nu.prop, mean = mean.log.nu, sd = sd.log.nu, log = TRUE)
-                        log.diff <- log.lik.prop - log.lik.curr + log.lik.curr.star - log.lik.prop.star 
-                            + log.dens.th.prop - log.dens.th.curr + log.dens.nu.prop - log.dens.nu.curr
+                        log.diff <- (log.lik.prop - log.lik.curr + log.lik.curr.star - log.lik.prop.star 
+                            + log.dens.th.prop - log.dens.th.curr + log.dens.nu.prop - log.dens.nu.curr) ## added brackets 11/1/2018 JAH
                         accept <- (log.diff >= 0) || (stats::runif(n = 1L) < exp(log.diff))
                         if (accept) {
                             n.accept.theta <- n.accept.theta + 1L

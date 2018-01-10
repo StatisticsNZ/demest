@@ -3972,7 +3972,7 @@ test_that("R, generic C, and specific C versions updateModelNotUseExp method for
     }
 })
 
-## updateModelUseExp for PoissonVaryingNotUseExpAgNormal
+## updateModelNotUseExp for PoissonVaryingNotUseExpAgNormal
 
 test_that("updateModelNotUseExp for PoissonVaryingNotUseExpAgNormal updates the correct slots", {
     updateModelNotUseExp <- demest:::updateModelNotUseExp
@@ -4026,7 +4026,7 @@ test_that("R, generic C, and specific C versions updateModelNotUseExp method for
     }
 })
 
-## updateModelUseExp for PoissonVaryingNotUseExpAgFun
+## updateModelNotUseExp for PoissonVaryingNotUseExpAgFun
 
 test_that("updateModelNotUseExp for PoissonVaryingNotUseExpAgFun updates the correct slots", {
     updateModelNotUseExp <- demest:::updateModelNotUseExp

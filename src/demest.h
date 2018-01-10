@@ -726,6 +726,7 @@ void updateThetaAndValueAgFun_PoissonNotUseExp(SEXP object, SEXP y_R);
 void updateThetaAndValueAgFun_PoissonUseExp(SEXP object, SEXP y_R, SEXP exposure_R);
 void updateThetaAndValueAgLife_PoissonUseExp(SEXP object, SEXP y_R, SEXP exposure_R);
 void updateThetaAndNu_CMPVaryingNotUseExp(SEXP object_R, SEXP y_R);
+void updateThetaAndNu_CMPVaryingUseExp(SEXP object_R, SEXP y_R, SEXP exposure_R);
 
 void updateVarsigma(SEXP object, SEXP y_R);
 
@@ -783,6 +784,7 @@ void predictModelUseExp(SEXP object, SEXP y_R, SEXP exposure_R);
 
 
 /* update models not using exposure*/
+void updateModelNotUseExp_CMPVaryingNotUseExp(SEXP object, SEXP y_R);
 void updateModelNotUseExp_NormalVaryingVarsigmaKnown(SEXP object, SEXP y_R);
 void updateModelNotUseExp_NormalVaryingVarsigmaUnknown(SEXP object, SEXP y_R);
 void updateModelNotUseExp_PoissonVaryingNotUseExp(SEXP object, SEXP y_R);
@@ -799,6 +801,7 @@ void updateModelNotUseExp_PoissonVaryingNotUseExpAgPoisson(SEXP object, SEXP y_R
 void updateModelNotUseExp_NormalFixedNotUseExp(SEXP object, SEXP y_R);
 void updateModelNotUseExp(SEXP object, SEXP y_R);
 /* update models using exposure*/
+void updateModelUseExp_CMPVaryingUseExp(SEXP object, SEXP y_R, SEXP exposure_R);
 void updateModelUseExp_BinomialVarying(SEXP object, SEXP y_R, SEXP exposure_R);
 void updateModelUseExp_PoissonVarying(SEXP object, SEXP y_R, SEXP exposure_R);
 void updateModelUseExp_PoissonBinomialMixture
