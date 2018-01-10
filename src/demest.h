@@ -90,6 +90,7 @@ SEXP
   tolerance_sym,
   betaIsPredicted_sym,
   nFailedPropTheta_sym,
+  nFailedPropYStar_sym,
   maxAttempt_sym,
   valueAg_sym,
   weightAg_sym,
@@ -724,6 +725,7 @@ void updateThetaAndValueAgFun_Normal(SEXP object, SEXP y_R);
 void updateThetaAndValueAgFun_PoissonNotUseExp(SEXP object, SEXP y_R);
 void updateThetaAndValueAgFun_PoissonUseExp(SEXP object, SEXP y_R, SEXP exposure_R);
 void updateThetaAndValueAgLife_PoissonUseExp(SEXP object, SEXP y_R, SEXP exposure_R);
+void updateThetaAndNu_CMPVaryingNotUseExp(SEXP object_R, SEXP y_R);
 
 void updateVarsigma(SEXP object, SEXP y_R);
 

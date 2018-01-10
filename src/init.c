@@ -1285,6 +1285,7 @@ UPDATEOBJECT_NOEXP_WRAPPER_R(updateThetaAndValueAgFun_Normal);
 UPDATEOBJECT_NOEXP_WRAPPER_R(updateThetaAndValueAgFun_PoissonNotUseExp);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateThetaAndValueAgFun_PoissonUseExp);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateThetaAndValueAgLife_PoissonUseExp);
+UPDATEOBJECT_NOEXP_WRAPPER_R(updateThetaAndNu_CMPVaryingNotUseExp);
 
 /* wrap update Counts functions */
 UPDATECOUNTS_NOEXP_WRAPPER_R(updateCountsPoissonNotUseExp);
@@ -2282,6 +2283,8 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateThetaAndValueAgFun_PoissonNotUseExp_R, 2),
   CALLDEF(updateThetaAndValueAgFun_PoissonUseExp_R, 3),
   CALLDEF(updateThetaAndValueAgLife_PoissonUseExp_R, 3),
+  CALLDEF(updateThetaAndNu_CMPVaryingNotUseExp_R, 2),
+  
   
   CALLDEF(updateVarsigma_R, 2),
   
@@ -2614,6 +2617,7 @@ R_init_demest(DllInfo *info)
   /* ag */
   ADD_SYM(maxAttempt);
   ADD_SYM(nFailedPropTheta);
+  ADD_SYM(nFailedPropYStar);
   ADD_SYM(valueAg);
   ADD_SYM(weightAg);
   ADD_SYM(transformAg);
