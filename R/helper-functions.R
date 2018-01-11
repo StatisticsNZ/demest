@@ -7828,6 +7828,7 @@ makeResultsAccount <- function(finalCombineds, mcmcArgs, controlArgs, seed) {
     pos <- 1L
     if (n.sim > 0) {
         output.account <- makeOutputAccount(account = account,
+                                            systemModels = system.models,
                                             pos = pos)
         pos <- pos + changeInPos(output.account)
     }
@@ -10944,22 +10945,37 @@ makeIteratorCODPCP <- function(dim, iTime, iAge, iTriangle, iMultiple, lastAgeGr
 }
 
 
-makeOutputAccount <- function(account, pos) {
+makeOutputAccount <- function(account, systemModels, pos) {
     population.obj <- account@population
     components.obj <- account@components
     names.components <- account@namesComponents
     first <- pos
     pos <- first + length(population.obj)
+    s <- seq_along(dim(population.obj))
+    sys.mod <- systemModels[[1L]]
+    struc.zero.array <- sys.mod@strucZeroArray
     population.out <- Skeleton(population.obj,
-                               first = first)
+                               first = first,
+                               strucZeroArray = struc.zero.array,
+                               margin = 2)
     components.out <- vector(mode = "list",
                              length = length(components.obj))
     for (i in seq_along(components.obj)) {
         component <- components.obj[[i]]
+        sys.mod <- systemModels[[i + 1L]]
         first <- pos
         pos <- first + length(component)
-        components.out[[i]] <- Skeleton(component,
-                                        first = first)
+        if (methods::is(sys.mod, "StrucZeroArrayMixin")) {
+            s <- seq_along(dim(component))
+            struc.zero.array = sys.mod@strucZeroArray
+            components.out[[i]] <- Skeleton(component,
+                                            first = first,
+                                            strucZeroArray = struc.zero.array,
+                                            margin = s)
+        }
+        else
+            components.out[[i]] <- Skeleton(component,
+                                            first = first)
     }
     names(components.out) <- names.components
     c(list(population = population.out),
