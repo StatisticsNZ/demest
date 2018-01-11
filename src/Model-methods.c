@@ -33,6 +33,9 @@ logLikelihood(SEXP model_R, int count, SEXP dataset_R, int i)
             ans = logLikelihood_NormalFixedUseExp(
                                         model_R, count, dataset_R, i);
             break;
+         case 33: /* CMPVaryingUseExp */
+            ans = logLikelihood_CMP(model_R, count, dataset_R, i);
+            break;
          case 34: /* Round3 */
             ans = logLikelihood_Round3(model_R, count, dataset_R, i);
             break;
@@ -169,7 +172,7 @@ transferParamModel(SEXP model_R, const char *filename,
             break;
         case 134: 
             transferParamModel_Round3_i(model_R, 
-			filename, lengthIter, iteration);
+            filename, lengthIter, iteration);
             break;
         default:
             error("unknown i_method_model in transferParamModel: %d", 
@@ -489,6 +492,16 @@ predictModelUseExp_NormalFixedUseExpPredict(SEXP object, SEXP y_R, SEXP exposure
 
 /* models not using exposure */
 
+static __inline__ void
+updateModelNotUseExp_CMPVaryingNotUseExp_i(SEXP object, SEXP y_R)
+{
+    updateThetaAndNu_CMPVaryingNotUseExp(object, y_R);
+    updateSigma_Varying_General(object, log);
+    updateMeanLogNu(object);
+    updateSDLogNu(object);
+    updateBetasAndPriorsBetas_General(object, log);
+}
+
 
 static __inline__ void
 updateModelNotUseExp_NormalVaryingVarsigmaKnown_i(SEXP object, SEXP y_R)
@@ -610,6 +623,18 @@ updateModelNotUseExp_NormalFixedNotUseExp_i(SEXP object, SEXP y_R)
 }
 
 /* models using exposure */
+
+static __inline__ void
+updateModelUseExp_CMPVaryingUseExp_i(SEXP object, SEXP y_R, SEXP exposure_R)
+{
+    updateThetaAndNu_CMPVaryingUseExp(object, y_R, exposure_R);
+    updateSigma_Varying_General(object, log);
+    updateMeanLogNu(object);
+    updateSDLogNu(object);
+    updateBetasAndPriorsBetas_General(object, log);
+}
+
+
 
 static __inline__ void
 updateModelUseExp_BinomialVarying_i(SEXP object, SEXP y_R, SEXP exposure_R)
@@ -772,6 +797,9 @@ updateModelNotUseExp_Internal(SEXP object, SEXP y_R, int i_method_model)
         case 30:    
             updateModelNotUseExp_NormalFixedNotUseExp_i(object, y_R);
             break; 
+        case 32:    
+            updateModelNotUseExp_CMPVaryingNotUseExp_i(object, y_R);
+            break; 
         default:
             error("unknown i_method_model: %d", i_method_model);
             break;
@@ -829,6 +857,9 @@ updateModelUseExp_Internal(SEXP object, SEXP y_R, SEXP exposure_R,
         case 31:    
             updateModelUseExp_NormalFixedUseExp_i(object, y_R, exposure_R);
             break;
+        case 33:    
+            updateModelUseExp_CMPVaryingUseExp_i(object, y_R, exposure_R);
+            break;
         case 34:    
             updateModelUseExp_Round3_i(object, y_R, exposure_R);
             break;
@@ -839,6 +870,13 @@ updateModelUseExp_Internal(SEXP object, SEXP y_R, SEXP exposure_R,
 }
 
 /* specific functions for models not using exposure */
+void
+updateModelNotUseExp_CMPVaryingNotUseExp(SEXP object, SEXP y_R) 
+{
+    updateModelNotUseExp_CMPVaryingNotUseExp_i(object, y_R);
+    
+}
+
 void
 updateModelNotUseExp_NormalVaryingVarsigmaKnown(SEXP object, SEXP y_R) 
 {
@@ -927,6 +965,13 @@ updateModelNotUseExp_NormalFixedNotUseExp(SEXP object, SEXP y_R)
 }
 
 /* specific functions for models using exposure */
+void
+updateModelUseExp_CMPVaryingUseExp(SEXP object, SEXP y_R, SEXP exposure_R) 
+{
+    updateModelUseExp_CMPVaryingUseExp_i(object, y_R, exposure_R);
+    
+}
+
 void
 updateModelUseExp_BinomialVarying(SEXP object, SEXP y_R, SEXP exposure_R)
 {

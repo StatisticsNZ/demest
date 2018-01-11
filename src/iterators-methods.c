@@ -24,10 +24,6 @@ advanceA(SEXP iterator_R)
     int indices_len =  LENGTH(indices_R);
     int *indices = INTEGER(indices_R);
     
-    /* if (object@iWithin < object@nWithin) {
-            object@iWithin <- object@iWithin + 1L
-            object@indices <- object@indices + 1L
-        } */
     if (*iWithin < nWithin) {
         *iWithin += 1;
         for (int i = 0; i < indices_len; ++i) {
@@ -40,12 +36,7 @@ advanceA(SEXP iterator_R)
         /* nBetween unchanged so treat by value */
         int nBetween = *(INTEGER(GET_SLOT(iterator_R, nBetween_sym)));
         
-        /*  object@iWithin <- 1L */
         *iWithin = 1;
-        /* if (object@iBetween < object@nBetween) {
-                object@iBetween <- object@iBetween + 1L
-                object@indices <- object@indices + object@incrementBetween
-         } */
         if (*iBetween < nBetween) {
             *iBetween += 1;
             int incrementBetween = 
@@ -54,10 +45,6 @@ advanceA(SEXP iterator_R)
                 indices[i] += incrementBetween;
             }
         }
-        /* else {
-                object@iBetween <- 1L
-                object@indices <- object@initial
-            } */
         else {
             *iBetween = 1;
             
@@ -119,8 +106,6 @@ advanceB(SEXP iterator_R)
         /* make space to store iterator strides */
         int dimIteratorStrides[nDimIterators];
         
-        /* for (d in seq_along(dim.iterators))
-                dim.iterators[[d]] <- advanceD(dim.iterators[[d]]) */
         for (int d = 0; d < nDimIterators; ++d) {
             SEXP dIterator_R = VECTOR_ELT(dim_iterators_R, d);
             advanceD(dIterator_R);
@@ -129,13 +114,6 @@ advanceB(SEXP iterator_R)
                     = *(INTEGER(GET_SLOT(dIterator_R, nStrides_sym)));
         }
         
-        /*for (b in seq.int(from = 2L, to = n.beta)) {
-                for (d in seq_along(dim.iterators)) {
-                    n.strides <- dim.iterators[[d]]@nStrides
-                    stride.length <- stride.lengths[[b - 1L]][d]
-                    indices[[b]] <- indices[[b]] + as.integer(n.strides * stride.length)
-                }
-            } */
         for (int b = 1; b < n_beta; ++b) {
             
             int *this_vec = INTEGER(VECTOR_ELT(stride_lengths_R, b-1));
@@ -198,10 +176,6 @@ advanceD(SEXP iterator_R)
     /* nWithin by value */
     int nWithin = *(INTEGER(GET_SLOT(iterator_R, nWithin_sym)));
     
-    /* if (object@iWithin < object@nWithin) {
-            object@iWithin <- object@iWithin + 1L
-            object@nStrides <- 0L
-        } */
     if (*iWithin < nWithin) {
         *iWithin += 1;
         *nStrides = 0;
@@ -268,11 +242,6 @@ advanceCA(SEXP iterator_R)
     *iTime_ptr = iTime;
     int * i_ptr = INTEGER(GET_SLOT(iterator_R, i_sym));
     *i_ptr = i;
-    
-    //SET_SLOT(iterator_R, iAge_sym, ScalarInteger(iAge));
-    //SET_SLOT(iterator_R, i_sym, ScalarInteger(i));
-    //SET_SLOT(iterator_R, iTime_sym, ScalarInteger(iTime));
-    //SET_SLOT(iterator_R, finished_sym, ScalarLogical(finished));
     
     SEXP finished_R = GET_SLOT(iterator_R, finished_sym);
     LOGICAL(finished_R)[0] = ((iTime >= nTime) || (iAge >= nAge));
@@ -419,31 +388,6 @@ resetCA(SEXP iterator_R, int i)
 }
 
 /* reset cohort iterator */
-#if(0)
-void
-resetCP(SEXP iterator_R, int i)
-{
-    int stepTime = *INTEGER(GET_SLOT(iterator_R, stepTime_sym));
-    int nTime = *INTEGER(GET_SLOT(iterator_R, nTime_sym));
-    int hasAge = *LOGICAL(GET_SLOT(iterator_R, hasAge_sym));
-    
-    int iTime_R = (((i - 1) / stepTime) % nTime) + 1; /* R-style */
-    
-    if (hasAge) {
-        int stepAge = *INTEGER(GET_SLOT(iterator_R, stepAge_sym));
-        int nAge = *INTEGER(GET_SLOT(iterator_R, nAge_sym));
-        int iAge_R = (((i - 1) / stepAge) % nAge) + 1; /* R-style */
-        SET_SLOT(iterator_R, iAge_sym, ScalarInteger(iAge_R));
-    }
-    
-    SET_SLOT(iterator_R, i_sym, ScalarInteger(i));
-    SET_SLOT(iterator_R, iTime_sym, ScalarInteger(iTime_R));
-    
-    int finished = (iTime_R >= nTime);
-    SET_SLOT(iterator_R, finished_sym, ScalarLogical(finished));
-}
-#endif
-
 void
 resetCP(SEXP iterator_R, int i)
 {

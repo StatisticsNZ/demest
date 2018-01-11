@@ -3853,8 +3853,6 @@ updateThetaAndNu_CMPVaryingNotUseExp(SEXP object_R, SEXP y_R)
                         theta[i] = th_prop;
                         nu[i] = nu_prop; 
                     }
-                    
-                    
                 }
                 else {
                     ++n_failed_prop_y_star;
@@ -3871,8 +3869,174 @@ updateThetaAndNu_CMPVaryingNotUseExp(SEXP object_R, SEXP y_R)
     SET_INTSCALE_SLOT(object_R, nFailedPropYStar_sym, n_failed_prop_y_star);
     SET_INTSCALE_SLOT(object_R, nFailedPropTheta_sym, n_failed_prop_theta);
     SET_INTSCALE_SLOT(object_R, nAcceptTheta_sym, n_accept_theta);
-
 }
+
+
+void
+updateThetaAndNu_CMPVaryingUseExp(SEXP object_R, SEXP y_R, SEXP exposure_R)
+{
+    SEXP theta_R = GET_SLOT(object_R, theta_sym);
+    double *theta = REAL(theta_R);
+    int n_theta = LENGTH(theta_R);
+    
+    double boxCoxParam = *REAL(GET_SLOT(object_R, boxCoxParam_sym));
+    int usesBoxCoxTransform = (boxCoxParam > 0) ? 1 : 0;
+    double oneOverBoxCoxParam = 1/boxCoxParam;
+    
+    double scale = *REAL(GET_SLOT(object_R, scaleTheta_sym));
+    double scaleMultiplier = *REAL(GET_SLOT(object_R, scaleThetaMultiplier_sym));
+    scale *= scaleMultiplier;
+    
+    double lower = *REAL(GET_SLOT(object_R, lower_sym));
+    double upper = *REAL(GET_SLOT(object_R, upper_sym));
+    double tolerance = *REAL(GET_SLOT(object_R, tolerance_sym));
+    double sigma = *REAL(GET_SLOT(object_R, sigma_sym));  
+    double * nu = REAL(GET_SLOT(object_R, nuCMP_sym));
+    double meanLogNu = *REAL(GET_SLOT(object_R, meanLogNuCMP_sym));
+    double sdLogNu = *REAL(GET_SLOT(object_R, sdLogNuCMP_sym));
+
+    int maxAttempt = *INTEGER(GET_SLOT(object_R, maxAttempt_sym));
+    
+    SEXP betas_R = GET_SLOT(object_R, betas_sym);
+    int n_beta =  LENGTH(betas_R);
+
+    SEXP iteratorBetas_R = GET_SLOT(object_R, iteratorBetas_sym);
+
+    resetB(iteratorBetas_R);
+    int *indices = INTEGER(GET_SLOT(iteratorBetas_R, indices_sym));
+
+    double* betas[n_beta]; /* array of pointers */
+    for (int b = 0; b < n_beta; ++b) {
+        betas[b] = REAL(VECTOR_ELT(betas_R, b));
+    }
+
+    int *y = INTEGER(y_R);
+    double *exposure = REAL(exposure_R);
+    
+    int n_failed_prop_y_star = 0;
+    int n_failed_prop_theta = 0;
+    int n_accept_theta = 0;
+    
+    for (int i = 0; i < n_theta; ++i) {
+        
+        /* get 'mu' */
+        double mu = 0.0;
+        for (int b = 0; b < n_beta; ++b) {
+            double *this_beta = betas[b];
+            
+            mu += this_beta[indices[b]-1];
+        }
+        
+        int this_y = y[i];
+        
+        int y_is_missing = ( this_y == NA_INTEGER );
+        
+        double mean = 0;
+        double sd = 0;
+        
+        double th_curr = 0;
+        double tr_th_curr = 0;
+        
+        if (y_is_missing) {
+            mean = mu;
+            sd = sigma;
+        }
+        else {
+            th_curr = theta[i];
+            if(usesBoxCoxTransform) {
+                tr_th_curr = ( pow(th_curr, boxCoxParam) - 1)/boxCoxParam; 
+            }
+            else {
+                tr_th_curr = log(th_curr);
+            }
+            mean = tr_th_curr;
+            sd = scale;
+        }
+        
+        int attempt = 0;
+        int found_prop_theta = 0;
+        double tr_th_prop = 0;
+                
+        while( (!found_prop_theta) && (attempt < maxAttempt) ) {
+            
+            ++attempt;
+
+            tr_th_prop = rnorm(mean, sd);
+            
+            found_prop_theta = ( ( tr_th_prop > (lower + tolerance) )
+                    && ( tr_th_prop < (upper - tolerance) ) );
+        }
+        
+        if (found_prop_theta) {
+            
+            double th_prop = 0;
+            
+            if (usesBoxCoxTransform) {
+                th_prop = pow(boxCoxParam * tr_th_prop + 1, oneOverBoxCoxParam);
+            }
+            else {
+                th_prop = exp(tr_th_prop);    
+            }
+            
+            if (y_is_missing) {
+                theta[i] = th_prop;
+        
+            }
+            else {
+            
+                double nu_curr = nu[i];
+                double log_nu_curr = log(nu_curr);
+                double log_nu_prop = rnorm(meanLogNu, sdLogNu);
+                
+                double nu_prop = exp(log_nu_prop);
+                double y_star = rcmp1(th_prop, nu_prop, maxAttempt);
+                
+                int found_y_star = R_finite(y_star);
+                
+                if (found_y_star) {
+                    
+                    double this_exposure = exposure[i];
+                    double gamma_curr = th_curr * this_exposure;
+                    double gamma_prop = th_prop * this_exposure;
+                    
+                    double logLikCurr = logDensCMPUnnormalised1(this_y, gamma_curr, nu_curr);
+                    double logLikProp = logDensCMPUnnormalised1(this_y, gamma_prop, nu_prop);
+                    double logLikCurrStar = logDensCMPUnnormalised1(y_star, gamma_curr, nu_curr);
+                    double logLikPropStar = logDensCMPUnnormalised1(y_star, gamma_prop, nu_prop);
+                    
+                    double logDensThCurr = dnorm(tr_th_curr, mu, sigma, USE_LOG);
+                    double logDensThProp = dnorm(tr_th_prop, mu, sigma, USE_LOG);
+                    double logDensNuCurr = dnorm(log_nu_curr, meanLogNu, sdLogNu, USE_LOG);
+                    double logDensNuProp = dnorm(log_nu_prop, meanLogNu, sdLogNu, USE_LOG);
+                    
+                    double logDiff = logLikProp - logLikCurr + logLikCurrStar - logLikPropStar
+                                    + logDensThProp - logDensThCurr + logDensNuProp - logDensNuCurr;
+                    
+                    int accept = ( !(logDiff < 0) || ( runif(0,1) < exp(logDiff) ) );
+                    
+                    if (accept) {
+                        ++n_accept_theta;
+                        theta[i] = th_prop;
+                        nu[i] = nu_prop; 
+                    }
+                }
+                else {
+                    ++n_failed_prop_y_star;
+                }
+            } 
+        } /* end if found_prop_theta */
+        else {
+            ++n_failed_prop_theta;
+        }
+        advanceB(iteratorBetas_R);
+            
+    } /* end loop through theta */
+    
+    SET_INTSCALE_SLOT(object_R, nFailedPropYStar_sym, n_failed_prop_y_star);
+    SET_INTSCALE_SLOT(object_R, nFailedPropTheta_sym, n_failed_prop_theta);
+    SET_INTSCALE_SLOT(object_R, nAcceptTheta_sym, n_accept_theta);
+}
+
 
 /* y_R is a demographic array, g'teed to be doubles,
  * betas is a list, length same as length of the iteratorBetas' indices */

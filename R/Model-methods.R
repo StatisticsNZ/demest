@@ -146,7 +146,7 @@ setMethod("logLikelihood",
           })
 
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 ## *************************************************************
 ## NOTE THAT THIS FUNCTION RETURNS THE UNNORMALISED LIKELIHOOD.
@@ -180,8 +180,8 @@ setMethod("logLikelihood",
               stopifnot(i <= length(dataset))
               stopifnot(!is.na(dataset@.Data[i]))
               if (useC) {
-                  if (useSpecific)
-                      .Call(logLikelihood_Poisson_R, model, count, dataset, i)
+                  if (useSpecific) ## changed to use logLikelihood_CMP, JAH 11/1/2018
+                      .Call(logLikelihood_CMP_R, model, count, dataset, i)
                   else
                       .Call(logLikelihood_R, model, count, dataset, i)
               }
@@ -1754,7 +1754,7 @@ setMethod("transferParamModel",
 
 ## updateModelNotUseExp ##############################################################
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("updateModelNotUseExp",
           signature(object = "CMPVaryingNotUseExp"),
@@ -2176,7 +2176,7 @@ setMethod("updateModelUseExp",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("updateModelUseExp",
           signature(object = "CMPVaryingUseExp"),
