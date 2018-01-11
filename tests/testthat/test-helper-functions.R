@@ -1492,200 +1492,200 @@ test_that("initialFakeDLMWithTrend works", {
     expect_identical(ans.obtained$hasLevel, new("LogicalFlag", TRUE))
 })
 
-test_that("makeFakeHyper works", {
-    makeFakeHyper <- demest:::makeFakeHyper
-    makeFakeOutputPrior <- demest:::makeFakeOutputPrior
-    fakePrior <- demest:::fakePrior
-    spec.int <- ExchFixed(mean = -1, sd = 0.1)
-    spec.time <- DLM(level = Level(scale = HalfT(scale = 0.01)),
-                trend = NULL,
-                error = Error(scale = HalfT(scale = 0.01)))
-    metadata <- new("MetaData",
-                    nms = "time",
-                    dimtypes = "time",
-                    DimScales = list(new("Points", dimvalues = 1:10)))
-    prior.int <- fakePrior(spec.int,
-                           metadata = NULL,
-                           isSaturated = FALSE)
-    prior.time <- fakePrior(spec.time,
-                            metadata = metadata,
-                            isSaturated = TRUE)
-    priors <- list(prior.int, prior.time)
-    names <- c("(Intercept)", "age")
-    ans.obtained <- makeFakeHyper(priors = priors,
-                                  margins = 0:1,
-                                  metadata = metadata,
-                                  names = names)
-    ans.expected <- list("(Intercept)" = list(mean = -1,
-                                              sd = 0.1),
-                         age = list(level = ValuesOne(prior.time@alphaDLM[-1],
-                                                      labels = 1:10,
-                                                      name = "time",
-                                                      dimscale = "Points"),
-                                    scaleLevel = prior.time@omegaAlpha@.Data,
-                                    damp = prior.time@phi,
-                                    scaleError = prior.time@tau@.Data))
-    expect_equal(ans.obtained, ans.expected)
-})
+## test_that("makeFakeHyper works", {
+##     makeFakeHyper <- demest:::makeFakeHyper
+##     makeFakeOutputPrior <- demest:::makeFakeOutputPrior
+##     fakePrior <- demest:::fakePrior
+##     spec.int <- ExchFixed(mean = -1, sd = 0.1)
+##     spec.time <- DLM(level = Level(scale = HalfT(scale = 0.01)),
+##                 trend = NULL,
+##                 error = Error(scale = HalfT(scale = 0.01)))
+##     metadata <- new("MetaData",
+##                     nms = "time",
+##                     dimtypes = "time",
+##                     DimScales = list(new("Points", dimvalues = 1:10)))
+##     prior.int <- fakePrior(spec.int,
+##                            metadata = NULL,
+##                            isSaturated = FALSE)
+##     prior.time <- fakePrior(spec.time,
+##                             metadata = metadata,
+##                             isSaturated = TRUE)
+##     priors <- list(prior.int, prior.time)
+##     names <- c("(Intercept)", "age")
+##     ans.obtained <- makeFakeHyper(priors = priors,
+##                                   margins = 0:1,
+##                                   metadata = metadata,
+##                                   names = names)
+##     ans.expected <- list("(Intercept)" = list(mean = -1,
+##                                               sd = 0.1),
+##                          age = list(level = ValuesOne(prior.time@alphaDLM[-1],
+##                                                       labels = 1:10,
+##                                                       name = "time",
+##                                                       dimscale = "Points"),
+##                                     scaleLevel = prior.time@omegaAlpha@.Data,
+##                                     damp = prior.time@phi,
+##                                     scaleError = prior.time@tau@.Data))
+##     expect_equal(ans.obtained, ans.expected)
+## })
 
-test_that("makeFakeMargins works", {
-    makeFakeMargins <- demest:::makeFakeMargins
-    namesSpecs <- c("(Intercept)", "age", "sex", "age:sex")
-    y <- Counts(array(1,
-                      dim = c(3, 2),
-                      dimnames = list(age = c("0-4", "5-9", "10+"),
-                                      sex = c("f", "m"))))
-    call <- call("Model", y ~ Poisson(mean ~ age * sex),
-                 `(Intercept)` ~ ExchFixed(mean = -3, sd = 0.1),
-                 age ~ DLM(level = Level(scale = HalfT(scale = 0.01)),
-                           error = Error(scale = HalfT(scale = 0.1))),
-                 sex ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
-                 age:sex ~ Exch(error = Error(scale = HalfT(scale = 0.001))))
-    ans.obtained <- makeFakeMargins(namesSpecs = namesSpecs,
-                                    y = y,
-                                    call = call)
-    expect_identical(ans.obtained, list(0L, 1L, 2L, 1:2))
-    namesSpecs.wrong <- namesSpecs[-1]
-    expect_error(makeFakeMargins(namesSpecs = namesSpecs.wrong,
-                                 y = y,
-                                 call = call),
-                 "no prior specified for '\\(Intercept\\)' in model")
-    namesSpecs.wrong <- c(namesSpecs, "wrong")
-    expect_error(makeFakeMargins(namesSpecs = namesSpecs.wrong,
-                                 y = y,
-                                 call = call),
-                 "term 'wrong' from formula")
-})
+## test_that("makeFakeMargins works", {
+##     makeFakeMargins <- demest:::makeFakeMargins
+##     namesSpecs <- c("(Intercept)", "age", "sex", "age:sex")
+##     y <- Counts(array(1,
+##                       dim = c(3, 2),
+##                       dimnames = list(age = c("0-4", "5-9", "10+"),
+##                                       sex = c("f", "m"))))
+##     call <- call("Model", y ~ Poisson(mean ~ age * sex),
+##                  `(Intercept)` ~ ExchFixed(mean = -3, sd = 0.1),
+##                  age ~ DLM(level = Level(scale = HalfT(scale = 0.01)),
+##                            error = Error(scale = HalfT(scale = 0.1))),
+##                  sex ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
+##                  age:sex ~ Exch(error = Error(scale = HalfT(scale = 0.001))))
+##     ans.obtained <- makeFakeMargins(namesSpecs = namesSpecs,
+##                                     y = y,
+##                                     call = call)
+##     expect_identical(ans.obtained, list(0L, 1L, 2L, 1:2))
+##     namesSpecs.wrong <- namesSpecs[-1]
+##     expect_error(makeFakeMargins(namesSpecs = namesSpecs.wrong,
+##                                  y = y,
+##                                  call = call),
+##                  "no prior specified for '\\(Intercept\\)' in model")
+##     namesSpecs.wrong <- c(namesSpecs, "wrong")
+##     expect_error(makeFakeMargins(namesSpecs = namesSpecs.wrong,
+##                                  y = y,
+##                                  call = call),
+##                  "term 'wrong' from formula")
+## })
 
-test_that("makeFakeOutputLevelDLM works", {
-    makeFakeOutputLevelDLM <- demest:::makeFakeOutputLevelDLM
-    fakePrior <- demest:::fakePrior
-    spec <- DLM(level = Level(scale = HalfT(scale = 0.01)),
-                trend = NULL,
-                error = Error(scale = HalfT(scale = 0.01)))
-    metadata <- new("MetaData",
-                    nms = "time",
-                    dimtypes = "time",
-                    DimScales = list(new("Points", dimvalues = 1:10)))
-    prior <- fakePrior(spec,
-                       metadata = metadata,
-                       isSaturated = FALSE)
-    ans.obtained <- makeFakeOutputLevelDLM(prior = prior,
-                                           metadata = metadata)
-    ans.expected <- array(prior@alphaDLM[-1L],
-                          dim = dim(metadata),
-                          dimnames = dimnames(metadata))
-    ans.expected <- new("Values",
-                        .Data = ans.expected,
-                        metadata = metadata)
-    expect_identical(ans.obtained, ans.expected)
-})
+## test_that("makeFakeOutputLevelDLM works", {
+##     makeFakeOutputLevelDLM <- demest:::makeFakeOutputLevelDLM
+##     fakePrior <- demest:::fakePrior
+##     spec <- DLM(level = Level(scale = HalfT(scale = 0.01)),
+##                 trend = NULL,
+##                 error = Error(scale = HalfT(scale = 0.01)))
+##     metadata <- new("MetaData",
+##                     nms = "time",
+##                     dimtypes = "time",
+##                     DimScales = list(new("Points", dimvalues = 1:10)))
+##     prior <- fakePrior(spec,
+##                        metadata = metadata,
+##                        isSaturated = FALSE)
+##     ans.obtained <- makeFakeOutputLevelDLM(prior = prior,
+##                                            metadata = metadata)
+##     ans.expected <- array(prior@alphaDLM[-1L],
+##                           dim = dim(metadata),
+##                           dimnames = dimnames(metadata))
+##     ans.expected <- new("Values",
+##                         .Data = ans.expected,
+##                         metadata = metadata)
+##     expect_identical(ans.obtained, ans.expected)
+## })
 
-test_that("makeFakeOutputTrendDLM works", {
-    makeFakeOutputTrendDLM <- demest:::makeFakeOutputTrendDLM
-    fakePrior <- demest:::fakePrior
-    spec <- DLM(level = Level(scale = HalfT(scale = 0.01)),
-                trend = Trend(initial = Initial(sd = 0.01),
-                              scale = HalfT(scale = 0.01)),
-                error = Error(scale = HalfT(scale = 0.01)))
-    metadata <- new("MetaData",
-                    nms = "time",
-                    dimtypes = "time",
-                    DimScales = list(new("Points", dimvalues = 1:10)))
-    prior <- fakePrior(spec,
-                       metadata = metadata,
-                       isSaturated = FALSE)
-    ans.obtained <- makeFakeOutputTrendDLM(prior = prior,
-                                           metadata = metadata)
-    ans.expected <- array(prior@deltaDLM[-1L],
-                          dim = dim(metadata),
-                          dimnames = dimnames(metadata))
-    ans.expected <- new("Values",
-                        .Data = ans.expected,
-                        metadata = metadata)
-    expect_identical(ans.obtained, ans.expected)
-})
+## test_that("makeFakeOutputTrendDLM works", {
+##     makeFakeOutputTrendDLM <- demest:::makeFakeOutputTrendDLM
+##     fakePrior <- demest:::fakePrior
+##     spec <- DLM(level = Level(scale = HalfT(scale = 0.01)),
+##                 trend = Trend(initial = Initial(sd = 0.01),
+##                               scale = HalfT(scale = 0.01)),
+##                 error = Error(scale = HalfT(scale = 0.01)))
+##     metadata <- new("MetaData",
+##                     nms = "time",
+##                     dimtypes = "time",
+##                     DimScales = list(new("Points", dimvalues = 1:10)))
+##     prior <- fakePrior(spec,
+##                        metadata = metadata,
+##                        isSaturated = FALSE)
+##     ans.obtained <- makeFakeOutputTrendDLM(prior = prior,
+##                                            metadata = metadata)
+##     ans.expected <- array(prior@deltaDLM[-1L],
+##                           dim = dim(metadata),
+##                           dimnames = dimnames(metadata))
+##     ans.expected <- new("Values",
+##                         .Data = ans.expected,
+##                         metadata = metadata)
+##     expect_identical(ans.obtained, ans.expected)
+## })
 
-test_that("makeFakePhi works", {
-    makeFakePhi <- demest:::makeFakePhi
-    ## phi known
-    ans.obtained <- makeFakePhi(phi = 0.9,
-                                phiKnown = TRUE,
-                                min = 0,
-                                max = 1,
-                                shape1 = 1,
-                                shape2 = 1)
-    ans.expected <- 0.9
-    expect_identical(ans.obtained, ans.expected)
-    ## phi unknown
-    set.seed(1)
-    ans.obtained <- makeFakePhi(phi = as.double(NA),
-                                phiKnown = FALSE,
-                                min = 0.8,
-                                max = 0.98,
-                                shape1 = 3,
-                                shape2 = 3)
-    set.seed(1)
-    ans.expected <- rbeta(1, 3, 3)
-    ans.expected <- ans.expected * 0.18 + 0.8
-    if (test.identity)
-        expect_identical(ans.obtained, ans.expected)
-    else
-        expect_equal(ans.obtained, ans.expected)
-})
+## test_that("makeFakePhi works", {
+##     makeFakePhi <- demest:::makeFakePhi
+##     ## phi known
+##     ans.obtained <- makeFakePhi(phi = 0.9,
+##                                 phiKnown = TRUE,
+##                                 min = 0,
+##                                 max = 1,
+##                                 shape1 = 1,
+##                                 shape2 = 1)
+##     ans.expected <- 0.9
+##     expect_identical(ans.obtained, ans.expected)
+##     ## phi unknown
+##     set.seed(1)
+##     ans.obtained <- makeFakePhi(phi = as.double(NA),
+##                                 phiKnown = FALSE,
+##                                 min = 0.8,
+##                                 max = 0.98,
+##                                 shape1 = 3,
+##                                 shape2 = 3)
+##     set.seed(1)
+##     ans.expected <- rbeta(1, 3, 3)
+##     ans.expected <- ans.expected * 0.18 + 0.8
+##     if (test.identity)
+##         expect_identical(ans.obtained, ans.expected)
+##     else
+##         expect_equal(ans.obtained, ans.expected)
+## })
 
-test_that("makeFakePriors works", {
-    makeFakePriors <- demest:::makeFakePriors
-    specs <- list(ExchFixed(mean = -3, sd = 0.1),
-                  Exch(error = Error(scale = HalfT(scale = 0.05))),
-                  DLM(level = Level(scale = HalfT(scale = 0.01)),
-                      trend = Trend(initial = Initial(sd = 0.01, mean = 0.02),
-                                    scale = HalfT(scale = 0.01)),
-                      error = Error(scale = HalfT(scale = 0.05))))
-    margins <- c(0L, 1L, 2L)
-    metadata <- new("MetaData",
-                    nms = c("reg", "age"),
-                    dimtypes = c("state", "age"),
-                    DimScales = list(new("Categories", dimvalues = letters[1:10]),
-                                     new("Intervals", dimvalues = seq(0, 50, 5))))
-    isSaturated <- c(FALSE, FALSE, FALSE)
-    ans.obtained <- makeFakePriors(specs = specs,
-                                   margins = margins,
-                                   metadata = metadata,
-                                   isSaturated = isSaturated)
-    expect_identical(sapply(ans.obtained, class),
-                     c("FakeExchFixed", "FakeExchNormZero", "FakeDLMWithTrendNormZeroNoSeason"))
-})
+## test_that("makeFakePriors works", {
+##     makeFakePriors <- demest:::makeFakePriors
+##     specs <- list(ExchFixed(mean = -3, sd = 0.1),
+##                   Exch(error = Error(scale = HalfT(scale = 0.05))),
+##                   DLM(level = Level(scale = HalfT(scale = 0.01)),
+##                       trend = Trend(initial = Initial(sd = 0.01, mean = 0.02),
+##                                     scale = HalfT(scale = 0.01)),
+##                       error = Error(scale = HalfT(scale = 0.05))))
+##     margins <- c(0L, 1L, 2L)
+##     metadata <- new("MetaData",
+##                     nms = c("reg", "age"),
+##                     dimtypes = c("state", "age"),
+##                     DimScales = list(new("Categories", dimvalues = letters[1:10]),
+##                                      new("Intervals", dimvalues = seq(0, 50, 5))))
+##     isSaturated <- c(FALSE, FALSE, FALSE)
+##     ans.obtained <- makeFakePriors(specs = specs,
+##                                    margins = margins,
+##                                    metadata = metadata,
+##                                    isSaturated = isSaturated)
+##     expect_identical(sapply(ans.obtained, class),
+##                      c("FakeExchFixed", "FakeExchNormZero", "FakeDLMWithTrendNormZeroNoSeason"))
+## })
 
-test_that("makeFakeScale works", {
-    makeFakeScale <- demest:::makeFakeScale
-    rhalftTrunc1 <- demest:::rhalftTrunc1
-    ## valid inputs
-    A <- new("SpecScale", 0.1)
-    nu <- new("DegreesFreedom", 2)
-    scaleMax <- new("SpecScale", 0.3)
-    functionName <- "Error"
-    set.seed(1)
-    ans.obtained <- makeFakeScale(A = A,
-                             nu = nu,
-                             scaleMax = scaleMax,
-                             functionName = functionName)
-    set.seed(1)
-    scale <- new("Scale", rhalftTrunc1(df = 2, scale = 0.1, max = 0.3))
-    scaleMax <- new("Scale", 0.3)
-    A <- new("Scale", 0.1)
-    ans.expected <- list(scale = scale, A = A, scaleMax = scaleMax)
-    if (test.identity)
-        expect_identical(ans.obtained, ans.expected)
-    else
-        expect_equal(ans.obtained, ans.expected)
-    ## no scale specified
-    expect_error(makeFakeScale(A = new("SpecScale", as.double(NA)),
-                                          nu = nu,
-                                          scaleMax = scaleMax,
-                                          functionName = functionName),
-                 "need to specify scale of half-t distribution for 'scale' in call to function 'Error'")
-})
+## test_that("makeFakeScale works", {
+##     makeFakeScale <- demest:::makeFakeScale
+##     rhalftTrunc1 <- demest:::rhalftTrunc1
+##     ## valid inputs
+##     A <- new("SpecScale", 0.1)
+##     nu <- new("DegreesFreedom", 2)
+##     scaleMax <- new("SpecScale", 0.3)
+##     functionName <- "Error"
+##     set.seed(1)
+##     ans.obtained <- makeFakeScale(A = A,
+##                              nu = nu,
+##                              scaleMax = scaleMax,
+##                              functionName = functionName)
+##     set.seed(1)
+##     scale <- new("Scale", rhalftTrunc1(df = 2, scale = 0.1, max = 0.3))
+##     scaleMax <- new("Scale", 0.3)
+##     A <- new("Scale", 0.1)
+##     ans.expected <- list(scale = scale, A = A, scaleMax = scaleMax)
+##     if (test.identity)
+##         expect_identical(ans.obtained, ans.expected)
+##     else
+##         expect_equal(ans.obtained, ans.expected)
+##     ## no scale specified
+##     expect_error(makeFakeScale(A = new("SpecScale", as.double(NA)),
+##                                           nu = nu,
+##                                           scaleMax = scaleMax,
+##                                           functionName = functionName),
+##                  "need to specify scale of half-t distribution for 'scale' in call to function 'Error'")
+## })
 
 
 
@@ -16148,7 +16148,7 @@ test_that("makeIteratorCC creates objects from valid inputs", {
                         stepTriangle = 60L,
                         iTriangle = 1L,
                         finished = FALSE,
-                        lageAgeGroupOpen = FALSE)
+                        lastAgeGroupOpen = FALSE)
     expect_identical(ans.obtained, ans.expected)
     ## dim = 3:4, iAge = 2L, iTime = 1L 
     ans.obtained <- makeIteratorCC(dim = 2:4, iTime = 2L, iAge = 3L, iTriangle = 1L,
@@ -16228,7 +16228,7 @@ test_that("makeIteratorCODPCP creates objects from valid inputs", {
     ## dim = 3:4, iAge = 2L, iTime = 1L 
     ans.obtained <- makeIteratorCODPCP(dim = c(2:4, 3L, 3L), iTime = 2L, iAge = 3L, iTriangle = 1L,
                                        iMultiple = 4L,
-                        lastAgeGroupOpen = TRUE)
+                                       lastAgeGroupOpen = TRUE)
     ans.expected <- new("CohortIteratorOrigDestParChPool",
                         i = 1L,
                         nTime = 3L,
@@ -16249,7 +16249,7 @@ test_that("makeIteratorCODPCP creates objects from valid inputs", {
     ## dim = 3:4, iAge = 0L, iTime = 2L 
     ans.obtained <- makeIteratorCODPCP(dim = c(3:4, 3L, 3L, 2L, 2L), iTime = 2L, iAge = 0L,
                                        iTriangle = 0L, iMult = c(4L, 6L),
-                        lastAgeGroupOpen = NA)
+                                       lastAgeGroupOpen = NA)
     ans.expected <- new("CohortIteratorOrigDestParChPool",
                         i = 1L,
                         nTime = 4L,
@@ -16269,7 +16269,8 @@ test_that("makeIteratorCODPCP creates objects from valid inputs", {
     expect_identical(ans.obtained, ans.expected)
     ## dim = 2:5, iTime = 4L, iAge = 3L, iTriangle = 1L, iMult = c(2L, 7L)
     ans.obtained <- makeIteratorCODPCP(dim = c(2:5, 3L, 2L, 2L), iTime = 4L, iAge = 3L,
-                                       iTriangle = 1L, iMult = c(2L, 7L))
+                                       iTriangle = 1L, iMult = c(2L, 7L),
+                                       lastAgeGroupOpen = FALSE)
     ans.expected <- new("CohortIteratorOrigDestParChPool",
                         i = 1L,
                         nTime = 5L,

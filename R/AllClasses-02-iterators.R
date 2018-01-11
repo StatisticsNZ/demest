@@ -234,7 +234,7 @@ setClass("CohortIteratorComponent",
                          return(gettextf("'%s' is missing",
                                          name))
                      ## if hasAge is TRUE: stepTriangle, iTriangle positive
-                     if ((name %in% c("stepTriangle", "iTriangle") && (value < 1L))
+                     if ((name %in% c("stepTriangle", "iTriangle")) && (value < 1L))
                          return(gettextf("'%s' is non-positive",
                                          name))
                  }

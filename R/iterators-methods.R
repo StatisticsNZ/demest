@@ -192,29 +192,26 @@ advanceCC <- function(object, useC = FALSE) {
         if (has.age) {
             step.age <- object@stepAge
             n.age <- object@nAge
-            i.age <- object@iAge
+            last.age.group.open <- object@lastAgeGroupOpen
             step.triangle <- object@stepTriangle
+            i.age <- object@iAge
             i.triangle <- object@iTriangle
             if (i.triangle == 1L) {
                 i.time <- i.time + 1L
-                i.triangle <- 2L
-                i <- i + step.time + step.triangle
+                i <- i + step.time
+                i.triangle <- i.triangle + 1L
+                i <- i + step.triangle
+                finished <- !last.age.group.open && (i.age == n.age) # new triangle is 'upper'
             }
             else {
+                i.triangle <- i.triangle - 1L
+                i <- i  - step.triangle
                 if (i.age < n.age) {
                     i.age <- i.age + 1L
-                    i.triangle <- 1L
-                    i <- i + step.age - step.triangle
+                    i <- i + step.age
                 }
-                else {
-                    i.time <- i.time + 1L
-                    i <- i + step.time
-                }
+                finished <- i.time == n.time # new triangle is 'lower'
             }
-            if (i.triangle == 1L)
-                finished <- i.time == n.time
-            else
-                finished <- (i.time == n.time) && (i.age == n.age)
         }
         else {
             i.time <- i.time + 1L
@@ -341,16 +338,17 @@ resetCC <- function(object, i, useC = FALSE) {
         if (has.age) {
             step.age <- object@stepAge
             n.age <- object@nAge
-            i.age <- (((i - 1L) %/% step.age) %% n.age) + 1L # R-style
+            last.age.group.open <- object@lastAgeGroupOpen
             step.triangle <- object@stepTriangle
+            i.age <- (((i - 1L) %/% step.age) %% n.age) + 1L # R-style
             i.triangle <- (((i - 1L) %/% step.triangle) %% 2L) + 1L # R-style
             if (i.triangle == 1L)
-                finished <- i.time >= n.time
+                finished <- i.time == n.time
             else
-                finished <- (i.time >= n.time) && (i.age >= n.age)
+                finished <- !last.age.group.open && (i.age == n.age)
         }
         else
-            finished <- i.time >= n.time
+            finished <- i.time == n.time
         object@i <- i
         object@iTime <- i.time
         if (has.age) {

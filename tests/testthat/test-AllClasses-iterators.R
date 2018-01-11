@@ -454,7 +454,8 @@ test_that("validity tests for CohortIteratorOrigDestParChPool inherited from Coh
              iVec = c(1L, 19L, 37L),
              lengthVec = 3L,
              increment = c(0L, 18L, 36L),
-             finished = FALSE)
+             finished = FALSE,
+             lastAgeGroupOpen = TRUE)
     ## iVec, lengthVec, increment do not have length 0
     x.wrong <- x
     x.wrong@iVec <- integer()

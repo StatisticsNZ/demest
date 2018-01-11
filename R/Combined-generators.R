@@ -363,11 +363,11 @@ setMethod("initialCombinedAccount",
               is.pool <- sapply(components, methods::is, "InternalMovementsPool")
               is.int.net <- sapply(components, methods::is, "InternalMovementsNet")
               is.net.move <- sapply(components, methods::is, "NetMovements")
-              i.births <- if (any(is.births)) which(is.births) else 0L
-              i.orig.dest <- if (any(is.orig.dest)) which(is.orig.dest) else 0L
-              i.par.ch <- if (any(is.par.ch)) which(is.par.ch) else 0L
-              i.pool <- if (any(is.pool)) which(is.pool) else 0L
-              i.int.net <- if (any(is.int.net)) which(is.int.net) else 0L
+              i.births <- if (any(is.births)) which(is.births) else -1L
+              i.orig.dest <- if (any(is.orig.dest)) which(is.orig.dest) else -1L
+              i.par.ch <- if (any(is.par.ch)) which(is.par.ch) else -1L
+              i.pool <- if (any(is.pool)) which(is.pool) else -1L
+              i.int.net <- if (any(is.int.net)) which(is.int.net) else -1L
               is.net <- is.int.net | is.net.move
               exposure <- dembase::exposure(population,
                                             triangles = has.age)
@@ -526,7 +526,7 @@ setMethod("initialCombinedAccount",
                                iBirths = i.births,
                                iCell = NA_integer_,
                                iCellOther = NA_integer_,
-                               iComp = 0L,
+                               iComp = -1L,
                                iExpFirst = NA_integer_,
                                iExpFirstOther = NA_integer_,
                                iExposure = NA_integer_,
@@ -573,7 +573,8 @@ setMethod("initialCombinedAccount",
                                hasAge = new("LogicalFlag", FALSE),
                                iBirths = i.births,
                                iCell = NA_integer_,
-                               iCellOther = NA_integer_, iComp = 0L,
+                               iCellOther = NA_integer_,
+                               iComp = -1L,
                                iExpFirst = NA_integer_,
                                iExpFirstOther = NA_integer_,
                                iExposure = NA_integer_,

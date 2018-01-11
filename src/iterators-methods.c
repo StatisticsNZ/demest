@@ -333,36 +333,32 @@ advanceCC(SEXP iterator_R)
     if (hasAge) {
         int stepAge = *INTEGER(GET_SLOT(iterator_R, stepAge_sym));
         int nAge = *INTEGER(GET_SLOT(iterator_R, nAge_sym));
-        int * iAge_ptr = INTEGER(GET_SLOT(iterator_R, iAge_sym));
+	int lastAgeGroupOpen = *INTEGER(GET_SLOT(iterator_R, lastAgeGroupOpen_sym));
         int stepTriangle = *INTEGER(GET_SLOT(iterator_R, stepTriangle_sym));
-        int * iTriangle_ptr = INTEGER(GET_SLOT(iterator_R, iTriangle_sym));
+	int * iAge_ptr = INTEGER(GET_SLOT(iterator_R, iAge_sym));
+	int * iTriangle_ptr = INTEGER(GET_SLOT(iterator_R, iTriangle_sym));
         
         int iAge = *iAge_ptr;
         int iTriangle = *iTriangle_ptr; 
         
         if (iTriangle == 1) {
             ++iTime;
-            iTriangle = 2;
-            i += stepTime + stepTriangle;
+	    i += stepTime;
+            ++iTriangle;
+            i += stepTriangle;
+	    finished = !lastAgeGroupOpen && (iAge == nAge);
         }
         
         else {
+	    --iTriangle;
+	    i -= stepTriangle;
             if (iAge < nAge) {
                 ++iAge;
-                iTriangle = 1;
-                i += stepAge - stepTriangle;
-            }
-            else {
-                ++iTime;
-                i += stepTime;
-            }
+		i += stepAge;
+	    }
+	    finished = (iTime == nTime);
         }
 
-    if (iTriangle == 1)
-        finished = (iTime == nTime);
-    else
-        finished = (iTime == nTime) && (iAge == nAge);
-        
         *iAge_ptr = iAge;
         *iTriangle_ptr = iTriangle;
     }
@@ -497,8 +493,9 @@ resetCC(SEXP iterator_R, int i)
     if (hasAge) {
     
         int stepAge = *INTEGER(GET_SLOT(iterator_R, stepAge_sym));
-        int stepTriangle = *INTEGER(GET_SLOT(iterator_R, stepTriangle_sym));
         int nAge = *INTEGER(GET_SLOT(iterator_R, nAge_sym));
+	int lastAgeGroupOpen = *INTEGER(GET_SLOT(iterator_R, lastAgeGroupOpen_sym));
+        int stepTriangle = *INTEGER(GET_SLOT(iterator_R, stepTriangle_sym));
         int iAge_R = (((i - 1) / stepAge) % nAge) + 1; /* R-style */
         int iTriangle_R = (((i - 1) / stepTriangle) % 2) + 1; /* R-style */
         
@@ -509,14 +506,14 @@ resetCC(SEXP iterator_R, int i)
         *iTriangle_ptr = iTriangle_R;
 
         if (iTriangle_R == 1) {
-            finished = (iTime_R >= nTime);
+            finished = (iTime_R == nTime);
         }
         else {
-            finished = (iTime_R >= nTime) && (iAge_R >= nAge);
+            finished = !lastAgeGroupOpen && (iAge_R == nAge);
         }
     }
     else {
-        finished = (iTime_R >= nTime);
+        finished = (iTime_R == nTime);
     }
     
     SEXP finished_R = GET_SLOT(iterator_R, finished_sym);

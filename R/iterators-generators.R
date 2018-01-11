@@ -139,11 +139,12 @@ setMethod("CohortIterator",
               i.time <- match("time", dimtypes)
               i.age <- match("age", dimtypes, nomatch = 0L)
               i.triangle <- match("triangle", dimtypes, nomatch = 0L)
+              last.age.group.open <- if (i.age > 0L) TRUE else NA
               makeIteratorCC(dim = dim,
                              iTime = i.time,
                              iAge = i.age,
                              iTriangle = i.triangle,
-                             lastAgeGroupOpen = TRUE)
+                             lastAgeGroupOpen = last.age.group.open)
           })
 
 ## HAS_TESTS
@@ -156,11 +157,13 @@ setMethod("CohortIterator",
               i.age <- match("age", dimtypes, nomatch = 0L)
               i.triangle <- match("triangle", dimtypes, nomatch = 0L)
               i.dest <- grep("destination", dimtypes)
+              last.age.group.open <- if (i.age > 0L) TRUE else NA
               makeIteratorCODPCP(dim = dim,
                                  iTime = i.time,
                                  iAge = i.age,
                                  iTriangle = i.triangle,
-                                 iMultiple = i.dest)
+                                 iMultiple = i.dest,
+                                 lastAgeGroupOpen = last.age.group.open)
           })
 
 ## HAS_TESTS
@@ -173,11 +176,13 @@ setMethod("CohortIterator",
               i.time <- match("time", dimtypes)
               i.age <- match("age", dimtypes, nomatch = 0L)
               i.triangle <- match("triangle", dimtypes, nomatch = 0L)
+              last.age.group.open <- if (i.age > 0L) TRUE else NA
               makeIteratorCODPCP(dim = dim,
                                  iTime = i.time,
                                  iAge = i.age,
                                  iTriangle = i.triangle,
-                                 iMultiple = i.direction)
+                                 iMultiple = i.direction,
+                                 lastAgeGroupOpen = last.age.group.open)
           })
 
 ## HAS_TESTS

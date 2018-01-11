@@ -117,7 +117,8 @@ test_that("CohortIterator works with BirthsMovementsHasParentChild", {
                         iVec = c(1L, 4L, 7L),
                         lengthVec = 3L,
                         increment = c(0L, 3L, 6L),
-                        finished = FALSE)
+                        finished = FALSE,
+                        lastAgeGroupOpen = TRUE)
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -154,6 +155,7 @@ test_that("ComponentIterator works with InternalMovementsOrigDest", {
                         iVec = c(1L, 10L, 19L),
                         lengthVec = 3L,
                         increment = c(0L, 9L, 18L),
+                        lastAgeGroupOpen = TRUE,
                         finished = FALSE)
     expect_identical(ans.obtained, ans.expected)
 })
@@ -193,10 +195,10 @@ test_that("ComponentIterator works with InternalMovementsPool", {
                         iVec = c(1L, 37L),
                         lengthVec = 2L,
                         increment = c(0L, 36L),
+                        lastAgeGroupOpen = TRUE,
                         finished = FALSE)
     expect_identical(ans.obtained, ans.expected)
 })
-
 
 
 test_that("ComponentIterator works with ordinary component", {
@@ -229,7 +231,8 @@ test_that("ComponentIterator works with ordinary component", {
                         iAge = 1L,
                         stepTriangle = 18L,
                         iTriangle = 1L,
-                        finished = FALSE)
+                        finished = FALSE,
+                        lastAgeGroupOpen = TRUE)
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -256,6 +259,7 @@ test_that("ComponentIterator works with Exposure", {
                         iAge = 1L,
                         stepTriangle = 18L,
                         iTriangle = 1L,
+                        lastAgeGroupOpen = TRUE,
                         finished = FALSE)
     expect_identical(ans.obtained, ans.expected)
 })

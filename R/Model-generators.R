@@ -799,6 +799,7 @@ setMethod("initialModel",
                                     tolerance = tolerance,
                                     nAcceptTheta = methods::new("Counter", 0L),
                                     nFailedPropTheta = methods::new("Counter", 0L),
+                                    nFailedPropYStar = methods::new("Counter", 0L), ## added 10/1/2018 JAH
                                     maxAttempt = max.attempt,
                                     sigma = sigma,
                                     sigmaMax = sigma.max,

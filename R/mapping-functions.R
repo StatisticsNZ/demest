@@ -486,40 +486,26 @@ getIExpFirstFromComp <- function(i, mapping, useC = FALSE) {
         has.age <- mapping@hasAge
         i.exp <- 1L
         i.time.comp <- ((i - 1L) %/% step.time.comp) %% n.time
+        i.exp <- i.exp + i.time.comp * step.time.exp
         if (has.age) {
             n.age <- mapping@nAgeCurrent
             step.age.comp <- mapping@stepAgeCurrent
             step.age.exp <- mapping@stepAgeTarget
             step.triangle.comp <- mapping@stepTriangleCurrent
-            step.triangle.exp <- mapping@stepTriangleTarget
             i.age.comp <- ((i - 1L) %/% step.age.comp) %% n.age
             i.triangle.comp <- ((i - 1L) %/% step.triangle.comp) %% 2L
             is.lower <- i.triangle.comp == 0L
             if (is.lower) {
-                i.time.exp <- i.time.comp
                 i.age.exp <- i.age.comp
-                i.triangle.exp <- i.triangle.comp
             }
             else {
-                if (i.age.comp == (n.age - 1L)) {
-                    if (i.time.comp == (n.time - 1L))
-                        return(0L)
-                    i.time.exp <- i.time.comp + 1L
+                if (i.age.comp == (n.age - 1L))
                     i.age.exp <- i.age.comp
-                    i.triangle.exp <- i.triangle.comp
-                }
-                else {
-                    i.time.exp <- i.time.comp
+                else
                     i.age.exp <- i.age.comp + 1L
-                    i.triangle.exp <- 0L
-                }
             }
             i.exp <- i.exp + i.age.exp * step.age.exp
-            i.exp <- i.exp + i.triangle.exp * step.triangle.exp
         }
-        else
-            i.time.exp <- i.time.comp
-        i.exp <- i.exp + i.time.exp * step.time.exp
         n.dim.shared <- length(n.shared.vec)
         for (d in seq_len(n.dim.shared)) {
             n.shared <- n.shared.vec[d]
@@ -596,40 +582,26 @@ getIExpFirstPairFromOrigDest <- function(i, mapping, useC = FALSE) {
         step.orig.dest.exp.vec <- mapping@stepOrigDestTargetVec    
         i.exp <- 1L
         i.time.comp <- ((i - 1L) %/% step.time.comp) %% n.time
+        i.exp <- i.exp + i.time.comp * step.time.exp
         if (has.age) {
             n.age <- mapping@nAgeCurrent
             step.age.comp <- mapping@stepAgeCurrent
             step.age.exp <- mapping@stepAgeTarget
             step.triangle.comp <- mapping@stepTriangleCurrent
-            step.triangle.exp <- mapping@stepTriangleTarget
             i.age.comp <- ((i - 1L) %/% step.age.comp) %% n.age
             i.triangle.comp <- ((i - 1L) %/% step.triangle.comp) %% 2L
             is.lower <- i.triangle.comp == 0L
             if (is.lower) {
-                i.time.exp <- i.time.comp
                 i.age.exp <- i.age.comp
-                i.triangle.exp <- i.triangle.comp
             }
             else {
-                if (i.age.comp == (n.age - 1L)) {
-                    if (i.time.comp == (n.time - 1L))
-                        return(c(0L, 0L))
-                    i.time.exp <- i.time.comp + 1L
+                if (i.age.comp == (n.age - 1L))
                     i.age.exp <- i.age.comp
-                    i.triangle.exp <- i.triangle.comp
-                }
-                else {
-                    i.time.exp <- i.time.comp
+                else
                     i.age.exp <- i.age.comp + 1L
-                    i.triangle.exp <- 0L
-                }
             }
             i.exp <- i.exp + i.age.exp * step.age.exp
-            i.exp <- i.exp + i.triangle.exp * step.triangle.exp
         }
-        else
-            i.time.exp <- i.time.comp
-        i.exp <- i.exp + i.time.exp * step.time.exp
         n.dim.shared <- length(n.shared.vec)
         for (d in seq_len(n.dim.shared)) {
             n.shared <- n.shared.vec[d]

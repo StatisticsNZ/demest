@@ -631,13 +631,12 @@ test_that("R and C versions of advanceCP give same answer", {
     expect_identical(ans.R, ans.C)
 })
 
-
 test_that("advanceCC works", {
     advanceCC <- demest:::advanceCC
     resetCC <- demest:::resetCC
     CohortIterator <- demest:::CohortIterator
     EntriesMovements <- dembase:::EntriesMovements
-    ## with age
+    ## with age - last age group open
     entries <- Counts(array(1:36,
                             dim = c(3, 3, 2, 2),
                             dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -665,6 +664,44 @@ test_that("advanceCC works", {
     expect_identical(iterator@i, 12L)
     expect_true(iterator@finished)
     iterator <- resetCC(iterator, i = 21L)
+    expect_false(iterator@finished)
+    iterator <- advanceCC(iterator)
+    expect_identical(iterator@i, 3L)
+    iterator <- advanceCC(iterator)
+    expect_identical(iterator@i, 30L)
+    iterator <- advanceCC(iterator)
+    expect_identical(iterator@i, 12L)
+    expect_true(iterator@finished)
+    ## with age - last age group closed
+    entries <- Counts(array(1:36,
+                            dim = c(3, 3, 2, 2),
+                            dimnames = list(age = c("0-4", "5-9", "10-14"),
+                                region = 1:3,
+                                time = c("2001-2005", "2006-2010"),
+                                triangle = c("TL", "TU"))))
+    template <- Counts(array(0L,
+                             dim = c(3, 3, 2, 2),
+                             dimnames = list(age = c("0-4", "5-9", "10-14"),
+                                 region = 1:3,
+                                 time = c("2001-2005", "2006-2010"),
+                                 triangle = c("TL", "TU"))))
+    set.seed(1)
+    component <- EntriesMovements(entries = entries,
+                                  template = template,
+                                  name = "immigration")
+    iterator <- CohortIterator(component)
+    iterator <- resetCC(iterator, i = 19L)
+    iterator <- advanceCC(iterator)
+    expect_identical(iterator@i, 2L)
+    iterator <- advanceCC(iterator)
+    expect_identical(iterator@i, 29L)
+    expect_false(iterator@finished)    
+    iterator <- advanceCC(iterator)
+    expect_identical(iterator@i, 12L)
+    expect_true(iterator@finished)
+    iterator <- resetCC(iterator, i = 21L)
+    expect_true(iterator@finished)
+    iterator <- resetCC(iterator, i = 3L)
     expect_false(iterator@finished)
     iterator <- advanceCC(iterator)
     expect_identical(iterator@i, 30L)
@@ -698,7 +735,7 @@ test_that("R and C versions of advanceCC give same answer", {
     resetCC <- demest:::resetCC
     CohortIterator <- demest:::CohortIterator
     EntriesMovements <- dembase:::EntriesMovements
-    ## with age
+    ## with age - last age group open
     entries <- Counts(array(1:36,
                             dim = c(3, 3, 2, 2),
                             dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -728,6 +765,50 @@ test_that("R and C versions of advanceCC give same answer", {
     iterator.R <- advanceCC(iterator.R, useC = FALSE)
     iterator.C <- advanceCC(iterator.C, useC = TRUE)
     expect_identical(iterator.R, iterator.C)
+    iterator.R <- resetCC(iterator, i = 3L)
+    iterator.C <- resetCC(iterator, i = 3L)
+    while (!iterator.R@finished) {
+        iterator.R <- advanceCC(iterator.R, useC = FALSE)
+        iterator.C <- advanceCC(iterator.C, useC = TRUE)
+        expect_identical(iterator.R, iterator.C)
+    }
+    ## with age - last age group closed
+    entries <- Counts(array(1:36,
+                            dim = c(3, 3, 2, 2),
+                            dimnames = list(age = c("0-4", "5-9", "10-14"),
+                                region = 1:3,
+                                time = c("2001-2005", "2006-2010"),
+                                triangle = c("TL", "TU"))))
+    template <- Counts(array(0L,
+                             dim = c(3, 3, 2, 2),
+                             dimnames = list(age = c("0-4", "5-9", "10-14"),
+                                 region = 1:3,
+                                 time = c("2001-2005", "2006-2010"),
+                                 triangle = c("TL", "TU"))))
+    set.seed(1)
+    component <- EntriesMovements(entries = entries,
+                                  template = template,
+                                  name = "immigration")
+    iterator <- CohortIterator(component)
+    iterator.R <- resetCC(iterator, i = 19L)
+    iterator.C <- resetCC(iterator, i = 19L)
+    while (!iterator.R@finished) {
+        iterator.R <- advanceCC(iterator.R, useC = FALSE)
+        iterator.C <- advanceCC(iterator.C, useC = TRUE)
+        expect_identical(iterator.R, iterator.C)
+    }
+    iterator.R <- resetCC(iterator, i = 21L)
+    iterator.C <- resetCC(iterator, i = 21L)
+    iterator.R <- advanceCC(iterator.R, useC = FALSE)
+    iterator.C <- advanceCC(iterator.C, useC = TRUE)
+    expect_identical(iterator.R, iterator.C)
+    iterator.R <- resetCC(iterator, i = 3L)
+    iterator.C <- resetCC(iterator, i = 3L)
+    while (!iterator.R@finished) {
+        iterator.R <- advanceCC(iterator.R, useC = FALSE)
+        iterator.C <- advanceCC(iterator.C, useC = TRUE)
+        expect_identical(iterator.R, iterator.C)
+    }
     ## without age
     entries <- Counts(array(1:12,
                             dim = c(3, 4),
@@ -1111,7 +1192,7 @@ test_that("resetCC works", {
     resetCC <- demest:::resetCC
     CohortIterator <- demest:::CohortIterator
     EntriesMovements <- dembase:::EntriesMovements
-    ## with age
+    ## with age - last age group open
     entries <- Counts(array(1:36,
                             dim = c(3, 3, 2, 2),
                             dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -1121,6 +1202,41 @@ test_that("resetCC works", {
     template <- Counts(array(0L,
                              dim = c(3, 3, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
+                                 region = 1:3,
+                                 time = c("2001-2005", "2006-2010"),
+                                 triangle = c("TL", "TU"))))
+    component <- EntriesMovements(entries = entries,
+                                  template = template,
+                                  name = "immigration")
+    iterator <- CohortIterator(component)
+    ## i = 2
+    iterator <- resetCC(iterator, i = 2L)
+    expect_identical(iterator@iTime, 1L)
+    expect_identical(iterator@iAge, 2L)
+    expect_identical(iterator@iTriangle, 1L)
+    expect_false(iterator@finished)
+    ## i = 18
+    iterator <- resetCC(iterator, i = 18L)
+    expect_identical(iterator@iTime, 2L)
+    expect_identical(iterator@iAge, 3L)
+    expect_identical(iterator@iTriangle, 1L)
+    expect_true(iterator@finished)
+    ## i = 30L
+    iterator <- resetCC(iterator, i = 30L)
+    expect_identical(iterator@iTime, 2L)
+    expect_identical(iterator@iAge, 3L)
+    expect_identical(iterator@iTriangle, 2L)
+    expect_false(iterator@finished)
+    ## with age - last age group closed
+    entries <- Counts(array(1:36,
+                            dim = c(3, 3, 2, 2),
+                            dimnames = list(age = c("0-4", "5-9", "10-14"),
+                                region = 1:3,
+                                time = c("2001-2005", "2006-2010"),
+                                triangle = c("TL", "TU"))))
+    template <- Counts(array(0L,
+                             dim = c(3, 3, 2, 2),
+                             dimnames = list(age = c("0-4", "5-9", "10-14"),
                                  region = 1:3,
                                  time = c("2001-2005", "2006-2010"),
                                  triangle = c("TL", "TU"))))
@@ -1380,7 +1496,7 @@ test_that("resetCODPCP works", {
     expect_identical(iterator@iTime, 2L)
     expect_identical(iterator@iAge, 3L)
     expect_identical(iterator@iTriangle, 2L)
-    expect_true(iterator@finished)
+    expect_false(iterator@finished)
     ## without age
     internal <- Counts(array(1:72,
                              dim = c(3, 3, 2, 2, 2),

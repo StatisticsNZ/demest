@@ -356,7 +356,7 @@ setClass("ICompMixin",
              iIntNet <- object@iIntNet
              iParCh <- object@iParCh
              components <- object@account@components
-             s <- c(0L, seq_along(components))
+             s <- c(-1L, 0L, seq_along(components))
              for (name in c("iComp", "iBirths", "iIntNet", "iOrigDest", "iParCh", "iPool")) {
                  value <- slot(object, name)
                  ## 'iComp', 'iBirths', iOrigDest', 'iParCh', 'iPool' 'iIntNet' has  length 1
@@ -367,21 +367,21 @@ setClass("ICompMixin",
                  if (is.na(value))
                      return(gettextf("'%s' is missing",
                                      name))
-                 ## if 'iComp', 'iBirths', iOrigDest', 'iParCh', 'iPool', 'iIntNet' is not 0, it is the index of a component
+                 ## if 'iComp', 'iBirths', iOrigDest', 'iParCh', 'iPool', 'iIntNet' is -1, 0, or index of a component
                  if (!(value %in% s))
                      return(gettextf("'%s' does not index a component",
                                      name))
              }
-             ## 'iBirths', 'iIntNet', iOrigDest', 'iPool' do not overlap, except at 0L
+             ## 'iBirths', 'iIntNet', iOrigDest', 'iPool' do not overlap, except at -1L
              indices <- c(iBirths, iIntNet, iOrigDest, iPool)
-             indices.nonzero <- indices[indices != 0L]
-             if (any(duplicated(indices.nonzero)))
+             indices.valid <- indices[indices != -1L]
+             if (any(duplicated(indices.valid)))
                  return(gettextf("'%s', '%s', '%s', '%s' overlap",
                                  "iBirths", "iIntNet", "iOrigDest", "iPool"))
-             ## if 'iParCh' is non-zero, then it equals 'iBirths'
-             if ((iParCh != 0L) && (iParCh != iBirths))
-                 return(gettextf("'%s' is non-zero, but does not equal '%s'",
-                                 "iParCh", "iBirths"))                 
+             ## if 'iParCh' is not -1L, then it equals 'iBirths'
+             if ((iParCh != -1L) && (iParCh != iBirths))
+                 return(gettextf("'%s' does not equal %d, and does not equal '%s'",
+                                 -1L, "iParCh", "iBirths"))                 
              TRUE
          })
 
@@ -977,8 +977,8 @@ setClass("TransformExpToBirthsMixin",
              iBirths <- object@iBirths
              exposure <- object@exposure
              modelUsesExposure <- object@modelUsesExposure
-             ## if 'iBirths' is 0, then 'transformExpToBirths' is empty
-             if (iBirths == 0L) {
+             ## if 'iBirths' is -1L, then 'transformExpToBirths' is empty
+             if (iBirths == -1L) {
                  if (!identical(transformExpToBirths, new("CollapseTransform")))
                      return(gettextf("account does not have births component, but '%s' is not empty",
                                      "transformExpToBirths"))

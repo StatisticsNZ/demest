@@ -90,6 +90,7 @@ SEXP
   tolerance_sym,
   betaIsPredicted_sym,
   nFailedPropTheta_sym,
+  nFailedPropYStar_sym,
   maxAttempt_sym,
   valueAg_sym,
   weightAg_sym,
@@ -167,6 +168,7 @@ SEXP
   iVec_sym,
   lengthVec_sym,
   increment_sym,
+  lastAgeGroupOpen_sym,
   /* mappings */
   hasParCh_sym,
   isOneToOne_sym,
@@ -306,6 +308,13 @@ SEXP
   updateSeriesDLM_sym,
   
   nuCMP_sym,
+  sdLogNuCMP_sym,
+  sdLogNuMaxCMP_sym,
+  meanMeanLogNuCMP_sym,
+  sdMeanLogNuCMP_sym,
+  meanLogNuCMP_sym,
+  ASDLogNuCMP_sym,
+  nuSDLogNuCMP_sym,
   
   alphaKnown_sym,
   AKnownVec_sym,  
@@ -694,6 +703,8 @@ updateAlphaDeltaDLMWithTrend(SEXP prior_R, double *betaTilde, int J);
 void
 updateSeason(SEXP prior_R, double *betaTilde, int J);
 
+void updateMeanLogNu(SEXP object_R);
+void updateSDLogNu(SEXP object_R);
 void updateSigma_Varying(SEXP object);
 
 void updateTheta_BinomialVarying(SEXP object, SEXP y_R, SEXP exposure_R);
@@ -715,6 +726,7 @@ void updateThetaAndValueAgFun_Normal(SEXP object, SEXP y_R);
 void updateThetaAndValueAgFun_PoissonNotUseExp(SEXP object, SEXP y_R);
 void updateThetaAndValueAgFun_PoissonUseExp(SEXP object, SEXP y_R, SEXP exposure_R);
 void updateThetaAndValueAgLife_PoissonUseExp(SEXP object, SEXP y_R, SEXP exposure_R);
+void updateThetaAndNu_CMPVaryingNotUseExp(SEXP object_R, SEXP y_R);
 
 void updateVarsigma(SEXP object, SEXP y_R);
 

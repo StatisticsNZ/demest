@@ -8841,13 +8841,13 @@ test_that("updateSubsequentExpMove works", {
             age <- as.data.frame(x1@account@population, direction = "long")[x1@iCell, "age"]
             if (age == "10+")
                 expect_equal(sum(ans.obtained@exposure),
-                             sum(x1@exposure) + x@ageTimeStep * x1@diffProp)
+                             sum(x1@exposure) + 2 * x@ageTimeStep * x1@diffProp)
             else if (age == "5-9")
                 expect_equal(sum(ans.obtained@exposure),
-                             sum(x1@exposure) + x@ageTimeStep * 1.5 * x1@diffProp)
+                             sum(x1@exposure) + 2 * x@ageTimeStep * x1@diffProp)
             else
                 expect_equal(sum(ans.obtained@exposure),
-                             sum(x1@exposure) + x@ageTimeStep * 2 * x1@diffProp)
+                             sum(x1@exposure) + 2 * x@ageTimeStep * x1@diffProp)
         }
         ## updating orig-dest
         x0 <- x
@@ -8871,30 +8871,18 @@ test_that("updateSubsequentExpMove works", {
             is.lower <- x1@isLowerTriangle@.Data
             if (age == "10+") {
                 if (time == "2001-2005") {
-                    if (is.lower)
-                        expect_equal(sum(ans.obtained@exposure),
-                                     sum(x1@exposure) - x@ageTimeStep * x1@diffProp)
-                    else
-                        expect_equal(sum(ans.obtained@exposure),
-                                     sum(x1@exposure) - 0.5 * x@ageTimeStep * x1@diffProp)
+                    expect_equal(sum(ans.obtained@exposure),
+                                 sum(x1@exposure) - 1.5 * x@ageTimeStep * x1@diffProp)
                 }
                 else {
-                    if (is.lower)
-                        expect_equal(sum(ans.obtained@exposure),
-                                     sum(x1@exposure) - 0.5 * x@ageTimeStep * x1@diffProp)
-                    else
-                        expect_equal(sum(ans.obtained@exposure),
-                                     sum(x1@exposure))
+                    expect_equal(sum(ans.obtained@exposure),
+                                 sum(x1@exposure) - 0.5 * x@ageTimeStep * x1@diffProp)
                 }
             }
             else if (age == "5-9") {
                 if (time == "2001-2005") {
-                    if (is.lower)
-                        expect_equal(sum(ans.obtained@exposure),
-                                     sum(x1@exposure) - 1.5 * x@ageTimeStep * x1@diffProp)
-                    else
-                        expect_equal(sum(ans.obtained@exposure),
-                                     sum(x1@exposure) - x@ageTimeStep * x1@diffProp)
+                    expect_equal(sum(ans.obtained@exposure),
+                                 sum(x1@exposure) - 1.5 * x@ageTimeStep * x1@diffProp)
                 }
                 else {
                     expect_equal(sum(ans.obtained@exposure),

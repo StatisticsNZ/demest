@@ -1258,6 +1258,9 @@ UPDATEPRIORWITHBETA_WRAPPER_R(updateSeason);
 /* wrap update betas and zetas*/
 UPDATEOBJECT_WRAPPER_R(updateBetasAndPriorsBetas);
 
+UPDATEOBJECT_WRAPPER_R(updateMeanLogNu);
+UPDATEOBJECT_WRAPPER_R(updateSDLogNu);
+
 /* wrap update sigma generic functions */
 UPDATEOBJECT_WRAPPER_R(updateSigma_Varying);
 
@@ -1282,6 +1285,7 @@ UPDATEOBJECT_NOEXP_WRAPPER_R(updateThetaAndValueAgFun_Normal);
 UPDATEOBJECT_NOEXP_WRAPPER_R(updateThetaAndValueAgFun_PoissonNotUseExp);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateThetaAndValueAgFun_PoissonUseExp);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateThetaAndValueAgLife_PoissonUseExp);
+UPDATEOBJECT_NOEXP_WRAPPER_R(updateThetaAndNu_CMPVaryingNotUseExp);
 
 /* wrap update Counts functions */
 UPDATECOUNTS_NOEXP_WRAPPER_R(updateCountsPoissonNotUseExp);
@@ -2260,6 +2264,8 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateAlphaDeltaDLMWithTrend_R, 2), 
   CALLDEF(updateSeason_R, 2),
   
+  CALLDEF(updateMeanLogNu_R, 1),
+  CALLDEF(updateSDLogNu_R, 1),
   CALLDEF(updateSigma_Varying_R, 1),
   
   CALLDEF(updateTheta_BinomialVarying_R, 3),
@@ -2281,6 +2287,8 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateThetaAndValueAgFun_PoissonNotUseExp_R, 2),
   CALLDEF(updateThetaAndValueAgFun_PoissonUseExp_R, 3),
   CALLDEF(updateThetaAndValueAgLife_PoissonUseExp_R, 3),
+  CALLDEF(updateThetaAndNu_CMPVaryingNotUseExp_R, 2),
+  
   
   CALLDEF(updateVarsigma_R, 2),
   
@@ -2613,6 +2621,7 @@ R_init_demest(DllInfo *info)
   /* ag */
   ADD_SYM(maxAttempt);
   ADD_SYM(nFailedPropTheta);
+  ADD_SYM(nFailedPropYStar);
   ADD_SYM(valueAg);
   ADD_SYM(weightAg);
   ADD_SYM(transformAg);
@@ -2690,6 +2699,7 @@ R_init_demest(DllInfo *info)
   ADD_SYM(iAge);
   ADD_SYM(iTriangle);
   ADD_SYM(finished);
+  ADD_SYM(lastAgeGroupOpen);
   /* mappings */
   ADD_SYM(isOneToOne);
   ADD_SYM(nSharedVec);
@@ -2831,6 +2841,13 @@ R_init_demest(DllInfo *info)
   ADD_SYM(alphaKnown);
   ADD_SYM(AKnownVec);
   ADD_SYM(nuCMP);
+  ADD_SYM(sdLogNuCMP);
+  ADD_SYM(sdLogNuMaxCMP);
+  ADD_SYM(meanMeanLogNuCMP);
+  ADD_SYM(sdMeanLogNuCMP);
+  ADD_SYM(meanLogNuCMP);
+  ADD_SYM(ASDLogNuCMP);
+  ADD_SYM(nuSDLogNuCMP);
   /* skeleton */
   ADD_SYM(first);
   ADD_SYM(last);
