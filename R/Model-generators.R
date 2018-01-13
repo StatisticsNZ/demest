@@ -1119,10 +1119,7 @@ setMethod("initialModel",
               }
               else
                   rate <- 1
-              if (has.exposure)
-                  scale.theta.multiplier <- sqrt(mean.y.obs + 1)
-              else
-                  scale.theta.multiplier <- 1.0
+              scale.theta.multiplier <- sqrt(mean.y.obs + 1)
               scale.theta.multiplier <- methods::new("Scale", scale.theta.multiplier)
               theta <- stats::rgamma(n = length(y), shape = shape, rate = rate)
               if (has.exposure)

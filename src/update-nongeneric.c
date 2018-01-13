@@ -4821,6 +4821,7 @@ updateTheta_PoissonVaryingNotUseExp(SEXP object, SEXP y_R)
     int maxAttempt = *INTEGER(GET_SLOT(object, maxAttempt_sym));
 
     double scale = *REAL(GET_SLOT(object, scaleTheta_sym));
+    double scale_multiplier = *REAL(GET_SLOT(object, scaleThetaMultiplier_sym));
 
     double sigma = *REAL(GET_SLOT(object, sigma_sym));
 
@@ -4860,6 +4861,8 @@ updateTheta_PoissonVaryingNotUseExp(SEXP object, SEXP y_R)
     
     int n_accept_theta = 0;
     int n_failed_prop_theta = 0;
+
+    scale = scale * scale_multiplier;
 
     for (int i = 0; i < n_theta; ++i) {
 
@@ -4904,7 +4907,13 @@ updateTheta_PoissonVaryingNotUseExp(SEXP object, SEXP y_R)
             transformedThetaCurr = (pow(theta_curr, boxCoxParam) - 1) / boxCoxParam;
         }
         mean = transformedThetaCurr;
-        sd = scale;
+
+        if (y_is_missing) {
+            sd = scale / scale_multiplier;
+        }
+        else {
+            sd = scale / sqrt(1 + this_y);
+        }
         
         }
 
@@ -5118,7 +5127,7 @@ updateTheta_PoissonVaryingUseExp(SEXP object, SEXP y_R, SEXP exposure_R)
             sd = scale / scale_multiplier;
         }
         else {
-            sd = scale / sqrt(1 + y[i]);
+            sd = scale / sqrt(1 + this_y);
         }
         }
 

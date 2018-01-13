@@ -3319,6 +3319,7 @@ updateTheta_PoissonVaryingNotUseExp <- function(object, y, useC = FALSE) {
         box.cox.param <- object@boxCoxParam
         cell.in.lik <- object@cellInLik
         scale <- object@scaleTheta
+        scale.multiplier <- object@scaleThetaMultiplier
         lower <- object@lower
         upper <- object@upper
         tolerance <- object@tolerance
@@ -3329,6 +3330,7 @@ updateTheta_PoissonVaryingNotUseExp <- function(object, y, useC = FALSE) {
         n.failed.prop.theta <- 0L
         n.accept.theta <- 0L
         iterator <- resetB(iterator)
+        scale <- scale * scale.multiplier
         for (i in seq_along(theta)) {
             is.struc.zero <- !cell.in.lik[i] && !is.na(y[i]) && (y[i] == 0L)
             if (!is.struc.zero) {
@@ -3360,7 +3362,10 @@ updateTheta_PoissonVaryingNotUseExp <- function(object, y, useC = FALSE) {
                     else
                         tr.th.curr <- log(th.curr)
                     mean <- tr.th.curr
-                    sd <- scale
+                    if (y.is.missing)
+                        sd <- scale / scale.multiplier
+                    else
+                        sd <- scale / sqrt(1 + y[i])
                 }
                 while (!found.prop && (attempt < max.attempt)) {
                     attempt <- attempt + 1L
