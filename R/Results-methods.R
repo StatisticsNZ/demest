@@ -41,14 +41,52 @@ setMethod("finiteSDObject",
               list(model = ans.model,
                    dataModels = ans.dataModels)
           })
-    
+
+
+## makeResults #####################################################################
+
+setMethod("makeResults",
+          signature(object = "ResultsModelEst"),
+          function(object, finalCombineds, mcmcArgs, controlArgs, seed) {
+              makeResultsModelEst(finalCombineds = finalCombineds,
+                                  mcmcArgs = mcmcArgs,
+                                  controlArgs = controlArgs,
+                                  seed = seed)
+          })
+
+setMethod("makeResults",
+          signature(object = "ResultsCountsEst"),
+          function(object, finalCombineds, mcmcArgs, controlArgs, seed) {
+              makeResultsCounts(finalCombineds = finalCombineds,
+                                mcmcArgs = mcmcArgs,
+                                controlArgs = controlArgs,
+                                seed = seed)
+          })
+
+setMethod("makeResults",
+          signature(object = "ResultsAccount"),
+          function(object, finalCombineds, mcmcArgs, controlArgs, seed) {
+              makeResultsAccount(finalCombineds = finalCombineds,
+                                 mcmcArgs = mcmcArgs,
+                                 controlArgs = controlArgs,
+                                 seed = seed)
+          })
+          
+              
+
+
+## nIteration #################################################################
+
 ## HAS_TESTS
 setMethod("nIteration",
           signature(object = "Results"),
           function(object) {
               mcmc <- object@mcmc
               mcmc[["nIteration"]]
-          })          
+          })
+
+
+## rescaleBetasPred #################################################################
 
 ## HAS_TESTS
 setMethod("rescaleBetasPred",
@@ -66,6 +104,10 @@ setMethod("rescaleBetasPred",
                                      nIteration = nIteration,
                                      lengthIter = lengthIter)
           })
+
+
+
+## rescalePriors #################################################################
 
 ## HAS_TESTS
 setMethod("rescalePriors",

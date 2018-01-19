@@ -4627,6 +4627,8 @@ rpoisTrunc1 <- function(lambda, lower, upper, maxAttempt, useC = FALSE) {
     else {
         if (is.na(lower))
             lower <- 0L
+        if (lower < 0L)
+            lower <- 0L
         finite.upper <- !is.na(upper)
         if (finite.upper && (lower == upper))
             return(lower)
@@ -5804,23 +5806,23 @@ makeMetadataPredict <- function(metadata, along, labels, n) {
                              "n", "labels"))
         labels <- as.character(labels)
         DimScale.pred <- dembase::inferDimScale(dimtype = dimtypes[along],
-                                       dimscale = dimscales[along],
-                                       labels = labels,
-                                       name = names[along])
+                                                dimscale = dimscales[along],
+                                                labels = labels,
+                                                name = names[along])
     }
     else {
         if (!is.null(n))
             DimScale.pred <- dembase::incrementDimScale(DimScales[[along]],
-                                               n = n)
+                                                        n = n)
         else
             stop(gettextf("must supply '%s' or '%s' argument",
                           "labels", "n"))
     }
     DimScales[[along]] <- DimScale.pred
     methods::new("MetaData",
-        nms = names,
-        dimtypes = dimtypes,
-        DimScales = DimScales)
+                 nms = names,
+                 dimtypes = dimtypes,
+                 DimScales = DimScales)
 }
 
 ## HAS_TESTS

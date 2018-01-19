@@ -472,6 +472,9 @@ rpoisTrunc1(double lambda, int lower, int upper, int maxAttempt)
     if (lower == NA_INTEGER)
     lower = 0;
 
+    if (lower < 0)
+	lower = 0;
+    
     int finite_upper = ( (upper == NA_INTEGER) ? 0 : 1);
     
     int retValue = NA_INTEGER;
@@ -500,9 +503,9 @@ rpoisTrunc1(double lambda, int lower, int upper, int maxAttempt)
             }
         }
         if (found) {
-            
             retValue = (int) prop_value;
         }
+	
     }
     
     return retValue;    

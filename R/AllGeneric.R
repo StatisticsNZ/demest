@@ -339,7 +339,11 @@ setGeneric("makeOutputModel",
 
 setGeneric("makeOutputPrior",
            function(prior, metadata, pos, strucZeroArray = NULL, margin = NULL)
-           standardGeneric("makeOutputPrior"))
+               standardGeneric("makeOutputPrior"))
+
+setGeneric("makeResults",
+           function(object, finalCombineds, mcmcArgs, controlArgs, seed)
+               standardGeneric("makeResults"))
 
 setGeneric("modelUsesWeights",
            function(object) FALSE)
@@ -353,10 +357,6 @@ setGeneric("predictCombined",
                     useC = FALSE, useSpecific = FALSE)
            standardGeneric("predictCombined"))
 
-setGeneric("predictPrior",
-           function(prior, useC = FALSE, useSpecific = FALSE)
-               standardGeneric("predictPrior"))
-
 setGeneric("predictModelNotUseExp",
            function(object, y, useC = FALSE, useSpecific = FALSE)
                standardGeneric("predictModelNotUseExp"))
@@ -365,9 +365,9 @@ setGeneric("predictModelUseExp",
            function(object, y, exposure, useC = FALSE, useSpecific = FALSE)
                standardGeneric("predictModelUseExp"))
 
-setGeneric("predictVarDLM",
-           function(prior, zeta, useC = FALSE, useSpecific = FALSE)
-           standardGeneric("predictVarDLM"))
+setGeneric("predictPrior",
+           function(prior, useC = FALSE, useSpecific = FALSE)
+               standardGeneric("predictPrior"))
 
 setGeneric("printAgValEqns",
            function(object) invisible())

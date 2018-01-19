@@ -313,7 +313,7 @@ setClass("LowerUpperMixin",
 ## HAS_TESTS
 setClass("MaxAttemptMixin",
          slots = c(maxAttempt = "integer"),
-         prototype = prototype(maxAttempt = 100L),
+         prototype = prototype(maxAttempt = 1000L),
          contains = "VIRTUAL",
          validity = function(object) {
              maxAttempt <- object@maxAttempt

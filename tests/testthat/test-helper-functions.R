@@ -5406,8 +5406,12 @@ test_that("rpoisTrunc1 gives valid answer", {
         ans <- rpoisTrunc1(lambda = lambda, lower = 2L, upper = 10L,
                            maxAttempt = 100L)
         expect_true((is.na(ans)) || ((ans >= 2L) && ans <= 10L))
-        ## returns NA_integer_ if failed
+        ## returns 0 if upper = 0
         ans <- rpoisTrunc1(lambda = 1000, lower = -1L, upper = 0L,
+                           maxAttempt = 1L)
+        expect_identical(ans, 0L)
+        ## returns NA_integer_ if failed
+        ans <- rpoisTrunc1(lambda = 1000, lower = -1L, upper = 1L,
                            maxAttempt = 1L)
         expect_identical(ans, NA_integer_)
         ## lower is NA gives same answer as lower is 0
@@ -5454,11 +5458,8 @@ test_that("More tests for R and C versions of rpoisTrunc1 give same answer", {
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         lambda <- runif(1, 0, 15)
-    
             lower <- as.integer(rpois(n = 1, lambda = 5))
-            
             upper <- NA_integer_ ## non-finite upper
-            
             set.seed(seed + 1)
             ans.R <- rpoisTrunc1(lambda = lambda, lower = lower, upper = upper,
                                  maxAttempt = 10L, useC = FALSE)
@@ -5466,7 +5467,6 @@ test_that("More tests for R and C versions of rpoisTrunc1 give same answer", {
             ans.C <- rpoisTrunc1(lambda = lambda, lower = lower, upper = upper,
                                  maxAttempt = 10L, useC = TRUE)
             expect_identical(ans.R, ans.C)
-            
             upper <- lower ## upper == lower
             set.seed(seed + 1)
             ans.R <- rpoisTrunc1(lambda = lambda, lower = lower, upper = upper,
@@ -5475,7 +5475,6 @@ test_that("More tests for R and C versions of rpoisTrunc1 give same answer", {
             ans.C <- rpoisTrunc1(lambda = lambda, lower = lower, upper = upper,
                                  maxAttempt = 10L, useC = TRUE)
             expect_identical(ans.R, ans.C)
-            
             upper <- lower + as.integer(rpois(1, lambda = 10)) ## upper > lower
             set.seed(seed + 1)
             ans.R <- rpoisTrunc1(lambda = lambda, lower = lower, upper = upper,
@@ -5483,8 +5482,7 @@ test_that("More tests for R and C versions of rpoisTrunc1 give same answer", {
             set.seed(seed + 1)
             ans.C <- rpoisTrunc1(lambda = lambda, lower = lower, upper = upper,
                                  maxAttempt = 10L, useC = TRUE)
-            expect_identical(ans.R, ans.C)
-            
+            expect_identical(ans.R, ans.C)            
     }
 })
 

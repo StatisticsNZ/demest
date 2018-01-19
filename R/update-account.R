@@ -74,7 +74,7 @@ updateAccount <- function(object, useC = FALSE) {
     }
     else {
         n.cell.account <- object@nCellAccount@.Data
-        for (i in seq_len(n.cell.account)) {
+        for (i in seq_len(2L * n.cell.account)) {
             object <- updateProposalAccount(object)
             generated.new.proposal <- object@generatedNewProposal@.Data
             if (generated.new.proposal) {
@@ -268,7 +268,7 @@ updateProposalAccountMoveBirths <- function(combined, useC = FALSE) {
                                     maxAttempt = max.attempt)
             found.value <- !is.na(val.prop)
             if (found.value) {
-                diff.prop <- unname(val.prop - val.curr) ## JAH changed 22/12/2017
+                diff.prop <- unname(val.prop - val.curr)
                 generated.new.proposal <- diff.prop != 0L
             }
             else
@@ -283,7 +283,7 @@ updateProposalAccountMoveBirths <- function(combined, useC = FALSE) {
             if (has.age) {
                 combined@iAccNext <- i.acc.next
                 combined@iAccNextOther <- NA_integer_
-                combined@isLowerTriangle@.Data <- is.lower.triangle ## changed JAH 22/12/2017
+                combined@isLowerTriangle@.Data <- is.lower.triangle
             }
             if (uses.exposure) {
                 combined@iExposure <- i.exposure
@@ -306,7 +306,7 @@ updateProposalAccountMoveBirths <- function(combined, useC = FALSE) {
             if (has.age) {
                 combined@iAccNext <- NA_integer_
                 combined@iAccNextOther <- NA_integer_
-                combined@isLowerTriangle@.Data <- NA ## changed JAH 22/12/2017
+                combined@isLowerTriangle@.Data <- NA
             }
             combined@iExposure <- NA_integer_
             combined@iExposureOther <- NA_integer_
@@ -2335,7 +2335,7 @@ diffLogDensExpOrigDestPoolNet <- function(combined, useC = FALSE) {
                         }
                     }
                 }
-                else { ## is net
+                else { ## is comp
                     i.cell.orig <- getICellCompFromExp(i = i.exp.first.orig,
                                                        mapping = mapping.from.exp)
                     i.cell.dest <- getICellCompFromExp(i = i.exp.first.dest,

@@ -11,7 +11,7 @@ updateAccount(SEXP object_R)
 {
     int nCellAccount = *INTEGER(GET_SLOT(object_R, nCellAccount_sym));
     
-    for (int i = 0; i < nCellAccount; ++i) {
+    for (int i = 0; i < (2 * nCellAccount); ++i) {
         updateProposalAccount(object_R);
         int generatedNewProposal = *LOGICAL(GET_SLOT(object_R, generatedNewProposal_sym));
         

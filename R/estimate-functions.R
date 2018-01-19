@@ -830,8 +830,6 @@ predictAccount <- function(filenameEst, filenamePred, along = NULL, labels = NUL
 continueEstimation <- function(filename, nBurnin = NULL, nSim = 1000, nThin = NULL,
                                outfile = NULL, verbose = FALSE, useC = TRUE) {
     object <- fetchResultsObject(filename)
-    if (methods::is(object, "CombinedCounts"))
-        stop("sorry - method for estimateCounts not written yet!")
     mcmc.args.old <- object@mcmc
     control.args <- object@control
     seed.old <- object@seed
@@ -887,10 +885,11 @@ continueEstimation <- function(filename, nBurnin = NULL, nSim = 1000, nThin = NU
             + mcmc.args.old[["nSim"]]
             + mcmc.args.new[["nBurnin"]])
     }
-    results <- makeResultsModelEst(finalCombineds = final.combineds,
-                                   mcmcArgs = mcmc.args.new,
-                                   controlArgs = control.args,
-                                   seed = seed)
+    results <- makeResults(object = object,
+                           finalCombineds = final.combineds,
+                           mcmcArgs = mcmc.args.new,
+                           controlArgs = control.args,
+                           seed = seed)
     if (append) {
         tempfiles.old <- splitFile(filename = filename,
                                    nChain = mcmc.args.old[["nChain"]],
