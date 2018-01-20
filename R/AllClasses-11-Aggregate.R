@@ -286,20 +286,24 @@ setClass("SpecValueAgMixin",
          slots = c(valueAg = "ParameterVector"),
          contains = "VIRTUAL")
 
-## HAS_TESTS
+## ## HAS_TESTS
+## setClass("SpecWeightAgMixin",
+##          slots = c(weightAg = "CountsOrNULL"),
+##          contains = "VIRTUAL",
+##          validity = function(object) {
+##              weightAg <- object@weightAg
+##              ## 'weightAg' has no negative values
+##              if (!is.null(weightAg)) {
+##                  if (any(weightAg < 0, na.rm = TRUE))
+##                      return(gettextf("'%s' has negative values",
+##                                      "weightAg"))
+##              }
+##              TRUE
+##          })
+
 setClass("SpecWeightAgMixin",
          slots = c(weightAg = "CountsOrNULL"),
-         contains = "VIRTUAL",
-         validity = function(object) {
-             weightAg <- object@weightAg
-             ## 'weightAg' has no negative values
-             if (!is.null(weightAg)) {
-                 if (any(weightAg < 0, na.rm = TRUE))
-                     return(gettextf("'%s' has negative values",
-                                     "weightAg"))
-             }
-             TRUE
-         })
+         contains = "VIRTUAL")
 
 ## HAS_TESTS
 setClass("TransformAgMixin",
@@ -337,10 +341,10 @@ setClass("WeightAgMixin",
              if (!is.double(weightAg))
                  return(gettextf("'%s' does not have type \"%s\"",
                                  "weightAg", "double"))
-             ## all non-missing values in 'weightAg' are non-negative
-             if (any(weightAg < 0, na.rm = TRUE))
-                 return(gettextf("'%s' has negative values",
-                                 "weightAg"))
+             ## ## all non-missing values in 'weightAg' are non-negative
+             ## if (any(weightAg < 0, na.rm = TRUE))
+             ##     return(gettextf("'%s' has negative values",
+             ##                     "weightAg"))
              ## 'weightAg' has length implied by 'transformAg'
              if (!identical(length(weightAg), as.integer(prod(transformAg@dimBefore))))
                  return(gettextf("'%s' does not have length implied by '%s'",

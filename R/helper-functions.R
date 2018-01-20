@@ -2606,7 +2606,7 @@ addAgCertain <- function(object, aggregate, defaultWeights) {
     mu <- rep(0, times = length(theta))
     for (k in seq_along(value)) {
         i.th <- dembase::getIBefore(k, transform = transform, useC = TRUE)
-        sum.wt <- sum(weight[i.th])
+        sum.wt <- sum(abs(weight[i.th]))
         if (sum.wt > 0)
             theta[i.th] <- value[k] / sum.wt
     }
@@ -3367,9 +3367,9 @@ checkSpecWeightAg <- function(weights, metadata) {
         if (!methods::is(weights, "Counts"))
             stop(gettextf("'%s' has class \"%s\"",
                           "weights", class(weights)))
-        if (any(weights < 0, na.rm = TRUE))
-            stop(gettextf("'%s' has negative values",
-                          "weights"))
+        ## if (any(weights < 0, na.rm = TRUE))
+        ##     stop(gettextf("'%s' has negative values",
+        ##                   "weights"))
         if (!is.null(metadata)) {
             .Data <- array(1L,
                            dim = dim(metadata),
@@ -4001,7 +4001,7 @@ makeWeightAg <- function(weight, default, model, thetaObj, transform, values) {
             wt <- ans[i.wt]
             sum.wt <- sum(wt)
             if (sum.wt > 0)
-                wt <- wt / sum(wt)
+                wt <- wt / sum.wt
             ans[i.wt] <- wt
         }
     }

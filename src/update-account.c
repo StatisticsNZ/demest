@@ -238,6 +238,9 @@ updateProposalAccountMoveBirths(SEXP combined_R)
 	int valProp = rpoisTrunc1(lambda, lower, upper, maxAttempt);
     
 	int foundValue = !(valProp == NA_INTEGER);
+
+	/* printf("valCurr %d, valProp %d, thetaCell %f, lambda %f\n", */
+	/*        valCurr, valProp, thetaCell, lambda); */
     
 	if(foundValue) {
 	    diffProp = valProp - valCurr;

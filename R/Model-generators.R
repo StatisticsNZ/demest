@@ -1112,10 +1112,10 @@ setMethod("initialModel",
                   mean.y.obs <- mean(y@.Data[is.obs]) 
               else
                   mean.y.obs <- 0.5
-              shape <- ifelse(is.obs, 0.5 * mean.y.obs + 0.5 * y@.Data, mean.y.obs)
+              shape <- ifelse(is.obs, 0.05 * mean.y.obs + 0.95 * y@.Data, mean.y.obs)
               if (has.exposure) {
                   mean.expose.obs <- mean(exposure[is.obs])
-                  rate <- ifelse(is.obs, 0.5 * mean.expose.obs + 0.5 * exposure, mean.expose.obs)
+                  rate <- ifelse(is.obs, 0.05 * mean.expose.obs + 0.95 * exposure, mean.expose.obs)
               }
               else
                   rate <- 1
@@ -1138,7 +1138,7 @@ setMethod("initialModel",
               ## need to avoid having all 'theta' equalling lower or upper bound
               is.too.low <- theta < lower
               n.too.low <- sum(is.too.low)
-              width <- 0.2 * (upper - lower)
+              width <- 0.05 * (upper - lower)
               if (is.infinite(width))
                   width <- 100
               theta[is.too.low] <- stats::runif(n = n.too.low, min = lower, max = lower + width)
