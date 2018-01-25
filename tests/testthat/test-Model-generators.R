@@ -574,7 +574,7 @@ test_that("initialModel creates object of class BinomialVarying from valid input
     expect_identical(x@lower, -Inf)
     expect_identical(x@upper, Inf)
     expect_identical(x@tolerance, 1e-5)
-    expect_identical(x@maxAttempt, 100L)
+    expect_identical(x@maxAttempt, 1000L)
     expect_identical(x@nFailedPropTheta, new("Counter", 0L))
     ## intercept only
     exposure <- Counts(array(rpois(n = 20, lambda = 20),
@@ -729,7 +729,7 @@ test_that("initialModel creates object of class CMPVaryingUseExp from valid inpu
     expect_identical(x@nuSigma, new("DegreesFreedom", 7))
     expect_identical(x@sigmaMax, new("Scale", qhalft(0.999, df = 7, scale = 1)))
     expect_identical(x@tolerance, 1e-5)
-    expect_identical(x@maxAttempt, 100L)
+    expect_identical(x@maxAttempt, 1000L)
     expect_identical(x@nFailedPropTheta, new("Counter", 0L))
     expect_identical(x@meanLogNuCMP, new("Parameter", meanNu))
     expect_identical(x@sdLogNuCMP, new("Scale", sdNu))
@@ -810,7 +810,7 @@ test_that("initialModel creates object of class CMPVaryingUseExp from valid inpu
     expect_identical(x@ASigma, new("Scale", 1))
     expect_identical(x@tolerance, 1e-5)
     expect_identical(x@sigma, new("Scale", sigma))
-    expect_identical(x@maxAttempt, 100L)
+    expect_identical(x@maxAttempt, 1000L)
     expect_identical(x@nFailedPropTheta, new("Counter", 0L))
     ## saturated model
     exposure <- Counts(array(rpois(n = 20, lambda = 20),
@@ -885,7 +885,7 @@ test_that("initialModel creates object of class NormalVaryingVarsigmaKnown from 
     expect_identical(x@sigmaMax@.Data, qhalft(p = 0.999, df = 7, scale = sd(y)))
     expect_identical(x@lower, -Inf)
     expect_identical(x@upper, Inf)
-    expect_identical(x@maxAttempt, 100L)
+    expect_identical(x@maxAttempt, 1000L)
     expect_identical(x@tolerance, 1e-5)
     ## intercept only
     varsigma <- 2.1
@@ -965,7 +965,7 @@ test_that("initialModel creates object of class NormalVaryingVarsigmaKnown from 
     expect_identical(x@ASigma, new("Scale", sd(y, na.rm = T)))
     expect_identical(x@lower, -Inf)
     expect_identical(x@upper, Inf)
-    expect_identical(x@maxAttempt, 100L)
+    expect_identical(x@maxAttempt, 1000L)
     expect_identical(x@tolerance, 1e-5)
     ## maxSigma specified
     varsigma <- 1.3
@@ -1042,7 +1042,7 @@ test_that("initialModel creates object of class NormalVaryingVarsigmaUnknown fro
     expect_is(x@priorsBetas[[1]], "ExchFixed")
     expect_identical(x@lower, -Inf)
     expect_identical(x@upper, Inf)
-    expect_identical(x@maxAttempt, 100L)
+    expect_identical(x@maxAttempt, 1000L)
     expect_identical(x@tolerance, 1e-5)
     ## intercept only
     y <- Counts(array(rnorm(n = 20, mean = 0, sd = varsigma),
@@ -1119,7 +1119,7 @@ test_that("initialModel creates object of class NormalVaryingVarsigmaUnknown fro
     expect_is(x@priorsBetas[[1]], "ExchFixed")
     expect_identical(x@lower, -Inf)
     expect_identical(x@upper, Inf)
-    expect_identical(x@maxAttempt, 100L)
+    expect_identical(x@maxAttempt, 1000L)
     expect_identical(x@tolerance, 1e-5)
     ## saturated model
     y <- Values(array(rnorm(n = 20),
@@ -1154,8 +1154,8 @@ test_that("initialModel creates object of class PoissonVaryingUseExp from valid 
     x <- initialModel(spec, y = y, exposure = exposure)
     set.seed(1)
     theta <- rgamma(n = 20,
-                    shape = 0.5 * mean(y) + 0.5 * y,
-                    rate = 0.5 * mean(exposure) + 0.5 * exposure)
+                    shape = 0.05 * mean(y) + 0.95 * y,
+                    rate = 0.05 * mean(exposure) + 0.95 * exposure)
     sigma <- runif(1, max = 1)
     theta <- array(theta, dim = dim(y), dimnames = dimnames(y))
     betas <- loglm(~ age + region, theta)$param
@@ -1182,7 +1182,7 @@ test_that("initialModel creates object of class PoissonVaryingUseExp from valid 
     expect_identical(x@nuSigma, new("DegreesFreedom", 7))
     expect_identical(x@sigmaMax, new("Scale", qhalft(0.999, df = 7, scale = 1)))
     expect_identical(x@tolerance, 1e-5)
-    expect_identical(x@maxAttempt, 100L)
+    expect_identical(x@maxAttempt, 1000L)
     expect_identical(x@nFailedPropTheta, new("Counter", 0L))
     ## intercept only
     exposure <- Counts(array(rpois(n = 20, lambda = 20),
@@ -1196,8 +1196,8 @@ test_that("initialModel creates object of class PoissonVaryingUseExp from valid 
     x <- initialModel(spec, y = y, exposure = exposure)
     set.seed(1)
     theta <- rgamma(n = 20,
-                    shape = 0.5 * mean(y) + 0.5 * y,
-                    rate = 0.5 * mean(exposure) + 0.5 * exposure)
+                    shape = 0.05 * mean(y) + 0.95 * y,
+                    rate = 0.05 * mean(exposure) + 0.95 * exposure)
     sigma <- runif(1, max = 1)
     expect_identical(x@sigma, new("Scale", sigma))
     expect_identical(x@theta, theta)
@@ -1230,9 +1230,9 @@ test_that("initialModel creates object of class PoissonVaryingUseExp from valid 
     set.seed(1)
     mean.y <- mean(y[6:20])
     mean.expose <- mean(exposure[6:20])
-    shape <- 0.5 * mean.y + 0.5 * y
+    shape <- 0.05 * mean.y + 0.95 * y
     shape[1:5] <- mean.y
-    rate <- 0.5 * mean.expose + 0.5 * exposure
+    rate <- 0.05 * mean.expose + 0.95 * exposure
     rate[1:5] <- mean.expose
     theta <- rgamma(n = 20, shape = shape, rate = rate)
     sigma <- runif(1)
@@ -1261,7 +1261,7 @@ test_that("initialModel creates object of class PoissonVaryingUseExp from valid 
     expect_identical(x@ASigma, new("Scale", 1))
     expect_identical(x@tolerance, 1e-5)
     expect_identical(x@sigma, new("Scale", sigma))
-    expect_identical(x@maxAttempt, 100L)
+    expect_identical(x@maxAttempt, 1000L)
     expect_identical(x@nFailedPropTheta, new("Counter", 0L))
     ## saturated model
     exposure <- Counts(array(rpois(n = 20, lambda = 20),
@@ -1301,7 +1301,7 @@ test_that("initialModel creates object of class PoissonVaryingNotUseExp from val
     x <- initialModel(spec, y = y, exposure = NULL)
     set.seed(1)
     theta <- rgamma(n = 20,
-                    shape = 0.5 * mean(y) + 0.5 * y,
+                    shape = 0.05 * mean(y) + 0.95 * y,
                     rate = 1)
     sigma <- runif(1, max = sd(log(y+1)))
     expect_is(x, "PoissonVaryingNotUseExp")
@@ -1313,7 +1313,7 @@ test_that("initialModel creates object of class PoissonVaryingNotUseExp from val
     expect_identical(x@ASigma, new("Scale", sd(log(y+1))))
     expect_identical(x@sigmaMax, new("Scale", 10))
     expect_identical(x@tolerance, 1e-5)
-    expect_identical(x@maxAttempt, 100L)
+    expect_identical(x@maxAttempt, 1000L)
     expect_identical(x@nFailedPropTheta, new("Counter", 0L))
     ## intercept only
     y <- Counts(array(rpois(n = 20, lambda = 10),
@@ -1324,7 +1324,7 @@ test_that("initialModel creates object of class PoissonVaryingNotUseExp from val
     x <- initialModel(spec, y = y, exposure = NULL)
     set.seed(1)
     theta <- rgamma(n = 20,
-                    shape = 0.5 * mean(y) + 0.5 * y,
+                    shape = 0.05 * mean(y) + 0.95 * y,
                     rate = 1)
     sigma <- runif(1, max = sd(log(y+1)))
     m <- mean(y)
@@ -1341,7 +1341,7 @@ test_that("initialModel creates object of class PoissonVaryingNotUseExp from val
     x <- initialModel(spec, y = y, exposure = NULL)
     set.seed(1)
     mean <- mean(y, na.rm = TRUE)
-    shape <- 0.5 * mean + 0.5 * y
+    shape <- 0.05 * mean + 0.95 * y
     shape[1:5] <- mean
     theta <- rgamma(n = 20, shape = shape, rate = 1)
     sigma <- runif(1, max = sd(log(y+1), na.rm = T))
@@ -1353,7 +1353,7 @@ test_that("initialModel creates object of class PoissonVaryingNotUseExp from val
     expect_identical(x@nuSigma, new("DegreesFreedom", 7))
     expect_identical(x@ASigma, new("Scale", sd(log(y+1), na.rm = TRUE)))
     expect_identical(x@tolerance, 1e-5)
-    expect_identical(x@maxAttempt, 100L)
+    expect_identical(x@maxAttempt, 1000L)
     expect_identical(x@nFailedPropTheta, new("Counter", 0L))
     ## saturated model
     y <- Counts(array(rpois(n = 20, lambda = 10),

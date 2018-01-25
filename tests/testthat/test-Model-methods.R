@@ -701,7 +701,7 @@ test_that("makeOutputAggregate works with AgNormal", {
     ans.expected <- list(value = Skeleton(metadata = model@metadataAg,
                              first = 20L),
                          jump = aggregate@scaleAg@.Data,
-                         noProposal = SkeletonAccept(nAttempt = 100L, first = 22L,
+                         noProposal = SkeletonAccept(nAttempt = 1000L, first = 22L,
                              nChain = 2L, nIteration = 50L),
                          accept = SkeletonAccept(nAttempt = 2L, first = 23L,
                              nChain = 2L, nIteration = 50L),
@@ -722,7 +722,7 @@ test_that("makeOutputAggregate works with AgNormal", {
     weights <- new("Counts", .Data = prop.table(exposure), metadata = exposure@metadata)
     ans.expected <- list(value = Skeleton(first = 10L),
                          jump = aggregate@scaleAg@.Data,
-                         noProposal = SkeletonAccept(nAttempt = 100L, first = 11L,
+                         noProposal = SkeletonAccept(nAttempt = 1000L, first = 11L,
                              nChain = 2L, nIteration = 50L),
                          accept = SkeletonAccept(nAttempt = 1L, first = 12L,
                              nChain = 2L, nIteration = 50L),
@@ -801,7 +801,7 @@ test_that("makeOutputAggregate works with AgFun", {
                                         nChain = 2L, nIteration = 50L)
     ans.expected <- list(value = Skeleton(metadata = model@metadataAg,
                              first = 20L),
-                         noProposal = SkeletonAccept(nAttempt = 100L, first = 22L,
+                         noProposal = SkeletonAccept(nAttempt = 1000L, first = 22L,
                              nChain = 2L, nIteration = 50L),
                          accept = SkeletonAccept(nAttempt = 2L, first = 23L,
                              nChain = 2L, nIteration = 50L),
@@ -821,7 +821,7 @@ test_that("makeOutputAggregate works with AgFun", {
                                         nChain = 2L, nIteration = 50L)
     weights <- new("Counts", .Data = prop.table(exposure), metadata = exposure@metadata)
     ans.expected <- list(value = Skeleton(first = 10L),
-                         noProposal = SkeletonAccept(nAttempt = 100L, first = 11L,
+                         noProposal = SkeletonAccept(nAttempt = 1000L, first = 11L,
                              nChain = 2L, nIteration = 50L),
                          accept = SkeletonAccept(nAttempt = 1L, first = 12L,
                              nChain = 2L, nIteration = 50L),
@@ -854,7 +854,7 @@ test_that("makeOutputAggregate works with AgPoisson", {
     ans.expected <- list(value = Skeleton(metadata = model@metadataAg,
                              first = 20L),
                          jump = aggregate@scaleAg@.Data,
-                         noProposal = SkeletonAccept(nAttempt = 100L, first = 22L,
+                         noProposal = SkeletonAccept(nAttempt = 1000L, first = 22L,
                              nChain = 2L, nIteration = 50L),
                          accept = SkeletonAccept(nAttempt = 2L, first = 23L,
                              nChain = 2L, nIteration = 50L),
@@ -877,7 +877,7 @@ test_that("makeOutputAggregate works with AgPoisson", {
     weights <- new("Counts", .Data = prop.table(exposure), metadata = exposure@metadata)
     ans.expected <- list(value = Skeleton(first = 10L),
                          jump = aggregate@scaleAg@.Data,
-                         noProposal = SkeletonAccept(nAttempt = 100L, first = 11L,
+                         noProposal = SkeletonAccept(nAttempt = 1000L, first = 11L,
                              nChain = 2L, nIteration = 50L),
                          accept = SkeletonAccept(nAttempt = 1L, first = 12L,
                              nChain = 2L, nIteration = 50L),

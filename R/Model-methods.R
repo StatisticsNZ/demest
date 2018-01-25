@@ -1098,7 +1098,7 @@ setMethod("predictModelNotUseExp",
               ## y
               stopifnot(is.integer(y))
               stopifnot(identical(length(y), length(object@theta)))
-              stopifnot(all(is.na(y)))
+              stopifnot(all(is.na(y) | (y == 0L)))
               if (useC) {
                   if (useSpecific)
                       .Call(predictModelNotUseExp_PoissonVaryingNotUseExpPredict_R,
@@ -1185,10 +1185,9 @@ setMethod("predictModelUseExp",
               ## y
               stopifnot(is.integer(y))
               stopifnot(identical(length(y), length(object@theta)))
-              stopifnot(all(is.na(y)))
+              stopifnot(all(is.na(y) | (y == 0L)))
               ## exposure
               stopifnot(is.double(exposure))
-              stopifnot(all(is.na(exposure)))
               ## y and exposure
               stopifnot(identical(length(exposure), length(y)))
               if (useC) {
@@ -2193,7 +2192,7 @@ setMethod("updateModelUseExp",
               ## y and exposure
               stopifnot(identical(length(exposure), length(y)))
               stopifnot(all(is.na(exposure) <= is.na(y)))
-              stopifnot(all(y@.Data[!is.na(y@.Data)][exposure[!is.na(y)] == 0] == 0))
+              stopifnot(all(y@.Data[!is.na(y@.Data) & (exposure@.Data == 0L)] == 0))
               if (useC) {
                   if (useSpecific)
                       .Call(updateModelUseExp_CMPVaryingUseExp_R, object, y, exposure)
@@ -2227,7 +2226,8 @@ setMethod("updateModelUseExp",
               ## y and exposure
               stopifnot(identical(length(exposure), length(y)))
               stopifnot(all(is.na(exposure) <= is.na(y)))
-              stopifnot(all(y@.Data[!is.na(y@.Data)][exposure[!is.na(y)] == 0] == 0))
+              stopifnot(all(y@.Data[!is.na(y@.Data) & (exposure@.Data == 0L)] == 0))
+              stopifnot(all(y@.Data[!is.na(y@.Data) & (exposure@.Data == 0L)] == 0))
               if (useC) {
                   if (useSpecific)
                       .Call(updateModelUseExp_PoissonVarying_R, object, y, exposure)

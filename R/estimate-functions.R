@@ -302,7 +302,8 @@ predictModel <- function(filenameEst, filenamePred, along = NULL, labels = NULL,
                                                  yIsCounts = y.is.counts)
     control.args.pred <- list(call = call,
                               parallel = parallel,
-                              lengthIter = lengthValues(combined.pred))
+                              lengthIter = lengthValues(combined.pred),
+                              nUpdateMax = control.args.first[["nUpdateMax"]])
     mcmc.args.pred <- list(nBurnin = nBurnin,
                            nSim = mcmc.args.first[["nSim"]],
                            nChain = mcmc.args.first[["nChain"]],
@@ -527,11 +528,120 @@ estimateCounts <- function(model, y, exposure = NULL, dataModels,
 #'
 #' @export
 predictCounts <- function(filenameEst, filenamePred, along = NULL, labels = NULL, n = NULL,
-                          data = NULL, aggregate = NULL, lower = NULL,
-                          upper = NULL, nBurnin = 0L,  parallel = TRUE, outfile = NULL,
+                          exposure = NULL, data = list(), aggregate = list(), lower = list(),
+                          upper = list(), nBurnin = 0L,  parallel = TRUE, outfile = NULL,
                           verbose = FALSE, useC = TRUE) {
-    stop("not written yet")
+    if (!identical(nBurnin, 0L))
+        stop("'nBurnin' must currently be 0L")
+    call <- match.call()
+    results.first <- fetchResultsObject(filenameEst)
+    ## extract information about old results
+    combined.first <- results.first@final[[1L]]
+    mcmc.args.first <- results.first@mcmc
+    control.args.first <- results.first@control
+    model.first <- combined.first@model
+    metadata.first <- model.first@metadataY
+    y.first <- combined.first@y
+    ## set up new objects
+    along <- dembase::checkAndTidyAlong(along = along,
+                                        metadata = metadata.first,
+                                        numericDimScales = FALSE)
+    checkFilename(filename = filenameEst,
+                  name = "filenameEst")
+    if(is.null(filenamePred))
+        filenamePred <- tempfile()
+    else
+        checkFilename(filename = filenamePred,
+                      name = "filenamePred")
+    if (!(identical(aggregate, list()) || methods::is(aggregate, "SpecAggregate")))
+        stop(gettextf("'%s' has class \"%s\"",
+                      "aggregate", class(aggregate)))
+    data <- checkAndTidyListArgForEstimateFun(arg = data,
+                                              name = "data",
+                                              isCounts = TRUE)
+    aggregate <- checkAndTidyListArgForEstimateFun(arg = aggregate,
+                                                   name = "aggregate",
+                                                   isCounts = TRUE)
+    lower <- checkAndTidyListArgForEstimateFun(arg = lower,
+                                               name = "lower",
+                                               isCounts = TRUE)
+    upper <- checkAndTidyListArgForEstimateFun(arg = upper,
+                                               name = "upper",
+                                               isCounts = TRUE)
+    combined.pred <- initialCombinedCountsPredict(combined = combined.first,
+                                                  along = along,
+                                                  labels = labels,
+                                                  n = n,
+                                                  exposure = exposure,
+                                                  covariates = data,
+                                                  aggregate = aggregate,
+                                                  lower = lower,
+                                                  upper = upper)
+    control.args.pred <- list(call = call,
+                              parallel = parallel,
+                              lengthIter = lengthValues(combined.pred),
+                              nUpdateMax = control.args.first[["nUpdateMax"]])
+    mcmc.args.pred <- list(nBurnin = nBurnin,
+                           nSim = mcmc.args.first[["nSim"]],
+                           nChain = mcmc.args.first[["nChain"]],
+                           nThin = mcmc.args.first[["nThin"]],
+                           nIteration = mcmc.args.first[["nIteration"]])
+    tempfiles.first <- splitFile(filename = filenameEst,
+                                 nChain = mcmc.args.first[["nChain"]],
+                                 nIteration = mcmc.args.first[["nIteration"]],
+                                 lengthIter = control.args.first[["lengthIter"]])
+    tempfiles.pred <- paste(filenamePred, seq_len(mcmc.args.pred[["nChain"]]), sep = "_")
+    n.iter.chain <- mcmc.args.first[["nIteration"]] / mcmc.args.first[["nChain"]]
+    if (parallel) {
+        if (is.null(outfile)) ## passing 'outfile' as an argument always causes redirection
+            cl <- parallel::makeCluster(getOption("cl.cores",
+                                                  default = mcmc.args.pred$nChain))
+        else
+            cl <- parallel::makeCluster(getOption("cl.cores",
+                                                  default = mcmc.args.pred$nChain),
+                                        outfile = outfile)
+        parallel::clusterSetRNGStream(cl)
+        final.combineds <- parallel::clusterMap(cl = cl,
+                                                fun = predictOneChain,
+                                                combined = list(combined.pred),
+                                                tempfileOld = tempfiles.first,
+                                                tempfileNew = tempfiles.pred,
+                                                lengthIter = control.args.first[["lengthIter"]],
+                                                nIteration = n.iter.chain,
+                                                nUpdate = nBurnin,
+                                                useC = useC,
+                                                SIMPLIFY = FALSE,
+                                                USE.NAMES = FALSE)
+        seed <- parallel::clusterCall(cl, function() .Random.seed)
+        parallel::stopCluster(cl)
+    }
+    else {
+        final.combineds <- mapply(predictOneChain,
+                                  combined = list(combined.pred),
+                                  tempfileOld = tempfiles.first,
+                                  tempfileNew = tempfiles.pred,
+                                  lengthIter = control.args.first[["lengthIter"]],
+                                  nIteration = n.iter.chain,
+                                  nUpdate = nBurnin,
+                                  useC = useC,
+                                  SIMPLIFY = FALSE,
+                                  USE.NAMES = FALSE)
+        seed <- list(.Random.seed)
+    }
+    sapply(tempfiles.first, unlink)
+    results <- makeResultsCounts(finalCombineds = final.combineds,
+                                 mcmcArgs = mcmc.args.pred,
+                                 controlArgs = control.args.pred,
+                                 seed = seed)
+    makeResultsFile(filename = filenamePred,
+                    results = results,
+                    tempfiles = tempfiles.pred)
+    finalMessage(filename = filenamePred,
+                 verbose = verbose)
 }
+
+
+
 
 #' Estimate demographic account and models from multiple noisy datasets.
 #'

@@ -501,6 +501,55 @@ test_that("initialCombinedCounts throws appropriate errors with CombinedCountsBi
                  "'y' greater than 'exposure'")
 })
 
+## initialCombinedCountsPredict #############################################################
+
+test_that("initialCombinedCountsPredict creates object of class CombinedCountsPoissonHasExp from valid inputs", {
+    initialCombinedCounts <- demest:::initialCombinedCounts
+    initialCombinedCountsPredict <- demest:::initialCombinedCountsPredict
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    object <- Model(y ~ Poisson(mean ~ sex * region))
+    y <- Counts(array(1:24,
+                      dim = 2:4,
+                      dimnames = list(sex = c("f", "m"), region = 1:3, time = 0:3)),
+                dimscales = c(time = "Intervals"))
+    exposure <- y + 2
+    y[24] <- NA
+    datasets <- list(Counts(array(c(1:11, NA),
+                                  dim = c(2, 3, 2),
+                                  dimnames = list(sex = c("f", "m"), region = 1:3, time = 2:3)),
+                            dimscales = c(time = "Intervals")),
+                     Counts(array(1:12,
+                                  dim = 3:4,
+                                  dimnames = list(region = 1:3, time = 0:3)),
+                            dimscales = c(time = "Intervals")))
+    namesDatasets <- c("tax", "census")
+    transforms <- list(makeTransform(x = y, y = datasets[[1]], subset = TRUE),
+                       makeTransform(x = y, y = datasets[[2]], subset = TRUE))
+    transforms <- lapply(transforms, makeCollapseTransformExtra)
+    data.models <- list(Model(tax ~ Poisson(mean ~ time + sex)),
+                        Model(census ~ PoissonBinomial(prob = 0.9)))
+    x.est <- initialCombinedCounts(object = object,
+                                   y = y,
+                                   exposure = exposure,
+                                   dataModels = data.models,
+                                   datasets = datasets,
+                                   namesDatasets = namesDatasets,
+                                   transforms = transforms)
+    expect_true(validObject(x.est))
+    expect_is(x.est, "CombinedCountsPoissonHasExp")
+    exposure.pred <- extrapolate(exposure, labels = c("4", "5"))[,,5:6]
+    x.pred <- initialCombinedCountsPredict(x.est,
+                                           along = 3L,
+                                           labels = NULL,
+                                           n = 2L,
+                                           exposure = exposure.pred,
+                                           covariates = list(),
+                                           aggregate = list(),
+                                           lower = list(),
+                                           upper = list())
+    expect_is(x.est, "CombinedCountsPoissonHasExp")
+    expect_true(validObject(x.pred))
+})
 
 ## CombinedAccount ##########################################################################
 

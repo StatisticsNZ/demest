@@ -1379,11 +1379,6 @@ test_that("validity tests for BinomialVaryingAgCertain inherited from WeightAgMi
     x.wrong@weightAg <- as.integer(x.wrong@weightAg)
     expect_error(validObject(x.wrong),
                  "'weightAg' does not have type \"double\"")
-    ## all non-missing values in 'weightAg' are non-negative
-    x.wrong <- x
-    x.wrong@weightAg[1] <- -1
-    expect_error(validObject(x.wrong),
-                 "'weightAg' has negative values")
     ## 'weightAg' has length implied by 'transformAg'
     x.wrong <- x
     x.wrong@weightAg <- c(x.wrong@weightAg, NA)

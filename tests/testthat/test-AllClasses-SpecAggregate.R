@@ -71,26 +71,6 @@ test_that("validityTests inherited from ConcordancesAgMixin work", {
                  "concordancesAg' has duplicate names")
 })
 
-test_that("validityTests inherited from SpecWeightAgMixin work", {
-    x <- new("SpecAgCertain",
-             valueAg = new("ParameterVector", as.double(1:4)),
-             weightAg = Counts(array(1,
-                 dim = 4:3,
-                 dimnames = list(region = 1:4, time = c(0, 5, 10)))),
-             metadataAg = new("MetaData",
-                 nms = "region",
-                 dimtypes = "state",
-                 DimScales = list(new("Categories", dimvalues = as.character(1:4)))))
-    expect_true(validObject(x))
-    ## 'weightAg' has no negative values
-    x.wrong <- x
-    x.wrong@weightAg <- Counts(array(c(-1, rep(1, 11)),
-                                     dim = 4:3,
-                                     dimnames = list(region = 1:4, time = c(0, 5, 10))))
-    expect_error(validObject(x.wrong),
-                 "'weightAg' has negative values")
-})
-
 test_that("can create object of class SpecAgNormal", {
     x <- new("SpecAgNormal",
              valueAg = new("ParameterVector", as.double(1:4)),

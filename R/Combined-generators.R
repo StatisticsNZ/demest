@@ -332,6 +332,84 @@ setMethod("initialCombinedCounts",
           })
 
 
+## initialCombinedCountsPredict ############################################################
+
+## HAS_TESTS
+setMethod("initialCombinedCountsPredict",
+          signature(combined = "CombinedCountsPoissonHasExp"),
+          function(combined, along, labels, n, exposure, covariates,
+                   aggregate, lower, upper) {
+              model.est <- combined@model
+              metadata.y <- model.est@metadataY
+              y.est <- combined@y
+              datasets.est <- combined@datasets
+              data.models.est <- combined@dataModels
+              names.datasets <- combined@namesDatasets
+              n.dataset <- length(datasets.est)
+              pos <- 1L
+              covariates.pred <- covariates[["model"]]
+              aggregate.pred <- aggregate[["model"]]
+              lower.pred <- lower[["model"]]
+              upper.pred <- upper[["model"]]
+              model.pred <- initialModelPredict(model = model.est,
+                                                along = along,
+                                                labels = labels,
+                                                n = n,
+                                                offsetModel = pos,
+                                                covariates = covariates.pred,
+                                                aggregate = aggregate.pred,
+                                                lower = lower.pred,
+                                                upper = upper.pred)
+              pos <- pos + lengthValues(model.est)
+              y.pred <- makeCountsPred(modelPred = model.pred)
+              pos <- pos + lengthValues(y.est)
+              data.models.pred <- vector(mode = "list", length = n.dataset)
+              datasets.pred <- vector(mode = "list", length = n.dataset)
+              transforms.pred <- vector(mode = "list", length = n.dataset)
+              names.y <- names(metadata.y)
+              name.dim.along <- names.y[along]
+              for (i in seq_len(n.dataset)) {
+                  data.model.est <- data.models.est[[i]]
+                  name <- names.datasets[i]
+                  covariates.pred <- covariates[["dataModels"]][[name]]
+                  aggregate.pred <- aggregate[["dataModels"]][[name]]
+                  lower.pred <- lower[["dataModels"]][[name]]
+                  upper.pred <- upper[["dataModels"]][[name]]
+                  along.pred <- match(name.dim.along, names(datasets.est[[i]]), nomatch = 0L)
+                  if (along.pred == 0L)
+                      stop(gettextf("dataset \"%s\" does not contain '%s' dimension [\"%s\"]",
+                                    name, "along", name.dim.along))
+                  data.model.pred <- initialModelPredict(model = data.model.est,
+                                                         along = along.pred,
+                                                         labels = labels,
+                                                         n = n,
+                                                         offsetModel = pos,
+                                                         covariates = covariates.pred,
+                                                         aggregate = aggregate.pred,
+                                                         lower = lower.pred,
+                                                         upper = upper.pred)
+                  pos <- pos + lengthValues(data.model.est)
+                  dataset.pred <- makeCountsPred(modelPred = data.model.pred)
+                  transform.pred <- dembase::makeTransform(x = y.pred,
+                                                           y = dataset.pred,
+                                                           subset = TRUE)
+                  transform.pred <- dembase::makeCollapseTransformExtra(transform.pred)
+                  data.models.pred[[i]] <- data.model.pred
+                  datasets.pred[[i]] <- dataset.pred
+                  transforms.pred[[i]] <- transform.pred
+              }
+              methods::new("CombinedCountsPoissonHasExp",
+                           model = model.pred,
+                           y = y.pred,
+                           exposure = exposure,
+                           dataModels = data.models.pred,
+                           datasets = datasets.pred,
+                           namesDatasets = names.datasets,
+                           transforms = transforms.pred)
+          })
+
+
+
 ## COMBINED ACCOUNT ###################################################################
 
 setMethod("initialCombinedAccount",

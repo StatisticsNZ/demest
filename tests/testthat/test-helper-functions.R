@@ -3302,13 +3302,6 @@ test_that("checkSpecWeightAg works", {
     metadata <- weights@metadata
     expect_error(checkSpecWeightAg(weights = weights, metadata = metadata),
                  "'weights' has class \"Values\"")
-    ## weights has negative values
-    weights <- Counts(array(c(1:3, -1),
-                            dim = 4,
-                            dimnames = list(region = 1:4)))
-    metadata <- weights@metadata
-    expect_error(checkSpecWeightAg(weights = weights, metadata = metadata),
-                 "'weights' has negative values")
     ## weights and metadata not compatible
     weights <- Counts(array(1,
                             dim = 4,
@@ -16293,6 +16286,7 @@ test_that("makeIteratorCODPCP creates objects from valid inputs", {
 test_that("makeOutputAccount works", {
     makeOutputAccount <- demest:::makeOutputAccount
     Skeleton <- demest:::Skeleton
+    initialModel <- demest:::initialModel
     population <- CountsOne(values = seq(100, 200, 10),
                             labels = seq(2000, 2100, 10),
                             name = "time")
@@ -16305,7 +16299,18 @@ test_that("makeOutputAccount works", {
     account <- Movements(population = population,
                          births = births,
                          exits = list(deaths = deaths))
-    ans.obtained <- makeOutputAccount(account = account, pos = 11L)
+    system.models <- list(initialModel(Model(population ~ Poisson(mean ~ 1, useExpose = FALSE)),
+                                       y = toInteger(population),
+                                       exposure = NULL),
+                          initialModel(Model(births ~ Poisson(mean ~ 1)),
+                                       y = toInteger(births),
+                                       exposure = exposure(population)),
+                          initialModel(Model(deaths ~ Poisson(mean ~ 1)),
+                                       y = toInteger(deaths),
+                                       exposure = exposure(population)))
+    ans.obtained <- makeOutputAccount(account = account,
+                                      systemModels = system.models,
+                                      pos = 11L)
     ans.expected <- list(population = Skeleton(account@population, first = 11L),
                          births = Skeleton(account@components[[1]], first = 22L),
                          deaths = Skeleton(account@components[[2]], first = 32L))

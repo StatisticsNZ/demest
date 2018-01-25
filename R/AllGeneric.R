@@ -273,7 +273,12 @@ setGeneric("initialCombinedAccount",
 setGeneric("initialCombinedCounts",
            function(object, y, exposure, dataModels, datasets,
                     namesDatasets, transforms)
-           standardGeneric("initialCombinedCounts"))
+               standardGeneric("initialCombinedCounts"))
+
+setGeneric("initialCombinedCountsPredict",
+           function(combined, along, labels, n, exposure,
+                    covariates, aggregate, lower, upper)
+              standardGeneric("initialCombinedCountsPredict"))
 
 setGeneric("initialCombinedModel",
            function(object, y, exposure, weights)

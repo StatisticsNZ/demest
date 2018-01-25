@@ -6207,9 +6207,6 @@ predictLevelComponentWeightMix <- function(prior, useC = FALSE) {
 }
 
 
-
-
-
 ## HAS_TESTS
 predictOneChain <- function(combined, tempfileOld, tempfileNew,
                             lengthIter, nIteration, nUpdate,

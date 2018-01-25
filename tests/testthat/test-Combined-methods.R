@@ -538,6 +538,173 @@ test_that("R, C.specific, and C.generic versions of predictCombined give same an
 })
 
 
+## predictCombined - CombinedCounts ###################################################
+
+
+test_that("predictCounts works withobject of class CombinedCountsPoissonHasExp", {
+    predictCombined <- demest:::predictCombined
+    initialCombinedCounts <- demest:::initialCombinedCounts
+    initialCombinedCountsPredict <- demest:::initialCombinedCountsPredict
+    predictModelUseExp <- demest:::predictModelUseExp
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    extractValues <- demest:::extractValues
+    object <- Model(y ~ Poisson(mean ~ sex * region))
+    y <- Counts(array(1:24,
+                      dim = 2:4,
+                      dimnames = list(sex = c("f", "m"), region = 1:3, time = 0:3)),
+                dimscales = c(time = "Intervals"))
+    exposure <- y + 2
+    y[24] <- NA
+    datasets <- list(Counts(array(c(1:11, NA),
+                                  dim = c(2, 3, 2),
+                                  dimnames = list(sex = c("f", "m"), region = 1:3, time = 2:3)),
+                            dimscales = c(time = "Intervals")),
+                     Counts(array(1:12,
+                                  dim = 3:4,
+                                  dimnames = list(region = 1:3, time = 0:3)),
+                            dimscales = c(time = "Intervals")))
+    namesDatasets <- c("tax", "census")
+    transforms <- list(makeTransform(x = y, y = datasets[[1]], subset = TRUE),
+                       makeTransform(x = y, y = datasets[[2]], subset = TRUE))
+    transforms <- lapply(transforms, makeCollapseTransformExtra)
+    data.models <- list(Model(tax ~ Poisson(mean ~ time + sex)),
+                        Model(census ~ PoissonBinomial(prob = 0.9)))
+    x.est <- initialCombinedCounts(object = object,
+                                   y = y,
+                                   exposure = exposure,
+                                   dataModels = data.models,
+                                   datasets = datasets,
+                                   namesDatasets = namesDatasets,
+                                   transforms = transforms)
+    exposure.pred <- toDouble(extrapolate(exposure, labels = c("4", "5"))[,,5:6])
+    x.pred <- initialCombinedCountsPredict(x.est,
+                                           along = 3L,
+                                           labels = NULL,
+                                           n = 2L,
+                                           exposure = exposure.pred,
+                                           covariates = list(),
+                                           aggregate = list(),
+                                           lower = list(),
+                                           upper = list())
+    expect_is(x.pred, "CombinedCountsPoissonHasExp")
+    expect_true(validObject(x.pred))
+    values <- extractValues(x.est)
+    lengthIter <- length(values)
+    filename <- tempfile()
+    con <- file(filename, "wb")
+    writeBin(values, con = con)
+    close(con)
+    set.seed(1)
+    ans.obtained <- predictCombined(x.pred,
+                                    filename = filename,
+                                    lengthIter = lengthIter,
+                                    iteration = 1L,
+                                    nUpdate = 1L)
+    set.seed(1)
+    ans.expected <- x.pred
+    model <- ans.expected@model
+    model <- transferParamModel(model = model,
+                                filename = filename,
+                                lengthIter = lengthIter,
+                                iteration = 1L)
+    model <- predictModelUseExp(object = model, y = x.pred@y, exposure = x.pred@exposure)
+    ans.expected@model <- model
+    ans.expected@y[] <- rpois(n = length(model@theta), lambda = model@theta * exposure.pred)
+    ans.expected@dataModels[[1]] <- predictModelUseExp(object = ans.expected@dataModels[[1]],
+                                                       y = ans.expected@datasets[[1]],
+                                                       exposure = toDouble(ans.expected@datasets[[1]]))
+    ans.expected@dataModels[[2]] <- predictModelUseExp(object = ans.expected@dataModels[[2]],
+                                                       y = ans.expected@datasets[[2]],
+                                                       exposure = ans.expected@datasets[[2]])
+    expect_identical(ans.obtained, ans.expected)    
+})
+
+
+test_that("R, C generic and C specific versions of predictCounts give same answer with object of class CombinedCountsPoissonHasExp", {
+    predictCombined <- demest:::predictCombined
+    initialCombinedCounts <- demest:::initialCombinedCounts
+    initialCombinedCountsPredict <- demest:::initialCombinedCountsPredict
+    predictModelUseExp <- demest:::predictModelUseExp
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    extractValues <- demest:::extractValues
+    object <- Model(y ~ Poisson(mean ~ sex * region))
+    y <- Counts(array(1:24,
+                      dim = 2:4,
+                      dimnames = list(sex = c("f", "m"), region = 1:3, time = 0:3)),
+                dimscales = c(time = "Intervals"))
+    exposure <- y + 2
+    y[24] <- NA
+    datasets <- list(Counts(array(c(1:11, NA),
+                                  dim = c(2, 3, 2),
+                                  dimnames = list(sex = c("f", "m"), region = 1:3, time = 2:3)),
+                            dimscales = c(time = "Intervals")),
+                     Counts(array(1:12,
+                                  dim = 3:4,
+                                  dimnames = list(region = 1:3, time = 0:3)),
+                            dimscales = c(time = "Intervals")))
+    namesDatasets <- c("tax", "census")
+    transforms <- list(makeTransform(x = y, y = datasets[[1]], subset = TRUE),
+                       makeTransform(x = y, y = datasets[[2]], subset = TRUE))
+    transforms <- lapply(transforms, makeCollapseTransformExtra)
+    data.models <- list(Model(tax ~ Poisson(mean ~ time + sex)),
+                        Model(census ~ PoissonBinomial(prob = 0.9)))
+    x.est <- initialCombinedCounts(object = object,
+                                   y = y,
+                                   exposure = exposure,
+                                   dataModels = data.models,
+                                   datasets = datasets,
+                                   namesDatasets = namesDatasets,
+                                   transforms = transforms)
+    exposure.pred <- toDouble(extrapolate(exposure, labels = c("4", "5"))[,,5:6])
+    x.pred <- initialCombinedCountsPredict(x.est,
+                                           along = 3L,
+                                           labels = NULL,
+                                           n = 2L,
+                                           exposure = exposure.pred,
+                                           covariates = list(),
+                                           aggregate = list(),
+                                           lower = list(),
+                                           upper = list())
+    expect_is(x.pred, "CombinedCountsPoissonHasExp")
+    expect_true(validObject(x.pred))
+    values <- extractValues(x.est)
+    lengthIter <- length(values)
+    filename <- tempfile()
+    con <- file(filename, "wb")
+    writeBin(values, con = con)
+    close(con)
+    set.seed(1)
+    ans.R <- predictCombined(x.pred,
+                             filename = filename,
+                             lengthIter = lengthIter,
+                             iteration = 1L,
+                             nUpdate = 1L,
+                             useC = FALSE)
+    set.seed(1)
+    ans.C.specific <- predictCombined(x.pred,
+                                      filename = filename,
+                                      lengthIter = lengthIter,
+                                      iteration = 1L,
+                                      nUpdate = 1L,
+                                      useC = TRUE,
+                                      useSpecific = TRUE)
+    set.seed(1)
+    ans.C.generic <- predictCombined(combined.pred,
+                                     filename = filename,
+                                     lengthIter = lengthIter,
+                                     iteration = 1L,
+                                     nUpdate = 1L,
+                                     useC = TRUE,
+                                     useSpecific = TRUE)
+    if (test.identity)
+        expect_identical(ans.R, ans.C.specific)
+    else
+        expect_equal(ans.R, ans.C.specific)
+    expect_identical(ans.C.specific, ans.C.generic)
+})
+
+
+
 ## updateCombined - CombinedModel #####################################################
 
 ## Assume that underlying updating functions work correctly.  Only check that
@@ -743,26 +910,27 @@ test_that("updateCombined method for CombinedCountsPoissonNotHasExp updates corr
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     updateCombined <- demest:::updateCombined
     set.seed(100)
-    y <- Counts(array(c(1:11, 20L),
+    y <- Counts(array(c(1:12),
                       dim = c(6, 2),
                       dimnames = list(age = 0:5, sex = c("f", "m"))))
     model <- Model(y ~ Poisson(mean ~ age, useExpose = FALSE))
     data.models <- list(Model(register ~ PoissonBinomial(prob = 0.98)),
-                              Model(tax ~ Binomial(mean ~ 1)))
+                        Model(tax ~ Binomial(mean ~ 1)))
     datasets <- list(Counts(array(c(0L, 2:12), dim = c(6, 2),
                                   dimnames = list(age = 0:5, sex = c("f", "m")))),
-                         Counts(array(c(1:5, NA), dim = 6, dimnames = list(age = 0:5))))
+                     Counts(array(c(1:5, NA), dim = 6, dimnames = list(age = 0:5))))
     namesDatasets <- c("register", "tax")
     transforms <- list(makeTransform(x = y, y = datasets[[1]]),
                        makeTransform(x = y, y = datasets[[2]]))
     transforms <- lapply(transforms, makeCollapseTransformExtra)
     x0 <- initialCombinedCounts(model,
-                               y = y,
-                               exposure = NULL,
-                               dataModels = data.models,
-                               datasets = datasets,
-                               namesDatasets = namesDatasets,
-                               transforms = transforms)
+                                y = y,
+                                exposure = NULL,
+                                dataModels = data.models,
+                                datasets = datasets,
+                                namesDatasets = namesDatasets,
+                                transforms = transforms)
+    x0@y[1] <- 100L
     x1 <- updateCombined(x0)
     for (name in c("model", "y", "dataModels")) {
         expect_false(identical(slot(x1, name), slot(x0, name)))
@@ -2260,7 +2428,6 @@ test_that("R and C give same answer for updatedExpectedExposure with CombinedAcc
     expect_identical(ans.C.specific, ans.C.generic)
 })
 
-
 test_that("updateSystemModels works with CombinedAccountMovements", {
     updateSystemModels <- demest:::updateSystemModels    
     updateAccount <- demest:::updateAccount
@@ -2268,10 +2435,23 @@ test_that("updateSystemModels works with CombinedAccountMovements", {
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     updateModelNotUseExp <- demest:::updateModelNotUseExp
     updateModelUseExp <- demest:::updateModelUseExp
+    ## Possibilities for models: 
+    ## uses exposure, is births, does not have transform from the transforms.exp.to.comp list DONE
+    ## uses exposure, is births, has transform from the transforms.exp.to.comp list 
+    ## uses exposure, not is births, does not have transform from the transforms.exp.to.comp list DONE
+    ## uses exposure, not is births, has transform from the transforms.exp.to.comp list
+    ## does not use exposure, is Normal DONE
+    ## does not use exposure, is not Normal DONE
+    ## CASE 1 - NO TRANSFORMS IN transform.exp.to.comp LIST
+    set.seed(0)
     population <- Counts(array(seq(1000L, 1500L, 100L),
                                dim = c(3, 2),
                                dimnames = list(reg = c("a", "b", "c"),
                                                time = c(2000, 2005))))
+    births <- Counts(array(10L,
+                           dim = c(3, 1),
+                           dimnames = list(reg = c("a", "b", "c"),
+                                           time = c("2001-2005"))))
     deaths <- Counts(array(c(10L, 5L, 3L),
                            dim = c(3, 1),
                            dimnames = list(reg = c("a", "b", "c"),
@@ -2285,13 +2465,16 @@ test_that("updateSystemModels works with CombinedAccountMovements", {
                                              time = "2001-2005")))
     internal <- collapseOrigDest(internal, to = "net")
     account <- Movements(population = population,
+                         births = births,
                          internal = internal,
                          exits = list(deaths = deaths))
     account <- makeConsistent(account)
     systemModels <- list(Model(population ~ Poisson(mean ~ reg, useExpose = FALSE)),
+                         Model(births ~ Poisson(mean ~ 1)),
                          Model(internal ~ Normal(mean ~ 1)),
                          Model(deaths ~ Poisson(mean ~ reg)))
     systemWeights <- list(NULL,
+                          NULL,
                           Counts(array(1,
                                        dim = c(3, 1),
                                        dimnames = list(reg = c("a", "b", "c"),
@@ -2300,7 +2483,7 @@ test_that("updateSystemModels works with CombinedAccountMovements", {
     mean <- ValuesOne(1, labels = "2001-2005", name = "time")
     data.models <- list(Model(tax ~ NormalFixed(mean = mean, sd = 0.1), series = "internal"),
                         Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
-    seriesIndices <- c(1L, 0L)
+    seriesIndices <- c(2L, 0L)
     datasets <- list(internal + 10L,
                      population - 5L)
     namesDatasets <- c("tax", "census")
@@ -2322,15 +2505,91 @@ test_that("updateSystemModels works with CombinedAccountMovements", {
     ans.expected <- x1
     ans.expected@systemModels[[1L]] <- updateModelNotUseExp(ans.expected@systemModels[[1]],
                                                             y = ans.expected@account@population)
-    ans.expected@systemModels[[2L]] <- updateModelNotUseExp(ans.expected@systemModels[[2]],
-                                                            y = toDouble(ans.expected@account@components[[1]]))
+    ans.expected@systemModels[[2L]] <- updateModelUseExp(ans.expected@systemModels[[2]],
+                                                         y = ans.expected@account@components[[1]],
+                                                         exposure = ans.expected@exposure)
+    ans.expected@systemModels[[3L]] <- updateModelNotUseExp(ans.expected@systemModels[[3]],
+                                                            y = toDouble(ans.expected@account@components[[2]]))
+    ans.expected@systemModels[[4L]] <- updateModelUseExp(ans.expected@systemModels[[4]],
+                                                         y = ans.expected@account@components[[3]],
+                                                         exposure = ans.expected@exposure)
+    if (test.identity) {
+        expect_identical(ans.obtained, ans.expected)
+    } else {
+        expect_equal(ans.obtained, ans.expected)
+    }
+    ## CASE 2 - TRANSFORMS IN transform.exp.to.comp LIST
+    population <- Counts(array(101:108,
+                               dim = c(2, 2, 2),
+                               dimnames = list(reg = c("a", "b"),
+                                               age = c("0-9", "10+"),
+                                               time = c(2000, 2010))))
+    births <- Counts(array(c(50L, 40L,
+                             60L, 40L),
+                           dim = c(2, 2, 1, 1),
+                           dimnames = list(reg_parent = c("a", "b"),
+                                           reg_child = c("a", "b"),
+                                           age = "10+",
+                                           time = "2001-2010")))
+    internal <- Counts(array(c(0L, 2L,
+                               1L, 0L,
+                               0L, 3L,
+                               2L, 0L),
+                             dim = c(2, 2, 2, 1),
+                             dimnames = list(reg_orig = c("a", "b"),
+                                             reg_dest = c("a", "b"),
+                                             age = c("0-9", "10+"),
+                                             time = "2001-2010")))
+    account <- Movements(population = population,
+                         births = births,
+                         internal = internal)
+    account <- makeConsistent(account)
+    systemModels <- list(Model(population ~ Poisson(mean ~ time, useExpose = FALSE)),
+                         Model(births ~ Poisson(mean ~ 1)),
+                         Model(internal ~ Poisson(mean ~ 1, structuralZeros = "diag")))
+    systemWeights <- rep(list(NULL), 3)
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
+    seriesIndices <- 0L
+    datasets <- list(population + 1L)
+    namesDatasets <- "census"
+    transforms <- list(makeTransform(x = population, y = datasets[[1]], subset = TRUE))
+    transforms <- lapply(transforms, makeCollapseTransformExtra)
+    set.seed(0)
+    x0 <- initialCombinedAccount(account = account,
+                                 systemModels = systemModels,
+                                 systemWeights = systemWeights,
+                                 dataModels = data.models,
+                                 seriesIndices = seriesIndices,
+                                 datasets = datasets,
+                                 namesDatasets = namesDatasets,
+                                 transforms = transforms)
+    set.seed(0)
+    x1 <- updateAccount(x0)
+    set.seed(1)
+    ans.obtained <- updateSystemModels(x1)
+    set.seed(1)
+    ans.expected <- x1
+    ans.expected@systemModels[[1L]] <- updateModelNotUseExp(ans.expected@systemModels[[1]],
+                                                            y = ans.expected@account@population)
+    expose.births <- Counts(array(extend(collapse(ans.expected@exposure,
+                                                  transform = ans.expected@transformExpToBirths),
+                                         transform = ans.expected@transformsExpToComp[[1]]),
+                                  dim = dim(x1@account@components[[1]]),
+                                  dimnames = dimnames(x1@account@components[[1]])))
+    ans.expected@systemModels[[2L]] <- updateModelUseExp(ans.expected@systemModels[[2]],
+                                                         y = ans.expected@account@components[[1]],
+                                                         exposure = toDouble(expose.births))
+    expose.internal <- Counts(array(extend(ans.expected@exposure,
+                                           transform = ans.expected@transformsExpToComp[[2]]),
+                                  dim = dim(x1@account@components[[2]]),
+                                  dimnames = dimnames(x1@account@components[[2]])))
     ans.expected@systemModels[[3L]] <- updateModelUseExp(ans.expected@systemModels[[3]],
                                                          y = ans.expected@account@components[[2]],
-                                                         exposure = ans.expected@exposure)
+                                                         exposure = toDouble(expose.internal))
     if (test.identity)
         expect_identical(ans.obtained, ans.expected)
     else
-        expect_equal(ans.obtained, ans.expected)        
+        expect_equal(ans.obtained, ans.expected)
 })
 
 
@@ -2339,10 +2598,25 @@ test_that("R and C versions of updateSystemModels give same answer with Combined
     updateAccount <- demest:::updateAccount
     initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    updateModelNotUseExp <- demest:::updateModelNotUseExp
+    updateModelUseExp <- demest:::updateModelUseExp
+    ## Possibilities for models: 
+    ## uses exposure, is births, does not have transform from the transforms.exp.to.comp list DONE
+    ## uses exposure, is births, has transform from the transforms.exp.to.comp list 
+    ## uses exposure, not is births, does not have transform from the transforms.exp.to.comp list DONE
+    ## uses exposure, not is births, has transform from the transforms.exp.to.comp list
+    ## does not use exposure, is Normal DONE
+    ## does not use exposure, is not Normal DONE
+    ## CASE 1 - NO TRANSFORMS IN transform.exp.to.comp LIST
+    set.seed(0)
     population <- Counts(array(seq(1000L, 1500L, 100L),
                                dim = c(3, 2),
                                dimnames = list(reg = c("a", "b", "c"),
                                                time = c(2000, 2005))))
+    births <- Counts(array(10L,
+                           dim = c(3, 1),
+                           dimnames = list(reg = c("a", "b", "c"),
+                                           time = c("2001-2005"))))
     deaths <- Counts(array(c(10L, 5L, 3L),
                            dim = c(3, 1),
                            dimnames = list(reg = c("a", "b", "c"),
@@ -2356,22 +2630,25 @@ test_that("R and C versions of updateSystemModels give same answer with Combined
                                              time = "2001-2005")))
     internal <- collapseOrigDest(internal, to = "net")
     account <- Movements(population = population,
+                         births = births,
                          internal = internal,
                          exits = list(deaths = deaths))
     account <- makeConsistent(account)
     systemModels <- list(Model(population ~ Poisson(mean ~ reg, useExpose = FALSE)),
+                         Model(births ~ Poisson(mean ~ 1)),
                          Model(internal ~ Normal(mean ~ 1)),
                          Model(deaths ~ Poisson(mean ~ reg)))
     systemWeights <- list(NULL,
+                          NULL,
                           Counts(array(1,
-                                             dim = c(3, 1),
-                                             dimnames = list(reg = c("a", "b", "c"),
-                                                             time = "2001-2005"))),
+                                       dim = c(3, 1),
+                                       dimnames = list(reg = c("a", "b", "c"),
+                                                       time = "2001-2005"))),
                           NULL)
     mean <- ValuesOne(1, labels = "2001-2005", name = "time")
     data.models <- list(Model(tax ~ NormalFixed(mean = mean, sd = 0.1), series = "internal"),
-                              Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
-    seriesIndices <- c(1L, 0L)
+                        Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
+    seriesIndices <- c(2L, 0L)
     datasets <- list(internal + 10L,
                      population - 5L)
     namesDatasets <- c("tax", "census")
@@ -2387,6 +2664,68 @@ test_that("R and C versions of updateSystemModels give same answer with Combined
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
     x1 <- updateAccount(x0)
+    set.seed(1)
+    ans.obtained <- updateSystemModels(x1)
+    set.seed(1)
+    ans.R <- updateSystemModels(x1, useC = FALSE)
+    set.seed(1)
+    ans.C.specific <- updateSystemModels(x1, useC = TRUE, useSpecific = TRUE)
+    set.seed(1)
+    ans.C.generic <- updateSystemModels(x1, useC = TRUE, useSpecific = FALSE)
+    if (test.identity)
+        expect_identical(ans.R, ans.C.specific)
+    else
+        expect_equal(ans.R, ans.C.specific)
+    expect_identical(ans.C.specific, ans.C.generic)
+    ## CASE 2 - TRANSFORMS IN transform.exp.to.comp LIST
+    population <- Counts(array(101:108,
+                               dim = c(2, 2, 2),
+                               dimnames = list(reg = c("a", "b"),
+                                               age = c("0-9", "10+"),
+                                               time = c(2000, 2010))))
+    births <- Counts(array(c(50L, 40L,
+                             60L, 40L),
+                           dim = c(2, 2, 1, 1),
+                           dimnames = list(reg_parent = c("a", "b"),
+                                           reg_child = c("a", "b"),
+                                           age = "10+",
+                                           time = "2001-2010")))
+    internal <- Counts(array(c(0L, 2L,
+                               1L, 0L,
+                               0L, 3L,
+                               2L, 0L),
+                             dim = c(2, 2, 2, 1),
+                             dimnames = list(reg_orig = c("a", "b"),
+                                             reg_dest = c("a", "b"),
+                                             age = c("0-9", "10+"),
+                                             time = "2001-2010")))
+    account <- Movements(population = population,
+                         births = births,
+                         internal = internal)
+    account <- makeConsistent(account)
+    systemModels <- list(Model(population ~ Poisson(mean ~ time, useExpose = FALSE)),
+                         Model(births ~ Poisson(mean ~ 1)),
+                         Model(internal ~ Poisson(mean ~ 1, structuralZeros = "diag")))
+    systemWeights <- rep(list(NULL), 3)
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
+    seriesIndices <- 0L
+    datasets <- list(population + 1L)
+    namesDatasets <- "census"
+    transforms <- list(makeTransform(x = population, y = datasets[[1]], subset = TRUE))
+    transforms <- lapply(transforms, makeCollapseTransformExtra)
+    set.seed(0)
+    x0 <- initialCombinedAccount(account = account,
+                                 systemModels = systemModels,
+                                 systemWeights = systemWeights,
+                                 dataModels = data.models,
+                                 seriesIndices = seriesIndices,
+                                 datasets = datasets,
+                                 namesDatasets = namesDatasets,
+                                 transforms = transforms)
+    set.seed(0)
+    x1 <- updateAccount(x0)
+    set.seed(1)
+    ans.obtained <- updateSystemModels(x1)
     set.seed(1)
     ans.R <- updateSystemModels(x1, useC = FALSE)
     set.seed(1)

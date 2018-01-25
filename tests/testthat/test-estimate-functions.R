@@ -744,7 +744,6 @@
 ##                nChain = 2,
 ##                filename = filename1)
 
-
 ## res2 <- continueEstimation(res1, nBurnin = 10, nSim = 20)
 ## set.seed(1)
 ## res3 <- estimateCounts(model = Model(y ~ Poisson(mean ~ age + sex + region,
@@ -771,6 +770,56 @@
 ## expect_identical(t2, t3)
 
 
+
+
+## filename1 <- tempfile()
+## filename2 <- tempfile()
+## lambda <- exp(outer(outer(rnorm(n = 10,
+##                                 mean = seq(from = 2, to = 3.5, length = 10),
+##                                 sd = 0.1),
+##                           rnorm(2, sd = 0.2), "+"), rnorm(5, sd = 0.2), "+"))
+## y <- Counts(array(rpois(n = length(lambda), lambda = lambda),
+##                   dim = c(10, 2, 5),
+##                   dimnames = list(age = 0:9, sex = c("f", "m"), time = 2001:2005)),
+##             dimscales = c(time = "Intervals"))
+## exposure <- y + 5
+## d1 <- Counts(array(rbinom(n = length(y), size = y, prob = 0.7),
+##                    dim = dim(y),
+##                    dimnames = dimnames(y)),
+##              dimscales = c(time = "Intervals"))
+## d2 <- Counts(array(rpois(n = length(y)/ 2,
+##                          lambda = collapseDimension(y, dim = "sex")),
+##                    dim = c(10, 5),
+##                    dimnames = list(age = 0:9, time = 2001:2005)),
+##              dimscales = c(time = "Intervals"))
+## d2[c(2, 4)] <- NA
+## d3 <- collapseDimension(y, dim = "age")
+## observation <- list(Model(d1 ~ Binomial(mean ~ age)),
+##                     Model(d2 ~ Poisson(mean ~ age),
+##                           jump = 0.2,
+##                           lower = 0.1,
+##                           upper = 3),
+##                     Model(d3 ~ PoissonBinomial(prob = 0.95)))
+## set.seed(1)
+## estimateCounts(Model(y ~ Poisson(mean ~ age + sex + time),
+##                      age ~ Exch(),
+##                      lower = 2,
+##                      jump = 0.3),
+##                y = y,
+##                exposure = exposure,
+##                dataModels = observation,
+##                datasets = list(d1 = d1, d2 = d2, d3 = d3),
+##                nBurnin = 10,
+##                nSim = 10,
+##                nThin = 2,
+##                nChain = 2,
+##                filename = filename1)
+## exposure.pred <- extrapolate(exposure, labels = c("2006", "2007"))[,,6:7]
+## predictCounts(filenameEst = filename1,
+##               filenamePred = filename2,
+##               exposure = exposure.pred,
+##               n = 2,
+##               useC = FALSE)
 
 
 
