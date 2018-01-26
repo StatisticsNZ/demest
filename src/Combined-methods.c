@@ -60,6 +60,71 @@ predictCombined_CombinedModelPoissonHasExp(SEXP object_R,
     
 }
 
+void
+predictCombined_CombinedCountsPoissonHasExp(SEXP object_R, 
+        const char *filename, int lengthIter, int iteration)
+{
+    SEXP model_R = GET_SLOT(object_R, model_sym);
+    SEXP y_R = GET_SLOT(object_R, y_sym);
+    SEXP exposure_R = GET_SLOT(object_R, exposure_sym);
+    SEXP datasets_R = GET_SLOT(object_R, datasets_sym);
+    int *strucZeroArray = INTEGER(GET_SLOT(model_R, strucZeroArray_sym));
+    SEXP dataModels_R = GET_SLOT(object_R, dataModels_sym);
+    
+    transferParamModel(model_R, filename, lengthIter, iteration);
+    
+    /* reset y to have 0 if corresponding element of structZeroArray is 0, 
+     * and NA_INTEGER otherwise */
+    int n_y = LENGTH(y_R);
+    int * y = INTEGER(y_R);
+    memset(y, 0, n_y * sizeof(int)); 
+    
+    for (int i = 0; i < n_y; ++i) {
+        if (strucZeroArray[i] != 0) {
+            y[i] = NA_INTEGER;
+        }
+    }
+    predictModelUseExp(model_R, y_R, exposure_R);
+    
+    double * theta = REAL(GET_SLOT(model_R, theta_sym));
+    double * exposure = REAL(exposure_R);
+    
+    for (int i = 0; i < n_y; ++i) {
+        double this_lambda = theta[i] * exposure[i];
+        y[i] = rpois(this_lambda);
+    }  
+    
+    int n_models = LENGTH(dataModels_R);
+    
+    for (int i = 0; i < n_models; ++i) {
+        
+        SEXP dataModel_R = VECTOR_ELT(dataModels_R, i);
+        SEXP dataset_R = VECTOR_ELT(datasets_R, i);
+        
+        /* if it is not a poisson datamodel we can use dataset as is 
+         * as the exposure for predictModel, 
+         * but if it is a poisson model need to use a double version
+         * of dataset as the exposure for predictModel */
+        const char *class_name = CHAR(STRING_ELT(GET_SLOT((dataModel_R), 
+                                                    R_ClassSymbol), 0));
+        char *found = NULL;
+        found = strstr(class_name, "Poisson");
+
+        if (found) {
+            
+            SEXP expose_R;
+            SEXP expose_tmp_R;
+            PROTECT( expose_tmp_R = duplicate(dataset_R) );
+            PROTECT(expose_R = coerceVector(expose_tmp_R, REALSXP));
+
+            predictModelUseExp(dataModel_R, dataset_R, expose_R);
+            UNPROTECT(2);
+        }
+        else {
+            predictModelUseExp(dataModel_R, dataset_R, exposure_R);
+        }
+    }
+}
               
 /* generic predict combined object method */
 void
@@ -87,6 +152,11 @@ predictCombined(SEXP object_R,
             predictCombined_CombinedModelPoissonHasExp(object_R, 
                                         filename, lengthIter, iteration);
             break;
+        case 7: /* poisson counts, has exposure */
+            predictCombined_CombinedCountsPoissonHasExp(object_R, 
+                                        filename, lengthIter, iteration);
+            break;
+
         default:
             error("unknown iMethodCombined for predictCombined: %d", i_method_combined);
             break;
@@ -598,81 +668,11 @@ updateSystemModels(SEXP object_R)
     }
 }
   
-    /*
-## READY_TO_TRANSLATE
-## HAS_TESTS
-setMethod("updateSystemModels",
-          signature(combined = "CombinedAccountMovements"),
-          function(combined, useC = FALSE, useSpecific = FALSE) {
-              if (useC) {
-                  if (useSpecific)
-                      .Call(updateSystemModels_CombinedAccountMovements_R, object)
-                  else
-                      .Call(updateSystemModels_R, object)
-              }
-              else {
-                  system.models <- combined@systemModels
-                  population <- combined@account@population
-                  components <- combined@account@components
-                  has.age <- combined@hasAge
-                  model.uses.exposure <- combined@modelUsesExposure
-                  transforms.exp.to.comp <- combined@transformsExpToComp
-                  transform.exp.to.births <- combined@transformExpToBirths
-                  i.births <- combined@iBirths
-                  model <- system.models[[1L]]
-                  model <- updateModelNotUseExp(model,
-                                                y = population)
-                  system.models[[1L]] <- model
-                  for (i in seq_along(components)) {
-                      model <- system.models[[i + 1L]]
-                      component <- components[[i]]
-                      uses.exposure <- model.uses.exposure[i + 1L]
-                      if (uses.exposure) {
-                          exposure <- combined@exposure@.Data
-                          is.births <- i == i.births
-                          if (is.births)
-                              exposure <- collapse(exposure,
-                                                   transform = transform.exp.to.births)
-                          transform <- transforms.exp.to.comp[[i]]
-                          if (!is.null(transform))
-                              exposure <- extend(exposure,
-                                                 transform = transforms.exp.to.comp[[i]])
-                          model <- updateModelUseExp(object = model,
-                                                     y = component,
-                                                     exposure = exposure)
-                      }
-                      else {
-                          if (methods::is(model, "Normal"))
-                              component <- toDouble(component)
-                          model <- updateModelNotUseExp(object = model,
-                                                        y = component)
-                      }
-                      system.models[[i + 1L]] <- model
-                  }
-                  combined@systemModels <- system.models
-                  combined
-              }
-          })
 
-*/
-
-//#define MYDEBUG
 
 void
 updateSystemModels_CombinedAccountMovements(SEXP combined_R)
 {
-    /*system.models <- combined@systemModels
-                  population <- combined@account@population
-                  components <- combined@account@components
-                  has.age <- combined@hasAge
-                  model.uses.exposure <- combined@modelUsesExposure
-                  transforms.exp.to.comp <- combined@transformsExpToComp
-                  transform.exp.to.births <- combined@transformExpToBirths
-                  i.births <- combined@iBirths
-                  model <- system.models[[1L]]
-                  model <- updateModelNotUseExp(model,
-                                                y = population)
-                  system.models[[1L]] <- model*/
                   
     SEXP systemModels_R = GET_SLOT(combined_R, systemModels_sym);
         
@@ -692,13 +692,6 @@ updateSystemModels_CombinedAccountMovements(SEXP combined_R)
     
     updateModelNotUseExp(firstModel_R, population_R);
     
-    /*for (i in seq_along(components)) {
-                      model <- system.models[[i + 1L]]
-                      component <- components[[i]]
-                      uses.exposure <- model.uses.exposure[i + 1L]
-                      if (uses.exposure) {
-                          exposure <- combined@exposure@.Data
-                          is.births <- i == i.births*/
     for(int i = 0; i < nComponents; ++i) {
         
         SEXP model_R = VECTOR_ELT(systemModels_R, i+1);
@@ -713,18 +706,6 @@ updateSystemModels_CombinedAccountMovements(SEXP combined_R)
             SEXP exposure_R = GET_SLOT(combined_R, exposure_sym);
             int isBirths = (i == (iBirths_r - 1));
                 
-        /*                if (is.births)
-                              exposure <- collapse(exposure,
-                                                   transform = transform.exp.to.births)
-                          transform <- transforms.exp.to.comp[[i]]
-                          if (!is.null(transform))
-                              exposure <- extend(exposure,
-                                                 transform = transforms.exp.to.comp[[i]])
-                          model <- updateModelUseExp(object = model,
-                                                     y = component,
-                                                     exposure = exposure)
-                      }*/
-            
             if(isBirths) {
                 SEXP newExposure_R = NULL;
                 PROTECT(newExposure_R = dembase_Collapse_R(exposure_R, 
@@ -769,13 +750,6 @@ updateSystemModels_CombinedAccountMovements(SEXP combined_R)
             }
         } /* end if usesExposure */
         
-        /*else {
-                          if (methods::is(model, "Normal"))
-                              component <- toDouble(component)
-                          model <- updateModelNotUseExp(object = model,
-                                                        y = component)
-                      }*/
-            
         else {
             const char *class_name = CHAR(STRING_ELT(GET_SLOT((model_R), R_ClassSymbol), 0));
             char *found = NULL;
@@ -805,11 +779,6 @@ updateSystemModels_CombinedAccountMovements(SEXP combined_R)
 void
 updateCombined_CombinedAccount(SEXP object_R, int nUpdate)
 {
-    /*                      object <- updateAccount(object)
-                      object <- updateSystemModels(object)
-                      object <- updateExpectedExposure(object)
-                      object <- updateDataModelsAccount(object)
-*/  
     for (int i = 0; i < nUpdate; ++i) {
         updateAccount(object_R);
         updateSystemModels(object_R);

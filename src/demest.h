@@ -840,6 +840,8 @@ void predictCombined_CombinedModelBinomial(SEXP object_R,
                     const char *filename, int lengthIter, int iteration);
 void predictCombined_CombinedModelPoissonHasExp(SEXP object_R, 
                     const char *filename, int lengthIter, int iteration);
+void predictCombined_CombinedCountsPoissonHasExp(SEXP object_R, 
+                    const char *filename, int lengthIter, int iteration);
 void predictCombined(SEXP object_R, 
                     const char *filename, int lengthIter, int iteration);
 
@@ -968,19 +970,19 @@ double diffLogLikAccountMoveComp(SEXP combined_R);
 
 double diffLogDensPopn(SEXP combined_R);
 double diffLogDensPopnOneCohort (int diff, SEXP population_R, int i_r, 
-				 SEXP iterator_R, double * theta, int * strucZeroArray);                   
+                 SEXP iterator_R, double * theta, int * strucZeroArray);                   
 double diffLogDensExpPopn(SEXP combined_R);
 double diffLogDensExpOneOrigDestParChPool(int iCell_r, int hasAge, 
                         double ageTimeStep, int updatedPopn,
                         SEXP component_R, double * theta,
-           		  int * strucZeroArray,
+                        int * strucZeroArray,
                         SEXP iteratorComp_R, 
                         int iExpFirst_r, double * exposure,
                         SEXP iteratorExposure_R,
                         int diff);
 double diffLogDensExpOneComp(int iCell_r, int hasAge, 
                         double ageTimeStep, int updatedPopn,
-			     SEXP component_R, double * theta, int * strucZeroArray,
+                        SEXP component_R, double * theta, int * strucZeroArray,
                         SEXP iteratorComp_R, 
                         int iExpFirst_r, double * exposure,
                         SEXP iteratorExposure_R,

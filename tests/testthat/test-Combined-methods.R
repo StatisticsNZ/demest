@@ -689,7 +689,7 @@ test_that("R, C generic and C specific versions of predictCombined give same ans
                                       useC = TRUE,
                                       useSpecific = TRUE)
     set.seed(1)
-    ans.C.generic <- predictCombined(combined.pred,
+    ans.C.generic <- predictCombined(x.pred,
                                      filename = filename,
                                      lengthIter = lengthIter,
                                      iteration = 1L,
