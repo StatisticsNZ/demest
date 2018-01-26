@@ -541,7 +541,7 @@ test_that("R, C.specific, and C.generic versions of predictCombined give same an
 ## predictCombined - CombinedCounts ###################################################
 
 
-test_that("predictCounts works withobject of class CombinedCountsPoissonHasExp", {
+test_that("predictCombined works with object of class CombinedCountsPoissonHasExp", {
     predictCombined <- demest:::predictCombined
     initialCombinedCounts <- demest:::initialCombinedCounts
     initialCombinedCountsPredict <- demest:::initialCombinedCountsPredict
@@ -620,7 +620,7 @@ test_that("predictCounts works withobject of class CombinedCountsPoissonHasExp",
 })
 
 
-test_that("R, C generic and C specific versions of predictCounts give same answer with object of class CombinedCountsPoissonHasExp", {
+test_that("R, C generic and C specific versions of predictCombined give same answer with object of class CombinedCountsPoissonHasExp", {
     predictCombined <- demest:::predictCombined
     initialCombinedCounts <- demest:::initialCombinedCounts
     initialCombinedCountsPredict <- demest:::initialCombinedCountsPredict
