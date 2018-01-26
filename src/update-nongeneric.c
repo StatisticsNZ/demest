@@ -5091,8 +5091,8 @@ updateTheta_PoissonVaryingUseExp(SEXP object, SEXP y_R, SEXP exposure_R)
         /* get 'mu' */
         double mu = 0.0;
         for (int b = 0; b < n_beta; ++b) {
-        double *this_beta = betas[b];
-        mu += this_beta[indices[b]-1];
+            double *this_beta = betas[b];
+            mu += this_beta[indices[b]-1];
         }
 
         
@@ -5105,15 +5105,15 @@ updateTheta_PoissonVaryingUseExp(SEXP object, SEXP y_R, SEXP exposure_R)
         int use_subtotal = 0;
         int ir_after = 0;
         if (y_is_missing && has_subtotals) {
-        ir_after = dembase_getIAfter(ir, transformSubtotals_R);
-        use_subtotal = (ir_after > 0);
+            ir_after = dembase_getIAfter(ir, transformSubtotals_R);
+            use_subtotal = (ir_after > 0);
         }
         
         int draw_straight_from_prior = (y_is_missing && !use_subtotal);
         
         if (draw_straight_from_prior) {
-        mean = mu;
-        sd = sigma;
+            mean = mu;
+            sd = sigma;
         }
         else {
             
@@ -7330,59 +7330,59 @@ updateCountsPoissonUseExp(SEXP y_R, SEXP model_R,
 
     for (int ir = 1; ir <= n_y; ++ir) {
 
-    if (strucZeroArray[ir - 1] != 0) {
+        if (strucZeroArray[ir - 1] != 0) {
 
-    int nInd = 2; /* number of indices (proposals) to deal with */
-        int yProp[nInd]; /* make space > 1 (may only need one)  */
-        int indices[nInd]; /* make space > 1 (may only need one) */
-        /* put ir into first pos in indices
-         * if nInd=2 second pos will be filled later */
-        indices[0] = ir;
+            int nInd = 2; /* number of indices (proposals) to deal with */
+            int yProp[nInd]; /* make space > 1 (may only need one)  */
+            int indices[nInd]; /* make space > 1 (may only need one) */
+            /* put ir into first pos in indices
+             * if nInd=2 second pos will be filled later */
+            indices[0] = ir;
 
-        if (has_subtotals) {
-            int ir_other = makeIOther(ir, transformSubtotals_R);
+            if (has_subtotals) {
+                int ir_other = makeIOther(ir, transformSubtotals_R);
 
-            if (ir_other > 0) { /* found other cell with same subtotal */
+                if (ir_other > 0) { /* found other cell with same subtotal */
 
-                getTwoMultinomialProposalsWithExp(yProp,
-                    y, theta, exposure, ir, ir_other);
+                    getTwoMultinomialProposalsWithExp(yProp,
+                        y, theta, exposure, ir, ir_other);
 
-                indices[1] = ir_other; /* only need if nInd = 2 */
+                    indices[1] = ir_other; /* only need if nInd = 2 */
 
+                }
+
+                else if (ir_other < 0) { /* cell not included in any subtotal */
+                    nInd = 1;
+                    /* the R code for R 3.0.0 onwards seems to just use
+                     * a cast to an int, so that's what I have done. */
+                    yProp[0] = (int) rpois(theta[ir-1]*exposure[ir-1]);
+                }
+                else { /* ir_other == 0, subtotal refers to single cell */
+                    continue; /* next ir in for loop */
+                }
             }
+            else { /* no subtotals */
 
-            else if (ir_other < 0) { /* cell not included in any subtotal */
                 nInd = 1;
                 /* the R code for R 3.0.0 onwards seems to just use
                  * a cast to an int, so that's what I have done. */
                 yProp[0] = (int) rpois(theta[ir-1]*exposure[ir-1]);
+
             }
-            else { /* ir_other == 0, subtotal refers to single cell */
-                continue; /* next ir in for loop */
+
+            double diffLL = diffLogLik(yProp, y_R, indices, nInd,
+                    dataModels_R, datasets_R, transforms_R);
+
+
+            if (!( diffLL < 0.0) || ( runif(0.0, 1.0) < exp(diffLL) )) {
+                /* accept proposals */
+
+                for (int i = 0; i < nInd; ++i) {
+                    y[ indices[i] - 1] = yProp[i];
+                }
             }
-        }
-        else { /* no subtotals */
-
-            nInd = 1;
-            /* the R code for R 3.0.0 onwards seems to just use
-             * a cast to an int, so that's what I have done. */
-            yProp[0] = (int) rpois(theta[ir-1]*exposure[ir-1]);
 
         }
-
-        double diffLL = diffLogLik(yProp, y_R, indices, nInd,
-                dataModels_R, datasets_R, transforms_R);
-
-
-        if (!( diffLL < 0.0) || ( runif(0.0, 1.0) < exp(diffLL) )) {
-            /* accept proposals */
-
-            for (int i = 0; i < nInd; ++i) {
-                y[ indices[i] - 1] = yProp[i];
-            }
-        }
-
-    }
 
     }
 

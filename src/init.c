@@ -1357,6 +1357,7 @@ PREDICTCOMBINEDOBJECT_WRAPPER_R(predictCombined_CombinedModelNormal);
 PREDICTCOMBINEDOBJECT_WRAPPER_R(predictCombined_CombinedModelPoissonNotHasExp);
 PREDICTCOMBINEDOBJECT_WRAPPER_R(predictCombined_CombinedModelBinomial);
 PREDICTCOMBINEDOBJECT_WRAPPER_R(predictCombined_CombinedModelPoissonHasExp);
+PREDICTCOMBINEDOBJECT_WRAPPER_R(predictCombined_CombinedCountsPoissonHasExp);
 PREDICTCOMBINEDOBJECT_WRAPPER_R(predictCombined);
 
 /* wrap repetitive update of combined model functions */
@@ -1949,7 +1950,7 @@ DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensPopn);
 /* one-off wrapper for diffLogDensPopnOneCohort */
 SEXP
 diffLogDensPopnOneCohort_R(SEXP diff_R, SEXP population_R, SEXP i_R, 
-			   SEXP iterator_R, SEXP theta_R, SEXP strucZeroArray_R)
+               SEXP iterator_R, SEXP theta_R, SEXP strucZeroArray_R)
 {
     int diff = *INTEGER(diff_R);
     int i_r = *INTEGER(i_R);
@@ -1958,7 +1959,7 @@ diffLogDensPopnOneCohort_R(SEXP diff_R, SEXP population_R, SEXP i_R,
     SEXP iteratornew_R;
     PROTECT(iteratornew_R = duplicate(iterator_R));
     double ans = diffLogDensPopnOneCohort (diff, population_R, i_r, 
-					   iteratornew_R, theta, strucZeroArray);
+                       iteratornew_R, theta, strucZeroArray);
     UNPROTECT(1);
     return ScalarReal(ans);
 }
@@ -1970,7 +1971,7 @@ DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensExpPopn);
 SEXP diffLogDensExpOneOrigDestParChPool_R(SEXP iCell_R, SEXP hasAge_R, 
                         SEXP ageTimeStep_R, SEXP updatedPopn_R,
                         SEXP component_R, SEXP theta_R,
-			  SEXP strucZeroArray_R,
+                        SEXP strucZeroArray_R,
                         SEXP iteratorComp_R, 
                         SEXP iExpFirst_R, SEXP exposure_R,
                         SEXP iteratorExposure_R,
@@ -1991,7 +1992,7 @@ SEXP diffLogDensExpOneOrigDestParChPool_R(SEXP iCell_R, SEXP hasAge_R,
     PROTECT(iteratorExpNew_R = duplicate(iteratorExposure_R));
     double ans = diffLogDensExpOneOrigDestParChPool(iCell_r, hasAge, 
                         ageTimeStep, updatedPopn,
-  		    component_R, theta, strucZeroArray,
+                        component_R, theta, strucZeroArray,
                         iteratorCompNew_R, 
                         iExpFirst_r, exposure,
                         iteratorExpNew_R,
@@ -1999,12 +2000,16 @@ SEXP diffLogDensExpOneOrigDestParChPool_R(SEXP iCell_R, SEXP hasAge_R,
     UNPROTECT(2);
     return ScalarReal(ans);
 }
-
+/*.Call(diffLogDensExpOneComp_R,
+              iCell, hasAge, ageTimeStep, updatedPopn,
+              component, theta, strucZeroArray, iteratorComp,
+              iExpFirst, exposure, iteratorExposure, diff)*/
 
 /* diffLogDensExpOneComp */
 SEXP diffLogDensExpOneComp_R(SEXP iCell_R, SEXP hasAge_R, 
                         SEXP ageTimeStep_R, SEXP updatedPopn_R,
-			     SEXP component_R, SEXP theta_R, SEXP strucZeroArray_R,
+                        SEXP component_R, SEXP theta_R, 
+                        SEXP strucZeroArray_R,  
                         SEXP iteratorComp_R, 
                         SEXP iExpFirst_R, SEXP exposure_R,
                         SEXP iteratorExposure_R,
@@ -2025,7 +2030,7 @@ SEXP diffLogDensExpOneComp_R(SEXP iCell_R, SEXP hasAge_R,
     PROTECT(iteratorExpNew_R = duplicate(iteratorExposure_R));
     double ans = diffLogDensExpOneComp(iCell_r, hasAge, 
                         ageTimeStep, updatedPopn,
-				       component_R, theta, strucZeroArray,
+                        component_R, theta, strucZeroArray,
                         iteratorCompNew_R, 
                         iExpFirst_r, exposure,
                         iteratorExpNew_R,
@@ -2372,6 +2377,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(predictCombined_CombinedModelPoissonNotHasExp_R, 4),
   CALLDEF(predictCombined_CombinedModelBinomial_R, 4),
   CALLDEF(predictCombined_CombinedModelPoissonHasExp_R, 4),
+  CALLDEF(predictCombined_CombinedCountsPoissonHasExp_R, 4),
   CALLDEF(predictCombined_R, 4),
 
   /* update combined */

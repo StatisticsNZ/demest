@@ -165,7 +165,7 @@ setMethod("predictCombined",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("predictCombined",
           signature(object = "CombinedCountsPoissonHasExp"),
@@ -672,7 +672,7 @@ setMethod("updateExpectedExposure",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("updateSystemModels",
           signature(combined = "CombinedAccountMovements"),
@@ -728,7 +728,7 @@ setMethod("updateSystemModels",
           })
 
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("updateCombined",
           signature(object = "CombinedAccountMovements"),
