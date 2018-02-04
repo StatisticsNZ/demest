@@ -80,18 +80,31 @@ setClass("NormalFixed",
          contains = c("Model", "MeanSDMixin", "MeanSDMetadataAllMixin"),
          validity = function(object) {
              mean <- object@mean@.Data
-             meanAll <- object@meanAll@.Data
              metadataY <- object@metadataY
              ## 'metadataY' and 'mean' consistent
              if (!identical(length(mean), as.integer(prod(dim(metadataY)))))
                  return(gettextf("'%s' and '%s' inconsistent",
                                  "mean", "metadataY"))
-             ## ## 'meanAll' is at least as long as 'mean'
-             ## if (length(meanAll) < length(mean))
-             ##     return(gettextf("'%s' is shorter than '%s'",
-             ##                     "meanAll", "mean"))
              TRUE
          })
+
+## NO_TESTS
+setClass("TFixed",
+         contains = c("VIRTUAL",
+                      "Model",
+                      "MeanSDMixin",
+                      "MeanSDMetadataAllMixin",
+                      "NuMixin"),
+         validity = function(object) {
+             mean <- object@mean@.Data
+             metadataY <- object@metadataY
+             ## 'metadataY' and 'mean' consistent
+             if (!identical(length(mean), as.integer(prod(dim(metadataY)))))
+                 return(gettextf("'%s' and '%s' inconsistent",
+                                 "mean", "metadataY"))
+             TRUE
+         })
+
 
 
 
@@ -261,6 +274,7 @@ setClass("NormalFixedNotUseExp",
          contains = c("NormalFixed",
                       "NotUseExposure"),
          prototype = prototype(slotsToExtract = character(),
+
                                iMethodModel = 30L))
 
 ## HAS_TESTS
@@ -311,6 +325,23 @@ setClass("Round3",
                       "UseExposure"),
          prototype = prototype(slotsToExtract = character(),
                                iMethodModel = 34L))
+
+
+## HAS_TESTS
+setClass("TFixedNotUseExp",
+         contains = c("TFixed",
+                      "NotUseExposure"),
+         prototype = prototype(nu = methods::new("DegreesFreedom", 7),
+                               slotsToExtract = character(),
+                               iMethodModel = 35L))
+
+## HAS_TESTS
+setClass("TFixedUseExp",
+         contains = c("TFixed",
+                      "UseExposure"),
+         prototype = prototype(nu = methods::new("DegreesFreedom", 7),
+                               slotsToExtract = character(),
+                               iMethodModel = 36L))
 
 
 ## Models With Aggregate ##################################################################
@@ -572,7 +603,8 @@ setClass("NormalFixedNotUseExpPredict",
 
 ## HAS_TESTS
 setClass("NormalFixedUseExpPredict",
-         prototype = prototype(iMethodModel = 131L),
+         prototype = prototype(iMethodModel = 131L,
+                               slotsToExtract = character()),
          contains = "NormalFixedUseExp")
 
 ## NO_TESTS
@@ -593,7 +625,19 @@ setClass("Round3Predict",
          prototype = prototype(slotsToExtract = character(),
                                iMethodModel = 134L))
 
+## HAS_TESTS
+setClass("TFixedNotUseExpPredict",
+         prototype = prototype(nu = methods::new("DegreesFreedom", 7),
+                               slotsToExtract = character(),
+                               iMethodModel = 135L),
+         contains = "TFixedNotUseExp")
 
+## HAS_TESTS
+setClass("TFixedUseExpPredict",
+         prototype = prototype(nu = methods::new("DegreesFreedom", 7),
+                               slotsToExtract = character(),
+                               iMethodModel = 136L),
+         contains = "TFixedUseExp")
 
 ## Predicted Models - Aggregate #############################################################
 

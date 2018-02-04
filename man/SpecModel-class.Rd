@@ -11,6 +11,7 @@
 \alias{SpecNormalFixed-class}
 \alias{SpecPoissonBinomialMixture-class}
 \alias{SpecRound3-class}
+\alias{SpecTFixed-class}
 \title{S4 classes to specify a model.}
 \description{
 Classes describing all the parts of a model that can
@@ -94,6 +95,8 @@ interactions.}
 \item{\code{nameSpecPriors}}{The names of the main effects
 or interactions that have non-default priors.}
 
+\item{\code{nu}}{Degrees of freedom for TFixed model.}
+
 \item{\code{nuSigma}}{Degrees of freedom for truncated
 half-t prior for standard deviation in prior
 (level 2) model.}
@@ -108,17 +111,17 @@ in prior (level 2) model.}
 \item{\code{aggregate}}{An object of class
 \code{\linkS4class{SpecAggregate}}.}
 
-\item{\code{mean}}{Vector of means in NormalFixed model - subsetted to
+\item{\code{mean}}{Vector of means in NormalFixed or TFixed model - subsetted to
 include only cells that are observed in \code{y}.}
 
-\item{\code{meanAll}}{Vector of means in NormalFixed model, before
+\item{\code{meanAll}}{Vector of means in NormalFixed or TFixed model, before
 subsetting.}
 
-\item{\code{sd}}{Vector of standard deviations in NormalFixed model - subsetted to
-include only cells that are observed in \code{y}}
+\item{\code{sd}}{Vector of standard deviations or scales in NormalFixed or TFixed
+model - subsetted to include only cells that are observed in \code{y}}
 
-\item{\code{sdAll}}{Vector of standard deviations in NormalFixed model, before
-subsetting.}
+\item{\code{sdAll}}{Vector of standard deviations or scales in NormalFixed model,
+or TFixed model before subsetting.}
 
 \item{\code{metadata}}{Metadata for \code{mean} and \code{sd}.}
 

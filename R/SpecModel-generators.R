@@ -413,6 +413,135 @@ NormalFixed <- function(mean, sd, useExpose = TRUE) {
 }
 
 
+
+## NO_TESTS
+#' Specify a model based on a Student's t distribution with known
+#' location, scale, and degrees of freedom.
+#'
+#' Specify a model of the form
+#'   \deqn{y_i = t(location[i], scale[i], df)}
+#' or
+#'   \deqn{y_i = t(exposure[i] * location[i], scale[i], df)}.
+#'
+#' The model is useful as a data model where a few cells
+#' have much larger errors than the rest. Smaller values for \code{df}
+#' lead to thicker tails (ie larger probabilities of extreme values.)
+#' Subscript \eqn{i} denotes a cell within a classification
+#' defined by variables such as age, sex, and time.
+#' For instance cell \eqn{i} might be 30-34 year old females
+#' in 2020.
+#'
+#' @inheritParams likelihood
+#' @param location An object of class \code{\link[dembase:Values-class]{Values}}
+#' specifying the center of the distribution.
+#' @param scale Parameter governing dispersion. Can be an object
+#' of class \code{\link[dembase:Values-class]{Values}}, or a single number,
+#' a single number, in which case it is applied to all
+#' elements of \code{location}.
+#' @param df A positive number. Defaults to 7.
+#'
+#' @return An object of class \code{\linkS4class{SpecLikelihoodTFixed}}.
+#' 
+#' @seealso \code{TFixed} is typically used as
+#' part of a call to function \code{\link{Model}}.
+#' Similar data models that do not allow for the possibility of occasional
+#' large errors can be specified using \code{\link{Normal}} (though
+#' setting \code{df} to a value greater than 30 in \code{TFixed} will
+#' have much the same effect.)
+#' Flexible normal models can be specified using
+#' \code{\link{Normal}}.
+#'
+#' @examples
+#' location <- Values(array(c(0.95, 0.96, 0.95, 0.94),
+#'                      dim = c(2, 2),
+#'                      dimnames = list(age = c("0-39", "40+"),
+#'                                      sex = c("Female", "Male"))))
+#' scale <- Values(array(c(0.05, 0.08, 0.05, 0.04),
+#'                    dim = c(2, 2),
+#'                    dimnames = list(age = c("0-39", "40+"),
+#'                                    sex = c("Female", "Male"))))
+#' TFixed(location = location, scale = scale)
+#' TFixed(location = location, scale = 0.1, df = 1)
+#' TFixed(location = location, scale = 0.1, useExpose = FALSE)
+#'
+#' ## indistinguishable from normal distribution:
+#' TFixed(location = location, scale = scale, df = 30)
+#'
+#' ## Cauchy distribution (very heavy tails):
+#' TFixed(location = location, scale = scale, df = 1)
+#' @export
+TFixed <- function(location, scale, df = 7, useExpose = TRUE) {
+    ## 'location' is "Values"
+    if (!methods::is(location, "Values"))
+        stop(gettextf("'%s' has class \"%s\"",
+                      "location", class(location)))
+    metadata <- location@metadata
+    ## 'metadata' does not have any dimensions with dimtype "iteration"
+    if ("iteration" %in% dimtypes(metadata))
+        stop(gettextf("'%s' has dimension with dimtype \"%s\"",
+                      "location", "iteration"))
+    ## 'metadata' does not have any dimensions with dimtype "quantile"
+    if ("quantile" %in% dimtypes(metadata))
+        stop(gettextf("'%s' has dimension with dimtype \"%s\"",
+                      "location", "quantile"))
+    ## 'location' has no missing values
+    if (any(is.na(location)))
+        stop(gettextf("'%s' has missing values",
+                      "location"))
+    location.param <- as.double(location)
+    location.param <- new("ParameterVector", location.param)
+    if (methods::is(scale, "Values")) {
+        ## 'scale' is compatible with 'location'
+        scale <- tryCatch(dembase::makeCompatible(x = scale, y = location, subset = TRUE),
+                          error = function(e) e)
+        if (methods::is(scale, "error"))
+            stop(gettextf("'%s' and '%s' not compatible : %s",
+                          "scale", "location", scale$message))
+        scale <- as.double(scale)
+        ## 'scale' has no missing values
+        if (any(is.na(scale)))
+            stop(gettextf("'%s' has missing values",
+                          "scale"))
+        ## 'scale' has no negative values
+        if (any(scale < 0))
+            stop(gettextf("'%s' has negative values",
+                          "scale"))
+    }
+    else if (methods::is(scale, "numeric")) {
+        scale <- as.double(scale)
+        ## 'scale' has length 1
+        if (!identical(length(scale), 1L))
+            stop(gettextf("'%s' is numeric but does not have length %d",
+                          "scale", 1L))
+        ## 'scale' is not missing
+        if (is.na(scale))
+            stop(gettextf("'%s' is missing",
+                          "scale"))
+        ## 'scale' is non-negative
+        if (scale < 0)
+            stop(gettextf("'%s' is negative",
+                          "scale"))
+        scale <- rep(scale, times = length(location))
+    }
+    else { ## scale is Values or numeric
+        stop(gettextf("'%s' has class \"%s\"",
+                      "scale", class(scale)))
+    }
+    scale <- new("ScaleVec", scale)
+    df <- checkAndTidyNu(x = df,
+                         name = "df")
+    useExpose <- checkAndTidyLogicalFlag(x = useExpose,
+                                         name = "useExpose")
+    new("SpecLikelihoodTFixed",
+        mean = location.param,
+        sd = scale,
+        nu = df,
+        metadata = metadata,
+        useExpose = useExpose)
+}
+
+
+
 ## HAS_TESTS
 #' Specify a model for a single demographic series or
 #' dataset.
@@ -525,7 +654,7 @@ Model <- function(formula, ..., lower = NULL, upper = NULL,
                   priorSD = NULL, jump = NULL, series = NULL,
                   aggregate = NULL) {
     kValidDistributions <- c("Poisson", "Binomial", "Normal", "CMP",
-                             "PoissonBinomial", "NormalFixed",
+                             "PoissonBinomial", "NormalFixed", "TFixed",
                              "Round3")
     call <- match.call()
     dots <- list(...)
@@ -1018,6 +1147,37 @@ setMethod("SpecModel",
                            series = series,
                            mean = mean,
                            sd = sd,
+                           metadata = metadata,
+                           useExpose = useExpose)
+          })
+
+## HAS_TESTS
+setMethod("SpecModel",
+          signature(specInner = "SpecLikelihoodTFixed"),
+          function(specInner, call, nameY, dots, lower, upper,
+                   priorSD, jump, series, aggregate) {
+              mean <- specInner@mean
+              sd <- specInner@sd
+              nu <- specInner@nu
+              metadata <- specInner@metadata
+              useExpose <- specInner@useExpose
+              if (length(dots) > 0L)
+                  stop(gettextf("priors specified, but distribution is %s",
+                                "TFixed"))
+              for (name in c("lower", "upper", "priorSD", "jump", "aggregate")) {
+                  value <- get(name)
+                  if (!is.null(value))
+                      stop(gettextf("'%s' specified, but distribution is %s",
+                                    name, "TFixed"))
+              }
+              series <- checkAndTidySeries(series)
+              methods::new("SpecTFixed",
+                           call = call,
+                           nameY = nameY,
+                           series = series,
+                           mean = mean,
+                           sd = sd,
+                           nu = nu,
                            metadata = metadata,
                            useExpose = useExpose)
           })

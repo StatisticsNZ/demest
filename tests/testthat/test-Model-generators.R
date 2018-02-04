@@ -1506,6 +1506,91 @@ test_that("initialModel creates object of class NormalFixedNotUseExp from valid 
 
 
 
+## TFixed #############################################################
+
+test_that("initialModel creates object of class TFixedUseExp from valid inputs", {
+    initialModel <- demest:::initialModel
+    location <- Values(array(runif(n = 25),
+                             dim = c(5, 5),
+                             dimnames = list(age = 0:4, region = letters[1:5])))
+    exposure <- Counts(array(rpois(n = 20, lambda = 20),
+                             dim = c(5, 4),
+                             dimnames = list(age = 0:4, region = letters[1:4])))
+    y <- Counts(array(rpois(n = 20, lambda = 0.3 * exposure),
+                      dim = c(5, 4),
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    spec <- Model(y ~ TFixed(location = location, scale = 0.1, df = 8))
+    ans.obtained <- initialModel(spec, y = y, exposure = exposure)
+    ans.expected <- new("TFixedUseExp",
+                        call = call("Model", formula = y ~ TFixed(location = location, scale = 0.1, df = 8)),
+                        mean = new("ParameterVector", location@.Data[1:20]),
+                        sd = new("ScaleVec", rep(0.1, 20)),
+                        metadataY = y@metadata,
+                        meanAll = new("ParameterVector", location@.Data),
+                        sdAll = new("ScaleVec", rep(0.1, 25)),
+                        nu = new("DegreesFreedom", 8),
+                        metadataAll = location@metadata)
+    expect_equal(ans.obtained, ans.expected)
+})
+
+test_that("initialModel throws appropriate errors with TFixedUseExp", {
+    initialModel <- demest:::initialModel
+    exposure <- Counts(array(rpois(n = 20, lambda = 20),
+                             dim = c(5, 4),
+                             dimnames = list(age = 0:4, region = letters[1:4])))
+    y <- Counts(array(rpois(n = 20, lambda = 0.3 * exposure),
+                      dim = c(5, 4),
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    location.wrong <- Values(array(runif(n = 25),
+                                   dim = c(5, 5),
+                                   dimnames = list(age = 0:4, region = letters[2:6])))
+    spec <- Model(y ~ TFixed(location = location.wrong, scale = 0.1))
+    expect_error(initialModel(spec, y = y, exposure = exposure),
+                 "'location' from TFixed model not compatible with data :")
+    location <- Values(array(runif(n = 25),
+                             dim = c(5, 5),
+                             dimnames = list(age = 0:4, region = letters[1:5])))
+    exposure <- Counts(array(rpois(n = 20, lambda = 20),
+                             dim = c(5, 4),
+                             dimnames = list(age = 0:4, region = letters[1:4])))
+    y <- Counts(array(rpois(n = 20, lambda = 0.3 * exposure),
+                      dim = c(5, 4),
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    spec <- Model(y ~ TFixed(location = location, scale = 0.1))
+    expect_error(initialModel(spec, y = y, exposure = NULL),
+                 "model 'y ~ TFixed\\(location = location, scale = 0\\.1\\)' uses exposure, but no 'exposure' argument supplied")
+})
+
+test_that("initialModel creates object of class TFixedNotUseExp from valid inputs", {
+    initialModel <- demest:::initialModel
+    location <- Values(array(runif(n = 25),
+                         dim = c(5, 5),
+                         dimnames = list(age = 0:4, region = letters[1:5])))
+    y <- Counts(array(rpois(n = 20, lambda = 10),
+                      dim = c(5, 4),
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    spec <- Model(y ~ TFixed(location = location, scale = 0.1, useExpose = FALSE))
+    ans.obtained <- initialModel(spec, y = y, exposure = NULL)
+    ans.expected <- new("TFixedNotUseExp",
+                        call = call("Model", formula = y ~ TFixed(location = location, scale = 0.1, useExpose = FALSE)),
+                        mean = new("ParameterVector", location@.Data[1:20]),
+                        sd = new("ScaleVec", rep(0.1, 20)),
+                        metadataY = y@metadata,
+                        meanAll = new("ParameterVector", location@.Data),
+                        sdAll = new("ScaleVec", rep(0.1, 25)),
+                        nu = new("DegreesFreedom", 7),
+                        metadataAll = location@metadata)
+    expect_equal(ans.obtained, ans.expected)
+    exposure <- Counts(array(rpois(n = 20, lambda = 20),
+                             dim = c(5, 4),
+                             dimnames = list(age = 0:4, region = letters[1:4])))
+    y <- Counts(array(rpois(n = 20, lambda = 0.3 * exposure),
+                      dim = c(5, 4),
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    spec <- Model(y ~ TFixed(location = location, scale = 0.1, useExpose = FALSE))
+    expect_error(initialModel(spec, y = y, exposure = exposure),
+                 "'exposure' argument supplied, but model 'y ~ TFixed\\(location = location, scale = 0.1, useExpose = FALSE\\)' does not use exposure")
+})
 
 
 ## Aggregate #########################################################################
@@ -2147,6 +2232,58 @@ test_that("initialModelPredict works with NormFixedNotUseExp", {
                          dim = c(10, 4),
                          dimnames = list(age = 0:9, region = letters[1:4])))
     spec <- Model(y ~ NormalFixed(mean = mean, sd = sqrt(abs(mean)), useExpose = FALSE))
+    model <- initialModel(spec, y = y, exposure = NULL)
+    ans <- initialModelPredict(model,
+                               along = 1L,
+                               labels = NULL,
+                               n = 5L,
+                               offsetModel = 1L)
+    expect_true(validObject(ans))
+    metadata.expected <- Counts(array(1L,
+                                      dim = c(5, 4),
+                                      dimnames = list(age = 5:9, region = letters[1:4])))@metadata
+    expect_identical(ans@metadataY, metadata.expected)
+    expect_identical(ans@iMethodModel, model@iMethodModel + 100L)
+})
+
+
+test_that("initialModelPredict works with NormFixedUseExp", {
+    initialModelPredict <- demest:::initialModelPredict
+    initialModel <- demest:::initialModel
+    exposure <- Counts(array(rpois(n = 20, lambda = 20),
+                             dim = c(5, 4),
+                             dimnames = list(age = 0:4, region = letters[1:4])))
+    y <- Counts(array(rbinom(n = 20, size = exposure, prob = 0.5),
+                      dim = c(5, 4),
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    location <- Values(array(rnorm(n = 40),
+                         dim = c(10, 4),
+                         dimnames = list(age = 0:9, region = letters[1:4])))
+    spec <- Model(y ~ TFixed(location = location, scale = sqrt(abs(location))))
+    model <- initialModel(spec, y = y, exposure = exposure)
+    ans <- initialModelPredict(model,
+                               along = 1L,
+                               labels = NULL,
+                               n = 5L,
+                               offsetModel = 1L)
+    expect_true(validObject(ans))
+    metadata.expected <- Counts(array(1L,
+                                      dim = c(5, 4),
+                                      dimnames = list(age = 5:9, region = letters[1:4])))@metadata
+    expect_identical(ans@metadataY, metadata.expected)
+    expect_identical(ans@iMethodModel, model@iMethodModel + 100L)
+})
+
+test_that("initialModelPredict works with NormFixedNotUseExp", {
+    initialModelPredict <- demest:::initialModelPredict
+    initialModel <- demest:::initialModel
+    y <- Counts(array(rpois(n = 20, lambda = 10),
+                      dim = c(5, 4),
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    location <- Values(array(rnorm(n = 40),
+                         dim = c(10, 4),
+                         dimnames = list(age = 0:9, region = letters[1:4])))
+    spec <- Model(y ~ TFixed(location = location, scale = sqrt(abs(location)), useExpose = FALSE))
     model <- initialModel(spec, y = y, exposure = NULL)
     ans <- initialModelPredict(model,
                                along = 1L,

@@ -1324,7 +1324,67 @@ setMethod("initialModel",
                            call = call,
                            metadataY = metadataY)
           })
-
+## HAS_TESTS
+setMethod("initialModel",
+          signature(object = "SpecTFixed",
+                    y = "DemographicArray",
+                    exposure = "ANY",
+                    weights = "missing"),
+          function(object, y, exposure) {
+              call <- object@call
+              meanAll <- object@mean
+              sdAll <- object@sd
+              metadataAll <- object@metadata
+              nu <- object@nu
+              metadataY <- y@metadata
+              use.expose <- object@useExpose@.Data
+              .Data.mean <- array(meanAll@.Data,
+                                  dim = dim(metadataAll),
+                                  dimnames = dimnames(metadataAll))
+              .Data.sd <- array(sdAll@.Data,
+                                dim = dim(metadataAll),
+                                dimnames = dimnames(metadataAll))
+              mean.before.subset <- new("Values",
+                                        .Data = .Data.mean,
+                                        metadata = metadataAll)
+              sd.before.subset <- new("Values",
+                                      .Data = .Data.sd,
+                                      metadata = metadataAll)
+              mean <- tryCatch(makeCompatible(x = mean.before.subset,
+                                              y = y,
+                                              subset = TRUE,
+                                              check = TRUE),
+                               error = function(e) e)
+              if (methods::is(mean, "error"))
+                  stop(gettextf("'%s' from %s model not compatible with data : %s",
+                                "location", "TFixed", mean$message))
+              sd <- makeCompatible(x = sd.before.subset,
+                                   y = y,
+                                   subset = TRUE,
+                                   check = FALSE)
+              mean <- new("ParameterVector", mean@.Data)
+              sd <- new("ScaleVec", sd@.Data)
+              has.exposure <- !is.null(exposure)
+              if (has.exposure && !use.expose)
+                  stop(gettextf("'%s' argument supplied, but model '%s' does not use exposure",
+                                "exposure", deparse(call[[2L]])))
+              if (!has.exposure && use.expose)
+                  stop(gettextf("model '%s' uses exposure, but no '%s' argument supplied",
+                                deparse(call[[2L]]), "exposure"))
+              if (has.exposure)
+                  class <- "TFixedUseExp"
+              else
+                  class <- "TFixedNotUseExp"
+              methods::new(class,
+                           call = call,
+                           mean = mean,
+                           sd = sd,
+                           nu = nu,
+                           metadataY = metadataY,
+                           meanAll = meanAll,
+                           sdAll = sdAll,
+                           metadataAll = metadataAll)
+          })
 
 
 ## initialModelPredict ################################################################
@@ -1626,5 +1686,77 @@ setMethod("initialModelPredict",
                            metadataAll = metadataAll,
                            iMethodModel = i.method.model.second)
           })
+
+
+## HAS_TESTS
+setMethod("initialModelPredict",
+          signature(model = "TFixed"),
+          function(model, along, labels, n, offsetModel,
+                   covariates, aggregate, lower, upper) {
+              i.method.model.first <- model@iMethodModel
+              metadata.first <- model@metadataY
+              meanAll <- model@meanAll
+              sdAll <- model@sdAll
+              nu <- model@nu
+              metadataAll <- model@metadataAll
+              metadata.second <- makeMetadataPredict(metadata = metadata.first,
+                                                     along = along,
+                                                     labels = labels,
+                                                     n = n)
+              .Data.mean <- array(meanAll@.Data,
+                                  dim = dim(metadataAll),
+                                  dimnames = dimnames(metadataAll))
+              .Data.sd <- array(sdAll@.Data,
+                                dim = dim(metadataAll),
+                                dimnames = dimnames(metadataAll))
+              .Data.second <- array(0L,
+                                    dim = dim(metadata.second),
+                                    dimnames = dimnames(metadata.second))
+              mean.before.subset <- new("Values",
+                                        .Data = .Data.mean,
+                                        metadata = metadataAll)
+              sd.before.subset <- new("Values",
+                                      .Data = .Data.sd,
+                                      metadata = metadataAll)
+              y.second <- new("Values",
+                              .Data = .Data.second,
+                              metadata = metadata.second)
+              mean <- tryCatch(makeCompatible(x = mean.before.subset,
+                                              y = y.second,
+                                              subset = TRUE,
+                                              check = TRUE),
+                               error = function(e) e)
+              if (methods::is(mean, "error"))
+                  stop(gettextf("'%s' from %s model not compatible with data : %s",
+                                "location", "TFixed", mean$message))
+              ## check that don't need to expand 'mean' to make compatible with 'y'
+              value <- tryCatch(makeCompatible(x = as(mean.before.subset, "Counts"),
+                                               y = y.second,
+                                               subset = TRUE,
+                                               check = TRUE),
+                                error = function(e) e)
+              if (methods::is(value, "error"))
+                  stop(gettextf("'%s' from %s model not compatible with data : %s",
+                                "location", "TFixed", value$message))
+              sd <- makeCompatible(x = sd.before.subset,
+                                   y = y.second,
+                                   subset = TRUE,
+                                   check = FALSE)
+              mean <- new("ParameterVector", mean@.Data)
+              sd <- new("ScaleVec", sd@.Data)
+              class <- paste0(class(model), "Predict")
+              i.method.model.second <- i.method.model.first + 100L
+              methods::new(class,
+                           mean = model@mean,
+                           sd = model@sd,
+                           nu = nu,
+                           metadataY = metadata.second,
+                           meanAll = meanAll,
+                           sdAll = sdAll,
+                           metadataAll = metadataAll,
+                           iMethodModel = i.method.model.second)
+          })
+
+
 
 

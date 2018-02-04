@@ -1213,6 +1213,44 @@ test_that("can create valid object of class Round3", {
 })
 
 
+test_that("can create valid object of class TFixedNotUseExp", {
+    x <- new("TFixedNotUseExp",
+             call = call("Model", reg.deaths ~ TFixed(location = location, scale = scale, useExpose = FALSE)),
+             mean = new("ParameterVector", rnorm(10)),
+             sd = new("ScaleVec", runif(10)),
+             meanAll = new("ParameterVector", rnorm(15)),
+             sdAll = new("ScaleVec", runif(15)),
+             metadataY = new("MetaData",
+                            nms = "age",
+                            dimtypes = "age",
+                            DimScales = list(new("Intervals", dimvalues = 0:10))),
+             metadataAll = new("MetaData",
+                            nms = "age",
+                            dimtypes = "age",
+                            DimScales = list(new("Intervals", dimvalues = 0:15))))
+    expect_true(validObject(x))
+    expect_identical(x@nu, new("DegreesFreedom", 7))
+})
+
+
+test_that("can create valid object of class TFixedNotUseExp", {
+    x <- new("TFixedUseExp",
+             call = call("Model", reg.deaths ~ TFixed(location = location, scale = scale)),
+             mean = new("ParameterVector", rnorm(10)),
+             sd = new("ScaleVec", runif(10)),
+             meanAll = new("ParameterVector", rnorm(15)),
+             sdAll = new("ScaleVec", runif(15)),
+             metadataY = new("MetaData",
+                            nms = "age",
+                            dimtypes = "age",
+                            DimScales = list(new("Intervals", dimvalues = 0:10))),
+             metadataAll = new("MetaData",
+                            nms = "age",
+                            dimtypes = "age",
+                            DimScales = list(new("Intervals", dimvalues = 0:15))))
+    expect_true(validObject(x))
+    expect_identical(x@nu, new("DegreesFreedom", 7))
+})
 
 
 
@@ -4922,6 +4960,45 @@ test_that("can create valid object of class NormalFixedUseExpPredict", {
                             dimtypes = "age",
                             DimScales = list(new("Intervals", dimvalues = 0:15))))
     expect_true(validObject(x))
+})
+
+test_that("can create valid object of class TFixedNotUseExp", {
+    x <- new("TFixedNotUseExpPredict",
+             call = call("Model", reg.deaths ~ TFixed(location = location, scale = scale, useExpose = FALSE)),
+             mean = new("ParameterVector", rnorm(10)),
+             sd = new("ScaleVec", runif(10)),
+             meanAll = new("ParameterVector", rnorm(15)),
+             sdAll = new("ScaleVec", runif(15)),
+             metadataY = new("MetaData",
+                            nms = "age",
+                            dimtypes = "age",
+                            DimScales = list(new("Intervals", dimvalues = 0:10))),
+             metadataAll = new("MetaData",
+                            nms = "age",
+                            dimtypes = "age",
+                            DimScales = list(new("Intervals", dimvalues = 0:15))))
+    expect_true(validObject(x))
+    expect_identical(x@nu, new("DegreesFreedom", 7))
+})
+
+
+test_that("can create valid object of class TFixedNotUseExp", {
+    x <- new("TFixedUseExpPredict",
+             call = call("Model", reg.deaths ~ TFixed(location = location, scale = scale)),
+             mean = new("ParameterVector", rnorm(10)),
+             sd = new("ScaleVec", runif(10)),
+             meanAll = new("ParameterVector", rnorm(15)),
+             sdAll = new("ScaleVec", runif(15)),
+             metadataY = new("MetaData",
+                            nms = "age",
+                            dimtypes = "age",
+                            DimScales = list(new("Intervals", dimvalues = 0:10))),
+             metadataAll = new("MetaData",
+                            nms = "age",
+                            dimtypes = "age",
+                            DimScales = list(new("Intervals", dimvalues = 0:15))))
+    expect_true(validObject(x))
+    expect_identical(x@nu, new("DegreesFreedom", 7))
 })
           
 

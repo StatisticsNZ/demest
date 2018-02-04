@@ -137,6 +137,16 @@ setClass("SpecLikelihoodNormalFixed",
 setClass("SpecLikelihoodRound3",
          contains = "SpecLikelihood")
 
+#' @rdname SpecLikelihood-class
+#' @export
+setClass("SpecLikelihoodTFixed",
+         prototype = prototype(useExpose = new("LogicalFlag", TRUE)),
+         contains = c("SpecLikelihood",
+                      "MeanSDMetadataMixin",
+                      "NuMixin",
+                      "UseExposeMixin"))
+
+
 
 #' S4 classes to specify a model.
 #'
@@ -207,6 +217,7 @@ setClass("SpecLikelihoodRound3",
 #' interactions.
 #' @slot nameSpecPriors The names of the main effects
 #' or interactions that have non-default priors.
+#' @slot nu Degrees of freedom for TFixed model.
 #' @slot nuSigma Degrees of freedom for truncated
 #' half-t prior for standard deviation in prior
 #' (level 2) model.
@@ -217,14 +228,14 @@ setClass("SpecLikelihoodRound3",
 #' in prior (level 2) model.
 #' @slot aggregate An object of class
 #' \code{\linkS4class{SpecAggregate}}.
-#' @slot mean Vector of means in NormalFixed model - subsetted to
+#' @slot mean Vector of means in NormalFixed or TFixed model - subsetted to
 #' include only cells that are observed in \code{y}.
-#' @slot meanAll Vector of means in NormalFixed model, before
+#' @slot meanAll Vector of means in NormalFixed or TFixed model, before
 #' subsetting.
-#' @slot sd Vector of standard deviations in NormalFixed model - subsetted to
-#' include only cells that are observed in \code{y}
-#' @slot sdAll Vector of standard deviations in NormalFixed model, before
-#' subsetting.
+#' @slot sd Vector of standard deviations or scales in NormalFixed or TFixed
+#' model - subsetted to include only cells that are observed in \code{y}
+#' @slot sdAll Vector of standard deviations or scales in NormalFixed model,
+#' or TFixed model before subsetting.
 #' @slot metadata Metadata for \code{mean} and \code{sd}.
 #' @slot metadataAll Metadata for \code{meanAll} and \code{sdAll}.
 #' @slot useExpose Whether the model includes and exposure term.
@@ -364,3 +375,14 @@ setClass("SpecRound3",
 
 
 
+
+## NO_TESTS
+#' @rdname SpecModel-class
+#' @export
+setClass("SpecTFixed",
+         prototype = prototype(useExpose = new("LogicalFlag", TRUE),
+                               nu = new("DegreesFreedom", 7)),
+         contains = c("SpecModel",
+                      "MeanSDMetadataMixin",
+                      "NuMixin",
+                      "SpecSeriesMixin"))

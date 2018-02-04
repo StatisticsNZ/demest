@@ -7081,6 +7081,42 @@ logLikelihood_Round3 <- function(model, count, dataset, i, useC = FALSE) {
     }
 }
 
+## READY_TO_TRANSLATE
+## HAS_TESTS
+## Calling function should test that dataset[i] is not missing
+logLikelihood_TFixedUseExp <- function(model, count, dataset, i, useC = FALSE) {
+    ## model
+    stopifnot(methods::is(model, "Model"))
+    stopifnot(methods::is(model, "TFixedUseExp"))
+    ## count
+    stopifnot(identical(length(count), 1L))
+    stopifnot(is.integer(count))
+    stopifnot(!is.na(count))
+    ## dataset
+    stopifnot(is.integer(dataset))
+    ## i
+    stopifnot(identical(length(i), 1L))
+    stopifnot(is.integer(i))
+    stopifnot(!is.na(i))
+    stopifnot(i >= 1L)
+    ## dataset and i
+    stopifnot(i <= length(dataset))
+    stopifnot(!is.na(dataset@.Data[i]))
+    if (useC) {
+        .Call(logLikelihood_TFixedUseExp_R, model, count, dataset, i)
+    }
+    else {
+        x <- dataset[[i]]
+        mean <- model@mean@.Data[i]
+        sd <- model@sd@.Data[i]
+        nu <- model@nu@.Data
+        mean <- count * mean
+        x.rescaled <- (x - mean) / sd
+        stats::dt(x = x.rescaled, df = nu, log = TRUE) - log(sd) # Jacobian
+    }
+}
+
+
 
 ## TRANSLATED
 ## HAS_TESTS
@@ -8801,7 +8837,7 @@ printNormalFixedModEqns <- function(object) {
         exposure <- series
     name.y <- sprintf("%13s", name.y)
     if (uses.exposure)
-        cat(name.y, "[i] ~ NormalFixed(", exposure, "[i] * mean[i], sd[i]^2)\n", sep = "")
+        cat(name.y, "[i] ~ Normal(", exposure, "[i] * mean[i], sd[i]^2)\n", sep = "")
     else
         cat(name.y, "Normal(mean[i], sd[i]^2)\n", sep = "")
 }
@@ -9178,6 +9214,57 @@ printSpecsPriorsEqns <- function(object) {
         }
     }
 }
+
+printTFixedLikEqns <- function(object) {
+    df <- object@nu@.Data
+    useExpose <- object@useExpose@.Data
+    if (useExpose)
+        cat("            y[i] ~ t(", df, ", exposure[i] * location[i], scale[i]^2)\n", sep = "")
+    else
+        cat("            y[i] ~ t(", df, ", location[i], scale[i]^2)\n", sep = "")
+}
+
+
+printTFixedModEqns <- function(object) {
+    call <- object@call
+    df <- object@nu@.Data
+    uses.exposure <- methods::is(object, "UseExposure")
+    series <- call$series
+    name.y <- deparse(call$formula[[2L]])
+    if (is.null(series)) {
+        if (identical(name.y, "y"))
+            exposure <- "exposure"
+        else
+            exposure <- "y"
+    }
+    else
+        exposure <- series
+    name.y <- sprintf("%13s", name.y)
+    if (uses.exposure)
+        cat(name.y, "[i] ~ t(", df, ", ", exposure, "[i] * location[i], scale[i]^2)\n", sep = "")
+    else
+        cat(name.y, "t(", df, ", location[i], scale[i]^2)\n", sep = "")
+}
+
+printTFixedSpecEqns <- function(object) {
+    series <- object@series@.Data
+    df <- object@nu@.Data
+    call <- object@call
+    nameY <- object@nameY
+    useExpose <- object@useExpose@.Data
+    has.series <- !is.na(series)
+    name.y <- deparse(call$formula[[2L]])
+    name.y <- sprintf("%13s", nameY)
+    if (useExpose) {
+        if (has.series)
+            exposure <- series        
+        else
+            exposure <- "exposure"
+        cat(name.y, "[i] ~ t(", df, ", ", exposure, "[i] * location[i], scale[i]^2)\n", sep = "")
+    }
+    else
+        cat("            y[i] ~ t(", df, ", location[i], scale[i]^2)\n", sep = "")
+} 
 
 printWeightAg <- function(object) {
     weight <- object@weightAg

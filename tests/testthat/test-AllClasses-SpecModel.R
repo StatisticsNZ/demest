@@ -357,7 +357,7 @@ test_that("tests for SpecNormalFixed inherited from MeanSDMetadataMixin work", {
                  "'mean' and 'metadata' inconsistent")    
 })
 
-test_that("can create valid object of class SpecPoissonBinomialMixture", {
+test_that("can create valid object of class SpecRound3", {
     ## nameY and series supplied
     x <- new("SpecRound3",
              call = call("Model", reg.deaths ~ Round3()),
@@ -368,6 +368,33 @@ test_that("can create valid object of class SpecPoissonBinomialMixture", {
     x <- new("SpecRound3",
              call = call("Model", y ~ Round3()),
              nameY = new("Name", "y"),
+             series = new("SpecName", as.character(NA)))
+    expect_true(validObject(x))
+})
+
+test_that("can create valid object of class SpecTFixed", {
+    ## nameY and series supplied
+    x <- new("SpecTFixed",
+             call = call("Model", reg.deaths ~ TFixed(mean = mean, sd = sd)),
+             nameY = new("Name", "reg.deaths"),
+             mean = new("ParameterVector", rnorm(10)),
+             sd = new("ScaleVec", runif(10)),
+             metadata = new("MetaData",
+                            nms = "age",
+                            dimtypes = "age",
+                            DimScales = list(new("Intervals", dimvalues = 0:10))),
+             series = new("SpecName", "deaths"))
+    expect_true(validObject(x))
+    ## series NULL
+    x <- new("SpecTFixed",
+             call = call("Model", y ~ TFixed(mean = mean, sd = sd)),
+             nameY = new("Name", "y"),
+             mean = new("ParameterVector", rnorm(10)),
+             sd = new("ScaleVec", runif(10)),
+             metadata = new("MetaData",
+                            nms = "age",
+                            dimtypes = "age",
+                            DimScales = list(new("Intervals", dimvalues = 0:10))),
              series = new("SpecName", as.character(NA)))
     expect_true(validObject(x))
 })

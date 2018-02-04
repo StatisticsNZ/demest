@@ -10831,6 +10831,71 @@ test_that("R and C versions of logLikelihood give same answer with Round3", {
     }
 })
 
+
+test_that("logLikelihood gives valid answer with TFixedUseExp", {
+    ## logLikelihood_TFixedUseExp <- demest:::logLikelihood_TFixedUseExp
+    initialModel <- demest:::initialModel
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        dataset <- Counts(array(as.integer(rpois(n = 20, lambda = 20)),
+                                dim = c(2, 10),
+                                dimnames = list(sex = c("f", "m"), age = 0:9)))
+        location <- Values(array(runif(20),
+                             dim = c(2, 10),
+                             dimnames = list(sex = c("f", "m"), age = 0:9)))
+        spec <- Model(y ~ TFixed(location = location, scale = 0.1))
+        model <- initialModel(spec, y = dataset, exposure = dataset)
+        i <- sample.int(20, size = 1)
+        count <- as.integer(rpois(n = 1, lambda = dataset[i]))
+        ans.obtained <- logLikelihood_TFixedUseExp(model = model,
+                                                   count = count,
+                                                   dataset = dataset,
+                                                   i = i)
+        ans.expected <- dt(x = (dataset[i] - count * location@.Data[i])/0.1, df = 7, log = TRUE) - log(0.1)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of logLikelihood give same answer with TFixedUseExp", {
+    logLikelihood_TFixedUseExp <- demest:::logLikelihood_TFixedUseExp
+    initialModel <- demest:::initialModel
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        dataset <- Counts(array(as.integer(rpois(n = 20, lambda = 20)),
+                                dim = c(2, 10),
+                                dimnames = list(sex = c("f", "m"), age = 0:9)))
+        location <- Values(array(runif(20),
+                                 dim = c(2, 10),
+                                 dimnames = list(sex = c("f", "m"), age = 0:9)))
+        scale <- sqrt(location)
+        spec <- Model(y ~ TFixed(location = location, scale = scale))
+        model <- initialModel(spec, y = dataset, exposure = dataset)
+        i <- sample.int(20, size = 1)
+        count <- as.integer(rpois(n = 1, lambda = dataset[i]))
+        ans.R <- logLikelihood_TFixedUseExp(model = model,
+                                            count = count,
+                                            dataset = dataset,
+                                            i = i,
+                                            useC = FALSE)
+        ans.C <- logLikelihood_TFixedUseExp(model = model,
+                                            count = count,
+                                            dataset = dataset,
+                                            i = i,
+                                            useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
+
+
+
+
+
 test_that("makeIOther gives valid answers", {
     makeIOther <- demest:::makeIOther
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra

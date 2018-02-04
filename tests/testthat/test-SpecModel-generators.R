@@ -202,6 +202,61 @@ test_that("NormalFixed works", {
                  "'sd' has class \"character\"")
 })
 
+
+test_that("TFixed works", {
+    location <- Values(array(1:3, dim = 3, dimnames = list(age = 0:2)))
+    scale <- sqrt(location)
+    x <- TFixed(location = location, scale = scale)
+    expect_is(x, "SpecLikelihoodTFixed")
+    expect_true(validObject(x))
+    expect_identical(x@nu, new("DegreesFreedom", 7))
+    x <- TFixed(location = location, scale = 1)
+    expect_is(x, "SpecLikelihoodTFixed")
+    expect_true(validObject(x))
+    ## 'location' is "Values"
+    expect_error(TFixed(location = "wrong", scale = scale),
+                 "'location' has class \"character\"")
+    ## 'metadata' does not have any dimensions with dimtype "iteration"
+    location.wrong <- Values(array(1:3, dim = 3, dimnames = list(iteration = 1:3)))
+    expect_error(TFixed(location = location.wrong, scale = scale),
+                 "'location' has dimension with dimtype \"iteration\"")
+    ## 'metadata' does not have any dimensions with dimtype "quantile"
+    location.wrong <- Values(array(1:3, dim = 3, dimnames = list(quantile = c(0.1, 0.5, 0.9))))
+    expect_error(TFixed(location = location.wrong, scale = scale),
+                 "'location' has dimension with dimtype \"quantile\"")
+    ## 'location' has no missing values
+    location.wrong <- location
+    location.wrong[1] <- NA
+    expect_error(TFixed(location = location.wrong, scale = scale),
+                 "'location' has missing values")
+    ## 'scale' is compatible with 'location'
+    expect_error(TFixed(location = location, scale = scale[1:2]),
+                 "'scale' and 'location' not compatible :")
+    ## 'scale' has no missing values
+    scale.wrong <- scale
+    scale.wrong[1] <- NA
+    expect_error(TFixed(location = location, scale = scale.wrong),
+                 "'scale' has missing values")
+    ## 'scale' has no negative values
+    scale.wrong <- scale
+    scale.wrong[1] <- -1
+    expect_error(TFixed(location = location, scale = scale.wrong),
+                 "'scale' has negative values")
+    ## 'scale' has length 1
+    expect_error(TFixed(location = location, scale = 1:2),
+                 "'scale' is numeric but does not have length 1")
+    ## 'scale' is not missing
+    expect_error(TFixed(location = location, scale = as.numeric(NA)),
+                 "'scale' is missing")
+    ## 'scale' is non-negative
+    expect_error(TFixed(location = location, scale = -1),
+                 "'scale' is negative")
+    ## 'scale' is Values or numeric
+    expect_error(TFixed(location = location, scale = "wrong"),
+                 "'scale' has class \"character\"")
+})
+
+
 test_that("SpecModel works with SpecLikelihoodBinomial", {
     SpecModel <- demest:::SpecModel
     spec.inner <- Binomial(mean ~ age + sex)
@@ -701,8 +756,6 @@ test_that("SpecModel works with SpecRound3", {
         expect_equal(ans.obtained, ans.expected)
 })
 
-
-
 test_that("SpecModel works with SpecNormalFixed", {
     SpecModel <- demest:::SpecModel
     mean <- Values(array(1:4,
@@ -759,6 +812,66 @@ test_that("SpecModel works with SpecNormalFixed", {
     else
         expect_equal(ans.obtained, ans.expected)
 })
+
+test_that("SpecModel works with SpecTFixed", {
+    SpecModel <- demest:::SpecModel
+    location <- Values(array(1:4,
+                         dim = c(2, 2),
+                         dimnames = list(age = c("0-39", "40"),
+                                         sex = c("Female", "Male"))))
+    spec.inner <- TFixed(location = location, scale = 1, df = 4)
+    call <- call("Model",
+                 formula = y ~ TFixed(location = location, scale = 1, df = 4))
+    ans.obtained <- SpecModel(specInner = spec.inner,
+                              call = call,
+                              nameY = new("Name", "y"),
+                              dots = list(),
+                              lower = NULL,
+                              upper = NULL,
+                              priorSD = NULL,
+                              jump = NULL,
+                              series = NULL,
+                              aggregate = NULL)
+    ans.expected <- new("SpecTFixed",
+                        call = call,
+                        nameY = new("Name", "y"),
+                        series = new("SpecName", as.character(NA)),
+                        mean = new("ParameterVector", 1 * 1:4),
+                        nu = new("DegreesFreedom", 4),
+                        sd = new("ScaleVec", rep(1, 4)),
+                        metadata = location@metadata)
+    if (test.identity)
+        expect_identical(ans.obtained, ans.expected)
+    else
+        expect_equal(ans.obtained, ans.expected)
+    spec.inner <- TFixed(location = location, scale = 1)
+    call <- call("Model",
+                 formula = deaths.reg ~ TFixed(location = location, scale = 1),
+                 series = "deaths")
+    ans.obtained <- SpecModel(specInner = spec.inner,
+                              call = call,
+                              nameY = new("Name", "deaths.reg"),
+                              dots = list(),
+                              lower = NULL,
+                              upper = NULL,
+                              priorSD = NULL,
+                              jump = NULL,
+                              series = "deaths",
+                              aggregate = NULL)
+    ans.expected <- new("SpecTFixed",
+                        call = call,
+                        nameY = new("Name", "deaths.reg"),
+                        series = new("SpecName", "deaths"),
+                        mean = new("ParameterVector", 1 * 1:4),
+                        sd = new("ScaleVec", rep(1, 4)),
+                        nu = new("DegreesFreedom", 7),
+                        metadata = location@metadata)
+    if (test.identity)
+        expect_identical(ans.obtained, ans.expected)
+    else
+        expect_equal(ans.obtained, ans.expected)
+})
+
 
 
 

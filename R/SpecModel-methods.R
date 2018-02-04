@@ -344,6 +344,15 @@ setMethod("show",
 #' @rdname show-methods
 #' @export
 setMethod("show",
+          signature(object = "SpecLikelihoodTFixed"),
+          function(object) {
+              cat("An object of class \"", class(object), "\"\n\n", sep = "")
+              printTFixedLikEqns(object)
+          })
+
+#' @rdname show-methods
+#' @export
+setMethod("show",
           signature(object = "SpecBinomialVarying"),
           function(object) {
               cat("An object of class \"", class(object), "\"\n\n", sep = "")
@@ -438,6 +447,18 @@ setMethod("show",
               printNormalFixedSpecEqns(object)
           })
 
+#' @rdname show-methods
+#' @export
+setMethod("show",
+          signature(object = "SpecTFixed"),
+          function(object) {
+              cat("An object of class \"", class(object), "\"\n\n", sep = "")
+              printTFixedSpecEqns(object)
+          })
+
+
+
+
 ## stringScaleAg ##############################################################################
 
 setMethod("stringScaleAg",
@@ -510,6 +531,10 @@ setMethod("stringScaleTheta",
 
 setMethod("stringScaleTheta",
           signature(object = "SpecNormalFixed"),
+          function(object) "")
+
+setMethod("stringScaleTheta",
+          signature(object = "SpecTFixed"),
           function(object) "")
 
 setMethod("stringScaleTheta",

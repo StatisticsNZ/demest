@@ -2,7 +2,7 @@
 % Please edit documentation in R/estimate-functions.R
 \name{estimateCounts}
 \alias{estimateCounts}
-\title{Estimate counts and model from multiple noisy datasets.}
+\title{Estimate counts and model from one or more noisy datasets.}
 \usage{
 estimateCounts(model, y, exposure = NULL, dataModels, datasets,
   filename = NULL, nBurnin = 1000, nSim = 1000, nChain = 5, nThin = 1,
@@ -57,7 +57,7 @@ for debugging.}
 }
 \description{
 Infer the contents of a demographic array, and fit a model describing
-the array, using multiple noisy datasets.
+the array, using one or more noisy datasets.
 }
 \details{
 See the documentation for \code{\link{estimateModel}} for details on

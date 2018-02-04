@@ -5,9 +5,9 @@
 \title{Use results from function estimateCounts to make predictions.}
 \usage{
 predictCounts(filenameEst, filenamePred, along = NULL, labels = NULL,
-  n = NULL, data = NULL, aggregate = NULL, lower = NULL, upper = NULL,
-  nBurnin = 0L, parallel = TRUE, outfile = NULL, verbose = FALSE,
-  useC = TRUE)
+  n = NULL, exposure = NULL, data = list(), aggregate = list(),
+  lower = list(), upper = list(), nBurnin = 0L, parallel = TRUE,
+  outfile = NULL, verbose = FALSE, useC = TRUE)
 }
 \arguments{
 \item{filenameEst}{Filename used to \code{\link{estimateModel}}.}

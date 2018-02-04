@@ -343,6 +343,43 @@ setMethod("logLikelihood",
           })
 
 
+## HAS_TESTS
+## Calling function should test that dataset[i] is not missing
+## Do not create equivalent function for TFixedNotUseExp,
+setMethod("logLikelihood",
+          signature(model = "TFixedUseExp",
+                    count = "integer",
+                    dataset = "Counts",
+                    i = "integer"),
+          function(model, count, dataset, i, useC = FALSE, useSpecific = FALSE) {
+              ## count
+              stopifnot(identical(length(count), 1L))
+              stopifnot(!is.na(count))
+              ## dataset
+              stopifnot(is.integer(dataset))
+              ## i
+              stopifnot(identical(length(i), 1L))
+              stopifnot(!is.na(i))
+              stopifnot(i >= 1L)
+              ## dataset and i
+              stopifnot(i <= length(dataset))
+              stopifnot(!is.na(dataset@.Data[i]))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(logLikelihood_TFixedUseExp_R, model, count, dataset, i)
+                  else
+                      .Call(logLikelihood_R, model, count, dataset, i)
+              }
+              else {
+                  logLikelihood_TFixedUseExp(model = model,
+                                             count = count,
+                                             dataset = dataset,
+                                             i = i)
+              }
+          })
+
+
+
 
 
 ## makeCellInLik ################################################################
@@ -1138,6 +1175,29 @@ setMethod("predictModelNotUseExp",
               }
           })
 
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("predictModelNotUseExp",
+          signature(object = "TFixedNotUseExpPredict"),
+          function(object, y, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(is.integer(y))
+              stopifnot(all(is.na(y)))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(predictModelNotUseExp_TFixedNotUseExpPredict_R,
+                            object, y)
+                  else
+                      .Call(predictModelNotUseExp_R,
+                            object, y)
+              }
+              else {
+                  object
+              }
+          })
+
 
 
 
@@ -1290,6 +1350,36 @@ setMethod("predictModelUseExp",
                   object
               }
           })
+
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("predictModelUseExp",
+          signature(object = "TFixedUseExpPredict"),
+          function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(is.integer(y))
+              stopifnot(all(is.na(y)))
+              ## exposure
+              stopifnot(is.integer(exposure))
+              stopifnot(all(is.na(exposure)))
+              ## y and exposure
+              stopifnot(identical(length(exposure), length(y)))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(predictModelUseExp_TFixedUseExpPredict_R,
+                            object, y, exposure)
+                  else
+                      .Call(predictModelUseExp_R,
+                            object, y, exposure)
+              }
+              else {
+                  object
+              }
+          })
+
 
 
 
@@ -1510,6 +1600,13 @@ setMethod("showModelHelper",
           function(object) {
               printNormalFixedModEqns(object)
           })
+
+setMethod("showModelHelper",
+          signature(object = "TFixed"),
+          function(object) {
+              printTFixedModEqns(object)
+          })
+
 
 
 
@@ -1741,6 +1838,44 @@ setMethod("transferParamModel",
                   if (useSpecific)
                       .Call(transferParamModel_Round3_R,
                             model, filename, lengthIter, iteration)
+                  else
+                      .Call(transferParamModel_R,
+                            model, filename, lengthIter, iteration)
+              }
+              else {
+                  model
+              }
+          })
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("transferParamModel",
+          signature(model = "TFixedNotUseExpPredict"),
+          function(model, filename, lengthIter, iteration,
+                   useC = FALSE, useSpecific = FALSE) {
+              if (useC) {
+                  if (useSpecific)
+                      .Call(transferParamModel_TFixedNotUseExpPredict_R,
+                            model, filename, lengthIter, iteration)
+                  else
+                      .Call(transferParamModel_R,
+                            model, filename, lengthIter, iteration)
+              }
+              else {
+                  model
+              }
+          })
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("transferParamModel",
+          signature(model = "TFixedUseExpPredict"),
+          function(model, filename, lengthIter, iteration,
+                   useC = FALSE, useSpecific = FALSE) {
+              if (useC) {
+                  if (useSpecific)
+                      .Call(transferParamModel_TFixedUseExpPredict_R,
+ model, filename, lengthIter, iteration)
                   else
                       .Call(transferParamModel_R,
                             model, filename, lengthIter, iteration)
@@ -2134,6 +2269,29 @@ setMethod("updateModelNotUseExp",
                   object
               }
           })
+
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("updateModelNotUseExp",
+          signature(object = "TFixedNotUseExp"),
+          function(object, y, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(is.integer(y))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(updateModelNotUseExp_TFixedNotUseExp_R, object, y)
+                  else
+                      .Call(updateModelNotUseExp_R, object, y)
+              }
+              else {
+                  ## object is not updated
+                  object
+              }
+          })
+
 
 
 
@@ -2591,7 +2749,8 @@ setMethod("updateModelUseExp",
               }
           })
 
-
+## TRANSLATED
+## HAS_TESTS
 setMethod("updateModelUseExp",
           signature(object = "Round3"),
           function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
@@ -2617,6 +2776,33 @@ setMethod("updateModelUseExp",
                   object
               }
           })
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("updateModelUseExp",
+          signature(object = "TFixedUseExp"),
+          function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(is.integer(y))
+              ## exposure
+              stopifnot(is.integer(exposure))
+              stopifnot(!any(is.na(exposure)))
+              ## y and exposure
+              stopifnot(identical(length(exposure), length(y)))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(updateModelUseExp_TFixedUseExp_R, object, y, exposure)
+                  else
+                      .Call(updateModelUseExp_R, object, y, exposure)
+              }
+              else {
+                  ## object is not updated
+                  object
+              }
+          })
+
 
 
 
@@ -2684,7 +2870,6 @@ setMethod("whereAcceptance",
           function(object) list(c("likelihood", "acceptRate"),
                                 c("aggregate", "accept")))
 
-
 ## HAS_TESTS
 setMethod("whereAcceptance",
           signature(object = "PoissonVaryingNotUseExpAgPoisson"),
@@ -2712,15 +2897,20 @@ setMethod("whereAcceptance",
           signature(object = "PoissonVaryingUseExpPredict"),
           function(object) list(NULL))
 
+## HAS_TESTS
 setMethod("whereAcceptance",
           signature(object = "Round3"),
           function(object) list(NULL))
 
+## HAS_TESTS
 setMethod("whereAcceptance",
           signature(object = "NormalFixed"),
           function(object) list(NULL))
 
-
+## HAS_TESTS
+setMethod("whereAcceptance",
+          signature(object = "TFixed"),
+          function(object) list(NULL))
 
 
 ## whereAutocorr #####################################################################
@@ -2812,6 +3002,7 @@ setMethod("whereAutocorr",
           signature(object = "PoissonVaryingUseExpPredict"),
           function(object) list(NULL))
 
+## HAS_TESTS
 setMethod("whereAutocorr",
           signature(object = "Round3"),
           function(object) list(NULL))
@@ -2820,6 +3011,12 @@ setMethod("whereAutocorr",
 setMethod("whereAutocorr",
           signature(object = "NormalFixed"),
           function(object) list(NULL))
+
+## HAS_TESTS
+setMethod("whereAutocorr",
+          signature(object = "TFixed"),
+          function(object) list(NULL))
+
 
 
 
@@ -2931,6 +3128,13 @@ setMethod("whereJump",
 setMethod("whereJump",
           signature(object = "NormalFixed"),
           function(object) list(NULL))
+
+
+## NO_TESTS
+setMethod("whereJump",
+          signature(object = "TFixed"),
+          function(object) list(NULL))
+
 
 
 ## whereEstimated ####################################################################
@@ -3086,6 +3290,7 @@ setMethod("whereEstimated",
               list(NULL)
           })
 
+## HAS_TESTS
 setMethod("whereEstimated",
           signature(object = "Round3"),
           function(object) {
@@ -3095,6 +3300,11 @@ setMethod("whereEstimated",
 ## HAS_TESTS
 setMethod("whereEstimated",
           signature(object = "NormalFixed"),
+          function(object) list(NULL))
+
+## HAS_TESTS
+setMethod("whereEstimated",
+          signature(object = "TFixed"),
           function(object) list(NULL))
 
 
@@ -3232,6 +3442,7 @@ setMethod("whereNoProposal",
           signature(object = "PoissonBinomialMixture"),
           function(object) list(NULL))
 
+## HAS_TESTS
 setMethod("whereNoProposal",
           signature(object = "Round3"),
           function(object) list(NULL))
@@ -3240,6 +3451,12 @@ setMethod("whereNoProposal",
 setMethod("whereNoProposal",
           signature(object = "NormalFixed"),
           function(object) list(NULL))
+
+## HAS_TESTS
+setMethod("whereNoProposal",
+          signature(object = "TFixed"),
+          function(object) list(NULL))
+
 
 
 
@@ -3274,6 +3491,7 @@ setMethod("whereTheta",
                             "object", class(object)))
           })
 
+## HAS_TESTS
 setMethod("whereTheta",
           signature(object = "Round3"),
           function(object) {
@@ -3288,4 +3506,13 @@ setMethod("whereTheta",
               stop(gettextf("'%s' has class \"%s\"",
                             "object", class(object)))
           })
+
+## HAS_TESTS
+setMethod("whereTheta",
+          signature(object = "TFixed"),
+          function(object) {
+              stop(gettextf("'%s' has class \"%s\"",
+                            "object", class(object)))
+          })
+
 

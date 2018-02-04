@@ -503,6 +503,48 @@ test_that("R, C-generic, and C-specific versions of logLikelihood give same answ
     }
 })
 
+test_that("R, C-generic, and C-specific versions of logLikelihood give same answer with TFixedUseExp", {
+    logLikelihood <- demest:::logLikelihood
+    initialModel <- demest:::initialModel
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        dataset <- Counts(array(as.integer(rpois(n = 20, lambda = 20)),
+                                dim = c(2, 10),
+                                dimnames = list(sex = c("f", "m"), age = 0:9)))
+        location <- Values(array(runif(10),
+                             dim = c(2, 10),
+                             dimnames = list(sex = c("f", "m"), age = 0:9)))
+        scale <- sqrt(location)
+        spec <- Model(y ~ TFixed(location = location, scale = scale))
+        model <- initialModel(spec, y = dataset, exposure = dataset)
+        i <- sample.int(20, size = 1)
+        count <- as.integer(rpois(n = 1, lambda = dataset[i]))
+        ans.R <- logLikelihood(model = model,
+                               count = count,
+                               dataset = dataset,
+                               i = i,
+                               useC = FALSE)
+        ans.C.generic <- logLikelihood(model = model,
+                                       count = count,
+                                       dataset = dataset,
+                                       i = i,
+                                       useC = TRUE,
+                                       useSpecific = FALSE)
+        ans.C.specific <- logLikelihood(model = model,
+                                        count = count,
+                                        dataset = dataset,
+                                        i = i,
+                                        useC = TRUE,
+                                        useSpecific = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C.generic)
+        else
+            expect_equal(ans.R, ans.C.generic)
+        expect_identical(ans.C.generic, ans.C.specific)
+    }
+})
+
+
 
 
 
@@ -2067,8 +2109,39 @@ test_that("predictModelNotUseExp gives valid answer with NormalFixed", {
     expect_identical(ans.obtained, ans.expected)
 })
 
+test_that("predictModelNotUseExp gives valid answer with TFixed", {
+    initialModel <- demest:::initialModel
+    initialModelPredict <- demest:::initialModelPredict
+    predictModelNotUseExp <- demest:::predictModelNotUseExp
+    y.est <- Counts(array(rpois(10, lambda  = 10),
+                          dim = c(2, 5),
+                          dimnames = list(sex = c("f", "m"), age = 0:4)))
+    y.pred <- Counts(array(as.integer(NA),
+                           dim = c(2, 5),
+                           dimnames = list(sex = c("f", "m"), age = 5:9)))
+    location <- Values(array(rpois(20, lambda  = 10),
+                             dim = c(2, 10),
+                             dimnames = list(sex = c("f", "m"), age = 0:9)))
+    scale <- Values(array(runif(20),
+                          dim = c(2, 10),
+                          dimnames = list(sex = c("f", "m"), age = 0:9)))
+    spec <- Model(y ~ TFixed(location = location, scale = scale, useExpose = FALSE))
+    model <- initialModel(spec, y = y.est, exposure = NULL)
+    model <- initialModelPredict(model,
+                                 along = 2L,
+                                 labels = NULL,
+                                 n = 5,
+                                 offsetModel = 1L,
+                                 covariates = NULL,
+                                 aggregate = NULL,
+                                 lower = NULL,
+                                 upper = NULL)
+    ans.obtained <- predictModelNotUseExp(model, y = y.pred)
+    ans.expected <- model
+    expect_identical(ans.obtained, ans.expected)
+})
 
-test_that("R, C-specific, and C-generic methods for predictModelNotUseExp give same answer with NormalFixedPredict", {
+test_that("R, C-specific, and C-generic methods for predictModelNotUseExp give same answer with TFixedPredict", {
     predictModelNotUseExp <- demest:::predictModelNotUseExp
     initialModel <- demest:::initialModel
     initialModelPredict <- demest:::initialModelPredict
@@ -2078,13 +2151,13 @@ test_that("R, C-specific, and C-generic methods for predictModelNotUseExp give s
     y.pred <- Counts(array(as.integer(NA),
                            dim = c(2, 5),
                            dimnames = list(sex = c("f", "m"), age = 5:9)))
-    mean <- Values(array(rpois(20, lambda  = 10),
+    location <- Values(array(rpois(20, lambda  = 10),
                          dim = c(2, 10),
                          dimnames = list(sex = c("f", "m"), age = 0:9)))
-    sd <- Values(array(runif(20),
+    scale <- Values(array(runif(20),
                        dim = c(2, 10),
                        dimnames = list(sex = c("f", "m"), age = 0:9)))
-    spec <- Model(y ~ NormalFixed(mean = mean, sd = sd, useExpose = FALSE))
+    spec <- Model(y ~ TFixed(location = location, scale = scale, useExpose = FALSE))
     model <- initialModel(spec, y = y.est, exposure = NULL)
     model <- initialModelPredict(model,
                                  along = 2L,
@@ -2107,7 +2180,6 @@ test_that("R, C-specific, and C-generic methods for predictModelNotUseExp give s
         expect_equal(ans.R, ans.C.specific)
     expect_identical(ans.C.specific, ans.C.generic)
 })
-
 
 
 
@@ -2401,7 +2473,7 @@ test_that("R, generic C, and specific C versions predictModelUseExp method for R
     expect_identical(ans.C.generic, ans.C.specific)
 })
 
-test_that("predictModelUseExp gives valid answer with NormalFixed", {
+test_that("predictModelUseExp gives valid answer with NormalFixedPredict", {
     initialModel <- demest:::initialModel
     initialModelPredict <- demest:::initialModelPredict
     predictModelUseExp <- demest:::predictModelUseExp
@@ -2463,6 +2535,91 @@ test_that("R, C-specific, and C-generic methods for predictModelUseExp give same
                        dim = c(2, 10),
                        dimnames = list(sex = c("f", "m"), age = 0:9)))
     spec <- Model(y ~ NormalFixed(mean = mean, sd = sd))
+    model <- initialModel(spec, y = y.est, exposure = exposure.est)
+    model <- initialModelPredict(model,
+                                 along = 2L,
+                                 labels = NULL,
+                                 n = 5,
+                                 offsetModel = 1L,
+                                 covariates = NULL,
+                                 aggregate = NULL,
+                                 lower = NULL,
+                                 upper = NULL)
+    ans.R <- predictModelUseExp(model, y = y.pred, exposure = exposure.pred,
+                                   useC = FALSE)
+    ans.C.specific <- predictModelUseExp(model, y = y.pred, exposure = exposure.pred,
+                                            useC = TRUE, useSpecific = TRUE)
+    ans.C.generic <- predictModelUseExp(model, y = y.pred, exposure = exposure.pred,
+                                           useC = TRUE, useSpecific = FALSE)
+    if (test.identity)
+        expect_identical(ans.R, ans.C.specific)
+    else
+        expect_equal(ans.R, ans.C.specific)
+    expect_identical(ans.C.specific, ans.C.generic)
+})
+
+test_that("predictModelUseExp gives valid answer with TFixedPredict", {
+    initialModel <- demest:::initialModel
+    initialModelPredict <- demest:::initialModelPredict
+    predictModelUseExp <- demest:::predictModelUseExp
+    y.est <- Counts(array(rpois(10, lambda  = 10),
+                          dim = c(2, 5),
+                          dimnames = list(sex = c("f", "m"), age = 0:4)))
+    exposure.est <- Counts(array(rpois(10, lambda  = 10),
+                                 dim = c(2, 5),
+                                 dimnames = list(sex = c("f", "m"), age = 0:4)))
+    y.pred <- Counts(array(as.integer(NA),
+                           dim = c(2, 5),
+                           dimnames = list(sex = c("f", "m"), age = 5:9)))
+    exposure.pred <- Counts(array(as.integer(NA),
+                                  dim = c(2, 5),
+                                  dimnames = list(sex = c("f", "m"), age = 5:9)))
+    location <- Values(array(rpois(20, lambda  = 10),
+                         dim = c(2, 10),
+                         dimnames = list(sex = c("f", "m"), age = 0:9)))
+    scale <- Values(array(runif(20),
+                       dim = c(2, 10),
+                       dimnames = list(sex = c("f", "m"), age = 0:9)))
+    spec <- Model(y ~ TFixed(location = location, scale = scale))
+    model <- initialModel(spec, y = y.est, exposure = exposure.est)
+    model <- initialModelPredict(model,
+                                 along = 2L,
+                                 labels = NULL,
+                                 n = 5,
+                                 offsetModel = 1L,
+                                 covariates = NULL,
+                                 aggregate = NULL,
+                                 lower = NULL,
+                                 upper = NULL)
+    ans.obtained <- predictModelUseExp(model, y = y.pred, exposure = exposure.pred)
+    ans.expected <- model
+    expect_identical(ans.obtained, ans.expected)
+})
+
+
+test_that("R, C-specific, and C-generic methods for predictModelUseExp give same answer with TFixedPredict", {
+    initialModel <- demest:::initialModel
+    initialModelPredict <- demest:::initialModelPredict
+    predictModelUseExp <- demest:::predictModelUseExp
+    y.est <- Counts(array(rpois(10, lambda  = 10),
+                          dim = c(2, 5),
+                          dimnames = list(sex = c("f", "m"), age = 0:4)))
+    exposure.est <- Counts(array(rpois(10, lambda  = 10),
+                                 dim = c(2, 5),
+                                 dimnames = list(sex = c("f", "m"), age = 0:4)))
+    y.pred <- Counts(array(as.integer(NA),
+                           dim = c(2, 5),
+                           dimnames = list(sex = c("f", "m"), age = 5:9)))
+    exposure.pred <- Counts(array(as.integer(NA),
+                                  dim = c(2, 5),
+                                  dimnames = list(sex = c("f", "m"), age = 5:9)))
+    location <- Values(array(rpois(20, lambda  = 10),
+                         dim = c(2, 10),
+                         dimnames = list(sex = c("f", "m"), age = 0:9)))
+    scale <- Values(array(runif(20),
+                       dim = c(2, 10),
+                       dimnames = list(sex = c("f", "m"), age = 0:9)))
+    spec <- Model(y ~ TFixed(location = location, scale = scale))
     model <- initialModel(spec, y = y.est, exposure = exposure.est)
     model <- initialModelPredict(model,
                                  along = 2L,
@@ -3342,6 +3499,102 @@ test_that("R, C-specific, and C-generic methods for transferParamModel give same
     expect_identical(ans.C.generic, ans.C.specific)
 })
 
+test_that("transferParamModel gives valid answer with TFixedUseExpPredict", {
+    initialModel <- demest:::initialModel
+    initialModelPredict <- demest:::initialModelPredict
+    transferParamModel <- demest:::transferParamModel
+    y.est <- Counts(array(rpois(10, lambda  = 10),
+                          dim = c(2, 5),
+                          dimnames = list(sex = c("f", "m"), age = 0:4)))
+    exposure.est <- Counts(array(rpois(10, lambda  = 10),
+                                 dim = c(2, 5),
+                                 dimnames = list(sex = c("f", "m"), age = 0:4)))
+    y.pred <- Counts(array(as.integer(NA),
+                           dim = c(2, 5),
+                           dimnames = list(sex = c("f", "m"), age = 5:9)))
+    exposure.pred <- Counts(array(as.integer(NA),
+                                  dim = c(2, 5),
+                                  dimnames = list(sex = c("f", "m"), age = 5:9)))
+    location <- Values(array(rpois(20, lambda  = 10),
+                         dim = c(2, 10),
+                         dimnames = list(sex = c("f", "m"), age = 0:9)))
+    scale <- Values(array(runif(20),
+                       dim = c(2, 10),
+                       dimnames = list(sex = c("f", "m"), age = 0:9)))
+    spec <- Model(y ~ TFixed(location = location, scale = scale))
+    model <- initialModel(spec, y = y.est, exposure = exposure.est)
+    model <- initialModelPredict(model,
+                                 along = 2L,
+                                 labels = NULL,
+                                 n = 5,
+                                 offsetModel = 1L,
+                                 covariates = NULL,
+                                 aggregate = NULL,
+                                 lower = NULL,
+                                 upper = NULL)
+    ans.obtained <- transferParamModel(model,
+                                       filename = "file",
+                                       lengthIter = 100L,
+                                       iteration = 1L)
+    ans.expected <- model
+    expect_identical(ans.obtained, ans.expected)
+})
+
+
+test_that("R, C-specific, and C-generic methods for transferParamModel give same answer with TFixedUseExpPredict", {
+    initialModel <- demest:::initialModel
+    initialModelPredict <- demest:::initialModelPredict
+    transferParamModel <- demest:::transferParamModel
+    y.est <- Counts(array(rpois(10, lambda  = 10),
+                          dim = c(2, 5),
+                          dimnames = list(sex = c("f", "m"), age = 0:4)))
+    exposure.est <- Counts(array(rpois(10, lambda  = 10),
+                                 dim = c(2, 5),
+                                 dimnames = list(sex = c("f", "m"), age = 0:4)))
+    y.pred <- Counts(array(as.integer(NA),
+                           dim = c(2, 5),
+                           dimnames = list(sex = c("f", "m"), age = 5:9)))
+    exposure.pred <- Counts(array(as.integer(NA),
+                                  dim = c(2, 5),
+                                  dimnames = list(sex = c("f", "m"), age = 5:9)))
+    location <- Values(array(rpois(20, lambda  = 10),
+                         dim = c(2, 10),
+                         dimnames = list(sex = c("f", "m"), age = 0:9)))
+    scale <- Values(array(runif(20),
+                       dim = c(2, 10),
+                       dimnames = list(sex = c("f", "m"), age = 0:9)))
+    spec <- Model(y ~ TFixed(location = location, scale = scale))
+    model <- initialModel(spec, y = y.est, exposure = exposure.est)
+    model <- initialModelPredict(model,
+                                 along = 2L,
+                                 labels = NULL,
+                                 n = 5,
+                                 offsetModel = 1L,
+                                 covariates = NULL,
+                                 aggregate = NULL,
+                                 lower = NULL,
+                                 upper = NULL)
+    ans.R <- transferParamModel(model,
+                                filename = "file",
+                                lengthIter = 100L,
+                                iteration = 1L,
+                                useC = FALSE)                              
+    ans.C.specific <- transferParamModel(model,
+                                         filename = "file",
+                                         lengthIter = 100L,
+                                         iteration = 1L,
+                                         useC = TRUE,
+                                         useSpecific = TRUE)
+    ans.C.generic <- transferParamModel(model,
+                                        filename = "file",
+                                        lengthIter = 100L,
+                                        iteration = 1L,
+                                        useC = TRUE,
+                                        useSpecific = FALSE)
+    expect_identical(ans.R, ans.C.specific)
+    expect_identical(ans.C.generic, ans.C.specific)
+})
+
 
 ## updateModelNotUseExp ##############################################################
 
@@ -4184,6 +4437,51 @@ test_that("R, generic C, and specific C versions updateModelNotUseExp method for
 
 
 
+test_that("updateModelNotUseExp for TFixedNotUseExp works", {
+    updateModelNotUseExp <- demest:::updateModelNotUseExp
+    initialModel <- demest:::initialModel
+    y <- Counts(array(rpois(10, lambda  = 10),
+                          dim = c(2, 5),
+                          dimnames = list(sex = c("f", "m"), age = 0:4)))
+    location <- Values(array(rpois(20, lambda  = 10),
+                         dim = c(2, 10),
+                         dimnames = list(sex = c("f", "m"), age = 0:9)))
+    scale <- Values(array(runif(20),
+                       dim = c(2, 10),
+                       dimnames = list(sex = c("f", "m"), age = 0:9)))
+    spec <- Model(y ~ TFixed(location = location, scale = scale, useExpose = FALSE))
+    model <- initialModel(spec, y = y, exposure = NULL)
+    ans.obtained <- updateModelNotUseExp(model, y = y, useC = FALSE)
+    ans.expected <- model
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("R, generic C, and specific C versions updateModelNotUseExp method for TFixedNotUseExp give same answer", {
+    updateModelNotUseExp <- demest:::updateModelNotUseExp
+    initialModel <- demest:::initialModel
+    y <- Counts(array(rpois(10, lambda  = 10),
+                      dim = c(2, 5),
+                      dimnames = list(sex = c("f", "m"), age = 0:4)))
+    location <- Values(array(rpois(20, lambda  = 10),
+                         dim = c(2, 10),
+                         dimnames = list(sex = c("f", "m"), age = 0:9)))
+    scale <- Values(array(runif(20),
+                       dim = c(2, 10),
+                       dimnames = list(sex = c("f", "m"), age = 0:9)))
+    spec <- Model(y ~ TFixed(location = location, scale = scale, useExpose = FALSE))
+    model <- initialModel(spec, y = y, exposure = NULL)
+    ans.R <- updateModelNotUseExp(model, y = y, useC = FALSE)
+    ans.C.generic <- updateModelNotUseExp(model, y = y, useC = TRUE, useSpecific = FALSE)
+    ans.C.specific <- updateModelNotUseExp(model, y = y, useC = TRUE, useSpecific = TRUE)
+    if (test.identity)
+        expect_identical(ans.R, ans.C.generic)
+    else
+        expect_equal(ans.R, ans.C.generic)
+    expect_identical(ans.C.generic, ans.C.specific)
+})
+
+
+
 ## updateModelUseExp ##################################################################
 
 ## Only test that appropriate slots are updated.  Check that values are correct in
@@ -4959,6 +5257,57 @@ test_that("R, generic C, and specific C versions updateModelUseExp method for No
     expect_identical(ans.C.generic, ans.C.specific)
 })
 
+test_that("updateModelUseExp for TFixedUseExp works", {
+    updateModelUseExp <- demest:::updateModelUseExp
+    initialModel <- demest:::initialModel
+    y <- Counts(array(rpois(10, lambda  = 10),
+                          dim = c(2, 5),
+                          dimnames = list(sex = c("f", "m"), age = 0:4)))
+    exposure <- Counts(array(rpois(10, lambda  = 10),
+                          dim = c(2, 5),
+                          dimnames = list(sex = c("f", "m"), age = 0:4)))
+    location <- Values(array(rpois(20, lambda  = 10),
+                         dim = c(2, 10),
+                         dimnames = list(sex = c("f", "m"), age = 0:9)))
+    scale <- Values(array(runif(20),
+                       dim = c(2, 10),
+                       dimnames = list(sex = c("f", "m"), age = 0:9)))
+    spec <- Model(y ~ TFixed(location = location, scale = scale))
+    model <- initialModel(spec, y = y, exposure = exposure)
+    ans.obtained <- updateModelUseExp(model, y = y, exposure = exposure, useC = FALSE)
+    ans.expected <- model
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("R, generic C, and specific C versions updateModelUseExp method for TFixedUseExp give same answer", {
+    updateModelUseExp <- demest:::updateModelUseExp
+    initialModel <- demest:::initialModel
+    y <- Counts(array(rpois(10, lambda  = 10),
+                      dim = c(2, 5),
+                      dimnames = list(sex = c("f", "m"), age = 0:4)))
+    exposure <- Counts(array(rpois(10, lambda  = 10),
+                          dim = c(2, 5),
+                          dimnames = list(sex = c("f", "m"), age = 0:4)))
+    location <- Values(array(rpois(20, lambda  = 10),
+                         dim = c(2, 10),
+                         dimnames = list(sex = c("f", "m"), age = 0:9)))
+    scale <- Values(array(runif(20),
+                       dim = c(2, 10),
+                       dimnames = list(sex = c("f", "m"), age = 0:9)))
+    spec <- Model(y ~ TFixed(location = location, scale = scale))
+    model <- initialModel(spec, y = y, exposure = exposure)
+    ans.R <- updateModelUseExp(model, y = y, exposure = exposure, useC = FALSE)
+    ans.C.generic <- updateModelUseExp(model, y = y, exposure = exposure,
+                                       useC = TRUE, useSpecific = FALSE)
+    ans.C.specific <- updateModelUseExp(model, y = y, exposure = exposure,
+                                           useC = TRUE, useSpecific = TRUE)
+    if (test.identity)
+        expect_identical(ans.R, ans.C.generic)
+    else
+        expect_equal(ans.R, ans.C.generic)
+    expect_identical(ans.C.generic, ans.C.specific)
+})
+
 
 
 
@@ -5028,7 +5377,19 @@ test_that("whereAcceptance works", {
     x <- new("PoissonVaryingUseExpPredict")
     expect_identical(whereAcceptance(x),
                      list(NULL))
+    x <- new("Round3")
+    expect_identical(whereAcceptance(x),
+                     list(NULL))
     x <- new("NormalFixedNotUseExp")
+    expect_identical(whereAcceptance(x),
+                     list(NULL))
+    x <- new("NormalFixedUseExp")
+    expect_identical(whereAcceptance(x),
+                     list(NULL))
+    x <- new("TFixedNotUseExp")
+    expect_identical(whereAcceptance(x),
+                     list(NULL))
+    x <- new("TFixedUseExp")
     expect_identical(whereAcceptance(x),
                      list(NULL))
 })
@@ -5085,7 +5446,13 @@ test_that("whereAutocorr works", {
     expect_identical(whereAutocorr(x), list(NULL))
     x <- new("PoissonVaryingUseExpPredict")
     expect_identical(whereAutocorr(x), list(NULL))
-        x <- new("NormalFixedNotUseExp")
+    x <- new("NormalFixedNotUseExp")
+    expect_identical(whereAutocorr(x),
+                     list(NULL))
+    x <- new("Round3")
+    expect_identical(whereAutocorr(x),
+                     list(NULL))
+    x <- new("TFixedNotUseExp")
     expect_identical(whereAutocorr(x),
                      list(NULL))
 })
@@ -5145,6 +5512,12 @@ test_that("whereJump works", {
     x <- new("PoissonVaryingUseExpPredict")
     expect_identical(whereJump(x), list(NULL))
     x <- new("NormalFixedNotUseExp")
+    expect_identical(whereJump(x),
+                     list(NULL))
+    x <- new("TFixedNotUseExp")
+    expect_identical(whereJump(x),
+                     list(NULL))
+    x <- new("Round3")
     expect_identical(whereJump(x),
                      list(NULL))
 })
@@ -5543,11 +5916,31 @@ test_that("whereEstimated works with PoissonBinomialMixture", {
     expect_identical(ans.obtained, ans.expected)
 })
 
+## Round3
+
+test_that("whereEstimated works with Round3", {
+    whereEstimated <- demest:::whereEstimated
+    model <- new("Round3")
+    ans.obtained <- whereEstimated(model)
+    ans.expected <- list(NULL)
+    expect_identical(ans.obtained, ans.expected)
+})
+
 ## NormalFixed
 
 test_that("whereEstimated works with NormalFixed", {
     whereEstimated <- demest:::whereEstimated
     model <- new("NormalFixedNotUseExp")
+    ans.obtained <- whereEstimated(model)
+    ans.expected <- list(NULL)
+    expect_identical(ans.obtained, ans.expected)
+})
+
+## TFixed
+
+test_that("whereEstimated works with TFixed", {
+    whereEstimated <- demest:::whereEstimated
+    model <- new("TFixedNotUseExp")
     ans.obtained <- whereEstimated(model)
     ans.expected <- list(NULL)
     expect_identical(ans.obtained, ans.expected)
@@ -5626,6 +6019,12 @@ test_that("whereNoProposal works", {
     x <- new("NormalFixedNotUseExp")
     expect_identical(whereNoProposal(x),
                      list(NULL))
+    x <- new("Round3")
+    expect_identical(whereNoProposal(x),
+                     list(NULL))
+    x <- new("TFixedNotUseExp")
+    expect_identical(whereNoProposal(x),
+                     list(NULL))
 })
 
 
@@ -5649,4 +6048,8 @@ test_that("whereTheta works", {
     expect_error(whereTheta(x), "'object' has class \"PoissonBinomialMixture\"")
     x <- new("NormalFixedNotUseExp")
     expect_error(whereTheta(x), "'object' has class \"NormalFixedNotUseExp\"")
+    x <- new("Round3")
+    expect_error(whereTheta(x), "'object' has class \"Round3\"")
+    x <- new("TFixedNotUseExp")
+    expect_error(whereTheta(x), "'object' has class \"TFixedNotUseExp\"")
 })

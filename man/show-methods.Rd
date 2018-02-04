@@ -20,6 +20,7 @@
 \alias{show,SpecLikelihoodPoissonBinomialMixture-method}
 \alias{show,SpecLikelihoodRound3-method}
 \alias{show,SpecLikelihoodNormalFixed-method}
+\alias{show,SpecLikelihoodTFixed-method}
 \alias{show,SpecBinomialVarying-method}
 \alias{show,SpecCMPVarying-method}
 \alias{show,SpecNormalVaryingVarsigmaKnown-method}
@@ -28,6 +29,7 @@
 \alias{show,SpecPoissonBinomialMixture-method}
 \alias{show,SpecRound3-method}
 \alias{show,SpecNormalFixed-method}
+\alias{show,SpecTFixed-method}
 \alias{show,Components-method}
 \alias{show,Covariates-method}
 \alias{show,Error-method}
@@ -78,6 +80,8 @@
 
 \S4method{show}{SpecLikelihoodNormalFixed}(object)
 
+\S4method{show}{SpecLikelihoodTFixed}(object)
+
 \S4method{show}{SpecBinomialVarying}(object)
 
 \S4method{show}{SpecCMPVarying}(object)
@@ -93,6 +97,8 @@
 \S4method{show}{SpecRound3}(object)
 
 \S4method{show}{SpecNormalFixed}(object)
+
+\S4method{show}{SpecTFixed}(object)
 
 \S4method{show}{Components}(object)
 
