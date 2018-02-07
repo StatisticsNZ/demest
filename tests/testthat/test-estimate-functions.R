@@ -687,6 +687,29 @@
 ## time.damp <- fetch(filename, c("mod", "hyper", "time", "damp"))
 
 
+## set.seed(1)
+## y <- Counts(array(rpois(n = 60, lambda = 10),
+##                   dim = c(2, 3, 10),
+##                   dimnames = list(sex = c("f", "m"), age = 0:2, dep = 1:10)))
+## exposure <- y + 2
+## filename <- tempfile()
+## estimateModel(Model(y ~ CMP(mean ~ sex + age + dep),
+##                     dep ~ DLM(),
+##                     jump = 0.2),
+##               y = y,
+##               exposure = exposure,
+##               filename = filename,
+##               nBurnin = 0,
+##               nSim = 5,
+##               nChain = 4,
+##               nThin = 1, useC = F)
+## fetchSummary(filename)
+## time.level <- fetch(filename, c("mod", "hyper", "time", "level"))
+## time.scaleLevel <- fetch(filename, c("mod", "hyper", "time", "scaleLevel"))
+## time.trend <- fetch(filename, c("mod", "hyper", "time", "trend"))
+## time.scaleTrend <- fetch(filename, c("mod", "hyper", "time", "scaleTrend"))
+## time.damp <- fetch(filename, c("mod", "hyper", "time", "damp"))
+
 
 
 ## y <- Counts(array(rpois(n = 24, lambda = 1:24),

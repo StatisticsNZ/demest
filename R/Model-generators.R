@@ -694,17 +694,14 @@ setMethod("initialModel",
                   mean.y.obs <- mean(y@.Data[is.obs]) 
               else
                   mean.y.obs <- 0.5
-              shape <- ifelse(is.obs, 0.5 * mean.y.obs + 0.5 * y@.Data, mean.y.obs)
+              shape <- ifelse(is.obs, 0.05 * mean.y.obs + 0.95 * y@.Data, mean.y.obs)
               if (has.exposure) {
                   mean.expose.obs <- mean(exposure[is.obs])
-                  rate <- ifelse(is.obs, 0.5 * mean.expose.obs + 0.5 * exposure, mean.expose.obs)
+                  rate <- ifelse(is.obs, 0.05 * mean.expose.obs + 0.95 * exposure, mean.expose.obs)
               }
               else
                   rate <- 1
-              if (has.exposure)
-                  scale.theta.multiplier <- sqrt(mean.y.obs + 1)
-              else
-                  scale.theta.multiplier <- 1.0
+              scale.theta.multiplier <- sqrt(mean.y.obs + 1)
               scale.theta.multiplier <- methods::new("Scale", scale.theta.multiplier)
               theta <- stats::rgamma(n = length(y), shape = shape, rate = rate)
               if (has.exposure)
@@ -723,7 +720,7 @@ setMethod("initialModel",
               ## need to avoid having all 'theta' equalling lower or upper bound
               is.too.low <- theta < lower
               n.too.low <- sum(is.too.low)
-              width <- 0.2 * (upper - lower)
+              width <- 0.05 * (upper - lower)
               if (is.infinite(width))
                   width <- 100
               theta[is.too.low] <- stats::runif(n = n.too.low, min = lower, max = lower + width)
@@ -1584,6 +1581,80 @@ setMethod("initialModelPredict",
               }
               ans
           })
+
+## HAS_TESTS
+setMethod("initialModelPredict",
+          signature(model = "CMPVarying"),
+          function(model, along, labels, n, offsetModel,
+                   covariates, aggregate, lower, upper) {
+              l <- initialModelPredictHelper(model = model,
+                                             along = along,
+                                             labels = labels,
+                                             n = n,
+                                             offsetModel = offsetModel,
+                                             covariates = covariates)
+              nu.cmp <- new("ParameterVector", rep(1, times = length(l$theta)))
+              metadataY <- l$metadataY
+              box.cox.param <- model@boxCoxParam
+              if (box.cox.param > 0) {
+                  if (is.null(lower))
+                      lower <- (box.cox.param * model@lower + 1) ^ (1 / box.cox.param)
+                  if (is.null(upper))
+                      upper <- (box.cox.param * model@upper + 1) ^ (1 / box.cox.param)
+              }
+              else {
+                  if (is.null(lower))
+                      lower <- exp(model@lower)
+                  if (is.null(upper))
+                      upper <- exp(model@upper)
+              }
+              checkLowerAndUpper(lower = lower,
+                                 upper = upper,
+                                 distribution = "Poisson")
+              lower <- model@lower
+              upper <- model@upper
+              uses.exposure <- methods::is(model, "UseExposure")
+              if (uses.exposure)
+                  Class <- "CMPVaryingUseExpPredict"
+              else
+                  Class <- "CMPVaryingNotUseExpPredict"
+              ans <- methods::new(Class,
+                                  model,
+                                  theta = l$theta,
+                                  nuCMP = nu.cmp,
+                                  metadataY = metadataY,
+                                  cellInLik = l$cellInLik,
+                                  nAcceptTheta = methods::new("Counter", 0L),
+                                  lower = lower,
+                                  upper = upper,
+                                  nFailedPropTheta = methods::new("Counter", 0L),
+                                  betas = l$betas,
+                                  priorsBetas = l$priorsBetas,
+                                  strucZeroArray = l$strucZeroArray,
+                                  iteratorBetas = l$iteratorBetas,
+                                  dims = l$dims,
+                                  betaIsPredicted = l$betaIsPredicted,
+                                  offsetsBetas = l$offsetsBetas,
+                                  offsetsPriorsBetas = l$offsetsPriorsBetas,
+                                  offsetsSigma = l$offsetsSigma,
+                                  iMethodModel = l$iMethodModel)
+              if (!is.null(aggregate)) {
+                  if (uses.exposure)
+                      default.weights <- NULL
+                  else
+                      default.weights <- array(1.0,
+                                               dim = dim(metadataY),
+                                               dimnames = dimnames(metadataY))
+                  ans <- addAg(model = ans,
+                               aggregate = aggregate,
+                               defaultWeights = default.weights)
+                  ans <- makeCellInLik(model = ans,
+                                       strucZeroArray = l$strucZeroArray)
+              }
+              ans
+          })
+
+
 
 ## HAS_TESTS
 setMethod("initialModelPredict",

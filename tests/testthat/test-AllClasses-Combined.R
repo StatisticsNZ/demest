@@ -1048,6 +1048,111 @@ test_that("validity tests for CombinedModelPoissonHasExp inherited from Combined
                  "y > 0 but exposure == 0 for some cells")
 })
 
+test_that("can create valid object of class CombinedModelCMPNotHasExp", {
+    BetaIterator <- demest:::BetaIterator
+    y <- Counts(array(as.integer(rpois(24, lambda = 10)),
+                      dim = 2:4,
+                      dimnames = list(sex = c("f", "m"), region = letters[1:3], age = 0:3)))
+    y[1:4] <- NA
+    model <- new("CMPVaryingNotUseExp",
+                 theta = rbeta(n = 24, shape1 = 5, shape2 = 5),
+                 nuCMP = new("ParameterVector", runif(24)),
+                 meanLogNuCMP = new("Parameter", rnorm(1)),
+                 sdLogNuCMP = new("Scale", runif(1)),
+                 meanMeanLogNuCMP = new("Parameter", rnorm(1)),
+                 sdMeanLogNuCMP = new("Scale", runif(1)),
+                 ASDLogNuCMP = new("Scale", runif(1)),
+                 nuSDLogNuCMP = new("DegreesFreedom", 7),
+                 metadataY = y@metadata,
+                 strucZeroArray = Counts(array(1L,
+                                               dim = 2:4,
+                                               dimnames = list(sex = c("f", "m"),
+                                                               region = letters[1:3], age = 0:3))),
+                 cellInLik = rep(TRUE, 24),
+                 scaleTheta = new("Scale", 0.1),
+                 nAcceptTheta = new("Counter", 0L),
+                 lower = -Inf,
+                 upper = Inf,
+                 maxAttempt = 100L,
+                 nFailedPropTheta = new("Counter", 0L),
+                 sigma = new("Scale", 1),
+                 ASigma = new("Scale", 1),
+                 sigmaMax = new("Scale", 5),
+                 betas = list(5, rnorm(2), rnorm(3), rnorm(4)),
+                 namesBetas = c("(Intercept)", c("sex", "region", "age")),
+                 margins = list(0L, 1L, 2L, 3L),
+                 priorsBetas = list(new("ExchFixed", isSaturated = new("LogicalFlag", FALSE), allStrucZero = FALSE),
+                                    new("ExchFixed", J = new("Length", 2L), isSaturated = new("LogicalFlag", FALSE),
+                                        allStrucZero = rep(FALSE, 2)),
+                                    new("ExchNormZero", J = new("Length", 3L), tauMax = new("Scale", 5),
+                                        isSaturated = new("LogicalFlag", FALSE),
+                                        allStrucZero = rep(FALSE, 3)),
+                                    new("ExchNormZero", J = new("Length", 4L), tauMax = new("Scale", 5),
+                                        isSaturated = new("LogicalFlag", FALSE),
+                                        allStrucZero = rep(FALSE, 4))),
+                 iteratorBetas = BetaIterator(dim = 2:4, margins = list(0L, 1L, 2L, 3L)),
+                 dims = list(0L, 2L, 3L, 4L))
+    x <- new("CombinedModelCMPNotHasExp",
+             model = model,
+             y = y)
+    expect_true(validObject(x))
+})
+
+
+test_that("can create valid object of class CombinedModelCMPHasExp", {
+    BetaIterator <- demest:::BetaIterator
+    y <- Counts(array(as.integer(rpois(24, lambda = 10)),
+                      dim = 2:4,
+                      dimnames = list(sex = c("f", "m"), region = letters[1:3], age = 0:3)))
+    y[1:4] <- NA
+    exposure <- y + 1
+    model <- new("CMPVaryingUseExp",
+                 theta = rbeta(n = 24, shape1 = 5, shape2 = 5),
+                 nuCMP = new("ParameterVector", runif(24)),
+                 meanLogNuCMP = new("Parameter", rnorm(1)),
+                 sdLogNuCMP = new("Scale", runif(1)),
+                 meanMeanLogNuCMP = new("Parameter", rnorm(1)),
+                 sdMeanLogNuCMP = new("Scale", runif(1)),
+                 ASDLogNuCMP = new("Scale", runif(1)),
+                 nuSDLogNuCMP = new("DegreesFreedom", 7),
+                 metadataY = y@metadata,
+                 strucZeroArray = Counts(array(1L,
+                                               dim = 2:4,
+                                               dimnames = list(sex = c("f", "m"),
+                                                               region = letters[1:3], age = 0:3))),
+                 cellInLik = rep(TRUE, 24),
+                 scaleTheta = new("Scale", 0.1),
+                 nAcceptTheta = new("Counter", 0L),
+                 lower = -Inf,
+                 upper = Inf,
+                 maxAttempt = 100L,
+                 nFailedPropTheta = new("Counter", 0L),
+                 sigma = new("Scale", 1),
+                 ASigma = new("Scale", 1),
+                 sigmaMax = new("Scale", 5),
+                 betas = list(5, rnorm(2), rnorm(3), rnorm(4)),
+                 namesBetas = c("(Intercept)", c("sex", "region", "age")),
+                 margins = list(0L, 1L, 2L, 3L),
+                 priorsBetas = list(new("ExchFixed", isSaturated = new("LogicalFlag", FALSE), allStrucZero = FALSE),
+                                    new("ExchFixed", J = new("Length", 2L), isSaturated = new("LogicalFlag", FALSE),
+                                        allStrucZero = rep(FALSE, 2)),
+                                    new("ExchNormZero", J = new("Length", 3L), tauMax = new("Scale", 5),
+                                        isSaturated = new("LogicalFlag", FALSE),
+                                        allStrucZero = rep(FALSE, 3)),
+                                    new("ExchNormZero", J = new("Length", 4L), tauMax = new("Scale", 5),
+                                        isSaturated = new("LogicalFlag", FALSE),
+                                        allStrucZero = rep(FALSE, 4))),
+                 iteratorBetas = BetaIterator(dim = 2:4, margins = list(0L, 1L, 2L, 3L)),
+                 dims = list(0L, 2L, 3L, 4L))
+    x <- new("CombinedModelCMPHasExp",
+             model = model,
+             y = y,
+             exposure = exposure)
+    expect_true(validObject(x))
+})
+
+
+
 
 ## CombinedCounts ##########################################################################
 

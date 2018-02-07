@@ -7352,14 +7352,16 @@ test_that("updateTheta_PoissonVaryingUseExp gives valid answer", {
         y <- Counts(array(as.integer(rpois(n = 20, lambda = 0.5 * exposure)),
                           dim = c(5, 4),
                           dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
-        spec <- Model(y ~ Poisson(mean ~ age + region, boxcox = 0.7))
+        spec <- Model(y ~ Poisson(mean ~ age + region, boxcox = 0.9))
         model <- initialModel(spec, y = y, exposure = exposure)
         set.seed(seed + 1)
         ans.obtained <- updateTheta_PoissonVaryingUseExp(model, y = y, exposure = exposure)
         set.seed(seed + 1)
         ans.expected <- model
-        g <- function(x) (x^(0.7) - 1)/0.7
-        g.inv <- function(x) (0.7*x + 1)^(1/0.7)
+        ## CURRENTLY FAILS. WE MAY NEED TO CHANGE 'lower' and 'upper' TO PREVENT THIS
+        ## FROM HAPPENING WITH BOX-COX MODELS
+        g <- function(x) (x^(0.9) - 1)/0.9
+        g.inv <- function(x) (0.9*x + 1)^(1/0.9)
         mu <- (model@betas[[1]]
             + model@betas[[2]]
             + rep(model@betas[[3]], each = 5))

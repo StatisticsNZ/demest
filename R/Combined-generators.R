@@ -121,6 +121,50 @@ setMethod("initialCombinedModel",
                             "y", class(y), "Poisson", "y", "Counts"))
           })
 
+## HAS_TESTS
+setMethod("initialCombinedModel",
+          signature(object = "SpecCMPVarying",
+                    y = "Counts",
+                    exposure = "NULL",
+                    weights = "ANY"),
+          function(object, y, exposure, weights) {
+              if (!is.null(weights))
+                  warning(gettextf("'%s' argument ignored when distribution is %s",
+                                   "weights", "CMP"))
+              model <- initialModel(object, y = y, exposure = exposure)
+              methods::new("CombinedModelCMPNotHasExp",
+                  model = model,
+                  y = y)
+          })
+
+## HAS_TESTS
+setMethod("initialCombinedModel",
+          signature(object = "SpecCMPVarying",
+                    y = "Counts",
+                    exposure = "Counts",
+                    weights = "ANY"),
+          function(object, y, exposure, weights) {
+              if (!is.null(weights))
+                  warning(gettextf("'%s' argument ignored when distribution is %s",
+                                   "weights", "CMP"))
+              model <- initialModel(object, y = y, exposure = exposure)
+              methods::new("CombinedModelCMPHasExp",
+                  model = model,
+                  y = y,
+                  exposure = exposure)
+          })
+
+## HAS_TESTS
+setMethod("initialCombinedModel",
+          signature(object = "SpecCMPVarying",
+                    y = "ANY",
+                    exposure = "CountsOrNULL",
+                    weights = "ANY"),
+          function(object, y, exposure, weights) {
+              stop(gettextf("'%s' has class \"%s\" : in a %s model '%s' must have class \"%s\"",
+                            "y", class(y), "CMP", "y", "Counts"))
+          })
+
 
 
 ## initialCombinedModelPredict ##############################################################
@@ -244,6 +288,75 @@ setMethod("initialCombinedModelPredict",
                            y = y,
                            exposure = exposure)
           })
+
+
+## HAS_TESTS
+setMethod("initialCombinedModelPredict",
+          signature(combined = "CombinedModelCMPNotHasExp"),
+          function(combined, along, labels, n, covariates,
+                   aggregate, lower, upper, yIsCounts) {
+              model <- combined@model
+              model <- initialModelPredict(model = model,
+                                           along = along,
+                                           labels = labels,
+                                           n = n,
+                                           offsetModel = 1L,
+                                           covariates = covariates,
+                                           aggregate = aggregate,
+                                           lower = lower,
+                                           upper = upper)
+              metadata <- model@metadataY
+              struc.zero.array <- model@strucZeroArray@.Data
+              .Data <- ifelse(struc.zero.array == 0L, 0L, NA_integer_)
+              .Data <- array(.Data,
+                             dim = dim(metadata),
+                             dimnames = dimnames(metadata))
+              class.y <- if (yIsCounts) "Counts" else "Values"
+              y <- methods::new(class.y, .Data = .Data, metadata = metadata)
+              methods::new("CombinedModelCMPNotHasExp",
+                           model = model,
+                           y = y)
+          })
+
+
+## HAS_TESTS
+setMethod("initialCombinedModelPredict",
+          signature(combined = "CombinedModelCMPHasExp"),
+          function(combined, along, labels, n, covariates,
+                   aggregate, lower, upper, yIsCounts) {
+              model <- combined@model
+              model <- initialModelPredict(model = model,
+                                           along = along,
+                                           labels = labels,
+                                           n = n,
+                                           offsetModel = 1L,
+                                           covariates = covariates,
+                                           aggregate = aggregate,
+                                           lower = lower,
+                                           upper = upper)
+              metadata <- model@metadataY
+              struc.zero.array <- model@strucZeroArray@.Data
+              .Data.y <- ifelse(struc.zero.array == 0L, 0L, NA_integer_)
+              .Data.exp <- ifelse(struc.zero.array == 0L, 0, as.numeric(NA))
+              .Data.y <- array(.Data.y,
+                               dim = dim(metadata),
+                               dimnames = dimnames(metadata))
+              .Data.exp <- array(.Data.exp,
+                                 dim = dim(metadata),
+                                 dimnames = dimnames(metadata))
+              class.y <- if (yIsCounts) "Counts" else "Values"
+              y <- methods::new(class.y,
+                                .Data = .Data.y,
+                                metadata = metadata)
+              exposure <- methods::new("Counts",
+                                       .Data = .Data.exp,
+                                       metadata = metadata)
+              methods::new("CombinedModelCMPHasExp",
+                           model = model,
+                           y = y,
+                           exposure = exposure)
+          })
+
 
 
 ## initialCombinedCounts #############################################################

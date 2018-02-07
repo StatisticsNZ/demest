@@ -2601,6 +2601,7 @@ updateThetaAndNu_CMPVaryingNotUseExp <- function(object, y, useC = FALSE) {
     else {
         theta <- object@theta
         box.cox.param <- object@boxCoxParam
+        cell.in.lik <- object@cellInLik
         scale <- object@scaleTheta
         scale.multiplier <- object@scaleThetaMultiplier
         lower <- object@lower
@@ -2620,75 +2621,85 @@ updateThetaAndNu_CMPVaryingNotUseExp <- function(object, y, useC = FALSE) {
         iterator <- resetB(iterator)
         scale <- scale * scale.multiplier
         for (i in seq_along(theta)) {
-            indices <- iterator@indices
-            mu <- 0
-            for (b in seq_along(betas))
-                mu <- mu + betas[[b]][indices[b]]
-            y.is.missing <- is.na(y[i]) 
-            if (y.is.missing) {
-                mean <- mu
-                sd <- sigma
-            }
-            else {
-                th.curr <- theta[i]
-                if (box.cox.param > 0)
-                    tr.th.curr <- (th.curr ^ box.cox.param - 1) / box.cox.param # ('tr' short for 'transformed')
-                else
-                    tr.th.curr <- log(th.curr)
-                mean <- tr.th.curr
-                sd <- scale
-            }
-            found.prop.theta <- FALSE
-            attempt <- 0L
-            while (!found.prop.theta && (attempt < max.attempt)) {
-                attempt <- attempt + 1L
-                tr.th.prop <- stats::rnorm(n = 1L, mean = mean, sd = sd)
-                found.prop.theta <- ((tr.th.prop > lower + tolerance)
-                    && (tr.th.prop < upper - tolerance))
-            }
-            if (found.prop.theta) {
-                if (box.cox.param > 0)
-                    th.prop <- (box.cox.param * tr.th.prop + 1) ^ (1 / box.cox.param)
-                else
-                    th.prop <- exp(tr.th.prop)
-                if (y.is.missing)
-                    theta[i] <- th.prop
+            is.struc.zero <- !cell.in.lik[i] && !is.na(y[i]) && (y[i] == 0L)
+            if (!is.struc.zero) {
+                indices <- iterator@indices
+                mu <- 0
+                for (b in seq_along(betas))
+                    mu <- mu + betas[[b]][indices[b]]
+                y.is.missing <- is.na(y[i]) 
+                if (y.is.missing) {
+                    mean <- mu
+                    sd <- sigma
+                }
                 else {
-                    nu.curr <- nu[i]
-                    log.nu.curr <- log(nu.curr)
-                    log.nu.prop <- stats::rnorm(n = 1L,
-                                                mean = mean.log.nu,
-                                                sd = sd.log.nu)
-                    nu.prop <- exp(log.nu.prop)
-                    y.star <- rcmp1(mu = th.prop,
-                                    nu = nu.prop,
-                                    max = max.attempt)
-                    found.y.star <- is.finite(y.star)
-                    if (found.y.star) {
-                        log.lik.curr <- logDensCMPUnnormalised1(x = y[i], gamma = th.curr, nu = nu.curr)
-                        log.lik.prop <- logDensCMPUnnormalised1(x = y[i], gamma = th.prop, nu = nu.prop)
-                        log.lik.curr.star <- logDensCMPUnnormalised1(x = y.star, gamma = th.curr, nu = nu.curr)
-                        log.lik.prop.star <- logDensCMPUnnormalised1(x = y.star, gamma = th.prop, nu = nu.prop)
-                        log.dens.th.curr <- stats::dnorm(x = tr.th.curr, mean = mu, sd = sigma, log = TRUE) 
-                        log.dens.th.prop <- stats::dnorm(x = tr.th.prop, mean = mu, sd = sigma, log = TRUE)
-                        log.dens.nu.curr <- stats::dnorm(x = log.nu.curr, mean = mean.log.nu, sd = sd.log.nu, log = TRUE) 
-                        log.dens.nu.prop <- stats::dnorm(x = log.nu.prop, mean = mean.log.nu, sd = sd.log.nu, log = TRUE)
-                        log.diff <- (log.lik.prop - log.lik.curr + log.lik.curr.star - log.lik.prop.star 
-                        + log.dens.th.prop - log.dens.th.curr + log.dens.nu.prop - log.dens.nu.curr)
-                        accept <- (log.diff >= 0) || (stats::runif(n = 1L) < exp(log.diff)) ## added brackets 10/1/2018 JAH
-                        if (accept) {
-                            n.accept.theta <- n.accept.theta + 1L
-                            theta[i] <- th.prop
-                            nu[i] <- nu.prop
-                        }
+                    th.curr <- theta[i]
+                    if (box.cox.param > 0)
+                        tr.th.curr <- (th.curr ^ box.cox.param - 1) / box.cox.param # ('tr' short for 'transformed')
+                    else
+                        tr.th.curr <- log(th.curr)
+                    mean <- tr.th.curr
+                    if (y.is.missing)
+                        sd <- scale / scale.multiplier
+                    else
+                        sd <- scale / sqrt(1 + y[i])
+                }
+                found.prop.theta <- FALSE
+                attempt <- 0L
+                while (!found.prop.theta && (attempt < max.attempt)) {
+                    attempt <- attempt + 1L
+                    tr.th.prop <- stats::rnorm(n = 1L, mean = mean, sd = sd)
+                    found.prop.theta <- ((tr.th.prop > lower + tolerance)
+                        && (tr.th.prop < upper - tolerance))
+                }
+                if (found.prop.theta) {
+                    if (box.cox.param > 0)
+                        th.prop <- (box.cox.param * tr.th.prop + 1) ^ (1 / box.cox.param)
+                    else
+                        th.prop <- exp(tr.th.prop)
+                    if (y.is.missing) {
+                        theta[i] <- th.prop
+                        nu[i] <- rlnorm(n = 1L,
+                                        meanlog = mean.log.nu,
+                                        sdlog = sd.log.nu)
                     }
                     else {
-                        n.failed.prop.y.star <- n.failed.prop.y.star + 1L
+                        nu.curr <- nu[i] 
+                        log.nu.curr <- log(nu.curr)
+                        log.nu.prop <- stats::rnorm(n = 1L,
+                                                    mean = mean.log.nu,
+                                                    sd = sd.log.nu)
+                        nu.prop <- exp(log.nu.prop)
+                        y.star <- rcmp1(mu = th.prop,
+                                        nu = nu.prop,
+                                        max = max.attempt)
+                        found.y.star <- is.finite(y.star)
+                        if (found.y.star) {
+                            log.lik.curr <- logDensCMPUnnormalised1(x = y[i], gamma = th.curr, nu = nu.curr)
+                            log.lik.prop <- logDensCMPUnnormalised1(x = y[i], gamma = th.prop, nu = nu.prop)
+                            log.lik.curr.star <- logDensCMPUnnormalised1(x = y.star, gamma = th.curr, nu = nu.curr)
+                            log.lik.prop.star <- logDensCMPUnnormalised1(x = y.star, gamma = th.prop, nu = nu.prop)
+                            log.dens.th.curr <- stats::dnorm(x = tr.th.curr, mean = mu, sd = sigma, log = TRUE) 
+                            log.dens.th.prop <- stats::dnorm(x = tr.th.prop, mean = mu, sd = sigma, log = TRUE)
+                            log.dens.nu.curr <- stats::dnorm(x = log.nu.curr, mean = mean.log.nu, sd = sd.log.nu, log = TRUE) 
+                            log.dens.nu.prop <- stats::dnorm(x = log.nu.prop, mean = mean.log.nu, sd = sd.log.nu, log = TRUE)
+                            log.diff <- (log.lik.prop - log.lik.curr + log.lik.curr.star - log.lik.prop.star 
+                                + log.dens.th.prop - log.dens.th.curr + log.dens.nu.prop - log.dens.nu.curr)
+                            accept <- (log.diff >= 0) || (stats::runif(n = 1L) < exp(log.diff))
+                            if (accept) {
+                                n.accept.theta <- n.accept.theta + 1L
+                                theta[i] <- th.prop
+                                nu[i] <- nu.prop
+                            }
+                        }
+                        else {
+                            n.failed.prop.y.star <- n.failed.prop.y.star + 1L
+                        }
                     }
                 }
+                else
+                    n.failed.prop.theta <- n.failed.prop.theta + 1L
             }
-            else
-                n.failed.prop.theta <- n.failed.prop.theta + 1L
             iterator <- advanceB(iterator)
         }
         object@theta <- theta
@@ -2724,6 +2735,7 @@ updateThetaAndNu_CMPVaryingUseExp <- function(object, y, exposure, useC = FALSE)
     else {
         theta <- object@theta
         box.cox.param <- object@boxCoxParam
+        cell.in.lik <- object@cellInLik
         scale <- object@scaleTheta
         scale.multiplier <- object@scaleThetaMultiplier
         lower <- object@lower
@@ -2743,77 +2755,84 @@ updateThetaAndNu_CMPVaryingUseExp <- function(object, y, exposure, useC = FALSE)
         iterator <- resetB(iterator)
         scale <- scale * scale.multiplier
         for (i in seq_along(theta)) {
-            indices <- iterator@indices
-            mu <- 0
-            for (b in seq_along(betas))
-                mu <- mu + betas[[b]][indices[b]]
-            y.is.missing <- is.na(y[i]) 
-            if (y.is.missing) {
-                mean <- mu
-                sd <- sigma
-            }
-            else {
-                th.curr <- theta[i]
-                if (box.cox.param > 0)
-                    tr.th.curr <- (th.curr ^ box.cox.param - 1) / box.cox.param # ('tr' short for 'transformed')
-                else
-                    tr.th.curr <- log(th.curr)
-                mean <- tr.th.curr
-                sd <- scale
-            }
-            found.prop.theta <- FALSE
-            attempt <- 0L
-            while (!found.prop.theta && (attempt < max.attempt)) {
-                attempt <- attempt + 1L
-                tr.th.prop <- stats::rnorm(n = 1L, mean = mean, sd = sd)
-                found.prop.theta <- ((tr.th.prop > lower + tolerance)
-                    && (tr.th.prop < upper - tolerance))
-            }
-            if (found.prop.theta) {
-                if (box.cox.param > 0)
-                    th.prop <- (box.cox.param * tr.th.prop + 1) ^ (1 / box.cox.param)
-                else
-                    th.prop <- exp(tr.th.prop)
-                if (y.is.missing)
-                    theta[i] <- th.prop
+            is.struc.zero <- !cell.in.lik[i] && !is.na(y[i]) && (y[i] == 0L)
+            if (!is.struc.zero) {
+                indices <- iterator@indices
+                mu <- 0
+                for (b in seq_along(betas))
+                    mu <- mu + betas[[b]][indices[b]]
+                y.is.missing <- is.na(y[i]) 
+                if (y.is.missing) {
+                    mean <- mu
+                    sd <- sigma
+                }
                 else {
-                    nu.curr <- nu[i]
-                    log.nu.curr <- log(nu.curr)
-                    log.nu.prop <- stats::rnorm(n = 1L,
-                                                mean = mean.log.nu,
-                                                sd = sd.log.nu)
-                    nu.prop <- exp(log.nu.prop)
-                    y.star <- rcmp1(mu = th.prop,
-                                    nu = nu.prop,
-                                    max = max.attempt)
-                    found.y.star <- is.finite(y.star)
-                    if (found.y.star) {
-                        gamma.curr <- th.curr * exposure[i]
-                        gamma.prop <- th.prop * exposure[i]
-                        log.lik.curr <- logDensCMPUnnormalised1(x = y[i], gamma = gamma.curr, nu = nu.curr)
-                        log.lik.prop <- logDensCMPUnnormalised1(x = y[i], gamma = gamma.prop, nu = nu.prop)
-                        log.lik.curr.star <- logDensCMPUnnormalised1(x = y.star, gamma = gamma.curr, nu = nu.curr)
-                        log.lik.prop.star <- logDensCMPUnnormalised1(x = y.star, gamma = gamma.prop, nu = nu.prop)
-                        log.dens.th.curr <- stats::dnorm(x = tr.th.curr, mean = mu, sd = sigma, log = TRUE) 
-                        log.dens.th.prop <- stats::dnorm(x = tr.th.prop, mean = mu, sd = sigma, log = TRUE)
-                        log.dens.nu.curr <- stats::dnorm(x = log.nu.curr, mean = mean.log.nu, sd = sd.log.nu, log = TRUE) 
-                        log.dens.nu.prop <- stats::dnorm(x = log.nu.prop, mean = mean.log.nu, sd = sd.log.nu, log = TRUE)
-                        log.diff <- (log.lik.prop - log.lik.curr + log.lik.curr.star - log.lik.prop.star 
-                            + log.dens.th.prop - log.dens.th.curr + log.dens.nu.prop - log.dens.nu.curr) ## added brackets 11/1/2018 JAH
-                        accept <- (log.diff >= 0) || (stats::runif(n = 1L) < exp(log.diff))
-                        if (accept) {
-                            n.accept.theta <- n.accept.theta + 1L
-                            theta[i] <- th.prop
-                            nu[i] <- nu.prop
-                        }
+                    th.curr <- theta[i]
+                    if (box.cox.param > 0)
+                        tr.th.curr <- (th.curr ^ box.cox.param - 1) / box.cox.param # ('tr' short for 'transformed')
+                    else
+                        tr.th.curr <- log(th.curr)
+                    mean <- tr.th.curr
+                    sd <- scale
+                }
+                found.prop.theta <- FALSE
+                attempt <- 0L
+                while (!found.prop.theta && (attempt < max.attempt)) {
+                    attempt <- attempt + 1L
+                    tr.th.prop <- stats::rnorm(n = 1L, mean = mean, sd = sd)
+                    found.prop.theta <- ((tr.th.prop > lower + tolerance)
+                        && (tr.th.prop < upper - tolerance))
+                }
+                if (found.prop.theta) {
+                    if (box.cox.param > 0)
+                        th.prop <- (box.cox.param * tr.th.prop + 1) ^ (1 / box.cox.param)
+                    else
+                        th.prop <- exp(tr.th.prop)
+                    if (y.is.missing) {
+                        theta[i] <- th.prop
+                        nu[i] <- rlnorm(n = 1L,
+                                        meanlog = mean.log.nu,
+                                        sdlog = sd.log.nu)
                     }
                     else {
-                        n.failed.prop.y.star <- n.failed.prop.y.star + 1L
+                        nu.curr <- nu[i]
+                        log.nu.curr <- log(nu.curr)
+                        log.nu.prop <- stats::rnorm(n = 1L,
+                                                    mean = mean.log.nu,
+                                                    sd = sd.log.nu)
+                        nu.prop <- exp(log.nu.prop)
+                        y.star <- rcmp1(mu = th.prop,
+                                        nu = nu.prop,
+                                        max = max.attempt)
+                        found.y.star <- is.finite(y.star)
+                        if (found.y.star) {
+                            gamma.curr <- th.curr * exposure[i]
+                            gamma.prop <- th.prop * exposure[i]
+                            log.lik.curr <- logDensCMPUnnormalised1(x = y[i], gamma = gamma.curr, nu = nu.curr)
+                            log.lik.prop <- logDensCMPUnnormalised1(x = y[i], gamma = gamma.prop, nu = nu.prop)
+                            log.lik.curr.star <- logDensCMPUnnormalised1(x = y.star, gamma = gamma.curr, nu = nu.curr)
+                            log.lik.prop.star <- logDensCMPUnnormalised1(x = y.star, gamma = gamma.prop, nu = nu.prop)
+                            log.dens.th.curr <- stats::dnorm(x = tr.th.curr, mean = mu, sd = sigma, log = TRUE) 
+                            log.dens.th.prop <- stats::dnorm(x = tr.th.prop, mean = mu, sd = sigma, log = TRUE)
+                            log.dens.nu.curr <- stats::dnorm(x = log.nu.curr, mean = mean.log.nu, sd = sd.log.nu, log = TRUE) 
+                            log.dens.nu.prop <- stats::dnorm(x = log.nu.prop, mean = mean.log.nu, sd = sd.log.nu, log = TRUE)
+                            log.diff <- (log.lik.prop - log.lik.curr + log.lik.curr.star - log.lik.prop.star 
+                                + log.dens.th.prop - log.dens.th.curr + log.dens.nu.prop - log.dens.nu.curr)
+                            accept <- (log.diff >= 0) || (stats::runif(n = 1L) < exp(log.diff))
+                            if (accept) {
+                                n.accept.theta <- n.accept.theta + 1L
+                                theta[i] <- th.prop
+                                nu[i] <- nu.prop
+                            }
+                        }
+                        else {
+                            n.failed.prop.y.star <- n.failed.prop.y.star + 1L
+                        }
                     }
                 }
+                else
+                    n.failed.prop.theta <- n.failed.prop.theta + 1L
             }
-            else
-                n.failed.prop.theta <- n.failed.prop.theta + 1L
             iterator <- advanceB(iterator)
         }
         object@theta <- theta

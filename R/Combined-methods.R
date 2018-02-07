@@ -340,6 +340,63 @@ setMethod("updateCombined",
               }
           })
 
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("updateCombined",
+          signature(object = "CombinedModelCMPNotHasExp"),
+          function(object, nUpdate = 1L, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              methods::validObject(object)
+              ## nUpdate
+              stopifnot(identical(length(nUpdate), 1L))
+              stopifnot(is.integer(nUpdate))
+              stopifnot(!is.na(nUpdate))
+              stopifnot(nUpdate >= 0L)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(updateCombined_CombinedModelCMPNotHasExp_R, object, nUpdate)
+                  else
+                      .Call(updateCombined_R, object, nUpdate)
+              }
+              else {
+                  model <- object@model
+                  y <- object@y
+                  for (i in seq_len(nUpdate))
+                      model <- updateModelNotUseExp(model, y = y)
+                  object@model <- model
+                  object
+              }
+          })
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("updateCombined",
+          signature(object = "CombinedModelCMPHasExp"),
+          function(object, nUpdate = 1L, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              methods::validObject(object)
+              ## nUpdate
+              stopifnot(identical(length(nUpdate), 1L))
+              stopifnot(is.integer(nUpdate))
+              stopifnot(!is.na(nUpdate))
+              stopifnot(nUpdate >= 0L)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(updateCombined_CombinedModelCMPHasExp_R, object, nUpdate)
+                  else
+                      .Call(updateCombined_R, object, nUpdate)
+              }
+              else {
+                  model <- object@model
+                  y <- object@y
+                  exposure <- object@exposure
+                  for (i in seq_len(nUpdate))
+                      model <- updateModelUseExp(model, y = y, exposure = exposure)
+                  object@model <- model
+                  object
+              }
+          })
+
 ## TRANSLATED
 ## HAS_TESTS
 setMethod("updateCombined",

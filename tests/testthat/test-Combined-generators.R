@@ -191,6 +191,68 @@ test_that("initialCombinedModel gives apprioriate warnings and errors with class
                  "'y' has class \"Values\" : in a Poisson model 'y' must have class \"Counts\"")
 })
 
+test_that("initialCombinedModel creates object of class CombinedModelCMP from valid inputs", {
+    initialCombinedModel <- demest:::initialCombinedModel
+    spec <- Model(y ~ CMP(mean ~ sex + time, useExpose = FALSE))
+    y <- Counts(array(as.integer(rbinom(n = 12, size = 10, prob = 0.8)),
+                             dim = c(2, 6),
+                      dimnames = list(sex = c("f", "m"), time = 2000:2005)),
+                dimscales = c(time = "Intervals"))
+    x <- initialCombinedModel(object = spec, y = y, exposure = NULL, weights = NULL)
+    expect_true(validObject(x))
+    expect_is(x, "CombinedModelCMPNotHasExp")
+    expect_is(x@model, "CMPVaryingNotUseExp")
+    ## y has NA
+    spec <- Model(y ~ CMP(mean ~ sex + time, useExpose = FALSE))
+    exposure <- Counts(array(as.numeric(rpois(n = 12, lambda = 100)),
+                             dim = c(2, 6),
+                             dimnames = list(sex = c("f", "m"), time = 2000:2005)),
+                       dimscales = c(time = "Intervals"))
+    y <- Counts(array(as.integer(rbinom(n = 12, size = exposure, prob = 0.8)),
+                             dim = c(2, 6),
+                      dimnames = list(sex = c("f", "m"), time = 2000:2005)),
+                dimscales = c(time = "Intervals"))
+    y[1:5] <- NA
+    x <- initialCombinedModel(object = spec, y = y, exposure = NULL, weights = NULL)
+    expect_true(validObject(x))
+    expect_is(x, "CombinedModelCMPNotHasExp")
+    expect_is(x@model, "CMPVaryingNotUseExp")
+    expect_identical(sum(is.na(x@y)), 5L)
+})
+
+test_that("initialCombinedModel gives apprioriate warnings and errors with class SpecCMP", {
+    initialCombinedModel <- demest:::initialCombinedModel
+    ## 'weights' supplied
+    spec <- Model(y ~ CMP(mean ~ 1))
+    exposure <- Counts(array(as.double(rpois(n = 12, lambda = 100)),
+                             dim = c(2, 6),
+                             dimnames = list(sex = c("f", "m"), time = 2000:2005)),
+                       dimscales = c(time = "Intervals"))
+    weights <- Counts(array(rbeta(n = 12, shape1 = 1, shape2 = 1),
+                            dim = c(2, 6),
+                            dimnames = list(sex = c("f", "m"), time = 2000:2005)),
+                      dimscales = c(time = "Intervals"))
+    y <- Counts(array(as.integer(rbinom(n = 12, size = exposure, prob = 0.8)),
+                      dim = c(2, 6),
+                      dimnames = list(sex = c("f", "m"), time = 2000:2005)),
+                dimscales = c(time = "Intervals"))
+    expect_warning(initialCombinedModel(object = spec, y = y, exposure = exposure, weights = weights),
+                   "'weights' argument ignored when distribution is CMP")
+    ## y is Counts
+    spec <- Model(y ~ CMP(mean ~ 1))
+    exposure <- Counts(array(as.double(rpois(n = 12, lambda = 100)),
+                             dim = c(2, 6),
+                             dimnames = list(sex = c("f", "m"), time = 2000:2005)),
+                       dimscales = c(time = "Intervals"))
+    y <- Counts(array(as.double(rbinom(n = 12, size = exposure, prob = 0.8)),
+                      dim = c(2, 6),
+                      dimnames = list(sex = c("f", "m"), time = 2000:2005)),
+                dimscales = c(time = "Intervals"))
+    expect_error(initialCombinedModel(object = spec, y = as(y, "Values"),
+                                      exposure = exposure, weights = NULL),
+                 "'y' has class \"Values\" : in a CMP model 'y' must have class \"Counts\"")
+})
+
 
 ## CombinedModel - Predict ############################################################
 
@@ -297,6 +359,60 @@ test_that("test that initialCombinedModelPredict works with with CombinedModelPo
     expect_is(ans@y, "Counts")
     expect_true(all(is.na(ans@y)))
 })
+
+
+test_that("test that initialCombinedModelPredict works with with CombinedModelCMPNotHasExp", {
+    initialCombinedModelPredict <- demest:::initialCombinedModelPredict
+    initialCombinedModel <- demest:::initialCombinedModel
+    y <- Counts(array(as.integer(rpois(n = 30, lambda = 20)),
+                      dim = c(2, 3, 5),
+                      dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000:2004)),
+                dimscales = c(time = "Intervals"))
+    spec <- Model(y ~ CMP(mean ~ age + time, useExpose = FALSE))
+    combined <- initialCombinedModel(spec, y = y, exposure = NULL, weights = NULL)
+    ans <- initialCombinedModelPredict(combined = combined,
+                                       along = 3L,
+                                       labels = NULL,
+                                       n = 2,
+                                       covariates = NULL,
+                                       aggregate = NULL,
+                                       lower = NULL,
+                                       upper = NULL,
+                                       yIsCounts = TRUE)
+    expect_is(ans, "CombinedModelCMPNotHasExp")
+    expect_is(ans@y, "Counts")
+    expect_true(all(is.na(ans@y)))
+})
+
+
+test_that("test that initialCombinedModelPredict works with with CombinedModelCMPHasExp", {
+    initialCombinedModelPredict <- demest:::initialCombinedModelPredict
+    initialCombinedModel <- demest:::initialCombinedModel
+    exposure <- Counts(array(runif(30, max = 50),
+                             dim = c(2, 3, 5),
+                             dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000:2004)),
+                       dimscales = c(time = "Intervals"))
+    y <- Counts(array(as.integer(rpois(n = 30, lambda = 0.5 * exposure)),
+                      dim = c(2, 3, 5),
+                      dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000:2004)),
+                dimscales = c(time = "Intervals"))
+    spec <- Model(y ~ CMP(mean ~ sex * age + time))
+    combined <- initialCombinedModel(spec, y = y, exposure = exposure, weights = NULL)
+    ans <- initialCombinedModelPredict(combined = combined,
+                                       along = 3L,
+                                       labels = NULL,
+                                       n = 2,
+                                       covariates = NULL,
+                                       aggregate = NULL,
+                                       lower = NULL,
+                                       upper = NULL,
+                                       yIsCounts = TRUE)
+    expect_is(ans, "CombinedModelCMPHasExp")
+    expect_is(ans@y, "Counts")
+    expect_true(all(is.na(ans@y)))
+})
+
+
 
 
 ## CombinedCounts #####################################################################

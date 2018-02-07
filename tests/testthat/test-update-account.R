@@ -60,8 +60,8 @@ test_that("updateAccount works with CombinedAccountMovements", {
     ans.obtained <- updateAccount(x0)
     set.seed(1)
     ans.expected <- x0
-    for (i in seq_len(length(x0@account@population) + length(x0@account@components[[1]])
-                      + length(x0@account@components[[2]]))) {
+    for (i in seq_len(2 * length(x0@account@population) + 2 * length(x0@account@components[[1]])
+                      + 2 * length(x0@account@components[[2]]))) {
         ans.expected <- updateProposalAccount(ans.expected)
         if (ans.expected@generatedNewProposal@.Data) {
             diff.lik <- diffLogLikAccount(ans.expected)

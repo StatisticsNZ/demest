@@ -548,6 +548,7 @@ test_that("predictCombined works with object of class CombinedCountsPoissonHasEx
     predictModelUseExp <- demest:::predictModelUseExp
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     extractValues <- demest:::extractValues
+    transferParamModel <- demest:::transferParamModel
     object <- Model(y ~ Poisson(mean ~ sex * region))
     y <- Counts(array(1:24,
                       dim = 2:4,
@@ -887,6 +888,103 @@ test_that("R, specific C, and generic C versions of updateCombined give same ans
     exposure[1] <- NA
     y[1] <- NA
     spec <- Model(y ~ Poisson(mean ~ sex * age + time))
+    x <- initialCombinedModel(spec, y = y, exposure = exposure, weights = NULL)
+    set.seed(seed + 1)
+    ans.R <- updateCombined(x, useC = FALSE)
+    set.seed(seed + 1)
+    ans.C.specific <- updateCombined(x, useC = TRUE, useSpecific = TRUE)
+    set.seed(seed + 1)
+    ans.C.generic <- updateCombined(x, useC = TRUE, useSpecific = FALSE)
+    if (test.identity)
+        expect_identical(ans.C.specific, ans.R)
+    else
+        expect_equal(ans.C.specific, ans.R)
+    expect_identical(ans.C.specific, ans.C.generic)
+})
+
+
+test_that("updateCombined updates appropriate slots with CombinedModelCMPNotHasExp", {
+    updateCombined <- demest:::updateCombined
+    initialCombinedModel <- demest:::initialCombinedModel
+    set.seed(1)
+    y <- Counts(array(as.integer(rpois(n = 24, lambda = 30)),
+                      dim = 2:4,
+                      dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000:2003)),
+                dimscales = c(age = "Intervals", time = "Intervals"))
+    y[1] <- NA
+    spec <- Model(y ~ CMP(mean ~ sex * age + time, useExpose = FALSE))
+    x0 <- initialCombinedModel(spec, y = y, exposure = NULL, weights = NULL)
+    x1 <- updateCombined(x0)
+    for (name in "model")
+        expect_false(identical(slot(x1, name), slot(x0, name)))
+    for (name in c("y", "iMethodCombined", "slotsToExtract"))
+        expect_true(identical(slot(x1, name), slot(x0, name)))
+})
+
+## tests equal but not identical
+test_that("R, specific C, and generic C versions of updateCombined give same answer with CombinedModelCMPNotHasExp", {
+    updateCombined <- demest:::updateCombined
+    initialCombinedModel <- demest:::initialCombinedModel
+    seed <- 1
+    set.seed(seed)
+    y <- Counts(array(as.integer(rpois(n = 24, lambda = 30)),
+                      dim = 2:4,
+                      dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000:2003)),
+                dimscales = c(time = "Intervals"))
+    y[1] <- NA
+    spec <- Model(y ~ CMP(mean ~ sex * age + time, useExpose = FALSE))
+    x <- initialCombinedModel(spec, y = y, exposure = NULL, weights = NULL)
+    set.seed(seed + 1)
+    ans.R <- updateCombined(x, useC = FALSE)
+    set.seed(seed + 1)
+    ans.C.specific <- updateCombined(x, useC = TRUE, useSpecific = TRUE)
+    set.seed(seed + 1)
+    ans.C.generic <- updateCombined(x, useC = TRUE, useSpecific = FALSE)
+    if (test.identity)
+        expect_identical(ans.C.specific, ans.R)
+    else
+        expect_equal(ans.C.specific, ans.R)
+    expect_identical(ans.C.specific, ans.C.generic)
+})
+
+test_that("updateCombined updates appropriate slots with CombinedModelCMPUseExp", {
+    updateCombined <- demest:::updateCombined
+    initialCombinedModel <- demest:::initialCombinedModel
+    exposure <- Counts(array(runif(n = 24, max = 20),
+                      dim = 2:4,
+                             dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000:2003)),
+                       dimscales = c(time = "Intervals"))
+    y <- Counts(array(as.integer(rpois(n = 24, lambda = 0.5 * exposure)),
+                      dim = 2:4,
+                      dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000:2003)),
+                dimscales = c(time = "Intervals"))
+    exposure[1] <- NA
+    y[1] <- NA
+    spec <- Model(y ~ CMP(mean ~ sex * age + time))
+    x0 <- initialCombinedModel(spec, y = y, exposure = exposure, weights = NULL)
+    x1 <- updateCombined(x0)
+    for (name in "model")
+        expect_false(identical(slot(x1, name), slot(x0, name)))
+    for (name in c("y", "iMethodCombined", "slotsToExtract"))
+        expect_true(identical(slot(x1, name), slot(x0, name)))
+})
+
+test_that("R, specific C, and generic C versions of updateCombined give same answer with CombinedModelCMPUseExp", {
+    updateCombined <- demest:::updateCombined
+    initialCombinedModel <- demest:::initialCombinedModel
+    seed <- 1
+    set.seed(seed)
+    exposure <- Counts(array(runif(n = 24, max = 20),
+                             dim = 2:4,
+                             dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000:2003)),
+                       dimscales = c(time = "Intervals"))
+    y <- Counts(array(as.integer(rpois(n = 24, lambda = 0.5 * exposure)),
+                      dim = 2:4,
+                      dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000:2003)),
+                dimscales = c(time = "Intervals"))
+    exposure[1] <- NA
+    y[1] <- NA
+    spec <- Model(y ~ CMP(mean ~ sex * age + time))
     x <- initialCombinedModel(spec, y = y, exposure = exposure, weights = NULL)
     set.seed(seed + 1)
     ans.R <- updateCombined(x, useC = FALSE)

@@ -1788,6 +1788,71 @@ test_that("makeOutputModel works with PoissonVaryingUseExp - AgPoisson", {
     expect_identical(ans.obtained, ans.expected)
 })
 
+test_that("makeOutputModel works with CMP - no aggregate", {
+    makeOutputModel <- demest:::makeOutputModel
+    makeOutputPrior <- demest:::makeOutputPrior
+    initialModel <- demest:::initialModel
+    SkeletonMu <- demest:::SkeletonMu
+    Skeleton <- demest:::Skeleton
+    makeOutputPrior <- demest:::makeOutputPrior
+    lengthValues <- demest:::lengthValues
+    y <- Counts(array(rpois(20, lambda  = 10),
+                      dim = c(2, 10),
+                      dimnames = list(sex = c("f", "m"), age = 0:9)))
+    spec <- Model(y ~ CMP(mean ~ sex + age, useExpose = FALSE))
+    model <- initialModel(spec, y = y, exposure = NULL)
+    metadata <- y@metadata
+    pos <- 10L
+    ans.obtained <- makeOutputModel(model = model, pos = pos,
+                                    mcmc = c(nChain = 2L, nIteration = 20L))
+    likelihood <- list(count = new("SkeletonManyCounts",
+                                   first = 10L,
+                                   last = 29L,
+                                   metadata = metadata),
+                       jumpCount = model@scaleTheta@.Data,
+                       noProposalCount = new("SkeletonNAccept", nAttempt = 20L, first = 30L,
+                                             iFirstInChain = c(1L, 11L)),
+                       noProposalY = new("SkeletonNAccept", nAttempt = 20L, first = 31L,
+                                         iFirstInChain = c(1L, 11L)),
+                       acceptCount = new("SkeletonNAccept", nAttempt = 20L, first = 32L,
+                                         iFirstInChain = c(1L, 11L)),
+                       dispersion = new("SkeletonManyValues",
+                                        first = 33L,
+                                        last = 52L,
+                                        metadata = metadata))
+    mean.log.nu <- Skeleton(first = 53L)
+    sd.log.nu <- Skeleton(first = 54L)
+    mu <- SkeletonMu(betas = model@betas,
+                     margins = model@margins,
+                     first = 55L,
+                     metadata = model@metadataY)
+    betas <- list("(Intercept)" = new("SkeletonBetaIntercept",
+                                      first = 55L, last = 55L),
+                  sex = new("SkeletonBetaTerm",
+                            first = 56L,
+                            last = 57L,
+                            metadata = metadata[1]),
+                  age = new("SkeletonBetaTerm",
+                            first = 58L,
+                            last = 67L,
+                            metadata = metadata[2]))
+    sigma <- new("SkeletonOneValues", first = 68L)
+    prior <- c(betas,
+               list(count = list(mean = mu, sd = sigma)),
+               list(dispersion = list(mean = mean.log.nu, sd = sd.log.nu)))
+    hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
+                  sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
+                  age = makeOutputPrior(prior = model@priorsBetas[[3]],
+                                        metadata = model@metadataY[2],
+                                        pos = 69L),
+                  dispersion = list(mean = list(mean = model@meanMeanLogNuCMP@.Data,
+                                                sd = model@sdMeanLogNuCMP@.Data),
+                                    sd = list(scale = model@ASDLogNuCMP@.Data)))
+    ans.expected <- list(likelihood = likelihood, prior = prior, hyper = hyper)
+    expect_identical(ans.obtained, ans.expected)
+})
+
+
 
 ## Poisson-binomial mixture
 
@@ -5369,6 +5434,12 @@ test_that("whereAcceptance works", {
     expect_identical(whereAcceptance(x),
                      list(c("likelihood", "acceptRate"),
                           c("aggregate", "accept")))
+    x <- new("CMPVaryingNotUseExp")
+    expect_identical(whereAcceptance(x),
+                     list(c("likelihood", "acceptCount")))
+    x <- new("CMPVaryingUseExp")
+    expect_identical(whereAcceptance(x),
+                     list(c("likelihood", "acceptRate")))
     x <- new("PoissonBinomialMixture")
     expect_identical(whereAcceptance(x), list(NULL))
     x <- new("BinomialVaryingPredict")
@@ -5440,6 +5511,10 @@ test_that("whereAutocorr works", {
     x <- new("PoissonVaryingUseExpAgPoisson")
     expect_identical(whereAutocorr(x), list(c("likelihood", "rate"),
                                               c("aggregate", "value")))
+    x <- new("CMPVaryingUseExp")
+    expect_identical(whereAutocorr(x), list(c("likelihood", "rate")))
+    x <- new("CMPVaryingNotUseExp")
+    expect_identical(whereAutocorr(x), list(c("likelihood", "count")))
     x <- new("PoissonBinomialMixture")
     expect_identical(whereAutocorr(x), list(NULL))
     x <- new("BinomialVaryingPredict")
@@ -5507,6 +5582,10 @@ test_that("whereJump works", {
     x <- new("PoissonVaryingNotUseExpAgPoisson")
     expect_identical(whereJump(x), list(c("likelihood", "jumpCount"),
                                         c("aggregate", "jump")))
+    x <- new("CMPVaryingUseExp")
+    expect_identical(whereJump(x), list(c("likelihood", "jumpRate")))
+    x <- new("CMPVaryingNotUseExp")
+    expect_identical(whereJump(x), list(c("likelihood", "jumpCount")))
     x <- new("PoissonBinomialMixture")
     expect_identical(whereJump(x), list(NULL))
     x <- new("PoissonVaryingUseExpPredict")
@@ -5904,6 +5983,86 @@ test_that("whereEstimated works with PoissonVaryingUseExpAgPoisson", {
                          c("aggregate", "value"))
     expect_identical(ans.obtained, ans.expected)
 })
+
+## CMP
+
+test_that("whereEstimated works with CMPVaryingNotUseExp", {
+    whereEstimated <- demest:::whereEstimated
+    initialModel <- demest:::initialModel
+    y <- Counts(array(rpois(20, lambda  = 10),
+                      dim = c(2, 10),
+                      dimnames = list(sex = c("f", "m"), age = 0:9)))
+    ## is not saturated
+    spec <- Model(y ~ CMP(mean ~ sex + age, useExpose = FALSE),
+                  age ~ DLM(damp = NULL))
+    model <- initialModel(spec, y = y, exposure = NULL)
+    ans.obtained <- whereEstimated(model)
+    ans.expected <- list(c("likelihood", "count"),
+                         c("likelihood", "dispersion"),
+                         c("prior", "count", "mean"),
+                         c("prior", "count", "sd"),
+                         c("prior", "dispersion", "mean"),
+                         c("prior", "dispersion", "sd"),
+                         c("hyper", "age", "scaleLevel"),
+                         c("hyper", "age", "scaleTrend"),
+                         c("hyper", "age", "scaleError"))
+    expect_identical(ans.obtained, ans.expected)
+    ## is saturated
+    spec <- Model(y ~ CMP(mean ~ sex * age, useExpose = FALSE),
+                  age ~ DLM(damp = NULL))
+    model <- initialModel(spec, y = y, exposure = NULL)
+    ans.obtained <- whereEstimated(model)
+    ans.expected <- list(c("likelihood", "count"),
+                         c("likelihood", "dispersion"),
+                         c("prior", "count", "mean"),
+                         c("prior", "dispersion", "mean"),
+                         c("prior", "dispersion", "sd"),
+                         c("hyper", "age", "scaleLevel"),
+                         c("hyper", "age", "scaleTrend"),
+                         c("hyper", "age", "scaleError"),
+                         c("hyper", "sex:age", "scaleError"))
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("whereEstimated works with CMPVaryingUseExp", {
+    whereEstimated <- demest:::whereEstimated
+    initialModel <- demest:::initialModel
+    y <- Counts(array(rpois(20, lambda  = 10),
+                      dim = c(2, 10),
+                      dimnames = list(sex = c("f", "m"), age = 0:9)))
+    exposure <- y + 1
+    ## is not saturated
+    spec <- Model(y ~ CMP(mean ~ sex + age),
+                  age ~ DLM(damp = NULL))
+    model <- initialModel(spec, y = y, exposure = exposure)
+    ans.obtained <- whereEstimated(model)
+    ans.expected <- list(c("likelihood", "rate"),
+                         c("likelihood", "dispersion"),
+                         c("prior", "rate", "mean"),
+                         c("prior", "rate", "sd"),
+                         c("prior", "dispersion", "mean"),
+                         c("prior", "dispersion", "sd"),
+                         c("hyper", "age", "scaleLevel"),
+                         c("hyper", "age", "scaleTrend"),
+                         c("hyper", "age", "scaleError"))
+    expect_identical(ans.obtained, ans.expected)
+    ## is saturated
+    spec <- Model(y ~ CMP(mean ~ sex * age),
+                  age ~ DLM(damp = NULL))
+    model <- initialModel(spec, y = y, exposure = exposure)
+    ans.obtained <- whereEstimated(model)
+    ans.expected <- list(c("likelihood", "rate"),
+                         c("likelihood", "dispersion"),
+                         c("prior", "rate", "mean"),
+                         c("prior", "dispersion", "mean"),
+                         c("prior", "dispersion", "sd"),
+                         c("hyper", "age", "scaleLevel"),
+                         c("hyper", "age", "scaleTrend"),
+                         c("hyper", "age", "scaleError"),
+                         c("hyper", "sex:age", "scaleError"))
+    expect_identical(ans.obtained, ans.expected)
+})
+
 
 
 ## Poisson-binomial mixture

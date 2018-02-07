@@ -46,7 +46,18 @@ setClass("CombinedPoisson",
              TRUE
          })
 
-
+## HAS_TESTS
+setClass("CombinedCMP",
+         contains = "VIRTUAL",
+         validity = function(object) {
+             model <- object@model
+             y <- object@y
+             ## 'model' has class CMP
+             if (!methods::is(model, "CMP"))
+                 return(gettextf("'%s' has class \"%s\"",
+                                 "model", class(model)))
+             TRUE
+         })
 
 setClass("Combined",
          contains = c("VIRTUAL", "SlotsToExtract", "IMethodCombined"))
@@ -150,6 +161,45 @@ setClass("CombinedModelPoissonHasExp",
                  return(gettextf("%s but %s for some cells", "y > 0", "exposure == 0"))
              TRUE
          })
+
+## HAS_TESTS
+setClass("CombinedModelCMPNotHasExp",
+         prototype = prototype(iMethodCombined = 11L),
+         contains = c("CombinedModelNotHasExp", "CombinedCMP", "YNonNegativeCounts"),
+         validity = function(object) {
+             model <- object@model
+             theta <- model@theta
+             y <- object@y
+             ## 'y' and 'theta' have same length
+             if (!identical(length(y), length(theta)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "y", "theta"))
+             TRUE
+         })
+
+## HAS_TESTS
+setClass("CombinedModelCMPHasExp",
+         prototype = prototype(iMethodCombined = 12L),
+         contains = c("CombinedModelHasExp", "CombinedCMP", "YNonNegativeCounts"),
+         validity = function(object) {
+             model <- object@model
+             theta <- model@theta
+             y <- object@y
+             exposure <- object@exposure
+             ## 'y' and 'theta' have same length
+             if (!identical(length(y), length(theta)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "y", "theta"))
+             ## 'exposure' has type "double"
+             if (!is.double(exposure))
+                 return(gettextf("'%s' does not have type \"%s\"",
+                                 "exposure", "double"))
+             ## y is 0 if exposure is 0
+             if (any(y[!is.na(y)][exposure[!is.na(y)] == 0] > 0L))
+                 return(gettextf("%s but %s for some cells", "y > 0", "exposure == 0"))
+             TRUE
+         })
+
 
 
 ## CombinedCounts #############################################################

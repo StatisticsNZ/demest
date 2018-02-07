@@ -92,6 +92,23 @@ setMethod("castExposure",
 
 ## HAS_TESTS
 setMethod("castExposure",
+          signature(exposure = "Counts",
+                    model = "SpecCMPVarying"),
+          function(exposure, model) {
+              dembase::toDouble(exposure)
+          })
+
+## HAS_TESTS
+setMethod("castExposure",
+          signature(exposure = "NULL",
+                    model = "SpecCMPVarying"),
+          function(exposure, model) {
+              NULL
+          })
+
+
+## HAS_TESTS
+setMethod("castExposure",
           signature(exposure = "NULL",
                     model = "SpecNormalVarying"),
           function(exposure, model) {
@@ -149,6 +166,20 @@ setMethod("castY",
                                 "y", y$message))
               y
           })
+
+## HAS_TESTS
+setMethod("castY",
+          signature(y = "Counts",
+                    spec = "SpecCMPVarying"),
+          function(y, spec) {
+              y <- tryCatch(dembase::toInteger(y),
+                            error = function(e) e)
+              if (methods::is(y, "error"))
+                  stop(gettextf("'%s' cannot be coerced to integer : %s",
+                                "y", y$message))
+              y
+          })
+
 
 ## HAS_TESTS
 setMethod("castY",

@@ -92,6 +92,23 @@ test_that("castExposure works with SpecPoisson", {
                      NULL)
 })
 
+test_that("castExposure works with SpecCMP", {
+    castExposure <- demest:::castExposure
+    exposure <- Counts(array(1:2, dim = 2, dimnames = list(sex = c("f", "m"))))
+    model <- Model(y ~ CMP(mean ~ sex))
+    expect_identical(castExposure(exposure = exposure, model = model),
+                     toDouble(exposure))
+    exposure <- toDouble(exposure)
+    expect_identical(castExposure(exposure = exposure, model = model),
+                     exposure)
+    exposure <- exposure + 0.5
+    expect_identical(castExposure(exposure = exposure, model = model),
+                     exposure)
+    expect_identical(castExposure(exposure = NULL, model = model),
+                     NULL)
+})
+
+
 test_that("castExposure works with SpecNormal", {
     castExposure <- demest:::castExposure
     model <- Model(y ~ Normal(mean ~ sex))
@@ -144,7 +161,7 @@ test_that("castY works with SpecNormal", {
                      y)
 })
 
-test_that("castY works with SpecBinomial", {
+test_that("castY works with SpecPoisson", {
     castY <- demest:::castY
     y <- Counts(array(1:2, dim = 2, dimnames = list(sex = c("f", "m"))))
     spec <- Model(y ~ Poisson(mean ~ sex))
@@ -158,7 +175,23 @@ test_that("castY works with SpecBinomial", {
                  "'y' cannot be coerced to integer : non-integer values")
 })
 
-test_that("castY works with SpecBinomial", {
+
+test_that("castY works with SpecCMP", {
+    castY <- demest:::castY
+    y <- Counts(array(1:2, dim = 2, dimnames = list(sex = c("f", "m"))))
+    spec <- Model(y ~ CMP(mean ~ sex))
+    expect_identical(castY(y = y, spec = spec),
+                     y)
+    y <- toDouble(y)
+    expect_identical(castY(y = y, spec = spec),
+                     toInteger(y))
+    y <- y + 0.5
+    expect_error(castY(y = y, spec = spec),
+                 "'y' cannot be coerced to integer : non-integer values")
+})
+
+
+test_that("castY works with SpecPoissonBinomial", {
     castY <- demest:::castY
     y <- Counts(array(1:2, dim = 2, dimnames = list(sex = c("f", "m"))))
     spec <- Model(y ~ PoissonBinomial(prob = 0.98))

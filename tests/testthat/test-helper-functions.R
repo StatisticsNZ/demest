@@ -10833,7 +10833,7 @@ test_that("R and C versions of logLikelihood give same answer with Round3", {
 
 
 test_that("logLikelihood gives valid answer with TFixedUseExp", {
-    ## logLikelihood_TFixedUseExp <- demest:::logLikelihood_TFixedUseExp
+    logLikelihood_TFixedUseExp <- demest:::logLikelihood_TFixedUseExp
     initialModel <- demest:::initialModel
     for (seed in seq_len(n.test)) {
         set.seed(seed)

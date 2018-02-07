@@ -923,7 +923,7 @@ setMethod("makeOutputModel",
               dims <- model@dims
               struc.zero.array <- model@strucZeroArray
               n.beta <- length(betas.obj)
-              n.attempt <- as.integer(prod(dim(metadata)))
+              n.attempt <- as.integer(prod(dim(metadata)) - sum(struc.zero.array == 0L))
               nChain <- mcmc["nChain"]
               nIteration <- mcmc["nIteration"]
               uses.exposure <- methods::is(model, "UseExposure")
@@ -1020,6 +1020,176 @@ setMethod("makeOutputModel",
               }
               ans
           })
+
+
+## CMP
+
+
+## HAS_TESTS
+setMethod("makeOutputModel",
+          signature(model = "CMPVarying"),
+          function(model, pos, mcmc) {
+              theta <- model@theta
+              nu.cmp.obj <- model@nuCMP@.Data
+              mean.mean.log.nu.cmp <- model@meanMeanLogNuCMP@.Data
+              sd.mean.log.nu.cmp <- model@sdMeanLogNuCMP@.Data
+              A.sd.log.nu.cmp <- model@ASDLogNuCMP@.Data
+              metadata <- model@metadataY
+              scale.theta <- model@scaleTheta@.Data
+              betas.obj <- model@betas
+              priors.betas <- model@priorsBetas
+              names.betas <- model@namesBetas
+              margins <- model@margins
+              dims <- model@dims
+              struc.zero.array <- model@strucZeroArray
+              n.beta <- length(betas.obj)
+              n.attempt <- as.integer(prod(dim(metadata)) - sum(struc.zero.array == 0L))
+              nChain <- mcmc["nChain"]
+              nIteration <- mcmc["nIteration"]
+              uses.exposure <- methods::is(model, "UseExposure")
+              ## make theta
+              first <- pos
+              pos <- first + length(theta)
+              class <- if (uses.exposure) "Values" else "Counts"
+              .Data <- array(theta,
+                             dim = dim(metadata),
+                             dimnames = dimnames(metadata))
+              theta <- methods::new(class,
+                                    .Data = .Data,
+                                    metadata = metadata)
+              s <- seq_along(dim(metadata))
+              theta <- Skeleton(object = theta,
+                                first = first,
+                                strucZeroArray = struc.zero.array,
+                                margin = s)
+              ## make nFailedPropTheta
+              first <- pos
+              pos <- first + 1L
+              fail.prop.theta <- SkeletonAccept(nAttempt = n.attempt,
+                                                first = first,
+                                                nChain = nChain,
+                                                nIteration = nIteration)
+              ## make nFailedPropYStar
+              first <- pos
+              pos <- first + 1L
+              fail.prop.y.star <- SkeletonAccept(nAttempt = n.attempt,
+                                                 first = first,
+                                                 nChain = nChain,
+                                                 nIteration = nIteration)
+              ## make nAcceptTheta
+              first <- pos
+              pos <- first + 1L
+              accept.theta <- SkeletonAccept(nAttempt = n.attempt,
+                                             first = first,
+                                             nChain = nChain,
+                                             nIteration = nIteration)
+              ## make nuCMP
+              first <- pos
+              pos <- first + length(nu.cmp.obj)
+              .Data <- array(nu.cmp.obj,
+                             dim = dim(metadata),
+                             dimnames = dimnames(metadata))
+              nu.cmp <- methods::new("Values",
+                                     .Data = .Data,
+                                     metadata = metadata)
+              s <- seq_along(dim(metadata))
+              nu.cmp <- Skeleton(object = nu.cmp,
+                                 first = first,
+                                 strucZeroArray = struc.zero.array,
+                                 margin = s)
+              ## make meanLogNuCMP
+              first <- pos
+              pos <- pos + 1L
+              mean.log.nu.cmp <- Skeleton(first = first)
+              ## make sdLogNuCMP
+              first <- pos
+              pos <- pos + 1L
+              sd.log.nu.cmp <- Skeleton(first = first)
+              ## make mu and betas
+              first <- pos
+              pos <- pos + 1L
+              mu <- SkeletonMu(betas = betas.obj,
+                               margins = margins,
+                               first = first,
+                               metadata = metadata,
+                               strucZeroArray = struc.zero.array)
+              betas <- vector(mode = "list", length = n.beta)
+              betas[[1L]] <- SkeletonBetaIntercept(first = first)
+              if (n.beta > 1L) {
+                  for (i in seq_len(n.beta)[-1L]) {
+                      first <- pos
+                      pos <- first + length(betas.obj[[i]])
+                      margin <- margins[[i]]
+                      betas[[i]] <- SkeletonBetaTerm(first = first,
+                                                     metadata = metadata[margin],
+                                                     strucZeroArray = struc.zero.array,
+                                                     margin = margin)
+                  }
+              }
+              names(betas) <- names.betas
+              ## make sigma
+              first <- pos
+              pos <- first + 1L
+              sigma <- Skeleton(first = first)
+              ## make hyper
+              hyper <- vector(mode = "list", length = n.beta)
+              for (i in seq_len(n.beta)) {
+                  if (i == 1L)
+                      metadata.i <- NULL
+                  else {
+                      margin <- margins[[i]]
+                      metadata.i <- metadata[margin]
+                  }
+                  hyper[i] <- list(makeOutputPrior(priors.betas[[i]],
+                                                   metadata = metadata.i,
+                                                   pos = pos,
+                                                   strucZeroArray = struc.zero.array,
+                                                   margin = margin))
+                  pos <- pos + changeInPos(hyper[[i]])
+              }
+              names(hyper) <- names.betas
+              hyper.dispersion <- list(dispersion = list(mean = list(mean = mean.mean.log.nu.cmp,
+                                                                     sd = sd.mean.log.nu.cmp),
+                                                         sd = list(scale = A.sd.log.nu.cmp)))
+              hyper <- c(hyper, hyper.dispersion)
+              ## return value
+              if (uses.exposure) {
+                  likelihood <- list(rate = theta,
+                                     jumpRate = scale.theta,
+                                     noProposalRate = fail.prop.theta,
+                                     noProposalY = fail.prop.y.star,
+                                     acceptRate = accept.theta,
+                                     dispersion = nu.cmp)
+                  prior <- c(betas,
+                             list(rate = list(mean = mu,
+                                              sd = sigma)),
+                             list(dispersion = list(mean = mean.log.nu.cmp,
+                                                    sd = sd.log.nu.cmp)))
+              }
+              else {
+                  likelihood <- list(count = theta,
+                                     jumpCount = scale.theta,
+                                     noProposalCount = fail.prop.theta,
+                                     noProposalY = fail.prop.y.star,
+                                     acceptCount = accept.theta,
+                                     dispersion = nu.cmp)
+                  prior <- c(betas,
+                             list(count = list(mean = mu,
+                                               sd = sigma)),
+                             list(dispersion = list(mean = mean.log.nu.cmp,
+                                                    sd = sd.log.nu.cmp)))
+              }
+              ans <- list(likelihood = likelihood, prior = prior, hyper = hyper)
+              if (methods::is(model, "Aggregate")) {
+                  aggregate <- makeOutputAggregate(model = model,
+                                                   pos = pos,
+                                                   nChain = nChain,
+                                                   nIteration = nIteration)
+                  ans <- c(ans, list(aggregate = aggregate))
+              }
+              ans
+          })
+
 
 
 ## Poisson-binomial mixture
@@ -2884,6 +3054,16 @@ setMethod("whereAcceptance",
 
 ## HAS_TESTS
 setMethod("whereAcceptance",
+          signature(object = "CMPVaryingNotUseExp"),
+          function(object) list(c("likelihood", "acceptCount")))
+
+## HAS_TESTS
+setMethod("whereAcceptance",
+          signature(object = "CMPVaryingUseExp"),
+          function(object) list(c("likelihood", "acceptRate")))
+
+## HAS_TESTS
+setMethod("whereAcceptance",
           signature(object = "PoissonBinomialMixture"),
           function(object) list(NULL))
 
@@ -2986,6 +3166,16 @@ setMethod("whereAutocorr",
           signature(object = "PoissonVaryingUseExpAgPoisson"),
           function(object) list(c("likelihood", "rate"),
                                 c("aggregate", "value")))
+
+## HAS_TESTS
+setMethod("whereAutocorr",
+          signature(object = "CMPVaryingNotUseExp"),
+          function(object) list(c("likelihood", "count")))
+
+## HAS_TESTS
+setMethod("whereAutocorr",
+          signature(object = "CMPVaryingUseExp"),
+          function(object) list(c("likelihood", "rate")))
 
 ## HAS_TESTS
 setMethod("whereAutocorr",
@@ -3104,6 +3294,16 @@ setMethod("whereJump",
               list(c("likelihood", "jumpRate"),
                    c("aggregate", "jump"))
           })
+
+## HAS_TESTS
+setMethod("whereJump",
+          signature(object = "CMPVaryingNotUseExp"),
+          function(object) list(c("likelihood", "jumpCount")))
+
+## HAS_TESTS
+setMethod("whereJump",
+          signature(object = "CMPVaryingUseExp"),
+          function(object) list(c("likelihood", "jumpRate")))
 
 ## HAS_TESTS
 setMethod("whereJump",
@@ -3245,6 +3445,46 @@ setMethod("whereEstimated",
               priors <- makeMCMCPriorsBetas(priors = priors.betas,
                                             names = names.betas)
               c(likelihood, betas, mu, sd, priors)
+          })
+
+## HAS_TESTS
+setMethod("whereEstimated",
+          signature(object = "CMPVaryingNotUseExp"),
+          function(object) {
+              names.betas <- object@namesBetas
+              priors.betas <- object@priorsBetas
+              likelihood <- list(c("likelihood", "count"),
+                                 c("likelihood", "dispersion"))
+              betas <- makeMCMCBetas(priors = priors.betas,
+                                     names = names.betas)
+              count <- list(c("prior", "count", "mean"))
+              if (!isSaturated(object))
+                  count <- c(count, list(c("prior", "count", "sd")))
+              dispersion <- list(c("prior", "dispersion", "mean"),
+                                 c("prior", "dispersion", "sd"))
+              priors <- makeMCMCPriorsBetas(priors = priors.betas,
+                                            names = names.betas)
+              c(likelihood, betas, count, dispersion, priors)
+          })
+
+## HAS_TESTS
+setMethod("whereEstimated",
+          signature(object = "CMPVaryingUseExp"),
+          function(object) {
+              names.betas <- object@namesBetas
+              priors.betas <- object@priorsBetas
+              likelihood <- list(c("likelihood", "rate"),
+                                 c("likelihood", "dispersion"))
+              betas <- makeMCMCBetas(priors = priors.betas,
+                                     names = names.betas)
+              rate <- list(c("prior", "rate", "mean"))
+              if (!isSaturated(object))
+                  rate <- c(rate, list(c("prior", "rate", "sd")))
+              dispersion <- list(c("prior", "dispersion", "mean"),
+                                 c("prior", "dispersion", "sd"))
+              priors <- makeMCMCPriorsBetas(priors = priors.betas,
+                                            names = names.betas)
+              c(likelihood, betas, rate, dispersion, priors)
           })
 
 ## HAS_TESTS

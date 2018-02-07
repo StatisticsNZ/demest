@@ -698,8 +698,8 @@ test_that("initialModel creates object of class CMPVaryingUseExp from valid inpu
     x <- initialModel(spec, y = y, exposure = exposure)
     set.seed(1)
     theta <- rgamma(n = 20,
-                    shape = 0.5 * mean(y) + 0.5 * y,
-                    rate = 0.5 * mean(exposure) + 0.5 * exposure)
+                    shape = 0.05 * mean(y) + 0.95 * y,
+                    rate = 0.05 * mean(exposure) + 0.95 * exposure)
     sigma <- runif(1, max = 1)
     theta <- array(theta, dim = dim(y), dimnames = dimnames(y))
     betas <- loglm(~ age + region, theta)$param
@@ -745,8 +745,8 @@ test_that("initialModel creates object of class CMPVaryingUseExp from valid inpu
     x <- initialModel(spec, y = y, exposure = exposure)
     set.seed(1)
     theta <- rgamma(n = 20,
-                    shape = 0.5 * mean(y) + 0.5 * y,
-                    rate = 0.5 * mean(exposure) + 0.5 * exposure)
+                    shape = 0.05 * mean(y) + 0.95 * y,
+                    rate = 0.05 * mean(exposure) + 0.95 * exposure)
     sigma <- runif(1, max = 1)
     expect_identical(x@sigma, new("Scale", sigma))
     expect_identical(x@theta, theta)
@@ -779,9 +779,9 @@ test_that("initialModel creates object of class CMPVaryingUseExp from valid inpu
     set.seed(1)
     mean.y <- mean(y[6:20])
     mean.expose <- mean(exposure[6:20])
-    shape <- 0.5 * mean.y + 0.5 * y
+    shape <- 0.05 * mean.y + 0.95 * y
     shape[1:5] <- mean.y
-    rate <- 0.5 * mean.expose + 0.5 * exposure
+    rate <- 0.05 * mean.expose + 0.95 * exposure
     rate[1:5] <- mean.expose
     theta <- rgamma(n = 20, shape = shape, rate = rate)
     sigma <- runif(1)
@@ -2142,6 +2142,54 @@ test_that("initialModelPredict works with PoissonVaryingNotUseExpPredict - with 
     expect_true(validObject(x))
     expect_is(x, "PoissonVaryingNotUseExpPredictAgNormal")
 })
+
+
+test_that("initialModelPredict works with CMPVaryingUseExp", {
+    initialModelPredict <- demest:::initialModelPredict
+    initialModel <- demest:::initialModel
+    exposure <- Counts(array(rpois(n = 20, lambda = 20),
+                             dim = c(5, 4),
+                             dimnames = list(age = 0:4, region = letters[1:4])))
+    y <- Counts(array(rpois(n = 20, lambda = 0.5 * exposure),
+                      dim = c(5, 4),
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    spec <- Model(y ~ CMP(mean ~ age + region))
+    x <- initialModel(spec, y = y, exposure = exposure)
+    x <- initialModelPredict(x,
+                             along = 2L,
+                             labels = c("a", "b", "c", "d"),
+                             n = NULL,
+                             offsetModel = 1L,
+                             covariates = NULL,
+                             aggregate = NULL,
+                             lower = NULL,
+                             upper = 100000)
+    expect_is(x, "CMPVaryingUseExpPredict")
+})
+
+test_that("initialModelPredict works with CMPVaryingUseExp", {
+    initialModelPredict <- demest:::initialModelPredict
+    initialModel <- demest:::initialModel
+    exposure <- Counts(array(rpois(n = 20, lambda = 20),
+                             dim = c(5, 4),
+                             dimnames = list(age = 0:4, region = letters[1:4])))
+    y <- Counts(array(rpois(n = 20, lambda = 0.5 * exposure),
+                      dim = c(5, 4),
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    spec <- Model(y ~ CMP(mean ~ age + region))
+    x <- initialModel(spec, y = y, exposure = exposure)
+    x <- initialModelPredict(x,
+                             along = 2L,
+                             labels = c("a", "b", "c", "d"),
+                             n = NULL,
+                             offsetModel = 1L,
+                             covariates = NULL,
+                             aggregate = NULL,
+                             lower = NULL,
+                             upper = 100000)
+    expect_is(x, "CMPVaryingUseExpPredict")
+})
+
 
 test_that("initialModelPredict works with PoissonBinomial", {
     initialModelPredict <- demest:::initialModelPredict
