@@ -340,7 +340,7 @@ setMethod("updateCombined",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("updateCombined",
           signature(object = "CombinedModelCMPNotHasExp"),
@@ -368,7 +368,7 @@ setMethod("updateCombined",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("updateCombined",
           signature(object = "CombinedModelCMPHasExp"),

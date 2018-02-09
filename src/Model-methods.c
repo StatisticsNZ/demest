@@ -305,14 +305,18 @@ predictModelNotUseExp_NormalFixedNotUseExpPredict_i(SEXP object, SEXP y_R)
     /* null op */
 }
 
+static __inline__ void
+predictModelNotUseExp_TFixedNotUseExpPredict_i(SEXP object, SEXP y_R)
+{
+    /* null op */
+}
+
+
 /* models using exposure */
 
 static __inline__ void
 predictModelUseExp_BinomialVaryingPredict_i(SEXP object, SEXP y_R, SEXP exposure_R)
 {
-    /*  object <- predictPriorsBetas(object)
-        object <- predictBetas(object)
-        object <- updateTheta_BinomialVarying(object, y = y, exposure = exposure) */
     predictPriorsBetas(object);
     predictBetas(object);
     updateTheta_BinomialVarying(object, y_R, exposure_R);
@@ -321,9 +325,6 @@ predictModelUseExp_BinomialVaryingPredict_i(SEXP object, SEXP y_R, SEXP exposure
 static __inline__ void
 predictModelUseExp_PoissonVaryingUseExpPredict_i(SEXP object, SEXP y_R, SEXP exposure_R)
 {
-    /*  object <- predictPriorsBetas(object)
-        object <- predictBetas(object)
-        object <- updateTheta_PoissonVaryingUseExp(object, y = y, exposure = exposure) */
     predictPriorsBetas(object);
     predictBetas(object);
     updateTheta_PoissonVaryingUseExp(object, y_R, exposure_R);
@@ -346,6 +347,13 @@ predictModelUseExp_NormalFixedUseExpPredict_i(SEXP object, SEXP y_R, SEXP exposu
 {
     /*  do nothing */
 }
+
+static __inline__ void
+predictModelUseExp_TFixedUseExpPredict_i(SEXP object, SEXP y_R, SEXP exposure_R)
+{
+    /*  do nothing */
+}
+
 
 void
 predictModelNotUseExp(SEXP object, SEXP y_R) 
@@ -372,6 +380,9 @@ predictModelNotUseExp_Internal(SEXP object, SEXP y_R, int i_method_model)
             break;
         case 130:
             predictModelNotUseExp_NormalFixedNotUseExpPredict_i(object, y_R);
+            break;
+        case 135:
+            predictModelNotUseExp_TFixedNotUseExpPredict_i(object, y_R);
             break;
         default:
             error("unknown i_method_model: %d", i_method_model);
@@ -409,6 +420,9 @@ predictModelUseExp_Internal(SEXP object, SEXP y_R, SEXP exposure_R,
         case 134:
             predictModelUseExp_Round3Predict_i(object, y_R, exposure_R);
             break;
+        case 136:
+            predictModelUseExp_TFixedUseExpPredict_i(object, y_R, exposure_R);
+            break;
         default:
             error("unknown i_method_model: %d", i_method_model);
             break;
@@ -443,6 +457,14 @@ predictModelNotUseExp_NormalFixedNotUseExpPredict(SEXP object, SEXP y_R)
     predictModelNotUseExp_NormalFixedNotUseExpPredict_i(object, y_R);
     
 }
+
+void
+predictModelNotUseExp_TFixedNotUseExpPredict(SEXP object, SEXP y_R) 
+{
+    predictModelNotUseExp_TFixedNotUseExpPredict_i(object, y_R);
+    
+}
+
 /* specific functions for models using exposure */
 
 void
@@ -477,6 +499,13 @@ void
 predictModelUseExp_NormalFixedUseExpPredict(SEXP object, SEXP y_R, SEXP exposure_R)
 {
     predictModelUseExp_NormalFixedUseExpPredict_i(object, y_R, exposure_R);
+    
+}
+
+void
+predictModelUseExp_TFixedUseExpPredict(SEXP object, SEXP y_R, SEXP exposure_R)
+{
+    predictModelUseExp_TFixedUseExpPredict_i(object, y_R, exposure_R);
     
 }
 

@@ -10875,11 +10875,13 @@ test_that("R and C versions of logLikelihood give same answer with TFixedUseExp"
         model <- initialModel(spec, y = dataset, exposure = dataset)
         i <- sample.int(20, size = 1)
         count <- as.integer(rpois(n = 1, lambda = dataset[i]))
+        set.seed(seed + 1)
         ans.R <- logLikelihood_TFixedUseExp(model = model,
                                             count = count,
                                             dataset = dataset,
                                             i = i,
                                             useC = FALSE)
+        set.seed(seed + 1)
         ans.C <- logLikelihood_TFixedUseExp(model = model,
                                             count = count,
                                             dataset = dataset,

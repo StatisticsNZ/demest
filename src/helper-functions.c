@@ -473,7 +473,7 @@ rpoisTrunc1(double lambda, int lower, int upper, int maxAttempt)
     lower = 0;
 
     if (lower < 0)
-	lower = 0;
+    lower = 0;
     
     int finite_upper = ( (upper == NA_INTEGER) ? 0 : 1);
     
@@ -505,7 +505,7 @@ rpoisTrunc1(double lambda, int lower, int upper, int maxAttempt)
         if (found) {
             retValue = (int) prop_value;
         }
-	
+    
     }
     
     return retValue;    
@@ -2720,6 +2720,28 @@ logLikelihood_NormalFixedUseExp(SEXP model_R, int count,
     
     return dnorm(x, thisMean, thisSd, USE_LOG);
 }
+
+double
+logLikelihood_TFixedUseExp(SEXP model_R, int count, 
+                                SEXP dataset_R, int i)
+{
+    int *dataset = INTEGER(dataset_R);
+    int i_c = i - 1;
+    double x = dataset[i_c];
+    
+    double *mean = REAL(GET_SLOT(model_R, mean_sym));
+    double *sd = REAL(GET_SLOT(model_R, sd_sym));
+    
+    double nu = *REAL(GET_SLOT(model_R, nu_sym));
+    
+    double thisMean = count * mean[i_c];
+    double thisSd = sd[i_c];
+    double x_rescaled = (x - thisMean)/thisSd;
+    
+    return dt(x_rescaled, nu, USE_LOG) - log(thisSd);
+}
+
+
 
 int
 makeIOther(int i, SEXP transform_R)

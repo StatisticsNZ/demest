@@ -238,6 +238,38 @@ updateCombined_CombinedModelPoissonHasExp(SEXP object_R, int nUpdate)
     }
 }
 
+void
+updateCombined_CombinedModelCMPNotHasExp(SEXP object_R, int nUpdate)
+{
+    SEXP model_R = GET_SLOT(object_R, model_sym);
+    SEXP y_R = GET_SLOT(object_R, y_sym);
+    
+    int i_method_model = *(INTEGER(GET_SLOT(model_R, iMethodModel_sym)));
+    
+    while (nUpdate > 0) {
+        updateModelNotUseExp_Internal(model_R, y_R, i_method_model);
+        
+        --nUpdate;
+    }
+}
+
+void
+updateCombined_CombinedModelCMPHasExp(SEXP object_R, int nUpdate)
+{
+    SEXP model_R = GET_SLOT(object_R, model_sym);
+    SEXP y_R = GET_SLOT(object_R, y_sym);
+    
+    SEXP exposure_R = GET_SLOT(object_R, exposure_sym);
+    
+    int i_method_model = *(INTEGER(GET_SLOT(model_R, iMethodModel_sym)));
+    
+    while (nUpdate > 0) {
+        updateModelUseExp_Internal(model_R, y_R, exposure_R, i_method_model);
+        
+        --nUpdate;
+    }
+}
+
 
 void
 updateCombined_CombinedCountsPoissonNotHasExp(SEXP object_R,
@@ -253,17 +285,6 @@ updateCombined_CombinedCountsPoissonNotHasExp(SEXP object_R,
     
     while (nUpdate > 0) {
 
-/*                     y <- updateCountsPoissonNotUseExp(y = y,
-                                                        model = model,
-                                                        dataModels = dataModels,
-                                                        datasets = datasets,
-                                                        transforms = transforms)
-                      model <- updateModelNotUseExp(object = model,
-                                                    y = y)
-                      dataModels <- updateDataModelsCounts(dataModels = dataModels,
-                                                             datasets = datasets,
-                                                             transforms = transforms,
- */                
         updateCountsPoissonNotUseExp(y_R, model_R, dataModels_R,
                                         datasets_R, transforms_R);
         
@@ -363,6 +384,12 @@ updateCombined(SEXP object_R, int nUpdate)
             break;
         case 9: case 10: /* combined account movements (no age and has age) */
             updateCombined_CombinedAccount(object_R, nUpdate);
+            break;
+        case 11: /* CMP model, not has exposure */
+            updateCombined_CombinedModelCMPNotHasExp(object_R, nUpdate);
+            break;
+        case 12: /* CMP model, has exposure */
+            updateCombined_CombinedModelCMPHasExp(object_R, nUpdate);
             break;
         default:
             error("unknown iMethodCombined for updateCombined: %d", i_method_combined);

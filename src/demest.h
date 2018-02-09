@@ -315,6 +315,7 @@ SEXP
   meanLogNuCMP_sym,
   ASDLogNuCMP_sym,
   nuSDLogNuCMP_sym,
+  nu_sym,
   
   alphaKnown_sym,
   AKnownVec_sym,  
@@ -589,6 +590,8 @@ double logLikelihood_Round3(SEXP model_R, int count,
                 SEXP dataset_R, int i);
 double logLikelihood_NormalFixedUseExp(SEXP model_R, int count, 
                                 SEXP dataset_R, int i);
+double logLikelihood_TFixedUseExp(SEXP model_R, int count, 
+                                SEXP dataset_R, int i);
 double logLikelihood(SEXP model_R, int count, 
                                 SEXP dataset_R, int i);
 SEXP diffLogLik_R(SEXP yProp_R, SEXP y_R, SEXP indicesY_R, 
@@ -774,6 +777,7 @@ void predictModelNotUseExp_NormalVaryingVarsigmaKnownPredict(SEXP object, SEXP y
 void predictModelNotUseExp_NormalVaryingVarsigmaUnknownPredict(SEXP object, SEXP y_R);
 void predictModelNotUseExp_PoissonVaryingNotUseExpPredict(SEXP object, SEXP y_R);
 void predictModelNotUseExp_NormalFixedNotUseExpPredict(SEXP object, SEXP y_R);
+void predictModelNotUseExp_TFixedNotUseExpPredict(SEXP object, SEXP y_R);
 void predictModelNotUseExp(SEXP object, SEXP y_R);
 /* predict models using exposure*/
 void predictModelUseExp_BinomialVaryingPredict(SEXP object, SEXP y_R, SEXP exposure_R);
@@ -781,6 +785,7 @@ void predictModelUseExp_PoissonVaryingUseExpPredict(SEXP object, SEXP y_R, SEXP 
 void predictModelUseExp_PoissonBinomialMixturePredict(SEXP object, SEXP y_R, SEXP exposure_R);
 void predictModelUseExp_Round3Predict(SEXP object, SEXP y_R, SEXP exposure_R);
 void predictModelUseExp_NormalFixedUseExpPredict(SEXP object, SEXP y_R, SEXP exposure_R);
+void predictModelUseExp_TFixedUseExpPredict(SEXP object, SEXP y_R, SEXP exposure_R);
 void predictModelUseExp(SEXP object, SEXP y_R, SEXP exposure_R);
 
 
@@ -850,6 +855,8 @@ void updateCombined_CombinedModelBinomial(SEXP object_R, int nUpdate);
 void updateCombined_CombinedModelNormal(SEXP object_R, int nUpdate);
 void updateCombined_CombinedModelPoissonNotHasExp(SEXP object_R, int nUpdate);
 void updateCombined_CombinedModelPoissonHasExp(SEXP object_R, int nUpdate);
+void updateCombined_CombinedModelCMPNotHasExp(SEXP object_R, int nUpdate);
+void updateCombined_CombinedModelCMPHasExp(SEXP object_R, int nUpdate);
 void updateCombined_CombinedAccount(SEXP object_R, int nUpdate);
 void updateCombined(SEXP object_R, int nUpdate);
 

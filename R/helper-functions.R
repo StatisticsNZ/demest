@@ -7081,7 +7081,7 @@ logLikelihood_Round3 <- function(model, count, dataset, i, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATEd
 ## HAS_TESTS
 ## Calling function should test that dataset[i] is not missing
 logLikelihood_TFixedUseExp <- function(model, count, dataset, i, useC = FALSE) {

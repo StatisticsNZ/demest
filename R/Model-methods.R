@@ -1345,7 +1345,7 @@ setMethod("predictModelNotUseExp",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("predictModelNotUseExp",
           signature(object = "TFixedNotUseExpPredict"),
@@ -1522,7 +1522,7 @@ setMethod("predictModelUseExp",
           })
 
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("predictModelUseExp",
           signature(object = "TFixedUseExpPredict"),
