@@ -129,6 +129,20 @@ transferParamModel_NormalFixedUseExpPredict_i(SEXP model_R, const char *filename
     /* null op */
 }
 
+static __inline__ void
+transferParamModel_TFixedNotUseExpPredict_i(SEXP model_R, const char *filename,
+                                int lengthIter, int iteration)
+{
+    /* null op */
+}
+
+static __inline__ void
+transferParamModel_TFixedUseExpPredict_i(SEXP model_R, const char *filename,
+                                int lengthIter, int iteration)
+{
+    /* null op */
+}
+
 
 void
 transferParamModel(SEXP model_R, const char *filename,
@@ -173,6 +187,14 @@ transferParamModel(SEXP model_R, const char *filename,
         case 134: 
             transferParamModel_Round3_i(model_R, 
             filename, lengthIter, iteration);
+            break;
+        case 135: 
+            transferParamModel_TFixedNotUseExpPredict_i(model_R, 
+                        filename, lengthIter, iteration);
+            break;
+        case 136: 
+            transferParamModel_TFixedUseExpPredict_i(model_R, 
+                        filename, lengthIter, iteration);
             break;
         default:
             error("unknown i_method_model in transferParamModel: %d", 
@@ -254,6 +276,22 @@ transferParamModel_NormalFixedUseExpPredict(SEXP model_R, const char *filename,
                                 lengthIter, iteration);
 }
 
+
+void
+transferParamModel_TFixedNotUseExpPredict(SEXP model_R, const char *filename,
+                                int lengthIter, int iteration)
+{
+    transferParamModel_TFixedNotUseExpPredict_i(model_R, filename, 
+                                lengthIter, iteration);
+}
+
+void
+transferParamModel_TFixedUseExpPredict(SEXP model_R, const char *filename,
+                                int lengthIter, int iteration)
+{
+    transferParamModel_TFixedUseExpPredict_i(model_R, filename, 
+                                lengthIter, iteration);
+}
 
 /* ******************************************************************************** */
 /* Functions for predicting models. ************************************************* */
@@ -651,6 +689,12 @@ updateModelNotUseExp_NormalFixedNotUseExp_i(SEXP object, SEXP y_R)
     /* null op */
 }
 
+static __inline__ void
+updateModelNotUseExp_TFixedNotUseExp_i(SEXP object, SEXP y_R)
+{
+    /* null op */
+}
+
 /* models using exposure */
 
 static __inline__ void
@@ -771,6 +815,13 @@ updateModelUseExp_NormalFixedUseExp_i(SEXP object, SEXP y_R, SEXP exposure_R)
     /* null op */
 }
 
+
+static __inline__ void
+updateModelUseExp_TFixedUseExp_i(SEXP object, SEXP y_R, SEXP exposure_R)
+{
+    /* null op */
+}
+
 void
 updateModelNotUseExp(SEXP object, SEXP y_R) 
 {
@@ -828,6 +879,9 @@ updateModelNotUseExp_Internal(SEXP object, SEXP y_R, int i_method_model)
             break; 
         case 32:    
             updateModelNotUseExp_CMPVaryingNotUseExp_i(object, y_R);
+            break; 
+        case 35:    
+            updateModelNotUseExp_TFixedNotUseExp_i(object, y_R);
             break; 
         default:
             error("unknown i_method_model: %d", i_method_model);
@@ -891,6 +945,9 @@ updateModelUseExp_Internal(SEXP object, SEXP y_R, SEXP exposure_R,
             break;
         case 34:    
             updateModelUseExp_Round3_i(object, y_R, exposure_R);
+            break;
+        case 36:    
+            updateModelUseExp_TFixedUseExp_i(object, y_R, exposure_R);
             break;
         default:
             error("unknown i_method_model: %d", i_method_model);
@@ -993,6 +1050,12 @@ updateModelNotUseExp_NormalFixedNotUseExp(SEXP object, SEXP y_R)
     updateModelNotUseExp_NormalFixedNotUseExp_i(object, y_R);
 }
 
+void
+updateModelNotUseExp_TFixedNotUseExp(SEXP object, SEXP y_R)
+{
+    updateModelNotUseExp_TFixedNotUseExp_i(object, y_R);
+}
+
 /* specific functions for models using exposure */
 void
 updateModelUseExp_CMPVaryingUseExp(SEXP object, SEXP y_R, SEXP exposure_R) 
@@ -1089,4 +1152,10 @@ updateModelUseExp_NormalFixedUseExp
                                 (SEXP object, SEXP y_R, SEXP exposure_R)
 {
     updateModelUseExp_NormalFixedUseExp_i(object, y_R, exposure_R);
+}
+
+void
+updateModelUseExp_TFixedUseExp(SEXP object, SEXP y_R, SEXP exposure_R)
+{
+    updateModelUseExp_TFixedUseExp_i(object, y_R, exposure_R);
 }

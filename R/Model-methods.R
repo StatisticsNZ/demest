@@ -2017,7 +2017,7 @@ setMethod("transferParamModel",
               }
           })
 
-## READY_TO_TRANSLATE
+## READY_TO_TRANSLATE - translated but cannot find tests - JAH 10/2/2018
 ## HAS_TESTS
 setMethod("transferParamModel",
           signature(model = "TFixedNotUseExpPredict"),
@@ -2036,7 +2036,7 @@ setMethod("transferParamModel",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("transferParamModel",
           signature(model = "TFixedUseExpPredict"),
@@ -2441,7 +2441,7 @@ setMethod("updateModelNotUseExp",
           })
 
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("updateModelNotUseExp",
           signature(object = "TFixedNotUseExp"),
@@ -2947,7 +2947,7 @@ setMethod("updateModelUseExp",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("updateModelUseExp",
           signature(object = "TFixedUseExp"),

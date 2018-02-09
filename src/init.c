@@ -1304,6 +1304,8 @@ TRANSFERPARAM_WRAPPER_R(transferParamModel_PoissonBinomialMixture);
 TRANSFERPARAM_WRAPPER_R(transferParamModel_Round3);
 TRANSFERPARAM_WRAPPER_R(transferParamModel_NormalFixedNotUseExpPredict);
 TRANSFERPARAM_WRAPPER_R(transferParamModel_NormalFixedUseExpPredict);
+TRANSFERPARAM_WRAPPER_R(transferParamModel_TFixedNotUseExpPredict);
+TRANSFERPARAM_WRAPPER_R(transferParamModel_TFixedUseExpPredict);
 
 /* wrap predict model functions */
 UPDATEOBJECT_NOEXP_WRAPPER_R(predictModelNotUseExp_NormalVaryingVarsigmaKnownPredict);
@@ -1337,6 +1339,7 @@ UPDATEOBJECT_NOEXP_WRAPPER_R(updateModelNotUseExp_PoissonVaryingNotUseExpAgNorma
 UPDATEOBJECT_NOEXP_WRAPPER_R(updateModelNotUseExp_PoissonVaryingNotUseExpAgFun);
 UPDATEOBJECT_NOEXP_WRAPPER_R(updateModelNotUseExp_PoissonVaryingNotUseExpAgPoisson);
 UPDATEOBJECT_NOEXP_WRAPPER_R(updateModelNotUseExp_NormalFixedNotUseExp);
+UPDATEOBJECT_NOEXP_WRAPPER_R(updateModelNotUseExp_TFixedNotUseExp);
 UPDATEOBJECT_NOEXP_WRAPPER_R(updateModelNotUseExp);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_CMPVaryingUseExp);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_BinomialVarying);
@@ -1352,6 +1355,7 @@ UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_PoissonVaryingUseExpAgFun);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_PoissonVaryingUseExpAgPoisson);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_PoissonVaryingUseExpAgLife);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_NormalFixedUseExp);
+UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_TFixedUseExp);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp);
 
 /* wrap predict combined model functions */
@@ -2329,6 +2333,8 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(transferParamModel_Round3_R, 4),
   CALLDEF(transferParamModel_NormalFixedNotUseExpPredict_R, 4),
   CALLDEF(transferParamModel_NormalFixedUseExpPredict_R, 4),
+  CALLDEF(transferParamModel_TFixedNotUseExpPredict_R, 4),
+  CALLDEF(transferParamModel_TFixedUseExpPredict_R, 4),
 
   CALLDEF(predictModelNotUseExp_NormalVaryingVarsigmaKnownPredict_R, 2),
   CALLDEF(predictModelNotUseExp_NormalVaryingVarsigmaUnknownPredict_R, 2),
@@ -2360,6 +2366,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateModelNotUseExp_PoissonVaryingNotUseExpAgFun_R, 2),
   CALLDEF(updateModelNotUseExp_PoissonVaryingNotUseExpAgPoisson_R, 2),
   CALLDEF(updateModelNotUseExp_NormalFixedNotUseExp_R, 2),
+  CALLDEF(updateModelNotUseExp_TFixedNotUseExp_R, 2),
   CALLDEF(updateModelNotUseExp_R, 2),
   
   CALLDEF(updateModelUseExp_CMPVaryingUseExp_R, 3),
@@ -2376,6 +2383,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateModelUseExp_PoissonVaryingUseExpAgPoisson_R, 3),
   CALLDEF(updateModelUseExp_PoissonVaryingUseExpAgLife_R, 3),
   CALLDEF(updateModelUseExp_NormalFixedUseExp_R, 3),
+  CALLDEF(updateModelUseExp_TFixedUseExp_R, 3),
   CALLDEF(updateModelUseExp_R, 3),
   
   CALLDEF(updateBetasAndPriorsBetas_R, 1),

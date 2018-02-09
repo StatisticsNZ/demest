@@ -770,6 +770,10 @@ void transferParamModel_NormalFixedUseExpPredict(SEXP model_R,
         const char *filename, int lengthIter, int iteration);
 void transferParamModel_Round3(SEXP model_R, 
         const char *filename, int lengthIter, int iteration);
+void transferParamModel_TFixedNotUseExpPredict(SEXP model_R, 
+        const char *filename, int lengthIter, int iteration);
+void transferParamModel_TFixedUseExpPredict(SEXP model_R, 
+        const char *filename, int lengthIter, int iteration);
 
 
 /* predict models not using exposure*/
@@ -805,6 +809,7 @@ void updateModelNotUseExp_PoissonVaryingNotUseExpAgNormal(SEXP object, SEXP y_R)
 void updateModelNotUseExp_PoissonVaryingNotUseExpAgFun(SEXP object, SEXP y_R);
 void updateModelNotUseExp_PoissonVaryingNotUseExpAgPoisson(SEXP object, SEXP y_R);
 void updateModelNotUseExp_NormalFixedNotUseExp(SEXP object, SEXP y_R);
+void updateModelNotUseExp_TFixedNotUseExp(SEXP object, SEXP y_R);
 void updateModelNotUseExp(SEXP object, SEXP y_R);
 /* update models using exposure*/
 void updateModelUseExp_CMPVaryingUseExp(SEXP object, SEXP y_R, SEXP exposure_R);
@@ -831,6 +836,8 @@ void updateModelUseExp_PoissonVaryingUseExpAgPoisson
 void updateModelUseExp_PoissonVaryingUseExpAgLife
                             (SEXP object, SEXP y_R, SEXP exposure_R);
 void updateModelUseExp_NormalFixedUseExp
+                            (SEXP object, SEXP y_R, SEXP exposure_R);
+void updateModelUseExp_TFixedUseExp
                             (SEXP object, SEXP y_R, SEXP exposure_R);
 void updateModelUseExp(SEXP object, SEXP y_R, SEXP exposure_R);
 
