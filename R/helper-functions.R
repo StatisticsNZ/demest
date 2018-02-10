@@ -8362,6 +8362,74 @@ printBinomialSpecEqns <- function(object) {
     cat("  logit(prob[i]) ~ N(", terms, ", sd^2)\n", sep = "")
 }
 
+printCMPLikEqns <- function(object) {
+    formulaMu <- object@formulaMu
+    useExpose <- object@useExpose@.Data
+    mean <- object@meanMeanLogNuCMP@.Data
+    sd <- object@sdMeanLogNuCMP@.Data
+    nu <- object@nuSDLogNuCMP@.Data
+    A <- object@ASDLogNuCMP@.Data
+    max <- object@sdLogNuMaxCMP@.Data
+    terms <- expandTermsSpec(formulaMu)
+    if (useExpose) {
+        cat("              y[i] ~ CMP(rate[i] * exposure[i], dispersion[i])\n")
+        cat("      log(rate[i]) ~ N(", terms, ", sd^2)\n", sep = "")
+    }
+    else {
+        cat("              y[i] ~ CMP(count[i], dispersion[i])\n")
+        cat("     log(count[i]) ~ N(", terms, ", sd^2)\n", sep = "")
+    }
+    cat("log(dispersion[i]) ~ N(meanDispersion[i], sdDispersion^2)\n")
+    cat(" meanDispersion[i] ~ N(", mean, ", ", squaredOrNA(sd), ")\n", sep = "")
+    cat("      sdDispersion ~ trunc-half-t(", nu, ", ", sep = "")
+    cat(squaredOrNA(A), ", ", max, ")\n", sep = "")
+}
+
+printCMPModEqns <- function(object) {
+    call <- object@call
+    mean <- object@meanMeanLogNuCMP@.Data
+    sd <- object@sdMeanLogNuCMP@.Data
+    nu <- object@nuSDLogNuCMP@.Data
+    A <- object@ASDLogNuCMP@.Data
+    max <- object@sdLogNuMaxCMP@.Data
+    lower <- object@lower
+    upper <- object@upper
+    names <- object@namesBetas
+    uses.exposure <- methods::is(object, "UseExposure")
+    series <- call$series
+    name.y <- deparse(call$formula[[2L]])
+    if (is.null(series)) {
+        if (identical(name.y, "y"))
+            exposure <- "exposure"
+        else
+            exposure <- "y"
+    }
+    else
+        exposure <- series
+    name.y <- sprintf("%15s", name.y)
+    lower <- exp(lower)
+    upper <- exp(upper)
+    terms <- expandTermsMod(names)
+    if (uses.exposure) {
+        cat(name.y, "[i] ~ CMP(rate[i] * ", exposure, "[i])", sep = "")
+        if (lower > 0 || is.finite(upper))
+            cat(",  ", format(lower, digits = 4), "< rate[i] <", format(upper, digits = 4))
+        cat("\n")
+        cat("      log(rate[i]) ~ N(", terms, ", sd^2)\n", sep = "")
+    }
+    else {
+        cat(name.y, "[i] ~ CMP(count[i])", sep = "")
+        if ((lower > 0) || (is.finite(upper)))
+            cat(",  ", format(lower, digits = 4), "< count[i] <", format(upper, digits = 4))
+        cat("\n")
+        cat("     log(count[i]) ~ N(", terms, ", sd^2)\n", sep = "")
+    }
+    cat("log(dispersion[i]) ~ N(meanDispersion[i], sdDispersion^2)\n")
+    cat(" meanDispersion[i] ~ N(", mean, ", ", squaredOrNA(sd), ")\n", sep = "")
+    cat("      sdDispersion ~ trunc-half-t(", nu, ", ", sep = "")
+    cat(squaredOrNA(A), ", ", max, ")\n", sep = "")
+}
+
 printCMPSpecEqns <- function(object) {
     formulaMu <- object@formulaMu
     nameY <- object@nameY
@@ -8395,32 +8463,9 @@ printCMPSpecEqns <- function(object) {
         cat("\n")
         cat("     log(count[i]) ~ N(", terms, ", sd^2)  \n", sep = "")
     }
-    cat("log(dispersion[i]) ~ N(mean[i], scale^2)\n")
-    cat("           mean[i] ~ N(", mean, ", ", squaredOrNA(sd), ")\n", sep = "")
-    cat("             scale ~ trunc-half-t(", nu, ", ", sep = "")
-    cat(squaredOrNA(A), ", ", max, ")\n", sep = "")
-}
-
-printCMPLikEqns <- function(object) {
-    formulaMu <- object@formulaMu
-    useExpose <- object@useExpose@.Data
-    mean <- object@meanMeanLogNuCMP@.Data
-    sd <- object@sdMeanLogNuCMP@.Data
-    nu <- object@nuSDLogNuCMP@.Data
-    A <- object@ASDLogNuCMP@.Data
-    max <- object@sdLogNuMaxCMP@.Data
-    terms <- expandTermsSpec(formulaMu)
-    if (useExpose) {
-        cat("              y[i] ~ CMP(rate[i] * exposure[i], dispersion[i])\n")
-        cat("      log(rate[i]) ~ N(", terms, ", sd^2)\n", sep = "")
-    }
-    else {
-        cat("              y[i] ~ CMP(count[i], dispersion[i])\n")
-        cat("     log(count[i]) ~ N(", terms, ", sd^2)\n", sep = "")
-    }
-    cat("log(dispersion[i]) ~ N(mean[i], scale^2)\n")
-    cat("           mean[i] ~ N(", mean, ", ", squaredOrNA(sd), ")\n", sep = "")
-    cat("             scale ~ trunc-half-t(", nu, ", ", sep = "")
+    cat("log(dispersion[i]) ~ N(meanDispersion[i], sdDispersion^2)\n")
+    cat(" meanDispersion[i] ~ N(", mean, ", ", squaredOrNA(sd), ")\n", sep = "")
+    cat("      sdDispersion ~ trunc-half-t(", nu, ", ", sep = "")
     cat(squaredOrNA(A), ", ", max, ")\n", sep = "")
 }
 

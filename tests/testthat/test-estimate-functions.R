@@ -693,22 +693,55 @@
 ##                   dimnames = list(sex = c("f", "m"), age = 0:2, dep = 1:10)))
 ## exposure <- y + 2
 ## filename <- tempfile()
-## estimateModel(Model(y ~ CMP(mean ~ sex + age + dep),
+## estimateModel(Model(y ~ CMP(mean ~ sex + age + dep,
+##                             dispersion = Dispersion(scale = HalfT(scale = 0.1))),
 ##                     dep ~ DLM(),
 ##                     jump = 0.2),
 ##               y = y,
 ##               exposure = exposure,
 ##               filename = filename,
 ##               nBurnin = 0,
-##               nSim = 5,
+##               nSim = 2,
 ##               nChain = 4,
-##               nThin = 1, useC = F)
+##               nThin = 1,
+##               useC = F, parallel = F)
 ## fetchSummary(filename)
-## time.level <- fetch(filename, c("mod", "hyper", "time", "level"))
-## time.scaleLevel <- fetch(filename, c("mod", "hyper", "time", "scaleLevel"))
-## time.trend <- fetch(filename, c("mod", "hyper", "time", "trend"))
-## time.scaleTrend <- fetch(filename, c("mod", "hyper", "time", "scaleTrend"))
-## time.damp <- fetch(filename, c("mod", "hyper", "time", "damp"))
+
+library(dplyr)
+library(demest)
+y <- demdata::uk.deaths %>%
+    Counts(dimscales = c(year = "Intervals")) %>%
+    subarray(year > 1950) %>%
+    collapseIntervals(dimension = "age", breaks = seq(0, 90, 5))
+expose <- demdata::uk.exposure %>%
+    Counts(dimscales = c(year = "Intervals")) %>%
+    subarray(year > 1950) %>%
+    collapseIntervals(dimension = "age", breaks = seq(0, 90, 5))
+
+filename <- tempfile()
+estimateModel(Model(y ~ CMP(mean ~ age + sex + year,
+                            dispersion = Dispersion(mean = Norm(mean = 0, sd = 0.1),
+                                                    scale = HalfT(scale = 0.001))),
+                    age ~ DLM(damp = NULL),
+                    upper = 2,
+                    jump = 0.1),
+              y = y,
+              exposure = expose,
+              filename = filename,
+              nBurnin = 200,
+              nSim = 200,
+              nChain = 4,
+              nThin = 5)
+fetchSummary(filename)
+
+
+
+
+## age.level <- fetch(filename, c("mod", "hyper", "age", "level"))
+## age.scaleLevel <- fetch(filename, c("mod", "hyper", "age", "scaleLevel"))
+## age.trend <- fetch(filename, c("mod", "hyper", "age", "trend"))
+## age.scaleTrend <- fetch(filename, c("mod", "hyper", "age", "scaleTrend"))
+## age.damp <- fetch(filename, c("mod", "hyper", "age", "damp"))
 
 
 

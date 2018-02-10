@@ -3811,7 +3811,7 @@ updateThetaAndNu_CMPVaryingNotUseExp(SEXP object_R, SEXP y_R)
 		    double nu_curr = nu[i];
 		    double log_nu_curr = log(nu_curr);
 		    double log_nu_prop = rnorm(meanLogNu, sdLogNu);
-                
+		    
 		    double nu_prop = exp(log_nu_prop);
 		    double y_star = rcmp1(th_prop, nu_prop, maxAttempt);
                 

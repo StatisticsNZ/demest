@@ -1754,6 +1754,18 @@ setMethod("showModelHelper",
           })
 
 setMethod("showModelHelper",
+          signature(object = "CMPVarying"),
+          function(object) {
+              printCMPModEqns(object)
+              cat("\n")
+              printPriorsEqns(object)
+              cat("\n")
+              printSDEqns(object)
+              printAggregateEqns(object)
+          })
+
+
+setMethod("showModelHelper",
           signature(object = "PoissonBinomialMixture"),
           function(object) {
               printPoissonBinomialModEqns(object)

@@ -756,6 +756,8 @@ setMethod("initialModel",
                                        mean = meanLogNuCMP@.Data,
                                        sd = sdLogNuCMP)
               nuCMP <- exp(logNuCMP)
+              nuCMP[nuCMP < 0.5] <- 0.5 ## TEMPORARY HACK
+              nuCMP[nuCMP > 2] <- 2 ## TEMPORARY HACK
               nuCMP <- new("ParameterVector", nuCMP)              
               names.betas <- names(betas)
               margins <- makeMargins(betas = betas, y = y)
