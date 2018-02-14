@@ -3810,7 +3810,7 @@ updateThetaAndNu_CMPVaryingNotUseExp(SEXP object_R, SEXP y_R)
             
 		    double nu_curr = nu[i];
 		    double log_nu_curr = log(nu_curr);
-		    double log_nu_prop = rnorm(meanLogNu, sdLogNu);
+		    double log_nu_prop = rnorm(log_nu_curr, sdLogNu);
 		    
 		    double nu_prop = exp(log_nu_prop);
 		    double y_star = rcmp1(th_prop, nu_prop, maxAttempt);
@@ -4003,18 +4003,17 @@ updateThetaAndNu_CMPVaryingUseExp(SEXP object_R, SEXP y_R, SEXP exposure_R)
             
 		    double nu_curr = nu[i];
 		    double log_nu_curr = log(nu_curr);
-		    double log_nu_prop = rnorm(meanLogNu, sdLogNu);
+		    double log_nu_prop = rnorm(log_nu_curr, sdLogNu);
                 
 		    double nu_prop = exp(log_nu_prop);
-		    double y_star = rcmp1(th_prop, nu_prop, maxAttempt);
+		    double this_exposure = exposure[i];
+		    double gamma_curr = th_curr * this_exposure;
+		    double gamma_prop = th_prop * this_exposure;
+		    double y_star = rcmp1(gamma_prop, nu_prop, maxAttempt);
                 
 		    int found_y_star = R_finite(y_star);
                 
 		    if (found_y_star) {
-                    
-			double this_exposure = exposure[i];
-			double gamma_curr = th_curr * this_exposure;
-			double gamma_prop = th_prop * this_exposure;
                     
 			double logLikCurr = logDensCMPUnnormalised1(this_y, gamma_curr, nu_curr);
 			double logLikProp = logDensCMPUnnormalised1(this_y, gamma_prop, nu_prop);

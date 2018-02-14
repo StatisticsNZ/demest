@@ -2667,7 +2667,7 @@ updateThetaAndNu_CMPVaryingNotUseExp <- function(object, y, useC = FALSE) {
                         nu.curr <- nu[i] 
                         log.nu.curr <- log(nu.curr)
                         log.nu.prop <- stats::rnorm(n = 1L,
-                                                    mean = mean.log.nu,
+                                                    mean = log.nu.curr,
                                                     sd = sd.log.nu)
                         nu.prop <- exp(log.nu.prop)
                         y.star <- rcmp1(mu = th.prop,
@@ -2797,17 +2797,23 @@ updateThetaAndNu_CMPVaryingUseExp <- function(object, y, exposure, useC = FALSE)
                     else {
                         nu.curr <- nu[i]
                         log.nu.curr <- log(nu.curr)
+                        ## log.nu.prop <- stats::rnorm(n = 1L,
+                        ##                             mean = mean.log.nu,
+                        ##                             sd = sd.log.nu)
                         log.nu.prop <- stats::rnorm(n = 1L,
-                                                    mean = mean.log.nu,
+                                                    mean = log.nu.curr,
                                                     sd = sd.log.nu)
                         nu.prop <- exp(log.nu.prop)
-                        y.star <- rcmp1(mu = th.prop,
+                        ## y.star <- rcmp1(mu = th.prop,
+                        ##                 nu = nu.prop,
+                        ##                 max = max.attempt)
+                        gamma.curr <- th.curr * exposure[i]
+                        gamma.prop <- th.prop * exposure[i]
+                        y.star <- rcmp1(mu = gamma.prop,
                                         nu = nu.prop,
                                         max = max.attempt)
                         found.y.star <- is.finite(y.star)
                         if (found.y.star) {
-                            gamma.curr <- th.curr * exposure[i]
-                            gamma.prop <- th.prop * exposure[i]
                             log.lik.curr <- logDensCMPUnnormalised1(x = y[i], gamma = gamma.curr, nu = nu.curr)
                             log.lik.prop <- logDensCMPUnnormalised1(x = y[i], gamma = gamma.prop, nu = nu.prop)
                             log.lik.curr.star <- logDensCMPUnnormalised1(x = y.star, gamma = gamma.curr, nu = nu.curr)
