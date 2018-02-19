@@ -2773,7 +2773,7 @@ updateThetaAndNu_CMPVaryingUseExp <- function(object, y, exposure, useC = FALSE)
                     else
                         tr.th.curr <- log(th.curr)
                     mean <- tr.th.curr
-                    sd <- scale
+                    sd <- scale / sqrt(1 + y[i])
                 }
                 found.prop.theta <- FALSE
                 attempt <- 0L
@@ -2797,16 +2797,10 @@ updateThetaAndNu_CMPVaryingUseExp <- function(object, y, exposure, useC = FALSE)
                     else {
                         nu.curr <- nu[i]
                         log.nu.curr <- log(nu.curr)
-                        ## log.nu.prop <- stats::rnorm(n = 1L,
-                        ##                             mean = mean.log.nu,
-                        ##                             sd = sd.log.nu)
                         log.nu.prop <- stats::rnorm(n = 1L,
                                                     mean = log.nu.curr,
                                                     sd = sd.log.nu)
                         nu.prop <- exp(log.nu.prop)
-                        ## y.star <- rcmp1(mu = th.prop,
-                        ##                 nu = nu.prop,
-                        ##                 max = max.attempt)
                         gamma.curr <- th.curr * exposure[i]
                         gamma.prop <- th.prop * exposure[i]
                         y.star <- rcmp1(mu = gamma.prop,

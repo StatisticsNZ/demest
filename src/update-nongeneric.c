@@ -3967,7 +3967,7 @@ updateThetaAndNu_CMPVaryingUseExp(SEXP object_R, SEXP y_R, SEXP exposure_R)
 		    tr_th_curr = log(th_curr);
 		}
 		mean = tr_th_curr;
-		sd = scale;
+		sd = scale / sqrt(1 + this_y);
 	    }
         
 	    int attempt = 0;
