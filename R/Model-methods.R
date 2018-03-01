@@ -342,7 +342,7 @@ setMethod("logLikelihood",
               }
           })
 
-
+## TRANSLATED
 ## HAS_TESTS
 ## Calling function should test that dataset[i] is not missing
 ## Do not create equivalent function for TFixedNotUseExp,
@@ -1235,6 +1235,32 @@ setMethod("makeOutputModel",
               list(mean = mean,
                    sd = sd)
           })
+
+## HAS_TESTS
+setMethod("makeOutputModel",
+          signature(model = "TFixed"),
+          function(model) {
+              metadata <- model@metadataY
+              location <- model@mean@.Data
+              scale <- model@sd@.Data
+              df <- model@nu@.Data
+              .Data.location <- array(location,
+                                      dim = dim(metadata),
+                                      dimnames = dimnames(metadata))
+              .Data.scale <- array(scale,
+                                   dim = dim(metadata),
+                                   dimnames = dimnames(metadata))
+              location <- new("Values",
+                              .Data = .Data.location,
+                              metadata = metadata)
+              scale <- new("Values",
+                           .Data = .Data.scale,
+                           metadata = metadata)
+              list(location = location,
+                   scale = scale,
+                   df = df)
+          })
+
 
 
 

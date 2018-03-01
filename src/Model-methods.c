@@ -39,6 +39,10 @@ logLikelihood(SEXP model_R, int count, SEXP dataset_R, int i)
          case 34: /* Round3 */
             ans = logLikelihood_Round3(model_R, count, dataset_R, i);
             break;
+         case 36: /* TFixedUseExp */
+            ans = logLikelihood_TFixedUseExp(
+                                        model_R, count, dataset_R, i);
+            break;
          default:
             error("unknown iMethodModel: %d", iMethodModel);
             break;

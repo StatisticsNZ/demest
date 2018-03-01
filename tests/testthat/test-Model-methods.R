@@ -461,8 +461,6 @@ test_that("R and C versions of logLikelihood give same answer with Round3", {
     }
 })
 
-
-
 test_that("R, C-generic, and C-specific versions of logLikelihood give same answer with NormalFixedUseExp", {
     logLikelihood <- demest:::logLikelihood
     initialModel <- demest:::initialModel
@@ -1890,6 +1888,30 @@ test_that("makeOutputModel works with NormalFixed", {
     ans.obtained <- makeOutputModel(model = model, pos = pos)
     ans.expected <- list(mean = mean, sd = sd)
 })
+
+
+# TFixed
+
+test_that("makeOutputModel works with TFixed", {
+    initialModel <- demest:::initialModel
+    makeOutputModel <- demest:::makeOutputModel
+    y <- Counts(array(rpois(20, lambda  = 10),
+                      dim = c(2, 10),
+                      dimnames = list(sex = c("f", "m"), age = 0:9)))
+    location <- Values(array(rpois(20, lambda  = 10),
+                      dim = c(2, 10),
+                      dimnames = list(sex = c("f", "m"), age = 0:9)))
+    scale <- Values(array(runif(20),
+                      dim = c(2, 10),
+                      dimnames = list(sex = c("f", "m"), age = 0:9)))
+    spec <- Model(y ~ TFixed(location = location, scale = scale, df = 3, useExpose = FALSE))
+    model <- initialModel(spec, y = y, exposure = NULL)
+    metadata <- y@metadata
+    pos <- 10L
+    ans.obtained <- makeOutputModel(model = model, pos = pos)
+    ans.expected <- list(location = location, scale = scale, df = 3)
+})
+
 
 
 
