@@ -7456,8 +7456,7 @@ updateDataModelsCounts(SEXP y_R, SEXP dataModels_R,
         int i_method_model = *(INTEGER(GET_SLOT(model_R, iMethodModel_sym)));
         
         const char *class_name = CHAR(STRING_ELT(GET_SLOT((model_R), R_ClassSymbol), 0));
-        char *found = NULL;
-        found = strstr(class_name, "Poisson");
+        int found = !((strstr(class_name, "Poisson") == NULL) && (strstr(class_name, "CMP") == NULL));
         if (found) {
                         
             SEXP yCollapsed_tmp_R;
@@ -7517,8 +7516,7 @@ updateDataModelsAccount(SEXP combined_R)
         int i_method_model = *(INTEGER(GET_SLOT(model_R, iMethodModel_sym)));
         
         const char *class_name = CHAR(STRING_ELT(GET_SLOT((model_R), R_ClassSymbol), 0));
-        char *found = NULL;
-        found = strstr(class_name, "Poisson");
+        int found = !((strstr(class_name, "Poisson") == NULL) && (strstr(class_name, "CMP") == NULL));
         if (found) {
             
             SEXP seriesCollapsed_tmp_R;

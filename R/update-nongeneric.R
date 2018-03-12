@@ -5113,7 +5113,7 @@ updateDataModelsCounts <- function(y, dataModels, datasets,
             dataset <- datasets[[i]]
             transform <- transforms[[i]]
             y.collapsed <- dembase::collapse(y, transform = transform)
-            if (methods::is(model, "Poisson"))
+            if (methods::is(model, "Poisson") || methods::is(model, "CMP"))
                 y.collapsed <- dembase::toDouble(y.collapsed)
             dataModels[[i]] <- updateModelUseExp(model,
                                                   y = dataset,
@@ -5147,7 +5147,7 @@ updateDataModelsAccount <- function(combined, useC = FALSE) {
             else
                 series <- components[[series.index]]
             series.collapsed <- collapse(series, transform = transform)
-            if (is(model, "Poisson"))
+            if (methods::is(model, "Poisson") || methods::is(model, "CMP"))
                 series.collapsed <- toDouble(series.collapsed)
             model <- updateModelUseExp(model,
                                        y = dataset,

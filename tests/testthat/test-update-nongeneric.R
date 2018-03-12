@@ -10598,7 +10598,7 @@ test_that("updateDataModelsAccount works with CombinedAccountMovements", {
                          Model(births ~ Poisson(mean ~ 1)),
                          Model(deaths ~ Poisson(mean ~ 1)))
     systemWeights <- rep(list(NULL), 3)
-    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
+    data.models <- list(Model(tax ~ CMP(mean ~ 1), series = "deaths"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(2L, 0L)
     datasets <- list(subarray(deaths, time > 2010, drop = FALSE) + 1L,
@@ -10658,7 +10658,7 @@ test_that("R and C versions of updateDataModelsAccount give same answer", {
                          Model(births ~ Poisson(mean ~ 1)),
                          Model(deaths ~ Poisson(mean ~ 1)))
     systemWeights <- rep(list(NULL), 3)
-    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
+    data.models <- list(Model(tax ~ CMP(mean ~ 1), series = "deaths"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(2L, 0L)
     datasets <- list(subarray(deaths, time > 2010, drop = FALSE) + 1L,
