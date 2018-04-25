@@ -16,17 +16,6 @@ log_rates <- log(rates)
 
 
 log_rates <- subarray(log_rates, year < 2011 & !(series %in% c("Israel", "Taiwan", "Greece")))
-
-listAllSubsets <- function(s) {
-    n <- length(s)
-    if (n <= 1L)
-        s
-    else {
-        makeCombnOrderI <- function(i) utils::combn(s, i, simplify = FALSE)
-        ans <- lapply(seq_len(n - 1L), makeCombnOrderI)
-        unlist(ans, recursive = FALSE)
-    }
-}
     
 makeTerms <- function(object) {
     if (length(object) == 0L)
@@ -35,33 +24,45 @@ makeTerms <- function(object) {
     if (any(is.na(object)))
         stop(gettextf("'%s' has missing values",
                       "object"))
+    if (any(is.infinite(object)))
+        stop(gettextf("'%s' has non-finite values",
+                      "object"))
     dim <- dim(object)
     .Data <- object@.Data
     metadata <- object@metadata
     n <- length(dim)
-    ans <- list("(Intercept)" = mean(.Data))
-    s <- seq_len(n)
-    margins <- listAllSubsets(s)
-    makeMean <- function(margin) apply(.Data, margin, mean)
-    means <- lapply(margins, makeMean)
-    metadata.means <- lapply(margins, function(margin) metadata[margin])
-    makeValObj <- function(.Data, metadata) {
-        .Data <- array(.Data,
-                       dim = dim(metadata),
-                       dimnames = dimnames(metadata))
-        new("Values",
-            .Data = .Data,
-            metadata = metadata)
+    intercept <- mean(.Data)
+    ans <- list("(Intercept)" = intercept)
+    if (n > 1L) {
+        margins <- listAllSubsets(n)
+        makeMean <- function(margin) apply(.Data, margin, mean)
+        means <- lapply(margins, makeMean)
+        metadata.means <- lapply(margins, function(margin) metadata[margin])
+        makeValObj <- function(.Data, metadata) {
+            .Data <- array(.Data,
+                           dim = dim(metadata),
+                           dimnames = dimnames(metadata))
+            new("Values",
+                .Data = .Data,
+                metadata = metadata)
+        }
+        means <- mapply(makeValObj,
+                        .Data = means,
+                        metadata = metadata.means)
+        means <- lapply(means, demest:::sweepAllMargins)
+        names.means <- lapply(means, names)
+        names.means <- sapply(names.means, paste, collapse = ":")
+        names(means) <- names.means
+        ans <- c(ans, means)
     }
-    means <- mapply(makeValObj,
-                    .Data = means,
-                    metadata = metadata.means)
-    means <- lapply(means, demest:::sweepAllMargins)
-    names.means <- lapply(means, names)
-    names.means <- sapply(names.means, paste, collapse = ":")
-    names(means) <- names.means
-    c(ans, means)
+    predicted <- Reduce(f = "+", x = ans)
+    error <- object - predicted
+    name <- paste(names(object), collapse = ":")
+    error <- list(error)
+    names(error) <- name
+    ans <- c(intercept, means, error)
 }
+
 
 terms <- makeTerms(log_rates)
 

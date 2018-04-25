@@ -25,6 +25,20 @@ test_that("checkAllTermsInFormulaSpecified works", {
                          paste(sQuote(c("sex", "age:sex")), collapse = ", ")))
 })
 
+test_that("listAllSubsets works", {
+    listAllSubsets <- demest:::listAllSubsets
+    ans.obtained <- listAllSubsets(n = 1L)
+    ans.expected <- list()
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- listAllSubsets(n = 2L)
+    ans.expected <- list(1L, 2L)
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- listAllSubsets(n = 3L)
+    ans.expected <- list(1L, 2L, 3L, 1:2, c(1L, 3L), 2:3)
+    expect_identical(ans.obtained, ans.expected)
+})
+
+
 ## test_that("makeFakeBetas works", {
 ##     makeFakeBetas <- demest:::makeFakeBetas
 ##     sweepAllMargins <- demest:::sweepAllMargins
@@ -100,6 +114,7 @@ test_that("checkAllTermsInFormulaSpecified works", {
 ##     expect_error(makeFakeSigma(dfPriorSigma = -1, scalePriorSigma = 0),
 ##                  "'prior.sd' must have an informative prior with function 'fakeData'")
 ## })
+
 
 test_that("makeIteratorBetas works", {
     makeIteratorBetas <- demest:::makeIteratorBetas

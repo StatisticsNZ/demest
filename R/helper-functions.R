@@ -16,6 +16,23 @@ checkAllTermsInFormulaSpecified <- function(formula, namesSpecPriors) {
     NULL
 }
 
+
+
+listAllSubsets <- function(n) {
+    if (n == 0L)
+        stop(gettext("no dimensions"))
+    else if (n == 1L)
+        list()
+    else {
+        s <- seq_len(n)
+        makeCombnOrderI <- function(i) utils::combn(s, i, simplify = FALSE)
+        ans <- lapply(seq_len(n - 1L), makeCombnOrderI)
+        unlist(ans, recursive = FALSE)
+    }
+}
+
+
+
 ## makeFakeBetas
 
 ## ## HAS_TESTS

@@ -108,6 +108,41 @@ setGeneric("concatDimScaleFirstSecond",
                                  "along", name, class(first), class(second)))
            })
 
+#' Decompose a Values array
+#'
+#' Decompose a \code{\link[dembase]{Values}} array into terms
+#' made up of component dimensions.  Typically used to obtain
+#' initial estimates of main effects and interactions,
+#' as part of model building.
+#'
+#' When building a Poisson model, the decomposition is usually
+#' carried out on log-rates, and when building a binomial model,
+#' it is usually carried out on logit-proportions.
+#'
+#' @param object An object of class \code{\link[dembase]{Values}}.
+#'
+#' @return A named list, the elements of which have class
+#' \code{\link[dembase]{Values}}.
+#'
+#' @references Chapter 12 of Bryant and Zhang,
+#' \emph{Bayesian Demographic Estimation and Forecasting}.
+#'
+#' @examples
+#' deaths <- Counts(demdata::VADeaths2)
+#' popn <- Counts(demdata::VAPopn)
+#' rates <- deaths/popn
+#' log.rates <- log(rates)
+#' ans <- decomposition(log.rates)
+#' names(ans)
+#' ans[1:3]
+#' ans[["age:residence"]]
+#' mean(log.rates)
+#' round(sapply(ans, sum), 5)
+#' all.equal(Reduce("+", ans), log.rates)
+setGeneric("decomposition",
+           function(object)
+               standardGeneric("decomposition"))
+
 setGeneric("diffLogDensAccount",
            function(combined, useC = FALSE, useSpecific = FALSE)
                standardGeneric("diffLogDensAccount"))
@@ -121,7 +156,7 @@ setGeneric("drawYNonSampled",
            standardGeneric("drawYNonSampled"))
 
 #' Convert estimates from a complex survey into a form suitable for
-#' analysis with an area-level model.
+#' analysis with an area-level model
 #'
 #' Take estimates of probabilities or rates from a complex survey,
 #' along with the associated standard errors, and turn them into counts and

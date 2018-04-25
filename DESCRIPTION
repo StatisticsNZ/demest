@@ -1,7 +1,7 @@
 Package: demest
 Title: Bayesian Demographic Estimation and Forecasting
-Version: 0.0.0.9211
-Date: 2018-03-12
+Version: 0.0.0.9212
+Date: 2018-04-26
 Authors@R: c(
     person(given = "John",
            family = "Bryant",

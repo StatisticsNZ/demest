@@ -5,7 +5,7 @@
 \alias{equivalentSample}
 \alias{equivalentSample,Values,Values-method}
 \title{Convert estimates from a complex survey into a form suitable for
-analysis with an area-level model.}
+analysis with an area-level model}
 \usage{
 equivalentSample(mean, se, to = c("binomial", "Poisson"), epsilon = 1e-06)
 

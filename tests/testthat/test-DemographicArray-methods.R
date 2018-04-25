@@ -444,6 +444,44 @@ test_that("Points method for concatDimScaleFirstSecond works", {
 })
 
 
+## decomposition #################################################################
+
+
+test_that("decomposition works", {
+    x <- Values(array(rnorm(6),
+                      dim = 3:2,
+                      dimnames = list(age = c("0-4", "5-9", "10+"),
+                                      sex = c("m", "f"))))
+    ans.obtained <- decomposition(x)
+    expect_equal(ans.obtained[[1]], mean(x))
+    expect_equal(sapply(ans.obtained[-1], sum), c(age = 0, sex = 0, "age:sex" = 0))
+    expect_equal(Reduce("+", ans.obtained), x)
+    x <- Values(array(rnorm(12),
+                      dim = c(3:2, 2),
+                      dimnames = list(age = c("0-4", "5-9", "10+"),
+                                      sex = c("m", "f"),
+                                      time = c(2000, 2005))))
+    ans.obtained <- decomposition(x)
+    expect_equal(ans.obtained[[1]], mean(x))
+    expect_equal(sapply(ans.obtained, sum),
+                 c("(Intercept)" = mean(x),
+                   age = 0, sex = 0, time = 0,
+                   "age:sex" = 0, "age:time" = 0, "sex:time" = 0,
+                   "age:sex:time" = 0))
+    expect_equal(Reduce("+", ans.obtained), x)
+    x <- Values(array(rnorm(3),
+                      dim = 3,
+                      dimnames = list(age = c("0-4", "5-9", "10+"))))
+    ans.obtained <- decomposition(x)
+    expect_equal(ans.obtained[[1]], mean(x))
+    expect_equal(sapply(ans.obtained, sum),
+                 c("(Intercept)" = mean(x),
+                   age = 0))
+    expect_equal(Reduce("+", ans.obtained), x)
+})
+
+
+
 ## equivalentSample ##############################################################
 
 test_that("equivalentSample works", {
