@@ -952,7 +952,7 @@
 ##                  census = Counts(array(seq.int(110L, 210L, 10L),
 ##                                        dim = 11,
 ##                                        dimnames = list(time = seq(2000, 2100, 10)))))
-## dataModels <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
+## dataModels <- list(Model(tax ~ CMP(mean ~ 1), series = "deaths"),
 ##                    Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
 ## filename <- tempfile()
 ## estimateAccount(account = account,
@@ -963,5 +963,4 @@
 ##                 nBurnin = 1,
 ##                 nSim = 2,
 ##                 nChain = 4,
-##                 nThin = 1,
-##                 useC = FALSE)
+##                 nThin = 1)
