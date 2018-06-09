@@ -2431,5 +2431,50 @@ test_that("initialPriorPredict works with KnownUncertain", {
 })
 
 
-
-
+test_that("initialPriorPredict works with Zero", {
+    set.seed(100)
+    initialPriorPredict <- demest:::initialPriorPredict
+    initialPrior <- demest:::initialPrior
+    spec <- Zero()
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(region = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          multScale = 1,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "Zero")
+    metadata.new <- new("MetaData",
+                        nms = "region",
+                        dimtypes = "state",
+                        DimScales = list(new("Categories", dimvalues = letters[11:15])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 5L,
+                                   dimnames = list(region = letters[11:15])))
+    beta.new <- rnorm(5)
+    ans.obtained <- initialPriorPredict(prior,
+                                        data = NULL,
+                                        metadata = metadata.new,
+                                        name = "region",
+                                        along = "region",
+                                        margin = 1L,
+                                        strucZeroArray = strucZeroArray)
+    ans.expected <- initialPrior(spec,
+                                 beta = beta.new,
+                                 metadata = metadata.new,
+                                 sY = NULL,
+                                 multScale = 1,
+                                 isSaturated = FALSE,
+                                 margin = 1L,
+                                 strucZeroArray = strucZeroArray)
+    expect_identical(ans.obtained, ans.expected)
+})

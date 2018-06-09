@@ -3080,7 +3080,7 @@ setMethod("initialPriorPredict",
 
 ## Zero
 
-## NO_TESTS
+## HAS_TESTS
 setMethod("initialPriorPredict",
           signature(prior = "Zero"),
           function(prior, data, metadata, name, along, margin, strucZeroArray) {
@@ -3088,7 +3088,14 @@ setMethod("initialPriorPredict",
                   stop(gettextf("covariate data supplied for prior for '%s', but prior does not use covariates",
                                 name))
               J <- makeJPredict(metadata)
+              if (is.null(metadata))
+                  allStrucZero <- FALSE
+              else
+                  allStrucZero <- makeAllStrucZero(strucZeroArray = strucZeroArray,
+                                                   margin = margin,
+                                                   metadata = metadata)
               methods::new("Zero",
+                           allStrucZero = allStrucZero,
                            isSaturated = prior@isSaturated,
                            J = J)
           })
