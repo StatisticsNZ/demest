@@ -139,6 +139,7 @@ setGeneric("concatDimScaleFirstSecond",
 #' mean(log.rates)
 #' round(sapply(ans, sum), 5)
 #' all.equal(Reduce("+", ans), log.rates)
+#' @export
 setGeneric("decomposition",
            function(object)
                standardGeneric("decomposition"))

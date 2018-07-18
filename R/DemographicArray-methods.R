@@ -395,6 +395,9 @@ setMethod("classY",
 ## decomposition ##################################################################
 
 
+
+#' @rdname decomposition
+#' @export
 setMethod("decomposition",
           signature(object = "Values"),
           function(object) {
