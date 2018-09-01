@@ -760,7 +760,7 @@
 ##                     Model(d3 ~ PoissonBinomial(prob = 0.95)),
 ##                     x <- Model(d4 ~ NormalFixed(mean = mean.agesex, sd = 0.1)))
 ## set.seed(1)
-## estimateCounts(Model(y ~ Poisson(mean ~ age + sex + region),
+## estimateCounts(Model(y ~ Poisson(mean ~ age + sex + region, useExpose = FALSE),
 ##                      age ~ Exch(),
 ##                      lower = 2,
 ##                      jump = 0.3),
