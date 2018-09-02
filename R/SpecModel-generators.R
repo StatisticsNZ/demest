@@ -10,11 +10,8 @@ CMP <- function(formula, dispersion = Dispersion(), useExpose = TRUE,
     if (!methods::is(dispersion, "Dispersion"))
         stop(gettextf("'%s' has class \"%s\"",
                       dispersion, class(dispersion)))
-    meanMeanLogNuCMP <- dispersion@meanMeanLogNuCMP
-    sdMeanLogNuCMP <- dispersion@sdMeanLogNuCMP
-    ASDLogNuCMP <- dispersion@ASDLogNuCMP
-    nuSDLogNuCMP <- dispersion@nuSDLogNuCMP
-    sdLogNuMaxCMP <- dispersion@sdLogNuMaxCMP
+    meanLogNuCMP <- dispersion@meanLogNuCMP
+    sdLogNuCMP <- dispersion@sdLogNuCMP
     ## useExpose
     useExpose <- checkAndTidyLogicalFlag(x = useExpose,
                                          name = "useExpose")
@@ -22,11 +19,8 @@ CMP <- function(formula, dispersion = Dispersion(), useExpose = TRUE,
     structuralZeros <- checkAndTidyStructuralZeros(structuralZeros)
     methods::new("SpecLikelihoodCMP",
                  formulaMu = formula,
-                 meanMeanLogNuCMP = meanMeanLogNuCMP,
-                 sdMeanLogNuCMP = sdMeanLogNuCMP,
-                 ASDLogNuCMP = ASDLogNuCMP,
-                 nuSDLogNuCMP = nuSDLogNuCMP,
-                 sdLogNuMaxCMP = sdLogNuMaxCMP,
+                 meanLogNuCMP = meanLogNuCMP,
+                 sdLogNuCMP = sdLogNuCMP,
                  useExpose = useExpose,
                  boxCoxParam = boxcox,
                  structuralZeros = structuralZeros)
@@ -39,22 +33,10 @@ CMP <- function(formula, dispersion = Dispersion(), useExpose = TRUE,
 #' Specify the prior for the dispersion parameter (often denoted
 #' 'nu') in a CMP or COM-Poisson model. The dispersion parameter
 #' is assumed to have a distribution
-#' \deqn{log \nu_i \sim N(\mu_i, \sigma^2)}
-#' \deqn{\mu_i \sim N(M, S^2)}
-#' \deqn{\sigma \sim trunc-half-t(df, A, max)}
-#'
-#' The \code{mean} argument is used to specify the second equation,
-#' and the \code{scale} argument is used to specify the third.
-#' \code{M} in the second equation defaults to 0, and \code{S}
-#' defaults to 1. \code{df} in the third equation defaults to 7.
-#' \code{A} defaults to 1 if the CMP model uses exposure,
-#' and a function of the variation in log(y) otherwise.
+#' \deqn{log \nu_i \sim N(\mu, \sigma^2)}
 #' 
-#' @param mean An object of class \code{\linkS4class{Norm}}, specifying
-#' the prior for the mean of the (logged) dispersion parameter.
-#' @param scale An object of class \code{\linkS4class{HalfT}},
-#' specifying the prior for the standard deviation of the (logged)
-#' dispersion parameter.
+#' @param mean A scalar, defaulting to 0.
+#' @param sd A scalar, defaulting to 1.
 #'
 #' @return An object of class \code{\linkS4class{Dispersion}}.
 #'
@@ -62,42 +44,16 @@ CMP <- function(formula, dispersion = Dispersion(), useExpose = TRUE,
 #'
 #' @examples
 #' Dispersion()
-#' Dispersion(mean = Norm(mean = -1, sd = 0.1))
-#' Dispersion(mean = Norm(mean = -1, sd = 0.1),
-#'            scale = HalfT(scale = 0.1))
+#' Dispersion(mean = 1, sd = 0.3)
 #' @export
-Dispersion <- function(mean = Norm(), scale = HalfT()) {
-    ## mean
-    if (!methods::is(mean, "Norm"))
-        stop(gettextf("'%s' has class \"%s\"",
-                      mean, class(mean)))
-    meanMeanLogNuCMP <- mean@mean
-    sdMeanLogNuCMP <- mean@A@.Data
-    if (is.na(sdMeanLogNuCMP))
-        sdMeanLogNuCMP <- new("Scale", 1)
-    else
-        sdMeanLogNuCMP <- new("Scale", sdMeanLogNuCMP)
-    ## scale
-    if (!methods::is(scale, "HalfT"))
-        stop(gettextf("'%s' has class \"%s\"",
-                      scale, class(scale)))
-    ASDLogNuCMP <- scale@A@.Data
-    mult <- scale@mult@.Data
-    nuSDLogNuCMP <- scale@nu
-    sdLogNuMaxCMP <- scale@scaleMax@.Data
-    if (is.na(ASDLogNuCMP))
-        ASDLogNuCMP <- mult
-    ASDLogNuCMP <- new("Scale", ASDLogNuCMP)
-    sdLogNuMaxCMP <- makeScaleMax(scaleMax = sdLogNuMaxCMP,
-                                  A = ASDLogNuCMP,
-                                  nu = nuSDLogNuCMP,
-                                  isSpec = FALSE)
+Dispersion <- function(mean = 0, sd = 1) {
+    meanLogNuCMP <- checkAndTidyMeanOrProb(mean, name = "mean")
+    checkNonNegativeNumeric(sd, name = "sd")
+    meanLogNuCMP <- new("Parameter", meanLogNuCMP)
+    sdLogNuCMP <- new("Scale", sd)
     methods::new("Dispersion",
-                 meanMeanLogNuCMP = meanMeanLogNuCMP,
-                 sdMeanLogNuCMP = sdMeanLogNuCMP,
-                 ASDLogNuCMP = ASDLogNuCMP,
-                 nuSDLogNuCMP = nuSDLogNuCMP,
-                 sdLogNuMaxCMP = sdLogNuMaxCMP)
+                 meanLogNuCMP = meanLogNuCMP,
+                 sdLogNuCMP = sdLogNuCMP)
 }
 
 
@@ -106,6 +62,7 @@ Dispersion <- function(mean = Norm(), scale = HalfT()) {
 #'
 #' Specify the likelihood and part of the prior for a
 #' Poisson, binomial, or normal hierarchical model.
+#'
 #'
 #' Specify a likelihood and prior of the form
 #' \deqn{y_i \sim Poisson(\gamma_i n_i)}
@@ -840,11 +797,8 @@ setMethod("SpecModel",
               useExpose <- specInner@useExpose
               boxCoxParam <- specInner@boxCoxParam
               structuralZeros <- specInner@structuralZeros
-              meanMeanLogNuCMP <- specInner@meanMeanLogNuCMP
-              sdMeanLogNuCMP <- specInner@sdMeanLogNuCMP
-              ASDLogNuCMP <- specInner@ASDLogNuCMP
-              nuSDLogNuCMP <- specInner@nuSDLogNuCMP
-              sdLogNuMaxCMP <- specInner@sdLogNuMaxCMP
+              meanLogNuCMP <- specInner@meanLogNuCMP
+              sdLogNuCMP <- specInner@sdLogNuCMP
               specs.priors <- makeSpecsPriors(dots)
               names.specs.priors <- makeNamesSpecsPriors(dots)
               if (is.null(lower))
@@ -894,11 +848,8 @@ setMethod("SpecModel",
                            structuralZeros = structuralZeros,
                            upper = upper,
                            useExpose = useExpose,
-                           meanMeanLogNuCMP = meanMeanLogNuCMP,
-                           sdMeanLogNuCMP = sdMeanLogNuCMP,
-                           ASDLogNuCMP = ASDLogNuCMP,
-                           nuSDLogNuCMP = nuSDLogNuCMP,
-                           sdLogNuMaxCMP = sdLogNuMaxCMP,
+                           meanLogNuCMP = meanLogNuCMP,
+                           sdLogNuCMP = sdLogNuCMP,
                            aggregate = aggregate)
           })
 

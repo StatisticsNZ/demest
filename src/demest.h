@@ -706,8 +706,6 @@ updateAlphaDeltaDLMWithTrend(SEXP prior_R, double *betaTilde, int J);
 void
 updateSeason(SEXP prior_R, double *betaTilde, int J);
 
-void updateMeanLogNu(SEXP object_R);
-void updateSDLogNu(SEXP object_R);
 void updateSigma_Varying(SEXP object);
 
 void updateTheta_BinomialVarying(SEXP object, SEXP y_R, SEXP exposure_R);

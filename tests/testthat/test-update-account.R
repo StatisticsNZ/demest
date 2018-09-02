@@ -3654,6 +3654,7 @@ test_that("diffLogLikCellOneDataset works", {
     diffLogLikCellOneDataset <- demest:::diffLogLikCellOneDataset
     initialModel <- demest:::initialModel
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    collapse <- dembase::collapse
     ## one to one
     deaths <- Counts(array(rpois(n = 180, lambda = 100),
                            dim = c(3, 2, 5, 3, 2),
@@ -3738,6 +3739,7 @@ test_that("R and C versions of diffLogLikCellOneDataset give same answer", {
     diffLogLikCellOneDataset <- demest:::diffLogLikCellOneDataset
     initialModel <- demest:::initialModel
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    collapse <- dembase::collapse
     ## one to one
     deaths <- Counts(array(rpois(n = 180, lambda = 100),
                            dim = c(3, 2, 5, 3, 2),
@@ -3987,6 +3989,7 @@ test_that("diffLogLikPopn works", {
     Population <- dembase:::Population
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     CohortIterator <- demest:::CohortIterator
+    collapse <- dembase::collapse
     popn <- Counts(array(rpois(n = 90, lambda = 100),
                          dim = c(3, 2, 5, 3),
                          dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -4030,10 +4033,10 @@ test_that("diffLogLikPopn works", {
                                dimnames = dimnames(deaths))) + 1L
     datasets <- list(census, register, reg.births, address.change, reg.deaths)
     data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
-                              Model(register ~ Poisson(mean ~ 1), series = "population"),
-                              Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
-                              Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
-                              Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
+                        Model(register ~ Poisson(mean ~ 1), series = "population"),
+                        Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
+                        Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
+                        Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
     seriesIndices <- c(0L, 0L, 1L, 2L, 3L)
     transforms <- list(makeTransform(x = popn, y = datasets[[1]], subset = TRUE),
                        makeTransform(x = popn,, y = datasets[[2]], subset = TRUE),
@@ -4044,20 +4047,20 @@ test_that("diffLogLikPopn works", {
     popn <- Population(popn)
     iterator <- CohortIterator(popn)
     data.models <- list(initialModel(object = data.models[[1L]],
-                                            y = datasets[[1L]],
-                                            exposure = collapse(popn, transform = transforms[[1L]])),
-                              initialModel(object = data.models[[2L]],
-                                            y = datasets[[2L]],
-                                            exposure = collapse(popn, transform = transforms[[2L]])),
-                              initialModel(object = data.models[[3L]],
-                                            y = datasets[[3L]],
-                                            exposure = collapse(births, transform = transforms[[3L]])),
-                              initialModel(object = data.models[[4L]],
-                                            y = datasets[[4L]],
-                                            exposure = collapse(internal, transform = transforms[[4L]])),
-                              initialModel(object = data.models[[5L]],
-                                            y = datasets[[5L]],
-                                            exposure = collapse(deaths, transform = transforms[[5L]])))
+                                     y = datasets[[1L]],
+                                     exposure = collapse(popn, transform = transforms[[1L]])),
+                        initialModel(object = data.models[[2L]],
+                                     y = datasets[[2L]],
+                                     exposure = collapse(popn, transform = transforms[[2L]])),
+                        initialModel(object = data.models[[3L]],
+                                     y = datasets[[3L]],
+                                     exposure = collapse(births, transform = transforms[[3L]])),
+                        initialModel(object = data.models[[4L]],
+                                     y = datasets[[4L]],
+                                     exposure = collapse(internal, transform = transforms[[4L]])),
+                        initialModel(object = data.models[[5L]],
+                                     y = datasets[[5L]],
+                                     exposure = collapse(deaths, transform = transforms[[5L]])))
     ans.obtained <- diffLogLikPopn(diff = 5L,
                                    iFirst  = 11L,
                                    iterator = iterator,
@@ -4094,6 +4097,7 @@ test_that("R and C versions of diffLogLikPopn give same answer", {
     Population <- dembase:::Population
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     CohortIterator <- demest:::CohortIterator
+    collapse <- dembase::collapse
     popn <- Counts(array(rpois(n = 90, lambda = 100),
                          dim = c(3, 2, 5, 3),
                          dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -4137,10 +4141,10 @@ test_that("R and C versions of diffLogLikPopn give same answer", {
                                dimnames = dimnames(deaths))) + 1L
     datasets <- list(census, register, reg.births, address.change, reg.deaths)
     data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
-                              Model(register ~ Poisson(mean ~ 1), series = "population"),
-                              Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
-                              Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
-                              Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
+                        Model(register ~ Poisson(mean ~ 1), series = "population"),
+                        Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
+                        Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
+                        Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
     seriesIndices <- c(0L, 0L, 1L, 2L, 3L)
     transforms <- list(makeTransform(x = popn, y = datasets[[1]], subset = TRUE),
                        makeTransform(x = popn,, y = datasets[[2]], subset = TRUE),
@@ -4151,20 +4155,20 @@ test_that("R and C versions of diffLogLikPopn give same answer", {
     popn <- Population(popn)
     iterator <- CohortIterator(popn)
     data.models <- list(initialModel(object = data.models[[1L]],
-                                           y = datasets[[1L]],
-                                           exposure = collapse(popn, transform = transforms[[1L]])),
-                              initialModel(object = data.models[[2L]],
-                                           y = datasets[[2L]],
-                                           exposure = collapse(popn, transform = transforms[[2L]])),
-                              initialModel(object = data.models[[3L]],
-                                           y = datasets[[3L]],
-                                           exposure = collapse(births, transform = transforms[[3L]])),
-                              initialModel(object = data.models[[4L]],
-                                           y = datasets[[4L]],
-                                           exposure = collapse(internal, transform = transforms[[4L]])),
-                              initialModel(object = data.models[[5L]],
-                                           y = datasets[[5L]],
-                                           exposure = collapse(deaths, transform = transforms[[5L]])))
+                                     y = datasets[[1L]],
+                                     exposure = collapse(popn, transform = transforms[[1L]])),
+                        initialModel(object = data.models[[2L]],
+                                     y = datasets[[2L]],
+                                     exposure = collapse(popn, transform = transforms[[2L]])),
+                        initialModel(object = data.models[[3L]],
+                                     y = datasets[[3L]],
+                                     exposure = collapse(births, transform = transforms[[3L]])),
+                        initialModel(object = data.models[[4L]],
+                                     y = datasets[[4L]],
+                                     exposure = collapse(internal, transform = transforms[[4L]])),
+                        initialModel(object = data.models[[5L]],
+                                     y = datasets[[5L]],
+                                     exposure = collapse(deaths, transform = transforms[[5L]])))
     ans.R <- diffLogLikPopn(diff = 5L,
                             iFirst  = 11L,
                             iterator = iterator,

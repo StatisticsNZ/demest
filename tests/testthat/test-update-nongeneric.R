@@ -3011,14 +3011,14 @@ test_that("updateOmegaVectorsMix gives valid answer", {
         set.seed(seed)
         ans.obtained <- updateOmegaVectorsMix(prior)
         set.seed(seed)
-        max.used <- prior@indexClassMaxUsedMix@.Data
+        max.used <- prior@indexClassMaxUsedMix@.Data * 1
         sigma <- prior@omegaVectorsMix@.Data
         A <- prior@AVectorsMix@.Data
         nu <- prior@nuVectorsMix@.Data
         vectors <- prior@vectorsMix[c(1, 3)]
         vectors <- lapply(vectors, function(x) matrix(x, ncol = 10))
         vectors <- lapply(vectors, function(x) x[, 1:max.used])
-        V <- sum(sapply(prior@vectorsMix, function(x) sum(x^2)))
+        V <- sum(sapply(vectors, function(x) sum(x^2)))
         n <- sum(sapply(vectors, length))
         omega.new <- updateSDNorm(sigma = sigma,
                                   A = A,
@@ -4411,112 +4411,6 @@ test_that("R and C versions of updateWeightMix give same answer", {
 
 ## UPDATING MODELS ################################################################
 
-test_that("updateMeanLogNu gives valid answer", {
-    updateMeanLogNu <- demest:::updateMeanLogNu
-    initialModel <- demest:::initialModel
-    for (seed in seq_len(n.test)) {
-        y <- Counts(array(as.integer(rpois(n = 20, lambda = 10)),
-                          dim = c(5, 4),
-                          dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
-        spec <- Model(y ~ CMP(mean ~ age + region,
-                              dispersion = Dispersion(mean = Norm(-0.5, 0.3),
-                                                      scale = HalfT(scale = 0.25)),
-                              useExpose = FALSE))
-        model <- initialModel(spec, y = y, exposure = NULL)
-        set.seed(seed + 1)
-        ans.obtained <- updateMeanLogNu(model)
-        set.seed(seed + 1)
-        var <- 1 / (20/model@sdLogNuCMP@.Data^2 + 1/model@sdMeanLogNuCMP^2)
-        mean <- ((20/model@sdLogNuCMP@.Data^2) * mean(log(model@nuCMP)) + (1/model@sdMeanLogNuCMP^2) * model@meanMeanLogNuCMP) * var
-        ans.expected <- model
-        ans.expected@meanLogNuCMP@.Data <- rnorm(n = 1, mean = mean, sd = sqrt(var))
-        if (test.identity)
-            expect_identical(ans.obtained, ans.expected)
-        else
-            expect_equal(ans.obtained, ans.expected)
-  }
-})
-
-test_that("R and C versions of updateMeanLogNu give same answer", {
-    updateMeanLogNu <- demest:::updateMeanLogNu
-    initialModel <- demest:::initialModel
-    for (seed in seq_len(n.test)) {
-        y <- Counts(array(as.integer(rpois(n = 20, lambda = 10)),
-                          dim = c(5, 4),
-                          dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
-        spec <- Model(y ~ CMP(mean ~ age + region,
-                              dispersion = Dispersion(mean = Norm(-0.5, 0.3),
-                                                      scale = HalfT(scale = 0.25)),
-                              useExpose = FALSE))
-        model <- initialModel(spec, y = y, exposure = NULL)
-        set.seed(seed + 1)
-        ans.R <- updateMeanLogNu(model, useC = FALSE)
-        set.seed(seed + 1)
-        ans.C <- updateMeanLogNu(model, useC = TRUE)
-        if (test.identity)
-            expect_identical(ans.R, ans.C)
-        else
-            expect_equal(ans.R, ans.C)
-  }
-})
-
-test_that("updateSDLogNu gives valid answer", {
-    updateSDLogNu <- demest:::updateSDLogNu
-    initialModel <- demest:::initialModel
-    updateSDNorm <- demest:::updateSDNorm
-    for (seed in seq_len(n.test)) {
-        y <- Counts(array(as.integer(rpois(n = 20, lambda = 10)),
-                          dim = c(5, 4),
-                          dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
-        spec <- Model(y ~ CMP(mean ~ age + region,
-                              dispersion = Dispersion(mean = Norm(-0.5, 0.3),
-                                                      scale = HalfT(scale = 0.25)),
-                              useExpose = FALSE))
-        model <- initialModel(spec, y = y, exposure = NULL)
-        set.seed(seed + 1)
-        ans.obtained <- updateSDLogNu(model)
-        set.seed(seed + 1)
-        ans.expected <- model
-        V <- sum((log(model@nuCMP@.Data) - model@meanLogNuCMP@.Data)^2)
-        sd <- updateSDNorm(sigma = model@sdLogNuCMP@.Data,
-                           A = model@ASDLogNuCMP@.Data,
-                           nu = model@nuSDLogNuCMP@.Data,
-                           V = V,
-                           n = 20L,
-                           max = model@sdLogNuMaxCMP@.Data)
-        if (sd > 0)
-            ans.expected@sdLogNuCMP@.Data <- sd
-        if (test.identity)
-            expect_identical(ans.obtained, ans.expected)
-        else
-            expect_equal(ans.obtained, ans.expected)
-  }
-})
-
-
-test_that("R and C versions of updateSDLogNu give same answer", {
-    updateSDLogNu <- demest:::updateSDLogNu
-    initialModel <- demest:::initialModel
-    updateSDNorm <- demest:::updateSDNorm
-    for (seed in seq_len(n.test)) {
-        y <- Counts(array(as.integer(rpois(n = 20, lambda = 10)),
-                          dim = c(5, 4),
-                          dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
-        spec <- Model(y ~ CMP(mean ~ age + region,
-                              dispersion = Dispersion(mean = Norm(-0.5, 0.3),
-                                                      scale = HalfT(scale = 0.25)),
-                              useExpose = FALSE))
-        model <- initialModel(spec, y = y, exposure = NULL)
-        set.seed(seed + 1)
-        ans.R <- updateSDLogNu(model, useC = FALSE)
-        set.seed(seed + 1)
-        ans.C <- updateSDLogNu(model, useC = TRUE)
-        if (test.identity)
-            expect_identical(ans.R, ans.C)
-        else
-            expect_equal(ans.R, ans.C)
-  }
-})
 
 
 test_that("updateSigma_Varying gives valid answer - no Box-Cox", {
@@ -10580,6 +10474,7 @@ test_that("updateDataModelsAccount works with CombinedAccountMovements", {
     initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     updateModelUseExp <- demest:::updateModelUseExp
+    collapse <- dembase::collapse
     set.seed(1)
     population <- CountsOne(values = seq(100L, 200L, 10L),
                             labels = seq(2000, 2100, 10),

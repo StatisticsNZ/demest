@@ -1919,68 +1919,6 @@ updateWeightMix <- function(prior, useC = FALSE) {
 
 ## TRANSLATED
 ## HAS_TESTS
-updateMeanLogNu <- function(object, useC = FALSE) {
-    stopifnot(methods::is(object, "CMPVarying"))
-    stopifnot(methods::validObject(object))
-    if (useC) {
-        .Call(updateMeanLogNu_R, object)
-    }
-    else {
-        sd.data <- object@sdLogNuCMP@.Data
-        mean.prior <- object@meanMeanLogNuCMP@.Data
-        sd.prior <- object@sdMeanLogNuCMP@.Data
-        nu <- object@nuCMP
-        n <- length(nu)
-        mean.data <- mean(log(nu))
-        prec.data <- n / sd.data^2
-        prec.prior <- 1 / sd.prior^2
-        var.post <- 1 / (prec.data + prec.prior)
-        mean.post <- (prec.data * mean.data + prec.prior * mean.prior) * var.post
-        sd.post <- sqrt(var.post)
-        mean.log.nu <- stats::rnorm(n = 1L,
-                                    mean = mean.post,
-                                    sd = sd.post)
-        object@meanLogNuCMP@.Data <- mean.log.nu
-        object
-    }
-}
-
-## TRANSLATED
-## HAS_TESTS
-updateSDLogNu <- function(object, useC = FALSE) {
-    stopifnot(methods::is(object, "CMPVarying"))
-    stopifnot(methods::validObject(object))
-    if (useC) {
-        .Call(updateSDLogNu_R, object)
-    }
-    else {
-        sd <- object@sdLogNuCMP@.Data
-        max <- object@sdLogNuMaxCMP@.Data
-        mean <- object@meanLogNuCMP@.Data
-        A <- object@ASDLogNuCMP@.Data
-        nu <- object@nuSDLogNuCMP@.Data
-        nu.cmp <- object@nuCMP@.Data
-        n <- length(nu.cmp)
-        V <- 0
-        for (i in seq_len(n)) {
-            log.nu.cmp <- log(nu.cmp[i])
-            V <- V + (log.nu.cmp - mean)^2
-        }
-        sd <- updateSDNorm(sigma = sd,
-                           A = A,
-                           nu = nu,
-                           V = V,
-                           n = n,
-                           max = max)
-        successfully.updated <- sd > 0
-        if (successfully.updated)
-            object@sdLogNuCMP@.Data <- sd
-        object
-    }
-}
-
-## TRANSLATED
-## HAS_TESTS
 updateSigma_Varying <- function(object, g, useC = FALSE) {
     ## object
     stopifnot(methods::is(object, "Varying"))

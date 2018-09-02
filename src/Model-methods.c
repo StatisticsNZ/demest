@@ -568,8 +568,6 @@ updateModelNotUseExp_CMPVaryingNotUseExp_i(SEXP object, SEXP y_R)
 {
     updateThetaAndNu_CMPVaryingNotUseExp(object, y_R);
     updateSigma_Varying_General(object, log);
-    updateMeanLogNu(object);
-    updateSDLogNu(object);
     updateBetasAndPriorsBetas_General(object, log);
 }
 
@@ -706,8 +704,6 @@ updateModelUseExp_CMPVaryingUseExp_i(SEXP object, SEXP y_R, SEXP exposure_R)
 {
     updateThetaAndNu_CMPVaryingUseExp(object, y_R, exposure_R);
     updateSigma_Varying_General(object, log);
-    updateMeanLogNu(object);
-    updateSDLogNu(object);
     updateBetasAndPriorsBetas_General(object, log);
 }
 

@@ -704,9 +704,10 @@ test_that("initialModel creates object of class CMPVaryingUseExp from valid inpu
     theta <- array(theta, dim = dim(y), dimnames = dimnames(y))
     betas <- loglm(~ age + region, theta)$param
     theta <- as.numeric(theta)
-    sdNu <- runif(1, max = 1)
-    meanNu <- rnorm(n = 1, mean = spec@meanMeanLogNuCMP, sd = spec@sdMeanLogNuCMP)
-    nuCMP <- rnorm(n = length(theta), mean = meanNu, sd = sdNu)
+    logNuCMP <- stats::rnorm(n = length(theta))
+    nuCMP <- exp(logNuCMP)
+    nuCMP[nuCMP < 0.5] <- 0.5
+    nuCMP[nuCMP > 2] <- 2
     strucZeroArray <- Counts(array(1L,
                                    dim = c(5, 4),
                                    dimnames = list(age = 0:4, region = letters[1:4])))
@@ -731,8 +732,9 @@ test_that("initialModel creates object of class CMPVaryingUseExp from valid inpu
     expect_identical(x@tolerance, 1e-5)
     expect_identical(x@maxAttempt, 1000L)
     expect_identical(x@nFailedPropTheta, new("Counter", 0L))
-    expect_identical(x@meanLogNuCMP, new("Parameter", meanNu))
-    expect_identical(x@sdLogNuCMP, new("Scale", sdNu))
+    expect_identical(x@nuCMP, new("ParameterVector", nuCMP))
+    expect_identical(x@meanLogNuCMP, new("Parameter", 0))
+    expect_identical(x@sdLogNuCMP, new("Scale", 1))
     ## intercept only
     exposure <- Counts(array(rpois(n = 20, lambda = 20),
                              dim = c(5, 4),
@@ -788,9 +790,7 @@ test_that("initialModel creates object of class CMPVaryingUseExp from valid inpu
     theta <- array(theta, dim = dim(y), dimnames = dimnames(y))
     betas <- loglm(~ age + region, theta)$param
     theta <- as.numeric(theta)
-    sdNu <- runif(1, max = 1)
-    meanNu <- rnorm(n = 1, mean = spec@meanMeanLogNuCMP, sd = spec@sdMeanLogNuCMP)
-    nuCMP <- rnorm(n = length(theta), mean = meanNu, sd = sdNu)
+    nuCMP <- rnorm(n = length(theta), mean = 0, sd = 1)
     priors <- makePriors(betas = betas,
                          specs = spec@specsPriors,
                          namesSpecs = spec@namesSpecsPriors,

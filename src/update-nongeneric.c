@@ -2676,63 +2676,6 @@ get_log_gamma_dens(int n, double theta[],
 }
 
 
-void
-updateMeanLogNu(SEXP object_R)
-{
-    double sd_data = *REAL(GET_SLOT(object_R, sdLogNuCMP_sym));
-    double mean_prior = *REAL(GET_SLOT(object_R, meanMeanLogNuCMP_sym));
-    double sd_prior = *REAL(GET_SLOT(object_R, sdMeanLogNuCMP_sym));
-    SEXP nu_R = GET_SLOT(object_R, nuCMP_sym);
-    int n = LENGTH(nu_R);
-    double * nuVec = REAL(nu_R);
-    
-    double mean_data = 0;
-    for (int i = 0; i < n; ++i ) {
-        mean_data += log(nuVec[i]);
-    }
-    mean_data /= n;
-    
-    double prec_data = n / (sd_data * sd_data);
-    double prec_prior = 1 / (sd_prior * sd_prior);
-    double var_post = 1 / (prec_data + prec_prior);
-    double mean_post = (prec_data * mean_data + prec_prior * mean_prior)
-                                                        * var_post;
-    double sd_post = sqrt(var_post);
-    
-    double mean_log_nu = rnorm(mean_post, sd_post);
-    
-    SET_DOUBLESCALE_SLOT(object_R, meanLogNuCMP_sym, mean_log_nu);
-    
-}
-
-
-void
-updateSDLogNu(SEXP object_R)
-{
-    double sd = *REAL(GET_SLOT(object_R, sdLogNuCMP_sym));
-    double max = *REAL(GET_SLOT(object_R, sdLogNuMaxCMP_sym));
-    double mean = *REAL(GET_SLOT(object_R, meanLogNuCMP_sym));
-    double A = *REAL(GET_SLOT(object_R, ASDLogNuCMP_sym));
-    double nu = *REAL(GET_SLOT(object_R, nuSDLogNuCMP_sym));
-    SEXP nu_cmp_R = GET_SLOT(object_R, nuCMP_sym);
-    int n = LENGTH(nu_cmp_R);
-    double * nu_cmpVec = REAL(nu_cmp_R);
-    
-    double V = 0;
-    for (int i = 0; i < n; ++i ) {
-        double log_nu_cmp = log(nu_cmpVec[i]);
-        double tmp = log_nu_cmp - mean;
-        V += tmp * tmp;
-    }
-    
-    double new_sd = updateSDNorm(sd, A, nu, V, n, max);
-    int successfully_updated = (new_sd > 0);
-    if (successfully_updated) {
-        SET_DOUBLESCALE_SLOT(object_R, sdLogNuCMP_sym, new_sd);    
-    }
-}
-
-
 /* only here for testing updateSigma_Varying:
  * the uber update model function effectively duplicates this */
 void

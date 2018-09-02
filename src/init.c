@@ -1258,9 +1258,6 @@ UPDATEPRIORWITHBETA_WRAPPER_R(updateSeason);
 /* wrap update betas and zetas*/
 UPDATEOBJECT_WRAPPER_R(updateBetasAndPriorsBetas);
 
-UPDATEOBJECT_WRAPPER_R(updateMeanLogNu);
-UPDATEOBJECT_WRAPPER_R(updateSDLogNu);
-
 /* wrap update sigma generic functions */
 UPDATEOBJECT_WRAPPER_R(updateSigma_Varying);
 
@@ -2282,8 +2279,6 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateAlphaDeltaDLMWithTrend_R, 2), 
   CALLDEF(updateSeason_R, 2),
   
-  CALLDEF(updateMeanLogNu_R, 1),
-  CALLDEF(updateSDLogNu_R, 1),
   CALLDEF(updateSigma_Varying_R, 1),
   
   CALLDEF(updateTheta_BinomialVarying_R, 3),

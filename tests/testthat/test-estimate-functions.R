@@ -694,17 +694,16 @@
 ## exposure <- y + 2
 ## filename <- tempfile()
 ## estimateModel(Model(y ~ CMP(mean ~ sex + age + dep,
-##                             dispersion = Dispersion(scale = HalfT(scale = 0.1))),
+##                             dispersion = Dispersion(mean = 0, sd = 0.5)),
 ##                     dep ~ DLM(),
 ##                     jump = 0.2),
 ##               y = y,
 ##               exposure = exposure,
 ##               filename = filename,
-##               nBurnin = 0,
-##               nSim = 2,
+##               nBurnin = 100,
+##               nSim = 100,
 ##               nChain = 4,
-##               nThin = 1,
-##               useC = F, parallel = F)
+##               nThin = 5)
 ## fetchSummary(filename)
 
 

@@ -668,11 +668,8 @@ setMethod("initialModel",
               sigma.max <- object@sigmaMax@.Data
               use.expose <- object@useExpose@.Data
               aggregate <- object@aggregate
-              meanMeanLogNuCMP <- object@meanMeanLogNuCMP
-              sdMeanLogNuCMP <- object@sdMeanLogNuCMP
-              ASDLogNuCMP <- object@ASDLogNuCMP
-              nuSDLogNuCMP <- object@nuSDLogNuCMP
-              sdLogNuMaxCMP <- object@sdLogNuMaxCMP
+              meanLogNuCMP <- object@meanLogNuCMP
+              sdLogNuCMP <- object@sdLogNuCMP
               checkTermsFromFormulaFound(y = y, formula = formula.mu)
               checkLengthDimInFormula(y = y, formula = formula.mu)
               metadataY <- y@metadata
@@ -744,20 +741,14 @@ setMethod("initialModel",
               }
               theta <- as.numeric(theta)
               theta[struc.zero.array == 0L] <- NA
-              sdLogNuCMP <- stats::runif(n = 1L,
-                                         min = 0,
-                                         max = min(ASDLogNuCMP@.Data, sdLogNuMaxCMP@.Data))
-              sdLogNuCMP <- methods::new("Scale", sdLogNuCMP)
-              meanLogNuCMP <- stats::rnorm(n = 1L,
-                                           mean = meanMeanLogNuCMP@.Data,
-                                           sd = sdMeanLogNuCMP@.Data)
               meanLogNuCMP <- methods::new("Parameter", meanLogNuCMP)
+              sdLogNuCMP <- methods::new("Scale", sdLogNuCMP)
               logNuCMP <- stats::rnorm(n = length(theta),
                                        mean = meanLogNuCMP@.Data,
-                                       sd = sdLogNuCMP)
+                                       sd = sdLogNuCMP@.Data)
               nuCMP <- exp(logNuCMP)
-              nuCMP[nuCMP < 0.5] <- 0.5 ## TEMPORARY HACK
-              nuCMP[nuCMP > 2] <- 2 ## TEMPORARY HACK
+              nuCMP[nuCMP < 0.5] <- 0.5
+              nuCMP[nuCMP > 2] <- 2
               nuCMP <- new("ParameterVector", nuCMP)              
               names.betas <- names(betas)
               margins <- makeMargins(betas = betas, y = y)
@@ -804,13 +795,8 @@ setMethod("initialModel",
                                     sigmaMax = sigma.max,
                                     ASigma = A.sigma,
                                     nuSigma = nu.sigma,
-                                    ASDLogNuCMP = ASDLogNuCMP,
-                                    nuSDLogNuCMP = nuSDLogNuCMP,
                                     sdLogNuCMP = sdLogNuCMP,
-                                    sdLogNuMaxCMP = sdLogNuMaxCMP,
                                     meanLogNuCMP = meanLogNuCMP,
-                                    meanMeanLogNuCMP = meanMeanLogNuCMP,
-                                    sdMeanLogNuCMP = sdMeanLogNuCMP,
                                     nuCMP = nuCMP,
                                     betas = betas,
                                     priorsBetas = priors.betas,

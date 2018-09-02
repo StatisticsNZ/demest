@@ -2533,6 +2533,7 @@ test_that("updateSystemModels works with CombinedAccountMovements", {
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     updateModelNotUseExp <- demest:::updateModelNotUseExp
     updateModelUseExp <- demest:::updateModelUseExp
+    collapse <- dembase::collapse
     ## Possibilities for models: 
     ## uses exposure, is births, does not have transform from the transforms.exp.to.comp list DONE
     ## uses exposure, is births, has transform from the transforms.exp.to.comp list 

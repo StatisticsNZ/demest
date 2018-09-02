@@ -1818,34 +1818,29 @@ test_that("makeOutputModel works with CMP - no aggregate", {
                                         first = 33L,
                                         last = 52L,
                                         metadata = metadata))
-    mean.log.nu <- Skeleton(first = 53L)
-    sd.log.nu <- Skeleton(first = 54L)
     mu <- SkeletonMu(betas = model@betas,
                      margins = model@margins,
-                     first = 55L,
+                     first = 53L,
                      metadata = model@metadataY)
     betas <- list("(Intercept)" = new("SkeletonBetaIntercept",
-                                      first = 55L, last = 55L),
+                                      first = 53L, last = 53L),
                   sex = new("SkeletonBetaTerm",
-                            first = 56L,
-                            last = 57L,
+                            first = 54L,
+                            last = 55L,
                             metadata = metadata[1]),
                   age = new("SkeletonBetaTerm",
-                            first = 58L,
-                            last = 67L,
+                            first = 56L,
+                            last = 65L,
                             metadata = metadata[2]))
-    sigma <- new("SkeletonOneValues", first = 68L)
+    sigma <- new("SkeletonOneValues", first = 66L)
     prior <- c(betas,
                list(count = list(mean = mu, sd = sigma)),
-               list(dispersion = list(mean = mean.log.nu, sd = sd.log.nu)))
+               list(dispersion = list(mean = model@meanLogNuCMP@.Data, sd = model@sdLogNuCMP@.Data)))
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
                   age = makeOutputPrior(prior = model@priorsBetas[[3]],
                                         metadata = model@metadataY[2],
-                                        pos = 69L),
-                  dispersion = list(mean = list(mean = model@meanMeanLogNuCMP@.Data,
-                                                sd = model@sdMeanLogNuCMP@.Data),
-                                    sd = list(scale = model@ASDLogNuCMP@.Data)))
+                                        pos = 67L))
     ans.expected <- list(likelihood = likelihood, prior = prior, hyper = hyper)
     expect_identical(ans.obtained, ans.expected)
 })
@@ -3702,8 +3697,8 @@ test_that("updateModelNotUseExp for CMPVaryingNotUseExp updates the correct slot
         x1 <- updateModelNotUseExp(x0, y = y, useC = FALSE)
         expect_identical(sum(x1@theta != x0@theta), x1@nAcceptTheta@.Data)
         expect_false(all(x1@nuCMP == x0@nuCMP))
-        expect_true(x1@meanLogNuCMP != x0@meanLogNuCMP)
-        expect_true(x1@sdLogNuCMP != x0@sdLogNuCMP)
+        expect_true(x1@meanLogNuCMP == x0@meanLogNuCMP)
+        expect_true(x1@sdLogNuCMP == x0@sdLogNuCMP)
         for (b in seq_along(x1@betas)) {
             expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
             if (!is(x1@priorsBetas[[b]], "ExchFixed"))
@@ -4650,8 +4645,8 @@ test_that("updateModelUseExp for CMPVaryingUseExp updates the correct slots", {
         x1 <- updateModelUseExp(x0, y = y, exposure = exposure, useC = FALSE)
         expect_identical(sum(x1@theta != x0@theta), x1@nAcceptTheta@.Data)
         expect_false(all(x1@nuCMP == x0@nuCMP))
-        expect_true(x1@meanLogNuCMP != x0@meanLogNuCMP)
-        expect_true(x1@sdLogNuCMP != x0@sdLogNuCMP)
+        expect_true(x1@meanLogNuCMP == x0@meanLogNuCMP)
+        expect_true(x1@sdLogNuCMP == x0@sdLogNuCMP)
         for (b in seq_along(x1@betas)) {
             expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
             if (!is(x1@priorsBetas[[b]], "ExchFixed"))

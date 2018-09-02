@@ -12,27 +12,17 @@
 #' \code{Dispersion} object.  The slots are not part of
 #' the API of the package, and may change in future.
 #'
-#' @slot meanMeanLogNuCMP The prior mean of the mean.
-#' @slot sdMeanLogNuCMP The prior standard deviation of the mean.
-#' @slot ASDLogNuCMP Scale for truncated half-t prior for
-#' standard deviation.
-#' @slot nuSDLogNuCMP Degrees of freedom for truncated half-t prior
-#' for standard deviation.
-#' @slot sdLogNuMaxCMP Maximum value for truncated half-t prior
-#' for the standard deviation.
-#' @slot multLogNuCMP Multiplier applied to scale of
-#' truncated half-t prior for the standard deviation.
+#' @slot meanLogNuCMP The prior mean of the dispersion parameter.
+#' @slot sdLogNuCMP The prior standard deviation of the
+#' dispersion parameter.
 #' 
 #' @seealso Objects of class \code{Dispersion} are created
 #' by calls to function \code{\link{Dispersion}}.
 #'
 #' @export
 setClass("Dispersion",
-         contains = c("MeanMeanLogNuCMPMixin",
-                      "SDMeanLogNuCMPMixin",
-                      "ASDLogNuCMPMixin",
-                      "NuSDLogNuCMPMixin",
-                      "SDMaxLogNuCMPMixin"))
+         contains = c("MeanLogNuCMPMixin",
+                      "SDLogNuCMPMixin"))
 
 
 #' S4 classes to specify one or two levels of a model.
@@ -84,11 +74,8 @@ setClass("SpecLikelihoodCMP",
          contains = c("SpecLikelihood",
                       "BoxCoxParamMixin",
                       "StructuralZerosMixin",
-                      "MeanMeanLogNuCMPMixin",
-                      "SDMeanLogNuCMPMixin",
-                      "ASDLogNuCMPMixin",
-                      "NuSDLogNuCMPMixin",
-                      "SDMaxLogNuCMPMixin",
+                      "MeanLogNuCMPMixin",
+                      "SDLogNuCMPMixin",
                       "FormulaMuMixin",
                       "UseExposeMixin"))
 
@@ -294,11 +281,8 @@ setClass("SpecCMPVarying",
          prototype = prototype(useExpose = new("LogicalFlag", TRUE)),
          contains = c("SpecVarying",
                       "BoxCoxParamMixin",
-                      "MeanMeanLogNuCMPMixin",
-                      "SDMeanLogNuCMPMixin",
-                      "ASDLogNuCMPMixin",
-                      "NuSDLogNuCMPMixin",
-                      "SDMaxLogNuCMPMixin",
+                      "MeanLogNuCMPMixin",
+                      "SDLogNuCMPMixin",
                       "StructuralZerosMixin"),
          validity = function(object) {
              lower <- object@lower

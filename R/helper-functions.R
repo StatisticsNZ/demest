@@ -8382,11 +8382,8 @@ printBinomialSpecEqns <- function(object) {
 printCMPLikEqns <- function(object) {
     formulaMu <- object@formulaMu
     useExpose <- object@useExpose@.Data
-    mean <- object@meanMeanLogNuCMP@.Data
-    sd <- object@sdMeanLogNuCMP@.Data
-    nu <- object@nuSDLogNuCMP@.Data
-    A <- object@ASDLogNuCMP@.Data
-    max <- object@sdLogNuMaxCMP@.Data
+    mean <- object@meanLogNuCMP@.Data
+    sd <- object@sdLogNuCMP@.Data
     terms <- expandTermsSpec(formulaMu)
     if (useExpose) {
         cat("              y[i] ~ CMP(rate[i] * exposure[i], dispersion[i])\n")
@@ -8396,19 +8393,13 @@ printCMPLikEqns <- function(object) {
         cat("              y[i] ~ CMP(count[i], dispersion[i])\n")
         cat("     log(count[i]) ~ N(", terms, ", sd^2)\n", sep = "")
     }
-    cat("log(dispersion[i]) ~ N(meanDispersion[i], sdDispersion^2)\n")
-    cat(" meanDispersion[i] ~ N(", mean, ", ", squaredOrNA(sd), ")\n", sep = "")
-    cat("      sdDispersion ~ trunc-half-t(", nu, ", ", sep = "")
-    cat(squaredOrNA(A), ", ", max, ")\n", sep = "")
+    cat("log(dispersion[i]) ~ N(", mean, ", ", squaredOrNA(sd), ")\n", sep = "")
 }
 
 printCMPModEqns <- function(object) {
     call <- object@call
-    mean <- object@meanMeanLogNuCMP@.Data
-    sd <- object@sdMeanLogNuCMP@.Data
-    nu <- object@nuSDLogNuCMP@.Data
-    A <- object@ASDLogNuCMP@.Data
-    max <- object@sdLogNuMaxCMP@.Data
+    mean <- object@meanLogNuCMP@.Data
+    sd <- object@sdLogNuCMP@.Data
     lower <- object@lower
     upper <- object@upper
     names <- object@namesBetas
@@ -8441,10 +8432,7 @@ printCMPModEqns <- function(object) {
         cat("\n")
         cat("     log(count[i]) ~ N(", terms, ", sd^2)\n", sep = "")
     }
-    cat("log(dispersion[i]) ~ N(meanDispersion[i], sdDispersion^2)\n")
-    cat(" meanDispersion[i] ~ N(", mean, ", ", squaredOrNA(sd), ")\n", sep = "")
-    cat("      sdDispersion ~ trunc-half-t(", nu, ", ", sep = "")
-    cat(squaredOrNA(A), ", ", max, ")\n", sep = "")
+    cat("log(dispersion[i]) ~ N(", mean, ", ", squaredOrNA(sd), ")\n", sep = "")
 }
 
 printCMPSpecEqns <- function(object) {

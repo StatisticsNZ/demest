@@ -1031,9 +1031,8 @@ setMethod("makeOutputModel",
           function(model, pos, mcmc) {
               theta <- model@theta
               nu.cmp.obj <- model@nuCMP@.Data
-              mean.mean.log.nu.cmp <- model@meanMeanLogNuCMP@.Data
-              sd.mean.log.nu.cmp <- model@sdMeanLogNuCMP@.Data
-              A.sd.log.nu.cmp <- model@ASDLogNuCMP@.Data
+              mean.log.nu.cmp <- model@meanLogNuCMP@.Data
+              sd.log.nu.cmp <- model@sdLogNuCMP@.Data
               metadata <- model@metadataY
               scale.theta <- model@scaleTheta@.Data
               betas.obj <- model@betas
@@ -1097,14 +1096,6 @@ setMethod("makeOutputModel",
                                  first = first,
                                  strucZeroArray = struc.zero.array,
                                  margin = s)
-              ## make meanLogNuCMP
-              first <- pos
-              pos <- pos + 1L
-              mean.log.nu.cmp <- Skeleton(first = first)
-              ## make sdLogNuCMP
-              first <- pos
-              pos <- pos + 1L
-              sd.log.nu.cmp <- Skeleton(first = first)
               ## make mu and betas
               first <- pos
               pos <- pos + 1L
@@ -1148,10 +1139,6 @@ setMethod("makeOutputModel",
                   pos <- pos + changeInPos(hyper[[i]])
               }
               names(hyper) <- names.betas
-              hyper.dispersion <- list(dispersion = list(mean = list(mean = mean.mean.log.nu.cmp,
-                                                                     sd = sd.mean.log.nu.cmp),
-                                                         sd = list(scale = A.sd.log.nu.cmp)))
-              hyper <- c(hyper, hyper.dispersion)
               ## return value
               if (uses.exposure) {
                   likelihood <- list(rate = theta,
@@ -2116,8 +2103,6 @@ setMethod("updateModelNotUseExp",
               else {
                   object <- updateThetaAndNu_CMPVaryingNotUseExp(object, y = y)
                   object <- updateSigma_Varying(object, g = log)
-                  object <- updateMeanLogNu(object)
-                  object <- updateSDLogNu(object)
                   object <- updateBetasAndPriorsBetas(object, g = log)
                   object
               }
@@ -2568,8 +2553,6 @@ setMethod("updateModelUseExp",
               else {
                   object <- updateThetaAndNu_CMPVaryingUseExp(object, y = y, exposure)
                   object <- updateSigma_Varying(object, g = log)
-                  object <- updateMeanLogNu(object)
-                  object <- updateSDLogNu(object)
                   object <- updateBetasAndPriorsBetas(object, g = log)
                   object
               }
@@ -3498,11 +3481,9 @@ setMethod("whereEstimated",
               count <- list(c("prior", "count", "mean"))
               if (!isSaturated(object))
                   count <- c(count, list(c("prior", "count", "sd")))
-              dispersion <- list(c("prior", "dispersion", "mean"),
-                                 c("prior", "dispersion", "sd"))
               priors <- makeMCMCPriorsBetas(priors = priors.betas,
                                             names = names.betas)
-              c(likelihood, betas, count, dispersion, priors)
+              c(likelihood, betas, count, priors)
           })
 
 ## HAS_TESTS
@@ -3518,11 +3499,9 @@ setMethod("whereEstimated",
               rate <- list(c("prior", "rate", "mean"))
               if (!isSaturated(object))
                   rate <- c(rate, list(c("prior", "rate", "sd")))
-              dispersion <- list(c("prior", "dispersion", "mean"),
-                                 c("prior", "dispersion", "sd"))
               priors <- makeMCMCPriorsBetas(priors = priors.betas,
                                             names = names.betas)
-              c(likelihood, betas, rate, dispersion, priors)
+              c(likelihood, betas, rate, priors)
           })
 
 ## HAS_TESTS

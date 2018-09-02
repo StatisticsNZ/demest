@@ -202,16 +202,10 @@ setMethod("show",
 setMethod("show",
           signature(object = "Dispersion"),
           function(object) {
-              mean <- object@meanMeanLogNuCMP@.Data
-              sd <- object@sdMeanLogNuCMP@.Data
-              nu <- object@nuSDLogNuCMP@.Data
-              A <- object@ASDLogNuCMP@.Data
-              max <- object@sdLogNuMaxCMP@.Data
+              mean <- object@meanLogNuCMP@.Data
+              sd <- object@sdLogNuCMP@.Data
               cat("An object of class \"", class(object), "\"\n", sep = "")
-              cat("log(dispersion[i]) ~ N(mean, scale^2)\n")
-              cat("              mean ~ N(", mean, ", ", squaredOrNA(sd), ")\n", sep = "")
-              cat("             scale ~ trunc-half-t(", nu, ", ", sep = "")
-              cat(squaredOrNA(A), ", ", max, ")\n", sep = "")
+              cat("log(dispersion[i]) ~ N(", mean, ", ", squaredOrNA(sd), ")\n", sep = "")
           })
 
 #' @rdname show-methods
