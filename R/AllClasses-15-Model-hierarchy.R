@@ -146,14 +146,29 @@ setClass("NormalVarying",
 ## HAS_UPDATE
 setClass("NormalVaryingVarsigmaKnown",
          contains = c("NormalVarying",
-             "VarsigmaKnown"),
-         prototype = prototype(slotsToExtract = c("theta",
-                                   "nFailedPropTheta",
-                                   "betas",
-                                   "sigma",
-                                   "priorsBetas"),
-             iMethodModel = 4L,
-             nuSigma = methods::new("DegreesFreedom", 7)))
+                      "VarsigmaKnown"),
+         prototype = prototype(varsigmaSetToZero = new("LogicalFlag", FALSE),
+                               slotsToExtract = c("theta",
+                                                  "nFailedPropTheta",
+                                                  "betas",
+                                                  "sigma",
+                                                  "priorsBetas"),
+                               iMethodModel = 4L,
+                               nuSigma = methods::new("DegreesFreedom", 7)),
+         validity = function(object) {
+             varsigmaSetToZero <- object@varsigmaSetToZero@.Data
+             if (varsigmaSetToZero) {
+                 ## if varsigma is 0, lower, upper not specified
+                 for (name in c("lower", "upper")) {
+                     value <- slot(object, name)
+                     if (is.finite(value))
+                         return(gettextf("'%s' is %d but '%s' is finite",
+                                         "varsigma", 0L, name))
+                 }
+             }
+             TRUE
+         })
+
 
 ## HAS_TESTS
 ## HAS_UPDATE
@@ -341,12 +356,13 @@ setClass("TFixedUseExp",
 ## HAS_UPDATE
 setClass("NormalVaryingVarsigmaKnownAgCertain",
          contains = c("NormalVaryingVarsigmaKnown",
-             "AgCertain"),
-         prototype = prototype(slotsToExtract = c("theta",
-                                   "nFailedPropTheta", "nAcceptTheta",
-                                   "betas", "sigma", "priorsBetas"),
-             iMethodModel = 12L,
-             nuSigma = methods::new("DegreesFreedom", 7)))
+                      "AgCertain"),
+         prototype = prototype(varsigmaSetToZero = new("LogicalFlag", FALSE),
+                               slotsToExtract = c("theta",
+                                                  "nFailedPropTheta", "nAcceptTheta",
+                                                  "betas", "sigma", "priorsBetas"),
+                               iMethodModel = 12L,
+                               nuSigma = methods::new("DegreesFreedom", 7)))
 
 ## HAS_TESTS
 ## HAS_UPDATE
@@ -364,13 +380,14 @@ setClass("NormalVaryingVarsigmaUnknownAgCertain",
 ## HAS_UPDATE
 setClass("NormalVaryingVarsigmaKnownAgNormal",
          contains = c("NormalVaryingVarsigmaKnown",
-             "AgNormal"),
-         prototype = prototype(slotsToExtract = c("theta",
-                               "nFailedPropTheta", "nAcceptTheta",
-                               "betas", "sigma", "priorsBetas",
-                               "valueAg", "nFailedPropValueAg", "nAcceptAg"),
-             iMethodModel = 14L,
-             nuSigma = methods::new("DegreesFreedom", 7)))
+                      "AgNormal"),
+         prototype = prototype(varsigmaSetToZero = new("LogicalFlag", FALSE),
+                               slotsToExtract = c("theta",
+                                                  "nFailedPropTheta", "nAcceptTheta",
+                                                  "betas", "sigma", "priorsBetas",
+                                                  "valueAg", "nFailedPropValueAg", "nAcceptAg"),
+                               iMethodModel = 14L,
+                               nuSigma = methods::new("DegreesFreedom", 7)))
 
 ## HAS_TESTS
 ## HAS_UPDATE
@@ -481,13 +498,14 @@ setClass("PoissonVaryingUseExpAgPoisson",
 ## HAS_UPDATE
 setClass("NormalVaryingVarsigmaKnownAgFun",
          contains = c("NormalVaryingVarsigmaKnown",
-             "AgFun"),
-         prototype = prototype(slotsToExtract = c("theta",
-                                   "nFailedPropTheta", "nAcceptTheta",
-                                   "betas", "sigma", "priorsBetas",
-                                   "valueAg"),
-             iMethodModel = 24L,
-             nuSigma = methods::new("DegreesFreedom", 7)))
+                      "AgFun"),
+         prototype = prototype(varsigmaSetToZero = new("LogicalFlag", FALSE),
+                               slotsToExtract = c("theta",
+                                                  "nFailedPropTheta", "nAcceptTheta",
+                                                  "betas", "sigma", "priorsBetas",
+                                                  "valueAg"),
+                               iMethodModel = 24L,
+                               nuSigma = methods::new("DegreesFreedom", 7)))
 
 ## HAS_TESTS
 ## HAS_UPDATE

@@ -1,14 +1,15 @@
 
 setClass("VarsigmaKnown",
          contains = c("VIRTUAL",
-             "VarsigmaMixin"))
+                      "VarsigmaMixin",
+                      "VarsigmaSetToZeroMixin"))
 
 setClass("VarsigmaUnknown",
          contains = c("VIRTUAL",
-             "AVarsigmaMixin",
-             "NuVarsigmaMixin",
-             "VarsigmaMixin",
-             "VarsigmaMaxMixin"))
+                      "AVarsigmaMixin",
+                      "NuVarsigmaMixin",
+                      "VarsigmaMixin",
+                      "VarsigmaMaxMixin"))
 
 ## HAS_TESTS
 setClass("Varying",

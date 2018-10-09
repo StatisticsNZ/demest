@@ -956,6 +956,7 @@ setMethod("makeOutputPrior",
           })
 
 
+
 ## NO_TESTS
 setMethod("makeOutputPrior",
           signature(prior = "Zero",
@@ -3315,6 +3316,22 @@ setMethod("whereEstimated",
           })
 
 
+## Known
+
+## HAS_TESTS
+setMethod("whereEstimated",
+          signature(object = "KnownCertain"),
+          function(object) {
+              NULL
+          })
+
+## HAS_TESTS
+setMethod("whereEstimated",
+          signature(object = "KnownUncertain"),
+          function(object) {
+              NULL
+          })
+
 ## Mix
 
 setMethod("whereEstimated",
@@ -3327,6 +3344,8 @@ setMethod("whereEstimated",
                 "scale2",
                 "scaleError")
           })
+
+## Zero
 
 ## HAS_TESTS
 setMethod("whereEstimated",

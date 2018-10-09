@@ -8914,8 +8914,12 @@ printNormalFixedSpecEqns <- function(object) {
 printNormalVarsigmaKnownLikEqns <- function(object) {
     formulaMu <- object@formulaMu
     varsigma <- object@varsigma
+    varsigmaSetToZero <- object@varsigmaSetToZero@.Data
     terms <- expandTermsSpec(formulaMu)
-    cat("            y[i] ~ N(mean[i], ", varsigma, "^2 / weights[i])\n", sep = "")
+    if (varsigmaSetToZero)
+        cat("            y[i] = mean[i]\n", sep = "")
+    else
+        cat("            y[i] ~ N(mean[i], ", varsigma, "^2 / weights[i])\n", sep = "")
     cat("         mean[i] ~ N(", terms, ", sd^2)\n", sep = "")
 }
 
@@ -8937,12 +8941,16 @@ printNormalVarsigmaKnownModEqns <- function(object) {
     upper <- object@upper
     names <- object@namesBetas
     varsigma <- object@varsigma@.Data
+    varsigmaSetToZero <- object@varsigmaSetToZero@.Data
     series <- call$series
     has.series <- !is.null(series)
     name.y <- deparse(call$formula[[2L]])
     name.y <- sprintf("%13s", name.y)
     terms <- expandTermsMod(names)
-    cat(name.y, "[i] ~ N(mean[i], ", varsigma, "^2 / weight[i])", sep = "")
+    if (varsigmaSetToZero)
+        cat(name.y, "[i] = mean[i]", sep = "")
+    else
+        cat(name.y, "[i] ~ N(mean[i], ", varsigma, "^2 / weight[i])", sep = "")
     if (is.finite(lower) || is.finite(upper))
         cat(",  ", format(lower, digits = 4), "< mean[i] <", format(upper, digits = 4))
     cat("\n")
@@ -8952,12 +8960,16 @@ printNormalVarsigmaKnownModEqns <- function(object) {
 printNormalVarsigmaKnownSpecEqns <- function(object) {
     formulaMu <- object@formulaMu
     varsigma <- object@varsigma
+    varsigmaSetToZero <- object@varsigmaSetToZero@.Data
     nameY <- object@nameY
     lower <- object@lower
     upper <- object@upper
     name.y <- sprintf("%13s", nameY)
     terms <- expandTermsSpec(formulaMu)
-    cat(name.y, "[i] ~ N(mean[i], ", varsigma, "^2 / weight[i])", sep = "")
+    if (varsigmaSetToZero)
+        cat(name.y, "[i] = mean[i]", sep = "")
+    else
+        cat(name.y, "[i] ~ N(mean[i], ", varsigma, "^2 / weight[i])", sep = "")
     if (is.finite(lower) || is.finite(upper))
         cat(",  ", format(lower, digits = 4), "< mean[i] <", format(upper, digits = 4))
     cat("\n")

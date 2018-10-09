@@ -3734,6 +3734,66 @@ test_that("R and C versions of updateModelNotUseExp give same answer with CMPVar
     }
 })
 
+## Only test that appropriate slots are updated.  
+test_that("updateModelNotUseExp for NormalVaryingVarsigmaKnown with sd = 0 updates the correct slots", {
+    updateModelNotUseExp <- demest:::updateModelNotUseExp
+    initialModel <- demest:::initialModel
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        y <- Values(array(rnorm(20),
+                          dim = 5:4,
+                          dimnames = list(age = 0:4, region = letters[1:4])))
+        weights <- Counts(array(rbeta(n = 20, shape1 = 5, shape2 = 5),
+                                dim = 5:4,
+                                dimnames = list(age = 0:4, region = letters[1:4])))
+        spec <- Model(y ~ Normal(mean ~ age + region, sd = 0))
+        x0 <- initialModel(spec, y = y, weights = weights)
+        set.seed(seed + 1)
+        x1 <- updateModelNotUseExp(x0, y = y, useC = FALSE)
+        expect_true(all(x1@theta == x0@theta))
+        expect_true(x1@sigma != x0@sigma)
+        for (b in seq_along(x1@betas)) {
+            expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
+            if (!is(x1@priorsBetas[[b]], "ExchFixed"))
+                expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
+        }
+        for (name in c("w", "slotsToExtract", "iMethodModel", "namesBetas",
+                       "varsigma", "iteratorBetas", "dims"))
+            expect_identical(slot(x1, name), slot(x0, name))
+    }
+})
+
+## tests equal but not identical
+test_that("R, generic C, and specific C versions updateModelNotUseExp method for NormalVaryingVarsigmaKnown give same answer with sd = 0", {
+    updateModelNotUseExp <- demest:::updateModelNotUseExp
+    initialModel <- demest:::initialModel
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        y <- Values(array(rnorm(20),
+                          dim = 5:4,
+                          dimnames = list(age = 0:4, region = letters[1:4])))
+        weights <- Counts(array(rbeta(n = 20, shape1 = 5, shape2 = 5),
+                                dim = 5:4,
+                                dimnames = list(age = 0:4, region = letters[1:4])))
+        spec <- Model(y ~ Normal(mean ~ age + region, sd = 0),
+                      age ~ Exch())                      
+        x <- initialModel(spec, y = y, weights = weights)
+        set.seed(seed + 1)
+        ans.R <- updateModelNotUseExp(x, y = y, useC = FALSE)
+        set.seed(seed + 1)
+        ans.C.generic <- updateModelNotUseExp(x, y = y, useC = TRUE, useSpecific = FALSE)
+        set.seed(seed + 1)
+        ans.C.specific <- updateModelNotUseExp(x, y = y, useC = TRUE, useSpecific = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C.generic)
+        else
+            expect_equal(ans.R, ans.C.generic)
+        expect_identical(ans.C.generic, ans.C.specific)
+    }
+})
+
+
+
 ## Only test that appropriate slots are updated.  Check that values are correct in
 ## the tests for the 'updateTheta' etc
 test_that("updateModelNotUseExp for NormalVaryingVarsigmaKnown updates the correct slots", {
@@ -6018,8 +6078,6 @@ test_that("whereEstimated works with CMPVaryingNotUseExp", {
                          c("likelihood", "dispersion"),
                          c("prior", "count", "mean"),
                          c("prior", "count", "sd"),
-                         c("prior", "dispersion", "mean"),
-                         c("prior", "dispersion", "sd"),
                          c("hyper", "age", "scaleLevel"),
                          c("hyper", "age", "scaleTrend"),
                          c("hyper", "age", "scaleError"))
@@ -6032,8 +6090,6 @@ test_that("whereEstimated works with CMPVaryingNotUseExp", {
     ans.expected <- list(c("likelihood", "count"),
                          c("likelihood", "dispersion"),
                          c("prior", "count", "mean"),
-                         c("prior", "dispersion", "mean"),
-                         c("prior", "dispersion", "sd"),
                          c("hyper", "age", "scaleLevel"),
                          c("hyper", "age", "scaleTrend"),
                          c("hyper", "age", "scaleError"),
@@ -6057,8 +6113,6 @@ test_that("whereEstimated works with CMPVaryingUseExp", {
                          c("likelihood", "dispersion"),
                          c("prior", "rate", "mean"),
                          c("prior", "rate", "sd"),
-                         c("prior", "dispersion", "mean"),
-                         c("prior", "dispersion", "sd"),
                          c("hyper", "age", "scaleLevel"),
                          c("hyper", "age", "scaleTrend"),
                          c("hyper", "age", "scaleError"))
@@ -6071,8 +6125,6 @@ test_that("whereEstimated works with CMPVaryingUseExp", {
     ans.expected <- list(c("likelihood", "rate"),
                          c("likelihood", "dispersion"),
                          c("prior", "rate", "mean"),
-                         c("prior", "dispersion", "mean"),
-                         c("prior", "dispersion", "sd"),
                          c("hyper", "age", "scaleLevel"),
                          c("hyper", "age", "scaleTrend"),
                          c("hyper", "age", "scaleError"),
