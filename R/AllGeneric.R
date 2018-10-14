@@ -34,7 +34,7 @@ setGeneric("Description",
                standardGeneric("Description"))
 
 setGeneric("Mapping",
-           function(current, target)
+           function(current, target, dominant = c("Female", "Male"))
                standardGeneric("Mapping"))
 
 setGeneric("Skeleton",

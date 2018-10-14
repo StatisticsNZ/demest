@@ -400,6 +400,7 @@ getIExposureFromBirths(int i, SEXP mapping_R)
     int stepTimeBirths  = *INTEGER(GET_SLOT(mapping_R, stepTimeCurrent_sym));
     int stepTimeExp  = *INTEGER(GET_SLOT(mapping_R, stepTimeTarget_sym));
     int hasAge  = *LOGICAL(GET_SLOT(mapping_R, hasAge_sym));
+    int hasSex  = *LOGICAL(GET_SLOT(mapping_R, hasSex_sym));
     
     SEXP nSharedVec_R = GET_SLOT(mapping_R, nSharedVec_sym);
     int *nSharedVec  = INTEGER(nSharedVec_R);
@@ -430,12 +431,18 @@ getIExposureFromBirths(int i, SEXP mapping_R)
         iExp_r += iTriangle * stepTriangleExp;
     }
 
+    if (hasSex) {
+        int iSexDominant = *INTEGER(GET_SLOT(mapping_R, iSexDominant_sym));
+        int stepSexExp = *INTEGER(GET_SLOT(mapping_R, stepSexTarget_sym));
+	iExp_r += iSexDominant * stepSexExp;
+    }
+
     for (int d = 0; d < nDimShared; ++d) {
-    int nShared = nSharedVec[d];
-    int stepSharedBirths = stepSharedBirthsVec[d];
-    int stepSharedExp = stepSharedExpVec[d];
-    int iShared = (iMinus1/stepSharedBirths) % nShared; 
-    iExp_r += iShared * stepSharedExp;
+      int nShared = nSharedVec[d];
+      int stepSharedBirths = stepSharedBirthsVec[d];
+      int stepSharedExp = stepSharedExpVec[d];
+      int iShared = (iMinus1/stepSharedBirths) % nShared; 
+      iExp_r += iShared * stepSharedExp;
     }
     
     return iExp_r;

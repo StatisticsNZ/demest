@@ -7,7 +7,7 @@
 setMethod("Mapping",
           signature(current = "Component",
                     target = "Population"),
-          function(current, target) {
+          function(current, target, dominant = c("Female", "Male")) {
               dim.current <- dim(current)
               dim.target <- dim(target)
               dimtypes.current <- dembase::dimtypes(current, use.names = FALSE)
@@ -87,7 +87,7 @@ setMethod("Mapping",
 setMethod("Mapping",
           signature(current = "BirthsMovements",
                     target = "Population"),
-          function(current, target) {
+          function(current, target, dominant = c("Female", "Male")) {
               dim.current <- dim(current)
               dim.target <- dim(target)
               dimtypes.current <- dembase::dimtypes(current, use.names = FALSE)
@@ -150,7 +150,7 @@ setMethod("Mapping",
 setMethod("Mapping",
           signature(current = "InternalMovementsOrigDest",
                     target = "Population"),
-          function(current, target) {
+          function(current, target, dominant = c("Female", "Male")) {
               names.current <- names(current)
               names.target <- names(target)
               dim.current <- dim(current)
@@ -257,7 +257,7 @@ setMethod("Mapping",
 setMethod("Mapping",
           signature(current = "InternalMovementsPool",
                     target = "Population"),
-          function(current, target) {
+          function(current, target, dominant = c("Female", "Male")) {
               i.direction <- current@iDirection # specific to Pool
               dim.current <- dim(current)
               dim.target <- dim(target)
@@ -338,7 +338,7 @@ setMethod("Mapping",
 setMethod("Mapping",
           signature(current = "Component",
                     target = "Accession"),
-          function(current, target) {
+          function(current, target, dominant = c("Female", "Male")) {
               dim.current <- dim(current)
               dim.target <- dim(target)
               dimtypes.current <- dembase::dimtypes(current, use.names = FALSE)
@@ -410,7 +410,7 @@ setMethod("Mapping",
 setMethod("Mapping",
           signature(current = "BirthsMovements",
                     target = "Accession"),
-          function(current, target) {
+          function(current, target, dominant = c("Female", "Male")) {
               dim.current <- dim(current)
               dim.target <- dim(target)
               dimtypes.current <- dembase::dimtypes(current, use.names = FALSE)
@@ -470,7 +470,7 @@ setMethod("Mapping",
 setMethod("Mapping",
           signature(current = "InternalMovementsOrigDest",
                     target = "Accession"),
-          function(current, target) {
+          function(current, target, dominant = c("Female", "Male")) {
               names.current <- names(current)
               names.target <- names(target)
               dim.current <- dim(current)
@@ -568,7 +568,7 @@ setMethod("Mapping",
 setMethod("Mapping",
           signature(current = "InternalMovementsPool",
                     target = "Accession"),
-          function(current, target) {
+          function(current, target, dominant = c("Female", "Male")) {
               i.direction <- current@iDirection # specific to Pool
               dim.current <- dim(current)
               dim.target <- dim(target)
@@ -638,7 +638,7 @@ setMethod("Mapping",
 setMethod("Mapping",
           signature(current = "Component",
                     target = "Exposure"),
-          function(current, target) {
+          function(current, target, dominant = c("Female", "Male")) {
               metadata.comp <- current@metadata
               metadata.exp <- target@metadata
               dim.comp <- dim(current)
@@ -728,7 +728,8 @@ setMethod("Mapping",
 setMethod("Mapping",
           signature(current = "BirthsMovements",
                     target = "Exposure"),
-          function(current, target) {
+          function(current, target, dominant = c("Female", "Male")) {
+              dominant <- match.arg(dominant)
               metadata.births <- current@metadata
               metadata.exp <- target@metadata
               dim.births <- dim(current)
@@ -741,6 +742,7 @@ setMethod("Mapping",
                                                      use.names = FALSE)
               DimScales.exp <- dembase::DimScales(target,
                                                   use.names = FALSE)
+              ## time dimension
               i.time.births <- match("time", dimtypes.births)
               i.time.exp <- match("time", dimtypes.exp)
               n.time <- dim.births[i.time.births]
@@ -750,10 +752,12 @@ setMethod("Mapping",
               step.time.exp <- 1L
               for (d in seq_len(i.time.exp - 1L))
                   step.time.exp <- step.time.exp * dim.exp[d]
+              ## shared dimensions (complete later)
               i.shared.births <- seq_along(dim.births)
               i.shared.exp <- seq_along(dim.exp)
               i.shared.births <- setdiff(i.shared.births, i.time.births)
               i.shared.exp <- setdiff(i.shared.exp, i.time.exp)
+              ## age
               i.age.births <- match("age", dimtypes.births, nomatch = 0L)
               has.age <- i.age.births > 0L
               if (has.age) {
@@ -791,6 +795,32 @@ setMethod("Mapping",
                   step.triangle.births <- NA_integer_
                   step.triangle.exp <- NA_integer_
               }
+              ## sex
+              i.sex.births <- match("sex", dimtypes.births, nomatch = 0L)
+              has.sex <- i.sex.births > 0L
+              if (has.sex) {
+                  i.sex.exp <- match("sex", dimtypes.exp)
+                  DimScale.sex <- DimScales.births[[i.sex.births]]
+                  if (identical(dominant, "Female"))
+                      i.sex.dominant <- dembase::iFemale(DimScale.sex)
+                  else if (identical(dominant, "Male"))
+                      i.sex.dominant <- dembase::iMale(DimScale.sex)
+                  else {
+                      stop(gettextf("'%s' equals \"%s\" : must be one of \"%s\" or \"%s\"",
+                                    "dominant", dominant, "Female", "Male"))
+                  }
+                  i.sex.dominant <- i.sex.dominant - 1L # C style
+                  step.sex.exp <- 1L
+                  for (d in seq_len(i.sex.exp - 1L))
+                      step.sex.exp <- step.sex.exp * dim.exp[d]
+                  i.shared.births <- setdiff(i.shared.births, i.sex.births)
+                  i.shared.exp <- setdiff(i.shared.exp, i.sex.exp)
+              }
+              else {
+                  i.sex.dominant <- NA_integer_
+                  step.sex.exp <- NA_integer_
+              }
+              ## parent
               i.parent <- grep("parent", dimtypes.births)
               has.par.ch <- length(i.parent) > 0L
               if (has.par.ch) {
@@ -838,14 +868,17 @@ setMethod("Mapping",
                            stepAgeCurrent = step.age.births,
                            stepAgeTarget = step.age.exp,
                            stepTriangleCurrent = step.triangle.births,
-                           stepTriangleTarget = step.triangle.exp)
+                           stepTriangleTarget = step.triangle.exp,
+                           hasSex = has.sex,
+                           iSexDominant = i.sex.dominant,
+                           stepSexTarget = step.sex.exp)
           })
 
 ## HAS_TESTS
 setMethod("Mapping",
           signature(current = "InternalMovementsOrigDest",
                     target = "Exposure"),
-          function(current, target) {
+          function(current, target, dominant = c("Female", "Male")) {
               metadata.comp <- current@metadata
               metadata.exp <- target@metadata
               names.comp <- names(current)
@@ -963,7 +996,7 @@ setMethod("Mapping",
 setMethod("Mapping",
           signature(current = "InternalMovementsPool",
                     target = "Exposure"),
-          function(current, target) {
+          function(current, target, dominant = c("Female", "Male")) {
               i.direction <- current@iDirection # specific to Pool
               metadata.comp <- current@metadata
               metadata.exp <- target@metadata
@@ -1057,7 +1090,7 @@ setMethod("Mapping",
 setMethod("Mapping",
           signature(current = "Exposure",
                     target = "Component"),
-          function(current, target) {
+          function(current, target, dominant = c("Female", "Male")) {
               metadata.exp <- current@metadata
               metadata.comp <- target@metadata
               is.one.to.one <- identical(metadata.exp, metadata.comp)
@@ -1088,7 +1121,7 @@ setMethod("Mapping",
 setMethod("Mapping",
           signature(current = "Exposure",
                     target = "BirthsMovements"),
-          function(current, target) {
+          function(current, target, dominant = c("Female", "Male")) {
               i.min.age <- target@iMinAge
               dim.exp <- dim(current)
               dim.births <- dim(target)
@@ -1178,7 +1211,7 @@ setMethod("Mapping",
 setMethod("Mapping",
           signature(current = "Exposure",
                     target = "InternalMovementsOrigDest"),
-          function(current, target) {
+          function(current, target, dominant = c("Female", "Male")) {
               dim.exp <- dim(current)
               dim.comp <- dim(target)
               dimtypes.comp <- dembase::dimtypes(target, use.names = FALSE)
@@ -1211,7 +1244,7 @@ setMethod("Mapping",
 setMethod("Mapping",
           signature(current = "Exposure",
                     target = "InternalMovementsPool"),
-          function(current, target) {
+          function(current, target, dominant = c("Female", "Male")) {
               dim.exp <- dim(current)
               dim.comp <- dim(target)
               i.direction <- target@iDirection

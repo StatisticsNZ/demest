@@ -2709,6 +2709,7 @@ R_init_demest(DllInfo *info)
   ADD_SYM(nTime);
   ADD_SYM(stepTime);
   ADD_SYM(hasAge);
+  ADD_SYM(hasSex);  
   ADD_SYM(nAge);
   ADD_SYM(stepAge);
   ADD_SYM(length);
@@ -2738,6 +2739,8 @@ R_init_demest(DllInfo *info)
   ADD_SYM(nAgeTarget);
   ADD_SYM(stepAgeCurrent);
   ADD_SYM(stepAgeTarget);
+  ADD_SYM(stepSexTarget);
+  ADD_SYM(iSexDominant);
   ADD_SYM(stepTriangleCurrent);
   ADD_SYM(stepTriangleTarget);
   ADD_SYM(nOrigDestVec);

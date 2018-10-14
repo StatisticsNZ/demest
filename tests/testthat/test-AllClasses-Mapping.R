@@ -473,10 +473,10 @@ test_that("can create valid object of class MappingBirthsToExp", {
                        dimscales = c(time = "Intervals"))
     x <- new("MappingBirthsToExp",
              isOneToOne = FALSE,
-             nSharedVec = c(4L, 2L),
-             stepSharedCurrentVec = c(1L, 32L),
-             stepSharedCurrentExposureVec = c(1L, 32L),
-             stepSharedTargetVec = c(1L, 96L),
+             nSharedVec = 4L,
+             stepSharedCurrentVec = 1L, 
+             stepSharedCurrentExposureVec = 1L, 
+             stepSharedTargetVec = 1L,
              nTimeCurrent = 4L,
              stepTimeCurrent = 8L,
              stepTimeTarget = 24L,
@@ -486,17 +486,20 @@ test_that("can create valid object of class MappingBirthsToExp", {
              stepAgeCurrent = 4L,
              stepAgeTarget = 4L,
              stepTriangleCurrent = 4L,
-             stepTriangleTarget = 12L)
+             stepTriangleTarget = 12L,
+             hasSex = TRUE,
+             iSexDominant = 0L,
+             stepSexTarget = 96L)
     expect_true(validObject(x))
 })
 
-test_that("validity tests for MappingBirthsToExp inherited from MappingMixingIMinAge work", {
-    x <- new("MappingBirthsToExp",
+test_that("validity tests for MappingBirthsToExp inherited from MappingMixinIMinAge work", {
+  x <- new("MappingBirthsToExp",
              isOneToOne = FALSE,
-             nSharedVec = c(4L, 2L),
-             stepSharedCurrentVec = c(1L, 32L),
-             stepSharedCurrentExposureVec = c(1L, 32L),
-             stepSharedTargetVec = c(1L, 96L),
+             nSharedVec = 4L,
+             stepSharedCurrentVec = 1L, 
+             stepSharedCurrentExposureVec = 1L, 
+             stepSharedTargetVec = 1L,
              nTimeCurrent = 4L,
              stepTimeCurrent = 8L,
              stepTimeTarget = 24L,
@@ -506,8 +509,11 @@ test_that("validity tests for MappingBirthsToExp inherited from MappingMixingIMi
              stepAgeCurrent = 4L,
              stepAgeTarget = 4L,
              stepTriangleCurrent = 4L,
-             stepTriangleTarget = 12L)
-    ## 'iMinAge' has length 1
+             stepTriangleTarget = 12L,
+             hasSex = TRUE,
+             iSexDominant = 0L,
+             stepSexTarget = 96L)
+      ## 'iMinAge' has length 1
     x.wrong <- x
     x.wrong@iMinAge <- c(2L, 2L)
     expect_error(validObject(x.wrong),
@@ -519,7 +525,7 @@ test_that("validity tests for MappingBirthsToExp inherited from MappingMixingIMi
                  "'iMinAge' is non-positive")
 })
 
-test_that("can create valid object of class MappingBirthsToExp", {
+test_that("validity tests for MappingBirthsToExp inherited from MappingMixinSex work", {
     births <- Counts(array(1L,
                            dim = c(4, 4, 1, 2, 4, 2),
                            dimnames = list(reg_parent = 1:4,
@@ -537,26 +543,54 @@ test_that("can create valid object of class MappingBirthsToExp", {
                                              time = 1:4,
                                              sex = c("f", "m"))),
                        dimscales = c(time = "Intervals"))
-    x <- new("MappingBirthsToExp",
+  x <- new("MappingBirthsToExp",
              isOneToOne = FALSE,
-             nSharedVec = c(4L, 2L),
-             stepSharedCurrentVec = c(4L, 128L),
-             stepSharedCurrentExposureVec = c(1L, 128L),
-             stepSharedTargetVec = c(1L, 96L),
+             nSharedVec = 4L,
+             stepSharedCurrentVec = 1L, 
+             stepSharedCurrentExposureVec = 1L, 
+             stepSharedTargetVec = 1L,
              nTimeCurrent = 4L,
-             stepTimeCurrent = 32L,
+             stepTimeCurrent = 8L,
              stepTimeTarget = 24L,
              hasAge = TRUE,
              nAgeCurrent = 1L,
              iMinAge = 2L,
-             stepAgeCurrent = 16L,
+             stepAgeCurrent = 4L,
              stepAgeTarget = 4L,
-             stepTriangleCurrent = 16L,
-             stepTriangleTarget = 12L)
+             stepTriangleCurrent = 4L,
+             stepTriangleTarget = 12L,
+             hasSex = TRUE,
+             iSexDominant = 0L,
+             stepSexTarget = 96L)
     expect_true(validObject(x))
+    ## hasSex is not missing
+    x.wrong <- x
+    x.wrong@hasSex <- NA
+    expect_error(validObject(x.wrong),
+                 "'hasSex' is missing")
+    ## if hasSex: iSexDominant, stepSexTarget not missing
+    x.wrong <- x
+    x.wrong@iSexDominant <- NA_integer_
+    expect_error(validObject(x.wrong),
+                 "'iSexDominant' is missing")
+    ## if hasSex: iSexDominant is 0L or 1L
+    x.wrong <- x
+    x.wrong@iSexDominant <- 2L
+    expect_error(validObject(x.wrong),
+                 "'iSexDominant' equals 2")
+    ## if hasSex: stepSexTarget positive
+    x.wrong <- x
+    x.wrong@stepSexTarget <- 0L
+    expect_error(validObject(x.wrong),
+                 "'stepSexTarget' is non-positive")
+    ## if not hasSex: iSexDominant, stepSexTarget missing
+    x.wrong <- x
+    x.wrong@hasSex <- FALSE
+    expect_error(validObject(x.wrong),
+                 "'hasSex' is FALSE but 'iSexDominant' is not missing")
 })
 
-test_that("tests for MappingBirthsToExpParCh inherited from MappingExposureVecMixin work", {
+test_that("tests for MappingBirthsToExp inherited from MappingExposureVecMixin work", {
     births <- Counts(array(1L,
                            dim = c(4, 4, 1, 2, 4, 2),
                            dimnames = list(reg_parent = 1:4,
@@ -576,10 +610,10 @@ test_that("tests for MappingBirthsToExpParCh inherited from MappingExposureVecMi
                        dimscales = c(time = "Intervals"))
     x <- new("MappingBirthsToExp",
              isOneToOne = FALSE,
-             nSharedVec = c(4L, 2L),
-             stepSharedCurrentVec = c(4L, 128L),
-             stepSharedCurrentExposureVec = c(1L, 128L),
-             stepSharedTargetVec = c(1L, 96L),
+             nSharedVec = 4L, 
+             stepSharedCurrentVec = 4L,
+             stepSharedCurrentExposureVec = 1L,
+             stepSharedTargetVec = 1L,
              nTimeCurrent = 4L,
              stepTimeCurrent = 32L,
              stepTimeTarget = 24L,
@@ -589,7 +623,10 @@ test_that("tests for MappingBirthsToExpParCh inherited from MappingExposureVecMi
              stepAgeCurrent = 16L,
              stepAgeTarget = 4L,
              stepTriangleCurrent = 16L,
-             stepTriangleTarget = 12L)
+             stepTriangleTarget = 12L,
+             hasSex = TRUE,
+             iSexDominant = 0L,
+             stepSexTarget = 128L)
     ## stepSharedCurrentExposureVec has no missing values
     x.wrong <- x
     x.wrong@stepSharedCurrentExposureVec[1] <- NA

@@ -1232,7 +1232,10 @@ test_that("Mapping creates object of class MappingBirthsToExp from object of cla
                         stepAgeCurrent = 1L,
                         stepAgeTarget = 1L,
                         stepTriangleCurrent = 6L,
-                        stepTriangleTarget = 12L)
+                        stepTriangleTarget = 12L,
+                        hasSex = FALSE,
+                        iSexDominant = NA_integer_,
+                        stepSexTarget = NA_integer_)
     expect_identical(ans.obtained, ans.expected)
     ## has age; shared dimensions
     births <- Counts(array(1:36,
@@ -1267,7 +1270,10 @@ test_that("Mapping creates object of class MappingBirthsToExp from object of cla
                         stepAgeCurrent = 3L,
                         stepAgeTarget = 3L,
                         stepTriangleCurrent = 18L,
-                        stepTriangleTarget = 36L)
+                        stepTriangleTarget = 36L,
+                        hasSex = FALSE,
+                        iSexDominant = NA_integer_,
+                        stepSexTarget = NA_integer_)
     expect_identical(ans.obtained, ans.expected)
     ## no age; shared dimensions
     births <- Counts(array(1:36,
@@ -1301,7 +1307,10 @@ test_that("Mapping creates object of class MappingBirthsToExp from object of cla
                         stepAgeCurrent = NA_integer_,
                         stepAgeTarget = NA_integer_,
                         stepTriangleCurrent = NA_integer_,
-                        stepTriangleTarget = NA_integer_)
+                        stepTriangleTarget = NA_integer_,
+                        hasSex = FALSE,
+                        iSexDominant = NA_integer_,
+                        stepSexTarget = NA_integer_)
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -1346,7 +1355,10 @@ test_that("Mapping creates object of class MappingBirthsToExpParCh from object o
                         stepAgeCurrent = 1L,
                         stepAgeTarget = 1L,
                         stepTriangleCurrent = 54L,
-                        stepTriangleTarget = 36L)
+                        stepTriangleTarget = 36L,
+                        hasSex = FALSE,
+                        iSexDominant = NA_integer_,
+                        stepSexTarget = NA_integer_)
     expect_identical(ans.obtained, ans.expected)
     ## has age; shared dimensions
     births <- Counts(array(1:1296,
@@ -1387,7 +1399,10 @@ test_that("Mapping creates object of class MappingBirthsToExpParCh from object o
                         stepAgeCurrent = 108L,
                         stepAgeTarget = 18L,
                         stepTriangleCurrent = 648L,
-                        stepTriangleTarget = 216L)
+                        stepTriangleTarget = 216L,
+                        hasSex = FALSE,
+                        iSexDominant = NA_integer_,
+                        stepSexTarget = NA_integer_)
     expect_identical(ans.obtained, ans.expected)
 })
 

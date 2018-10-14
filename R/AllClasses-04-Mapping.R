@@ -125,6 +125,58 @@ setClass("MappingMixinAge",
              TRUE
          })
 
+
+## NO_TESTS
+setClass("MappingMixinSex",
+         slots = c(hasSex = "logical",
+                   iSexDominant = "integer",
+                   stepSexTarget = "integer"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             hasSex <- object@hasSex
+             iSexDominant <- object@iSexDominant
+             stepSexTarget <- object@stepSexTarget
+             ## hasSex, iSexDominant, stepSexTarget have length 1
+             for (name in c("hasSex", "iSexDominant", "stepSexTarget")) {
+                 value <- methods::slot(object, name)
+                 if (!identical(length(value), 1L))
+                     return(gettextf("'%s' does not have length %d",
+                                     name, 1L))
+             }
+             ## hasSex is not missing
+             if (is.na(hasSex))
+                 return(gettextf("'%s' is missing",
+                                 "hasSex"))
+             if (hasSex) {
+                 ## if hasSex: iSexDominant, stepSexTarget not missing
+                 for (name in c("iSexDominant", "stepSexTarget")) {
+                     value <- methods::slot(object, name)
+                     if (is.na(value))
+                         return(gettextf("'%s' is missing",
+                                         name))
+                 }
+                 ## if hasSex: iSexDominant is 0L or 1L
+                 if (!(iSexDominant %in% 0:1))
+                     return(gettextf("'%s' equals %d",
+                                     "iSexDominant", iSexDominant))
+                 ## if hasSex: stepSexTarget positive
+                 if (stepSexTarget < 1L)
+                     return(gettextf("'%s' is non-positive",
+                                     "stepSexTarget"))
+             }
+             else {
+                 ## if not hasSex: iSexDominant, stepSexTarget missing
+                 for (name in c("iSexDominant", "stepSexTarget")) {
+                     value <- methods::slot(object, name)
+                     if (!is.na(value))
+                         return(gettextf("'%s' is %s but '%s' is not missing",
+                                         "hasSex", FALSE, name))
+                 }
+             }
+             TRUE
+         })
+
+
 ## HAS_TESTS
 setClass("MappingMixinStepTriangleCurrent",
          slots = c(stepTriangleCurrent = "integer"),
@@ -353,6 +405,7 @@ setClass("MappingCompToExp",
 setClass("MappingBirthsToExp",
          contains = c("MappingToExp",
                       "MappingMixinIMinAge",
+                      "MappingMixinSex",
                       "MappingExposureVecMixin"))
 
 ## HAS_TESTS

@@ -574,7 +574,7 @@ setMethod("initialCombinedAccount",
               iterators.comp <- lapply(components, CohortIterator)
               descriptions <- lapply(c(list(population), components), Description)
               mappings.from.exp <- lapply(components, function(x) Mapping(exposure, x))
-              mappings.to.exp <- lapply(components, function(x) Mapping(x, exposure))
+              mappings.to.exp <- lapply(components, function(x) Mapping(x, exposure, dominant))
               mappings.to.popn <- lapply(components, function(x) Mapping(x, population))
               model.uses.exposure <- sapply(systemModels, function(x) x@useExpose@.Data)
               if ((i.births > 0L) && model.uses.exposure[i.births + 1L])

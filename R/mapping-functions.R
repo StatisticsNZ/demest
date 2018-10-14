@@ -338,6 +338,7 @@ getIExposureFromComp <- function(i, mapping, useC = FALSE) {
     }
 }
 
+
 ## TRANSLATED
 ## HAS_TESTS
 getIExposureFromBirths <- function(i, mapping, useC = FALSE) {
@@ -356,6 +357,7 @@ getIExposureFromBirths <- function(i, mapping, useC = FALSE) {
         step.time.births <- mapping@stepTimeCurrent
         step.time.exp <- mapping@stepTimeTarget
         has.age <- mapping@hasAge
+        has.sex <- mapping@hasSex
         n.shared.vec <- mapping@nSharedVec
         step.shared.births.vec <- mapping@stepSharedCurrentExposureVec
         step.shared.exp.vec <- mapping@stepSharedTargetVec
@@ -375,6 +377,11 @@ getIExposureFromBirths <- function(i, mapping, useC = FALSE) {
             i.triangle <- ((i - 1L) %/% step.triangle.births) %% 2L
             i.exp <- i.exp + i.age.exp * step.age.exp
             i.exp <- i.exp + i.triangle * step.triangle.exp
+        }
+        if (has.sex) {
+            i.sex.dominant <- mapping@iSexDominant
+            step.sex.exp <- mapping@stepSexTarget
+            i.exp <- i.exp + i.sex.dominant * step.sex.exp
         }
         for (d in seq_len(n.dim.shared)) {
             n.shared <- n.shared.vec[d]
