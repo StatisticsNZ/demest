@@ -841,6 +841,7 @@ setMethod("initialModel",
               tolerance <- object@tolerance
               max.attempt <- object@maxAttempt
               varsigma <- object@varsigma
+              varsigmaSetToZero <- object@varsigmaSetToZero
               nu.sigma <- object@nuSigma
               A.sigma <- object@ASigma@.Data
               sigma.max <- object@sigmaMax@.Data
@@ -860,18 +861,22 @@ setMethod("initialModel",
                                     min = 0,
                                     max = min(A.sigma@.Data, sigma.max@.Data))
               sigma <- methods::new("Scale", sigma)
-              y.bar <- mean(y, na.rm = TRUE)
-              mean <- 0.5 * y.bar + 0.5 * y
-              mean[is.na(y)] <- y.bar
-              theta <- rnormTruncated(n = n,
-                                      mean = mean,
-                                      sd = rep(sigma, times = n),
-                                      lower = lower,
-                                      upper = upper,
-                                      tolerance = tolerance,
-                                      maxAttempt = max.attempt,
-                                      uniform = TRUE,
-                                      useC = TRUE)
+              if (varsigmaSetToZero@.Data)
+                  theta <- as.numeric(y)
+              else {
+                  y.bar <- mean(y, na.rm = TRUE)
+                  mean <- 0.5 * y.bar + 0.5 * y
+                  mean[is.na(y)] <- y.bar
+                  theta <- rnormTruncated(n = n,
+                                          mean = mean,
+                                          sd = rep(sigma, times = n),
+                                          lower = lower,
+                                          upper = upper,
+                                          tolerance = tolerance,
+                                          maxAttempt = max.attempt,
+                                          uniform = TRUE,
+                                          useC = TRUE)
+              }
               theta <- array(theta, dim = dim(y), dimnames = dimnames(y))
               betas <- makeLinearBetas(theta = theta, formula = formula.mu)
               theta <- as.numeric(theta)
@@ -907,6 +912,7 @@ setMethod("initialModel",
                                     cellInLik = cellInLik,
                                     w = w,
                                     varsigma = varsigma,
+                                    varsigmaSetToZero = varsigmaSetToZero,
                                     lower = lower,
                                     upper = upper,
                                     tolerance = tolerance,
@@ -1081,6 +1087,7 @@ setMethod("initialModel",
               checkLengthDimInFormula(y = y, formula = formula.mu)
               metadataY <- y@metadata
               dim <- dim(y)
+              browser()
               struc.zero.array <- makeStrucZeroArray(structuralZeros = structural.zeros, 
                                                      y = y) 
               y <- checkAndTidyYForStrucZero(y = y, 

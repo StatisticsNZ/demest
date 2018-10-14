@@ -241,11 +241,14 @@ Normal <- function(formula, sd = NULL, priorSD = HalfT()) {
                      varsigmaMax = varsigmaMax)
     }
     else {
-        checkPositiveNumeric(x = sd, name = "sd")
+        checkNonNegativeNumeric(x = sd, name = "sd")
         varsigma <- methods::new("Scale", as.double(sd))
+        varsigmaSetToZero <- isTRUE(all.equal(sd, 0))
+        varsigmaSetToZero <- new("LogicalFlag", varsigmaSetToZero)
         methods::new("SpecLikelihoodNormalVarsigmaKnown",
                      formulaMu = formula,
-                     varsigma = varsigma)
+                     varsigma = varsigma,
+                     varsigmaSetToZero = varsigmaSetToZero)
     }
 }
 
@@ -861,6 +864,7 @@ setMethod("SpecModel",
                    priorSD, jump, series, aggregate) {
               formula.mu <- specInner@formulaMu
               varsigma <- specInner@varsigma
+              varsigmaSetToZero <- specInner@varsigmaSetToZero
               specs.priors <- makeSpecsPriors(dots)
               names.specs.priors <- makeNamesSpecsPriors(dots)
               if (is.null(lower))
@@ -906,6 +910,7 @@ setMethod("SpecModel",
                            sigmaMax = sigma.max,
                            upper = upper,
                            varsigma = varsigma,
+                           varsigmaSetToZero = varsigmaSetToZero,
                            aggregate = aggregate)
           })
 

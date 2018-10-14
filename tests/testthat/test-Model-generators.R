@@ -837,9 +837,6 @@ test_that("initialModel creates object of class CMPVaryingUseExp from valid inpu
                  "model 'y ~ CMP\\(mean ~ age \\* region\\)' uses exposure, but no 'exposure' argument supplied")
 })
 
-
-
-
 test_that("initialModel creates object of class NormalVaryingVarsigmaKnown from valid inputs", {
     initialModel <- demest:::initialModel
     makeLinearBetas <- demest:::makeLinearBetas
@@ -993,6 +990,18 @@ test_that("initialModel creates object of class NormalVaryingVarsigmaKnown from 
     expect_identical(x@ASigma, x@priorsBetas[[4]]@ATau)
     expect_identical(x@sigmaMax, x@priorsBetas[[4]]@tauMax)
     expect_identical(x@nuSigma, x@priorsBetas[[4]]@nuTau)
+    ## varsigma is 0
+    y <- Values(array(rnorm(n = 20),
+                      dim = c(5, 4),
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    spec <- Model(y ~ Normal(mean ~ age * region, sd = 0),
+                  age:region ~ Exch(error = Error(scale = HalfT(df = 3, scale = 0.1, max = 0.6))))
+    weights <- Counts(array(rbeta(n = 20, shape1 = 1, shape2 = 1),
+                            dim = c(5, 4),
+                            dimnames = list(age = 0:4, region = letters[1:4])))
+    x <- initialModel(spec, y = y, weights = weights)
+    expect_identical(x@varsigma@.Data, 0)
+    expect_identical(x@theta, as.numeric(y))
 })
 
 test_that("initialModel creates object of class NormalVaryingVarsigmaUnknown from valid inputs", {

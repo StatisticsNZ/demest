@@ -2126,7 +2126,10 @@ setMethod("updateModelNotUseExp",
               }
               else {
                   identity <- function(x) x
-                  object <- updateTheta_NormalVarying(object, y = y)
+                  varsigmaSetToZero <- object@varsigmaSetToZero@.Data
+                  if (!varsigmaSetToZero) {
+                      object <- updateTheta_NormalVarying(object, y = y)
+                  }
                   object <- updateSigma_Varying(object, g = identity)
                   object <- updateBetasAndPriorsBetas(object, g = identity)
                   object

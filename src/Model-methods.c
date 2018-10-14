@@ -575,7 +575,10 @@ updateModelNotUseExp_CMPVaryingNotUseExp_i(SEXP object, SEXP y_R)
 static __inline__ void
 updateModelNotUseExp_NormalVaryingVarsigmaKnown_i(SEXP object, SEXP y_R)
 {
-    updateTheta_NormalVarying(object, y_R);
+    int varsigmaSetToZero = *LOGICAL(GET_SLOT(object, varsigmaSetToZero_sym));
+    if (!varsigmaSetToZero) {
+      updateTheta_NormalVarying(object, y_R);
+    }
     updateSigma_Varying_General(object, identity);
     updateBetasAndPriorsBetas_General(object, identity);
 }

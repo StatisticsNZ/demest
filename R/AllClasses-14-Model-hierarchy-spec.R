@@ -84,7 +84,8 @@ setClass("SpecLikelihoodCMP",
 setClass("SpecLikelihoodNormalVarsigmaKnown",
          contains = c("SpecLikelihood",
              "FormulaMuMixin",
-             "VarsigmaMixin"))
+             "VarsigmaMixin",
+             "VarsigmaSetToZeroMixin"))
 
 #' @rdname SpecLikelihood-class
 #' @export
@@ -313,9 +314,31 @@ setClass("SpecNormalVaryingVarsigmaUnknown",
 #' @rdname SpecModel-class
 #' @export
 setClass("SpecNormalVaryingVarsigmaKnown",
-         prototype = prototype(useExpose = new("LogicalFlag", FALSE)),
+         prototype = prototype(useExpose = new("LogicalFlag", FALSE),
+                               varsigmaSetToZero = new("LogicalFlag", FALSE)),
          contains = c("SpecNormalVarying",
-             "VarsigmaMixin"))
+                      "VarsigmaMixin",
+                      "VarsigmaSetToZeroMixin"),
+         validity = function(object) {
+             aggregate <- object@aggregate
+             varsigmaSetToZero <- object@varsigmaSetToZero@.Data
+             if (varsigmaSetToZero) {
+                 ## if varsigma is 0, lower, upper not specified
+                 for (name in c("lower", "upper")) {
+                     value <- slot(object, name)
+                     if (is.finite(value))
+                         return(gettextf("'%s' is %d but '%s' is finite",
+                                         "varsigma", 0L, name))
+                 }
+                 ## if varsigma is 0, 'aggregate' not specified
+                 if (varsigmaSetToZero) {
+                     if (!methods::is(aggregate, "SpecAgPlaceholder"))
+                         return(gettextf("'%s' is %d but '%s' has class \"%s\"",
+                                         "varsigma", 0L, "aggregate", class(aggregate)))
+                 }
+             }
+             TRUE
+         })
 
 ## HAS_TESTS
 #' @rdname SpecModel-class

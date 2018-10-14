@@ -810,6 +810,12 @@ setClass("VarsigmaMaxMixin",
          })
 
 ## HAS_TESTS
+setClass("VarsigmaSetToZeroMixin",
+         slots = c(varsigmaSetToZero = "LogicalFlag"),
+         contains = "VIRTUAL")
+
+
+## HAS_TESTS
 setClass("WNormalMixin",
          slots = c(w = "numeric"),
          contains = "VIRTUAL",

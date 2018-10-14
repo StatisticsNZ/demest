@@ -38,7 +38,14 @@ test_that("Normal works - varsigma known", {
     ans.obtained <- Normal(mean ~ age + sex, sd = 0.5)
     ans.expected <- new("SpecLikelihoodNormalVarsigmaKnown",
                         formulaMu = mean ~ age + sex,
-                        varsigma = new("Scale", 0.5))
+                        varsigma = new("Scale", 0.5),
+                        varsigmaSetToZero = new("LogicalFlag", FALSE))
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- Normal(mean ~ age + sex, sd = 0)
+    ans.expected <- new("SpecLikelihoodNormalVarsigmaKnown",
+                        formulaMu = mean ~ age + sex,
+                        varsigma = new("Scale", 0),
+                        varsigmaSetToZero = new("LogicalFlag", TRUE))
     expect_identical(ans.obtained, ans.expected)
     expect_error(Normal(prob ~ age + sex),
                  "formula 'prob ~ age \\+ sex' does not have response 'mean'")

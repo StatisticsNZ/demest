@@ -7217,6 +7217,12 @@ test_that("whereEstimated works", {
                        "scaleSeason",
                        "coef",
                        "scaleError"))
+    x <- new("KnownCertain")
+    expect_identical(whereEstimated(x),
+                     NULL)
+    x <- new("KnownUncertain")
+    expect_identical(whereEstimated(x),
+                     NULL)
     x <- new("MixNormZero")
     expect_identical(whereEstimated(x),
                      c("scaleComponents",

@@ -72,6 +72,7 @@ SEXP
   nuSigma_sym,
   varsigma_sym,
   varsigmaMax_sym,
+  varsigmaSetToZero_sym,
   AVarsigma_sym,
   nuVarsigma_sym,
   w_sym,

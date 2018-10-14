@@ -196,6 +196,50 @@ test_that("validity tests for SpecNormalVaryingVarsigmaKnown inherited from Spec
                  "response for formula 'wrong ~ age \\+ sex' is not 'mean'")
 })
 
+
+test_that("validity tests for SpecNormalVaryingVarsigmaKnown inherited from VarsigmaSetToZeroMixin work", {
+    x <- new("SpecNormalVaryingVarsigmaKnown",
+             call = call("Model", y ~ Normal(mean ~ age + sex, sd = 0)),
+             nameY = new("Name", "y"),
+             formulaMu = mean ~ age + sex,
+             specsPriors = list(DLM(), Exch()),
+             namesSpecsPriors = c("age", "sex"),
+             lower = -Inf,
+             upper = Inf,
+             maxAttempt = 100L,
+             varsigma = new("Scale", 0),
+             varsigmaSetToZero = new("LogicalFlag", TRUE),
+             ASigma = new("SpecScale", as.numeric(NA)),
+             aggregate = new("SpecAgPlaceholder"))
+    ## if varsigma is 0, lower, upper not specified
+    x.wrong <- x
+    x.wrong@lower <- 0
+    expect_error(validObject(x.wrong),
+                 "'varsigma' is 0 but 'lower' is finite")
+})
+
+
+test_that("validity tests for SpecNormalVaryingVarsigmaKnown inherited from SpecNormalVaryingVarsigmaKnown work", {
+    x <- new("SpecNormalVaryingVarsigmaKnown",
+             call = call("Model", y ~ Normal(mean ~ age + sex, sd = 0)),
+             nameY = new("Name", "y"),
+             formulaMu = mean ~ age + sex,
+             specsPriors = list(DLM(), Exch()),
+             namesSpecsPriors = c("age", "sex"),
+             lower = -Inf,
+             upper = Inf,
+             maxAttempt = 100L,
+             varsigma = new("Scale", 0),
+             varsigmaSetToZero = new("LogicalFlag", TRUE),
+             ASigma = new("SpecScale", as.numeric(NA)),
+             aggregate = new("SpecAgPlaceholder"))
+    ## if varsigma is 0, 'aggregate' not specified
+    x.wrong <- x
+    x.wrong@aggregate <- AgCertain(1)
+    expect_error(validObject(x.wrong),
+                 "'varsigma' is 0 but 'aggregate' has class \"SpecAgCertain\"")
+})
+
 test_that("can create valid object of class SpecNormalVaryingVarsigmaUnknown", {
     ## nameY and varsigma supplied; have priors
     x <- new("SpecNormalVaryingVarsigmaUnknown",
