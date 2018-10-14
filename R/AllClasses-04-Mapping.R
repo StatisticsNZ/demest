@@ -126,7 +126,7 @@ setClass("MappingMixinAge",
          })
 
 
-## NO_TESTS
+## HAS_TESTS
 setClass("MappingMixinSex",
          slots = c(hasSex = "logical",
                    iSexDominant = "integer",

@@ -2018,12 +2018,12 @@ test_that("getIExposureFromBirths works with BirthsMovementNoParentChild", {
     births <- Counts(array(1:8,
                            dim = c(2, 2, 2),
                            dimnames = list(time = c("2001-2010", "2011-2020"),
-                               triangle = c("TL", "TU"),
-                               age = c("10-19", "20-29"))))
+                                           triangle = c("TL", "TU"),
+                                           age = c("10-19", "20-29"))))
     population <- Counts(array(1:15,
                                dim = c(3, 5),
                                dimnames = list(time = c(2000, 2010, 2020),
-                                   age = c("0-9", "10-19", "20-29", "30-39", "40+"))))
+                                               age = c("0-9", "10-19", "20-29", "30-39", "40+"))))
     template <- makeTemplateComponent(population)
     births <- BirthsMovements(births = births,
                               template = template)
@@ -2039,13 +2039,13 @@ test_that("getIExposureFromBirths works with BirthsMovementNoParentChild", {
     }
     ## time is second dimension of two
     births <- Counts(array(1:3,
-                              dim = c(3, 1),
-                              dimnames = list(reg = c("a", "b", "c"),
-                                  time = "2001-2010")))
+                           dim = c(3, 1),
+                           dimnames = list(reg = c("a", "b", "c"),
+                                           time = "2001-2010")))
     population <- Counts(array(1:6,
                                dim = c(3, 2),
                                dimnames = list(reg = c("a", "b", "c"),
-                                   time = c(2000, 2010))))
+                                               time = c(2000, 2010))))
     template <- makeTemplateComponent(population)
     births <- BirthsMovements(births = births,
                               template = template)
@@ -2060,16 +2060,16 @@ test_that("getIExposureFromBirths works with BirthsMovementNoParentChild", {
     }
     ## time is second dimension of three
     births <- Counts(array(1:36,
-                              dim = c(3, 2, 2, 2),
-                              dimnames = list(reg = c("a", "b", "c"),
-                                  time = c("2001-2010", "2011-2020"),
-                                  age = c("10-19", "20-29"),
-                                  triangle = c("TL", "TU"))))
+                           dim = c(3, 2, 2, 2),
+                           dimnames = list(reg = c("a", "b", "c"),
+                                           time = c("2001-2010", "2011-2020"),
+                                           age = c("10-19", "20-29"),
+                                           triangle = c("TL", "TU"))))
     population <- Counts(array(1:36,
                                dim = c(3, 3, 4),
                                dimnames = list(reg = c("a", "b", "c"),
-                                   time = c(2000, 2010, 2020),
-                                   age = c("0-9", "10-19", "20-29", "30+"))))
+                                               time = c(2000, 2010, 2020),
+                                               age = c("0-9", "10-19", "20-29", "30+"))))
     template <- makeTemplateComponent(population)
     births <- BirthsMovements(births = births,
                               template = template)
@@ -2081,18 +2081,18 @@ test_that("getIExposureFromBirths works with BirthsMovementNoParentChild", {
     for (i in 1:24) {
         ans.obtained <- getIExposureFromBirths(i = i, mapping = mapping)
         ans.expected <- ans.exp[i]
-          expect_identical(ans.obtained, ans.expected)
+        expect_identical(ans.obtained, ans.expected)
     }
     births <- Counts(array(1:11,
                            dim = 11,
                            dimnames = list(time = paste(seq(2001, by = 5, len = 11),
-                                               seq(2005, by = 5, len = 11),
-                                               sep = "-"))))
+                                                        seq(2005, by = 5, len = 11),
+                                                        sep = "-"))))
     population <- Counts(array(1:12,
                                dim = 12,
                                dimnames = list(time = seq(from = 2000,
-                                                   by = 5,
-                                                   length = 12))))
+                                                          by = 5,
+                                                          length = 12))))
     template <- makeTemplateComponent(population)
     births <- BirthsMovements(births = births,
                               template = template)
@@ -2103,6 +2103,30 @@ test_that("getIExposureFromBirths works with BirthsMovementNoParentChild", {
     for (i in 1:11) {
         ans.obtained <- getIExposureFromBirths(i = i, mapping = mapping)
         ans.expected <- i
+        expect_identical(ans.obtained, ans.expected)
+    }
+    ## includes sex dimension
+    births <- Counts(array(1:8,
+                           dim = c(2, 2, 2),
+                           dimnames = list(time = c("2001-2010", "2011-2020"),
+                                           sex = c("Female", "Male"),
+                                           region = c("A", "B"))))
+    population <- Counts(array(1:12,
+                               dim = c(3, 2, 2),
+                               dimnames = list(time = c(2000, 2010, 2020),
+                                               sex = c("Female", "Male"),
+                                               region = c("A", "B"))))
+    template <- makeTemplateComponent(population)
+    births <- BirthsMovements(births = births,
+                              template = template)
+    exposure <- exposure(population, triangles = FALSE)
+    exposure <- Exposure(exposure)
+    mapping <- Mapping(current = births,
+                       target = exposure)
+    ans.exp <- c(1:2, 1:2, 5:6, 5:6)
+    for (i in 1:8) {
+        ans.obtained <- getIExposureFromBirths(i = i, mapping = mapping)
+        ans.expected <- ans.exp[i]
         expect_identical(ans.obtained, ans.expected)
     }
 })
@@ -2117,12 +2141,12 @@ test_that("R and C versions of getIExposureFromBirths give same answer with Birt
     births <- Counts(array(1:8,
                            dim = c(2, 2, 2),
                            dimnames = list(time = c("2001-2010", "2011-2020"),
-                               triangle = c("TL", "TU"),
-                               age = c("10-19", "20-29"))))
+                                           triangle = c("TL", "TU"),
+                                           age = c("10-19", "20-29"))))
     population <- Counts(array(1:15,
                                dim = c(3, 5),
                                dimnames = list(time = c(2000, 2010, 2020),
-                                   age = c("0-9", "10-19", "20-29", "30-39", "40+"))))
+                                               age = c("0-9", "10-19", "20-29", "30-39", "40+"))))
     template <- makeTemplateComponent(population)
     births <- BirthsMovements(births = births,
                               template = template)
@@ -2137,13 +2161,13 @@ test_that("R and C versions of getIExposureFromBirths give same answer with Birt
     }
     ## time is second dimension of two
     births <- Counts(array(1:3,
-                              dim = c(3, 1),
-                              dimnames = list(reg = c("a", "b", "c"),
-                                  time = "2001-2010")))
+                           dim = c(3, 1),
+                           dimnames = list(reg = c("a", "b", "c"),
+                                           time = "2001-2010")))
     population <- Counts(array(1:6,
                                dim = c(3, 2),
                                dimnames = list(reg = c("a", "b", "c"),
-                                   time = c(2000, 2010))))
+                                               time = c(2000, 2010))))
     template <- makeTemplateComponent(population)
     births <- BirthsMovements(births = births,
                               template = template)
@@ -2158,16 +2182,16 @@ test_that("R and C versions of getIExposureFromBirths give same answer with Birt
     }
     ## time is second dimension of three
     births <- Counts(array(1:36,
-                              dim = c(3, 2, 2, 2),
-                              dimnames = list(reg = c("a", "b", "c"),
-                                  time = c("2001-2010", "2011-2020"),
-                                  age = c("10-19", "20-29"),
-                                  triangle = c("TL", "TU"))))
+                           dim = c(3, 2, 2, 2),
+                           dimnames = list(reg = c("a", "b", "c"),
+                                           time = c("2001-2010", "2011-2020"),
+                                           age = c("10-19", "20-29"),
+                                           triangle = c("TL", "TU"))))
     population <- Counts(array(1:36,
                                dim = c(3, 3, 4),
                                dimnames = list(reg = c("a", "b", "c"),
-                                   time = c(2000, 2010, 2020),
-                                   age = c("0-9", "10-19", "20-29", "30+"))))
+                                               time = c(2000, 2010, 2020),
+                                               age = c("0-9", "10-19", "20-29", "30+"))))
     template <- makeTemplateComponent(population)
     births <- BirthsMovements(births = births,
                               template = template)
@@ -2184,13 +2208,13 @@ test_that("R and C versions of getIExposureFromBirths give same answer with Birt
     births <- Counts(array(1:11,
                            dim = 11,
                            dimnames = list(time = paste(seq(2001, by = 5, len = 11),
-                                               seq(2005, by = 5, len = 11),
-                                               sep = "-"))))
+                                                        seq(2005, by = 5, len = 11),
+                                                        sep = "-"))))
     population <- Counts(array(1:12,
                                dim = 12,
                                dimnames = list(time = seq(from = 2000,
-                                                   by = 5,
-                                                   length = 12))))
+                                                          by = 5,
+                                                          length = 12))))
     template <- makeTemplateComponent(population)
     births <- BirthsMovements(births = births,
                               template = template)
@@ -2199,6 +2223,29 @@ test_that("R and C versions of getIExposureFromBirths give same answer with Birt
     mapping <- Mapping(current = births,
                        target = exposure)
     for (i in 1:11) {
+        ans.R <- getIExposureFromBirths(i = i, mapping = mapping, useC = FALSE)
+        ans.C <- getIExposureFromBirths(i = i, mapping = mapping, useC = TRUE)
+        expect_identical(ans.R, ans.C)
+    }
+    ## has sex dimension
+    births <- Counts(array(1:8,
+                           dim = c(2, 2, 2),
+                           dimnames = list(time = c("2001-2010", "2011-2020"),
+                                           sex = c("Female", "Male"),
+                                           region = c("A", "B"))))
+    population <- Counts(array(1:12,
+                               dim = c(3, 2, 2),
+                               dimnames = list(time = c(2000, 2010, 2020),
+                                               sex = c("Female", "Male"),
+                                               region = c("A", "B"))))
+    template <- makeTemplateComponent(population)
+    births <- BirthsMovements(births = births,
+                              template = template)
+    exposure <- exposure(population, triangles = FALSE)
+    exposure <- Exposure(exposure)
+    mapping <- Mapping(current = births,
+                       target = exposure)
+    for (i in 1:8) {
         ans.R <- getIExposureFromBirths(i = i, mapping = mapping, useC = FALSE)
         ans.C <- getIExposureFromBirths(i = i, mapping = mapping, useC = TRUE)
         expect_identical(ans.R, ans.C)
