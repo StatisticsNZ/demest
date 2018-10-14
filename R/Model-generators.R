@@ -1087,7 +1087,6 @@ setMethod("initialModel",
               checkLengthDimInFormula(y = y, formula = formula.mu)
               metadataY <- y@metadata
               dim <- dim(y)
-              browser()
               struc.zero.array <- makeStrucZeroArray(structuralZeros = structural.zeros, 
                                                      y = y) 
               y <- checkAndTidyYForStrucZero(y = y, 

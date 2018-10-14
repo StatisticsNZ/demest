@@ -2981,58 +2981,58 @@ test_that("R and C versions of updateOmegaSeason give same answer", {
 })
 
 test_that("updateOmegaVectorsMix gives valid answer", {
-    updateOmegaVectorsMix <- demest:::updateOmegaVectorsMix
-    updateSDNorm <- demest:::updateSDNorm
-    set.seed(100)
-    initialPrior <- demest:::initialPrior
-    beta <- rnorm(200)
-    metadata <- new("MetaData",
-                    nms = c("reg", "time", "age"),
-                    dimtypes = c("state", "time", "age"),
-                    DimScales = list(new("Categories", dimvalues = c("a", "b")),
-                                     new("Points", dimvalues = 2001:2010),
-                                     new("Intervals", dimvalues = as.numeric(0:10))))
-    strucZeroArray <- Counts(array(1L,
-                                   dim = c(2, 10, 10),
-                                   dimnames = list(reg = c("a", "b"),
-                                                   time = 2001:2010,
-                                                   age = 0:9)),
-                             dimscales = c(time = "Points", age = "Intervals"))
-    spec <- Mix()
-    prior <- initialPrior(spec,
-                          beta = beta,
-                          metadata = metadata,
-                          sY = NULL,
-                          isSaturated = FALSE,
-                          multScale = 1,
-                          margin = 1:3,
-                          strucZeroArray = strucZeroArray)
-    for (seed in seq_len(n.test)) {
-        set.seed(seed)
-        ans.obtained <- updateOmegaVectorsMix(prior)
-        set.seed(seed)
-        max.used <- prior@indexClassMaxUsedMix@.Data * 1
-        sigma <- prior@omegaVectorsMix@.Data
-        A <- prior@AVectorsMix@.Data
-        nu <- prior@nuVectorsMix@.Data
-        vectors <- prior@vectorsMix[c(1, 3)]
-        vectors <- lapply(vectors, function(x) matrix(x, ncol = 10))
-        vectors <- lapply(vectors, function(x) x[, 1:max.used])
-        V <- sum(sapply(vectors, function(x) sum(x^2)))
-        n <- sum(sapply(vectors, length))
-        omega.new <- updateSDNorm(sigma = sigma,
-                                  A = A,
-                                  nu = nu,
-                                  V = V,
-                                  n = n,
-                                  max = max.used)
-        ans.expected <- prior
-        ans.expected@omegaVectorsMix@.Data <- omega.new
-        if (test.identity)
-            expect_identical(ans.obtained, ans.expected)
-        else
-            expect_equal(ans.obtained, ans.expected)
-    }
+    ## updateOmegaVectorsMix <- demest:::updateOmegaVectorsMix
+    ## updateSDNorm <- demest:::updateSDNorm
+    ## set.seed(100)
+    ## initialPrior <- demest:::initialPrior
+    ## beta <- rnorm(200)
+    ## metadata <- new("MetaData",
+    ##                 nms = c("reg", "time", "age"),
+    ##                 dimtypes = c("state", "time", "age"),
+    ##                 DimScales = list(new("Categories", dimvalues = c("a", "b")),
+    ##                                  new("Points", dimvalues = 2001:2010),
+    ##                                  new("Intervals", dimvalues = as.numeric(0:10))))
+    ## strucZeroArray <- Counts(array(1L,
+    ##                                dim = c(2, 10, 10),
+    ##                                dimnames = list(reg = c("a", "b"),
+    ##                                                time = 2001:2010,
+    ##                                                age = 0:9)),
+    ##                          dimscales = c(time = "Points", age = "Intervals"))
+    ## spec <- Mix()
+    ## prior <- initialPrior(spec,
+    ##                       beta = beta,
+    ##                       metadata = metadata,
+    ##                       sY = NULL,
+    ##                       isSaturated = FALSE,
+    ##                       multScale = 1,
+    ##                       margin = 1:3,
+    ##                       strucZeroArray = strucZeroArray)
+    ## for (seed in seq_len(n.test)) {
+    ##     set.seed(seed)
+    ##     ans.obtained <- updateOmegaVectorsMix(prior)
+    ##     set.seed(seed)
+    ##     max.used <- prior@indexClassMaxUsedMix@.Data * 1
+    ##     sigma <- prior@omegaVectorsMix@.Data
+    ##     A <- prior@AVectorsMix@.Data
+    ##     nu <- prior@nuVectorsMix@.Data
+    ##     vectors <- prior@vectorsMix[c(1, 3)]
+    ##     vectors <- lapply(vectors, function(x) matrix(x, ncol = 10))
+    ##     vectors <- lapply(vectors, function(x) x[, 1:max.used])
+    ##     V <- sum(sapply(vectors, function(x) sum(x^2)))
+    ##     n <- sum(sapply(vectors, length))
+    ##     omega.new <- updateSDNorm(sigma = sigma,
+    ##                               A = A,
+    ##                               nu = nu,
+    ##                               V = V,
+    ##                               n = n,
+    ##                               max = max.used)
+    ##     ans.expected <- prior
+    ##     ans.expected@omegaVectorsMix@.Data <- omega.new
+    ##     if (test.identity)
+    ##         expect_identical(ans.obtained, ans.expected)
+    ##     else
+    ##         expect_equal(ans.obtained, ans.expected)
+    ## }
 })
 
 test_that("R and C versions of updateOmegaVectorsMix give same answer", {
