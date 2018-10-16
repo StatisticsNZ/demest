@@ -544,12 +544,19 @@ getIExpFirstFromBirths <- function(i, mapping, useC = FALSE) {
         n.time <- mapping@nTimeCurrent
         step.time.births <- mapping@stepTimeCurrent
         step.time.exp <- mapping@stepTimeTarget
+        has.sex <- mapping@hasSex
         n.shared.vec <- mapping@nSharedVec
         step.shared.births.vec <- mapping@stepSharedCurrentVec
         step.shared.exp.vec <- mapping@stepSharedTargetVec
         i.exp <- 1L
         i.time <- ((i - 1L) %/% step.time.births) %% n.time
         i.exp <- i.exp + i.time * step.time.exp
+        if (has.sex) {
+            step.sex.births <- mapping@stepSexCurrent
+            step.sex.exp <- mapping@stepSexTarget
+            i.sex <- ((i - 1L) %/% step.sex.births) %% 2L
+            i.exp <- i.exp + i.sex * step.sex.exp
+        }
         n.dim.shared <- length(n.shared.vec)
         for (d in seq_len(n.dim.shared)) {
             n.shared <- n.shared.vec[d]

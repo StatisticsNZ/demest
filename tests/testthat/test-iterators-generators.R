@@ -99,7 +99,7 @@ test_that("CohortIterator works with BirthsMovementsHasParentChild", {
                                  age = c("0-4", "5-9", "10+"),
                                  region = 1:3,
                                  time = c("2001-2005", "2006-2010"),
-                                 triangle = c("TL", "TU"))))
+                                 triangle = c("Lower", "Upper"))))
     set.seed(1)
     births <- BirthsMovements(births = births, template = template)
     ans.obtained <- CohortIterator(births)
@@ -136,7 +136,7 @@ test_that("ComponentIterator works with InternalMovementsOrigDest", {
                              dimnames = list(age = c("0-4", "5-9", "10+"),
                                  reg = 1:3,
                                  time = c("2001-2005", "2006-2010"),
-                                 triangle = c("TL", "TU"))))
+                                 triangle = c("Lower", "Upper"))))
     set.seed(1)
     internal <- InternalMovements(internal = internal,
                                   template = template)
@@ -168,7 +168,7 @@ test_that("ComponentIterator works with InternalMovementsPool", {
                              dimnames = list(age = c("0-4", "5-9", "10+"),
                                  region = 1:3,
                                  time = c("2001-2005", "2006-2010"),
-                                 triangle = c("TL", "TU"),
+                                 triangle = c("Lower", "Upper"),
                                  direction = c("Out", "In"))))
     internal <- Pool(internal, direction = "direction", between = "region")
     template <- Counts(array(0L,
@@ -176,7 +176,7 @@ test_that("ComponentIterator works with InternalMovementsPool", {
                              dimnames = list(age = c("0-4", "5-9", "10+"),
                                  region = 1:3,
                                  time = c("2001-2005", "2006-2010"),
-                                 triangle = c("TL", "TU"))))
+                                 triangle = c("Lower", "Upper"))))
     set.seed(1)
     internal <- InternalMovements(internal = internal,
                                   template = template)
@@ -214,7 +214,7 @@ test_that("ComponentIterator works with ordinary component", {
                              dimnames = list(age = c("0-4", "5-9", "10+"),
                                  region = 1:3,
                                  time = c("2001-2005", "2006-2010"),
-                                 triangle = c("TL", "TU"))))
+                                 triangle = c("Lower", "Upper"))))
     set.seed(1)
     component <- EntriesMovements(entries = entries,
                                   template = template,

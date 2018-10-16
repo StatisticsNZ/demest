@@ -15,7 +15,7 @@ test_that("Mapping creates object of class MappingCompToPopn from object of clas
                           dim = c(4, 3, 2),
                           dimnames = list(age = c("0-4", "5-9", "10-14", "15+"),
                               time = c("2001-2005", "2006-2010", "2011-2015"),
-                              triangle = c("TL", "TU"))))
+                              triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:24,
                                dim = c(4, 4),
                                dimnames = list(age = c("0-4", "5-9", "10-14", "15+"),
@@ -44,7 +44,7 @@ test_that("Mapping creates object of class MappingCompToPopn from object of clas
                           dimnames = list(reg = 1:3,
                               age = c("0-4", "5-9", "10-14", "15+"),
                               time = c("2001-2005", "2006-2010", "2011-2015"),
-                              triangle = c("TL", "TU"))))
+                              triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:48,
                                dim = c(3, 4, 4),
                                dimnames = list(reg = 1:3,
@@ -112,7 +112,7 @@ test_that("Mapping creates object of class MappingCompToPopn from object of clas
                           dim = c(2, 3, 2),
                           dimnames = list(age = c("5-9", "10-14"),
                               time = c("2001-2005", "2006-2010", "2011-2015"),
-                              triangle = c("TL", "TU"))))
+                              triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:24,
                                dim = c(4, 4),
                                dimnames = list(age = c("0-4", "5-9", "10-14", "15+"),
@@ -141,7 +141,7 @@ test_that("Mapping creates object of class MappingCompToPopn from object of clas
                           dimnames = list(reg = 1:3,
                               age = c("5-9", "10-14"),
                               time = c("2001-2005", "2006-2010", "2011-2015"),
-                              triangle = c("TL", "TU"))))
+                              triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:48,
                                dim = c(3, 4, 4),
                                dimnames = list(reg = 1:3,
@@ -210,7 +210,7 @@ test_that("Mapping creates object of class MappingCompToPopn from object of clas
                                time = c("2001-2005", "2006-2010", "2011-2015"),
                                eth_parent = 1:3,
                                eth_child = 1:3,
-                               triangle = c("TL", "TU"))))
+                               triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:24,
                                dim = c(4, 4, 3),
                                dimnames = list(age = c("0-4", "5-9", "10-14", "15+"),
@@ -244,7 +244,7 @@ test_that("Mapping creates object of class MappingCompToPopn from object of clas
                                occ_child = 1:3,
                                age = c("5-9", "10-14"),
                                time = c("2001-2005", "2006-2010", "2011-2015"),
-                               triangle = c("TL", "TU"))))
+                               triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:288,
                                dim = c(3, 2, 3, 4, 4),
                                dimnames = list(reg = 1:3,
@@ -317,7 +317,7 @@ test_that("Mapping creates object of class MappingCompToPopn from object of clas
                                  time = c("2001-2005", "2006-2010", "2011-2015"),
                                  eth_orig = 1:3,
                                  eth_dest = 1:3,
-                                 triangle = c("TL", "TU"))))
+                                 triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:24,
                                dim = c(4, 4, 3),
                                dimnames = list(age = c("0-4", "5-9", "10-14", "15+"),
@@ -356,7 +356,7 @@ test_that("Mapping creates object of class MappingCompToPopn from object of clas
                                  sex = c("f", "m"),
                                  age = c("0-4", "5-9", "10-14", "15+"),
                                  time = c("2001-2005", "2006-2010", "2011-2015"),
-                                 triangle = c("TL", "TU"))))
+                                 triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:576,
                                dim = c(3, 2, 3, 2, 4, 4),
                                dimnames = list(reg = 1:3,
@@ -438,7 +438,7 @@ test_that("Mapping creates object of class MappingCompToPopn from object of clas
                                  time = c("2001-2005", "2006-2010", "2011-2015"),
                                  eth_orig = 1:3,
                                  eth_dest = 1:3,
-                                 triangle = c("TL", "TU"))))
+                                 triangle = c("Lower", "Upper"))))
     internal <- collapseOrigDest(internal, to = "pool")
     population <- Counts(array(1:24,
                                dim = c(4, 4, 3),
@@ -474,7 +474,7 @@ test_that("Mapping creates object of class MappingCompToPopn from object of clas
                                  sex = c("f", "m"),
                                  age = c("0-4", "5-9", "10-14", "15+"),
                                  time = c("2001-2005", "2006-2010", "2011-2015"),
-                                 triangle = c("TL", "TU"))))
+                                 triangle = c("Lower", "Upper"))))
     internal <- collapseOrigDest(internal, to = "pool")
     population <- Counts(array(1:576,
                                dim = c(3, 2, 3, 2, 4, 4),
@@ -550,7 +550,7 @@ test_that("Mapping creates object of class MappingCompToPopn from object of clas
                                  time = c("2001-2005", "2006-2010", "2011-2015"),
                                  eth_orig = 1:3,
                                  eth_dest = 1:3,
-                                 triangle = c("TL", "TU"))))
+                                 triangle = c("Lower", "Upper"))))
     internal <- collapseOrigDest(internal, to = "net")
     population <- Counts(array(1:24,
                                dim = c(4, 4, 3),
@@ -586,7 +586,7 @@ test_that("Mapping creates object of class MappingCompToPopn from object of clas
                                  sex = c("f", "m"),
                                  age = c("0-4", "5-9", "10-14", "15+"),
                                  time = c("2001-2005", "2006-2010", "2011-2015"),
-                                 triangle = c("TL", "TU"))))
+                                 triangle = c("Lower", "Upper"))))
     internal <- collapseOrigDest(internal, to = "net")
     population <- Counts(array(1:576,
                                dim = c(3, 2, 3, 2, 4, 4),
@@ -662,7 +662,7 @@ test_that("Mapping creates object of class MappingCompToAcc from object of class
                           dim = c(4, 3, 2),
                           dimnames = list(age = c("0-4", "5-9", "10-14", "15+"),
                               time = c("2001-2005", "2006-2010", "2011-2015"),
-                              triangle = c("TL", "TU"))))
+                              triangle = c("Lower", "Upper"))))
     accession <- Counts(array(1:12,
                               dim = c(3, 3),
                               dimnames = list(age = c("5", "10", "15"),
@@ -695,7 +695,7 @@ test_that("Mapping creates object of class MappingCompToAcc from object of class
                           dimnames = list(reg = 1:3,
                               age = c("0-4", "5-9", "10-14", "15+"),
                               time = c("2001-2005", "2006-2010", "2011-2015"),
-                              triangle = c("TL", "TU"))))
+                              triangle = c("Lower", "Upper"))))
     accession <- Counts(array(1:27,
                               dim = c(3, 3, 3),
                               dimnames = list(reg = 1:3,
@@ -739,7 +739,7 @@ test_that("Mapping creates object of class MappingCompToAcc from object of class
                            dim = c(2, 3, 2),
                            dimnames = list(age = c("5-9", "10-14"),
                                            time = c("2001-2005", "2006-2010", "2011-2015"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:16,
                                dim = c(4, 4),
                                dimnames = list(age = c("0-4", "5-9", "10-14", "15+"),
@@ -772,7 +772,7 @@ test_that("Mapping creates object of class MappingCompToAcc from object of class
                            dimnames = list(reg = 1:3,
                                            age = c("5-9", "10-14"),
                                            time = c("2001-2005", "2006-2010", "2011-2015"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:48,
                               dim = c(3, 4, 4),
                               dimnames = list(reg = 1:3,
@@ -817,7 +817,7 @@ test_that("Mapping creates object of class MappingCompToAcc from object of class
                                time = c("2001-2005", "2006-2010", "2011-2015"),
                                eth_parent = 1:3,
                                eth_child = 1:3,
-                               triangle = c("TL", "TU"))))
+                               triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:24,
                                dim = c(4, 4, 3),
                                dimnames = list(age = c("0-4", "5-9", "10-14", "15+"),
@@ -856,7 +856,7 @@ test_that("Mapping creates object of class MappingCompToAcc from object of class
                                occ_child = 1:3,
                                age = c("5-9", "10-14"),
                                time = c("2001-2005", "2006-2010", "2011-2015"),
-                               triangle = c("TL", "TU"))))
+                               triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:288,
                                dim = c(3, 2, 3, 4, 4),
                                dimnames = list(reg = 1:3,
@@ -906,7 +906,7 @@ test_that("Mapping creates object of class MappingCompToAcc from object of class
                                  time = c("2001-2005", "2006-2010", "2011-2015"),
                                  eth_orig = 1:3,
                                  eth_dest = 1:3,
-                                 triangle = c("TL", "TU"))))
+                                 triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:24,
                                dim = c(4, 4, 3),
                                dimnames = list(age = c("0-4", "5-9", "10-14", "15+"),
@@ -950,7 +950,7 @@ test_that("Mapping creates object of class MappingCompToAcc from object of class
                                  sex = c("f", "m"),
                                  age = c("0-4", "5-9", "10-14", "15+"),
                                  time = c("2001-2005", "2006-2010", "2011-2015"),
-                                 triangle = c("TL", "TU"))))
+                                 triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:576,
                                dim = c(3, 2, 3, 2, 4, 4),
                                dimnames = list(reg = 1:3,
@@ -1006,7 +1006,7 @@ test_that("Mapping creates object of class MappingCompToAcc from object of class
                                  time = c("2001-2005", "2006-2010", "2011-2015"),
                                  eth_orig = 1:3,
                                  eth_dest = 1:3,
-                                 triangle = c("TL", "TU"))))
+                                 triangle = c("Lower", "Upper"))))
     internal <- collapseOrigDest(internal, to = "pool")
     population <- Counts(array(1:24,
                                dim = c(4, 4, 3),
@@ -1047,7 +1047,7 @@ test_that("Mapping creates object of class MappingCompToAcc from object of class
                                  sex = c("f", "m"),
                                  age = c("0-4", "5-9", "10-14", "15+"),
                                  time = c("2001-2005", "2006-2010", "2011-2015"),
-                                 triangle = c("TL", "TU"))))
+                                 triangle = c("Lower", "Upper"))))
     internal <- collapseOrigDest(internal, to = "pool")
     population <- Counts(array(1:576,
                                dim = c(3, 2, 3, 2, 4, 4),
@@ -1101,7 +1101,7 @@ test_that("Mapping creates object of class MappingCompToExp from object of class
                           dim = c(4, 3, 2),
                           dimnames = list(age = c("0-4", "5-9", "10-14", "15+"),
                               time = c("2001-2005", "2006-2010", "2011-2015"),
-                              triangle = c("TL", "TU"))))
+                              triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:24,
                                dim = c(4, 4),
                                dimnames = list(age = c("0-4", "5-9", "10-14", "15+"),
@@ -1133,7 +1133,7 @@ test_that("Mapping creates object of class MappingCompToExp from object of class
                           dimnames = list(reg = 1:3,
                               age = c("0-4", "5-9", "10-14", "15+"),
                               time = c("2001-2005", "2006-2010", "2011-2015"),
-                              triangle = c("TL", "TU"))))
+                              triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:48,
                                dim = c(3, 4, 4),
                                dimnames = list(reg = 1:3,
@@ -1206,7 +1206,7 @@ test_that("Mapping creates object of class MappingBirthsToExp from object of cla
                           dim = c(2, 3, 2),
                           dimnames = list(age = c("5-9", "10-14"),
                               time = c("2001-2005", "2006-2010", "2011-2015"),
-                              triangle = c("TL", "TU"))))
+                              triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:24,
                                dim = c(4, 4),
                                dimnames = list(age = c("0-4", "5-9", "10-14", "15+"),
@@ -1235,6 +1235,7 @@ test_that("Mapping creates object of class MappingBirthsToExp from object of cla
                         stepTriangleTarget = 12L,
                         hasSex = FALSE,
                         iSexDominant = NA_integer_,
+                        stepSexCurrent = NA_integer_,
                         stepSexTarget = NA_integer_)
     expect_identical(ans.obtained, ans.expected)
     ## has age; shared dimensions
@@ -1243,7 +1244,7 @@ test_that("Mapping creates object of class MappingBirthsToExp from object of cla
                           dimnames = list(reg = 1:3,
                               age = c("5-9", "10-14"),
                               time = c("2001-2005", "2006-2010", "2011-2015"),
-                              triangle = c("TL", "TU"))))
+                              triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:48,
                                dim = c(3, 4, 4),
                                dimnames = list(reg = 1:3,
@@ -1273,6 +1274,7 @@ test_that("Mapping creates object of class MappingBirthsToExp from object of cla
                         stepTriangleTarget = 36L,
                         hasSex = FALSE,
                         iSexDominant = NA_integer_,
+                        stepSexCurrent = NA_integer_,
                         stepSexTarget = NA_integer_)
     expect_identical(ans.obtained, ans.expected)
     ## no age; shared dimensions
@@ -1310,6 +1312,7 @@ test_that("Mapping creates object of class MappingBirthsToExp from object of cla
                         stepTriangleTarget = NA_integer_,
                         hasSex = FALSE,
                         iSexDominant = NA_integer_,
+                        stepSexCurrent = NA_integer_,
                         stepSexTarget = NA_integer_)
     expect_identical(ans.obtained, ans.expected)
 })
@@ -1328,7 +1331,7 @@ test_that("Mapping creates object of class MappingBirthsToExpParCh from object o
                                time = c("2001-2005", "2006-2010", "2011-2015"),
                                eth_parent = 1:3,
                                eth_child = 1:3,
-                               triangle = c("TL", "TU"))))
+                               triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:24,
                                dim = c(4, 4, 3),
                                dimnames = list(age = c("0-4", "5-9", "10-14", "15+"),
@@ -1358,6 +1361,7 @@ test_that("Mapping creates object of class MappingBirthsToExpParCh from object o
                         stepTriangleTarget = 36L,
                         hasSex = FALSE,
                         iSexDominant = NA_integer_,
+                        stepSexCurrent = NA_integer_,
                         stepSexTarget = NA_integer_)
     expect_identical(ans.obtained, ans.expected)
     ## has age; shared dimensions
@@ -1370,7 +1374,7 @@ test_that("Mapping creates object of class MappingBirthsToExpParCh from object o
                                occ_child = 1:3,
                                age = c("5-9", "10-14"),
                                time = c("2001-2005", "2006-2010", "2011-2015"),
-                               triangle = c("TL", "TU"))))
+                               triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:288,
                                dim = c(3, 2, 3, 4, 4),
                                dimnames = list(reg = 1:3,
@@ -1402,6 +1406,7 @@ test_that("Mapping creates object of class MappingBirthsToExpParCh from object o
                         stepTriangleTarget = 216L,
                         hasSex = FALSE,
                         iSexDominant = NA_integer_,
+                        stepSexCurrent = NA_integer_,
                         stepSexTarget = NA_integer_)
     expect_identical(ans.obtained, ans.expected)
 })
@@ -1420,7 +1425,7 @@ test_that("Mapping creates object of class MappingOrigDestToExp from object of c
                                              time = c("2001-2005", "2006-2010", "2011-2015"),
                                              eth_orig = 1:3,
                                              eth_dest = 1:3,
-                                             triangle = c("TL", "TU"))))
+                                             triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:24,
                                dim = c(4, 4, 3),
                                dimnames = list(age = c("0-4", "5-9", "10-14", "15+"),
@@ -1462,7 +1467,7 @@ test_that("Mapping creates object of class MappingOrigDestToExp from object of c
                                              sex = c("f", "m"),
                                              age = c("0-4", "5-9", "10-14", "15+"),
                                              time = c("2001-2005", "2006-2010", "2011-2015"),
-                                             triangle = c("TL", "TU"))))
+                                             triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:576,
                                dim = c(3, 2, 3, 2, 4, 4),
                                dimnames = list(reg = 1:3,
@@ -1512,7 +1517,7 @@ test_that("Mapping creates object of class MappingCompToExp from object of class
                                  time = c("2001-2005", "2006-2010", "2011-2015"),
                                  eth_orig = 1:3,
                                  eth_dest = 1:3,
-                                 triangle = c("TL", "TU"))))
+                                 triangle = c("Lower", "Upper"))))
     internal <- collapseOrigDest(internal, to = "pool")
     population <- Counts(array(1:24,
                                dim = c(4, 4, 3),
@@ -1550,7 +1555,7 @@ test_that("Mapping creates object of class MappingCompToExp from object of class
                                  sex = c("f", "m"),
                                  age = c("0-4", "5-9", "10-14", "15+"),
                                  time = c("2001-2005", "2006-2010", "2011-2015"),
-                                 triangle = c("TL", "TU"))))
+                                 triangle = c("Lower", "Upper"))))
     internal <- collapseOrigDest(internal, to = "pool")
     population <- Counts(array(1:576,
                                dim = c(3, 2, 3, 2, 4, 4),
@@ -1598,7 +1603,7 @@ test_that("Mapping creates object of class MappingExpToComp from objects of clas
                           dim = c(4, 3, 2),
                           dimnames = list(age = c("0-4", "5-9", "10-14", "15+"),
                               time = c("2001-2005", "2006-2010", "2011-2015"),
-                              triangle = c("TL", "TU"))))
+                              triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:24,
                                dim = c(4, 4),
                                dimnames = list(age = c("0-4", "5-9", "10-14", "15+"),
@@ -1621,7 +1626,7 @@ test_that("Mapping creates object of class MappingExpToComp from objects of clas
                           dimnames = list(reg = 1:3,
                               age = c("0-4", "5-9", "10-14", "15+"),
                               time = c("2001-2005", "2006-2010", "2011-2015"),
-                              triangle = c("TL", "TU"))))
+                              triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:48,
                                dim = c(3, 4, 4),
                                dimnames = list(reg = 1:3,
@@ -1676,7 +1681,7 @@ test_that("Mapping creates object of class MappingExpToBirths from objects of cl
                           dim = c(2, 3, 2),
                           dimnames = list(age = c("5-9", "10-14"),
                               time = c("2001-2005", "2006-2010", "2011-2015"),
-                              triangle = c("TL", "TU"))))
+                              triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:24,
                                dim = c(4, 4),
                                dimnames = list(age = c("0-4", "5-9", "10-14", "15+"),
@@ -1710,7 +1715,7 @@ test_that("Mapping creates object of class MappingExpToBirths from objects of cl
                           dimnames = list(reg = 1:3,
                               age = c("5-9", "10-14"),
                               time = c("2001-2005", "2006-2010", "2011-2015"),
-                              triangle = c("TL", "TU"))))
+                              triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:48,
                                dim = c(3, 4, 4),
                                dimnames = list(reg = 1:3,
@@ -1790,7 +1795,7 @@ test_that("Mapping creates object of class MappingExpToBirths from object of cla
                                time = c("2001-2005", "2006-2010", "2011-2015"),
                                eth_parent = 1:3,
                                eth_child = 1:3,
-                               triangle = c("TL", "TU"))))
+                               triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:24,
                                dim = c(4, 4, 3),
                                dimnames = list(age = c("0-4", "5-9", "10-14", "15+"),
@@ -1829,7 +1834,7 @@ test_that("Mapping creates object of class MappingExpToBirths from object of cla
                                occ_child = 1:3,
                                age = c("5-9", "10-14"),
                                time = c("2001-2005", "2006-2010", "2011-2015"),
-                               triangle = c("TL", "TU"))))
+                               triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:288,
                                dim = c(3, 2, 3, 4, 4),
                                dimnames = list(reg = 1:3,
@@ -1877,7 +1882,7 @@ test_that("Mapping creates object of class MappingOrigDestToExp from object of c
                                              time = c("2001-2005", "2006-2010", "2011-2015"),
                                              eth_orig = 1:3,
                                              eth_dest = 1:3,
-                                             triangle = c("TL", "TU"))))
+                                             triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:24,
                                dim = c(4, 4, 3),
                                dimnames = list(age = c("0-4", "5-9", "10-14", "15+"),
@@ -1906,7 +1911,7 @@ test_that("Mapping creates object of class MappingOrigDestToExp from object of c
                                              sex = c("f", "m"),
                                              age = c("0-4", "5-9", "10-14", "15+"),
                                              time = c("2001-2005", "2006-2010", "2011-2015"),
-                                             triangle = c("TL", "TU"))))
+                                             triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:576,
                                dim = c(3, 2, 3, 2, 4, 4),
                                dimnames = list(reg = 1:3,
@@ -1941,7 +1946,7 @@ test_that("Mapping creates object of class MappingExpToComp from object of class
                                              time = c("2001-2005", "2006-2010", "2011-2015"),
                                              eth_orig = 1:3,
                                              eth_dest = 1:3,
-                                             triangle = c("TL", "TU"))))
+                                             triangle = c("Lower", "Upper"))))
     internal <- collapseOrigDest(internal, to = "pool")
     population <- Counts(array(1:24,
                                dim = c(4, 4, 3),
@@ -1970,7 +1975,7 @@ test_that("Mapping creates object of class MappingExpToComp from object of class
                                              sex = c("f", "m"),
                                              age = c("0-4", "5-9", "10-14", "15+"),
                                              time = c("2001-2005", "2006-2010", "2011-2015"),
-                                             triangle = c("TL", "TU"))))
+                                             triangle = c("Lower", "Upper"))))
     internal <- collapseOrigDest(internal, to = "pool")
     population <- Counts(array(1:576,
                                dim = c(3, 2, 3, 2, 4, 4),

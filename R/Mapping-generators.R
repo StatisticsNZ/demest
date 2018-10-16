@@ -810,6 +810,9 @@ setMethod("Mapping",
                                     "dominant", dominant, "Female", "Male"))
                   }
                   i.sex.dominant <- i.sex.dominant - 1L # C style
+                  step.sex.births <- 1L
+                  for (d in seq_len(i.sex.births - 1L))
+                      step.sex.births <- step.sex.births * dim.births[d]
                   step.sex.exp <- 1L
                   for (d in seq_len(i.sex.exp - 1L))
                       step.sex.exp <- step.sex.exp * dim.exp[d]
@@ -818,6 +821,7 @@ setMethod("Mapping",
               }
               else {
                   i.sex.dominant <- NA_integer_
+                  step.sex.births <- NA_integer_
                   step.sex.exp <- NA_integer_
               }
               ## parent
@@ -871,6 +875,7 @@ setMethod("Mapping",
                            stepTriangleTarget = step.triangle.exp,
                            hasSex = has.sex,
                            iSexDominant = i.sex.dominant,
+                           stepSexCurrent = step.sex.births,
                            stepSexTarget = step.sex.exp)
           })
 

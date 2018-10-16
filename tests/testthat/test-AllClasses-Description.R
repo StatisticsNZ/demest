@@ -284,7 +284,7 @@ test_that("can create valid object of class DescriptionNet", {
     ##                        dim = c(5, 4, 2, 5),
     ##                        dimnames = list(reg = 1:5,
     ##                            age = 1:4,
-    ##                            triangle = c("TL", "TU"),
+    ##                            triangle = c("Lower", "Upper"),
     ##                            time = 1:5)))
     x <- new("DescriptionNet",
              nBetweenVec = 5L,

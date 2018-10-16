@@ -361,7 +361,7 @@ test_that("can create valid object of class CohortIteratorOrigDestParChPool", {
     a <- array(1:108,
                dim = c(3, 2, 3, 3, 2),
                dimnames = list(age = c("0-4", "5-9", "10+"),
-                   triangle = c("TL", "TU"),
+                   triangle = c("Lower", "Upper"),
                    reg_orig = 1:3,
                    reg_dest = 1:3,
                    time = c("2001-2005", "2006-2010")))
@@ -387,7 +387,7 @@ test_that("can create valid object of class CohortIteratorOrigDestParChPool", {
                dimnames = list(age = c("0-4", "5-9", "10+"),
                    hl_orig = 1:4,
                    hl_dest = 1:4,
-                   triangle = c("TL", "TU"),
+                   triangle = c("Lower", "Upper"),
                    reg_orig = 1:3,
                    reg_dest = 1:3,
                    time = c("2001-2005", "2006-2010")))
@@ -402,7 +402,7 @@ test_that("can create valid object of class CohortIteratorOrigDestParChPool", {
              iAge = 2L,
              stepTriangle = 48L,
              iTriangle = 2L,
-             iVec = as.integer(a["5-9","2",,"TU","3",,2]),
+             iVec = as.integer(a["5-9","2",,"Upper","3",,2]),
              lengthVec = 12L,
              increment = rep(seq.int(from = 0L, to = 36L, by = 12L), times = 3) + rep(c(0L, 288L, 576L), each = 4),
              lastAgeGroupOpen = TRUE,
@@ -436,7 +436,7 @@ test_that("validity tests for CohortIteratorOrigDestParChPool inherited from Coh
     a <- array(1:108,
                dim = c(3, 2, 3, 3, 2),
                dimnames = list(age = c("0-4", "5-9", "10+"),
-                   triangle = c("TL", "TU"),
+                   triangle = c("Lower", "Upper"),
                    reg_orig = 1:3,
                    reg_dest = 1:3,
                    time = c("2001-2005", "2006-2010")))

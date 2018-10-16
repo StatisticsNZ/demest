@@ -642,13 +642,13 @@ test_that("advanceCC works", {
                             dimnames = list(age = c("0-4", "5-9", "10+"),
                                 region = 1:3,
                                 time = c("2001-2005", "2006-2010"),
-                                triangle = c("TL", "TU"))))
+                                triangle = c("Lower", "Upper"))))
     template <- Counts(array(0L,
                              dim = c(3, 3, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
                                  region = 1:3,
                                  time = c("2001-2005", "2006-2010"),
-                                 triangle = c("TL", "TU"))))
+                                 triangle = c("Lower", "Upper"))))
     set.seed(1)
     component <- EntriesMovements(entries = entries,
                                   template = template,
@@ -678,13 +678,13 @@ test_that("advanceCC works", {
                             dimnames = list(age = c("0-4", "5-9", "10-14"),
                                 region = 1:3,
                                 time = c("2001-2005", "2006-2010"),
-                                triangle = c("TL", "TU"))))
+                                triangle = c("Lower", "Upper"))))
     template <- Counts(array(0L,
                              dim = c(3, 3, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10-14"),
                                  region = 1:3,
                                  time = c("2001-2005", "2006-2010"),
-                                 triangle = c("TL", "TU"))))
+                                 triangle = c("Lower", "Upper"))))
     set.seed(1)
     component <- EntriesMovements(entries = entries,
                                   template = template,
@@ -741,13 +741,13 @@ test_that("R and C versions of advanceCC give same answer", {
                             dimnames = list(age = c("0-4", "5-9", "10+"),
                                 region = 1:3,
                                 time = c("2001-2005", "2006-2010"),
-                                triangle = c("TL", "TU"))))
+                                triangle = c("Lower", "Upper"))))
     template <- Counts(array(0L,
                              dim = c(3, 3, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
                                  region = 1:3,
                                  time = c("2001-2005", "2006-2010"),
-                                 triangle = c("TL", "TU"))))
+                                 triangle = c("Lower", "Upper"))))
     set.seed(1)
     component <- EntriesMovements(entries = entries,
                                   template = template,
@@ -778,13 +778,13 @@ test_that("R and C versions of advanceCC give same answer", {
                             dimnames = list(age = c("0-4", "5-9", "10-14"),
                                 region = 1:3,
                                 time = c("2001-2005", "2006-2010"),
-                                triangle = c("TL", "TU"))))
+                                triangle = c("Lower", "Upper"))))
     template <- Counts(array(0L,
                              dim = c(3, 3, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10-14"),
                                  region = 1:3,
                                  time = c("2001-2005", "2006-2010"),
-                                 triangle = c("TL", "TU"))))
+                                 triangle = c("Lower", "Upper"))))
     set.seed(1)
     component <- EntriesMovements(entries = entries,
                                   template = template,
@@ -1198,13 +1198,13 @@ test_that("resetCC works", {
                             dimnames = list(age = c("0-4", "5-9", "10+"),
                                 region = 1:3,
                                 time = c("2001-2005", "2006-2010"),
-                                triangle = c("TL", "TU"))))
+                                triangle = c("Lower", "Upper"))))
     template <- Counts(array(0L,
                              dim = c(3, 3, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
                                  region = 1:3,
                                  time = c("2001-2005", "2006-2010"),
-                                 triangle = c("TL", "TU"))))
+                                 triangle = c("Lower", "Upper"))))
     component <- EntriesMovements(entries = entries,
                                   template = template,
                                   name = "immigration")
@@ -1233,13 +1233,13 @@ test_that("resetCC works", {
                             dimnames = list(age = c("0-4", "5-9", "10-14"),
                                 region = 1:3,
                                 time = c("2001-2005", "2006-2010"),
-                                triangle = c("TL", "TU"))))
+                                triangle = c("Lower", "Upper"))))
     template <- Counts(array(0L,
                              dim = c(3, 3, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10-14"),
                                  region = 1:3,
                                  time = c("2001-2005", "2006-2010"),
-                                 triangle = c("TL", "TU"))))
+                                 triangle = c("Lower", "Upper"))))
     component <- EntriesMovements(entries = entries,
                                   template = template,
                                   name = "immigration")
@@ -1301,13 +1301,13 @@ test_that("R and C versions of resetCC give same answer", {
                             dimnames = list(age = c("0-4", "5-9", "10+"),
                                 region = 1:3,
                                 time = c("2001-2005", "2006-2010"),
-                                triangle = c("TL", "TU"))))
+                                triangle = c("Lower", "Upper"))))
     template <- Counts(array(0L,
                              dim = c(3, 3, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
                                  region = 1:3,
                                  time = c("2001-2005", "2006-2010"),
-                                 triangle = c("TL", "TU"))))
+                                 triangle = c("Lower", "Upper"))))
     component <- EntriesMovements(entries = entries,
                                   template = template,
                                   name = "immigration")
@@ -1365,13 +1365,13 @@ test_that("advanceCODPCP works", {
                                  reg_orig = 1:3,
                                  reg_dest = 1:3,
                                  time = c("2001-2005", "2006-2010"),
-                                 triangle = c("TL", "TU"))))
+                                 triangle = c("Lower", "Upper"))))
     template <- Counts(array(0L,
                              dim = c(3, 3, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
                                  reg = 1:3,
                                  time = c("2001-2005", "2006-2010"),
-                                 triangle = c("TL", "TU"))))
+                                 triangle = c("Lower", "Upper"))))
     internal <- InternalMovements(internal = internal,
                                   template = template)
     iterator <- CohortIterator(internal)
@@ -1410,13 +1410,13 @@ test_that("R and C versions of advanceCODPCP give same answer", {
                                  reg_orig = 1:3,
                                  reg_dest = 1:3,
                                  time = c("2001-2005", "2006-2010"),
-                                 triangle = c("TL", "TU"))))
+                                 triangle = c("Lower", "Upper"))))
     template <- Counts(array(0L,
                              dim = c(3, 3, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
                                  reg = 1:3,
                                  time = c("2001-2005", "2006-2010"),
-                                 triangle = c("TL", "TU"))))
+                                 triangle = c("Lower", "Upper"))))
     internal <- InternalMovements(internal = internal,
                                   template = template)
     iterator <- CohortIterator(internal)
@@ -1460,13 +1460,13 @@ test_that("resetCODPCP works", {
                                  reg_orig = 1:3,
                                  reg_dest = 1:3,
                                  time = c("2001-2005", "2006-2010"),
-                                 triangle = c("TL", "TU"))))
+                                 triangle = c("Lower", "Upper"))))
     template <- Counts(array(0L,
                              dim = c(3, 3, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
                                  reg = 1:3,
                                  time = c("2001-2005", "2006-2010"),
-                                 triangle = c("TL", "TU"))))
+                                 triangle = c("Lower", "Upper"))))
     internal <- InternalMovements(internal = internal,
                                   template = template)
     iterator <- CohortIterator(internal)
@@ -1540,13 +1540,13 @@ test_that("R and C versions of resetCODPCP give same answer", {
                                  reg_orig = 1:3,
                                  reg_dest = 1:3,
                                  time = c("2001-2005", "2006-2010"),
-                                 triangle = c("TL", "TU"))))
+                                 triangle = c("Lower", "Upper"))))
     template <- Counts(array(0L,
                              dim = c(3, 3, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
                                  reg = 1:3,
                                  time = c("2001-2005", "2006-2010"),
-                                 triangle = c("TL", "TU"))))
+                                 triangle = c("Lower", "Upper"))))
     internal <- InternalMovements(internal = internal,
                                   template = template)
     iterator <- CohortIterator(internal)

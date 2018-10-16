@@ -727,7 +727,7 @@ test_that("initialCombinedAccount creates object of class CombinedAccountMovemen
                                            sex = c("m", "f"),
                                            reg = 1:5,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     internal <- Counts(array(rpois(n = 300, lambda = 10),
                              dim = c(3, 2, 5, 5, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -735,35 +735,35 @@ test_that("initialCombinedAccount creates object of class CombinedAccountMovemen
                                              reg_orig = 1:5,
                                              reg_dest = 1:5,
                                              time = c("2001-2005", "2006-2010"),
-                                             triangle = c("TL", "TU"))))
+                                             triangle = c("Lower", "Upper"))))
     deaths <- Counts(array(rpois(n = 72, lambda = 10),
                            dim = c(3, 2, 5, 2, 2),
                            dimnames = list(age = c("0-4", "5-9", "10+"),
                                            sex = c("m", "f"),
                                            reg = 5:1,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     immigration <- Counts(array(rpois(n = 72, lambda = 5),
                                 dim = c(3, 2, 5, 2, 2),
                                 dimnames = list(age = c("0-4", "5-9", "10+"),
                                                 sex = c("m", "f"),
                                                 reg = 1:5,
                                                 time = c("2001-2005", "2006-2010"),
-                                                triangle = c("TL", "TU"))))
+                                                triangle = c("Lower", "Upper"))))
     emigration <- Counts(array(rpois(n = 72, lambda = 5),
                                dim = c(3, 2, 5, 2, 2),
                                dimnames = list(age = c("0-4", "5-9", "10+"),
                                                sex = c("m", "f"),
                                                reg = 1:5,
                                                time = c("2001-2005", "2006-2010"),
-                                               triangle = c("TL", "TU"))))
+                                               triangle = c("Lower", "Upper"))))
     reclassification <- Counts(array(c(1, -1),
                                      dim = c(3, 2, 5, 2, 2),
                                      dimnames = list(age = c("0-4", "5-9", "10+"),
                                                      sex = c("m", "f"),
                                                      reg = 1:5,
                                                      time = c("2001-2005", "2006-2010"),
-                                                     triangle = c("TL", "TU"))))
+                                                     triangle = c("Lower", "Upper"))))
     account <- Movements(population = popn,
                          births = births,
                          internal = internal,
@@ -784,7 +784,7 @@ test_that("initialCombinedAccount creates object of class CombinedAccountMovemen
                                                     sex = c("m", "f"),
                                                     reg = 1:5,
                                                     time = c("2001-2005", "2006-2010"),
-                                                    triangle = c("TL", "TU"))))
+                                                    triangle = c("Lower", "Upper"))))
     systemWeights <- list(NULL, NULL, NULL, NULL, NULL, NULL, weights.reclass)
     census <- subarray(popn, time == "2000", drop = FALSE) + 2L
     register <- Counts(array(rpois(n = 90, lambda = popn),

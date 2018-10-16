@@ -14926,7 +14926,7 @@ test_that("chooseICellComp works", {
                            dim = c(3, 2, 2),
                            dimnames = list(time = c("2001-2010", "2011-2020", "2021-2030"),
                                age = c("0-9", "10+"),
-                               triangle = c("TL", "TU"))))
+                               triangle = c("Lower", "Upper"))))
     object <- new("EntriesMovements",
                   .Data = object@.Data,
                   metadata = object@metadata)
@@ -14942,7 +14942,7 @@ test_that("R and C versions of chooseICellComp give same answer", {
                            dim = c(3, 2, 2),
                            dimnames = list(time = c("2001-2010", "2011-2020", "2021-2030"),
                                age = c("0-9", "10+"),
-                               triangle = c("TL", "TU"))))
+                               triangle = c("Lower", "Upper"))))
     object <- new("EntriesMovements",
                   .Data = object@.Data,
                   metadata = object@metadata)
@@ -14966,7 +14966,7 @@ test_that("chooseICellOutInPool works", {
                                    age = c("0-9", "10+"),
                                    region = 1:5,
                                    direction = c("Out", "In"),
-                                   triangle = c("TL", "TU"))))
+                                   triangle = c("Lower", "Upper"))))
         object <- new("InternalMovementsPool",
                       .Data = object@.Data,
                       iDirection = 4L,
@@ -15009,7 +15009,7 @@ test_that("R and C versions of chooseICellOutInPool give same answer", {
                                    age = c("0-9", "10+"),
                                    region = 1:5,
                                    direction = c("Out", "In"),
-                                   triangle = c("TL", "TU"))))
+                                   triangle = c("Lower", "Upper"))))
         object <- new("InternalMovementsPool",
                       .Data = object@.Data,
                       iDirection = 4L,
@@ -15155,7 +15155,7 @@ test_that("chooseICellSubAddNet works", {
                                dimnames = list(time = c("2001-2010", "2011-2020", "2021-2030"),
                                    age = c("0-9", "10+"),
                                    region = 1:5,
-                                   triangle = c("TL", "TU"))))
+                                   triangle = c("Lower", "Upper"))))
         object <- new("InternalMovementsNet",
                       .Data = object@.Data,
                       iBetween = 3L,
@@ -15192,7 +15192,7 @@ test_that("R and C versions of chooseICellSubAddNet give same answer", {
                                dimnames = list(time = c("2001-2010", "2011-2020", "2021-2030"),
                                    age = c("0-9", "10+"),
                                    region = 1:5,
-                                   triangle = c("TL", "TU"))))
+                                   triangle = c("Lower", "Upper"))))
         object <- new("InternalMovementsNet",
                       .Data = object@.Data,
                       iBetween = 3L,
@@ -15231,7 +15231,7 @@ test_that("isLowerTriangle works", {
                            dim = c(3, 2, 2),
                            dimnames = list(time = c("2001-2010", "2011-2020", "2021-2030"),
                                age = c("0-9", "10+"),
-                               triangle = c("TL", "TU"))))
+                               triangle = c("Lower", "Upper"))))
     object <- new("EntriesMovements",
                   .Data = object@.Data,
                   metadata = object@metadata)
@@ -15249,7 +15249,7 @@ test_that("R and C versions of isLowerTriangle give same answer", {
                            dim = c(3, 2, 2),
                            dimnames = list(time = c("2001-2010", "2011-2020", "2021-2030"),
                                age = c("0-9", "10+"),
-                               triangle = c("TL", "TU"))))
+                               triangle = c("Lower", "Upper"))))
     object <- new("EntriesMovements",
                   .Data = object@.Data,
                   metadata = object@metadata)
@@ -16002,14 +16002,14 @@ test_that("makeTransformExpToBirths works", {
                                              time = c("2002-2006", "2007-2011"),
                                              sex = c("f", "m"),
                                              age = c("0-4", "5-9", "10+"),
-                                             triangle = c("TL", "TU"))))
+                                             triangle = c("Lower", "Upper"))))
     births <- Counts(array(1,
                            dim = c(5, 2, 2, 1, 2),
                            dimnames = list(region = 1:5,
                                            time = c("2002-2006", "2007-2011"),
                                            sex = c("f", "m"),
                                            age = "5-9",
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     ans.obtained <- makeTransformExpToBirths(exposure = exposure,
                                              births = births,
                                              dominant = "Female")
@@ -16050,13 +16050,13 @@ test_that("makeTransformExpToBirths works", {
                              dimnames = list(region = 1:5,
                                              time = c("2002-2006", "2007-2011"),
                                              age = c("0-4", "5-9", "10+"),
-                                             triangle = c("TL", "TU"))))
+                                             triangle = c("Lower", "Upper"))))
     births <- Counts(array(1,
                            dim = c(5, 2, 1, 2),
                            dimnames = list(region = 1:5,
                                            time = c("2002-2006", "2007-2011"),
                                            age = "5-9",
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     ans.obtained <- makeTransformExpToBirths(exposure = exposure,
                                              births = births,
                                              dominant = "Female")

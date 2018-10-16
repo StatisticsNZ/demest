@@ -130,14 +130,14 @@ setClass("MappingMixinAge",
 setClass("MappingMixinSex",
          slots = c(hasSex = "logical",
                    iSexDominant = "integer",
+                   stepSexCurrent = "integer",
                    stepSexTarget = "integer"),
          contains = "VIRTUAL",
          validity = function(object) {
              hasSex <- object@hasSex
              iSexDominant <- object@iSexDominant
-             stepSexTarget <- object@stepSexTarget
              ## hasSex, iSexDominant, stepSexTarget have length 1
-             for (name in c("hasSex", "iSexDominant", "stepSexTarget")) {
+             for (name in c("hasSex", "iSexDominant", "stepSexCurrent", "stepSexTarget")) {
                  value <- methods::slot(object, name)
                  if (!identical(length(value), 1L))
                      return(gettextf("'%s' does not have length %d",
@@ -148,8 +148,8 @@ setClass("MappingMixinSex",
                  return(gettextf("'%s' is missing",
                                  "hasSex"))
              if (hasSex) {
-                 ## if hasSex: iSexDominant, stepSexTarget not missing
-                 for (name in c("iSexDominant", "stepSexTarget")) {
+                 ## if hasSex: iSexDominant, stepSexCurrent, stepSexTarget, not missing
+                 for (name in c("iSexDominant", "stepSexCurrent", "stepSexTarget")) {
                      value <- methods::slot(object, name)
                      if (is.na(value))
                          return(gettextf("'%s' is missing",
@@ -159,14 +159,17 @@ setClass("MappingMixinSex",
                  if (!(iSexDominant %in% 0:1))
                      return(gettextf("'%s' equals %d",
                                      "iSexDominant", iSexDominant))
-                 ## if hasSex: stepSexTarget positive
-                 if (stepSexTarget < 1L)
-                     return(gettextf("'%s' is non-positive",
-                                     "stepSexTarget"))
+                 ## if hasSex: stepSexCurrent, stepAgeTarget positive
+                 for (name in c("stepSexCurrent", "stepSexTarget")) {
+                     value <- methods::slot(object, name)
+                     if (value < 1L)
+                         return(gettextf("'%s' is non-positive",
+                                         name))
+                 }
              }
              else {
-                 ## if not hasSex: iSexDominant, stepSexTarget missing
-                 for (name in c("iSexDominant", "stepSexTarget")) {
+                 ## if not hasSex: iSexDominant, stepSexCurrent, stepSexTarget missing
+                 for (name in c("iSexDominant", "stepSexCurrent", "stepSexTarget")) {
                      value <- methods::slot(object, name)
                      if (!is.na(value))
                          return(gettextf("'%s' is %s but '%s' is not missing",

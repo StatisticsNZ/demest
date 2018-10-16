@@ -1251,7 +1251,7 @@ test_that("diffLogDensAccount works with CombinedAccountMovementsHasAge", {
                                            sex = c("m", "f"),
                                            reg = 1:5,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     internal <- Counts(array(rpois(n = 300, lambda = 10),
                              dim = c(3, 2, 5, 5, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -1259,7 +1259,7 @@ test_that("diffLogDensAccount works with CombinedAccountMovementsHasAge", {
                                              reg_orig = 1:5,
                                              reg_dest = 1:5,
                                              time = c("2001-2005", "2006-2010"),
-                                             triangle = c("TL", "TU"))))
+                                             triangle = c("Lower", "Upper"))))
     internal <- collapseOrigDest(internal, to = "pool")
     deaths <- Counts(array(rpois(n = 72, lambda = 10),
                            dim = c(3, 2, 5, 2, 2),
@@ -1267,7 +1267,7 @@ test_that("diffLogDensAccount works with CombinedAccountMovementsHasAge", {
                                            sex = c("m", "f"),
                                            reg = 5:1,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     account <- Movements(population = popn,
                          births = births,
                          internal = internal,
@@ -1345,7 +1345,7 @@ test_that("R and C versions of diffLogDensAccount give same answer with Combined
                                            sex = c("m", "f"),
                                            reg = 1:5,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     internal <- Counts(array(rpois(n = 300, lambda = 10),
                              dim = c(3, 2, 5, 5, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -1353,7 +1353,7 @@ test_that("R and C versions of diffLogDensAccount give same answer with Combined
                                              reg_orig = 1:5,
                                              reg_dest = 1:5,
                                              time = c("2001-2005", "2006-2010"),
-                                             triangle = c("TL", "TU"))))
+                                             triangle = c("Lower", "Upper"))))
     internal <- collapseOrigDest(internal, to = "pool")
     deaths <- Counts(array(rpois(n = 72, lambda = 10),
                            dim = c(3, 2, 5, 2, 2),
@@ -1361,7 +1361,7 @@ test_that("R and C versions of diffLogDensAccount give same answer with Combined
                                            sex = c("m", "f"),
                                            reg = 5:1,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     account <- Movements(population = popn,
                          births = births,
                          internal = internal,
@@ -1449,7 +1449,7 @@ test_that("diffLogLikAccount works with CombinedAccountMovementsHasAge", {
                                            sex = c("m", "f"),
                                            reg = 1:5,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     internal <- Counts(array(rpois(n = 300, lambda = 10),
                              dim = c(3, 2, 5, 5, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -1457,7 +1457,7 @@ test_that("diffLogLikAccount works with CombinedAccountMovementsHasAge", {
                                              reg_orig = 1:5,
                                              reg_dest = 1:5,
                                              time = c("2001-2005", "2006-2010"),
-                                             triangle = c("TL", "TU"))))
+                                             triangle = c("Lower", "Upper"))))
     internal <- collapseOrigDest(internal, to = "pool")
     deaths <- Counts(array(rpois(n = 72, lambda = 10),
                            dim = c(3, 2, 5, 2, 2),
@@ -1465,7 +1465,7 @@ test_that("diffLogLikAccount works with CombinedAccountMovementsHasAge", {
                                            sex = c("m", "f"),
                                            reg = 5:1,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     account <- Movements(population = popn,
                          births = births,
                          internal = internal,
@@ -1543,7 +1543,7 @@ test_that("R and C versions of diffLogLikAccount give same answer with CombinedA
                                            sex = c("m", "f"),
                                            reg = 1:5,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     internal <- Counts(array(rpois(n = 300, lambda = 10),
                              dim = c(3, 2, 5, 5, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -1551,7 +1551,7 @@ test_that("R and C versions of diffLogLikAccount give same answer with CombinedA
                                              reg_orig = 1:5,
                                              reg_dest = 1:5,
                                              time = c("2001-2005", "2006-2010"),
-                                             triangle = c("TL", "TU"))))
+                                             triangle = c("Lower", "Upper"))))
     internal <- collapseOrigDest(internal, to = "pool")
     deaths <- Counts(array(rpois(n = 72, lambda = 10),
                            dim = c(3, 2, 5, 2, 2),
@@ -1559,7 +1559,7 @@ test_that("R and C versions of diffLogLikAccount give same answer with CombinedA
                                            sex = c("m", "f"),
                                            reg = 5:1,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     account <- Movements(population = popn,
                          births = births,
                          internal = internal,
@@ -1646,7 +1646,7 @@ test_that("updateProposalAccount works with CombinedAccountMovementsHasAge", {
                                            sex = c("m", "f"),
                                            reg = 1:5,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     internal <- Counts(array(rpois(n = 300, lambda = 10),
                              dim = c(3, 2, 5, 5, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -1654,7 +1654,7 @@ test_that("updateProposalAccount works with CombinedAccountMovementsHasAge", {
                                              reg_orig = 1:5,
                                              reg_dest = 1:5,
                                              time = c("2001-2005", "2006-2010"),
-                                             triangle = c("TL", "TU"))))
+                                             triangle = c("Lower", "Upper"))))
     internal <- collapseOrigDest(internal, to = "pool")
     deaths <- Counts(array(rpois(n = 72, lambda = 10),
                            dim = c(3, 2, 5, 2, 2),
@@ -1662,7 +1662,7 @@ test_that("updateProposalAccount works with CombinedAccountMovementsHasAge", {
                                            sex = c("m", "f"),
                                            reg = 5:1,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     account <- Movements(population = popn,
                          births = births,
                          internal = internal,
@@ -1739,7 +1739,7 @@ test_that("R and C versions of updateProposalAccount give same answer with Combi
                                            sex = c("m", "f"),
                                            reg = 1:5,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     internal <- Counts(array(rpois(n = 300, lambda = 10),
                              dim = c(3, 2, 5, 5, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -1747,7 +1747,7 @@ test_that("R and C versions of updateProposalAccount give same answer with Combi
                                              reg_orig = 1:5,
                                              reg_dest = 1:5,
                                              time = c("2001-2005", "2006-2010"),
-                                             triangle = c("TL", "TU"))))
+                                             triangle = c("Lower", "Upper"))))
     internal <- collapseOrigDest(internal, to = "pool")
     deaths <- Counts(array(rpois(n = 72, lambda = 10),
                            dim = c(3, 2, 5, 2, 2),
@@ -1755,7 +1755,7 @@ test_that("R and C versions of updateProposalAccount give same answer with Combi
                                            sex = c("m", "f"),
                                            reg = 5:1,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     account <- Movements(population = popn,
                          births = births,
                          internal = internal,

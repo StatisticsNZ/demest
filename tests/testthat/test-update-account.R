@@ -427,7 +427,7 @@ test_that("updateProposalAccountMovePopn works with CombinedAccountMovementsHasA
                                            sex = c("m", "f"),
                                            reg = 1:5,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     internal <- Counts(array(rpois(n = 300, lambda = 10),
                              dim = c(3, 2, 5, 5, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -435,14 +435,14 @@ test_that("updateProposalAccountMovePopn works with CombinedAccountMovementsHasA
                                              reg_orig = 1:5,
                                              reg_dest = 1:5,
                                              time = c("2001-2005", "2006-2010"),
-                                             triangle = c("TL", "TU"))))
+                                             triangle = c("Lower", "Upper"))))
     deaths <- Counts(array(rpois(n = 72, lambda = 10),
                            dim = c(3, 2, 5, 2, 2),
                            dimnames = list(age = c("0-4", "5-9", "10+"),
                                            sex = c("m", "f"),
                                            reg = 5:1,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     account <- Movements(population = popn,
                          births = births,
                          internal = internal,
@@ -519,7 +519,7 @@ test_that("R and C versions of updateProposalAccountMovePopn give same answer Co
                                            sex = c("m", "f"),
                                            reg = 1:5,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     internal <- Counts(array(rpois(n = 300, lambda = 10),
                              dim = c(3, 2, 5, 5, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -527,14 +527,14 @@ test_that("R and C versions of updateProposalAccountMovePopn give same answer Co
                                              reg_orig = 1:5,
                                              reg_dest = 1:5,
                                              time = c("2001-2005", "2006-2010"),
-                                             triangle = c("TL", "TU"))))
+                                             triangle = c("Lower", "Upper"))))
     deaths <- Counts(array(rpois(n = 72, lambda = 10),
                            dim = c(3, 2, 5, 2, 2),
                            dimnames = list(age = c("0-4", "5-9", "10+"),
                                            sex = c("m", "f"),
                                            reg = 5:1,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     account <- Movements(population = popn,
                          births = births,
                          internal = internal,
@@ -620,7 +620,7 @@ if (test.extended) {
                                                    sex = c("m", "f"),
                                                    reg = 1:5,
                                                    time = c("2001-2005", "2006-2010"),
-                                                   triangle = c("TL", "TU"))))
+                                                   triangle = c("Lower", "Upper"))))
             internal <- Counts(array(rpois(n = 300, lambda = 10),
                                      dim = c(3, 2, 5, 5, 2, 2),
                                      dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -628,14 +628,14 @@ if (test.extended) {
                                                      reg_orig = 1:5,
                                                      reg_dest = 1:5,
                                                      time = c("2001-2005", "2006-2010"),
-                                                     triangle = c("TL", "TU"))))
+                                                     triangle = c("Lower", "Upper"))))
             deaths <- Counts(array(rpois(n = 72, lambda = 10),
                                    dim = c(3, 2, 5, 2, 2),
                                    dimnames = list(age = c("0-4", "5-9", "10+"),
                                                    sex = c("m", "f"),
                                                    reg = 5:1,
                                                    time = c("2001-2005", "2006-2010"),
-                                                   triangle = c("TL", "TU"))))
+                                                   triangle = c("Lower", "Upper"))))
             account <- Movements(population = popn,
                                  births = births,
                                  internal = internal,
@@ -916,7 +916,7 @@ test_that("updateProposalAccountMoveBirths works with CombinedAccountMovementsHa
                                            sex = c("m", "f"),
                                            reg = 1:5,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     internal <- Counts(array(rpois(n = 300, lambda = 10),
                              dim = c(3, 2, 5, 5, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -924,14 +924,14 @@ test_that("updateProposalAccountMoveBirths works with CombinedAccountMovementsHa
                                              reg_orig = 1:5,
                                              reg_dest = 1:5,
                                              time = c("2001-2005", "2006-2010"),
-                                             triangle = c("TL", "TU"))))
+                                             triangle = c("Lower", "Upper"))))
     deaths <- Counts(array(rpois(n = 72, lambda = 10),
                            dim = c(3, 2, 5, 2, 2),
                            dimnames = list(age = c("0-4", "5-9", "10+"),
                                            sex = c("m", "f"),
                                            reg = 5:1,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     account <- Movements(population = popn,
                          births = births,
                          internal = internal,
@@ -1009,7 +1009,7 @@ test_that("R and C versions of updateProposalAccountMoveBirths give same answer 
                                            sex = c("m", "f"),
                                            reg = 1:5,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     internal <- Counts(array(rpois(n = 300, lambda = 10),
                              dim = c(3, 2, 5, 5, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -1017,14 +1017,14 @@ test_that("R and C versions of updateProposalAccountMoveBirths give same answer 
                                              reg_orig = 1:5,
                                              reg_dest = 1:5,
                                              time = c("2001-2005", "2006-2010"),
-                                             triangle = c("TL", "TU"))))
+                                             triangle = c("Lower", "Upper"))))
     deaths <- Counts(array(rpois(n = 72, lambda = 10),
                            dim = c(3, 2, 5, 2, 2),
                            dimnames = list(age = c("0-4", "5-9", "10+"),
                                            sex = c("m", "f"),
                                            reg = 5:1,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     account <- Movements(population = popn,
                          births = births,
                          internal = internal,
@@ -1116,7 +1116,7 @@ if (test.extended) {
                                                    sex = c("m", "f"),
                                                    reg = 1:5,
                                                    time = c("2001-2005", "2006-2010"),
-                                                   triangle = c("TL", "TU"))))
+                                                   triangle = c("Lower", "Upper"))))
             internal <- Counts(array(rpois(n = 300, lambda = 10),
                                      dim = c(3, 2, 5, 5, 2, 2),
                                      dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -1124,14 +1124,14 @@ if (test.extended) {
                                                      reg_orig = 1:5,
                                                      reg_dest = 1:5,
                                                      time = c("2001-2005", "2006-2010"),
-                                                     triangle = c("TL", "TU"))))
+                                                     triangle = c("Lower", "Upper"))))
             deaths <- Counts(array(rpois(n = 72, lambda = 10),
                                    dim = c(3, 2, 5, 2, 2),
                                    dimnames = list(age = c("0-4", "5-9", "10+"),
                                                    sex = c("m", "f"),
                                                    reg = 5:1,
                                                    time = c("2001-2005", "2006-2010"),
-                                                   triangle = c("TL", "TU"))))
+                                                   triangle = c("Lower", "Upper"))))
             account <- Movements(population = popn,
                                  births = births,
                                  internal = internal,
@@ -1607,7 +1607,7 @@ test_that("updateProposalAccountMoveOrigDest works with CombinedAccountMovements
                                            sex = c("m", "f"),
                                            reg = 1:5,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     internal <- Counts(array(rpois(n = 300, lambda = 10),
                              dim = c(3, 2, 5, 5, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -1615,14 +1615,14 @@ test_that("updateProposalAccountMoveOrigDest works with CombinedAccountMovements
                                              reg_orig = 1:5,
                                              reg_dest = 1:5,
                                              time = c("2001-2005", "2006-2010"),
-                                             triangle = c("TL", "TU"))))
+                                             triangle = c("Lower", "Upper"))))
     deaths <- Counts(array(rpois(n = 72, lambda = 10),
                            dim = c(3, 2, 5, 2, 2),
                            dimnames = list(age = c("0-4", "5-9", "10+"),
                                            sex = c("m", "f"),
                                            reg = 5:1,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     account <- Movements(population = popn,
                          births = births,
                          internal = internal,
@@ -1700,7 +1700,7 @@ test_that("R and C versions of updateProposalAccountMoveOrigDest give same answe
                                            sex = c("m", "f"),
                                            reg = 1:5,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     internal <- Counts(array(rpois(n = 300, lambda = 10),
                              dim = c(3, 2, 5, 5, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -1708,14 +1708,14 @@ test_that("R and C versions of updateProposalAccountMoveOrigDest give same answe
                                              reg_orig = 1:5,
                                              reg_dest = 1:5,
                                              time = c("2001-2005", "2006-2010"),
-                                             triangle = c("TL", "TU"))))
+                                             triangle = c("Lower", "Upper"))))
     deaths <- Counts(array(rpois(n = 72, lambda = 10),
                            dim = c(3, 2, 5, 2, 2),
                            dimnames = list(age = c("0-4", "5-9", "10+"),
                                            sex = c("m", "f"),
                                            reg = 5:1,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     account <- Movements(population = popn,
                          births = births,
                          internal = internal,
@@ -1807,7 +1807,7 @@ if (test.extended) {
                                                    sex = c("m", "f"),
                                                    reg = 1:5,
                                                    time = c("2001-2005", "2006-2010"),
-                                                   triangle = c("TL", "TU"))))
+                                                   triangle = c("Lower", "Upper"))))
             internal <- Counts(array(rpois(n = 300, lambda = 10),
                                      dim = c(3, 2, 5, 5, 2, 2),
                                      dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -1815,14 +1815,14 @@ if (test.extended) {
                                                      reg_orig = 1:5,
                                                      reg_dest = 1:5,
                                                      time = c("2001-2005", "2006-2010"),
-                                                     triangle = c("TL", "TU"))))
+                                                     triangle = c("Lower", "Upper"))))
             deaths <- Counts(array(rpois(n = 72, lambda = 10),
                                    dim = c(3, 2, 5, 2, 2),
                                    dimnames = list(age = c("0-4", "5-9", "10+"),
                                                    sex = c("m", "f"),
                                                    reg = 5:1,
                                                    time = c("2001-2005", "2006-2010"),
-                                                   triangle = c("TL", "TU"))))
+                                                   triangle = c("Lower", "Upper"))))
             account <- Movements(population = popn,
                                  births = births,
                                  internal = internal,
@@ -2091,7 +2091,7 @@ test_that("updateProposalAccountMovePool works with CombinedAccountMovementsHasA
                                            sex = c("m", "f"),
                                            reg = 1:5,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     internal <- Counts(array(rpois(n = 300, lambda = 10),
                              dim = c(3, 2, 5, 5, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -2099,7 +2099,7 @@ test_that("updateProposalAccountMovePool works with CombinedAccountMovementsHasA
                                              reg_orig = 1:5,
                                              reg_dest = 1:5,
                                              time = c("2001-2005", "2006-2010"),
-                                             triangle = c("TL", "TU"))))
+                                             triangle = c("Lower", "Upper"))))
     internal <- collapseOrigDest(internal, to = "pool")
     deaths <- Counts(array(rpois(n = 72, lambda = 10),
                            dim = c(3, 2, 5, 2, 2),
@@ -2107,7 +2107,7 @@ test_that("updateProposalAccountMovePool works with CombinedAccountMovementsHasA
                                            sex = c("m", "f"),
                                            reg = 5:1,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     account <- Movements(population = popn,
                          births = births,
                          internal = internal,
@@ -2185,7 +2185,7 @@ test_that("R and C versions of updateProposalAccountMovePool give same answer wi
                                            sex = c("m", "f"),
                                            reg = 1:5,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     internal <- Counts(array(rpois(n = 300, lambda = 10),
                              dim = c(3, 2, 5, 5, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -2193,7 +2193,7 @@ test_that("R and C versions of updateProposalAccountMovePool give same answer wi
                                              reg_orig = 1:5,
                                              reg_dest = 1:5,
                                              time = c("2001-2005", "2006-2010"),
-                                             triangle = c("TL", "TU"))))
+                                             triangle = c("Lower", "Upper"))))
     internal <- collapseOrigDest(internal, to = "pool")
     deaths <- Counts(array(rpois(n = 72, lambda = 10),
                            dim = c(3, 2, 5, 2, 2),
@@ -2201,7 +2201,7 @@ test_that("R and C versions of updateProposalAccountMovePool give same answer wi
                                            sex = c("m", "f"),
                                            reg = 5:1,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     account <- Movements(population = popn,
                          births = births,
                          internal = internal,
@@ -2293,7 +2293,7 @@ if(test.extended) {
                                                    sex = c("m", "f"),
                                                    reg = 1:5,
                                                    time = c("2001-2005", "2006-2010"),
-                                                   triangle = c("TL", "TU"))))
+                                                   triangle = c("Lower", "Upper"))))
             internal <- Counts(array(rpois(n = 300, lambda = 10),
                                      dim = c(3, 2, 5, 5, 2, 2),
                                      dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -2301,7 +2301,7 @@ if(test.extended) {
                                                      reg_orig = 1:5,
                                                      reg_dest = 1:5,
                                                      time = c("2001-2005", "2006-2010"),
-                                                     triangle = c("TL", "TU"))))
+                                                     triangle = c("Lower", "Upper"))))
             internal <- collapseOrigDest(internal, to = "pool")
             deaths <- Counts(array(rpois(n = 72, lambda = 10),
                                    dim = c(3, 2, 5, 2, 2),
@@ -2309,7 +2309,7 @@ if(test.extended) {
                                                    sex = c("m", "f"),
                                                    reg = 5:1,
                                                    time = c("2001-2005", "2006-2010"),
-                                                   triangle = c("TL", "TU"))))
+                                                   triangle = c("Lower", "Upper"))))
             account <- Movements(population = popn,
                                  births = births,
                                  internal = internal,
@@ -2588,7 +2588,7 @@ test_that("updateProposalAccountMoveNet works with CombinedAccountMovementsHasAg
                                            sex = c("m", "f"),
                                            reg = 1:5,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     internal <- Counts(array(rpois(n = 300, lambda = 2),
                              dim = c(3, 2, 5, 5, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -2596,7 +2596,7 @@ test_that("updateProposalAccountMoveNet works with CombinedAccountMovementsHasAg
                                              reg_orig = 1:5,
                                              reg_dest = 1:5,
                                              time = c("2001-2005", "2006-2010"),
-                                             triangle = c("TL", "TU"))))
+                                             triangle = c("Lower", "Upper"))))
     internal <- collapseOrigDest(internal, to = "net")
     deaths <- Counts(array(rpois(n = 72, lambda = 10),
                            dim = c(3, 2, 5, 2, 2),
@@ -2604,7 +2604,7 @@ test_that("updateProposalAccountMoveNet works with CombinedAccountMovementsHasAg
                                            sex = c("m", "f"),
                                            reg = 5:1,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     account <- Movements(population = popn,
                          births = births,
                          internal = internal,
@@ -2620,7 +2620,7 @@ test_that("updateProposalAccountMoveNet works with CombinedAccountMovementsHasAg
                                        sex = c("m", "f"),
                                        reg = 5:1,
                                        time = c("2001-2005", "2006-2010"),
-                                       triangle = c("TL", "TU"))))
+                                       triangle = c("Lower", "Upper"))))
     systemWeights <- list(NULL, NULL, w, NULL)
     census <- subarray(popn, time == "2000", drop = FALSE) + 2L
     register <- Counts(array(rpois(n = 90, lambda = popn),
@@ -2691,7 +2691,7 @@ test_that("R and C versions of updateProposalAccountMoveNet give same answer wit
                                            sex = c("m", "f"),
                                            reg = 1:5,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     internal <- Counts(array(rpois(n = 300, lambda = 2),
                              dim = c(3, 2, 5, 5, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -2699,7 +2699,7 @@ test_that("R and C versions of updateProposalAccountMoveNet give same answer wit
                                              reg_orig = 1:5,
                                              reg_dest = 1:5,
                                              time = c("2001-2005", "2006-2010"),
-                                             triangle = c("TL", "TU"))))
+                                             triangle = c("Lower", "Upper"))))
     internal <- collapseOrigDest(internal, to = "net")
     deaths <- Counts(array(rpois(n = 72, lambda = 10),
                            dim = c(3, 2, 5, 2, 2),
@@ -2707,7 +2707,7 @@ test_that("R and C versions of updateProposalAccountMoveNet give same answer wit
                                            sex = c("m", "f"),
                                            reg = 5:1,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     account <- Movements(population = popn,
                          births = births,
                          internal = internal,
@@ -2723,7 +2723,7 @@ test_that("R and C versions of updateProposalAccountMoveNet give same answer wit
                                        sex = c("m", "f"),
                                        reg = 5:1,
                                        time = c("2001-2005", "2006-2010"),
-                                       triangle = c("TL", "TU"))))
+                                       triangle = c("Lower", "Upper"))))
     systemWeights <- list(NULL, NULL, w, NULL)
     census <- subarray(popn, time == "2000", drop = FALSE) + 2L
     register <- Counts(array(rpois(n = 90, lambda = popn),
@@ -2808,7 +2808,7 @@ if (test.extended) {
                                                    sex = c("m", "f"),
                                                    reg = 1:5,
                                                    time = c("2001-2005", "2006-2010"),
-                                                   triangle = c("TL", "TU"))))
+                                                   triangle = c("Lower", "Upper"))))
             internal <- Counts(array(rpois(n = 300, lambda = 2),
                                      dim = c(3, 2, 5, 5, 2, 2),
                                      dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -2816,7 +2816,7 @@ if (test.extended) {
                                                      reg_orig = 1:5,
                                                      reg_dest = 1:5,
                                                      time = c("2001-2005", "2006-2010"),
-                                                     triangle = c("TL", "TU"))))
+                                                     triangle = c("Lower", "Upper"))))
             internal <- collapseOrigDest(internal, to = "net")
             deaths <- Counts(array(rpois(n = 72, lambda = 10),
                                    dim = c(3, 2, 5, 2, 2),
@@ -2824,7 +2824,7 @@ if (test.extended) {
                                                    sex = c("m", "f"),
                                                    reg = 5:1,
                                                    time = c("2001-2005", "2006-2010"),
-                                                   triangle = c("TL", "TU"))))
+                                                   triangle = c("Lower", "Upper"))))
             account <- Movements(population = popn,
                                  births = births,
                                  internal = internal,
@@ -2840,7 +2840,7 @@ if (test.extended) {
                                                sex = c("m", "f"),
                                                reg = 5:1,
                                                time = c("2001-2005", "2006-2010"),
-                                               triangle = c("TL", "TU"))))
+                                               triangle = c("Lower", "Upper"))))
             systemWeights <- list(NULL, NULL, w, NULL)
             census <- subarray(popn, time == "2000", drop = FALSE) + 2L
             register <- Counts(array(rpois(n = 90, lambda = popn),
@@ -3108,7 +3108,7 @@ test_that("updateProposalAccountMoveComp works with CombinedAccountMovementsHasA
                                            sex = c("m", "f"),
                                            reg = 1:5,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     internal <- Counts(array(rpois(n = 300, lambda = 10),
                              dim = c(3, 2, 5, 5, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -3116,14 +3116,14 @@ test_that("updateProposalAccountMoveComp works with CombinedAccountMovementsHasA
                                              reg_orig = 1:5,
                                              reg_dest = 1:5,
                                              time = c("2001-2005", "2006-2010"),
-                                             triangle = c("TL", "TU"))))
+                                             triangle = c("Lower", "Upper"))))
     deaths <- Counts(array(rpois(n = 72, lambda = 10),
                            dim = c(3, 2, 5, 2, 2),
                            dimnames = list(age = c("0-4", "5-9", "10+"),
                                            sex = c("m", "f"),
                                            reg = 5:1,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     account <- Movements(population = popn,
                          births = births,
                          internal = internal,
@@ -3201,7 +3201,7 @@ test_that("R and C versions of updateProposalAccountMoveComp give same answer wi
                                            sex = c("m", "f"),
                                            reg = 1:5,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     internal <- Counts(array(rpois(n = 300, lambda = 10),
                              dim = c(3, 2, 5, 5, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -3209,14 +3209,14 @@ test_that("R and C versions of updateProposalAccountMoveComp give same answer wi
                                              reg_orig = 1:5,
                                              reg_dest = 1:5,
                                              time = c("2001-2005", "2006-2010"),
-                                             triangle = c("TL", "TU"))))
+                                             triangle = c("Lower", "Upper"))))
     deaths <- Counts(array(rpois(n = 72, lambda = 10),
                            dim = c(3, 2, 5, 2, 2),
                            dimnames = list(age = c("0-4", "5-9", "10+"),
                                            sex = c("m", "f"),
                                            reg = 5:1,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     account <- Movements(population = popn,
                          births = births,
                          internal = internal,
@@ -3304,7 +3304,7 @@ if (test.extended) {
                                                    sex = c("m", "f"),
                                                    reg = 1:5,
                                                    time = c("2001-2005", "2006-2010"),
-                                                   triangle = c("TL", "TU"))))
+                                                   triangle = c("Lower", "Upper"))))
             internal <- Counts(array(rpois(n = 300, lambda = 10),
                                      dim = c(3, 2, 5, 5, 2, 2),
                                      dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -3312,14 +3312,14 @@ if (test.extended) {
                                                      reg_orig = 1:5,
                                                      reg_dest = 1:5,
                                                      time = c("2001-2005", "2006-2010"),
-                                                     triangle = c("TL", "TU"))))
+                                                     triangle = c("Lower", "Upper"))))
             deaths <- Counts(array(rpois(n = 72, lambda = 10),
                                    dim = c(3, 2, 5, 2, 2),
                                    dimnames = list(age = c("0-4", "5-9", "10+"),
                                                    sex = c("m", "f"),
                                                    reg = 5:1,
                                                    time = c("2001-2005", "2006-2010"),
-                                                   triangle = c("TL", "TU"))))
+                                                   triangle = c("Lower", "Upper"))))
             account <- Movements(population = popn,
                                  births = births,
                                  internal = internal,
@@ -3548,7 +3548,7 @@ test_that("diffLogLikCellComp works", {
                                               sex = c("f", "m"),
                                               reg = 1:5,
                                               time = c("2001-2005", "2006-2010", "2011-2015"),
-                                              triangle = c("TL", "TU"))))
+                                              triangle = c("Lower", "Upper"))))
     component <- new("ExitsMovements",
                      .Data = component@.Data,
                      metadata = component@metadata)
@@ -3604,7 +3604,7 @@ test_that("R and C versions of diffLogLikCellComp give same answer", {
                                               sex = c("f", "m"),
                                               reg = 1:5,
                                               time = c("2001-2005", "2006-2010", "2011-2015"),
-                                              triangle = c("TL", "TU"))))
+                                              triangle = c("Lower", "Upper"))))
     component <- new("ExitsMovements",
                      .Data = component@.Data,
                      metadata = component@metadata)
@@ -3662,7 +3662,7 @@ test_that("diffLogLikCellOneDataset works", {
                                          sex = c("f", "m"),
                                          reg = 1:5,
                                          time = c("2001-2005", "2006-2010", "2011-2015"),
-                                         triangle = c("TL", "TU"))))
+                                         triangle = c("Lower", "Upper"))))
     deaths <- new("ExitsMovements",
                   .Data = deaths@.Data,
                   metadata = deaths@metadata)
@@ -3704,7 +3704,7 @@ test_that("diffLogLikCellOneDataset works", {
                                          sex = c("f", "m"),
                                          reg = 1:5,
                                          time = c("2001-2005", "2006-2010", "2011-2015"),
-                                         triangle = c("TL", "TU"))))
+                                         triangle = c("Lower", "Upper"))))
     deaths <- new("ExitsMovements",
                   .Data = deaths@.Data,
                   metadata = deaths@metadata)
@@ -3747,7 +3747,7 @@ test_that("R and C versions of diffLogLikCellOneDataset give same answer", {
                                            sex = c("f", "m"),
                                            reg = 1:5,
                                            time = c("2001-2005", "2006-2010", "2011-2015"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     deaths <- new("ExitsMovements",
                   .Data = deaths@.Data,
                   metadata = deaths@metadata)
@@ -3809,7 +3809,7 @@ test_that("R and C versions of diffLogLikCellOneDataset give same answer", {
                                            sex = c("f", "m"),
                                            reg = 1:5,
                                            time = c("2001-2005", "2006-2010", "2011-2015"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     deaths <- new("ExitsMovements",
                   .Data = deaths@.Data,
                   metadata = deaths@metadata)
@@ -4002,7 +4002,7 @@ test_that("diffLogLikPopn works", {
                                            sex = c("m", "f"),
                                            reg = 1:5,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     internal <- Counts(array(rpois(n = 300, lambda = 10),
                              dim = c(3, 2, 5, 5, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -4010,14 +4010,14 @@ test_that("diffLogLikPopn works", {
                                              reg_orig = 1:5,
                                              reg_dest = 1:5,
                                              time = c("2001-2005", "2006-2010"),
-                                             triangle = c("TL", "TU"))))
+                                             triangle = c("Lower", "Upper"))))
     deaths <- Counts(array(rpois(n = 72, lambda = 10),
                            dim = c(3, 2, 5, 2, 2),
                            dimnames = list(age = c("0-4", "5-9", "10+"),
                                            sex = c("m", "f"),
                                            reg = 5:1,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     census <- subarray(popn, time == "2000", drop = FALSE) + 2L
     register <- Counts(array(rpois(n = 90, lambda = popn),
                              dim = dim(popn),
@@ -4110,7 +4110,7 @@ test_that("R and C versions of diffLogLikPopn give same answer", {
                                            sex = c("m", "f"),
                                            reg = 1:5,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     internal <- Counts(array(rpois(n = 300, lambda = 10),
                              dim = c(3, 2, 5, 5, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -4118,14 +4118,14 @@ test_that("R and C versions of diffLogLikPopn give same answer", {
                                              reg_orig = 1:5,
                                              reg_dest = 1:5,
                                              time = c("2001-2005", "2006-2010"),
-                                             triangle = c("TL", "TU"))))
+                                             triangle = c("Lower", "Upper"))))
     deaths <- Counts(array(rpois(n = 72, lambda = 10),
                            dim = c(3, 2, 5, 2, 2),
                            dimnames = list(age = c("0-4", "5-9", "10+"),
                                            sex = c("m", "f"),
                                            reg = 5:1,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     census <- subarray(popn, time == "2000", drop = FALSE) + 2L
     register <- Counts(array(rpois(n = 90, lambda = popn),
                              dim = dim(popn),
@@ -5503,7 +5503,7 @@ test_that("diffLogDensExpPopn works", {
                                            sex = c("m", "f"),
                                            reg = 1:5,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     internal <- Counts(array(rpois(n = 300, lambda = 10),
                              dim = c(3, 2, 5, 5, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -5511,7 +5511,7 @@ test_that("diffLogDensExpPopn works", {
                                              reg_orig = 1:5,
                                              reg_dest = 1:5,
                                              time = c("2001-2005", "2006-2010"),
-                                             triangle = c("TL", "TU"))))
+                                             triangle = c("Lower", "Upper"))))
     internal[slice.index(internal, 3) == slice.index(internal, 4)] <- 0L
     deaths <- Counts(array(rpois(n = 72, lambda = 10),
                            dim = c(3, 2, 5, 2, 2),
@@ -5519,7 +5519,7 @@ test_that("diffLogDensExpPopn works", {
                                            sex = c("m", "f"),
                                            reg = 5:1,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     account <- Movements(population = popn,
                          births = births,
                          internal = internal,
@@ -5644,7 +5644,7 @@ test_that("R and C versions of diffLogDensExpPopn give same answer", {
                                                sex = c("m", "f"),
                                                reg = 1:5,
                                                time = c("2001-2005", "2006-2010"),
-                                               triangle = c("TL", "TU"))))
+                                               triangle = c("Lower", "Upper"))))
         internal <- Counts(array(rpois(n = 300, lambda = 10),
                                  dim = c(3, 2, 5, 5, 2, 2),
                                  dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -5652,7 +5652,7 @@ test_that("R and C versions of diffLogDensExpPopn give same answer", {
                                                  reg_orig = 1:5,
                                                  reg_dest = 1:5,
                                                  time = c("2001-2005", "2006-2010"),
-                                                 triangle = c("TL", "TU"))))
+                                                 triangle = c("Lower", "Upper"))))
         internal[slice.index(internal, 3) == slice.index(internal, 4)] <- 0L
         deaths <- Counts(array(rpois(n = 72, lambda = 10),
                                dim = c(3, 2, 5, 2, 2),
@@ -5660,7 +5660,7 @@ test_that("R and C versions of diffLogDensExpPopn give same answer", {
                                                sex = c("m", "f"),
                                                reg = 5:1,
                                                time = c("2001-2005", "2006-2010"),
-                                               triangle = c("TL", "TU"))))
+                                               triangle = c("Lower", "Upper"))))
         account <- Movements(population = popn,
                              births = births,
                              internal = internal,
@@ -5872,7 +5872,7 @@ test_that("diffLogDensJumpOrigDest works - with age", {
                                            sex = c("m", "f"),
                                            reg = 1:5,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     internal <- Counts(array(rpois(n = 300, lambda = 10),
                              dim = c(3, 2, 5, 5, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -5880,14 +5880,14 @@ test_that("diffLogDensJumpOrigDest works - with age", {
                                              reg_orig = 1:5,
                                              reg_dest = 1:5,
                                              time = c("2001-2005", "2006-2010"),
-                                             triangle = c("TL", "TU"))))
+                                             triangle = c("Lower", "Upper"))))
     deaths <- Counts(array(rpois(n = 72, lambda = 10),
                            dim = c(3, 2, 5, 2, 2),
                            dimnames = list(age = c("0-4", "5-9", "10+"),
                                            sex = c("m", "f"),
                                            reg = 5:1,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     account <- Movements(population = popn,
                          births = births,
                          internal = internal,
@@ -5997,7 +5997,7 @@ test_that("R and C versions of diffLogDensJumpOrigDest give same answer - with a
                                            sex = c("m", "f"),
                                            reg = 1:5,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     internal <- Counts(array(rpois(n = 300, lambda = 10),
                              dim = c(3, 2, 5, 5, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -6005,14 +6005,14 @@ test_that("R and C versions of diffLogDensJumpOrigDest give same answer - with a
                                              reg_orig = 1:5,
                                              reg_dest = 1:5,
                                              time = c("2001-2005", "2006-2010"),
-                                             triangle = c("TL", "TU"))))
+                                             triangle = c("Lower", "Upper"))))
     deaths <- Counts(array(rpois(n = 72, lambda = 10),
                            dim = c(3, 2, 5, 2, 2),
                            dimnames = list(age = c("0-4", "5-9", "10+"),
                                            sex = c("m", "f"),
                                            reg = 5:1,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     account <- Movements(population = popn,
                          births = births,
                          internal = internal,
@@ -6269,7 +6269,7 @@ test_that("diffLogDensExpOrigDestPoolNet works - with age", {
                                            sex = c("m", "f"),
                                            reg = 1:5,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     internal <- Counts(array(rpois(n = 300, lambda = 10),
                              dim = c(3, 2, 5, 5, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -6277,7 +6277,7 @@ test_that("diffLogDensExpOrigDestPoolNet works - with age", {
                                              reg_orig = 1:5,
                                              reg_dest = 1:5,
                                              time = c("2001-2005", "2006-2010"),
-                                             triangle = c("TL", "TU"))))
+                                             triangle = c("Lower", "Upper"))))
     internal[slice.index(internal, 3) == slice.index(internal, 4)] <- 0L
     deaths <- Counts(array(rpois(n = 72, lambda = 10),
                            dim = c(3, 2, 5, 2, 2),
@@ -6285,7 +6285,7 @@ test_that("diffLogDensExpOrigDestPoolNet works - with age", {
                                            sex = c("m", "f"),
                                            reg = 5:1,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     account <- Movements(population = popn,
                          births = births,
                          internal = internal,
@@ -6454,7 +6454,7 @@ test_that("R and C versions of diffLogDensExpOrigDestPoolNet give same answer - 
                                            sex = c("m", "f"),
                                            reg = 1:5,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     internal <- Counts(array(rpois(n = 300, lambda = 10),
                              dim = c(3, 2, 5, 5, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -6462,7 +6462,7 @@ test_that("R and C versions of diffLogDensExpOrigDestPoolNet give same answer - 
                                              reg_orig = 1:5,
                                              reg_dest = 1:5,
                                              time = c("2001-2005", "2006-2010"),
-                                             triangle = c("TL", "TU"))))
+                                             triangle = c("Lower", "Upper"))))
     internal[slice.index(internal, 3) == slice.index(internal, 4)] <- 0L
     deaths <- Counts(array(rpois(n = 72, lambda = 10),
                            dim = c(3, 2, 5, 2, 2),
@@ -6470,7 +6470,7 @@ test_that("R and C versions of diffLogDensExpOrigDestPoolNet give same answer - 
                                            sex = c("m", "f"),
                                            reg = 5:1,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     account <- Movements(population = popn,
                          births = births,
                          internal = internal,
@@ -7319,7 +7319,7 @@ test_that("diffLogDensJumpComp works - with age", {
                                            sex = c("m", "f"),
                                            reg = 1:5,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     internal <- Counts(array(rpois(n = 300, lambda = 10),
                              dim = c(3, 2, 5, 5, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -7327,14 +7327,14 @@ test_that("diffLogDensJumpComp works - with age", {
                                              reg_orig = 1:5,
                                              reg_dest = 1:5,
                                              time = c("2001-2005", "2006-2010"),
-                                             triangle = c("TL", "TU"))))
+                                             triangle = c("Lower", "Upper"))))
     deaths <- Counts(array(rpois(n = 72, lambda = 10),
                            dim = c(3, 2, 5, 2, 2),
                            dimnames = list(age = c("0-4", "5-9", "10+"),
                                            sex = c("m", "f"),
                                            reg = 5:1,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     account <- Movements(population = popn,
                          births = births,
                          internal = internal,
@@ -7445,7 +7445,7 @@ test_that("R and C versions of diffLogDensJumpComp give same answer - with age",
                                            sex = c("m", "f"),
                                            reg = 1:5,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     internal <- Counts(array(rpois(n = 300, lambda = 3),
                              dim = c(3, 2, 5, 5, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -7453,14 +7453,14 @@ test_that("R and C versions of diffLogDensJumpComp give same answer - with age",
                                              reg_orig = 1:5,
                                              reg_dest = 1:5,
                                              time = c("2001-2005", "2006-2010"),
-                                             triangle = c("TL", "TU"))))
+                                             triangle = c("Lower", "Upper"))))
     deaths <- Counts(array(rpois(n = 72, lambda = 10),
                            dim = c(3, 2, 5, 2, 2),
                            dimnames = list(age = c("0-4", "5-9", "10+"),
                                            sex = c("m", "f"),
                                            reg = 5:1,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     account <- Movements(population = popn,
                          births = births,
                          internal = internal,
@@ -7548,7 +7548,7 @@ test_that("diffLogDensExpComp works", {
                                            sex = c("m", "f"),
                                            reg = 1:5,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     internal <- Counts(array(rpois(n = 300, lambda = 10),
                              dim = c(3, 2, 5, 5, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -7556,7 +7556,7 @@ test_that("diffLogDensExpComp works", {
                                              reg_orig = 1:5,
                                              reg_dest = 1:5,
                                              time = c("2001-2005", "2006-2010"),
-                                             triangle = c("TL", "TU"))))
+                                             triangle = c("Lower", "Upper"))))
     internal[slice.index(internal, 3) == slice.index(internal, 4)] <- 0L
     deaths <- Counts(array(rpois(n = 72, lambda = 10),
                            dim = c(3, 2, 5, 2, 2),
@@ -7564,7 +7564,7 @@ test_that("diffLogDensExpComp works", {
                                            sex = c("m", "f"),
                                            reg = 5:1,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     account <- Movements(population = popn,
                          births = births,
                          internal = internal,
@@ -7686,7 +7686,7 @@ test_that("R and C versions of diffLogDensExpComp give same value", {
                                            sex = c("m", "f"),
                                            reg = 1:5,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     internal <- Counts(array(rpois(n = 300, lambda = 10),
                              dim = c(3, 2, 5, 5, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -7694,7 +7694,7 @@ test_that("R and C versions of diffLogDensExpComp give same value", {
                                              reg_orig = 1:5,
                                              reg_dest = 1:5,
                                              time = c("2001-2005", "2006-2010"),
-                                             triangle = c("TL", "TU"))))
+                                             triangle = c("Lower", "Upper"))))
     internal[slice.index(internal, 3) == slice.index(internal, 4)] <- 0L
     deaths <- Counts(array(rpois(n = 72, lambda = 10),
                            dim = c(3, 2, 5, 2, 2),
@@ -7702,7 +7702,7 @@ test_that("R and C versions of diffLogDensExpComp give same value", {
                                            sex = c("m", "f"),
                                            reg = 5:1,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     account <- Movements(population = popn,
                          births = births,
                          internal = internal,
@@ -7964,7 +7964,7 @@ test_that("updateCellMove works", {
                                            sex = c("m", "f"),
                                            reg = 1:5,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     internal <- Counts(array(rpois(n = 300, lambda = 2),
                              dim = c(3, 2, 5, 5, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -7972,7 +7972,7 @@ test_that("updateCellMove works", {
                                              reg_orig = 1:5,
                                              reg_dest = 1:5,
                                              time = c("2001-2005", "2006-2010"),
-                                             triangle = c("TL", "TU"))))
+                                             triangle = c("Lower", "Upper"))))
     internal <- collapseOrigDest(internal, to = "pool")
     deaths <- Counts(array(rpois(n = 72, lambda = 10),
                            dim = c(3, 2, 5, 2, 2),
@@ -7980,7 +7980,7 @@ test_that("updateCellMove works", {
                                            sex = c("m", "f"),
                                            reg = 5:1,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     account <- Movements(population = popn,
                          births = births,
                          internal = internal,
@@ -8091,7 +8091,7 @@ test_that("R and C versions of updateCellMove give same answer", {
                                            sex = c("m", "f"),
                                            reg = 1:5,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     internal <- Counts(array(rpois(n = 300, lambda = 2),
                              dim = c(3, 2, 5, 5, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -8099,7 +8099,7 @@ test_that("R and C versions of updateCellMove give same answer", {
                                              reg_orig = 1:5,
                                              reg_dest = 1:5,
                                              time = c("2001-2005", "2006-2010"),
-                                             triangle = c("TL", "TU"))))
+                                             triangle = c("Lower", "Upper"))))
     internal <- collapseOrigDest(internal, to = "pool")
     deaths <- Counts(array(rpois(n = 72, lambda = 10),
                            dim = c(3, 2, 5, 2, 2),
@@ -8107,7 +8107,7 @@ test_that("R and C versions of updateCellMove give same answer", {
                                            sex = c("m", "f"),
                                            reg = 5:1,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     account <- Movements(population = popn,
                          births = births,
                          internal = internal,
@@ -8220,7 +8220,7 @@ test_that("updateSubsequentPopnMove works", {
                                            sex = c("m", "f"),
                                            reg = 1:5,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     internal <- Counts(array(rpois(n = 300, lambda = 5),
                              dim = c(3, 2, 5, 5, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -8228,14 +8228,14 @@ test_that("updateSubsequentPopnMove works", {
                                              reg_orig = 1:5,
                                              reg_dest = 1:5,
                                              time = c("2001-2005", "2006-2010"),
-                                             triangle = c("TL", "TU"))))
+                                             triangle = c("Lower", "Upper"))))
     deaths <- Counts(array(rpois(n = 72, lambda = 10),
                            dim = c(3, 2, 5, 2, 2),
                            dimnames = list(age = c("0-4", "5-9", "10+"),
                                            sex = c("m", "f"),
                                            reg = 5:1,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     account <- Movements(population = popn,
                          births = births,
                          internal = internal,
@@ -8349,7 +8349,7 @@ test_that("R and C versions of updateSubsequentPopnMove give same answer", {
                                            sex = c("m", "f"),
                                            reg = 1:5,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     internal <- Counts(array(rpois(n = 300, lambda = 5),
                              dim = c(3, 2, 5, 5, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -8357,14 +8357,14 @@ test_that("R and C versions of updateSubsequentPopnMove give same answer", {
                                              reg_orig = 1:5,
                                              reg_dest = 1:5,
                                              time = c("2001-2005", "2006-2010"),
-                                             triangle = c("TL", "TU"))))
+                                             triangle = c("Lower", "Upper"))))
     deaths <- Counts(array(rpois(n = 72, lambda = 10),
                            dim = c(3, 2, 5, 2, 2),
                            dimnames = list(age = c("0-4", "5-9", "10+"),
                                            sex = c("m", "f"),
                                            reg = 5:1,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     account <- Movements(population = popn,
                          births = births,
                          internal = internal,
@@ -8482,7 +8482,7 @@ test_that("updateSubsequentAccMove works", {
                                            sex = c("m", "f"),
                                            reg = 1:5,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     internal <- Counts(array(rpois(n = 300, lambda = 5),
                              dim = c(3, 2, 5, 5, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -8490,14 +8490,14 @@ test_that("updateSubsequentAccMove works", {
                                              reg_orig = 1:5,
                                              reg_dest = 1:5,
                                              time = c("2001-2005", "2006-2010"),
-                                             triangle = c("TL", "TU"))))
+                                             triangle = c("Lower", "Upper"))))
     deaths <- Counts(array(rpois(n = 72, lambda = 10),
                            dim = c(3, 2, 5, 2, 2),
                            dimnames = list(age = c("0-4", "5-9", "10+"),
                                            sex = c("m", "f"),
                                            reg = 5:1,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     account <- Movements(population = popn,
                          births = births,
                          internal = internal,
@@ -8645,7 +8645,7 @@ test_that("R and C versions of updateSubsequentAccMove give same answer", {
                                            sex = c("m", "f"),
                                            reg = 1:5,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     internal <- Counts(array(rpois(n = 300, lambda = 5),
                              dim = c(3, 2, 5, 5, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -8653,14 +8653,14 @@ test_that("R and C versions of updateSubsequentAccMove give same answer", {
                                              reg_orig = 1:5,
                                              reg_dest = 1:5,
                                              time = c("2001-2005", "2006-2010"),
-                                             triangle = c("TL", "TU"))))
+                                             triangle = c("Lower", "Upper"))))
     deaths <- Counts(array(rpois(n = 72, lambda = 10),
                            dim = c(3, 2, 5, 2, 2),
                            dimnames = list(age = c("0-4", "5-9", "10+"),
                                            sex = c("m", "f"),
                                            reg = 5:1,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     account <- Movements(population = popn,
                          births = births,
                          internal = internal,
@@ -8769,7 +8769,7 @@ test_that("updateSubsequentExpMove works", {
                                            sex = c("m", "f"),
                                            reg = 1:5,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     internal <- Counts(array(rpois(n = 300, lambda = 5),
                              dim = c(3, 2, 5, 5, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -8777,14 +8777,14 @@ test_that("updateSubsequentExpMove works", {
                                              reg_orig = 1:5,
                                              reg_dest = 1:5,
                                              time = c("2001-2005", "2006-2010"),
-                                             triangle = c("TL", "TU"))))
+                                             triangle = c("Lower", "Upper"))))
     deaths <- Counts(array(rpois(n = 72, lambda = 10),
                            dim = c(3, 2, 5, 2, 2),
                            dimnames = list(age = c("0-4", "5-9", "10+"),
                                            sex = c("m", "f"),
                                            reg = 5:1,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     account <- Movements(population = popn,
                          births = births,
                          internal = internal,
@@ -8933,7 +8933,7 @@ test_that("R and C versions of updateSubsequentExpMove give same answer", {
                                            sex = c("m", "f"),
                                            reg = 1:5,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     internal <- Counts(array(rpois(n = 300, lambda = 5),
                              dim = c(3, 2, 5, 5, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -8941,14 +8941,14 @@ test_that("R and C versions of updateSubsequentExpMove give same answer", {
                                              reg_orig = 1:5,
                                              reg_dest = 1:5,
                                              time = c("2001-2005", "2006-2010"),
-                                             triangle = c("TL", "TU"))))
+                                             triangle = c("Lower", "Upper"))))
     deaths <- Counts(array(rpois(n = 72, lambda = 10),
                            dim = c(3, 2, 5, 2, 2),
                            dimnames = list(age = c("0-4", "5-9", "10+"),
                                            sex = c("m", "f"),
                                            reg = 5:1,
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     account <- Movements(population = popn,
                          births = births,
                          internal = internal,

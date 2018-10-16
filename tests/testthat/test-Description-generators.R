@@ -56,7 +56,7 @@ test_that("Description creates object of class DescriptionComp from valid inputs
     object <- Counts(array(1:24,
                            dim = c(4, 2, 3),
                            dimnames = list(age = c("0-4", "5-9", "10-14", "15+"),
-                               triangle = c("TL", "TU"),
+                               triangle = c("Lower", "Upper"),
                                time = c("2001-2005", "2006-2010", "2011-2015"))))
     object <- new("EntriesMovements",
                   .Data = object@.Data,
@@ -92,7 +92,7 @@ test_that("Description creates object of class DescriptionComp from valid inputs
                            dimnames = list(time = c("2001-2005", "2006-2010", "2011-2015", "2016-2020", "2021-2025"),
                                region = 1:4,
                                age = c("0-4", "5-9", "10+"),
-                               triangle = c("TL", "TU"))))
+                               triangle = c("Lower", "Upper"))))
     object <- new("NetMovements", 
                   .Data = object@.Data,
                   metadata = object@metadata)
@@ -114,7 +114,7 @@ test_that("Description creates object of class DescriptionPool from valid inputs
                            dim = c(5, 4, 2, 3, 2),
                            dimnames = list(region = 1:5,
                                age = c("0-4", "5-9", "10-14", "15+"),
-                               triangle = c("TL", "TU"),
+                               triangle = c("Lower", "Upper"),
                                time = c("2001-2005", "2006-2010", "2011-2015"),
                                direction = c("Out", "In"))))
     object <- new("InternalMovementsPool",
@@ -169,7 +169,7 @@ test_that("Description creates object of class DescriptionPool from valid inputs
                                time = c("2001-2005", "2006-2010", "2011-2015", "2016-2020", "2021-2025"),
                                region = 1:4,
                                age = c("0-4", "5-9", "10+"),
-                               triangle = c("TL", "TU"))))
+                               triangle = c("Lower", "Upper"))))
     object <- new("InternalMovementsPool", 
                   .Data = object@.Data,
                   iDirection = 1L,
@@ -199,7 +199,7 @@ test_that("Description creates object of class DescriptionNet from valid inputs"
                            dim = c(5, 4, 2, 3),
                            dimnames = list(region = 1:5,
                                            age = c("0-4", "5-9", "10-14", "15+"),
-                                           triangle = c("TL", "TU"),
+                                           triangle = c("Lower", "Upper"),
                                            time = c("2001-2005", "2006-2010", "2011-2015"))))
     object <- new("InternalMovementsNet",
                   .Data = object@.Data,
@@ -247,7 +247,7 @@ test_that("Description creates object of class DescriptionNet from valid inputs"
                            dimnames = list(time = c("2001-2005", "2006-2010", "2011-2015", "2016-2020", "2021-2025"),
                                            region = 1:4,
                                            age = c("0-4", "5-9", "10+"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     object <- new("InternalMovementsNet", 
                   .Data = object@.Data,
                   iBetween = 2L,

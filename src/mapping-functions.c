@@ -584,6 +584,8 @@ getIExpFirstFromBirths(int i, SEXP mapping_R)
     int nTime  = *INTEGER(GET_SLOT(mapping_R, nTimeCurrent_sym));
     int stepTimeBirths  = *INTEGER(GET_SLOT(mapping_R, stepTimeCurrent_sym));
     int stepTimeExp  = *INTEGER(GET_SLOT(mapping_R, stepTimeTarget_sym));
+
+    int hasSex = *LOGICAL(GET_SLOT(mapping_R, hasSex_sym));
     
     SEXP nSharedVec_R = GET_SLOT(mapping_R, nSharedVec_sym);
     int *nSharedVec  = INTEGER(nSharedVec_R);
@@ -596,6 +598,13 @@ getIExpFirstFromBirths(int i, SEXP mapping_R)
     
     int iTime = ( iMinus1 / stepTimeBirths ) % nTime;
     int iExp_r = 1 + iTime * stepTimeExp;
+
+    if (hasSex) {
+      int stepSexBirths  = *INTEGER(GET_SLOT(mapping_R, stepSexCurrent_sym));
+      int stepSexExp  = *INTEGER(GET_SLOT(mapping_R, stepSexTarget_sym));
+      int iSex = ( iMinus1 / stepSexBirths ) % 2;
+      iExp_r += iSex * stepSexExp;
+    }
     
     for (int d = 0; d < nDimShared; ++d) {
         int nShared = nSharedVec[d];

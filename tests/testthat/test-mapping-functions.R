@@ -22,7 +22,7 @@ test_that("getIPopnNextFromComp works with ordinary component", {
     component <- Counts(array(1:8,
                               dim = c(2, 2, 2),
                               dimnames = list(time = c("2001-2010", "2011-2020"),
-                                  triangle = c("TL", "TU"),
+                                  triangle = c("Lower", "Upper"),
                                   age = c("0-9", "10+"))))
     population <- Counts(array(1:6,
                                dim = c(3, 2),
@@ -76,7 +76,7 @@ test_that("getIPopnNextFromComp works with ordinary component", {
                               dimnames = list(reg = c("a", "b", "c"),
                                   time = c("2001-2010", "2011-2020"),
                                   age = c("0-9", "10+"),
-                                  triangle = c("TL", "TU"))))
+                                  triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:18,
                                dim = c(3, 3, 2),
                                dimnames = list(reg = c("a", "b", "c"),
@@ -135,7 +135,7 @@ test_that("R and C versions of getIPopnNextFromComp give same answer with ordina
     component <- Counts(array(1:8,
                               dim = c(2, 2, 2),
                               dimnames = list(time = c("2001-2010", "2011-2020"),
-                                  triangle = c("TL", "TU"),
+                                  triangle = c("Lower", "Upper"),
                                   age = c("0-9", "10+"))))
     population <- Counts(array(1:6,
                                dim = c(3, 2),
@@ -186,7 +186,7 @@ test_that("R and C versions of getIPopnNextFromComp give same answer with ordina
                               dimnames = list(reg = c("a", "b", "c"),
                                   time = c("2001-2010", "2011-2020"),
                                   age = c("0-9", "10+"),
-                                  triangle = c("TL", "TU"))))
+                                  triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:18,
                                dim = c(3, 3, 2),
                                dimnames = list(reg = c("a", "b", "c"),
@@ -260,7 +260,7 @@ test_that("getIPopnNextFromComp works with BirthsMovementNoParentChild", {
     births <- Counts(array(1:8,
                            dim = c(2, 2, 2),
                            dimnames = list(time = c("2001-2010", "2011-2020"),
-                               triangle = c("TL", "TU"),
+                               triangle = c("Lower", "Upper"),
                                age = c("10-19", "20-29"))))
     population <- Counts(array(1:15,
                                dim = c(3, 5),
@@ -304,7 +304,7 @@ test_that("getIPopnNextFromComp works with BirthsMovementNoParentChild", {
                               dimnames = list(reg = c("a", "b", "c"),
                                   time = c("2001-2010", "2011-2020"),
                                   age = c("10-19", "20-29"),
-                                  triangle = c("TL", "TU"))))
+                                  triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:36,
                                dim = c(3, 3, 4),
                                dimnames = list(reg = c("a", "b", "c"),
@@ -355,7 +355,7 @@ test_that("R and C versons of getIPopnNextFromComp give same answer with BirthsM
     births <- Counts(array(1:8,
                            dim = c(2, 2, 2),
                            dimnames = list(time = c("2001-2010", "2011-2020"),
-                               triangle = c("TL", "TU"),
+                               triangle = c("Lower", "Upper"),
                                age = c("10-19", "20-29"))))
     population <- Counts(array(1:15,
                                dim = c(3, 5),
@@ -399,7 +399,7 @@ test_that("R and C versons of getIPopnNextFromComp give same answer with BirthsM
                            dimnames = list(reg = c("a", "b", "c"),
                                time = c("2001-2010", "2011-2020"),
                                age = c("10-19", "20-29"),
-                               triangle = c("TL", "TU"))))
+                               triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:36,
                                dim = c(3, 3, 4),
                                dimnames = list(reg = c("a", "b", "c"),
@@ -455,7 +455,7 @@ test_that("getIPopnNextFromComp works with BirthsMovementHasParentChild", {
                            dimnames = list(time = c("2001-2010", "2011-2020"),
                                eth_parent = 1:3,
                                eth_child = 1:3,
-                               triangle = c("TL", "TU"),
+                               triangle = c("Lower", "Upper"),
                                age = c("10-19", "20-29"))))
     population <- Counts(array(1:15,
                                dim = c(3, 3, 5),
@@ -506,7 +506,7 @@ test_that("getIPopnNextFromComp works with BirthsMovementHasParentChild", {
                                reg_child = c("a", "b", "c"),
                                time = c("2001-2010", "2011-2020"),
                                age = c("10-19", "20-29"),
-                               triangle = c("TL", "TU"))))
+                               triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:36,
                                dim = c(3, 3, 4),
                                dimnames = list(reg = c("a", "b", "c"),
@@ -564,7 +564,7 @@ test_that("R and C versions of getIPopnNextFromComp give same answer with Births
                            dimnames = list(time = c("2001-2010", "2011-2020"),
                                eth_parent = 1:3,
                                eth_child = 1:3,
-                               triangle = c("TL", "TU"),
+                               triangle = c("Lower", "Upper"),
                                age = c("10-19", "20-29"))))
     population <- Counts(array(1:15,
                                dim = c(3, 3, 5),
@@ -614,7 +614,7 @@ test_that("R and C versions of getIPopnNextFromComp give same answer with Births
                                reg_child = c("a", "b", "c"),
                               time = c("2001-2010", "2011-2020"),
                                age = c("10-19", "20-29"),
-                               triangle = c("TL", "TU"))))
+                               triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:36,
                                dim = c(3, 3, 4),
                                dimnames = list(reg = c("a", "b", "c"),
@@ -673,7 +673,7 @@ test_that("getIPopnNextFromOrigDest works with InternalMovementsOrigDest", {
                               dimnames = list(time = c("2001-2010", "2011-2020"),
                                   reg_orig = 1:3,
                                   reg_dest = 1:3,
-                                  triangle = c("TL", "TU"),
+                                  triangle = c("Lower", "Upper"),
                                   age = c("0-9", "10+"))))
     population <- Counts(array(1:18,
                                dim = c(3, 3, 2),
@@ -767,7 +767,7 @@ test_that("R and C versions of getIPopnNextFromOrigDest give same answer Interna
                               dimnames = list(time = c("2001-2010", "2011-2020"),
                                   reg_orig = 1:3,
                                   reg_dest = 1:3,
-                                  triangle = c("TL", "TU"),
+                                  triangle = c("Lower", "Upper"),
                                   age = c("0-9", "10+"))))
     population <- Counts(array(1:18,
                                dim = c(3, 3, 2),
@@ -863,7 +863,7 @@ test_that("getIPopnNextFromComp works with InternalMovementsPool", {
                               dimnames = list(time = c("2001-2010", "2011-2020"),
                                   reg_orig = 1:3,
                                   reg_dest = 1:3,
-                                  triangle = c("TL", "TU"),
+                                  triangle = c("Lower", "Upper"),
                                   age = c("0-9", "10+"))))
     internal <- collapseOrigDest(internal, to = "pool")
     population <- Counts(array(1:18,
@@ -953,7 +953,7 @@ test_that("R and C versions of getIPopnNextFromComp give same answer with Intern
                               dimnames = list(time = c("2001-2010", "2011-2020"),
                                   reg_orig = 1:3,
                                   reg_dest = 1:3,
-                                  triangle = c("TL", "TU"),
+                                  triangle = c("Lower", "Upper"),
                                   age = c("0-9", "10+"))))
     internal <- collapseOrigDest(internal, to = "pool")
     population <- Counts(array(1:18,
@@ -1041,7 +1041,7 @@ test_that("getIPopnNextFromComp works with InternalMovementsNet", {
                               dimnames = list(time = c("2001-2010", "2011-2020"),
                                   reg_orig = 1:3,
                                   reg_dest = 1:3,
-                                  triangle = c("TL", "TU"),
+                                  triangle = c("Lower", "Upper"),
                                   age = c("0-9", "10+"))))
     internal <- collapseOrigDest(internal, to = "net")
     population <- Counts(array(1:18,
@@ -1131,7 +1131,7 @@ test_that("R and C versions of getIPopnNextFromComp give same answer with Intern
                               dimnames = list(time = c("2001-2010", "2011-2020"),
                                   reg_orig = 1:3,
                                   reg_dest = 1:3,
-                                  triangle = c("TL", "TU"),
+                                  triangle = c("Lower", "Upper"),
                                   age = c("0-9", "10+"))))
     internal <- collapseOrigDest(internal, to = "net")
     population <- Counts(array(1:18,
@@ -1218,7 +1218,7 @@ test_that("getIAccNextFromComp works with ordinary component", {
                               dim = c(2, 2, 2, 3),
                               dimnames = list(time = c("2001-2010", "2011-2020"),
                                               sex = c("Female", "Male"),
-                                              triangle = c("TL", "TU"),
+                                              triangle = c("Lower", "Upper"),
                                               age = c("0-9", "10-19", "20+"))))
     accession <- Counts(array(1:8,
                               dim = c(2, 2, 2),
@@ -1252,7 +1252,7 @@ test_that("getIAccNextFromComp works with ordinary component", {
                               dimnames = list(reg = c("a", "b", "c"),
                                   time = c("2001-2010", "2011-2020"),
                                   age = c("0-9", "10+"),
-                                  triangle = c("TL", "TU"))))
+                                  triangle = c("Lower", "Upper"))))
     accession <- Counts(array(1:18,
                               dim = c(3, 2, 1),
                               dimnames = list(reg = c("a", "b", "c"),
@@ -1290,7 +1290,7 @@ test_that("R and C versions of getIAccNextFromComp give same answer with ordinar
                               dim = c(2, 2, 2, 3),
                               dimnames = list(time = c("2001-2010", "2011-2020"),
                                               sex = c("Female", "Male"),
-                                              triangle = c("TL", "TU"),
+                                              triangle = c("Lower", "Upper"),
                                               age = c("0-9", "10-19", "20+"))))
     accession <- Counts(array(1:8,
                               dim = c(2, 2, 2),
@@ -1314,7 +1314,7 @@ test_that("R and C versions of getIAccNextFromComp give same answer with ordinar
                               dimnames = list(reg = c("a", "b", "c"),
                                   time = c("2001-2010", "2011-2020"),
                                   age = c("0-9", "10+"),
-                                  triangle = c("TL", "TU"))))
+                                  triangle = c("Lower", "Upper"))))
     accession <- Counts(array(1:18,
                               dim = c(3, 2, 1),
                               dimnames = list(reg = c("a", "b", "c"),
@@ -1348,7 +1348,7 @@ test_that("getIAccNextFromComp works with BirthsMovementNoParentChild", {
     births <- Counts(array(1:8,
                            dim = c(2, 2, 2),
                            dimnames = list(time = c("2001-2010", "2011-2020"),
-                                           triangle = c("TL", "TU"),
+                                           triangle = c("Lower", "Upper"),
                                            age = c("10-19", "20-29"))))
     population <- Counts(array(1:15,
                                dim = c(3, 5),
@@ -1375,7 +1375,7 @@ test_that("getIAccNextFromComp works with BirthsMovementNoParentChild", {
                            dimnames = list(reg = c("a", "b", "c"),
                                            time = c("2001-2010", "2011-2020"),
                                            age = c("10-19", "20-29"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:36,
                                dim = c(3, 3, 4),
                                dimnames = list(reg = c("a", "b", "c"),
@@ -1412,7 +1412,7 @@ test_that("R and C versions of getIAccNextFromComp give same answer with BirthsM
     births <- Counts(array(1:8,
                            dim = c(2, 2, 2),
                            dimnames = list(time = c("2001-2010", "2011-2020"),
-                                           triangle = c("TL", "TU"),
+                                           triangle = c("Lower", "Upper"),
                                            age = c("10-19", "20-29"))))
     population <- Counts(array(1:15,
                                dim = c(3, 5),
@@ -1439,7 +1439,7 @@ test_that("R and C versions of getIAccNextFromComp give same answer with BirthsM
                            dimnames = list(reg = c("a", "b", "c"),
                                            time = c("2001-2010", "2011-2020"),
                                            age = c("10-19", "20-29"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:36,
                                dim = c(3, 3, 4),
                                dimnames = list(reg = c("a", "b", "c"),
@@ -1481,7 +1481,7 @@ test_that("getIAccNextFromComp works with BirthsMovementHasParentChild", {
                            dimnames = list(time = c("2001-2010", "2011-2020"),
                                            eth_parent = 1:3,
                                            eth_child = 1:3,
-                                           triangle = c("TL", "TU"),
+                                           triangle = c("Lower", "Upper"),
                                            age = c("10-19", "20-29"))))
     population <- Counts(array(1:15,
                                dim = c(3, 3, 5),
@@ -1515,7 +1515,7 @@ test_that("getIAccNextFromComp works with BirthsMovementHasParentChild", {
                                            reg_child = c("a", "b", "c"),
                                            time = c("2001-2010", "2011-2020"),
                                            age = c("10-19", "20-29"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:36,
                                dim = c(3, 3, 4),
                                dimnames = list(reg = c("a", "b", "c"),
@@ -1556,7 +1556,7 @@ test_that("R and C versions getIAccNextFromComp give same answer with BirthsMove
                            dimnames = list(time = c("2001-2010", "2011-2020"),
                                            eth_parent = 1:3,
                                            eth_child = 1:3,
-                                           triangle = c("TL", "TU"),
+                                           triangle = c("Lower", "Upper"),
                                            age = c("10-19", "20-29"))))
     population <- Counts(array(1:15,
                                dim = c(3, 3, 5),
@@ -1590,7 +1590,7 @@ test_that("R and C versions getIAccNextFromComp give same answer with BirthsMove
                                            reg_child = c("a", "b", "c"),
                                            time = c("2001-2010", "2011-2020"),
                                            age = c("10-19", "20-29"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:36,
                                dim = c(3, 3, 4),
                                dimnames = list(reg = c("a", "b", "c"),
@@ -1630,7 +1630,7 @@ test_that("getIAccNextFromOrigDest works with InternalMovementsOrigDest", {
                               dimnames = list(time = c("2001-2010", "2011-2020"),
                                               reg_orig = 1:3,
                                               reg_dest = 1:3,
-                                              triangle = c("TL", "TU"),
+                                              triangle = c("Lower", "Upper"),
                                               age = c("0-9", "10+"))))
     population <- Counts(array(1:18,
                                dim = c(3, 3, 2),
@@ -1676,7 +1676,7 @@ test_that("R and C versions of getIAccNextFromOrigDest give same answer with Int
                               dimnames = list(time = c("2001-2010", "2011-2020"),
                                               reg_orig = 1:3,
                                               reg_dest = 1:3,
-                                              triangle = c("TL", "TU"),
+                                              triangle = c("Lower", "Upper"),
                                               age = c("0-9", "10+"))))
     population <- Counts(array(1:18,
                                dim = c(3, 3, 2),
@@ -1716,7 +1716,7 @@ test_that("getIAccNextFromComp works with InternalMovementsPool", {
                              dimnames = list(time = c("2001-2010", "2011-2020"),
                                              reg_orig = 1:3,
                                              reg_dest = 1:3,
-                                             triangle = c("TL", "TU"),
+                                             triangle = c("Lower", "Upper"),
                                              age = c("0-9", "10-19", "20+"))))
     internal <- collapseOrigDest(internal, to = "pool")
     population <- Counts(array(1:18,
@@ -1761,7 +1761,7 @@ test_that("R and C versions of getIAccNextFromComp give same answer with Interna
                              dimnames = list(time = c("2001-2010", "2011-2020"),
                                              reg_orig = 1:3,
                                              reg_dest = 1:3,
-                                             triangle = c("TL", "TU"),
+                                             triangle = c("Lower", "Upper"),
                                              age = c("0-9", "10-19", "20+"))))
     internal <- collapseOrigDest(internal, to = "pool")
     population <- Counts(array(1:18,
@@ -1810,7 +1810,7 @@ test_that("getIExposureFromComp works with ordinary component", {
     component <- Counts(array(1:8,
                               dim = c(2, 2, 2),
                               dimnames = list(time = c("2001-2010", "2011-2020"),
-                                              triangle = c("TL", "TU"),
+                                              triangle = c("Lower", "Upper"),
                                               age = c("0-9", "10+"))))
     population <- Counts(array(1:6,
                                dim = c(3, 2),
@@ -1857,7 +1857,7 @@ test_that("getIExposureFromComp works with ordinary component", {
                               dimnames = list(reg = c("a", "b", "c"),
                                               time = c("2001-2010", "2011-2020"),
                                               age = c("0-9", "10+"),
-                                              triangle = c("TL", "TU"))))
+                                              triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:18,
                                dim = c(3, 3, 2),
                                dimnames = list(reg = c("a", "b", "c"),
@@ -1913,7 +1913,7 @@ test_that("R and C versions of getIExposureFromComp give same answer with ordina
     component <- Counts(array(1:8,
                               dim = c(2, 2, 2),
                               dimnames = list(time = c("2001-2010", "2011-2020"),
-                                              triangle = c("TL", "TU"),
+                                              triangle = c("Lower", "Upper"),
                                               age = c("0-9", "10+"))))
     population <- Counts(array(1:6,
                                dim = c(3, 2),
@@ -1960,7 +1960,7 @@ test_that("R and C versions of getIExposureFromComp give same answer with ordina
                               dimnames = list(reg = c("a", "b", "c"),
                                               time = c("2001-2010", "2011-2020"),
                                               age = c("0-9", "10+"),
-                                              triangle = c("TL", "TU"))))
+                                              triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:18,
                                dim = c(3, 3, 2),
                                dimnames = list(reg = c("a", "b", "c"),
@@ -2018,7 +2018,7 @@ test_that("getIExposureFromBirths works with BirthsMovementNoParentChild", {
     births <- Counts(array(1:8,
                            dim = c(2, 2, 2),
                            dimnames = list(time = c("2001-2010", "2011-2020"),
-                                           triangle = c("TL", "TU"),
+                                           triangle = c("Lower", "Upper"),
                                            age = c("10-19", "20-29"))))
     population <- Counts(array(1:15,
                                dim = c(3, 5),
@@ -2064,7 +2064,7 @@ test_that("getIExposureFromBirths works with BirthsMovementNoParentChild", {
                            dimnames = list(reg = c("a", "b", "c"),
                                            time = c("2001-2010", "2011-2020"),
                                            age = c("10-19", "20-29"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:36,
                                dim = c(3, 3, 4),
                                dimnames = list(reg = c("a", "b", "c"),
@@ -2141,7 +2141,7 @@ test_that("R and C versions of getIExposureFromBirths give same answer with Birt
     births <- Counts(array(1:8,
                            dim = c(2, 2, 2),
                            dimnames = list(time = c("2001-2010", "2011-2020"),
-                                           triangle = c("TL", "TU"),
+                                           triangle = c("Lower", "Upper"),
                                            age = c("10-19", "20-29"))))
     population <- Counts(array(1:15,
                                dim = c(3, 5),
@@ -2186,7 +2186,7 @@ test_that("R and C versions of getIExposureFromBirths give same answer with Birt
                            dimnames = list(reg = c("a", "b", "c"),
                                            time = c("2001-2010", "2011-2020"),
                                            age = c("10-19", "20-29"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:36,
                                dim = c(3, 3, 4),
                                dimnames = list(reg = c("a", "b", "c"),
@@ -2266,7 +2266,7 @@ test_that("getIExposureFromBirths works with BirthsMovementHasParentChild", {
                            dimnames = list(time = c("2001-2010", "2011-2020"),
                                eth_parent = 1:3,
                                eth_child = 1:3,
-                               triangle = c("TL", "TU"),
+                               triangle = c("Lower", "Upper"),
                                age = c("10-19", "20-29"))))
     population <- Counts(array(1:15,
                                dim = c(3, 3, 5),
@@ -2325,7 +2325,7 @@ test_that("getIExposureFromBirths works with BirthsMovementHasParentChild", {
                                reg_child = c("a", "b", "c"),
                                time = c("2001-2010", "2011-2020"),
                                age = c("10-19", "20-29"),
-                               triangle = c("TL", "TU"))))
+                               triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:36,
                                dim = c(3, 3, 4),
                                dimnames = list(reg = c("a", "b", "c"),
@@ -2392,7 +2392,7 @@ test_that("R and C versions of getIExposureFromBirths give same answer with Birt
                            dimnames = list(time = c("2001-2010", "2011-2020"),
                                eth_parent = 1:3,
                                eth_child = 1:3,
-                               triangle = c("TL", "TU"),
+                               triangle = c("Lower", "Upper"),
                                age = c("10-19", "20-29"))))
     population <- Counts(array(1:15,
                                dim = c(3, 3, 5),
@@ -2444,7 +2444,7 @@ test_that("R and C versions of getIExposureFromBirths give same answer with Birt
                                reg_child = c("a", "b", "c"),
                                time = c("2001-2010", "2011-2020"),
                                age = c("10-19", "20-29"),
-                               triangle = c("TL", "TU"))))
+                               triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:36,
                                dim = c(3, 3, 4),
                                dimnames = list(reg = c("a", "b", "c"),
@@ -2505,7 +2505,7 @@ test_that("getIExposureFromOrigDest works with InternalMovementsOrigDest", {
                               dimnames = list(time = c("2001-2010", "2011-2020"),
                                   reg_orig = 1:3,
                                   reg_dest = 1:3,
-                                  triangle = c("TL", "TU"),
+                                  triangle = c("Lower", "Upper"),
                                   age = c("0-9", "10+"))))
     population <- Counts(array(1:18,
                                dim = c(3, 3, 2),
@@ -2597,7 +2597,7 @@ test_that("R and C versions of getIExposureFromOrigDest give same answer with In
                               dimnames = list(time = c("2001-2010", "2011-2020"),
                                   reg_orig = 1:3,
                                   reg_dest = 1:3,
-                                  triangle = c("TL", "TU"),
+                                  triangle = c("Lower", "Upper"),
                                   age = c("0-9", "10+"))))
     population <- Counts(array(1:18,
                                dim = c(3, 3, 2),
@@ -2689,7 +2689,7 @@ test_that("getIExposureFromComp works with InternalMovementsPool", {
                               dimnames = list(time = c("2001-2010", "2011-2020"),
                                   reg_orig = 1:3,
                                   reg_dest = 1:3,
-                                  triangle = c("TL", "TU"),
+                                  triangle = c("Lower", "Upper"),
                                   age = c("0-9", "10+"))))
     component <- collapseOrigDest(component, to = "pool")
     population <- Counts(array(1:18,
@@ -2780,7 +2780,7 @@ test_that("getIExposureFromComp works with InternalMovementsPool", {
                               dimnames = list(time = c("2001-2010", "2011-2020"),
                                   reg_orig = 1:3,
                                   reg_dest = 1:3,
-                                  triangle = c("TL", "TU"),
+                                  triangle = c("Lower", "Upper"),
                                   age = c("0-9", "10+"))))
     component <- collapseOrigDest(component, to = "pool")
     population <- Counts(array(1:18,
@@ -2874,7 +2874,7 @@ test_that("getIExpFirstFromComp works with ordinary component", {
     component <- Counts(array(1:8,
                               dim = c(2, 2, 2),
                               dimnames = list(time = c("2001-2010", "2011-2020"),
-                                              triangle = c("TL", "TU"),
+                                              triangle = c("Lower", "Upper"),
                                               age = c("0-9", "10+"))))
     population <- Counts(array(1:6,
                                dim = c(3, 2),
@@ -2922,7 +2922,7 @@ test_that("getIExpFirstFromComp works with ordinary component", {
                               dimnames = list(reg = c("a", "b", "c"),
                                               time = c("2001-2010", "2011-2020"),
                                               age = c("0-9", "10+"),
-                                              triangle = c("TL", "TU"))))
+                                              triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:18,
                                dim = c(3, 3, 2),
                                dimnames = list(reg = c("a", "b", "c"),
@@ -2972,7 +2972,7 @@ test_that("getIExpFirstFromComp works with ordinary component", {
                               dimnames = list(reg = c("a", "b", "c"),
                                               time = c("2001-2010", "2011-2020"),
                                               age = c("0-9", "10-19", "20+"),
-                                              triangle = c("TL", "TU"))))
+                                              triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:18,
                                dim = c(3, 3, 3),
                                dimnames = list(reg = c("a", "b", "c"),
@@ -3004,7 +3004,7 @@ test_that("R and C versions of getIExpFirstFromComp give same answer with ordina
     component <- Counts(array(1:8,
                               dim = c(2, 2, 2),
                               dimnames = list(time = c("2001-2010", "2011-2020"),
-                                              triangle = c("TL", "TU"),
+                                              triangle = c("Lower", "Upper"),
                                               age = c("0-9", "10+"))))
     population <- Counts(array(1:6,
                                dim = c(3, 2),
@@ -3051,7 +3051,7 @@ test_that("R and C versions of getIExpFirstFromComp give same answer with ordina
                               dimnames = list(reg = c("a", "b", "c"),
                                               time = c("2001-2010", "2011-2020"),
                                               age = c("0-9", "10+"),
-                                              triangle = c("TL", "TU"))))
+                                              triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:18,
                                dim = c(3, 3, 2),
                                dimnames = list(reg = c("a", "b", "c"),
@@ -3109,7 +3109,7 @@ test_that("getIExpFirstFromBirths works with BirthsMovementNoParentChild", {
     births <- Counts(array(1:8,
                            dim = c(2, 2, 2),
                            dimnames = list(time = c("2001-2010", "2011-2020"),
-                               triangle = c("TL", "TU"),
+                               triangle = c("Lower", "Upper"),
                                age = c("10-19", "20-29"))))
     population <- Counts(array(1:15,
                                dim = c(3, 5),
@@ -3155,7 +3155,7 @@ test_that("getIExpFirstFromBirths works with BirthsMovementNoParentChild", {
                               dimnames = list(reg = c("a", "b", "c"),
                                   time = c("2001-2010", "2011-2020"),
                                   age = c("10-19", "20-29"),
-                                  triangle = c("TL", "TU"))))
+                                  triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:36,
                                dim = c(3, 3, 4),
                                dimnames = list(reg = c("a", "b", "c"),
@@ -3209,7 +3209,7 @@ test_that("R and C versions of getIExpFirstFromBirths give same answer with Birt
     births <- Counts(array(1:8,
                            dim = c(2, 2, 2),
                            dimnames = list(time = c("2001-2010", "2011-2020"),
-                               triangle = c("TL", "TU"),
+                               triangle = c("Lower", "Upper"),
                                age = c("10-19", "20-29"))))
     population <- Counts(array(1:15,
                                dim = c(3, 5),
@@ -3255,7 +3255,7 @@ test_that("R and C versions of getIExpFirstFromBirths give same answer with Birt
                               dimnames = list(reg = c("a", "b", "c"),
                                   time = c("2001-2010", "2011-2020"),
                                   age = c("10-19", "20-29"),
-                                  triangle = c("TL", "TU"))))
+                                  triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:36,
                                dim = c(3, 3, 4),
                                dimnames = list(reg = c("a", "b", "c"),
@@ -3313,7 +3313,7 @@ test_that("getIExpFirstFromBirths works with BirthsMovementHasParentChild", {
                            dimnames = list(time = c("2001-2010", "2011-2020"),
                                eth_parent = 1:3,
                                eth_child = 1:3,
-                               triangle = c("TL", "TU"),
+                               triangle = c("Lower", "Upper"),
                                age = c("10-19", "20-29"))))
     population <- Counts(array(1:15,
                                dim = c(3, 3, 5),
@@ -3371,7 +3371,7 @@ test_that("getIExpFirstFromBirths works with BirthsMovementHasParentChild", {
                                reg_child = c("a", "b", "c"),
                                time = c("2001-2010", "2011-2020"),
                                age = c("10-19", "20-29"),
-                               triangle = c("TL", "TU"))))
+                               triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:36,
                                dim = c(3, 3, 4),
                                dimnames = list(reg = c("a", "b", "c"),
@@ -3432,7 +3432,7 @@ test_that("R and C versions of getIExpFirstFromBirths give same answer with Birt
                            dimnames = list(time = c("2001-2010", "2011-2020"),
                                eth_parent = 1:3,
                                eth_child = 1:3,
-                               triangle = c("TL", "TU"),
+                               triangle = c("Lower", "Upper"),
                                age = c("10-19", "20-29"))))
     population <- Counts(array(1:15,
                                dim = c(3, 3, 5),
@@ -3490,7 +3490,7 @@ test_that("R and C versions of getIExpFirstFromBirths give same answer with Birt
                                reg_child = c("a", "b", "c"),
                                time = c("2001-2010", "2011-2020"),
                                age = c("10-19", "20-29"),
-                               triangle = c("TL", "TU"))))
+                               triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:36,
                                dim = c(3, 3, 4),
                                dimnames = list(reg = c("a", "b", "c"),
@@ -3551,7 +3551,7 @@ test_that("getIExpFirstPairFromOrigDest works with InternalMovementsOrigDest", {
                               dimnames = list(time = c("2001-2010", "2011-2020"),
                                               reg_orig = 1:3,
                                               reg_dest = 1:3,
-                                              triangle = c("TL", "TU"),
+                                              triangle = c("Lower", "Upper"),
                                               age = c("0-9", "10+"))))
     population <- Counts(array(1:18,
                                dim = c(3, 3, 2),
@@ -3653,7 +3653,7 @@ test_that("R and C versions of getIExpFirstPairFromOrigDest give same answer wit
                               dimnames = list(time = c("2001-2010", "2011-2020"),
                                               reg_orig = 1:3,
                                               reg_dest = 1:3,
-                                              triangle = c("TL", "TU"),
+                                              triangle = c("Lower", "Upper"),
                                               age = c("0-9", "10+"))))
     population <- Counts(array(1:18,
                                dim = c(3, 3, 2),
@@ -3743,7 +3743,7 @@ test_that("getIExpFirstFromComp works with InternalMovementsPool", {
                               dimnames = list(time = c("2001-2010", "2011-2020"),
                                               reg_orig = 1:3,
                                               reg_dest = 1:3,
-                                              triangle = c("TL", "TU"),
+                                              triangle = c("Lower", "Upper"),
                                               age = c("0-9", "10+"))))
     component <- collapseOrigDest(component, to = "pool")
     population <- Counts(array(1:18,
@@ -3838,7 +3838,7 @@ test_that("R and C versions of getIExpFirstFromComp give same answer with Intern
                               dimnames = list(time = c("2001-2010", "2011-2020"),
                                               reg_orig = 1:3,
                                               reg_dest = 1:3,
-                                              triangle = c("TL", "TU"),
+                                              triangle = c("Lower", "Upper"),
                                               age = c("0-9", "10+"))))
     component <- collapseOrigDest(component, to = "pool")
     population <- Counts(array(1:18,
@@ -3930,7 +3930,7 @@ test_that("getICellCompFromExp works with generic Component", {
     component <- Counts(array(1:8,
                               dim = c(2, 2, 2),
                               dimnames = list(time = c("2001-2010", "2011-2020"),
-                                  triangle = c("TL", "TU"),
+                                  triangle = c("Lower", "Upper"),
                                   age = c("0-9", "10+"))))
     population <- Counts(array(1:6,
                                dim = c(3, 2),
@@ -3963,7 +3963,7 @@ test_that("R and C give same answer with getICellCompFromExp with generic Compon
     component <- Counts(array(1:8,
                               dim = c(2, 2, 2),
                               dimnames = list(time = c("2001-2010", "2011-2020"),
-                                              triangle = c("TL", "TU"),
+                                              triangle = c("Lower", "Upper"),
                                               age = c("0-9", "10+"))))
     population <- Counts(array(1:6,
                                dim = c(3, 2),
@@ -3997,7 +3997,7 @@ test_that("getICellCompFromExp works with InternalMovementsOrigDest", {
                               dimnames = list(time = c("2001-2010", "2011-2020"),
                                               reg_orig = 1:3,
                                               reg_dest = 1:3,
-                                              triangle = c("TL", "TU"),
+                                              triangle = c("Lower", "Upper"),
                                               age = c("0-9", "10+"))))
     population <- Counts(array(1:18,
                                dim = c(3, 3, 2),
@@ -4088,7 +4088,7 @@ test_that("R and C versions of getICellCompFromExp give same answer with Interna
                               dimnames = list(time = c("2001-2010", "2011-2020"),
                                               reg_orig = 1:3,
                                               reg_dest = 1:3,
-                                              triangle = c("TL", "TU"),
+                                              triangle = c("Lower", "Upper"),
                                               age = c("0-9", "10+"))))
     population <- Counts(array(1:18,
                                dim = c(3, 3, 2),
@@ -4175,7 +4175,7 @@ test_that("getICellCompFromExp works with InternalMovementsPool", {
                               dimnames = list(time = c("2001-2010", "2011-2020"),
                                               reg_orig = 1:3,
                                               reg_dest = 1:3,
-                                              triangle = c("TL", "TU"),
+                                              triangle = c("Lower", "Upper"),
                                               age = c("0-9", "10+"))))
     component <- collapseOrigDest(component, to = "pool")
     population <- Counts(array(1:18,
@@ -4262,7 +4262,7 @@ test_that("R and C versions of getICellCompFromExp work with InternalMovementsPo
                               dimnames = list(time = c("2001-2010", "2011-2020"),
                                               reg_orig = 1:3,
                                               reg_dest = 1:3,
-                                              triangle = c("TL", "TU"),
+                                              triangle = c("Lower", "Upper"),
                                               age = c("0-9", "10+"))))
     component <- collapseOrigDest(component, to = "pool")
     population <- Counts(array(1:18,
@@ -4349,7 +4349,7 @@ test_that("getICellBirthsFromExp works with BirthsNoParentChild", {
     births <- Counts(array(1:8,
                            dim = c(2, 2, 2),
                            dimnames = list(time = c("2001-2010", "2011-2020"),
-                               triangle = c("TL", "TU"),
+                               triangle = c("Lower", "Upper"),
                                age = c("10-19", "20-29"))))
     population <- Counts(array(1:15,
                                dim = c(3, 5),
@@ -4398,7 +4398,7 @@ test_that("getICellBirthsFromExp works with BirthsNoParentChild", {
                               dimnames = list(reg = c("a", "b", "c"),
                                   time = c("2001-2010", "2011-2020"),
                                   age = c("10-19", "20-29"),
-                                  triangle = c("TL", "TU"))))
+                                  triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:36,
                                dim = c(3, 3, 4),
                                dimnames = list(reg = c("a", "b", "c"),
@@ -4454,7 +4454,7 @@ test_that("R and C versions of getICellBirthsFromExp give same answer with Birth
     births <- Counts(array(1:8,
                            dim = c(2, 2, 2),
                            dimnames = list(time = c("2001-2010", "2011-2020"),
-                               triangle = c("TL", "TU"),
+                               triangle = c("Lower", "Upper"),
                                age = c("10-19", "20-29"))))
     population <- Counts(array(1:15,
                                dim = c(3, 5),
@@ -4503,7 +4503,7 @@ test_that("R and C versions of getICellBirthsFromExp give same answer with Birth
                               dimnames = list(reg = c("a", "b", "c"),
                                   time = c("2001-2010", "2011-2020"),
                                   age = c("10-19", "20-29"),
-                                  triangle = c("TL", "TU"))))
+                                  triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:36,
                                dim = c(3, 3, 4),
                                dimnames = list(reg = c("a", "b", "c"),
@@ -4561,7 +4561,7 @@ test_that("getICellBirthsFromExp works with BirthsMovementHasParentChild", {
                            dimnames = list(time = c("2001-2010", "2011-2020"),
                                eth_parent = 1:3,
                                eth_child = 1:3,
-                               triangle = c("TL", "TU"),
+                               triangle = c("Lower", "Upper"),
                                age = c("10-19", "20-29"))))
     population <- Counts(array(1:15,
                                dim = c(3, 3, 5),
@@ -4620,7 +4620,7 @@ test_that("getICellBirthsFromExp works with BirthsMovementHasParentChild", {
                                reg_child = c("a", "b", "c"),
                                time = c("2001-2010", "2011-2020"),
                                age = c("10-19", "20-29"),
-                               triangle = c("TL", "TU"))))
+                               triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:36,
                                dim = c(3, 3, 4),
                                dimnames = list(reg = c("a", "b", "c"),
@@ -4693,7 +4693,7 @@ test_that("getICellBirthsFromExp works with BirthsMovementHasParentChild", {
                            dimnames = list(time = c("2001-2010", "2011-2020"),
                                            eth_parent = 1:3,
                                            eth_child = 1:3,
-                                           triangle = c("TL", "TU"),
+                                           triangle = c("Lower", "Upper"),
                                            age = c("10-19", "20-29"))))
     population <- Counts(array(1:15,
                                dim = c(3, 3, 5),
@@ -4743,7 +4743,7 @@ test_that("getICellBirthsFromExp works with BirthsMovementHasParentChild", {
                                            reg_child = c("a", "b", "c"),
                                            time = c("2001-2010", "2011-2020"),
                                            age = c("10-19", "20-29"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:36,
                                dim = c(3, 3, 4),
                                dimnames = list(reg = c("a", "b", "c"),

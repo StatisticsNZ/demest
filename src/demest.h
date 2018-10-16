@@ -153,6 +153,7 @@ SEXP
   hasAge_sym,
   hasSex_sym,
   iSexDominant_sym,
+  stepSexCurrent_sym,
   stepSexTarget_sym,
   nAge_sym,
   stepAge_sym,
