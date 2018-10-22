@@ -36,7 +36,7 @@ setMethod("summary",
 ## HAS_TESTS
 setMethod("summary",
           signature(object = "ResultsModelEst"),
-          function(object, filename, iteration = NULL) {
+          function(object, filename, nSummary, iteration = NULL) {
               y <- object@y
               mcmc <- object@mcmc
               final <- object@final[[1L]]
@@ -50,6 +50,7 @@ setMethod("summary",
                            mcmc = mcmc,
                            parameters = parameters,
                            gelmanDiag = gelman.diag,
+                           nSummaryMCMC = nSummary,
                            metropolis = metropolis,
                            model = summary.model,
                            y = summary.y)
@@ -73,7 +74,7 @@ setMethod("summary",
 ## HAS_TESTS
 setMethod("summary",
           signature(object = "ResultsCountsEst"),
-          function(object, filename, iteration = NULL) {
+          function(object, filename, nSummary, iteration = NULL) {
               mcmc <- object@mcmc
               final <- object@final[[1L]]
               model <- final@model
@@ -92,6 +93,7 @@ setMethod("summary",
                            mcmc = mcmc,
                            parameters = parameters,
                            gelmanDiag = gelman.diag,
+                           nSummary = nSummaryMCMC,
                            metropolis = metropolis,
                            model = model.summary,
                            y = y.summary,
@@ -123,6 +125,7 @@ setMethod("summary",
                            mcmc = mcmc,
                            parameters = parameters,
                            gelmanDiag = gelman.diag,
+                           nSummary = nSummary,
                            metropolis = metropolis,
                            account = account.summary,
                            systemModels = system.models.summary,

@@ -14356,13 +14356,14 @@ test_that("makeGelmanDiag works with BinomialVarying", {
     ans.obtained <- makeGelmanDiag(object, filename = filename)
     set.seed(1)
     mcmc.all <- fetchMCMC(filename)
-    ans.expected <- numeric(length(mcmc.all))
+    ans.expected <- array(dim = c(length(mcmc.all), 2))
     for (i in seq_along(mcmc.all)) {
         tmp <- foldMCMCList(mcmc.all[[i]])
         tmp <- coda::gelman.diag(tmp, autoburnin = FALSE, multivariate = FALSE)
-        ans.expected[i] <- max(tmp$psrf[, "Point est."])
+        ans.expected[i,] <- c(median(tmp$psrf[, "Point est."]), max(tmp$psrf[, "Point est."]))
     }
-    names(ans.expected) <- names(mcmc.all)
+    rownames(ans.expected) <- names(mcmc.all)
+    colnames(ans.expected) <- c("median", "max")
     expect_identical(ans.obtained, ans.expected)
 })
 

@@ -187,9 +187,49 @@ test_that("can create valid object of class SummaryResultsModelEst", {
                  nZero = 3L,
                  median = 33.5),
              mcmc = c(nBurnin = 1000L, nSim = 1000L, nChain = 2L, nThin = 10L, nIteration = 200L),
-             gelmanDiag = c(model.likelihood.mean = 1.3),
+             gelmanDiag = matrix(c(1.3, 1.6), nrow = 1,
+                                 dimnames = list("model.likelihood.mean", c("median", "max"))),
+             nSampleMCMC = new("Length", 25L),
              parameters = data.frame("2.5%" = 0.1, "50%" = 0.3, "97.5%" = 0.5, length = 1))
     expect_true(validObject(x))
+})
+
+test_that("can validity tests for SummaryResultsModelEst inerited from GelmanDiagMixin work", {
+    x <- new("SummaryResultsModelEst",
+             metropolis = data.frame(jump = 1, acceptance = 0.3, autocorr = 0.38,
+                                     row.names = "model.likelihood.mean"),
+             model = new("SummaryModel",
+                         specification = "y ~ Binomial(mean ~ 1)",
+                         dimensions = c("age", "sex")),
+             y = new("SummaryDataset",
+                     classStr = "Counts",
+                     dimensions = c("age", "sex"),
+                     nCell = 24L,
+                     nMissing = 0L,
+                     isIntegers = TRUE,
+                     nZero = 3L,
+                     median = 33.5),
+             mcmc = c(nBurnin = 1000L, nSim = 1000L, nChain = 2L, nThin = 10L, nIteration = 200L),
+             gelmanDiag = matrix(c(1.3, 1.6), nrow = 1,
+                                 dimnames = list("model.likelihood.mean", c("median", "max"))),
+             nSampleMCMC = new("Length", 25L),
+             parameters = data.frame("2.5%" = 0.1, "50%" = 0.3, "97.5%" = 0.5, length = 1))
+    expect_true(validObject(x))
+    ## has colnames 'median', 'max'
+    x.wrong <- x
+    colnames(x.wrong@gelmanDiag)[1] <- "wrong"
+    expect_error(validObject(x.wrong),
+                 "'gelmanDiag' has invalid colnames")
+    ## has rownames
+    x.wrong <- x
+    rownames(x.wrong@gelmanDiag) <- NULL
+    expect_error(validObject(x.wrong),
+                 "'gelmanDiag' does not have rownames")
+    ## is numeric
+    x.wrong <- x
+    x.wrong@gelmanDiag[] <- "a"
+    expect_error(validObject(x.wrong),
+                 "'gelmanDiag' is non-numeric")
 })
 
 test_that("can create valid object of class SummaryResultsModelPred", {
@@ -206,35 +246,40 @@ test_that("can create valid object of class SummaryResultsModelPred", {
 test_that("can create valid object of class SummaryResultsCounts", {
     x <- new("SummaryResultsCounts",
              metropolis = data.frame(jump = c(1, 0.1),
-                 acceptance = c(0.3, 0.4),
-                 autocorr = c(0.38, 0.4),
-                 row.names = c("model.prior.sd", "data.models.prior.sd")),
+                                     acceptance = c(0.3, 0.4),
+                                     autocorr = c(0.38, 0.4),
+                                     row.names = c("model.prior.sd", "data.models.prior.sd")),
              model = new("SummaryModel",
-                 specification = "y ~ Binomial(prob = 0.6)",
-                 dimensions = c("age", "sex")),
+                         specification = "y ~ Binomial(prob = 0.6)",
+                         dimensions = c("age", "sex")),
              y = new("SummarySeries",
-                 dimensions = c("age", "sex"),
-                 nCell = 24L),
+                     dimensions = c("age", "sex"),
+                     nCell = 24L),
              dataModels = list(new("SummaryModel",
-                 specification = "y ~ Poisson(mean = 1)",
-                 dimensions = "age")),
+                                   specification = "y ~ Poisson(mean = 1)",
+                                   dimensions = "age")),
              datasets = list(new("SummaryDataset",
-                 classStr = "Counts",
-                 dimensions = "age", 
-                 nCell = 12L,
-                 nMissing = 0L,
-                 isIntegers = TRUE,
-                 nZero = 0L,
-                 median = 5)),
+                                 classStr = "Counts",
+                                 dimensions = "age", 
+                                 nCell = 12L,
+                                 nMissing = 0L,
+                                 isIntegers = TRUE,
+                                 nZero = 0L,
+                                 median = 5)),
              namesDatasets = "census",
              mcmc = c(nBurnin = 1000L, nSim = 1000L, nChain = 2L, nThin = 10L, nIteration = 200L),
              parameters = data.frame(matrix(rnorm(16), nc = 4),
-                 row.names = c("model.likelihood.prob", "model.prior.sd",
-                     "dataModels.census.likelihood.mean",
-                     "dataModels.census.likelihood.sd")),
-             gelmanDiag = c("model.likelihood.prob" = 1, "model.prior.sd" = 1,
-                     "dataModels.census.likelihood.mean" = 1,
-                     "dataModels.census.likelihood.sd" = 1))
+                                     row.names = c("model.likelihood.prob", "model.prior.sd",
+                                                   "dataModels.census.likelihood.mean",
+                                                   "dataModels.census.likelihood.sd")),
+             nSampleMCMC = new("Length", 25L),
+             gelmanDiag = matrix(c(1, 1, 1, 1, 2, 2, 2, 2),
+                                 ncol = 2,
+                                 dimnames = list(c("model.likelihood.prob",
+                                                   "model.prior.sd",
+                                                   "dataModels.census.likelihood.mean",
+                                                   "dataModels.census.likelihood.sd"),
+                                                 c("median", "max"))))
     expect_true(validObject(x))
 })
 

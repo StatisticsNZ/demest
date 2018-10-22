@@ -395,6 +395,8 @@ fetchCoverage <- function(filename, dataset) {
     suppressMessages(dataset / series)
 }
 
+
+## TODO - add nSample argument
 ## HAS_TESTS
 #' Create a list of objects for analysis with package "coda".
 #' 
@@ -551,10 +553,12 @@ fetchMCMC <- function(filename, where = NULL, sample = NULL, thinned = TRUE) {
 #' Summarise the results from \code{\link{estimateModel}},
 #' \code{\link{estimateCounts}} or \code{\link{estimateAccount}}.
 #' \code{fetchSummary} can also be called on results from prediction
-#' functions, though doing so is generally less informative.
+#' functions, though doing so is generally less enlightening.
 #'
 #' @param filename The filename used by the estimation or prediction
 #' function.
+#' @param nSample The number of cells to sample from a vector of
+#' parameters.
 #'
 #' @section Metropolis-Hastings updates:
 #'
@@ -564,9 +568,9 @@ fetchMCMC <- function(filename, where = NULL, sample = NULL, thinned = TRUE) {
 #' proportion of proposals that are accepted.  \code{autocorrelation}
 #' is the correlation between successive iterations, after thinning.
 #' Autocorrelations are calculated separately, parameter by parameter,
-#' and then averaged.  If a batch contains more than 25 parameters,
-#' then 25 parameters are chosen at random, and autocorrelations calculated
-#' only for that sample.
+#' and then averaged.  If a batch contains more than \code{nSample} parameters,
+#' then \code{nSample} parameters are chosen at random, and autocorrelations
+#' calculated only for that sample.
 #'
 #' The Metropolis-Hastings statistics can be extracted from the summary
 #' object using function \code{\link{metropolis}}.
@@ -585,7 +589,8 @@ fetchMCMC <- function(filename, where = NULL, sample = NULL, thinned = TRUE) {
 #' then \code{parameters} shows (approximately) the quantiles that would
 #' be obtained by calling function \code{quantile} on the combined
 #' 5 x 1000 = 5000 elements.  The results are only approximate because,
-#' to save time, \code{parameters} samples at most 25 iterations.
+#' to save time, \code{parameters} samples at most \code{nSample}
+#' iterations.
 #'
 #' The parameter summaries can be extracted using
 #' function \code{\link{parameters}}.
@@ -606,9 +611,10 @@ fetchMCMC <- function(filename, where = NULL, sample = NULL, thinned = TRUE) {
 #'
 #' There is a multivariate of Rhat for use with batches of parameters,
 #' but it is prone to numeric problems. \code{fetchSummary} calculates
-#' Rhats parameter by parameter, and then reports the maximum value,
-#' which is a conservative approach. To save time, if a batch of parameters
-#' contains more than 25 elements, a sample of 25 parameters is extracted,
+#' Rhats parameter by parameter, and then reports the median and
+#' maxmum values. To save time, if a batch of parameters
+#' contains more than \code{nSample} elements,
+#' a sample of \code{nSample} parameters is extracted,
 #' and Rhats calculated for those. The sampling introduces an element
 #' of randomness: if \code{fetchSample} is called twice on the same
 #' \code{filename} the results for \code{Rhat} will differ.
@@ -638,7 +644,7 @@ fetchMCMC <- function(filename, where = NULL, sample = NULL, thinned = TRUE) {
 #' \emph{Handbook of Markov Chain Monte Carlo}. CRC Press.
 #'
 #' Gelman, A., Carlin, J.B., Stern, H.S. and Rubin, D.B., 2014.
-#' \emph{Bayesian Ddata Analysis. Third Edition.} Boca Raton, FL, USA:
+#' \emph{Bayesian Data Analysis. Third Edition.} Boca Raton, FL, USA:
 #' Chapman & Hall/CRC.
 #'
 #' @examples
@@ -666,9 +672,14 @@ fetchMCMC <- function(filename, where = NULL, sample = NULL, thinned = TRUE) {
 #' metropolis(summary.est)
 #' parameters(summary.est)
 #' @export
-fetchSummary <- function(filename) {
+fetchSummary <- function(filename, nSummary = 25) {
+    nSummary <- checkPositiveInteger(x = nSummary,
+                                     name = "nSummary")
+    nSummary <- as.integer(nSummary)
     object <- fetchResultsObject(filename)
-    summary(object = object, filename = filename)
+    summary(object = object,
+            filename = filename,
+            nSummary = nSummary)
 }
 
 ## HAS_TESTS

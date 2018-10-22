@@ -80,9 +80,10 @@ setMethod("show",
                   cat("\nparameters:\n")
                   parameters[] <- lapply(parameters, formatC, digits = kDigits, format = "fg")
                   Rhat <- round(gelmanDiag, digits = kDigits - 1L)
-                  dot <- ifelse(Rhat < 1.1, "", ".")
+                  dot <- ifelse(Rhat[ , "max"] < 1.1, "", ".")
                   df <- data.frame(" " = dot,
-                                   Rhat = Rhat,
+                                   "Rhat med" = Rhat[ , "median"],
+                                   "Rhat max" = Rhat[ , "max"],
                                    parameters,
                                    check.names = FALSE)
                   print(df)
@@ -166,9 +167,10 @@ setMethod("show",
                   cat("\nparameters:\n")
                   parameters[] <- lapply(parameters, formatC, digits = kDigits, format = "fg")
                   Rhat <- round(gelmanDiag, digits = kDigits - 1L)
-                  dot <- ifelse(Rhat < 1.1, "", ".")
+                  dot <- ifelse(Rhat[ , "max"] < 1.1, "", ".")
                   df <- data.frame(" " = dot,
-                                   Rhat = Rhat,
+                                   "Rhat med" = Rhat[ , "median"],
+                                   "Rhat max" = Rhat[ , "max"],
                                    parameters,
                                    check.names = FALSE)
                   print(df)
@@ -236,9 +238,10 @@ setMethod("show",
                   cat("\nparameters:\n")
                   parameters[] <- lapply(parameters, formatC, digits = kDigits, format = "fg")
                   Rhat <- round(gelmanDiag, digits = kDigits - 1L)
-                  dot <- ifelse(Rhat < 1.1, "", ".")
+                  dot <- ifelse(Rhat[ , "max"] < 1.1, "", ".")
                   df <- data.frame(" " = dot,
-                                   Rhat = Rhat,
+                                   "Rhat med" = Rhat[ , "median"],
+                                   "Rhat max" = Rhat[ , "max"],
                                    parameters,
                                    check.names = FALSE)
                   print(df)

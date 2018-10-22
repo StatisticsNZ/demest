@@ -25,14 +25,41 @@ setClass("SummaryResults",
          contains = "VIRTUAL")
 
 ## HAS_TESTS
+setClass("GelmanDiagMixin",
+         slots = c(gelmanDiag = "matrix"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             gelmanDiag <- object@gelmanDiag
+             ## has colnames 'median', 'max'
+             if (!identical(colnames(gelmanDiag), c("median", "max")))
+                 return(gettextf("'%s' has invalid colnames",
+                                 "gelmanDiag"))
+             ## has rownames
+             if (is.null(rownames(gelmanDiag)))
+                 return(gettextf("'%s' does not have rownames",
+                                 "gelmanDiag"))
+             ## is numeric
+             if (!is.numeric(gelmanDiag))
+                 return(gettextf("'%s' is non-numeric",
+                                 "gelmanDiag"))
+             TRUE
+         })
+
+
+## NO_TESTS
+setClass("NSampleMCMC",
+         slots = c(nSampleMCMC = "Length"),
+         contains = "VIRTUAL")
+
+## HAS_TESTS
 setClass("SummaryDataset",
          slots = c(classStr = "character",
-                        dimensions = "character",
-                        nCell = "integer",
-                        nMissing = "integer",
-                        isIntegers = "logical",
-                        nZero = "integer",
-                        median = "numeric"),
+                   dimensions = "character",
+                   nCell = "integer",
+                   nMissing = "integer",
+                   isIntegers = "logical",
+                   nZero = "integer",
+                   median = "numeric"),
          validity = function(object) {
              nCell <- object@nCell
              nMissing <- object@nMissing
@@ -79,8 +106,8 @@ setClass("SummaryDataset",
                  for (name in c("isIntegers", "median")) {
                      value <- methods::slot(object, name)
                      if (is.na(value))
-                     return(gettextf("'%s' is missing",
-                                     name))
+                         return(gettextf("'%s' is missing",
+                                         name))
                  }
              }
              ## if 'isIntegers' is TRUE, then 'nZero' is inside valid range
@@ -107,7 +134,7 @@ setClass("SummaryDataset",
 ## HAS_TESTS
 setClass("SummarySeries",
          slots = c(dimensions = "character",
-                        nCell = "integer"),
+                   nCell = "integer"),
          validity = function(object) {
              dimensions <- object@dimensions
              nCell <- object@nCell
@@ -141,7 +168,7 @@ setClass("SummarySeries",
 ## HAS_TESTS
 setClass("SummaryModel",
          slots = c(specification = "character",
-             dimensions = "character"),
+                   dimensions = "character"),
          validity = function(object) {
              specification <- object@specification
              dimensions <- object@dimensions
@@ -174,11 +201,12 @@ setClass("SummaryModel",
 
 ## HAS_TESTS
 setClass("SummaryResultsModelEst",
-         slots = c(gelmanDiag = "numeric",
-             metropolis = "dataframeOrNULL",
-             model = "SummaryModel",
-             y = "SummaryDataset"),
-         contains = "SummaryResults")
+         slots = c(metropolis = "dataframeOrNULL",
+                   model = "SummaryModel",
+                   y = "SummaryDataset"),
+         contains = c("SummaryResults",
+                      "GelmanDiagMixin",
+                      "NSampleMCMC"))
 
 ## HAS_TESTS
 setClass("SummaryResultsModelPred",
@@ -188,14 +216,15 @@ setClass("SummaryResultsModelPred",
 
 ## HAS_TESTS
 setClass("SummaryResultsCounts",
-         slots = c(gelmanDiag = "numeric",
-             metropolis = "dataframeOrNULL",
-             model = "SummaryModel",
-             y = "SummarySeries",
-             dataModels = "list",
-             datasets = "list",
-             namesDatasets = "character"),
-         contains = "SummaryResults",
+         slots = c(metropolis = "dataframeOrNULL",
+                   model = "SummaryModel",
+                   y = "SummarySeries",
+                   dataModels = "list",
+                   datasets = "list",
+                   namesDatasets = "character"),
+         contains = c("SummaryResults",
+                      "GelmanDiagMixin",
+                      "NSampleMCMC"),
          validity = function(object) {
              dataModels <- object@dataModels
              datasets <- object@datasets
@@ -214,15 +243,16 @@ setClass("SummaryResultsCounts",
 
 ## NO_TESTS
 setClass("SummaryResultsAccount",
-         slots = c(gelmanDiag = "numeric",
-                   metropolis = "dataframeOrNULL",
+         slots = c(metropolis = "dataframeOrNULL",
                    account = "list",
                    systemModels = "list",
                    namesSeries = "character",
                    datasets = "list",
                    dataModels = "list",
                    namesDatasets = "character"),
-         contains = "SummaryResults",
+         contains = c("SummaryResults",
+                      "GelmanDiagMixin",
+                      "NSampleMCMC"),
          validity = function(object) {
              account <- object@account
              systemModels <- object@systemModels

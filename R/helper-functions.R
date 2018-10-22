@@ -9375,6 +9375,8 @@ squaredOrNA <- function(x) {
 
 ## INSPECT RESULTS ###################################################################
 
+
+## TODO - add an 'nSample' argument
 ## HAS_TESTS
 MCMCDemographic <- function(object, sample = NULL, nChain, nThin = 1L, skeleton = NULL) {
     if (!methods::is(object, "DemographicArray"))
@@ -10055,17 +10057,16 @@ makeGelmanDiag <- function(object, filename) {
     if (is.null(l))
         numeric()
     n <- length(l)
-    ans <- numeric(length = n)
+    ans <- matrix(nrow = n, ncol = 2, dimnames = list(names(l), c("median", "max")))
     for (i in seq_len(n)) {
         mcmc.list.i <- l[[i]]
         mcmc.list.i <- foldMCMCList(mcmc.list.i)
         ans.i <- coda::gelman.diag(mcmc.list.i,
                                    autoburnin = FALSE,
                                    multivariate = FALSE)
-        ans.i <- max(ans.i$psrf[, "Point est."])
-        ans[i] <- ans.i
+        ans.i <- ans.i$psrf[, "Point est."]
+        ans[i, ] <- c(median(ans.i), max(ans.i))
     }
-    names(ans) <- names(l)
     ans
 }
 
@@ -10117,7 +10118,7 @@ makeMetropolis <- function(object, filename) {
 }
 
 ## HAS_TESTS
-makeParameters <- function(object, filename) {
+makeParameters <- function(object, filename, nSample) {
     if (!methods::is(object, "Results"))
         stop(gettextf("'%s' has class \"%s\"",
                       "object", class(object)))
@@ -10125,10 +10126,10 @@ makeParameters <- function(object, filename) {
     n.iter <- dembase::nIteration(object)
     if (n.iter == 0L)
         return(NULL)
-    else if (n.iter <= 25L)
+    else if (n.iter <= nSample)
         iterations <- seq_len(n.iter)
     else
-        iterations <- sample(n.iter, size = 25L)
+        iterations <- sample(n.iter, size = nSample)
     where.est <- whereMetropStat(object, whereEstimated)
     n.where <- length(where.est)
     if (n.where == 0L)
