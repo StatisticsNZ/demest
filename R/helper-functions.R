@@ -9376,13 +9376,12 @@ squaredOrNA <- function(x) {
 ## INSPECT RESULTS ###################################################################
 
 
-## TODO - add an 'nSample' argument
 ## HAS_TESTS
-MCMCDemographic <- function(object, sample = NULL, nChain, nThin = 1L, skeleton = NULL) {
+MCMCDemographic <- function(object, sample = NULL, nSample = 25,
+                            nChain, nThin = 1L, skeleton = NULL) {
     if (!methods::is(object, "DemographicArray"))
         stop(gettextf("'%s' has class \"%s\"",
                       "object", class(object)))
-    kDefaultSize <- 25L
     .Data <- object@.Data
     dim <- dim(object)
     n.dim <- length(dim)
@@ -9394,13 +9393,15 @@ MCMCDemographic <- function(object, sample = NULL, nChain, nThin = 1L, skeleton 
     n.slice <- n.data / n.iter  ## number of values in one iteration
     s <- seq_len(n.slice)
     if (is.null(sample)) {
+        checkPositiveInteger(x = nSample,
+                             name = "nSample")
         indices.struc.zero <- getIndicesStrucZero(skeleton)
         s <- setdiff(s, indices.struc.zero)
         n.s <- length(s)
-        if ((n.s == 1L) || (kDefaultSize >= n.s))
+        if ((n.s == 1L) || (nSample >= n.s))
             sample <- s
         else
-            sample <- sample(s, size = kDefaultSize, replace = FALSE)
+            sample <- sample(s, size = nSample, replace = FALSE)
         sample <- sort(sample)
     }
     else {
@@ -10047,26 +10048,47 @@ makeContentsListInner <- function(object, nameObject, where, max, depth, listsAs
 }
 
 ## HAS_TESTS
-makeGelmanDiag <- function(object, filename) {
+makeGelmanDiag <- function(object, filename, nSample) {
+    kDotThreshold <- 1.1
     if (!methods::is(object, "Results"))
         stop(gettextf("'%s' has class \"%s\"",
                       "object", class(object)))
     if (identical(dembase::nIteration(object), 0L))
         numeric()
-    l <- fetchMCMC(filename)
+    l <- fetchMCMC(filename = filename,
+                   nSample = nSample)
     if (is.null(l))
         numeric()
-    n <- length(l)
-    ans <- matrix(nrow = n, ncol = 2, dimnames = list(names(l), c("median", "max")))
-    for (i in seq_len(n)) {
+    n.param <- length(l)
+    med <- numeric(length = n.param)
+    max <- numeric(length = n.param)
+    n <- integer(length = n.param)
+    N <- integer(length = n.param)
+    where.mcmc <- whereMetropStat(object, whereEstimated)
+    for (i in seq_len(n.param)) {
         mcmc.list.i <- l[[i]]
         mcmc.list.i <- foldMCMCList(mcmc.list.i)
-        ans.i <- coda::gelman.diag(mcmc.list.i,
-                                   autoburnin = FALSE,
-                                   multivariate = FALSE)
-        ans.i <- ans.i$psrf[, "Point est."]
-        ans[i, ] <- c(median(ans.i), max(ans.i))
+        rhat.i <- coda::gelman.diag(mcmc.list.i,
+                                    autoburnin = FALSE,
+                                    multivariate = FALSE)
+        rhat.i <- rhat.i$psrf[, "Point est."]
+        med[i] <- median(rhat.i)
+        max[i] <- max(rhat.i)
+        one.iter <- fetch(filename,
+                          where = where.mcmc[[i]],
+                          iterations = 1L,
+                          impute = FALSE)
+        skeleton <- fetchSkeleton(object,
+                                  where = where.mcmc[[i]])
+        indices.struc.zero <- getIndicesStrucZero(skeleton)
+        N[i] <- length(one.iter) - length(indices.struc.zero)
+        n[i] <- min(N[i], nSample)
     }
+    dot <- ifelse(max >= kDotThreshold, ".", "")
+    nN <- paste(n, N, sep = "/")
+    ans <- data.frame(dot, med, max, nN,
+                      stringsAsFactors = FALSE)
+    row.names(ans) <- names(l)
     ans
 }
 
@@ -10095,7 +10117,7 @@ makeMCMCPriorsBetas <- function(priors, names) {
 }
 
 ## HAS_TESTS
-makeMetropolis <- function(object, filename) {
+makeMetropolis <- function(object, filename, nSample) {
     if (!methods::is(object, "Results"))
         stop(gettextf("'%s' has class \"%s\"",
                       "object", class(object)))
@@ -10109,7 +10131,7 @@ makeMetropolis <- function(object, filename) {
     jump <- sapply(where.jump, function(where) fetch(filename, where))
     acceptance <- lapply(where.acceptance, function(where) fetch(filename, where))
     acceptance <- sapply(acceptance, mean)
-    autocorr <- lapply(where.autocorr, function(where) fetchMCMC(filename, where))
+    autocorr <- lapply(where.autocorr, function(where) fetchMCMC(filename, where, nSample = nSample))
     autocorr <- sapply(autocorr, makeAutocorr)
     ans <- data.frame(jump, acceptance, autocorr)
     rownames <- sapply(where.autocorr, function(x) paste(x, collapse = "."))
@@ -10118,7 +10140,8 @@ makeMetropolis <- function(object, filename) {
 }
 
 ## HAS_TESTS
-makeParameters <- function(object, filename, nSample) {
+makeParameters <- function(object, filename) {
+    n.iter.sample <- 100L
     if (!methods::is(object, "Results"))
         stop(gettextf("'%s' has class \"%s\"",
                       "object", class(object)))
@@ -10126,10 +10149,10 @@ makeParameters <- function(object, filename, nSample) {
     n.iter <- dembase::nIteration(object)
     if (n.iter == 0L)
         return(NULL)
-    else if (n.iter <= nSample)
+    else if (n.iter <= n.iter.sample)
         iterations <- seq_len(n.iter)
     else
-        iterations <- sample(n.iter, size = nSample)
+        iterations <- sample(n.iter, size = n.iter.sample)
     where.est <- whereMetropStat(object, whereEstimated)
     n.where <- length(where.est)
     if (n.where == 0L)
@@ -10138,23 +10161,34 @@ makeParameters <- function(object, filename, nSample) {
     length <- integer(length = n.where)
     for (i in seq_len(n.where)) {
         where <- where.est[[i]]
-        estimates <- fetch(filename,
-                           where = where,
-                           iterations = iterations,
-                           impute = FALSE)
-        estimates <- as.double(estimates)
-        quantile[[i]] <- stats::quantile(estimates,
-                                         probs = kProbs,
-                                         na.rm = TRUE)
-        length[i] <- c(length = length(estimates) %/% length(iterations))
+        posterior.sample <- fetch(filename,
+                                  where = where,
+                                  iterations = iterations,
+                                  impute = FALSE)
+        point.estimates <- collapseIterations(posterior.sample,
+                                              FUN = median,
+                                              na.rm = TRUE)
+        point.estimates <- as.numeric(point.estimates)
+        n.point.estimates <- length(point.estimates)
+        if (n.point.estimates == 1L)
+            quantile[[i]] <- c(NA,
+                               point.estimates,
+                               NA)
+        else if (n.point.estimates == 2L)
+            quantile[[i]] <- c(min(point.estimates),
+                               NA,
+                               max(point.estimate))
+        else
+            quantile[[i]] <- c(min(point.estimates),
+                               median(point.estimates),
+                               max(point.estimates))
     }
-    colnames <- c(names(quantile[[1L]]), "length")
+    colnames <- c(c("min", "med", "max"))
     rownames <- sapply(where.est, paste, collapse = ".")
-    quantile <- do.call(rbind, quantile)
-    ans <- data.frame(quantile, length)
-    rownames(ans) <- rownames
+    ans <- do.call(rbind, quantile)
     colnames(ans) <- colnames
-    ans
+    rownames(ans) <- rownames
+    as.data.frame(ans)
 }
 
 #' Extract information on Metropolis-Hastings updates.

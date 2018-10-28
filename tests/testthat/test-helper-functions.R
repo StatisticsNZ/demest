@@ -14353,9 +14353,9 @@ test_that("makeGelmanDiag works with BinomialVarying", {
                   filename = filename)
     object <- fetchResultsObject(filename)
     set.seed(1)
-    ans.obtained <- makeGelmanDiag(object, filename = filename)
+    ans.obtained <- makeGelmanDiag(object, filename = filename, nSample = 10)
     set.seed(1)
-    mcmc.all <- fetchMCMC(filename)
+    mcmc.all <- fetchMCMC(filename, nSample = 10)
     ans.expected <- array(dim = c(length(mcmc.all), 2))
     for (i in seq_along(mcmc.all)) {
         tmp <- foldMCMCList(mcmc.all[[i]])
@@ -14390,11 +14390,12 @@ test_that("makeMetropolis works with BinomialVarying", {
                   filename = filename)
     object <- fetchResultsObject(filename)
     set.seed(1)
-    ans.obtained <- makeMetropolis(object, filename = filename)
+    ans.obtained <- makeMetropolis(object, filename = filename, nSample = 25)
     set.seed(1)
     ans.expected <- data.frame(jump = fetch(filename, c("model", "likelihood", "jumpProb")),
                                acceptance = mean(fetch(filename, c("model", "likelihood", "acceptProb"))),
-                               autocorr = makeAutocorr(fetchMCMC(filename, c("model", "likelihood", "prob"))))
+                               autocorr = makeAutocorr(fetchMCMC(filename, c("model", "likelihood", "prob"),
+                                                                 nSample = 25)))
     rownames(ans.expected) <- "model.likelihood.prob"
     expect_identical(ans.obtained, ans.expected)
 })
@@ -14432,7 +14433,7 @@ test_that("makeMetropolis works with ResultsCounts", {
     object <- fetchResultsObject(filename)
     ## metropolis
     set.seed(1)
-    ans.obtained <- makeMetropolis(object, filename = filename)
+    ans.obtained <- makeMetropolis(object, filename = filename, nSample = 25)
     set.seed(1)
     ans.expected <- data.frame(jump = c(fetch(filename, c("model", "likelihood", "jumpCount")),
                                    fetch(filename, c("dataModels", "d1", "likelihood", "jumpProb")),
@@ -14440,9 +14441,12 @@ test_that("makeMetropolis works with ResultsCounts", {
                                acceptance = c(mean(fetch(filename, c("model", "likelihood", "acceptCount"))),
                                    mean(fetch(filename, c("dataModels", "d1", "likelihood", "acceptProb"))),
                                    mean(fetch(filename, c("dataModels", "d2", "likelihood", "acceptRate")))),
-                               autocorr = c(makeAutocorr(fetchMCMC(filename, c("model", "likelihood", "count"))),
-                                   makeAutocorr(fetchMCMC(filename, c("dataModels", "d1", "likelihood", "prob"))),
-                                   makeAutocorr(fetchMCMC(filename, c("dataModels", "d2", "likelihood", "rate")))))
+                               autocorr = c(makeAutocorr(fetchMCMC(filename, c("model", "likelihood", "count"),
+                                                                   nSample = 25)),
+                                            makeAutocorr(fetchMCMC(filename, c("dataModels", "d1", "likelihood", "prob"),
+                                                                   nSample = 25)),
+                                            makeAutocorr(fetchMCMC(filename, c("dataModels", "d2", "likelihood", "rate"),
+                                                                   nSample = 25))))
     rownames(ans.expected) <- c("model.likelihood.count", "dataModels.d1.likelihood.prob",
                                 "dataModels.d2.likelihood.rate")
     expect_identical(ans.obtained, ans.expected)

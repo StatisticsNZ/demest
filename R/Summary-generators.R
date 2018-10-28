@@ -36,21 +36,27 @@ setMethod("summary",
 ## HAS_TESTS
 setMethod("summary",
           signature(object = "ResultsModelEst"),
-          function(object, filename, nSummary, iteration = NULL) {
+          function(object, filename, nSample) {
               y <- object@y
               mcmc <- object@mcmc
               final <- object@final[[1L]]
               model <- final@model
-              parameters <- makeParameters(object = object, filename = filename)
-              gelman.diag <- makeGelmanDiag(object = object, filename = filename)
-              metropolis <- makeMetropolis(object = object, filename = filename)
+              parameters <- makeParameters(object = object,
+                                           filename = filename)
+              gelman.diag <- makeGelmanDiag(object = object,
+                                            filename = filename,
+                                            nSample = nSample)
+              metropolis <- makeMetropolis(object = object,
+                                           filename = filename,
+                                           nSample = nSample)
               summary.model <- summary(model)
               summary.y <- summaryDataset(y)
+              nSampleMCMC <- new("Length", nSample)
               methods::new("SummaryResultsModelEst",
                            mcmc = mcmc,
                            parameters = parameters,
                            gelmanDiag = gelman.diag,
-                           nSummaryMCMC = nSummary,
+                           nSampleMCMC = nSampleMCMC,
                            metropolis = metropolis,
                            model = summary.model,
                            y = summary.y)
@@ -59,7 +65,7 @@ setMethod("summary",
 ## NO_TESTS
 setMethod("summary",
           signature(object = "ResultsModelPred"),
-          function(object, filename, iteration = NULL) {
+          function(object, filename) {
               mcmc <- object@mcmc
               final <- object@final[[1L]]
               model <- final@model
@@ -74,7 +80,7 @@ setMethod("summary",
 ## HAS_TESTS
 setMethod("summary",
           signature(object = "ResultsCountsEst"),
-          function(object, filename, nSummary, iteration = NULL) {
+          function(object, filename, nSample) {
               mcmc <- object@mcmc
               final <- object@final[[1L]]
               model <- final@model
@@ -82,18 +88,24 @@ setMethod("summary",
               dataModels <- final@dataModels
               datasets <- final@datasets
               names.datasets <- final@namesDatasets
-              parameters <- makeParameters(object = object, filename = filename)
-              gelman.diag <- makeGelmanDiag(object = object, filename = filename)
-              metropolis <- makeMetropolis(object = object, filename = filename)
+              parameters <- makeParameters(object = object,
+                                           filename = filename)
+              gelman.diag <- makeGelmanDiag(object = object,
+                                            filename = filename,
+                                            nSample = nSample)
+              metropolis <- makeMetropolis(object = object,
+                                           filename = filename,
+                                           nSample = nSample)
               model.summary <- summary(model)
               y.summary <- summary(y)
               dataModels.summary <- lapply(dataModels, summary)
               datasets.summary <- lapply(datasets, summaryDataset)
+              nSampleMCMC <- new("Length", nSample)
               methods::new("SummaryResultsCounts",
                            mcmc = mcmc,
                            parameters = parameters,
                            gelmanDiag = gelman.diag,
-                           nSummary = nSummaryMCMC,
+                           nSampleMCMC = nSampleMCMC,
                            metropolis = metropolis,
                            model = model.summary,
                            y = y.summary,
@@ -105,7 +117,7 @@ setMethod("summary",
 ## NO_TESTS
 setMethod("summary",
           signature(object = "ResultsAccount"),
-          function(object, filename, iteration = NULL) {
+          function(object, filename, nSample) {
               mcmc <- object@mcmc
               final <- object@final[[1L]]
               account <- object@account
@@ -113,19 +125,25 @@ setMethod("summary",
               datasets <- final@datasets
               data.models <- final@dataModels
               names.datasets <- final@namesDatasets
-              parameters <- makeParameters(object = object, filename = filename)
-              gelman.diag <- makeGelmanDiag(object = object, filename = filename)
-              metropolis <- makeMetropolis(object = object, filename = filename)
+              parameters <- makeParameters(object = object,
+                                           filename = filename)
+              gelman.diag <- makeGelmanDiag(object = object,
+                                            filename = filename,
+                                            nSample = nSample)
+              metropolis <- makeMetropolis(object = object,
+                                           filename = filename,
+                                           nSample = nSample)
               account.summary <- lapply(account, summary)
               system.models.summary <- lapply(system.models, summary)
               names.series <- names(account)
               datasets.summary <- lapply(datasets, summaryDataset)
               data.models.summary <- lapply(data.models, summary)
+              nSampleMCMC <- new("Length", nSample)
               methods::new("SummaryResultsAccount",
                            mcmc = mcmc,
                            parameters = parameters,
                            gelmanDiag = gelman.diag,
-                           nSummary = nSummary,
+                           nSampleMCMC = nSampleMCMC,
                            metropolis = metropolis,
                            account = account.summary,
                            systemModels = system.models.summary,

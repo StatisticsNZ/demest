@@ -26,21 +26,17 @@ setClass("SummaryResults",
 
 ## HAS_TESTS
 setClass("GelmanDiagMixin",
-         slots = c(gelmanDiag = "matrix"),
+         slots = c(gelmanDiag = "data.frame"),
          contains = "VIRTUAL",
          validity = function(object) {
              gelmanDiag <- object@gelmanDiag
              ## has colnames 'median', 'max'
-             if (!identical(colnames(gelmanDiag), c("median", "max")))
+             if (!identical(colnames(gelmanDiag), c("dot", "med", "max", "nN")))
                  return(gettextf("'%s' has invalid colnames",
                                  "gelmanDiag"))
              ## has rownames
-             if (is.null(rownames(gelmanDiag)))
+             if (identical(rownames(gelmanDiag), as.character(seq_len(nrow(gelmanDiag)))))
                  return(gettextf("'%s' does not have rownames",
-                                 "gelmanDiag"))
-             ## is numeric
-             if (!is.numeric(gelmanDiag))
-                 return(gettextf("'%s' is non-numeric",
                                  "gelmanDiag"))
              TRUE
          })

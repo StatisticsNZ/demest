@@ -395,8 +395,6 @@ fetchCoverage <- function(filename, dataset) {
     suppressMessages(dataset / series)
 }
 
-
-## TODO - add nSample argument
 ## HAS_TESTS
 #' Create a list of objects for analysis with package "coda".
 #' 
@@ -410,15 +408,16 @@ fetchCoverage <- function(filename, dataset) {
 #' path to parameter or parameters.  See \code{\link{fetch}} for more on
 #' specifying paths.
 #' 
-#' If a batch of parameters has more than 25 elements, then, by default,
-#' \code{fetchMCMC} extracts 25 randomly-chosen elements.  However, users can
-#' control the selection of parameters throught the \code{sample} argument.
+#' If a batch of parameters has many elements, then calculating MCMC
+#' diagnositics for all those elements can be very slow.
+#' To speed things up, when applied to a batch of parameters,
+#' \code{fetchMCMC} randomly selects only \code{nSample} of these
+#' parameters.  \code{nSample} defaults to 25.
+#'
+#' Alternatively, the indices of the parameters to be selected
+#' can be specified using the \code{sample} argument.
 #' See below for an example.
 #'
-#' If a model contains structuralZeros (\code{\link{Poisson}}),
-#' then, unless an explicit \code{sample} is supplied,
-#' cells corresponding to structural zeros are omitted from the sample.
-#' 
 #' If \code{thinned} is \code{TRUE}, then the \code{thin} argument in
 #' \pkg{coda} function \code{\link[coda]{mcmc}} is set to 1; otherwise
 #' \code{thin} is set to \code{nThin}, extracted from \code{object}.
@@ -432,8 +431,11 @@ fetchCoverage <- function(filename, dataset) {
 #' \code{estimate} function is kept.
 #' @param where A character vector used to select a single parameter or batch
 #' of parameters.  See below for details.
-#' @param sample Indices of parameters to be sampled.  Optional, and only
-#' needed when there are many parameters.
+#' @param nSample Number of parameters to be sampled from a batch
+#' of parameters. Defaults to 25. Ignored when batch has fewer than
+#' 25 parameters (including having only one parameter.)
+#' @param sample Indices of parameters to be sampled.  An alternative
+#' to \code{nSample} when more control over sampling is required.
 #' @param thinned Logical.  If \code{TRUE}, the default, the
 #' \code{"\link{mcmc.list}"} object or objects describe the thinned process.
 #'
@@ -482,12 +484,19 @@ fetchCoverage <- function(filename, dataset) {
 #' ## only write part of each name
 #' mean.mcmc <- fetchMCMC(filename, where = c("mod", "like", "r"))
 #' 
+#' ## sample 6 randomly-chosen values
+#' mean.mcmc.5 <- fetchMCMC(filename,
+#'                     where = c("model", "likelihood", "rate"),
+#'                     nSample = 6)
+#'
 #' ## sample the first 5 values
 #' mean.mcmc.5 <- fetchMCMC(filename,
 #'                     where = c("model", "likelihood", "rate"),
 #'                     sample = 1:5)
+#'
 #' @export
-fetchMCMC <- function(filename, where = NULL, sample = NULL, thinned = TRUE) {
+fetchMCMC <- function(filename, where = NULL, nSample = 25,
+                      sample = NULL, thinned = TRUE) {
     object <- fetchResultsObject(filename)
     if (!methods::is(object, "Results"))
         stop(gettextf("results object has class \"%s\"",
@@ -520,6 +529,7 @@ fetchMCMC <- function(filename, where = NULL, sample = NULL, thinned = TRUE) {
                 skeleton <- fetchSkeleton(object, where = where)
                 ans[[i]] <- MCMCDemographic(object = obj,
                                             sample = sample,
+                                            nSample = nSample,
                                             nChain = n.chain,
                                             nThin = n.thin,
                                             skeleton = skeleton)
@@ -539,6 +549,7 @@ fetchMCMC <- function(filename, where = NULL, sample = NULL, thinned = TRUE) {
         skeleton <- fetchSkeleton(object, where = where)
         MCMCDemographic(object = obj,
                         sample = sample,
+                        nSample = nSample,
                         nChain = n.chain,
                         nThin = n.thin,
                         skeleton = skeleton)
@@ -558,7 +569,7 @@ fetchMCMC <- function(filename, where = NULL, sample = NULL, thinned = TRUE) {
 #' @param filename The filename used by the estimation or prediction
 #' function.
 #' @param nSample The number of cells to sample from a vector of
-#' parameters.
+#' parameters. Defaults to 25.
 #'
 #' @section Metropolis-Hastings updates:
 #'
@@ -672,14 +683,14 @@ fetchMCMC <- function(filename, where = NULL, sample = NULL, thinned = TRUE) {
 #' metropolis(summary.est)
 #' parameters(summary.est)
 #' @export
-fetchSummary <- function(filename, nSummary = 25) {
-    nSummary <- checkPositiveInteger(x = nSummary,
-                                     name = "nSummary")
-    nSummary <- as.integer(nSummary)
+fetchSummary <- function(filename, nSample = 25) {
+    checkPositiveInteger(x = nSample,
+                         name = "nSample")
+    nSample <- as.integer(nSample)
     object <- fetchResultsObject(filename)
     summary(object = object,
             filename = filename,
-            nSummary = nSummary)
+            nSample = nSample)
 }
 
 ## HAS_TESTS

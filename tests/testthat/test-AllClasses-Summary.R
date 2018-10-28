@@ -174,21 +174,21 @@ test_that("validity tests for SummaryModel inherited from SummaryModel work", {
 test_that("can create valid object of class SummaryResultsModelEst", {
     x <- new("SummaryResultsModelEst",
              metropolis = data.frame(jump = 1, acceptance = 0.3, autocorr = 0.38,
-                 row.names = "model.likelihood.mean"),
+                                     row.names = "model.likelihood.mean"),
              model = new("SummaryModel",
-                 specification = "y ~ Binomial(mean ~ 1)",
-                 dimensions = c("age", "sex")),
+                         specification = "y ~ Binomial(mean ~ 1)",
+                         dimensions = c("age", "sex")),
              y = new("SummaryDataset",
-                 classStr = "Counts",
-                 dimensions = c("age", "sex"),
-                 nCell = 24L,
-                 nMissing = 0L,
-                 isIntegers = TRUE,
-                 nZero = 3L,
-                 median = 33.5),
+                     classStr = "Counts",
+                     dimensions = c("age", "sex"),
+                     nCell = 24L,
+                     nMissing = 0L,
+                     isIntegers = TRUE,
+                     nZero = 3L,
+                     median = 33.5),
              mcmc = c(nBurnin = 1000L, nSim = 1000L, nChain = 2L, nThin = 10L, nIteration = 200L),
-             gelmanDiag = matrix(c(1.3, 1.6), nrow = 1,
-                                 dimnames = list("model.likelihood.mean", c("median", "max"))),
+             gelmanDiag = data.frame(dot = ".", med = 1.3, max = 1.6, nN = "25/25",
+                                     row.names = "model.likelihood.mean"),
              nSampleMCMC = new("Length", 25L),
              parameters = data.frame("2.5%" = 0.1, "50%" = 0.3, "97.5%" = 0.5, length = 1))
     expect_true(validObject(x))
@@ -210,12 +210,12 @@ test_that("can validity tests for SummaryResultsModelEst inerited from GelmanDia
                      nZero = 3L,
                      median = 33.5),
              mcmc = c(nBurnin = 1000L, nSim = 1000L, nChain = 2L, nThin = 10L, nIteration = 200L),
-             gelmanDiag = matrix(c(1.3, 1.6), nrow = 1,
-                                 dimnames = list("model.likelihood.mean", c("median", "max"))),
+             gelmanDiag = data.frame(dot = ".", med = 1.3, max = 1.6, nN = "25/25",
+                                     row.names = "model.likelihood.mean"),
              nSampleMCMC = new("Length", 25L),
              parameters = data.frame("2.5%" = 0.1, "50%" = 0.3, "97.5%" = 0.5, length = 1))
     expect_true(validObject(x))
-    ## has colnames 'median', 'max'
+    ## has colnames 'dot', 'med', 'max', 'nN'
     x.wrong <- x
     colnames(x.wrong@gelmanDiag)[1] <- "wrong"
     expect_error(validObject(x.wrong),
@@ -225,11 +225,6 @@ test_that("can validity tests for SummaryResultsModelEst inerited from GelmanDia
     rownames(x.wrong@gelmanDiag) <- NULL
     expect_error(validObject(x.wrong),
                  "'gelmanDiag' does not have rownames")
-    ## is numeric
-    x.wrong <- x
-    x.wrong@gelmanDiag[] <- "a"
-    expect_error(validObject(x.wrong),
-                 "'gelmanDiag' is non-numeric")
 })
 
 test_that("can create valid object of class SummaryResultsModelPred", {
@@ -273,13 +268,14 @@ test_that("can create valid object of class SummaryResultsCounts", {
                                                    "dataModels.census.likelihood.mean",
                                                    "dataModels.census.likelihood.sd")),
              nSampleMCMC = new("Length", 25L),
-             gelmanDiag = matrix(c(1, 1, 1, 1, 2, 2, 2, 2),
-                                 ncol = 2,
-                                 dimnames = list(c("model.likelihood.prob",
+             gelmanDiag = data.frame(dot = c(".", ".", "", ""),
+                                     med = rep(1.3, 4),
+                                     max = rep(1.6, 4),
+                                     nN = c("25/50", "1/1", "25/50", "1/1"),
+                                     row.names = c("model.likelihood.prob",
                                                    "model.prior.sd",
                                                    "dataModels.census.likelihood.mean",
-                                                   "dataModels.census.likelihood.sd"),
-                                                 c("median", "max"))))
+                                                   "dataModels.census.likelihood.sd")))
     expect_true(validObject(x))
 })
 

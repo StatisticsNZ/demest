@@ -51,15 +51,19 @@ test_that("summary works with ResultsModelEst", {
                   nChain = 2L)
     set.seed(1)
     object <- fetchResultsObject(filename)
-    ans.obtained <- summary(object, filename = filename)
+    ans.obtained <- summary(object, filename = filename, nSample = 10)
     set.seed(1)
     ans.expected <- new("SummaryResultsModelEst",
                         parameters = makeParameters(object = object, filename = filename),
-                        metropolis = makeMetropolis(object = object, filename = filename),
+                        gelmanDiag = makeGelmanDiag(object = object,
+                                                    filename = filename,
+                                                    nSample = 10),
+                        metropolis = makeMetropolis(object = object, filename = filename,
+                                                    nSample = 10),
                         model = summary(object@final[[1]]@model),
                         y = summaryDataset(y),
                         mcmc = object@mcmc,
-                        gelmanDiag = makeGelmanDiag(object = object, filename = filename))
+                        nSampleMCMC = new("Length", 10L))
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -127,13 +131,15 @@ test_that("summary works with object of class ResultsCountsEst", {
                    nChain = 2)
     object <- fetchResultsObject(filename)
     set.seed(1)
-    ans.obtained <- summary(object, filename = filename)
+    ans.obtained <- summary(object, filename = filename, nSample = 25)
     set.seed(1)
     ans.expected <- new("SummaryResultsCounts",
                         mcmc = object@mcmc,
                         parameters = makeParameters(object, filename),
-                        gelmanDiag = makeGelmanDiag(object, filename),
-                        metropolis = makeMetropolis(object, filename),
+                        gelmanDiag = makeGelmanDiag(object, filename,
+                                                    nSample = 25),
+                        metropolis = makeMetropolis(object, filename,
+                                                    nSample = 25),
                         model = summary(object@final[[1]]@model),
                         y = summary(object@y),
                         dataModels = list(
@@ -144,7 +150,8 @@ test_that("summary works with object of class ResultsCountsEst", {
                             summaryDataset(d1),
                             summaryDataset(d2),
                             summaryDataset(d3)),
-                        namesDatasets = c("d1", "d2", "d3"))
+                        namesDatasets = c("d1", "d2", "d3"),
+                        nSampleMCMC = new("Length", 25L))
     expect_identical(ans.obtained, ans.expected)
 })
 
