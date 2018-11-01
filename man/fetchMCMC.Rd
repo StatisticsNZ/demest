@@ -4,7 +4,8 @@
 \alias{fetchMCMC}
 \title{Create a list of objects for analysis with package "coda".}
 \usage{
-fetchMCMC(filename, where = NULL, sample = NULL, thinned = TRUE)
+fetchMCMC(filename, where = NULL, nSample = 25, sample = NULL,
+  thinned = TRUE)
 }
 \arguments{
 \item{filename}{The name of the file where the output from the
@@ -13,8 +14,12 @@ fetchMCMC(filename, where = NULL, sample = NULL, thinned = TRUE)
 \item{where}{A character vector used to select a single parameter or batch
 of parameters.  See below for details.}
 
-\item{sample}{Indices of parameters to be sampled.  Optional, and only
-needed when there are many parameters.}
+\item{nSample}{Number of parameters to be sampled from a batch
+of parameters. Defaults to 25. Ignored when batch has fewer than
+25 parameters (including having only one parameter.)}
+
+\item{sample}{Indices of parameters to be sampled.  An alternative
+to \code{nSample} when more control over sampling is required.}
 
 \item{thinned}{Logical.  If \code{TRUE}, the default, the
 \code{"\link{mcmc.list}"} object or objects describe the thinned process.}
@@ -35,14 +40,15 @@ estimated. If a \code{where} argument is supplied, it must describe the
 path to parameter or parameters.  See \code{\link{fetch}} for more on
 specifying paths.
 
-If a batch of parameters has more than 25 elements, then, by default,
-\code{fetchMCMC} extracts 25 randomly-chosen elements.  However, users can
-control the selection of parameters throught the \code{sample} argument.
-See below for an example.
+If a batch of parameters has many elements, then calculating MCMC
+diagnositics for all those elements can be very slow.
+To speed things up, when applied to a batch of parameters,
+\code{fetchMCMC} randomly selects only \code{nSample} of these
+parameters.  \code{nSample} defaults to 25.
 
-If a model contains structuralZeros (\code{\link{Poisson}}),
-then, unless an explicit \code{sample} is supplied,
-cells corresponding to structural zeros are omitted from the sample.
+Alternatively, the indices of the parameters to be selected
+can be specified using the \code{sample} argument.
+See below for an example.
 
 If \code{thinned} is \code{TRUE}, then the \code{thin} argument in
 \pkg{coda} function \code{\link[coda]{mcmc}} is set to 1; otherwise
@@ -90,10 +96,16 @@ mean.mcmc <- fetchMCMC(filename,
 ## only write part of each name
 mean.mcmc <- fetchMCMC(filename, where = c("mod", "like", "r"))
 
+## sample 6 randomly-chosen values
+mean.mcmc.5 <- fetchMCMC(filename,
+                    where = c("model", "likelihood", "rate"),
+                    nSample = 6)
+
 ## sample the first 5 values
 mean.mcmc.5 <- fetchMCMC(filename,
                     where = c("model", "likelihood", "rate"),
                     sample = 1:5)
+
 }
 \seealso{
 Other functions for examining output from

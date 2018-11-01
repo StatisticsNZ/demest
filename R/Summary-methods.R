@@ -78,17 +78,20 @@ setMethod("show",
               }
               if (!is.null(gelmanDiag)) {
                   cat("\nparameters:\n")
-                  parameters[] <- lapply(parameters, formatC, digits = kDigits, format = "fg")
+                  parameters[] <- lapply(parameters, formatC, digits = kDigits - 1, format = "fg")
                   parameters[] <- lapply(parameters, function(x) sub("NA", "  ", x))
+                  N <- parameters[length(parameters)]
+                  parameters <- parameters[-length(parameters)]
                   is.num <- sapply(gelmanDiag, is.numeric)
-                  gelmanDiag[is.num] <- lapply(gelmanDiag[is.num], round, digits = kDigits - 1L)
-                  gap <- data.frame(gap = rep("  ", times = nrow(parameters)),
+                  gelmanDiag[is.num] <- lapply(gelmanDiag[is.num], formatC, digits = kDigits, format = "fg")
+                  gelmanDiag[is.num] <- lapply(gelmanDiag[is.num], function(x) sub("NA", "  ", x))                  
+                  gap <- data.frame(gap = rep(" ", times = nrow(parameters)),
                                     stringsAsFactors = FALSE)
-                  df <- as.data.frame(list(gelmanDiag, gap, parameters))
-                  names(df) <- c("", "med", "max", "n/N", "", "min", "med", "max")
+                  df <- as.data.frame(list(gelmanDiag, gap, parameters, gap, N))
+                  names(df) <- c("med", "max", "n", "", "min", "med", "max", "", "")
                   df <- rbind(names(df), df)
                   row.names(df)[1L] <- ""
-                  names(df) <- c("", "", "Rhat", "", "", "", "Est.", "")
+                  names(df) <- c("Rhat", "", "", "", "Est.", "", "", "", "N")
                   print(df)
               }
               cat(kDivider)
@@ -168,14 +171,20 @@ setMethod("show",
               }
               if (!is.null(gelmanDiag)) {
                   cat("\nparameters:\n")
-                  parameters[] <- lapply(parameters, formatC, digits = kDigits, format = "fg")
-                  Rhat <- round(gelmanDiag, digits = kDigits - 1L)
-                  dot <- ifelse(Rhat[ , "max"] < 1.1, "", ".")
-                  df <- data.frame(" " = dot,
-                                   "Rhat med" = Rhat[ , "median"],
-                                   "Rhat max" = Rhat[ , "max"],
-                                   parameters,
-                                   check.names = FALSE)
+                  parameters[] <- lapply(parameters, formatC, digits = kDigits - 1, format = "fg")
+                  parameters[] <- lapply(parameters, function(x) sub("NA", "  ", x))
+                  N <- parameters[length(parameters)]
+                  parameters <- parameters[-length(parameters)]
+                  is.num <- sapply(gelmanDiag, is.numeric)
+                  gelmanDiag[is.num] <- lapply(gelmanDiag[is.num], formatC, digits = kDigits, format = "fg")
+                  gelmanDiag[is.num] <- lapply(gelmanDiag[is.num], function(x) sub("NA", "  ", x))                  
+                  gap <- data.frame(gap = rep(" ", times = nrow(parameters)),
+                                    stringsAsFactors = FALSE)
+                  df <- as.data.frame(list(gelmanDiag, gap, parameters, gap, N))
+                  names(df) <- c("med", "max", "n", "", "min", "med", "max", "", "")
+                  df <- rbind(names(df), df)
+                  row.names(df)[1L] <- ""
+                  names(df) <- c("Rhat", "", "", "", "Est.", "", "", "", "N")
                   print(df)
               }
               cat(kDivider)
@@ -239,14 +248,20 @@ setMethod("show",
               }
               if (!is.null(gelmanDiag)) {
                   cat("\nparameters:\n")
-                  parameters[] <- lapply(parameters, formatC, digits = kDigits, format = "fg")
-                  Rhat <- round(gelmanDiag, digits = kDigits - 1L)
-                  dot <- ifelse(Rhat[ , "max"] < 1.1, "", ".")
-                  df <- data.frame(" " = dot,
-                                   "Rhat med" = Rhat[ , "median"],
-                                   "Rhat max" = Rhat[ , "max"],
-                                   parameters,
-                                   check.names = FALSE)
+                  parameters[] <- lapply(parameters, formatC, digits = kDigits - 1, format = "fg")
+                  parameters[] <- lapply(parameters, function(x) sub("NA", "  ", x))
+                  N <- parameters[length(parameters)]
+                  parameters <- parameters[-length(parameters)]
+                  is.num <- sapply(gelmanDiag, is.numeric)
+                  gelmanDiag[is.num] <- lapply(gelmanDiag[is.num], formatC, digits = kDigits, format = "fg")
+                  gelmanDiag[is.num] <- lapply(gelmanDiag[is.num], function(x) sub("NA", "  ", x))                  
+                  gap <- data.frame(gap = rep(" ", times = nrow(parameters)),
+                                    stringsAsFactors = FALSE)
+                  df <- as.data.frame(list(gelmanDiag, gap, parameters, gap, N))
+                  names(df) <- c("med", "max", "n", "", "min", "med", "max", "", "")
+                  df <- rbind(names(df), df)
+                  row.names(df)[1L] <- ""
+                  names(df) <- c("Rhat", "", "", "", "Est.", "", "", "", "N")
                   print(df)
               }
               cat(kDivider)

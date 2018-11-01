@@ -12,21 +12,10 @@ the prior mean and standard deviation of the mean.
 \section{Slots}{
 
 \describe{
-\item{\code{meanMeanLogNuCMP}}{The prior mean of the mean.}
+\item{\code{meanLogNuCMP}}{The prior mean of the dispersion parameter.}
 
-\item{\code{sdMeanLogNuCMP}}{The prior standard deviation of the mean.}
-
-\item{\code{ASDLogNuCMP}}{Scale for truncated half-t prior for
-standard deviation.}
-
-\item{\code{nuSDLogNuCMP}}{Degrees of freedom for truncated half-t prior
-for standard deviation.}
-
-\item{\code{sdLogNuMaxCMP}}{Maximum value for truncated half-t prior
-for the standard deviation.}
-
-\item{\code{multLogNuCMP}}{Multiplier applied to scale of
-truncated half-t prior for the standard deviation.}
+\item{\code{sdLogNuCMP}}{The prior standard deviation of the
+dispersion parameter.}
 }}
 
 \section{Warning}{

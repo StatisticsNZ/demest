@@ -3,7 +3,6 @@
 \docType{class}
 \name{Error-class}
 \alias{Error-class}
-\alias{Error-class}
 \alias{ErrorNorm-class}
 \alias{ErrorRobust-class}
 \title{S4 classes to specify error terms for priors.}

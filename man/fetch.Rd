@@ -4,7 +4,8 @@
 \alias{fetch}
 \title{Extract estimates from model output.}
 \usage{
-fetch(filename, where = character(), iterations = NULL, impute = FALSE)
+fetch(filename, where = character(), iterations = NULL,
+  impute = FALSE)
 }
 \arguments{
 \item{filename}{The filename used by the estimate function.}

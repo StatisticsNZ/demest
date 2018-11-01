@@ -568,7 +568,7 @@ fetchMCMC <- function(filename, where = NULL, nSample = 25,
 #'
 #' @param filename The filename used by the estimation or prediction
 #' function.
-#' @param nSample The number of cells to sample from a vector of
+#' @param nSample The number of elements to sample from a batch of
 #' parameters. Defaults to 25.
 #'
 #' @section Metropolis-Hastings updates:
@@ -588,51 +588,51 @@ fetchMCMC <- function(filename, where = NULL, nSample = 25,
 #'
 #' @section Parameters:
 #' 
-#' Some parameters, such as  the rates in the likelihood for a Poisson
-#' model (\code{model.likelihood.rate}), come in batches.
-#' Others, such as the standard deviation in the prior for a Poisson
-#' model (\code{model.prior.sd}), come on their own.  \code{length} shows
-#' the length of each batch.
-#'
-#' The quantiles summarise the distribution of the parameters across iterations,
-#' and, if the batch has more than one element, among parameters within a batch.
-#' For example, if a batch has 5 elements, and there are 1000 iterations,
-#' then \code{parameters} shows (approximately) the quantiles that would
-#' be obtained by calling function \code{quantile} on the combined
-#' 5 x 1000 = 5000 elements.  The results are only approximate because,
-#' to save time, \code{parameters} samples at most \code{nSample}
-#' iterations.
-#'
-#' The parameter summaries can be extracted using
-#' function \code{\link{parameters}}.
-#' 
-#' @section Rhat:
-#'
-#' Obtain potential scale reduction factors - i.e. the 'Rhats' for batches
-#' of parameters.   The Rhats are calculated using function
-#' \code{\link[coda]{gelman.diag}} from package \pkg{coda}.  However,
-#' in line with  Gelman et al (2014: 284-286), each chain is split into two,
-#' and the first and second halves compared, to capture variation within each chain,
+#' 'Rhat's, or 'potential scale reduction factors' are calculated
+#' using function \code{\link[coda]{gelman.diag}}
+#' from package \pkg{coda}.  However, like Gelman et al (2014: 284-286),
+#' but unlike the original \code{gelman.diag} function,
+#' each chain is split into two,
+#' and the first and second halves compared,
+#' to capture variation within each chain,
 #' in addition to variation across chains.
 #'
-#' Potential scale reduction factors are used to diagnose convergence in MCMC
-#' simulations.  Values close to 1 suggest that convergence has occurred.
-#' See the references below for discussion.  A dot is shown next to a Rhat
-#' if the value if greater than 1.1.
+#' To save time, \code{fetchSummary} calculates Rhats for a sample of
+#' at most \code{nSample} elements from each batch of parameters.
+#' The number of elements sampled is shown in the column labeled \code{n}.
 #'
-#' There is a multivariate of Rhat for use with batches of parameters,
-#' but it is prone to numeric problems. \code{fetchSummary} calculates
-#' Rhats parameter by parameter, and then reports the median and
-#' maxmum values. To save time, if a batch of parameters
-#' contains more than \code{nSample} elements,
-#' a sample of \code{nSample} parameters is extracted,
-#' and Rhats calculated for those. The sampling introduces an element
+#' Rhats typically vary across different parameters within a batch.
+#' To give an idea of the distribution, \code{fetchSummary} shows
+#' the median and maximum Rhats. The best way to get detailed information
+#' about convergence is to use \code{\link{fetchMCMC}} followed by
+#' \code{plot}.
+#'
+#' The sampling of the Rhats introduces an element
 #' of randomness: if \code{fetchSample} is called twice on the same
 #' \code{filename} the results for \code{Rhat} will differ.
 #'
 #' When the number of chains (\code{nChain}), the number of iterations
 #' (\code{nSim}), or the proportion of proposals accepted is small,
-#' estimated Rhats can be unstable.
+#' estimated Rhats can be unstable, and must be interpreted with
+#' caution.
+#'
+#' \code{Est.} in the output from \code{fetchSummary} is short for
+#' "Point estimates". The \code{Est.} columns provide summaries
+#' of the distribution of the estimates. \code{fetchSummary}
+#' calculates point estimates (posterior medians) for every element
+#' in a batch of parameters, and then shows the distribution of
+#' these point estimates.  If a batch has only one parameter, then
+#' only the point estimate for that parameter is shown.
+#' If a batch has more than one parameter, then the minimum
+#' point estimate, median point estimate, and maximum point estimate
+#' for that batch are shown.
+#'
+#' To save time, \code{fetchSummary} calculates the point estimates
+#' from a maximum of 100 draws from the posterior sample. The values
+#' may therefore differ slightly from the more accurate values
+#' obtained by calling \code{fetch} and then \code{collapseIterations}
+#' (assuming the full sample has more than 100 draws.)
+#'
 #'
 #' If greater control over the calculation of Rhat is desired, parameter
 #' estimates can be extracted using \code{\link{fetchMCMC}}, and

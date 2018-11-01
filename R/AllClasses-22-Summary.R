@@ -30,8 +30,8 @@ setClass("GelmanDiagMixin",
          contains = "VIRTUAL",
          validity = function(object) {
              gelmanDiag <- object@gelmanDiag
-             ## has colnames 'median', 'max'
-             if (!identical(colnames(gelmanDiag), c("dot", "med", "max", "nN")))
+             ## has valid colnames
+             if (!identical(colnames(gelmanDiag), c("med", "max", "n")))
                  return(gettextf("'%s' has invalid colnames",
                                  "gelmanDiag"))
              ## has rownames

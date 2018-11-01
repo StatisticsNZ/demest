@@ -5,12 +5,10 @@
 \alias{Binomial}
 \alias{Normal}
 \alias{Poisson}
-\alias{Poisson}
-\alias{Binomial}
-\alias{Normal}
 \title{Specify first two levels of hierarchical model.}
 \usage{
-Poisson(formula, useExpose = TRUE, structuralZeros = NULL, boxcox = 0)
+Poisson(formula, useExpose = TRUE, structuralZeros = NULL,
+  boxcox = 0)
 
 Binomial(formula)
 

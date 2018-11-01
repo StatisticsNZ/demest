@@ -4,7 +4,8 @@
 \alias{fetchFiniteSD}
 \title{Finite-population standard deviations.}
 \usage{
-fetchFiniteSD(filename, probs = c(0.025, 0.5, 0.975), iterations = NULL)
+fetchFiniteSD(filename, probs = c(0.025, 0.5, 0.975),
+  iterations = NULL)
 }
 \arguments{
 \item{filename}{The name of the file where the output from the

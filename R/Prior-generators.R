@@ -13,7 +13,7 @@ setMethod("initialPrior",
           function(object, beta, metadata, sY, isSaturated, ...) {
               mean <- object@mean@.Data
               tau <- object@tau
-              if (!all.equal(mean, 0))
+              if (!isTRUE(all.equal(mean, 0)))
                   warning(gettextf("non-zero mean in '%s' prior for '%s' ignored",
                                    "ExchFixed", paste(names(metadata), collapse = ":")))
               J <- makeJ(beta)

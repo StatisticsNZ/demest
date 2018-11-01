@@ -9,10 +9,7 @@ setMethod("summary",
           function(object) {
               call <- object@call
               metadata <- object@metadataY
-              specification <- unname(sapply(call[-1L], deparse))
-              specification <- lapply(specification, paste, collapse = "\n")
-              specification <- Reduce(function(x, y) paste(x, y, sep = ",\n"),
-                                      specification)
+              specification <- deparse(call[[2L]])
               dimensions <- names(metadata)
               methods::new("SummaryModel",
                   specification = specification,

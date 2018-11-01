@@ -4,8 +4,8 @@
 \alias{plotHalfT}
 \title{Plot the half-t distribution.}
 \usage{
-plotHalfT(df = 7, scale = 1, max = 0.999, density = TRUE, add = FALSE,
-  ...)
+plotHalfT(df = 7, scale = 1, max = 0.999, density = TRUE,
+  add = FALSE, ...)
 }
 \arguments{
 \item{df}{Degrees of freedom. Positive. Can be non-integer,

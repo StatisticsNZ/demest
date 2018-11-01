@@ -7,7 +7,8 @@
 \title{Convert estimates from a complex survey into a form suitable for
 analysis with an area-level model}
 \usage{
-equivalentSample(mean, se, to = c("binomial", "Poisson"), epsilon = 1e-06)
+equivalentSample(mean, se, to = c("binomial", "Poisson"),
+  epsilon = 1e-06)
 
 \S4method{equivalentSample}{Values,Values}(mean, se, to = c("binomial",
   "Poisson"), epsilon = 1e-06)

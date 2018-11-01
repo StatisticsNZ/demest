@@ -3,7 +3,6 @@
 \docType{class}
 \name{Damp-class}
 \alias{Damp-class}
-\alias{Damp-class}
 \alias{DampKnown-class}
 \alias{DampUnknown-class}
 \title{S4 classes to specify damping terms in DLM priors.}

@@ -11,7 +11,8 @@
 \usage{
 AgCertain(value, weights = NULL, concordances = list())
 
-AgNormal(value, sd, weights = NULL, concordances = list(), jump = NULL)
+AgNormal(value, sd, weights = NULL, concordances = list(),
+  jump = NULL)
 
 AgPoisson(value, concordances = list(), jump = NULL)
 

@@ -16,7 +16,7 @@ test_that("summary works with object of class Model", {
     x <- initialModel(spec, y = y, weights = weights)
     ans.obtained <- summary(x)
     ans.expected <- new("SummaryModel",
-                        specification = "y ~ Normal(mean ~ age + region),\nage ~ Exch()",
+                        specification = "y ~ Normal(mean ~ age + region)",
                         dimensions = c("age", "region"))
     expect_identical(ans.obtained, ans.expected)
 })
@@ -127,7 +127,7 @@ test_that("summary works with object of class ResultsCountsEst", {
                    datasets = list(d1 = d1, d2 = d2, d3 = d3),
                    filename = filename,
                    nBurnin = 2,
-                   nSim = 2,
+                   nSim = 20,
                    nChain = 2)
     object <- fetchResultsObject(filename)
     set.seed(1)

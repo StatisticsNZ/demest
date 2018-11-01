@@ -9,7 +9,6 @@
 \alias{rhalft}
 \alias{qhalft}
 \alias{phalft}
-\alias{dhalft}
 \title{The half-t distribution.}
 \usage{
 rhalft(n, df, scale = 1)

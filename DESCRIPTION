@@ -1,7 +1,7 @@
 Package: demest
 Title: Bayesian Demographic Estimation and Forecasting
-Version: 0.0.0.9214
-Date: 2018-07-18
+Version: 0.0.0.9215
+Date: 2018-11-02
 Authors@R: c(
     person(given = "John",
            family = "Bryant",
@@ -32,6 +32,7 @@ Description: Demographic estimation and forecasting, using Bayesian
     with multiple datasets, noisy data, and missing data.
 Depends:
     dembase
+Encoding: UTF-8
 License: MIT + file LICENSE
 LazyLoad: yes
 LazyData: yes
@@ -50,4 +51,4 @@ Suggests:
     testthat,
     knitr
 VignetteBuilder: knitr
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.0

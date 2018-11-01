@@ -10049,7 +10049,6 @@ makeContentsListInner <- function(object, nameObject, where, max, depth, listsAs
 
 ## HAS_TESTS
 makeGelmanDiag <- function(object, filename, nSample) {
-    kDotThreshold <- 1.1
     if (!methods::is(object, "Results"))
         stop(gettextf("'%s' has class \"%s\"",
                       "object", class(object)))
@@ -10060,20 +10059,11 @@ makeGelmanDiag <- function(object, filename, nSample) {
     if (is.null(l))
         numeric()
     n.param <- length(l)
-    med <- numeric(length = n.param)
-    max <- numeric(length = n.param)
+    med <- rep(NA, times = n.param)
+    max <- rep(NA, times = n.param)
     n <- integer(length = n.param)
-    N <- integer(length = n.param)
     where.mcmc <- whereMetropStat(object, whereEstimated)
     for (i in seq_len(n.param)) {
-        mcmc.list.i <- l[[i]]
-        mcmc.list.i <- foldMCMCList(mcmc.list.i)
-        rhat.i <- coda::gelman.diag(mcmc.list.i,
-                                    autoburnin = FALSE,
-                                    multivariate = FALSE)
-        rhat.i <- rhat.i$psrf[, "Point est."]
-        med[i] <- median(rhat.i)
-        max[i] <- max(rhat.i)
         one.iter <- fetch(filename,
                           where = where.mcmc[[i]],
                           iterations = 1L,
@@ -10081,12 +10071,22 @@ makeGelmanDiag <- function(object, filename, nSample) {
         skeleton <- fetchSkeleton(object,
                                   where = where.mcmc[[i]])
         indices.struc.zero <- getIndicesStrucZero(skeleton)
-        N[i] <- length(one.iter) - length(indices.struc.zero)
-        n[i] <- min(N[i], nSample)
+        N <- length(one.iter) - length(indices.struc.zero)
+        n[i] <- min(N, nSample)
+        mcmc.list.i <- l[[i]]
+        mcmc.list.i <- foldMCMCList(mcmc.list.i)
+        rhat.i <- coda::gelman.diag(mcmc.list.i,
+                                    autoburnin = FALSE,
+                                    multivariate = FALSE)
+        rhat.i <- rhat.i$psrf[, "Point est."]
+        med[i] <- median(rhat.i, na.rm = TRUE)
+        if (n[i] > 1L)
+            max[i] <- max(rhat.i, na.rm = TRUE)
+        has.na <- any(is.na(rhat.i))
+        if (has.na)
+            max[i] <- Inf
     }
-    dot <- ifelse(max >= kDotThreshold, ".", "")
-    nN <- paste(n, N, sep = "/")
-    ans <- data.frame(dot, med, max, nN,
+    ans <- data.frame(med, max, n,
                       stringsAsFactors = FALSE)
     row.names(ans) <- names(l)
     ans
@@ -10145,7 +10145,6 @@ makeParameters <- function(object, filename) {
     if (!methods::is(object, "Results"))
         stop(gettextf("'%s' has class \"%s\"",
                       "object", class(object)))
-    kProbs <- c(0.025, 0.5, 0.975)
     n.iter <- dembase::nIteration(object)
     if (n.iter == 0L)
         return(NULL)
@@ -10157,7 +10156,7 @@ makeParameters <- function(object, filename) {
     n.where <- length(where.est)
     if (n.where == 0L)
         return(NULL)
-    quantile <- vector(mode = "list", length = n.where)
+    ans <- vector(mode = "list", length = n.where)
     length <- integer(length = n.where)
     for (i in seq_len(n.where)) {
         where <- where.est[[i]]
@@ -10170,22 +10169,24 @@ makeParameters <- function(object, filename) {
                                               na.rm = TRUE)
         point.estimates <- as.numeric(point.estimates)
         n.point.estimates <- length(point.estimates)
-        if (n.point.estimates == 1L)
-            quantile[[i]] <- c(NA,
-                               point.estimates,
-                               NA)
-        else if (n.point.estimates == 2L)
-            quantile[[i]] <- c(min(point.estimates),
-                               NA,
-                               max(point.estimate))
+        skeleton <- fetchSkeleton(object = object,
+                                  where = where)
+        indices.struc.zero <- getIndicesStrucZero(skeleton)
+        N <- n.point.estimates - length(indices.struc.zero)
+        if (N == 1L)
+            ans[[i]] <- c(NA,
+                          point.estimates,
+                          NA,
+                          N)
         else
-            quantile[[i]] <- c(min(point.estimates),
-                               median(point.estimates),
-                               max(point.estimates))
+            ans[[i]] <- c(min(point.estimates),
+                          median(point.estimates),
+                          max(point.estimates),
+                          N)
     }
-    colnames <- c(c("min", "med", "max"))
+    colnames <- c(c("min", "med", "max", "N"))
     rownames <- sapply(where.est, paste, collapse = ".")
-    ans <- do.call(rbind, quantile)
+    ans <- do.call(rbind, ans)
     colnames(ans) <- colnames
     rownames(ans) <- rownames
     as.data.frame(ans)

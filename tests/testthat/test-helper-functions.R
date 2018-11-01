@@ -14356,14 +14356,18 @@ test_that("makeGelmanDiag works with BinomialVarying", {
     ans.obtained <- makeGelmanDiag(object, filename = filename, nSample = 10)
     set.seed(1)
     mcmc.all <- fetchMCMC(filename, nSample = 10)
-    ans.expected <- array(dim = c(length(mcmc.all), 2))
+    ans.expected <- data.frame(med = numeric(2), max = numeric(2), n = integer(2))
     for (i in seq_along(mcmc.all)) {
         tmp <- foldMCMCList(mcmc.all[[i]])
         tmp <- coda::gelman.diag(tmp, autoburnin = FALSE, multivariate = FALSE)
-        ans.expected[i,] <- c(median(tmp$psrf[, "Point est."]), max(tmp$psrf[, "Point est."]))
+        ans.expected[i,] <- c(median(tmp$psrf[, "Point est."], na.rm = TRUE),
+                              max(tmp$psrf[, "Point est."]),
+                              length(tmp$psrf[, "Point est."]))
     }
+    ans.expected$max[ans.expected$n == 1] <- NA
+    ans.expected$max[is.na(ans.expected$max) & ans.expected$n > 1] <- Inf
     rownames(ans.expected) <- names(mcmc.all)
-    colnames(ans.expected) <- c("median", "max")
+    colnames(ans.expected) <- c("med", "max", "n")
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -14454,8 +14458,9 @@ test_that("makeMetropolis works with ResultsCounts", {
 
 test_that("makeParameters works with BinomialVarying", {
     makeParameters <- demest:::makeParameters
+    whereMetropStat <- demest:::whereMetropStat
+    whereEstimated <- demest:::whereEstimated
     fetchResultsObject <- demest:::fetchResultsObject
-    makeAutocorr <- demest:::makeAutocorr
     exposure <- Counts(array(as.integer(rpois(n = 24, lambda = 10)),
                              dim = 2:4,
                              dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000:2003)),
@@ -14475,13 +14480,17 @@ test_that("makeParameters works with BinomialVarying", {
                   filename = filename)
     object <- fetchResultsObject(filename)
     ans.obtained <- makeParameters(object, filename = filename)
-    l <- fetchMCMC(filename)
-    l <- lapply(l, unlist)
-    q <- lapply(l, quantile, probs = c(0.025, 0.5, 0.975))
-    nms <- names(q[[1]])
-    q <- do.call(rbind, q)
-    ans.expected <- data.frame(q, length = sapply(l, length)%/%20L)
-    colnames(ans.expected)[1:3] <- nms
+    where <- whereMetropStat(object, whereEstimated)
+    ans <- vector(mode = "list", length = length(where))
+    for (i in seq_along(ans))
+        ans[[i]] <- c(quantile(collapseIterations(fetch(filename, where = where[[i]]), FUN = median),
+                               c(0, 0.5, 1)),
+                      length(fetch(filename, where = where[[i]])) %/% 20L)
+    ans.expected <- data.frame(do.call(rbind, ans))
+    colnames(ans.expected) <- c("min", "med", "max", "N")
+    rownames(ans.expected) <- sapply(where, paste, collapse = ".")
+    ans.expected$min[ans.expected$N == 1] <- NA
+    ans.expected$max[ans.expected$N == 1] <- NA
     expect_identical(ans.obtained, ans.expected)
 })
 

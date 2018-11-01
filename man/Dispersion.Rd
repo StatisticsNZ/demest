@@ -4,15 +4,12 @@
 \alias{Dispersion}
 \title{Specify the prior for the dispersion parameter in a CMP model.}
 \usage{
-Dispersion(mean = Norm(), scale = HalfT())
+Dispersion(mean = 0, sd = 1)
 }
 \arguments{
-\item{mean}{An object of class \code{\linkS4class{Norm}}, specifying
-the prior for the mean of the (logged) dispersion parameter.}
+\item{mean}{A scalar, defaulting to 0.}
 
-\item{scale}{An object of class \code{\linkS4class{HalfT}},
-specifying the prior for the standard deviation of the (logged)
-dispersion parameter.}
+\item{sd}{A scalar, defaulting to 1.}
 }
 \value{
 An object of class \code{\linkS4class{Dispersion}}.
@@ -21,23 +18,11 @@ An object of class \code{\linkS4class{Dispersion}}.
 Specify the prior for the dispersion parameter (often denoted
 'nu') in a CMP or COM-Poisson model. The dispersion parameter
 is assumed to have a distribution
-\deqn{log \nu_i \sim N(\mu_i, \sigma^2)}
-\deqn{\mu_i \sim N(M, S^2)}
-\deqn{\sigma \sim trunc-half-t(df, A, max)}
-}
-\details{
-The \code{mean} argument is used to specify the second equation,
-and the \code{scale} argument is used to specify the third.
-\code{M} in the second equation defaults to 0, and \code{S}
-defaults to 1. \code{df} in the third equation defaults to 7.
-\code{A} defaults to 1 if the CMP model uses exposure,
-and a function of the variation in log(y) otherwise.
+\deqn{log \nu_i \sim N(\mu, \sigma^2)}
 }
 \examples{
 Dispersion()
-Dispersion(mean = Norm(mean = -1, sd = 0.1))
-Dispersion(mean = Norm(mean = -1, sd = 0.1),
-           scale = HalfT(scale = 0.1))
+Dispersion(mean = 1, sd = 0.3)
 }
 \seealso{
 CMP models are specified with function \code{\link{CMP}}.
