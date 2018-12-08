@@ -118,10 +118,11 @@ setClass("Margins",
 ## HAS_TESTS
 setClass("Betas",
          slots = c(betas = "list",
-                        namesBetas = "character",
-                        priorsBetas = "list",
-                        iteratorBetas = "BetaIterator",
-                        dims = "list"),
+                   namesBetas = "character",
+                   priorsBetas = "list",
+                   iteratorBetas = "BetaIterator",
+                   dims = "list",
+                   mu = "numeric"),
          contains = c("VIRTUAL", "Margins"),
          validity = function(object) {
              betas <- object@betas
@@ -130,6 +131,8 @@ setClass("Betas",
              priors <- object@priorsBetas
              iteratorBetas <- object@iteratorBetas
              dims <- object@dims
+             mu <- object@mu
+             theta <- object@theta
              hasNonPositive <- function(x) any(x <= 0L)
              hasMissing <- function(x) any(is.na(x))
              I <- length(object@theta)
@@ -190,6 +193,10 @@ setClass("Betas",
              if (!identical(dims[[1L]], 0L))
                  return(gettextf("first element of '%s' is not %d",
                                  "dims", 0L))
+             ## 'mu' has type "double"
+             if (!is.double(mu))
+                 return(gettextf("'%s' does not have type \"%s\"",
+                                 "mu", "double"))
              ## 'betas' and 'namesBetas' have same length
              if (!identical(length(betas), length(names)))
                  return(gettextf("'%s' and '%s' have different lengths",
@@ -217,6 +224,10 @@ setClass("Betas",
              if (!identical(length(iteratorBetas@indices), length(betas)))
                  return(gettextf("length of '%s' from '%s' not equal to length of '%s'",
                                  "indices", "iteratorBetas", "betas"))
+             ## 'mu' and 'theta' have same length
+             if (!identical(length(mu), length(theta)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "mu", "theta"))
              TRUE
          })
 
@@ -771,15 +782,25 @@ setClass("StrucZeroArrayMixin",
 
 ## HAS_TESTS
 setClass("Theta",
-         slots = c(theta = "numeric"),
+         slots = c(theta = "numeric",
+                   thetaTransformed = "numeric"),
          contains = "VIRTUAL",
          validity = function(object) {
              theta <- object@theta
+             thetaTransformed <- object@thetaTransformed
              metadataY <- object@metadataY
              ## 'theta' is double
              if (!is.double(theta))
                  return(gettextf("'%s' does not have type \"%s\"",
                                  "theta", "double"))
+             ## 'thetaTransformed' is double
+             if (!is.double(thetaTransformed))
+                 return(gettextf("'%s' does not have type \"%s\"",
+                                 "thetaTransformed", "double"))
+             ## 'thetaTransformed' and 'theta' have same length
+             if (!identical(length(theta), length(thetaTransformed)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "theta", "thetaTransformed"))
              ## dimensions of 'metadataY' consistent with length of 'theta'
              if (!identical(as.integer(prod(dim(metadataY))), length(theta)))
                  return(gettextf("dimensions of '%s' inconsistent with length of '%s'",

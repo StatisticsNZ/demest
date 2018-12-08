@@ -587,6 +587,7 @@ setMethod("initialModel",
               logit.theta <- log(theta / (1 - theta))
               betas <- makeLinearBetas(theta = logit.theta, formula = formula.mu)
               theta <- as.numeric(theta)
+              theta.transformed <- log(theta / (1 - theta))
               names.betas <- names(betas)
               margins <- makeMargins(betas = betas, y = y)
               struc.zero.array <- makeStrucZeroArray(structuralZeros = NULL,
@@ -611,10 +612,15 @@ setMethod("initialModel",
               betas <- jitterBetas(betas = betas, priorsBetas = priors.betas)
               iterator.betas <- BetaIterator(dim = dim, margins = margins)
               dims <- makeDims(dim = dim, margins = margins)
+              mu <- makeMu(n = length(theta),
+                           betas = betas,
+                           iterator = iterator.betas,
+                           useC = TRUE)
               cellInLik <- rep(TRUE, times = length(theta))
               model <- methods::new("BinomialVarying",
                                     call = call,
                                     theta = theta,
+                                    thetaTransformed = theta.transformed,
                                     metadataY = metadataY,
                                     cellInLik = cellInLik,
                                     scaleTheta = scale.theta,
@@ -634,7 +640,8 @@ setMethod("initialModel",
                                     namesBetas = names.betas,
                                     margins = margins,
                                     iteratorBetas = iterator.betas,
-                                    dims = dims)
+                                    dims = dims,
+                                    mu = mu)
               default.weights <- exposure
               model <- addAg(model = model,
                              aggregate = aggregate,
@@ -741,6 +748,10 @@ setMethod("initialModel",
               }
               theta <- as.numeric(theta)
               theta[struc.zero.array == 0L] <- NA
+              if (box.cox.param > 0)
+                  theta.transformed <- (theta ^ box.cox.param - 1) / box.cox.param
+              else
+                  theta.transformed <- log(theta)
               meanLogNuCMP <- methods::new("Parameter", meanLogNuCMP)
               sdLogNuCMP <- methods::new("Scale", sdLogNuCMP)
               logNuCMP <- stats::rnorm(n = length(theta),
@@ -773,11 +784,16 @@ setMethod("initialModel",
                                    priorsBetas = priors.betas)
               iterator.betas <- BetaIterator(dim = dim, margins = margins)
               dims <- makeDims(dim = dim, margins = margins)
+              mu <- makeMu(n = length(theta),
+                           betas = betas,
+                           iterator = iterator.betas,
+                           useC = TRUE)
               class <- if (has.exposure) "CMPVaryingUseExp" else "CMPVaryingNotUseExp"
               cellInLik <- rep(TRUE, times = length(theta))
               model <- methods::new(class,
                                     call = call,
                                     theta = theta,
+                                    thetaTransformed = theta.transformed,
                                     cellInLik = cellInLik,
                                     strucZeroArray = struc.zero.array,
                                     metadataY = metadataY,
@@ -803,7 +819,8 @@ setMethod("initialModel",
                                     namesBetas = names.betas,
                                     margins = margins,
                                     iteratorBetas = iterator.betas,
-                                    dims = dims)
+                                    dims = dims,
+                                    mu = mu)
               if (has.exposure)
                   default.weights <- exposure
               else {
@@ -904,10 +921,15 @@ setMethod("initialModel",
               betas <- jitterBetas(betas = betas, priorsBetas = priors.betas)
               iterator.betas <- BetaIterator(dim = dim, margins = margins)
               dims <- makeDims(dim = dim, margins = margins)
+              mu <- makeMu(n = length(theta),
+                           betas = betas,
+                           iterator = iterator.betas,
+                           useC = TRUE)
               cellInLik <- rep(TRUE, times = length(theta))
               model <- methods::new("NormalVaryingVarsigmaKnown",
                                     call = call,
                                     theta = theta,
+                                    thetaTransformed = theta,
                                     metadataY = metadataY,
                                     cellInLik = cellInLik,
                                     w = w,
@@ -929,7 +951,8 @@ setMethod("initialModel",
                                     namesBetas = names.betas,
                                     margins = margins,
                                     iteratorBetas = iterator.betas,
-                                    dims = dims)
+                                    dims = dims,
+                                    mu = mu)
               default.weights <- weights
               model <- addAg(model = model,
                              aggregate = aggregate,
@@ -1023,10 +1046,15 @@ setMethod("initialModel",
               betas <- jitterBetas(betas = betas, priorsBetas = priors.betas)
               iterator.betas <- BetaIterator(dim = dim, margins = margins)
               dims <- makeDims(dim = dim, margins = margins)
+              mu <- makeMu(n = length(theta),
+                           betas = betas,
+                           iterator = iterator.betas,
+                           useC = TRUE)
               cellInLik <- rep(TRUE, times = length(theta))
               model <- methods::new("NormalVaryingVarsigmaUnknown",
                                     call = call,
                                     theta = theta,
+                                    thetaTransformed = theta,
                                     metadataY = metadataY,
                                     cellInLik = cellInLik,
                                     w = w,
@@ -1050,7 +1078,8 @@ setMethod("initialModel",
                                     namesBetas = names.betas,
                                     margins = margins,
                                     iteratorBetas = iterator.betas,
-                                    dims = dims)
+                                    dims = dims,
+                                    mu = mu)
               default.weights <- weights
               model <- addAg(model = model,
                              aggregate = aggregate,
@@ -1154,8 +1183,17 @@ setMethod("initialModel",
                   betas <- MASS::loglm(formula.mu, data = theta)$param
                   betas <- convertToFormulaOrder(betas = betas, formulaMu = formula.mu)
               }
+              ## too many zeros (including structural zeros) can lead to
+              ## missing values - need to fix these up
+              for (i in seq_along(betas)) {
+                  betas[[i]][is.na(betas[[i]])] <- 0
+              }
               theta <- as.numeric(theta)
               theta[struc.zero.array == 0L] <- NA
+              if (box.cox.param > 0)
+                  theta.transformed <- (theta ^ box.cox.param - 1) / box.cox.param
+              else
+                  theta.transformed <- log(theta)
               names.betas <- names(betas)
               margins <- makeMargins(betas = betas, y = y)
               priors.betas <- makePriors(betas = betas,
@@ -1179,11 +1217,16 @@ setMethod("initialModel",
                                    priorsBetas = priors.betas)
               iterator.betas <- BetaIterator(dim = dim, margins = margins)
               dims <- makeDims(dim = dim, margins = margins)
+              mu <- makeMu(n = length(theta),
+                           betas = betas,
+                           iterator = iterator.betas,
+                           useC = TRUE)
               class <- if (has.exposure) "PoissonVaryingUseExp" else "PoissonVaryingNotUseExp"
               cellInLik <- rep(TRUE, times = length(theta))
               model <- methods::new(class,
                                     call = call,
                                     theta = theta,
+                                    thetaTransformed = theta.transformed,
                                     cellInLik = cellInLik,
                                     strucZeroArray = struc.zero.array,
                                     metadataY = metadataY,
@@ -1205,7 +1248,8 @@ setMethod("initialModel",
                                     namesBetas = names.betas,
                                     margins = margins,
                                     iteratorBetas = iterator.betas,
-                                    dims = dims)
+                                    dims = dims,
+                                    mu = mu)
               if (has.exposure)
                   default.weights <- exposure
               else {
@@ -1411,6 +1455,7 @@ setMethod("initialModelPredict",
               ans <- methods::new("BinomialVaryingPredict",
                                   model,
                                   theta = l$theta,
+                                  thetaTransformed = l$thetaTransformed,
                                   metadataY = metadataY,
                                   cellInLik = l$cellInLik,
                                   nAcceptTheta = methods::new("Counter", 0L),
@@ -1421,6 +1466,7 @@ setMethod("initialModelPredict",
                                   priorsBetas = l$priorsBetas,
                                   iteratorBetas = l$iteratorBetas,
                                   dims = l$dims,
+                                  mu = l$mu,
                                   betaIsPredicted = l$betaIsPredicted,
                                   offsetsBetas = l$offsetsBetas,
                                   offsetsPriorsBetas = l$offsetsPriorsBetas,
@@ -1473,6 +1519,7 @@ setMethod("initialModelPredict",
               ans <- methods::new(Class,
                                   model,
                                   theta = l$theta,
+                                  thetaTransformed = l$thetaTransformed,
                                   metadataY = metadataY,
                                   cellInLik = l$cellInLik,
                                   nAcceptTheta = methods::new("Counter", 0L),
@@ -1484,6 +1531,7 @@ setMethod("initialModelPredict",
                                   strucZeroArray = l$strucZeroArray,
                                   iteratorBetas = l$iteratorBetas,
                                   dims = l$dims,
+                                  mu = l$mu,
                                   betaIsPredicted = l$betaIsPredicted,
                                   offsetsBetas = l$offsetsBetas,
                                   offsetsPriorsBetas = l$offsetsPriorsBetas,
@@ -1533,6 +1581,7 @@ setMethod("initialModelPredict",
                   ans <- methods::new("NormalVaryingVarsigmaKnownPredict",
                              model,
                              theta = l$theta,
+                             thetaTransformed = l$thetaTransformed,
                              metadataY = metadataY,
                              cellInLik = l$cellInLik,
                              lower = lower,
@@ -1542,6 +1591,7 @@ setMethod("initialModelPredict",
                              priorsBetas = l$priorsBetas,
                              iteratorBetas = l$iteratorBetas,
                              dims = l$dims,
+                             mu = l$mu,
                              betaIsPredicted = l$betaIsPredicted,
                              offsetsBetas = l$offsetsBetas,
                              offsetsPriorsBetas = l$offsetsPriorsBetas,
@@ -1553,6 +1603,7 @@ setMethod("initialModelPredict",
                   ans <- methods::new("NormalVaryingVarsigmaUnknownPredict",
                              model,
                              theta = l$theta,
+                             thetaTransformed = l$thetaTransformed,
                              metadataY = metadataY,
                              cellInLik = l$cellInLik,
                              lower = lower,
@@ -1562,6 +1613,7 @@ setMethod("initialModelPredict",
                              priorsBetas = l$priorsBetas,
                              iteratorBetas = l$iteratorBetas,
                              dims = l$dims,
+                             mu = l$mu,
                              betaIsPredicted = l$betaIsPredicted,
                              offsetsBetas = l$offsetsBetas,
                              offsetsPriorsBetas = l$offsetsPriorsBetas,
@@ -1618,6 +1670,7 @@ setMethod("initialModelPredict",
               ans <- methods::new(Class,
                                   model,
                                   theta = l$theta,
+                                  thetaTransformed = l$thetaTransformed,
                                   nuCMP = nu.cmp,
                                   metadataY = metadataY,
                                   cellInLik = l$cellInLik,
@@ -1630,6 +1683,7 @@ setMethod("initialModelPredict",
                                   strucZeroArray = l$strucZeroArray,
                                   iteratorBetas = l$iteratorBetas,
                                   dims = l$dims,
+                                  mu = l$mu,
                                   betaIsPredicted = l$betaIsPredicted,
                                   offsetsBetas = l$offsetsBetas,
                                   offsetsPriorsBetas = l$offsetsPriorsBetas,

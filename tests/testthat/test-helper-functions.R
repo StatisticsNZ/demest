@@ -7747,6 +7747,7 @@ test_that("initialModelPredictHelper works", {
     makeOffsetsBetas <- demest:::makeOffsetsBetas
     makeOffsetsPriorsBetas <- demest:::makeOffsetsPriorsBetas
     makeOffsetsSigma <- demest:::makeOffsetsSigma
+    makeMu <- demest:::makeMu
     exposure <- Counts(array(as.integer(runif(n = 20, min = 5, max = 100)),
                              dim = c(5, 4),
                              dimnames = list(time = 2001:2005, region = 1:4)),
@@ -7770,6 +7771,7 @@ test_that("initialModelPredictHelper works", {
                                               covariates = NULL)
     set.seed(1)
     ans.expected <- list(theta = rep(mean(mod@theta), times = 16),
+                         thetaTransformed = rep(0, times = 16),
                          metadataY = new("MetaData",
                                          nms = c("time", "region"),
                                          dimtypes = c("time", "state"),
@@ -7798,6 +7800,10 @@ test_that("initialModelPredictHelper works", {
                          iteratorBetas = BetaIterator(dim = c(4L, 4L),
                                                       margins = c(0L, 1L, 2L)),
                          dims = list(0L, 4L, 4L),
+                         mu = makeMu(n = 16L,
+                                     betas = betas,
+                                     iterator = iteratorBetas,
+                                     useC = TRUE),
                          betaIsPredicted = c(FALSE, TRUE, FALSE),
                          offsetsBetas = makeOffsetsBetas(model = mod,
                                                          offsetModel = 1L),

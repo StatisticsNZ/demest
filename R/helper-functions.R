@@ -90,7 +90,6 @@ makeMu <- function(n, betas, iterator, useC = FALSE) {
     ## betas
     stopifnot(is.list(betas))
     stopifnot(all(sapply(betas, is.numeric)))
-    stopifnot(all(sapply(betas, function(x) !any(is.na(x)))))
     ## iterator
     stopifnot(methods::is(iterator, "BetaIterator"))
     if (useC) {
@@ -5728,7 +5727,9 @@ initialModelPredictHelper <- function(model, along, labels, n, offsetModel,
                                      metadata = metadata.pred)
     }
     theta <- ifelse(struc.zero.array.pred@.Data == 0L, 0, mean(theta.old))
+    thetaTransformed <- ifelse(struc.zero.array.pred@.Data == 0L, NA, 0)
     theta <- as.double(theta)
+    thetaTransformed <- as.double(thetaTransformed)
     cell.in.lik <- rep(FALSE, times = prod(dim(metadata.pred)))
     beta.is.predicted <- logical(length = n.beta)
     for (i in seq_len(n.beta)) {
@@ -5776,7 +5777,12 @@ initialModelPredictHelper <- function(model, along, labels, n, offsetModel,
     offsets.priors.betas <- makeOffsetsPriorsBetas(model, offsetModel = offsetModel)
     offsets.sigma <- makeOffsetsSigma(model, offsetModel = offsetModel)
     i.method.model <- i.method.model.first + 100L
+    mu <- makeMu(n = length(theta),
+                 betas = betas,
+                 iterator = iterator.betas,
+                 useC = TRUE)
     list(theta = theta,
+         thetaTransformed = thetaTransformed,
          metadataY = metadata.pred,
          cellInLik = cell.in.lik,
          betas = betas,
@@ -5784,6 +5790,7 @@ initialModelPredictHelper <- function(model, along, labels, n, offsetModel,
          priorsBetas = priors.betas,
          iteratorBetas = iterator.betas,
          dims = dims,
+         mu = mu,
          betaIsPredicted = beta.is.predicted,
          offsetsBetas = offsets.betas,
          offsetsPriorsBetas = offsets.priors.betas,

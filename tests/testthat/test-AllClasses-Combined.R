@@ -17,6 +17,7 @@ test_that("can create valid object of class CombinedModelBinomial", {
     y[1:2] <- NA
     model <- new("BinomialVarying",
                  theta = rbeta(n = 24, shape1 = 5, shape2 = 5),
+                 thetaTransformed = rnorm(24),
                  metadataY = y@metadata,
                  cellInLik = rep(TRUE, 24),
                  scaleTheta = new("Scale", 0.1),
@@ -41,7 +42,8 @@ test_that("can create valid object of class CombinedModelBinomial", {
                                         isSaturated = new("LogicalFlag", FALSE),
                                         allStrucZero = rep(FALSE, 4))),
                  iteratorBetas = BetaIterator(dim = 2:4, margins = list(0L, 1L, 2L, 3L)),
-                 dims = list(0L, 2L, 3L, 4L))
+                 dims = list(0L, 2L, 3L, 4L),
+                 mu = rnorm(24))
     x <- new("CombinedModelBinomial",
              model = model,
              y = y,
@@ -59,6 +61,7 @@ test_that("validity tests for CombinedModelBinomial inherited from HasExposure w
                       dimnames = list(sex = c("f", "m"), region = letters[1:3], age = 0:3)))
     model <- new("BinomialVarying",
                  theta = rbeta(n = 24, shape1 = 5, shape2 = 5),
+                 thetaTransformed = rnorm(24),
                  metadataY = y@metadata,
                  cellInLik = rep(TRUE, 24),
                  scaleTheta = new("Scale", 0.1),
@@ -83,7 +86,8 @@ test_that("validity tests for CombinedModelBinomial inherited from HasExposure w
                                         isSaturated = new("LogicalFlag", FALSE),
                                         allStrucZero = rep(FALSE, 4))),
                  iteratorBetas = BetaIterator(dim = 2:4, margins = list(0L, 1L, 2L, 3L)),
-                 dims = list(0L, 2L, 3L, 4L))
+                 dims = list(0L, 2L, 3L, 4L),
+                 mu = rnorm(24))
     x <- new("CombinedModelBinomial",
              model = model,
              y = y,
@@ -126,6 +130,7 @@ test_that("validity tests for CombinedModelBinomial inherited from Y work", {
                       dimnames = list(sex = c("f", "m"), region = letters[1:3], age = 0:3)))
     model <- new("BinomialVarying",
                  theta = rbeta(n = 24, shape1 = 5, shape2 = 5),
+                 thetaTransformed = rnorm(24),
                  metadataY = y@metadata,
                  cellInLik = rep(TRUE, 24),
                  scaleTheta = new("Scale", 0.1),
@@ -150,7 +155,8 @@ test_that("validity tests for CombinedModelBinomial inherited from Y work", {
                                         isSaturated = new("LogicalFlag", FALSE),
                                         allStrucZero = rep(FALSE, 4))),
                  iteratorBetas = BetaIterator(dim = 2:4, margins = list(0L, 1L, 2L, 3L)),
-                 dims = list(0L, 2L, 3L, 4L))
+                 dims = list(0L, 2L, 3L, 4L),
+                 mu = rnorm(24))
     x <- new("CombinedModelBinomial",
              model = model,
              y = y,
@@ -192,6 +198,7 @@ test_that("validity tests for CombinedModelBinomial inherited from YCounts work"
                       dimnames = list(sex = c("f", "m"), region = letters[1:3], age = 0:3)))
     model <- new("BinomialVarying",
                  theta = rbeta(n = 24, shape1 = 5, shape2 = 5),
+                 thetaTransformed = rnorm(24),
                  metadataY = y@metadata,
                  cellInLik = rep(TRUE, 24),
                  scaleTheta = new("Scale", 0.1),
@@ -216,7 +223,8 @@ test_that("validity tests for CombinedModelBinomial inherited from YCounts work"
                                         isSaturated = new("LogicalFlag", FALSE),
                                         allStrucZero = rep(FALSE, 4))),
                  iteratorBetas = BetaIterator(dim = 2:4, margins = list(0L, 1L, 2L, 3L)),
-                 dims = list(0L, 2L, 3L, 4L))
+                 dims = list(0L, 2L, 3L, 4L),
+                 mu = rnorm(24))
     x <- new("CombinedModelBinomial",
              model = model,
              y = y,
@@ -244,6 +252,7 @@ test_that("validity tests for CombinedModelBinomial inherited from YNonNegativeC
                       dimnames = list(sex = c("f", "m"), region = letters[1:3], age = 0:3)))
     model <- new("BinomialVarying",
                  theta = rbeta(n = 24, shape1 = 5, shape2 = 5),
+                 thetaTransformed = rnorm(24),
                  metadataY = y@metadata,
                  scaleTheta = new("Scale", 0.1),
                  cellInLik = rep(TRUE, 24),
@@ -268,7 +277,8 @@ test_that("validity tests for CombinedModelBinomial inherited from YNonNegativeC
                                         isSaturated = new("LogicalFlag", FALSE),
                                         allStrucZero = rep(FALSE, 4))),
                  iteratorBetas = BetaIterator(dim = 2:4, margins = list(0L, 1L, 2L, 3L)),
-                 dims = list(0L, 2L, 3L, 4L))
+                 dims = list(0L, 2L, 3L, 4L),
+                 mu = rnorm(24))
     x <- new("CombinedModelBinomial",
              model = model,
              y = y,
@@ -292,6 +302,7 @@ test_that("validity tests for CombinedModelBinomial inherited from CombinedBinom
                       dimnames = list(sex = c("f", "m"), region = letters[1:3], age = 0:3)))
     model <- new("BinomialVarying",
                  theta = rbeta(n = 24, shape1 = 5, shape2 = 5),
+                 thetaTransformed = rnorm(24),
                  metadataY = y@metadata,
                  cellInLik = rep(TRUE, 24),
                  scaleTheta = new("Scale", 0.1),
@@ -316,7 +327,8 @@ test_that("validity tests for CombinedModelBinomial inherited from CombinedBinom
                                         isSaturated = new("LogicalFlag", FALSE),
                                         allStrucZero = rep(FALSE, 4))),
                  iteratorBetas = BetaIterator(dim = 2:4, margins = list(0L, 1L, 2L, 3L)),
-                 dims = list(0L, 2L, 3L, 4L))
+                 dims = list(0L, 2L, 3L, 4L),
+                 mu = rnorm(24))
     x <- new("CombinedModelBinomial",
              model = model,
              y = y,
@@ -326,6 +338,7 @@ test_that("validity tests for CombinedModelBinomial inherited from CombinedBinom
     x.wrong <- x
     x.wrong@model <- new("PoissonVaryingUseExp",
                          theta = rbeta(n = 24, shape1 = 5, shape2 = 5),
+                 thetaTransformed = rnorm(24),
                          metadataY = y@metadata,
                          cellInLik = rep(TRUE, 24),
                          strucZeroArray = Counts(array(1L,
@@ -354,7 +367,8 @@ test_that("validity tests for CombinedModelBinomial inherited from CombinedBinom
                                                 isSaturated = new("LogicalFlag", FALSE),
                                                 allStrucZero = rep(FALSE, 4))),
                          iteratorBetas = BetaIterator(dim = 2:4, margins = list(0L, 1L, 2L, 3L)),
-                         dims = list(0L, 2L, 3L, 4L))
+                         dims = list(0L, 2L, 3L, 4L),
+                         mu = rnorm(24))
     expect_error(validObject(x.wrong),
                  "'model' has class \"PoissonVaryingUseExp\"")
 })
@@ -369,6 +383,7 @@ test_that("validity tests for CombinedModelBinomial inherited from CombinedModel
                       dimnames = list(sex = c("f", "m"), region = letters[1:3], age = 0:3)))
     model <- new("BinomialVarying",
                  theta = rbeta(n = 24, shape1 = 5, shape2 = 5),
+                 thetaTransformed = rnorm(24),
                  metadataY = y@metadata,
                  cellInLik = rep(TRUE, 24),
                  scaleTheta = new("Scale", 0.1),
@@ -393,7 +408,8 @@ test_that("validity tests for CombinedModelBinomial inherited from CombinedModel
                                         isSaturated = new("LogicalFlag", FALSE),
                                         allStrucZero = rep(FALSE, 4))),
                  iteratorBetas = BetaIterator(dim = 2:4, margins = list(0L, 1L, 2L, 3L)),
-                 dims = list(0L, 2L, 3L, 4L))
+                 dims = list(0L, 2L, 3L, 4L),
+                 mu = rnorm(24))
     x <- new("CombinedModelBinomial",
              model = model,
              y = y,
@@ -432,6 +448,7 @@ test_that("can create valid object of class CombinedModelNormal", {
     y[1] <- NA
     model <- new("NormalVaryingVarsigmaKnown",
                  theta = rbeta(n = 24, shape1 = 5, shape2 = 5),
+                 thetaTransformed = rnorm(24),
                  w = runif(n = 24),
                  metadataY = y@metadata,
                  lower = -Inf,
@@ -458,7 +475,8 @@ test_that("can create valid object of class CombinedModelNormal", {
                                         isSaturated = new("LogicalFlag", FALSE),
                                         allStrucZero = rep(FALSE, 4))),
                  iteratorBetas = BetaIterator(dim = 2:4, margins = list(0L, 1L, 2L, 3L)),
-                 dims = list(0L, 2L, 3L, 4L))
+                 dims = list(0L, 2L, 3L, 4L),
+                 mu = rnorm(24))
     x <- new("CombinedModelNormal",
              model = model,
              y = y,
@@ -473,6 +491,7 @@ test_that("validity tests for CombinedModelNormal inherited from CombinedNormal 
                       dimnames = list(sex = c("f", "m"), region = letters[1:3], age = 0:3)))
     model <- new("NormalVaryingVarsigmaKnown",
                  theta = rbeta(n = 24, shape1 = 5, shape2 = 5),
+                 thetaTransformed = rnorm(24),
                  w = runif(n = 24),
                  cellInLik = rep(TRUE, 24),
                  metadataY = y@metadata,
@@ -499,7 +518,8 @@ test_that("validity tests for CombinedModelNormal inherited from CombinedNormal 
                                         isSaturated = new("LogicalFlag", FALSE),
                                         allStrucZero = rep(FALSE, 4))),
                  iteratorBetas = BetaIterator(dim = 2:4, margins = list(0L, 1L, 2L, 3L)),
-                 dims = list(0L, 2L, 3L, 4L))
+                 dims = list(0L, 2L, 3L, 4L),
+                 mu = rnorm(24))
     x <- new("CombinedModelNormal",
              model = model,
              y = y,
@@ -509,6 +529,7 @@ test_that("validity tests for CombinedModelNormal inherited from CombinedNormal 
     x.wrong <- x
     x.wrong@model <- new("BinomialVarying",
                          theta = rbeta(n = 24, shape1 = 5, shape2 = 5),
+                 thetaTransformed = rnorm(24),
                          metadataY = y@metadata,
                          cellInLik = rep(TRUE, 24),
                          scaleTheta = new("Scale", 0.1),
@@ -533,7 +554,8 @@ test_that("validity tests for CombinedModelNormal inherited from CombinedNormal 
                                                 isSaturated = new("LogicalFlag", FALSE),
                                                 allStrucZero = rep(FALSE, 4))),
                          iteratorBetas = BetaIterator(dim = 2:4, margins = list(0L, 1L, 2L, 3L)),
-                         dims = list(0L, 2L, 3L, 4L))
+                         dims = list(0L, 2L, 3L, 4L),
+                         mu = rnorm(24))
     expect_error(validObject(x.wrong),
                  "'model' has class \"BinomialVarying\"")
     ## 'w' has missing values only if 'y' does
@@ -555,6 +577,7 @@ test_that("validity tests for CombinedModelNormal inherited from CombinedModelNo
                       dimnames = list(sex = c("f", "m"), region = letters[1:3], age = 0:3)))
     model <- new("NormalVaryingVarsigmaKnown",
                  theta = rbeta(n = 24, shape1 = 5, shape2 = 5),
+                 thetaTransformed = rnorm(24),
                  w = runif(n = 24),
                  cellInLik = rep(TRUE, 24),
                  metadataY = y@metadata,
@@ -581,7 +604,8 @@ test_that("validity tests for CombinedModelNormal inherited from CombinedModelNo
                                         isSaturated = new("LogicalFlag", FALSE),
                                         allStrucZero = rep(FALSE, 4))),
                  iteratorBetas = BetaIterator(dim = 2:4, margins = list(0L, 1L, 2L, 3L)),
-                 dims = list(0L, 2L, 3L, 4L))
+                 dims = list(0L, 2L, 3L, 4L),
+                 mu = rnorm(24))
     x <- new("CombinedModelNormal",
              model = model,
              y = y,
@@ -618,6 +642,7 @@ test_that("can create valid object of class CombinedModelPoissonNotHasExp", {
     y[1:4] <- NA
     model <- new("PoissonVaryingNotUseExp",
                  theta = rbeta(n = 24, shape1 = 5, shape2 = 5),
+                 thetaTransformed = rnorm(24),
                  metadataY = y@metadata,
                  strucZeroArray = Counts(array(1L,
                                                dim = 2:4,
@@ -646,7 +671,8 @@ test_that("can create valid object of class CombinedModelPoissonNotHasExp", {
                                         isSaturated = new("LogicalFlag", FALSE),
                                         allStrucZero = rep(FALSE, 4))),
                  iteratorBetas = BetaIterator(dim = 2:4, margins = list(0L, 1L, 2L, 3L)),
-                 dims = list(0L, 2L, 3L, 4L))
+                 dims = list(0L, 2L, 3L, 4L),
+                 mu = rnorm(24))
     x <- new("CombinedModelPoissonNotHasExp",
              model = model,
              y = y)
@@ -660,6 +686,7 @@ test_that("validity tests for CombinedModelPoissonNotHasExp inherited from NotHa
                       dimnames = list(sex = c("f", "m"), region = letters[1:3], age = 0:3)))
     model <- new("PoissonVaryingNotUseExp",
                  theta = rbeta(n = 24, shape1 = 5, shape2 = 5),
+                 thetaTransformed = rnorm(24),
                  metadataY = y@metadata,
                  strucZeroArray = Counts(array(1L,
                                                dim = 2:4,
@@ -688,7 +715,8 @@ test_that("validity tests for CombinedModelPoissonNotHasExp inherited from NotHa
                                         isSaturated = new("LogicalFlag", FALSE),
                                         allStrucZero = rep(FALSE, 4))),
                  iteratorBetas = BetaIterator(dim = 2:4, margins = list(0L, 1L, 2L, 3L)),
-                 dims = list(0L, 2L, 3L, 4L))
+                 dims = list(0L, 2L, 3L, 4L),
+                 mu = rnorm(24))
     x <- new("CombinedModelPoissonNotHasExp",
              model = model,
              y = y,
@@ -697,6 +725,7 @@ test_that("validity tests for CombinedModelPoissonNotHasExp inherited from NotHa
     x.wrong <- x
     x.wrong@model <- new("PoissonVaryingUseExp",
                          theta = rbeta(n = 24, shape1 = 5, shape2 = 5),
+                 thetaTransformed = rnorm(24),
                          metadataY = y@metadata,
                          strucZeroArray = Counts(array(1L,
                                                        dim = 2:4,
@@ -725,7 +754,8 @@ test_that("validity tests for CombinedModelPoissonNotHasExp inherited from NotHa
                                                 isSaturated = new("LogicalFlag", FALSE),
                                                 allStrucZero = rep(FALSE, 4))),
                          iteratorBetas = BetaIterator(dim = 2:4, margins = list(0L, 1L, 2L, 3L)),
-                         dims = list(0L, 2L, 3L, 4L))
+                         dims = list(0L, 2L, 3L, 4L),
+                         mu = rnorm(24))
     expect_error(validObject(x.wrong),
                  "'model' has class \"PoissonVaryingUseExp\"")
 })
@@ -737,6 +767,7 @@ test_that("validity tests for CombinedModelPoissonNotHasExp inherited from Combi
                       dimnames = list(sex = c("f", "m"), region = letters[1:3], age = 0:3)))
     model <- new("PoissonVaryingNotUseExp",
                  theta = rbeta(n = 24, shape1 = 5, shape2 = 5),
+                 thetaTransformed = rnorm(24),
                  metadataY = y@metadata,
                  strucZeroArray = Counts(array(1L,
                                                dim = 2:4,
@@ -765,7 +796,8 @@ test_that("validity tests for CombinedModelPoissonNotHasExp inherited from Combi
                                         isSaturated = new("LogicalFlag", FALSE),
                                         allStrucZero = rep(FALSE, 4))),
                  iteratorBetas = BetaIterator(dim = 2:4, margins = list(0L, 1L, 2L, 3L)),
-                 dims = list(0L, 2L, 3L, 4L))
+                 dims = list(0L, 2L, 3L, 4L),
+                 mu = rnorm(24))
     x <- new("CombinedModelPoissonNotHasExp",
              model = model,
              y = y)
@@ -773,6 +805,7 @@ test_that("validity tests for CombinedModelPoissonNotHasExp inherited from Combi
     x.wrong <- x
     x.wrong@model <- new("BinomialVarying",
                          theta = rbeta(n = 24, shape1 = 5, shape2 = 5),
+                 thetaTransformed = rnorm(24),
                          metadataY = y@metadata,
                          cellInLik = rep(TRUE, 24),
                          scaleTheta = new("Scale", 0.1),
@@ -797,7 +830,8 @@ test_that("validity tests for CombinedModelPoissonNotHasExp inherited from Combi
                                                 isSaturated = new("LogicalFlag", FALSE),
                                                 allStrucZero = rep(FALSE, 4))),
                          iteratorBetas = BetaIterator(dim = 2:4, margins = list(0L, 1L, 2L, 3L)),
-                         dims = list(0L, 2L, 3L, 4L))
+                         dims = list(0L, 2L, 3L, 4L),
+                         mu = rnorm(24))
     expect_error(validObject(x.wrong),
                  "'model' has class \"BinomialVarying\"")
 })
@@ -809,6 +843,7 @@ test_that("validity tests for CombinedModelPoissonNotHasExp inherited from Combi
                       dimnames = list(sex = c("f", "m"), region = letters[1:3], age = 0:3)))
     model <- new("PoissonVaryingNotUseExp",
                  theta = rbeta(n = 24, shape1 = 5, shape2 = 5),
+                 thetaTransformed = rnorm(24),
                  metadataY = y@metadata,
                  strucZeroArray = Counts(array(1L,
                                                dim = 2:4,
@@ -837,7 +872,8 @@ test_that("validity tests for CombinedModelPoissonNotHasExp inherited from Combi
                                         isSaturated = new("LogicalFlag", FALSE),
                                         allStrucZero = rep(FALSE, 4))),
                  iteratorBetas = BetaIterator(dim = 2:4, margins = list(0L, 1L, 2L, 3L)),
-                 dims = list(0L, 2L, 3L, 4L))
+                 dims = list(0L, 2L, 3L, 4L),
+                 mu = rnorm(24))
     x <- new("CombinedModelPoissonNotHasExp",
              model = model,
              y = y,
@@ -863,6 +899,7 @@ test_that("can create valid object of class CombinedModelPoissonHasExp", {
     y[1:2] <- NA
     model <- new("PoissonVaryingUseExp",
                  theta = rbeta(n = 24, shape1 = 5, shape2 = 5),
+                 thetaTransformed = rnorm(24),
                  strucZeroArray = Counts(array(1L,
                                                dim = 2:4,
                                                dimnames = list(sex = c("f", "m"),
@@ -891,7 +928,8 @@ test_that("can create valid object of class CombinedModelPoissonHasExp", {
                                         isSaturated = new("LogicalFlag", FALSE),
                                         allStrucZero = rep(FALSE, 4))),
                  iteratorBetas = BetaIterator(dim = 2:4, margins = list(0L, 1L, 2L, 3L)),
-                 dims = list(0L, 2L, 3L, 4L))
+                 dims = list(0L, 2L, 3L, 4L),
+                 mu = rnorm(24))
     x <- new("CombinedModelPoissonHasExp",
              model = model,
              y = y,
@@ -908,6 +946,7 @@ test_that("validity tests for CombinedModelPoissonHasExp inherited from HasExpos
                       dimnames = list(sex = c("f", "m"), region = letters[1:3], age = 0:3)))
     model <- new("PoissonVaryingUseExp",
                  theta = rbeta(n = 24, shape1 = 5, shape2 = 5),
+                 thetaTransformed = rnorm(24),
                  metadataY = y@metadata,
                  strucZeroArray = Counts(array(1L,
                                                dim = 2:4,
@@ -936,7 +975,8 @@ test_that("validity tests for CombinedModelPoissonHasExp inherited from HasExpos
                                         isSaturated = new("LogicalFlag", FALSE),
                                         allStrucZero = rep(FALSE, 4))),
                  iteratorBetas = BetaIterator(dim = 2:4, margins = list(0L, 1L, 2L, 3L)),
-                 dims = list(0L, 2L, 3L, 4L))
+                 dims = list(0L, 2L, 3L, 4L),
+                 mu = rnorm(24))
     x <- new("CombinedModelPoissonHasExp",
              model = model,
              y = y,
@@ -946,6 +986,7 @@ test_that("validity tests for CombinedModelPoissonHasExp inherited from HasExpos
     x.wrong <- x
     x.wrong@model <- new("PoissonVaryingNotUseExp",
                          theta = rbeta(n = 24, shape1 = 5, shape2 = 5),
+                 thetaTransformed = rnorm(24),
                          strucZeroArray = Counts(array(1L,
                                                        dim = 2:4,
                                                        dimnames = list(sex = c("f", "m"),
@@ -974,7 +1015,8 @@ test_that("validity tests for CombinedModelPoissonHasExp inherited from HasExpos
                                                 isSaturated = new("LogicalFlag", FALSE),
                                                 allStrucZero = rep(FALSE, 4))),
                          iteratorBetas = BetaIterator(dim = 2:4, margins = list(0L, 1L, 2L, 3L)),
-                         dims = list(0L, 2L, 3L, 4L))
+                         dims = list(0L, 2L, 3L, 4L),
+                 mu = rnorm(24))
     expect_error(validObject(x.wrong),
                  "'model' has class \"PoissonVaryingNotUseExp\"")
 })
@@ -989,6 +1031,7 @@ test_that("validity tests for CombinedModelPoissonHasExp inherited from Combined
                       dimnames = list(sex = c("f", "m"), region = letters[1:3], age = 0:3)))
     model <- new("PoissonVaryingUseExp",
                  theta = rbeta(n = 24, shape1 = 5, shape2 = 5),
+                 thetaTransformed = rnorm(24),
                  metadataY = y@metadata,
                  strucZeroArray = Counts(array(1L,
                                                dim = 2:4,
@@ -1017,7 +1060,8 @@ test_that("validity tests for CombinedModelPoissonHasExp inherited from Combined
                                                 isSaturated = new("LogicalFlag", FALSE),
                                                 allStrucZero = rep(FALSE, 4))),
                  iteratorBetas = BetaIterator(dim = 2:4, margins = list(0L, 1L, 2L, 3L)),
-                 dims = list(0L, 2L, 3L, 4L))
+                 dims = list(0L, 2L, 3L, 4L),
+                 mu = rnorm(24))
     x <- new("CombinedModelPoissonHasExp",
              model = model,
              y = y,
@@ -1056,6 +1100,7 @@ test_that("can create valid object of class CombinedModelCMPNotHasExp", {
     y[1:4] <- NA
     model <- new("CMPVaryingNotUseExp",
                  theta = rbeta(n = 24, shape1 = 5, shape2 = 5),
+                 thetaTransformed = rnorm(24),
                  nuCMP = new("ParameterVector", runif(24)),
                  meanLogNuCMP = new("Parameter", rnorm(1)),
                  sdLogNuCMP = new("Scale", runif(1)),
@@ -1087,7 +1132,8 @@ test_that("can create valid object of class CombinedModelCMPNotHasExp", {
                                         isSaturated = new("LogicalFlag", FALSE),
                                         allStrucZero = rep(FALSE, 4))),
                  iteratorBetas = BetaIterator(dim = 2:4, margins = list(0L, 1L, 2L, 3L)),
-                 dims = list(0L, 2L, 3L, 4L))
+                 dims = list(0L, 2L, 3L, 4L),
+                 mu = rnorm(24))
     x <- new("CombinedModelCMPNotHasExp",
              model = model,
              y = y)
@@ -1104,6 +1150,7 @@ test_that("can create valid object of class CombinedModelCMPHasExp", {
     exposure <- y + 1
     model <- new("CMPVaryingUseExp",
                  theta = rbeta(n = 24, shape1 = 5, shape2 = 5),
+                 thetaTransformed = rnorm(24),
                  nuCMP = new("ParameterVector", runif(24)),
                  meanLogNuCMP = new("Parameter", rnorm(1)),
                  sdLogNuCMP = new("Scale", runif(1)),
@@ -1135,7 +1182,8 @@ test_that("can create valid object of class CombinedModelCMPHasExp", {
                                         isSaturated = new("LogicalFlag", FALSE),
                                         allStrucZero = rep(FALSE, 4))),
                  iteratorBetas = BetaIterator(dim = 2:4, margins = list(0L, 1L, 2L, 3L)),
-                 dims = list(0L, 2L, 3L, 4L))
+                 dims = list(0L, 2L, 3L, 4L),
+                 mu = rnorm(24))
     x <- new("CombinedModelCMPHasExp",
              model = model,
              y = y,
@@ -1156,6 +1204,7 @@ test_that("can create valid object of class CombinedCountsPoissonNotHasExp", {
                       dimnames = list(age = 0:2, sex = c("f", "m"))))
     model <- new("PoissonVaryingNotUseExp",
                  theta = rbeta(n = 6, shape1 = 5, shape2 = 5),
+                 thetaTransformed = rnorm(6),
                  metadataY = y@metadata,
                  strucZeroArray = Counts(array(1L,
                                                dim = 3:2,
@@ -1180,7 +1229,8 @@ test_that("can create valid object of class CombinedCountsPoissonNotHasExp", {
                                         isSaturated = new("LogicalFlag", FALSE),
                                         allStrucZero = rep(FALSE, 3))),
                  iteratorBetas = BetaIterator(dim = 2:3, margins = list(0L, 1L, 2L)),
-                 dims = list(0L, 2L, 3L))
+                 dims = list(0L, 2L, 3L),
+                 mu = rnorm(6))
     datasets <- list(Counts(array(c(1:5, 5L),
                                   dim = c(3, 2),
                                   dimnames = list(age = 0:2, sex = c("f", "m")))),
@@ -1190,6 +1240,7 @@ test_that("can create valid object of class CombinedCountsPoissonNotHasExp", {
     data.models <- list(new("PoissonBinomialMixture", prob = 0.9, metadataY = datasets[[1]]@metadata),
                         new("PoissonVaryingUseExp",
                             theta = rbeta(n = 4, shape1 = 5, shape2 = 5),
+                            thetaTransformed = rnorm(4),
                             metadataY = y[1:2,]@metadata,
                             strucZeroArray = Counts(array(1L,
                                                           dim = c(2, 2),
@@ -1214,7 +1265,8 @@ test_that("can create valid object of class CombinedCountsPoissonNotHasExp", {
                                                    isSaturated = new("LogicalFlag", FALSE),
                                                    allStrucZero = rep(FALSE, 2))),
                             iteratorBetas = BetaIterator(dim = c(2L, 2L), margins = list(0L, 1L, 2L)),
-                            dims = list(0L, 2L, 2L)))
+                            dims = list(0L, 2L, 2L),
+                            mu = rnorm(4)))
     namesDatasets <- c("dataset1", "dataset2")
     transforms <- list(new("CollapseTransformExtra",
                            indices = list(1:3, 1:2),
@@ -1246,6 +1298,7 @@ test_that("can create valid object of class CombinedCountsPoissonNotHasExp", {
                       dimnames = list(age = 0:2, sex = c("f", "m"))))
     model <- new("PoissonVaryingNotUseExp",
                  theta = rbeta(n = 6, shape1 = 5, shape2 = 5),
+                 thetaTransformed = rnorm(6),
                  metadataY = y@metadata,
                  strucZeroArray = Counts(array(1L,
                                                dim = c(3, 2),
@@ -1270,7 +1323,8 @@ test_that("can create valid object of class CombinedCountsPoissonNotHasExp", {
                                         isSaturated = new("LogicalFlag", FALSE),
                                         allStrucZero = rep(FALSE, 3))),
                  iteratorBetas = BetaIterator(dim = 2:3, margins = list(0L, 1L, 2L)),
-                 dims = list(0L, 2L, 3L))
+                 dims = list(0L, 2L, 3L),
+                 mu = rnorm(6))
     datasets <- list(Counts(array(c(1:5, NA),
                                   dim = c(3, 2),
                                   dimnames = list(age = 0:2, sex = c("f", "m")))),
@@ -1280,6 +1334,7 @@ test_that("can create valid object of class CombinedCountsPoissonNotHasExp", {
     data.models <- list(new("PoissonBinomialMixture", prob = 0.9, metadataY = datasets[[1]]@metadata),
                         new("PoissonVaryingUseExp",
                             theta = rbeta(n = 4, shape1 = 5, shape2 = 5),
+                            thetaTransformed = rnorm(4),
                             strucZeroArray = Counts(array(1L,
                                                           dim = c(2, 2),
                                                           dimnames = list(age = 0:1, sex = c("f", "m")))),
@@ -1304,7 +1359,8 @@ test_that("can create valid object of class CombinedCountsPoissonNotHasExp", {
                                                    isSaturated = new("LogicalFlag", FALSE),
                                                    allStrucZero = rep(FALSE, 2))),
                             iteratorBetas = BetaIterator(dim = c(2L, 2L), margins = list(0L, 1L, 2L)),
-                            dims = list(0L, 2L, 2L)))
+                            dims = list(0L, 2L, 2L),
+                            mu = rnorm(4)))
     namesDatasets <- c("dataset1", "dataset2")
     transforms <- list(new("CollapseTransformExtra",
                            indices = list(1:3, 1:2),
@@ -1339,6 +1395,7 @@ test_that("validity tests inherited for CombinedCountsPoissonNotHasExp inherited
                       dimnames = list(age = 0:2, sex = c("f", "m"))))
     model <- new("PoissonVaryingNotUseExp",
                  theta = rbeta(n = 6, shape1 = 5, shape2 = 5),
+                 thetaTransformed = rnorm(6),
                  metadataY = y@metadata,
                  strucZeroArray = Counts(array(1L,
                                                dim = 3:2,
@@ -1363,7 +1420,8 @@ test_that("validity tests inherited for CombinedCountsPoissonNotHasExp inherited
                                         isSaturated = new("LogicalFlag", FALSE),
                                         allStrucZero = rep(FALSE, 3))),
                  iteratorBetas = BetaIterator(dim = 2:3, margins = list(0L, 1L, 2L)),
-                 dims = list(0L, 2L, 3L))
+                 dims = list(0L, 2L, 3L),
+                 mu = rnorm(6))
     datasets <- list(Counts(array(c(1:5, 5L),
                                   dim = c(3, 2),
                                   dimnames = list(age = 0:2, sex = c("f", "m")))),
@@ -1373,6 +1431,7 @@ test_that("validity tests inherited for CombinedCountsPoissonNotHasExp inherited
     data.models <- list(new("PoissonBinomialMixture", prob = 0.9, metadataY = datasets[[1]]@metadata),
                         new("PoissonVaryingUseExp",
                             theta = rbeta(n = 4, shape1 = 5, shape2 = 5),
+                            thetaTransformed = rnorm(4),
                             metadataY = y[1:2,]@metadata,
                             strucZeroArray = Counts(array(1L,
                                                           dim = c(2, 2),
@@ -1397,7 +1456,8 @@ test_that("validity tests inherited for CombinedCountsPoissonNotHasExp inherited
                                                    isSaturated = new("LogicalFlag", FALSE),
                                                    allStrucZero = rep(FALSE, 2))),
                             iteratorBetas = BetaIterator(dim = c(2L, 2L), margins = list(0L, 1L, 2L)),
-                            dims = list(0L, 2L, 2L)))
+                            dims = list(0L, 2L, 2L),
+                            mu = rnorm(4)))
     namesDatasets <- c("dataset1", "dataset2")
     transforms <- list(new("CollapseTransformExtra",
                            indices = list(1:3, 1:2),
@@ -1526,6 +1586,7 @@ test_that("can create valid object of class CombinedCountsPoissonHasExp", {
     exposure <- y + 1
     model <- new("PoissonVaryingUseExp",
                  theta = rbeta(n = 6, shape1 = 5, shape2 = 5),
+                 thetaTransformed = rnorm(6),
                  metadataY = y@metadata,
                  strucZeroArray = Counts(array(1L,
                                                dim = 3:2,
@@ -1550,7 +1611,8 @@ test_that("can create valid object of class CombinedCountsPoissonHasExp", {
                                         isSaturated = new("LogicalFlag", FALSE),
                                         allStrucZero = rep(FALSE, 3))),
                  iteratorBetas = BetaIterator(dim = 2:3, margins = list(0L, 1L, 2L)),
-                 dims = list(0L, 2L, 3L))
+                 dims = list(0L, 2L, 3L),
+                 mu = rnorm(6))
     datasets <- list(Counts(array(c(1:5, 5L),
                                   dim = c(3, 2),
                                   dimnames = list(age = 0:2, sex = c("f", "m")))),
@@ -1560,6 +1622,7 @@ test_that("can create valid object of class CombinedCountsPoissonHasExp", {
     data.models <- list(new("PoissonBinomialMixture", prob = 0.9, metadataY = datasets[[1]]@metadata),
                         new("PoissonVaryingUseExp",
                             theta = rbeta(n = 4, shape1 = 5, shape2 = 5),
+                            thetaTransformed = rnorm(4),
                             metadataY = y[1:2,]@metadata,
                             strucZeroArray = Counts(array(1L,
                                                           dim = c(2, 2),
@@ -1584,7 +1647,8 @@ test_that("can create valid object of class CombinedCountsPoissonHasExp", {
                                                    isSaturated = new("LogicalFlag", FALSE),
                                                    allStrucZero = rep(FALSE, 2))),
                             iteratorBetas = BetaIterator(dim = c(2L, 2L), margins = list(0L, 1L, 2L)),
-                            dims = list(0L, 2L, 2L)))
+                            dims = list(0L, 2L, 2L),
+                            mu = rnorm(4)))
     namesDatasets <- c("dataset1", "dataset2")
     transforms <- list(new("CollapseTransformExtra",
                            indices = list(1:3, 1:2),
@@ -1632,6 +1696,7 @@ test_that("validity tests for CombinedCountsPoissonHasExp inherited from Combine
     exposure <- y + 1
     model <- new("PoissonVaryingUseExp",
                  theta = rbeta(n = 6, shape1 = 5, shape2 = 5),
+                 thetaTransformed = rnorm(6),
                  metadataY = y@metadata,
                  strucZeroArray = Counts(array(1L,
                                                dim = 3:2,
@@ -1656,7 +1721,8 @@ test_that("validity tests for CombinedCountsPoissonHasExp inherited from Combine
                                         isSaturated = new("LogicalFlag", FALSE),
                                         allStrucZero = rep(FALSE, 3))),
                  iteratorBetas = BetaIterator(dim = 2:3, margins = list(0L, 1L, 2L)),
-                 dims = list(0L, 2L, 3L))
+                 dims = list(0L, 2L, 3L),
+                 mu = rnorm(6))
     datasets <- list(Counts(array(c(1:5, 5L),
                                   dim = c(3, 2),
                                   dimnames = list(age = 0:2, sex = c("f", "m")))),
@@ -1666,6 +1732,7 @@ test_that("validity tests for CombinedCountsPoissonHasExp inherited from Combine
     data.models <- list(new("PoissonBinomialMixture", prob = 0.9, metadataY = datasets[[1]]@metadata),
                         new("PoissonVaryingUseExp",
                             theta = rbeta(n = 4, shape1 = 5, shape2 = 5),
+                            thetaTransformed = rnorm(4),
                             strucZeroArray = Counts(array(1L,
                                                           dim = c(2, 2),
                                                           dimnames = list(age = 0:1, sex = c("f", "m")))),
@@ -1690,7 +1757,8 @@ test_that("validity tests for CombinedCountsPoissonHasExp inherited from Combine
                                                    isSaturated = new("LogicalFlag", FALSE),
                                                    allStrucZero = rep(FALSE, 2))),
                             iteratorBetas = BetaIterator(dim = c(2L, 2L), margins = list(0L, 1L, 2L)),
-                            dims = list(0L, 2L, 2L)))
+                            dims = list(0L, 2L, 2L),
+                            mu = rnorm(4)))
     namesDatasets <- c("dataset1", "dataset2")
     transforms <- list(new("CollapseTransformExtra",
                            indices = list(1:3, 1:2),
@@ -1733,6 +1801,7 @@ test_that("can create valid object of class CombinedCountsBinomial", {
     exposure <- y + 1
     model <- new("BinomialVarying",
                  theta = rbeta(n = 6, shape1 = 5, shape2 = 5),
+                 thetaTransformed = rnorm(6),
                  metadataY = y@metadata,
                  scaleTheta = new("Scale", 0.1),
                  cellInLik = rep(TRUE, 6),
@@ -1754,7 +1823,8 @@ test_that("can create valid object of class CombinedCountsBinomial", {
                                         isSaturated = new("LogicalFlag", FALSE),
                                         allStrucZero = rep(FALSE, 3))),
                  iteratorBetas = BetaIterator(dim = 2:3, margins = list(0L, 1L, 2L)),
-                 dims = list(0L, 2L, 3L))
+                 dims = list(0L, 2L, 3L),
+                 mu = rnorm(6))
     datasets <- list(Counts(array(c(1:5, 5L),
                                   dim = c(3, 2),
                                   dimnames = list(age = 0:2, sex = c("f", "m")))),
@@ -1764,6 +1834,7 @@ test_that("can create valid object of class CombinedCountsBinomial", {
     data.models <- list(new("PoissonBinomialMixture", prob = 0.9, metadataY = datasets[[1]]@metadata),
                         new("PoissonVaryingUseExp",
                             theta = rbeta(n = 4, shape1 = 5, shape2 = 5),
+                            thetaTransformed = rnorm(4),
                             strucZeroArray = Counts(array(1L,
                                                           dim = c(2, 2),
                                                           dimnames = list(age = 0:1, sex = c("f", "m")))),
@@ -1788,7 +1859,8 @@ test_that("can create valid object of class CombinedCountsBinomial", {
                                                    isSaturated = new("LogicalFlag", FALSE),
                                                    allStrucZero = rep(FALSE, 2))),
                             iteratorBetas = BetaIterator(dim = c(2L, 2L), margins = list(0L, 1L, 2L)),
-                            dims = list(0L, 2L, 2L)))
+                            dims = list(0L, 2L, 2L),
+                            mu = rnorm(4)))
     namesDatasets <- c("dataset1", "dataset2")
     transforms <- list(new("CollapseTransformExtra",
                            indices = list(1:3, 1:2),

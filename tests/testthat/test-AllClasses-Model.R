@@ -11,6 +11,7 @@ test_that("can create a valid object of class PoissonVaryingNotUseExp", {
     ## main effects model
     x <- new("PoissonVaryingNotUseExp",
              theta = rgamma(n = 20, shape = 5, rate = 5),
+             thetaTransformed = rnorm(20),
              metadataY = new("MetaData",
                              nms = c("age", "region"),
                              dimtypes = c("age", "state"),
@@ -41,11 +42,13 @@ test_that("can create a valid object of class PoissonVaryingNotUseExp", {
                                 new("ExchNormZero", J = new("Length", 4L), tauMax = new("Scale", 5),
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
-             dims = list(0L, 5L, 4L))
+             dims = list(0L, 5L, 4L),
+             mu = rnorm(20))
     expect_true(validObject(x))
     ## version consisting only of intercept
     x <- new("PoissonVaryingNotUseExp",
              theta = rgamma(n = 20, shape = 5, rate = 5),
+             thetaTransformed = rnorm(20),
              strucZeroArray = Counts(array(1L,
                                            dim = c(5, 4),
                                            dimnames = list(age = 0:4, region = letters[1:4])),
@@ -71,7 +74,8 @@ test_that("can create a valid object of class PoissonVaryingNotUseExp", {
              margins = list(0L),
              priorsBetas = list(new("ExchFixed")),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L)),
-             dims = list(0L))
+             dims = list(0L),
+             mu = rnorm(20))
     expect_true(validObject(x))
 })
 
@@ -79,6 +83,7 @@ test_that("validity tests for PoissonVaringNotUseExp inherited from MetadataY wo
     BetaIterator <- demest:::BetaIterator
     x <- new("PoissonVaryingNotUseExp",
              theta = rgamma(n = 20, shape = 5, rate = 5),
+             thetaTransformed = rnorm(20),
              strucZeroArray = Counts(array(1L,
                                            dim = c(5, 4),
                                            dimnames = list(age = 0:4, region = letters[1:4])),
@@ -109,7 +114,8 @@ test_that("validity tests for PoissonVaringNotUseExp inherited from MetadataY wo
                                 new("ExchNormZero", J = new("Length", 4L), tauMax = new("Scale", 5),
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
-             dims = list(0L, 5L, 4L))
+             dims = list(0L, 5L, 4L),
+             mu = rnorm(20))
     expect_true(validObject(x))
     ## 'metadataY' does not have any dimensions with dimtype "iteration"
     x.wrong <- x
@@ -134,7 +140,8 @@ test_that("validity tests for PoissonVaringNotUseExp inherited from MetadataY wo
 test_that("validity tests for PoissonVaryingNotUseExp inherited from Theta work", {
     BetaIterator <- demest:::BetaIterator
     x <- new("PoissonVaryingNotUseExp",
-             theta = rgamma(n = 20, shape = 5, rate = 5),
+             theta = rgamma(n = 20, shape = 5, rate = 5), 
+             thetaTransformed = rnorm(20),
              metadataY = new("MetaData",
                  nms = c("age", "region"),
                  dimtypes = c("age", "state"),
@@ -165,15 +172,27 @@ test_that("validity tests for PoissonVaryingNotUseExp inherited from Theta work"
                                 new("ExchNormZero", J = new("Length", 4L), tauMax = new("Scale", 5),
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
-             dims = list(0L, 5L, 4L))
+             dims = list(0L, 5L, 4L),
+             mu = rnorm(20))
     ## 'theta' is double
     x.wrong <- x
     x.wrong@theta <- 1:20
     expect_error(validObject(x.wrong),
                  "'theta' does not have type \"double\"")
+    ## 'thetaTransformed' is double
+    x.wrong <- x
+    x.wrong@thetaTransformed <- 1:20
+    expect_error(validObject(x.wrong),
+                 "'thetaTransformed' does not have type \"double\"")
+    ## 'thetaTransformed' and 'theta' have same length
+    x.wrong <- x
+    x.wrong@thetaTransformed <- x.wrong@thetaTransformed[1:19]
+    expect_error(validObject(x.wrong),
+                 "'theta' and 'thetaTransformed' have different lengths")
     ## dimensions of 'metadataY' consistent with length of 'theta'
     x.wrong <- x
     x.wrong@theta <- x.wrong@theta[-1]
+    x.wrong@thetaTransformed <- x.wrong@thetaTransformed[-1]
     expect_error(validObject(x.wrong),
                  "dimensions of 'metadataY' inconsistent with length of 'theta'")
 })
@@ -182,6 +201,7 @@ test_that("validity tests for PoissonVaryingNotUseExp inherited from Poisson wor
     BetaIterator <- demest:::BetaIterator
     x <- new("PoissonVaryingNotUseExp",
              theta = rgamma(n = 20, shape = 5, rate = 5),
+             thetaTransformed = rnorm(20),
              metadataY = new("MetaData",
                  nms = c("age", "region"),
                  dimtypes = c("age", "state"),
@@ -212,7 +232,8 @@ test_that("validity tests for PoissonVaryingNotUseExp inherited from Poisson wor
                                 new("ExchNormZero", J = new("Length", 4L), tauMax = new("Scale", 5),
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
-             dims = list(0L, 5L, 4L))
+             dims = list(0L, 5L, 4L),
+             mu = rnorm(20))
     ## 'theta' has no negative values
     x.wrong <- x
     x.wrong@theta[1] <- -1
@@ -224,6 +245,7 @@ test_that("validity tests for PoissonVaryingNotUseExp inherited from LowerUpper 
     BetaIterator <- demest:::BetaIterator
     x <- new("PoissonVaryingNotUseExp",
              theta = rgamma(n = 20, shape = 5, rate = 5),
+             thetaTransformed = rnorm(20),
              metadataY = new("MetaData",
                  nms = c("age", "region"),
                  dimtypes = c("age", "state"),
@@ -254,7 +276,8 @@ test_that("validity tests for PoissonVaryingNotUseExp inherited from LowerUpper 
                                 new("ExchNormZero", J = new("Length", 4L), tauMax = new("Scale", 5),
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
-             dims = list(0L, 5L, 4L))
+             dims = list(0L, 5L, 4L),
+             mu = rnorm(20))
     ## 'lower' has length 1
     x.wrong <- x
     x.wrong@lower <- c(1, 1)
@@ -292,6 +315,7 @@ test_that("validity tests for PoissonVaryingNotUseExp inherited from MaxAttemptM
     BetaIterator <- demest:::BetaIterator
     x <- new("PoissonVaryingNotUseExp",
              theta = rgamma(n = 20, shape = 5, rate = 5),
+             thetaTransformed = rnorm(20),
              metadataY = new("MetaData",
                  nms = c("age", "region"),
                  dimtypes = c("age", "state"),
@@ -322,7 +346,8 @@ test_that("validity tests for PoissonVaryingNotUseExp inherited from MaxAttemptM
                                 new("ExchNormZero", J = new("Length", 4L), tauMax = new("Scale", 5),
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
-             dims = list(0L, 5L, 4L))
+             dims = list(0L, 5L, 4L),
+             mu = rnorm(20))
     ## 'maxAttempt' has length 1
     x.wrong <- x
     x.wrong@maxAttempt <- c(100L, 100L)
@@ -344,6 +369,7 @@ test_that("validity tests for PoissonVaryingNotUseExp inherited from PoissonVary
     BetaIterator <- demest:::BetaIterator
     x <- new("PoissonVaryingNotUseExp",
              theta = rgamma(n = 20, shape = 5, rate = 5),
+             thetaTransformed = rnorm(20),
              metadataY = new("MetaData",
                  nms = c("age", "region"),
                  dimtypes = c("age", "state"),
@@ -374,7 +400,8 @@ test_that("validity tests for PoissonVaryingNotUseExp inherited from PoissonVary
                                 new("ExchNormZero", J = new("Length", 4L), tauMax = new("Scale", 5),
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
-             dims = list(0L, 5L, 4L))
+             dims = list(0L, 5L, 4L),
+             mu = rnorm(20))
     ## 'theta' greater than or equal to exp(lower)
     x.wrong <- x
     x.wrong@lower <- log(min(x.wrong@theta) + 0.1)
@@ -391,6 +418,7 @@ test_that("validity tests for PoissonVaryingNotUseExp inherited from Margins wor
     BetaIterator <- demest:::BetaIterator
     x <- new("PoissonVaryingNotUseExp",
              theta = rgamma(n = 20, shape = 5, rate = 5),
+             thetaTransformed = rnorm(20),
              metadataY = new("MetaData",
                  nms = c("age", "region"),
                  dimtypes = c("age", "state"),
@@ -421,7 +449,8 @@ test_that("validity tests for PoissonVaryingNotUseExp inherited from Margins wor
                                 new("ExchNormZero", J = new("Length", 4L), tauMax = new("Scale", 5),
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
-             dims = list(0L, 5L, 4L))
+             dims = list(0L, 5L, 4L),
+             mu = rnorm(20))
     ## all elements of 'margins' are integer
     x.wrong <- x
     x.wrong@margins[[2]] <- "wrong"
@@ -448,6 +477,7 @@ test_that("validity tests for PoissonVaryingNotUseExp inherited from Betas work"
     BetaIterator <- demest:::BetaIterator
     x <- new("PoissonVaryingNotUseExp",
              theta = rgamma(n = 20, shape = 5, rate = 5),
+             thetaTransformed = rnorm(20),
              metadataY = new("MetaData",
                  nms = c("age", "region"),
                  dimtypes = c("age", "state"),
@@ -478,7 +508,8 @@ test_that("validity tests for PoissonVaryingNotUseExp inherited from Betas work"
                                 new("ExchNormZero", J = new("Length", 4L), tauMax = new("Scale", 5),
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
-             dims = list(0L, 5L, 4L))
+             dims = list(0L, 5L, 4L),
+             mu = rnorm(20))
     ## 'betas' has at least one element
     x.wrong <- x
     x.wrong@betas <- list()
@@ -589,12 +620,23 @@ test_that("validity tests for PoissonVaryingNotUseExp inherited from Betas work"
     x.wrong@iteratorBetas <- BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L))
     expect_error(validObject(x.wrong),
                  "length of 'indices' from 'iteratorBetas' not equal to length of 'betas'")
+    ## 'mu' has type "double"
+    x.wrong <- x
+    x.wrong@mu <- as.integer(x.wrong@mu)
+    expect_error(validObject(x.wrong),
+                 "'mu' does not have type \"double\"")
+    ## 'mu' has same length as 'theta'
+    x.wrong <- x
+    x.wrong@mu <- rep(x.wrong@mu, 2)
+    expect_error(validObject(x.wrong),
+                 "'mu' and 'theta' have different lengths")
 })
 
 test_that("validity tests for PoissonVaryingNotUseExp inherited from CellInLikMixin work", {
     BetaIterator <- demest:::BetaIterator
     x <- new("PoissonVaryingNotUseExp",
              theta = rgamma(n = 20, shape = 5, rate = 5),
+             thetaTransformed = rnorm(20),
              metadataY = new("MetaData",
                  nms = c("age", "region"),
                  dimtypes = c("age", "state"),
@@ -625,7 +667,8 @@ test_that("validity tests for PoissonVaryingNotUseExp inherited from CellInLikMi
                                 new("ExchNormZero", J = new("Length", 4L), tauMax = new("Scale", 5),
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
-             dims = list(0L, 5L, 4L))
+             dims = list(0L, 5L, 4L),
+             mu = rnorm(20))
     ## 'cellInLik' same length as 'theta'
     x.wrong <- x
     x.wrong@cellInLik <- x.wrong@cellInLik[-1]
@@ -642,6 +685,7 @@ test_that("validity tests for PoissonVaryingNotUseExp inherited from NAcceptThet
     BetaIterator <- demest:::BetaIterator
     x <- new("PoissonVaryingNotUseExp",
              theta = rgamma(n = 20, shape = 5, rate = 5),
+             thetaTransformed = rnorm(20),
              metadataY = new("MetaData",
                  nms = c("age", "region"),
                  dimtypes = c("age", "state"),
@@ -672,7 +716,8 @@ test_that("validity tests for PoissonVaryingNotUseExp inherited from NAcceptThet
                                 new("ExchNormZero", J = new("Length", 4L), tauMax = new("Scale", 5),
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
-             dims = list(0L, 5L, 4L))
+             dims = list(0L, 5L, 4L),
+             mu = rnorm(20))
     ## 'NAcceptTheta' no larger than length of 'theta'
     x.wrong <- x
     x.wrong@nAcceptTheta <- new("Counter", 21L)
@@ -684,6 +729,7 @@ test_that("can create a valid object of class PoissonVaryingUseExp", {
     BetaIterator <- demest:::BetaIterator
     x <- new("PoissonVaryingUseExp",
              theta = rgamma(n = 20, shape = 5, rate = 5),
+             thetaTransformed = rnorm(20),
              metadataY = new("MetaData",
                              nms = c("age", "region"),
                              dimtypes = c("age", "state"),
@@ -714,10 +760,12 @@ test_that("can create a valid object of class PoissonVaryingUseExp", {
                                 new("ExchNormZero", J = new("Length", 4L), tauMax = new("Scale", 5),
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
-             dims = list(0L, 5L, 4L))
+             dims = list(0L, 5L, 4L),
+             mu = rnorm(20))
     ## version consisting only of intercept
     x <- new("PoissonVaryingUseExp",
              theta = rgamma(n = 20, shape = 5, rate = 5),
+             thetaTransformed = rnorm(20),
              metadataY = new("MetaData",
                              nms = c("age", "region"),
                              dimtypes = c("age", "state"),
@@ -743,7 +791,8 @@ test_that("can create a valid object of class PoissonVaryingUseExp", {
              margins = list(0L),
              priorsBetas = list(new("ExchFixed")),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L)),
-             dims = list(0L))
+             dims = list(0L),
+             mu = rnorm(20))
     expect_true(validObject(x))
 })
 
@@ -751,6 +800,7 @@ test_that("can create a valid object of class BinomialVarying", {
     BetaIterator <- demest:::BetaIterator
     x <- new("BinomialVarying",
              theta = rbeta(n = 20, shape1 = 5, shape2 = 5),
+             thetaTransformed = rnorm(20),
              metadataY = new("MetaData",
                              nms = c("age", "region"),
                              dimtypes = c("age", "state"),
@@ -777,10 +827,12 @@ test_that("can create a valid object of class BinomialVarying", {
                                 new("ExchNormZero", J = new("Length", 4L), tauMax = new("Scale", 5),
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
-             dims = list(0L, 5L, 4L))
+             dims = list(0L, 5L, 4L),
+             mu = rnorm(20))
     ## version consisting only of intercept
     x <- new("BinomialVarying",
              theta = rbeta(n = 20, shape1 = 5, shape2 = 5),
+             thetaTransformed = rnorm(20),
              metadataY = new("MetaData",
                              nms = c("age", "region"),
                              dimtypes = c("age", "state"),
@@ -802,7 +854,8 @@ test_that("can create a valid object of class BinomialVarying", {
              margins = list(0L),
              priorsBetas = list(new("ExchFixed")),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L)),
-             dims = list(0L))
+             dims = list(0L),
+             mu = rnorm(20))
     expect_true(validObject(x))
 })
 
@@ -810,6 +863,7 @@ test_that("validity tests for BinomialVarying inherited from Binomial work", {
     BetaIterator <- demest:::BetaIterator
     x <- new("BinomialVarying",
              theta = rbeta(n = 20, shape1 = 5, shape2 = 5),
+             thetaTransformed = rnorm(20),
              metadataY = new("MetaData",
                              nms = c("age", "region"),
                              dimtypes = c("age", "state"),
@@ -836,7 +890,8 @@ test_that("validity tests for BinomialVarying inherited from Binomial work", {
                                 new("ExchNormZero", J = new("Length", 4L), tauMax = new("Scale", 5),
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
-             dims = list(0L, 5L, 4L))
+             dims = list(0L, 5L, 4L),
+             mu = rnorm(20))
     ## 'theta' is non-negative
     x.wrong <- x
     x.wrong@theta[1] <- -0.1
@@ -854,6 +909,7 @@ test_that("validity tests for BinomialVarying inherited from BinomialVarying wor
     logit <- function(p) log(p / (1-p))
     x <- new("BinomialVarying",
              theta = rbeta(n = 20, shape1 = 5, shape2 = 5),
+             thetaTransformed = rnorm(20),
              metadataY = new("MetaData",
                              nms = c("age", "region"),
                              dimtypes = c("age", "state"),
@@ -880,7 +936,8 @@ test_that("validity tests for BinomialVarying inherited from BinomialVarying wor
                                 new("ExchNormZero", J = new("Length", 4L), tauMax = new("Scale", 5),
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
-             dims = list(0L, 5L, 4L))
+             dims = list(0L, 5L, 4L),
+             mu = rnorm(20))
     ## 'theta' greater than or equal to invlogit(lower)
     x.wrong <- x
     x.wrong@lower <- logit(min(x.wrong@theta) + 0.1)
@@ -897,6 +954,7 @@ test_that("can create a valid object of class NormalVaryingVarsigmaKnown", {
     BetaIterator <- demest:::BetaIterator
     x <- new("NormalVaryingVarsigmaKnown",
              theta = rnorm(n = 20, sd = 1.3),
+             thetaTransformed = rnorm(20),
              metadataY = new("MetaData",
                              nms = c("age", "region"),
                              dimtypes = c("age", "state"),
@@ -924,11 +982,13 @@ test_that("can create a valid object of class NormalVaryingVarsigmaKnown", {
                                 new("ExchNormZero", J = new("Length", 4L), tauMax = new("Scale", 5),
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
-             dims = list(0L, 5L, 4L))
+             dims = list(0L, 5L, 4L),
+             mu = rnorm(20))
     expect_true(validObject(x))
     ## version consisting only of intercept
     x <- new("NormalVaryingVarsigmaKnown",
              theta = rgamma(n = 20, shape = 5, rate = 5),
+             thetaTransformed = rnorm(20),
              metadataY = new("MetaData",
                              nms = c("age", "region"),
                              dimtypes = c("age", "state"),
@@ -951,7 +1011,8 @@ test_that("can create a valid object of class NormalVaryingVarsigmaKnown", {
              margins = list(0L),
              priorsBetas = list(new("ExchFixed")),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L)),
-             dims = list(0L))
+             dims = list(0L),
+             mu = rnorm(20))
     expect_true(validObject(x))
 })
 
@@ -959,6 +1020,7 @@ test_that("validity tests for NormalVaryingVarsigmaKnown inherited from Normal w
     BetaIterator <- demest:::BetaIterator
     x <- new("NormalVaryingVarsigmaKnown",
              theta = rnorm(n = 20, sd = 1.3),
+             thetaTransformed = rnorm(20),
              metadataY = new("MetaData",
                              nms = c("age", "region"),
                              dimtypes = c("age", "state"),
@@ -986,7 +1048,8 @@ test_that("validity tests for NormalVaryingVarsigmaKnown inherited from Normal w
                                 new("ExchNormZero", J = new("Length", 4L), tauMax = new("Scale", 5),
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
-             dims = list(0L, 5L, 4L))
+             dims = list(0L, 5L, 4L),
+             mu = rnorm(20))
     expect_true(validObject(x))
     x@w[1] <- NA
     expect_true(validObject(x))
@@ -1006,6 +1069,7 @@ test_that("can create a valid object of class NormalVaryingVarsigmaUnknown", {
     BetaIterator <- demest:::BetaIterator
     x <- new("NormalVaryingVarsigmaUnknown",
              theta = rnorm(n = 20, sd = 1.3),
+             thetaTransformed = rnorm(20),
              metadataY = new("MetaData",
                              nms = c("age", "region"),
                              dimtypes = c("age", "state"),
@@ -1034,10 +1098,12 @@ test_that("can create a valid object of class NormalVaryingVarsigmaUnknown", {
                                 new("ExchNormZero", J = new("Length", 4L), tauMax = new("Scale", 5),
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
-             dims = list(0L, 5L, 4L))
+             dims = list(0L, 5L, 4L),
+             mu = rnorm(20))
     ## version consisting only of intercept
     x <- new("NormalVaryingVarsigmaUnknown",
              theta = rgamma(n = 20, shape = 5, rate = 5),
+             thetaTransformed = rnorm(20),
              metadataY = new("MetaData",
                              nms = c("age", "region"),
                              dimtypes = c("age", "state"),
@@ -1061,7 +1127,8 @@ test_that("can create a valid object of class NormalVaryingVarsigmaUnknown", {
              margins = list(0L),
              priorsBetas = list(new("ExchFixed")),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L)),
-             dims = list(0L))
+             dims = list(0L),
+             mu = rnorm(20))
     expect_true(validObject(x))
 })
 
@@ -1261,6 +1328,7 @@ test_that("can create a valid object of class BinomialVaryingAgCertain", {
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     ## valueAg has dim 3L
     theta <- rbeta(n = 20, shape1 = 5, shape2 = 5)
+    thetaTransformed <- rnorm(20)
     weightAg <- matrix(c(1:15, rep(NA, 5)), nrow = 5)
     weightAg <- prop.table(weightAg, margin = 2)
     valueAg <- colSums(weightAg * theta)[1:3]
@@ -1278,6 +1346,7 @@ test_that("can create a valid object of class BinomialVaryingAgCertain", {
                       DimScales = list(new("Categories", dimvalues = c("a", "b", "c"))))
     x <- new("BinomialVaryingAgCertain",
              theta = theta,
+             thetaTransformed = thetaTransformed,
              metadataY = new("MetaData",
                              nms = c("age", "region"),
                              dimtypes = c("age", "state"),
@@ -1323,6 +1392,7 @@ test_that("can create a valid object of class BinomialVaryingAgCertain", {
     transformAg <- makeCollapseTransformExtra(transformAg)
     x <- new("BinomialVaryingAgCertain",
              theta = theta,
+             thetaTransformed = rnorm(20),
              metadataY = new("MetaData",
                              nms = c("age", "region"),
                              dimtypes = c("age", "state"),
@@ -1362,6 +1432,7 @@ test_that("validity tests for BinomialVaryingAgCertain inherited from WeightAgMi
     BetaIterator <- demest:::BetaIterator
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     theta <- rbeta(n = 20, shape1 = 5, shape2 = 5)
+    thetaTransformed <- rnorm(20)
     weightAg <- matrix(c(1:15, rep(NA, 5)), nrow = 5)
     weightAg <- prop.table(weightAg, margin = 2)
     valueAg <- colSums(weightAg * theta)[1:3]
@@ -1380,6 +1451,7 @@ test_that("validity tests for BinomialVaryingAgCertain inherited from WeightAgMi
     set.seed(100)
     x <- new("BinomialVaryingAgCertain",
              theta = theta,
+             thetaTransformed = thetaTransformed,
              metadataY = new("MetaData",
                              nms = c("age", "region"),
                              dimtypes = c("age", "state"),
@@ -1437,81 +1509,11 @@ test_that("validity tests for BinomialVaryingAgCertain inherited from WeightAgMi
     expect_error(validObject(x.wrong)) ## can't get regexpr to work with numbers
 })
 
-test_that("validity tests for BinomialVaryingAgCertain inherited from MuMixin work", {
-    BetaIterator <- demest:::BetaIterator
-    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
-    theta <- rbeta(n = 20, shape1 = 5, shape2 = 5)
-    weightAg <- matrix(c(1:15, rep(NA, 5)), nrow = 5)
-    weightAg <- prop.table(weightAg, margin = 2)
-    valueAg <- colSums(weightAg * theta)[1:3]
-    valueAg <- new("ParameterVector", valueAg)
-    weightAg <- as.double(weightAg)
-    transformAg <- new("CollapseTransform",
-                       indices = list(rep(1L, 5), c(1:3, 0L)),
-                       dims = c(0L, 1L),
-                       dimBefore = 5:4,
-                       dimAfter = 3L)
-    transformAg <- makeCollapseTransformExtra(transformAg)
-    metadataAg <- new("MetaData",
-                      nms = "region",
-                      dimtypes = "state",
-                      DimScales = list(new("Categories", dimvalues = c("a", "b", "c"))))
-    set.seed(100)
-    x <- new("BinomialVaryingAgCertain",
-             theta = theta,
-             metadataY = new("MetaData",
-                             nms = c("age", "region"),
-                             dimtypes = c("age", "state"),
-                             DimScales = list(new("Intervals", dimvalues = 0:5),
-                                              new("Categories", dimvalues = c("a", "b", "c", "d")))),
-             cellInLik = rep(TRUE, 20),
-             scaleTheta = new("Scale", 0.1),
-             scaleThetaMultiplier = new("Scale", 1),
-             nAcceptTheta = new("Counter", 0L),
-             lower = -Inf,
-             upper = Inf,
-             maxAttempt = 100L,
-             nFailedPropTheta = new("Counter", 0L),
-             sigma = new("Scale", 1),
-             sigmaMax = new("Scale", 5),
-             ASigma = new("Scale", 1),
-             betas = list(5, rnorm(5), rnorm(4)),
-             namesBetas = c("(Intercept)", "age", "region"),
-             margins = list(0L, 1L, 2L),
-             priorsBetas = list(new("ExchFixed", isSaturated = new("LogicalFlag", FALSE), allStrucZero = FALSE),
-                                new("ExchNormZero", J = new("Length", 5L), isSaturated = new("LogicalFlag", FALSE),
-                                    tauMax = new("Scale", 5),
-                                    allStrucZero = rep(FALSE, 5)),
-                                new("ExchNormZero", J = new("Length", 4L), tauMax = new("Scale", 5),
-                                    isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
-             iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
-             dims = list(0L, 5L, 4L),
-             valueAg = valueAg,
-             weightAg = weightAg,
-             transformAg = transformAg,
-             metadataAg = metadataAg,
-             mu = rnorm(20))
-    ## 'mu' has type "double"
-    x.wrong <- x
-    x.wrong@mu <- as.integer(x.wrong@mu)
-    expect_error(validObject(x.wrong),
-                 "'mu' does not have type \"double\"")
-    ## 'mu' has no missing values
-    x.wrong <- x
-    x.wrong@mu[1] <- NA
-    expect_error(validObject(x.wrong),
-                 "'mu' has missing values")
-    ## 'mu' has same length as 'theta'
-    x.wrong <- x
-    x.wrong@mu <- rep(x.wrong@mu, 2)
-    expect_error(validObject(x.wrong),
-                 "'mu' and 'theta' have different lengths")
-})
-
 test_that("validity tests for BinomialVaryingAgCertain inherited from BinomialVaryingAgCertain work", {
     BetaIterator <- demest:::BetaIterator
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     theta <- rep(0.6, times = 20)
+    thetaTransformed <- rnorm(20)
     weightAg <- matrix(c(1:15, rep(NA, 5)), nrow = 5)
     weightAg <- prop.table(weightAg, margin = 2)
     valueAg <- colSums(weightAg * theta)[1:3]
@@ -1530,6 +1532,7 @@ test_that("validity tests for BinomialVaryingAgCertain inherited from BinomialVa
     set.seed(100)
     x <- new("BinomialVaryingAgCertain",
              theta = theta,
+             thetaTransformed = thetaTransformed,
              metadataY = new("MetaData",
                              nms = c("age", "region"),
                              dimtypes = c("age", "state"),
@@ -1579,6 +1582,7 @@ test_that("can create a valid object of class BinomialVaryingAgNormal", {
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     ## dim = 3L
     theta <- rbeta(n = 20, shape1 = 5, shape2 = 5)
+    thetaTransformed <- rnorm(20)
     weightAg <- matrix(c(1:15, rep(NA, 5)), nrow = 5)
     weightAg <- prop.table(weightAg, margin = 2)
     valueAg <- colSums(weightAg * theta)[1:3]
@@ -1598,6 +1602,7 @@ test_that("can create a valid object of class BinomialVaryingAgNormal", {
                       DimScales = list(new("Categories", dimvalues = c("a", "b", "c"))))
     x <- new("BinomialVaryingAgNormal",
              theta = theta,
+             thetaTransformed = thetaTransformed,
              metadataY = new("MetaData",
                              nms = c("age", "region"),
                              dimtypes = c("age", "state"),
@@ -1649,6 +1654,7 @@ test_that("can create a valid object of class BinomialVaryingAgNormal", {
     transformAg <- makeCollapseTransformExtra(transformAg)
     x <- new("BinomialVaryingAgNormal",
              theta = theta,
+             thetaTransformed = thetaTransformed,
              metadataY = new("MetaData",
                              nms = c("age", "region"),
                              dimtypes = c("age", "state"),
@@ -1692,6 +1698,7 @@ test_that("validity tests for BinomialVaryingAgNormal inherited from SDAgMixin w
     BetaIterator <- demest:::BetaIterator
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     theta <- rbeta(n = 20, shape1 = 5, shape2 = 5)
+    thetaTransformed <- rnorm(20)
     weightAg <- matrix(c(1:15, rep(NA, 5)), nrow = 5)
     weightAg <- prop.table(weightAg, margin = 2)
     valueAg <- colSums(weightAg * theta)[1:3]
@@ -1711,6 +1718,7 @@ test_that("validity tests for BinomialVaryingAgNormal inherited from SDAgMixin w
                       DimScales = list(new("Categories", dimvalues = c("a", "b", "c"))))
     x <- new("BinomialVaryingAgNormal",
              theta = theta,
+             thetaTransformed = thetaTransformed,
              metadataY = new("MetaData",
                              nms = c("age", "region"),
                              dimtypes = c("age", "state"),
@@ -1759,6 +1767,7 @@ test_that("validity tests for BinomialVaryingAgNormal inherited from MeanAgMixin
     BetaIterator <- demest:::BetaIterator
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     theta <- rep(0.6, 20)
+    thetaTransformed <- rnorm(20)
     weightAg <- matrix(c(1:15, rep(NA, 5)), nrow = 5)
     weightAg <- prop.table(weightAg, margin = 2)
     valueAg <- colSums(weightAg * theta)[1:3]
@@ -1778,6 +1787,7 @@ test_that("validity tests for BinomialVaryingAgNormal inherited from MeanAgMixin
                       DimScales = list(new("Categories", dimvalues = c("a", "b", "c"))))
     x <- new("BinomialVaryingAgNormal",
              theta = theta,
+             thetaTransformed = thetaTransformed,
              metadataY = new("MetaData",
                              nms = c("age", "region"),
                              dimtypes = c("age", "state"),
@@ -1838,6 +1848,7 @@ test_that("can create a valid object of class BinomialVaryingAgFun", {
     makeMetaDataSubarraysBefore <- dembase:::makeMetaDataSubarraysBefore
     ## dim = 3L
     theta <- rbeta(n = 20, shape1 = 2, shape2 = 2)
+    thetaTransformed <- rnorm(20)
     meanAg <- new("ParameterVector", runif(n = 3))
     sdAg <- new("ScaleVec", rbeta(n = 3, shape1 = 1, shape2 = 2))
     metadataAg <- new("MetaData",
@@ -1882,6 +1893,7 @@ test_that("can create a valid object of class BinomialVaryingAgFun", {
                      funAg(xArgsAg[[3]], weightsArgsAg[[3]])))
     x <- new("BinomialVaryingAgFun",
              theta = theta,
+             thetaTransformed = thetaTransformed,
              metadataY = metadataY,
              cellInLik = rep(TRUE, 20),
              scaleTheta = new("Scale", 0.1),
@@ -1905,6 +1917,7 @@ test_that("can create a valid object of class BinomialVaryingAgFun", {
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(20),
              valueAg = valueAg,
              meanAg = meanAg,
              sdAg = sdAg,
@@ -1936,6 +1949,7 @@ test_that("can create a valid object of class BinomialVaryingAgFun", {
     valueAg <- new("ParameterVector", funAg(xArgsAg[[1]], weightsArgsAg[[1]]))
     x <- new("BinomialVaryingAgFun",
              theta = theta,
+             thetaTransformed = thetaTransformed,
              metadataY = new("MetaData",
                              nms = c("age", "region"),
                              dimtypes = c("age", "state"),
@@ -1963,6 +1977,7 @@ test_that("can create a valid object of class BinomialVaryingAgFun", {
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(20),
              valueAg = valueAg,
              meanAg = new("ParameterVector", 0.5),
              sdAg = new("ScaleVec", 0.2),
@@ -1981,6 +1996,7 @@ test_that("can create a valid object of class NormalVaryingVarsigmaKnownAgCertai
     BetaIterator <- demest:::BetaIterator
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     theta <- rep(0.6, times = 20)
+    thetaTransformed <- rnorm(20)
     weightAg <- matrix(c(1:15, rep(NA, 5)), nrow = 5)
     weightAg <- prop.table(weightAg, margin = 2)
     valueAg <- colSums(weightAg * theta)[1:3]
@@ -1998,6 +2014,7 @@ test_that("can create a valid object of class NormalVaryingVarsigmaKnownAgCertai
                       DimScales = list(new("Categories", dimvalues = c("a", "b", "c"))))
     x <- new("NormalVaryingVarsigmaKnownAgCertain",
              theta = theta,
+             thetaTransformed = thetaTransformed,
              metadataY = new("MetaData",
                              nms = c("age", "region"),
                              dimtypes = c("age", "state"),
@@ -2026,11 +2043,11 @@ test_that("can create a valid object of class NormalVaryingVarsigmaKnownAgCertai
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(20),
              valueAg = valueAg,
              weightAg = weightAg,
              transformAg = transformAg,
-             metadataAg = metadataAg,
-             mu = rnorm(20))
+             metadataAg = metadataAg)
     expect_true(validObject(x))
 })
 
@@ -2038,6 +2055,7 @@ test_that("can create a valid object of class NormalVaryingVarsigmaUnknownAgCert
     BetaIterator <- demest:::BetaIterator
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     theta <- rep(0.6, times = 20)
+    thetaTransformed <- rnorm(20)
     weightAg <- matrix(c(1:15, rep(NA, 5)), nrow = 5)
     weightAg <- prop.table(weightAg, margin = 2)
     valueAg <- colSums(weightAg * theta)[1:3]
@@ -2055,6 +2073,7 @@ test_that("can create a valid object of class NormalVaryingVarsigmaUnknownAgCert
                       DimScales = list(new("Categories", dimvalues = c("a", "b", "c"))))
     x <- new("NormalVaryingVarsigmaUnknownAgCertain",
              theta = theta,
+             thetaTransformed = thetaTransformed,
              metadataY = new("MetaData",
                              nms = c("age", "region"),
                              dimtypes = c("age", "state"),
@@ -2084,11 +2103,11 @@ test_that("can create a valid object of class NormalVaryingVarsigmaUnknownAgCert
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(20),
              valueAg = valueAg,
              weightAg = weightAg,
              transformAg = transformAg,
-             metadataAg = metadataAg,
-             mu = rnorm(20))
+             metadataAg = metadataAg)
     expect_true(validObject(x))
 })
 
@@ -2097,6 +2116,7 @@ test_that("can create a valid object of class NormalVaryingVarsigmaKnownAgNormal
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     ## dim = 3L
     theta <- rnorm(n = 20, mean = 0, sd = 2)
+    thetaTransformed <- rnorm(20)
     weightAg <- matrix(c(1:15, rep(NA, 5)), nrow = 5)
     weightAg <- prop.table(weightAg, margin = 2)
     valueAg <- colSums(weightAg * theta)[1:3]
@@ -2116,6 +2136,7 @@ test_that("can create a valid object of class NormalVaryingVarsigmaKnownAgNormal
                       DimScales = list(new("Categories", dimvalues = c("a", "b", "c"))))
     x <- new("NormalVaryingVarsigmaKnownAgNormal",
              theta = theta,
+             thetaTransformed = thetaTransformed,
              metadataY = new("MetaData",
                              nms = c("age", "region"),
                              dimtypes = c("age", "state"),
@@ -2162,6 +2183,7 @@ test_that("can create a valid object of class NormalVaryingVarsigmaUnknownAgNorm
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     ## dim = 3L
     theta <- rnorm(n = 20, mean = 0, sd = 2)
+    thetaTransformed <- rnorm(20)
     weightAg <- matrix(c(1:15, rep(NA, 5)), nrow = 5)
     weightAg <- prop.table(weightAg, margin = 2)
     valueAg <- colSums(weightAg * theta)[1:3]
@@ -2181,6 +2203,7 @@ test_that("can create a valid object of class NormalVaryingVarsigmaUnknownAgNorm
                       DimScales = list(new("Categories", dimvalues = c("a", "b", "c"))))
     x <- new("NormalVaryingVarsigmaUnknownAgNormal",
              theta = theta,
+             thetaTransformed = thetaTransformed,
              metadataY = new("MetaData",
                              nms = c("age", "region"),
                              dimtypes = c("age", "state"),
@@ -2229,6 +2252,7 @@ test_that("can create a valid object of class NormalVaryingVarsigmaKnownAgFun", 
     makeMetaDataSubarraysBefore <- dembase:::makeMetaDataSubarraysBefore
     ## dim = 3L
     theta <- rnorm(n = 20)
+    thetaTransformed <- rnorm(20)
     varsigma <- 0.5
     meanAg <- new("ParameterVector", runif(n = 3))
     sdAg <- new("ScaleVec", rbeta(n = 3, shape1 = 1, shape2 = 2))
@@ -2275,6 +2299,7 @@ test_that("can create a valid object of class NormalVaryingVarsigmaKnownAgFun", 
                      funAg(xArgsAg[[3]], weightsArgsAg[[3]])))
     x <- new("NormalVaryingVarsigmaKnownAgFun",
              theta = theta,
+             thetaTransformed = thetaTransformed,
              w = w,
              metadataY = metadataY,
              cellInLik = rep(TRUE, 20),
@@ -2299,6 +2324,7 @@ test_that("can create a valid object of class NormalVaryingVarsigmaKnownAgFun", 
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(20),
              valueAg = valueAg,
              meanAg = meanAg,
              sdAg = sdAg,
@@ -2331,6 +2357,7 @@ test_that("can create a valid object of class NormalVaryingVarsigmaKnownAgFun", 
     valueAg <- new("ParameterVector", funAg(xArgsAg[[1]], weightsArgsAg[[1]]))
     x <- new("NormalVaryingVarsigmaKnownAgFun",
              theta = theta,
+             thetaTransformed = thetaTransformed,
              w = w,
              metadataY = new("MetaData",
                              nms = c("age", "region"),
@@ -2359,6 +2386,7 @@ test_that("can create a valid object of class NormalVaryingVarsigmaKnownAgFun", 
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(20),
              valueAg = valueAg,
              meanAg = new("ParameterVector", 0.5),
              sdAg = new("ScaleVec", 0.2),
@@ -2376,6 +2404,7 @@ test_that("can create a valid object of class NormalVaryingVarsigmaUnknownAgFun"
     makeMetaDataSubarraysBefore <- dembase:::makeMetaDataSubarraysBefore
     ## dim = 3L
     theta <- rnorm(n = 20)
+    thetaTransformed <- rnorm(20)
     varsigma <- 0.5
     meanAg <- new("ParameterVector", runif(n = 3))
     sdAg <- new("ScaleVec", rbeta(n = 3, shape1 = 1, shape2 = 2))
@@ -2422,6 +2451,7 @@ test_that("can create a valid object of class NormalVaryingVarsigmaUnknownAgFun"
                      funAg(xArgsAg[[3]], weightsArgsAg[[3]])))
     x <- new("NormalVaryingVarsigmaUnknownAgFun",
              theta = theta,
+             thetaTransformed = thetaTransformed,
              w = w,
              metadataY = metadataY,
              cellInLik = rep(TRUE, 20),
@@ -2447,6 +2477,7 @@ test_that("can create a valid object of class NormalVaryingVarsigmaUnknownAgFun"
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(20),
              valueAg = valueAg,
              meanAg = meanAg,
              sdAg = sdAg,
@@ -2479,6 +2510,7 @@ test_that("can create a valid object of class NormalVaryingVarsigmaUnknownAgFun"
     valueAg <- new("ParameterVector", funAg(xArgsAg[[1]], weightsArgsAg[[1]]))
     x <- new("NormalVaryingVarsigmaUnknownAgFun",
              theta = theta,
+             thetaTransformed = thetaTransformed,
              w = w,
              metadataY = new("MetaData",
                  nms = c("age", "region"),
@@ -2508,6 +2540,7 @@ test_that("can create a valid object of class NormalVaryingVarsigmaUnknownAgFun"
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(20),
              valueAg = valueAg,
              meanAg = new("ParameterVector", 0.5),
              sdAg = new("ScaleVec", 0.2),
@@ -2527,6 +2560,7 @@ test_that("can create a valid object of class PoissonVaryingNotUseExpAgCertain",
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     ## valueAg has dim 3L
     theta <- 5 * rbeta(n = 20, shape1 = 5, shape2 = 5)
+    thetaTransformed <- rnorm(20)
     weightAg <- matrix(c(1:15, rep(NA, 5)), nrow = 5)
     weightAg <- prop.table(weightAg, margin = 2)
     valueAg <- colSums(weightAg * theta)[1:3]
@@ -2544,6 +2578,7 @@ test_that("can create a valid object of class PoissonVaryingNotUseExpAgCertain",
                       DimScales = list(new("Categories", dimvalues = c("a", "b", "c"))))
     x <- new("PoissonVaryingNotUseExpAgCertain",
              theta = theta,
+             thetaTransformed = thetaTransformed,
              metadataY = new("MetaData",
                              nms = c("age", "region"),
                              dimtypes = c("age", "state"),
@@ -2575,14 +2610,15 @@ test_that("can create a valid object of class PoissonVaryingNotUseExpAgCertain",
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(20),
              valueAg = valueAg,
              weightAg = weightAg,
              transformAg = transformAg,
-             metadataAg = metadataAg,
-             mu = rnorm(20))
+             metadataAg = metadataAg)
     expect_true(validObject(x))
     ## valueAg is a scalar
     theta <- 5 * rbeta(n = 20, shape1 = 5, shape2 = 5)
+    thetaTransformed <- rnorm(20)
     weightAg <- as.double(prop.table(1:20))
     valueAg <- sum(weightAg * theta)
     valueAg <- new("ParameterVector", valueAg)
@@ -2594,6 +2630,7 @@ test_that("can create a valid object of class PoissonVaryingNotUseExpAgCertain",
     transformAg <- makeCollapseTransformExtra(transformAg)
     x <- new("PoissonVaryingNotUseExpAgCertain",
              theta = theta,
+             thetaTransformed = thetaTransformed,
              metadataY = new("MetaData",
                              nms = c("age", "region"),
                              dimtypes = c("age", "state"),
@@ -2625,11 +2662,11 @@ test_that("can create a valid object of class PoissonVaryingNotUseExpAgCertain",
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(20),
              valueAg = valueAg,
              weightAg = weightAg,
              transformAg = transformAg,
-             metadataAg = NULL,
-             mu = rnorm(20))
+             metadataAg = NULL)
     expect_true(validObject(x))
 })
 
@@ -2638,6 +2675,7 @@ test_that("can create a valid object of class PoissonVaryingNotUseExpAgNormal", 
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     ## dim = 3L
     theta <- 2 * rbeta(n = 20, shape1 = 5, shape2 = 5)
+    thetaTransformed <- rnorm(20)
     weightAg <- matrix(c(1:15, rep(NA, 5)), nrow = 5)
     weightAg <- prop.table(weightAg, margin = 2)
     valueAg <- colSums(weightAg * theta)[1:3]
@@ -2657,6 +2695,7 @@ test_that("can create a valid object of class PoissonVaryingNotUseExpAgNormal", 
                       DimScales = list(new("Categories", dimvalues = c("a", "b", "c"))))
     x <- new("PoissonVaryingNotUseExpAgNormal",
              theta = theta,
+             thetaTransformed = thetaTransformed,
              metadataY = new("MetaData",
                              nms = c("age", "region"),
                              dimtypes = c("age", "state"),
@@ -2688,6 +2727,7 @@ test_that("can create a valid object of class PoissonVaryingNotUseExpAgNormal", 
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(20),
              valueAg = valueAg,
              meanAg = meanAg,
              sdAg = sdAg,
@@ -2695,12 +2735,12 @@ test_that("can create a valid object of class PoissonVaryingNotUseExpAgNormal", 
              weightAg = weightAg,
              transformAg = transformAg,
              metadataAg = metadataAg,
-             mu = rnorm(20),
              nAcceptAg = new("Counter", 5L),
              nFailedPropValueAg = new("Counter", 1L))
     expect_true(validObject(x))
     ## scalar
     theta <- rbeta(n = 20, shape1 = 5, shape2 = 5)
+    thetaTransformed <- rnorm(20)
     weightAg <- as.double(prop.table(1:20))
     valueAg <- sum(weightAg * theta)
     valueAg <- new("ParameterVector", valueAg)
@@ -2712,6 +2752,7 @@ test_that("can create a valid object of class PoissonVaryingNotUseExpAgNormal", 
     transformAg <- makeCollapseTransformExtra(transformAg)
     x <- new("PoissonVaryingNotUseExpAgNormal",
              theta = theta,
+             thetaTransformed = thetaTransformed,
              metadataY = new("MetaData",
                              nms = c("age", "region"),
                              dimtypes = c("age", "state"),
@@ -2743,6 +2784,7 @@ test_that("can create a valid object of class PoissonVaryingNotUseExpAgNormal", 
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(20),
              valueAg = valueAg,
              meanAg = new("ParameterVector", 0.5),
              sdAg = new("ScaleVec", 0.2),
@@ -2750,7 +2792,6 @@ test_that("can create a valid object of class PoissonVaryingNotUseExpAgNormal", 
              weightAg = weightAg,
              transformAg = transformAg,
              metadataAg = NULL,
-             mu = rnorm(20),
              nAcceptAg = new("Counter", 5L),
              nFailedPropValueAg = new("Counter", 1L))
     expect_true(validObject(x))
@@ -2780,6 +2821,7 @@ test_that("can create a valid object of class PoissonVaryingNotUseExpAgPoisson",
     exposureAg <- new("ScaleVec", rep(6, 3))
     x <- new("PoissonVaryingNotUseExpAgPoisson",
              theta = theta,
+             thetaTransformed = rnorm(20),
              metadataY = new("MetaData",
                              nms = c("age", "region"),
                              dimtypes = c("age", "state"),
@@ -2811,13 +2853,13 @@ test_that("can create a valid object of class PoissonVaryingNotUseExpAgPoisson",
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(20),
              valueAg = valueAg,
              meanAg = meanAg,
              weightAg = weightAg,
              transformAg = transformAg,
              metadataAg = metadataAg,
              exposureAg = exposureAg,
-             mu = rnorm(20),
              nAcceptAg = new("Counter", 5L),
              nFailedPropValueAg = new("Counter", 1L))
     expect_true(validObject(x))
@@ -2834,6 +2876,7 @@ test_that("can create a valid object of class PoissonVaryingNotUseExpAgPoisson",
     transformAg <- makeCollapseTransformExtra(transformAg)
     x <- new("PoissonVaryingNotUseExpAgPoisson",
              theta = theta,
+             thetaTransformed = rnorm(20),
              metadataY = new("MetaData",
                              nms = c("age", "region"),
                              dimtypes = c("age", "state"),
@@ -2865,6 +2908,7 @@ test_that("can create a valid object of class PoissonVaryingNotUseExpAgPoisson",
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(20),
              valueAg = valueAg,
              meanAg = new("ParameterVector", 0.5),
              scaleAg = new("Scale", 0.1),
@@ -2872,7 +2916,6 @@ test_that("can create a valid object of class PoissonVaryingNotUseExpAgPoisson",
              transformAg = transformAg,
              metadataAg = NULL,
              exposureAg = new("ScaleVec", 20),
-             mu = rnorm(20),
              nAcceptAg = new("Counter", 5L),
              nFailedPropValueAg = new("Counter", 1L))
     expect_true(validObject(x))
@@ -2903,6 +2946,7 @@ test_that("validity test for PoissonVaryingNotUseExpAgPoisson inherited from Exp
     exposureAg <- new("ScaleVec", rep(6, 3))
     x <- new("PoissonVaryingNotUseExpAgPoisson",
              theta = theta,
+             thetaTransformed = rnorm(20),
              metadataY = new("MetaData",
                              nms = c("age", "region"),
                              dimtypes = c("age", "state"),
@@ -2934,13 +2978,13 @@ test_that("validity test for PoissonVaryingNotUseExpAgPoisson inherited from Exp
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(20),
              valueAg = valueAg,
              meanAg = meanAg,
              weightAg = weightAg,
              transformAg = transformAg,
              metadataAg = metadataAg,
              exposureAg = exposureAg,
-             mu = rnorm(20),
              nAcceptAg = new("Counter", 5L),
              nFailedPropValueAg = new("Counter", 1L))
     expect_true(validObject(x))
@@ -3002,6 +3046,7 @@ test_that("can create a valid object of class PoissonVaryingNotUseExpAgFun", {
                      funAg(xArgsAg[[3]], weightsArgsAg[[3]])))
     x <- new("PoissonVaryingNotUseExpAgFun",
              theta = theta,
+             thetaTransformed = rnorm(20),
              metadataY = metadataY,
              cellInLik = rep(TRUE, 20),
              strucZeroArray = Counts(array(1L,
@@ -3029,6 +3074,7 @@ test_that("can create a valid object of class PoissonVaryingNotUseExpAgFun", {
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(20),
              valueAg = valueAg,
              meanAg = meanAg,
              sdAg = sdAg,
@@ -3060,6 +3106,7 @@ test_that("can create a valid object of class PoissonVaryingNotUseExpAgFun", {
     valueAg <- new("ParameterVector", funAg(xArgsAg[[1]], weightsArgsAg[[1]]))
     x <- new("PoissonVaryingNotUseExpAgFun",
              theta = theta,
+             thetaTransformed = rnorm(20),
              metadataY = new("MetaData",
                              nms = c("age", "region"),
                              dimtypes = c("age", "state"),
@@ -3091,6 +3138,7 @@ test_that("can create a valid object of class PoissonVaryingNotUseExpAgFun", {
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(20),
              valueAg = valueAg,
              meanAg = new("ParameterVector", 0.5),
              sdAg = new("ScaleVec", 0.2),
@@ -3131,6 +3179,7 @@ test_that("can create a valid object of class PoissonVaryingUseExpAgCertain", {
                       DimScales = list(new("Categories", dimvalues = c("a", "b", "c"))))
     x <- new("PoissonVaryingUseExpAgCertain",
              theta = theta,
+             thetaTransformed = rnorm(20),
              metadataY = new("MetaData",
                              nms = c("age", "region"),
                              dimtypes = c("age", "state"),
@@ -3162,11 +3211,11 @@ test_that("can create a valid object of class PoissonVaryingUseExpAgCertain", {
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(20),
              valueAg = valueAg,
              weightAg = weightAg,
              transformAg = transformAg,
-             metadataAg = metadataAg,
-             mu = rnorm(20))
+             metadataAg = metadataAg)
     expect_true(validObject(x))
     ## valueAg is a scalar
     theta <- 5 * rbeta(n = 20, shape1 = 5, shape2 = 5)
@@ -3181,6 +3230,7 @@ test_that("can create a valid object of class PoissonVaryingUseExpAgCertain", {
     transformAg <- makeCollapseTransformExtra(transformAg)
     x <- new("PoissonVaryingUseExpAgCertain",
              theta = theta,
+             thetaTransformed = rnorm(20),
              metadataY = new("MetaData",
                              nms = c("age", "region"),
                              dimtypes = c("age", "state"),
@@ -3212,11 +3262,11 @@ test_that("can create a valid object of class PoissonVaryingUseExpAgCertain", {
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(20),
              valueAg = valueAg,
              weightAg = weightAg,
              transformAg = transformAg,
-             metadataAg = NULL,
-             mu = rnorm(20))
+             metadataAg = NULL)
     expect_true(validObject(x))
 })
 
@@ -3242,6 +3292,7 @@ test_that("validity tests for PoissonVaryingUseExpAgCertain inherited from Poiss
                       DimScales = list(new("Categories", dimvalues = c("a", "b", "c"))))
     x <- new("PoissonVaryingUseExpAgCertain",
              theta = theta,
+             thetaTransformed = rnorm(20),
              strucZeroArray = Counts(array(1L,
                                            dim = c(5, 4),
                                            dimnames = list(age = 0:4, region = letters[1:4])),
@@ -3273,11 +3324,11 @@ test_that("validity tests for PoissonVaryingUseExpAgCertain inherited from Poiss
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(20),
              valueAg = valueAg,
              weightAg = weightAg,
              transformAg = transformAg,
-             metadataAg = metadataAg,
-             mu = rnorm(20))
+             metadataAg = metadataAg)
     ## 'valueAg' greater than or equal to exp(lower)
     x.wrong <- x
     x.wrong@theta[1:5] <- 0.1
@@ -3314,6 +3365,7 @@ test_that("can create a valid object of class PoissonVaryingUseExpAgNormal", {
                       DimScales = list(new("Categories", dimvalues = c("a", "b", "c"))))
     x <- new("PoissonVaryingUseExpAgNormal",
              theta = theta,
+             thetaTransformed = rnorm(20),
              strucZeroArray = Counts(array(1L,
                                            dim = c(5, 4),
                                            dimnames = list(age = 0:4, region = letters[1:4])),
@@ -3345,6 +3397,7 @@ test_that("can create a valid object of class PoissonVaryingUseExpAgNormal", {
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(20),
              valueAg = valueAg,
              meanAg = meanAg,
              sdAg = sdAg,
@@ -3352,7 +3405,6 @@ test_that("can create a valid object of class PoissonVaryingUseExpAgNormal", {
              weightAg = weightAg,
              transformAg = transformAg,
              metadataAg = metadataAg,
-             mu = rnorm(20),
              nAcceptAg = new("Counter", 5L),
              nFailedPropValueAg = new("Counter", 1L))
     expect_true(validObject(x))
@@ -3369,6 +3421,7 @@ test_that("can create a valid object of class PoissonVaryingUseExpAgNormal", {
     transformAg <- makeCollapseTransformExtra(transformAg)
     x <- new("PoissonVaryingUseExpAgNormal",
              theta = theta,
+             thetaTransformed = rnorm(20),
              metadataY = new("MetaData",
                              nms = c("age", "region"),
                              dimtypes = c("age", "state"),
@@ -3400,6 +3453,7 @@ test_that("can create a valid object of class PoissonVaryingUseExpAgNormal", {
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(20),
              valueAg = valueAg,
              meanAg = new("ParameterVector", 0.5),
              sdAg = new("ScaleVec", 0.2),
@@ -3407,7 +3461,6 @@ test_that("can create a valid object of class PoissonVaryingUseExpAgNormal", {
              weightAg = weightAg,
              transformAg = transformAg,
              metadataAg = NULL,
-             mu = rnorm(20),
              nAcceptAg = new("Counter", 5L),
              nFailedPropValueAg = new("Counter", 1L))
     expect_true(validObject(x))
@@ -3438,6 +3491,7 @@ test_that("can create a valid object of class PoissonVaryingUseExpAgPoisson", {
     exposureAg <- new("ScaleVec", runif(n = 3, min = 1, max = 5))
     x <- new("PoissonVaryingUseExpAgPoisson",
              theta = theta,
+             thetaTransformed = rnorm(20),
              strucZeroArray = Counts(array(1L,
                                            dim = c(5, 4),
                                            dimnames = list(age = 0:4, region = letters[1:4])),
@@ -3469,6 +3523,7 @@ test_that("can create a valid object of class PoissonVaryingUseExpAgPoisson", {
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(20),
              valueAg = valueAg,
              meanAg = meanAg,
              exposureAg = exposureAg,
@@ -3476,7 +3531,6 @@ test_that("can create a valid object of class PoissonVaryingUseExpAgPoisson", {
              weightAg = weightAg,
              transformAg = transformAg,
              metadataAg = metadataAg,
-             mu = rnorm(20),
              nAcceptAg = new("Counter", 5L),
              nFailedPropValueAg = new("Counter", 1L))
     expect_true(validObject(x))
@@ -3493,6 +3547,7 @@ test_that("can create a valid object of class PoissonVaryingUseExpAgPoisson", {
     transformAg <- makeCollapseTransformExtra(transformAg)
     x <- new("PoissonVaryingUseExpAgPoisson",
              theta = theta,
+             thetaTransformed = rnorm(20),
              metadataY = new("MetaData",
                              nms = c("age", "region"),
                              dimtypes = c("age", "state"),
@@ -3524,6 +3579,7 @@ test_that("can create a valid object of class PoissonVaryingUseExpAgPoisson", {
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(20),
              valueAg = valueAg,
              meanAg = new("ParameterVector", 0.5),
              exposureAg = new("ScaleVec", 5),
@@ -3531,7 +3587,6 @@ test_that("can create a valid object of class PoissonVaryingUseExpAgPoisson", {
              weightAg = weightAg,
              transformAg = transformAg,
              metadataAg = NULL,
-             mu = rnorm(20),
              nAcceptAg = new("Counter", 5L),
              nFailedPropValueAg = new("Counter", 1L))
     expect_true(validObject(x))
@@ -3588,6 +3643,7 @@ test_that("can create a valid object of class PoissonVaryingUseExpAgFun", {
                      funAg(xArgsAg[[3]], weightsArgsAg[[3]])))
     x <- new("PoissonVaryingUseExpAgFun",
              theta = theta,
+             thetaTransformed = rnorm(20),
              metadataY = metadataY,
              strucZeroArray = Counts(array(1L,
                                            dim = c(5, 4),
@@ -3615,6 +3671,7 @@ test_that("can create a valid object of class PoissonVaryingUseExpAgFun", {
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(20),
              valueAg = valueAg,
              meanAg = meanAg,
              sdAg = sdAg,
@@ -3646,6 +3703,7 @@ test_that("can create a valid object of class PoissonVaryingUseExpAgFun", {
     valueAg <- new("ParameterVector", funAg(xArgsAg[[1]], weightsArgsAg[[1]]))
     x <- new("PoissonVaryingUseExpAgFun",
              theta = theta,
+             thetaTransformed = rnorm(20),
              metadataY = new("MetaData",
                              nms = c("age", "region"),
                              dimtypes = c("age", "state"),
@@ -3677,6 +3735,7 @@ test_that("can create a valid object of class PoissonVaryingUseExpAgFun", {
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(20),
              valueAg = valueAg,
              meanAg = new("ParameterVector", 0.5),
              sdAg = new("ScaleVec", 0.2),
@@ -3738,6 +3797,7 @@ test_that("validity tests for PoissonVaryingUseExpAgFun inherited from AgFun wor
     valueAg <- new("ParameterVector", valueAg)
     x <- new("PoissonVaryingUseExpAgFun",
              theta = theta,
+             thetaTransformed = rnorm(20),
              metadataY = metadataY,
              strucZeroArray = Counts(array(1L,
                                            dim = c(5, 4),
@@ -3765,6 +3825,7 @@ test_that("validity tests for PoissonVaryingUseExpAgFun inherited from AgFun wor
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(20),
              valueAg = valueAg,
              meanAg = meanAg,
              sdAg = sdAg,
@@ -3821,6 +3882,7 @@ test_that("can create a valid object of class PoissonVaryingUseExpAgLife", {
     nxAg <- c(1, 4, rep(5, 17), Inf)
     x <- new("PoissonVaryingUseExpAgLife",
              theta = theta,
+             thetaTransformed = rnorm(240),
              metadataY = metadataY,
              strucZeroArray = Counts(array(1L,
                                            dim = c(5, 4),
@@ -3848,6 +3910,7 @@ test_that("can create a valid object of class PoissonVaryingUseExpAgLife", {
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(240),
              valueAg = valueAg,
              meanAg = meanAg,
              sdAg = sdAg,
@@ -3889,6 +3952,7 @@ test_that("can create a valid object of class PoissonVaryingUseExpAgLife", {
     nxAg <- c(1, 4, rep(5, 7), Inf)
     x <- new("PoissonVaryingUseExpAgLife",
              theta = theta,
+             thetaTransformed = rnorm(20),
              strucZeroArray = Counts(array(1L,
                                            dim = c(5, 4),
                                            dimnames = list(age = 0:4, region = letters[1:4])),
@@ -3920,6 +3984,7 @@ test_that("can create a valid object of class PoissonVaryingUseExpAgLife", {
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(20),
              valueAg = valueAg,
              meanAg = new("ParameterVector", 0.5),
              sdAg = new("ScaleVec", 0.2),
@@ -3967,6 +4032,7 @@ test_that("tests for PoissonVaryingUseExpAgLife inherited from AxAgMixin work", 
     nxAg <- c(1, 4, rep(5, 17), Inf)
     x <- new("PoissonVaryingUseExpAgLife",
              theta = theta,
+             thetaTransformed = rnorm(240),
              metadataY = metadataY,
              strucZeroArray = Counts(array(1L,
                                            dim = c(5, 4),
@@ -3994,6 +4060,7 @@ test_that("tests for PoissonVaryingUseExpAgLife inherited from AxAgMixin work", 
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(240),
              valueAg = valueAg,
              meanAg = meanAg,
              sdAg = sdAg,
@@ -4051,6 +4118,7 @@ test_that("tests for PoissonVaryingUseExpAgLife inherited from MetadataMxAgMixin
     nxAg <- c(1, 4, rep(5, 17), Inf)
     x <- new("PoissonVaryingUseExpAgLife",
              theta = theta,
+             thetaTransformed = rnorm(240),
              metadataY = metadataY,
              strucZeroArray = Counts(array(1L,
                                            dim = c(5, 4),
@@ -4078,6 +4146,7 @@ test_that("tests for PoissonVaryingUseExpAgLife inherited from MetadataMxAgMixin
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(240),
              valueAg = valueAg,
              meanAg = meanAg,
              sdAg = sdAg,
@@ -4143,6 +4212,7 @@ test_that("tests for PoissonVaryingUseExpAgLife inherited from MxAgMixin work", 
     nxAg <- c(1, 4, rep(5, 17), Inf)
     x <- new("PoissonVaryingUseExpAgLife",
              theta = theta,
+             thetaTransformed = rnorm(240),
              strucZeroArray = Counts(array(1L,
                                            dim = c(5, 4),
                                            dimnames = list(age = 0:4, region = letters[1:4])),
@@ -4170,6 +4240,7 @@ test_that("tests for PoissonVaryingUseExpAgLife inherited from MxAgMixin work", 
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(240),
              valueAg = valueAg,
              meanAg = meanAg,
              sdAg = sdAg,
@@ -4227,6 +4298,7 @@ test_that("tests for PoissonVaryingUseExpAgLife inherited from NxAgMixin work", 
     nxAg <- c(1, 4, rep(5, 17), Inf)
     x <- new("PoissonVaryingUseExpAgLife",
              theta = theta,
+             thetaTransformed = rnorm(240),
              metadataY = metadataY,
              strucZeroArray = Counts(array(1L,
                                            dim = c(5, 4),
@@ -4254,6 +4326,7 @@ test_that("tests for PoissonVaryingUseExpAgLife inherited from NxAgMixin work", 
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(240),
              valueAg = valueAg,
              meanAg = meanAg,
              sdAg = sdAg,
@@ -4310,6 +4383,7 @@ test_that("tests for PoissonVaryingUseExpAgLife inherited from AgLife work", {
     nxAg <- c(1, 4, rep(5, 17), Inf)
     x <- new("PoissonVaryingUseExpAgLife",
              theta = theta,
+             thetaTransformed = rnorm(240),
              metadataY = metadataY,
              strucZeroArray = Counts(array(1L,
                                            dim = c(5, 4),
@@ -4337,6 +4411,7 @@ test_that("tests for PoissonVaryingUseExpAgLife inherited from AgLife work", {
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(240),
              valueAg = valueAg,
              meanAg = meanAg,
              sdAg = sdAg,
@@ -4446,6 +4521,7 @@ test_that("can create a valid object of class NormalVaryingVarsigmaKnownPredict"
     ## old object had 10 regions
     x <- new("NormalVaryingVarsigmaKnownPredict",
              theta = rnorm(n = 20),
+             thetaTransformed = rnorm(n = 20),
              w = rbeta(n = 20, shape1 = 1, shape2 = 1),
              metadataY = new("MetaData",
                              nms = c("age", "region"),
@@ -4474,6 +4550,7 @@ test_that("can create a valid object of class NormalVaryingVarsigmaKnownPredict"
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(20),
              betaIsPredicted = c(FALSE, FALSE, TRUE),
              offsetsBetas = list(new("Offsets", c(53L, 53L)), new("Offsets", c(54L, 58L)),
                                  new("Offsets", c(59L, 62L))),
@@ -4487,6 +4564,7 @@ test_that("can create a valid object of class NormalVaryingVarsigmaUnknownPredic
     ## old object had 10 regions
     x <- new("NormalVaryingVarsigmaUnknownPredict",
              theta = rnorm(n = 20),
+             thetaTransformed = rnorm(n = 20),
              w = rbeta(n = 20, shape1 = 1, shape2 = 1),
              metadataY = new("MetaData",
                              nms = c("age", "region"),
@@ -4516,6 +4594,7 @@ test_that("can create a valid object of class NormalVaryingVarsigmaUnknownPredic
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(20),
              betaIsPredicted = c(FALSE, FALSE, TRUE),
              offsetsBetas = list(new("Offsets", c(53L, 53L)), new("Offsets", c(54L, 58L)),
                                  new("Offsets", c(59L, 62L))),
@@ -4529,6 +4608,7 @@ test_that("can create a valid object of class PoissonVaryingNotUseExpPredict", {
     ## old object had 10 regions
     x <- new("PoissonVaryingNotUseExpPredict",
              theta = rgamma(n = 20, shape = 5, rate = 5),
+             thetaTransformed = rnorm(20),
              metadataY = new("MetaData",
                              nms = c("age", "region"),
                              dimtypes = c("age", "state"),
@@ -4560,6 +4640,7 @@ test_that("can create a valid object of class PoissonVaryingNotUseExpPredict", {
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(20),
              betaIsPredicted = c(FALSE, FALSE, TRUE),
              offsetsBetas = list(new("Offsets", c(53L, 53L)), new("Offsets", c(54L, 58L)),
                                  new("Offsets", c(59L, 62L))),
@@ -4573,6 +4654,7 @@ test_that("can create a valid object of class BinomialVaryingPredict", {
     ## old object had 10 regions
     x <- new("BinomialVaryingPredict",
              theta = rbeta(n = 20, shape1 = 1, shape2 = 1),
+             thetaTransformed = rnorm(n = 20),
              metadataY = new("MetaData",
                              nms = c("age", "region"),
                              dimtypes = c("age", "state"),
@@ -4600,6 +4682,7 @@ test_that("can create a valid object of class BinomialVaryingPredict", {
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(20),
              betaIsPredicted = c(FALSE, FALSE, TRUE),
              offsetsBetas = list(new("Offsets", c(53L, 53L)), new("Offsets", c(54L, 58L)),
                                  new("Offsets", c(59L, 62L))),
@@ -4613,6 +4696,7 @@ test_that("can create a valid object of class PoissonVaryingUseExpPredict", {
     ## old object had 10 regions
     x <- new("PoissonVaryingUseExpPredict",
              theta = rgamma(n = 20, shape = 5, rate = 5),
+             thetaTransformed = rnorm(20),
              metadataY = new("MetaData",
                              nms = c("age", "region"),
                              dimtypes = c("age", "state"),
@@ -4644,6 +4728,7 @@ test_that("can create a valid object of class PoissonVaryingUseExpPredict", {
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(20),
              betaIsPredicted = c(FALSE, FALSE, TRUE),
              offsetsBetas = list(new("Offsets", c(53L, 53L)), new("Offsets", c(54L, 58L)),
                                  new("Offsets", c(59L, 62L))),
@@ -4657,6 +4742,7 @@ test_that("tests for PoissonVaryingUseExpPredict inherited from BetaIsPredicted 
     ## old object had 10 regions
     x <- new("PoissonVaryingUseExpPredict",
              theta = rgamma(n = 20, shape = 5, rate = 5),
+             thetaTransformed = rnorm(20),
              metadataY = new("MetaData",
                              nms = c("age", "region"),
                              dimtypes = c("age", "state"),
@@ -4688,6 +4774,7 @@ test_that("tests for PoissonVaryingUseExpPredict inherited from BetaIsPredicted 
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(20),
              betaIsPredicted = c(FALSE, FALSE, TRUE),
              offsetsBetas = list(new("Offsets", c(53L, 53L)), new("Offsets", c(54L, 58L)),
                                  new("Offsets", c(59L, 62L))),
@@ -4721,6 +4808,7 @@ test_that("tests for PoissonVaryingUseExpPredict inherited from OffsetsBetas wor
     ## old object had 10 regions
     x <- new("PoissonVaryingUseExpPredict",
              theta = rgamma(n = 20, shape = 5, rate = 5),
+             thetaTransformed = rnorm(20),
              metadataY = new("MetaData",
                              nms = c("age", "region"),
                              dimtypes = c("age", "state"),
@@ -4752,6 +4840,7 @@ test_that("tests for PoissonVaryingUseExpPredict inherited from OffsetsBetas wor
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(20),
              betaIsPredicted = c(FALSE, FALSE, TRUE),
              offsetsBetas = list(new("Offsets", c(53L, 53L)), new("Offsets", c(54L, 58L)),
                                  new("Offsets", c(59L, 62L))),
@@ -4775,6 +4864,7 @@ test_that("tests for PoissonVaryingUseExpPredict inherited from OffsetsPriorsBet
     ## old object had 10 regions
     x <- new("PoissonVaryingUseExpPredict",
              theta = rgamma(n = 20, shape = 5, rate = 5),
+             thetaTransformed = rnorm(20),
              metadataY = new("MetaData",
                              nms = c("age", "region"),
                              dimtypes = c("age", "state"),
@@ -4806,6 +4896,7 @@ test_that("tests for PoissonVaryingUseExpPredict inherited from OffsetsPriorsBet
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(20),
              betaIsPredicted = c(FALSE, FALSE, TRUE),
              offsetsBetas = list(new("Offsets", c(53L, 53L)), new("Offsets", c(54L, 58L)),
                                  new("Offsets", c(59L, 62L))),
@@ -4829,6 +4920,7 @@ test_that("tests for PoissonVaryingUseExpPredict inherited from OffsetsSigma wor
     ## old object had 10 regions
     x <- new("PoissonVaryingUseExpPredict",
              theta = rgamma(n = 20, shape = 5, rate = 5),
+             thetaTransformed = rnorm(20),
              metadataY = new("MetaData",
                              nms = c("age", "region"),
                              dimtypes = c("age", "state"),
@@ -4860,6 +4952,7 @@ test_that("tests for PoissonVaryingUseExpPredict inherited from OffsetsSigma wor
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(20),
              betaIsPredicted = c(FALSE, FALSE, TRUE),
              offsetsBetas = list(new("Offsets", c(53L, 53L)), new("Offsets", c(54L, 58L)),
                                  new("Offsets", c(59L, 62L))),
@@ -4878,6 +4971,7 @@ test_that("tests for NormalVaryingVarsigmUnknownPredict inherited from OffsetsVa
     ## old object had 10 regions
     x <- new("NormalVaryingVarsigmaUnknownPredict",
              theta = rnorm(20),
+             thetaTransformed = rnorm(20),
              w = runif(20),
              metadataY = new("MetaData",
                              nms = c("age", "region"),
@@ -4907,6 +5001,7 @@ test_that("tests for NormalVaryingVarsigmUnknownPredict inherited from OffsetsVa
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(20),
              betaIsPredicted = c(FALSE, FALSE, TRUE),
              offsetsVarsigma = new("Offsets", c(52L, 52L)),
              offsetsBetas = list(new("Offsets", c(53L, 53L)), new("Offsets", c(54L, 58L)),
@@ -5026,6 +5121,7 @@ test_that("can create a valid object of class NormalVaryingVarsigmaKnownPredictA
                       DimScales = list(new("Categories", dimvalues = c("a", "b", "c"))))
     x <- new("NormalVaryingVarsigmaKnownPredictAgCertain",
              theta = theta,
+             thetaTransformed = rnorm(20),
              w = rep(1, 20),
              metadataY = new("MetaData",
                              nms = c("age", "region"),
@@ -5054,6 +5150,7 @@ test_that("can create a valid object of class NormalVaryingVarsigmaKnownPredictA
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(20),
              betaIsPredicted = c(FALSE, FALSE, TRUE),
              offsetsBetas = list(new("Offsets", c(53L, 53L)), new("Offsets", c(54L, 58L)),
                                  new("Offsets", c(59L, 62L))),
@@ -5062,8 +5159,7 @@ test_that("can create a valid object of class NormalVaryingVarsigmaKnownPredictA
              valueAg = valueAg,
              weightAg = weightAg,
              transformAg = transformAg,
-             metadataAg = metadataAg,
-             mu = rnorm(20))
+             metadataAg = metadataAg)
     expect_true(validObject(x))
 })
 
@@ -5091,6 +5187,7 @@ test_that("can create a valid object of class NormalVaryingVarsigmaKnownPredictA
                       DimScales = list(new("Categories", dimvalues = c("a", "b", "c"))))
     x <- new("NormalVaryingVarsigmaKnownPredictAgNormal",
              theta = theta,
+             thetaTransformed = rnorm(20),
              w = rep(1, 20),
              metadataY = new("MetaData",
                              nms = c("age", "region"),
@@ -5119,6 +5216,7 @@ test_that("can create a valid object of class NormalVaryingVarsigmaKnownPredictA
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(20),
              betaIsPredicted = c(FALSE, FALSE, TRUE),
              offsetsBetas = list(new("Offsets", c(53L, 53L)), new("Offsets", c(54L, 58L)),
                                  new("Offsets", c(59L, 62L))),
@@ -5131,7 +5229,6 @@ test_that("can create a valid object of class NormalVaryingVarsigmaKnownPredictA
              weightAg = weightAg,
              transformAg = transformAg,
              metadataAg = metadataAg,
-             mu = rnorm(20),
              nAcceptAg = new("Counter", 5L),
              nFailedPropValueAg = new("Counter", 1L))
     expect_true(validObject(x))
@@ -5160,6 +5257,7 @@ test_that("can create a valid object of class NormalVaryingVarsigmaUnknownPredic
                       DimScales = list(new("Categories", dimvalues = c("a", "b", "c"))))
     x <- new("NormalVaryingVarsigmaUnknownPredictAgCertain",
              theta = theta,
+             thetaTransformed = rnorm(20),
              w = rep(1, 20),
              metadataY = new("MetaData",
                              nms = c("age", "region"),
@@ -5189,6 +5287,7 @@ test_that("can create a valid object of class NormalVaryingVarsigmaUnknownPredic
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(20),
              betaIsPredicted = c(FALSE, FALSE, TRUE),
              offsetsBetas = list(new("Offsets", c(53L, 53L)), new("Offsets", c(54L, 58L)),
                                  new("Offsets", c(59L, 62L))),
@@ -5197,8 +5296,7 @@ test_that("can create a valid object of class NormalVaryingVarsigmaUnknownPredic
              valueAg = valueAg,
              weightAg = weightAg,
              transformAg = transformAg,
-             metadataAg = metadataAg,
-             mu = rnorm(20))
+             metadataAg = metadataAg)
     expect_true(validObject(x))
 })
 
@@ -5226,6 +5324,7 @@ test_that("can create a valid object of class NormalVaryingVarsigmaUnknownPredic
                       DimScales = list(new("Categories", dimvalues = c("a", "b", "c"))))
     x <- new("NormalVaryingVarsigmaUnknownPredictAgNormal",
              theta = theta,
+             thetaTransformed = rnorm(20),
              w = rep(1, 20),
              metadataY = new("MetaData",
                              nms = c("age", "region"),
@@ -5255,6 +5354,7 @@ test_that("can create a valid object of class NormalVaryingVarsigmaUnknownPredic
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(20),
              betaIsPredicted = c(FALSE, FALSE, TRUE),
              offsetsBetas = list(new("Offsets", c(53L, 53L)), new("Offsets", c(54L, 58L)),
                                  new("Offsets", c(59L, 62L))),
@@ -5267,7 +5367,6 @@ test_that("can create a valid object of class NormalVaryingVarsigmaUnknownPredic
              weightAg = weightAg,
              transformAg = transformAg,
              metadataAg = metadataAg,
-             mu = rnorm(20),
              nAcceptAg = new("Counter", 5L),
              nFailedPropValueAg = new("Counter", 1L))
     expect_true(validObject(x))
@@ -5295,6 +5394,7 @@ test_that("can create a valid object of class PoissonVaryingNotUseExpPredictAgCe
                       DimScales = list(new("Categories", dimvalues = c("a", "b", "c"))))
     x <- new("PoissonVaryingNotUseExpPredictAgCertain",
              theta = theta,
+             thetaTransformed = rnorm(20),
              metadataY = new("MetaData",
                              nms = c("age", "region"),
                              dimtypes = c("age", "state"),
@@ -5326,6 +5426,7 @@ test_that("can create a valid object of class PoissonVaryingNotUseExpPredictAgCe
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(20),
              betaIsPredicted = c(FALSE, FALSE, TRUE),
              offsetsBetas = list(new("Offsets", c(53L, 53L)), new("Offsets", c(54L, 58L)),
                                  new("Offsets", c(59L, 62L))),
@@ -5334,8 +5435,7 @@ test_that("can create a valid object of class PoissonVaryingNotUseExpPredictAgCe
              valueAg = valueAg,
              weightAg = weightAg,
              transformAg = transformAg,
-             metadataAg = metadataAg,
-             mu = rnorm(20))
+             metadataAg = metadataAg)
     expect_true(validObject(x))
 })
 
@@ -5363,6 +5463,7 @@ test_that("can create a valid object of class PoissonVaryingNotUseExpPredictAgNo
                       DimScales = list(new("Categories", dimvalues = c("a", "b", "c"))))
     x <- new("PoissonVaryingNotUseExpPredictAgNormal",
              theta = theta,
+             thetaTransformed = rnorm(20),
              metadataY = new("MetaData",
                              nms = c("age", "region"),
                              dimtypes = c("age", "state"),
@@ -5394,6 +5495,7 @@ test_that("can create a valid object of class PoissonVaryingNotUseExpPredictAgNo
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(20),
              betaIsPredicted = c(FALSE, FALSE, TRUE),
              offsetsBetas = list(new("Offsets", c(53L, 53L)), new("Offsets", c(54L, 58L)),
                                  new("Offsets", c(59L, 62L))),
@@ -5406,7 +5508,6 @@ test_that("can create a valid object of class PoissonVaryingNotUseExpPredictAgNo
              weightAg = weightAg,
              transformAg = transformAg,
              metadataAg = metadataAg,
-             mu = rnorm(20),
              nAcceptAg = new("Counter", 5L),
              nFailedPropValueAg = new("Counter", 1L))
     expect_true(validObject(x))
@@ -5434,6 +5535,7 @@ test_that("can create a valid object of class BinomialVaryingPredictAgCertain", 
                       DimScales = list(new("Categories", dimvalues = c("a", "b", "c"))))
     x <- new("BinomialVaryingPredictAgCertain",
              theta = theta,
+             thetaTransformed = rnorm(20),
              metadataY = new("MetaData",
                              nms = c("age", "region"),
                              dimtypes = c("age", "state"),
@@ -5461,6 +5563,7 @@ test_that("can create a valid object of class BinomialVaryingPredictAgCertain", 
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(20),
              betaIsPredicted = c(FALSE, FALSE, TRUE),
              offsetsBetas = list(new("Offsets", c(53L, 53L)), new("Offsets", c(54L, 58L)),
                                  new("Offsets", c(59L, 62L))),
@@ -5469,8 +5572,7 @@ test_that("can create a valid object of class BinomialVaryingPredictAgCertain", 
              valueAg = valueAg,
              weightAg = weightAg,
              transformAg = transformAg,
-             metadataAg = metadataAg,
-             mu = rnorm(20))
+             metadataAg = metadataAg)
     expect_true(validObject(x))
 })
 
@@ -5498,6 +5600,7 @@ test_that("can create a valid object of class BinomialVaryingPredictAgNormal", {
                       DimScales = list(new("Categories", dimvalues = c("a", "b", "c"))))
     x <- new("BinomialVaryingPredictAgNormal",
              theta = theta,
+             thetaTransformed = rnorm(20),
              metadataY = new("MetaData",
                              nms = c("age", "region"),
                              dimtypes = c("age", "state"),
@@ -5525,6 +5628,7 @@ test_that("can create a valid object of class BinomialVaryingPredictAgNormal", {
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(20),
              betaIsPredicted = c(FALSE, FALSE, TRUE),
              offsetsBetas = list(new("Offsets", c(53L, 53L)), new("Offsets", c(54L, 58L)),
                                  new("Offsets", c(59L, 62L))),
@@ -5537,7 +5641,6 @@ test_that("can create a valid object of class BinomialVaryingPredictAgNormal", {
              weightAg = weightAg,
              transformAg = transformAg,
              metadataAg = metadataAg,
-             mu = rnorm(20),
              nAcceptAg = new("Counter", 5L),
              nFailedPropValueAg = new("Counter", 1L))
     expect_true(validObject(x))
@@ -5565,6 +5668,7 @@ test_that("can create a valid objects of class PoissonVaryingUseExpPredictAgCert
                       DimScales = list(new("Categories", dimvalues = c("a", "b", "c"))))
     x <- new("PoissonVaryingUseExpPredictAgCertain",
              theta = theta,
+             thetaTransformed = rnorm(20),
              metadataY = new("MetaData",
                              nms = c("age", "region"),
                              dimtypes = c("age", "state"),
@@ -5596,6 +5700,7 @@ test_that("can create a valid objects of class PoissonVaryingUseExpPredictAgCert
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(20),
              betaIsPredicted = c(FALSE, FALSE, TRUE),
              offsetsBetas = list(new("Offsets", c(53L, 53L)), new("Offsets", c(54L, 58L)),
                                  new("Offsets", c(59L, 62L))),
@@ -5604,8 +5709,7 @@ test_that("can create a valid objects of class PoissonVaryingUseExpPredictAgCert
              valueAg = valueAg,
              weightAg = weightAg,
              transformAg = transformAg,
-             metadataAg = metadataAg,
-             mu = rnorm(20))
+             metadataAg = metadataAg)
     expect_true(validObject(x))
 })
 
@@ -5633,6 +5737,7 @@ test_that("can create a valid objects of class PoissonVaryingUseExpPredictAgNorm
                       DimScales = list(new("Categories", dimvalues = c("a", "b", "c"))))
     x <- new("PoissonVaryingUseExpPredictAgNormal",
              theta = theta,
+             thetaTransformed = rnorm(20),
              metadataY = new("MetaData",
                              nms = c("age", "region"),
                              dimtypes = c("age", "state"),
@@ -5664,6 +5769,7 @@ test_that("can create a valid objects of class PoissonVaryingUseExpPredictAgNorm
                                     isSaturated = new("LogicalFlag", FALSE), allStrucZero = rep(FALSE, 4))),
              iteratorBetas = BetaIterator(dim = c(5L, 4L), margins = list(0L, 1L, 2L)),
              dims = list(0L, 5L, 4L),
+             mu = rnorm(20),
              betaIsPredicted = c(FALSE, FALSE, TRUE),
              offsetsBetas = list(new("Offsets", c(53L, 53L)), new("Offsets", c(54L, 58L)),
                                  new("Offsets", c(59L, 62L))),
@@ -5676,7 +5782,6 @@ test_that("can create a valid objects of class PoissonVaryingUseExpPredictAgNorm
              weightAg = weightAg,
              transformAg = transformAg,
              metadataAg = metadataAg,
-             mu = rnorm(20),
              nAcceptAg = new("Counter", 5L),
              nFailedPropValueAg = new("Counter", 1L))
     expect_true(validObject(x))

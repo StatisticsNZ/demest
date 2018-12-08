@@ -197,28 +197,6 @@ setClass("MetaDataMxAgMixin",
          })
 
 ## HAS_TESTS
-setClass("MuMixin",
-         slots = c(mu = "numeric"),
-         contains = "VIRTUAL",
-         validity = function(object) {
-             mu <- object@mu
-             theta <- object@theta
-             ## 'mu' has type "double"
-             if (!is.double(mu))
-                 return(gettextf("'%s' does not have type \"%s\"",
-                                 "mu", "double"))
-             ## 'mu' has no missing values
-             if (any(is.na(mu)))
-                 return(gettextf("'%s' has missing values",
-                                 "mu"))
-             ## 'mu' has same length as 'theta'
-             if (!identical(length(mu), length(theta)))
-                 return(gettextf("'%s' and '%s' have different lengths",
-                                 "mu", "theta"))
-             TRUE
-         })
-
-## HAS_TESTS
 setClass("MxAgMixin",
          slots = c(mxAg = "numeric"),
          contains = "VIRTUAL",
@@ -503,7 +481,6 @@ setClass("Aggregate",
 setClass("AgCertain",
          contains = c("VIRTUAL",
              "Aggregate",
-             "MuMixin",
              "TransformAgMixin",
              "WeightAgMixin"))
 
@@ -515,7 +492,6 @@ setClass("AgUncertain",
 setClass("AgNormal",
          contains = c("VIRTUAL",
              "AgUncertain",
-             "MuMixin",
              "NAcceptAgMixin",
              "NFailedPropValueAgMixin",
              "ScaleAgMixin",
@@ -527,7 +503,6 @@ setClass("AgPoisson",
          contains = c("VIRTUAL",
              "AgUncertain",
              "ExposureAgMixin",
-             "MuMixin",
              "NAcceptAgMixin",
              "NFailedPropValueAgMixin",
              "ScaleAgMixin",

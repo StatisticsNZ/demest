@@ -19,8 +19,8 @@ setClass("Model",
 ## HAS_TESTS
 setClass("Binomial",
          contains = c("VIRTUAL",
-             "UseExposure",
-             "ScaleThetaMultiplierMixin"),
+                      "UseExposure",
+                      "ScaleThetaMultiplierMixin"),
          validity = function(object) {
              theta <- object@theta
              ## 'theta' is non-negative
@@ -109,16 +109,16 @@ setClass("TFixed",
 ## HAS_UPDATE
 setClass("BinomialVarying",
          contains = c("Model",
-             "Binomial",
-             "Varying"),
+                      "Binomial",
+                      "Varying"),
          prototype = prototype(slotsToExtract = c("theta",
-                                   "nFailedPropTheta",
-                                   "nAcceptTheta",
-                                   "betas",
-                                   "sigma",
-                                   "priorsBetas"),
-             iMethodModel = 9L,
-             nuSigma = methods::new("DegreesFreedom", 7)),
+                                                  "nFailedPropTheta",
+                                                  "nAcceptTheta",
+                                                  "betas",
+                                                  "sigma",
+                                                  "priorsBetas"),
+                               iMethodModel = 9L,
+                               nuSigma = methods::new("DegreesFreedom", 7)),
          validity = function(object) {
              theta <- object@theta
              lower <- object@lower
