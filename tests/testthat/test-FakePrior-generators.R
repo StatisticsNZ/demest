@@ -1,41 +1,41 @@
 
-## context("FakePrior-generators")
+context("FakePrior-generators")
 
-## n.test <- 5
-## test.identity <- FALSE
-## test.extended <- TRUE
+n.test <- 5
+test.identity <- FALSE
+test.extended <- TRUE
 
 
-## test_that("fakePrior works with SpecExchFixed", {
-##     fakePrior <- demest:::fakePrior
-##     makeScale <- demest:::makeScale
-##     ## valid inputs
-##     spec <- ExchFixed(sd = 10)
-##     metadata <- new("MetaData",
-##                     nms = "reg",
-##                     dimtypes = "state",
-##                     DimScales = list(new("Categories", dimvalues = letters[1:10])))
-##     set.seed(1)
-##     ans.obtained <- fakePrior(spec, metadata = metadata, isSaturated = FALSE)
-##     set.seed(1)
-##     ans.expected <- new("FakeExchFixed",
-##                         tau = new("Scale", 10),
-##                         mean = new("Parameter", 0),
-##                         isSaturated = new("LogicalFlag", FALSE),
-##                         J = new("Length", 10L))
-##     if (test.identity)
-##         expect_identical(ans.obtained, ans.expected)
-##     else
-##         expect_equal(ans.obtained, ans.expected)
-##     ## scale not specified
-##     spec <- ExchFixed()
-##     metadata <- new("MetaData",
-##                     nms = "reg",
-##                     dimtypes = "state",
-##                     DimScales = list(new("Categories", dimvalues = letters[1:10])))
-##     expect_error(fakePrior(spec, metadata = metadata, isSaturated = FALSE),
-##                  "need to specify 'sd' in call to function 'ExchFixed'")
-## })
+test_that("fakePrior works with SpecExchFixed", {
+    fakePrior <- demest:::fakePrior
+    makeScale <- demest:::makeScale
+    ## valid inputs
+    spec <- ExchFixed(sd = 10)
+    metadata <- new("MetaData",
+                    nms = "reg",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    set.seed(1)
+    ans.obtained <- fakePrior(spec, metadata = metadata, isSaturated = FALSE)
+    set.seed(1)
+    ans.expected <- new("FakeExchFixed",
+                        tau = new("Scale", 10),
+                        mean = new("Parameter", 0),
+                        isSaturated = new("LogicalFlag", FALSE),
+                        J = new("Length", 10L))
+    if (test.identity)
+        expect_identical(ans.obtained, ans.expected)
+    else
+        expect_equal(ans.obtained, ans.expected)
+    ## scale not specified
+    spec <- ExchFixed()
+    metadata <- new("MetaData",
+                    nms = "reg",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    expect_error(fakePrior(spec, metadata = metadata, isSaturated = FALSE),
+                 "need to specify 'sd' in call to function 'ExchFixed'")
+})
 
 ## test_that("fakePrior works with SpecExchFixed - intercept", {
 ##     fakePrior <- demest:::fakePrior

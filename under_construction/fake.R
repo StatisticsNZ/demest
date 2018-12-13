@@ -1,4 +1,94 @@
 
+
+getPriorSD <- function(spec) {
+    if (!methods::is(spec, "SpecVarying"))
+    i.prior.sd <- match("priorSD", names(spec@call), nomatch = 0L)
+    has.prior.sd <- i.prior.sd > 0L                                  
+    if (!has.prior.sd)
+        stop(gettextf("'%s' argument required in call to '%s' when specifying model for fake data",
+                      "priorSD", "Model"))
+    call.prior.sd <- spec@call[[i.prior.sd]]
+    i.scale.prior.sd <- match("scale", names(call.prior.sd), nomatch = 0L)
+    has.scale.prior.sd <- i.scale.prior.sd > 0L
+    if (!has.scale.prior.sd)
+        stop(gettextf("'%s' argument required in call to '%s' when specifying '%s' in model for fake data",
+                      "scale", "priorSD", "Model"))
+    nu <- object@nuSigma
+    A <- object@ASigma@.Data
+    max <- object@sigmaMax@.Data
+    HalfT(df = nu,
+          scale = A,
+          max = max)
+}
+
+
+
+fakeModel <- function(model, y = NULL, exposure = NULL, weights = NULL,
+                      filename = NULL, nIteration = 100, verbose = TRUE) {
+    call <- match.call()
+    methods::validObject(model)
+    if (is.null(filename))
+        filename <- tempfile()
+    else
+        checkFilename(filename)
+    l <- checkFakeYExposureWeights(spec = model,
+                                   y = y,
+                                   exposure = exposure,
+                                   weights = weights)
+    y <- l$y
+    exposure <- l$exposure
+    weights <- l$weights
+    checkForSubtotals(object = y,
+                      model = model,
+                      name = "y")
+    combined <- initialCombinedModel(model,
+                                     y = y,
+                                     exposure = exposure,
+                                     weights = weights)
+    final.combined <- fakeOneChain(filename = filename,
+                                    combined = combined,
+                                   nIteration = nIteration)
+    makeFakeResultsFile(filename = filename
+                        final.combined = final.combined)
+    rescaleInFile(filename)
+    finaleMessage(filename = filename,
+                  verbose = verbose)
+}
+
+
+fakeOneChain <- function(combined, nIteration, ...) {
+    ## set seed if continuing
+    if (!is.null(seed))
+        assign(".Random.seed", seed, envir = .GlobalEnv)
+    ## burnin
+    nLoops <- nBurnin %/% nUpdateMax
+    for (i in seq_len(nLoops)) {
+        combined <- updateCombined(combined, nUpdate = nUpdateMax, useC = useC)
+    }
+    ## and any final ones
+    nLeftOver <- nBurnin - nLoops * nUpdateMax
+    combined <- updateCombined(combined, nUpdate = nLeftOver, useC = useC)
+    ## production
+    con <- file(tempfile, open = "wb")
+    n.prod <- nSim %/% nThin
+    for (i in seq_len(n.prod)) {
+        nLoops <- nThin %/% nUpdateMax
+        for (i in seq_len(nLoops)) {
+           combined <- updateCombined(combined, nUpdate = nUpdateMax, useC = useC)
+        }
+        ## and any final ones
+        nLeftOver <- nThin - nLoops * nUpdateMax
+        combined <- updateCombined(combined, nUpdate = nLeftOver, useC = useC)
+        values <- extractValues(combined)
+        writeBin(values, con = con)
+    }
+    close(con)
+    ## return final state
+    combined
+}
+
+
+
 #' Generate Fake Data
 #' 
 #' Generate a simulated dataset, based on a hierarchical model.
@@ -162,4 +252,18 @@ makeFakeBetas <- function(y, formula, specPriors, namesSpecPriors, intercept) {
     betas
 }
 
+
+kainga_data <- data.frame(kainga = letters[1:10],
+                          pc_pakeha = runif(n = 10, max = 0.2))
+
+model <- Model(y ~ Binomial(mean ~ kainga),
+               `(Intercept)` ~ ExchFixed(mean = -1, sd = 0.1),
+               kainga ~ Exch(covariates = Covariates(mean ~ pc_pakeha, data = kainga_data),
+                             error = Error(scale = HalfT(scale = 0.1))),
+               priorSD = HalfT(scale = 0.1))
+
+fakeData(model = model,
+         exposure = exposure,
+         filename = filename,
+         nIteration = 100)
 

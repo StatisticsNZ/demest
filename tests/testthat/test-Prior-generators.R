@@ -419,7 +419,7 @@ test_that("generator function and initialPrior work with DLMWithTrendNormZeroWit
     expect_is(prior, "DLMWithTrendNormZeroWithSeason")
 })
 
-test_that("generator function and initialPrior work with DLMNoTrendNormZeroNoSeason", {
+test_that("generator function and initialPrior work with DLMNoTrendNormCovNoSeason", {
     set.seed(100)
     initialPrior <- demest:::initialPrior
     data <- data.frame(time = rep(2001:2010, times = 2),
@@ -430,8 +430,8 @@ test_that("generator function and initialPrior work with DLMNoTrendNormZeroNoSea
     contrastsArg = list(cat = diag(3))
     spec <- DLM(trend = NULL,
                 covariates = Covariates(formula = formula,
-                    data = data,
-                    contrastsArg = contrastsArg))
+                                        data = data,
+                                        contrastsArg = contrastsArg))
     expect_is(spec, "SpecDLMNoTrendNormCovNoSeason")
     beta <- rnorm(20)
     strucZeroArray <- Counts(array(1L,
@@ -443,7 +443,7 @@ test_that("generator function and initialPrior work with DLMNoTrendNormZeroNoSea
                     nms = c("time", "reg"),
                     dimtypes = c("time", "state"),
                     DimScales = list(new("Points", dimvalues = 2001:2010),
-                        new("Categories", dimvalues = c("a", "b"))))
+                                     new("Categories", dimvalues = c("a", "b"))))
     prior <- initialPrior(spec,
                           beta = beta,
                           metadata = metadata,

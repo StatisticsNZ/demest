@@ -190,7 +190,7 @@ setClass("Scale",
                  return(gettext("missing"))
              ## 'object is non-negative
              if (object < 0)
-                 return(gettextf("negative"))
+                 return(gettext("negative"))
              TRUE
          })
 
@@ -206,7 +206,7 @@ setClass("ScaleVec",
                  return(gettext("missing values"))
              ## 'object' all non-negative
              if (any(object < 0))
-                 return(gettextf("negative values"))
+                 return(gettext("negative values"))
              TRUE
          })
 
@@ -236,9 +236,30 @@ setClass("SpecScale",
                                  "double"))
              ## if 'object' is not missing, 'object is non-negative
              if (!is.na(object) && (object < 0))
-                 return(gettextf("non-positive"))
+                 return(gettext("non-positive"))
              TRUE
          })
+
+setClass("SpecScaleVec",
+         contains = "numeric",
+         validity = function(object) {
+             ## 'object' has type "double"
+             if (!is.double(object))
+                 return(gettextf("does not have type \"%s\"",
+                                 "double"))
+             ## all elements of 'object' are either missing
+             ## or non-negative
+             if (any(is.na(object))) {
+                 if (any(!is.na(object)))
+                     return(gettext("mix of missing and non-missing values"))
+             }
+             else {
+                 if (any(object < 0))
+                     return(gettext("non-positive"))
+             }
+             TRUE
+         })
+
 
 setClass("UnitIntervalVec",
          contains = "numeric",
@@ -252,10 +273,10 @@ setClass("UnitIntervalVec",
                  return(gettext("missing values"))
              ## 'object' all non-negative
              if (any(object < 0))
-                 return(gettextf("negative values"))
+                 return(gettext("negative values"))
              ## 'object' all less than or equal to 1
              if (any(object > 1))
-                 return(gettextf("values greater than 1"))
+                 return(gettext("values greater than 1"))
              TRUE
          })
 

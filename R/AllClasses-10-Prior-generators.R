@@ -256,6 +256,32 @@ setClass("Season",
          contains = "SpecSeasonMixin")
 
 
+#' An S4 class to a vector of independent t-distributed variables
+#'
+#' An object of class \code{TDist} is used to specify the
+#' prior distribution of coefficents in the \code{\link{Covariates}}
+#' part of a prior prior.
+#'
+#' @section Warning:
+#' In  normal usage, it should not be necessary to
+#' access, or even know about, the slots of a
+#' \code{TDist} object.  The slots are not part of
+#' the API of the package, and may change in future.
+#'
+#' @slot nuEtaCoef Degrees of freedom
+#' @slot meanEtaCof Means
+#' @slot AEtaCoef Scales
+#'
+#' @seealso Objects of class \code{TDist} are created
+#' by calls to function \code{\link{TDist}}.  
+#' @export
+setClass("TDist",
+         contains = c("SpecAEtaCoefMixin",
+                      "MeanEtaCoefMixin",
+                      "NuEtaCoefMixin"))
+
+
+
 #' An S4 class to specify the trend term in a DLM prior.
 #'
 #' An object of class \code{Trend} is used to specify the

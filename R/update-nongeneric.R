@@ -631,14 +631,13 @@ updateEta <- function(prior, beta, useC = FALSE) {
         .Call(updateEta_R, prior, beta)
     }
     else {
-        P <- prior@P@.Data
-        Z <- prior@Z
+        P <- prior@P@.Data ## number of coefficients, including intercept
+        Z <- prior@Z ## data matrix
         Z <- unname(Z)
-        A.eta.intercept <- prior@AEtaIntercept@.Data
-        A.eta.coef <- prior@AEtaCoef@.Data
-        U.eta.coef <- prior@UEtaCoef@.Data
-        nu.eta.coef <- prior@nuEtaCoef@.Data
-        v <- getV(prior)
+        A.eta.intercept <- prior@AEtaIntercept@.Data ## prior standard deviation of intercept (mean is 0)
+        mean.eta.coef <- prior@meanEtaCoef@.Data ## NEW prior mean of coefficients
+        U.eta.coef <- prior@UEtaCoef@.Data ## prior variance of coefficients
+        v <- getV(prior) ## variance of beta
         U.eta <- c(A.eta.intercept^2, U.eta.coef)
         var.inv <- crossprod(Z, diag(1 / v)) %*% Z + diag(1 / U.eta)
         qr <- qr(var.inv)

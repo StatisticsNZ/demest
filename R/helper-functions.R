@@ -533,6 +533,20 @@ checkNonNegativeNumeric <- function(x, name) {
 
 
 ## NO_TESTS
+checkAndTidyParameterVector <- function(x, name) {
+    ## 'x' has no missing values
+    if (any(is.na(x)))
+        stop(gettextf("'%s' has missing values",
+                      name))
+    ## 'x' is numeric
+    if (!is.numeric(x))
+        stop(gettextf("'%s' is not numeric",
+                      name))
+    x <- as.numeric(x)
+    new("ParameterVector", x)
+}
+
+## NO_TESTS
 checkPositiveInteger <- function(x, name) {
     ## 'x' has length 1
     if (!identical(length(x), 1L))
@@ -680,12 +694,21 @@ checkAndTidyNSeason <- function(n) {
     methods::new("Length", n)
 }
 
+
 ## NO_TESTS
 checkAndTidyNu <- function(x, name) {
     checkPositiveNumeric(x = x, name = name)
     x <- as.double(x)
     methods::new("DegreesFreedom", x)
 }
+
+## NO_TESTS
+checkAndTidyNuVec <- function(x, name) {
+    checkPositiveNumericVector(x = x, name = name)
+    x <- as.double(x)
+    methods::new("DegreesFreedomVector", x)
+}
+
 
 ## NO_TESTS
 checkAndTidyPhi <- function(phi) {
@@ -743,6 +766,18 @@ checkAndTidySpecScale <- function(x, name) {
     methods::new("SpecScale", x)
 }
 
+## NO_TESTS
+checkAndTidySpecScaleVec <- function(x, name) {
+    if (is.null(x))
+        x <- as.double(NA)
+    else {
+        checkPositiveNumericVector(x = x, name = name)
+        x <- as.double(x)
+    }
+    methods::new("SpecScaleVec", x)
+}
+
+
 ## HAS_TESTS
 checkAndTidySeries <- function(series) {
     if (!is.null(series)) {
@@ -761,252 +796,6 @@ checkAndTidySeries <- function(series) {
         methods::new("SpecName", as.character(NA))
 }
 
-## FAKE ######################################################################
-
-## HAS_TESTS
-initialFakeDLMAll <- function(spec, metadata) {
-    along <- spec@along
-    ATau <- spec@ATau
-    nuTau <- spec@nuTau
-    tauMax <- spec@tauMax
-    AAlpha <- spec@AAlpha
-    nuAlpha <- spec@nuAlpha
-    omegaAlphaMax <- spec@omegaAlphaMax
-    phi <- spec@phi
-    phiKnown <- spec@phiKnown@.Data
-    minPhi <- spec@minPhi
-    maxPhi <- spec@maxPhi
-    shape1Phi <- spec@shape1Phi
-    shape2Phi <- spec@shape2Phi
-    l <- makeFakeScale(A = ATau,
-                       nu = nuTau,
-                       scaleMax = tauMax,
-                       functionName = "Error")
-    tau <- l$scale
-    ATau <- l$A
-    tauMax <- l$scaleMax
-    l <- makeFakeScale(A = AAlpha,
-                       nu = nuAlpha,
-                       scaleMax = omegaAlphaMax,
-                       functionName = "Level")
-    omegaAlpha <- l$scale
-    AAlpha <- l$A
-    omegaAlphaMax <- l$scaleMax
-    phi <- makeFakePhi(phi = phi,
-                       phiKnown = phiKnown,
-                       min = minPhi,
-                       max = maxPhi,
-                       shape1 = shape1Phi@.Data,
-                       shape2 <- shape2Phi@.Data)
-    if (is.na(along))
-        along <- NULL
-    iAlong <- dembase::checkAndTidyAlong(along = along,
-                                         metadata = metadata,
-                                         numericDimScales = TRUE)
-    dim <- dim(metadata)
-    J <- makeJPredict(metadata)
-    K <- makeK(dim = dim, iAlong = iAlong)
-    L <- makeL(dim = dim, iAlong = iAlong)
-    dim.alpha.delta <- dim
-    dim.alpha.delta[iAlong] <- dim.alpha.delta[iAlong] + 1L
-    iteratorState <- AlongIterator(dim = dim.alpha.delta,
-                                   iAlong = iAlong)
-    iteratorV <- AlongIterator(dim = dim,
-                               iAlong = iAlong)
-    alphaDLM <- makeStateDLM(K = K,
-                             L = L)
-    list(AAlpha = AAlpha,
-         alphaDLM = alphaDLM,
-         ATau = ATau,
-         iAlong = iAlong,
-         iteratorState = iteratorState,
-         iteratorV = iteratorV,
-         J = J,
-         K = K,
-         L = L,
-         minPhi = minPhi,
-         maxPhi = maxPhi,
-         nuAlpha = nuAlpha,
-         nuTau = nuTau,
-         omegaAlpha = omegaAlpha,
-         omegaAlphaMax = omegaAlphaMax,
-         phi = phi,
-         shape1Phi = shape1Phi,
-         shape2Phi = shape2Phi,
-         tau = tau,
-         tauMax = tauMax)
-}
-
-## HAS_TESTS
-initialFakeDLMWithTrend <- function(spec, metadata) {
-    meanDelta0 <- spec@meanDelta0
-    ADelta0 <- spec@ADelta0@.Data
-    nuDelta <- spec@nuDelta
-    omegaDeltaMax <- spec@omegaDeltaMax
-    ADelta <- spec@ADelta
-    hasLevel <- spec@hasLevel
-    along <- spec@along
-    if (is.na(ADelta0))
-        stop(gettextf("need to specify '%s' in call to function '%s'",
-                      "sd", "Initial"))
-    ADelta0 <- methods::new("Scale", ADelta0)
-    l <- makeFakeScale(A = ADelta,
-                       nu = nuDelta,
-                       scaleMax = omegaDeltaMax,
-                       functionName = "Level")
-    omegaDelta <- l$scale
-    ADelta <- l$A
-    omegaDeltaMax <- l$scaleMax
-    if (is.na(along))
-        along <- NULL
-    iAlong <- dembase::checkAndTidyAlong(along = along,
-                                         metadata = metadata,
-                                         numericDimScales = TRUE)
-    dim <- dim(metadata)
-    K <- makeK(dim = dim,
-               iAlong = iAlong)
-    L <- makeL(dim = dim,
-               iAlong = iAlong)
-    deltaDLM <- makeStateDLM(K = K,
-                             L = L)
-    list(ADelta = ADelta,
-         deltaDLM = deltaDLM,
-         nuDelta = nuDelta,
-         omegaDelta = omegaDelta,
-         omegaDeltaMax = omegaDeltaMax,
-         ADelta0 = ADelta0,
-         meanDelta0 = meanDelta0,
-         hasLevel = hasLevel)
-}
-
-## HAS_TESTS
-makeFakeHyper <- function(priors, margins, metadata, names) {
-    ans <- vector(mode = "list", length = length(priors))
-    for (i in seq_along(priors)) {
-        prior <- priors[[i]]
-        margin <- margins[[i]]
-        is.intercept <- identical(margin, 0L)
-        metadata.i <- if (is.intercept) NULL else metadata[margin]
-        ans[[i]] <- makeFakeOutputPrior(prior,
-                                        metadata = metadata.i)
-    }
-    names(ans) <- names
-    ans
-}
-
-## HAS_TESTS
-makeFakeMargins <- function(namesSpecs, y, call) {
-    names.y <- names(dimnames(y))
-    if (!identical(namesSpecs[1L], "(Intercept)"))
-        stop(gettextf("no prior specified for '%s' in model '%s'",
-                      "(Intercept)", deparse(call[[2L]])))
-    namesSpecs <- namesSpecs[-1L]
-    s <- seq_along(names.y)
-    possible.margins <- sapply(s, function(i) combn(s, i, simplify = FALSE))
-    possible.margins <- unlist(possible.margins, recursive = FALSE)
-    possible.names <- sapply(possible.margins, function(i) paste(names.y[i], collapse = ":"))
-    i.found <- sapply(namesSpecs, match, possible.names, nomatch = 0L)
-    not.found <- i.found == 0L
-    if (any(not.found)) {
-        stop(gettextf("term '%s' from formula '%s' not found in dimensions of '%s'",
-                      namesSpecs[not.found][1L], deparse(call[[2L]]), "templateY"))
-    }
-    ans <- possible.margins[i.found]
-    ans <- c(list(0L), ans)
-    ans
-}
-
-## HAS_TESTS
-makeFakeOutputLevelDLM <- function(prior, metadata) {
-    i.along <- prior@iAlong
-    alpha <- prior@alphaDLM@.Data
-    dim <- dim(metadata)
-    dim.alpha <- replace(dim,
-                         list = i.along,
-                         values = dim[i.along] + 1L)
-    .Data <- array(alpha,
-                   dim = dim.alpha)
-    is.alpha0 <- slice.index(.Data, MARGIN = i.along) == 1L
-    .Data <- .Data[!is.alpha0]
-    .Data <- array(.Data,
-                   dim = dim(metadata),
-                   dimnames = dimnames(metadata))
-    new("Values",
-        .Data = .Data,
-        metadata = metadata)
-}
-
-## HAS_TESTS
-makeFakeOutputTrendDLM <- function(prior, metadata) {
-    i.along <- prior@iAlong
-    delta <- prior@deltaDLM@.Data
-    dim <- dim(metadata)
-    dim.delta <- replace(dim,
-                         list = i.along,
-                         values = dim[i.along] + 1L)
-    .Data <- array(delta,
-                   dim = dim.delta)
-    is.delta0 <- slice.index(.Data, MARGIN = i.along) == 1L
-    .Data <- .Data[!is.delta0]
-    .Data <- array(.Data,
-                   dim = dim(metadata),
-                   dimnames = dimnames(metadata))
-    new("Values",
-        .Data = .Data,
-        metadata = metadata)
-}
-
-## HAS_TESTS
-makeFakePhi <- function(phi, phiKnown, min, max, shape1, shape2) {
-    if (!phiKnown) {
-        phi.transformed <- stats::rbeta(n = 1L,
-                                        shape1 = shape1,
-                                        shape2 = shape2)
-        phi <- phi.transformed * (max - min) + min
-    }
-    phi
-}
-
-## HAS_TESTS
-makeFakePriors <- function(specs, margins, metadata, isSaturated) {
-    ans <- vector(mode = "list", length = length(specs))
-    for (i in seq_along(specs)) {
-        spec <- specs[[i]]
-        margin <- margins[[i]]
-        is.intercept <- identical(margin, 0L)
-        metadata.i <- if (is.intercept) NULL else metadata[margin]
-        is.saturated.i <- isSaturated[i]
-        ans[[i]] <- fakePrior(spec,
-                              metadata = metadata.i,
-                              isSaturated = is.saturated.i)
-    }
-    ans
-}
-
-## HAS_TESTS
-makeFakeScale <- function(A, nu, scaleMax, functionName, scaleName = "scale") {
-    if (is.na(A))
-        stop(gettextf("need to specify scale of half-t distribution for '%s' in call to function '%s'",
-                      "scale", functionName))
-    scaleMax <- makeScaleMax(scaleMax = scaleMax,
-                             A = A,
-                             nu = nu,
-                             isSpec = FALSE)
-    scale <- tryCatch(rhalftTrunc1(df = nu@.Data,
-                                   scale = A@.Data,
-                                   max = scaleMax@.Data,
-                                   useC = TRUE),
-                      error = function(e) e)
-    if (methods::is(scale, "error"))
-        stop(gettextf("problem generating scale parameter within function '%s' : %s",
-                      functionName, scale$message))
-    scale <- methods::new("Scale", scale)
-    A <- methods::new("Scale", A@.Data)
-    list(scale = scale,
-         A = A,
-         scaleMax = scaleMax)
-}
-
 
     
 ## INITIAL VALUES - PRIORS ###################################################        
@@ -1019,13 +808,10 @@ initialCov <- function(object, beta, metadata, sY, allStrucZero) {
     data <- object@data
     formula <- object@formula
     infant <- object@infant
-    multEtaCoef <- object@multEtaCoef
+    meanEtaCoef <- object@meanEtaCoef
     nuEtaCoef <- object@nuEtaCoef
-    AEtaCoef <- makeAHalfT(A = AEtaCoef,
-                           metadata = metadata,
-                           sY = sY,
-                           mult = multEtaCoef)
-    AEtaIntercept <- makeAIntercept(A = AEtaIntercept, sY = sY)
+    AEtaIntercept <- makeAIntercept(A = AEtaIntercept,
+                                    sY = sY)
     Z <- makeZ(formula = formula[-2L],
                data = data,
                metadata = metadata,
@@ -1033,14 +819,35 @@ initialCov <- function(object, beta, metadata, sY, allStrucZero) {
                infant = infant,
                allStrucZero = allStrucZero)
     P <- makeP(Z)
-    UEtaCoef <- makeU(nu = nuEtaCoef, A = AEtaCoef, n = P - 1L)
-    eta <- makeEta(beta = beta, UEtaCoef = UEtaCoef)
+    n <- length(AEtaCoef@.Data)
+    P_minus_1 <- P@.Data - 1L
+    if (n == 1L) {
+        nuEtaCoef@.Data <- rep_len(nuEtaCoef@.Data, length.out = P_minus_1)
+        meanEtaCoef@.Data <- rep_len(meanEtaCoef@.Data, length.out = P_minus_1)
+        AEtaCoef@.Data <- rep_len(AEtaCoef@.Data, length.out = P_minus_1)
+    }
+    else {
+        if (n != P_minus_1) {
+            stop(gettextf("'%s', '%s', and '%s' in prior for coefficients have length %d, but data matrix (minus intercept) has %d columns",
+                          "df", "mean", "scale", n, P@.Data))
+        }
+    }
+    AEtaCoef <- makeAHalfTVec(A = AEtaCoef,
+                              metadata = metadata,
+                              sY = sY,
+                              mult = 1)
+    UEtaCoef <- makeUEtaCoef(nu = nuEtaCoef,
+                             A = AEtaCoef,
+                             n = P_minus_1)
+    eta <- makeEta(beta = beta,
+                   UEtaCoef = UEtaCoef)
     list(AEtaCoef = AEtaCoef,
          AEtaIntercept = AEtaIntercept,
          contrastsArg = contrastsArg,
          eta = eta,
          formula = formula,
          infant = infant,
+         meanEtaCoef = meanEtaCoef,
          nuEtaCoef = nuEtaCoef,
          P = P,
          UEtaCoef = UEtaCoef,
@@ -1889,6 +1696,21 @@ makeAHalfT <- function(A, metadata, sY, mult) {
 }
 
 ## NO_TESTS
+makeAHalfTVec <- function(A, metadata, sY, mult) {
+    ans <- A@.Data
+    d <- length(metadata)
+    for (i in seq_along(ans)) {
+        if (is.na(ans[i])) {
+            ans[i] <- (0.5)^(d - 1L)
+            if (!is.null(sY))
+                ans[i] <- sY * ans[i]
+            ans[i] <- mult * ans[i]
+        }
+    }
+    methods::new("ScaleVec", ans)
+}
+
+## NO_TESTS
 makeAIntercept <- function(A, sY) {
     if (is.na(A)) {
         ans <- 10
@@ -2265,6 +2087,17 @@ makeU <- function(nu, A, n, allStrucZero) {
     ans[allStrucZero] <- 1
     methods::new("VarTDist", ans)
 }
+
+
+## NO_TESTS
+makeUEtaCoef <- function(nu, A, n) {
+    ans <- double(length = n)
+    for (i in seq_len(n))
+        ans[i] <- rinvchisq1(df = nu@.Data[i],
+                             scale = A@.Data[i]^2)
+    methods::new("VarTDist", ans)
+}
+
 
 ## NO_TESTS
 makeMNoTrend <- function(K, m0 = NULL) {
@@ -8478,24 +8311,40 @@ printCMPSpecEqns <- function(object) {
 printCovariatesEqns <- function(object) {
     AEtaIntercept <- object@AEtaIntercept@.Data
     AEtaCoef <- object@AEtaCoef@.Data
+    meanEtaCoef <- object@meanEtaCoef@.Data
     nuEtaCoef <- object@nuEtaCoef@.Data
+    n <- length(nuEtaCoef)
     cat("    covariate[j] ~ (Intercept) + data[j,] * coef\n")
     cat("     (Intercept) ~ N(0, ", squaredOrNA(AEtaIntercept), ")\n", sep = "")
-    cat("         coef[p] ~ t(", nuEtaCoef, ", 0, ", squaredOrNA(AEtaCoef), ")\n",
-        sep = "")
+    if (n == 1L)
+        cat("            coef ~ t(", nuEtaCoef, ", ", meanEtaCoef, ", ", squaredOrNA(AEtaCoef), ")\n",
+            sep = "")
+    else
+        cat("            coef ~ t([", paste(nuEtaCoef, collapse = ","), "], [",
+            paste(meanEtaCoef, collapse = ","), "], [",
+            paste(sapply(AEtaCoef, squaredOrNA), collapse = ","), "])\n",
+            sep = "")
 }
 
 printCovariatesDLMEqns <- function(object, isMain) {
     AEtaIntercept <- object@AEtaIntercept@.Data
     AEtaCoef <- object@AEtaCoef@.Data
+    meanEtaCoef <- object@meanEtaCoef@.Data
     nuEtaCoef <- object@nuEtaCoef@.Data
+        n <- length(nuEtaCoef)
     if (isMain)
         cat("    covariate[j] ~ (Intercept) + data[j,] * coef\n")
     else
         cat("  covariate[k,l] ~ (Intercept) + data[k,l,] * coef\n")
     cat("     (Intercept) ~ N(0, ", squaredOrNA(AEtaIntercept), ")\n", sep = "")
-    cat("         coef[p] ~ t(", nuEtaCoef, ", 0, ", squaredOrNA(AEtaCoef), ")\n",
-        sep = "")
+    if (n == 1L)
+        cat("            coef ~ t(", nuEtaCoef, ", ", meanEtaCoef, ", ", squaredOrNA(AEtaCoef), ")\n",
+            sep = "")
+    else
+        cat("            coef ~ t([", paste(nuEtaCoef, collapse = ","), "], [",
+            paste(meanEtaCoef, collapse = ","), "], [",
+            paste(sapply(AEtaCoef, squaredOrNA), collapse = ","), "])\n",
+            sep = "")
 }
 
 printDLMEqns <- function(object, name, order, hasTrend, hasSeason, hasCovariates) {

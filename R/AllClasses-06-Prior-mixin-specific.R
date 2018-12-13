@@ -86,8 +86,17 @@ setClass("ADelta0Mixin",
          contains = "VIRTUAL")
 
 setClass("AEtaCoefMixin",
-         slots = c(AEtaCoef = "Scale"),
-         contains = "VIRTUAL")
+         slots = c(AEtaCoef = "ScaleVec"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             P <- object@P@.Data
+             AEtaCoef <- object@AEtaCoef
+             ## 'AEtaCoef' has length P-1
+             if (!identical(length(AEtaCoef), P - 1L))
+                 return(gettextf("'%s' does not have length %s-1",
+                                 "AEtaCoef", "P"))
+             TRUE
+         })
 
 setClass("AEtaInterceptMixin",
          slots = c(AEtaIntercept = "Scale"),
@@ -1021,6 +1030,19 @@ setClass("MeanDelta0Mixin",
          prototype = prototype(meanDelta0 = new("Parameter", 0)),
          contains = "VIRTUAL")
 
+setClass("MeanEtaCoefMixin",
+         slots = c(meanEtaCoef = "ParameterVector"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             meanEtaCoef <- object@meanEtaCoef
+             AEtaCoef <- object@AEtaCoef@.Data
+             ## 'meanEtaCoef' has same length as 'AEtaCoef'
+             if (!identical(length(meanEtaCoef), length(AEtaCoef)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "meanEtaCoef", "AEtaCoef"))
+             TRUE
+         })
+
 setClass("MetadataMixin",
          slots = c(metadata = "MetaData"),
          contains = "VIRTUAL")
@@ -1142,8 +1164,17 @@ setClass("NuDeltaMixin",
          contains = "VIRTUAL")
 
 setClass("NuEtaCoefMixin",
-         slots = c(nuEtaCoef = "DegreesFreedom"),
-         contains = "VIRTUAL")
+         slots = c(nuEtaCoef = "DegreesFreedomVector"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             nuEtaCoef <- object@nuEtaCoef
+             AEtaCoef <- object@AEtaCoef@.Data
+             ## 'nuEtaCoef' has same length as 'AEtaCoef'
+             if (!identical(length(nuEtaCoef), length(AEtaCoef)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "nuEtaCoef", "AEtaCoef"))
+             TRUE
+         })
 
 setClass("NuLevelComponentWeightMixMixin",
          slots = c(nuLevelComponentWeightMix = "DegreesFreedom"),
@@ -1537,7 +1568,7 @@ setClass("SpecADelta0Mixin",
          contains = "VIRTUAL")
 
 setClass("SpecAEtaCoefMixin",
-         slots = c(AEtaCoef = "SpecScale"),
+         slots = c(AEtaCoef = "SpecScaleVec"),
          contains = "VIRTUAL")
 
 setClass("SpecAEtaInterceptMixin",

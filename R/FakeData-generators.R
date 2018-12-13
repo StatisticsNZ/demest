@@ -1,218 +1,122 @@
 
 
-setMethod("fakeModel",
-          signature(model = "SpecPoissonVarying",
-                    templateY = "Counts",
-                    exposure = "ANY",
-                    weights = "missing"),
-          function(model, templateY, exposure = NULL,
-                   weights = NULL) {
-              call <- model@call
-              formula <- model@formulaMu
-              use.expose <- model@useExpose@.Data
-              specs.priors <- model@specsPriors
-              names.specs.priors <- model@namesSpecsPriors
-              A.sigma <- model@ASigma
-              nu.sigma <- model@nuSigma
-              sigma.max <- model@sigmaMax
-              lower <- model@lower
-              upper <- model@upper
-              box.cox.param <- model@boxCoxParam
-              max.attempt <- model@maxAttempt
-              n <- length(templateY)
-              dim.y <- dim(templateY)
-              dimnames.y <- dimnames(templateY)
-              metadata.y <- templateY@metadata
-              exposure <- checkAndTidyExposure(exposure = exposure,
-                                               y = templateY)
-              has.exposure <- !is.null(exposure)
-              if (has.exposure && !use.expose)
-                  stop(gettextf("'%s' argument supplied, but model '%s' does not use exposure",
-                                "exposure", deparse(call[[2L]])))
-              if (!has.exposure && use.expose)
-                  stop(gettextf("model '%s' uses exposure, but no '%s' argument supplied",
-                                deparse(call[[2L]]), "exposure"))
-              l <- makeFakeScale(A = A.sigma,
-                                 nu = nu.sigma,
-                                 scaleMax = sigma.max,
-                                 functionName = "Model",
-                                 scaleName = "priorSD")
-              sigma <- l$scale
-              margins <- makeFakeMargins(names = names.specs.priors,
-                                         y = templateY,
-                                         call = call)
-              s <- seq_along(dim.y)
-              is.saturated <- sapply(margins, identical, s)
-              priors.betas <- makeFakePriors(specs = specs.priors,
-                                             margins = margins,
-                                             metadata = metadata.y,
-                                             isSaturated = is.saturated)
-              betas <- lapply(priors.betas, fakeBeta)
-              names(betas) <- names.specs.priors
-              iterator <- makeIteratorBetas(betas = betas,
-                                            namesBetas = names.specs.priors,
-                                            y = templateY)
-              mu <- makeMu(n = n,
-                           betas = betas,
-                           iterator = iterator,
-                           useC = TRUE)
-              has.limits <- (lower > 0) || (upper < Inf)
-              if (has.limits) {
-                  if (box.cox.param > 0) {
-                      lower <- (lower ^ box.cox.param - 1) / box.cox.param
-                      upper <- (upper ^ box.cox.param - 1) / box.cox.param
-                  }
-                  else {
-                      lower <- log(lower)
-                      upper <- log(upper)
-                  }
-                  for (i in seq_len(n)) {
-                      tr.theta <- rtnorm1(mean = mu[i],
-                                          sd = sigma,
-                                          lower = lower,
-                                          upper = upper,
-                                          useC = TRUE)
-                  }
-              }
-              else {
-                  tr.theta <- stats::rnorm(n = n,
-                                           mean = mu,
-                                           sd = sigma)
-              }
-              if (box.cox.param > 0)
-                  theta <- (box.cox.param * tr.theta + 1) ^ (1 / box.cox.param)
-              else
-                  theta <- exp(tr.theta)
-              lambda <- if (is.null(exposure)) theta else exposure * theta
-              .Data.y <- stats::rpois(n = n, lambda = lambda)
-              .Data.y <- array(.Data.y,
-                               dim = dim.y,
-                               dimnames = dimnames.y)
-              y <- methods::new("Counts",
-                                .Data = .Data.y,
-                                metadata = metadata.y)
-              .Data.theta <- array(theta,
-                                   dim = dim.y,
-                                   dimnames = dimnames.y)
-              if (is.null(exposure))
-                  theta <- methods::new("Counts",
-                                        .Data = .Data.theta,
-                                        metadata = metadata.y)
-              else
-                  theta <- methods::new("Values",
-                                        .Data = .Data.theta,
-                                        metadata = metadata.y)
-              likelihood <- list(mean = theta)
-              prior <- c(betas, list(mean = mu), list(sd = sigma))
-              hyper <- makeFakeHyper(priors = priors.betas,
-                                     margins = margins,
-                                     metadata = metadata.y,
-                                     names = names.specs.priors)                              
-              model <- list(likelihood = likelihood,
-                            prior = prior,
-                            hyper = hyper)
-              if (is.null(exposure))
-                  methods::new("FakeModel",
-                               call = call,
-                               y = y,
-                               model = model)
-              else
-                  methods::new("FakeModelExposure",
-                               call = call,
-                               y = y,
-                               exposure = exposure,
-                               model = model)
-          })
-
 
 ## ## HAS_TESTS
 ## setMethod("fakeData",
-##           signature(model = "SpecBinomialVaryingBench",
-##                     templateY = "Counts"),
-##           function(model, intercept, templateY, exposure = NULL, weights = NULL, uniform = TRUE) {
-##               stop(gettext("cannot generate fake data from benchmarked model"))
-##           })
+##           signature(object = "SpecBinomialVarying",
+##                     y = "missing",
+##                     exposure = "Counts",
+##                     weights = "missing"),
+##           function(object, exposure, nIteration) {
+##               call <- object@call
+##               formula.mu <- object@formulaMu
+##               specs.priors <- object@specsPriors
+##               names.specs.priors <- object@namesSpecsPriors
+##               lower <- object@lower
+##               upper <- object@upper
+##               aggregate <- object@aggregate
+##               if (!methods::is(aggregate, "SpecAgPlaceholder"))
+##                   stop(gettextf("'%s' argument not in call to '%s' when specifying model for fake data",
+##                                 "aggregate", "Model"))
+##               priorSD <- getPriorSD(object)
+              
 
-## ## HAS_TESTS
-## setMethod("fakeData",
-##           signature(model = "SpecPoissonVaryingBench",
-##                     templateY = "Counts"),
-##           function(model, intercept, templateY, exposure = NULL, weights = NULL, uniform = TRUE) {
-##               stop(gettext("cannot generate fake data from benchmarked model"))
-##           })
+##               for (i in seq_len(nIteration)) {
+                  
 
 
-## ## HAS_TESTS
-## setMethod("fakeData",
-##           signature(model = "SpecBinomialVarying",
-##                     templateY = "Counts"),
-##           function(model, intercept, templateY, exposure = NULL, weights = NULL, uniform = TRUE) {
-##               call <- model@call
-##               formula <- model@formulaMu
-##               spec.priors <- model@priorsBetas
-##               names.spec.priors <- model@namesPriorsBetas
-##               df.prior.sigma <- model@dfPriorSigma
-##               scale.prior.sigma <- model@scalePriorSigma
-##               lower <- model@lower
-##               upper <- model@upper
-##               max.attempt <- model@maxAttempt
-##               n <- length(templateY)
-##               dim.y <- dim(templateY)
-##               dimnames.y <- dimnames(templateY)
-##               metadata.y <- templateY@metadata
-##               if (is.null(exposure))
-##                   stop(gettextf("'%s' cannot be %s in a binomial model",
-##                                 "exposure", "NULL"))
-##               exposure <- checkAndTidyExposure(exposure = exposure, y = templateY)
-##               if (!isTRUE(all.equal(round(as.numeric(exposure)), as.numeric(exposure))))
-##                   stop(gettextf("'%s' has non-integer values",
-##                                 "exposure"))
-##               if (!is.null(weights))
-##                   warning(gettextf("'%s' argument ignored when distribution is %s",
-##                                    "weights", "Binomial"))
-##               betas <- makeFakeBetas(y = templateY,
-##                                      formula = formula,
-##                                      specPriors = spec.priors,
-##                                      namesSpecPriors = names.spec.priors,
-##                                      intercept = intercept)
-##               zetas <- rep(1, times = length(betas))
-##               sigma <- makeFakeSigma(dfPriorSigma = df.prior.sigma,
-##                                      scalePriorSigma = scale.prior.sigma)
-##               names.betas <- c("(Intercept)", names.spec.priors)
-##               iterator <- makeIteratorBetas(betas = betas, namesBetas = names.betas, y = templateY)
-##               mu <- makeMu(n = n,
-##                            betas = betas,
-##                            zetas = zetas,
-##                            iterator = iterator,
-##                            useC = TRUE)
-##               has.limits <- (lower > 0) || (upper < 1)
-##               if (has.limits) {
-##                   lower <- log(lower / (1 - lower))
-##                   upper <- log(upper / (1 - upper))
-##                   logit.theta <- rnormTruncated(n = n,
-##                                                 mean = mu,
-##                                                 sd = sigma,
-##                                                 lower = lower,
-##                                                 upper = upper,
-##                                                 maxAttempt = max.attempt,
-##                                                 uniform = uniform,
-##                                                 useC = TRUE)
 ##               }
+
+
+              
+##               checkTermsFromFormulaFound(y = exposure, formula = formula.mu)
+##               checkLengthDimInFormula(y = exposure, formula = formula.mu)
+##               metadata <- exposure@metadata
+##               dim <- dim(exposure)
+
+
+
+
+##               theta <- stats::rbeta(n = length(y),
+##                                     shape1 = m * (nu / sigma^2 - 1) + y.tmp,
+##                                     shape2 = (1 - m) * (nu / sigma^2 - 1) + exposure.tmp - y.tmp)
+##               ## need to avoid having all 'theta' equalling lower or upper bound
+##               is.too.low <- theta < lower
+##               n.too.low <- sum(is.too.low)
+##               width <- 0.2 * (upper - lower)
+##               if (is.infinite(width))
+##                   width <- 100
+##               theta[is.too.low] <- stats::runif(n = n.too.low, min = lower, max = lower + width)
+##               is.too.high <- theta > upper
+##               n.too.high <- sum(is.too.high)
+##               theta[is.too.high] <- stats::runif(n = n.too.high, min = upper - width, max = upper)
+##               lower <- log(lower / (1 - lower))
+##               upper <- log(upper / (1 - upper))
+##               if (any(!is.na(y)))
+##                   scale.theta.multiplier <- median(sqrt(((exposure + 0.5) * (y + 0.5)) / (exposure - y + 0.5)),
+##                                                    na.rm = TRUE)
 ##               else
-##                   logit.theta <- stats::rnorm(n = n, mean = mu, sd = sigma)
-##               theta <- exp(logit.theta) / (1 + exp(logit.theta))
-##               .Data.y <- stats::rbinom(n = n, size = exposure, prob = theta)
-##               .Data.y <- array(.Data.y, dim = dim.y, dimnames = dimnames.y)
-##               y <- methods::new("Counts", .Data = .Data.y, metadata = metadata.y)
-##               .Data.theta <- array(theta, dim = dim.y, dimnames = dimnames.y)
-##               theta <- methods::new("Values", .Data = .Data.theta, metadata = metadata.y)
-##               likelihood <- list(prob = theta)
-##               betas <- makeFakeBetasOutput(betas = betas,
-##                                            namesBetas = names.betas,
-##                                            y = y)
-##               prior <- list(param = betas, sd = sigma)
-##               model <- list(likelihood = likelihood, prior = prior)
-##               methods::new("FakeDataExposure", call = call, y = y, exposure = exposure, model = model)
+##                   scale.theta.multiplier <- 1
+##               scale.theta.multiplier <- methods::new("Scale", scale.theta.multiplier)
+##               theta <- array(theta, dim = dim(y), dimnames = dimnames(y))
+##               logit.theta <- log(theta / (1 - theta))
+##               betas <- makeLinearBetas(theta = logit.theta, formula = formula.mu)
+##               theta <- as.numeric(theta)
+##               names.betas <- names(betas)
+##               margins <- makeMargins(betas = betas, y = y)
+##               struc.zero.array <- makeStrucZeroArray(structuralZeros = NULL,
+##                                                      y = y) 
+##               priors.betas <- makePriors(betas = betas,
+##                                          specs = specs.priors,
+##                                          namesSpecs = names.specs.priors,
+##                                          margins = margins,
+##                                          y = y,
+##                                          sY = NULL,
+##                                          strucZeroArray = struc.zero.array)
+##               is.saturated <- sapply(priors.betas, function(x) x@isSaturated@.Data)
+##               if (any(is.saturated)) {
+##                   i.saturated <- which(is.saturated)
+##                   prior.saturated <- priors.betas[[i.saturated]]
+##                   A.sigma <- prior.saturated@ATau
+##                   nu.sigma <- prior.saturated@nuTau
+##                   sigma.max <- prior.saturated@tauMax
+##                   sigma <- prior.saturated@tau
+##               }
+##               betas <- unname(lapply(betas, as.numeric))
+##               betas <- jitterBetas(betas = betas, priorsBetas = priors.betas)
+##               iterator.betas <- BetaIterator(dim = dim, margins = margins)
+##               dims <- makeDims(dim = dim, margins = margins)
+##               cellInLik <- rep(TRUE, times = length(theta))
+##               model <- methods::new("BinomialVarying",
+##                                     call = call,
+##                                     theta = theta,
+##                                     metadataY = metadataY,
+##                                     cellInLik = cellInLik,
+##                                     scaleTheta = scale.theta,
+##                                     scaleThetaMultiplier = scale.theta.multiplier,
+##                                     nAcceptTheta = methods::new("Counter", 0L),
+##                                     nFailedPropTheta = methods::new("Counter", 0L),
+##                                     sigma = sigma,
+##                                     sigmaMax = sigma.max,
+##                                     lower = lower,
+##                                     upper = upper,
+##                                     tolerance = tolerance,
+##                                     maxAttempt = max.attempt,
+##                                     ASigma = A.sigma,
+##                                     nuSigma = nu.sigma,
+##                                     betas = betas,
+##                                     priorsBetas = priors.betas,
+##                                     namesBetas = names.betas,
+##                                     margins = margins,
+##                                     iteratorBetas = iterator.betas,
+##                                     dims = dims)
+##               default.weights <- exposure
+##               model <- addAg(model = model,
+##                              aggregate = aggregate,
+##                              defaultWeights = default.weights)
+##               model <- makeCellInLik(model = model,
+##                                      y = y)
+##               model
 ##           })
 
 ## ## NO_TESTS

@@ -2,46 +2,6 @@
 
 ## HAS_TESTS
 setMethod("fakePrior",
-          signature(object = "SpecExchFixed",
-                    metadata = "MetaData"),
-          function(object, metadata, isSaturated) {
-              mean <- object@mean
-              tau <- object@tau@.Data
-              if (is.na(tau))
-                  stop(gettextf("need to specify '%s' in call to function '%s'",
-                                "sd", "ExchFixed"))
-              tau <- methods::new("Scale", tau)
-              J <- makeJPredict(metadata)
-              isSaturated <- new("LogicalFlag", isSaturated)
-              methods::new("FakeExchFixed",
-                           isSaturated = isSaturated,
-                           J = J,
-                           mean = mean,
-                           tau = tau)
-          })
-
-## NO_TESTS
-setMethod("fakePrior",
-          signature(object = "SpecExchFixed",
-                    metadata = "NULL"),
-          function(object, metadata, isSaturated) {
-              mean <- object@mean
-              tau <- object@tau@.Data
-              if (is.na(tau))
-                  stop(gettextf("need to specify '%s' in call to function '%s'",
-                                "sd", "ExchFixed"))
-              tau <- methods::new("Scale", tau)
-              J <- new("Length", 1L)
-              isSaturated <- new("LogicalFlag", isSaturated)
-              methods::new("FakeExchFixed",
-                           isSaturated = isSaturated,
-                           J = J,
-                           mean = mean,
-                           tau = tau)
-          })
-
-## HAS_TESTS
-setMethod("fakePrior",
           signature(object = "SpecExchNormZero",
                     metadata = "MetaData"),
           function(object, metadata, isSaturated) {
