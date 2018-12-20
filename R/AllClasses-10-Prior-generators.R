@@ -21,10 +21,12 @@ setClass("Classes",
 #' documentation for \code{\link[stats]{model.matrix}}.
 #' @slot AEtaIntercept Scale parameter for the normal
 #' prior for the intercept.
+#' @slot multEtaIntercept Multiplier for \code{AEtaIntercept}.
 #' @slot nuEtaCoef Degrees of freedom for the t priors
 #' for the coefficients.
 #' @slot AEtaCoef Scale parameter for the t priors
 #' for the coefficients.
+#' @slot multEtaIntercept Multiplier for \code{AEtaCoef}.
 #'
 #' @seealso Objects of class \code{Covariates} are created
 #' by a call to function \code{\link{Covariates}}.
@@ -269,7 +271,8 @@ setClass("Season",
 #' the API of the package, and may change in future.
 #'
 #' @slot nuEtaCoef Degrees of freedom
-#' @slot meanEtaCof Means
+#' @slot meanEtaCoef Means
+#' @slot multEtaCoef Multipliers
 #' @slot AEtaCoef Scales
 #'
 #' @seealso Objects of class \code{TDist} are created
@@ -278,6 +281,7 @@ setClass("Season",
 setClass("TDist",
          contains = c("SpecAEtaCoefMixin",
                       "MeanEtaCoefMixin",
+                      "MultEtaCoefMixin",
                       "NuEtaCoefMixin"))
 
 

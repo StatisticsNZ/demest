@@ -2,79 +2,392 @@
 
 ## checkPriorIsInformative ###########################################################
 
-
-setGeneric("checkPriorIsInformative",
-           function(object)
-               standardGeneric("checkPriorIsInformative"))
-
-
-checkPriorInform_multTau <- function(object, nameArg, nameFun) {
-    multTau <- object@multTau@.Data
-    if (!identical(multTau, 1))
-        stop(gettextf("'%s' argument not allowed in call to '%s' when specifying model for fake data",
-                      nameArg, nameFun))
-    NULL
-}
-
-
-checkPriorInform_tau <- function(object, nameArg, nameFun) {
-    tau <- object@tau@.Data
-    if (is.na(tau))
-        stop(gettextf("'%s' argument required in call to '%s' when specifying model for fake data",
-                      nameArg, nameFun))
-    NULL
-}
-
-checkPriorInform_ATau <- function(object, nameArg, nameFun) {
-    ATau <- object@ATau@.Data
-    if (is.na(ATau))
-        stop(gettextf("'%s' argument required in call to '%s' when specifying model for fake data",
-                      nameArg, nameFun))
-    NULL
-}
-
-
-
-
+## HAS_TESTS
 setMethod("checkPriorIsInformative",
           signature(object = "SpecExchFixed"),
           function(object) {
-              checkPriorInform_multTau(object = object,
-                                       nameArg = "mult",
-                                       nameFun = "ExchFixed")
-              checkPriorInform_tau(object = object,
-                                   nameArg = "sd",
-                                   nameFun = "ExchFixed")
+              checkPriorInform_ExchFixed(object)
           })
 
-
+## HAS_TESTS
 setMethod("checkPriorIsInformative",
-          signature(object = "SpecExch"),
+          signature(object = "SpecExchNormZero"),
           function(object) {
-              checkPriorInform_multTau(object = object,
-                                       nameArg = "mult",
-                                       nameFun = "HalfT")
-              checkPriorInform_Atau(object = object,
-                                    nameArg = "scale",
-                                    nameFun = "HalfT")
+              value <- checkPriorInform_Error(object)
+              if (!is.null(value))
+                  return(gettextf("%s in call to '%s'",
+                                  value, "Exch"))
+              NULL
           })
 
-
+## HAS_TESTS
 setMethod("checkPriorIsInformative",
           signature(object = "SpecExchRobustZero"),
           function(object) {
-              checkPriorInform_multTau(object = object,
-                                       nameArg = "mult",
-                                       nameFun = "HalfT")
-              checkPriorInform_Atau(object = object,
-                                    nameArg = "scale",
-                                    nameFun = "HalfT")
+              value <- checkPriorInform_Error(object)
+              if (!is.null(value))
+                  return(gettextf("%s in call to '%s'",
+                                  value, "Exch"))
+              NULL
           })
+
+## HAS_TESTS
+setMethod("checkPriorIsInformative",
+          signature(object = "SpecExchNormCov"),
+          function(object) {
+              value.covariates <- checkPriorInform_Covariates(object)
+              value.error <- checkPriorInform_Error(object)
+              for (value in list(value.covariates, value.error)) {
+                  if (!is.null(value))
+                      return(gettextf("%s in call to '%s'",
+                                      value, "Exch"))
+              }
+              NULL
+          })
+
+## HAS_TESTS
+setMethod("checkPriorIsInformative",
+          signature(object = "SpecExchRobustCov"),
+          function(object) {
+              value.covariates <- checkPriorInform_Covariates(object)
+              value.error <- checkPriorInform_Error(object)
+              for (value in list(value.covariates, value.error)) {
+                  if (!is.null(value))
+                      return(gettextf("%s in call to '%s'",
+                                      value, "Exch"))
+              }
+              NULL
+          })
+
+## HAS_TESTS
+setMethod("checkPriorIsInformative",
+          signature(object = "SpecDLMNoTrendNormZeroNoSeason"),
+          function(object) {
+              value.level <- checkPriorInform_Level(object)              
+              value.error <- checkPriorInform_Error(object)
+              for (value in list(value.level, value.error)) {
+                  if (!is.null(value))
+                      return(gettextf("%s in call to '%s'",
+                                      value, "DLM"))
+              }
+              NULL
+          })
+
+## HAS_TESTS
+setMethod("checkPriorIsInformative",
+          signature(object = "SpecDLMWithTrendNormZeroNoSeason"),
+          function(object) {
+              has.level <- object@hasLevel@.Data
+              if (has.level)
+                  value.level <- checkPriorInform_Level(object)
+              else
+                  value.level <- NULL
+              value.trend <- checkPriorInform_Trend(object)
+              value.error <- checkPriorInform_Error(object)
+              for (value in list(value.level, value.trend, value.error)) {
+                  if (!is.null(value))
+                      return(gettextf("%s in call to '%s'",
+                                      value, "DLM"))
+              }
+              NULL
+          })
+
+## HAS_TESTS
+setMethod("checkPriorIsInformative",
+          signature(object = "SpecDLMNoTrendNormZeroWithSeason"),
+          function(object) {
+              value.level <- checkPriorInform_Level(object)
+              value.season <- checkPriorInform_Season(object)
+              value.error <- checkPriorInform_Error(object)
+              for (value in list(value.level, value.season, value.error)) {
+                  if (!is.null(value))
+                      return(gettextf("%s in call to '%s'",
+                                      value, "DLM"))
+              }
+              NULL
+          })
+
+## HAS_TESTS
+setMethod("checkPriorIsInformative",
+          signature(object = "SpecDLMWithTrendNormZeroWithSeason"),
+          function(object) {
+              has.level <- object@hasLevel@.Data
+              if (has.level)
+                  value.level <- checkPriorInform_Level(object)
+              else
+                  value.level <- NULL
+              value.trend <- checkPriorInform_Trend(object)
+              value.season <- checkPriorInform_Season(object)
+              value.error <- checkPriorInform_Error(object)
+              for (value in list(value.level, value.trend,
+                                 value.season, value.error)) {
+                  if (!is.null(value))
+                      return(gettextf("%s in call to '%s'",
+                                      value, "DLM"))
+              }
+              NULL
+          })
+
+## HAS_TESTS
+setMethod("checkPriorIsInformative",
+          signature(object = "SpecDLMNoTrendNormCovNoSeason"),
+          function(object) {
+              value.level <- checkPriorInform_Level(object)              
+              value.covariates <- checkPriorInform_Covariates(object)
+              value.error <- checkPriorInform_Error(object)
+              for (value in list(value.level, value.covariates, value.error)) {
+                  if (!is.null(value))
+                      return(gettextf("%s in call to '%s'",
+                                      value, "DLM"))
+              }
+              NULL
+          })
+
+## HAS_TESTS
+setMethod("checkPriorIsInformative",
+          signature(object = "SpecDLMWithTrendNormCovNoSeason"),
+          function(object) {
+              has.level <- object@hasLevel@.Data
+              if (has.level)
+                  value.level <- checkPriorInform_Level(object)
+              else
+                  value.level <- NULL
+              value.trend <- checkPriorInform_Trend(object)
+              value.covariates <- checkPriorInform_Covariates(object)
+              value.error <- checkPriorInform_Error(object)
+              for (value in list(value.level, value.trend,
+                                 value.covariates, value.error)) {
+                  if (!is.null(value))
+                      return(gettextf("%s in call to '%s'",
+                                      value, "DLM"))
+              }
+              NULL
+          })
+
+## HAS_TESTS
+setMethod("checkPriorIsInformative",
+          signature(object = "SpecDLMNoTrendNormCovWithSeason"),
+          function(object) {
+              value.level <- checkPriorInform_Level(object)
+              value.covariates <- checkPriorInform_Covariates(object)
+              value.season <- checkPriorInform_Season(object)
+              value.error <- checkPriorInform_Error(object)
+              for (value in list(value.level, value.season,
+                                 value.covariates, value.error)) {
+                  if (!is.null(value))
+                      return(gettextf("%s in call to '%s'",
+                                      value, "DLM"))
+              }
+              NULL
+          })
+
+## HAS_TESTS
+setMethod("checkPriorIsInformative",
+          signature(object = "SpecDLMWithTrendNormCovWithSeason"),
+          function(object) {
+              has.level <- object@hasLevel@.Data
+              if (has.level)
+                  value.level <- checkPriorInform_Level(object)
+              else
+                  value.level <- NULL
+              value.trend <- checkPriorInform_Trend(object)
+              value.covariates <- checkPriorInform_Covariates(object)
+              value.season <- checkPriorInform_Season(object)
+              value.error <- checkPriorInform_Error(object)
+              for (value in list(value.level, value.trend, value.covariates,
+                                 value.season, value.error)) {
+                  if (!is.null(value))
+                      return(gettextf("%s in call to '%s'",
+                                      value, "DLM"))
+              }
+              NULL
+          })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## HAS_TESTS
+setMethod("checkPriorIsInformative",
+          signature(object = "SpecDLMNoTrendRobustZeroNoSeason"),
+          function(object) {
+              value.level <- checkPriorInform_Level(object)              
+              value.error <- checkPriorInform_Error(object)
+              for (value in list(value.level, value.error)) {
+                  if (!is.null(value))
+                      return(gettextf("%s in call to '%s'",
+                                      value, "DLM"))
+              }
+              NULL
+          })
+
+## HAS_TESTS
+setMethod("checkPriorIsInformative",
+          signature(object = "SpecDLMWithTrendRobustZeroNoSeason"),
+          function(object) {
+              has.level <- object@hasLevel@.Data
+              if (has.level)
+                  value.level <- checkPriorInform_Level(object)
+              else
+                  value.level <- NULL
+              value.trend <- checkPriorInform_Trend(object)
+              value.error <- checkPriorInform_Error(object)
+              for (value in list(value.level, value.trend, value.error)) {
+                  if (!is.null(value))
+                      return(gettextf("%s in call to '%s'",
+                                      value, "DLM"))
+              }
+              NULL
+          })
+
+## HAS_TESTS
+setMethod("checkPriorIsInformative",
+          signature(object = "SpecDLMNoTrendRobustZeroWithSeason"),
+          function(object) {
+              value.level <- checkPriorInform_Level(object)
+              value.season <- checkPriorInform_Season(object)
+              value.error <- checkPriorInform_Error(object)
+              for (value in list(value.level, value.season, value.error)) {
+                  if (!is.null(value))
+                      return(gettextf("%s in call to '%s'",
+                                      value, "DLM"))
+              }
+              NULL
+          })
+
+## HAS_TESTS
+setMethod("checkPriorIsInformative",
+          signature(object = "SpecDLMWithTrendRobustZeroWithSeason"),
+          function(object) {
+              has.level <- object@hasLevel@.Data
+              if (has.level)
+                  value.level <- checkPriorInform_Level(object)
+              else
+                  value.level <- NULL
+              value.trend <- checkPriorInform_Trend(object)
+              value.season <- checkPriorInform_Season(object)
+              value.error <- checkPriorInform_Error(object)
+              for (value in list(value.level, value.trend,
+                                 value.season, value.error)) {
+                  if (!is.null(value))
+                      return(gettextf("%s in call to '%s'",
+                                      value, "DLM"))
+              }
+              NULL
+          })
+
+## HAS_TESTS
+setMethod("checkPriorIsInformative",
+          signature(object = "SpecDLMNoTrendRobustCovNoSeason"),
+          function(object) {
+              value.level <- checkPriorInform_Level(object)              
+              value.covariates <- checkPriorInform_Covariates(object)
+              value.error <- checkPriorInform_Error(object)
+              for (value in list(value.level, value.covariates, value.error)) {
+                  if (!is.null(value))
+                      return(gettextf("%s in call to '%s'",
+                                      value, "DLM"))
+              }
+              NULL
+          })
+
+## HAS_TESTS
+setMethod("checkPriorIsInformative",
+          signature(object = "SpecDLMWithTrendRobustCovNoSeason"),
+          function(object) {
+              has.level <- object@hasLevel@.Data
+              if (has.level)
+                  value.level <- checkPriorInform_Level(object)
+              else
+                  value.level <- NULL
+              value.trend <- checkPriorInform_Trend(object)
+              value.covariates <- checkPriorInform_Covariates(object)
+              value.error <- checkPriorInform_Error(object)
+              for (value in list(value.level, value.trend,
+                                 value.covariates, value.error)) {
+                  if (!is.null(value))
+                      return(gettextf("%s in call to '%s'",
+                                      value, "DLM"))
+              }
+              NULL
+          })
+
+## HAS_TESTS
+setMethod("checkPriorIsInformative",
+          signature(object = "SpecDLMNoTrendRobustCovWithSeason"),
+          function(object) {
+              value.level <- checkPriorInform_Level(object)
+              value.covariates <- checkPriorInform_Covariates(object)
+              value.season <- checkPriorInform_Season(object)
+              value.error <- checkPriorInform_Error(object)
+              for (value in list(value.level, value.season,
+                                 value.covariates, value.error)) {
+                  if (!is.null(value))
+                      return(gettextf("%s in call to '%s'",
+                                      value, "DLM"))
+              }
+              NULL
+          })
+
+## HAS_TESTS
+setMethod("checkPriorIsInformative",
+          signature(object = "SpecDLMWithTrendRobustCovWithSeason"),
+          function(object) {
+              has.level <- object@hasLevel@.Data
+              if (has.level)
+                  value.level <- checkPriorInform_Level(object)
+              else
+                  value.level <- NULL
+              value.trend <- checkPriorInform_Trend(object)
+              value.covariates <- checkPriorInform_Covariates(object)
+              value.season <- checkPriorInform_Season(object)
+              value.error <- checkPriorInform_Error(object)
+              for (value in list(value.level, value.trend, value.covariates,
+                                 value.season, value.error)) {
+                  if (!is.null(value))
+                      return(gettextf("%s in call to '%s'",
+                                      value, "DLM"))
+              }
+              NULL
+          })
+
+## HAS_TESTS
+setMethod("checkPriorIsInformative",
+          signature(object = "SpecKnown"),
+          function(object) {
+              NULL
+          })
+
+## HAS_TESTS
+setMethod("checkPriorIsInformative",
+          signature(object = "SpecZero"),
+          function(object) {
+              NULL
+          })
+
+
+
+
+
+
 
 
 
 
 ## printPriorEqns ####################################################################
+
 
 
 setMethod("printPriorEqns",

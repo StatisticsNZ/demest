@@ -18,10 +18,10 @@ updateAccount(SEXP object_R)
         if(generatedNewProposal) {
             double diffLogLik = diffLogLikAccount(object_R);
             
-            if( R_finite(diffLogLik) ) {
+            if( R_finite(diffLogLik) || (diffLogLik > 0) ) {
                 double diffLogDens = diffLogDensAccount(object_R);
                 
-                if( R_finite(diffLogDens) ) {
+                if( R_finite(diffLogDens) || (diffLogLik > 0) ) {
                     double log_r = diffLogLik + diffLogDens;
                     
                     int accept = ( log_r > 0 ) || ( runif(0,1) < exp(log_r) );

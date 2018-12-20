@@ -1,5 +1,4 @@
 
-
 getPriorSD <- function(spec) {
     if (!methods::is(spec, "SpecVarying"))
     i.prior.sd <- match("priorSD", names(spec@call), nomatch = 0L)
@@ -23,14 +22,23 @@ getPriorSD <- function(spec) {
 
 
 
-fakeModel <- function(model, y = NULL, exposure = NULL, weights = NULL,
-                      filename = NULL, nIteration = 100, verbose = TRUE) {
+fakeModel <- function(model, y, exposure = NULL, weights = NULL,
+                      filename = NULL, nBurnin = 0, nSim = 25,
+                      nChain = 4, nThin = 1, parallel = TRUE, outfile = NULL,
+                      nUpdateMax = 50, verbose = TRUE, useC = TRUE) {
     call <- match.call()
     methods::validObject(model)
+    mcmc.args <- makeMCMCArgs(nBurnin = nBurnin,
+                              nSim = nSim,
+                              nChain = nChain,
+                              nThin = nThin)
     if (is.null(filename))
         filename <- tempfile()
     else
         checkFilename(filename)
+    control.args <- makeControlArgs(call = call,
+                                    parallel = parallel,
+                                    nUpdateMax = nUpdateMax)
     l <- checkFakeYExposureWeights(spec = model,
                                    y = y,
                                    exposure = exposure,
@@ -41,18 +49,63 @@ fakeModel <- function(model, y = NULL, exposure = NULL, weights = NULL,
     checkForSubtotals(object = y,
                       model = model,
                       name = "y")
-    combined <- initialCombinedModel(model,
-                                     y = y,
-                                     exposure = exposure,
-                                     weights = weights)
-    final.combined <- fakeOneChain(filename = filename,
-                                    combined = combined,
-                                   nIteration = nIteration)
-    makeFakeResultsFile(filename = filename
-                        final.combined = final.combined)
+    checkPriorsAreInformative(model)
+    checkAllDimensionsHavePriors(model)
+    combineds <- replicate(n = mcmc.args$nChain,
+                           initialCombinedModel(model,
+                                                y = y,
+                                                exposure = exposure,
+                                                weights = weights))
+    parallel <- control.args$parallel
+    tempfiles <- paste(filename, seq_len(mcmc.args$nChain), sep = "_")
+    MoreArgs <- c(list(seed = NULL),
+                  mcmc.args,
+                  control.args,
+                  list(continuing = FALSE,
+                       useC = useC))
+    if (parallel) {
+        pseed <- sample.int(n = 100000, # so that RNG behaves the same whether or not
+                            size = 1)   # seed has previously been set
+                                        # this must be done BEFORE call to makeCluster!
+        if (is.null(outfile)) ## passing 'outfile' as an argument always causes redirection
+            cl <- parallel::makeCluster(getOption("cl.cores",
+                                                  default = mcmc.args$nChain))
+        else
+            cl <- parallel::makeCluster(getOption("cl.cores",
+                                                  default = mcmc.args$nChain),
+                                        outfile = outfile)
+        parallel::clusterSetRNGStream(cl,
+                                      iseed = pseed)
+        final.combineds <- parallel::clusterMap(cl = cl,
+                                                fun = estimateOneChain,
+                                                tempfile = tempfiles,
+                                                combined = combineds,
+                                                MoreArgs = MoreArgs,
+                                                SIMPLIFY = FALSE,
+                                                USE.NAMES = FALSE)
+        seed <- parallel::clusterCall(cl, function() .Random.seed)
+        parallel::stopCluster(cl)
+    }
+    else {
+        final.combineds <- mapply(estimateOneChain,
+                                  tempfile = tempfiles,
+                                  combined = combineds,
+                                  MoreArgs = MoreArgs,
+                                  SIMPLIFY = FALSE,
+                                  USE.NAMES = FALSE)
+        seed <- list(.Random.seed)
+    }
+    control.args$lengthIter <- length(extractValues(final.combineds[[1L]]))
+    results <- makeResultsModelEst(finalCombineds = final.combineds,
+                                   mcmcArgs = mcmc.args,
+                                   controlArgs = control.args,
+                                   seed = seed)
+    makeResultsFile(filename = filename,
+                    results = results,
+                    tempfiles = tempfiles)
     rescaleInFile(filename)
-    finaleMessage(filename = filename,
-                  verbose = verbose)
+    finalMessage(filename = filename,
+                 verbose = verbose)
 }
 
 

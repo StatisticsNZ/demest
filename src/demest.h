@@ -250,6 +250,7 @@ SEXP
   AEtaIntercept_sym,
   AEtaCoef_sym,
   nuEtaCoef_sym,
+  meanEtaCoef_sym,
   UEtaCoef_sym,
   nSeason_sym,
   ASeason_sym,

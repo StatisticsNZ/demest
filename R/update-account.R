@@ -79,9 +79,9 @@ updateAccount <- function(object, useC = FALSE) {
             generated.new.proposal <- object@generatedNewProposal@.Data
             if (generated.new.proposal) {
                 diff.log.lik <- diffLogLikAccount(object)
-                if (is.finite(diff.log.lik)) {
+                if (is.finite(diff.log.lik) || (diff.log.lik > 0)) {
                     diff.log.dens <- diffLogDensAccount(object)
-                    if (is.finite(diff.log.dens)) {
+                    if (is.finite(diff.log.dens) || (diff.log.lik > 0)) {
                         log.r <- diff.log.lik + diff.log.dens
                         accept <- (log.r > 0) || (runif(n = 1L) < exp(log.r))
                         if (accept)

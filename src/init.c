@@ -2807,6 +2807,7 @@ R_init_demest(DllInfo *info)
   ADD_SYM(P);
   ADD_SYM(AEtaIntercept);
   ADD_SYM(AEtaCoef);
+  ADD_SYM(meanEtaCoef);
   ADD_SYM(UEtaCoef);
   ADD_SYM(nuEtaCoef);
   ADD_SYM(nSeason);

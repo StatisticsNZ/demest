@@ -6,6 +6,172 @@ test.identity <- FALSE
 test.extended <- FALSE
 
 
+test_that("checkPriorInform_prohibited works", {
+    checkPriorInform_prohibited <- demest:::checkPriorInform_prohibited
+    object <- ExchFixed()
+    expect_identical(checkPriorInform_prohibited(object = object,
+                                                 nameSlot = "multTau",
+                                                 nameArg = "mult",
+                                                 nameFun = "ExchFixed"),
+                     NULL)
+    object <- ExchFixed(mult = 3)
+    expect_identical(checkPriorInform_prohibited(object = object,
+                                                 nameSlot = "multTau",
+                                                 nameArg = "mult",
+                                                 nameFun = "ExchFixed"),
+                     "value for 'mult' supplied in call to 'ExchFixed'")                 
+})
+
+test_that("checkPriorInform_required works", {
+    checkPriorInform_required <- demest:::checkPriorInform_required
+    object <- ExchFixed(sd = 3)
+    expect_identical(checkPriorInform_required(object = object,
+                                               nameSlot = "tau",
+                                               nameArg = "sd",
+                                               nameFun = "ExchFixed"),
+                     NULL)
+    object <- ExchFixed()
+    expect_identical(checkPriorInform_required(object = object,
+                                               nameSlot = "tau",
+                                               nameArg = "sd",
+                                               nameFun = "ExchFixed"),
+                     "value for 'sd' not supplied in call to 'ExchFixed'")                 
+})
+
+test_that("checkPriorInform_ExchFixed works", {
+    checkPriorInform_ExchFixed <- demest:::checkPriorInform_ExchFixed
+    object <- ExchFixed(sd = 3)
+    expect_identical(checkPriorInform_ExchFixed(object = object),
+                     NULL)
+    object <- ExchFixed(mult = 3)
+    expect_identical(checkPriorInform_ExchFixed(object = object),
+                     "value for 'mult' supplied in call to 'ExchFixed'")                 
+    object <- ExchFixed()
+    expect_identical(checkPriorInform_ExchFixed(object = object),
+                     "value for 'sd' not supplied in call to 'ExchFixed'")                 
+})
+
+test_that("checkPriorInform_Error works", {
+    checkPriorInform_Error <- demest:::checkPriorInform_Error
+    object <- Exch(error = Error(scale = HalfT(scale = 0.2)))
+    expect_identical(checkPriorInform_Error(object = object),
+                     NULL)
+    object <- Exch(error = Error(scale = HalfT(mult = 3)))
+    expect_identical(checkPriorInform_Error(object = object),
+                     "value for 'mult' supplied in call to 'HalfT' when specifying 'error'")                 
+    object <- Exch()
+    expect_identical(checkPriorInform_Error(object = object),
+                     "value for 'scale' not supplied in call to 'HalfT' when specifying 'error'")
+})
+
+test_that("checkPriorInform_Covariates works", {
+    checkPriorInform_Covariates <- demest:::checkPriorInform_Covariates
+    data <- data.frame(region = letters[1:10],
+                       income = rnorm(10))
+    object <- Exch(covariates = Covariates(mean ~ income,
+                                           data = data,
+                                           intercept = Norm(sd = 10),
+                                           coef = TDist(scale = c(0.4, 0.3))))
+    expect_identical(checkPriorInform_Covariates(object = object),
+                     NULL)
+    object <- Exch(covariates = Covariates(mean ~ income,
+                                           data = data,
+                                           intercept = Norm(),
+                                           coef = TDist(scale = 0.4)))
+    expect_identical(checkPriorInform_Covariates(object = object),
+                     "value for 'sd' not supplied in call to 'Norm' when specifying 'covariates'")
+    object <- Exch(covariates = Covariates(mean ~ income,
+                                           data = data,
+                                           intercept = Norm(sd = 3),
+                                           coef = TDist()))
+    expect_identical(checkPriorInform_Covariates(object = object),
+                     "value for 'scale' not supplied in call to 'TDist' when specifying 'covariates'")
+})
+
+test_that("checkPriorInform_Level works", {
+    checkPriorInform_Level <- demest:::checkPriorInform_Level
+    object <- DLM(level = Level(scale = HalfT(scale = 0.02)))
+    expect_identical(checkPriorInform_Level(object = object),
+                     NULL)
+    object <- DLM(level = Level(scale = HalfT(mult = 3)))
+    expect_identical(checkPriorInform_Level(object = object),
+                     "value for 'mult' supplied in call to 'HalfT' when specifying 'level'")
+    object <- DLM()
+    expect_identical(checkPriorInform_Level(object = object),
+                     "value for 'scale' not supplied in call to 'HalfT' when specifying 'level'")
+})
+
+
+test_that("checkPriorInform_Trend works", {
+    checkPriorInform_Trend <- demest:::checkPriorInform_Trend
+    object <- DLM(trend = Trend(initial = Initial(sd = 0.01),
+                                scale = HalfT(scale = 0.4)))
+    expect_identical(checkPriorInform_Trend(object = object),
+                     NULL)
+    object <- DLM(trend = Trend(initial = Initial(mult = 3),
+                                scale = HalfT(scale = 0.4)))
+    expect_identical(checkPriorInform_Trend(object = object),
+                     "value for 'mult' supplied in call to 'Initial' when specifying 'trend'")
+    object <- DLM(trend = Trend(scale = HalfT(scale = 0.4)))
+    expect_identical(checkPriorInform_Trend(object = object),
+                     "value for 'sd' not supplied in call to 'Initial' when specifying 'trend'")
+    object <- DLM(trend = Trend(initial = Initial(sd = 3),
+                                scale = HalfT(mult = 3)))
+    expect_identical(checkPriorInform_Trend(object = object),
+                     "value for 'mult' supplied in call to 'HalfT' when specifying 'trend'")
+    object <- DLM(trend = Trend(initial = Initial(sd = 3)))
+    expect_identical(checkPriorInform_Trend(object = object),
+                     "value for 'scale' not supplied in call to 'HalfT' when specifying 'trend'")
+})
+
+test_that("checkPriorInform_Season works", {
+    checkPriorInform_Season <- demest:::checkPriorInform_Season
+    object <- DLM(season = Season(n = 4, scale = HalfT(scale = 0.4)))
+    expect_identical(checkPriorInform_Season(object = object),
+                     NULL)
+    object <- DLM(season = Season(n = 4, scale = HalfT(mult = 3)))
+    expect_identical(checkPriorInform_Season(object = object),
+                     "value for 'mult' supplied in call to 'HalfT' when specifying 'season'")
+    object <- DLM(season = Season(n = 3))
+    expect_identical(checkPriorInform_Season(object = object),
+                     "value for 'scale' not supplied in call to 'HalfT' when specifying 'season'")
+})
+
+
+
+
+
+
+
+
+
+
+
+test_that("checkPriorsAreInformative works", {
+    checkPriorsAreInformative <- demest:::checkPriorsAreInformative
+    model <- Model(y ~ Poisson(mean ~ region),
+                   `(Intercept)` ~ ExchFixed(mean = -1, sd = 0.2),
+                   region ~ Exch(error = Error(scale = HalfT(scale = 0.3))))
+    expect_is(model, "SpecVarying")
+    expect_identical(checkPriorsAreInformative(model),
+                     NULL)
+    model <- Model(y ~ Poisson(mean ~ region),
+                   `(Intercept)` ~ ExchFixed(mean = -1, sd = 0.2),
+                   region ~ Exch())
+    expect_error(checkPriorsAreInformative(model),
+                 "problem with prior for 'region' in model for 'y'")
+    model <- Model(y ~ Poisson(mean ~ region),
+                   `(Intercept)` ~ ExchFixed(mean = -1),
+                   region ~ Exch())
+    expect_error(checkPriorsAreInformative(model),
+                 "problem with prior for '\\(Intercept\\)' in model for 'y'")
+})
+               
+
+
+
+
+
 ## test_that("makeFakeBetas works", {
 ##     makeFakeBetas <- demest:::makeFakeBetas
 ##     sweepAllMargins <- demest:::sweepAllMargins
@@ -83,62 +249,62 @@ test.extended <- FALSE
 ## })
 
 
-## FAKE ######################################################################
+## ## FAKE ######################################################################
 
-test_that("initialFakeDLMAll works", {
-    initialFakeDLMAll <- demest:::initialFakeDLMAll
-    spec <- DLM(level = Level(scale = HalfT(scale = 0.05)),
-                trend = Trend(initial = Initial(mean = -0.02, sd = 0.01),
-                              scale = HalfT(scale = 0.02)),
-                error = Error(scale = HalfT(scale = 0.06)))
-    metadata <- new("MetaData",
-                    nms = "time",
-                    dimtypes = "time",
-                    DimScales = list(new("Points", dimvalues = 2001:2010)))
-    ans.obtained <- initialFakeDLMAll(spec = spec,
-                                      metadata = metadata)
-    expect_identical(ans.obtained$AAlpha, new("Scale", 0.05))
-    expect_identical(ans.obtained$alphaDLM, new("ParameterVector", rep(0, 11)))
-    expect_identical(ans.obtained$ATau, new("Scale", 0.06))
-    expect_identical(ans.obtained$iAlong, 1L)
-    expect_is(ans.obtained$iteratorState, "AlongIterator")
-    expect_is(ans.obtained$iteratorV, "AlongIterator")
-    expect_identical(ans.obtained$J, new("Length", 10L))
-    expect_identical(ans.obtained$K, new("Length", 10L))
-    expect_identical(ans.obtained$L, new("Length", 1L))
-    expect_identical(ans.obtained$minPhi, 0.8)
-    expect_identical(ans.obtained$maxPhi, 1)
-    expect_identical(ans.obtained$nuAlpha, new("DegreesFreedom", 7))
-    expect_identical(ans.obtained$nuTau, new("DegreesFreedom", 7))
-    expect_is(ans.obtained$omegaAlpha, "Scale")
-    expect_is(ans.obtained$omegaAlphaMax, "Scale")
-    expect_is(ans.obtained$phi, "numeric")
-    expect_identical(ans.obtained$shape1Phi, new("Scale", 2))
-    expect_identical(ans.obtained$shape2Phi, new("Scale", 2))
-    expect_is(ans.obtained$tau, "Scale")
-    expect_is(ans.obtained$tauMax, "Scale")
-})
+## test_that("initialFakeDLMAll works", {
+##     initialFakeDLMAll <- demest:::initialFakeDLMAll
+##     spec <- DLM(level = Level(scale = HalfT(scale = 0.05)),
+##                 trend = Trend(initial = Initial(mean = -0.02, sd = 0.01),
+##                               scale = HalfT(scale = 0.02)),
+##                 error = Error(scale = HalfT(scale = 0.06)))
+##     metadata <- new("MetaData",
+##                     nms = "time",
+##                     dimtypes = "time",
+##                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+##     ans.obtained <- initialFakeDLMAll(spec = spec,
+##                                       metadata = metadata)
+##     expect_identical(ans.obtained$AAlpha, new("Scale", 0.05))
+##     expect_identical(ans.obtained$alphaDLM, new("ParameterVector", rep(0, 11)))
+##     expect_identical(ans.obtained$ATau, new("Scale", 0.06))
+##     expect_identical(ans.obtained$iAlong, 1L)
+##     expect_is(ans.obtained$iteratorState, "AlongIterator")
+##     expect_is(ans.obtained$iteratorV, "AlongIterator")
+##     expect_identical(ans.obtained$J, new("Length", 10L))
+##     expect_identical(ans.obtained$K, new("Length", 10L))
+##     expect_identical(ans.obtained$L, new("Length", 1L))
+##     expect_identical(ans.obtained$minPhi, 0.8)
+##     expect_identical(ans.obtained$maxPhi, 1)
+##     expect_identical(ans.obtained$nuAlpha, new("DegreesFreedom", 7))
+##     expect_identical(ans.obtained$nuTau, new("DegreesFreedom", 7))
+##     expect_is(ans.obtained$omegaAlpha, "Scale")
+##     expect_is(ans.obtained$omegaAlphaMax, "Scale")
+##     expect_is(ans.obtained$phi, "numeric")
+##     expect_identical(ans.obtained$shape1Phi, new("Scale", 2))
+##     expect_identical(ans.obtained$shape2Phi, new("Scale", 2))
+##     expect_is(ans.obtained$tau, "Scale")
+##     expect_is(ans.obtained$tauMax, "Scale")
+## })
 
-test_that("initialFakeDLMWithTrend works", {
-    initialFakeDLMWithTrend <- demest:::initialFakeDLMWithTrend
-    spec <- DLM(level = Level(scale = HalfT(scale = 0.05)),
-                trend = Trend(initial = Initial(mean = -0.02, sd = 0.01),
-                              scale = HalfT(scale = 0.02)),
-                error = Error(scale = HalfT(scale = 0.06)))
-    metadata <- new("MetaData",
-                    nms = "time",
-                    dimtypes = "time",
-                    DimScales = list(new("Points", dimvalues = 2001:2010)))
-    ans.obtained <- initialFakeDLMWithTrend(spec = spec, metadata = metadata)
-    expect_identical(ans.obtained$ADelta, new("Scale", 0.02))
-    expect_identical(ans.obtained$deltaDLM, new("ParameterVector", rep(0, 11)))
-    expect_identical(ans.obtained$nuDelta, new("DegreesFreedom", 7))
-    expect_is(ans.obtained$omegaDelta, "Scale")
-    expect_is(ans.obtained$omegaDeltaMax, "Scale")
-    expect_identical(ans.obtained$ADelta0, new("Scale", 0.01))
-    expect_identical(ans.obtained$meanDelta0, new("Parameter", -0.02))
-    expect_identical(ans.obtained$hasLevel, new("LogicalFlag", TRUE))
-})
+## test_that("initialFakeDLMWithTrend works", {
+##     initialFakeDLMWithTrend <- demest:::initialFakeDLMWithTrend
+##     spec <- DLM(level = Level(scale = HalfT(scale = 0.05)),
+##                 trend = Trend(initial = Initial(mean = -0.02, sd = 0.01),
+##                               scale = HalfT(scale = 0.02)),
+##                 error = Error(scale = HalfT(scale = 0.06)))
+##     metadata <- new("MetaData",
+##                     nms = "time",
+##                     dimtypes = "time",
+##                     DimScales = list(new("Points", dimvalues = 2001:2010)))
+##     ans.obtained <- initialFakeDLMWithTrend(spec = spec, metadata = metadata)
+##     expect_identical(ans.obtained$ADelta, new("Scale", 0.02))
+##     expect_identical(ans.obtained$deltaDLM, new("ParameterVector", rep(0, 11)))
+##     expect_identical(ans.obtained$nuDelta, new("DegreesFreedom", 7))
+##     expect_is(ans.obtained$omegaDelta, "Scale")
+##     expect_is(ans.obtained$omegaDeltaMax, "Scale")
+##     expect_identical(ans.obtained$ADelta0, new("Scale", 0.01))
+##     expect_identical(ans.obtained$meanDelta0, new("Parameter", -0.02))
+##     expect_identical(ans.obtained$hasLevel, new("LogicalFlag", TRUE))
+## })
 
 ## test_that("makeFakeHyper works", {
 ##     makeFakeHyper <- demest:::makeFakeHyper

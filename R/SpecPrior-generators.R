@@ -273,6 +273,7 @@ Covariates <- function(formula = NULL, data = NULL, infant = FALSE,
     AEtaIntercept <- intercept@A
     AEtaCoef <- coef@AEtaCoef
     meanEtaCoef <- coef@meanEtaCoef
+    multEtaCoef <- coef@multEtaCoef
     nuEtaCoef <- coef@nuEtaCoef
     infant <- methods::new("LogicalFlag", infant)
     methods::new("Covariates",
@@ -283,6 +284,7 @@ Covariates <- function(formula = NULL, data = NULL, infant = FALSE,
                  formula = formula,
                  infant = infant,
                  meanEtaCoef = meanEtaCoef,
+                 multEtaCoef = multEtaCoef,
                  nuEtaCoef = nuEtaCoef)
 }
 
@@ -676,6 +678,7 @@ DLM <- function(along = NULL, level = Level(), trend = Trend(),
         formula <- covariates@formula
         infant <- covariates@infant
         meanEtaCoef <- covariates@meanEtaCoef
+        multEtaCoef <- covariates@multEtaCoef
         nuEtaCoef <- covariates@nuEtaCoef
     }
     else {
@@ -808,6 +811,7 @@ DLM <- function(along = NULL, level = Level(), trend = Trend(),
                      infant = infant,
                      multAlpha = multAlpha,
                      meanEtaCoef = meanEtaCoef,
+                     multEtaCoef = multEtaCoef,
                      multTau = multTau,
                      minPhi = minPhi,
                      maxPhi = maxPhi,
@@ -842,6 +846,7 @@ DLM <- function(along = NULL, level = Level(), trend = Trend(),
                      multDelta = multDelta,
                      multDelta0 = multDelta0,
                      meanEtaCoef = meanEtaCoef,
+                     multEtaCoef = multEtaCoef,
                      multTau = multTau,
                      nuAlpha = nuAlpha,
                      nuDelta = nuDelta,
@@ -871,6 +876,7 @@ DLM <- function(along = NULL, level = Level(), trend = Trend(),
                      maxPhi = maxPhi,
                      multAlpha = multAlpha,
                      meanEtaCoef = meanEtaCoef,
+                     multEtaCoef = multEtaCoef,
                      multSeason = multSeason,
                      multTau = multTau,
                      nSeason = nSeason,
@@ -908,6 +914,7 @@ DLM <- function(along = NULL, level = Level(), trend = Trend(),
                      multDelta = multDelta,
                      multDelta0 = multDelta0,
                      meanEtaCoef = meanEtaCoef,
+                     multEtaCoef = multEtaCoef,
                      multSeason = multSeason,
                      multTau = multTau,
                      nSeason = nSeason,
@@ -1042,6 +1049,7 @@ DLM <- function(along = NULL, level = Level(), trend = Trend(),
                      maxPhi = maxPhi,
                      multAlpha = multAlpha,
                      meanEtaCoef = meanEtaCoef,
+                     multEtaCoef = multEtaCoef,
                      multTau = multTau,
                      nuAlpha = nuAlpha,
                      nuBeta = nuBeta,
@@ -1075,6 +1083,7 @@ DLM <- function(along = NULL, level = Level(), trend = Trend(),
                      multDelta = multDelta,
                      multDelta0 = multDelta0,
                      meanEtaCoef = meanEtaCoef,
+                     multEtaCoef = multEtaCoef,
                      multTau = multTau,
                      nuAlpha = nuAlpha,
                      nuBeta = nuBeta,
@@ -1105,6 +1114,7 @@ DLM <- function(along = NULL, level = Level(), trend = Trend(),
                      maxPhi = maxPhi,
                      multAlpha = multAlpha,
                      meanEtaCoef = meanEtaCoef,
+                     multEtaCoef = multEtaCoef,
                      multSeason = multSeason,
                      multTau = multTau,
                      nSeason = nSeason,
@@ -1143,6 +1153,7 @@ DLM <- function(along = NULL, level = Level(), trend = Trend(),
                      multDelta = multDelta,
                      multDelta0 = multDelta0,
                      meanEtaCoef = meanEtaCoef,
+                     multEtaCoef = multEtaCoef,
                      multSeason = multSeason,
                      multTau = multTau,
                      nSeason = nSeason,
@@ -1286,6 +1297,7 @@ Exch <- function(covariates = NULL, error = Error()) {
         formula <- covariates@formula
         infant <- covariates@infant
         meanEtaCoef <- covariates@meanEtaCoef
+        multEtaCoef <- covariates@multEtaCoef
         nuEtaCoef <- covariates@nuEtaCoef
     }
     ## error
@@ -1325,6 +1337,7 @@ Exch <- function(covariates = NULL, error = Error()) {
                      formula = formula,
                      infant = infant,
                      meanEtaCoef = meanEtaCoef,
+                     multEtaCoef = multEtaCoef,
                      multTau = multTau,
                      nuEtaCoef = nuEtaCoef,
                      nuTau = nuTau,
@@ -1340,6 +1353,7 @@ Exch <- function(covariates = NULL, error = Error()) {
                      formula = formula,
                      infant = infant,
                      meanEtaCoef = meanEtaCoef,
+                     multEtaCoef = multEtaCoef,
                      multTau = multTau,
                      nuBeta = nuBeta,
                      nuEtaCoef = nuEtaCoef,
@@ -1805,6 +1819,7 @@ Mix <- function(along = NULL,
         formula <- covariates@formula
         infant <- covariates@infant
         meanEtaCoef <- covariates@meanEtaCoef
+        multEtaCoef <- covariates@multEtaCoef
         nuEtaCoef <- covariates@nuEtaCoef
     }
     ## error
@@ -1996,7 +2011,7 @@ Season <- function(n, scale = HalfT()) {
 #'        mean = c(-1, 0.2, 0.1),
 #'        scale = c(1, 2, 1))
 #' @export
-TDist <- function(df = 7, mean = 0, scale = NULL) {
+TDist <- function(df = 7, mean = 0, scale = NULL, mult = 1) {
     nu <- checkAndTidyNuVec(x = df,
                             name = "df")
     n.nu <- length(nu@.Data)
@@ -2015,21 +2030,29 @@ TDist <- function(df = 7, mean = 0, scale = NULL) {
     if (n.A == 0L)
         stop(gettextf("'%s' has length %d",
                       "mean", 0L))
-    max.len <- max(n.nu, n.mean, n.A)
+    mult <- checkAndTidyMultVec(mult = mult,
+                                scale = A,
+                                nameMult = "mult",
+                                nameScale = "scale")
+    n.mult <- length(mult@.Data)
+    max.len <- max(n.nu, n.mean, n.A, n.mult)
     if (max.len > 1L) {
         nu.invalid <- (n.nu != 1L) && (n.nu != max.len)
         mean.invalid <- (n.mean != 1L) && (n.mean != max.len)
         A.invalid <- (n.A != 1L) && (n.A != max.len)
-        if (nu.invalid || mean.invalid || A.invalid)
-            stop(gettextf("'%s', '%s', and '%s' have inconsistent lengths",
-                          "df", "mean", "scale"))
+        mult.invalid <- (n.mult != 1L) && (n.mult != max.len)
+        if (nu.invalid || mean.invalid || A.invalid || mult.invalid)
+            stop(gettextf("'%s', '%s', '%s', and '%s' have inconsistent lengths",
+                          "df", "mean", "scale", "mult"))
         nu@.Data <- rep_len(nu@.Data, length.out = max.len)
         mean@.Data <- rep_len(mean@.Data, length.out = max.len)
         A@.Data <- rep_len(A@.Data, length.out = max.len)
+        mult@.Data <- rep_len(mult@.Data, length.out = max.len)
     }
     methods::new("TDist",
                  AEtaCoef = A,
                  meanEtaCoef = mean,
+                 multEtaCoef = mult,
                  nuEtaCoef = nu)
 }
 

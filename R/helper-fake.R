@@ -1,6 +1,185 @@
 
 
-## FAKE ######################################################################
+## checkPriorInform ########################################################
+
+## Helper functions to check that prior specifications hold all the
+## information required to generate fake data (and do not have arguments
+## that are inappropriate for fake data).
+
+
+## HAS_TESTS
+checkPriorInform_prohibited <- function(object, nameSlot, nameArg, nameFun) {
+    val <- slot(object, nameSlot)
+    val <- slot(val, ".Data")
+    if (!isTRUE(all.equal(val, 1)))
+        gettextf("value for '%s' supplied in call to '%s'",
+                 nameArg, nameFun)
+    else
+        NULL
+}
+
+## HAS_TESTS
+checkPriorInform_required <- function(object, nameSlot, nameArg, nameFun) {
+    val <- slot(object, nameSlot)
+    val <- slot(val, ".Data")
+    if (any(is.na(val)))
+        gettextf("value for '%s' not supplied in call to '%s'",
+                 nameArg, nameFun)
+    else
+        NULL
+}
+
+## HAS_TESTS
+checkPriorInform_ExchFixed <- function(object) {
+    value.mult.tau <- checkPriorInform_prohibited(object = object,
+                                                  nameSlot = "multTau",
+                                                  nameArg = "mult",
+                                                  nameFun = "ExchFixed")
+    value.tau <- checkPriorInform_required(object = object,
+                                           nameSlot = "tau",
+                                           nameArg = "sd",
+                                           nameFun = "ExchFixed")
+    for (value in list(value.mult.tau, value.tau))
+        if (!is.null(value))
+            return(value)
+    NULL
+}
+
+## HAS_TESTS
+checkPriorInform_Error <- function(object) {
+    value.mult.tau <- checkPriorInform_prohibited(object = object,
+                                                  nameSlot = "multTau",
+                                                  nameArg = "mult",
+                                                  nameFun = "HalfT")
+    value.A.tau <- checkPriorInform_required(object = object,
+                                             nameSlot = "ATau",
+                                             nameArg = "scale",
+                                             nameFun = "HalfT")
+    for (value in list(value.mult.tau, value.A.tau))
+        if (!is.null(value))
+            return(gettextf("%s when specifying '%s'",
+                            value, "error"))
+    NULL
+}
+
+## HAS_TESTS
+checkPriorInform_Covariates <- function(object) {
+    value.A.eta.intercept <- checkPriorInform_required(object = object,
+                                                       nameSlot = "AEtaIntercept",
+                                                       nameArg = "sd",
+                                                       nameFun = "Norm")
+    value.A.eta.coef <- checkPriorInform_required(object = object,
+                                                  nameSlot = "AEtaCoef",
+                                                  nameArg = "scale",
+                                                  nameFun = "TDist")
+    for (value in list(value.A.eta.intercept, value.A.eta.coef))
+        if (!is.null(value))
+            return(gettextf("%s when specifying '%s'",
+                            value, "covariates"))
+    NULL
+}
+
+## HAS_TESTS
+checkPriorInform_Level <- function(object) {
+    value.mult.alpha <- checkPriorInform_prohibited(object = object,
+                                                    nameSlot = "multAlpha",
+                                                    nameArg = "mult",
+                                                    nameFun = "HalfT")
+    value.A.alpha <- checkPriorInform_required(object = object,
+                                               nameSlot = "AAlpha",
+                                               nameArg = "scale",
+                                               nameFun = "HalfT")
+    for (value in list(value.mult.alpha, value.A.alpha))
+        if (!is.null(value))
+            return(gettextf("%s when specifying '%s'",
+                            value, "level"))
+    NULL
+}
+
+## HAS_TESTS
+checkPriorInform_Trend <- function(object) {
+    value.mult.delta.0 <- checkPriorInform_prohibited(object = object,
+                                                      nameSlot = "multDelta0",
+                                                      nameArg = "mult",
+                                                      nameFun = "Initial")
+    value.A.delta.0 <- checkPriorInform_required(object = object,
+                                                 nameSlot = "ADelta0",
+                                                 nameArg = "sd",
+                                                 nameFun = "Initial")
+    value.mult.delta <- checkPriorInform_prohibited(object = object,
+                                                    nameSlot = "multDelta",
+                                                    nameArg = "mult",
+                                                    nameFun = "HalfT")
+    value.A.delta <- checkPriorInform_required(object = object,
+                                               nameSlot = "ADelta",
+                                               nameArg = "scale",
+                                               nameFun = "HalfT")
+    for (value in list(value.mult.delta.0, value.A.delta.0,
+                       value.mult.delta, value.A.delta))
+        if (!is.null(value))
+            return(gettextf("%s when specifying '%s'",
+                            value, "trend"))
+    NULL
+}
+
+## HAS_TESTS
+checkPriorInform_Season <- function(object) {
+    value.mult.season <- checkPriorInform_prohibited(object = object,
+                                                      nameSlot = "multSeason",
+                                                      nameArg = "mult",
+                                                      nameFun = "HalfT")
+    value.A.season <- checkPriorInform_required(object = object,
+                                                nameSlot = "ASeason",
+                                                nameArg = "scale",
+                                                nameFun = "HalfT")
+    for (value in list(value.mult.season, value.A.season))
+        if (!is.null(value))
+            return(gettextf("%s when specifying '%s'",
+                            value, "season"))
+    NULL
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+## HAS_TESTS
+checkPriorsAreInformative <- function(object) {
+    if (!methods::is(object, "SpecVarying"))
+        stop(gettextf("'%s' has class \"%s\"",
+                      "object", class(object)))
+    name.model <- object@nameY[[1L]]
+    specs.priors <- object@specsPriors
+    names.specs.priors <- object@namesSpecsPriors
+    for (i in seq_along(specs.priors)) {
+        value <- checkPriorIsInformative(specs.priors[[i]])
+        if (!is.null(value))
+            stop(gettextf("problem with prior for '%s' in model for '%s' : %s",
+                          names.specs.priors[i], name.model, value))
+    }
+    NULL
+}
+
+
+
+
+
+
+
+
+
+
+
+
+### OLD FUNCTIONS ######################################################
 
 ## HAS_TESTS
 initialFakeDLMAll <- function(spec, metadata) {

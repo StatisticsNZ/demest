@@ -644,6 +644,7 @@ updateEta <- function(prior, beta, useC = FALSE) {
         b <- crossprod(Z, diag(1 / v)) %*% beta
         eta.hat <- qr.solve(qr, b)
         eta.hat <- drop(eta.hat)
+        eta.hat[-1L] <- eta.hat[-1L] + mean.eta.coef / U.eta.coef
         g <- stats::rnorm(n = P)
         R <- chol(var.inv) 
         epsilon <- backsolve(R, g)
@@ -1718,10 +1719,11 @@ updateUEtaCoef <- function(prior, useC = FALSE) {
         U <- prior@UEtaCoef@.Data
         nu <- prior@nuEtaCoef@.Data
         A <- prior@AEtaCoef@.Data
+        mean <- prior@meanEtaCoef@.Data
         eta <- prior@eta@.Data
-        df <- nu + 1
         for (p in seq_len(P - 1L)) {
-            scale <- (nu * A^2 + eta[p + 1]^2) / df
+            df <- nu[p] + 1
+            scale <- (nu[p] * A[p]^2 + (eta[p + 1L] - mean[p])^2) / df
             U[p] <- rinvchisq1(df = df, scale = scale)
         }
         prior@UEtaCoef@.Data <- U
@@ -2743,7 +2745,7 @@ updateThetaAndNu_CMPVaryingUseExp <- function(object, y, exposure, useC = FALSE)
                         y.star <- rcmp1(mu = gamma.prop,
                                         nu = nu.prop,
                                         max = max.attempt)
-                        found.y.star <- is.finite(y.star)
+                        found.y.star <- nis.finite(y.star)
                         if (found.y.star) {
                             log.lik.curr <- logDensCMPUnnormalised1(x = y[i], gamma = gamma.curr, nu = nu.curr)
                             log.lik.prop <- logDensCMPUnnormalised1(x = y[i], gamma = gamma.prop, nu = nu.prop)

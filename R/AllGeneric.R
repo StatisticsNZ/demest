@@ -89,6 +89,10 @@ setGeneric("checkForSubtotals",
                NULL
            })
 
+setGeneric("checkPriorIsInformative",
+           function(object)
+               standardGeneric("checkPriorIsInformative"))
+
 setGeneric("classY",
            function(y)
            stop(gettextf("cannot handle '%s' with class \"%s\"",

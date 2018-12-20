@@ -1095,8 +1095,17 @@ setClass("MultDelta0Mixin",
          contains = "VIRTUAL")
 
 setClass("MultEtaCoefMixin",
-         slots = c(multEtaCoef = "Scale"),
-         contains = "VIRTUAL")
+         slots = c(multEtaCoef = "ScaleVec"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             multEtaCoef <- object@multEtaCoef
+             AEtaCoef <- object@AEtaCoef@.Data
+             ## 'multEtaCoef' has same length as 'AEtaCoef'
+             if (!identical(length(multEtaCoef), length(AEtaCoef)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "multEtaCoef", "AEtaCoef"))
+             TRUE
+         })
 
 setClass("MultLevelComponentWeightMixMixin",
          slots = c(multLevelComponentWeightMix = "Scale"),

@@ -911,7 +911,9 @@ updateEta(SEXP prior_R, double* beta, int J)
     
     double AEtaIntercept = *REAL(GET_SLOT(prior_R, AEtaIntercept_sym));
     
-    double *UEtaCoef= REAL(GET_SLOT(prior_R, UEtaCoef_sym)); /* length P-1 */
+    double *meanEtaCoef = REAL(GET_SLOT(prior_R, meanEtaCoef_sym)); /* length P-1 */
+
+    double *UEtaCoef = REAL(GET_SLOT(prior_R, UEtaCoef_sym)); /* length P-1 */
     
     double *v = (double *)R_alloc(J, sizeof(double));
 
@@ -1033,7 +1035,16 @@ updateEta(SEXP prior_R, double* beta, int J)
         PrintValue(mkString("eta_hat"));
         printDblArray(eta, P);
     #endif
-    
+
+
+    /* eta.hat[-1L] <- eta.hat[-1L] + mean.eta.coef / U.eta.coef */
+    /* Added by JB 24 December 2018                              */
+    for (int p = 0; p < P - 1; ++p) {
+
+      eta[p + 1] += meanEtaCoef[p] / UEtaCoef[p];
+      
+    }
+	
     /* g <- rnorm(n = P) */
     for (int p = 0; p < P; ++p) {
             
@@ -2351,19 +2362,18 @@ void
 updateUEtaCoef(SEXP prior_R)
 {
     int P = *INTEGER(GET_SLOT(prior_R, P_sym));
+    double *mean = REAL(GET_SLOT(prior_R, meanEtaCoef_sym)); /* length P-1 */
     double *U = REAL(GET_SLOT(prior_R, UEtaCoef_sym)); /* length P-1 */
-    double nu = *REAL(GET_SLOT(prior_R, nuEtaCoef_sym));
-    double A = *REAL(GET_SLOT(prior_R, AEtaCoef_sym));
+    double *nu = REAL(GET_SLOT(prior_R, nuEtaCoef_sym));
+    double *A = REAL(GET_SLOT(prior_R, AEtaCoef_sym));
     double *eta = REAL(GET_SLOT(prior_R, eta_sym));
     
-    double df = nu +1;
-    double nuTimesASq = nu * A * A;
-    
-    for (int p = 0; p <  P-1; ++p) {
-    
-        double eta_p = eta[p+1];
-        double scale = (nuTimesASq + eta_p*eta_p)/ df;
-        U[p] = rinvchisq1(df, scale);
+    for (int p = 0; p < P-1; ++p) {
+        double df_p = nu[p] + 1;
+        double nuTimesASq_p = nu[p] * A[p] * A[p];
+        double diff_p = eta[p+1] - mean[p];
+        double scale_p = (nuTimesASq_p + diff_p * diff_p) / df_p;
+        U[p] = rinvchisq1(df_p, scale_p);
     }
 }
 

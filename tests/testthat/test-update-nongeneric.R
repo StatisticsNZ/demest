@@ -1655,7 +1655,7 @@ test_that("R and C versions of updateComponentWeightMix give same answer", {
     }
 })
 
-test_that("updateEta gives valid answer", {
+test_that("updateEta gives valid answer - prior means all 0", {
     updateEta <- demest:::updateEta
     initialPrior <- demest:::initialPrior
     rinvchisq1 <- demest:::rinvchisq1
@@ -1706,7 +1706,7 @@ test_that("updateEta gives valid answer", {
     }
 })
 
-test_that("R and C versions of updateEta give same answer", {
+test_that("R and C versions of updateEta give same answer - prior means all 0", {
     updateEta <- demest:::updateEta
     initialPrior <- demest:::initialPrior
     rinvchisq1 <- demest:::rinvchisq1
@@ -1748,6 +1748,108 @@ test_that("R and C versions of updateEta give same answer", {
             expect_equal(ans.R, ans.C)
     }
 })
+
+
+test_that("updateEta gives valid answer - prior means non-0", {
+    updateEta <- demest:::updateEta
+    initialPrior <- demest:::initialPrior
+    rinvchisq1 <- demest:::rinvchisq1
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        data <- data.frame(region = rep(letters[1:10], times = 2),
+                           sex = rep(c("f", "m"), each = 10),
+                           income = rnorm(20),
+                           cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+        formula <- mean ~ income * cat
+        contrastsArg = list(cat = diag(3))
+        spec <- Exch(covariates = Covariates(formula = formula,
+                                             data = data,
+                                             contrastsArg = contrastsArg,
+                                             coef = TDist(df = 3, mean = c(-1, 1:6))))
+        beta <- rnorm(10)
+        metadata <- new("MetaData",
+                        nms = "region",
+                        dimtypes = "state",
+                        DimScales = list(new("Categories", dimvalues = letters[1:10])))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(region = letters[1:10])))
+        prior0 <- initialPrior(spec,
+                               beta = beta,
+                               metadata = metadata,
+                               sY = NULL,
+                               isSaturated = FALSE,
+                               multScale = 1,
+                               strucZeroArray = strucZeroArray,
+                               margin = 1L)
+        expect_is(prior0, "ExchNormCov")
+        beta <- rnorm(10)
+        set.seed(seed)
+        ans.obtained <- updateEta(prior = prior0, beta = beta)
+        set.seed(seed)
+        ans.expected <- prior0
+        V.inv <- crossprod(prior0@Z)/prior0@tau@.Data^2 + diag(1/c(prior0@AEtaIntercept^2, prior0@UEtaCoef))
+        V <- solve(V.inv)
+        R <- chol(V.inv)
+        epsilon <- drop(solve(R) %*% rnorm(8))
+        eta.hat <- drop(V %*% crossprod(prior0@Z, beta)/prior0@tau@.Data^2)
+        eta.hat[2:8] <- eta.hat[2:8] + c(-1, 1:6) / prior0@UEtaCoef@.Data
+        eta <- eta.hat + epsilon
+        eta <- unname(eta)
+        ans.expected@eta@.Data <- eta
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+
+test_that("R and C versions of updateEta give same answer - prior means non-0", {
+    updateEta <- demest:::updateEta
+    initialPrior <- demest:::initialPrior
+    rinvchisq1 <- demest:::rinvchisq1
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        data <- data.frame(region = rep(letters[1:10], times = 2),
+                           sex = rep(c("f", "m"), each = 10),
+                           income = rnorm(20),
+                           cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+        formula <- mean ~ income * cat
+        contrastsArg = list(cat = diag(3))
+        spec <- Exch(covariates = Covariates(formula = formula,
+                                             data = data,
+                                             contrastsArg = contrastsArg,
+                                             coef = TDist(df = 3, mean = c(-1, 1:6))))
+        beta <- rnorm(10)
+        metadata <- new("MetaData",
+                        nms = "region",
+                        dimtypes = "state",
+                        DimScales = list(new("Categories", dimvalues = letters[1:10])))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(region = letters[1:10])))
+        prior0 <- initialPrior(spec,
+                               beta = beta,
+                               metadata = metadata,
+                               sY = NULL,
+                               isSaturated = FALSE,
+                               multScale = 1,
+                               strucZeroArray = strucZeroArray,
+                               margin = 1L)
+        expect_is(prior0, "ExchNormCov")
+        beta <- rnorm(10)
+        set.seed(seed)
+        ans.R <- updateEta(prior = prior0, beta = beta, useC = FALSE)
+        set.seed(seed)
+        ans.C <- updateEta(prior = prior0, beta = beta, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
+
 
 test_that("updateGWithTrend works", {
     updateGWithTrend <- demest:::updateGWithTrend
@@ -3964,7 +4066,7 @@ test_that("R and C versions of updateUBeta give same answer", {
     }
 })
 
-test_that("updateUEtaCoef gives valid answer", {
+test_that("updateUEtaCoef gives valid answer - prior mean all 0", {
     updateUEtaCoef <- demest:::updateUEtaCoef
     initialPrior <- demest:::initialPrior
     rinvchisq1 <- demest:::rinvchisq1
@@ -4012,7 +4114,7 @@ test_that("updateUEtaCoef gives valid answer", {
     }
 })
 
-test_that("R and C versions of updateUEtaCoef give same answer", {
+test_that("R and C versions of updateUEtaCoef give same answer - prior mean all 0", {
     updateUEtaCoef <- demest:::updateUEtaCoef
     initialPrior <- demest:::initialPrior
     rinvchisq1 <- demest:::rinvchisq1
@@ -4055,6 +4157,104 @@ test_that("R and C versions of updateUEtaCoef give same answer", {
             expect_equal(ans.R, ans.C)
     }
 })
+
+
+test_that("updateUEtaCoef gives valid answer - prior mean non-0", {
+    updateUEtaCoef <- demest:::updateUEtaCoef
+    initialPrior <- demest:::initialPrior
+    rinvchisq1 <- demest:::rinvchisq1
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        data <- data.frame(region = rep(letters[1:10], times = 2),
+                           sex = rep(c("f", "m"), each = 10),
+                           income = rnorm(20),
+                           cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+        formula <- mean ~ income * cat
+        contrastsArg = list(cat = diag(3))
+        spec <- Exch(covariates = Covariates(formula = formula,
+                                             data = data,
+                                             contrastsArg = contrastsArg,
+                                             coef = TDist(df = 3, mean = c(-1, 1:6))),
+                     error = Error(robust = TRUE))
+        beta <- rnorm(10)
+        metadata <- new("MetaData",
+                        nms = "region",
+                        dimtypes = "state",
+                        DimScales = list(new("Categories", dimvalues = letters[1:10])))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(region = letters[1:10])))
+        prior0 <- initialPrior(spec,
+                               beta = beta,
+                               metadata = metadata,
+                               sY = NULL,
+                               isSaturated = FALSE,
+                               multScale = 1,
+                               strucZeroArray = strucZeroArray,
+                               margin = 1L)
+        expect_is(prior0, "ExchRobustCov")
+        beta <- rnorm(10)
+        set.seed(seed)
+        ans.obtained <- updateUEtaCoef(prior = prior0)
+        set.seed(seed)
+        ans.expected <- prior0
+        U <- numeric(7)
+        for (i in 1:7) {
+            U[i] <- rinvchisq1(df = prior0@nuEtaCoef[i] + 1,
+                               scale = ((prior0@nuEtaCoef[i] * prior0@AEtaCoef[i]^2 + (prior0@eta[i+1]-prior0@meanEtaCoef[i])^2)
+                                   / (prior0@nuEtaCoef[i] + 1)))
+        }
+        ans.expected@UEtaCoef@.Data <- U
+        expect_identical(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of updateUEtaCoef give same answer - prior mean non-0", {
+    updateUEtaCoef <- demest:::updateUEtaCoef
+    initialPrior <- demest:::initialPrior
+    rinvchisq1 <- demest:::rinvchisq1
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        data <- data.frame(region = rep(letters[1:10], times = 2),
+                           sex = rep(c("f", "m"), each = 10),
+                           income = rnorm(20),
+                           cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+        formula <- mean ~ income * cat
+        contrastsArg = list(cat = diag(3))
+        spec <- Exch(covariates = Covariates(formula = formula,
+                                             data = data,
+                                             contrastsArg = contrastsArg,
+                                             coef = TDist(df = 3, mean = c(-1, 1:6))),
+                     error = Error(robust = TRUE))
+        beta <- rnorm(10)
+        metadata <- new("MetaData",
+                        nms = "region",
+                        dimtypes = "state",
+                        DimScales = list(new("Categories", dimvalues = letters[1:10])))
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(region = letters[1:10])))
+        prior0 <- initialPrior(spec,
+                               beta = beta,
+                               metadata = metadata,
+                               sY = NULL,
+                               isSaturated = FALSE,
+                               multScale = 1,
+                               strucZeroArray = strucZeroArray,
+                               margin = 1L)
+        expect_is(prior0, "ExchRobustCov")
+        beta <- rnorm(10)
+        set.seed(seed)
+        ans.R <- updateUEtaCoef(prior = prior0, useC = FALSE)
+        set.seed(seed)
+        ans.C <- updateUEtaCoef(prior = prior0, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
+
 
 test_that("updateVectorsMixAndProdVectorsMix gives valid answer", {
     updateVectorsMixAndProdVectorsMix <- demest:::updateVectorsMixAndProdVectorsMix
