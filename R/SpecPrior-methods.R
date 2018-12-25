@@ -372,6 +372,22 @@ setMethod("checkPriorIsInformative",
 
 ## HAS_TESTS
 setMethod("checkPriorIsInformative",
+          signature(object = "SpecMixNormZero"),
+          function(object) {
+              value.components <- checkPriorInform_Components(object)
+              value.weights <- checkPriorInform_Weights(object)
+              value.error <- checkPriorInform_Error(object)
+              for (value in list(value.components, value.weights,
+                                 value.error)) {
+                  if (!is.null(value))
+                      return(gettextf("%s in call to '%s'",
+                                      value, "Mix"))
+              }
+              NULL
+          })
+
+## HAS_TESTS
+setMethod("checkPriorIsInformative",
           signature(object = "SpecZero"),
           function(object) {
               NULL

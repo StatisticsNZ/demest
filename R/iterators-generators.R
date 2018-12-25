@@ -1,5 +1,4 @@
 
-
 ## Generators for iterators
 
 ## Assume arguments correct because (i) functions only ever

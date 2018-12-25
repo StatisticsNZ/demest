@@ -537,7 +537,7 @@ setMethod("initialModel",
               tolerance <- object@tolerance
               max.attempt <- object@maxAttempt
               scale.theta <- object@scaleTheta
-              nu.sigma <- object@nuSigma
+              nu.sigma <- object@nuSigma@.Data
               A.sigma <- object@ASigma@.Data
               sigma.max <- object@sigmaMax@.Data
               aggregate <- object@aggregate
@@ -549,15 +549,11 @@ setMethod("initialModel",
               exposure.tmp <- as.integer(exposure)
               y.tmp[is.na(y)] <- 0.0
               exposure.tmp[is.na(y)] <- 0.0
+              A.sigma <- new("Scale", A.sigma)
+              nu.sigma <- new("DegreesFreedom", nu.sigma)
+              sigma.max <- new("Scale", sigma.max)
               m <- sum(y[!is.na(y)]) / sum(exposure[!is.na(y)])
               nu <- m * (1 - m)
-              A.sigma <- makeASigma(A = A.sigma,
-                                    sY = NULL,
-                                    isSpec = FALSE)
-              sigma.max <- makeScaleMax(scaleMax = sigma.max,
-                                        A = A.sigma,
-                                        nu = nu.sigma,
-                                        isSpec = FALSE)
               sigma <- stats::runif(n = 1L,
                                     min = 0,
                                     max = min(nu, sigma.max@.Data))
@@ -665,6 +661,7 @@ setMethod("initialModel",
               max.attempt <- object@maxAttempt
               nu.sigma <- object@nuSigma
               A.sigma <- object@ASigma@.Data
+              mult.sigma <- object@multSigma
               sigma.max <- object@sigmaMax@.Data
               use.expose <- object@useExpose@.Data
               aggregate <- object@aggregate
@@ -706,7 +703,8 @@ setMethod("initialModel",
               else
                   sY <-  stats::sd(log(as.numeric(y) + 1), na.rm = TRUE)
               A.sigma <- makeASigma(A = A.sigma,
-                                    sY = sY)
+                                    sY = sY,
+                                    mult = mult.sigma)
               sigma.max <- makeScaleMax(scaleMax = sigma.max,
                                         A = A.sigma,
                                         nu = nu.sigma)
@@ -844,6 +842,7 @@ setMethod("initialModel",
               varsigmaSetToZero <- object@varsigmaSetToZero
               nu.sigma <- object@nuSigma
               A.sigma <- object@ASigma@.Data
+              mult.sigma <- object@multSigma
               sigma.max <- object@sigmaMax@.Data
               aggregate <- object@aggregate
               checkTermsFromFormulaFound(y = y, formula = formula.mu)
@@ -853,7 +852,9 @@ setMethod("initialModel",
               w <- as.numeric(weights)
               n <- length(y)
               sY <- stats::sd(as.numeric(y), na.rm = TRUE) ## to deal with R <3.0 behaviour
-              A.sigma <- makeASigma(A = A.sigma, sY = sY)
+              A.sigma <- makeASigma(A = A.sigma,
+                                    sY = sY,
+                                    mult = mult.sigma)
               sigma.max <- makeScaleMax(scaleMax = sigma.max,
                                         A = A.sigma,
                                         nu = nu.sigma)
@@ -960,6 +961,7 @@ setMethod("initialModel",
               varsigma.max <- object@varsigmaMax@.Data
               nu.sigma <- object@nuSigma
               A.sigma <- object@ASigma@.Data
+              mult.sigma <- object@multSigma
               sigma.max <- object@sigmaMax@.Data
               aggregate <- object@aggregate
               checkTermsFromFormulaFound(y = y, formula = formula.mu)
@@ -969,8 +971,12 @@ setMethod("initialModel",
               w <- as.numeric(weights)
               n <- length(y)
               sY <- stats::sd(as.numeric(y), na.rm = TRUE) ## to deal with R <3.0 behaviour
-              A.varsigma <- makeASigma(A = A.varsigma, sY = sY)
-              A.sigma <- makeASigma(A = A.sigma, sY = sY)
+              A.varsigma <- makeASigma(A = A.varsigma,
+                                       sY = sY,
+                                       mult = mult.sigma)
+              A.sigma <- makeASigma(A = A.sigma,
+                                    sY = sY,
+                                    mult = mult.sigma)
               varsigma.max <- makeScaleMax(scaleMax = varsigma.max,
                                            A = A.varsigma,
                                            nu = nu.varsigma)
@@ -1080,6 +1086,7 @@ setMethod("initialModel",
               max.attempt <- object@maxAttempt
               nu.sigma <- object@nuSigma
               A.sigma <- object@ASigma@.Data
+              mult.sigma <- object@multSigma
               sigma.max <- object@sigmaMax@.Data
               use.expose <- object@useExpose@.Data
               aggregate <- object@aggregate
@@ -1120,7 +1127,8 @@ setMethod("initialModel",
               else
                   sY <-  stats::sd(log(as.numeric(y) + 1), na.rm = TRUE)
               A.sigma <- makeASigma(A = A.sigma,
-                                    sY = sY)
+                                    sY = sY,
+                                    mult = mult.sigma)
               sigma.max <- makeScaleMax(scaleMax = sigma.max,
                                         A = A.sigma,
                                         nu = nu.sigma)

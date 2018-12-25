@@ -938,7 +938,8 @@ predictAccount <- function(filenameEst, filenamePred, along = NULL, labels = NUL
 #' 
 #' @export
 continueEstimation <- function(filename, nBurnin = NULL, nSim = 1000, nThin = NULL,
-                               outfile = NULL, verbose = FALSE, useC = TRUE) {
+                               parallel = NULL, outfile = NULL, verbose = FALSE,
+                               useC = TRUE) {
     object <- fetchResultsObject(filename)
     mcmc.args.old <- object@mcmc
     control.args <- object@control
@@ -952,6 +953,11 @@ continueEstimation <- function(filename, nBurnin = NULL, nSim = 1000, nThin = NU
                                   nSim = nSim,
                                   nChain = mcmc.args.old[["nChain"]],
                                   nThin = nThin)
+    if (!is.null(parallel)) {
+        checkLogical(x = parallel,
+                     name = "parallel")
+        control.args$parallel <- parallel
+    }
     combineds <- object@final
     tempfiles.new <- paste(filename, "cont", seq_len(mcmc.args.new$nChain), sep = "_")
     MoreArgs <- c(mcmc.args.new, control.args, list(continuing = TRUE, useC = useC))

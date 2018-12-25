@@ -1,10 +1,50 @@
 
-context("helper-fake")
+context("helper-simulate")
 
 n.test <- 5
 test.identity <- FALSE
 test.extended <- FALSE
 
+
+test_that("checkAllDimensionsHavePriors works", {
+    checkAllDimensionsHavePriors <- demest:::checkAllDimensionsHavePriors
+    model <- Model(y ~ Poisson(mean ~ age * sex),
+               `(Intercept)` ~ ExchFixed(sd = 10), 
+               age ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
+               sex ~ ExchFixed(sd = 0.1),
+               age:sex ~ ExchFixed(sd = 0.05),
+               priorSD = HalfT(scale = 0.2))
+    y <- Counts(array(0L,
+                      dim = c(2, 3),
+                      dimnames = list(sex = c("F", "M"),
+                                      age = c("0-4", "5-9", "10+"))))
+    expect_identical(checkAllDimensionsHavePriors(model = model, y = y),
+                     NULL)
+    y <- Counts(array(0L,
+                      dim = c(2, 3, 3),
+                      dimnames = list(sex = c("F", "M"),
+                                      age = c("0-4", "5-9", "10+"),
+                                      region = c("a", "b", "c"))))
+    expect_error(checkAllDimensionsHavePriors(model = model, y = y),
+                 "no prior specified for \"region\" dimension in model for 'y'")
+    model <- Model(y ~ Poisson(mean ~ age * sex),
+               age ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
+               sex ~ ExchFixed(sd = 0.1),
+               age:sex ~ ExchFixed(sd = 0.05),
+               priorSD = HalfT(scale = 0.2))
+    y <- Counts(array(0L,
+                      dim = c(2, 3),
+                      dimnames = list(sex = c("F", "M"),
+                                      age = c("0-4", "5-9", "10+"))))
+    expect_error(checkAllDimensionsHavePriors(model = model, y = y),
+                 "no prior specified for intercept in model for 'y'")
+    model <- Model(d ~ Round3())
+    expect_identical(checkAllDimensionsHavePriors(model = model, y = y),
+                     NULL)
+})
+
+
+## checkPriorInform ########################################################
 
 test_that("checkPriorInform_prohibited works", {
     checkPriorInform_prohibited <- demest:::checkPriorInform_prohibited
@@ -137,15 +177,68 @@ test_that("checkPriorInform_Season works", {
                      "value for 'scale' not supplied in call to 'HalfT' when specifying 'season'")
 })
 
+test_that("checkPriorInform_Components works", {
+    checkPriorInform_Components <- demest:::checkPriorInform_Components
+    object <- Mix(components = Components(scale = HalfT(scale = 0.4)))
+    expect_identical(checkPriorInform_Components(object = object),
+                     NULL)
+    object <- Mix(components = Components(scale = HalfT(mult = 0.4)))
+    expect_identical(checkPriorInform_Components(object = object),
+                     "value for 'mult' supplied in call to 'HalfT' when specifying 'components'")
+    object <- Mix(components = Components())
+    expect_identical(checkPriorInform_Components(object = object),
+                     "value for 'scale' not supplied in call to 'HalfT' when specifying 'components'")
+})
 
+test_that("checkPriorInform_Weights works", {
+    checkPriorInform_Weights <- demest:::checkPriorInform_Weights
+    object <- Mix(weights = Weights(scale1 = HalfT(scale = 0.4),
+                                    scale2 = HalfT(scale = 0.3)))
+    expect_identical(checkPriorInform_Weights(object = object),
+                     NULL)
+    object <- Mix(weights = Weights(scale1 = HalfT(mult = 0.4),
+                                    scale2 = HalfT(scale = 0.3)))
+    expect_identical(checkPriorInform_Weights(object = object),
+                     "value for 'mult' supplied in call to 'HalfT' when specifying 'scale1' for 'weights'")
+    object <- Mix(weights = Weights(scale2 = HalfT(scale = 0.3)))
+    expect_identical(checkPriorInform_Weights(object = object),
+                     "value for 'scale' not supplied in call to 'HalfT' when specifying 'scale1' for 'weights'")
+    object <- Mix(weights = Weights(scale1 = HalfT(scale = 0.4),
+                                    scale2 = HalfT(mult = 0.3)))
+    expect_identical(checkPriorInform_Weights(object = object),
+                     "value for 'mult' supplied in call to 'HalfT' when specifying 'scale2' for 'weights'")
+    object <- Mix(weights = Weights(scale1 = HalfT(scale = 0.3)))
+    expect_identical(checkPriorInform_Weights(object = object),
+                     "value for 'scale' not supplied in call to 'HalfT' when specifying 'scale2' for 'weights'")
+})
 
-
-
-
-
-
-
-
+test_that("checkPriorSDInformative works", {
+    checkPriorSDInformative <- demest:::checkPriorSDInformative
+    model <- Model(y ~ Poisson(mean ~ region),
+                   `(Intercept)` ~ ExchFixed(mean = -1, sd = 0.2),
+                   region ~ Exch(error = Error(scale = HalfT(scale = 0.3))),
+                   priorSD = HalfT(scale = 0.1))
+    expect_is(model, "SpecVarying")
+    expect_identical(checkPriorSDInformative(model),
+                     NULL)
+    model <- Model(y ~ Poisson(mean ~ region),
+                   `(Intercept)` ~ ExchFixed(mean = -1, sd = 0.2),
+                   region ~ Exch(),
+                   priorSD = HalfT(mult = 0.1))
+    expect_error(checkPriorSDInformative(model),
+                 "problem with specification of 'priorSD' in model for 'y' : value for 'mult' supplied in call to 'HalfT'")
+    model <- Model(y ~ Poisson(mean ~ region),
+                   `(Intercept)` ~ ExchFixed(mean = -1),
+                   region ~ Exch(),
+                   priorSD = HalfT())
+    expect_error(checkPriorSDInformative(model),
+                 "problem with specification of 'priorSD' in model for 'y' : 'scale' argument not supplied in call to 'HalfT'")
+    model <- Model(y ~ Poisson(mean ~ region),
+                   `(Intercept)` ~ ExchFixed(mean = -1),
+                   region ~ Exch())
+    expect_error(checkPriorSDInformative(model),
+                 "problem with specification of 'priorSD' in model for 'y' : 'priorSD' argument not supplied in call to 'Model'")
+})
 
 test_that("checkPriorsAreInformative works", {
     checkPriorsAreInformative <- demest:::checkPriorsAreInformative
@@ -165,6 +258,9 @@ test_that("checkPriorsAreInformative works", {
                    region ~ Exch())
     expect_error(checkPriorsAreInformative(model),
                  "problem with prior for '\\(Intercept\\)' in model for 'y'")
+    model <- Model(d ~ Round3())
+    expect_identical(checkPriorsAreInformative(model),
+                     NULL)
 })
                
 

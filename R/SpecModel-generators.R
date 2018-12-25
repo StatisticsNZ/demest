@@ -755,11 +755,17 @@ setMethod("SpecModel",
                       stop(gettextf("'%s' has class \"%s\"",
                                     "priorSD", class(priorSD)))
               }
+              ## We can set A.sigma now. Even if no value for
+              ## 'A' was supplied in the call to 'priorSD',
+              ## we know there is an exposure term, so we can
+              ## default to 1 * mult
               A.sigma <- priorSD@A
+              mult.sigma <- priorSD@mult
               nu.sigma <- priorSD@nu
               sigma.max <- priorSD@scaleMax
               A.sigma <- makeASigma(A = A.sigma,
                                     sY = NULL,
+                                    mult = mult.sigma,
                                     isSpec = TRUE)
               sigma.max <- makeScaleMax(scaleMax = sigma.max,
                                         A = A.sigma,
@@ -818,21 +824,24 @@ setMethod("SpecModel",
                       stop(gettextf("'%s' has class \"%s\"",
                                     "priorSD", class(priorSD)))
               }
+              ## We can set A.sigma to 1 * mult now if
+              ## the model has an exposure term.
               A.sigma <- priorSD@A
+              mult.sigma <- priorSD@mult
               nu.sigma <- priorSD@nu
               sigma.max <- priorSD@scaleMax
-              scale.theta <- checkAndTidyJump(jump)
-              series <- checkAndTidySeries(series)
-              has.series <- !is.na(series@.Data)
-              if (has.series) {
+              if (useExpose@.Data) {
                   A.sigma <- makeASigma(A = A.sigma,
                                         sY = NULL,
+                                        mult = mult.sigma,
                                         isSpec = TRUE)
                   sigma.max <- makeScaleMax(scaleMax = sigma.max,
                                             A = A.sigma,
                                             nu = nu.sigma,
                                             isSpec = TRUE)
               }
+              scale.theta <- checkAndTidyJump(jump)
+              series <- checkAndTidySeries(series)
               if (is.null(aggregate))
                   aggregate <- methods::new("SpecAgPlaceholder")
               methods::new("SpecCMPVarying",
@@ -841,6 +850,7 @@ setMethod("SpecModel",
                            call = call,
                            formulaMu = formula.mu,
                            lower = lower,
+                           multSigma = mult.sigma,
                            specsPriors = specs.priors,
                            namesSpecsPriors = names.specs.priors,
                            nameY = nameY,
@@ -882,6 +892,7 @@ setMethod("SpecModel",
                                     "priorSD", class(priorSD)))
               }
               A.sigma <- priorSD@A
+              mult.sigma <- priorSD@mult
               nu.sigma <- priorSD@nu
               sigma.max <- priorSD@scaleMax
               if (is.null(aggregate) && !is.null(jump))
@@ -907,6 +918,7 @@ setMethod("SpecModel",
                            nuSigma = nu.sigma,
                            scaleTheta = scale.theta,
                            series = series,
+                           multSigma = mult.sigma,
                            sigmaMax = sigma.max,
                            upper = upper,
                            varsigma = varsigma,
@@ -940,6 +952,7 @@ setMethod("SpecModel",
                                     "priorSD", class(priorSD)))
               }
               A.sigma <- priorSD@A
+              mult.sigma <- priorSD@mult
               nu.sigma <- priorSD@nu
               sigma.max <- priorSD@scaleMax
               if (is.null(aggregate) && !is.null(jump))
@@ -967,6 +980,7 @@ setMethod("SpecModel",
                            nuVarsigma = nu.varsigma,
                            scaleTheta = scale.theta,
                            series = series,
+                           multSigma = mult.sigma,
                            sigmaMax = sigma.max,
                            upper = upper,
                            varsigmaMax = varsigma.max,
@@ -998,21 +1012,24 @@ setMethod("SpecModel",
                       stop(gettextf("'%s' has class \"%s\"",
                                     "priorSD", class(priorSD)))
               }
+              ## can set 'ASigma' to 1 * mult now,
+              ## if useExpose is TRUE
               A.sigma <- priorSD@A
+              mult.sigma <- priorSD@mult
               nu.sigma <- priorSD@nu
               sigma.max <- priorSD@scaleMax
-              scale.theta <- checkAndTidyJump(jump)
-              series <- checkAndTidySeries(series)
-              has.series <- !is.na(series@.Data)
-              if (has.series) {
+              if (useExpose@.Data) {
                   A.sigma <- makeASigma(A = A.sigma,
                                         sY = NULL,
+                                        mult = mult.sigma,
                                         isSpec = TRUE)
                   sigma.max <- makeScaleMax(scaleMax = sigma.max,
                                             A = A.sigma,
                                             nu = nu.sigma,
                                             isSpec = TRUE)
               }
+              scale.theta <- checkAndTidyJump(jump)
+              series <- checkAndTidySeries(series)
               if (is.null(aggregate))
                   aggregate <- methods::new("SpecAgPlaceholder")
               methods::new("SpecPoissonVarying",
@@ -1027,6 +1044,7 @@ setMethod("SpecModel",
                            nuSigma = nu.sigma,
                            scaleTheta = scale.theta,
                            series = series,
+                           multSigma = mult.sigma,
                            sigmaMax = sigma.max,
                            structuralZeros = structuralZeros,
                            upper = upper,

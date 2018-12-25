@@ -483,11 +483,12 @@ setMethod("stringScaleTheta",
           function(object) {
               scale <- object@scaleTheta@.Data
               series <- object@series@.Data
+              use.expose <- object@useExpose@.Data
               has.series <- !is.na(series)
-              if (has.series)
+              if (use.expose || has.series)
                   sprintf("    rate[i]: %s\n", scale)
               else
-                  sprintf("    rate[i] or count[i]: %s\n", scale)
+                  sprintf("    count[i]: %s\n", scale)
           })
 
 setMethod("stringScaleTheta",
@@ -511,11 +512,12 @@ setMethod("stringScaleTheta",
           function(object) {
               scale <- object@scaleTheta@.Data
               series <- object@series@.Data
+              use.expose <- object@useExpose@.Data
               has.series <- !is.na(series)
-              if (has.series)
+              if (use.expose || has.series)
                   sprintf("    rate[i]: %s\n", scale)
               else
-                  sprintf("    rate[i] or count[i]: %s\n", scale)
+                  sprintf("    count[i]: %s\n", scale)
           })
 
 setMethod("stringScaleTheta",

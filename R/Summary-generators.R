@@ -9,7 +9,7 @@ setMethod("summary",
           function(object) {
               call <- object@call
               metadata <- object@metadataY
-              specification <- deparse(call[[2L]])
+              specification <- paste(deparse(call[[2L]]), collapse = "")
               dimensions <- names(metadata)
               methods::new("SummaryModel",
                   specification = specification,

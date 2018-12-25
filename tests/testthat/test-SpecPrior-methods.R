@@ -885,6 +885,42 @@ test_that("checkPriorIsInformative works with SpecKnown", {
                      NULL)
 })
 
+test_that("checkPriorIsInformative works with SpecMix", {
+    checkPriorIsInformative <- demest:::checkPriorIsInformative
+    object <- Mix(components = Components(scale = HalfT(scale = 0.1)),
+                  weights = Weights(scale1 = HalfT(scale = 0.1),
+                                    scale2 = HalfT(scale = 0.1)),
+                  error = Error(scale = HalfT(scale = 0.1)))
+    expect_is(object, "SpecMixNormZero")
+    expect_identical(checkPriorIsInformative(object),
+                     NULL)
+    object <- Mix(components = Components(scale = HalfT(mult = 0.1)),
+                  weights = Weights(scale1 = HalfT(scale = 0.1),
+                                    scale2 = HalfT(scale = 0.1)),
+                  error = Error(scale = HalfT(scale = 0.1)))
+    expect_identical(checkPriorIsInformative(object),
+                     "value for 'mult' supplied in call to 'HalfT' when specifying 'components' in call to 'Mix'")
+    object <- Mix(components = Components(),
+                  weights = Weights(scale1 = HalfT(scale = 0.1),
+                                    scale2 = HalfT(scale = 0.1)),
+                  error = Error(scale = HalfT(scale = 0.1)))
+    expect_identical(checkPriorIsInformative(object),
+                     "value for 'scale' not supplied in call to 'HalfT' when specifying 'components' in call to 'Mix'")
+    object <- Mix(components = Components(scale = HalfT(scale = 0.1)),
+                  weights = Weights(scale1 = HalfT(mult = 0.1),
+                                    scale2 = HalfT(scale = 0.1)),
+                  error = Error(scale = HalfT(scale = 0.1)))
+    expect_identical(checkPriorIsInformative(object),
+                     "value for 'mult' supplied in call to 'HalfT' when specifying 'scale1' for 'weights' in call to 'Mix'")
+    object <- Mix(components = Components(scale = HalfT(scale = 0.1)),
+                  weights = Weights(scale1 = HalfT(scale = 0.1)),
+                  error = Error(scale = HalfT(scale = 0.1)))
+    expect_identical(checkPriorIsInformative(object),
+                     "value for 'scale' not supplied in call to 'HalfT' when specifying 'scale2' for 'weights' in call to 'Mix'")
+})
+
+
+
 test_that("checkPriorIsInformative works with SpecZero", {
     checkPriorIsInformative <- demest:::checkPriorIsInformative
     object <- Zero()

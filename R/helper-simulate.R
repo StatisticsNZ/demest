@@ -1,4 +1,22 @@
 
+## HAS_TESTS
+checkAllDimensionsHavePriors <- function(model, y) {
+    if (methods::is(model, "SpecVarying")) {
+        name.response <- model@nameY@.Data
+        names.specs <- model@namesSpecsPriors
+        names.y <- names(y)
+        for (name in names.y) {
+            if (!(name %in% names.specs))
+                stop(gettextf("no prior specified for \"%s\" dimension in model for '%s'",
+                              name, name.response))
+        }
+        if (!("(Intercept)" %in% names.specs))
+            stop(gettextf("no prior specified for intercept in model for '%s'",
+                          name.response))
+    }
+    NULL
+}
+
 
 ## checkPriorInform ########################################################
 
@@ -139,42 +157,107 @@ checkPriorInform_Season <- function(object) {
     NULL
 }
 
-
-
-
-
-
-
-
-
-
-
-
+## HAS_TESTS
+checkPriorInform_Components <- function(object) {
+    value.mult.vectors <- checkPriorInform_prohibited(object = object,
+                                                      nameSlot = "multVectorsMix",
+                                                      nameArg = "mult",
+                                                      nameFun = "HalfT")
+    value.A.vectors <- checkPriorInform_required(object = object,
+                                                 nameSlot = "AVectorsMix",
+                                                 nameArg = "scale",
+                                                 nameFun = "HalfT")
+    for (value in list(value.mult.vectors, value.A.vectors))
+        if (!is.null(value))
+            return(gettextf("%s when specifying '%s'",
+                            value, "components"))
+    NULL
+}
 
 ## HAS_TESTS
-checkPriorsAreInformative <- function(object) {
-    if (!methods::is(object, "SpecVarying"))
-        stop(gettextf("'%s' has class \"%s\"",
-                      "object", class(object)))
-    name.model <- object@nameY[[1L]]
-    specs.priors <- object@specsPriors
-    names.specs.priors <- object@namesSpecsPriors
-    for (i in seq_along(specs.priors)) {
-        value <- checkPriorIsInformative(specs.priors[[i]])
+checkPriorInform_Weights <- function(object) {
+    ## ComponentWeight
+    value.mult.comp.wt <- checkPriorInform_prohibited(object = object,
+                                                      nameSlot = "multComponentWeightMix",
+                                                      nameArg = "mult",
+                                                      nameFun = "HalfT")
+    value.A.comp.wt <- checkPriorInform_required(object = object,
+                                                 nameSlot = "AComponentWeightMix",
+                                                 nameArg = "scale",
+                                                 nameFun = "HalfT")
+    for (value in list(value.mult.comp.wt, value.A.comp.wt))
         if (!is.null(value))
-            stop(gettextf("problem with prior for '%s' in model for '%s' : %s",
-                          names.specs.priors[i], name.model, value))
-    }
+            return(gettextf("%s when specifying '%s' for '%s'",
+                            value, "scale1", "weights"))
+    ## LevelComponentWeight
+    value.mult.level.comp.wt <- checkPriorInform_prohibited(object = object,
+                                                            nameSlot = "multLevelComponentWeightMix",
+                                                            nameArg = "mult",
+                                                            nameFun = "HalfT")
+    value.A.level.comp.wt <- checkPriorInform_required(object = object,
+                                                       nameSlot = "ALevelComponentWeightMix",
+                                                       nameArg = "scale",
+                                                       nameFun = "HalfT")
+    for (value in list(value.mult.level.comp.wt, value.A.level.comp.wt))
+        if (!is.null(value))
+            return(gettextf("%s when specifying '%s' for '%s'",
+                            value, "scale2", "weights"))
     NULL
 }
 
 
 
+## HAS_TESTS
+checkPriorsAreInformative <- function(object) {
+    if (methods::is(object, "SpecVarying")) {
+        name.model <- object@nameY[[1L]]
+        specs.priors <- object@specsPriors
+        names.specs.priors <- object@namesSpecsPriors
+        for (i in seq_along(specs.priors)) {
+            value <- checkPriorIsInformative(specs.priors[[i]])
+            if (!is.null(value))
+                stop(gettextf("problem with prior for '%s' in model for '%s' : %s",
+                              names.specs.priors[i], name.model, value))
+        }
+    }
+    NULL
+}
 
-
-
-
-
+## HAS_TESTS
+checkPriorSDInformative <- function(object) {
+    if (methods::is(object, "SpecVarying")) {
+        name.model <- object@nameY[[1L]]
+        if (methods::.hasSlot(object, "multSigma"))
+            value.mult.sigma <- checkPriorInform_prohibited(object = object,
+                                                            nameSlot = "multSigma",
+                                                            nameArg = "mult",
+                                                            nameFun = "HalfT")
+        else
+            value.mult.sigma <- NULL
+        ## no need to allow for partial matching, since 'priorSD'
+        ## argument follows '...'
+        i.prior.sd <- match("priorSD", names(object@call), nomatch = 0L)
+        specified.prior.sd <- i.prior.sd > 0L
+        if (specified.prior.sd) {
+            spec.prior.sd <- object@call[[i.prior.sd]]
+            ## allow for partial matching
+            i.scale.prior.sd <- pmatch(names(spec.prior.sd), "scale", nomatch = 0L)
+            if (any(i.scale.prior.sd > 0L))
+                value.A.sigma <- NULL
+            else
+                value.A.sigma <- gettextf("'%s' argument not supplied in call to '%s'",
+                                          "scale", "HalfT")
+        }
+        else
+            value.A.sigma <- gettextf("'%s' argument not supplied in call to '%s'",
+                                      "priorSD", "Model")
+        for (value in list(value.mult.sigma, value.A.sigma))
+            if (!is.null(value))
+                stop(gettextf("problem with specification of '%s' in model for '%s' : %s",
+                              "priorSD", name.model, value))
+    }
+    NULL
+}    
 
 
 

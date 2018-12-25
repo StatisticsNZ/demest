@@ -4105,9 +4105,9 @@ test_that("updateUEtaCoef gives valid answer - prior mean all 0", {
         ans.expected <- prior0
         U <- numeric(7)
         for (i in 1:7) {
-            U[i] <- rinvchisq1(df = prior0@nuEtaCoef + 1,
-                               scale = ((prior0@nuEtaCoef * prior0@AEtaCoef^2 + prior0@eta[i+1]^2)
-                                   / (prior0@nuEtaCoef + 1)))
+            U[i] <- rinvchisq1(df = prior0@nuEtaCoef[i] + 1,
+                               scale = ((prior0@nuEtaCoef[i] * prior0@AEtaCoef[i]^2 + prior0@eta[i+1]^2)
+                                   / (prior0@nuEtaCoef[i] + 1)))
         }
         ans.expected@UEtaCoef@.Data <- U
         expect_identical(ans.obtained, ans.expected)

@@ -1,31 +1,251 @@
+model <- Model(y ~ Poisson(mean ~ age * sex),
+               `(Intercept)` ~ ExchFixed(sd = 10), 
+               age ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
+               sex ~ ExchFixed(sd = 0.1),
+               age:sex ~ ExchFixed(sd = 0.05),
+               priorSD = HalfT(scale = 0.2))
 
-getPriorSD <- function(spec) {
-    if (!methods::is(spec, "SpecVarying"))
-    i.prior.sd <- match("priorSD", names(spec@call), nomatch = 0L)
-    has.prior.sd <- i.prior.sd > 0L                                  
-    if (!has.prior.sd)
-        stop(gettextf("'%s' argument required in call to '%s' when specifying model for fake data",
-                      "priorSD", "Model"))
-    call.prior.sd <- spec@call[[i.prior.sd]]
-    i.scale.prior.sd <- match("scale", names(call.prior.sd), nomatch = 0L)
-    has.scale.prior.sd <- i.scale.prior.sd > 0L
-    if (!has.scale.prior.sd)
-        stop(gettextf("'%s' argument required in call to '%s' when specifying '%s' in model for fake data",
-                      "scale", "priorSD", "Model"))
-    nu <- object@nuSigma
-    A <- object@ASigma@.Data
-    max <- object@sigmaMax@.Data
-    HalfT(df = nu,
-          scale = A,
-          max = max)
+model <- Model(y ~ Poisson(mean ~ age * sex),
+               `(Intercept)` ~ ExchFixed(sd = 10), 
+               age ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
+               sex ~ ExchFixed(sd = 0.1),
+               age:sex ~ ExchFixed(sd = 0.05),
+               priorSD = HalfT(sc = 0.2))
+
+
+
+
+setGeneric("drawPrior",
+           function(object, useC = FALSE, useSpecific = FALSE)
+               standardGeneric("drawPrior"))
+
+setMethod("drawPrior",
+          signature(object = "ExchFixed"),
+          function(object, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawPrior_ExchFixed_R, prior)
+                  else
+                      .Call(drawPrior_R, prior)
+              }
+              else {
+                  prior
+              }
+          })
+
+
+
+drawTau <- function(prior, useC = FALSE) {
+    methods::validObject(prior)
+    if (useC) {
+        .Call(drawTau_R, prior)
+    }
+    else {
+        A <- prior@ATau@.Data
+        nu <- prior@nuTau@.Data
+        tau <- rhalft(n = 1L,
+                      df = nu,
+                      scale = A)
+        prior@tau@.Data <- tau
+        prior
+    }
 }
 
 
 
-fakeModel <- function(model, y, exposure = NULL, weights = NULL,
-                      filename = NULL, nBurnin = 0, nSim = 25,
-                      nChain = 4, nThin = 1, parallel = TRUE, outfile = NULL,
-                      nUpdateMax = 50, verbose = TRUE, useC = TRUE) {
+
+
+setMethod("drawPrior",
+          signature(object = "ExchNormZero"),
+          function(object, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawPrior_ExchNormZero_R, prior)
+                  else
+                      .Call(drawPrior_R, prior)
+              }
+              else {
+                  prior <- drawTau(prior)
+                  prior
+              }
+          })
+
+
+setMethod("drawPrior",
+          signature(prior = "ExchRobustZero"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawPrior_ExchRobustZero_R, prior)
+                  else
+                      .Call(drawPrior_R, prior)
+              }
+              else {
+                  prior <- predictUBeta(prior)
+                  prior
+              }
+          })
+
+
+setMethod("drawPrior",
+          signature(prior = "ExchNormCov"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawPrior_ExchNormCov_R, prior)
+                  else
+                      .Call(drawPrior_R, prior)
+              }
+              else {
+                  prior <- drawTau(prior)
+                  prior <- drawEta(prior)
+                  prior
+              }
+          })
+
+
+drawEta <- function(prior, useC = FALSE) {
+    methods::validObject(prior)
+    if (useC) {
+        .Call(drawEta_R, prior)
+    }
+    else {
+        eta <- prior@eta@.Data
+        P <- prior@P@.Data
+        A.eta.intercept <- prior@AEtaIntercept@.Data
+        A.eta.coef <- prior@AEtaCoef@.Data
+        mean.eta.coef <- prior@meanEtaCoef@.Data
+        eta[1L] <- rnorm(n = 1L,
+                         mean = 0,
+                         sd = A.eta.intercept)
+        for (p in seq_len(P - 1L)) {
+            T <- rt(n = 1L, df = nu.eta.coef[p])
+            eta[p + 1L] <- mean.eta.coef[p] + A.eta.coef[p] * T
+        }
+        prior@eta@.Data <- eta
+}
+
+
+
+
+
+
+
+
+## NO_TESTS
+drawBetas <- function(object) {
+    stopifnot(methods::is(object, "Varying"))
+    stopifnot(methods::validObject(object))
+    if (useC) {
+        .Call(drawBetas_R, object)
+    }
+    else {
+        betas <- object@betas
+        priors <- object@priorsBetas
+        for (b in seq_along(betas)) {
+            prior <- priors[[i]]
+            J <- prior@J@.Data
+            all.struc.zero <- prior@allStrucZero
+            beta.hat <- betaHat(prior)
+            v <- getV(prior)
+            for (j in seq_len(J)) {
+                if (!all.struct.zero[j]) {
+                    mean <- beta.hat[j]
+                    sd <- sqrt(v[j])
+                    betas[[b]][j] <- stats::rnorm(n = 1L,
+                                                  mean = mean,
+                                                  sd = sd)
+                }
+            }
+        }
+        object@betas <- betas
+        object
+    }
+}
+
+
+
+
+
+## NO_TESTS
+drawSigma_Varying <- function(object) {
+    stopifnot(methods::is(object, "Varying"))
+    stopifnot(methods::validObject(object))
+    if (useC) {
+        .Call(drawSigma_Varying_R, object)
+    }
+    else {
+        max <- object@sigmaMax@.Data
+        A <- object@ASigma@.Data
+        nu <- object@nuSigma@.Data
+        val <- rhalfTrunc1(df = nu,
+                           scale = A,
+                           max = max,
+                           useC = TRUE)
+        object@sigma@.Data <- val
+        object
+    }
+}
+
+              
+checkAllDimensionsHavePriors <- function(model, y) {
+    names.specs <- model@namesSpecsPriors
+    names.y <- names(y)
+    for (name in names.y) {
+        if (!(name %in% names.specs))
+            stop(gettextf("no prior specified for \"%s\" dimension",
+                          name))
+    }
+    NULL
+}
+
+
+checkSimulate <- function(val, nameVal, useVal, nameY) {
+    if (is.null(val) && useVal)
+        stop(gettextf("problem with model for '%s' : value for '%s' not supplied",
+                      nameY, nameVal))
+    if (!is.null(val) && !useVal)
+        stop(gettextf("problem with model for '%s' : value for '%s' supplied but should not be",
+                      nameY, nameVal))
+    NULL
+}
+        
+
+setGeneric("checkAndTidyYExposureWeightsSimulate",
+           function(model, y, exposure, weights)
+               standardGeneric("checkAndTidyYExposureWeightsSimulate"))
+
+setMethod("checkAndTidyYExposureWeightsSimulate",
+          signature(model = "SpecBinomialVarying"),
+          function(model, y, exposure, weights) {
+              nameY <- model@nameY[[1L]]
+              checkSimulate(val = y,
+                            nameVal = "y",
+                            useVal = FALSE,
+                            nameY = nameY)
+              checkSimulate(val = exposure,
+                            nameVal = "exposure",
+                            useVal = TRUE,
+                            nameY = nameY)
+              checkSimulate(val = y,
+                            nameVal = "y",
+                            useVal = FALSE,
+                            nameY = nameY)
+              
+          })              
+              
+              
+
+
+simulateModel <- function(model, y = NULL, exposure = NULL, weights = NULL,
+                          filename = NULL, nBurnin = 0, nSim = 25,
+                          nChain = 4, nThin = 1, parallel = TRUE,
+                          outfile = NULL, nUpdateMax = 50,
+                          verbose = TRUE, useC = TRUE) {
     call <- match.call()
     methods::validObject(model)
     mcmc.args <- makeMCMCArgs(nBurnin = nBurnin,
@@ -39,7 +259,7 @@ fakeModel <- function(model, y, exposure = NULL, weights = NULL,
     control.args <- makeControlArgs(call = call,
                                     parallel = parallel,
                                     nUpdateMax = nUpdateMax)
-    l <- checkFakeYExposureWeights(spec = model,
+    l <- checkFakeYExposureWeights(model = model,
                                    y = y,
                                    exposure = exposure,
                                    weights = weights)
@@ -49,8 +269,10 @@ fakeModel <- function(model, y, exposure = NULL, weights = NULL,
     checkForSubtotals(object = y,
                       model = model,
                       name = "y")
+    checkAllDimensionsHavePriors(model = model,
+                                 y = y)
     checkPriorsAreInformative(model)
-    checkAllDimensionsHavePriors(model)
+    checkPriorSDInformative(model)
     combineds <- replicate(n = mcmc.args$nChain,
                            initialCombinedModel(model,
                                                 y = y,
@@ -77,7 +299,7 @@ fakeModel <- function(model, y, exposure = NULL, weights = NULL,
         parallel::clusterSetRNGStream(cl,
                                       iseed = pseed)
         final.combineds <- parallel::clusterMap(cl = cl,
-                                                fun = estimateOneChain,
+                                                fun = simulateOneChain,
                                                 tempfile = tempfiles,
                                                 combined = combineds,
                                                 MoreArgs = MoreArgs,
@@ -87,7 +309,7 @@ fakeModel <- function(model, y, exposure = NULL, weights = NULL,
         parallel::stopCluster(cl)
     }
     else {
-        final.combineds <- mapply(estimateOneChain,
+        final.combineds <- mapply(simulateOneChain,
                                   tempfile = tempfiles,
                                   combined = combineds,
                                   MoreArgs = MoreArgs,
@@ -109,7 +331,7 @@ fakeModel <- function(model, y, exposure = NULL, weights = NULL,
 }
 
 
-fakeOneChain <- function(combined, nIteration, ...) {
+simulateOneChain <- function(combined, nIteration, ...) {
     ## set seed if continuing
     if (!is.null(seed))
         assign(".Random.seed", seed, envir = .GlobalEnv)
@@ -139,6 +361,35 @@ fakeOneChain <- function(combined, nIteration, ...) {
     ## return final state
     combined
 }
+
+
+setMethod("simulateCombined",
+          signature(object = "CombinedModelPoissonHasExp"),
+          function(object, nUpdate = 1L, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              methods::validObject(object)
+              ## nUpdate
+              stopifnot(identical(length(nUpdate), 1L))
+              stopifnot(is.integer(nUpdate))
+              stopifnot(!is.na(nUpdate))
+              stopifnot(nUpdate >= 0L)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(updateCombined_CombinedModelPoissonHasExp_R, object, nUpdate)
+                  else
+                      .Call(updateCombined_R, object, nUpdate)
+              }
+              else {
+                  model <- object@model
+                  y <- object@y
+                  exposure <- object@exposure
+                  for (i in seq_len(nUpdate))
+                      model <- predictModelUseExp(model, exposure = exposure)
+                  object@model <- model
+                  object
+              }
+          })
+
 
 
 
@@ -319,4 +570,926 @@ fakeData(model = model,
          exposure = exposure,
          filename = filename,
          nIteration = 100)
+
+
+
+
+
+setMethod("drawFromModelUseExp",
+          signature(object = "BinomialVarying"),
+          function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(identical(length(y), length(object@theta)))
+              stopifnot(is.integer(y))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
+              ## exposure
+              stopifnot(is.integer(exposure))
+              stopifnot(all(exposure[!is.na(exposure)] >= 0L))
+              ## y and exposure
+              stopifnot(identical(length(exposure), length(y)))
+              stopifnot(all(is.na(exposure) <= is.na(y)))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] <= exposure[!is.na(y)]))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawFromModelUseExp_BinomialVarying_R, object, y, exposure)
+                  else
+                      .Call(drawFromModelUseExp_R, object, y, exposure)
+              }
+              else {
+                  object <- drawBetas(object)
+                  object <- drawSigma_Varying(object)
+                  object <- updateTheta_BinomialVarying(object,
+                                                        y = y,
+                                                        exposure = exposure)
+                  object
+              })
+
+
+
+
+setGeneric("drawFromModelNotUseExp",
+           function(object)
+               standardGeneric("drawFromModelNotUseExp"))
+
+
+setMethod("drawFromModelNotUseExp",
+          signature(object = "CMPVaryingNotUseExp"),
+          function(object, y, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(is.integer(y))
+              stopifnot(identical(length(y), length(object@theta)))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawFromModelNotUseExp_CMPVaryingNotUseExp_R, object, y)
+                  else
+                      .Call(drawFromModelNotUseExp_R, object, y)
+              }
+              else {
+                  object <- drawBetas(object)
+                  object <- drawSigma_Varying(object)
+                  object <- updateThetaAndNu_CMPVaryingNotUseExp(object, y = y)
+                  object
+              }
+          })
+
+
+setMethod("drawFromModelNotUseExp",
+          signature(object = "NormalVaryingVarsigmaKnown"),
+          function(object, y, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(is.double(y))
+              stopifnot(identical(length(y), length(object@theta)))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawFromModelNotUseExp_NormalVaryingVarsigmaKnown_R, object, y)
+                  else
+                      .Call(drawFromModelNotUseExp_R, object, y)
+              }
+              else {
+                  varsigmaSetToZero <- object@varsigmaSetToZero@.Data
+                  object <- drawBetas(object)
+                  object <- drawSigma_Varying(object)
+                  if (varsigmaSetToZero)
+                      object <- updateThetaVarsigmaSetToZero(object)
+                  else
+                      object <- updateTheta_NormalVarying(object, y = y)
+                  object
+              }
+          })
+
+
+## TRANSLATED
+## HAS_TESTS
+setMethod("drawFromModelNotUseExp",
+          signature(object = "NormalVaryingVarsigmaUnknown"),
+          function(object, y, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(is.double(y))
+              stopifnot(identical(length(y), length(object@theta)))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawFromModelNotUseExp_NormalVaryingVarsigmaUnknown_R, object, y)
+                  else
+                      .Call(drawFromModelNotUseExp_R, object, y)
+              }
+              else {
+                  identity <- function(x) x
+                  object <- updateTheta_NormalVarying(object, y = y)
+                  object <- updateVarsigma(object, y = y)
+                  object <- updateSigma_Varying(object, g = identity)
+                  object <- updateBetasAndPriorsBetas(object, g = identity)
+                  object
+              }
+          })
+
+## TRANSLATED
+## HAS_TESTS
+setMethod("drawFromModelNotUseExp",
+          signature(object = "PoissonVaryingNotUseExp"),
+          function(object, y, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(is.integer(y))
+              stopifnot(identical(length(y), length(object@theta)))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawFromModelNotUseExp_PoissonVaryingNotUseExp_R, object, y)
+                  else
+                      .Call(drawFromModelNotUseExp_R, object, y)
+              }
+              else {
+                  object <- updateTheta_PoissonVaryingNotUseExp(object, y = y)
+                  object <- updateSigma_Varying(object, g = log)
+                  object <- updateBetasAndPriorsBetas(object, g = log)
+                  object
+              }
+          })
+
+
+## TRANSLATED
+## HAS_TESTS
+setMethod("drawFromModelNotUseExp",
+          signature(object = "NormalVaryingVarsigmaKnownAgCertain"),
+          function(object, y, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(is.double(y))
+              stopifnot(identical(length(y), length(object@theta)))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawFromModelNotUseExp_NormalVaryingVarsigmaKnownAgCertain_R, object, y)
+                  else
+                      .Call(drawFromModelNotUseExp_R, object, y)
+              }
+              else {
+                  identity <- function(x) x
+                  object <- updateTheta_NormalVaryingAgCertain(object, y = y)
+                  object <- updateSigma_Varying(object, g = identity)
+                  object <- updateBetasAndPriorsBetas(object, g = identity)
+                  object
+              }
+          })
+
+## TRANSLATED
+## HAS_TESTS
+setMethod("drawFromModelNotUseExp",
+          signature(object = "NormalVaryingVarsigmaUnknownAgCertain"),
+          function(object, y, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(is.double(y))
+              stopifnot(identical(length(y), length(object@theta)))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawFromModelNotUseExp_NormalVaryingVarsigmaUnknownAgCertain_R, object, y)
+                  else
+                      .Call(drawFromModelNotUseExp_R, object, y)
+              }
+              else {
+                  identity <- function(x) x
+                  object <- updateTheta_NormalVaryingAgCertain(object, y = y)
+                  object <- updateVarsigma(object, y = y)
+                  object <- updateSigma_Varying(object, g = identity)
+                  object <- updateBetasAndPriorsBetas(object, g = identity)
+                  object
+              }
+          })
+
+## TRANSLATED
+## HAS_TESTS
+setMethod("drawFromModelNotUseExp",
+          signature(object = "PoissonVaryingNotUseExpAgCertain"),
+          function(object, y, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(is.integer(y))
+              stopifnot(identical(length(y), length(object@theta)))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawFromModelNotUseExp_PoissonVaryingNotUseExpAgCertain_R, object, y)
+                  else
+                      .Call(drawFromModelNotUseExp_R, object, y)
+              }
+              else {
+                  object <- updateTheta_PoissonVaryingNotUseExpAgCertain(object, y = y)
+                  object <- updateSigma_Varying(object, g = log)
+                  object <- updateBetasAndPriorsBetas(object, g = log)
+                  object
+              }
+          })
+
+## TRANSLATED
+## HAS_TESTS
+setMethod("drawFromModelNotUseExp",
+          signature(object = "NormalVaryingVarsigmaKnownAgNormal"),
+          function(object, y, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(is.double(y))
+              stopifnot(identical(length(y), length(object@theta)))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawFromModelNotUseExp_NormalVaryingVarsigmaKnownAgNormal_R, object, y)
+                  else
+                      .Call(drawFromModelNotUseExp_R, object, y)
+              }
+              else {
+                  identity <- function(x) x
+                  object <- updateTheta_NormalVaryingAgCertain(object, y = y)
+                  object <- updateThetaAndValueAgNormal_Normal(object = object, y = y)
+                  object <- updateSigma_Varying(object, g = identity)
+                  object <- updateBetasAndPriorsBetas(object, g = identity)
+                  object
+              }
+          })
+
+## TRANSLATED
+## HAS_TESTS
+setMethod("drawFromModelNotUseExp",
+          signature(object = "NormalVaryingVarsigmaUnknownAgNormal"),
+          function(object, y, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(is.double(y))
+              stopifnot(identical(length(y), length(object@theta)))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawFromModelNotUseExp_NormalVaryingVarsigmaUnknownAgNormal_R, object, y)
+                  else
+                      .Call(drawFromModelNotUseExp_R, object, y)
+              }
+              else {
+                  identity <- function(x) x
+                  object <- updateTheta_NormalVaryingAgCertain(object, y = y)
+                  object <- updateThetaAndValueAgNormal_Normal(object = object, y = y)
+                  object <- updateVarsigma(object, y = y)
+                  object <- updateSigma_Varying(object, g = identity)
+                  object <- updateBetasAndPriorsBetas(object, g = identity)
+                  object
+              }
+          })
+
+## TRANSLATED
+## HAS_TESTS
+setMethod("drawFromModelNotUseExp",
+          signature(object = "NormalVaryingVarsigmaKnownAgFun"),
+          function(object, y, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(is.double(y))
+              stopifnot(identical(length(y), length(object@theta)))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawFromModelNotUseExp_NormalVaryingVarsigmaKnownAgFun_R, object, y)
+                  else
+                      .Call(drawFromModelNotUseExp_R, object, y)
+              }
+              else {
+                  identity <- function(x) x
+                  object <- updateThetaAndValueAgFun_Normal(object, y = y)
+                  object <- updateSigma_Varying(object, g = identity)
+                  object <- updateBetasAndPriorsBetas(object, g = identity)
+                  object
+              }
+          })
+
+## TRANSLATED
+## HAS_TESTS
+setMethod("drawFromModelNotUseExp",
+          signature(object = "NormalVaryingVarsigmaUnknownAgFun"),
+          function(object, y, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(is.double(y))
+              stopifnot(identical(length(y), length(object@theta)))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawFromModelNotUseExp_NormalVaryingVarsigmaUnknownAgFun_R, object, y)
+                  else
+                      .Call(drawFromModelNotUseExp_R, object, y)
+              }
+              else {
+                  identity <- function(x) x
+                  object <- updateThetaAndValueAgFun_Normal(object, y = y)
+                  object <- updateVarsigma(object, y = y)
+                  object <- updateSigma_Varying(object, g = identity)
+                  object <- updateBetasAndPriorsBetas(object, g = identity)
+                  object
+              }
+          })
+
+## TRANSLATED
+## HAS_TESTS
+setMethod("drawFromModelNotUseExp",
+          signature(object = "PoissonVaryingNotUseExpAgNormal"),
+          function(object, y, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(is.integer(y))
+              stopifnot(identical(length(y), length(object@theta)))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawFromModelNotUseExp_PoissonVaryingNotUseExpAgNormal_R, object, y)
+                  else
+                      .Call(drawFromModelNotUseExp_R, object, y)
+              }
+              else {
+                  object <- updateTheta_PoissonVaryingNotUseExpAgCertain(object, y = y)
+                  object <- updateThetaAndValueAgNormal_PoissonNotUseExp(object, y = y)
+                  object <- updateSigma_Varying(object, g = log)
+                  object <- updateBetasAndPriorsBetas(object, g = log)
+                  object
+              }
+          })
+
+## TRANSLATED
+## HAS_TESTS
+setMethod("drawFromModelNotUseExp",
+          signature(object = "PoissonVaryingNotUseExpAgFun"),
+          function(object, y, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(is.integer(y))
+              stopifnot(identical(length(y), length(object@theta)))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawFromModelNotUseExp_PoissonVaryingNotUseExpAgFun_R, object, y)
+                  else
+                      .Call(drawFromModelNotUseExp_R, object, y)
+              }
+              else {
+                  object <- updateThetaAndValueAgFun_PoissonNotUseExp(object, y = y)
+                  object <- updateSigma_Varying(object, g = log)
+                  object <- updateBetasAndPriorsBetas(object, g = log)
+                  object
+              }
+          })
+
+## TRANSLATED
+## HAS_TESTS
+setMethod("drawFromModelNotUseExp",
+          signature(object = "PoissonVaryingNotUseExpAgPoisson"),
+          function(object, y, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(is.integer(y))
+              stopifnot(identical(length(y), length(object@theta)))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawFromModelNotUseExp_PoissonVaryingNotUseExpAgPoisson_R, object, y)
+                  else
+                      .Call(drawFromModelNotUseExp_R, object, y)
+              }
+              else {
+                  object <- updateTheta_PoissonVaryingNotUseExpAgCertain(object, y = y)
+                  object <- updateThetaAndValueAgPoisson_PoissonNotUseExp(object, y = y)
+                  object <- updateSigma_Varying(object, g = log)
+                  object <- updateBetasAndPriorsBetas(object, g = log)
+                  object
+              }
+          })
+
+## TRANSLATED
+## HAS_TESTS
+setMethod("drawFromModelNotUseExp",
+          signature(object = "NormalFixedNotUseExp"),
+          function(object, y, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(is.integer(y))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawFromModelNotUseExp_NormalFixedNotUseExp_R, object, y)
+                  else
+                      .Call(drawFromModelNotUseExp_R, object, y)
+              }
+              else {
+                  ## object is not updated
+                  object
+              }
+          })
+
+
+## TRANSLATED
+## HAS_TESTS
+setMethod("drawFromModelNotUseExp",
+          signature(object = "TFixedNotUseExp"),
+          function(object, y, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(is.integer(y))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawFromModelNotUseExp_TFixedNotUseExp_R, object, y)
+                  else
+                      .Call(drawFromModelNotUseExp_R, object, y)
+              }
+              else {
+                  ## object is not updated
+                  object
+              }
+          })
+
+
+
+
+
+## drawFromModelUseExp #################################################################
+
+
+## TRANSLATED
+## HAS_TESTS
+setMethod("drawFromModelUseExp",
+          signature(object = "CMPVaryingUseExp"),
+          function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(is.integer(y))
+              stopifnot(identical(length(y), length(object@theta)))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
+              ## exposure
+              stopifnot(is.double(exposure))
+              stopifnot(all(exposure[!is.na(exposure)] >= 0))
+              ## y and exposure
+              stopifnot(identical(length(exposure), length(y)))
+              stopifnot(all(is.na(exposure) <= is.na(y)))
+              stopifnot(all(y@.Data[!is.na(y@.Data) & (exposure@.Data == 0L)] == 0))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawFromModelUseExp_CMPVaryingUseExp_R, object, y, exposure)
+                  else
+                      .Call(drawFromModelUseExp_R, object, y, exposure)
+              }
+              else {
+                  object <- updateThetaAndNu_CMPVaryingUseExp(object, y = y, exposure)
+                  object <- updateSigma_Varying(object, g = log)
+                  object <- updateBetasAndPriorsBetas(object, g = log)
+                  object
+              }
+          })
+
+## TRANSLATED
+## HAS_TESTS
+setMethod("drawFromModelUseExp",
+          signature(object = "PoissonVaryingUseExp"),
+          function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(identical(length(y), length(object@theta)))
+              stopifnot(is.integer(y))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
+              ## exposure
+              stopifnot(is.double(exposure))
+              stopifnot(all(exposure[!is.na(exposure)] >= 0))
+              ## y and exposure
+              stopifnot(identical(length(exposure), length(y)))
+              stopifnot(all(is.na(exposure) <= is.na(y)))
+              stopifnot(all(y@.Data[!is.na(y@.Data) & (exposure@.Data == 0L)] == 0))
+              stopifnot(all(y@.Data[!is.na(y@.Data) & (exposure@.Data == 0L)] == 0))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawFromModelUseExp_PoissonVarying_R, object, y, exposure)
+                  else
+                      .Call(drawFromModelUseExp_R, object, y, exposure)
+              }
+              else {
+                  object <- updateTheta_PoissonVaryingUseExp(object, y = y, exposure = exposure)
+                  object <- updateSigma_Varying(object, g = log)
+                  object <- updateBetasAndPriorsBetas(object, g = log)
+                  object
+              }
+          })
+
+## TRANSLATED
+## HAS_TESTS
+setMethod("drawFromModelUseExp",
+          signature(object = "PoissonBinomialMixture"),
+          function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(is.integer(y))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
+              ## exposure
+              stopifnot(is.integer(exposure))
+              stopifnot(all(exposure[!is.na(exposure)] >= 0L))
+              ## y and exposure
+              stopifnot(identical(length(exposure), length(y)))
+              stopifnot(all(is.na(exposure) <= is.na(y)))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawFromModelUseExp_PoissonBinomialMixture_R, object, y, exposure)
+                  else
+                      .Call(drawFromModelUseExp_R, object, y, exposure)
+              }
+              else {
+                  ## object is not updated
+                  object
+              }
+          })
+
+## TRANSLATED
+## HAS_TESTS
+setMethod("drawFromModelUseExp",
+          signature(object = "Round3"),
+          function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(is.integer(y))
+              stopifnot(all(dataset[!is.na(dataset)] %% 3L == 0L))
+              ## exposure
+              stopifnot(is.integer(exposure))
+              stopifnot(all(exposure[!is.na(exposure)] >= 0L))
+              ## y and exposure
+              stopifnot(identical(length(exposure), length(y)))
+              stopifnot(all(is.na(exposure) <= is.na(y)))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawFromModelUseExp_Round3_R, object, y, exposure)
+                  else
+                      .Call(drawFromModelUseExp_R, object, y, exposure)
+              }
+              else {
+                  ## object is not updated
+                  object
+              }
+          })
+
+
+## TRANSLATED
+## HAS_TESTS
+setMethod("drawFromModelUseExp",
+          signature(object = "BinomialVaryingAgCertain"),
+          function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(identical(length(y), length(object@theta)))
+              stopifnot(is.integer(y))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
+              ## exposure
+              stopifnot(is.integer(exposure))
+              stopifnot(!any(is.na(exposure)))
+              stopifnot(all(exposure[!is.na(exposure)] >= 0))
+              ## y and exposure
+              stopifnot(identical(length(exposure), length(y)))
+              stopifnot(all(is.na(exposure) <= is.na(y)))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] <= exposure[is.na(y)]))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawFromModelUseExp_BinomialVaryingAgCertain_R, object, y, exposure)
+                  else
+                      .Call(drawFromModelUseExp_R, object, y, exposure)
+              }
+              else {
+                  logit <- function(x) log(x / (1 - x))
+                  object <- updateTheta_BinomialVaryingAgCertain(object, y = y, exposure = exposure)
+                  object <- updateSigma_Varying(object, g = logit)
+                  object <- updateBetasAndPriorsBetas(object, g = logit)
+                  object
+              }
+          })
+
+## TRANSLATED
+## HAS_TESTS
+setMethod("drawFromModelUseExp",
+          signature(object = "PoissonVaryingUseExpAgCertain"),
+          function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(identical(length(y), length(object@theta)))
+              stopifnot(is.integer(y))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
+              ## exposure
+              stopifnot(is.double(exposure))
+              stopifnot(!any(is.na(exposure)))
+              stopifnot(all(exposure[!is.na(exposure)] >= 0))
+              ## y and exposure
+              stopifnot(identical(length(exposure), length(y)))
+              stopifnot(all(is.na(exposure) <= is.na(y)))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawFromModelUseExp_PoissonVaryingUseExpAgCertain_R, object, y, exposure)
+                  else
+                      .Call(drawFromModelUseExp_R, object, y, exposure)
+              }
+              else {
+                  object <- updateTheta_PoissonVaryingUseExpAgCertain(object, y = y, exposure = exposure)
+                  object <- updateSigma_Varying(object, g = log)
+                  object <- updateBetasAndPriorsBetas(object, g = log)
+                  object
+              }
+          })
+
+## TRANSLATED
+## HAS_TESTS
+setMethod("drawFromModelUseExp",
+          signature(object = "BinomialVaryingAgNormal"),
+          function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(identical(length(y), length(object@theta)))
+              stopifnot(is.integer(y))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0L))
+              ## exposure
+              stopifnot(is.integer(exposure))
+              stopifnot(!any(is.na(exposure)))
+              stopifnot(all(exposure[!is.na(exposure)] >= 0L))
+              ## y and exposure
+              stopifnot(identical(length(exposure), length(y)))
+              stopifnot(all(is.na(exposure) <= is.na(y)))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] <= exposure[!is.na(y)]))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawFromModelUseExp_BinomialVaryingAgNormal_R, object, y, exposure)
+                  else
+                      .Call(drawFromModelUseExp_R, object, y, exposure)
+              }
+              else {
+                  logit <- function(x) log(x / (1 - x))
+                  object <- updateTheta_BinomialVaryingAgCertain(object, y = y, exposure = exposure)
+                  object <- updateThetaAndValueAgNormal_Binomial(object, y = y, exposure = exposure)
+                  object <- updateSigma_Varying(object, g = logit)
+                  object <- updateBetasAndPriorsBetas(object, g = logit)
+                  object
+              }
+          })
+
+## TRANSLATED
+## HAS_TESTS
+setMethod("drawFromModelUseExp",
+          signature(object = "BinomialVaryingAgFun"),
+          function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(identical(length(y), length(object@theta)))
+              stopifnot(is.integer(y))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0L))
+              ## exposure
+              stopifnot(is.integer(exposure))
+              stopifnot(!any(is.na(exposure)))
+              stopifnot(all(exposure[!is.na(exposure)] >= 0L))
+              ## y and exposure
+              stopifnot(identical(length(exposure), length(y)))
+              stopifnot(all(is.na(exposure) <= is.na(y)))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] <= exposure[!is.na(y)]))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawFromModelUseExp_BinomialVaryingAgFun_R, object, y, exposure)
+                  else
+                      .Call(drawFromModelUseExp_R, object, y, exposure)
+              }
+              else {
+                  logit <- function(x) log(x / (1 - x))
+                  object <- updateThetaAndValueAgFun_Binomial(object, y = y, exposure = exposure)
+                  object <- updateSigma_Varying(object, g = logit)
+                  object <- updateBetasAndPriorsBetas(object, g = logit)
+                  object
+              }
+          })
+
+## TRANSLATED
+## HAS_TESTS
+setMethod("drawFromModelUseExp",
+          signature(object = "PoissonVaryingUseExpAgNormal"),
+          function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(identical(length(y), length(object@theta)))
+              stopifnot(is.integer(y))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0L))
+              ## exposure
+              stopifnot(is.double(exposure))
+              stopifnot(!any(is.na(exposure)))
+              stopifnot(all(exposure[!is.na(exposure)] >= 0))
+              ## y and exposure
+              stopifnot(identical(length(exposure), length(y)))
+              stopifnot(all(is.na(exposure) <= is.na(y)))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawFromModelUseExp_PoissonVaryingUseExpAgNormal_R, object, y, exposure)
+                  else
+                      .Call(drawFromModelUseExp_R, object, y, exposure)
+              }
+              else {
+                  object <- updateTheta_PoissonVaryingUseExpAgCertain(object, y = y, exposure = exposure)
+                  object <- updateThetaAndValueAgNormal_PoissonUseExp(object, y = y, exposure = exposure)
+                  object <- updateSigma_Varying(object, g = log)
+                  object <- updateBetasAndPriorsBetas(object, g = log)
+                  object
+              }
+          })
+
+## TRANSLATED
+## HAS_TESTS
+setMethod("drawFromModelUseExp",
+          signature(object = "PoissonVaryingUseExpAgFun"),
+          function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(identical(length(y), length(object@theta)))
+              stopifnot(is.integer(y))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0L))
+              ## exposure
+              stopifnot(is.double(exposure))
+              stopifnot(!any(is.na(exposure)))
+              stopifnot(all(exposure[!is.na(exposure)] >= 0))
+              ## y and exposure
+              stopifnot(identical(length(exposure), length(y)))
+              stopifnot(all(is.na(exposure) <= is.na(y)))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawFromModelUseExp_PoissonVaryingUseExpAgFun_R, object, y, exposure)
+                  else
+                      .Call(drawFromModelUseExp_R, object, y, exposure)
+              }
+              else {
+                  object <- updateThetaAndValueAgFun_PoissonUseExp(object, y = y, exposure = exposure)
+                  object <- updateSigma_Varying(object, g = log)
+                  object <- updateBetasAndPriorsBetas(object, g = log)
+                  object
+              }
+          })
+
+## TRANSLATED
+## HAS_TESTS
+setMethod("drawFromModelUseExp",
+          signature(object = "PoissonVaryingUseExpAgLife"),
+          function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(identical(length(y), length(object@theta)))
+              stopifnot(is.integer(y))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0L))
+              ## exposure
+              stopifnot(is.double(exposure))
+              stopifnot(!any(is.na(exposure)))
+              stopifnot(all(exposure[!is.na(exposure)] >= 0))
+              ## y and exposure
+              stopifnot(identical(length(exposure), length(y)))
+              stopifnot(all(is.na(exposure) <= is.na(y)))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawFromModelUseExp_PoissonVaryingUseExpAgLife_R, object, y, exposure)
+                  else
+                      .Call(drawFromModelUseExp_R, object, y, exposure)
+              }
+              else {
+                  object <- updateThetaAndValueAgLife_PoissonUseExp(object, y = y, exposure = exposure)
+                  object <- updateSigma_Varying(object, g = log)
+                  object <- updateBetasAndPriorsBetas(object, g = log)
+                  object
+              }
+          })
+
+
+## TRANSLATED
+## HAS_TESTS
+setMethod("drawFromModelUseExp",
+          signature(object = "PoissonVaryingUseExpAgPoisson"),
+          function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(identical(length(y), length(object@theta)))
+              stopifnot(is.integer(y))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0L))
+              ## exposure
+              stopifnot(is.double(exposure))
+              stopifnot(!any(is.na(exposure)))
+              stopifnot(all(exposure[!is.na(exposure)] >= 0))
+              ## y and exposure
+              stopifnot(identical(length(exposure), length(y)))
+              stopifnot(all(is.na(exposure) <= is.na(y)))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawFromModelUseExp_PoissonVaryingUseExpAgPoisson_R, object, y, exposure)
+                  else
+                      .Call(drawFromModelUseExp_R, object, y, exposure)
+              }
+              else {
+                  object <- updateTheta_PoissonVaryingUseExpAgCertain(object, y = y, exposure = exposure)
+                  object <- updateThetaAndValueAgPoisson_PoissonUseExp(object, y = y, exposure = exposure)
+                  object <- updateSigma_Varying(object, g = log)
+                  object <- updateBetasAndPriorsBetas(object, g = log)
+                  object
+              }
+          })
+
+## TRANSLATED
+## HAS_TESTS
+setMethod("drawFromModelUseExp",
+          signature(object = "NormalFixedUseExp"),
+          function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(is.integer(y))
+              ## exposure
+              stopifnot(is.integer(exposure))
+              stopifnot(!any(is.na(exposure)))
+              ## y and exposure
+              stopifnot(identical(length(exposure), length(y)))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawFromModelUseExp_NormalFixedUseExp_R, object, y, exposure)
+                  else
+                      .Call(drawFromModelUseExp_R, object, y, exposure)
+              }
+              else {
+                  ## object is not updated
+                  object
+              }
+          })
+
+## TRANSLATED
+## HAS_TESTS
+setMethod("drawFromModelUseExp",
+          signature(object = "Round3"),
+          function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(is.integer(y))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
+              ## exposure
+              stopifnot(is.integer(exposure))
+              stopifnot(all(exposure[!is.na(exposure)] >= 0L))
+              ## y and exposure
+              stopifnot(identical(length(exposure), length(y)))
+              stopifnot(all(is.na(exposure) <= is.na(y)))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawFromModelUseExp_Round3_R, object, y, exposure)
+                  else
+                      .Call(drawFromModelUseExp_R, object, y, exposure)
+              }
+              else {
+                  ## object is not updated
+                  object
+              }
+          })
+
+## TRANSLATED
+## HAS_TESTS
+setMethod("drawFromModelUseExp",
+          signature(object = "TFixedUseExp"),
+          function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(is.integer(y))
+              ## exposure
+              stopifnot(is.integer(exposure))
+              stopifnot(!any(is.na(exposure)))
+              ## y and exposure
+              stopifnot(identical(length(exposure), length(y)))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawFromModelUseExp_TFixedUseExp_R, object, y, exposure)
+                  else
+                      .Call(drawFromModelUseExp_R, object, y, exposure)
+              }
+              else {
+                  ## object is not updated
+                  object
+              }
+          })
+
 

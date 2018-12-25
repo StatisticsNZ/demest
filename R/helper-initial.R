@@ -927,11 +927,12 @@ makeAIntercept <- function(A, sY) {
 }
 
 ## NO_TESTS
-makeASigma <- function(A, sY, isSpec = FALSE) {
+makeASigma <- function(A, sY, mult, isSpec = FALSE) {
     if (is.na(A)) {
         ans <- 1
         if (!is.null(sY))
             ans <- sY * ans
+        ans <- ans * mult@.Data
     }
     else
         ans <- A

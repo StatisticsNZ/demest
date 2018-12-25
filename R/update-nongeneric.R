@@ -2745,7 +2745,7 @@ updateThetaAndNu_CMPVaryingUseExp <- function(object, y, exposure, useC = FALSE)
                         y.star <- rcmp1(mu = gamma.prop,
                                         nu = nu.prop,
                                         max = max.attempt)
-                        found.y.star <- nis.finite(y.star)
+                        found.y.star <- is.finite(y.star)
                         if (found.y.star) {
                             log.lik.curr <- logDensCMPUnnormalised1(x = y[i], gamma = gamma.curr, nu = nu.curr)
                             log.lik.prop <- logDensCMPUnnormalised1(x = y[i], gamma = gamma.prop, nu = nu.prop)

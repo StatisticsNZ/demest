@@ -260,7 +260,7 @@ setClass("SpecVarying",
 setClass("SpecBinomialVarying",
          prototype = prototype(useExpose = new("LogicalFlag", TRUE)),
          contains = c("SpecVarying",
-             "SpecAgNotPoissonMixin"),
+                      "SpecAgNotPoissonMixin"),
          validity = function(object) {
              lower <- object@lower
              upper <- object@upper
@@ -283,6 +283,7 @@ setClass("SpecCMPVarying",
          contains = c("SpecVarying",
                       "BoxCoxParamMixin",
                       "MeanLogNuCMPMixin",
+                      "MultSigmaMixin",
                       "SDLogNuCMPMixin",
                       "StructuralZerosMixin"),
          validity = function(object) {
@@ -297,8 +298,9 @@ setClass("SpecCMPVarying",
 ## HAS_TESTS
 setClass("SpecNormalVarying",
          contains = c("VIRTUAL",
-             "SpecVarying",
-             "SpecAgNotPoissonMixin"))
+                      "MultSigmaMixin",
+                      "SpecVarying",
+                      "SpecAgNotPoissonMixin"))
 
 ## HAS_TESTS
 #' @rdname SpecModel-class
@@ -306,9 +308,9 @@ setClass("SpecNormalVarying",
 setClass("SpecNormalVaryingVarsigmaUnknown",
          prototype = prototype(useExpose = new("LogicalFlag", FALSE)),
          contains = c("SpecNormalVarying",
-             "NuVarsigmaMixin",
-             "SpecAVarsigmaMixin",
-             "SpecVarsigmaMaxMixin"))
+                      "NuVarsigmaMixin",
+                      "SpecAVarsigmaMixin",
+                      "SpecVarsigmaMaxMixin"))
 
 ## HAS_TESTS
 #' @rdname SpecModel-class
@@ -347,6 +349,7 @@ setClass("SpecPoissonVarying",
          prototype = prototype(useExpose = new("LogicalFlag", TRUE)),
          contains = c("SpecVarying",
                       "StructuralZerosMixin",
+                      "MultSigmaMixin",
                       "BoxCoxParamMixin"),
          validity = function(object) {
              lower <- object@lower
