@@ -2863,7 +2863,6 @@ test_that("getIExposureFromComp works with InternalMovementsPool", {
 ## MAPPINGS TO EXPOSURE - iExpFirst ################################################################
 
 ## component
-
 test_that("getIExpFirstFromComp works with ordinary component", {
     getIExpFirstFromComp <- demest:::getIExpFirstFromComp
     ExitsMovements <- dembase:::ExitsMovements
@@ -2993,6 +2992,7 @@ test_that("getIExpFirstFromComp works with ordinary component", {
         expect_identical(ans.obtained, ans.expected)
     }
 })
+
 
 test_that("R and C versions of getIExpFirstFromComp give same answer with ordinary component", {
     getIExpFirstFromComp <- demest:::getIExpFirstFromComp
@@ -3640,6 +3640,8 @@ test_that("getIExpFirstPairFromOrigDest works with InternalMovementsOrigDest", {
         expect_identical(ans.obtained, ans.expected)
     }
 })
+
+
 
 test_that("R and C versions of getIExpFirstPairFromOrigDest give same answer with InternalMovementsOrigDest", {
     getIExpFirstPairFromOrigDest <- demest:::getIExpFirstPairFromOrigDest

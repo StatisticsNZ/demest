@@ -420,7 +420,8 @@ predictModel <- function(filenameEst, filenamePred, along = NULL, labels = NULL,
 #' }
 #' @export
 estimateCounts <- function(model, y, exposure = NULL, dataModels,
-                           datasets, filename = NULL, nBurnin = 1000,
+                           datasets, concordances = list(),
+                           filename = NULL, nBurnin = 1000,
                            nSim = 1000, nChain = 5, nThin = 1,
                            parallel = TRUE, outfile = NULL, nUpdateMax = 50,
                            verbose = FALSE, useC = TRUE) {
@@ -447,8 +448,12 @@ estimateCounts <- function(model, y, exposure = NULL, dataModels,
                                             datasets = datasets,
                                             namesDatasets = namesDatasets)
     ## make transforms from y to datasets
+    checkConcordancesDatasets(concordances = concordances,
+                              datasets = datasets,
+                              namesDatasets = namesDatasets)
     transforms <- makeTransformsYToDatasets(y = y,
                                             datasets = datasets,
+                                            concordances = concordances,
                                             namesDatasets = namesDatasets)
     ## mcmc and control arguments
     mcmc.args <- makeMCMCArgs(nBurnin = nBurnin,
@@ -664,7 +669,8 @@ predictCounts <- function(filenameEst, filenamePred, along = NULL, labels = NULL
 #' \emph{Bayesian Analysis}
 #' @export
 estimateAccount <- function(account, systemModels, datasets, dataModels, 
-                            weights = list(), dominant = c("Female", "Male"),
+                            concordances = list(), weights = list(),
+                            dominant = c("Female", "Male"),
                             filename = NULL, nBurnin = 1000, nSim = 1000,
                             nChain = 4, nThin = 1,
                             parallel = TRUE, outfile = NULL, nUpdateMax = 50,
@@ -695,8 +701,12 @@ estimateAccount <- function(account, systemModels, datasets, dataModels,
     seriesIndices <- makeSeriesIndices(dataModels = dataModels,
                                        account = account)
     ## make transforms from account to datasets
+    checkConcordancesDatasets(concordances = concordances,
+                              datasets = datasets,
+                              namesDatasets = namesDatasets)
     transforms <- makeTransformsAccountToDatasets(account = account,
                                                   datasets = datasets,
+                                                  concordances = concordances,
                                                   namesDatasets = namesDatasets,
                                                   seriesIndices = seriesIndices)
     ## mcmc and control arguments

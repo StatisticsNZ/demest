@@ -32,7 +32,7 @@ disaggregated rates, counts, probabilities, or means.}
 \item{\code{weightAg}}{Weights used to calculate \code{valueAg} from
 disaggregated rates, counts, probabilities, or means.}
 
-\item{\code{concordancesAg}}{List of \code{\link[classconc]{ManyToOne}}
+\item{\code{concordancesAg}}{List of \code{\link[dembase]{ManyToOne}}
 concordances.}
 }}
 

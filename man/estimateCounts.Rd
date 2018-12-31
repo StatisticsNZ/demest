@@ -5,9 +5,9 @@
 \title{Estimate counts and model from one or more noisy datasets.}
 \usage{
 estimateCounts(model, y, exposure = NULL, dataModels, datasets,
-  filename = NULL, nBurnin = 1000, nSim = 1000, nChain = 5,
-  nThin = 1, parallel = TRUE, outfile = NULL, nUpdateMax = 50,
-  verbose = FALSE, useC = TRUE)
+  concordances = list(), filename = NULL, nBurnin = 1000,
+  nSim = 1000, nChain = 5, nThin = 1, parallel = TRUE,
+  outfile = NULL, nUpdateMax = 50, verbose = FALSE, useC = TRUE)
 }
 \arguments{
 \item{model}{An object of class \code{\linkS4class{SpecModel}},

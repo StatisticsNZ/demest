@@ -261,6 +261,82 @@ checkPriorSDInformative <- function(object) {
 
 
 
+## drawPrior, drawModel ################################################
+
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+drawTau <- function(prior, useC = FALSE) {
+    methods::validObject(prior)
+    if (useC) {
+        .Call(drawTau_R, prior)
+    }
+    else {
+        A <- prior@ATau@.Data
+        nu <- prior@nuTau@.Data
+        max <- prior@tauMax@.Data
+        tau <- rhalftTrunc1(df = nu,
+                            scale = A,
+                            max = max,
+                            useC = TRUE)
+        prior@tau@.Data <- tau
+        prior
+    }
+}
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+drawEta <- function(prior, useC = FALSE) {
+    methods::validObject(prior)
+    if (useC) {
+        .Call(drawEta_R, prior)
+    }
+    else {
+        eta <- prior@eta@.Data
+        P <- prior@P@.Data
+        A.eta.intercept <- prior@AEtaIntercept@.Data
+        A.eta.coef <- prior@AEtaCoef@.Data
+        mean.eta.coef <- prior@meanEtaCoef@.Data
+        nu.eta.coef <- prior@nuEtaCoef@.Data
+        eta[1L] <- rnorm(n = 1L,
+                         mean = 0,
+                         sd = A.eta.intercept)
+        for (p in seq_len(P - 1L)) {
+            T <- rt(n = 1L, df = nu.eta.coef[p])
+            eta[p + 1L] <- mean.eta.coef[p] + A.eta.coef[p] * T
+        }
+        prior@eta@.Data <- eta
+        prior
+    }
+}
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+drawSigma_Varying <- function(object, useC = FALSE) {
+    stopifnot(methods::is(object, "Varying"))
+    stopifnot(methods::validObject(object))
+    if (useC) {
+        .Call(drawSigma_Varying_R, object)
+    }
+    else {
+        max <- object@sigmaMax@.Data
+        A <- object@ASigma@.Data
+        nu <- object@nuSigma@.Data
+        val <- rhalftTrunc1(df = nu,
+                            scale = A,
+                            max = max,
+                            useC = TRUE)
+        object@sigma@.Data <- val
+        object
+    }
+}
+
+
+
+
+
+
+
 
 ### OLD FUNCTIONS ######################################################
 

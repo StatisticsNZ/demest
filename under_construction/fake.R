@@ -15,39 +15,59 @@ model <- Model(y ~ Poisson(mean ~ age * sex),
 
 
 
-setGeneric("drawPrior",
-           function(object, useC = FALSE, useSpecific = FALSE)
-               standardGeneric("drawPrior"))
 
-setMethod("drawPrior",
-          signature(object = "ExchFixed"),
-          function(object, useC = FALSE, useSpecific = FALSE) {
-              methods::validObject(prior)
-              if (useC) {
-                  if (useSpecific)
-                      .Call(drawPrior_ExchFixed_R, prior)
-                  else
-                      .Call(drawPrior_R, prior)
-              }
-              else {
-                  prior
-              }
-          })
-
-
-
-drawTau <- function(prior, useC = FALSE) {
+drawOmegaAlpha <- function(prior, useC = FALSE) {
     methods::validObject(prior)
     if (useC) {
-        .Call(drawTau_R, prior)
+        .Call(drawOmegaAlpha_R, prior)
     }
     else {
-        A <- prior@ATau@.Data
-        nu <- prior@nuTau@.Data
-        tau <- rhalft(n = 1L,
-                      df = nu,
-                      scale = A)
-        prior@tau@.Data <- tau
+        A <- prior@AAlpha@.Data
+        nu <- prior@nuAlpha@.Data
+        omega <- rhalft(n = 1L,
+                        df = nu,
+                        scale = A)
+        prior@omegaAlpha@.Data <- omega
+        prior
+    }
+}
+
+
+drawOmegaDelta <- function(prior, useC = FALSE) {
+    methods::validObject(prior)
+    if (useC) {
+        .Call(drawOmegaDelta_R, prior)
+    }
+    else {
+        A <- prior@ADelta@.Data
+        nu <- prior@nuDelta@.Data
+        omega <- rhalft(n = 1L,
+                        df = nu,
+                        scale = A)
+        prior@omegaDelta@.Data <- omega
+        prior
+    }
+}
+
+
+drawPhi <- function(prior, useC = FALSE) {
+    methods::validObject(prior)
+    if (useC) {
+        .Call(drawPhi_R, prior)
+    }
+    else {
+        phi.known <- prior@phiKnown@.Data
+        if (phi.known)
+            prior
+        else {
+            
+        }
+        A <- prior@ADelta@.Data
+        nu <- prior@nuDelta@.Data
+        omega <- rhalft(n = 1L,
+                        df = nu,
+                        scale = A)
+        prior@omegaDelta@.Data <- omega
         prior
     }
 }
@@ -56,78 +76,26 @@ drawTau <- function(prior, useC = FALSE) {
 
 
 
+
+
 setMethod("drawPrior",
-          signature(object = "ExchNormZero"),
-          function(object, useC = FALSE, useSpecific = FALSE) {
+          signature(prior = "DLMNoTrendNormZeroNoSeason"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
               methods::validObject(prior)
               if (useC) {
                   if (useSpecific)
-                      .Call(drawPrior_ExchNormZero_R, prior)
+                      .Call(drawPrior_DLMNoTrendNormZeroNoSeason_R, prior)
                   else
                       .Call(drawPrior_R, prior)
               }
               else {
                   prior <- drawTau(prior)
+                  prior <- drawOmegaAlpha(prior)
+                  prior <- drawPhi(prior)
+                  prior <- predictAlphaDLMNoTrend(prior)
                   prior
               }
           })
-
-
-setMethod("drawPrior",
-          signature(prior = "ExchRobustZero"),
-          function(prior, useC = FALSE, useSpecific = FALSE) {
-              methods::validObject(prior)
-              if (useC) {
-                  if (useSpecific)
-                      .Call(drawPrior_ExchRobustZero_R, prior)
-                  else
-                      .Call(drawPrior_R, prior)
-              }
-              else {
-                  prior <- predictUBeta(prior)
-                  prior
-              }
-          })
-
-
-setMethod("drawPrior",
-          signature(prior = "ExchNormCov"),
-          function(prior, useC = FALSE, useSpecific = FALSE) {
-              methods::validObject(prior)
-              if (useC) {
-                  if (useSpecific)
-                      .Call(drawPrior_ExchNormCov_R, prior)
-                  else
-                      .Call(drawPrior_R, prior)
-              }
-              else {
-                  prior <- drawTau(prior)
-                  prior <- drawEta(prior)
-                  prior
-              }
-          })
-
-
-drawEta <- function(prior, useC = FALSE) {
-    methods::validObject(prior)
-    if (useC) {
-        .Call(drawEta_R, prior)
-    }
-    else {
-        eta <- prior@eta@.Data
-        P <- prior@P@.Data
-        A.eta.intercept <- prior@AEtaIntercept@.Data
-        A.eta.coef <- prior@AEtaCoef@.Data
-        mean.eta.coef <- prior@meanEtaCoef@.Data
-        eta[1L] <- rnorm(n = 1L,
-                         mean = 0,
-                         sd = A.eta.intercept)
-        for (p in seq_len(P - 1L)) {
-            T <- rt(n = 1L, df = nu.eta.coef[p])
-            eta[p + 1L] <- mean.eta.coef[p] + A.eta.coef[p] * T
-        }
-        prior@eta@.Data <- eta
-}
 
 
 
@@ -163,30 +131,6 @@ drawBetas <- function(object) {
             }
         }
         object@betas <- betas
-        object
-    }
-}
-
-
-
-
-
-## NO_TESTS
-drawSigma_Varying <- function(object) {
-    stopifnot(methods::is(object, "Varying"))
-    stopifnot(methods::validObject(object))
-    if (useC) {
-        .Call(drawSigma_Varying_R, object)
-    }
-    else {
-        max <- object@sigmaMax@.Data
-        A <- object@ASigma@.Data
-        nu <- object@nuSigma@.Data
-        val <- rhalfTrunc1(df = nu,
-                           scale = A,
-                           max = max,
-                           useC = TRUE)
-        object@sigma@.Data <- val
         object
     }
 }

@@ -29,7 +29,7 @@ are multiple values, an object of class
 weights to be used when aggregating. Optional.}
 
 \item{concordances}{A named list of objects of class
-\code{\link[classconc]{ManyToOne}}.}
+\code{\link[dembase]{ManyToOne}}.}
 
 \item{sd}{Standard deviation(s) for errors. If \code{value} is a single
 number, then \code{sd} must be a single number; otherwise \code{sd} must be
@@ -122,7 +122,7 @@ that are collapsed versions of categories of \code{weights}, or the
 underlying rates, probabilities, or means.  For instance, \code{values}
 might be specified at the state level, while the rates are estimated at
 the county level.  The mapping between the original and collapsed
-categories is known as a \code{\link[classconc]{Concordance}}.
+categories is known as a \code{\link[dembase]{Concordance}}.
 }
 \section{\code{AgCertain}}{
 

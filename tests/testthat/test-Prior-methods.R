@@ -26,7 +26,388 @@ test_that("betaIsEstimated works with Zero prior", {
 
 
 
-## makeDescriptor ####################################################################
+## drawPrior ####################################################################
+
+test_that("drawPrior works with ExchFixed", {
+    drawPrior <- demest:::drawPrior
+    initialPrior <- demest:::initialPrior
+    spec <- ExchFixed()
+    beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "ExchFixed")
+    ans.obtained <- drawPrior(prior)
+    ans.expected <- prior
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("R and C versions of drawPrior give same answer with ExchFixed", {
+    drawPrior <- demest:::drawPrior
+    initialPrior <- demest:::initialPrior
+    spec <- ExchFixed(sd = 1)
+    beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "ExchFixed")
+    ans.R <- drawPrior(prior, useC = FALSE)
+    ans.C.generic <- drawPrior(prior, useC = TRUE, useSpecific = FALSE)
+    ans.C.specific <- drawPrior(prior, useC = TRUE, useSpecific = TRUE)
+    expect_identical(ans.R, ans.C)
+})
+
+test_that("drawPrior works with ExchNormZero", {
+    drawPrior <- demest:::drawPrior
+    initialPrior <- demest:::initialPrior
+    spec <- Exch(error = Error(scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(region = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "ExchNormZero")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.obtained <- drawPrior(prior)
+        set.seed(seed)
+        ans.expected <- prior
+        ans.expected@tau@.Data <- rhalft(n = 1,
+                                         df = prior@nuTau@.Data,
+                                         scale = prior@ATau@.Data)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of drawPrior give same answer with ExchNormZero", {
+    drawPrior <- demest:::drawPrior
+    initialPrior <- demest:::initialPrior
+    spec <- Exch(error = Error(scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(region = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "ExchNormZero")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.R <- drawPrior(prior, useC = FALSE)
+        set.seed(seed)
+        ans.C.generic <- drawPrior(prior, useC = TRUE, useSpecific = FALSE)
+        set.seed(seed)
+        ans.C.specific <- drawPrior(prior, useC = TRUE, useSpecific = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C.generic)
+        else
+            expect_equal(ans.R, ans.C.generic)
+        expect_identical(ans.C.specific, ans.C.generic)
+    }
+})
+
+test_that("drawPrior works with ExchRobustZero", {
+    drawPrior <- demest:::drawPrior
+    initialPrior <- demest:::initialPrior
+    rinvchisq1 <- demest:::rinvchisq1
+    spec <- Exch(error = Error(robust = TRUE, scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(region = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "ExchRobustZero")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.obtained <- drawPrior(prior)
+        set.seed(seed)
+        ans.expected <- prior
+        ans.expected@tau@.Data <- rhalft(n = 1,
+                                         df = prior@nuTau@.Data,
+                                         scale = prior@ATau@.Data)
+        for (i in seq_len(ans.expected@J@.Data))
+            ans.expected@UBeta@.Data[i] <- rinvchisq1(df = ans.expected@nuBeta@.Data,
+                                                      scaleSq = ans.expected@tau@.Data^2)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of drawPrior give same answer with ExchRobustZero", {
+    drawPrior <- demest:::drawPrior
+    initialPrior <- demest:::initialPrior
+    spec <- Exch(error = Error(robust = TRUE, scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(region = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "ExchRobustZero")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.R <- drawPrior(prior, useC = FALSE)
+        set.seed(seed)
+        ans.C.generic <- drawPrior(prior, useC = TRUE, useSpecific = FALSE)
+        set.seed(seed)
+        ans.C.specific <- drawPrior(prior, useC = TRUE, useSpecific = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C.generic)
+        else
+            expect_equal(ans.R, ans.C.generic)
+        expect_identical(ans.C.specific, ans.C.generic)
+    }
+})
+
+test_that("drawPrior works with ExchNormCov", {
+    drawPrior <- demest:::drawPrior
+    initialPrior <- demest:::initialPrior
+    data <- data.frame(region = rep(letters[1:10], times = 2),
+                       sex = rep(c("f", "m"), each = 10),
+                       income = rnorm(20),
+                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+    formula <- mean ~ income * cat
+    spec <- Exch(covariates = Covariates(formula = formula,
+                                         data = data,
+                                         contrastsArg = list(cat = diag(3)),
+                                         intercept = Norm(sd = 3),
+                                         coef = TDist(scale = 0.3)),
+                 error = Error(scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
+    expect_is(prior, "ExchNormCov")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.obtained <- drawPrior(prior)
+        set.seed(seed)
+        ans.expected <- prior
+        ans.expected@tau@.Data <- rhalft(n = 1,
+                                         df = prior@nuTau@.Data,
+                                         scale = prior@ATau@.Data)
+        ans.expected@eta@.Data[1] <- rnorm(n = 1, sd = prior@AEtaIntercept@.Data)
+        for (i in seq_len(ans.expected@P@.Data - 1))
+            ans.expected@eta@.Data[i+1] <- prior@AEtaCoef@.Data[i] * rt(n = 1, df = ans.expected@nuEtaCoef@.Data[i])
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of drawPrior give same answer with ExchNormCov", {
+    drawPrior <- demest:::drawPrior
+    initialPrior <- demest:::initialPrior
+    data <- data.frame(region = rep(letters[1:10], times = 2),
+                       sex = rep(c("f", "m"), each = 10),
+                       income = rnorm(20),
+                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+    formula <- mean ~ income * cat
+    spec <- Exch(covariates = Covariates(formula = formula,
+                                         data = data,
+                                         contrastsArg = list(cat = diag(3)),
+                                         intercept = Norm(sd = 3),
+                                         coef = TDist(scale = 0.3)),
+                 error = Error(scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
+    expect_is(prior, "ExchNormCov")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.R <- drawPrior(prior, useC = FALSE)
+        set.seed(seed)
+        ans.C.generic <- drawPrior(prior, useC = TRUE, useSpecific = FALSE)
+        set.seed(seed)
+        ans.C.specific <- drawPrior(prior, useC = TRUE, useSpecific = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C.generic)
+        else
+            expect_equal(ans.R, ans.C.generic)
+        expect_identical(ans.C.specific, ans.C.generic)
+    }
+})
+
+test_that("drawPrior works with ExchRobustCov", {
+    drawPrior <- demest:::drawPrior
+    initialPrior <- demest:::initialPrior
+    rinvchisq1 <- demest:::rinvchisq1
+    data <- data.frame(region = rep(letters[1:10], times = 2),
+                       sex = rep(c("f", "m"), each = 10),
+                       income = rnorm(20),
+                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+    formula <- mean ~ income * cat
+    spec <- Exch(covariates = Covariates(formula = formula,
+                                         data = data,
+                                         contrastsArg = list(cat = diag(3)),
+                                         intercept = Norm(sd = 3),
+                                         coef = TDist(scale = 0.3)),
+                 error = Error(robust = TRUE, scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
+    expect_is(prior, "ExchRobustCov")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.obtained <- drawPrior(prior)
+        set.seed(seed)
+        ans.expected <- prior
+        ans.expected@tau@.Data <- rhalft(n = 1,
+                                         df = prior@nuTau@.Data,
+                                         scale = prior@ATau@.Data)
+        for (i in seq_len(ans.expected@J@.Data))
+            ans.expected@UBeta@.Data[i] <- rinvchisq1(df = ans.expected@nuBeta@.Data,
+                                                      scaleSq = ans.expected@tau@.Data^2)
+        ans.expected@eta@.Data[1] <- rnorm(n = 1, sd = prior@AEtaIntercept@.Data)
+        for (i in seq_len(ans.expected@P@.Data - 1))
+            ans.expected@eta@.Data[i+1] <- prior@AEtaCoef@.Data[i] * rt(n = 1, df = ans.expected@nuEtaCoef@.Data[i])
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of drawPrior give same answer with ExchRobustCov", {
+    drawPrior <- demest:::drawPrior
+    initialPrior <- demest:::initialPrior
+    data <- data.frame(region = rep(letters[1:10], times = 2),
+                       sex = rep(c("f", "m"), each = 10),
+                       income = rnorm(20),
+                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+    formula <- mean ~ income * cat
+    spec <- Exch(covariates = Covariates(formula = formula,
+                                         data = data,
+                                         contrastsArg = list(cat = diag(3)),
+                                         intercept = Norm(sd = 3),
+                                         coef = TDist(scale = 0.3)),
+                 error = Error(robust = TRUE,
+                               scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
+    expect_is(prior, "ExchRobustCov")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.R <- drawPrior(prior, useC = FALSE)
+        set.seed(seed)
+        ans.C.generic <- drawPrior(prior, useC = TRUE, useSpecific = FALSE)
+        set.seed(seed)
+        ans.C.specific <- drawPrior(prior, useC = TRUE, useSpecific = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C.generic)
+        else
+            expect_equal(ans.R, ans.C.generic)
+        expect_identical(ans.C.specific, ans.C.generic)
+    }
+})
+
+
+
 
 
 ## makeOutputPrior ###################################################################

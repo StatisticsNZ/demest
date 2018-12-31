@@ -677,11 +677,17 @@ setMethod("initialCombinedAccount",
               for (i in seq_along(dataModels)) {
                   series.index <- seriesIndices[i]
                   series <- if (series.index == 0L) population else components[[series.index]]
-                  series.collapsed <- dembase::collapse(series, transform = transforms[[i]])
-                  model <- dataModels[[i]]
-                  if (methods::is(model, "Poisson"))
-                      series.collapsed <- dembase::toDouble(series.collapsed)
                   dataset <- datasets[[i]]
+                  metadata.series.collapsed <- dataset@metadata
+                  .Data.series.collapsed <- dembase::collapse(series@.Data,
+                                                              transform = transforms[[i]])
+                  dimnames(.Data.series.collapsed) <- dimnames(metadata.series.collapsed)
+                  series.collapsed <- new("Counts",
+                                          .Data = .Data.series.collapsed,
+                                          metadata = metadata.series.collapsed)
+                  model <- dataModels[[i]]
+                  if (methods::is(model, "Poisson") || methods::is(model, "CMP"))
+                      series.collapsed <- dembase::toDouble(series.collapsed)
                   dataModels[[i]] <- initialModel(model,
                                                   y = dataset,
                                                   exposure = series.collapsed)

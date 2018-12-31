@@ -5,10 +5,10 @@
 \title{Estimate demographic account and models from multiple noisy datasets.}
 \usage{
 estimateAccount(account, systemModels, datasets, dataModels,
-  weights = list(), dominant = c("Female", "Male"), filename = NULL,
-  nBurnin = 1000, nSim = 1000, nChain = 4, nThin = 1,
-  parallel = TRUE, outfile = NULL, nUpdateMax = 50,
-  verbose = FALSE, useC = TRUE)
+  concordances = list(), weights = list(), dominant = c("Female",
+  "Male"), filename = NULL, nBurnin = 1000, nSim = 1000,
+  nChain = 4, nThin = 1, parallel = TRUE, outfile = NULL,
+  nUpdateMax = 50, verbose = FALSE, useC = TRUE)
 }
 \arguments{
 \item{systemModels}{A list of objects of class \code{\linkS4class{SpecModel}}

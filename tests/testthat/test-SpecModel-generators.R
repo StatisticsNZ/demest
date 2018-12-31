@@ -922,7 +922,7 @@ test_that("SpecModel works with SpecTFixed", {
 ## Aggregate ###################################################################
 
 test_that("AgCertain works", {
-    Concordance <- classconc::Concordance
+    Concordance <- dembase::Concordance
     ans.obtained <- AgCertain(value = 4, weights = NULL)
     ans.expected <- new("SpecAgCertain",
                         metadataAg = NULL,
@@ -947,7 +947,7 @@ test_that("AgCertain works", {
 })
 
 test_that("AgNormal works", {
-    Concordance <- classconc::Concordance
+    Concordance <- dembase::Concordance
     ans.obtained <- AgNormal(value = 4, sd = 3, weights = NULL)
     ans.expected <- new("SpecAgNormal",
                         metadataAg = NULL,
@@ -980,7 +980,7 @@ test_that("AgNormal works", {
 })
 
 test_that("AgFun works", {
-    Concordance <- classconc::Concordance
+    Concordance <- dembase::Concordance
     FUN <- function(x, weights) sum(x)
     ans.obtained <- AgFun(value = 4, sd = 3, FUN = FUN)
     ans.expected <- new("SpecAgFun",
@@ -1014,7 +1014,7 @@ test_that("AgFun works", {
 })
 
 test_that("AgLife works", {
-    Concordance <- classconc::Concordance
+    Concordance <- dembase::Concordance
     ## value is scalar
     ans.obtained <- AgLife(value = 80, sd = 3)
     ans.expected <- new("SpecAgLife",
@@ -1061,7 +1061,7 @@ test_that("AgLife works", {
 })
 
 test_that("AgPoisson works", {
-    Concordance <- classconc::Concordance
+    Concordance <- dembase::Concordance
     ans.obtained <- AgPoisson(value = 4)
     ans.expected <- new("SpecAgPoisson",
                         metadataAg = NULL,

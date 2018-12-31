@@ -4,7 +4,7 @@
 \alias{TDist}
 \title{Specify a vector of independent t-distributed variables}
 \usage{
-TDist(df = 7, mean = 0, scale = NULL)
+TDist(df = 7, mean = 0, scale = NULL, mult = 1)
 }
 \arguments{
 \item{df}{Degrees of freedom. A vector with length equal to
@@ -17,7 +17,7 @@ or to the number of variables required. Defaults to 0.}
 1 or to the number of variables required. Defaults to 1.}
 }
 \value{
-Object of class \code{\linkS4class{SpecTDistn}}.
+Object of class \code{\linkS4class{SpecTDist}}.
 }
 \description{
 Specify a vector of \code{n} t-distributed variables, each

@@ -3,7 +3,7 @@
 #define __HELPER_FUNCIONS_H__
 
     /* threshold for calculation in dpoibin */
-    #define THRESHOLD_POIBIN 1000 
+    #define THRESHOLD_POIBIN 50 
     
     /* for Newton's method rootfinding code */
     #define K_TOLERANCE 1e-20

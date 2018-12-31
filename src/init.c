@@ -1128,10 +1128,10 @@ rhalftTrunc1_R(SEXP df_R, SEXP scale_R, SEXP max_R)
 
 /* create one-off R version wrapper for rinvchisq1_R */ 
 SEXP
-rinvchisq1_R(SEXP df_R, SEXP scale_R)
+rinvchisq1_R(SEXP df_R, SEXP scaleSq_R)
 {
     GetRNGstate();
-    double ans = rinvchisq1(*REAL(df_R), *REAL(scale_R));
+    double ans = rinvchisq1(*REAL(df_R), *REAL(scaleSq_R));
     PutRNGstate();
     return ScalarReal(ans);
 }

@@ -82,7 +82,7 @@ getMu(double *mu, int n, SEXP betas_R, SEXP iterator_R)
 /*** RANDOM VARIATES ********************************************************* */
 /* *************************************************************************** */
 
-double
+double 
 dpoibin1(int x, int size, double prob, int use_log)
 {
     double lambda = (1 - prob) * size;
@@ -165,11 +165,11 @@ rhalftTrunc1(double df, double scale, double max)
 }
 
 double
-rinvchisq1(double df, double scale)
+rinvchisq1(double df, double scaleSq)
 {
     double x = rgamma(df / 2.0, 2.0);
     
-    return df * scale / x;
+    return df * scaleSq / x;
 }
 
 SEXP
@@ -2216,12 +2216,12 @@ predictUBeta(SEXP prior_R)
     
     double *U = REAL(GET_SLOT(prior_R, UBeta_sym));
     
-    double scale = tau*tau;
+    double scaleSq = tau*tau;
     
     for (int j = 0; j < J; ++j) {
-    if (!allStrucZero[j]) {
-        U[j] = rinvchisq1(nu, scale);
-    }
+      if (!allStrucZero[j]) {
+        U[j] = rinvchisq1(nu, scaleSq);
+      }
     }
 }
 

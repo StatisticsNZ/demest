@@ -1288,7 +1288,7 @@ makeTauExchFixedNonIntercept <- function(tau, sY, mult) {
 makeU <- function(nu, A, n, allStrucZero) {
     ans <- double(length = n)
     for (i in seq_len(n))
-        ans[i] <- rinvchisq1(df = nu, scale = A^2)
+        ans[i] <- rinvchisq1(df = nu, scaleSq = A^2)
     ans[allStrucZero] <- 1
     methods::new("VarTDist", ans)
 }
@@ -1299,7 +1299,7 @@ makeUEtaCoef <- function(nu, A, n) {
     ans <- double(length = n)
     for (i in seq_len(n))
         ans[i] <- rinvchisq1(df = nu@.Data[i],
-                             scale = A@.Data[i]^2)
+                             scaleSq = A@.Data[i]^2)
     methods::new("VarTDist", ans)
 }
 
@@ -2264,7 +2264,7 @@ checkConcordances <- function(concordances) {
     ## all elements of 'concordances' have class "ManyToOne"
     if (!all(sapply(concordances, methods::is, "ManyToOne")))
         return(gettextf("'%s' has elements not of class \"%s\"",
-                        "concordances"))
+                        "concordances", "ManyToOne"))
     ## 'concordances' has names
     if (is.null(names))
         stop(gettextf("'%s' does not have names",
@@ -2275,6 +2275,57 @@ checkConcordances <- function(concordances) {
                       "concordances"))
     NULL
 }
+
+
+## HAS_TESTS
+## Assume that 'datasets' has valid names
+checkConcordancesDatasets <- function(concordances, datasets, namesDatasets) {
+    ## 'concordances' is a list
+    if (!is.list(concordances))
+        stop(gettextf("'%s' has class \"%s\"",
+                      "concordances", class(concordances)))
+    if (identical(length(concordances), 0L))
+        return(NULL)
+    names.conc <- names(concordances)
+    ## 'concordances' has names
+    if (is.null(names.conc))
+        stop(gettextf("'%s' does not have names",
+                      "concordances"))
+    ## no duplicated names for 'concordances'
+    if (any(duplicated(names.conc)))
+        stop(gettextf("'%s' has duplicate names",
+                      "concordances"))
+    ## picks out a dataset
+    for (name in names.conc) {
+        if (!(name %in% namesDatasets))
+            stop(gettextf("'%s' has an element called \"%s\", but \"%s\" is not the name of a dataset",
+                          "concordances", name, name))
+    }
+    ## every element of 'concordances' is a list
+    for (name in names.conc) {
+        if (!is.list(concordances[[name]]))
+            stop(gettextf("element \"%s\" of '%s' is not a list",
+                          name, "concordances"))
+    }
+    ## each element of 'concordances' is a valid concordance list
+    for (name in names.conc) {
+        element <- concordances[[name]]
+        ## all elements have class "ManyToOne"
+        if (!all(sapply(element, methods::is, "ManyToOne")))
+            stop(gettextf("element \"%s\" of '%s' has elements not of class \"%s\"",
+                            name, "concordances", "ManyToOne"))
+        ## 'concordances' has names
+        if (is.null(names(element)))
+            stop(gettextf("element \"%s\" of '%s' does not have names",
+                          name, "concordances"))
+        ## no duplicated names for 'concordances'
+        if (any(duplicated(names(element))))
+            stop(gettextf("element \"%s\" of '%s' has duplicate names",
+                          name, "concordances"))
+    }
+    NULL
+}
+
 
 ## HAS_TESTS
 checkForMarginalTerms <- function(formula) {
@@ -2958,12 +3009,22 @@ makeSpecsPriors <- function(dots) {
 }
 
 ## HAS_TESTS
-makeTransformsYToDatasets <- function(y, datasets, namesDatasets) {
+makeTransformsYToDatasets <- function(y, datasets, concordances,
+                                      namesDatasets) {
+    names.concordances <- names(concordances)
     ans <- vector(mode = "list", length = length(datasets))
     for (i in seq_along(ans)) {
         dataset <- datasets[[i]]
+        name.dataset <- namesDatasets[i]
+        i.concordances <- match(name.dataset, names.concordances, nomatch = 0L)
+        has.concordances <- i.concordances > 0L
+        if (has.concordances)
+            concordances.dataset <- concordances[[i.concordances]]
+        else
+            concordances.dataset <- list()
         transform <- tryCatch(dembase::makeTransform(x = y,
                                                      y = dataset,
+                                                     concordances = concordances.dataset,
                                                      subset = TRUE,
                                                      check = TRUE),
                               error = function(e) e)

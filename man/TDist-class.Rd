@@ -12,11 +12,13 @@ part of a prior prior.
 \section{Slots}{
 
 \describe{
-\item{\code{nu}}{Degrees of freedom}
+\item{\code{nuEtaCoef}}{Degrees of freedom}
 
-\item{\code{mean}}{Means}
+\item{\code{meanEtaCoef}}{Means}
 
-\item{\code{A}}{Scales}
+\item{\code{multEtaCoef}}{Multipliers}
+
+\item{\code{AEtaCoef}}{Scales}
 }}
 
 \section{Warning}{

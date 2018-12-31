@@ -1397,9 +1397,9 @@ test_that("dpoibin1 works when x > threshold", {
     dpoibin1 <- demest:::dpoibin1
     set.seed(100)
     for (i in 1:10) {
-        x <- as.integer(rpois(n = 1, lambda = 10)) + 1000L
+        x <- as.integer(rpois(n = 1, lambda = 10)) + 50L
         prob <- runif(1, min = 0.5, max = 1)
-        size <- as.integer(abs(rnorm(1, mean = 12, sd = 2))) + 1000L
+        size <- as.integer(abs(rnorm(1, mean = 12, sd = 2))) + 50L
         mean <- prob * floor(size) + (1 - prob) * size
         sd <- sqrt(prob * (1 - prob) * floor(size) + (1 - prob) * size)
         ans <- dnorm(x, mean = mean, sd = sd)
@@ -1454,112 +1454,6 @@ test_that("dpoibin1 throws correct errors", {
     expect_error(dpoibin1(x = 10L, prob = 0.98, size = 10L, log = NA),
                  "'log' is missing")
 })
-
-test_that("rmvnorm1 gives valid answer", {
-    if (test.extended) {
-        rmvnorm1 <- demest:::rmvnorm1
-        mvrnorm <- MASS::mvrnorm
-        msq <- function(x) x %*% t(x)
-        set.seed(100)
-        m <- rnorm(5)
-        v <- matrix(rnorm(25), nrow = 5, ncol = 5)
-        v <- msq(v)
-        ans.obtained <- replicate(n = 100000, rmvnorm1(mean = m, var = v))
-        ans.obtained <- rowSums(ans.obtained)
-        ans.expected <- replicate(n = 100000, mvrnorm(n = 1, mu = m, Sigma = v))
-        ans.expected <- rowSums(ans.expected)
-        ## comes closer if larger n used
-        expect_true(all.equal(ans.obtained, ans.expected, tol = 0.02))
-        set.seed(100)
-        m <- rnorm(1)
-        v <- matrix(abs(rnorm(1)), nr = 1, nc = 1)
-        ans.obtained <- sum(replicate(n = 10000, rmvnorm1(mean = m, var = v)))
-        ans.expected <- sum(rnorm(n = 10000, mean = m, sd = sqrt(v)))
-        expect_true(all.equal(ans.obtained, ans.expected, tol = 0.02))
-    }
-})
-
-test_that("R and C versions of rmvnorm1 give same answer", {
-    rmvnorm1 <- demest:::rmvnorm1
-    msq <- function(x) x %*% t(x)
-    for (seed in seq_len(n.test)) {
-        set.seed(seed);
-        n <- sample(10, 1)
-        m <- rnorm(n)
-        v <- matrix(rnorm(n^2), nrow = n, ncol = n)
-        v <- msq(v)
-        set.seed(seed+1);
-        ans.R <- rmvnorm1(mean = m, var = v, useC = FALSE)
-        set.seed(seed+1);
-        ans.C <- rmvnorm1(mean = m, var = v, useC = TRUE)
-        if (test.identity)
-            expect_identical(ans.R, ans.C)
-        else
-            expect_equal(ans.R, ans.C)
-    }
-})
-
-test_that("rmvnorm2 gives valid answer", {
-    rmvnorm2 <- demest:::rmvnorm2
-    if (test.extended) {
-        rmvnorm2 <- demest:::rmvnorm2
-        mvrnorm <- MASS::mvrnorm
-        msq <- function(x) x %*% t(x)
-        set.seed(100)
-        m <- rnorm(2)
-        v <- matrix(rnorm(4), nrow = 2, ncol = 2)
-        v <- msq(v)
-        ans.obtained <- replicate(n = 10000, rmvnorm2(mean = m, var = v))
-        ans.obtained <- rowSums(ans.obtained)
-        ans.expected <- replicate(n = 10000, mvrnorm(n = 1, mu = m, Sigma = v))
-        ans.expected <- rowSums(ans.expected)
-        ## comes closer if larger n used
-        expect_true(all.equal(ans.obtained, ans.expected, tol = 0.01))
-    }
-    ## works with exactly singular matrix
-    var <- matrix(c(1, -1, -1, 1), nr = 2)
-    ans <- rmvnorm2(mean = c(0, 0), var = var)
-    expect_equal(sum(ans), 0)
-    ## works with a small amount of fuzz
-    var <- matrix(c(1, -1, -1 - 1e-12, 1), nr = 2)
-    ans <- rmvnorm2(mean = c(0, 0), var = var)
-    expect_equal(sum(ans), 0)
-    ## but not a large amount
-    var <- matrix(c(1, -1 - 1e-3, -1 - 1e-3, 1), nr = 2)
-    expect_error(rmvnorm2(mean = c(0, 0), var = var),
-                 "'var' is invalid")
-})
-
-test_that("R and C versions of rmvnorm2 give same answer", {
-    rmvnorm2 <- demest:::rmvnorm2
-    msq <- function(x) x %*% t(x)
-    for (seed in seq_len(n.test)) {
-        set.seed(seed)
-        m <- rnorm(2)
-        v <- matrix(rnorm(4), nrow = 2, ncol = 2)
-        v <- msq(v)
-        set.seed(seed + 1)
-        ans.R <- rmvnorm2(mean = m, var = v, useC = FALSE)
-        set.seed(seed + 1)
-        ans.C <- rmvnorm2(mean = m, var = v, useC = TRUE)
-        if (test.identity)
-            expect_identical(ans.R, ans.C)
-        else
-            expect_equal(ans.R, ans.C)
-    }
-    ## C version works with exactly singular matrix
-    var <- matrix(c(1, -1, -1, 1), nr = 2)
-    ans <- rmvnorm2(mean = c(0, 0), var = var, useC = TRUE)
-    expect_equal(sum(ans), 0)
-    ## works with a small amount of fuzz
-    var <- matrix(c(1, -1, -1 - 1e-12, 1), nr = 2)
-    ans <- rmvnorm2(mean = c(0, 0), var = var, useC = TRUE)
-    expect_equal(sum(ans), 0)
-    ## but not a large amount
-    var <- matrix(c(1, -1 - 1e-3, -1 - 1e-3, 1), nr = 2)
-    expect_error(rmvnorm2(mean = c(0, 0), var = var, useC = TRUE),
-                 "'var' is invalid")
-})    
 
 test_that("invlogit1 gives valid answer", {
     invlogit1 <- demest:::invlogit1
@@ -7734,26 +7628,32 @@ test_that("makeTransformsAccountToDatasets works", {
                          births = births,
                          exits = list(deaths = deaths))
     datasets <- list(population + 1L, births + 1L, deaths + 1L)
+    datasets[[3]] <- collapseCategories(datasets[[3]], dimension = "eth", old = c("B", "C"), new = "D")
     namesDatasets <- c("population.data", "births.data", "deaths.data")
     seriesIndices <- 0:2
+    concordances <- list(deaths.data = list(eth = Concordance(data.frame(from = c("A", "B", "C"),
+                                                                         to = c("A", "D", "D")))))
     ans.obtained <- makeTransformsAccountToDatasets(account = account,
                                                     datasets = datasets,
+                                                    concordances = concordances,
                                                     namesDatasets = namesDatasets,
                                                     seriesIndices = seriesIndices)
     ans.expected <- list(makeTransform(account@population, datasets[[1]]),
                          makeTransform(account@components[[1]], datasets[[2]]),
-                         makeTransform(account@components[[2]], datasets[[3]]))
+                         makeTransform(account@components[[2]], datasets[[3]],
+                                       concordances = concordances[[1]]))
     ans.expected <- lapply(ans.expected, makeCollapseTransformExtra)
     expect_identical(ans.obtained, ans.expected)
     ## no observation models without series
     deaths.wrong <- Counts(array(c(25L, 10L, 5L),
-                           dim = c(3, 1),
-                           dimnames = list(eth = c("A", "B", "D"),
-                                           time = "2001-2005")))
+                                 dim = c(3, 1),
+                                 dimnames = list(eth = c("A", "B", "D"),
+                                                 time = "2001-2005")))
     datasets.wrong <- list(population + 1L, births + 1L, deaths.wrong)
     expect_error(makeTransformsAccountToDatasets(account = account,
-                                                    datasets = datasets.wrong,
-                                                    namesDatasets = namesDatasets,
+                                                 datasets = datasets.wrong,
+                                                 namesDatasets = namesDatasets,
+                                                 concordances = concordances,
                                                  seriesIndices = seriesIndices),
                  "unable to collapse series 'deaths' to make it compatible with dataset 'deaths.data'")
 })

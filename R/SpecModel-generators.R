@@ -1237,7 +1237,7 @@ setMethod("SpecModel",
 #' underlying rates, probabilities, or means.  For instance, \code{values}
 #' might be specified at the state level, while the rates are estimated at
 #' the county level.  The mapping between the original and collapsed
-#' categories is known as a \code{\link[classconc]{Concordance}}.
+#' categories is known as a \code{\link[dembase]{Concordance}}.
 #' 
 #' @section \code{AgCertain}:
 #'
@@ -1326,7 +1326,7 @@ setMethod("SpecModel",
 #' @param weights An object of class \code{\linkS4class{Counts}} holding
 #' weights to be used when aggregating. Optional.
 #' @param concordances A named list of objects of class
-#' \code{\link[classconc]{ManyToOne}}.
+#' \code{\link[dembase]{ManyToOne}}.
 #' @param FUN A function taking arguments called \code{x} and \code{weights}
 #' and returning a single number.  See below for details.
 #' @param jump The standard deviation of the proposal density used in

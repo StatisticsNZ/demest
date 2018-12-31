@@ -494,7 +494,7 @@ double dpoibin1(int x, int size, double prob, int use_log);
 double invlogit1(double x);
 int rcateg1(double* cumProb);
 double rhalftTrunc1(double df, double scale, double max);
-double rinvchisq1(double df, double scale);
+double rinvchisq1(double df, double scaleSq);
 
 SEXP rmvnorm1(SEXP mean_R, SEXP var_R);
 SEXP rmvnorm2(SEXP mean_R, SEXP var_R);

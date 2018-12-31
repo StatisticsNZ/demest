@@ -156,6 +156,10 @@ setGeneric("diffLogLikAccount",
            function(object, useC = FALSE, useSpecific = FALSE)
                standardGeneric("diffLogLikAccount"))
 
+setGeneric("drawPrior",
+           function(prior, useC = FALSE, useSpecific = FALSE)
+               standardGeneric("drawPrior"))
+
 setGeneric("drawYNonSampled",
            function(filename, model, nonsampled, iterations)
            standardGeneric("drawYNonSampled"))

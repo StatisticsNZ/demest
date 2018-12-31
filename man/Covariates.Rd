@@ -5,7 +5,7 @@
 \title{Specify covariates in a prior for a main effect or interaction.}
 \usage{
 Covariates(formula = NULL, data = NULL, infant = FALSE,
-  contrastsArg = list(), intercept = Norm(), coef = HalfT())
+  contrastsArg = list(), intercept = Norm(), coef = TDist())
 }
 \arguments{
 \item{formula}{A \code{\link[stats]{formula}} with response \code{mean}.}
@@ -20,7 +20,7 @@ or names of contrasts functions.}
 
 \item{intercept}{An object of class \code{\linkS4class{Norm}}.}
 
-\item{coef}{An object of class \code{\link{HalfT}}.}
+\item{coef}{An object of class \code{\link{TDist}}.}
 }
 \value{
 An object of class \code{\linkS4class{Covariates}}
@@ -114,7 +114,7 @@ Covariates(mean ~ income + area,
 Covariates(mean ~ income + area,
            data = reg.data,
            intercept = Norm(sd = 5),
-           coef = HalfT(scale = 0.25))
+           coef = TDist(scale = 0.25))
 
 ## override the default 'treatment' contrast
 contrasts.arg <- list(area = diag(2))

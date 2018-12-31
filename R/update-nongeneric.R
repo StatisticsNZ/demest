@@ -1695,8 +1695,8 @@ updateUBeta <- function(prior, beta, useC = FALSE) {
         df <- nu + 1
         for (i in seq_len(J)) {
             if (!all.struc.zero[i]) {
-                scale <- (nu * tau^2 + (beta[i] - beta.hat[i])^2) / df
-                U[i] <- rinvchisq1(df = df, scale = scale)
+                scaleSq <- (nu * tau^2 + (beta[i] - beta.hat[i])^2) / df
+                U[i] <- rinvchisq1(df = df, scaleSq = scaleSq)
             }
         }
         prior@UBeta@.Data <- U
@@ -1723,8 +1723,8 @@ updateUEtaCoef <- function(prior, useC = FALSE) {
         eta <- prior@eta@.Data
         for (p in seq_len(P - 1L)) {
             df <- nu[p] + 1
-            scale <- (nu[p] * A[p]^2 + (eta[p + 1L] - mean[p])^2) / df
-            U[p] <- rinvchisq1(df = df, scale = scale)
+            scaleSq <- (nu[p] * A[p]^2 + (eta[p + 1L] - mean[p])^2) / df
+            U[p] <- rinvchisq1(df = df, scaleSq = scaleSq)
         }
         prior@UEtaCoef@.Data <- U
         prior

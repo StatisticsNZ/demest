@@ -21,11 +21,15 @@ documentation for \code{\link[stats]{model.matrix}}.}
 \item{\code{AEtaIntercept}}{Scale parameter for the normal
 prior for the intercept.}
 
+\item{\code{multEtaIntercept}}{Multiplier for \code{AEtaIntercept}.}
+
 \item{\code{nuEtaCoef}}{Degrees of freedom for the t priors
 for the coefficients.}
 
 \item{\code{AEtaCoef}}{Scale parameter for the t priors
 for the coefficients.}
+
+\item{\code{multEtaIntercept}}{Multiplier for \code{AEtaCoef}.}
 }}
 
 \section{Warning}{

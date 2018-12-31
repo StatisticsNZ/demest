@@ -35,35 +35,6 @@ listAllSubsets <- function(n) {
 
 ## makeFakeBetas
 
-## ## HAS_TESTS
-## makeFakeBetasOutput <- function(betas, namesBetas, y) {
-##     n <- length(betas)
-##     names.y <- names(y)
-##     metadata.y <- y@metadata
-##     if (n > 1L) {
-##         for (i in seq.int(from = 2L, to = n)) {
-##             name.split <- strsplit(namesBetas[i], split = ":", fixed = TRUE)[[1L]]
-##             margin <- match(name.split, names.y)
-##             metadata.beta <- metadata.y[margin]
-##             .Data.beta <- array(betas[[i]],
-##                                 dim = dim(metadata.beta),
-##                                 dimnames = dimnames(metadata.beta))
-##             betas[[i]] <- methods::new("Values", .Data = .Data.beta, metadata = metadata.beta)
-##         }
-##     }
-##     names(betas) <- namesBetas
-##     betas
-## }
-
-## ## HAS_TESTS
-## makeFakeSigma <- function(dfPriorSigma, scalePriorSigma) {
-##     sigma.has.improper.prior <- dfPriorSigma < 0
-##     if (sigma.has.improper.prior)
-##         stop(gettextf("'%s' must have an informative prior with function '%s'",
-##                       "prior.sd", "fakeData"))
-##     rinvchisq1(df = dfPriorSigma, scale = scalePriorSigma)
-## }
-
 ## HAS_TESTS
 makeIteratorBetas <- function(betas, namesBetas, y) {
     n <- length(betas)
@@ -219,7 +190,7 @@ dpoibin1 <- function(x, size, prob, log = FALSE, useC = FALSE) {
         .Call(dpoibin1_R, x, size, prob, log)
     }
     else {
-        kThreshold <- 1000
+        kThreshold <- 50
         lambda <- (1 - prob) * size
         if (x > kThreshold) {
             mean.binom <- prob * size
@@ -473,82 +444,23 @@ rhalftTrunc1 <- function(df, scale, max, useC = FALSE) {
 
 
 ## HAS_TESTS
-rinvchisq1 <- function(df, scale, useC = FALSE) {
+rinvchisq1 <- function(df, scaleSq, useC = FALSE) {
     stopifnot(is.double(df))
     stopifnot(identical(length(df), 1L))
     stopifnot(!is.na(df))
     stopifnot(df > 0)
-    stopifnot(is.double(scale))
-    stopifnot(identical(length(scale), 1L))
-    stopifnot(!is.na(scale))
-    stopifnot(scale > 0)
+    stopifnot(is.double(scaleSq))
+    stopifnot(identical(length(scaleSq), 1L))
+    stopifnot(!is.na(scaleSq))
+    stopifnot(scaleSq > 0)
     if (useC) {
-        .Call(rinvchisq1_R, df, scale)
+        .Call(rinvchisq1_R, df, scaleSq)
     }
     else {
         X <- stats::rchisq(n = 1, df = df)
-        df * scale / X
+        df * scaleSq / X
     }
 }
-
-## TRANSLATED
-## HAS_TESTS
-rmvnorm1 <- function(mean, var, useC = FALSE) {
-    ## mean
-    stopifnot(is.double(mean))
-    stopifnot(!any(is.na(mean)))
-    ## var
-    stopifnot(is.matrix(var))
-    stopifnot(is.double(var))
-    stopifnot(nrow(var) == ncol(var))
-    stopifnot(all(diag(var) >= 0))
-    stopifnot(all.equal(var, t(var)))
-    ## mean and var
-    stopifnot(ncol(var) == length(mean))
-    if (useC) {
-        .Call(rmvnorm1_R, mean, var)
-    }
-    else {
-        n <- length(mean)
-        R <- chol(var)
-        z <- stats::rnorm(n = n)
-        mean + drop(R %*% z)
-    }
-}
-
-## TRANSLATED
-## HAS_TESTS
-rmvnorm2 <- function(mean, var, useC = FALSE) {
-    ## mean
-    stopifnot(is.double(mean))
-    stopifnot(identical(length(mean), 2L))
-    stopifnot(!any(is.na(mean)))
-    ## var
-    stopifnot(identical(dim(var), c(2L, 2L)))
-    stopifnot(is.double(var))
-    stopifnot(all(diag(var) >= 0))
-    stopifnot(all.equal(var, t(var)))
-    if (useC) {
-        .Call(rmvnorm2_R, mean, var)
-    }
-    else {
-        kTolerance <- -1e-6
-        mean1 <- mean[1L]
-        sd1 <- sqrt(var[1L])
-        ans1 <- stats::rnorm(n = 1L, mean = mean1, sd = sd1)
-        mean2 <- mean[2L] + (var[2L] / var[1L]) * (ans1 - mean1)
-        var2 <- var[4L] - (var[3]^2 / var[1L])
-        if (var2 < 0) {
-            if (var2 < kTolerance)
-                stop("'var' is invalid")
-            else
-                var2 <- 0
-        }
-        sd2 <- sqrt(var2)
-        ans2 <- stats::rnorm(n = 1L, mean = mean2, sd = sd2)
-        c(ans1, ans2)
-    }
-}    
 
 ## TRANSLATED
 ## HAS_TESTS
@@ -4794,18 +4706,28 @@ makeSeriesIndices <- function(dataModels, account) {
 }
 
 ## HAS_TESTS
-makeTransformsAccountToDatasets <- function(account, datasets, namesDatasets, seriesIndices) {
+makeTransformsAccountToDatasets <- function(account, datasets, concordances,
+                                            namesDatasets, seriesIndices) {
     population <- account@population
     components <- account@components
     series <- c(list(population), components)
     names.components <- account@namesComponents
     names.series <- c("population", names.components)
+    names.concordances <- names(concordances)
     ans <- vector(mode = "list", length = length(datasets))
     for (i in seq_along(ans)) {
         dataset <- datasets[[i]]
         index <- seriesIndices[i] + 1L
+        name.dataset <- namesDatasets[i]
+        i.concordances <- match(name.dataset, names.concordances, nomatch = 0L)
+        has.concordances <- i.concordances > 0L
+        if (has.concordances)
+            concordances.dataset <- concordances[[i.concordances]]
+        else
+            concordances.dataset <- list()
         transform <- tryCatch(dembase::makeTransform(x = series[[index]],
                                                      y = dataset,
+                                                     concordances = concordances.dataset,
                                                      subset = TRUE,
                                                      check = TRUE),
                               error = function(e) e)

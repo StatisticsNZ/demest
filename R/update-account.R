@@ -79,14 +79,15 @@ updateAccount <- function(object, useC = FALSE) {
             generated.new.proposal <- object@generatedNewProposal@.Data
             if (generated.new.proposal) {
                 diff.log.lik <- diffLogLikAccount(object)
-                if (is.finite(diff.log.lik) || (diff.log.lik > 0)) {
-                    diff.log.dens <- diffLogDensAccount(object)
-                    if (is.finite(diff.log.dens) || (diff.log.lik > 0)) {
-                        log.r <- diff.log.lik + diff.log.dens
-                        accept <- (log.r > 0) || (runif(n = 1L) < exp(log.r))
-                        if (accept)
-                            object <- updateValuesAccount(object)
-                    }
+                diff.log.dens <- diffLogDensAccount(object)
+                is.invalid <- (is.infinite(diff.log.lik)
+                    && is.infinite(diff.log.dens)
+                    && ((diff.log.dens > diff.log.lik) || (diff.log.dens < diff.log.lik)))
+                if (!is.invalid) {
+                    log.r <- diff.log.lik + diff.log.dens
+                    accept <- (log.r > 0) || (runif(n = 1L) < exp(log.r))
+                    if (accept)
+                        object <- updateValuesAccount(object)
                 }
             }
         }
@@ -220,12 +221,16 @@ updateProposalAccountMoveBirths <- function(combined, useC = FALSE) {
         description <- combined@descriptions[[i.comp + 1L]]
         theta <- combined@systemModels[[i.comp + 1L]]@theta
         struc.zero.array <- combined@systemModels[[i.comp + 1L]]@strucZeroArray
-        i.cell <- chooseICellComp(description)
-        is.struc.zero <- struc.zero.array[i.cell] == 0L
-        if (is.struc.zero) {
-            generated.new.proposal <- FALSE
+        generated.new.proposal <- FALSE
+        for (i in seq_len(100)) {
+            i.cell <- chooseICellComp(description)
+            is.struc.zero <- struc.zero.array[i.cell] == 0L
+            if (!is.struc.zero) {
+                generated.new.proposal <- TRUE
+                break
+            }
         }
-        else {
+        if (generated.new.proposal) {
             if (has.age)
                 is.lower.triangle <- isLowerTriangle(i = i.cell,
                                                      description = description)
@@ -1082,13 +1087,24 @@ diffLogLikPopnOneCell <- function(iAfter, diff, population, model,
                                       count = total.popn.prop,
                                       dataset = dataset,
                                       i = iAfter)
-        if (is.infinite(log.lik.prop))
-            return(log.lik.prop)
         log.lik.curr <- logLikelihood(model = model,
                                       count = total.popn.curr,
                                       dataset = dataset,
                                       i = iAfter)
-        log.lik.prop - log.lik.curr
+        if (is.finite(log.lik.prop) || is.finite(log.lik.curr))
+            log.lik.prop - log.lik.curr
+        else {
+            ## If both -Inf, but proposed value is closer
+            ## to observed value, then return a large but not
+            ## infinite value (which can be overruled by
+            ## the log-density).
+            diff.prop <- abs(total.popn.prop - dataset[iAfter])
+            diff.curr <- abs(total.popn.curr - dataset[iAfter])
+            if (diff.prop > diff.curr)
+                -1000
+            else
+                1000           
+        }
     }
 }
 
@@ -1245,13 +1261,24 @@ diffLogLikCellOneDataset <- function(diff, iCell, component,
                                       count = total.comp.prop,
                                       dataset = dataset,
                                       i = i.after)
-        if (is.infinite(log.lik.prop))
-            return(log.lik.prop)
         log.lik.curr <- logLikelihood(model = model,
                                       count = total.comp.curr,
                                       dataset = dataset,
                                       i = i.after)
-        log.lik.prop - log.lik.curr
+        if (is.finite(log.lik.prop) || is.finite(log.lik.curr))
+            log.lik.prop - log.lik.curr
+        else {
+            ## If both -Inf, but proposed value is closer
+            ## to observed value, then return a large but not
+            ## infinite value (which can be overruled by
+            ## the log-density).
+            diff.prop <- abs(total.comp.prop - dataset[i.after])
+            diff.curr <- abs(total.comp.curr - dataset[i.after])
+            if (diff.prop > diff.curr)
+                -1000
+            else
+                1000
+        }
     }
 }
 
@@ -2873,6 +2900,7 @@ updateSubsequentAccMove <- function(combined, useC = FALSE) {
         combined
     }
 }
+
 ## TRANSLATED
 ## HAS_TESTS
 updateSubsequentExpMove <- function(combined, useC = FALSE) {

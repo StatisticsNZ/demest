@@ -9,30 +9,25 @@
 void
 updateAccount(SEXP object_R)
 {
-    int nCellAccount = *INTEGER(GET_SLOT(object_R, nCellAccount_sym));
-    
-    for (int i = 0; i < (2 * nCellAccount); ++i) {
-        updateProposalAccount(object_R);
-        int generatedNewProposal = *LOGICAL(GET_SLOT(object_R, generatedNewProposal_sym));
-        
-        if(generatedNewProposal) {
-            double diffLogLik = diffLogLikAccount(object_R);
-            
-            if( R_finite(diffLogLik) || (diffLogLik > 0) ) {
-                double diffLogDens = diffLogDensAccount(object_R);
-                
-                if( R_finite(diffLogDens) || (diffLogLik > 0) ) {
-                    double log_r = diffLogLik + diffLogDens;
-                    
-                    int accept = ( log_r > 0 ) || ( runif(0,1) < exp(log_r) );
-                    if (accept) {
-                        updateValuesAccount(object_R);
-                    }
-                    
-                }      
-            }    
-        }
+  int nCellAccount = *INTEGER(GET_SLOT(object_R, nCellAccount_sym));
+  for (int i = 0; i < (2 * nCellAccount); ++i) {
+    updateProposalAccount(object_R);
+    int generatedNewProposal = *LOGICAL(GET_SLOT(object_R, generatedNewProposal_sym));
+    if(generatedNewProposal) {
+      double diffLogLik = diffLogLikAccount(object_R);
+      double diffLogDens = diffLogDensAccount(object_R);
+      int isInvalid = (!R_finite(diffLogLik)
+		       && !R_finite(diffLogDens)
+		       && ((diffLogLik > diffLogDens) || (diffLogLik < diffLogDens)));
+      if (!isInvalid) {
+	double log_r = diffLogLik + diffLogDens;
+	int accept = ( log_r > 0 ) || ( runif(0,1) < exp(log_r) );
+	if (accept) {
+	  updateValuesAccount(object_R);
+	}
+      }
     } 
+  }
 }
 
 /* ****************** Updating proposals *************************** */
@@ -171,8 +166,21 @@ updateProposalAccountMoveBirths(SEXP combined_R)
     SEXP thisSystemModel_R = VECTOR_ELT(systemModels_R, iComp + 1);
     double * theta = REAL(GET_SLOT(thisSystemModel_R, theta_sym));
     int * strucZeroArray = INTEGER(GET_SLOT(thisSystemModel_R, strucZeroArray_sym));
-    
-    int iCell_r = chooseICellComp(description_R);
+
+    int iCell_r;
+    int iCell;
+    int isStrucZero;
+    int generatedNewProposal = 0;
+
+    for (int i = 0; i < 100; i++) {
+      iCell_r = chooseICellComp(description_R);
+      iCell = iCell_r - 1;
+      isStrucZero = strucZeroArray[iCell] == 0;
+      if (!isStrucZero) {
+	generatedNewProposal = 1;
+	break;
+      }
+    }
     
     int iExpFirst_r = getIExpFirstFromBirths(iCell_r, mappingToExp_R);
     int iPopnNext_r = getIPopnNextFromComp(iCell_r, mappingToPopn_R);
@@ -206,48 +214,40 @@ updateProposalAccountMoveBirths(SEXP combined_R)
     } /* end hasAge */
     
     int * component = INTEGER(component_R);
-    int iCell = iCell_r - 1;
     int diffProp = 0;
     int iExposure_r = 0;
 
-    int isStrucZero = strucZeroArray[iCell] == 0;
-
-    int generatedNewProposal = 0;
-
-    if (isStrucZero) {
-    generatedNewProposal = 0;
-    }
-    else {
+    if (generatedNewProposal) {
+      
+      int valCurr = component[iCell];
+      int lower = valCurr - minVal;
+      int upper = NA_INTEGER;
     
-    int valCurr = component[iCell];
-    int lower = valCurr - minVal;
-    int upper = NA_INTEGER;
-    
-    double thetaCell = theta[iCell];
+      double thetaCell = theta[iCell];
         
-    double lambda = thetaCell;
+      double lambda = thetaCell;
 
-    if(usesExposure) {
+      if(usesExposure) {
         double * expectedExposure = REAL(GET_SLOT(combined_R, expectedExposure_sym));
         iExposure_r = getIExposureFromBirths(iCell_r, mappingToExp_R);
         int iExposure = iExposure_r - 1;
         double expectedExposureCell = expectedExposure[iExposure];
         lambda *= expectedExposureCell;
-    }
+      }
     
-    int valProp = rpoisTrunc1(lambda, lower, upper, maxAttempt);
+      int valProp = rpoisTrunc1(lambda, lower, upper, maxAttempt);
     
-    int foundValue = !(valProp == NA_INTEGER);
+      int foundValue = !(valProp == NA_INTEGER);
 
-    /* printf("valCurr %d, valProp %d, thetaCell %f, lambda %f\n", */
-    /*        valCurr, valProp, thetaCell, lambda); */
+      /* printf("valCurr %d, valProp %d, thetaCell %f, lambda %f\n", */
+      /*        valCurr, valProp, thetaCell, lambda); */
     
-    if(foundValue) {
+      if(foundValue) {
         diffProp = valProp - valCurr;
         generatedNewProposal = (diffProp != 0);
-    }
+      }
 
-    } /* end isStrucZero */
+    } /* end generatedNewProposal */
     
     SET_LOGICALSCALE_SLOT(combined_R, generatedNewProposal_sym, generatedNewProposal);
     
@@ -1071,15 +1071,18 @@ diffLogLikPopnOneCell(int iAfter_r, int diff, SEXP population_R,
         int totalPopnProp = totalPopnCurr + diff;
         
         double logLikProp = logLikelihood(model_R, totalPopnProp, dataset_R, iAfter_r);
-        
-        if(R_finite(logLikProp)) {
-            
-            double logLikCurr = logLikelihood(model_R, totalPopnCurr, dataset_R, iAfter_r);
+	double logLikCurr = logLikelihood(model_R, totalPopnCurr, dataset_R, iAfter_r);
+
+        if(R_finite(logLikProp) || R_finite(logLikCurr)) {
             retValue = logLikProp - logLikCurr;
-            
         }
-        else { /* logLikProp infinite */
-            retValue = logLikProp;
+        else {
+	  double diffProp = abs(totalPopnProp - dataset[iAfter]);
+	  double diffCurr = abs(totalPopnCurr - dataset[iAfter]);
+	  if (diffProp > diffCurr)
+            retValue = -1000;
+	  else
+	    retValue = 1000;
         }
     }
     /* if cellHasNoData, retValue stays at default value */
@@ -1210,17 +1213,20 @@ diffLogLikCellOneDataset(int diff, int iCell_r, SEXP component_R,
         int totalCompProp = totalCompCurr + diff;
         
         double logLikProp = logLikelihood(model_R, totalCompProp, 
-                                                dataset_R, iAfter_r);
+					  dataset_R, iAfter_r);
+	double logLikCurr = logLikelihood(model_R, totalCompCurr, 
+					  dataset_R, iAfter_r);
         
-        if(R_finite(logLikProp)) {
-            
-            double logLikCurr = logLikelihood(model_R, totalCompCurr, 
-                                                dataset_R, iAfter_r);
+        if (R_finite(logLikProp) || R_finite(logLikCurr)) {
             ans = logLikProp - logLikCurr;
-            
         }
-        else { /* logLikProp infinite */
-            ans = logLikProp;
+        else {
+	  double diffProp = abs(totalCompProp - dataset[iAfter]);
+	  double diffCurr = abs(totalCompCurr - dataset[iAfter]);
+	  if (diffProp > diffCurr)
+	    ans = -1000;
+	  else
+	    ans = 1000;
         }
     }
     /* if cellHasNoData, retValue stays at default value */

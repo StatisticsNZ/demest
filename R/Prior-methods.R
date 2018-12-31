@@ -15,6 +15,105 @@ setMethod("betaIsEstimated",
           })
 
 
+
+## drawPrior #########################################################################
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawPrior",
+          signature(prior = "ExchFixed"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawPrior_ExchFixed_R, prior)
+                  else
+                      .Call(drawPrior_R, prior)
+              }
+              else {
+                  prior
+              }
+          })
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawPrior",
+          signature(prior = "ExchNormZero"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawPrior_ExchNormZero_R, prior)
+                  else
+                      .Call(drawPrior_R, prior)
+              }
+              else {
+                  prior <- drawTau(prior)
+                  prior
+              }
+          })
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawPrior",
+          signature(prior = "ExchRobustZero"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawPrior_ExchRobustZero_R, prior)
+                  else
+                      .Call(drawPrior_R, prior)
+              }
+              else {
+                  prior <- drawTau(prior)
+                  prior <- predictUBeta(prior)
+                  prior
+              }
+          })
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawPrior",
+          signature(prior = "ExchNormCov"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawPrior_ExchNormCov_R, prior)
+                  else
+                      .Call(drawPrior_R, prior)
+              }
+              else {
+                  prior <- drawTau(prior)
+                  prior <- drawEta(prior)
+                  prior
+              }
+          })
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawPrior",
+          signature(prior = "ExchRobustCov"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawPrior_ExchNormCov_R, prior)
+                  else
+                      .Call(drawPrior_R, prior)
+              }
+              else {
+                  prior <- drawTau(prior)
+                  prior <- predictUBeta(prior)
+                  prior <- drawEta(prior)
+                  prior
+              }
+          })
+
+
+
+
 ## makeOutputPrior ###################################################################
 
 

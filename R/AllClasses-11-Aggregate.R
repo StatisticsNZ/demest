@@ -435,7 +435,7 @@ setClass("SpecAxAgMixin",
 #'     disaggregated rates, counts, probabilities, or means.
 #' @slot weightAg Weights used to calculate \code{valueAg} from
 #'     disaggregated rates, counts, probabilities, or means.
-#' @slot concordancesAg List of \code{\link[classconc]{ManyToOne}}
+#' @slot concordancesAg List of \code{\link[dembase]{ManyToOne}}
 #' concordances.
 #' @name SpecAggregate-class
 #' @export

@@ -659,10 +659,10 @@ predictUBeta <- function(prior, useC = FALSE) {
         tau <- prior@tau@.Data
         U <- prior@UBeta@.Data
         allStrucZero <- prior@allStrucZero
-        scale <- tau^2
+        scaleSq <- tau^2
         for (j in seq_len(J)) {
             if (!allStrucZero[j])
-                U[j] <- rinvchisq1(df = nu, scale = scale)
+                U[j] <- rinvchisq1(df = nu, scaleSq = scaleSq)
         }
         prior@UBeta@.Data <- U
         prior

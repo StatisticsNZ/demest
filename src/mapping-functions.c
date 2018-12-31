@@ -528,6 +528,7 @@ getIExposureFromOrigDestNotOneToOne(int i, SEXP mapping_R)
 
 /* *************** MAPPINGS TO EXPOSURE - iExpFirst **************** */
 
+
 int
 getIExpFirstFromComp(int i, SEXP mapping_R)
 {
@@ -630,6 +631,8 @@ getIExpFirstPairFromOrigDest(int i, SEXP mapping_R)
     return ans_R;
 }
 
+
+
 /* ans must have 2 elements */
 void
 getIExpFirstPairFromOrigDestInternal(int *ans, int i, SEXP mapping_R)
@@ -704,6 +707,7 @@ getIExpFirstPairFromOrigDestInternal(int *ans, int i, SEXP mapping_R)
     ans[0] = iExpOrig_r;
     ans[1] = iExpDest_r;    
 }
+
 
 int
 getICellCompFromExp(int i, SEXP mapping_R)

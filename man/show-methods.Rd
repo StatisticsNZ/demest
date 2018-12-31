@@ -37,6 +37,7 @@
 \alias{show,Initial-method}
 \alias{show,Level-method}
 \alias{show,Norm-method}
+\alias{show,TDist-method}
 \alias{show,Trend-method}
 \alias{show,Season-method}
 \alias{show,SpecDLM-method}
@@ -113,6 +114,8 @@
 \S4method{show}{Level}(object)
 
 \S4method{show}{Norm}(object)
+
+\S4method{show}{TDist}(object)
 
 \S4method{show}{Trend}(object)
 

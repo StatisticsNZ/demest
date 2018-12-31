@@ -1345,7 +1345,7 @@ test_that("checkAxAg works", {
 
 test_that("checkConcordances works", {
     checkConcordances <- demest:::checkConcordances
-    Concordance <- classconc::Concordance
+    Concordance <- dembase::Concordance
     x <- Values(array(1:4,
                       dim = c(2, 2),
                       dimnames = list(age = c(0, "1+"),
@@ -1367,6 +1367,76 @@ test_that("checkConcordances works", {
     conc <- Concordance(data.frame(from = c("a", "b"), to = "A"))
     expect_error(checkConcordances(concordances = list(eth = conc, eth = conc)),
                  "'concordances' has duplicate names")
+})
+
+test_that("checkConcordancesDatasets works", {
+    checkConcordancesDatasets <- demest:::checkConcordancesDatasets
+    concordances <- list(reg_births = list(region = Concordance(data.frame(from = c("B", "C"), to = c("b", "b")))),
+                         census = list(region = Concordance(data.frame(from = c("C", "B"), to = c("b", "b")))))
+    datasets <- list(census = Counts(array(1:4,
+                                           dim = c(2, 2),
+                                           dimnames = list(age = c(0, "1+"),
+                                                           region = c("a", "b")))),
+                     reg_births = Counts(array(1:2,
+                                           dim = c(1, 2),
+                                           dimnames = list(age = "1+",
+                                                           region = c("a", "b")))))
+    expect_identical(checkConcordancesDatasets(concordances = concordances,
+                                               datasets = datasets,
+                                               namesDatasets = names(datasets)),
+                     NULL)
+    expect_identical(checkConcordancesDatasets(concordances = list(),
+                                               datasets = datasets,
+                                               namesDatasets = names(datasets)),
+                     NULL)
+    expect_error(checkConcordancesDatasets(concordances = "wrong",
+                                           datasets = datasets,
+                                           namesDatasets = names(datasets)),
+                 "'concordances' has class \"character\"")
+    concordances.wrong <- concordances
+    names(concordances.wrong) <- NULL
+    expect_error(checkConcordancesDatasets(concordances = concordances.wrong,
+                                           datasets = datasets,
+                                           namesDatasets = names(datasets)),
+                 "'concordances' does not have names")
+    concordances.wrong <- concordances
+    names(concordances.wrong) <- c("census", "census")
+    expect_error(checkConcordancesDatasets(concordances = concordances.wrong,
+                                           datasets = datasets,
+                                           namesDatasets = names(datasets)
+                                           ),
+                 "'concordances' has duplicate names")
+    concordances.wrong <- concordances
+    names(concordances.wrong) <- c("census", "wrong")
+    expect_error(checkConcordancesDatasets(concordances = concordances.wrong,
+                                           datasets = datasets,
+                                               namesDatasets = names(datasets)),
+                 "'concordances' has an element called \"wrong\", but \"wrong\" is not the name of a dataset")
+    concordances.wrong <- concordances
+    concordances.wrong[[1L]] <- "wrong"
+    expect_error(checkConcordancesDatasets(concordances = concordances.wrong,
+                                           datasets = datasets,
+                                           namesDatasets = names(datasets)),
+                 "element \"reg_births\" of 'concordances' is not a list")
+    concordances.wrong <- concordances
+    concordances.wrong[[2]][[1]] <- "wrong"
+    expect_error(checkConcordancesDatasets(concordances = concordances.wrong,
+                                           datasets = datasets,
+                                           namesDatasets = names(datasets)),
+                 "element \"census\" of 'concordances' has elements not of class \"ManyToOne\"")
+    concordances.wrong <- concordances
+    names(concordances.wrong[[2]]) <- NULL
+    expect_error(checkConcordancesDatasets(concordances = concordances.wrong,
+                                           datasets = datasets,
+                                           namesDatasets = names(datasets)),
+                 "element \"census\" of 'concordances' does not have names")
+    concordances.wrong <- concordances
+    concordances.wrong[[2]][2] <- concordances.wrong[[2]][1]
+    names(concordances.wrong[[2]])[2] <- "region"
+    expect_error(checkConcordancesDatasets(concordances = concordances.wrong,
+                                           datasets = datasets,
+                                           namesDatasets = names(datasets)),
+                 "element \"census\" of 'concordances' has duplicate names")
 })
 
 test_that("checkForMarginalTerms works", {
@@ -2854,15 +2924,22 @@ test_that("makeTransformsYToDatasets works", {
                      Counts(array(1:12, dim = c(3, 4, 1),
                                   dimnames = list(reg = 1:3, age = 0:3, time = 2000)),
                             dimscales = c(time = "Intervals")))
-    ans.obtained <- makeTransformsYToDatasets(y = y, datasets = datasets, namesDatasets = c("tax", "census"))
+    concordances <- list(census = list(reg = Concordance(data.frame(from = 1:3, to = c(1, 4, 4)))))
+    datasets[[2]] <- collapseCategories(datasets[[2]], dimension = "reg", old = 2:3, new = 4)
+    ans.obtained <- makeTransformsYToDatasets(y = y, datasets = datasets,
+                                              concordances = concordances,
+                                              namesDatasets = c("tax", "census"))
     ans.expected <- list(makeTransform(x = y, y = datasets[[1]], subset = TRUE),
-                         makeTransform(x = y, y = datasets[[2]], subset = TRUE))
+                         makeTransform(x = y, y = datasets[[2]], concordances = concordances[[1]],
+                                       subset = TRUE))
     ans.expected <- lapply(ans.expected, makeCollapseTransformExtra)
     expect_identical(ans.obtained, ans.expected)
     datasets.wrong <- c(datasets,
                         list(Counts(array(1:6, dim = 6, dimnames = list(time = 2000:2005)),
                                     dimscales = c(time = "Intervals"))))
-    expect_error(makeTransformsYToDatasets(y = y, datasets = datasets.wrong,
+    expect_error(makeTransformsYToDatasets(y = y,
+                                           datasets = datasets.wrong,
+                                           concordances = concordances,
                                            namesDatasets = c("tax", "census", "wrong")),
                  "unable to collapse 'y' to make it compatible with dataset 'wrong' :")
 })
