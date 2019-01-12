@@ -266,6 +266,434 @@ test_that("checkPriorsAreInformative works", {
 
 ## drawPrior, drawModel ################################################
 
+test_that("R version of drawEta works", {
+    drawEta <- demest:::drawEta
+    initialPrior <- demest:::initialPrior
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    data <- data.frame(region = letters[1:10],
+                       income = rnorm(10),
+                       cat = rep(c("a", "b"), each = 5))
+    spec <- Exch(covariate = Covariates(mean ~ income + cat,
+                                        data = data,
+                                        intercept = Norm(sd = 1),
+                                        coef = TDist(mean = c(-1, 1),
+                                                     scale = 0.1)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(region = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.obtained <- drawEta(prior)@eta@.Data
+        set.seed(seed)
+        ans.expected <- rnorm(n = prior@P@.Data,
+                              mean = c(0,  prior@meanEtaCoef@.Data),
+                              sd = c(prior@AEtaIntercept@.Data, sqrt(prior@UEtaCoef@.Data)))
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of drawEta give same answer", {
+    drawEta <- demest:::drawEta
+    initialPrior <- demest:::initialPrior
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    data <- data.frame(region = letters[1:10],
+                       income = rnorm(10),
+                       cat = rep(c("a", "b"), each = 5))
+    spec <- Exch(covariate = Covariates(mean ~ income + cat,
+                                        data = data,
+                                        intercept = Norm(sd = 1),
+                                        coef = TDist(mean = c(-1, 1),
+                                                     scale = 0.1)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(region = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.R <- drawEta(prior, useC = FALSE)
+        set.seed(seed)
+        ans.R <- drawEta(prior, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
+
+test_that("R version of drawOmegaAlpha works", {
+    drawOmegaAlpha <- demest:::drawOmegaAlpha
+    initialPrior <- demest:::initialPrior
+    spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
+                trend = NULL,
+                damp = NULL,
+                error = Error(scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "DLMNoTrendNormZeroNoSeason")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.obtained <- drawOmegaAlpha(prior)@omegaAlpha@.Data
+        set.seed(seed)
+        ans.expected <- rhalft(n = 1, df = prior@nuAlpha@.Data, scale = prior@AAlpha@.Data)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of version of drawOmegaAlpha give same answer", {
+    drawOmegaAlpha <- demest:::drawOmegaAlpha
+    initialPrior <- demest:::initialPrior
+    spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
+                trend = NULL,
+                damp = NULL,
+                error = Error(scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "DLMNoTrendNormZeroNoSeason")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.R <- drawOmegaAlpha(prior, useC = FALSE)
+        set.seed(seed)
+        ans.C <- drawOmegaAlpha(prior, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
+
+test_that("R version of drawOmegaDelta works", {
+    drawOmegaDelta <- demest:::drawOmegaDelta
+    initialPrior <- demest:::initialPrior
+    spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
+                trend = Trend(initial = Initial(sd = 0.2),
+                              scale = HalfT(scale = 0.2)),
+                damp = NULL,
+                error = Error(scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "DLMWithTrendNormZeroNoSeason")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.obtained <- drawOmegaDelta(prior)@omegaDelta@.Data
+        set.seed(seed)
+        ans.expected <- rhalft(n = 1, df = prior@nuDelta@.Data, scale = prior@ADelta@.Data)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of version of drawOmegaDelta give same answer", {
+    drawOmegaDelta <- demest:::drawOmegaDelta
+    initialPrior <- demest:::initialPrior
+    spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
+                trend = Trend(initial = Initial(sd = 0.2),
+                              scale = HalfT(scale = 0.2)),
+                damp = NULL,
+                error = Error(scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "DLMWithTrendNormZeroNoSeason")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.R <- drawOmegaDelta(prior, useC = FALSE)
+        set.seed(seed)
+        ans.C <- drawOmegaDelta(prior, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
+
+test_that("R version of drawOmegaSeason works", {
+    drawOmegaSeason <- demest:::drawOmegaSeason
+    initialPrior <- demest:::initialPrior
+    spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
+                trend = Trend(initial = Initial(sd = 0.2),
+                              scale = HalfT(scale = 0.2)),
+                season = Season(n = 4, scale = HalfT(scale = 0.05)),
+                damp = NULL,
+                error = Error(scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "DLMWithTrendNormZeroWithSeason")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.obtained <- drawOmegaSeason(prior)@omegaSeason@.Data
+        set.seed(seed)
+        ans.expected <- rhalft(n = 1, df = prior@nuSeason@.Data, scale = prior@ASeason@.Data)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of version of drawOmegaSeason give same answer", {
+    drawOmegaSeason <- demest:::drawOmegaSeason
+    initialPrior <- demest:::initialPrior
+    spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
+                trend = Trend(initial = Initial(sd = 0.2),
+                              scale = HalfT(scale = 0.2)),
+                season = Season(n = 4, scale = HalfT(scale = 0.05)),
+                damp = NULL,
+                error = Error(scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "DLMWithTrendNormZeroNoSeason")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.R <- drawOmegaSeason(prior, useC = FALSE)
+        set.seed(seed)
+        ans.C <- drawOmegaSeason(prior, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
+
+test_that("R version of drawPhi works", {
+    drawPhi <- demest:::drawPhi
+    initialPrior <- demest:::initialPrior
+    spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
+                trend = NULL,
+                damp = Damp(shape1 = 3, shape2 = 3),
+                error = Error(scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "DLMNoTrendNormZeroNoSeason")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.obtained <- drawPhi(prior)@phi@.Data
+        set.seed(seed)
+        ans.expected <- (rbeta(n = 1,
+                              shape1 = prior@shape1Phi@.Data,
+                              shape2 = prior@shape2Phi@.Data) * (prior@maxPhi - prior@minPhi)
+            + prior@minPhi)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of drawPhi give same answer", {
+    drawPhi <- demest:::drawPhi
+    initialPrior <- demest:::initialPrior
+    spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
+                trend = NULL,
+                damp = Damp(shape1 = 3, shape2 = 3),
+                error = Error(scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "DLMNoTrendNormZeroNoSeason")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.R <- drawPhi(prior, useC = FALSE)
+        set.seed(seed)
+        ans.C <- drawPhi(prior, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
+
+test_that("drawSigma_Varying works with BinomialVarying", {
+    drawSigma_Varying <- demest:::drawSigma_Varying
+    initialModel <- demest:::initialModel
+    rhalftTrunc1 <- demest:::rhalftTrunc1
+    exposure <- Counts(array(rpois(20, lambda  = 10),
+                             dim = c(2, 10),
+                             dimnames = list(sex = c("f", "m"), age = 0:9)))
+    y <- Counts(array(rbinom(20, size = exposure, prob = 0.7),
+                      dim = c(2, 10),
+                      dimnames = list(sex = c("f", "m"), age = 0:9)))
+    spec <- Model(y ~ Binomial(mean ~ sex + age),
+                  priorSD = HalfT(scale = 0.1))
+    model <- initialModel(spec, y = y, exposure = exposure)
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.expected <- drawSigma_Varying(model)
+        set.seed(seed)
+        ans.obtained <- model
+        ans.obtained@sigma@.Data <- rhalftTrunc1(df = model@nuSigma@.Data,
+                                                 scale = model@ASigma@.Data,
+                                                 max = model@sigmaMax@.Data,
+                                                 useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of drawSigma_Varying give same answer with BinomialVarying", {
+    drawSigma_Varying <- demest:::drawSigma_Varying
+    initialModel <- demest:::initialModel
+    rhalftTrunc1 <- demest:::rhalftTrunc1
+    exposure <- Counts(array(rpois(20, lambda  = 10),
+                             dim = c(2, 10),
+                             dimnames = list(sex = c("f", "m"), age = 0:9)))
+    y <- Counts(array(rbinom(20, size = exposure, prob = 0.7),
+                      dim = c(2, 10),
+                      dimnames = list(sex = c("f", "m"), age = 0:9)))
+    spec <- Model(y ~ Binomial(mean ~ sex + age),
+                  priorSD = HalfT(scale = 0.1))
+    model <- initialModel(spec, y = y, exposure = exposure)
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.R <- drawSigma_Varying(model, useC = FALSE)
+        set.seed(seed)
+        ans.C <- drawSigma_Varying(model, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
 
 test_that("R version of drawTau works", {
     drawTau <- demest:::drawTau
@@ -329,8 +757,54 @@ test_that("R and C versions of drawTau give same answer", {
     }
 })
 
-test_that("R version of drawEta works", {
-    drawEta <- demest:::drawEta
+
+
+
+
+
+test_that("R version of drawUEtaCoef works", {
+    drawUEtaCoef <- demest:::drawUEtaCoef
+    initialPrior <- demest:::initialPrior
+    rinvchisq1 <- demest:::rinvchisq1
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    data <- data.frame(region = letters[1:10],
+                       income = rnorm(10),
+                       cat = rep(c("a", "b"), each = 5))
+    spec <- Exch(covariate = Covariates(mean ~ income + cat,
+                                        data = data,
+                                        intercept = Norm(sd = 1),
+                                        coef = TDist(mean = c(-1, 1),
+                                                     scale = 0.1)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(region = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.obtained <- drawUEtaCoef(prior)@UEtaCoef@.Data
+        set.seed(seed)
+        ans.expected <- mapply(rinvchisq1,
+                               df = prior@nuEtaCoef@.Data,
+                               scaleSq = prior@AEtaCoef@.Data^2)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of drawUEtaCoef give same answer", {
+    drawUEtaCoef <- demest:::drawUEtaCoef
     initialPrior <- demest:::initialPrior
     beta <- rnorm(10)
     metadata <- new("MetaData",
@@ -357,49 +831,9 @@ test_that("R version of drawEta works", {
                           strucZeroArray = strucZeroArray)
     for (seed in seq_len(n.test)) {
         set.seed(seed)
-        ans.obtained <- drawEta(prior)@eta@.Data
+        ans.R <- drawUEtaCoef(prior, useC = FALSE)
         set.seed(seed)
-        ans.expected <- c(rnorm(n = 1, sd = prior@AEtaIntercept@.Data),
-                          prior@meanEtaCoef@.Data + prior@AEtaCoef@.Data * rt(n = prior@P@.Data - 1,
-                                                                              df = prior@nuEtaCoef@.Data))
-        if (test.identity)
-            expect_identical(ans.obtained, ans.expected)
-        else
-            expect_equal(ans.obtained, ans.expected)
-    }
-})
-
-test_that("R and C versions of drawEta give same answer", {
-    drawEta <- demest:::drawEta
-    initialPrior <- demest:::initialPrior
-    beta <- rnorm(10)
-    metadata <- new("MetaData",
-                    nms = "region",
-                    dimtypes = "state",
-                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
-    data <- data.frame(region = letters[1:10],
-                       income = rnorm(10),
-                       cat = rep(c("a", "b"), each = 5))
-    spec <- Exch(covariate = Covariates(mean ~ income + cat,
-                                        data = data,
-                                        intercept = Norm(sd = 1),
-                                        coef = TDist(mean = c(-1, 1),
-                                                     scale = 0.1)))
-    strucZeroArray <- Counts(array(1L,
-                                   dim = 10L,
-                                   dimnames = list(region = letters[1:10])))
-    prior <- initialPrior(spec,
-                          beta = beta,
-                          metadata = metadata,
-                          sY = NULL,
-                          isSaturated = FALSE,
-                          margin = 1L,
-                          strucZeroArray = strucZeroArray)
-    for (seed in seq_len(n.test)) {
-        set.seed(seed)
-        ans.R <- drawEta(prior, useC = FALSE)
-        set.seed(seed)
-        ans.R <- drawEta(prior, useC = TRUE)
+        ans.R <- drawUEtaCoef(prior, useC = TRUE)
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else
@@ -407,59 +841,6 @@ test_that("R and C versions of drawEta give same answer", {
     }
 })
 
-test_that("drawSigma_Varying works with BinomialVarying", {
-    drawSigma_Varying <- demest:::drawSigma_Varying
-    initialModel <- demest:::initialModel
-    rhalftTrunc1 <- demest:::rhalftTrunc1
-    exposure <- Counts(array(rpois(20, lambda  = 10),
-                             dim = c(2, 10),
-                             dimnames = list(sex = c("f", "m"), age = 0:9)))
-    y <- Counts(array(rbinom(20, size = exposure, prob = 0.7),
-                      dim = c(2, 10),
-                      dimnames = list(sex = c("f", "m"), age = 0:9)))
-    spec <- Model(y ~ Binomial(mean ~ sex + age),
-                  priorSD = HalfT(scale = 0.1))
-    model <- initialModel(spec, y = y, exposure = exposure)
-    for (seed in seq_len(n.test)) {
-        set.seed(seed)
-        ans.expected <- drawSigma_Varying(model)
-        set.seed(seed)
-        ans.obtained <- model
-        ans.obtained@sigma@.Data <- rhalftTrunc1(df = model@nuSigma@.Data,
-                                                 scale = model@ASigma@.Data,
-                                                 max = model@sigmaMax@.Data,
-                                                 useC = TRUE)
-        if (test.identity)
-            expect_identical(ans.obtained, ans.expected)
-        else
-            expect_equal(ans.obtained, ans.expected)
-    }
-})
 
-
-test_that("R and C versions of drawSigma_Varying give same answer with BinomialVarying", {
-    drawSigma_Varying <- demest:::drawSigma_Varying
-    initialModel <- demest:::initialModel
-    rhalftTrunc1 <- demest:::rhalftTrunc1
-    exposure <- Counts(array(rpois(20, lambda  = 10),
-                             dim = c(2, 10),
-                             dimnames = list(sex = c("f", "m"), age = 0:9)))
-    y <- Counts(array(rbinom(20, size = exposure, prob = 0.7),
-                      dim = c(2, 10),
-                      dimnames = list(sex = c("f", "m"), age = 0:9)))
-    spec <- Model(y ~ Binomial(mean ~ sex + age),
-                  priorSD = HalfT(scale = 0.1))
-    model <- initialModel(spec, y = y, exposure = exposure)
-    for (seed in seq_len(n.test)) {
-        set.seed(seed)
-        ans.R <- drawSigma_Varying(model, useC = FALSE)
-        set.seed(seed)
-        ans.C <- drawSigma_Varying(model, useC = TRUE)
-        if (test.identity)
-            expect_identical(ans.R, ans.C)
-        else
-            expect_equal(ans.R, ans.C)
-    }
-})
 
 
