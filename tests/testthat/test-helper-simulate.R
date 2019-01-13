@@ -416,6 +416,90 @@ test_that("R and C versions of version of drawOmegaAlpha give same answer", {
     }
 })
 
+test_that("R version of drawOmegaComponentWeightMix works", {
+    drawOmegaComponentWeightMix <- demest:::drawOmegaComponentWeightMix
+    initialPrior <- demest:::initialPrior
+    spec <- Mix(components = Components(scale = HalfT(scale = 0.1)),
+                weights = Weights(scale1 = HalfT(scale = 0.1),
+                                  scale2 = HalfT(scale = 0.1)),
+                error = Error(scale = HalfT(scale = 0.1)))
+    beta <- rnorm(200)
+    metadata <- new("MetaData",
+                    nms = c("time", "reg", "age"),
+                    dimtypes = c("time", "state", "age"),
+                    DimScales = list(new("Points", dimvalues = 2001:2010),
+                                     new("Categories", dimvalues = c("a", "b")),
+                                     new("Intervals", dimvalues = as.numeric(0:10))))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(10, 2, 10),
+                                   dimnames = list(time = 2001:2010,
+                                                   reg = c("a", "b"),
+                                                   age = 0:9)),
+                             dimscales = c(time = "Points", age = "Intervals"))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          multScale = 1,
+                          isSaturated = FALSE,
+                          margin = 1:3,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "MixNormZero")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.obtained <- drawOmegaComponentWeightMix(prior)@omegaComponentWeightMix@.Data
+        set.seed(seed)
+        ans.expected <- rhalft(n = 1,
+                               df = prior@nuComponentWeightMix@.Data,
+                               scale = prior@AComponentWeightMix@.Data)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C version of drawOmegaComponentWeightMix give same answer", {
+    drawOmegaComponentWeightMix <- demest:::drawOmegaComponentWeightMix
+    initialPrior <- demest:::initialPrior
+    spec <- Mix(components = Components(scale = HalfT(scale = 0.1)),
+                weights = Weights(scale1 = HalfT(scale = 0.1),
+                                  scale2 = HalfT(scale = 0.1)),
+                error = Error(scale = HalfT(scale = 0.1)))
+    beta <- rnorm(200)
+    metadata <- new("MetaData",
+                    nms = c("time", "reg", "age"),
+                    dimtypes = c("time", "state", "age"),
+                    DimScales = list(new("Points", dimvalues = 2001:2010),
+                                     new("Categories", dimvalues = c("a", "b")),
+                                     new("Intervals", dimvalues = as.numeric(0:10))))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(10, 2, 10),
+                                   dimnames = list(time = 2001:2010,
+                                                   reg = c("a", "b"),
+                                                   age = 0:9)),
+                             dimscales = c(time = "Points", age = "Intervals"))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          multScale = 1,
+                          isSaturated = FALSE,
+                          margin = 1:3,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "MixNormZero")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.R <- drawOmegaComponentWeightMix(prior, useC = FALSE)
+        set.seed(seed)
+        ans.C <- drawOmegaComponentWeightMix(prior, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
+
 test_that("R version of drawOmegaDelta works", {
     drawOmegaDelta <- demest:::drawOmegaDelta
     initialPrior <- demest:::initialPrior
@@ -483,6 +567,90 @@ test_that("R and C versions of version of drawOmegaDelta give same answer", {
         ans.R <- drawOmegaDelta(prior, useC = FALSE)
         set.seed(seed)
         ans.C <- drawOmegaDelta(prior, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
+
+test_that("R version of drawOmegaLevelComponentWeightMix works", {
+    drawOmegaLevelComponentWeightMix <- demest:::drawOmegaLevelComponentWeightMix
+    initialPrior <- demest:::initialPrior
+    spec <- Mix(components = Components(scale = HalfT(scale = 0.1)),
+                weights = Weights(scale1 = HalfT(scale = 0.1),
+                                  scale2 = HalfT(scale = 0.1)),
+                error = Error(scale = HalfT(scale = 0.1)))
+    beta <- rnorm(200)
+    metadata <- new("MetaData",
+                    nms = c("time", "reg", "age"),
+                    dimtypes = c("time", "state", "age"),
+                    DimScales = list(new("Points", dimvalues = 2001:2010),
+                                     new("Categories", dimvalues = c("a", "b")),
+                                     new("Intervals", dimvalues = as.numeric(0:10))))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(10, 2, 10),
+                                   dimnames = list(time = 2001:2010,
+                                                   reg = c("a", "b"),
+                                                   age = 0:9)),
+                             dimscales = c(time = "Points", age = "Intervals"))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          multScale = 1,
+                          isSaturated = FALSE,
+                          margin = 1:3,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "MixNormZero")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.obtained <- drawOmegaLevelComponentWeightMix(prior)@omegaLevelComponentWeightMix@.Data
+        set.seed(seed)
+        ans.expected <- rhalft(n = 1,
+                               df = prior@nuLevelComponentWeightMix@.Data,
+                               scale = prior@ALevelComponentWeightMix@.Data)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C version of drawOmegaLevelComponentWeightMix give same answer", {
+    drawOmegaLevelComponentWeightMix <- demest:::drawOmegaLevelComponentWeightMix
+    initialPrior <- demest:::initialPrior
+    spec <- Mix(components = Components(scale = HalfT(scale = 0.1)),
+                weights = Weights(scale1 = HalfT(scale = 0.1),
+                                  scale2 = HalfT(scale = 0.1)),
+                error = Error(scale = HalfT(scale = 0.1)))
+    beta <- rnorm(200)
+    metadata <- new("MetaData",
+                    nms = c("time", "reg", "age"),
+                    dimtypes = c("time", "state", "age"),
+                    DimScales = list(new("Points", dimvalues = 2001:2010),
+                                     new("Categories", dimvalues = c("a", "b")),
+                                     new("Intervals", dimvalues = as.numeric(0:10))))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(10, 2, 10),
+                                   dimnames = list(time = 2001:2010,
+                                                   reg = c("a", "b"),
+                                                   age = 0:9)),
+                             dimscales = c(time = "Points", age = "Intervals"))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          multScale = 1,
+                          isSaturated = FALSE,
+                          margin = 1:3,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "MixNormZero")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.R <- drawOmegaLevelComponentWeightMix(prior, useC = FALSE)
+        set.seed(seed)
+        ans.C <- drawOmegaLevelComponentWeightMix(prior, useC = TRUE)
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else
@@ -566,6 +734,90 @@ test_that("R and C versions of version of drawOmegaSeason give same answer", {
     }
 })
 
+test_that("R version of drawOmegaVectorsMix works", {
+    drawOmegaVectorsMix <- demest:::drawOmegaVectorsMix
+    initialPrior <- demest:::initialPrior
+    spec <- Mix(components = Components(scale = HalfT(scale = 0.1)),
+                weights = Weights(scale1 = HalfT(scale = 0.1),
+                                  scale2 = HalfT(scale = 0.1)),
+                error = Error(scale = HalfT(scale = 0.1)))
+    beta <- rnorm(200)
+    metadata <- new("MetaData",
+                    nms = c("time", "reg", "age"),
+                    dimtypes = c("time", "state", "age"),
+                    DimScales = list(new("Points", dimvalues = 2001:2010),
+                                     new("Categories", dimvalues = c("a", "b")),
+                                     new("Intervals", dimvalues = as.numeric(0:10))))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(10, 2, 10),
+                                   dimnames = list(time = 2001:2010,
+                                                   reg = c("a", "b"),
+                                                   age = 0:9)),
+                             dimscales = c(time = "Points", age = "Intervals"))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          multScale = 1,
+                          isSaturated = FALSE,
+                          margin = 1:3,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "MixNormZero")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.obtained <- drawOmegaVectorsMix(prior)@omegaVectorsMix@.Data
+        set.seed(seed)
+        ans.expected <- rhalft(n = 1,
+                               df = prior@nuVectorsMix@.Data,
+                               scale = prior@AVectorsMix@.Data)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C version of drawOmegaVectorsMix give same answer", {
+    drawOmegaVectorsMix <- demest:::drawOmegaVectorsMix
+    initialPrior <- demest:::initialPrior
+    spec <- Mix(components = Components(scale = HalfT(scale = 0.1)),
+                weights = Weights(scale1 = HalfT(scale = 0.1),
+                                  scale2 = HalfT(scale = 0.1)),
+                error = Error(scale = HalfT(scale = 0.1)))
+    beta <- rnorm(200)
+    metadata <- new("MetaData",
+                    nms = c("time", "reg", "age"),
+                    dimtypes = c("time", "state", "age"),
+                    DimScales = list(new("Points", dimvalues = 2001:2010),
+                                     new("Categories", dimvalues = c("a", "b")),
+                                     new("Intervals", dimvalues = as.numeric(0:10))))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(10, 2, 10),
+                                   dimnames = list(time = 2001:2010,
+                                                   reg = c("a", "b"),
+                                                   age = 0:9)),
+                             dimscales = c(time = "Points", age = "Intervals"))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          multScale = 1,
+                          isSaturated = FALSE,
+                          margin = 1:3,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "MixNormZero")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.R <- drawOmegaVectorsMix(prior, useC = FALSE)
+        set.seed(seed)
+        ans.C <- drawOmegaVectorsMix(prior, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
+
 test_that("R version of drawPhi works", {
     drawPhi <- demest:::drawPhi
     initialPrior <- demest:::initialPrior
@@ -640,6 +892,94 @@ test_that("R and C versions of drawPhi give same answer", {
             expect_equal(ans.R, ans.C)
     }
 })
+
+test_that("R version of drawPhiMix works", {
+    drawPhiMix <- demest:::drawPhiMix
+    initialPrior <- demest:::initialPrior
+    spec <- Mix(components = Components(scale = HalfT(scale = 0.1)),
+                weights = Weights(scale1 = HalfT(scale = 0.1),
+                                  scale2 = HalfT(scale = 0.1)),
+                error = Error(scale = HalfT(scale = 0.1)))
+    beta <- rnorm(200)
+    metadata <- new("MetaData",
+                    nms = c("time", "reg", "age"),
+                    dimtypes = c("time", "state", "age"),
+                    DimScales = list(new("Points", dimvalues = 2001:2010),
+                                     new("Categories", dimvalues = c("a", "b")),
+                                     new("Intervals", dimvalues = as.numeric(0:10))))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(10, 2, 10),
+                                   dimnames = list(time = 2001:2010,
+                                                   reg = c("a", "b"),
+                                                   age = 0:9)),
+                             dimscales = c(time = "Points", age = "Intervals"))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          multScale = 1,
+                          isSaturated = FALSE,
+                          margin = 1:3,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "MixNormZero")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.obtained <- drawPhiMix(prior)@phiMix
+        set.seed(seed)
+        ans.expected <- (rbeta(n = 1,
+                              shape1 = prior@shape1Phi@.Data,
+                              shape2 = prior@shape2Phi@.Data) * (prior@maxPhi - prior@minPhi)
+            + prior@minPhi)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C version of drawPhiMix give same answer", {
+    drawPhiMix <- demest:::drawPhiMix
+    initialPrior <- demest:::initialPrior
+    spec <- Mix(components = Components(scale = HalfT(scale = 0.1)),
+                weights = Weights(scale1 = HalfT(scale = 0.1),
+                                  scale2 = HalfT(scale = 0.1)),
+                error = Error(scale = HalfT(scale = 0.1)))
+    beta <- rnorm(200)
+    metadata <- new("MetaData",
+                    nms = c("time", "reg", "age"),
+                    dimtypes = c("time", "state", "age"),
+                    DimScales = list(new("Points", dimvalues = 2001:2010),
+                                     new("Categories", dimvalues = c("a", "b")),
+                                     new("Intervals", dimvalues = as.numeric(0:10))))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(10, 2, 10),
+                                   dimnames = list(time = 2001:2010,
+                                                   reg = c("a", "b"),
+                                                   age = 0:9)),
+                             dimscales = c(time = "Points", age = "Intervals"))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          multScale = 1,
+                          isSaturated = FALSE,
+                          margin = 1:3,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "MixNormZero")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.R <- drawPhiMix(prior, useC = FALSE)
+        set.seed(seed)
+        ans.C <- drawPhiMix(prior, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
+
+
+
 
 test_that("drawSigma_Varying works with BinomialVarying", {
     drawSigma_Varying <- demest:::drawSigma_Varying

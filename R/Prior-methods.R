@@ -18,6 +18,8 @@ setMethod("betaIsEstimated",
 
 ## drawPrior #########################################################################
 
+## ExchFixed
+
 ## READY_TO_TRANSLATE
 ## HAS_TESTS
 setMethod("drawPrior",
@@ -34,6 +36,8 @@ setMethod("drawPrior",
                   prior
               }
           })
+
+## Exch
 
 ## READY_TO_TRANSLATE
 ## HAS_TESTS
@@ -207,6 +211,8 @@ setMethod("drawPrior",
 
 ## DLM - Norm, Cov
 
+## READY_TO_TRANSLATE
+## HAS_TESTS
 setMethod("drawPrior",
           signature(prior = "DLMNoTrendNormCovNoSeason"),
           function(prior, useC = FALSE, useSpecific = FALSE) {
@@ -227,6 +233,361 @@ setMethod("drawPrior",
                   prior
               }
           })
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawPrior",
+          signature(prior = "DLMWithTrendNormCovNoSeason"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawPrior_DLMWithTrendNormCovNoSeason_R, prior)
+                  else
+                      .Call(drawPrior_R, prior)
+              }
+              else {
+                  prior <- drawTau(prior)
+                  prior <- drawOmegaAlpha(prior)
+                  prior <- drawOmegaDelta(prior)
+                  prior <- drawPhi(prior)
+                  prior <- drawUEtaCoef(prior)
+                  prior <- drawEta(prior)
+                  prior <- predictAlphaDeltaDLMWithTrend(prior)
+                  prior
+              }
+          })
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawPrior",
+          signature(prior = "DLMNoTrendNormCovWithSeason"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawPrior_DLMNoTrendNormCovWithSeason_R, prior)
+                  else
+                      .Call(drawPrior_R, prior)
+              }
+              else {
+                  prior <- drawTau(prior)
+                  prior <- drawOmegaAlpha(prior)
+                  prior <- drawOmegaSeason(prior)
+                  prior <- drawPhi(prior)
+                  prior <- drawUEtaCoef(prior)
+                  prior <- drawEta(prior)
+                  prior <- predictSeason(prior)
+                  prior <- predictAlphaDLMNoTrend(prior)
+                  prior
+              }
+          })
+
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawPrior",
+          signature(prior = "DLMWithTrendNormCovWithSeason"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawPrior_DLMWithTrendNormCovWithSeason_R, prior)
+                  else
+                      .Call(drawPrior_R, prior)
+              }
+              else {
+                  prior <- drawTau(prior)
+                  prior <- drawOmegaAlpha(prior)
+                  prior <- drawOmegaDelta(prior)
+                  prior <- drawOmegaSeason(prior)
+                  prior <- drawPhi(prior)
+                  prior <- drawUEtaCoef(prior)
+                  prior <- drawEta(prior)
+                  prior <- predictSeason(prior)
+                  prior <- predictAlphaDeltaDLMWithTrend(prior)
+                  prior
+              }
+          })
+
+## DLM - Robust, Zero
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawPrior",
+          signature(prior = "DLMNoTrendRobustZeroNoSeason"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawPrior_DLMNoTrendRobustZeroNoSeason_R, prior)
+                  else
+                      .Call(drawPrior_R, prior)
+              }
+              else {
+                  prior <- drawTau(prior)
+                  prior <- drawOmegaAlpha(prior)
+                  prior <- predictUBeta(prior)
+                  prior <- drawPhi(prior)
+                  prior <- predictAlphaDLMNoTrend(prior)
+                  prior
+              }
+          })
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawPrior",
+          signature(prior = "DLMWithTrendRobustZeroNoSeason"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawPrior_DLMWithTrendRobustZeroNoSeason_R, prior)
+                  else
+                      .Call(drawPrior_R, prior)
+              }
+              else {
+                  prior <- drawTau(prior)
+                  prior <- drawOmegaAlpha(prior)
+                  prior <- drawOmegaDelta(prior)
+                  prior <- predictUBeta(prior)
+                  prior <- drawPhi(prior)
+                  prior <- predictAlphaDeltaDLMWithTrend(prior)
+                  prior
+              }
+          })
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawPrior",
+          signature(prior = "DLMNoTrendRobustZeroWithSeason"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawPrior_DLMNoTrendRobustZeroNoSeason_R, prior)
+                  else
+                      .Call(drawPrior_R, prior)
+              }
+              else {
+                  prior <- drawTau(prior)
+                  prior <- drawOmegaAlpha(prior)
+                  prior <- drawOmegaSeason(prior)
+                  prior <- predictUBeta(prior)
+                  prior <- drawPhi(prior)
+                  prior <- predictSeason(prior)
+                  prior <- predictAlphaDLMNoTrend(prior)
+                  prior
+              }
+          })
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawPrior",
+          signature(prior = "DLMWithTrendRobustZeroWithSeason"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawPrior_DLMWithTrendRobustZeroNoSeason_R, prior)
+                  else
+                      .Call(drawPrior_R, prior)
+              }
+              else {
+                  prior <- drawTau(prior)
+                  prior <- drawOmegaAlpha(prior)
+                  prior <- drawOmegaDelta(prior)
+                  prior <- drawOmegaSeason(prior)
+                  prior <- predictUBeta(prior)
+                  prior <- drawPhi(prior)
+                  prior <- predictSeason(prior)
+                  prior <- predictAlphaDeltaDLMWithTrend(prior)
+                  prior
+              }
+          })
+
+## DLM - Robust, Cov
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawPrior",
+          signature(prior = "DLMNoTrendRobustCovNoSeason"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawPrior_DLMNoTrendRobustCovNoSeason_R, prior)
+                  else
+                      .Call(drawPrior_R, prior)
+              }
+              else {
+                  prior <- drawTau(prior)
+                  prior <- drawOmegaAlpha(prior)
+                  prior <- predictUBeta(prior)
+                  prior <- drawPhi(prior)
+                  prior <- drawUEtaCoef(prior)
+                  prior <- drawEta(prior)
+                  prior <- predictAlphaDLMNoTrend(prior)
+                  prior
+              }
+          })
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawPrior",
+          signature(prior = "DLMWithTrendRobustCovNoSeason"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawPrior_DLMWithTrendRobustCovNoSeason_R, prior)
+                  else
+                      .Call(drawPrior_R, prior)
+              }
+              else {
+                  prior <- drawTau(prior)
+                  prior <- drawOmegaAlpha(prior)
+                  prior <- drawOmegaDelta(prior)
+                  prior <- predictUBeta(prior)
+                  prior <- drawPhi(prior)
+                  prior <- drawUEtaCoef(prior)
+                  prior <- drawEta(prior)
+                  prior <- predictAlphaDeltaDLMWithTrend(prior)
+                  prior
+              }
+          })
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawPrior",
+          signature(prior = "DLMNoTrendRobustCovWithSeason"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawPrior_DLMNoTrendRobustCovWithSeason_R, prior)
+                  else
+                      .Call(drawPrior_R, prior)
+              }
+              else {
+                  prior <- drawTau(prior)
+                  prior <- drawOmegaAlpha(prior)
+                  prior <- drawOmegaSeason(prior)
+                  prior <- predictUBeta(prior)
+                  prior <- drawPhi(prior)
+                  prior <- drawUEtaCoef(prior)
+                  prior <- drawEta(prior)
+                  prior <- predictSeason(prior)
+                  prior <- predictAlphaDLMNoTrend(prior)
+                  prior
+              }
+          })
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawPrior",
+          signature(prior = "DLMWithTrendRobustCovWithSeason"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawPrior_DLMWithTrendRobustCovWithSeason_R, prior)
+                  else
+                      .Call(drawPrior_R, prior)
+              }
+              else {
+                  prior <- drawTau(prior)
+                  prior <- drawOmegaAlpha(prior)
+                  prior <- drawOmegaDelta(prior)
+                  prior <- drawOmegaSeason(prior)
+                  prior <- predictUBeta(prior)
+                  prior <- drawPhi(prior)
+                  prior <- drawUEtaCoef(prior)
+                  prior <- drawEta(prior)
+                  prior <- predictSeason(prior)
+                  prior <- predictAlphaDeltaDLMWithTrend(prior)
+                  prior
+              }
+          })
+
+## Known
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawPrior",
+          signature(prior = "KnownCertain"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawPrior_KnownCertain_R, prior)
+                  else
+                      .Call(drawPrior_R, prior)
+              }
+              else {
+                  prior
+              }
+          })
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawPrior",
+          signature(prior = "KnownUncertain"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawPrior_KnownUncertain_R, prior)
+                  else
+                      .Call(drawPrior_R, prior)
+              }
+              else {
+                  prior
+              }
+          })
+
+## Mix
+
+setMethod("drawPrior",
+          signature(prior = "MixNormZero"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawPrior_MixNormZero_R, prior)
+                  else
+                      .Call(drawPrior_R, prior)
+              }
+              else {
+                  prior <- drawTau(prior)
+                  prior <- drawOmegaVectorsMix(prior)
+                  prior <- drawOmegaLevelComponentWeightMix(prior)
+                  prior <- drawOmegaComponentWeightMix(prior)
+                  prior <- drawPhiMix(prior)
+                  stop("not finished yet")
+              }
+          })
+
+## Zero
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawPrior",
+          signature(prior = "Zero"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawPrior_Zero_R, prior)
+                  else
+                      .Call(drawPrior_R, prior)
+              }
+              else {
+                  prior
+              }
+          })
+
+
 
 
 
@@ -1065,6 +1426,8 @@ setMethod("makeOutputPrior",
                    coef = coef,
                    scaleError = scaleError)
           })
+
+## Known
 
 ## HAS_TESTS
 setMethod("makeOutputPrior",

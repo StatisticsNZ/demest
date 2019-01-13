@@ -311,6 +311,24 @@ drawOmegaAlpha <- function(prior, useC = FALSE) {
 
 ## READY_TO_TRANSLATE
 ## HAS_TESTS
+drawOmegaComponentWeightMix <- function(prior, useC = FALSE) {
+    methods::validObject(prior)
+    if (useC) {
+        .Call(drawOmegaComponentWeightMix_R, prior)
+    }
+    else {
+        A <- prior@AComponentWeightMix@.Data
+        nu <- prior@nuComponentWeightMix@.Data
+        omega <- rhalft(n = 1L,
+                        df = nu,
+                        scale = A)
+        prior@omegaComponentWeightMix@.Data <- omega
+        prior
+    }
+}
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
 drawOmegaDelta <- function(prior, useC = FALSE) {
     methods::validObject(prior)
     if (useC) {
@@ -329,6 +347,24 @@ drawOmegaDelta <- function(prior, useC = FALSE) {
 
 ## READY_TO_TRANSLATE
 ## HAS_TESTS
+drawOmegaLevelComponentWeightMix <- function(prior, useC = FALSE) {
+    methods::validObject(prior)
+    if (useC) {
+        .Call(drawOmegaLevelComponentWeightMix_R, prior)
+    }
+    else {
+        A <- prior@ALevelComponentWeightMix@.Data
+        nu <- prior@nuLevelComponentWeightMix@.Data
+        omega <- rhalft(n = 1L,
+                        df = nu,
+                        scale = A)
+        prior@omegaLevelComponentWeightMix@.Data <- omega
+        prior
+    }
+}
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
 drawOmegaSeason <- function(prior, useC = FALSE) {
     methods::validObject(prior)
     if (useC) {
@@ -341,6 +377,24 @@ drawOmegaSeason <- function(prior, useC = FALSE) {
                         df = nu,
                         scale = A)
         prior@omegaSeason@.Data <- omega
+        prior
+    }
+}
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+drawOmegaVectorsMix <- function(prior, useC = FALSE) {
+    methods::validObject(prior)
+    if (useC) {
+        .Call(drawOmegaVectorsMix_R, prior)
+    }
+    else {
+        A <- prior@AVectorsMix@.Data
+        nu <- prior@nuVectorsMix@.Data
+        omega <- rhalft(n = 1L,
+                        df = nu,
+                        scale = A)
+        prior@omegaVectorsMix@.Data <- omega
         prior
     }
 }
@@ -371,6 +425,31 @@ drawPhi <- function(prior, useC = FALSE) {
     }
 }
 
+## READY_TO_TRANSLATE
+## HAS_TESTS
+drawPhiMix <- function(prior, useC = FALSE) {
+    methods::validObject(prior)
+    if (useC) {
+        .Call(drawPhiMix_R, prior)
+    }
+    else {
+        phi.known <- prior@phiKnown@.Data
+        if (phi.known)
+            prior
+        else {
+            phi.min <- prior@minPhi@.Data
+            phi.max <- prior@maxPhi@.Data
+            shape1 <- prior@shape1Phi@.Data
+            shape2 <- prior@shape2Phi@.Data
+            X <- rbeta(n = 1L,
+                       shape1 = shape1,
+                       shape2 = shape2)
+            phi <- phi.min + X * (phi.max - phi.min)
+            prior@phiMix <- phi
+            prior
+        }
+    }
+}
 
 ## READY_TO_TRANSLATE
 ## HAS_TESTS
