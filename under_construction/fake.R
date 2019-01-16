@@ -16,46 +16,6 @@ model <- Model(y ~ Poisson(mean ~ age * sex),
 
 
 
-
-
-
-
-
-
-
-
-
-## NO_TESTS
-drawBetas <- function(object) {
-    stopifnot(methods::is(object, "Varying"))
-    stopifnot(methods::validObject(object))
-    if (useC) {
-        .Call(drawBetas_R, object)
-    }
-    else {
-        betas <- object@betas
-        priors <- object@priorsBetas
-        for (b in seq_along(betas)) {
-            prior <- priors[[i]]
-            J <- prior@J@.Data
-            all.struc.zero <- prior@allStrucZero
-            beta.hat <- betaHat(prior)
-            v <- getV(prior)
-            for (j in seq_len(J)) {
-                if (!all.struct.zero[j]) {
-                    mean <- beta.hat[j]
-                    sd <- sqrt(v[j])
-                    betas[[b]][j] <- stats::rnorm(n = 1L,
-                                                  mean = mean,
-                                                  sd = sd)
-                }
-            }
-        }
-        object@betas <- betas
-        object
-    }
-}
-
               
 checkAllDimensionsHavePriors <- function(model, y) {
     names.specs <- model@namesSpecsPriors

@@ -265,6 +265,57 @@ checkPriorSDInformative <- function(object) {
 
 ## READY_TO_TRANSLATE
 ## HAS_TESTS
+drawBeta_standard <- function(prior, useC = FALSE) {
+    stopifnot(methods::is(prior, "Prior"))
+    stopifnot(methods::is(prior, "ComponentFlags"))
+    stopifnot(methods::validObject(prior))
+    if (useC) {
+        .Call(drawBeta_standard_R, prior)
+    }
+    else {
+        J <- prior@J@.Data
+        all.struc.zero <- prior@allStrucZero
+        beta.hat <- betaHat(prior)
+        v <- getV(prior)
+        ans <- double(length = J)
+        for (j in seq_len(J)) {
+            if (all.struc.zero[j]) {
+                ans[j] <- NA
+            }
+            else {
+                mean <- beta.hat[j]
+                sd <- sqrt(v[j])
+                ans[j] <- stats::rnorm(n = 1L,
+                                       mean = mean,
+                                       sd = sd)
+            }
+        }
+        ans
+    }
+}
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+drawBetas <- function(object, useC = FALSE) {
+    stopifnot(methods::is(object, "Varying"))
+    stopifnot(methods::validObject(object))
+    if (useC) {
+        .Call(drawBetas_R, object)
+    }
+    else {
+        betas <- object@betas
+        priors <- object@priorsBetas
+        for (b in seq_along(betas)) {
+            prior <- priors[[b]]
+            betas[[b]] <- drawBeta(prior)
+        }
+        object@betas <- betas
+        object
+    }
+}
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
 drawEta <- function(prior, useC = FALSE) {
     methods::validObject(prior)
     if (useC) {

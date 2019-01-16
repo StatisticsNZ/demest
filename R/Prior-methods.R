@@ -15,6 +15,53 @@ setMethod("betaIsEstimated",
           })
 
 
+## drawBeta #########################################################################
+
+## ExchFixed
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawBeta",
+          signature(prior = "ExchFixed"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawBeta_ExchFixed_R, prior)
+                  else
+                      .Call(drawBeta_R, prior)
+              }
+              else {
+                  J <- prior@J@.Data
+                  mean <- prior@mean@.Data
+                  tau <- prior@tau@.Data
+                  all.struc.zero <- prior@allStrucZero
+                  ans <- 
+              }
+          })
+
+## Exch
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawPrior",
+          signature(prior = "ExchNormZero"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawPrior_ExchNormZero_R, prior)
+                  else
+                      .Call(drawPrior_R, prior)
+              }
+              else {
+                  prior <- drawTau(prior)
+                  prior
+              }
+          })
+
+
+
 
 ## drawPrior #########################################################################
 

@@ -775,7 +775,7 @@ checkUpdateBetaAndPriorBeta <- function(prior, vbar, n, sigma) {
 ## HAS_TESTS (INCLUDING FOR MIX)
 ## ADD TESTS FOR ICAR WHEN CLASSES FINISHED
 betaHat <- function(prior, useC = FALSE) {
-    stopifnot(methods::is(prior, "Prior") || methods::is(prior, "FakePrior"))
+    stopifnot(methods::is(prior, "Prior"))
     stopifnot(methods::is(prior, "ComponentFlags"))
     if (useC) {
         .Call(betaHat_R, prior)

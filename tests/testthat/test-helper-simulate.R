@@ -266,6 +266,194 @@ test_that("checkPriorsAreInformative works", {
 
 ## drawPrior, drawModel ################################################
 
+test_that("drawBeta_standard works", {
+    drawBeta_standard <- demest:::drawBeta_standard
+    initialPrior <- demest:::initialPrior
+    betaHat <- demest:::betaHat
+    getV <- demest:::getV
+    ## no structural zeros
+    spec <- Exch(error = Error(scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(region = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.obtained <- drawBeta_standard(prior)
+        set.seed(seed)
+        ans.expected <- rnorm(n = prior@J@.Data,
+                              mean = betaHat(prior),
+                              sd = sqrt(getV(prior)))
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+    ## with structural zeros
+    spec <- Exch(error = Error(scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(c(0L, rep(1L, 9)),
+                                   dim = 10L,
+                                   dimnames = list(region = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.obtained <- drawBeta_standard(prior)
+        set.seed(seed)
+        ans.expected <- c(NA,
+                          rnorm(n = prior@J@.Data - 1,
+                                mean = betaHat(prior)[-1],
+                                sd = sqrt(getV(prior))[-1]))
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of drawBeta_standard give same answer", {
+    drawBeta_standard <- demest:::drawBeta_standard
+    initialPrior <- demest:::initialPrior
+    betaHat <- demest:::betaHat
+    getV <- demest:::getV
+    ## no structural zeros
+    spec <- Exch(error = Error(scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(region = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.R <- drawBeta_standard(model, useC = FALSE)
+        set.seed(seed)
+        ans.C <- drawBeta_standard(model, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+    ## with structural zeros
+    spec <- Exch(error = Error(scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(c(0L, rep(1L, 9)),
+                                   dim = 10L,
+                                   dimnames = list(region = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.R <- drawBeta_standard(model, useC = FALSE)
+        set.seed(seed)
+        ans.C <- drawBeta_standard(model, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
+
+
+
+test_that("drawBetas works", {
+    initialModel <- demest:::initialModel
+    drawBeta <- demest:::drawBeta
+    spec <- Model(y ~ Poisson(mean ~ age + sex),
+                  `(Intercept)` ~ ExchFixed(sd = 10), 
+                  age ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
+                  sex ~ ExchFixed(sd = 0.1),
+                  priorSD = HalfT(scale = 0.2))
+    y <- Counts(array(1L,
+                      dim = 2:3,
+                      dimnames = list(sex = c("F", "M"),
+                                      age = c("0-4", "5-9", "10+"))))
+    exposure <- Counts(array(1:6,
+                             dim = 2:3,
+                             dimnames = list(sex = c("F", "M"),
+                                             age = c("0-4", "5-9", "10+"))))
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        model <- initialModel(spec, y = y, exposure = exposure)
+        set.seed(seed)
+        ans.obtained <- drawBetas(model)
+        set.seed(seed)
+        ans.expected <- model
+        for (i in 1:3)
+            ans.expected@betas[[i]] <- drawBeta(ans.expected@priorsBetas[[i]])
+        expect_identical(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of drawBetas give same answer", {
+    initialModel <- demest:::initialModel
+    drawBeta <- demest:::drawBeta
+    spec <- Model(y ~ Poisson(mean ~ age + sex),
+                  `(Intercept)` ~ ExchFixed(sd = 10), 
+                  age ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
+                  sex ~ ExchFixed(sd = 0.1),
+                  priorSD = HalfT(scale = 0.2))
+    y <- Counts(array(1L,
+                      dim = 2:3,
+                      dimnames = list(sex = c("F", "M"),
+                                      age = c("0-4", "5-9", "10+"))))
+    exposure <- Counts(array(1:6,
+                             dim = 2:3,
+                             dimnames = list(sex = c("F", "M"),
+                                             age = c("0-4", "5-9", "10+"))))
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        model <- initialModel(spec, y = y, exposure = exposure)
+        set.seed(seed)
+        ans.R <- drawBetas(model, useC = FALSE)
+        set.seed(seed)
+        ans.C <- drawBetas(model, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
+
 test_that("R version of drawEta works", {
     drawEta <- demest:::drawEta
     initialPrior <- demest:::initialPrior
@@ -336,7 +524,7 @@ test_that("R and C versions of drawEta give same answer", {
         set.seed(seed)
         ans.R <- drawEta(prior, useC = FALSE)
         set.seed(seed)
-        ans.R <- drawEta(prior, useC = TRUE)
+        ans.C <- drawEta(prior, useC = TRUE)
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else
