@@ -49,10 +49,12 @@
     
     void betaHat(double *betaHat, SEXP prior_R, int J);
     void betaHat_AlphaDLMInternal(double *betaHat, SEXP prior_R, int J);
+    void betaHat_MeanInternal(double *betaHat, SEXP prior_R, int J);
     void betaHat_AlphaICARInternal(double *betaHat, SEXP prior_R, int J);
     void betaHat_AlphaMixInternal(double *beta_hat, SEXP prior_R, int J);
     void betaHat_CovariatesInternal(double *betaHat, SEXP prior_R, int J);
     void betaHat_SeasonInternal(double *betaHat, SEXP prior_R, int J);
+    void betaHat_AlphaKnownInternal(double *betaHat, SEXP prior_R, int J);
     
     void getV_Internal(double *V, SEXP prior_R, int J);
                                 

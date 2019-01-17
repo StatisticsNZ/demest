@@ -267,7 +267,6 @@ checkPriorSDInformative <- function(object) {
 ## HAS_TESTS
 drawBeta_standard <- function(prior, useC = FALSE) {
     stopifnot(methods::is(prior, "Prior"))
-    stopifnot(methods::is(prior, "ComponentFlags"))
     stopifnot(methods::validObject(prior))
     if (useC) {
         .Call(drawBeta_standard_R, prior)

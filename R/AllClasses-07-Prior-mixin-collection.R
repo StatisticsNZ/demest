@@ -1,11 +1,17 @@
 
-setClass("ComponentFlags",
+setClass("ComponentFlagsMixin",
          contains = c("VIRTUAL",
-             "HasAlphaDLMMixin",
-             "HasAlphaICARMixin",
-             "HasAlphaMixMixin",
-             "HasCovariatesMixin",
-             "HasSeasonMixin"))
+                      "HasAlphaDLMMixin",
+                      "HasAlphaICARMixin",
+                      "HasAlphaMixMixin",
+                      "HasCovariatesMixin",
+                      "HasAlphaKnownMixin",
+                      "HasMeanMixin",
+                      "HasSeasonMixin",
+                      "IsKnownUncertainMixin",
+                      "IsNormMixin",
+                      "IsRobustMixin",
+                      "IsZeroVarMixin"))
 
 setClass("CovariatesMixin",
          contains = c("VIRTUAL",
@@ -29,7 +35,6 @@ setClass("DLMPredictMixin",
 setClass("ObsError",
          contains = c("VIRTUAL",
              "ATauMixin",
-             "IsRobustMixin",
              "NuTauMixin",
              "TauMixin",
              "TauMaxMixin"))
@@ -75,10 +80,10 @@ setClass("SeasonMixin",
 
 setClass("SpecObsMixin", 
          contains = c("VIRTUAL",
-             "MultTauMixin",
-             "NuTauMixin",
-             "SpecATauMixin",
-             "SpecTauMaxMixin"))
+                      "MultTauMixin",
+                      "NuTauMixin",
+                      "SpecATauMixin",
+                      "SpecTauMaxMixin"))
 
 setClass("SpecNormMixin", 
          contains = c("VIRTUAL",

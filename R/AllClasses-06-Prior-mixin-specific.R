@@ -525,11 +525,13 @@ setClass("HasCovariatesMixin",
          slots = c(hasCovariates = "LogicalFlag"),
          contains = "VIRTUAL")
 
+setClass("HasAlphaKnownMixin",
+         slots = c(hasAlphaKnown = "LogicalFlag"),
+         contains = "VIRTUAL")
 
 setClass("HasLevelMixin",
          slots = c(hasLevel = "LogicalFlag"),
          contains = "VIRTUAL")
-
 
 ## setClass("HasLevelMixin",
 ##          slots = c(hasLevel = "LogicalFlag"),
@@ -555,6 +557,10 @@ setClass("HasLevelMixin",
 ##              }
 ##              TRUE
 ##          })             
+
+setClass("HasMeanMixin",
+         slots = c(hasMean = "LogicalFlag"),
+         contains = "VIRTUAL")
 
 setClass("HasSeasonMixin",
          slots = c(hasSeason = "LogicalFlag"),
@@ -672,6 +678,14 @@ setClass("InfantMixin",
          slots = c(infant = "LogicalFlag"),
          contains = "VIRTUAL")
 
+setClass("IsKnownUncertainMixin",
+         slots = c(isKnownUncertain = "LogicalFlag"),
+         contains = "VIRTUAL")
+
+setClass("IsNormMixin",
+         slots = c(isNorm = "LogicalFlag"),
+         contains = "VIRTUAL")
+
 setClass("IsRobustMixin",
          slots = c(isRobust = "LogicalFlag"),
          contains = "VIRTUAL",
@@ -687,6 +701,10 @@ setClass("IsRobustMixin",
 
 setClass("IsSaturatedMixin",
          slots = c(isSaturated = "LogicalFlag"),
+         contains = "VIRTUAL")
+
+setClass("IsZeroVarMixin",
+         slots = c(isZeroVar = "LogicalFlag"),
          contains = "VIRTUAL")
 
 setClass("IteratorProdVectorMix",

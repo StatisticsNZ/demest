@@ -241,7 +241,6 @@ updateSDRobust <- function(sigma, A, nuBeta, nuTau, V, n, max, useC = FALSE) {
 ## HAS_TESTS
 updateAlphaMix <- function(prior, useC = FALSE) {
     stopifnot(methods::is(prior, "Prior"))
-    stopifnot(methods::is(prior, "ComponentFlags"))
     stopifnot(prior@hasAlphaMix)
     if (useC) {
         .Call(updateAlphaMix_R, prior)
@@ -503,7 +502,6 @@ updateBeta <- function(prior, vbar, n, sigma, useC = FALSE) {
                                 vbar = vbar,
                                 n = n,
                                 sigma = sigma)
-    stopifnot(methods::is(prior, "ComponentFlags"))
     if (useC) {
         .Call(updateBeta_R, prior, vbar, n, sigma)
     }

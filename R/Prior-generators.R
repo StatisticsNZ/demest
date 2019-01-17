@@ -11,11 +11,8 @@
 setMethod("initialPrior",
           signature(object = "SpecExchFixed", metadata = "NULL"),
           function(object, beta, metadata, sY, isSaturated, ...) {
-              mean <- object@mean@.Data
+              mean <- object@mean
               tau <- object@tau
-              if (!isTRUE(all.equal(mean, 0)))
-                  warning(gettextf("non-zero mean in '%s' prior for '%s' ignored",
-                                   "ExchFixed", paste(names(metadata), collapse = ":")))
               J <- makeJ(beta)
               if (J > 1L)
                   stop(gettextf("'%s' is %s but '%s' is greater than %d",
@@ -29,22 +26,28 @@ setMethod("initialPrior",
               if (all(strucZeroArray == 0L))
                   stop(gettext("data consists entirely of structural zeros"))
               methods::new("ExchFixed",
-                           J = J,
-                           tau = tau,
+                           allStrucZero = FALSE,
                            isSaturated = isSaturated,
-                           allStrucZero = FALSE)
+                           J = J,
+                           mean = mean,
+                           tau = tau)
           })
 
 ## non-intercept
 setMethod("initialPrior",
           signature(object = "SpecExchFixed"),
           function(object, beta, metadata, sY, isSaturated, margin, strucZeroArray, ...) {
+              mean <- object@mean
               tau <- object@tau
               multTau <- object@multTau
               J <- makeJ(beta)
               if (J <= 1L)
                   stop(gettextf("'%s' is not %s but '%s' is less than or equal to %d",
                                 "metadata", "NULL", "J", 1L))
+              if (!isTRUE(all.equal(mean@.Data, 0)))
+                  warning(gettextf("non-zero mean in '%s' prior for '%s' ignored",
+                                   "ExchFixed", paste(names(metadata), collapse = ":")))
+              mean <- new("Parameter", 0)
               tau <- makeTauExchFixedNonIntercept(tau = tau,
                                                   sY = sY,
                                                   mult = multTau)
@@ -59,6 +62,7 @@ setMethod("initialPrior",
                            allStrucZero = allStrucZero,
                            isSaturated = isSaturated,
                            J = J,
+                           mean = mean,
                            tau = tau)
           })
 

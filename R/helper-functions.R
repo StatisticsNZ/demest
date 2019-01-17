@@ -776,18 +776,24 @@ checkUpdateBetaAndPriorBeta <- function(prior, vbar, n, sigma) {
 ## ADD TESTS FOR ICAR WHEN CLASSES FINISHED
 betaHat <- function(prior, useC = FALSE) {
     stopifnot(methods::is(prior, "Prior"))
-    stopifnot(methods::is(prior, "ComponentFlags"))
     if (useC) {
         .Call(betaHat_R, prior)
     }
     else {
         J <- prior@J@.Data
+        has.mean <- prior@hasMean@.Data
         has.alpha.dlm <- prior@hasAlphaDLM@.Data
         has.alpha.icar <- prior@hasAlphaICAR@.Data
         has.alpha.mix <- prior@hasAlphaMix@.Data
         has.covariates <- prior@hasCovariates@.Data
         has.season <- prior@hasSeason@.Data
+        has.known <- prior@hasAlphaKnown@.Data
         ans <- rep(0, times = J)
+        if (has.mean) {
+            mean <- prior@mean@.Data
+            mean <- rep(mean, times = J)
+            ans <- ans + mean
+        }
         if (has.alpha.dlm) {
             alpha.dlm <- prior@alphaDLM@.Data
             K <- prior@K@.Data
@@ -847,6 +853,10 @@ betaHat <- function(prior, useC = FALSE) {
                 iterator.v <- advanceA(iterator.v)
             }
         }
+        if (has.known) {
+            alpha.known <- prior@alphaKnown@.Data
+            ans <- ans + alpha.known
+        }
         ans
     }
 }
@@ -855,7 +865,6 @@ betaHat <- function(prior, useC = FALSE) {
 ## HAS TESTS
 betaHatAlphaDLM <- function(prior, useC = FALSE) {
     stopifnot(methods::is(prior, "Prior"))
-    stopifnot(methods::is(prior, "ComponentFlags"))
     stopifnot(prior@hasAlphaDLM)
     if (useC) {
         .Call(betaHatAlphaDLM_R, prior)
@@ -891,7 +900,6 @@ betaHatAlphaDLM <- function(prior, useC = FALSE) {
 ## ## NO_TESTS
 ## betaHatAlphaICAR <- function(prior, useC = FALSE) {
 ##     stopifnot(methods::is(prior, "Prior"))
-##     stopifnot(methods::is(prior, "ComponentFlags"))
 ##     stopifnot(prior@hasAlphaICAR)
 ##     if (useC) {
 ##         .Call(betaHatICAR_R, prior)
@@ -906,7 +914,6 @@ betaHatAlphaDLM <- function(prior, useC = FALSE) {
 ## HAS_TESTS
 betaHatCovariates <- function(prior, useC = FALSE) {
     stopifnot(methods::is(prior, "Prior"))
-    stopifnot(methods::is(prior, "ComponentFlags"))
     stopifnot(prior@hasCovariates)
     if (useC) {
         .Call(betaHatCovariates_R, prior)
@@ -922,7 +929,6 @@ betaHatCovariates <- function(prior, useC = FALSE) {
 ## HAS_TESTS
 betaHatSeason <- function(prior, useC = FALSE) {
     stopifnot(methods::is(prior, "Prior"))
-    stopifnot(methods::is(prior, "ComponentFlags"))
     stopifnot(prior@hasSeason)
     if (useC) {
         .Call(betaHatSeason_R, prior)
@@ -1172,19 +1178,30 @@ findOneRootLogPostSigmaRobust <- function(sigma0, z, A, nuBeta, nuTau, V, n, min
 ## HAS_TESTS
 getV <- function(prior, useC = FALSE) {
     stopifnot(methods::is(prior, "Prior"))
-    stopifnot(methods::is(prior, "IsRobustMixin"))
     stopifnot(methods::validObject(prior))
     if (useC) {
         .Call(getV_R, prior)
     }
     else {
+        is.norm <- prior@isNorm@.Data
         is.robust <- prior@isRobust@.Data
-        if (is.robust)
-            prior@UBeta@.Data
-        else {
-            J <- prior@J@.Data
+        is.known.uncertain <- prior@isKnownUncertain
+        is.zero.var <- prior@isZeroVar
+        J <- prior@J@.Data        
+        if (is.norm) {
             tau <- prior@tau@.Data
             rep(tau^2, times = J)
+        }            
+        else if (is.robust)
+            prior@UBeta@.Data
+        else if (is.known.uncertain) {
+            prior@AKnownVec@.Data^2
+        }
+        else if (is.zero.var) {
+            rep(0, times = J)
+        }
+        else {
+            stop(gettext("unable to calculate variances for this prior"))
         }
     }
 }

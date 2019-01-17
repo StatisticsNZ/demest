@@ -2091,6 +2091,92 @@ test_that("R and C versions of centerA give same answer", {
 
 ## UPDATING ###########################################################################
 
+test_that("betaHat gives valid answer with prior of class ExchFixed", {
+    betaHat <- demest:::betaHat
+    initialPrior <- demest:::initialPrior
+    ## intercept
+    spec <- ExchFixed(mean = -3, sd = 3)
+    beta <- rnorm(n = 1)
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = NULL,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 0L,
+                          strucZeroArray = 1L)
+    expect_is(prior, "ExchFixed")
+    ans.obtained <- betaHat(prior)
+    ans.expected <- -3
+    expect_identical(ans.obtained, ans.expected)
+    ## non-intercept
+    spec <- ExchFixed(sd = 3)
+    beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "ExchFixed")
+    ans.obtained <- betaHat(prior)
+    ans.expected <- rep(0, 10)
+    expect_identical(ans.obtained, ans.expected)    
+})
+
+test_that("R and C versions of betaHat give same answer with ExchFixed", {
+    betaHat <- demest:::betaHat
+    initialPrior <- demest:::initialPrior
+    ## intercept
+    spec <- ExchFixed(mean = -3, sd = 3)
+    beta <- rnorm(n = 1)
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = NULL,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 0L,
+                          strucZeroArray = 1L)
+    expect_is(prior, "ExchFixed")
+    ans.R <- betaHat(prior, useC = FALSE)
+    ans.C <- betaHat(prior, useC = TRUE)
+    if (test.identity)
+        expect_identical(ans.R, ans.C)
+    else
+        expect_equal(ans.R, ans.C)
+    ## non-intercept
+    spec <- ExchFixed(sd = 3)
+    beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "ExchFixed")
+    ans.R <- betaHat(prior, useC = FALSE)
+    ans.C <- betaHat(prior, useC = TRUE)
+    if (test.identity)
+        expect_identical(ans.R, ans.C)
+    else
+        expect_equal(ans.R, ans.C)
+})
+
 test_that("betaHat gives valid answer with prior of class Exch - no covariates", {
     betaHat <- demest:::betaHat
     initialPrior <- demest:::initialPrior
@@ -2353,6 +2439,172 @@ test_that("R and C versions of betaHat give same answer with prior of class Mix"
     ans.C <- betaHat(prior, useC = TRUE)
     expect_identical(ans.R, ans.C)
 })
+
+
+test_that("betaHat works with KnownCertain", {
+    betaHat <- demest:::betaHat
+    initialPrior <- demest:::initialPrior
+    mean <- ValuesOne(1:10, labels = letters[1:10], name = "region")
+    spec <- Known(mean)
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "KnownCertain")
+    ans.obtained <- betaHat(prior)
+    ans.expected <- as.numeric(mean)
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("R and C versions of betaHat give same answer with KnownCertain", {
+    betaHat <- demest:::betaHat
+    initialPrior <- demest:::initialPrior
+    mean <- ValuesOne(1:10, labels = letters[1:10], name = "region")
+    spec <- Known(mean)
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "KnownCertain")
+    ans.R <- betaHat(prior, useC = FALSE)
+    ans.C <- betaHat(prior, useC = TRUE)
+    expect_identical(ans.R, ans.C)
+})
+
+test_that("betaHat works with KnownUncertain", {
+    betaHat <- demest:::betaHat
+    initialPrior <- demest:::initialPrior
+    mean <- ValuesOne(1:10, labels = letters[1:10], name = "region")
+    spec <- Known(mean, sd = 1)
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "KnownUncertain")
+    ans.obtained <- betaHat(prior)
+    ans.expected <- as.numeric(mean)
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("R and C versions of betaHat give same answer with KnownUncertain", {
+    betaHat <- demest:::betaHat
+    initialPrior <- demest:::initialPrior
+    mean <- ValuesOne(1:10, labels = letters[1:10], name = "region")
+    spec <- Known(mean, sd = 1)
+    beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "KnownUncertain")
+    ans.R <- betaHat(prior, useC = FALSE)
+    ans.C <- betaHat(prior, useC = TRUE)
+    expect_identical(ans.R, ans.C)
+})
+
+## Zero
+
+test_that("betaHat works with Zero", {
+    betaHat <- demest:::betaHat
+    initialPrior <- demest:::initialPrior
+    spec <- Zero()
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "Zero")
+    ans.obtained <- betaHat(prior)
+    ans.expected <- rep(0, 10)
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("R and C versions of betaHat give same answer with Zero", {
+    betaHat <- demest:::betaHat
+    initialPrior <- demest:::initialPrior
+    spec <- Zero()
+    beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "Zero")
+    ans.R <- betaHat(prior, useC = FALSE)
+    ans.C <- betaHat(prior, useC = TRUE)
+    expect_identical(ans.R, ans.C)
+})
+
+
+
+
+
+
+
+
+
 
 test_that("betaHatAlphaDLM works", {
     betaHatAlphaDLM <- demest:::betaHatAlphaDLM
@@ -3162,6 +3414,59 @@ test_that("R and C versions of logPostPhiSecondOrderMix give same answer", {
     }
 })
 
+test_that("getV gives valid answer with prior of class ExchFixed", {
+    getV <- demest:::getV
+    initialPrior <- demest:::initialPrior
+    spec <- ExchFixed(sd = 3)
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "ExchFixed")
+    ans.obtained <- getV(prior)
+    ans.expected <- rep(prior@tau@.Data^2, 10)
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("R and C versions of getV give same answer with prior of class ExchFixed", {
+    getV <- demest:::getV
+    initialPrior <- demest:::initialPrior
+    spec <- ExchFixed(sd = 3)
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "ExchFixed")
+    ans.R <- getV(prior, useC = FALSE)
+    ans.C <- getV(prior, useC = TRUE)
+    if (test.identity)
+        expect_identical(ans.R, ans.C)
+    else
+        expect_equal(ans.R, ans.C)
+})
+
 test_that("getV gives valid answer with prior of class NormMixin", {
     getV <- demest:::getV
     initialPrior <- demest:::initialPrior
@@ -3262,6 +3567,160 @@ test_that("R and C versions of getV give same answer with prior of class RobustM
         expect_identical(ans.R, ans.C)
     else
         expect_equal(ans.R, ans.C)
+})
+
+test_that("getV works with KnownCertain", {
+    getV <- demest:::getV
+    initialPrior <- demest:::initialPrior
+    mean <- ValuesOne(1:10, labels = letters[1:10], name = "region")
+    spec <- Known(mean)
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "KnownCertain")
+    ans.obtained <- getV(prior)
+    ans.expected <- rep(0, 10)
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("R and C versions of getV give same answer with KnownCertain", {
+    getV <- demest:::getV
+    initialPrior <- demest:::initialPrior
+    mean <- ValuesOne(1:10, labels = letters[1:10], name = "region")
+    spec <- Known(mean)
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "KnownCertain")
+    ans.R <- getV(prior, useC = FALSE)
+    ans.C <- getV(prior, useC = TRUE)
+    expect_identical(ans.R, ans.C)
+})
+
+test_that("getV works with KnownUncertain", {
+    getV <- demest:::getV
+    initialPrior <- demest:::initialPrior
+    mean <- ValuesOne(1:10, labels = letters[1:10], name = "region")
+    spec <- Known(mean, sd = 1.1)
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "KnownUncertain")
+    ans.obtained <- getV(prior)
+    ans.expected <- rep(1.1^2, 10)
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("R and C versions of getV give same answer with KnownUncertain", {
+    getV <- demest:::getV
+    initialPrior <- demest:::initialPrior
+    mean <- ValuesOne(1:10, labels = letters[1:10], name = "region")
+    spec <- Known(mean, sd = 0.2)
+    beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "KnownUncertain")
+    ans.R <- getV(prior, useC = FALSE)
+    ans.C <- getV(prior, useC = TRUE)
+    expect_identical(ans.R, ans.C)
+})
+
+test_that("getV works with Zero", {
+    getV <- demest:::getV
+    initialPrior <- demest:::initialPrior
+    spec <- Zero()
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "Zero")
+    ans.obtained <- getV(prior)
+    ans.expected <- rep(0, 10)
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("R and C versions of getV give same answer with Zero", {
+    getV <- demest:::getV
+    initialPrior <- demest:::initialPrior
+    spec <- Zero()
+    beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "Zero")
+    ans.R <- getV(prior, useC = FALSE)
+    ans.C <- getV(prior, useC = TRUE)
+    expect_identical(ans.R, ans.C)
 })
 
 test_that("R version of makeLifeExpBirth works", {

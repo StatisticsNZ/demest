@@ -2761,7 +2761,13 @@ R_init_demest(DllInfo *info)
   ADD_SYM(hasAlphaICAR);
   ADD_SYM(hasAlphaMix);
   ADD_SYM(hasCovariates);
+  ADD_SYM(hasAlphaKnown);
+  ADD_SYM(hasMean);
   ADD_SYM(hasSeason);
+  ADD_SYM(isKnownUncertain);
+  ADD_SYM(isNorm);
+  ADD_SYM(isRobust);
+  ADD_SYM(isZeroVar);
   ADD_SYM(alphaDLM);
   ADD_SYM(alphaICAR);
   ADD_SYM(alphaMix);
@@ -2772,7 +2778,6 @@ R_init_demest(DllInfo *info)
   ADD_SYM(s);
   ADD_SYM(UBeta);
   ADD_SYM(nuBeta);
-  ADD_SYM(isRobust);
   ADD_SYM(isSaturated);
   ADD_SYM(allStrucZero);
   ADD_SYM(alongAllStrucZero);
