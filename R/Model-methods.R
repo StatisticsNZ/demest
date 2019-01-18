@@ -1,4 +1,42 @@
 
+## drawModelUseExp #####################################################################
+
+
+setMethod("drawModelUseExp",
+          signature(object = "BinomialVarying"),
+          function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(identical(length(y), length(object@theta)))
+              stopifnot(is.integer(y))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
+              ## exposure
+              stopifnot(is.integer(exposure))
+              stopifnot(all(exposure[!is.na(exposure)] >= 0L))
+              ## y and exposure
+              stopifnot(identical(length(exposure), length(y)))
+              stopifnot(all(is.na(exposure) <= is.na(y)))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] <= exposure[!is.na(y)]))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawModelUseExp_BinomialVarying_R, object, y, exposure)
+                  else
+                      .Call(drawModelUseExp_R, object, y, exposure)
+              }
+              else {
+                  object <- drawPriors(object)
+                  object <- drawBetas(object)
+                  object <- drawSigma_Varying(object)
+                  object <- updateTheta_BinomialVarying(object,
+                                                        y = y,
+                                                        exposure = exposure)
+                  object
+              }
+          })
+
+
+
 ## drawYNonSampled #####################################################################
 
 ## HAS_TESTS
@@ -1444,7 +1482,9 @@ setMethod("predictModelUseExp",
               else {
                   object <- predictPriorsBetas(object)
                   object <- predictBetas(object)
-                  object <- updateTheta_PoissonVaryingUseExp(object, y = y, exposure = exposure)
+                  object <- updateTheta_PoissonVaryingUseExp(object,
+                                                             y = y,
+                                                             exposure = exposure)
                   object
               }
           })

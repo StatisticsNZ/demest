@@ -15,6 +15,56 @@ model <- Model(y ~ Poisson(mean ~ age * sex),
 
 
 
+## HAS_TESTS
+setMethod("initialCombinedModel",
+          signature(object = "SpecBinomialVarying",
+                    y = "Counts",
+                    exposure = "Counts",
+                    weights = "ANY"),
+          function(object, y, exposure, weights) {
+              if (!is.null(weights))
+                  warning(gettextf("'%s' argument ignored when distribution is %s",
+                                   "weights", "Binomial"))
+              if (any(y[!is.na(y)] > exposure[!is.na(y)]))
+                  stop(gettextf("'%s' greater than '%s'",
+                                "y", "exposure"))
+              model <- initialModel(object, y = y, exposure = exposure)
+              methods::new("CombinedModelBinomial",
+                           model = model,
+                           y = y,
+                           exposure = exposure)
+          })
+
+
+setMethod("drawCombined",
+          signature(object = "CombinedModelBinomial"),
+          function(object, nUpdate = 1L, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              methods::validObject(object)
+              ## nUpdate
+              stopifnot(identical(nUpdate, 1L))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(updateCombined_CombinedModelBinomial_R, object, nUpdate)
+                  else
+                      .Call(updateCombined_R, object, nUpdate)
+              }
+              else {
+                  model <- object@model
+                  y <- object@y
+                  exposure <- object@exposure
+                  model <- drawModelUseExp(model,
+                                           y = y,
+                                           exposure = exposure)
+                  object@model <- model
+                  object
+              }
+          })
+
+
+
+
+
 
               
 checkAllDimensionsHavePriors <- function(model, y) {
@@ -156,7 +206,25 @@ simulateModel <- function(model, y = NULL, exposure = NULL, weights = NULL,
 }
 
 
-simulateOneChain <- function(combined, nIteration, ...) {
+simulateOneChainDirect <- function(combined, seed, tempfile, nSim,
+                                   continuing, useC) {
+    ## set seed if continuing
+    if (!is.null(seed))
+        assign(".Random.seed", seed, envir = .GlobalEnv)
+    con <- file(tempfile, open = "wb")
+    for (i in seq_len(nSim)) {
+        combined <- drawCombined(combined,
+                                 nUpdate = 1L,
+                                 useC = useC)
+        values <- extractValues(combined)
+        writeBin(values, con = con)
+    }
+    close(con)
+    combined
+}
+
+simulateOneChainMCMC <- function(combined, seed, tempfile, nBurnin, nSim, nThin,
+                                 nUpdateMax, continuing, useC, ...) {
     ## set seed if continuing
     if (!is.null(seed))
         assign(".Random.seed", seed, envir = .GlobalEnv)
@@ -186,6 +254,7 @@ simulateOneChain <- function(combined, nIteration, ...) {
     ## return final state
     combined
 }
+
 
 
 setMethod("simulateCombined",
@@ -400,46 +469,15 @@ fakeData(model = model,
 
 
 
-setMethod("drawFromModelUseExp",
-          signature(object = "BinomialVarying"),
-          function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
-              ## object
-              stopifnot(methods::validObject(object))
-              ## y
-              stopifnot(identical(length(y), length(object@theta)))
-              stopifnot(is.integer(y))
-              stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
-              ## exposure
-              stopifnot(is.integer(exposure))
-              stopifnot(all(exposure[!is.na(exposure)] >= 0L))
-              ## y and exposure
-              stopifnot(identical(length(exposure), length(y)))
-              stopifnot(all(is.na(exposure) <= is.na(y)))
-              stopifnot(all(y@.Data[!is.na(y@.Data)] <= exposure[!is.na(y)]))
-              if (useC) {
-                  if (useSpecific)
-                      .Call(drawFromModelUseExp_BinomialVarying_R, object, y, exposure)
-                  else
-                      .Call(drawFromModelUseExp_R, object, y, exposure)
-              }
-              else {
-                  object <- drawBetas(object)
-                  object <- drawSigma_Varying(object)
-                  object <- updateTheta_BinomialVarying(object,
-                                                        y = y,
-                                                        exposure = exposure)
-                  object
-              })
 
 
 
-
-setGeneric("drawFromModelNotUseExp",
+setGeneric("drawModelNotUseExp",
            function(object)
-               standardGeneric("drawFromModelNotUseExp"))
+               standardGeneric("drawModelNotUseExp"))
 
 
-setMethod("drawFromModelNotUseExp",
+setMethod("drawModelNotUseExp",
           signature(object = "CMPVaryingNotUseExp"),
           function(object, y, useC = FALSE, useSpecific = FALSE) {
               ## object
@@ -450,9 +488,9 @@ setMethod("drawFromModelNotUseExp",
               stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
               if (useC) {
                   if (useSpecific)
-                      .Call(drawFromModelNotUseExp_CMPVaryingNotUseExp_R, object, y)
+                      .Call(drawModelNotUseExp_CMPVaryingNotUseExp_R, object, y)
                   else
-                      .Call(drawFromModelNotUseExp_R, object, y)
+                      .Call(drawModelNotUseExp_R, object, y)
               }
               else {
                   object <- drawBetas(object)
@@ -463,7 +501,7 @@ setMethod("drawFromModelNotUseExp",
           })
 
 
-setMethod("drawFromModelNotUseExp",
+setMethod("drawModelNotUseExp",
           signature(object = "NormalVaryingVarsigmaKnown"),
           function(object, y, useC = FALSE, useSpecific = FALSE) {
               ## object
@@ -473,9 +511,9 @@ setMethod("drawFromModelNotUseExp",
               stopifnot(identical(length(y), length(object@theta)))
               if (useC) {
                   if (useSpecific)
-                      .Call(drawFromModelNotUseExp_NormalVaryingVarsigmaKnown_R, object, y)
+                      .Call(drawModelNotUseExp_NormalVaryingVarsigmaKnown_R, object, y)
                   else
-                      .Call(drawFromModelNotUseExp_R, object, y)
+                      .Call(drawModelNotUseExp_R, object, y)
               }
               else {
                   varsigmaSetToZero <- object@varsigmaSetToZero@.Data
@@ -492,7 +530,7 @@ setMethod("drawFromModelNotUseExp",
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("drawFromModelNotUseExp",
+setMethod("drawModelNotUseExp",
           signature(object = "NormalVaryingVarsigmaUnknown"),
           function(object, y, useC = FALSE, useSpecific = FALSE) {
               ## object
@@ -502,9 +540,9 @@ setMethod("drawFromModelNotUseExp",
               stopifnot(identical(length(y), length(object@theta)))
               if (useC) {
                   if (useSpecific)
-                      .Call(drawFromModelNotUseExp_NormalVaryingVarsigmaUnknown_R, object, y)
+                      .Call(drawModelNotUseExp_NormalVaryingVarsigmaUnknown_R, object, y)
                   else
-                      .Call(drawFromModelNotUseExp_R, object, y)
+                      .Call(drawModelNotUseExp_R, object, y)
               }
               else {
                   identity <- function(x) x
@@ -518,7 +556,7 @@ setMethod("drawFromModelNotUseExp",
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("drawFromModelNotUseExp",
+setMethod("drawModelNotUseExp",
           signature(object = "PoissonVaryingNotUseExp"),
           function(object, y, useC = FALSE, useSpecific = FALSE) {
               ## object
@@ -529,9 +567,9 @@ setMethod("drawFromModelNotUseExp",
               stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
               if (useC) {
                   if (useSpecific)
-                      .Call(drawFromModelNotUseExp_PoissonVaryingNotUseExp_R, object, y)
+                      .Call(drawModelNotUseExp_PoissonVaryingNotUseExp_R, object, y)
                   else
-                      .Call(drawFromModelNotUseExp_R, object, y)
+                      .Call(drawModelNotUseExp_R, object, y)
               }
               else {
                   object <- updateTheta_PoissonVaryingNotUseExp(object, y = y)
@@ -544,7 +582,7 @@ setMethod("drawFromModelNotUseExp",
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("drawFromModelNotUseExp",
+setMethod("drawModelNotUseExp",
           signature(object = "NormalVaryingVarsigmaKnownAgCertain"),
           function(object, y, useC = FALSE, useSpecific = FALSE) {
               ## object
@@ -554,9 +592,9 @@ setMethod("drawFromModelNotUseExp",
               stopifnot(identical(length(y), length(object@theta)))
               if (useC) {
                   if (useSpecific)
-                      .Call(drawFromModelNotUseExp_NormalVaryingVarsigmaKnownAgCertain_R, object, y)
+                      .Call(drawModelNotUseExp_NormalVaryingVarsigmaKnownAgCertain_R, object, y)
                   else
-                      .Call(drawFromModelNotUseExp_R, object, y)
+                      .Call(drawModelNotUseExp_R, object, y)
               }
               else {
                   identity <- function(x) x
@@ -569,7 +607,7 @@ setMethod("drawFromModelNotUseExp",
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("drawFromModelNotUseExp",
+setMethod("drawModelNotUseExp",
           signature(object = "NormalVaryingVarsigmaUnknownAgCertain"),
           function(object, y, useC = FALSE, useSpecific = FALSE) {
               ## object
@@ -579,9 +617,9 @@ setMethod("drawFromModelNotUseExp",
               stopifnot(identical(length(y), length(object@theta)))
               if (useC) {
                   if (useSpecific)
-                      .Call(drawFromModelNotUseExp_NormalVaryingVarsigmaUnknownAgCertain_R, object, y)
+                      .Call(drawModelNotUseExp_NormalVaryingVarsigmaUnknownAgCertain_R, object, y)
                   else
-                      .Call(drawFromModelNotUseExp_R, object, y)
+                      .Call(drawModelNotUseExp_R, object, y)
               }
               else {
                   identity <- function(x) x
@@ -595,7 +633,7 @@ setMethod("drawFromModelNotUseExp",
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("drawFromModelNotUseExp",
+setMethod("drawModelNotUseExp",
           signature(object = "PoissonVaryingNotUseExpAgCertain"),
           function(object, y, useC = FALSE, useSpecific = FALSE) {
               ## object
@@ -606,9 +644,9 @@ setMethod("drawFromModelNotUseExp",
               stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
               if (useC) {
                   if (useSpecific)
-                      .Call(drawFromModelNotUseExp_PoissonVaryingNotUseExpAgCertain_R, object, y)
+                      .Call(drawModelNotUseExp_PoissonVaryingNotUseExpAgCertain_R, object, y)
                   else
-                      .Call(drawFromModelNotUseExp_R, object, y)
+                      .Call(drawModelNotUseExp_R, object, y)
               }
               else {
                   object <- updateTheta_PoissonVaryingNotUseExpAgCertain(object, y = y)
@@ -620,7 +658,7 @@ setMethod("drawFromModelNotUseExp",
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("drawFromModelNotUseExp",
+setMethod("drawModelNotUseExp",
           signature(object = "NormalVaryingVarsigmaKnownAgNormal"),
           function(object, y, useC = FALSE, useSpecific = FALSE) {
               ## object
@@ -630,9 +668,9 @@ setMethod("drawFromModelNotUseExp",
               stopifnot(identical(length(y), length(object@theta)))
               if (useC) {
                   if (useSpecific)
-                      .Call(drawFromModelNotUseExp_NormalVaryingVarsigmaKnownAgNormal_R, object, y)
+                      .Call(drawModelNotUseExp_NormalVaryingVarsigmaKnownAgNormal_R, object, y)
                   else
-                      .Call(drawFromModelNotUseExp_R, object, y)
+                      .Call(drawModelNotUseExp_R, object, y)
               }
               else {
                   identity <- function(x) x
@@ -646,7 +684,7 @@ setMethod("drawFromModelNotUseExp",
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("drawFromModelNotUseExp",
+setMethod("drawModelNotUseExp",
           signature(object = "NormalVaryingVarsigmaUnknownAgNormal"),
           function(object, y, useC = FALSE, useSpecific = FALSE) {
               ## object
@@ -656,9 +694,9 @@ setMethod("drawFromModelNotUseExp",
               stopifnot(identical(length(y), length(object@theta)))
               if (useC) {
                   if (useSpecific)
-                      .Call(drawFromModelNotUseExp_NormalVaryingVarsigmaUnknownAgNormal_R, object, y)
+                      .Call(drawModelNotUseExp_NormalVaryingVarsigmaUnknownAgNormal_R, object, y)
                   else
-                      .Call(drawFromModelNotUseExp_R, object, y)
+                      .Call(drawModelNotUseExp_R, object, y)
               }
               else {
                   identity <- function(x) x
@@ -673,7 +711,7 @@ setMethod("drawFromModelNotUseExp",
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("drawFromModelNotUseExp",
+setMethod("drawModelNotUseExp",
           signature(object = "NormalVaryingVarsigmaKnownAgFun"),
           function(object, y, useC = FALSE, useSpecific = FALSE) {
               ## object
@@ -683,9 +721,9 @@ setMethod("drawFromModelNotUseExp",
               stopifnot(identical(length(y), length(object@theta)))
               if (useC) {
                   if (useSpecific)
-                      .Call(drawFromModelNotUseExp_NormalVaryingVarsigmaKnownAgFun_R, object, y)
+                      .Call(drawModelNotUseExp_NormalVaryingVarsigmaKnownAgFun_R, object, y)
                   else
-                      .Call(drawFromModelNotUseExp_R, object, y)
+                      .Call(drawModelNotUseExp_R, object, y)
               }
               else {
                   identity <- function(x) x
@@ -698,7 +736,7 @@ setMethod("drawFromModelNotUseExp",
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("drawFromModelNotUseExp",
+setMethod("drawModelNotUseExp",
           signature(object = "NormalVaryingVarsigmaUnknownAgFun"),
           function(object, y, useC = FALSE, useSpecific = FALSE) {
               ## object
@@ -708,9 +746,9 @@ setMethod("drawFromModelNotUseExp",
               stopifnot(identical(length(y), length(object@theta)))
               if (useC) {
                   if (useSpecific)
-                      .Call(drawFromModelNotUseExp_NormalVaryingVarsigmaUnknownAgFun_R, object, y)
+                      .Call(drawModelNotUseExp_NormalVaryingVarsigmaUnknownAgFun_R, object, y)
                   else
-                      .Call(drawFromModelNotUseExp_R, object, y)
+                      .Call(drawModelNotUseExp_R, object, y)
               }
               else {
                   identity <- function(x) x
@@ -724,7 +762,7 @@ setMethod("drawFromModelNotUseExp",
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("drawFromModelNotUseExp",
+setMethod("drawModelNotUseExp",
           signature(object = "PoissonVaryingNotUseExpAgNormal"),
           function(object, y, useC = FALSE, useSpecific = FALSE) {
               ## object
@@ -735,9 +773,9 @@ setMethod("drawFromModelNotUseExp",
               stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
               if (useC) {
                   if (useSpecific)
-                      .Call(drawFromModelNotUseExp_PoissonVaryingNotUseExpAgNormal_R, object, y)
+                      .Call(drawModelNotUseExp_PoissonVaryingNotUseExpAgNormal_R, object, y)
                   else
-                      .Call(drawFromModelNotUseExp_R, object, y)
+                      .Call(drawModelNotUseExp_R, object, y)
               }
               else {
                   object <- updateTheta_PoissonVaryingNotUseExpAgCertain(object, y = y)
@@ -750,7 +788,7 @@ setMethod("drawFromModelNotUseExp",
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("drawFromModelNotUseExp",
+setMethod("drawModelNotUseExp",
           signature(object = "PoissonVaryingNotUseExpAgFun"),
           function(object, y, useC = FALSE, useSpecific = FALSE) {
               ## object
@@ -761,9 +799,9 @@ setMethod("drawFromModelNotUseExp",
               stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
               if (useC) {
                   if (useSpecific)
-                      .Call(drawFromModelNotUseExp_PoissonVaryingNotUseExpAgFun_R, object, y)
+                      .Call(drawModelNotUseExp_PoissonVaryingNotUseExpAgFun_R, object, y)
                   else
-                      .Call(drawFromModelNotUseExp_R, object, y)
+                      .Call(drawModelNotUseExp_R, object, y)
               }
               else {
                   object <- updateThetaAndValueAgFun_PoissonNotUseExp(object, y = y)
@@ -775,7 +813,7 @@ setMethod("drawFromModelNotUseExp",
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("drawFromModelNotUseExp",
+setMethod("drawModelNotUseExp",
           signature(object = "PoissonVaryingNotUseExpAgPoisson"),
           function(object, y, useC = FALSE, useSpecific = FALSE) {
               ## object
@@ -786,9 +824,9 @@ setMethod("drawFromModelNotUseExp",
               stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
               if (useC) {
                   if (useSpecific)
-                      .Call(drawFromModelNotUseExp_PoissonVaryingNotUseExpAgPoisson_R, object, y)
+                      .Call(drawModelNotUseExp_PoissonVaryingNotUseExpAgPoisson_R, object, y)
                   else
-                      .Call(drawFromModelNotUseExp_R, object, y)
+                      .Call(drawModelNotUseExp_R, object, y)
               }
               else {
                   object <- updateTheta_PoissonVaryingNotUseExpAgCertain(object, y = y)
@@ -801,7 +839,7 @@ setMethod("drawFromModelNotUseExp",
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("drawFromModelNotUseExp",
+setMethod("drawModelNotUseExp",
           signature(object = "NormalFixedNotUseExp"),
           function(object, y, useC = FALSE, useSpecific = FALSE) {
               ## object
@@ -810,9 +848,9 @@ setMethod("drawFromModelNotUseExp",
               stopifnot(is.integer(y))
               if (useC) {
                   if (useSpecific)
-                      .Call(drawFromModelNotUseExp_NormalFixedNotUseExp_R, object, y)
+                      .Call(drawModelNotUseExp_NormalFixedNotUseExp_R, object, y)
                   else
-                      .Call(drawFromModelNotUseExp_R, object, y)
+                      .Call(drawModelNotUseExp_R, object, y)
               }
               else {
                   ## object is not updated
@@ -823,7 +861,7 @@ setMethod("drawFromModelNotUseExp",
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("drawFromModelNotUseExp",
+setMethod("drawModelNotUseExp",
           signature(object = "TFixedNotUseExp"),
           function(object, y, useC = FALSE, useSpecific = FALSE) {
               ## object
@@ -832,9 +870,9 @@ setMethod("drawFromModelNotUseExp",
               stopifnot(is.integer(y))
               if (useC) {
                   if (useSpecific)
-                      .Call(drawFromModelNotUseExp_TFixedNotUseExp_R, object, y)
+                      .Call(drawModelNotUseExp_TFixedNotUseExp_R, object, y)
                   else
-                      .Call(drawFromModelNotUseExp_R, object, y)
+                      .Call(drawModelNotUseExp_R, object, y)
               }
               else {
                   ## object is not updated
@@ -846,12 +884,12 @@ setMethod("drawFromModelNotUseExp",
 
 
 
-## drawFromModelUseExp #################################################################
+## drawModelUseExp #################################################################
 
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("drawFromModelUseExp",
+setMethod("drawModelUseExp",
           signature(object = "CMPVaryingUseExp"),
           function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
               ## object
@@ -869,9 +907,9 @@ setMethod("drawFromModelUseExp",
               stopifnot(all(y@.Data[!is.na(y@.Data) & (exposure@.Data == 0L)] == 0))
               if (useC) {
                   if (useSpecific)
-                      .Call(drawFromModelUseExp_CMPVaryingUseExp_R, object, y, exposure)
+                      .Call(drawModelUseExp_CMPVaryingUseExp_R, object, y, exposure)
                   else
-                      .Call(drawFromModelUseExp_R, object, y, exposure)
+                      .Call(drawModelUseExp_R, object, y, exposure)
               }
               else {
                   object <- updateThetaAndNu_CMPVaryingUseExp(object, y = y, exposure)
@@ -883,7 +921,7 @@ setMethod("drawFromModelUseExp",
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("drawFromModelUseExp",
+setMethod("drawModelUseExp",
           signature(object = "PoissonVaryingUseExp"),
           function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
               ## object
@@ -902,9 +940,9 @@ setMethod("drawFromModelUseExp",
               stopifnot(all(y@.Data[!is.na(y@.Data) & (exposure@.Data == 0L)] == 0))
               if (useC) {
                   if (useSpecific)
-                      .Call(drawFromModelUseExp_PoissonVarying_R, object, y, exposure)
+                      .Call(drawModelUseExp_PoissonVarying_R, object, y, exposure)
                   else
-                      .Call(drawFromModelUseExp_R, object, y, exposure)
+                      .Call(drawModelUseExp_R, object, y, exposure)
               }
               else {
                   object <- updateTheta_PoissonVaryingUseExp(object, y = y, exposure = exposure)
@@ -916,7 +954,7 @@ setMethod("drawFromModelUseExp",
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("drawFromModelUseExp",
+setMethod("drawModelUseExp",
           signature(object = "PoissonBinomialMixture"),
           function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
               ## object
@@ -932,9 +970,9 @@ setMethod("drawFromModelUseExp",
               stopifnot(all(is.na(exposure) <= is.na(y)))
               if (useC) {
                   if (useSpecific)
-                      .Call(drawFromModelUseExp_PoissonBinomialMixture_R, object, y, exposure)
+                      .Call(drawModelUseExp_PoissonBinomialMixture_R, object, y, exposure)
                   else
-                      .Call(drawFromModelUseExp_R, object, y, exposure)
+                      .Call(drawModelUseExp_R, object, y, exposure)
               }
               else {
                   ## object is not updated
@@ -944,7 +982,7 @@ setMethod("drawFromModelUseExp",
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("drawFromModelUseExp",
+setMethod("drawModelUseExp",
           signature(object = "Round3"),
           function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
               ## object
@@ -960,9 +998,9 @@ setMethod("drawFromModelUseExp",
               stopifnot(all(is.na(exposure) <= is.na(y)))
               if (useC) {
                   if (useSpecific)
-                      .Call(drawFromModelUseExp_Round3_R, object, y, exposure)
+                      .Call(drawModelUseExp_Round3_R, object, y, exposure)
                   else
-                      .Call(drawFromModelUseExp_R, object, y, exposure)
+                      .Call(drawModelUseExp_R, object, y, exposure)
               }
               else {
                   ## object is not updated
@@ -973,7 +1011,7 @@ setMethod("drawFromModelUseExp",
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("drawFromModelUseExp",
+setMethod("drawModelUseExp",
           signature(object = "BinomialVaryingAgCertain"),
           function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
               ## object
@@ -992,9 +1030,9 @@ setMethod("drawFromModelUseExp",
               stopifnot(all(y@.Data[!is.na(y@.Data)] <= exposure[is.na(y)]))
               if (useC) {
                   if (useSpecific)
-                      .Call(drawFromModelUseExp_BinomialVaryingAgCertain_R, object, y, exposure)
+                      .Call(drawModelUseExp_BinomialVaryingAgCertain_R, object, y, exposure)
                   else
-                      .Call(drawFromModelUseExp_R, object, y, exposure)
+                      .Call(drawModelUseExp_R, object, y, exposure)
               }
               else {
                   logit <- function(x) log(x / (1 - x))
@@ -1007,7 +1045,7 @@ setMethod("drawFromModelUseExp",
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("drawFromModelUseExp",
+setMethod("drawModelUseExp",
           signature(object = "PoissonVaryingUseExpAgCertain"),
           function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
               ## object
@@ -1025,9 +1063,9 @@ setMethod("drawFromModelUseExp",
               stopifnot(all(is.na(exposure) <= is.na(y)))
               if (useC) {
                   if (useSpecific)
-                      .Call(drawFromModelUseExp_PoissonVaryingUseExpAgCertain_R, object, y, exposure)
+                      .Call(drawModelUseExp_PoissonVaryingUseExpAgCertain_R, object, y, exposure)
                   else
-                      .Call(drawFromModelUseExp_R, object, y, exposure)
+                      .Call(drawModelUseExp_R, object, y, exposure)
               }
               else {
                   object <- updateTheta_PoissonVaryingUseExpAgCertain(object, y = y, exposure = exposure)
@@ -1039,7 +1077,7 @@ setMethod("drawFromModelUseExp",
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("drawFromModelUseExp",
+setMethod("drawModelUseExp",
           signature(object = "BinomialVaryingAgNormal"),
           function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
               ## object
@@ -1058,9 +1096,9 @@ setMethod("drawFromModelUseExp",
               stopifnot(all(y@.Data[!is.na(y@.Data)] <= exposure[!is.na(y)]))
               if (useC) {
                   if (useSpecific)
-                      .Call(drawFromModelUseExp_BinomialVaryingAgNormal_R, object, y, exposure)
+                      .Call(drawModelUseExp_BinomialVaryingAgNormal_R, object, y, exposure)
                   else
-                      .Call(drawFromModelUseExp_R, object, y, exposure)
+                      .Call(drawModelUseExp_R, object, y, exposure)
               }
               else {
                   logit <- function(x) log(x / (1 - x))
@@ -1074,7 +1112,7 @@ setMethod("drawFromModelUseExp",
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("drawFromModelUseExp",
+setMethod("drawModelUseExp",
           signature(object = "BinomialVaryingAgFun"),
           function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
               ## object
@@ -1093,9 +1131,9 @@ setMethod("drawFromModelUseExp",
               stopifnot(all(y@.Data[!is.na(y@.Data)] <= exposure[!is.na(y)]))
               if (useC) {
                   if (useSpecific)
-                      .Call(drawFromModelUseExp_BinomialVaryingAgFun_R, object, y, exposure)
+                      .Call(drawModelUseExp_BinomialVaryingAgFun_R, object, y, exposure)
                   else
-                      .Call(drawFromModelUseExp_R, object, y, exposure)
+                      .Call(drawModelUseExp_R, object, y, exposure)
               }
               else {
                   logit <- function(x) log(x / (1 - x))
@@ -1108,7 +1146,7 @@ setMethod("drawFromModelUseExp",
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("drawFromModelUseExp",
+setMethod("drawModelUseExp",
           signature(object = "PoissonVaryingUseExpAgNormal"),
           function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
               ## object
@@ -1126,9 +1164,9 @@ setMethod("drawFromModelUseExp",
               stopifnot(all(is.na(exposure) <= is.na(y)))
               if (useC) {
                   if (useSpecific)
-                      .Call(drawFromModelUseExp_PoissonVaryingUseExpAgNormal_R, object, y, exposure)
+                      .Call(drawModelUseExp_PoissonVaryingUseExpAgNormal_R, object, y, exposure)
                   else
-                      .Call(drawFromModelUseExp_R, object, y, exposure)
+                      .Call(drawModelUseExp_R, object, y, exposure)
               }
               else {
                   object <- updateTheta_PoissonVaryingUseExpAgCertain(object, y = y, exposure = exposure)
@@ -1141,7 +1179,7 @@ setMethod("drawFromModelUseExp",
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("drawFromModelUseExp",
+setMethod("drawModelUseExp",
           signature(object = "PoissonVaryingUseExpAgFun"),
           function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
               ## object
@@ -1159,9 +1197,9 @@ setMethod("drawFromModelUseExp",
               stopifnot(all(is.na(exposure) <= is.na(y)))
               if (useC) {
                   if (useSpecific)
-                      .Call(drawFromModelUseExp_PoissonVaryingUseExpAgFun_R, object, y, exposure)
+                      .Call(drawModelUseExp_PoissonVaryingUseExpAgFun_R, object, y, exposure)
                   else
-                      .Call(drawFromModelUseExp_R, object, y, exposure)
+                      .Call(drawModelUseExp_R, object, y, exposure)
               }
               else {
                   object <- updateThetaAndValueAgFun_PoissonUseExp(object, y = y, exposure = exposure)
@@ -1173,7 +1211,7 @@ setMethod("drawFromModelUseExp",
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("drawFromModelUseExp",
+setMethod("drawModelUseExp",
           signature(object = "PoissonVaryingUseExpAgLife"),
           function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
               ## object
@@ -1191,9 +1229,9 @@ setMethod("drawFromModelUseExp",
               stopifnot(all(is.na(exposure) <= is.na(y)))
               if (useC) {
                   if (useSpecific)
-                      .Call(drawFromModelUseExp_PoissonVaryingUseExpAgLife_R, object, y, exposure)
+                      .Call(drawModelUseExp_PoissonVaryingUseExpAgLife_R, object, y, exposure)
                   else
-                      .Call(drawFromModelUseExp_R, object, y, exposure)
+                      .Call(drawModelUseExp_R, object, y, exposure)
               }
               else {
                   object <- updateThetaAndValueAgLife_PoissonUseExp(object, y = y, exposure = exposure)
@@ -1206,7 +1244,7 @@ setMethod("drawFromModelUseExp",
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("drawFromModelUseExp",
+setMethod("drawModelUseExp",
           signature(object = "PoissonVaryingUseExpAgPoisson"),
           function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
               ## object
@@ -1224,9 +1262,9 @@ setMethod("drawFromModelUseExp",
               stopifnot(all(is.na(exposure) <= is.na(y)))
               if (useC) {
                   if (useSpecific)
-                      .Call(drawFromModelUseExp_PoissonVaryingUseExpAgPoisson_R, object, y, exposure)
+                      .Call(drawModelUseExp_PoissonVaryingUseExpAgPoisson_R, object, y, exposure)
                   else
-                      .Call(drawFromModelUseExp_R, object, y, exposure)
+                      .Call(drawModelUseExp_R, object, y, exposure)
               }
               else {
                   object <- updateTheta_PoissonVaryingUseExpAgCertain(object, y = y, exposure = exposure)
@@ -1239,7 +1277,7 @@ setMethod("drawFromModelUseExp",
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("drawFromModelUseExp",
+setMethod("drawModelUseExp",
           signature(object = "NormalFixedUseExp"),
           function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
               ## object
@@ -1253,9 +1291,9 @@ setMethod("drawFromModelUseExp",
               stopifnot(identical(length(exposure), length(y)))
               if (useC) {
                   if (useSpecific)
-                      .Call(drawFromModelUseExp_NormalFixedUseExp_R, object, y, exposure)
+                      .Call(drawModelUseExp_NormalFixedUseExp_R, object, y, exposure)
                   else
-                      .Call(drawFromModelUseExp_R, object, y, exposure)
+                      .Call(drawModelUseExp_R, object, y, exposure)
               }
               else {
                   ## object is not updated
@@ -1265,7 +1303,7 @@ setMethod("drawFromModelUseExp",
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("drawFromModelUseExp",
+setMethod("drawModelUseExp",
           signature(object = "Round3"),
           function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
               ## object
@@ -1281,9 +1319,9 @@ setMethod("drawFromModelUseExp",
               stopifnot(all(is.na(exposure) <= is.na(y)))
               if (useC) {
                   if (useSpecific)
-                      .Call(drawFromModelUseExp_Round3_R, object, y, exposure)
+                      .Call(drawModelUseExp_Round3_R, object, y, exposure)
                   else
-                      .Call(drawFromModelUseExp_R, object, y, exposure)
+                      .Call(drawModelUseExp_R, object, y, exposure)
               }
               else {
                   ## object is not updated
@@ -1293,7 +1331,7 @@ setMethod("drawFromModelUseExp",
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("drawFromModelUseExp",
+setMethod("drawModelUseExp",
           signature(object = "TFixedUseExp"),
           function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
               ## object
@@ -1307,9 +1345,9 @@ setMethod("drawFromModelUseExp",
               stopifnot(identical(length(exposure), length(y)))
               if (useC) {
                   if (useSpecific)
-                      .Call(drawFromModelUseExp_TFixedUseExp_R, object, y, exposure)
+                      .Call(drawModelUseExp_TFixedUseExp_R, object, y, exposure)
                   else
-                      .Call(drawFromModelUseExp_R, object, y, exposure)
+                      .Call(drawModelUseExp_R, object, y, exposure)
               }
               else {
                   ## object is not updated

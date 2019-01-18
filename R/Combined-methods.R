@@ -397,6 +397,9 @@ setMethod("updateCombined",
               }
           })
 
+
+## Counts
+
 ## TRANSLATED
 ## HAS_TESTS
 setMethod("updateCombined",
@@ -536,7 +539,7 @@ setMethod("updateCombined",
           })
 
 
-## Accounts ##############################################################################
+## Accounts
 
 ## TRANSLATED
 ## HAS_TESTS

@@ -33,6 +33,7 @@
 #' @param iterations A vector of positive integers giving the iterations to be
 #' extracted if an item has multiple iterations.
 #' @param impute Logical. Whether to impute missing values.
+#' Defaults to \code{TRUE}.
 #'
 #' @return Parameters that were estimated from the data typically have class
 #' \code{DemographicArray} and have a dimension with
@@ -96,7 +97,7 @@
 #'       iterations = seq(from = 5, by = 5, to = 40))
 #' @export
 fetch <- function(filename, where = character(), iterations = NULL,
-                  impute = FALSE) {
+                  impute = TRUE) {
     object <- fetchResultsObject(filename)
     nIteration <- object@mcmc["nIteration"]
     lengthIter <- object@control$lengthIter
@@ -216,7 +217,7 @@ fetch <- function(filename, where = character(), iterations = NULL,
 #' }
 #' @export
 fetchBoth <- function(filenameEst, filenamePred, where, iterations = NULL,
-                      impute = FALSE) {
+                      impute = TRUE) {
     ## preparation and checking
     results.est <- fetchResultsObject(filenameEst)
     nIteration <- results.est@mcmc["nIteration"]

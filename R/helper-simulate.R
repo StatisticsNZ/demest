@@ -265,36 +265,6 @@ checkPriorSDInformative <- function(object) {
 
 ## READY_TO_TRANSLATE
 ## HAS_TESTS
-drawBeta_standard <- function(prior, useC = FALSE) {
-    stopifnot(methods::is(prior, "Prior"))
-    stopifnot(methods::validObject(prior))
-    if (useC) {
-        .Call(drawBeta_standard_R, prior)
-    }
-    else {
-        J <- prior@J@.Data
-        all.struc.zero <- prior@allStrucZero
-        beta.hat <- betaHat(prior)
-        v <- getV(prior)
-        ans <- double(length = J)
-        for (j in seq_len(J)) {
-            if (all.struc.zero[j]) {
-                ans[j] <- NA
-            }
-            else {
-                mean <- beta.hat[j]
-                sd <- sqrt(v[j])
-                ans[j] <- stats::rnorm(n = 1L,
-                                       mean = mean,
-                                       sd = sd)
-            }
-        }
-        ans
-    }
-}
-
-## READY_TO_TRANSLATE
-## HAS_TESTS
 drawBetas <- function(object, useC = FALSE) {
     stopifnot(methods::is(object, "Varying"))
     stopifnot(methods::validObject(object))
@@ -305,8 +275,22 @@ drawBetas <- function(object, useC = FALSE) {
         betas <- object@betas
         priors <- object@priorsBetas
         for (b in seq_along(betas)) {
+            beta <- betas[[b]]
             prior <- priors[[b]]
-            betas[[b]] <- drawBeta(prior)
+            J <- prior@J@.Data
+            all.struc.zero <- prior@allStrucZero
+            beta.hat <- betaHat(prior)
+            v <- getV(prior)
+            for (j in seq_len(J)) {
+                if (!all.struc.zero[j]) {
+                    mean <- beta.hat[j]
+                    sd <- sqrt(v[j])
+                    beta[j] <- stats::rnorm(n = 1L,
+                                            mean = mean,
+                                            sd = sd)
+                }
+            }
+            betas[[b]] <- beta
         }
         object@betas <- betas
         object
@@ -498,6 +482,23 @@ drawPhiMix <- function(prior, useC = FALSE) {
             prior@phiMix <- phi
             prior
         }
+    }
+}
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+drawPriors <- function(object, useC = FALSE) {
+    stopifnot(methods::is(object, "Varying"))
+    stopifnot(methods::validObject(object))
+    if (useC) {
+        .Call(drawPriors_R, object)
+    }
+    else {
+        priors <- object@priorsBetas
+        for (b in seq_along(priors))
+            priors[[b]] <- drawPrior(priors[[b]])
+        object@priorsBetas <- priors
+        object
     }
 }
 

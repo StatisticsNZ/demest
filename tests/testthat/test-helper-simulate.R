@@ -266,138 +266,11 @@ test_that("checkPriorsAreInformative works", {
 
 ## drawPrior, drawModel ################################################
 
-test_that("drawBeta_standard works", {
-    drawBeta_standard <- demest:::drawBeta_standard
-    initialPrior <- demest:::initialPrior
-    betaHat <- demest:::betaHat
-    getV <- demest:::getV
-    ## no structural zeros
-    spec <- Exch(error = Error(scale = HalfT(scale = 0.1)))
-    beta <- rnorm(10)
-    metadata <- new("MetaData",
-                    nms = "region",
-                    dimtypes = "state",
-                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
-    strucZeroArray <- Counts(array(1L,
-                                   dim = 10L,
-                                   dimnames = list(region = letters[1:10])))
-    prior <- initialPrior(spec,
-                          beta = beta,
-                          metadata = metadata,
-                          sY = NULL,
-                          isSaturated = FALSE,
-                          margin = 1L,
-                          strucZeroArray = strucZeroArray)
-    for (seed in seq_len(n.test)) {
-        set.seed(seed)
-        ans.obtained <- drawBeta_standard(prior)
-        set.seed(seed)
-        ans.expected <- rnorm(n = prior@J@.Data,
-                              mean = betaHat(prior),
-                              sd = sqrt(getV(prior)))
-        if (test.identity)
-            expect_identical(ans.obtained, ans.expected)
-        else
-            expect_equal(ans.obtained, ans.expected)
-    }
-    ## with structural zeros
-    spec <- Exch(error = Error(scale = HalfT(scale = 0.1)))
-    beta <- rnorm(10)
-    metadata <- new("MetaData",
-                    nms = "region",
-                    dimtypes = "state",
-                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
-    strucZeroArray <- Counts(array(c(0L, rep(1L, 9)),
-                                   dim = 10L,
-                                   dimnames = list(region = letters[1:10])))
-    prior <- initialPrior(spec,
-                          beta = beta,
-                          metadata = metadata,
-                          sY = NULL,
-                          isSaturated = FALSE,
-                          margin = 1L,
-                          strucZeroArray = strucZeroArray)
-    for (seed in seq_len(n.test)) {
-        set.seed(seed)
-        ans.obtained <- drawBeta_standard(prior)
-        set.seed(seed)
-        ans.expected <- c(NA,
-                          rnorm(n = prior@J@.Data - 1,
-                                mean = betaHat(prior)[-1],
-                                sd = sqrt(getV(prior))[-1]))
-        if (test.identity)
-            expect_identical(ans.obtained, ans.expected)
-        else
-            expect_equal(ans.obtained, ans.expected)
-    }
-})
-
-test_that("R and C versions of drawBeta_standard give same answer", {
-    drawBeta_standard <- demest:::drawBeta_standard
-    initialPrior <- demest:::initialPrior
-    betaHat <- demest:::betaHat
-    getV <- demest:::getV
-    ## no structural zeros
-    spec <- Exch(error = Error(scale = HalfT(scale = 0.1)))
-    beta <- rnorm(10)
-    metadata <- new("MetaData",
-                    nms = "region",
-                    dimtypes = "state",
-                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
-    strucZeroArray <- Counts(array(1L,
-                                   dim = 10L,
-                                   dimnames = list(region = letters[1:10])))
-    prior <- initialPrior(spec,
-                          beta = beta,
-                          metadata = metadata,
-                          sY = NULL,
-                          isSaturated = FALSE,
-                          margin = 1L,
-                          strucZeroArray = strucZeroArray)
-    for (seed in seq_len(n.test)) {
-        set.seed(seed)
-        ans.R <- drawBeta_standard(model, useC = FALSE)
-        set.seed(seed)
-        ans.C <- drawBeta_standard(model, useC = TRUE)
-        if (test.identity)
-            expect_identical(ans.R, ans.C)
-        else
-            expect_equal(ans.R, ans.C)
-    }
-    ## with structural zeros
-    spec <- Exch(error = Error(scale = HalfT(scale = 0.1)))
-    beta <- rnorm(10)
-    metadata <- new("MetaData",
-                    nms = "region",
-                    dimtypes = "state",
-                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
-    strucZeroArray <- Counts(array(c(0L, rep(1L, 9)),
-                                   dim = 10L,
-                                   dimnames = list(region = letters[1:10])))
-    prior <- initialPrior(spec,
-                          beta = beta,
-                          metadata = metadata,
-                          sY = NULL,
-                          isSaturated = FALSE,
-                          margin = 1L,
-                          strucZeroArray = strucZeroArray)
-    for (seed in seq_len(n.test)) {
-        set.seed(seed)
-        ans.R <- drawBeta_standard(model, useC = FALSE)
-        set.seed(seed)
-        ans.C <- drawBeta_standard(model, useC = TRUE)
-        if (test.identity)
-            expect_identical(ans.R, ans.C)
-        else
-            expect_equal(ans.R, ans.C)
-    }
-})
-
-
-
-test_that("drawBetas works", {
+test_that("drawBetas works - no structural zeros", {
     initialModel <- demest:::initialModel
-    drawBeta <- demest:::drawBeta
+    drawBetas <- demest:::drawBetas
+    betaHat <- demest:::betaHat
+    getV <- demest:::getV
     spec <- Model(y ~ Poisson(mean ~ age + sex),
                   `(Intercept)` ~ ExchFixed(sd = 10), 
                   age ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
@@ -419,20 +292,92 @@ test_that("drawBetas works", {
         set.seed(seed)
         ans.expected <- model
         for (i in 1:3)
-            ans.expected@betas[[i]] <- drawBeta(ans.expected@priorsBetas[[i]])
+            ans.expected@betas[[i]] <- rnorm(n = ans.expected@priorsBetas[[i]]@J@.Data,
+                                             mean = betaHat(ans.expected@priorsBetas[[i]]),
+                                             sd = sqrt(getV(ans.expected@priorsBetas[[i]])))
         expect_identical(ans.obtained, ans.expected)
     }
 })
 
-test_that("R and C versions of drawBetas give same answer", {
+test_that("R and C versions of drawBetas give same answer - no structural zeros", {
     initialModel <- demest:::initialModel
-    drawBeta <- demest:::drawBeta
+    drawBetas <- demest:::drawBetas
     spec <- Model(y ~ Poisson(mean ~ age + sex),
                   `(Intercept)` ~ ExchFixed(sd = 10), 
                   age ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
                   sex ~ ExchFixed(sd = 0.1),
                   priorSD = HalfT(scale = 0.2))
     y <- Counts(array(1L,
+                      dim = 2:3,
+                      dimnames = list(sex = c("F", "M"),
+                                      age = c("0-4", "5-9", "10+"))))
+    exposure <- Counts(array(1:6,
+                             dim = 2:3,
+                             dimnames = list(sex = c("F", "M"),
+                                             age = c("0-4", "5-9", "10+"))))
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        model <- initialModel(spec, y = y, exposure = exposure)
+        set.seed(seed)
+        ans.R <- drawBetas(model, useC = FALSE)
+        set.seed(seed)
+        ans.C <- drawBetas(model, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
+
+test_that("drawBetas works - with structural zeros", {
+    initialModel <- demest:::initialModel
+    drawBetas <- demest:::drawBetas
+    betaHat <- demest:::betaHat
+    getV <- demest:::getV
+    spec <- Model(y ~ Poisson(mean ~ age + sex,
+                              structuralZeros = ValuesOne(c(0, 1, 1), labels = c("0-4", "5-9", "10+"), name = "age")),
+                  `(Intercept)` ~ ExchFixed(sd = 10), 
+                  age ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
+                  sex ~ ExchFixed(sd = 0.1),
+                  priorSD = HalfT(scale = 0.2))
+    y <- Counts(array(rep(0:1, times = c(2, 4)),
+                      dim = 2:3,
+                      dimnames = list(sex = c("F", "M"),
+                                      age = c("0-4", "5-9", "10+"))))
+    exposure <- Counts(array(1:6,
+                             dim = 2:3,
+                             dimnames = list(sex = c("F", "M"),
+                                             age = c("0-4", "5-9", "10+"))))
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        model <- initialModel(spec, y = y, exposure = exposure)
+        set.seed(seed)
+        ans.obtained <- drawBetas(model)
+        set.seed(seed)
+        ans.expected <- model
+        ans.expected@betas[[1]] <- rnorm(n = ans.expected@priorsBetas[[1]]@J@.Data,
+                                         mean = betaHat(ans.expected@priorsBetas[[1]]),
+                                         sd = sqrt(getV(ans.expected@priorsBetas[[1]])))
+        ans.expected@betas[[2]][2:3] <- rnorm(n = ans.expected@priorsBetas[[2]]@J@.Data - 1,
+                                              mean = betaHat(ans.expected@priorsBetas[[2]])[2:3],
+                                              sd = sqrt(getV(ans.expected@priorsBetas[[2]])[2:3]))
+        ans.expected@betas[[3]] <- rnorm(n = ans.expected@priorsBetas[[3]]@J@.Data,
+                                         mean = betaHat(ans.expected@priorsBetas[[3]]),
+                                         sd = sqrt(getV(ans.expected@priorsBetas[[3]])))
+        expect_identical(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of drawBetas give same answer - with structural zeros", {
+    initialModel <- demest:::initialModel
+    drawBetas <- demest:::drawBetas
+    spec <- Model(y ~ Poisson(mean ~ age + sex,
+                              structuralZeros = ValuesOne(c(0, 1, 1), labels = c("0-4", "5-9", "10+"), name = "age")),
+                  `(Intercept)` ~ ExchFixed(sd = 10), 
+                  age ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
+                  sex ~ ExchFixed(sd = 0.1),
+                  priorSD = HalfT(scale = 0.2))
+    y <- Counts(array(rep(0:1, times = c(2, 4)),
                       dim = 2:3,
                       dimnames = list(sex = c("F", "M"),
                                       age = c("0-4", "5-9", "10+"))))
@@ -909,7 +854,7 @@ test_that("R and C versions of version of drawOmegaSeason give same answer", {
                           isSaturated = FALSE,
                           margin = 1L,
                           strucZeroArray = strucZeroArray)
-    expect_is(prior, "DLMWithTrendNormZeroNoSeason")
+    expect_is(prior, "DLMWithTrendNormZeroWithSeason")
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         ans.R <- drawOmegaSeason(prior, useC = FALSE)
@@ -1166,8 +1111,65 @@ test_that("R and C version of drawPhiMix give same answer", {
     }
 })
 
+test_that("drawPriors works", {
+    initialModel <- demest:::initialModel
+    drawPriors <- demest:::drawPriors
+    drawPrior <- demest:::drawPrior
+    spec <- Model(y ~ Poisson(mean ~ age + sex),
+                  `(Intercept)` ~ ExchFixed(sd = 10), 
+                  age ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
+                  sex ~ ExchFixed(sd = 0.1),
+                  priorSD = HalfT(scale = 0.2))
+    y <- Counts(array(1L,
+                      dim = 2:3,
+                      dimnames = list(sex = c("F", "M"),
+                                      age = c("0-4", "5-9", "10+"))))
+    exposure <- Counts(array(1:6,
+                             dim = 2:3,
+                             dimnames = list(sex = c("F", "M"),
+                                             age = c("0-4", "5-9", "10+"))))
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        model <- initialModel(spec, y = y, exposure = exposure)
+        set.seed(seed)
+        ans.obtained <- drawPriors(model)
+        set.seed(seed)
+        ans.expected <- model
+        for (i in 1:3)
+            ans.expected@priorsBetas[[i]] <- drawPrior(ans.expected@priorsBetas[[i]])
+        expect_identical(ans.obtained, ans.expected)
+    }
+})
 
-
+test_that("R and C versions of drawPriors give same answer", {
+    initialModel <- demest:::initialModel
+    drawPriors <- demest:::drawPriors
+    spec <- Model(y ~ Poisson(mean ~ age + sex),
+                  `(Intercept)` ~ ExchFixed(sd = 10), 
+                  age ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
+                  sex ~ ExchFixed(sd = 0.1),
+                  priorSD = HalfT(scale = 0.2))
+    y <- Counts(array(1L,
+                      dim = 2:3,
+                      dimnames = list(sex = c("F", "M"),
+                                      age = c("0-4", "5-9", "10+"))))
+    exposure <- Counts(array(1:6,
+                             dim = 2:3,
+                             dimnames = list(sex = c("F", "M"),
+                                             age = c("0-4", "5-9", "10+"))))
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        model <- initialModel(spec, y = y, exposure = exposure)
+        set.seed(seed)
+        ans.R <- drawPriors(model, useC = FALSE)
+        set.seed(seed)
+        ans.C <- drawPriors(model, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
 
 test_that("drawSigma_Varying works with BinomialVarying", {
     drawSigma_Varying <- demest:::drawSigma_Varying
@@ -1284,11 +1286,6 @@ test_that("R and C versions of drawTau give same answer", {
             expect_equal(ans.R, ans.C)
     }
 })
-
-
-
-
-
 
 test_that("R version of drawUEtaCoef works", {
     drawUEtaCoef <- demest:::drawUEtaCoef

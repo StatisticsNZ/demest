@@ -246,9 +246,9 @@ setMethod("initialCombinedModelPredict",
               y <- methods::new(class.y, .Data = .Data, metadata = metadata)
               exposure <- methods::new("Counts", .Data = .Data, metadata = metadata)
               methods::new("CombinedModelBinomial",
-                  model = model,
-                  y = y,
-                  exposure = exposure)
+                           model = model,
+                           y = y,
+                           exposure = exposure)
           })
 
 ## HAS_TESTS

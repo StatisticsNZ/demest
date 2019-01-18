@@ -156,6 +156,14 @@ setGeneric("diffLogLikAccount",
            function(object, useC = FALSE, useSpecific = FALSE)
                standardGeneric("diffLogLikAccount"))
 
+setGeneric("drawModelNotUseExp",
+           function(object, y, useC = FALSE, useSpecific = FALSE)
+               standardGeneric("drawModelNotUseExp"))
+
+setGeneric("drawModelUseExp",
+           function(object, y, exposure, useC = FALSE, useSpecific = FALSE)
+               standardGeneric("drawModelUseExp"))
+
 setGeneric("drawPrior",
            function(prior, useC = FALSE, useSpecific = FALSE)
                standardGeneric("drawPrior"))
