@@ -1376,7 +1376,7 @@ Exch <- function(covariates = NULL, error = Error()) {
 #' \code{mean} defaults to 0. In most cases, non-zero means are ignored,
 #' with a warning, when the model is generated. The exception is when
 #' \code{ExchFixed} is being used to specify an intercept term,
-#' when generating fake data.
+#' when generating simulated data.
 #' 
 #' If a value for \code{sd} is not supplied by the user, then a value is
 #' generated when function \code{\link{estimateModel}},

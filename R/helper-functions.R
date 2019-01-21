@@ -31,10 +31,6 @@ listAllSubsets <- function(n) {
     }
 }
 
-
-
-## makeFakeBetas
-
 ## HAS_TESTS
 makeIteratorBetas <- function(betas, namesBetas, y) {
     n <- length(betas)

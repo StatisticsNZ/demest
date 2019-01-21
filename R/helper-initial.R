@@ -302,7 +302,8 @@ initialDLMWithTrend <- function(object, beta, metadata, sY, lAll) {
                iAlong = iAlong)
     deltaDLM <- makeStateDLM(K = K,
                              L = L)
-    mWithTrend <- makeMWithTrend(K = K)
+    mWithTrend <- makeMWithTrend(K = K,
+                                 m0 = c(0, meanDelta0))
     m0WithTrend <- makeM0WithTrend(L = L,
                                    meanDelta0 = meanDelta0)
     CWithTrend <- makeCWithTrend(K = K,

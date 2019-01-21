@@ -26,6 +26,41 @@ setMethod("getSeriesForDataset",
           })
 
 
+## drawCombined ####################################################################
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawCombined",
+          signature(object = "CombinedModelBinomial"),
+          function(object, nUpdate = 1L, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              methods::validObject(object)
+              ## nUpdate
+              stopifnot(identical(length(nUpdate), 1L))
+              stopifnot(is.integer(nUpdate))
+              stopifnot(!is.na(nUpdate))
+              stopifnot(nUpdate >= 0L)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawCombined_CombinedModelBinomial_R, object, nUpdate)
+                  else
+                      .Call(drawCombined_R, object, nUpdate)
+              }
+              else {
+                  model <- object@model
+                  y <- object@y
+                  exposure <- object@exposure
+                  for (i in seq_len(nUpdate))
+                      model <- drawModelUseExp(model,
+                                               y = y,
+                                               exposure = exposure)
+                  object@model <- model
+                  object
+              }
+          })
+
+
+
 ## predictCombined #################################################################
 
 ## the 'nUpdate' argument may disappear in the long run,

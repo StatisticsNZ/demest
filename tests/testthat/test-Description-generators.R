@@ -3,7 +3,7 @@ context("Description-generators")
 
 n.test <- 5
 test.identity <- FALSE
-test.extended <- TRUE
+test.extended <- FALSE
 
 test_that("Description creates object of class DescriptionPopn from valid inputs", {
     Description <- demest:::Description

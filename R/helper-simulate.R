@@ -17,12 +17,9 @@ checkAllDimensionsHavePriors <- function(model, y) {
     NULL
 }
 
-
-## checkPriorInform ########################################################
-
 ## Helper functions to check that prior specifications hold all the
-## information required to generate fake data (and do not have arguments
-## that are inappropriate for fake data).
+## information required to generate simulated data (and do not have arguments
+## that are inappropriate for simulated data).
 
 
 ## HAS_TESTS
@@ -257,11 +254,35 @@ checkPriorSDInformative <- function(object) {
                               "priorSD", name.model, value))
     }
     NULL
-}    
+}
 
+## HAS_TESTS
+checkSimulatedExposure <- function(exposure) {
+    if (!methods::is(exposure, "Counts"))
+        stop(gettextf("'%s' has class \"%s\"",
+                      "exposure", class(exposure)))
+    if (any(is.na(exposure)))
+        stop(gettextf("'%s' has missing values",
+                      "exposure"))
+    if (any(exposure < 0))
+        stop(gettextf("'%s' has negative values",
+                      "exposure"))
+    if (all(exposure == 0))
+        stop(gettextf("'%s' has no non-zero values",
+                      "exposure"))
+    NULL
+}
 
-
-## drawPrior, drawModel ################################################
+## HAS_TESTS
+checkSimulatedYNoExposure <- function(y, model) {
+    if (is.null(y))
+        stop(gettextf("'%s' has class \"%s\", but '%s' and '%s' are both %s",
+                      "model", class(model), "y", "exposure", "NULL"))
+    if (!methods::is(y, "Counts"))
+        stop(gettextf("'%s' has class \"%s\", but '%s' has class \"%s\"",
+                      "model", class(model), "y", class(y)))
+    NULL
+}
 
 ## READY_TO_TRANSLATE
 ## HAS_TESTS
@@ -299,6 +320,36 @@ drawBetas <- function(object, useC = FALSE) {
 
 ## READY_TO_TRANSLATE
 ## HAS_TESTS
+drawDelta0 <- function(prior, useC = FALSE) {
+    stopifnot(methods::is(prior, "DLM") && methods::is(prior, "WithTrendMixin"))
+    if (useC) {
+        .Call(drawDelta0_R, prior)
+    }
+    else {
+        L <- prior@L@.Data
+        along.all.struc.zero <- prior@alongAllStrucZero
+        delta <- prior@deltaDLM@.Data # numeric vector length (K+1)L
+        A0 <- prior@ADelta0@.Data # scalar
+        mean0 <- prior@meanDelta0@.Data # scalar
+        iterator <- prior@iteratorState
+        iterator <- resetA(iterator)
+        for (l in seq_len(L)) {
+            if (!along.all.struc.zero[l]) {
+                indices <- iterator@indices
+                i0 <- indices[1L]
+                delta[i0] <- stats::rnorm(n = 1L,
+                                          mean = mean0,
+                                          sd = A0)
+            }
+            iterator <- advanceA(iterator)
+        }
+        prior@deltaDLM@.Data <- delta
+        prior
+    }
+}
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
 drawEta <- function(prior, useC = FALSE) {
     methods::validObject(prior)
     if (useC) {
@@ -323,6 +374,15 @@ drawEta <- function(prior, useC = FALSE) {
         prior@eta@.Data <- eta
         prior
     }
+}
+
+## TODO - ONCE FUNCTIONS ARE TRANSLATED, SET useC TO TRUE
+## HAS_TESTS
+drawHyperParam <- function(model) {
+    model <- drawPriors(model)
+    model <- drawBetas(model)
+    model <- drawSigma_Varying(model)
+    model
 }
 
 ## READY_TO_TRANSLATE
@@ -562,258 +622,82 @@ drawUEtaCoef <- function(prior, useC = FALSE) {
     }
 }
 
-
-
-
-
-
-
-
-
-
-### OLD FUNCTIONS ######################################################
-
 ## HAS_TESTS
-initialFakeDLMAll <- function(spec, metadata) {
-    along <- spec@along
-    ATau <- spec@ATau
-    nuTau <- spec@nuTau
-    tauMax <- spec@tauMax
-    AAlpha <- spec@AAlpha
-    nuAlpha <- spec@nuAlpha
-    omegaAlphaMax <- spec@omegaAlphaMax
-    phi <- spec@phi
-    phiKnown <- spec@phiKnown@.Data
-    minPhi <- spec@minPhi
-    maxPhi <- spec@maxPhi
-    shape1Phi <- spec@shape1Phi
-    shape2Phi <- spec@shape2Phi
-    l <- makeFakeScale(A = ATau,
-                       nu = nuTau,
-                       scaleMax = tauMax,
-                       functionName = "Error")
-    tau <- l$scale
-    ATau <- l$A
-    tauMax <- l$scaleMax
-    l <- makeFakeScale(A = AAlpha,
-                       nu = nuAlpha,
-                       scaleMax = omegaAlphaMax,
-                       functionName = "Level")
-    omegaAlpha <- l$scale
-    AAlpha <- l$A
-    omegaAlphaMax <- l$scaleMax
-    phi <- makeFakePhi(phi = phi,
-                       phiKnown = phiKnown,
-                       min = minPhi,
-                       max = maxPhi,
-                       shape1 = shape1Phi@.Data,
-                       shape2 <- shape2Phi@.Data)
-    if (is.na(along))
-        along <- NULL
-    iAlong <- dembase::checkAndTidyAlong(along = along,
-                                         metadata = metadata,
-                                         numericDimScales = TRUE)
-    dim <- dim(metadata)
-    J <- makeJPredict(metadata)
-    K <- makeK(dim = dim, iAlong = iAlong)
-    L <- makeL(dim = dim, iAlong = iAlong)
-    dim.alpha.delta <- dim
-    dim.alpha.delta[iAlong] <- dim.alpha.delta[iAlong] + 1L
-    iteratorState <- AlongIterator(dim = dim.alpha.delta,
-                                   iAlong = iAlong)
-    iteratorV <- AlongIterator(dim = dim,
-                               iAlong = iAlong)
-    alphaDLM <- makeStateDLM(K = K,
-                             L = L)
-    list(AAlpha = AAlpha,
-         alphaDLM = alphaDLM,
-         ATau = ATau,
-         iAlong = iAlong,
-         iteratorState = iteratorState,
-         iteratorV = iteratorV,
-         J = J,
-         K = K,
-         L = L,
-         minPhi = minPhi,
-         maxPhi = maxPhi,
-         nuAlpha = nuAlpha,
-         nuTau = nuTau,
-         omegaAlpha = omegaAlpha,
-         omegaAlphaMax = omegaAlphaMax,
-         phi = phi,
-         shape1Phi = shape1Phi,
-         shape2Phi = shape2Phi,
-         tau = tau,
-         tauMax = tauMax)
-}
-
-## HAS_TESTS
-initialFakeDLMWithTrend <- function(spec, metadata) {
-    meanDelta0 <- spec@meanDelta0
-    ADelta0 <- spec@ADelta0@.Data
-    nuDelta <- spec@nuDelta
-    omegaDeltaMax <- spec@omegaDeltaMax
-    ADelta <- spec@ADelta
-    hasLevel <- spec@hasLevel
-    along <- spec@along
-    if (is.na(ADelta0))
-        stop(gettextf("need to specify '%s' in call to function '%s'",
-                      "sd", "Initial"))
-    ADelta0 <- methods::new("Scale", ADelta0)
-    l <- makeFakeScale(A = ADelta,
-                       nu = nuDelta,
-                       scaleMax = omegaDeltaMax,
-                       functionName = "Level")
-    omegaDelta <- l$scale
-    ADelta <- l$A
-    omegaDeltaMax <- l$scaleMax
-    if (is.na(along))
-        along <- NULL
-    iAlong <- dembase::checkAndTidyAlong(along = along,
-                                         metadata = metadata,
-                                         numericDimScales = TRUE)
-    dim <- dim(metadata)
-    K <- makeK(dim = dim,
-               iAlong = iAlong)
-    L <- makeL(dim = dim,
-               iAlong = iAlong)
-    deltaDLM <- makeStateDLM(K = K,
-                             L = L)
-    list(ADelta = ADelta,
-         deltaDLM = deltaDLM,
-         nuDelta = nuDelta,
-         omegaDelta = omegaDelta,
-         omegaDeltaMax = omegaDeltaMax,
-         ADelta0 = ADelta0,
-         meanDelta0 = meanDelta0,
-         hasLevel = hasLevel)
-}
-
-## HAS_TESTS
-makeFakeHyper <- function(priors, margins, metadata, names) {
-    ans <- vector(mode = "list", length = length(priors))
-    for (i in seq_along(priors)) {
-        prior <- priors[[i]]
-        margin <- margins[[i]]
-        is.intercept <- identical(margin, 0L)
-        metadata.i <- if (is.intercept) NULL else metadata[margin]
-        ans[[i]] <- makeFakeOutputPrior(prior,
-                                        metadata = metadata.i)
-    }
-    names(ans) <- names
+makeCountsY <- function(exposure) {
+    ans <- exposure
+    size <- exposure@.Data
+    n <- length(size)
+    ans@.Data[] <- rbinom(n = n,
+                          size = size,
+                          prob = 0.5)
     ans
 }
 
 ## HAS_TESTS
-makeFakeMargins <- function(namesSpecs, y, call) {
-    names.y <- names(dimnames(y))
-    if (!identical(namesSpecs[1L], "(Intercept)"))
-        stop(gettextf("no prior specified for '%s' in model '%s'",
-                      "(Intercept)", deparse(call[[2L]])))
-    namesSpecs <- namesSpecs[-1L]
-    s <- seq_along(names.y)
-    possible.margins <- sapply(s, function(i) combn(s, i, simplify = FALSE))
-    possible.margins <- unlist(possible.margins, recursive = FALSE)
-    possible.names <- sapply(possible.margins, function(i) paste(names.y[i], collapse = ":"))
-    i.found <- sapply(namesSpecs, match, possible.names, nomatch = 0L)
-    not.found <- i.found == 0L
-    if (any(not.found)) {
-        stop(gettextf("term '%s' from formula '%s' not found in dimensions of '%s'",
-                      namesSpecs[not.found][1L], deparse(call[[2L]]), "templateY"))
+setYToMissing <- function(y) {
+    is.integer <- is.integer(y@.Data)
+    y@.Data[] <- if (is.integer) NA_integer_ else as.numeric(NA)
+    y
+}
+
+## HAS_TESTS
+simulateOneChain <- function(combined, seed, tempfile, nBurnin, nSim, nThin,
+                             nUpdateMax, continuing, useC, ...) {
+    ## set seed if continuing
+    if (!is.null(seed))
+        assign(".Random.seed", seed, envir = .GlobalEnv)
+    ## burnin
+    nLoops <- nBurnin %/% nUpdateMax
+    for (i in seq_len(nLoops)) {
+        combined <- drawCombined(combined,
+                                 nUpdate = nUpdateMax,
+                                 useC = useC)
     }
-    ans <- possible.margins[i.found]
-    ans <- c(list(0L), ans)
-    ans
-}
-
-## HAS_TESTS
-makeFakeOutputLevelDLM <- function(prior, metadata) {
-    i.along <- prior@iAlong
-    alpha <- prior@alphaDLM@.Data
-    dim <- dim(metadata)
-    dim.alpha <- replace(dim,
-                         list = i.along,
-                         values = dim[i.along] + 1L)
-    .Data <- array(alpha,
-                   dim = dim.alpha)
-    is.alpha0 <- slice.index(.Data, MARGIN = i.along) == 1L
-    .Data <- .Data[!is.alpha0]
-    .Data <- array(.Data,
-                   dim = dim(metadata),
-                   dimnames = dimnames(metadata))
-    new("Values",
-        .Data = .Data,
-        metadata = metadata)
-}
-
-## HAS_TESTS
-makeFakeOutputTrendDLM <- function(prior, metadata) {
-    i.along <- prior@iAlong
-    delta <- prior@deltaDLM@.Data
-    dim <- dim(metadata)
-    dim.delta <- replace(dim,
-                         list = i.along,
-                         values = dim[i.along] + 1L)
-    .Data <- array(delta,
-                   dim = dim.delta)
-    is.delta0 <- slice.index(.Data, MARGIN = i.along) == 1L
-    .Data <- .Data[!is.delta0]
-    .Data <- array(.Data,
-                   dim = dim(metadata),
-                   dimnames = dimnames(metadata))
-    new("Values",
-        .Data = .Data,
-        metadata = metadata)
-}
-
-## HAS_TESTS
-makeFakePhi <- function(phi, phiKnown, min, max, shape1, shape2) {
-    if (!phiKnown) {
-        phi.transformed <- stats::rbeta(n = 1L,
-                                        shape1 = shape1,
-                                        shape2 = shape2)
-        phi <- phi.transformed * (max - min) + min
+    ## and any final ones
+    nLeftOver <- nBurnin - nLoops * nUpdateMax
+    combined <- drawCombined(combined,
+                             nUpdate = nLeftOver,
+                             useC = useC)
+    ## production
+    con <- file(tempfile, open = "wb")
+    n.prod <- nSim %/% nThin
+    for (i in seq_len(n.prod)) {
+        nLoops <- nThin %/% nUpdateMax
+        for (i in seq_len(nLoops)) {
+            combined <- drawCombined(combined,
+                                     nUpdate = nUpdateMax,
+                                     useC = useC)
+        }
+        ## and any final ones
+        nLeftOver <- nThin - nLoops * nUpdateMax
+        combined <- drawCombined(combined,
+                                 nUpdate = nLeftOver,
+                                 useC = useC)
+        values <- extractValues(combined)
+        writeBin(values, con = con)
     }
-    phi
+    close(con)
+    ## return final state
+    combined
+}
+
+
+## HAS_TESTS
+warnSimulateModelIgnoresArg <- function(arg, argname, model) {
+    if (!is.null(arg))
+        warning(gettextf("function '%s' ignores '%s' argument when '%s' argument has class \"%s\"",
+                         "simulateModel", argname, "model", class(model)))
+    NULL
 }
 
 ## HAS_TESTS
-makeFakePriors <- function(specs, margins, metadata, isSaturated) {
-    ans <- vector(mode = "list", length = length(specs))
-    for (i in seq_along(specs)) {
-        spec <- specs[[i]]
-        margin <- margins[[i]]
-        is.intercept <- identical(margin, 0L)
-        metadata.i <- if (is.intercept) NULL else metadata[margin]
-        is.saturated.i <- isSaturated[i]
-        ans[[i]] <- fakePrior(spec,
-                              metadata = metadata.i,
-                              isSaturated = is.saturated.i)
-    }
-    ans
+warnSimulateModelExposureAndYSupplied <- function(y, model) {
+    if (!is.null(y))
+        warning(gettextf("function '%s' ignores '%s' argument when '%s' argument has class \"%s\" and '%s' argument is supplied",
+                         "simulateModel", "y", "model", class(model), "exposure"))
+    NULL
 }
 
-## HAS_TESTS
-makeFakeScale <- function(A, nu, scaleMax, functionName, scaleName = "scale") {
-    if (is.na(A))
-        stop(gettextf("need to specify scale of half-t distribution for '%s' in call to function '%s'",
-                      "scale", functionName))
-    scaleMax <- makeScaleMax(scaleMax = scaleMax,
-                             A = A,
-                             nu = nu,
-                             isSpec = FALSE)
-    scale <- tryCatch(rhalftTrunc1(df = nu@.Data,
-                                   scale = A@.Data,
-                                   max = scaleMax@.Data,
-                                   useC = TRUE),
-                      error = function(e) e)
-    if (methods::is(scale, "error"))
-        stop(gettextf("problem generating scale parameter within function '%s' : %s",
-                      functionName, scale$message))
-    scale <- methods::new("Scale", scale)
-    A <- methods::new("Scale", A@.Data)
-    list(scale = scale,
-         A = A,
-         scaleMax = scaleMax)
-}
+
+
 

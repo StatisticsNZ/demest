@@ -3,7 +3,7 @@ context("Model-generators")
 
 n.test <- 5
 test.identity <- FALSE
-test.extended <- TRUE
+test.extended <- FALSE
 
 ## addAg ########################################################################
 

@@ -3,7 +3,7 @@ context("Combined-methods")
 
 n.test <- 5
 test.identity <- FALSE
-test.extended <- TRUE
+test.extended <- FALSE
 
 ## getSeriesForDataset #############################################################
 
@@ -93,6 +93,86 @@ test.extended <- TRUE
 ## })
 
 
+## drawCombined - CombinedModel ####################################################
+
+test_that("drawCombined draws appropriate slots with CombinedModelBinomaial", {
+    drawCombined <- demest:::drawCombined
+    initialCombinedModelSimulate <- demest:::initialCombinedModelSimulate
+    exposure <- Counts(array(as.integer(rpois(n = 24, lambda = 10)),
+                      dim = 2:4,
+                             dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000:2003)),
+                       dimscales = c(time = "Intervals"))
+    y <- Counts(array(as.integer(rbinom(n = 24, size = exposure, prob = 0.5)),
+                      dim = 2:4,
+                      dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000:2003)),
+                dimscales = c(time = "Intervals"))
+    spec <- Model(y ~ Binomial(mean ~ sex * age + time),
+                  `(Intercept)` ~ ExchFixed(mean = -1, sd = 0.3),
+                  sex ~ ExchFixed(sd = 0.1),
+                  age ~ DLM(level = Level(scale = HalfT(scale = 0.03)),
+                            trend = NULL,
+                            damp = NULL,
+                            error = Error(scale = HalfT(scale = 0.03))),
+                  sex:age ~ Exch(error = Error(scale = HalfT(scale = 0.001))),
+                  time ~ DLM(level = Level(scale = HalfT(scale = 0.03)),
+                            trend = NULL,
+                            damp = NULL,
+                            error = Error(scale = HalfT(scale = 0.03))),
+                  priorSD = HalfT(scale = 0.1))
+    x0 <- initialCombinedModelSimulate(spec,
+                                       y = y,
+                                       exposure = exposure,
+                                       weights = NULL)
+    x1 <- drawCombined(x0, nUpdate = 1L)
+    for (name in "model")
+        expect_false(identical(slot(x1, name), slot(x0, name)))
+    for (name in c("y", "iMethodCombined", "slotsToExtract"))
+        expect_true(identical(slot(x1, name), slot(x0, name)))
+})
+
+test_that("R, specific C, and generic C versions of drawCombined give same answer with CombinedModelBinomial", {
+    drawCombined <- demest:::drawCombined
+    initialCombinedModelSimulate <- demest:::initialCombinedModelSimulate
+    spec <- Model(y ~ Binomial(mean ~ sex * age + time),
+                  `(Intercept)` ~ ExchFixed(mean = -1, sd = 0.3),
+                  sex ~ ExchFixed(sd = 0.1),
+                  age ~ DLM(level = Level(scale = HalfT(scale = 0.03)),
+                            trend = NULL,
+                            damp = NULL,
+                            error = Error(scale = HalfT(scale = 0.03))),
+                  sex:age ~ Exch(error = Error(scale = HalfT(scale = 0.001))),
+                  time ~ DLM(level = Level(scale = HalfT(scale = 0.03)),
+                             trend = NULL,
+                             damp = NULL,
+                             error = Error(scale = HalfT(scale = 0.03))),
+                  priorSD = HalfT(scale = 0.1))
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        exposure <- Counts(array(as.integer(rpois(n = 24, lambda = 10)),
+                                 dim = 2:4,
+                                 dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000:2003)),
+                           dimscales = c(time = "Intervals"))
+        y <- Counts(array(as.integer(rbinom(n = 24, size = exposure, prob = 0.5)),
+                          dim = 2:4,
+                          dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000:2003)),
+                    dimscales = c(time = "Intervals"))
+        x <- initialCombinedModelSimulate(spec,
+                                          y = y,
+                                          exposure = exposure,
+                                          weights = NULL)
+        set.seed(seed + 1)
+        ans.R <- drawCombined(x, nUpdate = 3L, useC = FALSE)
+        set.seed(seed + 1)
+        ans.C.specific <- drawCombined(x, nUpdate = 3L, useC = TRUE, useSpecific = TRUE)
+        set.seed(seed + 1)
+        ans.C.generic <- drawCombined(x, nUpdate = 3L, useC = TRUE, useSpecific = FALSE)
+        if (test.identity)
+            expect_identical(ans.C.specific, ans.R)
+        else
+            expect_equal(ans.C.specific, ans.R)
+        expect_identical(ans.C.specific, ans.C.generic)
+    }
+})
 
 
 ## predictCombined - CombinedModel ####################################################
@@ -797,7 +877,7 @@ test_that("R, specific C, and generic C versions of updateCombined give same ans
     expect_identical(ans.C.specific, ans.C.generic)
 })
 
-test_that("updateCombined updates appropriate slots with CombinedModelBinomial", {
+test_that("updateCombined updates appropriate slots with CombinedModelBinomaial", {
     updateCombined <- demest:::updateCombined
     initialCombinedModel <- demest:::initialCombinedModel
     exposure <- Counts(array(as.integer(rpois(n = 24, lambda = 10)),

@@ -1,5 +1,25 @@
 
-## modelUsesWeights
+
+## checkAndTidySimulatedYExposureWeights ##################################################
+
+## HAS_TESTS
+setMethod("checkAndTidySimulatedYExposureWeights",
+          signature(model = "SpecBinomialVarying"),
+          function(model, y, exposure, weights) {
+              warnSimulateModelIgnoresArg(arg = y,
+                                          argname = "y",
+                                          model = model)
+              warnSimulateModelIgnoresArg(arg = weights,
+                                          argname = "weights",
+                                          model = model)
+              checkSimulatedExposure(exposure)
+              y <- makeCountsY(exposure)
+              list(y = y,
+                   exposure = exposure)
+          })
+
+
+## modelUsesWeights  ######################################################################
 
 ## HAS_TESTS
 setMethod("modelUsesWeights",

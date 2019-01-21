@@ -3,7 +3,70 @@
 
 ## n.test <- 5
 ## test.identity <- FALSE
-## test.extended <- TRUE
+## test.extended <- FALSE
+
+
+model <- Model(y ~ Binomial(mean ~ age * sex),
+               `(Intercept)` ~ ExchFixed(mean = -1, sd = 0.2), 
+               age ~ Exch(error = Error(scale = HalfT(scale = 0.3))),
+               sex ~ ExchFixed(sd = 0.1),
+               age:sex ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
+               priorSD = HalfT(scale = 0.2))
+exposure <- Counts(array(101:106,
+                         dim = c(2, 3),
+                         dimnames = list(sex = c("F", "M"),
+                                         age = c("0-4", "5-9", "10+"))))
+filename <- tempfile()
+simulateModel(model,
+              nSim = 25,
+              exposure = exposure,
+              filename = filename,
+              useC = FALSE)
+y <- fetch(filename, "y")
+dplot(~ age | sex,
+      data = y)
+table(as.integer(y))
+
+
+
+
+model <- Model(y ~ Binomial(mean ~ sex + time),
+               `(Intercept)` ~ ExchFixed(mean = -2, sd = 0.2), 
+               sex ~ ExchFixed(sd = 0.1),
+               time ~ DLM(level = Level(scale = HalfT(scale = 0.01)),
+                          trend = Trend(initial = Initial(mean = 1, sd = 0.01),
+                                        scale = HalfT(scale = 0.01)),
+                          damp = NULL,
+                          error = Error(scale = HalfT(scale = 0.01))),
+               priorSD = HalfT(scale = 0.05))
+exposure <- Counts(array(100,
+                         dim = c(2, 20),
+                         dimnames = list(sex = c("F", "M"),
+                                         time = 2001:2020)),
+                   dimscales = c(time = "Points"))
+filename <- tempfile()
+set.seed(0)
+simulateModel(model,
+              nSim = 25,
+              exposure = exposure,
+              filename = filename,
+              useC = FALSE)
+y <- fetch(filename, "y")
+dplot(~ time | sex,
+      data = y)
+table(as.integer(y))
+
+time <- fetch(filename, c("mod", "prior", "time"))
+dplot(~ time,
+      groups = iteration,
+      data = time)
+
+trend <- fetch(filename, c("mod", "hyper", "time", "trend"))
+dplot(~ time,
+      groups = iteration,
+      data = trend)
+
+
 
 
 ## ## estimateModel ##################################################################
@@ -136,7 +199,6 @@
 ##                               trend = Trend(scale = HalfT(scale = 0.05, max = 0.1)),
 ##                               error = Error(scale = HalfT(scale = 0.05, max = 0.1)),
 ##                               damp = Damp(min = 0.9, max = 0.98)))
-
 
 
 ## continueEstimation(filename = filename.est, nBurnin = 5000, nSim = 5000)

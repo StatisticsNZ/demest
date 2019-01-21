@@ -4,7 +4,7 @@ context("Skeleton-generator")
 
 n.test <- 5
 test.identity <- FALSE
-test.extended <- TRUE
+test.extended <- FALSE
 
 test_that("Skeleton creates valid object of class SkeletonOneValues from first", {
     Skeleton <- demest:::Skeleton

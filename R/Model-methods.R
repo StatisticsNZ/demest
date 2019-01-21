@@ -2,6 +2,7 @@
 ## drawModelUseExp #####################################################################
 
 
+## HAS_TESTS
 setMethod("drawModelUseExp",
           signature(object = "BinomialVarying"),
           function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {

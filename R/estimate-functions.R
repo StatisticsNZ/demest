@@ -364,6 +364,117 @@ predictModel <- function(filenameEst, filenamePred, along = NULL, labels = NULL,
 }
 
 
+#' Draw parameters and data from a statistical model
+#'
+#' WARNING - THIS FUNCTION IS STILL UNDER DEVELOPMENT
+#' 
+#' @inheritParams estimateModel
+#' @export
+simulateModel <- function(model, y = NULL, exposure = NULL, weights = NULL,
+                          filename = NULL, nBurnin = 0, nSim = 100,
+                          nChain = 4, nThin = 1, parallel = TRUE,
+                          outfile = NULL, nUpdateMax = 50,
+                          verbose = TRUE, useC = TRUE) {
+    call <- match.call()
+    methods::validObject(model)
+    mcmc.args <- makeMCMCArgs(nBurnin = nBurnin,
+                              nSim = nSim,
+                              nChain = nChain,
+                              nThin = nThin)
+    if (is.null(filename))
+        filename <- tempfile()
+    else
+        checkFilename(filename)
+    control.args <- makeControlArgs(call = call,
+                                    parallel = parallel,
+                                    nUpdateMax = nUpdateMax)
+    l <- checkAndTidySimulatedYExposureWeights(model = model,
+                                               y = y,
+                                               exposure = exposure,
+                                               weights = weights)
+    y <- l$y
+    exposure <- l$exposure
+    y <- castY(y = y,
+               spec = model)
+    checkForSubtotals(object = y,
+                      model = model,
+                      name = "y")
+    exposure <- castExposure(exposure = exposure,
+                             model = model)
+    weights <- checkAndTidyWeights(weights = weights,
+                                   y = y)
+    checkAllDimensionsHavePriors(model = model,
+                                 y = y)
+    checkPriorsAreInformative(model)
+    checkPriorSDInformative(model)
+    combineds <- replicate(n = mcmc.args$nChain,
+                           initialCombinedModelSimulate(model,
+                                                        y = y,
+                                                        exposure = exposure,
+                                                        weights = weights))
+    parallel <- control.args$parallel
+    tempfiles <- paste(filename, seq_len(mcmc.args$nChain), sep = "_")
+    MoreArgs <- c(list(seed = NULL),
+                  mcmc.args,
+                  control.args,
+                  list(continuing = FALSE,
+                       useC = useC))
+    model.not.use.aggregate <- methods::is(model@aggregate, "SpecAgPlaceholder")
+    if (model.not.use.aggregate) {
+        if (mcmc.args$nBurnin > 0L)
+            warning(gettextf("can sample directly from target distribution, so ignoring '%s'",
+                             "nBurnin"))
+        if (mcmc.args$nThin > 1L)
+            warning(gettextf("can sample directly from target distribution, so ignoring '%s'",
+                             "nThin"))
+    }
+    if (parallel) {
+        pseed <- sample.int(n = 100000, # so that RNG behaves the same whether or not
+                            size = 1)   # seed has previously been set
+                                        # this must be done BEFORE call to makeCluster!
+        if (is.null(outfile)) ## passing 'outfile' as an argument always causes redirection
+            cl <- parallel::makeCluster(getOption("cl.cores",
+                                                  default = mcmc.args$nChain))
+        else
+            cl <- parallel::makeCluster(getOption("cl.cores",
+                                                  default = mcmc.args$nChain),
+                                        outfile = outfile)
+        parallel::clusterSetRNGStream(cl,
+                                      iseed = pseed)
+        final.combineds <- parallel::clusterMap(cl = cl,
+                                                fun = simulateOneChain,
+                                                tempfile = tempfiles,
+                                                combined = combineds,
+                                                MoreArgs = MoreArgs,
+                                                SIMPLIFY = FALSE,
+                                                USE.NAMES = FALSE)
+        seed <- parallel::clusterCall(cl, function() .Random.seed)
+        parallel::stopCluster(cl)
+    }
+    else {
+        final.combineds <- mapply(simulateOneChain,
+                                  tempfile = tempfiles,
+                                  combined = combineds,
+                                  MoreArgs = MoreArgs,
+                                  SIMPLIFY = FALSE,
+                                  USE.NAMES = FALSE)
+        seed <- list(.Random.seed)
+    }
+    control.args$lengthIter <- length(extractValues(final.combineds[[1L]]))
+    results <- makeResultsModelEst(finalCombineds = final.combineds,
+                                   mcmcArgs = mcmc.args,
+                                   controlArgs = control.args,
+                                   seed = seed)
+    makeResultsFile(filename = filename,
+                    results = results,
+                    tempfiles = tempfiles)
+    rescaleInFile(filename)
+    finalMessage(filename = filename,
+                 verbose = verbose)
+}
+
+
+
 #' Estimate counts and model from one or more noisy datasets.
 #'
 #' Infer the contents of a demographic array, and fit a model describing

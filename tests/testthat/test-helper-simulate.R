@@ -43,9 +43,6 @@ test_that("checkAllDimensionsHavePriors works", {
                      NULL)
 })
 
-
-## checkPriorInform ########################################################
-
 test_that("checkPriorInform_prohibited works", {
     checkPriorInform_prohibited <- demest:::checkPriorInform_prohibited
     object <- ExchFixed()
@@ -240,6 +237,51 @@ test_that("checkPriorSDInformative works", {
                  "problem with specification of 'priorSD' in model for 'y' : 'priorSD' argument not supplied in call to 'Model'")
 })
 
+test_that("checkSimulatedExposure works", {
+    checkSimulatedExposure <- demest:::checkSimulatedExposure
+    exposure <- Counts(array(1:6,
+                      dim = 2:3,
+                      dimnames = list(sex = c("F", "M"),
+                                      age = c("0-4", "5-9", "10+"))))
+    expect_identical(checkSimulatedExposure(exposure),
+                     NULL)
+    exposure.wrong <- as(exposure, "Values")
+    expect_error(checkSimulatedExposure(exposure.wrong),
+                 "'exposure' has class \"Values\"")
+    exposure.wrong <- exposure
+    exposure.wrong[1] <- NA
+    expect_error(checkSimulatedExposure(exposure.wrong),
+                 "'exposure' has missing values")
+    exposure.wrong <- exposure
+    exposure.wrong[1] <- -1
+    expect_error(checkSimulatedExposure(exposure.wrong),
+                 "'exposure' has negative values")
+    exposure.wrong <- exposure
+    exposure.wrong[] <- 0
+    expect_error(checkSimulatedExposure(exposure.wrong),
+                 "'exposure' has no non-zero values")
+})
+
+test_that("checkSimulatedYNoExposure works", {
+    checkSimulatedYNoExposure <- demest:::checkSimulatedYNoExposure
+    model <- Model(y ~ Poisson(mean ~ region),
+                   `(Intercept)` ~ ExchFixed(mean = -1, sd = 0.2),
+                   region ~ Exch(error = Error(scale = HalfT(scale = 0.3))))
+    y <- Counts(array(1:6,
+                      dim = 2:3,
+                      dimnames = list(sex = c("F", "M"),
+                                      age = c("0-4", "5-9", "10+"))))
+    expect_identical(checkSimulatedYNoExposure(y = y,
+                                               model = model),
+                     NULL)
+    expect_error(checkSimulatedYNoExposure(y = NULL,
+                                           model = model),
+                 "'model' has class \"SpecPoissonVarying\", but 'y' and 'exposure' are both NULL")
+    expect_error(checkSimulatedYNoExposure(y = as(y, "Values"),
+                                           model = model),
+                 "'model' has class \"SpecPoissonVarying\", but 'y' has class \"Values\"")
+})
+
 test_that("checkPriorsAreInformative works", {
     checkPriorsAreInformative <- demest:::checkPriorsAreInformative
     model <- Model(y ~ Poisson(mean ~ region),
@@ -263,9 +305,6 @@ test_that("checkPriorsAreInformative works", {
                      NULL)
 })
                
-
-## drawPrior, drawModel ################################################
-
 test_that("drawBetas works - no structural zeros", {
     initialModel <- demest:::initialModel
     drawBetas <- demest:::drawBetas
@@ -399,6 +438,86 @@ test_that("R and C versions of drawBetas give same answer - with structural zero
     }
 })
 
+test_that("R version of drawDelta0 works", {
+    drawDelta0 <- demest:::drawDelta0
+    initialPrior <- demest:::initialPrior
+    spec <- DLM(level = Level(scale = HalfT(scale = 0.1)),
+                trend = Trend(initial = Initial(mean = 0.2, sd = 0.1),
+                              scale = HalfT(scale = 0.01)),
+                error = Error(scale = HalfT(scale = 0.1)))
+    metadata <- new("MetaData",
+                    nms = c("region", "time"),
+                    dimtypes = c("state", "time"),
+                    DimScales = list(new("Categories", dimvalues = c("A", "B", "C", "D")),
+                                     new("Points", dimvalues = 1:10)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(4, 10),
+                                   dimnames = list(region = c("A", "B", "C", "D"),
+                                                   time = 1:10)),
+                             dimscales = c(time = "Points"))
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        beta <- rnorm(40)
+        prior <- initialPrior(spec,
+                              beta = beta,
+                              metadata = metadata,
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              margin = 1:2,
+                              strucZeroArray = strucZeroArray)
+        set.seed(seed)
+        ans.obtained <- drawDelta0(prior)
+        set.seed(seed)
+        ans.expected <- prior
+        ans.expected@deltaDLM@.Data[1:4] <- rnorm(4,
+                                                  mean = prior@meanDelta0@.Data,
+                                                  sd = prior@ADelta0@.Data)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of drawDelta0 give same answer", {
+    drawDelta0 <- demest:::drawDelta0
+    initialPrior <- demest:::initialPrior
+    spec <- DLM(level = Level(scale = HalfT(scale = 0.1)),
+                trend = Trend(initial = Initial(mean = 0.2, sd = 0.1),
+                              scale = HalfT(scale = 0.01)),
+                error = Error(scale = HalfT(scale = 0.1)))
+    metadata <- new("MetaData",
+                    nms = c("region", "time"),
+                    dimtypes = c("state", "time"),
+                    DimScales = list(new("Categories", dimvalues = c("A", "B", "C", "D")),
+                                     new("Points", dimvalues = 1:10)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = c(4, 10),
+                                   dimnames = list(region = c("A", "B", "C", "D"),
+                                                   time = 1:10)),
+                             dimscales = c(time = "Points"))
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        beta <- rnorm(40)
+        prior <- initialPrior(spec,
+                              beta = beta,
+                              metadata = metadata,
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              margin = 1:2,
+                              strucZeroArray = strucZeroArray)
+        set.seed(seed)
+        ans.R <- drawDelta0(prior, useC = FALSE)
+        set.seed(seed)
+        ans.C <- drawDelta0(prior, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
+
+
 test_that("R version of drawEta works", {
     drawEta <- demest:::drawEta
     initialPrior <- demest:::initialPrior
@@ -510,6 +629,39 @@ test_that("R version of drawOmegaAlpha works", {
             expect_identical(ans.obtained, ans.expected)
         else
             expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("drawHyperParam works", {
+    initialModel <- demest:::initialModel
+    drawHyperParam <- demest:::drawHyperParam
+    drawPriors <- demest:::drawPriors
+    drawBetas <- demest:::drawBetas
+    drawSigma_Varying <- demest:::drawSigma_Varying
+    spec <- Model(y ~ Poisson(mean ~ age + sex),
+                  `(Intercept)` ~ ExchFixed(sd = 10), 
+                  age ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
+                  sex ~ ExchFixed(sd = 0.1),
+                  priorSD = HalfT(scale = 0.2))
+    y <- Counts(array(1L,
+                      dim = 2:3,
+                      dimnames = list(sex = c("F", "M"),
+                                      age = c("0-4", "5-9", "10+"))))
+    exposure <- Counts(array(1:6,
+                             dim = 2:3,
+                             dimnames = list(sex = c("F", "M"),
+                                             age = c("0-4", "5-9", "10+"))))
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        model <- initialModel(spec, y = y, exposure = exposure)
+        set.seed(seed)
+        ans.obtained <- drawHyperParam(model)
+        set.seed(seed)
+        ans.expected <- model
+        ans.expected <- drawPriors(ans.expected)
+        ans.expected <- drawBetas(ans.expected)
+        ans.expected <- drawSigma_Varying(ans.expected)
+        expect_identical(ans.obtained, ans.expected)
     }
 })
 
@@ -1366,6 +1518,118 @@ test_that("R and C versions of drawUEtaCoef give same answer", {
     }
 })
 
+test_that("makeCountsY works", {
+    makeCountsY <- demest:::makeCountsY
+    exposure <- Counts(array(1:6,
+                             dim = 2:3,
+                             dimnames = list(sex = c("F", "M"),
+                                             age = c("0-4", "5-9", "10+"))))
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.obtained <- makeCountsY(exposure)
+        set.seed(seed)
+        ans.expected <- exposure
+        ans.expected[] <- rbinom(n = 6, size = as.integer(exposure), prob = 0.5)
+        expect_identical(ans.obtained, ans.expected)
+    }
+})
 
+test_that("setYToMissing works", {
+    setYToMissing <- demest:::setYToMissing
+    y <- Counts(array(1:6,
+                      dim = 2:3,
+                      dimnames = list(sex = c("F", "M"),
+                                      age = c("0-4", "5-9", "10+"))))
+    ans.obtained <- setYToMissing(y)
+    ans.expected <- Counts(array(NA_integer_,
+                                 dim = 2:3,
+                                 dimnames = list(sex = c("F", "M"),
+                                                 age = c("0-4", "5-9", "10+"))))
+    expect_identical(ans.obtained, ans.expected)
+    y <- toDouble(y)
+    ans.obtained <- setYToMissing(y)
+    ans.expected <- Counts(array(as.numeric(NA),
+                                 dim = 2:3,
+                                 dimnames = list(sex = c("F", "M"),
+                                                 age = c("0-4", "5-9", "10+"))))
+    expect_identical(ans.obtained, ans.expected)
+})
 
+test_that("simulateOneChain works when drawing directly from target distribution", {
+    simulateOneChain <- demest:::simulateOneChain
+    initialCombinedModelSimulate <- demest:::initialCombinedModelSimulate
+    drawCombined <- demest:::drawCombined
+    extractValues <- demest:::extractValues
+    set.seed(1)
+    model <- Model(y ~ Binomial(mean ~ region),
+                   `(Intercept)` ~ ExchFixed(mean = -1, sd = 0.2),
+                   region ~ Exch(error = Error(scale = HalfT(scale = 0.3))),
+                   priorSD = HalfT(scale = 0.1))
+    exposure <- CountsOne(1:10,
+                          labels = letters[1:10],
+                          name = "region")
+    y <- CountsOne(rbinom(10, size = 1:10, prob = 0.5),
+                   labels = letters[1:10],
+                   name = "region")
+    set.seed(0)
+    combined <- initialCombinedModelSimulate(model,
+                                             y = y,
+                                             exposure = exposure,
+                                             weights = NULL)
+    tempfile <- tempfile()
+    set.seed(100)
+    ans.obtained.obj <- simulateOneChain(combined, 
+                                         tempfile = tempfile,
+                                         seed = NULL, nBurnin = 0L,
+                                         nSim = 3L, continuing = FALSE,
+                                         nUpdateMax = 1L,
+                                         nThin = 1L, useC = FALSE)
+    con <- file(tempfile, "rb")
+    ans.obtained.file <- readBin(con = con, what = "double", n = 1000)
+    close(con)
+    set.seed(100)
+    ans.expected.file <- vector(mode = "list", length = 3)
+    for (i in 1:3) {
+        combined <- drawCombined(combined, nUpdate = 1L)
+        ans.expected.file[[i]] <- extractValues(combined)
+    }
+    ans.expected.file <- unlist(ans.expected.file)
+    ans.expected.obj <- combined
+    if (test.identity) {
+        expect_identical(ans.obtained.obj, ans.expected.obj)
+        expect_identical(ans.obtained.file, ans.expected.file)
+    }
+    else {
+        expect_identical(ans.obtained.obj, ans.expected.obj)
+        expect_identical(ans.obtained.file, ans.expected.file)
+    }
+})
+
+test_that("warnSimulateModelIgnoresArg works", {
+    warnSimulateModelIgnoresArg <- demest:::warnSimulateModelIgnoresArg
+    model <- Model(y ~ Poisson(mean ~ region),
+                   `(Intercept)` ~ ExchFixed(mean = -1, sd = 0.2),
+                   region ~ Exch(error = Error(scale = HalfT(scale = 0.3))),
+                   priorSD = HalfT(scale = 0.1))
+    weights <- CountsOne(1:10, labels = letters[1:10], name = "region")
+    expect_is(model, "SpecPoissonVarying")    
+    expect_identical(warnSimulateModelIgnoresArg(NULL, "weights", model),
+                     NULL)
+    expect_warning(warnSimulateModelIgnoresArg(weights, "weights", model),
+                   "function 'simulateModel' ignores 'weights' argument when 'model' argument has class \"SpecPoissonVarying\"")
+})
+
+test_that("warnSimulateModelIgnoresArg works", {
+    warnSimulateModelExposureAndYSupplied <- demest:::warnSimulateModelExposureAndYSupplied
+    model <- Model(y ~ Poisson(mean ~ region),
+                   `(Intercept)` ~ ExchFixed(mean = -1, sd = 0.2),
+                   region ~ Exch(error = Error(scale = HalfT(scale = 0.3))),
+                   priorSD = HalfT(scale = 0.1))
+    y <- CountsOne(1:10, labels = letters[1:10], name = "region")
+    expect_is(model, "SpecPoissonVarying")    
+    expect_identical(warnSimulateModelExposureAndYSupplied(NULL, model),
+                     NULL)
+    expect_warning(warnSimulateModelExposureAndYSupplied(y, model),
+                   "function 'simulateModel' ignores 'y' argument when 'model' argument has class \"SpecPoissonVarying\" and 'exposure' argument is supplied")
+})
 

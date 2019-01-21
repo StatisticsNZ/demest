@@ -3,7 +3,7 @@ context("Prior-methods")
 
 n.test <- 5
 test.identity <- FALSE
-test.extended <- TRUE
+test.extended <- FALSE
 
 ## betaIsEstimated ####################################################################
 
@@ -512,6 +512,7 @@ test_that("drawPrior works with DLMWithTrendNormZeroNoSeason", {
     drawOmegaAlpha <- demest:::drawOmegaAlpha
     drawOmegaDelta <- demest:::drawOmegaDelta
     drawPhi <- demest:::drawPhi
+    drawDelta0 <- demest:::drawDelta0
     predictAlphaDeltaDLMWithTrend <- demest:::predictAlphaDeltaDLMWithTrend
     initialPrior <- demest:::initialPrior
     spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
@@ -544,6 +545,7 @@ test_that("drawPrior works with DLMWithTrendNormZeroNoSeason", {
         ans.expected <- drawOmegaAlpha(ans.expected)
         ans.expected <- drawOmegaDelta(ans.expected)
         ans.expected <- drawPhi(ans.expected)
+        ans.expected <- drawDelta0(ans.expected)
         ans.expected <- predictAlphaDeltaDLMWithTrend(ans.expected)
         if (test.identity)
             expect_identical(ans.obtained, ans.expected)
@@ -687,6 +689,7 @@ test_that("drawPrior works with DLMWithTrendNormZeroWithSeason", {
     drawOmegaDelta <- demest:::drawOmegaDelta
     drawOmegaSeason <- demest:::drawOmegaSeason
     drawPhi <- demest:::drawPhi
+    drawDelta0 <- demest:::drawDelta0
     predictAlphaDeltaDLMWithTrend <- demest:::predictAlphaDeltaDLMWithTrend
     predictSeason <- demest:::predictSeason
     initialPrior <- demest:::initialPrior
@@ -723,6 +726,7 @@ test_that("drawPrior works with DLMWithTrendNormZeroWithSeason", {
         ans.expected <- drawOmegaSeason(ans.expected)
         ans.expected <- drawPhi(ans.expected)
         ans.expected <- predictSeason(ans.expected)
+        ans.expected <- drawDelta0(ans.expected)
         ans.expected <- predictAlphaDeltaDLMWithTrend(ans.expected)
         if (test.identity)
             expect_identical(ans.obtained, ans.expected)
@@ -888,6 +892,7 @@ test_that("drawPrior works with DLMWithTrendNormCovNoSeason", {
     drawPhi <- demest:::drawPhi
     drawUEtaCoef <- demest:::drawUEtaCoef
     drawEta <- demest:::drawEta
+    drawDelta0 <- demest:::drawDelta0
     predictAlphaDeltaDLMWithTrend <- demest:::predictAlphaDeltaDLMWithTrend
     initialPrior <- demest:::initialPrior
     data <- data.frame(time = rep(2001:2010, times = 2),
@@ -932,6 +937,7 @@ test_that("drawPrior works with DLMWithTrendNormCovNoSeason", {
         ans.expected <- drawPhi(ans.expected)
         ans.expected <- drawUEtaCoef(ans.expected)
         ans.expected <- drawEta(ans.expected)
+        ans.expected <- drawDelta0(ans.expected)
         ans.expected <- predictAlphaDeltaDLMWithTrend(ans.expected)
         if (test.identity)
             expect_identical(ans.obtained, ans.expected)
@@ -1112,6 +1118,7 @@ test_that("drawPrior works with DLMWithTrendNormCovWithSeason", {
     drawUEtaCoef <- demest:::drawUEtaCoef
     drawEta <- demest:::drawEta
     predictSeason <- demest:::predictSeason
+    drawDelta0 <- demest:::drawDelta0
     predictAlphaDeltaDLMWithTrend <- demest:::predictAlphaDeltaDLMWithTrend
     initialPrior <- demest:::initialPrior
     data <- data.frame(time = rep(2001:2010, times = 2),
@@ -1159,6 +1166,7 @@ test_that("drawPrior works with DLMWithTrendNormCovWithSeason", {
         ans.expected <- drawUEtaCoef(ans.expected)
         ans.expected <- drawEta(ans.expected)
         ans.expected <- predictSeason(ans.expected)
+        ans.expected <- drawDelta0(ans.expected)
         ans.expected <- predictAlphaDeltaDLMWithTrend(ans.expected)
         if (test.identity)
             expect_identical(ans.obtained, ans.expected)
@@ -1311,6 +1319,7 @@ test_that("drawPrior works with DLMWithTrendRobustZeroNoSeason", {
     drawOmegaDelta <- demest:::drawOmegaDelta
     predictUBeta <- demest:::predictUBeta
     drawPhi <- demest:::drawPhi
+    drawDelta0 <- demest:::drawDelta0
     predictAlphaDeltaDLMWithTrend <- demest:::predictAlphaDeltaDLMWithTrend
     initialPrior <- demest:::initialPrior
     spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
@@ -1344,6 +1353,7 @@ test_that("drawPrior works with DLMWithTrendRobustZeroNoSeason", {
         ans.expected <- drawOmegaDelta(ans.expected)
         ans.expected <- predictUBeta(ans.expected)
         ans.expected <- drawPhi(ans.expected)
+        ans.expected <- drawDelta0(ans.expected)
         ans.expected <- predictAlphaDeltaDLMWithTrend(ans.expected)
         if (test.identity)
             expect_identical(ans.obtained, ans.expected)
@@ -1490,6 +1500,7 @@ test_that("drawPrior works with DLMWithTrendRobustZeroWithSeason", {
     drawOmegaSeason <- demest:::drawOmegaSeason
     predictUBeta <- demest:::predictUBeta
     drawPhi <- demest:::drawPhi
+    drawDelta0 <- demest:::drawDelta0
     predictAlphaDeltaDLMWithTrend <- demest:::predictAlphaDeltaDLMWithTrend
     predictSeason <- demest:::predictSeason
     initialPrior <- demest:::initialPrior
@@ -1527,6 +1538,7 @@ test_that("drawPrior works with DLMWithTrendRobustZeroWithSeason", {
         ans.expected <- predictUBeta(ans.expected)
         ans.expected <- drawPhi(ans.expected)
         ans.expected <- predictSeason(ans.expected)
+        ans.expected <- drawDelta0(ans.expected)
         ans.expected <- predictAlphaDeltaDLMWithTrend(ans.expected)
         if (test.identity)
             expect_identical(ans.obtained, ans.expected)
@@ -1695,6 +1707,7 @@ test_that("drawPrior works with DLMWithTrendRobustCovNoSeason", {
     drawPhi <- demest:::drawPhi
     drawUEtaCoef <- demest:::drawUEtaCoef
     drawEta <- demest:::drawEta
+    drawDelta0 <- demest:::drawDelta0
     predictAlphaDeltaDLMWithTrend <- demest:::predictAlphaDeltaDLMWithTrend
     initialPrior <- demest:::initialPrior
     data <- data.frame(time = rep(2001:2010, times = 2),
@@ -1740,6 +1753,7 @@ test_that("drawPrior works with DLMWithTrendRobustCovNoSeason", {
         ans.expected <- drawPhi(ans.expected)
         ans.expected <- drawUEtaCoef(ans.expected)
         ans.expected <- drawEta(ans.expected)
+        ans.expected <- drawDelta0(ans.expected)
         ans.expected <- predictAlphaDeltaDLMWithTrend(ans.expected)
         if (test.identity)
             expect_identical(ans.obtained, ans.expected)
@@ -1923,6 +1937,7 @@ test_that("drawPrior works with DLMWithTrendRobustCovWithSeason", {
     drawUEtaCoef <- demest:::drawUEtaCoef
     drawEta <- demest:::drawEta
     predictSeason <- demest:::predictSeason
+    drawDelta0 <- demest:::drawDelta0
     predictAlphaDeltaDLMWithTrend <- demest:::predictAlphaDeltaDLMWithTrend
     initialPrior <- demest:::initialPrior
     data <- data.frame(time = rep(2001:2010, times = 2),
@@ -1971,6 +1986,7 @@ test_that("drawPrior works with DLMWithTrendRobustCovWithSeason", {
         ans.expected <- drawUEtaCoef(ans.expected)
         ans.expected <- drawEta(ans.expected)
         ans.expected <- predictSeason(ans.expected)
+        ans.expected <- drawDelta0(ans.expected)
         ans.expected <- predictAlphaDeltaDLMWithTrend(ans.expected)
         if (test.identity)
             expect_identical(ans.obtained, ans.expected)

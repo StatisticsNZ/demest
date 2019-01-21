@@ -3,7 +3,7 @@ context("Model-methods")
 
 n.test <- 5
 test.identity <- FALSE
-test.extended <- TRUE
+test.extended <- FALSE
 
 ## drawModelUseExp #####################################################################
 
@@ -50,6 +50,55 @@ test_that("drawModelUseExp works", {
             expect_equal(ans.obtained, ans.expected)
     }
 })
+
+test_that("R and C versions of drawModelUseExp give same answer", {
+    initialModel <- demest:::initialModel
+    drawModelUseExp <- demest:::drawModelUseExp
+    drawPriors <- demest:::drawPriors
+    drawBetas <- demest:::drawBetas
+    drawSigma_Varying <- demest:::drawSigma_Varying
+    updateTheta_BinomialVarying <- demest:::updateTheta_BinomialVarying
+    spec <- Model(y ~ Binomial(mean ~ age + sex),
+                  `(Intercept)` ~ ExchFixed(sd = 10), 
+                  age ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
+                  sex ~ ExchFixed(sd = 0.1),
+                  priorSD = HalfT(scale = 0.2))
+    y <- Counts(array(1L,
+                      dim = 2:3,
+                      dimnames = list(sex = c("F", "M"),
+                                      age = c("0-4", "5-9", "10+"))))
+    exposure <- Counts(array(1:6,
+                             dim = 2:3,
+                             dimnames = list(sex = c("F", "M"),
+                                             age = c("0-4", "5-9", "10+"))))
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        model <- initialModel(spec, y = y, exposure = exposure)
+        y.tmp <- y
+        y.tmp[] <- NA
+        set.seed(seed)
+        ans.R <- drawModelUseExp(object = model,
+                                 y = y.tmp,
+                                 exposure = exposure,
+                                 useC = FALSE)
+        ans.C.generic <- drawModelUseExp(object = model,
+                                         y = y.tmp,
+                                         exposure = exposure,
+                                         useC = TRUE,
+                                         useSpecific = FALSE)
+        ans.C.specific <- drawModelUseExp(object = model,
+                                          y = y.tmp,
+                                          exposure = exposure,
+                                          useC = TRUE,
+                                          useSpecific = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C.generic)
+        else
+            expect_equal(ans.R, ans.C.generic)
+        expect_identical(ans.C.generic, ans.C.specific)
+    }
+})
+
 
 ## drawYNonSampled #########################################################################
 

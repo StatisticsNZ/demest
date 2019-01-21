@@ -5,7 +5,7 @@
 \title{Extract combined results from estimation and prediction.}
 \usage{
 fetchBoth(filenameEst, filenamePred, where, iterations = NULL,
-  impute = FALSE)
+  impute = TRUE)
 }
 \arguments{
 \item{filenameEst}{The filename used for estimation.}
@@ -18,7 +18,8 @@ extracted.}
 \item{iterations}{A vector of positive integers giving the iterations to be
 extracted if an item has multiple iterations.}
 
-\item{impute}{Logical. Whether to impute missing values.}
+\item{impute}{Logical. Whether to impute missing values.
+Defaults to \code{TRUE}.}
 }
 \description{
 Combined results from calling \code{\link{estimateModel}} followed

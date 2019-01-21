@@ -300,8 +300,7 @@ extrapolateStrucZeroArray <- function(strucZeroArray, along, labels) {
 ## TRANSLATED
 ## HAS_TESTS
 predictAlphaDLMNoTrend <- function(prior, useC = FALSE) {
-    stopifnot((methods::is(prior, "DLM") && methods::is(prior, "NoTrendMixin"))
-              || (methods::is(prior, "FakeDLM")))
+    stopifnot((methods::is(prior, "DLM") && methods::is(prior, "NoTrendMixin")))
     if (useC) {
         .Call(predictAlphaDLMNoTrend_R, prior)
     }
@@ -336,8 +335,7 @@ predictAlphaDLMNoTrend <- function(prior, useC = FALSE) {
 ## TRANSLATED
 ## HAS_TESTS
 predictAlphaDeltaDLMWithTrend <- function(prior, useC = FALSE) {
-    stopifnot((methods::is(prior, "DLM") && methods::is(prior, "WithTrendMixin"))
-              || (methods::is(prior, "FakeDLM") && is(prior, "FakeWithTrendMixin")))
+    stopifnot(methods::is(prior, "DLM") && methods::is(prior, "WithTrendMixin"))
     if (useC) {
         .Call(predictAlphaDeltaDLMWithTrend_R, prior)
     }

@@ -5,7 +5,7 @@
 \title{Extract estimates from model output.}
 \usage{
 fetch(filename, where = character(), iterations = NULL,
-  impute = FALSE)
+  impute = TRUE)
 }
 \arguments{
 \item{filename}{The filename used by the estimate function.}
@@ -16,7 +16,8 @@ extracted.}
 \item{iterations}{A vector of positive integers giving the iterations to be
 extracted if an item has multiple iterations.}
 
-\item{impute}{Logical. Whether to impute missing values.}
+\item{impute}{Logical. Whether to impute missing values.
+Defaults to \code{TRUE}.}
 }
 \value{
 Parameters that were estimated from the data typically have class

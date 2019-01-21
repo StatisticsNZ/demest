@@ -156,6 +156,7 @@ setMethod("drawPrior",
                   prior <- drawOmegaAlpha(prior)
                   prior <- drawOmegaDelta(prior)
                   prior <- drawPhi(prior)
+                  prior <- drawDelta0(prior)
                   prior <- predictAlphaDeltaDLMWithTrend(prior)
                   prior
               }
@@ -203,6 +204,7 @@ setMethod("drawPrior",
                   prior <- drawOmegaSeason(prior)
                   prior <- drawPhi(prior)
                   prior <- predictSeason(prior)
+                  prior <- drawDelta0(prior)
                   prior <- predictAlphaDeltaDLMWithTrend(prior)
                   prior
               }
@@ -252,6 +254,7 @@ setMethod("drawPrior",
                   prior <- drawPhi(prior)
                   prior <- drawUEtaCoef(prior)
                   prior <- drawEta(prior)
+                  prior <- drawDelta0(prior)
                   prior <- predictAlphaDeltaDLMWithTrend(prior)
                   prior
               }
@@ -304,6 +307,7 @@ setMethod("drawPrior",
                   prior <- drawUEtaCoef(prior)
                   prior <- drawEta(prior)
                   prior <- predictSeason(prior)
+                  prior <- drawDelta0(prior)
                   prior <- predictAlphaDeltaDLMWithTrend(prior)
                   prior
               }
@@ -351,6 +355,7 @@ setMethod("drawPrior",
                   prior <- drawOmegaDelta(prior)
                   prior <- predictUBeta(prior)
                   prior <- drawPhi(prior)
+                  prior <- drawDelta0(prior)
                   prior <- predictAlphaDeltaDLMWithTrend(prior)
                   prior
               }
@@ -400,6 +405,7 @@ setMethod("drawPrior",
                   prior <- predictUBeta(prior)
                   prior <- drawPhi(prior)
                   prior <- predictSeason(prior)
+                  prior <- drawDelta0(prior)
                   prior <- predictAlphaDeltaDLMWithTrend(prior)
                   prior
               }
@@ -451,6 +457,7 @@ setMethod("drawPrior",
                   prior <- drawPhi(prior)
                   prior <- drawUEtaCoef(prior)
                   prior <- drawEta(prior)
+                  prior <- drawDelta0(prior)
                   prior <- predictAlphaDeltaDLMWithTrend(prior)
                   prior
               }
@@ -504,6 +511,7 @@ setMethod("drawPrior",
                   prior <- drawUEtaCoef(prior)
                   prior <- drawEta(prior)
                   prior <- predictSeason(prior)
+                  prior <- drawDelta0(prior)
                   prior <- predictAlphaDeltaDLMWithTrend(prior)
                   prior
               }

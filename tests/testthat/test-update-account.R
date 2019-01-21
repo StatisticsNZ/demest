@@ -3,7 +3,7 @@ context("update-account")
 
 n.test <- 5
 test.identity <- FALSE
-test.extended <- TRUE
+test.extended <- FALSE
 
 
 ## Overall update ############################################################

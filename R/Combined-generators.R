@@ -165,6 +165,27 @@ setMethod("initialCombinedModel",
                             "y", class(y), "CMP", "y", "Counts"))
           })
 
+## initialCombinedModelSimulate #############################################################
+
+## Creates orindary 'CombinedModel' object, but with initial draw
+## of hyper-parameters, and with blank 'y'
+
+## HAS_TESTS
+setMethod("initialCombinedModelSimulate",
+          signature(object = "SpecBinomialVarying"),
+          function(object, y, exposure, weights) {
+              model <- initialModel(object,
+                                    y = y,
+                                    exposure = exposure)
+              model <- drawHyperParam(model)
+              y <- setYToMissing(y)
+              methods::new("CombinedModelBinomial",
+                           model = model,
+                           y = y,
+                           exposure = exposure)
+          })
+
+
 
 
 ## initialCombinedModelPredict ##############################################################

@@ -3,7 +3,7 @@ context("Combined-generators")
 
 n.test <- 5
 test.identity <- FALSE
-test.extended <- TRUE
+test.extended <- FALSE
 
 ## Assume that lower-level generator functions are working correctly.
 ## Only check that valid objects are created, and that the error-checking
@@ -253,8 +253,31 @@ test_that("initialCombinedModel gives apprioriate warnings and errors with class
                  "'y' has class \"Values\" : in a CMP model 'y' must have class \"Counts\"")
 })
 
+## CombinedModelPredct ############################################################
 
-## CombinedModel - Predict ############################################################
+test_that("initialCombinedModelSimulate creates object of class CombinedModelBinomial from valid inputs", {
+    initialCombinedModelSimulate <- demest:::initialCombinedModelSimulate
+    model <- Model(y ~ Binomial(mean ~ region),
+                   `(Intercept)` ~ ExchFixed(mean = -1, sd = 0.2),
+                   region ~ Exch(error = Error(scale = HalfT(scale = 0.3))),
+                   priorSD = HalfT(scale = 0.1))
+    exposure <- CountsOne(1:10, labels = letters[1:10], name = "region")
+    y <- CountsOne(rbinom(n = 10, size = 1:10, prob = 0.6),
+                   labels = letters[1:10],
+                   name = "region")
+    x <- initialCombinedModelSimulate(object = model,
+                                      y = y,
+                                      exposure = exposure,
+                                      weights = NULL)
+    expect_true(validObject(x))
+    expect_is(x, "CombinedModelBinomial")
+    expect_is(x@model, "BinomialVarying")
+    expect_true(all(is.na(x@y@.Data)))
+})
+
+
+
+## CombinedModelPredct ############################################################
 
 test_that("test that initialCombinedModelPredict works with with CombinedModelNormal", {
     initialCombinedModelPredict <- demest:::initialCombinedModelPredict

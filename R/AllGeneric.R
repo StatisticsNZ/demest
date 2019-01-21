@@ -84,6 +84,10 @@ setGeneric("castY",
            function(y, spec)
            standardGeneric("castY"))
 
+setGeneric("checkAndTidySimulatedYExposureWeights",
+           function(model, y = NULL, exposure = NULL, weights = NULL)
+               standardGeneric("checkAndTidySimulatedYExposureWeights"))
+
 setGeneric("checkForSubtotals",
            function(object, model, name = "y") {
                NULL
@@ -155,6 +159,10 @@ setGeneric("diffLogDensAccount",
 setGeneric("diffLogLikAccount",
            function(object, useC = FALSE, useSpecific = FALSE)
                standardGeneric("diffLogLikAccount"))
+
+setGeneric("drawCombined",
+           function(object, nUpdate = 1L, useC = FALSE, useSpecific = FALSE)
+               standardGeneric("drawCombined"))
 
 setGeneric("drawModelNotUseExp",
            function(object, y, useC = FALSE, useSpecific = FALSE)
@@ -271,20 +279,6 @@ setGeneric("equivalentSample",
            function(mean, se, to = c("binomial", "Poisson"), epsilon = 1e-6)
                standardGeneric("equivalentSample"))
 
-setGeneric("fakeBeta",
-           function(object)
-               standardGeneric("fakeBeta"))
-
-#' @export
-setGeneric("fakeModel",
-           function(model, templateY, exposure = NULL,
-                    weights = NULL)
-               standardGeneric("fakeModel"))
-
-setGeneric("fakePrior",
-           function(object, metadata, isSaturated)
-               standardGeneric("fakePrior"))
-
 setGeneric("fetchResults",
            function(object, nameObject, filename, iterations,
                     nIteration, lengthIter, impute = FALSE) {
@@ -334,12 +328,16 @@ setGeneric("initialCombinedCountsPredict",
 
 setGeneric("initialCombinedModel",
            function(object, y, exposure, weights)
-           standardGeneric("initialCombinedModel"))
+               standardGeneric("initialCombinedModel"))
 
 setGeneric("initialCombinedModelPredict",
            function(combined, along, labels, n, covariates,
                     aggregate, lower, upper, yIsCounts = TRUE)
           standardGeneric("initialCombinedModelPredict"))
+
+setGeneric("initialCombinedModelSimulate",
+           function(object, y, exposure, weights)
+           standardGeneric("initialCombinedModelSimulate"))
 
 setGeneric("initialModel",
            function(object, y, exposure, weights)
@@ -377,10 +375,6 @@ setGeneric("makeCellInLik",
                }
                model
            })
-
-setGeneric("makeFakeOutputPrior",
-           function(prior, metadata)
-               standardGeneric("makeFakeOutputPrior"))
 
 setGeneric("makeTransformExpToComp",
            function(exposure, component, nameComponent)
