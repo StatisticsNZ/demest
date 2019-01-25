@@ -601,7 +601,6 @@ setMethod("drawPrior",
 
 ## makeOutputPrior ###################################################################
 
-
 ## Function "whereEstimated" controls whether a parameter
 ## estimated is actually printed. We can't skip parameters,
 ## because that messes up function 'changeInPos'.
@@ -636,7 +635,11 @@ setMethod("makeOutputPrior",
                     metadata = "ANY"),
           function(prior, pos) {
               scaleError <- makeOutputPriorScale(pos = pos)
-              list(scaleError = scaleError)
+              dfScaleError <- prior@nuTau@.Data
+              scaleScaleError <- prior@ATau@.Data
+              list(scaleError = scaleError,
+                   dfScaleError = dfScaleError,
+                   scaleScaleError = scaleScaleError)
           })
 
 ## HAS_TESTS
@@ -648,10 +651,22 @@ setMethod("makeOutputPrior",
               Z <- prior@Z@.Data
               coef <- makeOutputPriorCoef(Z = Z,
                                           pos = pos)
+              scaleIntercept <- prior@AEtaIntercept@.Data
+              meanCoef <- prior@meanEtaCoef@.Data
+              dfCoef <- prior@nuEtaCoef@.Data
+              scaleCoef <- prior@AEtaCoef@.Data
               pos <- pos + P
               scaleError <- makeOutputPriorScale(pos = pos)
+              dfScaleError <- prior@nuTau@.Data
+              scaleScaleError <- prior@ATau@.Data
               list(coef = coef,
-                   scaleError = scaleError)
+                   scaleIntercept = scaleIntercept,
+                   meanCoef = meanCoef,
+                   dfCoef = dfCoef,
+                   scaleCoef = scaleCoef,
+                   scaleError = scaleError,
+                   dfScaleError = dfScaleError,
+                   scaleScaleError = scaleScaleError)
           })
 
 ## HAS_TESTS
@@ -659,8 +674,14 @@ setMethod("makeOutputPrior",
           signature(prior = "ExchRobustZero",
                     metadata = "MetaData"),
           function(prior, metadata, pos) {
+              dfError <- prior@nuBeta@.Data
               scaleError <- makeOutputPriorScale(pos = pos)
-              list(scaleError = scaleError)
+              dfScaleError <- prior@nuTau@.Data
+              scaleScaleError <- prior@ATau@.Data
+              list(dfError = dfError,
+                   scaleError = scaleError,
+                   dfScaleError = dfScaleError,
+                   scaleScaleError = scaleScaleError)
           })
 
 ## HAS_TESTS
@@ -672,10 +693,28 @@ setMethod("makeOutputPrior",
               Z <- prior@Z@.Data
               coef <- makeOutputPriorCoef(Z = Z,
                                           pos = pos)
+              scaleIntercept <- prior@AEtaIntercept@.Data
+              meanCoef <- prior@meanEtaCoef@.Data
+              dfCoef <- prior@nuEtaCoef@.Data
+              scaleCoef <- prior@AEtaCoef@.Data
+              scaleIntercept <- prior@AEtaIntercept@.Data
+              meanCoef <- prior@meanEtaCoef@.Data
+              dfCoef <- prior@nuEtaCoef@.Data
+              scaleCoef <- prior@AEtaCoef@.Data
               pos <- pos + P
+              dfError <- prior@nuBeta@.Data
               scaleError <- makeOutputPriorScale(pos = pos)
+              dfScaleError <- prior@nuTau@.Data
+              scaleScaleError <- prior@ATau@.Data
               list(coef = coef,
-                   scaleError = scaleError)
+                   scaleIntercept = scaleIntercept,
+                   meanCoef = meanCoef,
+                   dfCoef = dfCoef,
+                   scaleCoef = scaleCoef,
+                   dfError = dfError,
+                   scaleError = scaleError,
+                   dfScaleError = dfScaleError,
+                   scaleScaleError = scaleScaleError)
           })
 
 
@@ -702,14 +741,22 @@ setMethod("makeOutputPrior",
                                           margin = margin)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
+              dfScaleLevel <- prior@nuAlpha@.Data
+              scaleScaleLevel <- prior@AAlpha@.Data
               pos <- pos + 1L
               damp <- makeOutputPriorDamp(pos = pos)
               pos <- pos + 1L
               scaleError <- makeOutputPriorScale(pos = pos)
+              dfScaleError <- prior@nuTau@.Data
+              scaleScaleError <- prior@ATau@.Data
               list(level = level,
                    scaleLevel = scaleLevel,
+                   dfScaleLevel = dfScaleLevel,
+                   scaleScaleLevel = scaleScaleLevel,
                    damp = damp,
-                   scaleError = scaleError)
+                   scaleError = scaleError,
+                   dfScaleError = dfScaleError,
+                   scaleScaleError = scaleScaleError)
           })
 
 ## HAS_TESTS
@@ -734,6 +781,8 @@ setMethod("makeOutputPrior",
                                           margin = margin)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
+              dfScaleLevel <- prior@nuAlpha@.Data
+              scaleScaleLevel <- prior@AAlpha@.Data
               pos <- pos + 1L
               trend <- makeOutputStateDLM(iterator = iterator,
                                           metadata = metadata,
@@ -744,16 +793,26 @@ setMethod("makeOutputPrior",
                                           margin = margin)
               pos <- pos + (K + 1L) * L
               scaleTrend <- makeOutputPriorScale(pos = pos)
+              dfScaleTrend <- prior@nuDelta@.Data
+              scaleScaleTrend <- prior@ADelta@.Data
               pos <- pos + 1L
               damp <- makeOutputPriorDamp(pos = pos)
               pos <- pos + 1L
               scaleError <- makeOutputPriorScale(pos = pos)
+              dfScaleError <- prior@nuTau@.Data
+              scaleScaleError <- prior@ATau@.Data
               list(level = level,
                    scaleLevel = scaleLevel,
+                   dfScaleLevel = dfScaleLevel,
+                   scaleScaleLevel = scaleScaleLevel,
                    trend = trend,
                    scaleTrend = scaleTrend,
+                   dfScaleTrend = dfScaleTrend,
+                   scaleScaleTrend = scaleScaleTrend,
                    damp = damp,
-                   scaleError = scaleError)
+                   scaleError = scaleError,
+                   dfScaleError = dfScaleError,
+                   scaleScaleError = scaleScaleError)
           })
 
 ## HAS_TESTS
@@ -778,6 +837,8 @@ setMethod("makeOutputPrior",
                                           margin = margin)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
+              dfScaleLevel <- prior@nuAlpha@.Data
+              scaleScaleLevel <- prior@AAlpha@.Data
               pos <- pos + 1L
               damp <- makeOutputPriorDamp(pos = pos)
               pos <- pos + 1L
@@ -790,14 +851,24 @@ setMethod("makeOutputPrior",
                                            margin = margin)
               pos <- pos + (K + 1L) * L * nSeason
               scaleSeason <- makeOutputPriorScale(pos = pos)
+              dfScaleSeason <- prior@nuSeason@.Data
+              scaleScaleSeason <- prior@ASeason@.Data
               pos <- pos + 1L
               scaleError <- makeOutputPriorScale(pos = pos)
+              dfScaleError <- prior@nuTau@.Data
+              scaleScaleError <- prior@ATau@.Data
               list(level = level,
                    scaleLevel = scaleLevel,
+                   dfScaleLevel = dfScaleLevel,
+                   scaleScaleLevel = scaleScaleLevel,
                    damp = damp,
                    season = season,
                    scaleSeason = scaleSeason,
-                   scaleError = scaleError)
+                   dfScaleSeason = dfScaleSeason,
+                   scaleScaleSeason = scaleScaleSeason,
+                   scaleError = scaleError,
+                   dfScaleError = dfScaleError,
+                   scaleScaleError = scaleScaleError)
           })
 
 ## HAS_TESTS
@@ -823,6 +894,8 @@ setMethod("makeOutputPrior",
                                           margin = margin)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
+              dfScaleLevel <- prior@nuAlpha@.Data
+              scaleScaleLevel <- prior@AAlpha@.Data
               pos <- pos + 1L
               trend <- makeOutputStateDLM(iterator = iterator,
                                           metadata = metadata,
@@ -833,6 +906,8 @@ setMethod("makeOutputPrior",
                                           margin = margin)
               pos <- pos + (K + 1L) * L
               scaleTrend <- makeOutputPriorScale(pos = pos)
+              dfScaleTrend <- prior@nuDelta@.Data
+              scaleScaleTrend <- prior@ADelta@.Data
               pos <- pos + 1L
               damp <- makeOutputPriorDamp(pos = pos)
               pos <- pos + 1L
@@ -845,16 +920,28 @@ setMethod("makeOutputPrior",
                                            margin = margin)
               pos <- pos + (K + 1L) * L * nSeason
               scaleSeason <- makeOutputPriorScale(pos = pos)
+              dfScaleSeason <- prior@nuSeason@.Data
+              scaleScaleSeason <- prior@ASeason@.Data
               pos <- pos + 1L
               scaleError <- makeOutputPriorScale(pos = pos)
+              dfScaleError <- prior@nuTau@.Data
+              scaleScaleError <- prior@ATau@.Data
               list(level = level,
                    scaleLevel = scaleLevel,
+                   dfScaleLevel = dfScaleLevel,
+                   scaleScaleLevel = scaleScaleLevel,
                    trend = trend,
                    scaleTrend = scaleTrend,
+                   dfScaleTrend = dfScaleTrend,
+                   scaleScaleTrend = scaleScaleTrend,
                    damp = damp,
                    season = season,
                    scaleSeason = scaleSeason,
-                   scaleError = scaleError)
+                   dfScaleSeason = dfScaleSeason,
+                   scaleScaleSeason = scaleScaleSeason,
+                   scaleError = scaleError,
+                   dfScaleError = dfScaleError,
+                   scaleScaleError = scaleScaleError)
           })
 
 
@@ -883,18 +970,34 @@ setMethod("makeOutputPrior",
                                           margin = margin)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
+              dfScaleLevel <- prior@nuAlpha@.Data
+              scaleScaleLevel <- prior@AAlpha@.Data
               pos <- pos + 1L
               damp <- makeOutputPriorDamp(pos = pos)
               pos <- pos + 1L
               coef <- makeOutputPriorCoef(Z = Z,
                                           pos = pos)
+              scaleIntercept <- prior@AEtaIntercept@.Data
+              meanCoef <- prior@meanEtaCoef@.Data
+              dfCoef <- prior@nuEtaCoef@.Data
+              scaleCoef <- prior@AEtaCoef@.Data
               pos <- pos + P
               scaleError <- makeOutputPriorScale(pos = pos)
+              dfScaleError <- prior@nuTau@.Data
+              scaleScaleError <- prior@ATau@.Data
               list(level = level,
                    scaleLevel = scaleLevel,
+                   dfScaleLevel = dfScaleLevel,
+                   scaleScaleLevel = scaleScaleLevel,
                    damp = damp,
                    coef = coef,
-                   scaleError = scaleError)
+                   scaleIntercept = scaleIntercept,
+                   meanCoef = meanCoef,
+                   dfCoef = dfCoef,
+                   scaleCoef = scaleCoef,
+                   scaleError = scaleError,
+                   dfScaleError = dfScaleError,
+                   scaleScaleError = scaleScaleError)
           })
 
 ## HAS_TESTS
@@ -921,6 +1024,8 @@ setMethod("makeOutputPrior",
                                           margin = margin)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
+              dfScaleLevel <- prior@nuAlpha@.Data
+              scaleScaleLevel <- prior@AAlpha@.Data
               pos <- pos + 1L
               trend <- makeOutputStateDLM(iterator = iterator,
                                           metadata = metadata,
@@ -931,20 +1036,38 @@ setMethod("makeOutputPrior",
                                           margin = margin)
               pos <- pos + (K + 1L) * L
               scaleTrend <- makeOutputPriorScale(pos = pos)
+              dfScaleTrend <- prior@nuDelta@.Data
+              scaleScaleTrend <- prior@ADelta@.Data
               pos <- pos + 1L
               damp <- makeOutputPriorDamp(pos = pos)
               pos <- pos + 1L
               coef <- makeOutputPriorCoef(Z = Z,
                                           pos = pos)
+              scaleIntercept <- prior@AEtaIntercept@.Data
+              meanCoef <- prior@meanEtaCoef@.Data
+              dfCoef <- prior@nuEtaCoef@.Data
+              scaleCoef <- prior@AEtaCoef@.Data
               pos <- pos + P
               scaleError <- makeOutputPriorScale(pos = pos)
+              dfScaleError <- prior@nuTau@.Data
+              scaleScaleError <- prior@ATau@.Data
               list(level = level,
                    scaleLevel = scaleLevel,
+                   dfScaleLevel = dfScaleLevel,
+                   scaleScaleLevel = scaleScaleLevel,
                    trend = trend,
                    scaleTrend = scaleTrend,
+                   dfScaleTrend = dfScaleTrend,
+                   scaleScaleTrend = scaleScaleTrend,
                    damp = damp,
                    coef = coef,
-                   scaleError = scaleError)
+                   scaleIntercept = scaleIntercept,
+                   meanCoef = meanCoef,
+                   dfCoef = dfCoef,
+                   scaleCoef = scaleCoef,
+                   scaleError = scaleError,
+                   dfScaleError = dfScaleError,
+                   scaleScaleError = scaleScaleError)
           })
 
 ## HAS_TESTS
@@ -971,6 +1094,8 @@ setMethod("makeOutputPrior",
                                           margin = margin)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
+              dfScaleLevel <- prior@nuAlpha@.Data
+              scaleScaleLevel <- prior@AAlpha@.Data
               pos <- pos + 1L
               damp <- makeOutputPriorDamp(pos = pos)
               pos <- pos + 1L
@@ -983,18 +1108,36 @@ setMethod("makeOutputPrior",
                                            margin = margin)
               pos <- pos + (K + 1L) * L * nSeason
               scaleSeason <- makeOutputPriorScale(pos = pos)
+              dfScaleSeason <- prior@nuSeason@.Data
+              scaleScaleSeason <- prior@ASeason@.Data
               pos <- pos + 1L
               coef <- makeOutputPriorCoef(Z = Z,
                                           pos = pos)
+              scaleIntercept <- prior@AEtaIntercept@.Data
+              meanCoef <- prior@meanEtaCoef@.Data
+              dfCoef <- prior@nuEtaCoef@.Data
+              scaleCoef <- prior@AEtaCoef@.Data
               pos <- pos + P
               scaleError <- makeOutputPriorScale(pos = pos)
+              dfScaleError <- prior@nuTau@.Data
+              scaleScaleError <- prior@ATau@.Data
               list(level = level,
                    scaleLevel = scaleLevel,
+                   dfScaleLevel = dfScaleLevel,
+                   scaleScaleLevel = scaleScaleLevel,
                    damp = damp,
                    season = season,
                    scaleSeason = scaleSeason,
+                   dfScaleSeason = dfScaleSeason,
+                   scaleScaleSeason = scaleScaleSeason,
                    coef = coef,
-                   scaleError = scaleError)
+                   scaleIntercept = scaleIntercept,
+                   meanCoef = meanCoef,
+                   dfCoef = dfCoef,
+                   scaleCoef = scaleCoef,
+                   scaleError = scaleError,
+                   dfScaleError = dfScaleError,
+                   scaleScaleError = scaleScaleError)
           })
 
 ## HAS_TESTS
@@ -1022,6 +1165,8 @@ setMethod("makeOutputPrior",
                                           margin = margin)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
+              dfScaleLevel <- prior@nuAlpha@.Data
+              scaleScaleLevel <- prior@AAlpha@.Data
               pos <- pos + 1L
               trend <- makeOutputStateDLM(iterator = iterator,
                                           metadata = metadata,
@@ -1032,6 +1177,8 @@ setMethod("makeOutputPrior",
                                           margin = margin)
               pos <- pos + (K + 1L) * L
               scaleTrend <- makeOutputPriorScale(pos = pos)
+              dfScaleTrend <- prior@nuDelta@.Data
+              scaleScaleTrend <- prior@ADelta@.Data
               pos <- pos + 1L
               damp <- makeOutputPriorDamp(pos = pos)
               pos <- pos + 1L
@@ -1044,20 +1191,40 @@ setMethod("makeOutputPrior",
                                            margin = margin)
               pos <- pos + (K + 1L) * L * nSeason
               scaleSeason <- makeOutputPriorScale(pos = pos)
+              dfScaleSeason <- prior@nuSeason@.Data
+              scaleScaleSeason <- prior@ASeason@.Data
               pos <- pos + 1L
               coef <- makeOutputPriorCoef(Z = Z,
                                           pos = pos)
+              scaleIntercept <- prior@AEtaIntercept@.Data
+              meanCoef <- prior@meanEtaCoef@.Data
+              dfCoef <- prior@nuEtaCoef@.Data
+              scaleCoef <- prior@AEtaCoef@.Data
               pos <- pos + P
               scaleError <- makeOutputPriorScale(pos = pos)
+              dfScaleError <- prior@nuTau@.Data
+              scaleScaleError <- prior@ATau@.Data
               list(level = level,
                    scaleLevel = scaleLevel,
+                   dfScaleLevel = dfScaleLevel,
+                   scaleScaleLevel = scaleScaleLevel,
                    trend = trend,
                    scaleTrend = scaleTrend,
+                   dfScaleTrend = dfScaleTrend,
+                   scaleScaleTrend = scaleScaleTrend,
                    damp = damp,
                    season = season,
                    scaleSeason = scaleSeason,
+                   dfScaleSeason = dfScaleSeason,
+                   scaleScaleSeason = scaleScaleSeason,
                    coef = coef,
-                   scaleError = scaleError)
+                   scaleIntercept = scaleIntercept,
+                   meanCoef = meanCoef,
+                   dfCoef = dfCoef,
+                   scaleCoef = scaleCoef,
+                   scaleError = scaleError,
+                   dfScaleError = dfScaleError,
+                   scaleScaleError = scaleScaleError)
           })
 
 
@@ -1083,14 +1250,24 @@ setMethod("makeOutputPrior",
                                           margin = margin)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
+              dfScaleLevel <- prior@nuAlpha@.Data
+              scaleScaleLevel <- prior@AAlpha@.Data
               pos <- pos + 1L
               damp <- makeOutputPriorDamp(pos = pos)
               pos <- pos + 1L
+              dfError <- prior@nuBeta@.Data
               scaleError <- makeOutputPriorScale(pos = pos)
+              dfScaleError <- prior@nuTau@.Data
+              scaleScaleError <- prior@ATau@.Data
               list(level = level,
                    scaleLevel = scaleLevel,
+                   dfScaleLevel = dfScaleLevel,
+                   scaleScaleLevel = scaleScaleLevel,
                    damp = damp,
-                   scaleError = scaleError)
+                   dfError = dfError,
+                   scaleError = scaleError,
+                   dfScaleError = dfScaleError,
+                   scaleScaleError = scaleScaleError)
           })
 
 ## HAS_TESTS
@@ -1114,6 +1291,8 @@ setMethod("makeOutputPrior",
                                           margin = margin)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
+              dfScaleLevel <- prior@nuAlpha@.Data
+              scaleScaleLevel <- prior@AAlpha@.Data
               pos <- pos + 1L
               trend <- makeOutputStateDLM(iterator = iterator,
                                           metadata = metadata,
@@ -1124,16 +1303,28 @@ setMethod("makeOutputPrior",
                                           margin = margin)
               pos <- pos + (K + 1L) * L
               scaleTrend <- makeOutputPriorScale(pos = pos)
+              dfScaleTrend <- prior@nuDelta@.Data
+              scaleScaleTrend <- prior@ADelta@.Data
               pos <- pos + 1L
               damp <- makeOutputPriorDamp(pos = pos)
               pos <- pos + 1L
+              dfError <- prior@nuBeta@.Data
               scaleError <- makeOutputPriorScale(pos = pos)
+              dfScaleError <- prior@nuTau@.Data
+              scaleScaleError <- prior@ATau@.Data
               list(level = level,
                    scaleLevel = scaleLevel,
+                   dfScaleLevel = dfScaleLevel,
+                   scaleScaleLevel = scaleScaleLevel,
                    trend = trend,
                    scaleTrend = scaleTrend,
+                   dfScaleTrend = dfScaleTrend,
+                   scaleScaleTrend = scaleScaleTrend,
                    damp = damp,
-                   scaleError = scaleError)
+                   dfError = dfError,
+                   scaleError = scaleError,
+                   dfScaleError = dfScaleError,
+                   scaleScaleError = scaleScaleError)
           })
 
 ## HAS_TESTS
@@ -1157,6 +1348,8 @@ setMethod("makeOutputPrior",
                                           margin = margin)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
+              dfScaleLevel <- prior@nuAlpha@.Data
+              scaleScaleLevel <- prior@AAlpha@.Data
               pos <- pos + 1L
               damp <- makeOutputPriorDamp(pos = pos)
               pos <- pos + 1L
@@ -1169,14 +1362,26 @@ setMethod("makeOutputPrior",
                                            margin = margin)
               pos <- pos + (K + 1L) * L * nSeason
               scaleSeason <- makeOutputPriorScale(pos = pos)
+              dfScaleSeason <- prior@nuSeason@.Data
+              scaleScaleSeason <- prior@ASeason@.Data
               pos <- pos + 1L
+              dfError <- prior@nuBeta@.Data
               scaleError <- makeOutputPriorScale(pos = pos)
+              dfScaleError <- prior@nuTau@.Data
+              scaleScaleError <- prior@ATau@.Data
               list(level = level,
                    scaleLevel = scaleLevel,
+                   dfScaleLevel = dfScaleLevel,
+                   scaleScaleLevel = scaleScaleLevel,
                    damp = damp,
                    season = season,
                    scaleSeason = scaleSeason,
-                   scaleError = scaleError)
+                   dfScaleSeason = dfScaleSeason,
+                   scaleScaleSeason = scaleScaleSeason,
+                   dfError = dfError,
+                   scaleError = scaleError,
+                   dfScaleError = dfScaleError,
+                   scaleScaleError = scaleScaleError)
           })
 
 ## HAS_TESTS
@@ -1201,6 +1406,8 @@ setMethod("makeOutputPrior",
                                           margin = margin)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
+              dfScaleLevel <- prior@nuAlpha@.Data
+              scaleScaleLevel <- prior@AAlpha@.Data
               pos <- pos + 1L
               trend <- makeOutputStateDLM(iterator = iterator,
                                           metadata = metadata,
@@ -1211,6 +1418,8 @@ setMethod("makeOutputPrior",
                                           margin = margin)
               pos <- pos + (K + 1L) * L
               scaleTrend <- makeOutputPriorScale(pos = pos)
+              dfScaleTrend <- prior@nuDelta@.Data
+              scaleScaleTrend <- prior@ADelta@.Data
               pos <- pos + 1L
               damp <- makeOutputPriorDamp(pos = pos)
               pos <- pos + 1L
@@ -1223,16 +1432,30 @@ setMethod("makeOutputPrior",
                                            margin = margin)
               pos <- pos + (K + 1L) * L * nSeason
               scaleSeason <- makeOutputPriorScale(pos = pos)
+              dfScaleSeason <- prior@nuSeason@.Data
+              scaleScaleSeason <- prior@ASeason@.Data
               pos <- pos + 1L
+              dfError <- prior@nuBeta@.Data
               scaleError <- makeOutputPriorScale(pos = pos)
+              dfScaleError <- prior@nuTau@.Data
+              scaleScaleError <- prior@ATau@.Data
               list(level = level,
                    scaleLevel = scaleLevel,
+                   dfScaleLevel = dfScaleLevel,
+                   scaleScaleLevel = scaleScaleLevel,
                    trend = trend,
                    scaleTrend = scaleTrend,
+                   dfScaleTrend = dfScaleTrend,
+                   scaleScaleTrend = scaleScaleTrend,
                    damp = damp,
                    season = season,
                    scaleSeason = scaleSeason,
-                   scaleError = scaleError)
+                   dfScaleSeason = dfScaleSeason,
+                   scaleScaleSeason = scaleScaleSeason,
+                   dfError = dfError,
+                   scaleError = scaleError,
+                   dfScaleError = dfScaleError,
+                   scaleScaleError = scaleScaleError)
           })
 
 
@@ -1260,18 +1483,36 @@ setMethod("makeOutputPrior",
                                           margin = margin)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
+              dfScaleLevel <- prior@nuAlpha@.Data
+              scaleScaleLevel <- prior@AAlpha@.Data
               pos <- pos + 1L
               damp <- makeOutputPriorDamp(pos = pos)
               pos <- pos + 1L
               coef <- makeOutputPriorCoef(Z = Z,
                                           pos = pos)
+              scaleIntercept <- prior@AEtaIntercept@.Data
+              meanCoef <- prior@meanEtaCoef@.Data
+              dfCoef <- prior@nuEtaCoef@.Data
+              scaleCoef <- prior@AEtaCoef@.Data
               pos <- pos + P
+              dfError <- prior@nuBeta@.Data
               scaleError <- makeOutputPriorScale(pos = pos)
+              dfScaleError <- prior@nuTau@.Data
+              scaleScaleError <- prior@ATau@.Data
               list(level = level,
                    scaleLevel = scaleLevel,
+                   dfScaleLevel = dfScaleLevel,
+                   scaleScaleLevel = scaleScaleLevel,
                    damp = damp,
                    coef = coef,
-                   scaleError = scaleError)
+                   scaleIntercept = scaleIntercept,
+                   meanCoef = meanCoef,
+                   dfCoef = dfCoef,
+                   scaleCoef = scaleCoef,
+                   dfError = dfError,
+                   scaleError = scaleError,
+                   dfScaleError = dfScaleError,
+                   scaleScaleError = scaleScaleError)
           })
 
 ## HAS_TESTS
@@ -1297,6 +1538,8 @@ setMethod("makeOutputPrior",
                                           margin = margin)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
+              dfScaleLevel <- prior@nuAlpha@.Data
+              scaleScaleLevel <- prior@AAlpha@.Data
               pos <- pos + 1L
               trend <- makeOutputStateDLM(iterator = iterator,
                                           metadata = metadata,
@@ -1307,20 +1550,40 @@ setMethod("makeOutputPrior",
                                           margin = margin)
               pos <- pos + (K + 1L) * L
               scaleTrend <- makeOutputPriorScale(pos = pos)
+              dfScaleTrend <- prior@nuDelta@.Data
+              scaleScaleTrend <- prior@ADelta@.Data
               pos <- pos + 1L
               damp <- makeOutputPriorDamp(pos = pos)
               pos <- pos + 1L
               coef <- makeOutputPriorCoef(Z = Z,
                                           pos = pos)
+              scaleIntercept <- prior@AEtaIntercept@.Data
+              meanCoef <- prior@meanEtaCoef@.Data
+              dfCoef <- prior@nuEtaCoef@.Data
+              scaleCoef <- prior@AEtaCoef@.Data
               pos <- pos + P
+              dfError <- prior@nuBeta@.Data
               scaleError <- makeOutputPriorScale(pos = pos)
+              dfScaleError <- prior@nuTau@.Data
+              scaleScaleError <- prior@ATau@.Data
               list(level = level,
                    scaleLevel = scaleLevel,
+                   dfScaleLevel = dfScaleLevel,
+                   scaleScaleLevel = scaleScaleLevel,
                    trend = trend,
                    scaleTrend = scaleTrend,
+                   dfScaleTrend = dfScaleTrend,
+                   scaleScaleTrend = scaleScaleTrend,
                    damp = damp,
                    coef = coef,
-                   scaleError = scaleError)
+                   scaleIntercept = scaleIntercept,
+                   meanCoef = meanCoef,
+                   dfCoef = dfCoef,
+                   scaleCoef = scaleCoef,
+                   dfError = dfError,
+                   scaleError = scaleError,
+                   dfScaleError = dfScaleError,
+                   scaleScaleError = scaleScaleError)
           })
 
 ## HAS_TESTS
@@ -1346,6 +1609,8 @@ setMethod("makeOutputPrior",
                                           margin = margin)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
+              dfScaleLevel <- prior@nuAlpha@.Data
+              scaleScaleLevel <- prior@AAlpha@.Data
               pos <- pos + 1L
               damp <- makeOutputPriorDamp(pos = pos)
               pos <- pos + 1L
@@ -1358,18 +1623,38 @@ setMethod("makeOutputPrior",
                                            margin = margin)
               pos <- pos + (K + 1L) * L * nSeason
               scaleSeason <- makeOutputPriorScale(pos = pos)
+              dfScaleSeason <- prior@nuSeason@.Data
+              scaleScaleSeason <- prior@ASeason@.Data
               pos <- pos + 1L
               coef <- makeOutputPriorCoef(Z = Z,
                                           pos = pos)
+              scaleIntercept <- prior@AEtaIntercept@.Data
+              meanCoef <- prior@meanEtaCoef@.Data
+              dfCoef <- prior@nuEtaCoef@.Data
+              scaleCoef <- prior@AEtaCoef@.Data
               pos <- pos + P
+              dfError <- prior@nuBeta@.Data
               scaleError <- makeOutputPriorScale(pos = pos)
+              dfScaleError <- prior@nuTau@.Data
+              scaleScaleError <- prior@ATau@.Data
               list(level = level,
                    scaleLevel = scaleLevel,
+                   dfScaleLevel = dfScaleLevel,
+                   scaleScaleLevel = scaleScaleLevel,
                    damp = damp,
                    season = season,
                    scaleSeason = scaleSeason,
+                   dfScaleSeason = dfScaleSeason,
+                   scaleScaleSeason = scaleScaleSeason,
                    coef = coef,
-                   scaleError = scaleError)
+                   scaleIntercept = scaleIntercept,
+                   meanCoef = meanCoef,
+                   dfCoef = dfCoef,
+                   scaleCoef = scaleCoef,
+                   dfError = dfError,
+                   scaleError = scaleError,
+                   dfScaleError = dfScaleError,
+                   scaleScaleError = scaleScaleError)
           })
 
 ## HAS_TESTS
@@ -1396,6 +1681,8 @@ setMethod("makeOutputPrior",
                                           margin = margin)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
+              dfScaleLevel <- prior@nuAlpha@.Data
+              scaleScaleLevel <- prior@AAlpha@.Data
               pos <- pos + 1L
               trend <- makeOutputStateDLM(iterator = iterator,
                                           metadata = metadata,
@@ -1406,6 +1693,8 @@ setMethod("makeOutputPrior",
                                           margin = margin)
               pos <- pos + (K + 1L) * L
               scaleTrend <- makeOutputPriorScale(pos = pos)
+              dfScaleTrend <- prior@nuDelta@.Data
+              scaleScaleTrend <- prior@ADelta@.Data
               pos <- pos + 1L
               damp <- makeOutputPriorDamp(pos = pos)
               pos <- pos + 1L
@@ -1418,20 +1707,42 @@ setMethod("makeOutputPrior",
                                            margin = margin)
               pos <- pos + (K + 1L) * L * nSeason
               scaleSeason <- makeOutputPriorScale(pos = pos)
+              dfScaleSeason <- prior@nuSeason@.Data
+              scaleScaleSeason <- prior@ASeason@.Data
               pos <- pos + 1L
               coef <- makeOutputPriorCoef(Z = Z,
                                           pos = pos)
+              scaleIntercept <- prior@AEtaIntercept@.Data
+              meanCoef <- prior@meanEtaCoef@.Data
+              dfCoef <- prior@nuEtaCoef@.Data
+              scaleCoef <- prior@AEtaCoef@.Data
               pos <- pos + P
+              dfError <- prior@nuBeta@.Data
               scaleError <- makeOutputPriorScale(pos = pos)
+              dfScaleError <- prior@nuTau@.Data
+              scaleScaleError <- prior@ATau@.Data
               list(level = level,
                    scaleLevel = scaleLevel,
+                   dfScaleLevel = dfScaleLevel,
+                   scaleScaleLevel = scaleScaleLevel,
                    trend = trend,
                    scaleTrend = scaleTrend,
+                   dfScaleTrend = dfScaleTrend,
+                   scaleScaleTrend = scaleScaleTrend,
                    damp = damp,
                    season = season,
                    scaleSeason = scaleSeason,
+                   dfScaleSeason = dfScaleSeason,
+                   scaleScaleSeason = scaleScaleSeason,
                    coef = coef,
-                   scaleError = scaleError)
+                   scaleIntercept = scaleIntercept,
+                   meanCoef = meanCoef,
+                   dfCoef = dfCoef,
+                   scaleCoef = scaleCoef,
+                   dfError = dfError,
+                   scaleError = scaleError,
+                   dfScaleError = dfScaleError,
+                   scaleScaleError = scaleScaleError)
           })
 
 ## Known
@@ -1527,6 +1838,8 @@ setMethod("makeOutputPrior",
               pos <- pos + 1L
               ## tau
               scaleError <- makeOutputPriorScale(pos = pos)
+              dfScaleError <- prior@nuTau@.Data
+              scaleScaleError <- prior@ATau@.Data
               ## return
               list(components = components,
                    scaleComponents = scaleComponents,
@@ -1537,7 +1850,9 @@ setMethod("makeOutputPrior",
                    mean = mean,
                    damp = damp,
                    scale2 = scale2,
-                   scaleError = scaleError)
+                   scaleError = scaleError,
+                   dfScaleError = dfScaleError,
+                   scaleScaleError = scaleScaleError)
           })
 
 

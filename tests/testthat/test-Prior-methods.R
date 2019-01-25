@@ -2210,18 +2210,6 @@ test_that("R and C versions of drawPrior give same answer with Zero", {
 })
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 ## makeOutputPrior ###################################################################
 
 test_that("makeOutputPrior works with ExchFixed", {
@@ -2272,7 +2260,9 @@ test_that("makeOutputPrior works with ExchNormZero", {
     ans.obtained <- makeOutputPrior(prior = prior,
                                     metadata = metadata,
                                     pos = 3L)
-    ans.expected <- list(scaleError = Skeleton(first = 3L))
+    ans.expected <- list(scaleError = Skeleton(first = 3L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -2307,10 +2297,16 @@ test_that("makeOutputPrior works with ExchCovZero", {
                          dimtypes = "state",
                          DimScales = list(new("Categories", dimvalues = c("income", "catb"))))
     ans.expected <- list(coef = new("SkeletonCovariates",
-                             first = 3L,
-                             last = 5L,
-                             metadata = metadata.coef),
-                         scaleError = Skeleton(first = 6L))
+                                    first = 3L,
+                                    last = 5L,
+                                    metadata = metadata.coef),
+                         scaleIntercept = prior@AEtaIntercept@.Data,
+                         meanCoef = prior@meanEtaCoef@.Data,
+                         dfCoef = prior@nuEtaCoef@.Data,
+                         scaleCoef = prior@AEtaCoef@.Data,
+                         scaleError = Skeleton(first = 6L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -2337,7 +2333,10 @@ test_that("makeOutputPrior works with ExchRobustZero", {
     ans.obtained <- makeOutputPrior(prior = prior,
                                     metadata = metadata,
                                     pos = 3L)
-    ans.expected <- list(scaleError = Skeleton(first = 3L))
+    ans.expected <- list(dfError = prior@nuBeta@.Data,
+                         scaleError = Skeleton(first = 3L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -2376,7 +2375,14 @@ test_that("makeOutputPrior works with ExchRobustCov", {
                              first = 3L,
                              last = 5L,
                              metadata = metadata.coef),
-                         scaleError = Skeleton(first = 6L))
+                         scaleIntercept = prior@AEtaIntercept@.Data,
+                         meanCoef = prior@meanEtaCoef@.Data,
+                         dfCoef = prior@nuEtaCoef@.Data,
+                         scaleCoef = prior@AEtaCoef@.Data,
+                         dfError = prior@nuBeta@.Data,
+                         scaleError = Skeleton(first = 6L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -2420,8 +2426,12 @@ test_that("makeOutputPrior works with DLMNoTrendNormZeroNoSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleLevel = Skeleton(first = 14L),
+                         dfScaleLevel = prior@nuAlpha@.Data,
+                         scaleScaleLevel = prior@AAlpha@.Data,
                          damp = Skeleton(first = 15L),
-                         scaleError = Skeleton(first = 16L))
+                         scaleError = Skeleton(first = 16L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -2464,6 +2474,8 @@ test_that("makeOutputPrior works with DLMWithTrendNormZeroNoSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleLevel = Skeleton(first = 14L),
+                         dfScaleLevel = prior@nuAlpha@.Data,
+                         scaleScaleLevel = prior@AAlpha@.Data,
                          trend = new("SkeletonStateDLM",
                                      iAlong = 1L,
                                      first = 15L,
@@ -2474,8 +2486,12 @@ test_that("makeOutputPrior works with DLMWithTrendNormZeroNoSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleTrend = Skeleton(first = 26L),
+                         dfScaleTrend = prior@nuDelta@.Data,
+                         scaleScaleTrend = prior@ADelta@.Data,
                          damp = Skeleton(first = 27L),
-                         scaleError = Skeleton(first = 28L))
+                         scaleError = Skeleton(first = 28L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
     ## no level
     spec <- DLM(level = NULL)
@@ -2506,6 +2522,8 @@ test_that("makeOutputPrior works with DLMWithTrendNormZeroNoSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleLevel = Skeleton(first = 14L),
+                         dfScaleLevel = prior@nuAlpha@.Data,
+                         scaleScaleLevel = prior@AAlpha@.Data,
                          trend = new("SkeletonStateDLM",
                                      iAlong = 1L,
                                      first = 15L,
@@ -2516,8 +2534,12 @@ test_that("makeOutputPrior works with DLMWithTrendNormZeroNoSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleTrend = Skeleton(first = 26L),
+                         dfScaleTrend = prior@nuDelta@.Data,
+                         scaleScaleTrend = prior@ADelta@.Data,
                          damp = Skeleton(first = 27L),
-                         scaleError = Skeleton(first = 28L))
+                         scaleError = Skeleton(first = 28L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -2569,6 +2591,8 @@ test_that("makeOutputPrior works with DLMNoTrendNormZeroWithSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleLevel = Skeleton(first = 14L),
+                         dfScaleLevel = prior@nuAlpha@.Data,
+                         scaleScaleLevel = prior@AAlpha@.Data,
                          damp = Skeleton(first = 15L),
                          season = new("SkeletonStateDLM",
                                       iAlong = 1L,
@@ -2580,7 +2604,11 @@ test_that("makeOutputPrior works with DLMNoTrendNormZeroWithSeason", {
                                       metadata0 = metadata0.season,
                                       metadataIncl0 = metadataIncl0.season),
                          scaleSeason = Skeleton(first = 60L),
-                         scaleError = Skeleton(first = 61L))
+                         dfScaleSeason = prior@nuSeason@.Data,
+                         scaleScaleSeason = prior@ASeason@.Data,
+                         scaleError = Skeleton(first = 61L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -2632,6 +2660,8 @@ test_that("makeOutputPrior works with DLMWithTrendNormZeroWithSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleLevel = Skeleton(first = 14L),
+                         dfScaleLevel = prior@nuAlpha@.Data,
+                         scaleScaleLevel = prior@AAlpha@.Data,
                          trend = new("SkeletonStateDLM",
                                      first = 15L,
                                      last = 25L,
@@ -2642,6 +2672,8 @@ test_that("makeOutputPrior works with DLMWithTrendNormZeroWithSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleTrend = Skeleton(first = 26L),
+                         dfScaleTrend = prior@nuDelta@.Data,
+                         scaleScaleTrend = prior@ADelta@.Data,
                          damp = Skeleton(first = 27L),
                          season = new("SkeletonStateDLM",
                                       first = 28L,
@@ -2653,7 +2685,11 @@ test_that("makeOutputPrior works with DLMWithTrendNormZeroWithSeason", {
                                       metadata0 = metadata0.season,
                                       metadataIncl0 = metadataIncl0.season),
                          scaleSeason = Skeleton(first = 72L),
-                         scaleError = Skeleton(first = 73L))
+                         dfScaleSeason = prior@nuSeason@.Data,
+                         scaleScaleSeason = prior@ASeason@.Data,
+                         scaleError = Skeleton(first = 73L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
     ## no level
     spec <- DLM(level = NULL, season = Season(n = 4))
@@ -2693,6 +2729,8 @@ test_that("makeOutputPrior works with DLMWithTrendNormZeroWithSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleLevel = Skeleton(first = 14L),
+                         dfScaleLevel = prior@nuAlpha@.Data,
+                         scaleScaleLevel = prior@AAlpha@.Data,
                          trend = new("SkeletonStateDLM",
                                      first = 15L,
                                      last = 25L,
@@ -2703,6 +2741,8 @@ test_that("makeOutputPrior works with DLMWithTrendNormZeroWithSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleTrend = Skeleton(first = 26L),
+                         dfScaleTrend = prior@nuDelta@.Data,
+                         scaleScaleTrend = prior@ADelta@.Data,
                          damp = Skeleton(first = 27L),
                          season = new("SkeletonStateDLM",
                                       first = 28L,
@@ -2714,7 +2754,11 @@ test_that("makeOutputPrior works with DLMWithTrendNormZeroWithSeason", {
                                       metadata0 = metadata0.season,
                                       metadataIncl0 = metadataIncl0.season),
                          scaleSeason = Skeleton(first = 72L),
-                         scaleError = Skeleton(first = 73L))
+                         dfScaleSeason = prior@nuSeason@.Data,
+                         scaleScaleSeason = prior@ASeason@.Data,
+                         scaleError = Skeleton(first = 73L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -2766,12 +2810,20 @@ test_that("makeOutputPrior works with DLMNoTrendNormCovNoSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleLevel = Skeleton(first = 14L),
+                         dfScaleLevel = prior@nuAlpha@.Data,
+                         scaleScaleLevel = prior@AAlpha@.Data,
                          damp = Skeleton(first = 15L),
                          coef = new("SkeletonCovariates",
                                     first = 16L,
                                     last = 18L,
                                     metadata = metadata.coef),
-                         scaleError = Skeleton(first = 19L))
+                         scaleIntercept = prior@AEtaIntercept@.Data,
+                         meanCoef = prior@meanEtaCoef@.Data,
+                         dfCoef = prior@nuEtaCoef@.Data,
+                         scaleCoef = prior@AEtaCoef@.Data,
+                         scaleError = Skeleton(first = 19L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -2821,6 +2873,8 @@ test_that("makeOutputPrior works with DLMWithTrendNormCovNoSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleLevel = Skeleton(first = 14L),
+                         dfScaleLevel = prior@nuAlpha@.Data,
+                         scaleScaleLevel = prior@AAlpha@.Data,
                          trend = new("SkeletonStateDLM",
                                      first = 15L,
                                      last = 25L,
@@ -2831,12 +2885,20 @@ test_that("makeOutputPrior works with DLMWithTrendNormCovNoSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleTrend = Skeleton(first = 26L),
+                         dfScaleTrend = prior@nuDelta@.Data,
+                         scaleScaleTrend = prior@ADelta@.Data,
                          damp = Skeleton(first = 27L),
                          coef = new("SkeletonCovariates",
                                     first = 28L,
                                     last = 30L,
                                     metadata = metadata.coef),
-                         scaleError = Skeleton(first = 31L))
+                         scaleIntercept = prior@AEtaIntercept@.Data,
+                         meanCoef = prior@meanEtaCoef@.Data,
+                         dfCoef = prior@nuEtaCoef@.Data,
+                         scaleCoef = prior@AEtaCoef@.Data,
+                         scaleError = Skeleton(first = 31L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
     ## no level
     data <- data.frame(time = 1:10,
@@ -2875,6 +2937,8 @@ test_that("makeOutputPrior works with DLMWithTrendNormCovNoSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleLevel = Skeleton(first = 14L),
+                         dfScaleLevel = prior@nuAlpha@.Data,
+                         scaleScaleLevel = prior@AAlpha@.Data,
                          trend = new("SkeletonStateDLM",
                                      first = 15L,
                                      last = 25L,
@@ -2885,12 +2949,20 @@ test_that("makeOutputPrior works with DLMWithTrendNormCovNoSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleTrend = Skeleton(first = 26L),
+                         dfScaleTrend = prior@nuDelta@.Data,
+                         scaleScaleTrend = prior@ADelta@.Data,
                          damp = Skeleton(first = 27L),
                          coef = new("SkeletonCovariates",
                                     first = 28L,
                                     last = 30L,
-                                    metadata = metadata.coef),
-                         scaleError = Skeleton(first = 31L))
+                                    metadata = metadata.coef), 
+                         scaleIntercept = prior@AEtaIntercept@.Data,
+                         meanCoef = prior@meanEtaCoef@.Data,
+                         dfCoef = prior@nuEtaCoef@.Data,
+                         scaleCoef = prior@AEtaCoef@.Data,
+                         scaleError = Skeleton(first = 31L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -2950,6 +3022,8 @@ test_that("makeOutputPrior works with DLMNoTrendNormCovWithSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleLevel = Skeleton(first = 14L),
+                         dfScaleLevel = prior@nuAlpha@.Data,
+                         scaleScaleLevel = prior@AAlpha@.Data,
                          damp = Skeleton(first = 15L),
                          season = new("SkeletonStateDLM",
                                       first = 16L,
@@ -2961,11 +3035,19 @@ test_that("makeOutputPrior works with DLMNoTrendNormCovWithSeason", {
                                      metadata0 = metadata0.season,
                                      metadataIncl0 = metadataIncl0.season),
                          scaleSeason = Skeleton(first = 60L),
+                         dfScaleSeason = prior@nuSeason@.Data,
+                         scaleScaleSeason = prior@ASeason@.Data,
                          coef = new("SkeletonCovariates",
                                     first = 61L,
                                     last = 63L,
                                     metadata = metadata.coef),
-                         scaleError = Skeleton(first = 64L))
+                         scaleIntercept = prior@AEtaIntercept@.Data,
+                         meanCoef = prior@meanEtaCoef@.Data,
+                         dfCoef = prior@nuEtaCoef@.Data,
+                         scaleCoef = prior@AEtaCoef@.Data,
+                         scaleError = Skeleton(first = 64L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -3025,6 +3107,8 @@ test_that("makeOutputPrior works with DLMWithTrendNormCovWithSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleLevel = Skeleton(first = 14L),
+                         dfScaleLevel = prior@nuAlpha@.Data,
+                         scaleScaleLevel = prior@AAlpha@.Data,
                          trend = new("SkeletonStateDLM",
                                      first = 15L,
                                      last = 25L,
@@ -3035,6 +3119,8 @@ test_that("makeOutputPrior works with DLMWithTrendNormCovWithSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleTrend = Skeleton(first = 26L),
+                         dfScaleTrend = prior@nuDelta@.Data,
+                         scaleScaleTrend = prior@ADelta@.Data,
                          damp = Skeleton(first = 27L),
                          season = new("SkeletonStateDLM",
                                       first = 28L,
@@ -3046,11 +3132,19 @@ test_that("makeOutputPrior works with DLMWithTrendNormCovWithSeason", {
                                       metadata0 = metadata0.season,
                                       metadataIncl0 = metadataIncl0.season),
                          scaleSeason = Skeleton(first = 72L),
+                         dfScaleSeason = prior@nuSeason@.Data,
+                         scaleScaleSeason = prior@ASeason@.Data,
                          coef = new("SkeletonCovariates",
                                     first = 73L,
                                     last = 75L,
                                     metadata = metadata.coef),
-                         scaleError = Skeleton(first = 76L))
+                         scaleIntercept = prior@AEtaIntercept@.Data,
+                         meanCoef = prior@meanEtaCoef@.Data,
+                         dfCoef = prior@nuEtaCoef@.Data,
+                         scaleCoef = prior@AEtaCoef@.Data,
+                         scaleError = Skeleton(first = 76L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
     ## no level
     data <- data.frame(time = 1:10,
@@ -3099,6 +3193,8 @@ test_that("makeOutputPrior works with DLMWithTrendNormCovWithSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleLevel = Skeleton(first = 14L),
+                         dfScaleLevel = prior@nuAlpha@.Data,
+                         scaleScaleLevel = prior@AAlpha@.Data,
                          trend = new("SkeletonStateDLM",
                                      first = 15L,
                                      last = 25L,
@@ -3109,6 +3205,8 @@ test_that("makeOutputPrior works with DLMWithTrendNormCovWithSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleTrend = Skeleton(first = 26L),
+                         dfScaleTrend = prior@nuDelta@.Data,
+                         scaleScaleTrend = prior@ADelta@.Data,
                          damp = Skeleton(first = 27L),
                          season = new("SkeletonStateDLM",
                                       first = 28L,
@@ -3120,11 +3218,19 @@ test_that("makeOutputPrior works with DLMWithTrendNormCovWithSeason", {
                                       metadata0 = metadata0.season,
                                       metadataIncl0 = metadataIncl0.season),
                          scaleSeason = Skeleton(first = 72L),
+                         dfScaleSeason = prior@nuSeason@.Data,
+                         scaleScaleSeason = prior@ASeason@.Data,
                          coef = new("SkeletonCovariates",
                                     first = 73L,
                                     last = 75L,
                                     metadata = metadata.coef),
-                         scaleError = Skeleton(first = 76L))
+                         scaleIntercept = prior@AEtaIntercept@.Data,
+                         meanCoef = prior@meanEtaCoef@.Data,
+                         dfCoef = prior@nuEtaCoef@.Data,
+                         scaleCoef = prior@AEtaCoef@.Data,
+                         scaleError = Skeleton(first = 76L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -3169,8 +3275,13 @@ test_that("makeOutputPrior works with DLMNoTrendRobustZeroNoSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleLevel = Skeleton(first = 14L),
+                         dfScaleLevel = prior@nuAlpha@.Data,
+                         scaleScaleLevel = prior@AAlpha@.Data,
                          damp = Skeleton(first = 15L),
-                         scaleError = Skeleton(first = 16L))
+                         dfError = prior@nuBeta@.Data,
+                         scaleError = Skeleton(first = 16L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -3213,6 +3324,8 @@ test_that("makeOutputPrior works with DLMWithTrendRobustZeroNoSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleLevel = Skeleton(first = 14L),
+                         dfScaleLevel = prior@nuAlpha@.Data,
+                         scaleScaleLevel = prior@AAlpha@.Data,
                          trend = new("SkeletonStateDLM",
                                      first = 15L,
                                      last = 25L,
@@ -3223,8 +3336,13 @@ test_that("makeOutputPrior works with DLMWithTrendRobustZeroNoSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleTrend = Skeleton(first = 26L),
+                         dfScaleTrend = prior@nuDelta@.Data,
+                         scaleScaleTrend = prior@ADelta@.Data,
                          damp = Skeleton(first = 27L),
-                         scaleError = Skeleton(first = 28L))
+                         dfError = prior@nuBeta@.Data,
+                         scaleError = Skeleton(first = 28L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
     ## no level
     spec <- DLM(level = NULL, error = Error(robust = TRUE))
@@ -3261,6 +3379,8 @@ test_that("makeOutputPrior works with DLMWithTrendRobustZeroNoSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleLevel = Skeleton(first = 14L),
+                         dfScaleLevel = prior@nuAlpha@.Data,
+                         scaleScaleLevel = prior@AAlpha@.Data,
                          trend = new("SkeletonStateDLM",
                                      first = 15L,
                                      last = 25L,
@@ -3271,8 +3391,13 @@ test_that("makeOutputPrior works with DLMWithTrendRobustZeroNoSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleTrend = Skeleton(first = 26L),
+                         dfScaleTrend = prior@nuDelta@.Data,
+                         scaleScaleTrend = prior@ADelta@.Data,
                          damp = Skeleton(first = 27L),
-                         scaleError = Skeleton(first = 28L))
+                         dfError = prior@nuBeta@.Data,
+                         scaleError = Skeleton(first = 28L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -3325,6 +3450,8 @@ test_that("makeOutputPrior works with DLMNoTrendRobustZeroWithSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleLevel = Skeleton(first = 14L),
+                         dfScaleLevel = prior@nuAlpha@.Data,
+                         scaleScaleLevel = prior@AAlpha@.Data,
                          damp = Skeleton(first = 15L),
                          season = new("SkeletonStateDLM",
                                       first = 16L,
@@ -3336,7 +3463,12 @@ test_that("makeOutputPrior works with DLMNoTrendRobustZeroWithSeason", {
                                       metadata0 = metadata0.season,
                                       metadataIncl0 = metadataIncl0.season),
                          scaleSeason = Skeleton(first = 60L),
-                         scaleError = Skeleton(first = 61L))
+                         dfScaleSeason = prior@nuSeason@.Data,
+                         scaleScaleSeason = prior@ASeason@.Data,
+                         dfError = prior@nuBeta@.Data,
+                         scaleError = Skeleton(first = 61L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -3389,6 +3521,8 @@ test_that("makeOutputPrior works with DLMWithTrendRobustZeroWithSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleLevel = Skeleton(first = 14L),
+                         dfScaleLevel = prior@nuAlpha@.Data,
+                         scaleScaleLevel = prior@AAlpha@.Data,
                          trend = new("SkeletonStateDLM",
                                      first = 15L,
                                      last = 25L,
@@ -3399,6 +3533,8 @@ test_that("makeOutputPrior works with DLMWithTrendRobustZeroWithSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleTrend = Skeleton(first = 26L),
+                         dfScaleTrend = prior@nuDelta@.Data,
+                         scaleScaleTrend = prior@ADelta@.Data,
                          damp = Skeleton(first = 27L),
                          season = new("SkeletonStateDLM",
                                       first = 28L,
@@ -3410,7 +3546,12 @@ test_that("makeOutputPrior works with DLMWithTrendRobustZeroWithSeason", {
                                       metadata0 = metadata0.season,
                                       metadataIncl0 = metadataIncl0.season),
                          scaleSeason = Skeleton(first = 72L),
-                         scaleError = Skeleton(first = 73L))
+                         dfScaleSeason = prior@nuSeason@.Data,
+                         scaleScaleSeason = prior@ASeason@.Data,
+                         dfError = prior@nuBeta@.Data,
+                         scaleError = Skeleton(first = 73L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
     ## no level
     spec <- DLM(level = NULL,
@@ -3439,6 +3580,8 @@ test_that("makeOutputPrior works with DLMWithTrendRobustZeroWithSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleLevel = Skeleton(first = 14L),
+                         dfScaleLevel = prior@nuAlpha@.Data,
+                         scaleScaleLevel = prior@AAlpha@.Data,
                          trend = new("SkeletonStateDLM",
                                      first = 15L,
                                      last = 25L,
@@ -3449,6 +3592,8 @@ test_that("makeOutputPrior works with DLMWithTrendRobustZeroWithSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleTrend = Skeleton(first = 26L),
+                         dfScaleTrend = prior@nuDelta@.Data,
+                         scaleScaleTrend = prior@ADelta@.Data,
                          damp = Skeleton(first = 27L),
                          season = new("SkeletonStateDLM",
                                       first = 28L,
@@ -3460,7 +3605,12 @@ test_that("makeOutputPrior works with DLMWithTrendRobustZeroWithSeason", {
                                       metadata0 = metadata0.season,
                                       metadataIncl0 = metadataIncl0.season),
                          scaleSeason = Skeleton(first = 72L),
-                         scaleError = Skeleton(first = 73L))
+                         dfScaleSeason = prior@nuSeason@.Data,
+                         scaleScaleSeason = prior@ASeason@.Data,
+                         dfError = prior@nuBeta@.Data,
+                         scaleError = Skeleton(first = 73L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -3514,12 +3664,21 @@ test_that("makeOutputPrior works with DLMNoTrendRobustCovNoSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleLevel = Skeleton(first = 14L),
+                         dfScaleLevel = prior@nuAlpha@.Data,
+                         scaleScaleLevel = prior@AAlpha@.Data,
                          damp = Skeleton(first = 15L),
                          coef = new("SkeletonCovariates",
                                     first = 16L,
                                     last = 18L,
                                     metadata = metadata.coef),
-                         scaleError = Skeleton(first = 19L))
+                         scaleIntercept = prior@AEtaIntercept@.Data,
+                         meanCoef = prior@meanEtaCoef@.Data,
+                         dfCoef = prior@nuEtaCoef@.Data,
+                         scaleCoef = prior@AEtaCoef@.Data,
+                         dfError = prior@nuBeta@.Data,
+                         scaleError = Skeleton(first = 19L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -3570,6 +3729,8 @@ test_that("makeOutputPrior works with DLMWithTrendRobustCovNoSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleLevel = Skeleton(first = 14L),
+                         dfScaleLevel = prior@nuAlpha@.Data,
+                         scaleScaleLevel = prior@AAlpha@.Data,
                          trend = new("SkeletonStateDLM",
                                      first = 15L,
                                      last = 25L,
@@ -3580,12 +3741,21 @@ test_that("makeOutputPrior works with DLMWithTrendRobustCovNoSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleTrend = Skeleton(first = 26L),
+                         dfScaleTrend = prior@nuDelta@.Data,
+                         scaleScaleTrend = prior@ADelta@.Data,
                          damp = Skeleton(first = 27L),
                          coef = new("SkeletonCovariates",
                                     first = 28L,
                                     last = 30L,
                                     metadata = metadata.coef),
-                         scaleError = Skeleton(first = 31L))
+                         scaleIntercept = prior@AEtaIntercept@.Data,
+                         meanCoef = prior@meanEtaCoef@.Data,
+                         dfCoef = prior@nuEtaCoef@.Data,
+                         scaleCoef = prior@AEtaCoef@.Data,
+                         dfError = prior@nuBeta@.Data,
+                         scaleError = Skeleton(first = 31L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
     ## no level
     metadataIncl0 <- new("MetaData",
@@ -3625,6 +3795,8 @@ test_that("makeOutputPrior works with DLMWithTrendRobustCovNoSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleLevel = Skeleton(first = 14L),
+                         dfScaleLevel = prior@nuAlpha@.Data,
+                         scaleScaleLevel = prior@AAlpha@.Data,
                          trend = new("SkeletonStateDLM",
                                      first = 15L,
                                      last = 25L,
@@ -3635,12 +3807,21 @@ test_that("makeOutputPrior works with DLMWithTrendRobustCovNoSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleTrend = Skeleton(first = 26L),
+                         dfScaleTrend = prior@nuDelta@.Data,
+                         scaleScaleTrend = prior@ADelta@.Data,
                          damp = Skeleton(first = 27L),
                          coef = new("SkeletonCovariates",
                                     first = 28L,
                                     last = 30L,
                                     metadata = metadata.coef),
-                         scaleError = Skeleton(first = 31L))
+                         scaleIntercept = prior@AEtaIntercept@.Data,
+                         meanCoef = prior@meanEtaCoef@.Data,
+                         dfCoef = prior@nuEtaCoef@.Data,
+                         scaleCoef = prior@AEtaCoef@.Data,
+                         dfError = prior@nuBeta@.Data,
+                         scaleError = Skeleton(first = 31L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -3701,6 +3882,8 @@ test_that("makeOutputPrior works with DLMNoTrendRobustCovWithSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleLevel = Skeleton(first = 14L),
+                         dfScaleLevel = prior@nuAlpha@.Data,
+                         scaleScaleLevel = prior@AAlpha@.Data,
                          damp = Skeleton(first = 15L),
                          season = new("SkeletonStateDLM",
                                       first = 16L,
@@ -3712,11 +3895,20 @@ test_that("makeOutputPrior works with DLMNoTrendRobustCovWithSeason", {
                                       metadata0 = metadata0.season,
                                       metadataIncl0 = metadataIncl0.season),
                          scaleSeason = Skeleton(first = 60L),
+                         dfScaleSeason = prior@nuSeason@.Data,
+                         scaleScaleSeason = prior@ASeason@.Data,
                          coef = new("SkeletonCovariates",
                                     first = 61L,
                                     last = 63L,
                                     metadata = metadata.coef),
-                         scaleError = Skeleton(first = 64L))
+                         scaleIntercept = prior@AEtaIntercept@.Data,
+                         meanCoef = prior@meanEtaCoef@.Data,
+                         dfCoef = prior@nuEtaCoef@.Data,
+                         scaleCoef = prior@AEtaCoef@.Data,
+                         dfError = prior@nuBeta@.Data,
+                         scaleError = Skeleton(first = 64L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -3777,6 +3969,8 @@ test_that("makeOutputPrior works with DLMWithTrendRobustCovWithSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleLevel = Skeleton(first = 14L),
+                         dfScaleLevel = prior@nuAlpha@.Data,
+                         scaleScaleLevel = prior@AAlpha@.Data,
                          trend = new("SkeletonStateDLM",
                                      first = 15L,
                                      last = 25L,
@@ -3787,6 +3981,8 @@ test_that("makeOutputPrior works with DLMWithTrendRobustCovWithSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleTrend = Skeleton(first = 26L),
+                         dfScaleTrend = prior@nuDelta@.Data,
+                         scaleScaleTrend = prior@ADelta@.Data,
                          damp = Skeleton(first = 27L),
                          season = new("SkeletonStateDLM",
                                       first = 28L,
@@ -3798,11 +3994,20 @@ test_that("makeOutputPrior works with DLMWithTrendRobustCovWithSeason", {
                                       metadata0 = metadata0.season,
                                       metadataIncl0 = metadataIncl0.season),
                          scaleSeason = Skeleton(first = 72L),
+                         dfScaleSeason = prior@nuSeason@.Data,
+                         scaleScaleSeason = prior@ASeason@.Data,
                          coef = new("SkeletonCovariates",
                                     first = 73L,
                                     last = 75L,
                                     metadata = metadata.coef),
-                         scaleError = Skeleton(first = 76L))
+                         scaleIntercept = prior@AEtaIntercept@.Data,
+                         meanCoef = prior@meanEtaCoef@.Data,
+                         dfCoef = prior@nuEtaCoef@.Data,
+                         scaleCoef = prior@AEtaCoef@.Data,
+                         dfError = prior@nuBeta@.Data,
+                         scaleError = Skeleton(first = 76L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
     ## no level
     data <- data.frame(time = 1:10,
@@ -3852,6 +4057,8 @@ test_that("makeOutputPrior works with DLMWithTrendRobustCovWithSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleLevel = Skeleton(first = 14L),
+                         dfScaleLevel = prior@nuAlpha@.Data,
+                         scaleScaleLevel = prior@AAlpha@.Data,
                          trend = new("SkeletonStateDLM",
                                      first = 15L,
                                      last = 25L,
@@ -3862,6 +4069,8 @@ test_that("makeOutputPrior works with DLMWithTrendRobustCovWithSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleTrend = Skeleton(first = 26L),
+                         dfScaleTrend = prior@nuDelta@.Data,
+                         scaleScaleTrend = prior@ADelta@.Data,
                          damp = Skeleton(first = 27L),
                          season = new("SkeletonStateDLM",
                                       first = 28L,
@@ -3873,11 +4082,20 @@ test_that("makeOutputPrior works with DLMWithTrendRobustCovWithSeason", {
                                       metadata0 = metadata0.season,
                                       metadataIncl0 = metadataIncl0.season),
                          scaleSeason = Skeleton(first = 72L),
+                         dfScaleSeason = prior@nuSeason@.Data,
+                         scaleScaleSeason = prior@ASeason@.Data,
                          coef = new("SkeletonCovariates",
                                     first = 73L,
                                     last = 75L,
                                     metadata = metadata.coef),
-                         scaleError = Skeleton(first = 76L))
+                         scaleIntercept = prior@AEtaIntercept@.Data,
+                         meanCoef = prior@meanEtaCoef@.Data,
+                         dfCoef = prior@nuEtaCoef@.Data,
+                         scaleCoef = prior@AEtaCoef@.Data,
+                         dfError = prior@nuBeta@.Data,
+                         scaleError = Skeleton(first = 76L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -3993,7 +4211,9 @@ test_that("makeOutputPrior works with MixNormZero", {
                          mean = Skeleton(first = 603L),
                          damp = Skeleton(first = 604L),
                          scale2 = Skeleton(first = 605L),
-                         scaleError = Skeleton(first = 606L))
+                         scaleError = Skeleton(first = 606L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
 })
 
