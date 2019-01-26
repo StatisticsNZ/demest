@@ -1079,7 +1079,9 @@ test_that("makeOutputModel works with NormalVaryingVarsigmaKnown - no aggregate"
                   age = list(scaleError = new("SkeletonOneValues",
                                               first = 46L),
                              dfScaleError = model@priorsBetas[[3]]@nuTau@.Data,
-                             scaleScaleError = model@priorsBetas[[3]]@ATau@.Data))
+                             scaleScaleError = model@priorsBetas[[3]]@ATau@.Data),
+                  sd = list(df = model@nuSigma@.Data,
+                            scale = model@ASigma@.Data))
     prior <- c(betas, list(mean = mu), list(sd = sigma))
     ans.expected <- list(likelihood = likelihood, prior = prior, hyper = hyper)
     expect_identical(ans.obtained, ans.expected)
@@ -1142,7 +1144,9 @@ test_that("makeOutputModel works with NormalVaryingVarsigmaKnown - AgCertain", {
                   age = list(scaleError = new("SkeletonOneValues",
                                               first = 47L),
                              dfScaleError = model@priorsBetas[[3]]@nuTau@.Data,
-                             scaleScaleError = model@priorsBetas[[3]]@ATau@.Data))
+                             scaleScaleError = model@priorsBetas[[3]]@ATau@.Data),
+                  sd = list(df = model@nuSigma@.Data,
+                            scale = model@ASigma@.Data))
     prior <- c(betas, list(mean = mu), list(sd = sigma))
     aggregate <- makeOutputAggregate(model)
     ans.expected <- list(likelihood = likelihood,
@@ -1210,7 +1214,9 @@ test_that("makeOutputModel works with NormalVaryingVarsigmaKnown - AgNormal", {
                   age = list(scaleError = new("SkeletonOneValues",
                                               first = 47L),
                              dfScaleError = model@priorsBetas[[3]]@nuTau@.Data,
-                             scaleScaleError = model@priorsBetas[[3]]@ATau@.Data))
+                             scaleScaleError = model@priorsBetas[[3]]@ATau@.Data),
+                  sd = list(df = model@nuSigma@.Data,
+                            scale = model@ASigma@.Data))
     prior <- c(betas, list(mean = mu), list(sd = sigma))
     aggregate <- makeOutputAggregate(model,
                                      pos = 48L,
@@ -1274,7 +1280,9 @@ test_that("makeOutputModel works with NormalVaryingVarsigmaUnknown - no aggregat
                   age = list(scaleError = new("SkeletonOneValues",
                                               first = 46L),
                              dfScaleError = model@priorsBetas[[3]]@nuTau@.Data,
-                             scaleScaleError = model@priorsBetas[[3]]@ATau@.Data))
+                             scaleScaleError = model@priorsBetas[[3]]@ATau@.Data),
+                  sd = list(df = model@nuSigma@.Data,
+                            scale = model@ASigma@.Data))
     ans.expected <- list(likelihood = likelihood, prior = prior, hyper = hyper)
     expect_identical(ans.obtained, ans.expected)
 })
@@ -1338,7 +1346,9 @@ test_that("makeOutputModel works with NormalVaryingVarsigmaUnknown - AgCertain",
                   age = list(scaleError = new("SkeletonOneValues",
                                               first = 47L),
                              dfScaleError = model@priorsBetas[[3]]@nuTau@.Data,
-                             scaleScaleError = model@priorsBetas[[3]]@ATau@.Data))
+                             scaleScaleError = model@priorsBetas[[3]]@ATau@.Data),
+                  sd = list(df = model@nuSigma@.Data,
+                            scale = model@ASigma@.Data))
     aggregate <- makeOutputAggregate(model)
     ans.expected <- list(likelihood = likelihood,
                          prior = prior,
@@ -1407,7 +1417,9 @@ test_that("makeOutputModel works with NormalVaryingVarsigmaUnknown - AgNormal", 
                   age = list(scaleError = new("SkeletonOneValues",
                                               first = 48L),
                              dfScaleError = model@priorsBetas[[3]]@nuTau@.Data,
-                             scaleScaleError = model@priorsBetas[[3]]@ATau@.Data))
+                             scaleScaleError = model@priorsBetas[[3]]@ATau@.Data),
+                  sd = list(df = model@nuSigma@.Data,
+                            scale = model@ASigma@.Data))
     prior <- c(betas, list(mean = mu), list(sd = sigma))
     aggregate <- makeOutputAggregate(model,
                                      pos = 49L,
@@ -1470,7 +1482,9 @@ test_that("makeOutputModel works with BinomialVarying - no aggregate", {
                   age = list(scaleError = new("SkeletonOneValues",
                                               first = 46L),
                              dfScaleError = model@priorsBetas[[3]]@nuTau@.Data,
-                             scaleScaleError = model@priorsBetas[[3]]@ATau@.Data))
+                             scaleScaleError = model@priorsBetas[[3]]@ATau@.Data),
+                  sd = list(df = model@nuSigma@.Data,
+                            scale = model@ASigma@.Data))
     ans.expected <- list(likelihood = likelihood, prior = prior, hyper = hyper)
     expect_identical(ans.obtained, ans.expected)
 })
@@ -1528,7 +1542,9 @@ test_that("makeOutputModel works with BinomialVarying - AgCertain", {
                   age = list(scaleError = new("SkeletonOneValues",
                                               first = 46L),
                              dfScaleError = model@priorsBetas[[3]]@nuTau@.Data,
-                             scaleScaleError = model@priorsBetas[[3]]@ATau@.Data))
+                             scaleScaleError = model@priorsBetas[[3]]@ATau@.Data),
+                  sd = list(df = model@nuSigma@.Data,
+                            scale = model@ASigma@.Data))
     aggregate <- makeOutputAggregate(model)
     ans.expected <- list(likelihood = likelihood,
                          prior = prior,
@@ -1590,7 +1606,9 @@ test_that("makeOutputModel works with BinomialVarying - AgNormal", {
                   age = list(scaleError = new("SkeletonOneValues",
                                               first = 47L),
                              dfScaleError = model@priorsBetas[[3]]@nuTau@.Data,
-                             scaleScaleError = model@priorsBetas[[3]]@ATau@.Data))
+                             scaleScaleError = model@priorsBetas[[3]]@ATau@.Data),
+                  sd = list(df = model@nuSigma@.Data,
+                            scale = model@ASigma@.Data))
     aggregate <- makeOutputAggregate(model, pos = hyper$age$scaleError@first + 1L,
                                      nChain = 2L, nIteration = 20L)
     ans.expected <- list(likelihood = likelihood,
@@ -1646,7 +1664,9 @@ test_that("makeOutputModel works with PoissonVarying - no aggregate", {
                   age = list(scaleError = new("SkeletonOneValues",
                                               first = 46L),
                              dfScaleError = model@priorsBetas[[3]]@nuTau@.Data,
-                             scaleScaleError = model@priorsBetas[[3]]@ATau@.Data))
+                             scaleScaleError = model@priorsBetas[[3]]@ATau@.Data),
+                  sd = list(df = model@nuSigma@.Data,
+                            scale = model@ASigma@.Data))
     ans.expected <- list(likelihood = likelihood, prior = prior, hyper = hyper)
     expect_identical(ans.obtained, ans.expected)
 })
@@ -1703,7 +1723,9 @@ test_that("makeOutputModel works with PoissonVaryingUseExp - AgCertain", {
                   age = list(scaleError = new("SkeletonOneValues",
                                               first = 46L),
                              dfScaleError = model@priorsBetas[[3]]@nuTau@.Data,
-                             scaleScaleError = model@priorsBetas[[3]]@ATau@.Data))
+                             scaleScaleError = model@priorsBetas[[3]]@ATau@.Data),
+                  sd = list(df = model@nuSigma@.Data,
+                            scale = model@ASigma@.Data))
     aggregate <- makeOutputAggregate(model)
     ans.expected <- list(likelihood = likelihood,
                          prior = prior,
@@ -1736,35 +1758,37 @@ test_that("makeOutputModel works with PoissonVaryingUseExp - AgNormal", {
     ans.obtained <- makeOutputModel(model = model, pos = pos,
                                     mcmc = c(nChain = 2L, nIteration = 20L))
     likelihood <- list(rate = new("SkeletonManyValues",
-                       first = 21L,
-                       last = 40L,
-                       metadata = metadata),
+                                  first = 21L,
+                                  last = 40L,
+                                  metadata = metadata),
                        jumpRate = model@scaleTheta@.Data,
                        noProposal = new("SkeletonNAccept", nAttempt = 20L, first = 41L,
-                       iFirstInChain = c(1L, 11L)),
+                                        iFirstInChain = c(1L, 11L)),
                        acceptRate = new("SkeletonNAccept", nAttempt = 20L, first = 42L,
-                       iFirstInChain = c(1L, 11L)))
+                                        iFirstInChain = c(1L, 11L)))
     mu <- SkeletonMu(betas = model@betas,
                      margins = model@margins,
                      first = 43L,
                      metadata = model@metadataY)
     betas <- list("(Intercept)" = new("SkeletonBetaIntercept",
-                      first = 43L, last = 43L),
+                                      first = 43L, last = 43L),
                   sex = new("SkeletonBetaTerm",
-                      first = 44L,
-                      last = 45L,
-                      metadata = metadata[1]),
+                            first = 44L,
+                            last = 45L,
+                            metadata = metadata[1]),
                   age = new("SkeletonBetaTerm",
-                      first = 46L,
-                      last = 55L,
-                      metadata = metadata[2]))
+                            first = 46L,
+                            last = 55L,
+                            metadata = metadata[2]))
     sigma <- new("SkeletonOneValues", first = 56L)
     prior <- c(betas, list(mean = mu), list(sd = sigma))
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
                   age = makeOutputPrior(prior = model@priorsBetas[[3]],
-                      metadata = model@metadataY[2],
-                      pos = 57L))
+                                        metadata = model@metadataY[2],
+                                        pos = 57L),
+                  sd = list(df = model@nuSigma@.Data,
+                            scale = model@ASigma@.Data))
     aggregate <- makeOutputAggregate(model, pos = hyper$age$scaleError@first + 1L,
                                      nChain = 2L, nIteration = 20L)
     ans.expected <- list(likelihood = likelihood,
@@ -1798,35 +1822,37 @@ test_that("makeOutputModel works with PoissonVaryingUseExp - AgFun", {
     ans.obtained <- makeOutputModel(model = model, pos = pos,
                                     mcmc = c(nChain = 2L, nIteration = 20L))
     likelihood <- list(rate = new("SkeletonManyValues",
-                       first = 21L,
-                       last = 40L,
-                       metadata = metadata),
+                                  first = 21L,
+                                  last = 40L,
+                                  metadata = metadata),
                        jumpRate = model@scaleTheta@.Data,
                        noProposal = new("SkeletonNAccept", nAttempt = 20L, first = 41L,
-                       iFirstInChain = c(1L, 11L)),
+                                        iFirstInChain = c(1L, 11L)),
                        acceptRate = new("SkeletonNAccept", nAttempt = 20L, first = 42L,
-                       iFirstInChain = c(1L, 11L)))
+                                        iFirstInChain = c(1L, 11L)))
     mu <- SkeletonMu(betas = model@betas,
                      margins = model@margins,
                      first = 43L,
                      metadata = model@metadataY)
     betas <- list("(Intercept)" = new("SkeletonBetaIntercept",
-                      first = 43L, last = 43L),
+                                      first = 43L, last = 43L),
                   sex = new("SkeletonBetaTerm",
-                      first = 44L,
-                      last = 45L,
-                      metadata = metadata[1]),
+                            first = 44L,
+                            last = 45L,
+                            metadata = metadata[1]),
                   age = new("SkeletonBetaTerm",
-                      first = 46L,
-                      last = 55L,
-                      metadata = metadata[2]))
+                            first = 46L,
+                            last = 55L,
+                            metadata = metadata[2]))
     sigma <- new("SkeletonOneValues", first = 56L)
     prior <- c(betas, list(mean = mu), list(sd = sigma))
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
                   age = makeOutputPrior(prior = model@priorsBetas[[3]],
-                      metadata = model@metadataY[2],
-                      pos = 57L))
+                                        metadata = model@metadataY[2],
+                                        pos = 57L),
+                  sd = list(df = model@nuSigma@.Data,
+                            scale = model@ASigma@.Data))
     aggregate <- makeOutputAggregate(model, pos = hyper$age$scaleError@first + 1L,
                                      nChain = 2L, nIteration = 20L)
     ans.expected <- list(likelihood = likelihood,
@@ -1887,7 +1913,9 @@ test_that("makeOutputModel works with PoissonVaryingUseExp - AgPoisson", {
                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
                   age = makeOutputPrior(prior = model@priorsBetas[[3]],
                       metadata = model@metadataY[2],
-                      pos = 57L))
+                      pos = 57L),
+                  sd = list(df = model@nuSigma@.Data,
+                            scale = model@ASigma@.Data))
     aggregate <- makeOutputAggregate(model, pos = hyper$age$scaleError@first + 1L,
                                      nChain = 2L, nIteration = 20L)
     ans.expected <- list(likelihood = likelihood,
@@ -1951,7 +1979,9 @@ test_that("makeOutputModel works with CMP - no aggregate", {
                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
                   age = makeOutputPrior(prior = model@priorsBetas[[3]],
                                         metadata = model@metadataY[2],
-                                        pos = 67L))
+                                        pos = 67L),
+                  sd = list(df = model@nuSigma@.Data,
+                            scale = model@ASigma@.Data))
     ans.expected <- list(likelihood = likelihood, prior = prior, hyper = hyper)
     expect_identical(ans.obtained, ans.expected)
 })

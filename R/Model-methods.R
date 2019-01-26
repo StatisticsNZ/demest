@@ -759,6 +759,8 @@ setMethod("makeOutputModel",
               names.betas <- model@namesBetas
               margins <- model@margins
               dims <- model@dims
+              dfSigma <- model@nuSigma@.Data
+              scaleSigma <- model@ASigma@.Data
               n.beta <- length(betas.obj)
               n.attempt <- as.integer(prod(dim(metadata)))
               nChain <- mcmc["nChain"]
@@ -829,6 +831,8 @@ setMethod("makeOutputModel",
                   pos <- pos + changeInPos(hyper[[i]])
               }
               names(hyper) <- names.betas
+              hyper <- c(hyper,
+                         list(sd = list(df = dfSigma, scale = scaleSigma)))
               ## assemble return value
               prior <- c(betas, list(mean = mu), list(sd = sigma))
               if (methods::is(model, "Aggregate")) {
@@ -871,6 +875,8 @@ setMethod("makeOutputModel",
               names.betas <- model@namesBetas
               margins <- model@margins
               dims <- model@dims
+              dfSigma <- model@nuSigma@.Data
+              scaleSigma <- model@ASigma@.Data
               n.beta <- length(betas.obj)
               n.attempt <- as.integer(prod(dim(metadata)))
               nChain <- mcmc["nChain"]
@@ -931,6 +937,8 @@ setMethod("makeOutputModel",
                   pos <- pos + changeInPos(hyper[[i]])
               }
               names(hyper) <- names.betas
+              hyper <- c(hyper,
+                         list(sd = list(df = dfSigma, scale = scaleSigma)))
               ## return value
               likelihood <- list(prob = theta,
                                  jumpProb = scale.theta,
@@ -960,6 +968,8 @@ setMethod("makeOutputModel",
               names.betas <- model@namesBetas
               margins <- model@margins
               dims <- model@dims
+              dfSigma <- model@nuSigma@.Data
+              scaleSigma <- model@ASigma@.Data
               struc.zero.array <- model@strucZeroArray
               n.beta <- length(betas.obj)
               n.attempt <- as.integer(prod(dim(metadata)) - sum(struc.zero.array == 0L))
@@ -1038,6 +1048,8 @@ setMethod("makeOutputModel",
                   pos <- pos + changeInPos(hyper[[i]])
               }
               names(hyper) <- names.betas
+              hyper <- c(hyper,
+                         list(sd = list(df = dfSigma, scale = scaleSigma)))
               ## return value
               likelihood <- list(theta,
                                  jumpMean = scale.theta,
@@ -1079,6 +1091,8 @@ setMethod("makeOutputModel",
               names.betas <- model@namesBetas
               margins <- model@margins
               dims <- model@dims
+              dfSigma <- model@nuSigma@.Data
+              scaleSigma <- model@ASigma@.Data
               struc.zero.array <- model@strucZeroArray
               n.beta <- length(betas.obj)
               n.attempt <- as.integer(prod(dim(metadata)) - sum(struc.zero.array == 0L))
@@ -1178,6 +1192,8 @@ setMethod("makeOutputModel",
                   pos <- pos + changeInPos(hyper[[i]])
               }
               names(hyper) <- names.betas
+              hyper <- c(hyper,
+                         list(sd = list(df = dfSigma, scale = scaleSigma)))
               ## return value
               if (uses.exposure) {
                   likelihood <- list(rate = theta,
