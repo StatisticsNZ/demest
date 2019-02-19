@@ -448,13 +448,16 @@ rinvchisq1 <- function(df, scaleSq, useC = FALSE) {
     stopifnot(is.double(scaleSq))
     stopifnot(identical(length(scaleSq), 1L))
     stopifnot(!is.na(scaleSq))
-    stopifnot(scaleSq > 0)
     if (useC) {
         .Call(rinvchisq1_R, df, scaleSq)
     }
     else {
-        X <- stats::rchisq(n = 1, df = df)
-        df * scaleSq / X
+        if (scaleSq > 0) {
+            X <- stats::rchisq(n = 1, df = df)
+            df * scaleSq / X
+        }
+        else
+            0
     }
 }
 
@@ -2587,13 +2590,11 @@ printCMPSpecEqns <- function(object) {
 
 
 printCovariatesEqns <- function(object) {
-    AEtaIntercept <- object@AEtaIntercept@.Data
     AEtaCoef <- object@AEtaCoef@.Data
     meanEtaCoef <- object@meanEtaCoef@.Data
     nuEtaCoef <- object@nuEtaCoef@.Data
     n <- length(nuEtaCoef)
     cat("    covariate[j] ~ (Intercept) + data[j,] * coef\n")
-    cat("     (Intercept) ~ N(0, ", squaredOrNA(AEtaIntercept), ")\n", sep = "")
     if (n == 1L)
         cat("            coef ~ t(", nuEtaCoef, ", ", meanEtaCoef, ", ", squaredOrNA(AEtaCoef), ")\n",
             sep = "")
@@ -2605,7 +2606,6 @@ printCovariatesEqns <- function(object) {
 }
 
 printCovariatesDLMEqns <- function(object, isMain) {
-    AEtaIntercept <- object@AEtaIntercept@.Data
     AEtaCoef <- object@AEtaCoef@.Data
     meanEtaCoef <- object@meanEtaCoef@.Data
     nuEtaCoef <- object@nuEtaCoef@.Data
@@ -2614,7 +2614,6 @@ printCovariatesDLMEqns <- function(object, isMain) {
         cat("    covariate[j] ~ (Intercept) + data[j,] * coef\n")
     else
         cat("  covariate[k,l] ~ (Intercept) + data[k,l,] * coef\n")
-    cat("     (Intercept) ~ N(0, ", squaredOrNA(AEtaIntercept), ")\n", sep = "")
     if (n == 1L)
         cat("            coef ~ t(", nuEtaCoef, ", ", meanEtaCoef, ", ", squaredOrNA(AEtaCoef), ")\n",
             sep = "")
@@ -2839,20 +2838,12 @@ printLevelTrendEqns <- function(object, isMain, hasTrend) {
             cat("level[k-1,l] + errorLevel[k,l]\n")
     }
     if (isMain) {
-        if (!hasTrend || (hasTrend && has.level))
-            cat("        level[0] ~ N(0, ", squaredOrNA(AAlpha0), ")\n", sep = "")
-        else
-            cat("        level[0] = 0\n")
         if (hasTrend) {
             cat("        trend[0] ~ N(", meanDelta0, ", ", sep = "")
             cat(squaredOrNA(ADelta0), ")\n", sep = "")
         }
     }
     else {
-        if (!hasTrend || (hasTrend && has.level))
-            cat("      level[0,l] ~ N(0, ", squaredOrNA(AAlpha0), ")\n", sep = "")
-        else
-            cat("      level[0,l] = 0\n")
         if (hasTrend) {
             cat("      trend[0,l] ~ N(", meanDelta0, ", ", sep = "")
             cat(squaredOrNA(ADelta0), ")\n", sep = "")
@@ -3491,7 +3482,7 @@ squaredOrNA <- function(x) {
     if (is.na(x))
         x
     else {
-        if (isTRUE(all.equal(x, 1.0)))
+        if (isTRUE(all.equal(x, 0)) || isTRUE(all.equal(x, 1)))
             format(x, digits = 4)
         else
             paste0(format(x, digits = 4), "^2")

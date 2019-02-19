@@ -294,9 +294,9 @@ setClass("VarTDist",
              if (!is.double(object))
                  return(gettextf("does not have type \"%s\"",
                                  "double"))
-             ## 'object' all positive
-             if (any(object <= 0))
-                 return(gettext("non-positive values"))
+             ## 'object' all non-negative
+             if (any(object < 0))
+                 return(gettext("negative values"))
              TRUE
          })
 

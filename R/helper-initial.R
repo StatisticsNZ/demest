@@ -5,7 +5,6 @@
 ## HAS_TESTS            
 initialCov <- function(object, beta, metadata, sY, allStrucZero) {
     AEtaCoef <- object@AEtaCoef
-    AEtaIntercept <- object@AEtaIntercept
     contrastsArg <- object@contrastsArg
     data <- object@data
     formula <- object@formula
@@ -13,8 +12,7 @@ initialCov <- function(object, beta, metadata, sY, allStrucZero) {
     meanEtaCoef <- object@meanEtaCoef
     multEtaCoef <- object@multEtaCoef
     nuEtaCoef <- object@nuEtaCoef
-    AEtaIntercept <- makeAIntercept(A = AEtaIntercept,
-                                    sY = sY)
+    AEtaIntercept <- makeAIntercept(sY)
     Z <- makeZ(formula = formula[-2L],
                data = data,
                metadata = metadata,
@@ -916,15 +914,11 @@ makeAHalfTVec <- function(A, metadata, sY, mult) {
 }
 
 ## NO_TESTS
-makeAIntercept <- function(A, sY) {
-    if (is.na(A)) {
-        ans <- 10
-        if (!is.null(sY))
-            ans <- sY * ans
-        methods::new("Scale", ans)
-    }
-    else
-        methods::new("Scale", A)
+makeAIntercept <- function(sY) {
+    ans <- 10
+    if (!is.null(sY))
+        ans <- sY * ans
+    methods::new("Scale", ans)
 }
 
 ## NO_TESTS
@@ -1370,7 +1364,7 @@ makeCNoTrend <- function(K, C0 = NULL, sY, phi, phiKnown) {
                      1.0,
                      simplify = FALSE)
     if (is.null(C0)) {
-        A0 <- makeAIntercept(A = NA, sY = sY)
+        A0 <- makeAIntercept(sY)
         A0 <- as.double(A0)
         C0 <- A0^2
     }
@@ -1394,7 +1388,7 @@ makeCSeason <- function(K, nSeason, ASeason, C0 = NULL) {
 ## NO_TESTS
 makeCWithTrend <- function(K, C0 = NULL, sY, ADelta0, hasLevel = TRUE) {
     if (is.null(C0)) {
-        AAlpha <- makeAIntercept(A = NA, sY = sY)
+        AAlpha <- makeAIntercept(sY)
         ADelta <- ADelta0@.Data
         C0 <- c(AAlpha^2, ADelta^2)
         C0 <- diag(C0,

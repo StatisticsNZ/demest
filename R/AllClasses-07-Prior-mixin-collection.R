@@ -109,8 +109,7 @@ setClass("SpecCovariatesMixin",
                       "MeanEtaCoefMixin",
                       "MultEtaCoefMixin",
                       "NuEtaCoefMixin",
-                      "SpecAEtaCoefMixin",
-                      "SpecAEtaInterceptMixin"),
+                      "SpecAEtaCoefMixin"),
          validity = function(object) {
              data <- object@data
              formula <- object@formula
