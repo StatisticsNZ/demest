@@ -1598,10 +1598,6 @@ setClass("SpecAEtaCoefMixin",
          slots = c(AEtaCoef = "SpecScaleVec"),
          contains = "VIRTUAL")
 
-setClass("SpecAEtaInterceptMixin",
-         slots = c(AEtaIntercept = "SpecScale"),
-         contains = "VIRTUAL")
-
 setClass("SpecALevelComponentWeightMixMixin",
          slots = c(ALevelComponentWeightMix = "SpecScale"),
          contains = "VIRTUAL")

@@ -651,7 +651,6 @@ setMethod("makeOutputPrior",
               Z <- prior@Z@.Data
               coef <- makeOutputPriorCoef(Z = Z,
                                           pos = pos)
-              scaleIntercept <- prior@AEtaIntercept@.Data
               meanCoef <- prior@meanEtaCoef@.Data
               dfCoef <- prior@nuEtaCoef@.Data
               scaleCoef <- prior@AEtaCoef@.Data
@@ -660,7 +659,6 @@ setMethod("makeOutputPrior",
               dfScaleError <- prior@nuTau@.Data
               scaleScaleError <- prior@ATau@.Data
               list(coef = coef,
-                   scaleIntercept = scaleIntercept,
                    meanCoef = meanCoef,
                    dfCoef = dfCoef,
                    scaleCoef = scaleCoef,
@@ -693,11 +691,9 @@ setMethod("makeOutputPrior",
               Z <- prior@Z@.Data
               coef <- makeOutputPriorCoef(Z = Z,
                                           pos = pos)
-              scaleIntercept <- prior@AEtaIntercept@.Data
               meanCoef <- prior@meanEtaCoef@.Data
               dfCoef <- prior@nuEtaCoef@.Data
               scaleCoef <- prior@AEtaCoef@.Data
-              scaleIntercept <- prior@AEtaIntercept@.Data
               meanCoef <- prior@meanEtaCoef@.Data
               dfCoef <- prior@nuEtaCoef@.Data
               scaleCoef <- prior@AEtaCoef@.Data
@@ -707,7 +703,6 @@ setMethod("makeOutputPrior",
               dfScaleError <- prior@nuTau@.Data
               scaleScaleError <- prior@ATau@.Data
               list(coef = coef,
-                   scaleIntercept = scaleIntercept,
                    meanCoef = meanCoef,
                    dfCoef = dfCoef,
                    scaleCoef = scaleCoef,
@@ -977,7 +972,6 @@ setMethod("makeOutputPrior",
               pos <- pos + 1L
               coef <- makeOutputPriorCoef(Z = Z,
                                           pos = pos)
-              scaleIntercept <- prior@AEtaIntercept@.Data
               meanCoef <- prior@meanEtaCoef@.Data
               dfCoef <- prior@nuEtaCoef@.Data
               scaleCoef <- prior@AEtaCoef@.Data
@@ -991,7 +985,6 @@ setMethod("makeOutputPrior",
                    scaleScaleLevel = scaleScaleLevel,
                    damp = damp,
                    coef = coef,
-                   scaleIntercept = scaleIntercept,
                    meanCoef = meanCoef,
                    dfCoef = dfCoef,
                    scaleCoef = scaleCoef,
@@ -1043,7 +1036,6 @@ setMethod("makeOutputPrior",
               pos <- pos + 1L
               coef <- makeOutputPriorCoef(Z = Z,
                                           pos = pos)
-              scaleIntercept <- prior@AEtaIntercept@.Data
               meanCoef <- prior@meanEtaCoef@.Data
               dfCoef <- prior@nuEtaCoef@.Data
               scaleCoef <- prior@AEtaCoef@.Data
@@ -1061,7 +1053,6 @@ setMethod("makeOutputPrior",
                    scaleScaleTrend = scaleScaleTrend,
                    damp = damp,
                    coef = coef,
-                   scaleIntercept = scaleIntercept,
                    meanCoef = meanCoef,
                    dfCoef = dfCoef,
                    scaleCoef = scaleCoef,
@@ -1113,7 +1104,6 @@ setMethod("makeOutputPrior",
               pos <- pos + 1L
               coef <- makeOutputPriorCoef(Z = Z,
                                           pos = pos)
-              scaleIntercept <- prior@AEtaIntercept@.Data
               meanCoef <- prior@meanEtaCoef@.Data
               dfCoef <- prior@nuEtaCoef@.Data
               scaleCoef <- prior@AEtaCoef@.Data
@@ -1131,7 +1121,6 @@ setMethod("makeOutputPrior",
                    dfScaleSeason = dfScaleSeason,
                    scaleScaleSeason = scaleScaleSeason,
                    coef = coef,
-                   scaleIntercept = scaleIntercept,
                    meanCoef = meanCoef,
                    dfCoef = dfCoef,
                    scaleCoef = scaleCoef,
@@ -1196,7 +1185,6 @@ setMethod("makeOutputPrior",
               pos <- pos + 1L
               coef <- makeOutputPriorCoef(Z = Z,
                                           pos = pos)
-              scaleIntercept <- prior@AEtaIntercept@.Data
               meanCoef <- prior@meanEtaCoef@.Data
               dfCoef <- prior@nuEtaCoef@.Data
               scaleCoef <- prior@AEtaCoef@.Data
@@ -1218,7 +1206,6 @@ setMethod("makeOutputPrior",
                    dfScaleSeason = dfScaleSeason,
                    scaleScaleSeason = scaleScaleSeason,
                    coef = coef,
-                   scaleIntercept = scaleIntercept,
                    meanCoef = meanCoef,
                    dfCoef = dfCoef,
                    scaleCoef = scaleCoef,
@@ -1490,7 +1477,6 @@ setMethod("makeOutputPrior",
               pos <- pos + 1L
               coef <- makeOutputPriorCoef(Z = Z,
                                           pos = pos)
-              scaleIntercept <- prior@AEtaIntercept@.Data
               meanCoef <- prior@meanEtaCoef@.Data
               dfCoef <- prior@nuEtaCoef@.Data
               scaleCoef <- prior@AEtaCoef@.Data
@@ -1505,7 +1491,6 @@ setMethod("makeOutputPrior",
                    scaleScaleLevel = scaleScaleLevel,
                    damp = damp,
                    coef = coef,
-                   scaleIntercept = scaleIntercept,
                    meanCoef = meanCoef,
                    dfCoef = dfCoef,
                    scaleCoef = scaleCoef,
@@ -1557,7 +1542,6 @@ setMethod("makeOutputPrior",
               pos <- pos + 1L
               coef <- makeOutputPriorCoef(Z = Z,
                                           pos = pos)
-              scaleIntercept <- prior@AEtaIntercept@.Data
               meanCoef <- prior@meanEtaCoef@.Data
               dfCoef <- prior@nuEtaCoef@.Data
               scaleCoef <- prior@AEtaCoef@.Data
@@ -1576,7 +1560,6 @@ setMethod("makeOutputPrior",
                    scaleScaleTrend = scaleScaleTrend,
                    damp = damp,
                    coef = coef,
-                   scaleIntercept = scaleIntercept,
                    meanCoef = meanCoef,
                    dfCoef = dfCoef,
                    scaleCoef = scaleCoef,
@@ -1628,7 +1611,6 @@ setMethod("makeOutputPrior",
               pos <- pos + 1L
               coef <- makeOutputPriorCoef(Z = Z,
                                           pos = pos)
-              scaleIntercept <- prior@AEtaIntercept@.Data
               meanCoef <- prior@meanEtaCoef@.Data
               dfCoef <- prior@nuEtaCoef@.Data
               scaleCoef <- prior@AEtaCoef@.Data
@@ -1647,7 +1629,6 @@ setMethod("makeOutputPrior",
                    dfScaleSeason = dfScaleSeason,
                    scaleScaleSeason = scaleScaleSeason,
                    coef = coef,
-                   scaleIntercept = scaleIntercept,
                    meanCoef = meanCoef,
                    dfCoef = dfCoef,
                    scaleCoef = scaleCoef,
@@ -1712,7 +1693,6 @@ setMethod("makeOutputPrior",
               pos <- pos + 1L
               coef <- makeOutputPriorCoef(Z = Z,
                                           pos = pos)
-              scaleIntercept <- prior@AEtaIntercept@.Data
               meanCoef <- prior@meanEtaCoef@.Data
               dfCoef <- prior@nuEtaCoef@.Data
               scaleCoef <- prior@AEtaCoef@.Data
@@ -1735,7 +1715,6 @@ setMethod("makeOutputPrior",
                    dfScaleSeason = dfScaleSeason,
                    scaleScaleSeason = scaleScaleSeason,
                    coef = coef,
-                   scaleIntercept = scaleIntercept,
                    meanCoef = meanCoef,
                    dfCoef = dfCoef,
                    scaleCoef = scaleCoef,

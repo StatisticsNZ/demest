@@ -176,9 +176,6 @@ Components <- function(scale = HalfT()) {
 #' Shrinking coefficient' estimates towards 0 protects against over-fitting.
 #'
 #' The intercept term is assumed to have a diffuse normal distribution.
-#' The rules for choosing default values for the standard deviation are
-#' described in the documentation for \code{\link{Norm}}. \code{mean}
-#' must equal 0 (the default).
 #' 
 #' The help for \code{\link[stats]{model.matrix}} contains a discussion of
 #' contrasts.  With Bayesian models that have informative priors, such as the
@@ -213,11 +210,9 @@ Components <- function(scale = HalfT()) {
 #'            data = reg.data)
 
 #'
-#' ## override the default settings for
-#' ## intercept and coefficients
+#' ## override the default settings
 #' Covariates(mean ~ income + area,
 #'            data = reg.data,
-#'            intercept = Norm(sd = 5),
 #'            coef = TDist(scale = 0.25))
 #'
 #' ## override the default 'treatment' contrast
@@ -239,8 +234,7 @@ Components <- function(scale = HalfT()) {
 #' Covariates(infant = TRUE)
 #' @export 
 Covariates <- function(formula = NULL, data = NULL, infant = FALSE,
-                       contrastsArg = list(), intercept = Norm(),
-                       coef = TDist()) {
+                       contrastsArg = list(), coef = TDist()) {
     checkCovariateFormula(formula)
     checkCovariateData(x = data, name = "data")
     checkModelMatrix(formula = formula,
@@ -260,17 +254,9 @@ Covariates <- function(formula = NULL, data = NULL, infant = FALSE,
         data <- methods::new("data.frame")
         formula <- methods::new("formula")
     }
-    if (!methods::is(intercept, "Norm"))
-        stop(gettextf("'%s' has class \"%s\"",
-                      "intercept", class(intercept)))
     if (!methods::is(coef, "TDist"))
         stop(gettextf("'%s' has class \"%s\"",
                       "coef", class(coef)))
-    mean <- intercept@mean@.Data
-    if (!isTRUE(all.equal(mean, 0)))
-        stop(gettextf("'%s' in '%s' does not equal %d",
-                      "mean", "intercept", 0L))
-    AEtaIntercept <- intercept@A
     AEtaCoef <- coef@AEtaCoef
     meanEtaCoef <- coef@meanEtaCoef
     multEtaCoef <- coef@multEtaCoef
@@ -278,7 +264,6 @@ Covariates <- function(formula = NULL, data = NULL, infant = FALSE,
     infant <- methods::new("LogicalFlag", infant)
     methods::new("Covariates",
                  AEtaCoef = AEtaCoef,
-                 AEtaIntercept = AEtaIntercept,
                  contrastsArg = contrastsArg,
                  data = data,
                  formula = formula,
@@ -672,7 +657,6 @@ DLM <- function(along = NULL, level = Level(), trend = Trend(),
     if (methods::is(covariates, "Covariates")) {
         has.covariates <- TRUE
         AEtaCoef <- covariates@AEtaCoef
-        AEtaIntercept <- covariates@AEtaIntercept
         contrastsArg <- covariates@contrastsArg
         data <- covariates@data
         formula <- covariates@formula
@@ -802,7 +786,6 @@ DLM <- function(along = NULL, level = Level(), trend = Trend(),
         methods::new("SpecDLMNoTrendNormCovNoSeason",
                      AAlpha = AAlpha,
                      AEtaCoef = AEtaCoef,
-                     AEtaIntercept = AEtaIntercept,
                      ATau = ATau,
                      along = along,
                      contrastsArg = contrastsArg,
@@ -831,7 +814,6 @@ DLM <- function(along = NULL, level = Level(), trend = Trend(),
                      ADelta = ADelta,
                      ADelta0 = ADelta0,
                      AEtaCoef = AEtaCoef,
-                     AEtaIntercept = AEtaIntercept,
                      ATau = ATau,
                      along = along,
                      contrastsArg = contrastsArg,
@@ -864,7 +846,6 @@ DLM <- function(along = NULL, level = Level(), trend = Trend(),
         methods::new("SpecDLMNoTrendNormCovWithSeason",
                      AAlpha = AAlpha,
                      AEtaCoef = AEtaCoef,
-                     AEtaIntercept = AEtaIntercept,
                      ASeason = ASeason,
                      ATau = ATau,
                      along = along,
@@ -898,7 +879,6 @@ DLM <- function(along = NULL, level = Level(), trend = Trend(),
                      ADelta = ADelta,
                      ADelta0 = ADelta0,
                      AEtaCoef = AEtaCoef,
-                     AEtaIntercept = AEtaIntercept,
                      ASeason = ASeason,
                      ATau = ATau,
                      along = along,
@@ -1038,7 +1018,6 @@ DLM <- function(along = NULL, level = Level(), trend = Trend(),
         methods::new("SpecDLMNoTrendRobustCovNoSeason",
                      AAlpha = AAlpha,
                      AEtaCoef = AEtaCoef,
-                     AEtaIntercept = AEtaIntercept,
                      ATau = ATau,
                      along = along,
                      contrastsArg = contrastsArg,
@@ -1068,7 +1047,6 @@ DLM <- function(along = NULL, level = Level(), trend = Trend(),
                      ADelta = ADelta,
                      ADelta0 = ADelta0,
                      AEtaCoef = AEtaCoef,
-                     AEtaIntercept = AEtaIntercept,
                      ATau = ATau,
                      along = along,
                      contrastsArg = contrastsArg,
@@ -1102,7 +1080,6 @@ DLM <- function(along = NULL, level = Level(), trend = Trend(),
         methods::new("SpecDLMNoTrendRobustCovWithSeason",
                      AAlpha = AAlpha,
                      AEtaCoef = AEtaCoef,
-                     AEtaIntercept = AEtaIntercept,
                      ASeason = ASeason,
                      ATau = ATau,
                      along = along,
@@ -1137,7 +1114,6 @@ DLM <- function(along = NULL, level = Level(), trend = Trend(),
                      ADelta = ADelta,
                      ADelta0 = ADelta0,
                      AEtaCoef = AEtaCoef,
-                     AEtaIntercept = AEtaIntercept,
                      ASeason = ASeason,
                      ATau = ATau,
                      along = along,
@@ -1291,7 +1267,6 @@ Exch <- function(covariates = NULL, error = Error()) {
             stop(gettextf("'%s' has class",
                           "covariates", class(covariates)))
         AEtaCoef <- covariates@AEtaCoef
-        AEtaIntercept <- covariates@AEtaIntercept
         contrastsArg <- covariates@contrastsArg
         data <- covariates@data
         formula <- covariates@formula
@@ -1330,7 +1305,6 @@ Exch <- function(covariates = NULL, error = Error()) {
     else if (!is.robust && has.covariates) {
         methods::new("SpecExchNormCov",
                      AEtaCoef = AEtaCoef,
-                     AEtaIntercept = AEtaIntercept,
                      ATau = ATau,
                      contrastsArg = contrastsArg,
                      data = data,
@@ -1346,7 +1320,6 @@ Exch <- function(covariates = NULL, error = Error()) {
     else {
         methods::new("SpecExchRobustCov",
                      AEtaCoef = AEtaCoef,
-                     AEtaIntercept = AEtaIntercept,
                      ATau = ATau,
                      contrastsArg = contrastsArg,
                      data = data,
@@ -1813,7 +1786,6 @@ Mix <- function(along = NULL,
             stop(gettextf("'%s' has class",
                           "covariates", class(covariates)))
         AEtaCoef <- covariates@AEtaCoef
-        AEtaIntercept <- covariates@AEtaIntercept
         contrastsArg <- covariates@contrastsArg
         data <- covariates@data
         formula <- covariates@formula
@@ -1875,35 +1847,12 @@ Mix <- function(along = NULL,
 ## NO_TESTS
 #' Specify a normal distribution.
 #'
-#' Specify a normal distribution with mean \code{mean}
-#' and standard deviation \code{sd}.
+#' Specify a normal distribution. \code{Norm} is used to specify
+#' a prior (on the log scale) for
+#' the dispersion parameter in a \code{\link{CMP}} model.
 #'
-#' The default for \code{mean} is always 0, but the default
-#' for \code{sd} depends on context.
-#'
-#' \code{Norm} is used to specify the prior for the intercept in
-#' function \code{\link{Covariates}}.  If a value for \code{sd}
-#' is not specified, a default value is determined when function
-#' \code{\link{estimateModel}}, \code{\link{estimateCounts}}, or
-#' \code{\link{estimateAccount}} is called.  Let \eqn{s} be the standard
-#' deviation of data \eqn{y}, or of \code{log(y)} in the case of a Poisson
-#' model without exposure.  Then the default for \code{sd} is
-#' determined as follows.
-#' 
-#' \tabular{ll}{
-#'   \strong{Model} \tab \strong{Default} \cr
-#'   Poisson with exposure \tab \eqn{10} \cr
-#'   Poisson without exposure \tab  \eqn{10s} \cr
-#'   binomial \tab \eqn{10} \cr
-#'   normal \tab  \eqn{10s}
-#' }
-#'
-#' {Norm} is also used to specify a prior (on the log scale) for
-#' the dispersion parameter in a \code{\link{CMP}} model. In this
-#' case \code{sd} defaults to 1.
-#'
-#' @param mean Mean.
-#' @param sd Standard deviation. A positive number.
+#' @param mean Mean. Defaults to 0.
+#' @param sd Standard deviation. A positive number. Defaults to 1.
 #'
 #' @return An object of class \code{\linkS4class{Norm}}.
 #'
@@ -1914,7 +1863,7 @@ Mix <- function(along = NULL,
 #' Norm(sd = 0.5)
 #' Norm(mean = 0.5, sd = 1.5)
 #' @export
-Norm <- function(mean = 0, sd = NULL) {
+Norm <- function(mean = 0, sd = 1) {
     mean <- checkAndTidyMeanOrProb(mean, name = "mean")
     mean <- new("Parameter", mean)
     A <- checkAndTidySpecScale(x = sd, name = "scale")

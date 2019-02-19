@@ -79,15 +79,11 @@ checkPriorInform_Error <- function(object) {
 
 ## HAS_TESTS
 checkPriorInform_Covariates <- function(object) {
-    value.A.eta.intercept <- checkPriorInform_required(object = object,
-                                                       nameSlot = "AEtaIntercept",
-                                                       nameArg = "sd",
-                                                       nameFun = "Norm")
     value.A.eta.coef <- checkPriorInform_required(object = object,
                                                   nameSlot = "AEtaCoef",
                                                   nameArg = "scale",
                                                   nameFun = "TDist")
-    for (value in list(value.A.eta.intercept, value.A.eta.coef))
+    for (value in list(value.A.eta.coef))
         if (!is.null(value))
             return(gettextf("%s when specifying '%s'",
                             value, "covariates"))
@@ -358,12 +354,9 @@ drawEta <- function(prior, useC = FALSE) {
     else {
         eta <- prior@eta@.Data
         P <- prior@P@.Data
-        A.eta.intercept <- prior@AEtaIntercept@.Data
         U.eta.coef <- prior@UEtaCoef@.Data
         mean.eta.coef <- prior@meanEtaCoef@.Data
-        eta[1L] <- rnorm(n = 1L,
-                         mean = 0,
-                         sd = A.eta.intercept)
+        eta[1L] <- 0
         for (p in seq_len(P - 1L)) {
             mean <- mean.eta.coef[p]
             sd <- sqrt(U.eta.coef[p])

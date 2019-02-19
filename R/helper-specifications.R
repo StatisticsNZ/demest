@@ -332,6 +332,22 @@ checkModelMatrix <- function(formula, data, contrastsArg) {
     NULL
 }
 
+
+## NO_TESTS
+checkAndTidyParameterVector <- function(x, name) {
+    ## 'x' has no missing values
+    if (any(is.na(x)))
+        stop(gettextf("'%s' has missing values",
+                      name))
+    ## 'x' is numeric
+    if (!is.numeric(x))
+        stop(gettextf("'%s' is not numeric",
+                      name))
+    x <- as.numeric(x)
+    new("ParameterVector", x)
+}
+
+
 ## NO_TESTS
 checkNonNegativeNumeric <- function(x, name) {
     ## 'x' has length 1
@@ -353,9 +369,8 @@ checkNonNegativeNumeric <- function(x, name) {
     NULL
 }
 
-
 ## NO_TESTS
-checkAndTidyParameterVector <- function(x, name) {
+checkNonNegativeNumericVector <- function(x, name) {
     ## 'x' has no missing values
     if (any(is.na(x)))
         stop(gettextf("'%s' has missing values",
@@ -364,9 +379,13 @@ checkAndTidyParameterVector <- function(x, name) {
     if (!is.numeric(x))
         stop(gettextf("'%s' is not numeric",
                       name))
-    x <- as.numeric(x)
-    new("ParameterVector", x)
+    ## 'x' is non-negative
+    if (any(x < 0))
+        stop(gettextf("'%s' has negative values",
+                      name))
+    NULL
 }
+
 
 ## NO_TESTS
 checkPositiveInteger <- function(x, name) {
@@ -617,7 +636,7 @@ checkAndTidySpecScaleVec <- function(x, name) {
     if (is.null(x))
         x <- as.double(NA)
     else {
-        checkPositiveNumericVector(x = x, name = name)
+        checkNonNegativeNumericVector(x = x, name = name)
         x <- as.double(x)
     }
     methods::new("SpecScaleVec", x)

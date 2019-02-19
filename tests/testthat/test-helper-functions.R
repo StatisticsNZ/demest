@@ -1574,6 +1574,10 @@ test_that("rinvchisq1 gives valid answer", {
         ans2 <- 4 * 3 / X
         expect_identical(ans1, ans2)
     }
+    ## scale is 0
+    ans.obtained <- rinvchisq1(df = 4, scale = 0)
+    ans.expected <- 0
+    expect_identical(ans.obtained, ans.expected)
 })
 
 test_that("R and C versions of rinvchisq1 give same answer", {
@@ -1590,6 +1594,10 @@ test_that("R and C versions of rinvchisq1 give same answer", {
         else
             expect_equal(ans.R, ans.C)
     }
+    ## scale is 0
+    ans.R <- rinvchisq1(df = 4, scale = 0, useC = FALSE)
+    ans.C <- rinvchisq1(df = 4, scale = 0, useC = TRUE)
+    expect_identical(ans.R, ans.C)
 })
 
 test_that("rcateg1 gives valid answer", {

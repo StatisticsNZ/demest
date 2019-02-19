@@ -167,9 +167,12 @@ rhalftTrunc1(double df, double scale, double max)
 double
 rinvchisq1(double df, double scaleSq)
 {
+  if (scaleSq > 0) {
     double x = rgamma(df / 2.0, 2.0);
-    
     return df * scaleSq / x;
+  }
+  else
+    return 0;
 }
 
 SEXP

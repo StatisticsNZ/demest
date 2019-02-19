@@ -19,14 +19,11 @@ setClass("Classes",
 #' @slot data A data.frame holding the covariate data.
 #' @slot contrastsArg A named list of contrasts, as described in the
 #' documentation for \code{\link[stats]{model.matrix}}.
-#' @slot AEtaIntercept Scale parameter for the normal
-#' prior for the intercept.
-#' @slot multEtaIntercept Multiplier for \code{AEtaIntercept}.
-#' @slot nuEtaCoef Degrees of freedom for the t priors
+#' #' @slot nuEtaCoef Degrees of freedom for the t priors
 #' for the coefficients.
 #' @slot AEtaCoef Scale parameter for the t priors
 #' for the coefficients.
-#' @slot multEtaIntercept Multiplier for \code{AEtaCoef}.
+#' @slot multEtaCoef Multiplier for \code{AEtaCoef}.
 #'
 #' @seealso Objects of class \code{Covariates} are created
 #' by a call to function \code{\link{Covariates}}.
