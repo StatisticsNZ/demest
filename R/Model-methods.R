@@ -1,7 +1,160 @@
 
+## checkAllDimensionsHavePriors ###########################################################
+
+## HAS_TESTS
+setMethod("checkAllDimensionsHavePriors",
+          signature(model = "SpecVarying"),
+          function(model, y) {
+              name.response <- model@nameY@.Data
+              names.specs <- model@namesSpecsPriors
+              names.y <- names(y)
+              for (name in names.y) {
+                  if (!(name %in% names.specs))
+                      stop(gettextf("no prior specified for \"%s\" dimension in model for '%s'",
+                                    name, name.response))
+              }
+              if (!("(Intercept)" %in% names.specs))
+                  stop(gettextf("no prior specified for intercept in model for '%s'",
+                                name.response))
+              NULL
+          })
+
+
+## checkPriorsAreInformative ###########################################################
+
+## HAS_TESTS
+setMethod("checkPriorsAreInformative",
+          signature(object = "SpecVarying"),
+          function(object) {
+              name.model <- object@nameY[[1L]]
+              specs.priors <- object@specsPriors
+              names.specs.priors <- object@namesSpecsPriors
+              for (i in seq_along(specs.priors)) {
+                  value <- checkPriorIsInformative(specs.priors[[i]])
+                  if (!is.null(value))
+                      stop(gettextf("problem with prior for '%s' in model for '%s' : %s",
+                                    names.specs.priors[i], name.model, value))
+              }
+              NULL
+          })
+
+## checkPriorSDInformative ############################################################
+
+## HAS_TESTS
+setMethod("checkPriorSDInformative",
+          signature(object = "SpecVarying"),
+          function(object) {
+              name.model <- object@nameY[[1L]]
+              value.mult.sigma <- checkPriorInform_prohibited(object = object,
+                                                              nameSlot = "multSigma",
+                                                              nameArg = "mult",
+                                                              nameFun = "HalfT")
+              ## no need to allow for partial matching, since 'priorSD'
+              ## argument follows '...'
+              i.prior.sd <- match("priorSD", names(object@call), nomatch = 0L)
+              specified.prior.sd <- i.prior.sd > 0L
+              if (specified.prior.sd) {
+                  spec.prior.sd <- object@call[[i.prior.sd]]
+                  ## allow for partial matching of 'scale' parameter
+                  i.scale.prior.sd <- pmatch(names(spec.prior.sd), "scale", nomatch = 0L)
+                  if (any(i.scale.prior.sd > 0L))
+                      value.A.sigma <- NULL
+                  else
+                      value.A.sigma <- gettextf("'%s' argument not supplied in call to '%s'",
+                                                "scale", "HalfT")
+              }
+              else
+                  value.A.sigma <- gettextf("'%s' argument not supplied in call to '%s'",
+                                            "priorSD", "Model")
+              for (value in list(value.mult.sigma, value.A.sigma))
+                  if (!is.null(value))
+                      stop(gettextf("problem with specification of '%s' in model for '%s' : %s",
+                                    "priorSD", name.model, value))
+              NULL
+          })
+
+
+## SpecBinomialVarying does not have multSigma slot
+## HAS_TESTS
+setMethod("checkPriorSDInformative",
+          signature(object = "SpecBinomialVarying"),
+          function(object) {
+              name.model <- object@nameY[[1L]]
+              ## no need to allow for partial matching, since 'priorSD'
+              ## argument follows '...'
+              i.prior.sd <- match("priorSD", names(object@call), nomatch = 0L)
+              specified.prior.sd <- i.prior.sd > 0L
+              if (specified.prior.sd) {
+                  spec.prior.sd <- object@call[[i.prior.sd]]
+                  ## allow for partial matching of 'scale' parameter
+                  i.scale.prior.sd <- pmatch(names(spec.prior.sd), "scale", nomatch = 0L)
+                  if (any(i.scale.prior.sd > 0L))
+                      value <- NULL
+                  else
+                      value <- gettextf("'%s' argument not supplied in call to '%s'",
+                                        "scale", "HalfT")
+              }
+              else
+                  value <- gettextf("'%s' argument not supplied in call to '%s'",
+                                    "priorSD", "Model")
+              if (!is.null(value))
+                  stop(gettextf("problem with specification of '%s' in model for '%s' : %s",
+                                "priorSD", name.model, value))
+              NULL
+          })
+
+
+## drawHyperParam ######################################################################
+
+
+## TODO - ONCE FUNCTIONS ARE TRANSLATED SET useC TO TRUE
+## HAS_TESTS
+setMethod("drawHyperParam",
+          signature(model = "Varying"),
+          function(model) {
+              model <- drawPriors(model)
+              model <- drawBetas(model)
+              model <- drawSigma_Varying(model)
+              model
+          })
+
+
+
+## drawModelNotUseExp ##################################################################
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawModelNotUseExp",
+          signature(object = "PoissonVaryingNotUseExp"),
+          function(object, y, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(identical(length(y), length(object@theta)))
+              stopifnot(is.integer(y))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawModelNotUseExp_PoissonVarying_R, object, y)
+                  else
+                      .Call(drawModelNotUseExp_R, object, y)
+              }
+              else {
+                  object <- drawPriors(object)
+                  object <- drawBetas(object)
+                  object <- drawSigma_Varying(object)
+                  object <- updateTheta_PoissonVaryingNotUseExp(object,
+                                                                y = y,
+                                                                useC = TRUE)
+                  object
+              }
+          })
+
+
+
 ## drawModelUseExp #####################################################################
 
-
+## READY_TO_TRANSLATE
 ## HAS_TESTS
 setMethod("drawModelUseExp",
           signature(object = "BinomialVarying"),
@@ -31,7 +184,75 @@ setMethod("drawModelUseExp",
                   object <- drawSigma_Varying(object)
                   object <- updateTheta_BinomialVarying(object,
                                                         y = y,
-                                                        exposure = exposure)
+                                                        exposure = exposure,
+                                                        useC = TRUE)
+                  object
+              }
+          })
+
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawModelUseExp",
+          signature(object = "PoissonVaryingUseExp"),
+          function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(identical(length(y), length(object@theta)))
+              stopifnot(is.integer(y))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
+              ## exposure
+              stopifnot(is.double(exposure))
+              stopifnot(all(exposure[!is.na(exposure)] >= 0))
+              ## y and exposure
+              stopifnot(identical(length(exposure), length(y)))
+              stopifnot(all(is.na(exposure) <= is.na(y)))
+              stopifnot(all(y@.Data[!is.na(y@.Data) & (exposure@.Data == 0L)] == 0))
+              stopifnot(all(y@.Data[!is.na(y@.Data) & (exposure@.Data == 0L)] == 0))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawModelUseExp_PoissonVarying_R, object, y, exposure)
+                  else
+                      .Call(drawModelUseExp_R, object, y, exposure)
+              }
+              else {
+                  object <- drawPriors(object)
+                  object <- drawBetas(object)
+                  object <- drawSigma_Varying(object)
+                  object <- updateTheta_PoissonVaryingUseExp(object,
+                                                             y = y,
+                                                             exposure = exposure,
+                                                             useC = TRUE)
+                  object
+              }
+          })
+
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawModelUseExp",
+          signature(object = "PoissonBinomialMixture"),
+          function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(is.integer(y))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
+              ## exposure
+              stopifnot(is.integer(exposure))
+              stopifnot(all(exposure[!is.na(exposure)] >= 0L))
+              ## y and exposure
+              stopifnot(identical(length(exposure), length(y)))
+              stopifnot(all(is.na(exposure) <= is.na(y)))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawModelUseExp_PoissonBinomialMixture_R, object, y, exposure)
+                  else
+                      .Call(drawModelUseExp_R, object, y, exposure)
+              }
+              else {
+                  ## no parameters to draw
                   object
               }
           })

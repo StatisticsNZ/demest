@@ -5,43 +5,69 @@ n.test <- 5
 test.identity <- FALSE
 test.extended <- FALSE
 
-
-test_that("checkAllDimensionsHavePriors works", {
-    checkAllDimensionsHavePriors <- demest:::checkAllDimensionsHavePriors
-    model <- Model(y ~ Poisson(mean ~ age * sex),
-               `(Intercept)` ~ ExchFixed(sd = 10), 
-               age ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
-               sex ~ ExchFixed(sd = 0.1),
-               age:sex ~ ExchFixed(sd = 0.05),
-               priorSD = HalfT(scale = 0.2))
-    y <- Counts(array(0L,
-                      dim = c(2, 3),
-                      dimnames = list(sex = c("F", "M"),
-                                      age = c("0-4", "5-9", "10+"))))
-    expect_identical(checkAllDimensionsHavePriors(model = model, y = y),
-                     NULL)
-    y <- Counts(array(0L,
-                      dim = c(2, 3, 3),
-                      dimnames = list(sex = c("F", "M"),
-                                      age = c("0-4", "5-9", "10+"),
-                                      region = c("a", "b", "c"))))
-    expect_error(checkAllDimensionsHavePriors(model = model, y = y),
-                 "no prior specified for \"region\" dimension in model for 'y'")
-    model <- Model(y ~ Poisson(mean ~ age * sex),
-               age ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
-               sex ~ ExchFixed(sd = 0.1),
-               age:sex ~ ExchFixed(sd = 0.05),
-               priorSD = HalfT(scale = 0.2))
-    y <- Counts(array(0L,
-                      dim = c(2, 3),
-                      dimnames = list(sex = c("F", "M"),
-                                      age = c("0-4", "5-9", "10+"))))
-    expect_error(checkAllDimensionsHavePriors(model = model, y = y),
-                 "no prior specified for intercept in model for 'y'")
-    model <- Model(d ~ Round3())
-    expect_identical(checkAllDimensionsHavePriors(model = model, y = y),
-                     NULL)
+test_that("checkDataModelsSuitableForSimulation works", {
+    checkDataModelsSuitableForSimulation <- demest:::checkDataModelsSuitableForSimulation
+    dataModels <- list(Model(census ~ NormalFixed(mean = ValuesOne(rep(3, 10),
+                                                                   labels = letters[1:10],
+                                                                   name = "region"),
+                                                  sd = ValuesOne(1:10,
+                                                                 labels = letters[1:10],
+                                                                 name = "region")),
+                             series = "population"),
+                       Model(reg_deaths ~ Poisson(mean ~ region + time),
+                             `(Intercept)` ~ ExchFixed(mean = -1, sd = 0.1),
+                             region ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
+                             time ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
+                             priorSD = HalfT(scale = 0.01),
+                             series = "deaths"))
+    datasets <- list(Counts(array(rep(c(100, 90), each = 10),
+                                  dim = c(10, 2),
+                                  dimnames = list(region = letters[1:10],
+                                                  time = 2000:2001)),
+                            dimscales = c(time = "Points")),
+                     Counts(array(10,
+                                  dim = c(10, 1),
+                                  dimnames = list(region = letters[1:10],
+                                                  time = "2001")),
+                            dimscales = c(time = "Intervals")))
+    namesDatasets <- c("census", "reg_deaths")
+    ## works with valid inputs
+    ans.obtained <- checkDataModelsSuitableForSimulation(dataModels = dataModels,
+                                                         datasets = datasets,
+                                                         namesDatasets = namesDatasets)
+    ans.expected <- NULL
+    expect_identical(ans.obtained, ans.expected)
+    ## throws error when dimensions do not have priors
+    dataModels.wrong <- dataModels
+    dataModels[[2]] <- Model(reg_deaths ~ Poisson(mean ~ region),
+                             `(Intercept)` ~ ExchFixed(mean = -1, sd = 0.1),
+                             priorSD = HalfT(scale = 0.01),
+                             series = "deaths")
+    expect_error(checkDataModelsSuitableForSimulation(dataModels = dataModels,
+                                                      datasets = datasets,
+                                                      namesDatasets = namesDatasets),
+                 "data model for 'reg_deaths' not suitable for simulation")
+    ## throws error when dimensions do not have priors
+    dataModels.wrong <- dataModels
+    dataModels[[2]] <- Model(deaths ~ Poisson(mean ~ region),
+                             `(Intercept)` ~ ExchFixed(mean = -1),
+                             priorSD = HalfT(scale = 0.01),
+                             series = "deaths")
+    expect_error(checkDataModelsSuitableForSimulation(dataModels = dataModels,
+                                                      datasets = datasets,
+                                                      namesDatasets = namesDatasets),
+                 "data model for 'reg_deaths' not suitable for simulation")
+    ## throws error when priorSD not specified
+    dataModels.wrong <- dataModels
+    dataModels[[2]] <- Model(deaths ~ Poisson(mean ~ region),
+                             `(Intercept)` ~ ExchFixed(mean = -1, sd = 1),
+                             series = "deaths")
+    expect_error(checkDataModelsSuitableForSimulation(dataModels = dataModels,
+                                                      datasets = datasets,
+                                                      namesDatasets = namesDatasets),
+                 "data model for 'reg_deaths' not suitable for simulation")
 })
+
 
 test_that("checkPriorInform_prohibited works", {
     checkPriorInform_prohibited <- demest:::checkPriorInform_prohibited
@@ -107,19 +133,11 @@ test_that("checkPriorInform_Covariates works", {
                        income = rnorm(10))
     object <- Exch(covariates = Covariates(mean ~ income,
                                            data = data,
-                                           intercept = Norm(sd = 10),
                                            coef = TDist(scale = c(0.4, 0.3))))
     expect_identical(checkPriorInform_Covariates(object = object),
                      NULL)
     object <- Exch(covariates = Covariates(mean ~ income,
                                            data = data,
-                                           intercept = Norm(),
-                                           coef = TDist(scale = 0.4)))
-    expect_identical(checkPriorInform_Covariates(object = object),
-                     "value for 'sd' not supplied in call to 'Norm' when specifying 'covariates'")
-    object <- Exch(covariates = Covariates(mean ~ income,
-                                           data = data,
-                                           intercept = Norm(sd = 3),
                                            coef = TDist()))
     expect_identical(checkPriorInform_Covariates(object = object),
                      "value for 'scale' not supplied in call to 'TDist' when specifying 'covariates'")
@@ -209,34 +227,6 @@ test_that("checkPriorInform_Weights works", {
                      "value for 'scale' not supplied in call to 'HalfT' when specifying 'scale2' for 'weights'")
 })
 
-test_that("checkPriorSDInformative works", {
-    checkPriorSDInformative <- demest:::checkPriorSDInformative
-    model <- Model(y ~ Poisson(mean ~ region),
-                   `(Intercept)` ~ ExchFixed(mean = -1, sd = 0.2),
-                   region ~ Exch(error = Error(scale = HalfT(scale = 0.3))),
-                   priorSD = HalfT(scale = 0.1))
-    expect_is(model, "SpecVarying")
-    expect_identical(checkPriorSDInformative(model),
-                     NULL)
-    model <- Model(y ~ Poisson(mean ~ region),
-                   `(Intercept)` ~ ExchFixed(mean = -1, sd = 0.2),
-                   region ~ Exch(),
-                   priorSD = HalfT(mult = 0.1))
-    expect_error(checkPriorSDInformative(model),
-                 "problem with specification of 'priorSD' in model for 'y' : value for 'mult' supplied in call to 'HalfT'")
-    model <- Model(y ~ Poisson(mean ~ region),
-                   `(Intercept)` ~ ExchFixed(mean = -1),
-                   region ~ Exch(),
-                   priorSD = HalfT())
-    expect_error(checkPriorSDInformative(model),
-                 "problem with specification of 'priorSD' in model for 'y' : 'scale' argument not supplied in call to 'HalfT'")
-    model <- Model(y ~ Poisson(mean ~ region),
-                   `(Intercept)` ~ ExchFixed(mean = -1),
-                   region ~ Exch())
-    expect_error(checkPriorSDInformative(model),
-                 "problem with specification of 'priorSD' in model for 'y' : 'priorSD' argument not supplied in call to 'Model'")
-})
-
 test_that("checkSimulatedExposure works", {
     checkSimulatedExposure <- demest:::checkSimulatedExposure
     exposure <- Counts(array(1:6,
@@ -282,28 +272,65 @@ test_that("checkSimulatedYNoExposure works", {
                  "'model' has class \"SpecPoissonVarying\", but 'y' has class \"Values\"")
 })
 
-test_that("checkPriorsAreInformative works", {
-    checkPriorsAreInformative <- demest:::checkPriorsAreInformative
-    model <- Model(y ~ Poisson(mean ~ region),
-                   `(Intercept)` ~ ExchFixed(mean = -1, sd = 0.2),
-                   region ~ Exch(error = Error(scale = HalfT(scale = 0.3))))
-    expect_is(model, "SpecVarying")
-    expect_identical(checkPriorsAreInformative(model),
-                     NULL)
-    model <- Model(y ~ Poisson(mean ~ region),
-                   `(Intercept)` ~ ExchFixed(mean = -1, sd = 0.2),
-                   region ~ Exch())
-    expect_error(checkPriorsAreInformative(model),
-                 "problem with prior for 'region' in model for 'y'")
-    model <- Model(y ~ Poisson(mean ~ region),
-                   `(Intercept)` ~ ExchFixed(mean = -1),
-                   region ~ Exch())
-    expect_error(checkPriorsAreInformative(model),
-                 "problem with prior for '\\(Intercept\\)' in model for 'y'")
-    model <- Model(d ~ Round3())
-    expect_identical(checkPriorsAreInformative(model),
-                     NULL)
+test_that("checkSystemModelsSuitableForSimulation works", {
+    checkSystemModelsSuitableForSimulation <- demest:::checkSystemModelsSuitableForSimulation
+    systemModels <- list(Model(Poisson ~ Poisson(mean ~ region + time),
+                               `(Intercept)` ~ ExchFixed(mean = -1, sd = 0.1),
+                               region ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
+                               time ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
+                               priorSD = HalfT(scale = 0.01)),
+                         Model(deaths ~ Poisson(mean ~ region + time),
+                               `(Intercept)` ~ ExchFixed(mean = -1, sd = 0.1),
+                               region ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
+                               time ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
+                               priorSD = HalfT(scale = 0.01)))
+    account <- Movements(population = Counts(array(rep(c(100, 90), each = 10),
+                                                   dim = c(10, 2),
+                                                   dimnames = list(region = letters[1:10],
+                                                                   time = 2000:2001)),
+                                             dimscales = c(time = "Points")),
+                         exits = list(deaths = Counts(array(10,
+                                                            dim = c(10, 1),
+                                                            dimnames = list(region = letters[1:10],
+                                                                            time = "2001")),
+                                                      dimscales = c(time = "Intervals"))))
+    ## works with valid inputs
+    ans.obtained <- checkSystemModelsSuitableForSimulation(systemModels = systemModels,
+                                                           account = account)
+    ans.expected <- NULL
+    expect_identical(ans.obtained, ans.expected)
+    ## throws error when dimensions do not have priors
+    systemModels.wrong <- systemModels
+    systemModels[[2]] <- Model(deaths ~ Poisson(mean ~ region),
+                               `(Intercept)` ~ ExchFixed(mean = -1, sd = 0.1),
+                               priorSD = HalfT(scale = 0.01),
+                               series = "deaths")
+    expect_error(checkSystemModelsSuitableForSimulation(systemModels = systemModels,
+                                                        account = account),
+                 "system model for 'deaths' not suitable for simulation")
+    ## throws error when dimensions do not have priors
+    systemModels.wrong <- systemModels
+    systemModels[[2]] <- Model(deaths ~ Poisson(mean ~ region),
+                               `(Intercept)` ~ ExchFixed(mean = -1),
+                               priorSD = HalfT(scale = 0.01),
+                               series = "deaths")
+    expect_error(checkSystemModelsSuitableForSimulation(systemModels = systemModels,
+                                                        account = account),
+                 "system model for 'deaths' not suitable for simulation")
+    ## throws error when priorSD not specified
+    systemModels.wrong <- systemModels
+    systemModels[[2]] <- Model(deaths ~ Poisson(mean ~ region),
+                               `(Intercept)` ~ ExchFixed(mean = -1, sd = 1),
+                               series = "deaths")
+    expect_error(checkSystemModelsSuitableForSimulation(systemModels = systemModels,
+                                                        account = account),
+                 "system model for 'deaths' not suitable for simulation")
 })
+
+
+
+
+
                
 test_that("drawBetas works - no structural zeros", {
     initialModel <- demest:::initialModel
@@ -438,6 +465,125 @@ test_that("R and C versions of drawBetas give same answer - with structural zero
     }
 })
 
+
+test_that("drawDataModelsAccount works with CombinedAccountMovements", {
+    drawDataModelsAccount <- demest:::drawDataModelsAccount
+    updateAccount <- demest:::updateAccount
+    initialCombinedAccount <- demest:::initialCombinedAccount
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    drawModelUseExp <- demest:::drawModelUseExp
+    collapse <- dembase::collapse
+    set.seed(1)
+    population <- CountsOne(values = seq(100L, 200L, 10L),
+                            labels = seq(2000, 2100, 10),
+                            name = "time")
+    births <- CountsOne(values = rpois(n = 10, lambda = 15),
+                        labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
+                        name = "time")
+    deaths <- CountsOne(values = rpois(n = 10, lambda = 5),
+                        labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
+                        name = "time")
+    account <- Movements(population = population,
+                         births = births,
+                         exits = list(deaths = deaths))
+    account <- makeConsistent(account)
+    systemModels <- list(Model(population ~ Poisson(mean ~ time, useExpose = FALSE)),
+                         Model(births ~ Poisson(mean ~ 1)),
+                         Model(deaths ~ Poisson(mean ~ 1)))
+    systemWeights <- rep(list(NULL), 3)
+    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
+                        Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
+    seriesIndices <- c(2L, 0L)
+    datasets <- list(subarray(deaths, time > 2010, drop = FALSE) + 1L,
+                     subarray(population, time < 2090, drop = FALSE) - 1L)
+    namesDatasets <- c("tax", "census")
+    transforms <- list(makeTransform(x = deaths, y = datasets[[1]], subset = TRUE),
+                       makeTransform(x = population, y = datasets[[2]], subset = TRUE))
+    transforms <- lapply(transforms, makeCollapseTransformExtra)
+    x <- initialCombinedAccount(account = account,
+                                systemModels = systemModels,
+                                systemWeights = systemWeights,
+                                dataModels = data.models,
+                                seriesIndices = seriesIndices,
+                                datasets = datasets,
+                                namesDatasets = namesDatasets,
+                                transforms = transforms)
+    x <- updateAccount(x)
+    set.seed(1)
+    ans.obtained <- drawDataModelsAccount(x)
+    set.seed(1)
+    ans.expected <- x
+    ans.expected@dataModels[[1]] <- drawModelUseExp(ans.expected@dataModels[[1]],
+                                                    y = ans.expected@datasets[[1]],
+                                                    exposure = toDouble(collapse(ans.expected@account@components[[2]],
+                                                                                 transform = transforms[[1]])))
+    ans.expected@dataModels[[2]] <- drawModelUseExp(ans.expected@dataModels[[2]],
+                                                    y = ans.expected@datasets[[2]],
+                                                    exposure = collapse(ans.expected@account@population,
+                                                                        transform = transforms[[2]]))
+    if (test.identity)
+        expect_identical(ans.obtained, ans.expected)
+    else
+        expect_equal(ans.obtained, ans.expected)
+})
+
+
+test_that("R and C versions of drawDataModelsAccount give same answer", {
+    drawDataModelsAccount <- demest:::drawDataModelsAccount
+    updateAccount <- demest:::updateAccount
+    initialCombinedAccount <- demest:::initialCombinedAccount
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    drawModelUseExp <- demest:::drawModelUseExp
+    set.seed(1)
+    population <- CountsOne(values = seq(100L, 200L, 10L),
+                            labels = seq(2000, 2100, 10),
+                            name = "time")
+    births <- CountsOne(values = rpois(n = 10, lambda = 15),
+                        labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
+                        name = "time")
+    deaths <- CountsOne(values = rpois(n = 10, lambda = 5),
+                        labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
+                        name = "time")
+    account <- Movements(population = population,
+                         births = births,
+                         exits = list(deaths = deaths))
+    account <- makeConsistent(account)
+    systemModels <- list(Model(population ~ Poisson(mean ~ time, useExpose = FALSE)),
+                         Model(births ~ Poisson(mean ~ 1)),
+                         Model(deaths ~ Poisson(mean ~ 1)))
+    systemWeights <- rep(list(NULL), 3)
+    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
+                              Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
+    seriesIndices <- c(2L, 0L)
+    datasets <- list(subarray(deaths, time > 2010, drop = FALSE) + 1L,
+                     subarray(population, time < 2090, drop = FALSE) - 1L)
+    namesDatasets <- c("tax", "census")
+    transforms <- list(makeTransform(x = deaths, y = datasets[[1]], subset = TRUE),
+                       makeTransform(x = population, y = datasets[[2]], subset = TRUE))
+    transforms <- lapply(transforms, makeCollapseTransformExtra)
+    x <- initialCombinedAccount(account = account,
+                                systemModels = systemModels,
+                                systemWeights = systemWeights,
+                                dataModels = data.models,
+                                seriesIndices = seriesIndices,
+                                datasets = datasets,
+                                namesDatasets = namesDatasets,
+                                transforms = transforms)
+    x <- updateAccount(x)
+    set.seed(1)
+    ans.R <- drawDataModelsAccount(x, useC = FALSE)
+    set.seed(1)
+    ans.C <- drawDataModelsAccount(x, useC = TRUE)
+    if (test.identity)
+        expect_identical(ans.R, ans.C)
+    else
+        expect_equal(ans.R, ans.C)
+})
+
+
+
+
+
 test_that("R version of drawDelta0 works", {
     drawDelta0 <- demest:::drawDelta0
     initialPrior <- demest:::initialPrior
@@ -531,7 +677,6 @@ test_that("R version of drawEta works", {
                        cat = rep(c("a", "b"), each = 5))
     spec <- Exch(covariate = Covariates(mean ~ income + cat,
                                         data = data,
-                                        intercept = Norm(sd = 1),
                                         coef = TDist(mean = c(-1, 1),
                                                      scale = 0.1)))
     strucZeroArray <- Counts(array(1L,
@@ -550,7 +695,7 @@ test_that("R version of drawEta works", {
         set.seed(seed)
         ans.expected <- rnorm(n = prior@P@.Data,
                               mean = c(0,  prior@meanEtaCoef@.Data),
-                              sd = c(prior@AEtaIntercept@.Data, sqrt(prior@UEtaCoef@.Data)))
+                              sd = c(0, sqrt(prior@UEtaCoef@.Data)))
         if (test.identity)
             expect_identical(ans.obtained, ans.expected)
         else
@@ -571,7 +716,6 @@ test_that("R and C versions of drawEta give same answer", {
                        cat = rep(c("a", "b"), each = 5))
     spec <- Exch(covariate = Covariates(mean ~ income + cat,
                                         data = data,
-                                        intercept = Norm(sd = 1),
                                         coef = TDist(mean = c(-1, 1),
                                                      scale = 0.1)))
     strucZeroArray <- Counts(array(1L,
@@ -599,6 +743,7 @@ test_that("R and C versions of drawEta give same answer", {
 test_that("R version of drawOmegaAlpha works", {
     drawOmegaAlpha <- demest:::drawOmegaAlpha
     initialPrior <- demest:::initialPrior
+    rhalftTrunc1 <- demest:::rhalftTrunc1
     spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
                 trend = NULL,
                 damp = NULL,
@@ -624,44 +769,13 @@ test_that("R version of drawOmegaAlpha works", {
         set.seed(seed)
         ans.obtained <- drawOmegaAlpha(prior)@omegaAlpha@.Data
         set.seed(seed)
-        ans.expected <- rhalft(n = 1, df = prior@nuAlpha@.Data, scale = prior@AAlpha@.Data)
+        ans.expected <- rhalftTrunc1(df = prior@nuAlpha@.Data,
+                                     scale = prior@AAlpha@.Data,
+                                     max = prior@omegaAlphaMax@.Data)
         if (test.identity)
             expect_identical(ans.obtained, ans.expected)
         else
             expect_equal(ans.obtained, ans.expected)
-    }
-})
-
-test_that("drawHyperParam works", {
-    initialModel <- demest:::initialModel
-    drawHyperParam <- demest:::drawHyperParam
-    drawPriors <- demest:::drawPriors
-    drawBetas <- demest:::drawBetas
-    drawSigma_Varying <- demest:::drawSigma_Varying
-    spec <- Model(y ~ Poisson(mean ~ age + sex),
-                  `(Intercept)` ~ ExchFixed(sd = 10), 
-                  age ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
-                  sex ~ ExchFixed(sd = 0.1),
-                  priorSD = HalfT(scale = 0.2))
-    y <- Counts(array(1L,
-                      dim = 2:3,
-                      dimnames = list(sex = c("F", "M"),
-                                      age = c("0-4", "5-9", "10+"))))
-    exposure <- Counts(array(1:6,
-                             dim = 2:3,
-                             dimnames = list(sex = c("F", "M"),
-                                             age = c("0-4", "5-9", "10+"))))
-    for (seed in seq_len(n.test)) {
-        set.seed(seed)
-        model <- initialModel(spec, y = y, exposure = exposure)
-        set.seed(seed)
-        ans.obtained <- drawHyperParam(model)
-        set.seed(seed)
-        ans.expected <- model
-        ans.expected <- drawPriors(ans.expected)
-        ans.expected <- drawBetas(ans.expected)
-        ans.expected <- drawSigma_Varying(ans.expected)
-        expect_identical(ans.obtained, ans.expected)
     }
 })
 
@@ -704,6 +818,7 @@ test_that("R and C versions of version of drawOmegaAlpha give same answer", {
 test_that("R version of drawOmegaComponentWeightMix works", {
     drawOmegaComponentWeightMix <- demest:::drawOmegaComponentWeightMix
     initialPrior <- demest:::initialPrior
+    rhalftTrunc1 <- demest:::rhalftTrunc1
     spec <- Mix(components = Components(scale = HalfT(scale = 0.1)),
                 weights = Weights(scale1 = HalfT(scale = 0.1),
                                   scale2 = HalfT(scale = 0.1)),
@@ -734,9 +849,9 @@ test_that("R version of drawOmegaComponentWeightMix works", {
         set.seed(seed)
         ans.obtained <- drawOmegaComponentWeightMix(prior)@omegaComponentWeightMix@.Data
         set.seed(seed)
-        ans.expected <- rhalft(n = 1,
-                               df = prior@nuComponentWeightMix@.Data,
-                               scale = prior@AComponentWeightMix@.Data)
+        ans.expected <- rhalftTrunc1(df = prior@nuComponentWeightMix@.Data,
+                                     scale = prior@AComponentWeightMix@.Data,
+                                     max = prior@omegaComponentWeightMaxMix@.Data)
         if (test.identity)
             expect_identical(ans.obtained, ans.expected)
         else
@@ -788,6 +903,7 @@ test_that("R and C version of drawOmegaComponentWeightMix give same answer", {
 test_that("R version of drawOmegaDelta works", {
     drawOmegaDelta <- demest:::drawOmegaDelta
     initialPrior <- demest:::initialPrior
+    rhalftTrunc1 <- demest:::rhalftTrunc1
     spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
                 trend = Trend(initial = Initial(sd = 0.2),
                               scale = HalfT(scale = 0.2)),
@@ -814,7 +930,9 @@ test_that("R version of drawOmegaDelta works", {
         set.seed(seed)
         ans.obtained <- drawOmegaDelta(prior)@omegaDelta@.Data
         set.seed(seed)
-        ans.expected <- rhalft(n = 1, df = prior@nuDelta@.Data, scale = prior@ADelta@.Data)
+        ans.expected <- rhalftTrunc1(df = prior@nuDelta@.Data,
+                                     scale = prior@ADelta@.Data,
+                                     max = prior@omegaDeltaMax@.Data)
         if (test.identity)
             expect_identical(ans.obtained, ans.expected)
         else
@@ -862,6 +980,7 @@ test_that("R and C versions of version of drawOmegaDelta give same answer", {
 test_that("R version of drawOmegaLevelComponentWeightMix works", {
     drawOmegaLevelComponentWeightMix <- demest:::drawOmegaLevelComponentWeightMix
     initialPrior <- demest:::initialPrior
+    rhalftTrunc1 <- demest:::rhalftTrunc1
     spec <- Mix(components = Components(scale = HalfT(scale = 0.1)),
                 weights = Weights(scale1 = HalfT(scale = 0.1),
                                   scale2 = HalfT(scale = 0.1)),
@@ -892,9 +1011,9 @@ test_that("R version of drawOmegaLevelComponentWeightMix works", {
         set.seed(seed)
         ans.obtained <- drawOmegaLevelComponentWeightMix(prior)@omegaLevelComponentWeightMix@.Data
         set.seed(seed)
-        ans.expected <- rhalft(n = 1,
-                               df = prior@nuLevelComponentWeightMix@.Data,
-                               scale = prior@ALevelComponentWeightMix@.Data)
+        ans.expected <- rhalftTrunc1(df = prior@nuLevelComponentWeightMix@.Data,
+                                     scale = prior@ALevelComponentWeightMix@.Data,
+                                     max = prior@omegaLevelComponentWeightMaxMix@.Data)
         if (test.identity)
             expect_identical(ans.obtained, ans.expected)
         else
@@ -946,6 +1065,7 @@ test_that("R and C version of drawOmegaLevelComponentWeightMix give same answer"
 test_that("R version of drawOmegaSeason works", {
     drawOmegaSeason <- demest:::drawOmegaSeason
     initialPrior <- demest:::initialPrior
+    rhalftTrunc1 <- demest:::rhalftTrunc1
     spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
                 trend = Trend(initial = Initial(sd = 0.2),
                               scale = HalfT(scale = 0.2)),
@@ -973,7 +1093,9 @@ test_that("R version of drawOmegaSeason works", {
         set.seed(seed)
         ans.obtained <- drawOmegaSeason(prior)@omegaSeason@.Data
         set.seed(seed)
-        ans.expected <- rhalft(n = 1, df = prior@nuSeason@.Data, scale = prior@ASeason@.Data)
+        ans.expected <- rhalftTrunc1(df = prior@nuSeason@.Data,
+                                     scale = prior@ASeason@.Data,
+                                     max = prior@omegaSeasonMax@.Data)
         if (test.identity)
             expect_identical(ans.obtained, ans.expected)
         else
@@ -1022,6 +1144,7 @@ test_that("R and C versions of version of drawOmegaSeason give same answer", {
 test_that("R version of drawOmegaVectorsMix works", {
     drawOmegaVectorsMix <- demest:::drawOmegaVectorsMix
     initialPrior <- demest:::initialPrior
+    rhalftTrunc1 <- demest:::rhalftTrunc1
     spec <- Mix(components = Components(scale = HalfT(scale = 0.1)),
                 weights = Weights(scale1 = HalfT(scale = 0.1),
                                   scale2 = HalfT(scale = 0.1)),
@@ -1052,9 +1175,9 @@ test_that("R version of drawOmegaVectorsMix works", {
         set.seed(seed)
         ans.obtained <- drawOmegaVectorsMix(prior)@omegaVectorsMix@.Data
         set.seed(seed)
-        ans.expected <- rhalft(n = 1,
-                               df = prior@nuVectorsMix@.Data,
-                               scale = prior@AVectorsMix@.Data)
+        ans.expected <- rhalftTrunc1(df = prior@nuVectorsMix@.Data,
+                                     scale = prior@AVectorsMix@.Data,
+                                     max = prior@omegaVectorsMaxMix@.Data)
         if (test.identity)
             expect_identical(ans.obtained, ans.expected)
         else
@@ -1453,7 +1576,6 @@ test_that("R version of drawUEtaCoef works", {
                        cat = rep(c("a", "b"), each = 5))
     spec <- Exch(covariate = Covariates(mean ~ income + cat,
                                         data = data,
-                                        intercept = Norm(sd = 1),
                                         coef = TDist(mean = c(-1, 1),
                                                      scale = 0.1)))
     strucZeroArray <- Counts(array(1L,
@@ -1493,7 +1615,6 @@ test_that("R and C versions of drawUEtaCoef give same answer", {
                        cat = rep(c("a", "b"), each = 5))
     spec <- Exch(covariate = Covariates(mean ~ income + cat,
                                         data = data,
-                                        intercept = Norm(sd = 1),
                                         coef = TDist(mean = c(-1, 1),
                                                      scale = 0.1)))
     strucZeroArray <- Counts(array(1L,

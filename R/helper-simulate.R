@@ -1,26 +1,33 @@
 
-## HAS_TESTS
-checkAllDimensionsHavePriors <- function(model, y) {
-    if (methods::is(model, "SpecVarying")) {
-        name.response <- model@nameY@.Data
-        names.specs <- model@namesSpecsPriors
-        names.y <- names(y)
-        for (name in names.y) {
-            if (!(name %in% names.specs))
-                stop(gettextf("no prior specified for \"%s\" dimension in model for '%s'",
-                              name, name.response))
-        }
-        if (!("(Intercept)" %in% names.specs))
-            stop(gettextf("no prior specified for intercept in model for '%s'",
-                          name.response))
-    }
-    NULL
-}
-
 ## Helper functions to check that prior specifications hold all the
 ## information required to generate simulated data (and do not have arguments
 ## that are inappropriate for simulated data).
 
+
+## NO_TESTS
+checkDataModelsSuitableForSimulation <- function(dataModels, datasets,
+                                                 namesDatasets) {
+    error.message <- "data model for '%s' not suitable for simulation : %s"
+    for (i in seq_along(dataModels)) {
+        model <- dataModels[[i]]
+        y <- datasets[[i]]
+        name <- namesDatasets[i]
+        val <- tryCatch(checkAllDimensionsHavePriors(model = model,
+                                                     y = y),
+                        error = function(e) e)
+        if (methods::is(val, "error"))
+            stop(gettextf(error.message, name, val$message))
+        val <- tryCatch(checkPriorsAreInformative(model),
+                        error = function(e) e)
+        if (methods::is(val, "error"))
+            stop(gettextf(error.message, name, val$message))
+        val <- tryCatch(checkPriorSDInformative(model),
+                        error = function(e) e)
+        if (methods::is(val, "error"))
+            stop(gettextf(error.message, name, val$message))
+    }
+    NULL
+}
 
 ## HAS_TESTS
 checkPriorInform_prohibited <- function(object, nameSlot, nameArg, nameFun) {
@@ -198,60 +205,6 @@ checkPriorInform_Weights <- function(object) {
     NULL
 }
 
-
-
-## HAS_TESTS
-checkPriorsAreInformative <- function(object) {
-    if (methods::is(object, "SpecVarying")) {
-        name.model <- object@nameY[[1L]]
-        specs.priors <- object@specsPriors
-        names.specs.priors <- object@namesSpecsPriors
-        for (i in seq_along(specs.priors)) {
-            value <- checkPriorIsInformative(specs.priors[[i]])
-            if (!is.null(value))
-                stop(gettextf("problem with prior for '%s' in model for '%s' : %s",
-                              names.specs.priors[i], name.model, value))
-        }
-    }
-    NULL
-}
-
-## HAS_TESTS
-checkPriorSDInformative <- function(object) {
-    if (methods::is(object, "SpecVarying")) {
-        name.model <- object@nameY[[1L]]
-        if (methods::.hasSlot(object, "multSigma"))
-            value.mult.sigma <- checkPriorInform_prohibited(object = object,
-                                                            nameSlot = "multSigma",
-                                                            nameArg = "mult",
-                                                            nameFun = "HalfT")
-        else
-            value.mult.sigma <- NULL
-        ## no need to allow for partial matching, since 'priorSD'
-        ## argument follows '...'
-        i.prior.sd <- match("priorSD", names(object@call), nomatch = 0L)
-        specified.prior.sd <- i.prior.sd > 0L
-        if (specified.prior.sd) {
-            spec.prior.sd <- object@call[[i.prior.sd]]
-            ## allow for partial matching
-            i.scale.prior.sd <- pmatch(names(spec.prior.sd), "scale", nomatch = 0L)
-            if (any(i.scale.prior.sd > 0L))
-                value.A.sigma <- NULL
-            else
-                value.A.sigma <- gettextf("'%s' argument not supplied in call to '%s'",
-                                          "scale", "HalfT")
-        }
-        else
-            value.A.sigma <- gettextf("'%s' argument not supplied in call to '%s'",
-                                      "priorSD", "Model")
-        for (value in list(value.mult.sigma, value.A.sigma))
-            if (!is.null(value))
-                stop(gettextf("problem with specification of '%s' in model for '%s' : %s",
-                              "priorSD", name.model, value))
-    }
-    NULL
-}
-
 ## HAS_TESTS
 checkSimulatedExposure <- function(exposure) {
     if (!methods::is(exposure, "Counts"))
@@ -277,6 +230,34 @@ checkSimulatedYNoExposure <- function(y, model) {
     if (!methods::is(y, "Counts"))
         stop(gettextf("'%s' has class \"%s\", but '%s' has class \"%s\"",
                       "model", class(model), "y", class(y)))
+    NULL
+}
+
+## HAS_TESTS
+checkSystemModelsSuitableForSimulation <- function(systemModels, account) {
+    error.message <- "system model for '%s' not suitable for simulation : %s"
+    population <- population(account)
+    components <- components(account, simplify = FALSE)
+    series <- c(list(population), components)
+    names <- c("population", componentNames(account))
+    for (i in seq_along(systemModels)) {
+        model <- systemModels[[i]]
+        y <- series[[i]]
+        name <- names[i]
+        val <- tryCatch(checkAllDimensionsHavePriors(model = model,
+                                                     y = y),
+                        error = function(e) e)
+        if (methods::is(val, "error"))
+            stop(gettextf(error.message, name, val$message))
+        val <- tryCatch(checkPriorsAreInformative(model),
+                        error = function(e) e)
+        if (methods::is(val, "error"))
+            stop(gettextf(error.message, name, val$message))
+        val <- tryCatch(checkPriorSDInformative(model),
+                        error = function(e) e)
+        if (methods::is(val, "error"))
+            stop(gettextf(error.message, name, val$message))
+    }
     NULL
 }
 
@@ -311,6 +292,42 @@ drawBetas <- function(object, useC = FALSE) {
         }
         object@betas <- betas
         object
+    }
+}
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+drawDataModelsAccount <- function(combined, useC = FALSE) {
+    stopifnot(methods::validObject(combined))
+    if (useC) {
+        .Call(drawDataModelsAccount_R, combined)
+    }
+    else {
+        data.models <- combined@dataModels
+        datasets <- combined@datasets
+        population <- combined@account@population
+        components <- combined@account@components
+        series.indices <- combined@seriesIndices
+        transforms <- combined@transforms
+        for (i in seq_along(data.models)) {
+            model <- data.models[[i]]
+            dataset <- datasets[[i]]
+            transform <- transforms[[i]]
+            series.index <- series.indices[i]
+            if (series.index == 0L)
+                series <- population
+            else
+                series <- components[[series.index]]
+            series.collapsed <- collapse(series, transform = transform)
+            if (methods::is(model, "Poisson") || methods::is(model, "CMP"))
+                series.collapsed <- toDouble(series.collapsed)
+            model <- drawModelUseExp(model,
+                                     y = dataset,
+                                     exposure = series.collapsed)
+            data.models[[i]] <- model
+        }
+        combined@dataModels <- data.models
+        combined
     }
 }
 
@@ -369,15 +386,6 @@ drawEta <- function(prior, useC = FALSE) {
     }
 }
 
-## TODO - ONCE FUNCTIONS ARE TRANSLATED, SET useC TO TRUE
-## HAS_TESTS
-drawHyperParam <- function(model) {
-    model <- drawPriors(model)
-    model <- drawBetas(model)
-    model <- drawSigma_Varying(model)
-    model
-}
-
 ## READY_TO_TRANSLATE
 ## HAS_TESTS
 drawOmegaAlpha <- function(prior, useC = FALSE) {
@@ -388,9 +396,11 @@ drawOmegaAlpha <- function(prior, useC = FALSE) {
     else {
         A <- prior@AAlpha@.Data
         nu <- prior@nuAlpha@.Data
-        omega <- rhalft(n = 1L,
-                        df = nu,
-                        scale = A)
+        max <- prior@omegaAlphaMax@.Data
+        omega <- rhalftTrunc1(df = nu,
+                              scale = A,
+                              max = max,
+                              useC = TRUE)
         prior@omegaAlpha@.Data <- omega
         prior
     }
@@ -406,9 +416,11 @@ drawOmegaComponentWeightMix <- function(prior, useC = FALSE) {
     else {
         A <- prior@AComponentWeightMix@.Data
         nu <- prior@nuComponentWeightMix@.Data
-        omega <- rhalft(n = 1L,
-                        df = nu,
-                        scale = A)
+        max <- prior@omegaComponentWeightMaxMix@.Data
+        omega <- rhalftTrunc1(df = nu,
+                              scale = A,
+                              max = max,
+                              useC = TRUE)
         prior@omegaComponentWeightMix@.Data <- omega
         prior
     }
@@ -424,9 +436,11 @@ drawOmegaDelta <- function(prior, useC = FALSE) {
     else {
         A <- prior@ADelta@.Data
         nu <- prior@nuDelta@.Data
-        omega <- rhalft(n = 1L,
-                        df = nu,
-                        scale = A)
+        max <- prior@omegaDeltaMax@.Data
+        omega <- rhalftTrunc1(df = nu,
+                              scale = A,
+                              max = max,
+                              useC = TRUE)
         prior@omegaDelta@.Data <- omega
         prior
     }
@@ -442,9 +456,11 @@ drawOmegaLevelComponentWeightMix <- function(prior, useC = FALSE) {
     else {
         A <- prior@ALevelComponentWeightMix@.Data
         nu <- prior@nuLevelComponentWeightMix@.Data
-        omega <- rhalft(n = 1L,
-                        df = nu,
-                        scale = A)
+        max <- prior@omegaLevelComponentWeightMaxMix@.Data
+        omega <- rhalftTrunc1(df = nu,
+                              scale = A,
+                              max = max,
+                              useC = TRUE)
         prior@omegaLevelComponentWeightMix@.Data <- omega
         prior
     }
@@ -460,9 +476,11 @@ drawOmegaSeason <- function(prior, useC = FALSE) {
     else {
         A <- prior@ASeason@.Data
         nu <- prior@nuSeason@.Data
-        omega <- rhalft(n = 1L,
-                        df = nu,
-                        scale = A)
+        max <- prior@omegaSeasonMax@.Data
+        omega <- rhalftTrunc1(df = nu,
+                              scale = A,
+                              max = max,
+                              useC = TRUE)
         prior@omegaSeason@.Data <- omega
         prior
     }
@@ -478,9 +496,11 @@ drawOmegaVectorsMix <- function(prior, useC = FALSE) {
     else {
         A <- prior@AVectorsMix@.Data
         nu <- prior@nuVectorsMix@.Data
-        omega <- rhalft(n = 1L,
-                        df = nu,
-                        scale = A)
+        max <- prior@omegaVectorsMaxMix@.Data
+        omega <- rhalftTrunc1(df = nu,
+                              scale = A,
+                              max = max,
+                              useC = TRUE)
         prior@omegaVectorsMix@.Data <- omega
         prior
     }
@@ -632,6 +652,23 @@ setYToMissing <- function(y) {
     y@.Data[] <- if (is.integer) NA_integer_ else as.numeric(NA)
     y
 }
+
+
+## HAS_TESTS
+simulateDirect <- function(combined, filename, nDraw, useC) {
+    con <- file(filename, open = "wb")
+    on.exit(close(con))
+    for (i in seq_len(nDraw)) {
+        combined <- drawCombined(combined,
+                                 nUpdate = nUpdateMax,
+                                 useC = useC)
+        values <- extractValues(combined)
+        writeBin(values, con = con)
+    }
+    combined
+}
+
+
 
 ## HAS_TESTS
 simulateOneChain <- function(combined, seed, tempfile, nBurnin, nSim, nThin,

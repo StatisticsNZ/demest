@@ -78,15 +78,6 @@
 #' functions pool the results from all the chains to form a single sample.
 #' This sample has \code{floor(nChain * nSim / nThin)} iterations.
 #'
-#' @section Parallel:
-#'
-#' Because each chain is run independently, the calculations can be carried out
-#' in parallel.  By default, \code{estimateModel}, \code{\link{estimateCounts}},
-#' and \code{\link{estimateAccount}} run the calculations on separate cores,
-#' using functions from the \pkg{parallel} package. For portability, however,
-#' the \code{parallel} argument is set to \code{FALSE} in the examples in the
-#' online help.
-#' 
 #' @param model An object of class \code{\linkS4class{SpecModel}},
 #' specifying the model to be fit.
 #' @param y A \code{\link[dembase:DemographicArray-class]{demographic array}}
@@ -98,10 +89,12 @@
 #' @param filename The name of a file where output is collected.  
 #' @param nBurnin Number of iteration discarded before recording begins.
 #' @param nSim Number of iterations carried out during recording.
-#' @param nChain Number of parallel chains used in simulations.
+#' @param nChain Number of independent chains to use.
 #' @param nThin Thinning interval.
 #' @param parallel Logical.  If \code{TRUE} (the default), parallel processing
 #' is used.
+#' @param nCore The number of cores to use, when \code{parallel}
+#' is \code{TRUE}.  If no value supplied, defaults to \code{nChain}.
 #' @param nUpdateMax Maximum number of iterations completed before releasing
 #' memory.  If running out of memory, setting a lower value than the default
 #' may help.
@@ -144,14 +137,16 @@
 #' @export
 estimateModel <- function(model, y, exposure = NULL, weights = NULL,
                           filename = NULL, nBurnin = 1000, nSim = 1000,
-                          nChain = 4, nThin = 1, parallel = TRUE, outfile = NULL,
+                          nChain = 4, nThin = 1, parallel = TRUE,
+                          nChain = NULL, outfile = NULL,
                           nUpdateMax = 50, verbose = TRUE, useC = TRUE) {
     call <- match.call()
     methods::validObject(model)
     mcmc.args <- makeMCMCArgs(nBurnin = nBurnin,
                               nSim = nSim,
                               nChain = nChain,
-                              nThin = nThin)
+                              nThin = nThin,
+                              nCore = nCore)
     if (is.null(filename))
         filename <- tempfile()
     else
@@ -189,10 +184,10 @@ estimateModel <- function(model, y, exposure = NULL, weights = NULL,
                                         # this must be done BEFORE call to makeCluster!
         if (is.null(outfile)) ## passing 'outfile' as an argument always causes redirection
             cl <- parallel::makeCluster(getOption("cl.cores",
-                                                  default = mcmc.args$nChain))
+                                                  default = mcmc.args$nCore))
         else
             cl <- parallel::makeCluster(getOption("cl.cores",
-                                                  default = mcmc.args$nChain),
+                                                  default = mcmc.args$nCore),
                                         outfile = outfile)
         parallel::clusterSetRNGStream(cl,
                                       iseed = pseed)
@@ -308,7 +303,8 @@ predictModel <- function(filenameEst, filenamePred, along = NULL, labels = NULL,
                            nSim = mcmc.args.first[["nSim"]],
                            nChain = mcmc.args.first[["nChain"]],
                            nThin = mcmc.args.first[["nThin"]],
-                           nIteration = mcmc.args.first[["nIteration"]])
+                           nIteration = mcmc.args.first[["nIteration"]],
+                           nCore = mcmc.args.first[["nCore"]])
     tempfiles.first <- splitFile(filename = filenameEst,
                                  nChain = mcmc.args.first[["nChain"]],
                                  nIteration = mcmc.args.first[["nIteration"]],
@@ -318,10 +314,10 @@ predictModel <- function(filenameEst, filenamePred, along = NULL, labels = NULL,
     if (parallel) {
         if (is.null(outfile)) ## passing 'outfile' as an argument always causes redirection
             cl <- parallel::makeCluster(getOption("cl.cores",
-                                                  default = mcmc.args.pred$nChain))
+                                                  default = mcmc.args.pred$nCore))
         else
             cl <- parallel::makeCluster(getOption("cl.cores",
-                                                  default = mcmc.args.pred$nChain),
+                                                  default = mcmc.args.pred$nCore),
                                         outfile = outfile)
         parallel::clusterSetRNGStream(cl)
         final.combineds <- parallel::clusterMap(cl = cl,
@@ -369,25 +365,27 @@ predictModel <- function(filenameEst, filenamePred, along = NULL, labels = NULL,
 #' WARNING - THIS FUNCTION IS STILL UNDER DEVELOPMENT
 #' 
 #' @inheritParams estimateModel
+#' @param nDraw The number of random draws to make from the model.
+#' @param nCore The number of cores to use if \code{parallel} is
+#' \code{TRUE}. Defaults to 4.
 #' @export
 simulateModel <- function(model, y = NULL, exposure = NULL, weights = NULL,
-                          filename = NULL, nBurnin = 0, nSim = 100,
-                          nChain = 4, nThin = 1, parallel = TRUE,
-                          outfile = NULL, nUpdateMax = 50,
+                          filename = NULL, nDraw = 10, 
                           verbose = TRUE, useC = TRUE) {
     call <- match.call()
     methods::validObject(model)
-    mcmc.args <- makeMCMCArgs(nBurnin = nBurnin,
-                              nSim = nSim,
-                              nChain = nChain,
-                              nThin = nThin)
+    model.uses.aggregate <- !methods::is(model@aggregate, "SpecAgPlaceholder")
+    if (model.uses.aggregate) {
+        stop(gettextf("function '%s' cannot be used if model includes aggregate values : consider using function '%s' instead",
+                      "simulateModel", "simulateModelAg"))
+    }
+    checkPositiveInteger(x = nDraw,
+                         name = "nDraw")
+    nDraw <- as.integer(nDraw)
     if (is.null(filename))
         filename <- tempfile()
     else
         checkFilename(filename)
-    control.args <- makeControlArgs(call = call,
-                                    parallel = parallel,
-                                    nUpdateMax = nUpdateMax)
     l <- checkAndTidySimulatedYExposureWeights(model = model,
                                                y = y,
                                                exposure = exposure,
@@ -407,61 +405,17 @@ simulateModel <- function(model, y = NULL, exposure = NULL, weights = NULL,
                                  y = y)
     checkPriorsAreInformative(model)
     checkPriorSDInformative(model)
-    combineds <- replicate(n = mcmc.args$nChain,
-                           initialCombinedModelSimulate(model,
-                                                        y = y,
-                                                        exposure = exposure,
-                                                        weights = weights))
-    parallel <- control.args$parallel
-    tempfiles <- paste(filename, seq_len(mcmc.args$nChain), sep = "_")
-    MoreArgs <- c(list(seed = NULL),
-                  mcmc.args,
-                  control.args,
-                  list(continuing = FALSE,
-                       useC = useC))
-    model.not.use.aggregate <- methods::is(model@aggregate, "SpecAgPlaceholder")
-    if (model.not.use.aggregate) {
-        if (mcmc.args$nBurnin > 0L)
-            warning(gettextf("can sample directly from target distribution, so ignoring '%s'",
-                             "nBurnin"))
-        if (mcmc.args$nThin > 1L)
-            warning(gettextf("can sample directly from target distribution, so ignoring '%s'",
-                             "nThin"))
-    }
-    if (parallel) {
-        pseed <- sample.int(n = 100000, # so that RNG behaves the same whether or not
-                            size = 1)   # seed has previously been set
-                                        # this must be done BEFORE call to makeCluster!
-        if (is.null(outfile)) ## passing 'outfile' as an argument always causes redirection
-            cl <- parallel::makeCluster(getOption("cl.cores",
-                                                  default = mcmc.args$nChain))
-        else
-            cl <- parallel::makeCluster(getOption("cl.cores",
-                                                  default = mcmc.args$nChain),
-                                        outfile = outfile)
-        parallel::clusterSetRNGStream(cl,
-                                      iseed = pseed)
-        final.combineds <- parallel::clusterMap(cl = cl,
-                                                fun = simulateOneChain,
-                                                tempfile = tempfiles,
-                                                combined = combineds,
-                                                MoreArgs = MoreArgs,
-                                                SIMPLIFY = FALSE,
-                                                USE.NAMES = FALSE)
-        seed <- parallel::clusterCall(cl, function() .Random.seed)
-        parallel::stopCluster(cl)
-    }
-    else {
-        final.combineds <- mapply(simulateOneChain,
-                                  tempfile = tempfiles,
-                                  combined = combineds,
-                                  MoreArgs = MoreArgs,
-                                  SIMPLIFY = FALSE,
-                                  USE.NAMES = FALSE)
-        seed <- list(.Random.seed)
-    }
-    control.args$lengthIter <- length(extractValues(final.combineds[[1L]]))
-    results <- makeResultsModelEst(finalCombineds = final.combineds,
+    combined <- initialCombinedModelSimulate(model,
+                                             y = y,
+                                             exposure = exposure,
+                                             weights = weights)
+    combined <- simulateDirect(combined = combined,
+                               filename = filename,
+                               nDraw = nDraw,
+                               useC = useC)
+    seed <- list(.Random.seed)
+    control.args$lengthIter <- length(extractValues(combined))
+    results <- makeResultsModelEst(finalCombineds = list(combined),
                                    mcmcArgs = mcmc.args,
                                    controlArgs = control.args,
                                    seed = seed)
@@ -534,7 +488,8 @@ estimateCounts <- function(model, y, exposure = NULL, dataModels,
                            datasets, concordances = list(),
                            filename = NULL, nBurnin = 1000,
                            nSim = 1000, nChain = 5, nThin = 1,
-                           parallel = TRUE, outfile = NULL, nUpdateMax = 50,
+                           parallel = TRUE, nCore = NULL,
+                           outfile = NULL, nUpdateMax = 50,
                            verbose = FALSE, useC = TRUE) {
     call <- match.call()
     methods::validObject(model)
@@ -570,7 +525,8 @@ estimateCounts <- function(model, y, exposure = NULL, dataModels,
     mcmc.args <- makeMCMCArgs(nBurnin = nBurnin,
                               nSim = nSim,
                               nChain = nChain,
-                              nThin = nThin)
+                              nThin = nThin,
+                              nCore = nCore)
     if (is.null(filename))
         filename <- tempfile()
     else
@@ -579,7 +535,7 @@ estimateCounts <- function(model, y, exposure = NULL, dataModels,
                                     parallel = parallel,
                                     nUpdateMax = nUpdateMax)
     ## initial values
-    combineds <- replicate(n = mcmc.args$nChain,
+    combineds <- replicate(n = mcmc.args$nCore,
                            initialCombinedCounts(model,
                                                  y = y,
                                                  exposure = exposure,
@@ -588,7 +544,7 @@ estimateCounts <- function(model, y, exposure = NULL, dataModels,
                                                  namesDatasets = namesDatasets,
                                                  transforms = transforms))
     parallel <- control.args$parallel
-    tempfiles <- paste(filename, seq_len(mcmc.args$nChain), sep = "_")
+    tempfiles <- paste(filename, seq_len(mcmc.args$nCore), sep = "_")
     MoreArgs <- c(list(seed = NULL),
                   mcmc.args,
                   control.args,
@@ -598,10 +554,10 @@ estimateCounts <- function(model, y, exposure = NULL, dataModels,
     if (parallel) {
         if (is.null(outfile)) ## passing 'outfile' as an argument always causes redirection
             cl <- parallel::makeCluster(getOption("cl.cores",
-                                                  default = mcmc.args$nChain))
+                                                  default = mcmc.args$nCore))
         else
             cl <- parallel::makeCluster(getOption("cl.cores",
-                                                  default = mcmc.args$nChain),
+                                                  default = mcmc.args$nCore),
                                         outfile = outfile)
         parallel::clusterSetRNGStream(cl)
         final.combineds <- parallel::clusterMap(cl = cl,

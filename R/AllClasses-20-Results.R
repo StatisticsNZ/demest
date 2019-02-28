@@ -145,7 +145,7 @@ setClass("ResultsPred",
 ## HAS_TESTS
 setClass("ResultsModelEst",
          slots = c(model = "list",
-                        y = "DemographicOrSkeletonMissingData"),
+                   y = "DemographicOrSkeletonMissingData"),
          contains = "ResultsEst",
          validity = function(object) {
              mcmc <- object@mcmc

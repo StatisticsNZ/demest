@@ -2364,7 +2364,7 @@ makeControlArgs <- function(call, parallel, nUpdateMax) {
 }
 
 ## HAS_TESTS
-makeMCMCArgs <- function(nBurnin, nSim, nChain, nThin) {
+makeMCMCArgs <- function(nBurnin, nSim, nChain, nThin, nCore = NULL) {
     for (name in c("nBurnin", "nSim", "nChain", "nThin")) {
         value <- get(name)
         ## length 1
@@ -2384,6 +2384,27 @@ makeMCMCArgs <- function(nBurnin, nSim, nChain, nThin) {
             stop(gettextf("'%s' has non-integer value",
                           name))
         assign(name, value = as.integer(value))
+    }
+    if (is.null(nCore))
+        nCore <- nChain
+    else {
+        ## length 1
+        if (!identical(length(nCore), 1L))
+            stop(gettextf("'%s' does not have length %d",
+                          "nCore", 1L))
+        ## is not missing
+        if (is.na(nCore))
+            stop(gettextf("'%s' is missing",
+                          "nCore"))
+        ## is numeric
+        if (!is.numeric(nCore))
+            stop(gettextf("'%s' is non-numeric",
+                          "nCore"))
+        ## is integer
+        if (round(nCore) != nCore)
+            stop(gettextf("'%s' has non-integer value",
+                          "nCore"))
+        nCore <- as.integer(nCore)
     }
     ## 'nBurnin', nSim non-negative
     for (name in c("nBurnin", "nSim")) {
@@ -2406,7 +2427,8 @@ makeMCMCArgs <- function(nBurnin, nSim, nChain, nThin) {
     list(nBurnin = nBurnin,
          nSim = nSim,
          nChain = nChain,
-         nThin = nThin)
+         nThin = nThin,
+         nCore = nCore)
 }
 
 

@@ -82,7 +82,12 @@ setGeneric("castPopnOrSampled",
 
 setGeneric("castY",
            function(y, spec)
-           standardGeneric("castY"))
+               standardGeneric("castY"))
+
+setGeneric("checkAllDimensionsHavePriors",
+           function(model, y) {
+               NULL
+           })
 
 setGeneric("checkAndTidySimulatedYExposureWeights",
            function(model, y = NULL, exposure = NULL, weights = NULL)
@@ -96,6 +101,16 @@ setGeneric("checkForSubtotals",
 setGeneric("checkPriorIsInformative",
            function(object)
                standardGeneric("checkPriorIsInformative"))
+
+setGeneric("checkPriorsAreInformative",
+           function(object) {
+               NULL
+           })
+
+setGeneric("checkPriorSDInformative",
+           function(object) {
+               NULL
+           })
 
 setGeneric("classY",
            function(y)
@@ -163,6 +178,11 @@ setGeneric("diffLogLikAccount",
 setGeneric("drawCombined",
            function(object, nUpdate = 1L, useC = FALSE, useSpecific = FALSE)
                standardGeneric("drawCombined"))
+
+setGeneric("drawHyperParam",
+           function(model) {
+               model
+           })
 
 setGeneric("drawModelNotUseExp",
            function(object, y, useC = FALSE, useSpecific = FALSE)
