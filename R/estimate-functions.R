@@ -138,7 +138,7 @@
 estimateModel <- function(model, y, exposure = NULL, weights = NULL,
                           filename = NULL, nBurnin = 1000, nSim = 1000,
                           nChain = 4, nThin = 1, parallel = TRUE,
-                          nChain = NULL, outfile = NULL,
+                          nCore = NULL, outfile = NULL,
                           nUpdateMax = 50, verbose = TRUE, useC = TRUE) {
     call <- match.call()
     methods::validObject(model)
@@ -366,8 +366,6 @@ predictModel <- function(filenameEst, filenamePred, along = NULL, labels = NULL,
 #' 
 #' @inheritParams estimateModel
 #' @param nDraw The number of random draws to make from the model.
-#' @param nCore The number of cores to use if \code{parallel} is
-#' \code{TRUE}. Defaults to 4.
 #' @export
 simulateModel <- function(model, y = NULL, exposure = NULL, weights = NULL,
                           filename = NULL, nDraw = 10, 
@@ -386,6 +384,7 @@ simulateModel <- function(model, y = NULL, exposure = NULL, weights = NULL,
         filename <- tempfile()
     else
         checkFilename(filename)
+    tempfile <- paste(filename, "sim", sep = "_")
     l <- checkAndTidySimulatedYExposureWeights(model = model,
                                                y = y,
                                                exposure = exposure,
@@ -410,18 +409,21 @@ simulateModel <- function(model, y = NULL, exposure = NULL, weights = NULL,
                                              exposure = exposure,
                                              weights = weights)
     combined <- simulateDirect(combined = combined,
-                               filename = filename,
+                               tempfile = tempfile,
                                nDraw = nDraw,
                                useC = useC)
     seed <- list(.Random.seed)
-    control.args$lengthIter <- length(extractValues(combined))
-    results <- makeResultsModelEst(finalCombineds = list(combined),
-                                   mcmcArgs = mcmc.args,
-                                   controlArgs = control.args,
-                                   seed = seed)
+    control.args <- list(call = call,
+                         parallel = FALSE,
+                         lengthIter = length(extractValues(combined)),
+                         nUpdateMax = 1L)
+    results <- makeResultsModelSimDirect(combined = combined,
+                                         nDraw = nDraw,
+                                         controlArgs = control.args,
+                                         seed = seed)
     makeResultsFile(filename = filename,
                     results = results,
-                    tempfiles = tempfiles)
+                    tempfiles = tempfile)
     rescaleInFile(filename)
     finalMessage(filename = filename,
                  verbose = verbose)
@@ -487,7 +489,7 @@ simulateModel <- function(model, y = NULL, exposure = NULL, weights = NULL,
 estimateCounts <- function(model, y, exposure = NULL, dataModels,
                            datasets, concordances = list(),
                            filename = NULL, nBurnin = 1000,
-                           nSim = 1000, nChain = 5, nThin = 1,
+                           nSim = 1000, nChain = 4, nThin = 1,
                            parallel = TRUE, nCore = NULL,
                            outfile = NULL, nUpdateMax = 50,
                            verbose = FALSE, useC = TRUE) {
@@ -535,7 +537,7 @@ estimateCounts <- function(model, y, exposure = NULL, dataModels,
                                     parallel = parallel,
                                     nUpdateMax = nUpdateMax)
     ## initial values
-    combineds <- replicate(n = mcmc.args$nCore,
+    combineds <- replicate(n = mcmc.args$nChain,
                            initialCombinedCounts(model,
                                                  y = y,
                                                  exposure = exposure,
@@ -740,7 +742,8 @@ estimateAccount <- function(account, systemModels, datasets, dataModels,
                             dominant = c("Female", "Male"),
                             filename = NULL, nBurnin = 1000, nSim = 1000,
                             nChain = 4, nThin = 1,
-                            parallel = TRUE, outfile = NULL, nUpdateMax = 50,
+                            parallel = TRUE, nCore = NULL,
+                            outfile = NULL, nUpdateMax = 50,
                             verbose = FALSE, useC = TRUE) {
     call <- match.call()
     methods::validObject(account)
@@ -780,7 +783,8 @@ estimateAccount <- function(account, systemModels, datasets, dataModels,
     mcmc.args <- makeMCMCArgs(nBurnin = nBurnin,
                               nSim = nSim,
                               nChain = nChain,
-                              nThin = nThin)
+                              nThin = nThin,
+                              nCore = nCore)
     if (is.null(filename))
         filename <- tempfile()
     else
@@ -810,10 +814,10 @@ estimateAccount <- function(account, systemModels, datasets, dataModels,
     if (parallel) {
         if (is.null(outfile)) ## passing 'outfile' as an argument always causes redirection
             cl <- parallel::makeCluster(getOption("cl.cores",
-                                                  default = mcmc.args$nChain))
+                                                  default = mcmc.args$nCore))
         else
             cl <- parallel::makeCluster(getOption("cl.cores",
-                                                  default = mcmc.args$nChain),
+                                                  default = mcmc.args$nCore),
                                         outfile = outfile)
         parallel::clusterSetRNGStream(cl)
         final.combineds <- parallel::clusterMap(cl = cl,

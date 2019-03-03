@@ -4,8 +4,10 @@
 simulateAccount <- function(account, systemModels, datasets, dataModels, 
                             concordances = list(), weights = list(),
                             dominant = c("Female", "Male"),
-                            filename = NULL, nBurnin = 1000, nSim = 1000,
-                            nChain = 4, nThin = 1, parallel = TRUE,
+                            filename = NULL, nDraw = 1,
+                            nBurnin = 1000, nSim = 1000,
+                            nChain = 4, nThin = 1,
+                            parallel = TRUE, nCore = NULL,
                             outfile = NULL, nUpdateMax = 50,
                             verbose = TRUE, useC = TRUE) {
     call <- match.call()
@@ -53,7 +55,7 @@ simulateAccount <- function(account, systemModels, datasets, dataModels,
                                                       namesDatasets = namesDatasets,
                                                       seriesIndices = seriesIndices)
     }
-    if (!has.data.models) {
+    else {
         if (length(datasets) > 0L)
             stop(gettext("there are datasets, but no data models"))
         seriesIndices <- list()
@@ -63,7 +65,8 @@ simulateAccount <- function(account, systemModels, datasets, dataModels,
     mcmc.args <- makeMCMCArgs(nBurnin = nBurnin,
                               nSim = nSim,
                               nChain = nChain,
-                              nThin = nThin)
+                              nThin = nThin,
+                              nCore = nCore)
     if (is.null(filename))
         filename <- tempfile()
     else
@@ -82,7 +85,7 @@ simulateAccount <- function(account, systemModels, datasets, dataModels,
                                                           namesDatasets = namesDatasets,
                                                           transforms = transforms,
                                                           dominant = dominant))
-        parallel <- control.args$parallel
+    parallel <- control.args$parallel
     tempfiles <- paste(filename, seq_len(mcmc.args$nChain), sep = "_")
     MoreArgs <- c(list(seed = NULL),
                   mcmc.args,
@@ -93,10 +96,10 @@ simulateAccount <- function(account, systemModels, datasets, dataModels,
     if (parallel) {
         if (is.null(outfile)) ## passing 'outfile' as an argument always causes redirection
             cl <- parallel::makeCluster(getOption("cl.cores",
-                                                  default = mcmc.args$nChain))
+                                                  default = mcmc.args$nCore))
         else
             cl <- parallel::makeCluster(getOption("cl.cores",
-                                                  default = mcmc.args$nChain),
+                                                  default = mcmc.args$nCore),
                                         outfile = outfile)
         parallel::clusterSetRNGStream(cl)
         final.combineds <- parallel::clusterMap(cl = cl,
@@ -110,7 +113,7 @@ simulateAccount <- function(account, systemModels, datasets, dataModels,
         parallel::stopCluster(cl)
     }
     else {
-        final.combineds <- mapply(estimateOneChain,
+        final.combineds <- mapply(simulateOneChain,
                                   tempfile = tempfiles,
                                   combined = combineds,
                                   MoreArgs = MoreArgs,
@@ -188,9 +191,6 @@ setMethod("drawSystemModels",
                   }
                   combined@systemModels <- system.models
                   combined
-    
-
-
 }
 
     

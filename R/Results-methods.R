@@ -128,6 +128,25 @@ setMethod("rescalePriors",
                                   lengthIter = lengthIter)
           })
 
+## HAS_TESTS
+setMethod("rescalePriors",
+          signature(results = "ResultsModelSimDirect"),
+          function(results, adjustments, filename, nIteration, lengthIter) {
+              priors <- results@final[[1L]]@model@priorsBetas
+              margins <- results@final[[1L]]@model@margins
+              skeletons.betas <- results@model$prior[seq_along(priors)] # omit mean, sd
+              skeletons.priors <- results@model$hyper
+              rescalePriorsHelper(priors = priors,
+                                  margins = margins,
+                                  skeletonsBetas = skeletons.betas,
+                                  skeletonsPriors = skeletons.priors,
+                                  adjustments = adjustments,
+                                  prefixAdjustments = "model",
+                                  filename = filename,
+                                  nIteration = nIteration,
+                                  lengthIter = lengthIter)
+          })
+
 
 
 ## HAS_TESTS

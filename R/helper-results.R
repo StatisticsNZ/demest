@@ -222,11 +222,13 @@ makeOutputMCMC <- function(mcmcArgs, finalCombineds) {
     n.sim <- mcmcArgs$nSim
     n.thin <- mcmcArgs$nThin
     n.chain <- mcmcArgs$nChain
+    n.core <- mcmcArgs$nCore
     n.iteration <- as.integer(n.chain * (n.sim %/% n.thin))
     c(nBurnin = mcmcArgs$nBurnin,
       nSim = n.sim,
       nChain = n.chain,
       nThin = n.thin,
+      nCore = n.core,
       nIteration = n.iteration)
 }
 
@@ -416,6 +418,48 @@ makeResultsModelPred <- function(finalCombineds, mcmcArgs, controlArgs, seed) {
                  control = controlArgs,
                  seed = seed,
                  final = final)
+}
+
+## HAS_TESTS
+makeResultsModelSimDirect <- function(combined, nDraw, controlArgs, seed) {
+    model <- combined@model
+    y <- combined@y
+    has.exposure <- methods::is(combined, "HasExposure")
+    exposure <- if (has.exposure) combined@exposure else NULL
+    pos <- 1L
+    mcmc <- c(nBurnin = 0L,
+              nSim = 1L,
+              nChain = 1L,
+              nThin = 1L,
+              nIteration = nDraw)
+    output.model <- makeOutputModel(model = model,
+                                    pos = pos,
+                                    mcmc = mcmc)
+    pos <- pos + changeInPos(output.model)
+    output.y <- SkeletonMissingData(y,
+                                    model = model,
+                                    outputModel = output.model,
+                                    exposure = exposure)
+    mcmc <- mcmc["nIteration"]
+    final <- list(combined)
+    if (has.exposure) {
+        methods::new("ResultsModelSimDirectExp",
+                     model = output.model,
+                     y = output.y,
+                     exposure = exposure,
+                     mcmc = mcmc,
+                     control = controlArgs,
+                     seed = seed,
+                     final = final)
+    }
+    else
+        methods::new("ResultsModelSimDirect",
+                     model = output.model,
+                     y = output.y,
+                     mcmc = mcmc,
+                     control = controlArgs,
+                     seed = seed,
+                     final = final)
 }
 
 ## HAS_TESTS

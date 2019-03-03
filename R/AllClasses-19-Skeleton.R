@@ -159,6 +159,20 @@ setClass("SkeletonOffsetsTheta",
          })
 
 ## HAS_TESTS
+setClass("SkeletonOffsetsNu",
+         slots = c(offsetsNu = "Offsets"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             data <- object@data
+             offsetsNu <- object@offsetsNu
+             ## 'data' and 'offsetsNu' consistent
+             if (!identical(length(data), offsetsNu[2L] - offsetsNu[1L] + 1L))
+                 return(gettextf("'%s' and '%s' inconsistent",
+                                 "data", "offsetsNu"))
+             TRUE
+         })
+
+## HAS_TESTS
 setClass("SkeletonExposure",
          slots = c(exposure = "Counts"),
          contains = "VIRTUAL",
@@ -517,6 +531,21 @@ setClass("SkeletonMissingDataPoissonUseExp",
 ## HAS_FETCH
 setClass("SkeletonMissingDataPoissonUseExpSubtotals",
          contains = c("SkeletonMissingDataPoissonUseExp", "SkeletonHasSubtotals"))
+
+## HAS_TESTS
+## HAS_FETCH
+setClass("SkeletonMissingDataCMPNotUseExp",
+         contains = c("SkeletonMissingData",
+                      "SkeletonOffsetsTheta",
+                      "SkeletonOffsetsNu"))
+
+## HAS_TESTS
+## HAS_FETCH
+setClass("SkeletonMissingDataCMPUseExp",
+         contains = c("SkeletonMissingData",
+                      "SkeletonOffsetsTheta",
+                      "SkeletonOffsetsNu", 
+                      "SkeletonExposure"))
 
 ## HAS_TESTS
 ## HAS_FETCH

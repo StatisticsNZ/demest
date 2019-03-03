@@ -150,19 +150,19 @@ setMethod("SkeletonMissingData",
               if (methods::is(model, "VarsigmaKnown")) {
                   varsigma <- model@varsigma
                   methods::new("SkeletonMissingDataNormalVarsigmaKnown",
-                      data = object,
-                      offsetsTheta = offsets.theta,
-                      w = w,
-                      varsigma = varsigma)
+                               data = object,
+                               offsetsTheta = offsets.theta,
+                               w = w,
+                               varsigma = varsigma)
               }
               else {
                   offsets.varsigma <- outputModel$likelihood$sd
                   offsets.varsigma <- methods::new("Offsets", c(offsets.varsigma@first, offsets.varsigma@first))
                   methods::new("SkeletonMissingDataNormalVarsigmaUnknown",
-                      data = object,
-                      offsetsTheta = offsets.theta,
-                      w = w,
-                      offsetsVarsigma = offsets.varsigma)
+                               data = object,
+                               offsetsTheta = offsets.theta,
+                               w = w,
+                               offsetsVarsigma = offsets.varsigma)
               }
           })
 
@@ -179,8 +179,8 @@ setMethod("SkeletonMissingData",
               if (methods::is(object, "HasSubtotals"))
                   class <- paste0(class, "Subtotals")
               methods::new(class,
-                  data = object,
-                  offsetsTheta = offsets)
+                           data = object,
+                           offsetsTheta = offsets)
           })
 
 ## HAS_TESTS
@@ -199,6 +199,41 @@ setMethod("SkeletonMissingData",
                   data = object,
                   exposure = exposure,
                   offsetsTheta = offsets)
+          })
+
+## HAS_TESTS
+setMethod("SkeletonMissingData",
+          signature(object = "Counts",
+                    model = "CMP",
+                    outputModel = "list",
+                    exposure = "NULL"),
+          function(object, model, outputModel, exposure) {
+              offsets.theta <- outputModel$likelihood$count
+              offsets.theta <- methods::new("Offsets", c(offsets.theta@first, offsets.theta@last))
+              offsets.nu <- outputModel$likelihood$dispersion
+              offsets.nu <- methods::new("Offsets", c(offsets.nu@first, offsets.nu@last))
+              methods::new("SkeletonMissingDataCMPNotUseExp",
+                           data = object,
+                           offsetsTheta = offsets.theta,
+                           offsetsNu = offsets.nu)
+          })
+
+## NO_TESTS
+setMethod("SkeletonMissingData",
+          signature(object = "Counts",
+                    model = "CMP",
+                    outputModel = "list",
+                    exposure = "Counts"),
+          function(object, model, outputModel, exposure) {
+              offsets.theta <- outputModel$likelihood$rate
+              offsets.theta <- methods::new("Offsets", c(offsets.theta@first, offsets.theta@last))
+              offsets.nu <- outputModel$likelihood$dispersion
+              offsets.nu <- methods::new("Offsets", c(offsets.nu@first, offsets.nu@last))
+              methods::new("SkeletonMissingDataCMPUseExp",
+                           data = object,
+                           exposure = exposure,
+                           offsetsTheta = offsets.theta,
+                           offsetsNu = offsets.nu)
           })
 
 ## HAS_TESTS

@@ -5456,3 +5456,5 @@ rcmp1 <- function(mu, nu, maxAttempt, useC = FALSE){
                       maxAttempt = maxAttempt)
     }
 }
+
+

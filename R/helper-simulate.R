@@ -655,12 +655,12 @@ setYToMissing <- function(y) {
 
 
 ## HAS_TESTS
-simulateDirect <- function(combined, filename, nDraw, useC) {
-    con <- file(filename, open = "wb")
+simulateDirect <- function(combined, tempfile, nDraw, useC) {
+    con <- file(tempfile, open = "wb")
     on.exit(close(con))
     for (i in seq_len(nDraw)) {
         combined <- drawCombined(combined,
-                                 nUpdate = nUpdateMax,
+                                 nUpdate = 1L,
                                  useC = useC)
         values <- extractValues(combined)
         writeBin(values, con = con)
