@@ -39,8 +39,13 @@
 ##               nThin = 50,
 ##               nChain = 4)
 ## fetchSummary(filename.est)
+## exposure.pred <- Counts(array(100,
+##                               dim = c(6, 25),
+##                               dimnames = c(dimnames(expose)["age"], list(year = 2016:2040))),
+##                         dimscales = c(year = "Intervals"))
 ## predictModel(filenameEst = filename.est,
 ##              filenamePred = filename.pred,
+##              exposure = exposure.pred,
 ##              n = 25)             
 ## rates <- fetchBoth(filenameEst = filename.est, filenamePred = filename.pred,
 ##                    where = c("model", "likelihood", "rate"))

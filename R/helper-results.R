@@ -400,22 +400,38 @@ makeResultsModelEst <- function(finalCombineds, mcmcArgs, controlArgs, seed) {
 }
 
 ## HAS_TESTS
-makeResultsModelPred <- function(finalCombineds, mcmcArgs, controlArgs, seed) {
+makeResultsModelPred <- function(finalCombineds, exposure, mcmcArgs, controlArgs, seed) {
     combined <- finalCombineds[[1L]]
     model <- combined@model
     y <- combined@y
+    has.exposure <- !is.null(exposure)
     mcmc <- makeOutputMCMC(mcmcArgs = mcmcArgs,
                            finalCombineds = finalCombineds)
     final <- finalCombineds
     names(final) <- paste0("chain", seq_along(final))
     output.model <- makeOutputModel(model = model, pos = 1L, mcmc = mcmc)
+    output.y <- SkeletonMissingData(y,
+                                    model = model,
+                                    outputModel = output.model,
+                                    exposure = exposure)
     mcmc <- mcmc["nIteration"]
-    methods::new("ResultsModelPred",
-                 model = output.model,
-                 mcmc = mcmc,
-                 control = controlArgs,
-                 seed = seed,
-                 final = final)
+    if (has.exposure)
+        methods::new("ResultsModelExposurePred",
+                     model = output.model,
+                     y = output.y,
+                     exposure = exposure,
+                     mcmc = mcmc,
+                     control = controlArgs,
+                     seed = seed,
+                     final = final)
+    else
+        methods::new("ResultsModelPred",
+                     model = output.model,
+                     y = output.y,
+                     mcmc = mcmc,
+                     control = controlArgs,
+                     seed = seed,
+                     final = final)
 }
 
 ## HAS_TESTS

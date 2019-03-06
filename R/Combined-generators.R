@@ -191,8 +191,8 @@ setMethod("initialCombinedModelPredict",
               class.y <- if (yIsCounts) "Counts" else "Values"
               y <- methods::new(class.y, .Data = .Data, metadata = metadata)
               methods::new("CombinedModelNormal",
-                  model = model,
-                  y = y)
+                           model = model,
+                           y = y)
           })
 
 ## HAS_TESTS

@@ -5451,7 +5451,25 @@ test_that("R, generic C, and specific C versions updateModelUseExp method for TF
 })
 
 
+## usesExposure ###################################################################
 
+test_that("usesExposure works", {
+    usesExposure <- demest:::usesExposure
+    x <- new("NormalVaryingVarsigmaUnknown")
+    expect_false(usesExposure(x))
+    x <- new("NormalVaryingVarsigmaKnownAgCertain")
+    expect_false(usesExposure(x))
+    x <- new("BinomialVarying")
+    expect_true(usesExposure(x))
+    x <- new("PoissonVaryingNotUseExp")
+    expect_false(usesExposure(x))
+    x <- new("PoissonVaryingUseExp")
+    expect_true(usesExposure(x))
+    x <- new("CMPVaryingNotUseExp")
+    expect_false(usesExposure(x))
+    x <- new("CMPVaryingUseExp")
+    expect_true(usesExposure(x))
+})
 
 ## whereAcceptance ###################################################################
 

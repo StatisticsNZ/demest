@@ -393,11 +393,9 @@ test_that("R and C versions of drawBeta_standard give same answer", {
     }
 })
 
-
-
 test_that("drawBetas works", {
     initialModel <- demest:::initialModel
-    drawBeta <- demest:::drawBeta
+    drawBetas <- demest:::drawBetas
     spec <- Model(y ~ Poisson(mean ~ age + sex),
                   `(Intercept)` ~ ExchFixed(sd = 10), 
                   age ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
@@ -419,7 +417,7 @@ test_that("drawBetas works", {
         set.seed(seed)
         ans.expected <- model
         for (i in 1:3)
-            ans.expected@betas[[i]] <- drawBeta(ans.expected@priorsBetas[[i]])
+            ans.expected@betas[[i]] <- drawBetas(ans.expected@priorsBetas[[i]])
         expect_identical(ans.obtained, ans.expected)
     }
 })

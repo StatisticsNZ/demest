@@ -179,8 +179,8 @@ setMethod("SkeletonMissingData",
               if (methods::is(object, "HasSubtotals"))
                   class <- paste0(class, "Subtotals")
               methods::new(class,
-                  data = object,
-                  offsetsTheta = offsets)
+                           data = object,
+                           offsetsTheta = offsets)
           })
 
 ## HAS_TESTS
@@ -196,9 +196,9 @@ setMethod("SkeletonMissingData",
               if (methods::is(object, "HasSubtotals"))
                   class <- paste0(class, "Subtotals")
               methods::new(class,
-                  data = object,
-                  exposure = exposure,
-                  offsetsTheta = offsets)
+                           data = object,
+                           exposure = exposure,
+                           offsetsTheta = offsets)
           })
 
 ## HAS_TESTS

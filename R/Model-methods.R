@@ -2998,7 +2998,49 @@ setMethod("updateModelUseExp",
           })
 
 
+## usesExposure ######################################################################
 
+## HAS_TESTS
+setMethod("usesExposure",
+          signature = "BinomialVarying",
+          function(object) {
+              TRUE
+          })
+
+## HAS_TESTS
+setMethod("usesExposure",
+          signature = "CMPVaryingNotUseExp",
+          function(object) {
+              FALSE
+          })
+
+## HAS_TESTS
+setMethod("usesExposure",
+          signature = "CMPVaryingUseExp",
+          function(object) {
+              TRUE
+          })
+
+## HAS_TESTS
+setMethod("usesExposure",
+          signature = "NormalVarying",
+          function(object) {
+              FALSE
+          })
+
+## HAS_TESTS
+setMethod("usesExposure",
+          signature = "PoissonVaryingNotUseExp",
+          function(object) {
+              FALSE
+          })
+
+## HAS_TESTS
+setMethod("usesExposure",
+          signature = "PoissonVaryingUseExp",
+          function(object) {
+              TRUE
+          })
 
 
 

@@ -278,6 +278,7 @@ test_that("can create valid object of class ResultsModelPred", {
     initialCombinedModel <- demest:::initialCombinedModel
     extractValues <- demest:::extractValues
     makeOutputModel <- demest:::makeOutputModel
+    SkeletonMissingData <- demest:::SkeletonMissingData
     call <- call("estimateModel", list("model"))
     filename <- "filename"
     mcmc <- c(nBurnin = 1000L, nSim = 1000L, nChain = 3L, nThin = 10L,
@@ -287,7 +288,6 @@ test_that("can create valid object of class ResultsModelPred", {
                       dim = 2:4,
                       dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000:2003)),
                 dimscales = c(time = "Intervals"))
-    y[1] <- NA
     spec <- Model(y ~ Poisson(mean ~ sex * age + time, useExpose = FALSE))
     final <- replicate(n = 3,
                        initialCombinedModel(spec, y = y, exposure = NULL, weights = NULL))
@@ -295,13 +295,66 @@ test_that("can create valid object of class ResultsModelPred", {
                     parallel = TRUE,
                     lengthIter = length(extractValues(final[[1L]])),
                     nUpdateMax = 200L)
-    model <- makeOutputModel(model = final[[1]]@model, pos = 1L, mcmc = mcmc)
+    model.output <- makeOutputModel(model = final[[1]]@model,
+                                    pos = 1L,
+                                    mcmc = mcmc)
+    y[] <- NA
+    y.output <- SkeletonMissingData(y,
+                                    model = final[[1]]@model,
+                                    outputModel = model.output,
+                                    exposure = NULL)                                    
     mcmc <- c(nIteration = 300L)
     ans <- new("ResultsModelPred",
                mcmc = mcmc,
                control = control,
                final = final,
-               model = model,
+               model = model.output,
+               y = y.output,
+               seed = seed)
+    expect_true(validObject(ans))
+})
+
+test_that("can create valid object of class ResultsModelExposurePred", {
+    initialCombinedModel <- demest:::initialCombinedModel
+    extractValues <- demest:::extractValues
+    makeOutputModel <- demest:::makeOutputModel
+    SkeletonMissingData <- demest:::SkeletonMissingData
+    call <- call("estimateModel", list("model"))
+    filename <- "filename"
+    mcmc <- c(nBurnin = 1000L, nSim = 1000L, nChain = 3L, nThin = 10L,
+              nIteration = 300L)
+    seed <- list(c(407L, 1:6), c(407L, 6:1), c(407L, 3:8))
+    y <- Counts(array(as.integer(rpois(n = 24, lambda = 20)),
+                      dim = 2:4,
+                      dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000:2003)),
+                dimscales = c(time = "Intervals"))
+    exposure <- Counts(array(1000,
+                             dim = 2:4,
+                      dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000:2003)),
+                dimscales = c(time = "Intervals"))
+    spec <- Model(y ~ Poisson(mean ~ sex * age + time))
+    final <- replicate(n = 3,
+                       initialCombinedModel(spec, y = y, exposure = exposure, weights = NULL))
+    control <- list(call = call,
+                    parallel = TRUE,
+                    lengthIter = length(extractValues(final[[1L]])),
+                    nUpdateMax = 200L)
+    model.output <- makeOutputModel(model = final[[1]]@model,
+                                    pos = 1L,
+                                    mcmc = mcmc)
+    y[] <- NA
+    y.output <- SkeletonMissingData(y,
+                                    model = final[[1]]@model,
+                                    outputModel = model.output,
+                                    exposure = exposure)             
+    mcmc <- c(nIteration = 300L)
+    ans <- new("ResultsModelExposurePred",
+               mcmc = mcmc,
+               control = control,
+               final = final,
+               model = model.output,
+               y = y.output,
+               exposure = exposure,
                seed = seed)
     expect_true(validObject(ans))
 })
@@ -310,6 +363,7 @@ test_that("validity tests for ResultsModelPred inherited from ResultsModelPred w
     initialCombinedModel <- demest:::initialCombinedModel
     extractValues <- demest:::extractValues
     makeOutputModel <- demest:::makeOutputModel
+    SkeletonMissingData <- demest:::SkeletonMissingData
     call <- call("estimateModel", list("model"))
     filename <- "filename"
     mcmc <- c(nBurnin = 1000L, nSim = 1000L, nChain = 3L, nThin = 10L,
@@ -327,15 +381,21 @@ test_that("validity tests for ResultsModelPred inherited from ResultsModelPred w
                     parallel = TRUE,
                     lengthIter = length(extractValues(final[[1L]])),
                     nUpdateMax = 200L)
-    model <- makeOutputModel(model = final[[1]]@model, pos = 1L, mcmc = mcmc)
+    model.output <- makeOutputModel(model = final[[1]]@model, pos = 1L, mcmc = mcmc)
+    y[] <- NA
+    y.output <- SkeletonMissingData(y,
+                                    model = final[[1]]@model,
+                                    outputModel = model.output,
+                                    exposure = NULL)             
     mcmc <- c(nIteration = 300L)
     x <- new("ResultsModelPred",
-               mcmc = mcmc,
-               control = control,
-               final = final,
-               model = model,
-               seed = seed)
-        ## all elements of final have class "CombinedModel"
+             mcmc = mcmc,
+             control = control,
+             final = final,
+             model = model.output,
+             y = y.output,
+             seed = seed)
+    ## all elements of final have class "CombinedModel"
     x.wrong <- x
     x.wrong@final <- rep(list(rep(1, length(extractValues(final[[1]])))),3)
     expect_error(validObject(x.wrong),
