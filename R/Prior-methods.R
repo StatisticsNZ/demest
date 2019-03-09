@@ -15,7 +15,264 @@ setMethod("betaIsEstimated",
           })
 
 
-## drawBeta #########################################################################
+## describePrior #############################################################
+
+## TimeInvariant
+
+## HAS_TESTS
+setMethod("describePrior",
+          signature(object = "TimeInvariant"),
+          function(object) {
+              "Time invariant"
+          })
+
+
+## ExchFixed
+
+## HAS_TESTS
+setMethod("describePrior",
+          signature(object = "ExchFixed"),
+          function(object) {
+              "Exchangeable with known variance"
+          })
+
+## HAS_TESTS
+setMethod("describePrior",
+          signature(object = "ExchNormZero"),
+          function(object) {
+              "Exchangeable"
+          })
+
+## HAS_TESTS
+setMethod("describePrior",
+          signature(object = "ExchNormCov"),
+          function(object) {
+              "Exchangeable with covariates"
+          })
+
+## HAS_TESTS
+setMethod("describePrior",
+          signature(object = "ExchRobustZero"),
+          function(object) {
+              "Robust exchangeable"
+          })
+
+## HAS_TESTS
+setMethod("describePrior",
+          signature(object = "ExchRobustCov"),
+          function(object) {
+              "Robust exchangeable with covariates"
+          })
+
+
+## DLM - Norm, Zero
+
+## HAS_TESTS
+setMethod("describePrior",
+          signature(object = "DLMNoTrendNormZeroNoSeason"),
+          function(object) {
+              if (isDamped(object))
+                  "Damped local level"
+              else
+                  "Local level"
+          })
+
+## HAS_TESTS
+setMethod("describePrior",
+          signature(object = "DLMWithTrendNormZeroNoSeason"),
+          function(object) {
+              if (isDamped(object))
+                  "Damped local trend"
+              else
+                  "Local trend"
+          })
+
+## HAS_TESTS
+setMethod("describePrior",
+          signature(object = "DLMNoTrendNormZeroWithSeason"),
+          function(object) {
+              if (isDamped(object))
+                  "Damped local level with seasonal effect"
+              else
+                  "Local level with seasonal effect"
+          })
+
+## HAS_TESTS
+setMethod("describePrior",
+          signature(object = "DLMWithTrendNormZeroWithSeason"),
+          function(object) {
+              if (isDamped(object))
+                  "Damped local trend with seasonal effect"
+              else
+                  "Local trend with seasonal effect"
+          })
+
+
+## DLM - Norm, Cov
+
+## HAS_TESTS
+setMethod("describePrior",
+          signature(object = "DLMNoTrendNormCovNoSeason"),
+          function(object) {
+              if (isDamped(object))
+                  "Damped local level with covariates"
+              else
+                  "Local level with covariates"
+          })
+
+## HAS_TESTS
+setMethod("describePrior",
+          signature(object = "DLMWithTrendNormCovNoSeason"),
+          function(object) {
+              if (isDamped(object))
+                  "Damped local trend with covariates"
+              else
+                  "Local trend with covariates"
+          })
+
+## HAS_TESTS
+setMethod("describePrior",
+          signature(object = "DLMNoTrendNormCovWithSeason"),
+          function(object) {
+              if (isDamped(object))
+                  "Damped local level with covariates and seasonal effect"
+              else
+                  "Local level with covariates and seasonal effect"
+          })
+
+## HAS_TESTS
+setMethod("describePrior",
+          signature(object = "DLMWithTrendNormCovWithSeason"),
+          function(object) {
+              if (isDamped(object))
+                  "Damped local trend with covariates and seasonal effect"
+              else
+                  "Local trend with covariates and seasonal effect"
+          })
+
+
+## DLM - Robust, Zero
+
+## HAS_TESTS
+setMethod("describePrior",
+          signature(object = "DLMNoTrendRobustZeroNoSeason"),
+          function(object) {
+              if (isDamped(object))
+                  "Damped robust local level"
+              else
+                  "Robust local level"
+          })
+
+## HAS_TESTS
+setMethod("describePrior",
+          signature(object = "DLMWithTrendRobustZeroNoSeason"),
+          function(object) {
+              if (isDamped(object))
+                  "Damped robust local trend"
+              else
+                  "Robust local trend"
+          })
+
+## HAS_TESTS
+setMethod("describePrior",
+          signature(object = "DLMNoTrendRobustZeroWithSeason"),
+          function(object) {
+              if (isDamped(object))
+                  "Damped robust local level with seasonal effect"
+              else
+                  "Robust local level with seasonal effect"
+          })
+
+## HAS_TESTS
+setMethod("describePrior",
+          signature(object = "DLMWithTrendRobustZeroWithSeason"),
+          function(object) {
+              if (isDamped(object))
+                  "Damped robust local trend with seasonal effect"
+              else
+                  "Robust local trend with seasonal effect"
+          })
+
+
+## DLM - Robust, Cov
+
+## HAS_TESTS
+setMethod("describePrior",
+          signature(object = "DLMNoTrendRobustCovNoSeason"),
+          function(object) {
+              if (isDamped(object))
+                  "Damped robust local level with covariates"
+              else
+                  "Robust local level with covariates"
+          })
+
+## HAS_TESTS
+setMethod("describePrior",
+          signature(object = "DLMWithTrendRobustCovNoSeason"),
+          function(object) {
+              if (isDamped(object))
+                  "Damped robust local trend with covariates"
+              else
+                  "Robust local trend with covariates"
+          })
+
+## HAS_TESTS
+setMethod("describePrior",
+          signature(object = "DLMNoTrendRobustCovWithSeason"),
+          function(object) {
+              if (isDamped(object))
+                  "Damped robust local level with covariates and seasonal effect"
+              else
+                  "Robust local level with covariates and seasonal effect"
+          })
+
+## HAS_TESTS
+setMethod("describePrior",
+          signature(object = "DLMWithTrendRobustCovWithSeason"),
+          function(object) {
+              if (isDamped(object))
+                  "Damped robust local trend with covariates and seasonal effect"
+              else
+                  "Robust local trend with covariates and seasonal effect"
+          })
+
+
+## Known
+
+## HAS_TESTS
+setMethod("describePrior",
+          signature(object = "KnownCertain"),
+          function(object) {
+              "Known values"
+          })
+
+## HAS_TESTS
+setMethod("describePrior",
+          signature(object = "KnownUncertain"),
+          function(object) {
+              "Normal with known mean and variance"
+          })
+
+## Mix
+
+setMethod("describePrior",
+          signature(object = "MixNormZero"),
+          function(object) {
+              "Mixture model"
+          })
+
+## Zero
+
+## HAS_TESTS
+setMethod("describePrior",
+          signature(object = "Zero"),
+          function(object) {
+              "Set to zero"
+          })
+
+
+
+## drawPrior #########################################################################
 
 ## Exch
 

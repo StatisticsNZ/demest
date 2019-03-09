@@ -89,6 +89,16 @@ indicesShow <- function(iterator, nSeason = NULL, dim, iAlong) {
     ans
 }
 
+isDamped <- function(object) {
+    phi.known <- object@phiKnown@.Data
+    min.phi <- object@minPhi
+    phi <- object@phi
+    if (phi.known)
+        phi < 1
+    else
+        min.phi < 1
+}
+
 ## HAS_TESTS
 ## assume that no subsetting and no permuting of elements within dimensions occurs
 makeIndicesStrucZero <- function(strucZeroArray, margin) {

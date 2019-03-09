@@ -1,4 +1,59 @@
 
+## describePriorsResults ##############################################################
+
+## HAS_TESTS
+setMethod("describePriorsResults",
+          signature(object = "ResultsModelEst"),
+          function(object) {
+              model <- object@final[[1L]]@model
+              describePriorsModel(model)
+          })
+
+## NO_TESTS
+setMethod("describePriorsResults",
+          signature(object = "ResultsModelPred"),
+          function(object) {
+              model <- object@final[[1L]]@model
+              describePriorsModel(model)
+          })
+
+## HAS_TESTS
+setMethod("describePriorsResults",
+          signature(object = "ResultsCountsEst"),
+          function(object) {
+              combined <- object@final[[1L]]
+              model <- combined@model
+              data.models <- combined@dataModels
+              names.datasets <- combined@namesDatasets
+              ans.model <- describePriorsModel(model)
+              ans.data.models <- lapply(data.models, describePriorsModel)
+              names(ans.data.models) <- names.datasets
+              list(model = ans.model,
+                   dataModels = ans.data.models)              
+          })
+
+## NO_TESTS
+setMethod("describePriorsResults",
+          signature(object = "ResultsAccount"),
+          function(object) {
+              combined <- object@final[[1L]]
+              system.models <- combined@systemModels
+              data.models <- combined@dataModels
+              names.components <- combined@account@namesComponents
+              names.datasets <- combined@namesDatasets
+              ans.system.models <- lapply(system.models, describePriorsModel)
+              ans.data.models <- lapply(data.models, describePriorsModel)
+              names(system.models) <- c("population", names.components)
+              names(data.models) <- names.datasets
+              list(systemModels = ans.system.models,
+                   dataModels = ans.data.models)           
+          })
+
+
+
+
+## finiteSDObject #####################################################################
+
 ## HAS_TESTS
 setMethod("finiteSDObject",
           signature(object = "ResultsModelEst"),
