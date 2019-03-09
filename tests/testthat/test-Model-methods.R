@@ -5,6 +5,41 @@ n.test <- 5
 test.identity <- FALSE
 test.extended <- TRUE
 
+
+## describeModel #######################################################################
+
+test_that("describePriorsModel works with BinomialVarying", {
+    describePriorsModel <- demest:::describePriorsModel
+    initialModel <- demest:::initialModel
+    exposure <- Counts(array(rpois(20, lambda  = 10),
+                             dim = c(2, 10),
+                             dimnames = list(sex = c("f", "m"), age = 0:9)))
+    y <- Counts(array(rbinom(20, size = exposure, prob = 0.7),
+                      dim = c(2, 10),
+                      dimnames = list(sex = c("f", "m"), age = 0:9)))
+    spec <- Model(y ~ Binomial(mean ~ sex + age),
+                  age ~ DLM())
+    model <- initialModel(spec, y = y, exposure = exposure)
+    ans.obtained <- describePriorsModel(model)
+    ans.expected <- data.frame(Term = c("(Intercept)", "sex", "age"),
+                               Prior = c("Exchangeable with known variance",
+                                         "Exchangeable with known variance",
+                                         "Damped local trend"),
+                               stringsAsFactors = FALSE)
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("describePriorsModel works with PoissonBinomial", {
+    describePriorsModel <- demest:::describePriorsModel
+    initialModel <- demest:::initialModel
+    spec <- Model(y ~ PoissonBinomial(prob = 0.2))
+    model <- initialModel(spec, y = y, exposure = exposure)
+    ans.obtained <- describePriorsModel(model)
+    ans.expected <- NULL
+    expect_identical(ans.obtained, ans.expected)
+})
+
+
 ## drawYNonSampled #########################################################################
 
 test_that("drawYNonSampled works with Binomial", {

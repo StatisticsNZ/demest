@@ -148,6 +148,20 @@ setGeneric("decomposition",
            function(object)
                standardGeneric("decomposition"))
 
+setGeneric("describePrior",
+           function(object)
+               standardGeneric("describePrior"))
+
+## HAS_TESTS
+setGeneric("describePriorsModel",
+           function(object) {
+               NULL
+           })
+
+setGeneric("describePriorsResults",
+           function(object)
+               standardGeneric("describePriorsResults"))
+
 setGeneric("diffLogDensAccount",
            function(combined, useC = FALSE, useSpecific = FALSE)
                standardGeneric("diffLogDensAccount"))

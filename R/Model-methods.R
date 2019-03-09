@@ -1,4 +1,19 @@
 
+
+## describeModel #######################################################################
+
+## HAS_TESTS
+setMethod("describePriorsModel",
+          signature(object = "Varying"),
+          function(object) {
+              names <- object@namesBetas
+              priors <- object@priorsBetas
+              descriptions <- sapply(priors, describePrior)
+              data.frame(Term = names,
+                         Prior = descriptions,
+                         stringsAsFactors = FALSE)
+          })
+
 ## drawYNonSampled #####################################################################
 
 ## HAS_TESTS
