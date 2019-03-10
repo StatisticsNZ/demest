@@ -24,6 +24,178 @@ test_that("betaIsEstimated works with Zero prior", {
     expect_false(betaIsEstimated(x))
 })
 
+## describePrior #############################################################
+
+test_that("describePrior works with exchangeable", {
+    describePrior <- demest:::describePrior
+    x <- new("ExchFixed")
+    expect_identical(describePrior(x),
+                     "Exchangeable with known variance")
+    x <- new("ExchNormZero")
+    expect_identical(describePrior(x),
+                     "Exchangeable")
+    x <- new("ExchNormCov")
+    expect_identical(describePrior(x),
+                     "Exchangeable with covariates")
+    x <- new("ExchRobustZero")
+    expect_identical(describePrior(x),
+                     "Robust exchangeable")
+    x <- new("ExchRobustCov")
+    expect_identical(describePrior(x),
+                     "Robust exchangeable with covariates")
+})
+
+test_that("describePrior works with damped DLM", {
+    describePrior <- demest:::describePrior
+    x <- new("DLMNoTrendNormZeroNoSeason")
+    expect_identical(describePrior(x),
+                     "Damped local level")
+    x <- new("DLMWithTrendNormZeroNoSeason")
+    expect_identical(describePrior(x),
+                     "Damped local trend")
+    x <- new("DLMNoTrendNormZeroWithSeason")
+    expect_identical(describePrior(x),
+                     "Damped local level with seasonal effect")
+    x <- new("DLMWithTrendNormZeroWithSeason")
+    expect_identical(describePrior(x),
+                     "Damped local trend with seasonal effect")
+    x <- new("DLMNoTrendNormCovNoSeason")
+    expect_identical(describePrior(x),
+                     "Damped local level with covariates")
+    x <- new("DLMWithTrendNormCovNoSeason")
+    expect_identical(describePrior(x),
+                     "Damped local trend with covariates")
+    x <- new("DLMNoTrendNormCovWithSeason")
+    expect_identical(describePrior(x),
+                     "Damped local level with covariates and seasonal effect")
+    x <- new("DLMWithTrendNormCovWithSeason")
+    expect_identical(describePrior(x),
+                     "Damped local trend with covariates and seasonal effect")
+    x <- new("DLMNoTrendRobustZeroNoSeason")
+    expect_identical(describePrior(x),
+                     "Damped robust local level")
+    x <- new("DLMWithTrendRobustZeroNoSeason")
+    expect_identical(describePrior(x),
+                     "Damped robust local trend")
+    x <- new("DLMNoTrendRobustZeroWithSeason")
+    expect_identical(describePrior(x),
+                     "Damped robust local level with seasonal effect")
+    x <- new("DLMWithTrendRobustZeroWithSeason")
+    expect_identical(describePrior(x),
+                     "Damped robust local trend with seasonal effect")
+    x <- new("DLMNoTrendRobustCovNoSeason")
+    expect_identical(describePrior(x),
+                     "Damped robust local level with covariates")
+    x <- new("DLMWithTrendRobustCovNoSeason")
+    expect_identical(describePrior(x),
+                     "Damped robust local trend with covariates")
+    x <- new("DLMNoTrendRobustCovWithSeason")
+    expect_identical(describePrior(x),
+                     "Damped robust local level with covariates and seasonal effect")
+    x <- new("DLMWithTrendRobustCovWithSeason")
+    expect_identical(describePrior(x),
+                     "Damped robust local trend with covariates and seasonal effect")
+})
+
+test_that("describePrior works with non-damped DLM", {
+    describePrior <- demest:::describePrior
+    x <- new("DLMNoTrendNormZeroNoSeason")
+    x@phiKnown@.Data <- TRUE
+    x@phi <- 1
+    expect_identical(describePrior(x),
+                     "Local level")
+    x <- new("DLMWithTrendNormZeroNoSeason")
+    x@phiKnown@.Data <- TRUE
+    x@phi <- 1
+    expect_identical(describePrior(x),
+                     "Local trend")
+    x <- new("DLMNoTrendNormZeroWithSeason")
+    x@phiKnown@.Data <- TRUE
+    x@phi <- 1
+    expect_identical(describePrior(x),
+                     "Local level with seasonal effect")
+    x <- new("DLMWithTrendNormZeroWithSeason")
+    x@phiKnown@.Data <- TRUE
+    x@phi <- 1
+    expect_identical(describePrior(x),
+                     "Local trend with seasonal effect")
+    x <- new("DLMNoTrendNormCovNoSeason")
+    x@phiKnown@.Data <- TRUE
+    x@phi <- 1
+    expect_identical(describePrior(x),
+                     "Local level with covariates")
+    x <- new("DLMWithTrendNormCovNoSeason")
+    x@phiKnown@.Data <- TRUE
+    x@phi <- 1
+    expect_identical(describePrior(x),
+                     "Local trend with covariates")
+    x <- new("DLMNoTrendNormCovWithSeason")
+    x@phiKnown@.Data <- TRUE
+    x@phi <- 1
+    expect_identical(describePrior(x),
+                     "Local level with covariates and seasonal effect")
+    x <- new("DLMWithTrendNormCovWithSeason")
+    x@phiKnown@.Data <- TRUE
+    x@phi <- 1
+    expect_identical(describePrior(x),
+                     "Local trend with covariates and seasonal effect")
+    x <- new("DLMNoTrendRobustZeroNoSeason")
+    x@phiKnown@.Data <- TRUE
+    x@phi <- 1
+    expect_identical(describePrior(x),
+                     "Robust local level")
+    x <- new("DLMWithTrendRobustZeroNoSeason")
+    x@phiKnown@.Data <- TRUE
+    x@phi <- 1
+    expect_identical(describePrior(x),
+                     "Robust local trend")
+    x <- new("DLMNoTrendRobustZeroWithSeason")
+    x@phiKnown@.Data <- TRUE
+    x@phi <- 1
+    expect_identical(describePrior(x),
+                     "Robust local level with seasonal effect")
+    x <- new("DLMWithTrendRobustZeroWithSeason")
+    x@phiKnown@.Data <- TRUE
+    x@phi <- 1
+    expect_identical(describePrior(x),
+                     "Robust local trend with seasonal effect")
+    x <- new("DLMNoTrendRobustCovNoSeason")
+    x@phiKnown@.Data <- TRUE
+    x@phi <- 1
+    expect_identical(describePrior(x),
+                     "Robust local level with covariates")
+    x <- new("DLMWithTrendRobustCovNoSeason")
+    x@phiKnown@.Data <- TRUE
+    x@phi <- 1
+    expect_identical(describePrior(x),
+                     "Robust local trend with covariates")
+    x <- new("DLMNoTrendRobustCovWithSeason")
+    x@phiKnown@.Data <- TRUE
+    x@phi <- 1
+    expect_identical(describePrior(x),
+                     "Robust local level with covariates and seasonal effect")
+    x <- new("DLMWithTrendRobustCovWithSeason")
+    x@phiKnown@.Data <- TRUE
+    x@phi <- 1
+    expect_identical(describePrior(x),
+                     "Robust local trend with covariates and seasonal effect")
+})
+
+test_that("describePrior works with remaining priors", {
+    describePrior <- demest:::describePrior
+    x <- new("KnownCertain")
+    expect_identical(describePrior(x),
+                     "Known"),
+    x <- new("KnownUncertain")
+    expect_identical(describePrior(x),
+                     "Normal with known mean and variance")
+    x <- new("MixNormZero")
+    expect_identical(describePrior(x),
+                     "Mixture model")
+    x <- new("Zero")
+    expect_identical(describePrior(x),
+                     "Set to zero")
+})
 
 
 ## drawPrior ####################################################################

@@ -792,7 +792,7 @@ setMethod("fetchResults",
                   exposure <- dembase::collapse(exposure, transform = transform)
                   is.missing <- is.na(.Data)
                   exposure <- exposure[is.missing]
-                  rounded <- dembase:::round3(exposure)
+                  rounded <- dembase::round3(exposure)
                   .Data[is.missing] <- rounded
                   methods::new("Counts", .Data = .Data, metadata = metadata)
               }

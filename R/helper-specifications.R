@@ -85,7 +85,7 @@ checkAndTidyStructuralZeros <- function(structuralZeros) {
     if (is.null(structuralZeros))
         NULL
     else if (identical(structuralZeros, "diag"))
-        new("Values")
+        methods::new("Values")
     else if (methods::is(structuralZeros, "Values")) {
         length(structuralZeros) > 0L
         if (any(is.na(structuralZeros)))

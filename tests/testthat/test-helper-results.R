@@ -795,7 +795,49 @@ test_that("makeResultsModelEst works with valid input", {
     expect_is(ans@y, "SkeletonMissingDataNormalVarsigmaUnknown")
 })
 
-test_that("makeResultsModelPred works with valid input", {
+test_that("makeResultsModelPred works with valid input - no exposure", {
+    makeResultsModelPred <- demest:::makeResultsModelPred
+    initialCombinedModel <- demest:::initialCombinedModel
+    initialCombinedModelPredict <- demest:::initialCombinedModelPredict
+    extractValues <- demest:::extractValues
+    y <- Counts(array(as.integer(rbinom(n = 24, size = 10, prob = 0.8)),
+                      dim = 2:4,
+                      dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000:2003)),
+                dimscales = c(time = "Intervals"))
+    spec <- Model(y ~ Poisson(mean ~ sex * age + time, useExpose = FALSE))
+    finalCombineds <- replicate(n = 3,
+                                initialCombinedModel(spec, y = y, exposure = NULL, weights = NULL))
+    for (i in 1:3) {
+        finalCombineds[[i]] <- initialCombinedModelPredict(combined = finalCombineds[[i]],
+                                                           along = 3L,
+                                                           labels = c("2004", "2005", "2006"),
+                                                           n = NULL,
+                                                           covariates = NULL,
+                                                           aggregate = NULL,
+                                                           lower = NULL,
+                                                           upper = NULL,
+                                                           yIsCounts = TRUE)
+    }
+    names(finalCombineds) <- c("chain1", "chain2", "chain3")
+    filename <- "filename"
+    call <- call("estimateModel", list("model"))
+    mcmcArgs <- list(nBurnin = 1000L, nSim = 1000L, nChain = 3L, nThin = 20L)
+    lengthIter <- length(extractValues(finalCombineds[[1L]]))
+    controlArgs <- list(call = call,
+                        parallel = TRUE,
+                        lengthIter = lengthIter,
+                        nUpdateMax = 200L)
+    seed <- list(c(407L, 1:6), c(407L, 6:1), c(407L, 3:8))
+    ans <- makeResultsModelPred(finalCombineds = finalCombineds,
+                                exposure = NULL,
+                                mcmcArgs = mcmcArgs,
+                                controlArgs = controlArgs,
+                                seed = seed)
+    expect_true(validObject(ans))
+    expect_is(ans, "ResultsModelPred")
+})
+
+test_that("makeResultsModelPred works with valid input - with exposure", {
     makeResultsModelPred <- demest:::makeResultsModelPred
     initialCombinedModel <- demest:::initialCombinedModel
     initialCombinedModelPredict <- demest:::initialCombinedModelPredict
@@ -832,12 +874,17 @@ test_that("makeResultsModelPred works with valid input", {
                         lengthIter = lengthIter,
                         nUpdateMax = 200L)
     seed <- list(c(407L, 1:6), c(407L, 6:1), c(407L, 3:8))
+    exposure.pred <- Counts(array(as.integer(rpois(n = 19, lambda = 10)),
+                                  dim = c(2, 3, 3),
+                                  dimnames = list(sex = c("f", "m"), age = 0:2, time = 2004:2006)),
+                            dimscales = c(time = "Intervals"))
     ans <- makeResultsModelPred(finalCombineds = finalCombineds,
+                                exposure = exposure.pred,
                                 mcmcArgs = mcmcArgs,
                                 controlArgs = controlArgs,
                                 seed = seed)
     expect_true(validObject(ans))
-    expect_is(ans, "ResultsModelPred")
+    expect_is(ans, "ResultsModelExposurePred")
 })
 
 test_that("makeResultsCounts works with no exposure", {

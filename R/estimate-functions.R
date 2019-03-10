@@ -239,6 +239,10 @@ estimateModel <- function(model, y, exposure = NULL, weights = NULL,
 #' When predicting along \code{"time"}, \code{"age"} or \code{"cohort"}
 #' dimensions, specifying an \code{n} argument is usually more convenient
 #' than specifying a \code{labels} argument.
+#'
+#' \code{exposure} or \code{weights} arguments are needed if predictions
+#' for outcome variable \code{y}, and not just the model parameters,
+#' are needed.
 #' 
 #' @inheritParams estimateModel
 #' @param filenameEst Filename used to \code{\link{estimateModel}}.
@@ -255,9 +259,13 @@ estimateModel <- function(model, y, exposure = NULL, weights = NULL,
 #' @param upper An upper bound for estimates of data-level
 #' rate, probabilities, or means.
 #' @export
-predictModel <- function(filenameEst, filenamePred, along = NULL, labels = NULL, n = NULL,
-                         data = NULL, aggregate = NULL, lower = NULL,
-                         upper = NULL, nBurnin = 0L,  parallel = TRUE, outfile = NULL,
+predictModel <- function(filenameEst, filenamePred,
+                         along = NULL, labels = NULL, n = NULL,
+                         exposure = NULL, weights = NULL,
+                         data = NULL, aggregate = NULL,
+                         lower = NULL, upper = NULL,
+                         nBurnin = 0L,  parallel = TRUE,
+                         outfile = NULL,
                          verbose = FALSE, useC = TRUE) {
     if (!identical(nBurnin, 0L))
         stop("'nBurnin' must currently be 0L")
@@ -295,6 +303,22 @@ predictModel <- function(filenameEst, filenamePred, along = NULL, labels = NULL,
                                                  lower = lower,
                                                  upper = upper,
                                                  yIsCounts = y.is.counts)
+    y.second <- combined.pred@y
+    uses.exposure <- usesExposure(model.first)
+    has.exposure <- !is.null(exposure)
+    if (uses.exposure && !has.exposure)
+        exposure <- y.second
+    if (!uses.exposure && has.exposure)
+        stop(gettextf("'%s' argument supplied, but model '%s' does not use exposure",
+                      "exposure", deparse(model.first@call[[2L]])))
+    exposure <- checkAndTidyExposure(exposure = exposure,
+                                     y = y.second)
+    exposure <- castExposure(exposure = exposure,
+                             model = model.first)
+    weights <- checkAndTidyWeights(weights = weights,
+                                   y = y.second)
+    if (!is.null(weights))
+        combined.pred@model@weights <- as.numeric(weights)
     control.args.pred <- list(call = call,
                               parallel = parallel,
                               lengthIter = lengthValues(combined.pred),
@@ -349,6 +373,7 @@ predictModel <- function(filenameEst, filenamePred, along = NULL, labels = NULL,
     }
     sapply(tempfiles.first, unlink)
     results <- makeResultsModelPred(finalCombineds = final.combineds,
+                                    exposure = exposure,
                                     mcmcArgs = mcmc.args.pred,
                                     controlArgs = control.args.pred,
                                     seed = seed)

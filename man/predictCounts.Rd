@@ -22,6 +22,9 @@ predictCounts(filenameEst, filenamePred, along = NULL, labels = NULL,
 along \code{"time"}, \code{"age"}, or \code{"cohort"} dimensions,
 and when the units have equal length.}
 
+\item{exposure}{A \code{\link[dembase:DemographicArray-class]{Counts}}
+object specifying exposure or sample size.}
+
 \item{data}{A named list containing future values of covariates.}
 
 \item{aggregate}{An object of class \code{\linkS4class{SpecAggregate}}.}

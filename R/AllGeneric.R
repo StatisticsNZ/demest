@@ -167,6 +167,20 @@ setGeneric("decomposition",
            function(object)
                standardGeneric("decomposition"))
 
+setGeneric("describePrior",
+           function(object)
+               standardGeneric("describePrior"))
+
+## HAS_TESTS
+setGeneric("describePriorsModel",
+           function(object) {
+               NULL
+           })
+
+setGeneric("describePriorsResults",
+           function(object)
+               standardGeneric("describePriorsResults"))
+
 setGeneric("diffLogDensAccount",
            function(combined, useC = FALSE, useSpecific = FALSE)
                standardGeneric("diffLogDensAccount"))
@@ -563,36 +577,40 @@ setGeneric("updateValuesAccount",
            function(combined, useC = FALSE, useSpecific = FALSE)
                standardGeneric("updateValuesAccount"))
 
+setGeneric("usesExposure",
+           function(object)
+               standardGeneric("usesExposure"))
+
 setGeneric("whereAcceptance",
            function(object)
-           standardGeneric("whereAcceptance"))
+               standardGeneric("whereAcceptance"))
 
 setGeneric("whereAutocorr",
            function(object)
-           standardGeneric("whereAutocorr"))
+               standardGeneric("whereAutocorr"))
 
 setGeneric("whereEstimated",
            function(object)
-           standardGeneric("whereEstimated"))
+               standardGeneric("whereEstimated"))
 
 setGeneric("whereFiniteSD",
            function(object)
-           standardGeneric("whereFiniteSD"))
+               standardGeneric("whereFiniteSD"))
 
 setGeneric("whereJump",
            function(object)
-           standardGeneric("whereJump"))
+               standardGeneric("whereJump"))
 
 setGeneric("whereMetropStat",
            function(object, FUN)
-           standardGeneric("whereMetropStat"))
+               standardGeneric("whereMetropStat"))
 
 setGeneric("whereNoProposal",
            function(object)
-           standardGeneric("whereNoProposal"))
+               standardGeneric("whereNoProposal"))
 
 setGeneric("whereTheta",
            function(object)
-           standardGeneric("whereTheta"))
+               standardGeneric("whereTheta"))
 
 

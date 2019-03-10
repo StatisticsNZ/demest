@@ -82,7 +82,7 @@ setClass("BoxCoxParamMixin",
                  return(gettextf("'%s' is less than %d",
                                  "boxCoxParam", 0L))
              ## TEMPORARILY CHECK THAT NOT AGGREGATE
-             if ((boxCoxParam > 0) && is(object, "Aggregate"))
+             if ((boxCoxParam > 0) && methods::is(object, "Aggregate"))
                  return("have not yet implemented Box-Cox transforms with aggregate values")
              TRUE
          })         
@@ -335,13 +335,13 @@ setClass("MaxAttemptMixin",
 ## NO_TESTS
 setClass("MeanMeanLogNuCMPMixin",
          slots = c(meanMeanLogNuCMP = "Parameter"),
-         prototype = prototype(meanMeanLogNuCMP = new("Parameter", 0)),
+         prototype = prototype(meanMeanLogNuCMP = methods::new("Parameter", 0)),
          contains = "VIRTUAL")
 
 ## NO_TESTS
 setClass("MeanLogNuCMPMixin",
          slots = c(meanLogNuCMP = "Parameter"),
-         prototype = prototype(meanLogNuCMP = new("Parameter", 0)),
+         prototype = prototype(meanLogNuCMP = methods::new("Parameter", 0)),
          contains = "VIRTUAL")
 
 ## HAS_TESTS
@@ -734,7 +734,7 @@ setClass("StructuralZerosMixin",
              structuralZeros <- object@structuralZeros
              if (is.null(structuralZeros))
                  TRUE
-             else if (identical(structuralZeros, new("Values")))
+             else if (identical(structuralZeros, methods::new("Values")))
                  TRUE
              else {
                  if (any(is.na(structuralZeros)))

@@ -89,6 +89,16 @@ indicesShow <- function(iterator, nSeason = NULL, dim, iAlong) {
     ans
 }
 
+isDamped <- function(object) {
+    phi.known <- object@phiKnown@.Data
+    min.phi <- object@minPhi
+    phi <- object@phi
+    if (phi.known)
+        phi < 1
+    else
+        min.phi < 1
+}
+
 ## HAS_TESTS
 ## assume that no subsetting and no permuting of elements within dimensions occurs
 makeIndicesStrucZero <- function(strucZeroArray, margin) {
@@ -124,13 +134,13 @@ makeMetadata0 <- function(metadata, iAlong, nSeason) {
     if (!is.null(nSeason)) {
         nm.season <- make.unique(c(names, "season"))[length(names) + 1L]
         dimtype.season <- "state"
-        DimScale.season <- new("Categories", dimvalues = as.character(seq_len(nSeason)))
+        DimScale.season <- methods::new("Categories", dimvalues = as.character(seq_len(nSeason)))
     }
     if (length(metadata) == 1L) {
         if (is.null(nSeason))
             NULL
         else
-            new("MetaData",
+            methods::new("MetaData",
                 nms = nm.season,
                 dimtypes = dimtype.season,
                 DimScales = list(DimScale.season))
@@ -144,7 +154,7 @@ makeMetadata0 <- function(metadata, iAlong, nSeason) {
             dimtypes <- c(dimtype.season, dimtypes)
             DimScales <- c(list(DimScale.season), DimScales)
         }
-        new("MetaData",
+        methods::new("MetaData",
             nms = names,
             dimtypes = dimtypes,
             DimScales = DimScales)
@@ -159,16 +169,16 @@ makeMetadataIncl0 <- function(metadata, iAlong, nSeason) {
     DimScales <- DimScales(metadata, use.names = FALSE)
     dimtypes[iAlong] <- "state"
     dimvalues.along <- as.character(seq_len(dim[iAlong] + 1L))
-    DimScale.along <- new("Categories", dimvalues = dimvalues.along)
+    DimScale.along <- methods::new("Categories", dimvalues = dimvalues.along)
     DimScales[[iAlong]] <- DimScale.along
     if (!is.null(nSeason)) {
         nm.season <- make.unique(c(names, "season"))[length(names) + 1L]
         names <- c(nm.season, names)
         dimtypes <- c("state", dimtypes)
-        DimScale.season <- new("Categories", dimvalues = as.character(seq_len(nSeason)))
+        DimScale.season <- methods::new("Categories", dimvalues = as.character(seq_len(nSeason)))
         DimScales <- c(list(DimScale.season), DimScales)
     }
-    new("MetaData",
+    methods::new("MetaData",
         nms = names,
         dimtypes = dimtypes,
         DimScales = DimScales)
@@ -400,22 +410,38 @@ makeResultsModelEst <- function(finalCombineds, mcmcArgs, controlArgs, seed) {
 }
 
 ## HAS_TESTS
-makeResultsModelPred <- function(finalCombineds, mcmcArgs, controlArgs, seed) {
+makeResultsModelPred <- function(finalCombineds, exposure, mcmcArgs, controlArgs, seed) {
     combined <- finalCombineds[[1L]]
     model <- combined@model
     y <- combined@y
+    has.exposure <- !is.null(exposure)
     mcmc <- makeOutputMCMC(mcmcArgs = mcmcArgs,
                            finalCombineds = finalCombineds)
     final <- finalCombineds
     names(final) <- paste0("chain", seq_along(final))
     output.model <- makeOutputModel(model = model, pos = 1L, mcmc = mcmc)
+    output.y <- SkeletonMissingData(y,
+                                    model = model,
+                                    outputModel = output.model,
+                                    exposure = exposure)
     mcmc <- mcmc["nIteration"]
-    methods::new("ResultsModelPred",
-                 model = output.model,
-                 mcmc = mcmc,
-                 control = controlArgs,
-                 seed = seed,
-                 final = final)
+    if (has.exposure)
+        methods::new("ResultsModelExposurePred",
+                     model = output.model,
+                     y = output.y,
+                     exposure = exposure,
+                     mcmc = mcmc,
+                     control = controlArgs,
+                     seed = seed,
+                     final = final)
+    else
+        methods::new("ResultsModelPred",
+                     model = output.model,
+                     y = output.y,
+                     mcmc = mcmc,
+                     control = controlArgs,
+                     seed = seed,
+                     final = final)
 }
 
 ## HAS_TESTS
@@ -522,7 +548,7 @@ makeResultsAccount <- function(finalCombineds, mcmcArgs, controlArgs, seed) {
         pos <- pos + changeInPos(output.account)
     }
     else {
-        output.account <- vector(mode = "list", length = length(series))
+        output.account <- vector(mode = "list", length = length(names.series))
         names(output.account) <- names.series
     }
     ## system models
@@ -793,10 +819,10 @@ readStateDLMFromFile <- function(skeleton, filename, iterations,
         indices0 <- skeleton@indices0
         metadata <- skeleton@metadata0
         if (is.null(metadata)) {
-            metadata <- new("MetaData",
+            metadata <- methods::new("MetaData",
                             nms = "iteration",
                             dimtypes = "iteration",
-                            DimScales = list(new("Iterations", dimvalues = seq_len(nIteration))))
+                            DimScales = list(methods::new("Iterations", dimvalues = seq_len(nIteration))))
         }
         else
             metadata <- dembase::addIterationsToMetadata(metadata, iterations = iterations)        

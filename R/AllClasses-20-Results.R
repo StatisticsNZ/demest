@@ -171,17 +171,16 @@ setClass("ResultsModelEst",
 ## sure the slots are listed in this order
 setClass("ResultsModelExposureEst",
          slots = c(model = "list",
-                        y = "DemographicOrSkeletonMissingData",
-                        exposure = "Counts"),
+                   y = "DemographicOrSkeletonMissingData",
+                   exposure = "Counts"),
          contains = "ResultsModelEst")
 
 ## HAS_TESTS
 setClass("ResultsModelPred",
-         slots = c(model = "list"),
+         slots = c(model = "list",
+                   y = "SkeletonMissingData"),
          contains = "ResultsPred",
          validity = function(object) {
-             mcmc <- object@mcmc
-             model <- object@model
              final <- object@final
              ## all elements of final have class "CombinedModel"
              if (!all(sapply(final, is, "CombinedModel")))
@@ -189,6 +188,15 @@ setClass("ResultsModelPred",
                                  "final", "CombinedModel"))
              TRUE
          })
+
+## HAS_TESTS
+## repeat arguments 'model' and 'y' to make
+## sure the slots are listed in this order
+setClass("ResultsModelExposurePred",
+         slots = c(model = "list",
+                   y = "SkeletonMissingData",
+                   exposure = "Counts"),
+         contains = "ResultsModelPred")
 
 setClassUnion("ResultsModel",
               members = c("ResultsModelEst", "ResultsModelPred"))

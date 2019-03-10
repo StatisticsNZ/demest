@@ -31,8 +31,8 @@ checkDataModelsSuitableForSimulation <- function(dataModels, datasets,
 
 ## HAS_TESTS
 checkPriorInform_prohibited <- function(object, nameSlot, nameArg, nameFun) {
-    val <- slot(object, nameSlot)
-    val <- slot(val, ".Data")
+    val <- methods::slot(object, nameSlot)
+    val <- methods::slot(val, ".Data")
     if (!isTRUE(all.equal(val, 1)))
         gettextf("value for '%s' supplied in call to '%s'",
                  nameArg, nameFun)
@@ -42,8 +42,8 @@ checkPriorInform_prohibited <- function(object, nameSlot, nameArg, nameFun) {
 
 ## HAS_TESTS
 checkPriorInform_required <- function(object, nameSlot, nameArg, nameFun) {
-    val <- slot(object, nameSlot)
-    val <- slot(val, ".Data")
+    val <- methods::slot(object, nameSlot)
+    val <- methods::slot(val, ".Data")
     if (any(is.na(val)))
         gettextf("value for '%s' not supplied in call to '%s'",
                  nameArg, nameFun)
@@ -377,9 +377,9 @@ drawEta <- function(prior, useC = FALSE) {
         for (p in seq_len(P - 1L)) {
             mean <- mean.eta.coef[p]
             sd <- sqrt(U.eta.coef[p])
-            eta[p + 1L] <- rnorm(n = 1L,
-                                 mean = mean,
-                                 sd = sd)
+            eta[p + 1L] <- stats::rnorm(n = 1L,
+                                        mean = mean,
+                                        sd = sd)
         }
         prior@eta@.Data <- eta
         prior
@@ -522,9 +522,9 @@ drawPhi <- function(prior, useC = FALSE) {
             phi.max <- prior@maxPhi@.Data
             shape1 <- prior@shape1Phi@.Data
             shape2 <- prior@shape2Phi@.Data
-            X <- rbeta(n = 1L,
-                       shape1 = shape1,
-                       shape2 = shape2)
+            X <- stats::rbeta(n = 1L,
+                              shape1 = shape1,
+                              shape2 = shape2)
             phi <- phi.min + X * (phi.max - phi.min)
             prior@phi <- phi
             prior
@@ -548,9 +548,9 @@ drawPhiMix <- function(prior, useC = FALSE) {
             phi.max <- prior@maxPhi@.Data
             shape1 <- prior@shape1Phi@.Data
             shape2 <- prior@shape2Phi@.Data
-            X <- rbeta(n = 1L,
-                       shape1 = shape1,
-                       shape2 = shape2)
+            X <- stats::rbeta(n = 1L,
+                              shape1 = shape1,
+                              shape2 = shape2)
             phi <- phi.min + X * (phi.max - phi.min)
             prior@phiMix <- phi
             prior
