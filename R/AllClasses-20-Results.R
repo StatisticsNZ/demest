@@ -61,7 +61,7 @@ setClass("ResultsEst",
          slots = c(mcmc = "integer"),
          contains = c("VIRTUAL", "Results"),
          validity = function(object) {
-             kNamesMCMC <- c("nBurnin", "nSim", "nChain", "nThin", "nIteration")
+             kNamesMCMC <- c("nBurnin", "nSim", "nChain", "nThin", "nCore", "nIteration")
              kNonNegative <- c("nBurnin", "nSim", "nIteration")
              mcmc <- object@mcmc
              seed <- object@seed
@@ -301,4 +301,62 @@ setClass("ResultsAccount",
              TRUE
          })
          
+## HAS_TESTS
+setClass("ResultsModelSimDirect",
+         slots = c(model = "list",
+                   y = "SkeletonMissingData",
+                   mcmc = "integer"),
+         contains = "Results",
+         validity = function(object) {
+             kNamesMCMC <- "nIteration"
+             kNonNegative <- "nIteration"
+             control <- object@control
+             model <- object@model
+             final <- object@final
+             parallel <- control[["parallel"]]
+             mcmc <- object@mcmc
+             ## 'parallel' is always FALSE
+             if (!identical(parallel, FALSE))
+                 return(gettextf("'%s' is not %s",
+                                 "parallel", "FALSE"))
+             ## 'final' has length 1
+             if (!identical(length(final), 1L))
+                 return(gettextf("'%s' does not have length %d",
+                                 "final", 1L))
+             ## all elements of final have class "CombinedModel"
+             if (!all(sapply(final, is, "CombinedModel")))
+                 return(gettextf("'%s' has elements not of class \"%s\"",
+                                 "final", "CombinedModel"))
+             ## mcmc has correct names
+             if (!identical(names(mcmc), kNamesMCMC))
+                 return(gettextf("'%s' has incorrect names",
+                                 "mcmc"))
+             ## mcmc has no missing values
+             for (name in kNamesMCMC)
+                 if (is.na(mcmc[[name]]))
+                     return(gettextf("'%s' is missing",
+                                     name))
+             ## elements of mcmc that should be non-negative are non-negative
+             for (name in kNonNegative)
+                 if (mcmc[[name]] < 0L)
+                     return(gettextf("'%s' is negative",
+                                     name))
+             ## elements of mcmc that should be positive are positive
+             for (name in setdiff(kNamesMCMC, kNonNegative))
+                 if (mcmc[[name]] < 1L)
+                     return(gettextf("'%s' is less than %d",
+                                     name, 1L))
+             TRUE
+         })
+
+
+
+## HAS_TESTS
+## repeat arguments 'model' and 'y' to make
+## sure the slots are listed in this order
+setClass("ResultsModelSimDirectExp",
+         slots = c(model = "list",
+                   y = "SkeletonMissingData",
+                   exposure = "Counts"),
+         contains = "ResultsModelSimDirect")
 

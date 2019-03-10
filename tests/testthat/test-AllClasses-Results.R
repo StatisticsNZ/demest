@@ -698,5 +698,129 @@ test_that("can create valid object of class ResultsCountsExposureEst", {
     expect_is(x, "ResultsCountsExposureEst")
 })
 
+test_that("can create valid object of class ResultsModelSimDirect", {
+    initialCombinedModel <- demest:::initialCombinedModel
+    extractValues <- demest:::extractValues
+    makeOutputModel <- demest:::makeOutputModel
+    SkeletonMissingData <- demest:::SkeletonMissingData
+    call <- call("estimateModel", list("model"))
+    filename <- "filename"
+    mcmc <- c(nBurnin = 0L, nSim = 1L, nChain = 1L, nThin = 1L,
+              nIteration = 1L)
+    seed <- list(.Random.seed)
+    y <- Counts(array(as.integer(rpois(n = 24, lambda = 20)),
+                      dim = 2:4,
+                      dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000:2003)),
+                dimscales = c(time = "Intervals"))
+    spec <- Model(y ~ Poisson(mean ~ sex * age + time, useExpose = FALSE))
+    final <- replicate(n = 1,
+                       initialCombinedModel(spec, y = y, exposure = NULL, weights = NULL))
+    control <- list(call = call,
+                    parallel = FALSE,
+                    lengthIter = length(extractValues(final[[1L]])))
+    model <- makeOutputModel(model = final[[1]]@model, pos = 1L, mcmc = mcmc)
+    y[] <- NA_integer_
+    y <- SkeletonMissingData(y,
+                             model = final[[1L]]@model,
+                             outputModel = model,
+                             exposure = NULL)    
+    ans <- new("ResultsModelSimDirect",
+               control = control,
+               final = final,
+               seed = seed,
+               model = model,
+               y = y)
+    expect_true(validObject(ans))
+})
 
- 
+
+test_that("validity tests for ResultsModelSimDirect inherited from ResultsModelSimDirect work", {
+    initialCombinedModel <- demest:::initialCombinedModel
+    extractValues <- demest:::extractValues
+    makeOutputModel <- demest:::makeOutputModel
+    SkeletonMissingData <- demest:::SkeletonMissingData
+    call <- call("estimateModel", list("model"))
+    filename <- "filename"
+    mcmc <- c(nBurnin = 0L, nSim = 1L, nChain = 1L, nThin = 1L,
+              nIteration = 1L)
+    seed <- list(.Random.seed)
+    y <- Counts(array(as.integer(rpois(n = 24, lambda = 20)),
+                      dim = 2:4,
+                      dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000:2003)),
+                dimscales = c(time = "Intervals"))
+    spec <- Model(y ~ Poisson(mean ~ sex * age + time, useExpose = FALSE))
+    final <- replicate(n = 1,
+                       initialCombinedModel(spec, y = y, exposure = NULL, weights = NULL))
+    control <- list(call = call,
+                    parallel = FALSE,
+                    lengthIter = length(extractValues(final[[1L]])))
+    model <- makeOutputModel(model = final[[1]]@model, pos = 1L, mcmc = mcmc)
+    y[] <- NA_integer_
+    y <- SkeletonMissingData(y,
+                             model = final[[1L]]@model,
+                             outputModel = model,
+                             exposure = NULL)    
+    ans <- new("ResultsModelSimDirect",
+               control = control,
+               final = final,
+               seed = seed,
+               mcmc = c(nIteration = 1L),
+               model = model,
+               y = y)
+    expect_true(validObject(ans))
+    ## 'parallel' is always FALSE
+    ans.wrong <- ans
+    ans.wrong@control$parallel <- TRUE
+    ans.wrong@seed <- list(c(407L, 1:6), c(407L, 6:1), c(407L, 3:8))
+    expect_error(validObject(ans.wrong),
+                 "'parallel' is not FALSE")
+    ## 'final' has length 1
+    ans.wrong <- ans
+    ans.wrong@final <- rep(ans.wrong@final, 2)
+    expect_error(validObject(ans.wrong),
+                 "'final' does not have length 1")
+})
+
+test_that("can create valid object of class ResultsModelSimDirectExp", {
+    initialCombinedModel <- demest:::initialCombinedModel
+    extractValues <- demest:::extractValues
+    makeOutputModel <- demest:::makeOutputModel
+    SkeletonMissingData <- demest:::SkeletonMissingData
+    call <- call("estimateModel", list("model"))
+    filename <- "filename"
+    mcmc <- c(nBurnin = 0L, nSim = 1L, nChain = 1L, nThin = 1L,
+              nIteration = 1L)
+    seed <- list(.Random.seed)
+    y <- Counts(array(as.integer(rpois(n = 24, lambda = 20)),
+                      dim = 2:4,
+                      dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000:2003)),
+                dimscales = c(time = "Intervals"))
+    exposure <- Counts(array(100,
+                      dim = 2:4,
+                      dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000:2003)),
+                      dimscales = c(time = "Intervals"))
+    spec <- Model(y ~ Poisson(mean ~ sex * age + time))
+    final <- replicate(n = 1,
+                       initialCombinedModel(spec, y = y, exposure = exposure, weights = NULL))
+    control <- list(call = call,
+                    parallel = FALSE,
+                    lengthIter = length(extractValues(final[[1L]])))
+    model <- makeOutputModel(model = final[[1]]@model, pos = 1L, mcmc = mcmc)
+    y[] <- NA_integer_
+    y <- SkeletonMissingData(y,
+                             model = final[[1L]]@model,
+                             outputModel = model,
+                             exposure = exposure)    
+    ans <- new("ResultsModelSimDirectExp",
+               control = control,
+               final = final,
+               seed = seed,
+               mcmc = c(nIteration = 1L),
+               model = model,
+               y = y,
+               exposure = exposure)
+    expect_true(validObject(ans))
+})
+
+
+

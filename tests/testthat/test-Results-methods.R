@@ -273,6 +273,43 @@ test_that("rescalePriors works with BinomialVarying", {
                            "model.prior.sex")))
 })
 
+
+test_that("rescalePriors works with BinomialVarying - simulation", {
+    rescalePriors <- demest:::rescalePriors
+    fetchResultsObject <- demest:::fetchResultsObject
+    exposure <- Counts(array(as.integer(rpois(n = 24, lambda = 10)),
+                             dim = 2:4,
+                             dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000:2003)),
+                       dimscales = c(time = "Intervals"))
+    filename <- tempfile()
+    model <- Model(y ~ Binomial(mean ~ age + sex + time),
+               `(Intercept)` ~ ExchFixed(mean = -1, sd = 0.2), 
+               age ~ Exch(error = Error(scale = HalfT(scale = 0.3))),
+               sex ~ ExchFixed(sd = 0.1),
+               time ~ ExchFixed(sd = 0.1),
+               priorSD = HalfT(scale = 0.2))
+    simulateModel(model,
+                  exposure = exposure,
+                  nDraw = 10,
+                  filename = filename,
+                  useC = FALSE)
+    results <- fetchResultsObject(filename)
+    adjustments <- new.env(hash = TRUE)
+    nIteration <- results@mcmc[["nIteration"]]
+    lengthIter <- results@control$lengthIter
+    rescalePriors(results = results,
+                  adjustments = adjustments,
+                  filename = filename,
+                  nIteration = nIteration,
+                  lengthIter = lengthIter)
+    expect_true(setequal(names(adjustments),
+                         c("model.prior.(Intercept)",
+                           "model.prior.time",
+                           "model.prior.age",
+                           "model.prior.sex")))
+})
+
+
 test_that("rescalePriors works with ResultsCounts", {
     rescalePriors <- demest:::rescalePriors
     fetchResultsObject <- demest:::fetchResultsObject

@@ -1676,8 +1676,8 @@ test_that("setYToMissing works", {
     expect_identical(ans.obtained, ans.expected)
 })
 
-test_that("simulateOneChain works when drawing directly from target distribution", {
-    simulateOneChain <- demest:::simulateOneChain
+test_that("simulateDirect works", {
+    simulateDirect <- demest:::simulateDirect
     initialCombinedModelSimulate <- demest:::initialCombinedModelSimulate
     drawCombined <- demest:::drawCombined
     extractValues <- demest:::extractValues
@@ -1699,18 +1699,16 @@ test_that("simulateOneChain works when drawing directly from target distribution
                                              weights = NULL)
     tempfile <- tempfile()
     set.seed(100)
-    ans.obtained.obj <- simulateOneChain(combined, 
-                                         tempfile = tempfile,
-                                         seed = NULL, nBurnin = 0L,
-                                         nSim = 3L, continuing = FALSE,
-                                         nUpdateMax = 1L,
-                                         nThin = 1L, useC = FALSE)
+    ans.obtained.obj <- simulateDirect(combined, 
+                                       tempfile = tempfile,
+                                       nDraw = 10L,
+                                       useC = FALSE)
     con <- file(tempfile, "rb")
     ans.obtained.file <- readBin(con = con, what = "double", n = 1000)
     close(con)
     set.seed(100)
     ans.expected.file <- vector(mode = "list", length = 3)
-    for (i in 1:3) {
+    for (i in 1:10) {
         combined <- drawCombined(combined, nUpdate = 1L)
         ans.expected.file[[i]] <- extractValues(combined)
     }

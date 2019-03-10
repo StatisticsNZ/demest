@@ -59,6 +59,8 @@ setMethod("summary",
                            y = summary.y)
           })
 
+
+
 ## NO_TESTS
 setMethod("summary",
           signature(object = "ResultsModelPred"),

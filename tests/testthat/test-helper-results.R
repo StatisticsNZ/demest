@@ -373,7 +373,8 @@ test_that("makeOutputMCMC works with valid input", {
     mcmcArgs <- list(nBurnin = 1000L,
                      nSim = 1000L,
                      nChain = 5L,
-                     nThin = 20L)
+                     nThin = 20L,
+                     nCore = 4L)
     finalCombineds <- list(NULL, "combined", "combined", NULL, "combined")
     ans.obtained <- makeOutputMCMC(mcmcArgs = mcmcArgs,
                                    finalCombineds = finalCombineds)
@@ -381,11 +382,13 @@ test_that("makeOutputMCMC works with valid input", {
                          nSim = 1000L,
                          nChain = 3L,
                          nThin = 20L,
+                         nCore = 4L,
                          nIteration = 3000L)
     mcmcArgs <- list(nBurnin = 0L,
                      nSim = 1000L,
                      nChain = 1L,
-                     nThin = 30L)
+                     nThin = 30L,
+                     nCore = 4L)
     finalCombineds <- list("combined")
     ans.obtained <- makeOutputMCMC(mcmcArgs = mcmcArgs,
                                    finalCombineds = finalCombineds)
@@ -393,6 +396,7 @@ test_that("makeOutputMCMC works with valid input", {
                          nSim = 1000L,
                          nChain = 1L,
                          nThin = 30L,
+                         nCore = 4L,
                          nIteration = 33L)
 })
 
@@ -837,7 +841,8 @@ test_that("makeResultsModelPred works with valid input - no exposure", {
     expect_is(ans, "ResultsModelPred")
 })
 
-test_that("makeResultsModelPred works with valid input - with exposure", {
+
+test_that("makeResultsModelPred works with valid input", {
     makeResultsModelPred <- demest:::makeResultsModelPred
     initialCombinedModel <- demest:::initialCombinedModel
     initialCombinedModelPredict <- demest:::initialCombinedModelPredict
@@ -886,6 +891,68 @@ test_that("makeResultsModelPred works with valid input - with exposure", {
     expect_true(validObject(ans))
     expect_is(ans, "ResultsModelExposurePred")
 })
+
+test_that("makeResultsModelSimDirect works with valid input", {
+    makeResultsModelSimDirect <- demest:::makeResultsModelSimDirect
+    initialCombinedModel <- demest:::initialCombinedModel
+    extractValues <- demest:::extractValues
+    ## without exposure
+    y <- Counts(array(rnorm(n = 24),
+                      dim = 2:4,
+                      dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000:2003)),
+                dimscales = c(time = "Intervals"))
+    spec <- Model(y ~ Normal(mean ~ sex * age + time))
+    combined <- initialCombinedModel(spec,
+                                     y = y,
+                                     exposure = NULL,
+                                     weights = NULL)
+    combined@y[] <- NA
+    filename <- "filename"
+    call <- call("estimateModel", list("model"))
+    lengthIter <- length(extractValues(combined))
+    controlArgs <- list(call = call,
+                        parallel = FALSE,
+                        lengthIter = lengthIter,
+                        nUpdateMax = 200L)
+    seed <- list(.Random.seed)
+    ans <- makeResultsModelSimDirect(combined = combined,
+                                     nDraw = 10L,
+                                     controlArgs = controlArgs,
+                                     seed = seed)
+    expect_true(validObject(ans))
+    expect_is(ans, "ResultsModelSimDirect")
+    ## with exposure
+    exposure <- Counts(array(as.integer(rpois(n = 24, lambda = 10)),
+                             dim = 2:4,
+                             dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000:2003)),
+                       dimscales = c(time = "Intervals"))
+    y <- Counts(array(as.integer(rbinom(n = 24, size = exposure, prob = 0.8)),
+                      dim = 2:4,
+                      dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000:2003)),
+                dimscales = c(time = "Intervals"))
+    spec <- Model(y ~ Binomial(mean ~ sex * age + time))
+    combined <- initialCombinedModel(spec,
+                                     y = y,
+                                     exposure = exposure,
+                                     weights = NULL)
+    combined@y[] <- NA
+    filename <- "filename"
+    call <- call("estimateModel", list("model"))
+    lengthIter <- length(extractValues(combined))
+    controlArgs <- list(call = call,
+                        parallel = FALSE,
+                        lengthIter = lengthIter,
+                        nUpdateMax = 200L)
+    seed <- list(.Random.seed)
+    ans <- makeResultsModelSimDirect(combined = combined,
+                                     nDraw = 10L,
+                                     controlArgs = controlArgs,
+                                     seed = seed)
+    expect_true(validObject(ans))
+    expect_is(ans, "ResultsModelSimDirectExp")
+})
+
+
 
 test_that("makeResultsCounts works with no exposure", {
     makeResultsCounts <- demest:::makeResultsCounts

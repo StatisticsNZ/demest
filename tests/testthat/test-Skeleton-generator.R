@@ -371,6 +371,53 @@ test_that("SkeletonMissingData creates valid object of class SkeletonMissingData
     expect_identical(ans.obtained, ans.expected)
 })
 
+test_that("SkeletonMissingData creates valid object of class SkeletonMissingDataCMPNotUseExp", {
+    SkeletonMissingData <- demest:::SkeletonMissingData
+    Skeleton <- demest:::Skeleton
+    object <- Counts(array(c(1:5, NA),
+                           dim = 2:3,
+                           dimnames = list(sex = c("f", "m"),
+                               age = 0:2)))
+    model <- new("CMPVaryingNotUseExp")
+    outputModel <- list(likelihood = list(count = Skeleton(first = 1L, object = object),
+                                          dispersion = Skeleton(first = 7L, object = object)))
+    ans.obtained <- SkeletonMissingData(object = object,
+                                        model = model,
+                                        outputModel = outputModel,
+                                        exposure = NULL)
+    ans.expected <- new("SkeletonMissingDataCMPNotUseExp",
+                        data = object,
+                        offsetsTheta = new("Offsets", c(1L, 6L)),
+                        offsetsNu = new("Offsets", c(7L, 12L)))
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("SkeletonMissingData creates valid object of class SkeletonMissingDataCMPUseExp", {
+    SkeletonMissingData <- demest:::SkeletonMissingData
+    Skeleton <- demest:::Skeleton
+    object <- Counts(array(c(1:5, NA),
+                           dim = 2:3,
+                           dimnames = list(sex = c("f", "m"),
+                               age = 0:2)))
+    exposure <- Counts(array(10,
+                             dim = 2:3,
+                             dimnames = list(sex = c("f", "m"),
+                                             age = 0:2)))
+    model <- new("CMPVaryingUseExp")
+    outputModel <- list(likelihood = list(rate = Skeleton(first = 1L, object = object),
+                                          dispersion = Skeleton(first = 7L, object = object)))
+    ans.obtained <- SkeletonMissingData(object = object,
+                                        model = model,
+                                        outputModel = outputModel,
+                                        exposure = exposure)
+    ans.expected <- new("SkeletonMissingDataCMPUseExp",
+                        data = object,
+                        offsetsTheta = new("Offsets", c(1L, 6L)),
+                        offsetsNu = new("Offsets", c(7L, 12L)),
+                        exposure = exposure)
+    expect_identical(ans.obtained, ans.expected)
+})
+
 test_that("SkeletonMissingData creates valid object of class SkeletonMissingDataBinomial", {
     SkeletonMissingData <- demest:::SkeletonMissingData
     Skeleton <- demest:::Skeleton
