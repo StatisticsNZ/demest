@@ -3785,7 +3785,7 @@ chooseICellSubAddNet <- function(description, useC = FALSE) {
 ## TRANSLATED
 ## HAS_TESTS
 isLowerTriangle <- function(i, description, useC = FALSE) {
-    stopifnot(is(description, "DescriptionComp"))
+    stopifnot(methods::is(description, "DescriptionComp"))
     stopifnot(description@hasAge)
     if (useC) {
         .Call(isLowerTriangle_R, i, description)
@@ -4259,7 +4259,7 @@ rcmpUnder <- function(mu, nu, maxAttempt, useC = FALSE) {
             ynew <- rpois(n = 1L, lambda = mu)
             logy <- lgamma(ynew + 1)
             log_a <- (nu - 1) * (log(mu) * (ynew - fl) - logy + logm)
-            u <- log(runif(n = 1L))
+            u <- log(stats::runif(n = 1L))
             if(u < log_a) 
                 return(ynew)
         }
@@ -4293,10 +4293,10 @@ rcmpOver <- function(mu, nu, maxAttempt, useC = FALSE) {
         fl <- floor(mu / ((1 - p)^(1 / nu)))
         logfl <- lgamma(fl + 1)
         for (i in seq_len(maxAttempt)) {
-            ynew <- rgeom(n = 1L, prob = p)
+            ynew <- stats::rgeom(n = 1L, prob = p)
             logy <- lgamma(ynew + 1)
             log_a <- (ynew - fl) * (nu * log(mu) - log1p(-p)) + nu * (logfl - logy)
-            u <- log(runif(n = 1L))
+            u <- log(stats::runif(n = 1L))
             if(u < log_a) 
                 return(ynew)
         }

@@ -456,7 +456,7 @@ setMethod("makeCellInLik",
               .Data <- array(1L,
                              dim = dim(metadata.y),
                              dimnames = dimnames(metadata.y))
-              strucZeroArray <- new("Counts",
+              strucZeroArray <- methods::new("Counts",
                                     .Data = .Data,
                                     metadata = metadata.y)
               model@cellInLik <- makeCellInLikHelper(transform = transform,
@@ -1228,10 +1228,10 @@ setMethod("makeOutputModel",
               .Data.sd <- array(sd,
                                 dim = dim(metadata),
                                 dimnames = dimnames(metadata))
-              mean <- new("Values",
+              mean <- methods::new("Values",
                           .Data = .Data.mean,
                           metadata = metadata)
-              sd <- new("Values",
+              sd <- methods::new("Values",
                         .Data = .Data.sd,
                         metadata = metadata)
               list(mean = mean,
@@ -1252,10 +1252,10 @@ setMethod("makeOutputModel",
               .Data.scale <- array(scale,
                                    dim = dim(metadata),
                                    dimnames = dimnames(metadata))
-              location <- new("Values",
+              location <- methods::new("Values",
                               .Data = .Data.location,
                               metadata = metadata)
-              scale <- new("Values",
+              scale <- methods::new("Values",
                            .Data = .Data.scale,
                            metadata = metadata)
               list(location = location,

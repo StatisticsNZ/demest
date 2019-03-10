@@ -49,8 +49,8 @@ CMP <- function(formula, dispersion = Dispersion(), useExpose = TRUE,
 Dispersion <- function(mean = 0, sd = 1) {
     meanLogNuCMP <- checkAndTidyMeanOrProb(mean, name = "mean")
     checkNonNegativeNumeric(sd, name = "sd")
-    meanLogNuCMP <- new("Parameter", meanLogNuCMP)
-    sdLogNuCMP <- new("Scale", sd)
+    meanLogNuCMP <- methods::new("Parameter", meanLogNuCMP)
+    sdLogNuCMP <- methods::new("Scale", sd)
     methods::new("Dispersion",
                  meanLogNuCMP = meanLogNuCMP,
                  sdLogNuCMP = sdLogNuCMP)
@@ -244,7 +244,7 @@ Normal <- function(formula, sd = NULL, priorSD = HalfT()) {
         checkNonNegativeNumeric(x = sd, name = "sd")
         varsigma <- methods::new("Scale", as.double(sd))
         varsigmaSetToZero <- isTRUE(all.equal(sd, 0))
-        varsigmaSetToZero <- new("LogicalFlag", varsigmaSetToZero)
+        varsigmaSetToZero <- methods::new("LogicalFlag", varsigmaSetToZero)
         methods::new("SpecLikelihoodNormalVarsigmaKnown",
                      formulaMu = formula,
                      varsigma = varsigma,
@@ -324,7 +324,7 @@ NormalFixed <- function(mean, sd, useExpose = TRUE) {
         stop(gettextf("'%s' has missing values",
                       "mean"))
     mean.param <- as.double(mean)
-    mean.param <- new("ParameterVector", mean.param)
+    mean.param <- methods::new("ParameterVector", mean.param)
     if (methods::is(sd, "Values")) {
         ## 'sd' is compatible with 'mean'
         sd <- tryCatch(dembase::makeCompatible(x = sd, y = mean, subset = TRUE),
@@ -362,10 +362,10 @@ NormalFixed <- function(mean, sd, useExpose = TRUE) {
         stop(gettextf("'%s' has class \"%s\"",
                       "sd", class(sd)))
     }
-    sd <- new("ScaleVec", sd)
+    sd <- methods::new("ScaleVec", sd)
     useExpose <- checkAndTidyLogicalFlag(x = useExpose,
                                          name = "useExpose")
-    new("SpecLikelihoodNormalFixed",
+    methods::new("SpecLikelihoodNormalFixed",
         mean = mean.param,
         sd = sd,
         metadata = metadata,
@@ -449,7 +449,7 @@ TFixed <- function(location, scale, df = 7, useExpose = TRUE) {
         stop(gettextf("'%s' has missing values",
                       "location"))
     location.param <- as.double(location)
-    location.param <- new("ParameterVector", location.param)
+    location.param <- methods::new("ParameterVector", location.param)
     if (methods::is(scale, "Values")) {
         ## 'scale' is compatible with 'location'
         scale <- tryCatch(dembase::makeCompatible(x = scale, y = location, subset = TRUE),
@@ -487,12 +487,12 @@ TFixed <- function(location, scale, df = 7, useExpose = TRUE) {
         stop(gettextf("'%s' has class \"%s\"",
                       "scale", class(scale)))
     }
-    scale <- new("ScaleVec", scale)
+    scale <- methods::new("ScaleVec", scale)
     df <- checkAndTidyNu(x = df,
                          name = "df")
     useExpose <- checkAndTidyLogicalFlag(x = useExpose,
                                          name = "useExpose")
-    new("SpecLikelihoodTFixed",
+    methods::new("SpecLikelihoodTFixed",
         mean = location.param,
         sd = scale,
         nu = df,
@@ -725,7 +725,7 @@ PoissonBinomial <- function(prob) {
 #' Round3()
 #' @export
 Round3 <- function() {
-    new("SpecLikelihoodRound3")
+    methods::new("SpecLikelihoodRound3")
 }
 
 

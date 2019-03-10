@@ -27,8 +27,8 @@ checkAllDimensionsHavePriors <- function(model, y) {
 
 ## HAS_TESTS
 checkPriorInform_prohibited <- function(object, nameSlot, nameArg, nameFun) {
-    val <- slot(object, nameSlot)
-    val <- slot(val, ".Data")
+    val <- methods::slot(object, nameSlot)
+    val <- methods::slot(val, ".Data")
     if (!isTRUE(all.equal(val, 1)))
         gettextf("value for '%s' supplied in call to '%s'",
                  nameArg, nameFun)
@@ -38,8 +38,8 @@ checkPriorInform_prohibited <- function(object, nameSlot, nameArg, nameFun) {
 
 ## HAS_TESTS
 checkPriorInform_required <- function(object, nameSlot, nameArg, nameFun) {
-    val <- slot(object, nameSlot)
-    val <- slot(val, ".Data")
+    val <- methods::slot(object, nameSlot)
+    val <- methods::slot(val, ".Data")
     if (any(is.na(val)))
         gettextf("value for '%s' not supplied in call to '%s'",
                  nameArg, nameFun)
@@ -712,7 +712,7 @@ makeFakeMargins <- function(namesSpecs, y, call) {
                       "(Intercept)", deparse(call[[2L]])))
     namesSpecs <- namesSpecs[-1L]
     s <- seq_along(names.y)
-    possible.margins <- sapply(s, function(i) combn(s, i, simplify = FALSE))
+    possible.margins <- sapply(s, function(i) utils::combn(s, i, simplify = FALSE))
     possible.margins <- unlist(possible.margins, recursive = FALSE)
     possible.names <- sapply(possible.margins, function(i) paste(names.y[i], collapse = ":"))
     i.found <- sapply(namesSpecs, match, possible.names, nomatch = 0L)
@@ -741,7 +741,7 @@ makeFakeOutputLevelDLM <- function(prior, metadata) {
     .Data <- array(.Data,
                    dim = dim(metadata),
                    dimnames = dimnames(metadata))
-    new("Values",
+    methods::new("Values",
         .Data = .Data,
         metadata = metadata)
 }
@@ -761,7 +761,7 @@ makeFakeOutputTrendDLM <- function(prior, metadata) {
     .Data <- array(.Data,
                    dim = dim(metadata),
                    dimnames = dimnames(metadata))
-    new("Values",
+    methods::new("Values",
         .Data = .Data,
         metadata = metadata)
 }

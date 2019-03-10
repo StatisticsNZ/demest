@@ -134,13 +134,13 @@ makeMetadata0 <- function(metadata, iAlong, nSeason) {
     if (!is.null(nSeason)) {
         nm.season <- make.unique(c(names, "season"))[length(names) + 1L]
         dimtype.season <- "state"
-        DimScale.season <- new("Categories", dimvalues = as.character(seq_len(nSeason)))
+        DimScale.season <- methods::new("Categories", dimvalues = as.character(seq_len(nSeason)))
     }
     if (length(metadata) == 1L) {
         if (is.null(nSeason))
             NULL
         else
-            new("MetaData",
+            methods::new("MetaData",
                 nms = nm.season,
                 dimtypes = dimtype.season,
                 DimScales = list(DimScale.season))
@@ -154,7 +154,7 @@ makeMetadata0 <- function(metadata, iAlong, nSeason) {
             dimtypes <- c(dimtype.season, dimtypes)
             DimScales <- c(list(DimScale.season), DimScales)
         }
-        new("MetaData",
+        methods::new("MetaData",
             nms = names,
             dimtypes = dimtypes,
             DimScales = DimScales)
@@ -169,16 +169,16 @@ makeMetadataIncl0 <- function(metadata, iAlong, nSeason) {
     DimScales <- DimScales(metadata, use.names = FALSE)
     dimtypes[iAlong] <- "state"
     dimvalues.along <- as.character(seq_len(dim[iAlong] + 1L))
-    DimScale.along <- new("Categories", dimvalues = dimvalues.along)
+    DimScale.along <- methods::new("Categories", dimvalues = dimvalues.along)
     DimScales[[iAlong]] <- DimScale.along
     if (!is.null(nSeason)) {
         nm.season <- make.unique(c(names, "season"))[length(names) + 1L]
         names <- c(nm.season, names)
         dimtypes <- c("state", dimtypes)
-        DimScale.season <- new("Categories", dimvalues = as.character(seq_len(nSeason)))
+        DimScale.season <- methods::new("Categories", dimvalues = as.character(seq_len(nSeason)))
         DimScales <- c(list(DimScale.season), DimScales)
     }
-    new("MetaData",
+    methods::new("MetaData",
         nms = names,
         dimtypes = dimtypes,
         DimScales = DimScales)
@@ -548,7 +548,7 @@ makeResultsAccount <- function(finalCombineds, mcmcArgs, controlArgs, seed) {
         pos <- pos + changeInPos(output.account)
     }
     else {
-        output.account <- vector(mode = "list", length = length(series))
+        output.account <- vector(mode = "list", length = length(names.series))
         names(output.account) <- names.series
     }
     ## system models
@@ -819,7 +819,7 @@ readStateDLMFromFile <- function(skeleton, filename, iterations,
         indices0 <- skeleton@indices0
         metadata <- skeleton@metadata0
         if (is.null(metadata)) {
-            metadata <- new("MetaData",
+            metadata <- methods::new("MetaData",
                             nms = "iteration",
                             dimtypes = "iteration",
                             DimScales = list(new("Iterations", dimvalues = seq_len(nIteration))))

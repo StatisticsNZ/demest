@@ -5,9 +5,9 @@
 \title{Use results from function estimateModel to make predictions.}
 \usage{
 predictModel(filenameEst, filenamePred, along = NULL, labels = NULL,
-  n = NULL, data = NULL, aggregate = NULL, lower = NULL,
-  upper = NULL, nBurnin = 0L, parallel = TRUE, outfile = NULL,
-  verbose = FALSE, useC = TRUE)
+  n = NULL, exposure = NULL, weights = NULL, data = NULL,
+  aggregate = NULL, lower = NULL, upper = NULL, nBurnin = 0L,
+  parallel = TRUE, outfile = NULL, verbose = FALSE, useC = TRUE)
 }
 \arguments{
 \item{filenameEst}{Filename used to \code{\link{estimateModel}}.}
@@ -21,6 +21,12 @@ predictModel(filenameEst, filenamePred, along = NULL, labels = NULL,
 \item{n}{Number of new categories.  Can only be used when predicting
 along \code{"time"}, \code{"age"}, or \code{"cohort"} dimensions,
 and when the units have equal length.}
+
+\item{exposure}{A \code{\link[dembase:DemographicArray-class]{Counts}}
+object specifying exposure or sample size.}
+
+\item{weights}{A \code{\link[dembase:DemographicArray-class]{Counts}}
+object containing weights.}
 
 \item{data}{A named list containing future values of covariates.}
 
@@ -62,4 +68,8 @@ or \code{"cohort"}.
 When predicting along \code{"time"}, \code{"age"} or \code{"cohort"}
 dimensions, specifying an \code{n} argument is usually more convenient
 than specifying a \code{labels} argument.
+
+\code{exposure} or \code{weights} arguments are needed if predictions
+for outcome variable \code{y}, and not just the model parameters,
+are needed.
 }

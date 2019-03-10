@@ -63,7 +63,7 @@ initialModelPredictHelper <- function(model, along, labels, n, offsetModel,
         .Data <- array(1L,
                        dim = dim(metadata.pred),
                        dimnames = dimnames(metadata.pred))
-        struc.zero.array.pred <- new("Counts",
+        struc.zero.array.pred <- methods::new("Counts",
                                      .Data = .Data,
                                      metadata = metadata.pred)
     }
@@ -285,13 +285,13 @@ extrapolateStrucZeroArray <- function(strucZeroArray, along, labels) {
     if (!(methods::is(DS.along, "Points") || methods::is(DS.along, "Intervals")))
         stop(gettextf("%s for '%s' dimension has class \"%s\"",
                       "dimscales", "along", class(DS.along)))
-    ans <- dembase:::extrapolate(strucZeroArray,
-                                 along = along,
-                                 labels = labels)
-    ans <- dembase:::slab(ans,
-                          dimension = along,
-                          elements = labels,
-                          drop = FALSE)
+    ans <- dembase::extrapolate(strucZeroArray,
+                                along = along,
+                                labels = labels)
+    ans <- dembase::slab(ans,
+                         dimension = along,
+                         elements = labels,
+                         drop = FALSE)
     ans <- toInteger(ans)
     ans
 }
@@ -337,7 +337,7 @@ predictAlphaDLMNoTrend <- function(prior, useC = FALSE) {
 ## HAS_TESTS
 predictAlphaDeltaDLMWithTrend <- function(prior, useC = FALSE) {
     stopifnot((methods::is(prior, "DLM") && methods::is(prior, "WithTrendMixin"))
-              || (methods::is(prior, "FakeDLM") && is(prior, "FakeWithTrendMixin")))
+              || (methods::is(prior, "FakeDLM") && methods::is(prior, "FakeWithTrendMixin")))
     if (useC) {
         .Call(predictAlphaDeltaDLMWithTrend_R, prior)
     }

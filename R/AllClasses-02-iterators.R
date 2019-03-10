@@ -389,7 +389,7 @@ setClass("SliceIterator",
                  return(gettextf("'%s' non-increasing",
                                  "indices"))
              for (name in c("increment", "posDim", "lengthDim")) {
-                 value <- slot(object, name)
+                 value <- methods::slot(object, name)
                  ## increment, posDim, lengthDim length 1
                  if (!identical(length(value), 1L))
                      return(gettextf("'%s' does not have length %d",

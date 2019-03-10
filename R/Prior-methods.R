@@ -1719,7 +1719,7 @@ setMethod("makeOutputPrior",
               .Data <- array(alpha,
                              dim = dim(metadata),
                              dimnames = dimnames(metadata))
-              mean <- new("Values",
+              mean <- methods::new("Values",
                           .Data = .Data,
                           metadata = metadata)
               list(mean = mean)
@@ -1738,10 +1738,10 @@ setMethod("makeOutputPrior",
               .Data.sd <- array(A,
                                 dim = dim(metadata),
                                 dimnames = dimnames(metadata))
-              mean <- new("Values",
+              mean <- methods::new("Values",
                           .Data = .Data.mean,
                           metadata = metadata)
-              sd <- new("Values",
+              sd <- methods::new("Values",
                         .Data = .Data.sd,
                         metadata = metadata)
               list(mean = mean,

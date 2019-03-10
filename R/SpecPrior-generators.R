@@ -1422,7 +1422,7 @@ Exch <- function(covariates = NULL, error = Error()) {
 #' @export
 ExchFixed <- function(mean = 0, sd = NULL, mult = 1) {
     mean <- checkAndTidyMeanOrProb(mean, name = "mean")
-    mean <- new("Parameter", mean)
+    mean <- methods::new("Parameter", mean)
     tau <- checkAndTidySpecScale(x = sd, name = "sd")
     multTau <- checkAndTidyMult(mult = mult,
                                 scale = tau,
@@ -1916,7 +1916,7 @@ Mix <- function(along = NULL,
 #' @export
 Norm <- function(mean = 0, sd = NULL) {
     mean <- checkAndTidyMeanOrProb(mean, name = "mean")
-    mean <- new("Parameter", mean)
+    mean <- methods::new("Parameter", mean)
     A <- checkAndTidySpecScale(x = sd, name = "scale")
     methods::new("Norm",
                  mean = mean,

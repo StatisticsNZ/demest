@@ -203,7 +203,8 @@ setMethod("predictCombined",
                                               exposure = exposure)
                   theta <- model@theta
                   lambda <- theta * exposure
-                  y[] <- rpois(n = length(theta), lambda = lambda) ## need to revisit this if we allow for subtotals
+                  y[] <- stats::rpois(n = length(theta),
+                                      lambda = lambda) ## need to revisit this if we allow for subtotals
                   for (i in seq_along(data.models)) {
                       data.model <- data.models[[i]]
                       dataset <- datasets[[i]] ## all NA
@@ -632,7 +633,7 @@ setMethod("updateProposalAccount",
               else {
                   account <- object@account
                   prob.popn <- object@probPopn
-                  update.popn <- runif(n = 1L) < prob.popn
+                  update.popn <- stats::runif(n = 1L) < prob.popn
                   if (update.popn) {
                       object@iComp <- 0L
                       updateProposalAccountMovePopn(object)

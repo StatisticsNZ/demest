@@ -1107,7 +1107,7 @@ makeStandardizedVariables <- function(formula, inputs, namePrior, contrastsArg, 
         i.term <- which.term[j]
         is.main.effect <- order.term[i.term] == 1L
         if (is.main.effect) {
-            is.binary <- isTRUE(all.equal(sort(unique(na.omit(v))), 0:1))
+            is.binary <- isTRUE(all.equal(sort(unique(stats::na.omit(v))), 0:1))
             if (is.binary)
                 v <- v - mean(v, na.rm = TRUE)
             else
@@ -1161,10 +1161,10 @@ makeAlongAllStrucZero <- function(strucZeroArray, metadata, margin, iAlong) {
     .Data.within <- array(0L,
                           dim = dim(metadata.within),
                           dimnames = dimnames(metadata.within))
-    array.along <- new("Counts",
+    array.along <- methods::new("Counts",
                        .Data = .Data.along,
                        metadata = metadata.along)
-    array.within <- new("Counts",
+    array.within <- methods::new("Counts",
                         .Data = .Data.within,
                         metadata = metadata.within)
     array.zero.along <- tryCatch(collapseDimension(strucZeroArray,
@@ -1195,7 +1195,7 @@ makeAlongAllStrucZero <- function(strucZeroArray, metadata, margin, iAlong) {
 makeStrucZeroArray <- function(structuralZeros, y) {
     if (is.null(structuralZeros))
         makeStrucZeroArrayNULL(y)
-    else if (identical(structuralZeros, new("Values")))
+    else if (identical(structuralZeros, methods::new("Values")))
         makeStrucZeroArrayDiag(y)
     else
         makeStrucZeroArrayGeneral(structuralZeros = structuralZeros,
@@ -1208,7 +1208,7 @@ makeStrucZeroArrayNULL <- function(y) {
                    dim = dim(y),
                    dimnames = dimnames(y))
     metadata <- y@metadata
-    new("Counts",
+    methods::new("Counts",
         .Data = .Data,
         metadata = metadata)
 }
@@ -1235,7 +1235,7 @@ makeStrucZeroArrayDiag <- function(y) {
         is.diag <- slice.index(y, MARGIN = i.orig[i]) == slice.index(y, MARGIN = i.dest[i])
         .Data[is.diag] <- 0L
     }
-    new("Counts",
+    methods::new("Counts",
         .Data = .Data,
         metadata = metadata)
 }
@@ -1251,7 +1251,7 @@ makeStrucZeroArrayGeneral <- function(structuralZeros, y) {
         stop(gettextf("problem expanding '%s' to make it compatible with '%s' : %s",
                       "structuralZeros", "y", ans$message))
     ans[] <- ifelse(ans == 0L, 0L, 1L)
-    ans <- as(ans, "Counts")
+    ans <- methods::as(ans, "Counts")
     ans <- toInteger(ans)
     ans
 }

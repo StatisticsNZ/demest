@@ -390,7 +390,7 @@ updateAlphaDeltaDLMWithTrend <- function(prior, betaTilde, useC = FALSE) {
                             var.delta.curr <- 1 / (prec.delta.0 + prec.alpha + prec.delta.1)
                             mean.delta.curr <- var.delta.curr * (prec.delta.0 * m[[1L]][2L] + prec.alpha * alpha[indices.ad[2L]]
                                 + prec.delta.1 * delta[indices.ad[2L]] / phi)
-                            delta.curr <- rnorm(n = 1L,
+                            delta.curr <- stats::rnorm(n = 1L,
                                                 mean = mean.delta.curr,
                                                 sd = sqrt(var.delta.curr))
                             delta[indices.ad[1L]] <- delta.curr
@@ -807,7 +807,7 @@ updateIndexClassMix <- function(prior, betaTilde, useC = FALSE) {
                         sum.prob <- sum.prob + prob
                     }
                 }
-                U <- runif(1L) * sum.prob
+                U <- stats::runif(1L) * sum.prob
                 cum.sum <- 0
                 for (i.class in seq_len(index.class.max.poss)) {
                     include.class <- index.class.prob[i.class] <= 1
@@ -1035,9 +1035,9 @@ updateMeanLevelComponentWeightMix <- function(prior, useC = FALSE) {
         var <- 1 / (prec.data + prec.prior)
         mean <- var * (prec.data * mean.data + prec.prior * mean.prior)
         sd <- sqrt(var)
-        prior@meanLevelComponentWeightMix@.Data <- rnorm(n = 1L,
-                                                         mean = mean,
-                                                         sd = sd)
+        prior@meanLevelComponentWeightMix@.Data <- stats::rnorm(n = 1L,
+                                                                mean = mean,
+                                                                sd = sd)
         prior
     }
 }
@@ -1802,7 +1802,7 @@ updateVectorsMixAndProdVectorsMix <- function(prior, betaTilde, useC = FALSE) {
                     var <- 1 / (prec.data + prec.prior)
                     sd <- sqrt(var)
                     mean <- var * yX[i.class]
-                    vector[i.vector] <- rnorm(n = 1L,
+                    vector[i.vector] <- stats::rnorm(n = 1L,
                                               mean = mean,
                                               sd = sd)
                 }
@@ -1899,7 +1899,7 @@ updateWeightMix <- function(prior, useC = FALSE) {
         n.along <- dim.beta[iAlong]
         n.wt <- n.along * index.class.max
         for (i.wt in seq_len(n.wt))
-            weight[i.wt] <- pnorm(comp.weight[i.wt])
+            weight[i.wt] <- stats::pnorm(comp.weight[i.wt])
         for (i.along in seq_len(n.along)) {
             multiplier.next <- 1
             for (i.class in seq_len(index.class.max)) {
@@ -2598,7 +2598,7 @@ updateThetaAndNu_CMPVaryingNotUseExp <- function(object, y, useC = FALSE) {
                         th.prop <- exp(tr.th.prop)
                     if (y.is.missing) {
                         theta[i] <- th.prop
-                        nu[i] <- rlnorm(n = 1L,
+                        nu[i] <- stats::rlnorm(n = 1L,
                                         meanlog = mean.log.nu,
                                         sdlog = sd.log.nu)
                     }
@@ -2611,7 +2611,7 @@ updateThetaAndNu_CMPVaryingNotUseExp <- function(object, y, useC = FALSE) {
                         nu.prop <- exp(log.nu.prop)
                         y.star <- rcmp1(mu = th.prop,
                                         nu = nu.prop,
-                                        max = max.attempt)
+                                        maxAttempt = max.attempt)
                         found.y.star <- is.finite(y.star)
                         if (found.y.star) {
                             log.lik.curr <- logDensCMPUnnormalised1(x = y[i], gamma = th.curr, nu = nu.curr)
@@ -2729,7 +2729,7 @@ updateThetaAndNu_CMPVaryingUseExp <- function(object, y, exposure, useC = FALSE)
                         th.prop <- exp(tr.th.prop)
                     if (y.is.missing) {
                         theta[i] <- th.prop
-                        nu[i] <- rlnorm(n = 1L,
+                        nu[i] <- stats::rlnorm(n = 1L,
                                         meanlog = mean.log.nu,
                                         sdlog = sd.log.nu)
                     }
@@ -2744,7 +2744,7 @@ updateThetaAndNu_CMPVaryingUseExp <- function(object, y, exposure, useC = FALSE)
                         gamma.prop <- th.prop * exposure[i]
                         y.star <- rcmp1(mu = gamma.prop,
                                         nu = nu.prop,
-                                        max = max.attempt)
+                                        maxAttempt = max.attempt)
                         found.y.star <- is.finite(y.star)
                         if (found.y.star) {
                             log.lik.curr <- logDensCMPUnnormalised1(x = y[i], gamma = gamma.curr, nu = nu.curr)

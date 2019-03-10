@@ -1027,7 +1027,7 @@ setClass("MeanMixin",
 
 setClass("MeanDelta0Mixin",
          slots = c(meanDelta0 = "Parameter"),
-         prototype = prototype(meanDelta0 = new("Parameter", 0)),
+         prototype = prototype(meanDelta0 = methods::new("Parameter", 0)),
          contains = "VIRTUAL")
 
 setClass("MeanEtaCoefMixin",
@@ -1071,7 +1071,7 @@ setClass("MetadataAllMixin",
 ## 'mu' in notes
 setClass("MeanLevelComponentWeightMixMixin",
          slots = c(meanLevelComponentWeightMix = "Parameter"),
-         prototype = prototype(meanLevelComponentWeightMix = new("Parameter", 0)),
+         prototype = prototype(meanLevelComponentWeightMix = methods::new("Parameter", 0)),
          contains = "VIRTUAL")
 
 setClass("MultMixin",
@@ -1423,13 +1423,13 @@ setClass("PosProdVectorsMixMixin",
 ## 'mu0' in notes
 setClass("PriorMeanLevelComponentWeightMixMixin",
          slots = c(priorMeanLevelComponentWeightMix = "Parameter"),
-         prototype = prototype(priorMeanLevelComponentWeightMix = new("Parameter", 0)),
+         prototype = prototype(priorMeanLevelComponentWeightMix = methods::new("Parameter", 0)),
          contains = "VIRTUAL")
 
 ## 'sigma0' in notes
 setClass("PriorSDLevelComponentWeightMixMixin",
          slots = c(priorSDLevelComponentWeightMix = "Scale"),
-         prototype = prototype(prorSDLevelComponentWeightMix = new("Scale", 1)),
+         prototype = prototype(prorSDLevelComponentWeightMix = methods::new("Scale", 1)),
          contains = "VIRTUAL")
 
 setClass("ProdVectorsMixMixin",
@@ -1521,7 +1521,7 @@ setClass("RSeasonMixin",
 
 setClass("SDMeanLogNuCMPMixin",
          slots = c(sdMeanLogNuCMP = "Scale"),
-         prototype = prototype(sdMeanLogNuCMP = new("Scale", 1)),
+         prototype = prototype(sdMeanLogNuCMP = methods::new("Scale", 1)),
          contains = "VIRTUAL")
 
 
@@ -1706,7 +1706,7 @@ setClass("TauMixin",
 
 setClass("ToleranceMixin",
          slots = c(tolerance = "Parameter"),
-         prototype = prototype(tolerance = new("Parameter", 1e-5)),
+         prototype = prototype(tolerance = methods::new("Parameter", 1e-5)),
          contains = "VIRTUAL",
          validity = function(object) {
              tolerance <- object@tolerance@.Data
@@ -1873,7 +1873,7 @@ setClass("YXXXMixMixin",
              indexClassMaxMix <- object@indexClassMaxMix@.Data
              ## yXMix, XXMix have length 'indexClassMaxMix'
              for (name in c("yXMix", "XXMix")) {
-                 value <- slot(object, name)
+                 value <- methods::slot(object, name)
                  value <- value@.Data
                  if (!identical(length(value), indexClassMaxMix))
                      return(gettextf("'%s' does not have length '%s'",

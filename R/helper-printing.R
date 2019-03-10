@@ -513,7 +513,7 @@ printMixEqns <- function(object, name, hasCovariates) {
     ALevelComponentWeight <- object@ALevelComponentWeightMix@.Data
     nuLevelComponentWeight <- object@nuLevelComponentWeightMix@.Data
     omegaLevelComponentWeightMax <- object@omegaLevelComponentWeightMaxMix@.Data
-    phi <- object@phiMix
+    phi <- object@phi
     phi.known <- object@phiKnown
     min.phi <- object@minPhi
     max.phi <- object@maxPhi

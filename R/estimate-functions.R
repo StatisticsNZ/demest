@@ -244,6 +244,10 @@ estimateModel <- function(model, y, exposure = NULL, weights = NULL,
 #' When predicting along \code{"time"}, \code{"age"} or \code{"cohort"}
 #' dimensions, specifying an \code{n} argument is usually more convenient
 #' than specifying a \code{labels} argument.
+#'
+#' \code{exposure} or \code{weights} arguments are needed if predictions
+#' for outcome variable \code{y}, and not just the model parameters,
+#' are needed.
 #' 
 #' @inheritParams estimateModel
 #' @param filenameEst Filename used to \code{\link{estimateModel}}.

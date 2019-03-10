@@ -16,7 +16,7 @@ setMethod("fakePrior",
               ATau <- l$A
               tauMax <- l$scaleMax
               J <- makeJPredict(metadata)
-              isSaturated <- new("LogicalFlag", isSaturated)
+              isSaturated <- methods::new("LogicalFlag", isSaturated)
               methods::new("FakeExchNormZero",
                            ATau = ATau,
                            isSaturated = isSaturated,
@@ -33,7 +33,7 @@ setMethod("fakePrior",
           function(object, metadata, isSaturated) {
               l.all <- initialFakeDLMAll(spec = object,
                                          metadata = metadata)
-              isSaturated <- new("LogicalFlag", isSaturated)
+              isSaturated <- methods::new("LogicalFlag", isSaturated)
               ans <- methods::new("FakeDLMNoTrendNormZeroNoSeason",
                                   AAlpha = l.all$AAlpha,
                                   alphaDLM = l.all$alphaDLM,
@@ -69,7 +69,7 @@ setMethod("fakePrior",
                                          metadata = metadata)
               l.with.trend <- initialFakeDLMWithTrend(spec = object,
                                                       metadata = metadata)
-              isSaturated <- new("LogicalFlag", isSaturated)
+              isSaturated <- methods::new("LogicalFlag", isSaturated)
               ans <- methods::new("FakeDLMWithTrendNormZeroNoSeason",
                                   AAlpha = l.all$AAlpha,
                                   ADelta = l.with.trend$ADelta,

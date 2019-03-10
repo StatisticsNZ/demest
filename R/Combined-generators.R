@@ -562,7 +562,7 @@ setMethod("initialCombinedAccount",
               is.net <- is.int.net | is.net.move
               exposure <- dembase::exposure(population,
                                             triangles = has.age)
-              exposure <- new("Exposure",
+              exposure <- methods::new("Exposure",
                               .Data = exposure@.Data,
                               metadata = exposure@metadata)
               population <- methods::new("Population",
@@ -582,7 +582,7 @@ setMethod("initialCombinedAccount",
                                                                       births = components[[i.births]],
                                                                       dominant = dominant)
               else
-                  transform.exp.to.births <- new("CollapseTransform")
+                  transform.exp.to.births <- methods::new("CollapseTransform")
               transforms.exp.to.comp <- vector(mode = "list", length = length(components))
               for (i in seq_along(transforms.exp.to.comp)) {
                   if (model.uses.exposure[i + 1L]) {
@@ -666,12 +666,12 @@ setMethod("initialCombinedAccount",
                                         dim = dim(population),
                                         dimnames = dimnames(population))
               metadata.theta.popn <- population@metadata
-              theta.popn <- new("Counts",
+              theta.popn <- methods::new("Counts",
                                 .Data = .Data.theta.popn,
                                 metadata = metadata.theta.popn)
               expected.exposure <- dembase::exposure(theta.popn,
                                                      triangles = has.age)
-              expected.exposure <- new("Exposure",
+              expected.exposure <- methods::new("Exposure",
                                        .Data = expected.exposure@.Data,
                                        metadata = expected.exposure@metadata)
               for (i in seq_along(dataModels)) {
@@ -682,7 +682,7 @@ setMethod("initialCombinedAccount",
                   .Data.series.collapsed <- dembase::collapse(series@.Data,
                                                               transform = transforms[[i]])
                   dimnames(.Data.series.collapsed) <- dimnames(metadata.series.collapsed)
-                  series.collapsed <- new("Counts",
+                  series.collapsed <- methods::new("Counts",
                                           .Data = .Data.series.collapsed,
                                           metadata = metadata.series.collapsed)
                   model <- dataModels[[i]]
@@ -701,7 +701,7 @@ setMethod("initialCombinedAccount",
               if (has.age) {
                   accession <- dembase::accession(account,
                                                   births = FALSE)
-                  accession <- new("Accession",
+                  accession <- methods::new("Accession",
                                    .Data = accession@.Data,
                                    metadata = accession@metadata)
                   iterator.acc <- CohortIterator(accession)
@@ -716,8 +716,8 @@ setMethod("initialCombinedAccount",
                                diffProp = NA_integer_,
                                exposure = exposure,
                                expectedExposure = expected.exposure,
-                               generatedNewProposal = new("LogicalFlag", FALSE),
-                               hasAge = new("LogicalFlag", TRUE),
+                               generatedNewProposal = methods::new("LogicalFlag", FALSE),
+                               hasAge = methods::new("LogicalFlag", TRUE),
                                iAccNext = NA_integer_,
                                iAccNextOther = NA_integer_,
                                iBirths = i.births,
@@ -735,7 +735,7 @@ setMethod("initialCombinedAccount",
                                iPopnNextOther = NA_integer_,
                                iPool = i.pool,
                                isIncrement = is.increment,
-                               isLowerTriangle = new("LogicalFlag", FALSE),
+                               isLowerTriangle = methods::new("LogicalFlag", FALSE),
                                isNet = is.net,
                                iteratorAcc = iterator.acc,
                                iteratorExposure = iterator.exposure,
@@ -766,8 +766,8 @@ setMethod("initialCombinedAccount",
                                diffProp = NA_integer_,
                                exposure = exposure,
                                expectedExposure = expected.exposure,
-                               generatedNewProposal = new("LogicalFlag", FALSE),
-                               hasAge = new("LogicalFlag", FALSE),
+                               generatedNewProposal = methods::new("LogicalFlag", FALSE),
+                               hasAge = methods::new("LogicalFlag", FALSE),
                                iBirths = i.births,
                                iCell = NA_integer_,
                                iCellOther = NA_integer_,

@@ -48,7 +48,7 @@ setMethod("summary",
                                            nSample = nSample)
               summary.model <- summary(model)
               summary.y <- summaryDataset(y)
-              nSampleMCMC <- new("Length", nSample)
+              nSampleMCMC <- methods::new("Length", nSample)
               methods::new("SummaryResultsModelEst",
                            mcmc = mcmc,
                            parameters = parameters,
@@ -97,7 +97,7 @@ setMethod("summary",
               y.summary <- summary(y)
               dataModels.summary <- lapply(dataModels, summary)
               datasets.summary <- lapply(datasets, summaryDataset)
-              nSampleMCMC <- new("Length", nSample)
+              nSampleMCMC <- methods::new("Length", nSample)
               methods::new("SummaryResultsCounts",
                            mcmc = mcmc,
                            parameters = parameters,
@@ -135,7 +135,7 @@ setMethod("summary",
               names.series <- names(account)
               datasets.summary <- lapply(datasets, summaryDataset)
               data.models.summary <- lapply(data.models, summary)
-              nSampleMCMC <- new("Length", nSample)
+              nSampleMCMC <- methods::new("Length", nSample)
               methods::new("SummaryResultsAccount",
                            mcmc = mcmc,
                            parameters = parameters,
