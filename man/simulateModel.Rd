@@ -30,9 +30,6 @@ printed at the end of the calculations.}
 \item{useC}{Logical.  If \code{TRUE} (the default), the calculations
 are done in C.  Setting \code{useC} to \code{FALSE} may be useful
 for debugging.}
-
-\item{nCore}{The number of cores to use if \code{parallel} is
-\code{TRUE}. Defaults to 4.}
 }
 \description{
 WARNING - THIS FUNCTION IS STILL UNDER DEVELOPMENT

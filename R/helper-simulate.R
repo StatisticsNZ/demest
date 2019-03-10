@@ -640,9 +640,9 @@ makeCountsY <- function(exposure) {
     ans <- exposure
     size <- exposure@.Data
     n <- length(size)
-    ans@.Data[] <- rbinom(n = n,
-                          size = size,
-                          prob = 0.5)
+    ans@.Data[] <- stats::rbinom(n = n,
+                                 size = size,
+                                 prob = 0.5)
     ans
 }
 

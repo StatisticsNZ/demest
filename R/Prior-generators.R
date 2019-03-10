@@ -47,7 +47,7 @@ setMethod("initialPrior",
               if (!isTRUE(all.equal(mean@.Data, 0)))
                   warning(gettextf("non-zero mean in '%s' prior for '%s' ignored",
                                    "ExchFixed", paste(names(metadata), collapse = ":")))
-              mean <- new("Parameter", 0)
+              mean <- methods::new("Parameter", 0)
               tau <- makeTauExchFixedNonIntercept(tau = tau,
                                                   sY = sY,
                                                   mult = multTau)

@@ -6,7 +6,7 @@
 \usage{
 estimateCounts(model, y, exposure = NULL, dataModels, datasets,
   concordances = list(), filename = NULL, nBurnin = 1000,
-  nSim = 1000, nChain = 5, nThin = 1, parallel = TRUE,
+  nSim = 1000, nChain = 4, nThin = 1, parallel = TRUE,
   nCore = NULL, outfile = NULL, nUpdateMax = 50, verbose = FALSE,
   useC = TRUE)
 }

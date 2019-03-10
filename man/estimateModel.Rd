@@ -6,8 +6,8 @@
 \usage{
 estimateModel(model, y, exposure = NULL, weights = NULL,
   filename = NULL, nBurnin = 1000, nSim = 1000, nChain = 4,
-  nThin = 1, parallel = TRUE, outfile = NULL, nUpdateMax = 50,
-  verbose = TRUE, useC = TRUE)
+  nThin = 1, parallel = TRUE, nCore = NULL, outfile = NULL,
+  nUpdateMax = 50, verbose = TRUE, useC = TRUE)
 }
 \arguments{
 \item{model}{An object of class \code{\linkS4class{SpecModel}},
@@ -35,6 +35,9 @@ object containing weights.}
 \item{parallel}{Logical.  If \code{TRUE} (the default), parallel processing
 is used.}
 
+\item{nCore}{The number of cores to use, when \code{parallel}
+is \code{TRUE}.  If no value supplied, defaults to \code{nChain}.}
+
 \item{outfile}{Where to direct the ‘stdout’ and ‘stderr’ connection
 output from the workers when parallel processing.  Passed to function
 \code{[parallel]{makeCluster}}.}
@@ -49,9 +52,6 @@ printed at the end of the calculations.}
 \item{useC}{Logical.  If \code{TRUE} (the default), the calculations
 are done in C.  Setting \code{useC} to \code{FALSE} may be useful
 for debugging.}
-
-\item{nCore}{The number of cores to use, when \code{parallel}
-is \code{TRUE}.  If no value supplied, defaults to \code{nChain}.}
 }
 \description{
 Estimate rates, counts, probabilities, or means for a single

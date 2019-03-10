@@ -7,8 +7,8 @@
 estimateAccount(account, systemModels, datasets, dataModels,
   concordances = list(), weights = list(), dominant = c("Female",
   "Male"), filename = NULL, nBurnin = 1000, nSim = 1000,
-  nChain = 4, nThin = 1, parallel = TRUE, outfile = NULL,
-  nUpdateMax = 50, verbose = FALSE, useC = TRUE)
+  nChain = 4, nThin = 1, parallel = TRUE, nCore = NULL,
+  outfile = NULL, nUpdateMax = 50, verbose = FALSE, useC = TRUE)
 }
 \arguments{
 \item{systemModels}{A list of objects of class \code{\linkS4class{SpecModel}}
@@ -32,6 +32,9 @@ specifying models for the demographic series.}
 
 \item{parallel}{Logical.  If \code{TRUE} (the default), parallel processing
 is used.}
+
+\item{nCore}{The number of cores to use, when \code{parallel}
+is \code{TRUE}.  If no value supplied, defaults to \code{nChain}.}
 
 \item{outfile}{Where to direct the ‘stdout’ and ‘stderr’ connection
 output from the workers when parallel processing.  Passed to function
