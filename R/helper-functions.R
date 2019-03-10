@@ -4256,7 +4256,7 @@ rcmpUnder <- function(mu, nu, maxAttempt, useC = FALSE) {
         fl <- floor(mu)
         logm <- lgamma(fl + 1)
         for (i in seq_len(maxAttempt)) {
-            ynew <- rpois(n = 1L, lambda = mu)
+            ynew <- stats::rpois(n = 1L, lambda = mu)
             logy <- lgamma(ynew + 1)
             log_a <- (nu - 1) * (log(mu) * (ynew - fl) - logy + logm)
             u <- log(stats::runif(n = 1L))

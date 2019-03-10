@@ -333,9 +333,9 @@ drawEta <- function(prior, useC = FALSE) {
         for (p in seq_len(P - 1L)) {
             mean <- mean.eta.coef[p]
             sd <- sqrt(U.eta.coef[p])
-            eta[p + 1L] <- rnorm(n = 1L,
-                                 mean = mean,
-                                 sd = sd)
+            eta[p + 1L] <- stats::rnorm(n = 1L,
+                                        mean = mean,
+                                        sd = sd)
         }
         prior@eta@.Data <- eta
         prior
@@ -466,9 +466,9 @@ drawPhi <- function(prior, useC = FALSE) {
             phi.max <- prior@maxPhi@.Data
             shape1 <- prior@shape1Phi@.Data
             shape2 <- prior@shape2Phi@.Data
-            X <- rbeta(n = 1L,
-                       shape1 = shape1,
-                       shape2 = shape2)
+            X <- stats::rbeta(n = 1L,
+                              shape1 = shape1,
+                              shape2 = shape2)
             phi <- phi.min + X * (phi.max - phi.min)
             prior@phi <- phi
             prior
@@ -492,9 +492,9 @@ drawPhiMix <- function(prior, useC = FALSE) {
             phi.max <- prior@maxPhi@.Data
             shape1 <- prior@shape1Phi@.Data
             shape2 <- prior@shape2Phi@.Data
-            X <- rbeta(n = 1L,
-                       shape1 = shape1,
-                       shape2 = shape2)
+            X <- stats::rbeta(n = 1L,
+                              shape1 = shape1,
+                              shape2 = shape2)
             phi <- phi.min + X * (phi.max - phi.min)
             prior@phiMix <- phi
             prior

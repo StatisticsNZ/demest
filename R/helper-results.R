@@ -822,7 +822,7 @@ readStateDLMFromFile <- function(skeleton, filename, iterations,
             metadata <- methods::new("MetaData",
                             nms = "iteration",
                             dimtypes = "iteration",
-                            DimScales = list(new("Iterations", dimvalues = seq_len(nIteration))))
+                            DimScales = list(methods::new("Iterations", dimvalues = seq_len(nIteration))))
         }
         else
             metadata <- dembase::addIterationsToMetadata(metadata, iterations = iterations)        
