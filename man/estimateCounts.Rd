@@ -7,7 +7,8 @@
 estimateCounts(model, y, exposure = NULL, dataModels, datasets,
   concordances = list(), filename = NULL, nBurnin = 1000,
   nSim = 1000, nChain = 5, nThin = 1, parallel = TRUE,
-  outfile = NULL, nUpdateMax = 50, verbose = FALSE, useC = TRUE)
+  nCore = NULL, outfile = NULL, nUpdateMax = 50, verbose = FALSE,
+  useC = TRUE)
 }
 \arguments{
 \item{model}{An object of class \code{\linkS4class{SpecModel}},
@@ -33,12 +34,15 @@ the datasets and counts.}
 
 \item{nSim}{Number of iterations carried out during recording.}
 
-\item{nChain}{Number of parallel chains used in simulations.}
+\item{nChain}{Number of independent chains to use.}
 
 \item{nThin}{Thinning interval.}
 
 \item{parallel}{Logical.  If \code{TRUE} (the default), parallel processing
 is used.}
+
+\item{nCore}{The number of cores to use, when \code{parallel}
+is \code{TRUE}.  If no value supplied, defaults to \code{nChain}.}
 
 \item{outfile}{Where to direct the ‘stdout’ and ‘stderr’ connection
 output from the workers when parallel processing.  Passed to function

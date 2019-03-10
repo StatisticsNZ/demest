@@ -1447,17 +1447,17 @@ diffLogLikCellsPool <- function(diff, iComp, iCellOut, iCellIn,
     stopifnot(methods::is(component, "Component"))
     ## dataModels
     stopifnot(is.list(dataModels))
-    stopifnot(all(sapply(dataModels, is, "Model")))
+    stopifnot(all(sapply(dataModels, methods::is, "Model")))
     ## datasets
     stopifnot(is.list(datasets))
-    stopifnot(all(sapply(datasets, is, "Counts")))
+    stopifnot(all(sapply(datasets, methods::is, "Counts")))
     ## seriesIndices
     stopifnot(is.integer(seriesIndices))
     stopifnot(!any(is.na(seriesIndices)))
     stopifnot(all(seriesIndices >= 0L))
     ## transforms
     stopifnot(is.list(transforms))
-    stopifnot(all(sapply(transforms, is, "CollapseTransformExtra")))
+    stopifnot(all(sapply(transforms, methods::is, "CollapseTransformExtra")))
     ## dataModels and datasets
     stopifnot(identical(length(dataModels), length(datasets)))
     ## dataModels and seriesIndices
@@ -1579,17 +1579,17 @@ diffLogLikCellsNet <- function(diff, iComp, iCellAdd, iCellSub,
     stopifnot(methods::is(component, "Component"))
     ## dataModels
     stopifnot(is.list(dataModels))
-    stopifnot(all(sapply(dataModels, is, "Model")))
+    stopifnot(all(sapply(dataModels, methods::is, "Model")))
     ## datasets
     stopifnot(is.list(datasets))
-    stopifnot(all(sapply(datasets, is, "Counts")))
+    stopifnot(all(sapply(datasets, methods::is, "Counts")))
     ## seriesIndices
     stopifnot(is.integer(seriesIndices))
     stopifnot(!any(is.na(seriesIndices)))
     stopifnot(all(seriesIndices >= 0L))
     ## transforms
     stopifnot(is.list(transforms))
-    stopifnot(all(sapply(transforms, is, "CollapseTransformExtra")))
+    stopifnot(all(sapply(transforms, methods::is, "CollapseTransformExtra")))
     ## dataModels and datasets
     stopifnot(identical(length(dataModels), length(datasets)))
     ## dataModels and seriesIndices

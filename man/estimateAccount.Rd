@@ -26,7 +26,7 @@ specifying models for the demographic series.}
 
 \item{nSim}{Number of iterations carried out during recording.}
 
-\item{nChain}{Number of parallel chains used in simulations.}
+\item{nChain}{Number of independent chains to use.}
 
 \item{nThin}{Thinning interval.}
 

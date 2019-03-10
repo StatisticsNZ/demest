@@ -138,7 +138,7 @@
 estimateModel <- function(model, y, exposure = NULL, weights = NULL,
                           filename = NULL, nBurnin = 1000, nSim = 1000,
                           nChain = 4, nThin = 1, parallel = TRUE,
-                          nChain = NULL, outfile = NULL,
+                          nCore = NULL, outfile = NULL,
                           nUpdateMax = 50, verbose = TRUE, useC = TRUE) {
     call <- match.call()
     methods::validObject(model)

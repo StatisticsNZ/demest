@@ -28,7 +28,7 @@ object containing weights.}
 
 \item{nSim}{Number of iterations carried out during recording.}
 
-\item{nChain}{Number of parallel chains used in simulations.}
+\item{nChain}{Number of independent chains to use.}
 
 \item{nThin}{Thinning interval.}
 
@@ -49,6 +49,9 @@ printed at the end of the calculations.}
 \item{useC}{Logical.  If \code{TRUE} (the default), the calculations
 are done in C.  Setting \code{useC} to \code{FALSE} may be useful
 for debugging.}
+
+\item{nCore}{The number of cores to use, when \code{parallel}
+is \code{TRUE}.  If no value supplied, defaults to \code{nChain}.}
 }
 \description{
 Estimate rates, counts, probabilities, or means for a single
@@ -132,17 +135,6 @@ converged.
 At the end of the estimation process, the \code{estimateModel} and similar
 functions pool the results from all the chains to form a single sample.
 This sample has \code{floor(nChain * nSim / nThin)} iterations.
-}
-
-\section{Parallel}{
-
-
-Because each chain is run independently, the calculations can be carried out
-in parallel.  By default, \code{estimateModel}, \code{\link{estimateCounts}},
-and \code{\link{estimateAccount}} run the calculations on separate cores,
-using functions from the \pkg{parallel} package. For portability, however,
-the \code{parallel} argument is set to \code{FALSE} in the examples in the
-online help.
 }
 
 \examples{

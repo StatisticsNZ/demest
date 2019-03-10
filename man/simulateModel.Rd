@@ -5,9 +5,7 @@
 \title{Draw parameters and data from a statistical model}
 \usage{
 simulateModel(model, y = NULL, exposure = NULL, weights = NULL,
-  filename = NULL, nBurnin = 0, nSim = 100, nChain = 4,
-  nThin = 1, parallel = TRUE, outfile = NULL, nUpdateMax = 50,
-  verbose = TRUE, useC = TRUE)
+  filename = NULL, nDraw = 10, verbose = TRUE, useC = TRUE)
 }
 \arguments{
 \item{model}{An object of class \code{\linkS4class{SpecModel}},
@@ -24,24 +22,7 @@ object containing weights.}
 
 \item{filename}{The name of a file where output is collected.}
 
-\item{nBurnin}{Number of iteration discarded before recording begins.}
-
-\item{nSim}{Number of iterations carried out during recording.}
-
-\item{nChain}{Number of parallel chains used in simulations.}
-
-\item{nThin}{Thinning interval.}
-
-\item{parallel}{Logical.  If \code{TRUE} (the default), parallel processing
-is used.}
-
-\item{outfile}{Where to direct the ‘stdout’ and ‘stderr’ connection
-output from the workers when parallel processing.  Passed to function
-\code{[parallel]{makeCluster}}.}
-
-\item{nUpdateMax}{Maximum number of iterations completed before releasing
-memory.  If running out of memory, setting a lower value than the default
-may help.}
+\item{nDraw}{The number of random draws to make from the model.}
 
 \item{verbose}{Logical.  If \code{TRUE} (the default) a message is
 printed at the end of the calculations.}
@@ -49,6 +30,9 @@ printed at the end of the calculations.}
 \item{useC}{Logical.  If \code{TRUE} (the default), the calculations
 are done in C.  Setting \code{useC} to \code{FALSE} may be useful
 for debugging.}
+
+\item{nCore}{The number of cores to use if \code{parallel} is
+\code{TRUE}. Defaults to 4.}
 }
 \description{
 WARNING - THIS FUNCTION IS STILL UNDER DEVELOPMENT

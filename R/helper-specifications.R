@@ -344,7 +344,7 @@ checkAndTidyParameterVector <- function(x, name) {
         stop(gettextf("'%s' is not numeric",
                       name))
     x <- as.numeric(x)
-    new("ParameterVector", x)
+    methods::new("ParameterVector", x)
 }
 
 
