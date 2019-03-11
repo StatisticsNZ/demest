@@ -35,7 +35,7 @@ test_that("updateAccount works with CombinedAccountMovements", {
                          Model(deaths ~ Poisson(mean ~ 1)))
     systemWeights <- rep(list(NULL), 3)
     data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
-                              Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
+                        Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(2L, 0L)
     datasets <- list(Counts(array(7L,
                                   dim = 10,
@@ -66,8 +66,10 @@ test_that("updateAccount works with CombinedAccountMovements", {
         if (ans.expected@generatedNewProposal@.Data) {
             diff.lik <- diffLogLikAccount(ans.expected)
             diff.dens <- diffLogDensAccount(ans.expected)
-            sum <- diff.lik + diff.dens
-            if (is.finite(sum)) {
+            valid <- ((is.finite(diff.lik) || is.finite(diff.dens))
+                || identical(diff.lik, diff.dens))
+            if (valid) {
+                sum <- diff.lik + diff.dens
                 accept <- (sum) > 0 || runif(1) < exp(sum)
                 if (accept)
                     ans.expected <- updateValuesAccount(ans.expected)

@@ -17,7 +17,7 @@ original value \code{q[i]} using the rule described in
 \details{
 The model is useful for analysing data that have been
 confidentialised to base 3. It is used as a data model
-in calls to \code{\link{estimateCount}}, and
+in calls to \code{\link{estimateCounts}}, and
 \code{\link{estimateAccount}}.
 }
 \examples{

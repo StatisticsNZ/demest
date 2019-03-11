@@ -9,6 +9,10 @@ Damp(coef = NULL, shape1 = 2, shape2 = 2, min = 0.8, max = 1)
 \arguments{
 \item{coef}{A number between 0 and 1.}
 
+\item{shape1}{A positive number. Defaults to 2.}
+
+\item{shape2}{A positive number. Defaults to 2.}
+
 \item{min}{A number between 0 and 1.}
 
 \item{max}{A number between \code{min} and 1.}

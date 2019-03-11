@@ -15,9 +15,12 @@ or to the number of variables required. Defaults to 0.}
 
 \item{scale}{Scale parameter.  A vector with length equal to
 1 or to the number of variables required. Defaults to 1.}
+
+\item{mult}{Multiplier applied to \code{scale}, if \code{sd}
+is generated automatically.  Defaults to 1.}
 }
 \value{
-Object of class \code{\linkS4class{SpecTDist}}.
+Object of class \code{\linkS4class{TDist}}.
 }
 \description{
 Specify a vector of \code{n} t-distributed variables, each
@@ -27,9 +30,9 @@ mean \code{mean[i]}, and scale \code{scale[i]}.
 \examples{
 TDist()
 TDist(mean = c(-1, 0, 0))
-TDistn(df = c(4, 4, 7),
-       mean = c(-1, 0.2, 0.1),
-       scale = c(1, 2, 1))
+TDist(df = c(4, 4, 7),
+      mean = c(-1, 0.2, 0.1),
+      scale = c(1, 2, 1))
 }
 \seealso{
 \code{\link{Covariates}}

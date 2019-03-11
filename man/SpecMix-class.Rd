@@ -13,16 +13,29 @@ involving time.
 \section{Slots}{
 
 \describe{
+\item{\code{AComponentWeightMix}}{Scale for truncated half-t prior for
+\code{omegaComponentWeightMix}.}
+
+\item{\code{ALevelComponentWeightMix}}{Scale for truncated half-t prior for
+\code{omegaLevelComponentWeightMix}.}
+
+\item{\code{AVectorsMix}}{Scale for truncated half-t prior for
+\code{omegaVectorsMix}.}
+
 \item{\code{along}}{The name of the "along" dimension.}
 
 \item{\code{indexClassMaxMix}}{The maximum number of components that
 can be accommodated.}
 
+\item{\code{maxLevelComponentWeight}}{The upper bound for values of
+\code{levelComponentWeightMix}.}
+
+\item{\code{maxPhi}}{Maximum value for the damping parameter.}
+
 \item{\code{minLevelComponentWeight}}{The lower bound for values of
 \code{levelComponentWeightMix}.}
 
-\item{\code{maxLevelComponentWeight}}{The upper bound for values of
-\code{levelComponentWeightMix}.}
+\item{\code{minPhi}}{Minimum value for the damping parameter.}
 
 \item{\code{multComponentWeightMix}}{Multiplier applied to the default
 value for \code{omegaComponentWeightMix}.}
@@ -42,28 +55,13 @@ half-t prior for \code{omegaLevelComponentWeightMix}.}
 \item{\code{nuVectorsMix}}{The degrees of freedom for the truncated
 half-t prior for \code{omegaVectorsMix}.}
 
-\item{\code{priorMeanLevelComponentWeightMix}}{Mean for normal prior
-for \code{meanLevelComponentWeightMix}.}
-
-\item{\code{priorSDLevelComponentWeightMix}}{Standard deviation for normal prior
-for \code{meanLevelComponentWeightMix}}
-
-\item{\code{AComponentWeightMix}}{Scale for truncated half-t prior for
-\code{omegaComponentWeightMix}.}
-
-\item{\code{ALevelComponentWeightMix}}{Scale for truncated half-t prior for
-\code{omegaLevelComponentWeightMix}.}
-
-\item{\code{AVectorsMix}}{Scale for truncated half-t prior for
-\code{omegaVectorsMix}.}
-
 \item{\code{omegaComponentWeightMaxMix}}{Upper limit for truncated half-t prior
 for \code{omegaComponentWeightMaxMix}.}
 
 \item{\code{omegaLevelComponentWeightMaxMix}}{Upper limit for truncated half-t prior
 for \code{omegalevelComponentWeightMaxMix}.}
 
-\item{\code{omegaVectorsMix}}{Upper limit for truncated half-t prior
+\item{\code{omegaVectorsMaxMix}}{Upper limit for truncated half-t prior
 for \code{omegaVectorsMix}.}
 
 \item{\code{phi}}{Damping parameter.}
@@ -71,9 +69,11 @@ for \code{omegaVectorsMix}.}
 \item{\code{phiKnown}}{Whether the damping parameter is known.
 or is estimated from the data.}
 
-\item{\code{minPhi}}{Minimum value for the damping parameter.}
+\item{\code{priorMeanLevelComponentWeightMix}}{Mean for normal prior
+for \code{meanLevelComponentWeightMix}.}
 
-\item{\code{maxPhi}}{Maximum value for the damping parameter.}
+\item{\code{priorSDLevelComponentWeightMix}}{Standard deviation for normal prior
+for \code{meanLevelComponentWeightMix}}
 
 \item{\code{shape1Phi}}{First 'sample size' parameter in beta
 prior for damping parameter.}

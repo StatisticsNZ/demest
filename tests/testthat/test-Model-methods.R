@@ -527,6 +527,12 @@ test_that("describePriorsModel works with BinomialVarying", {
 test_that("describePriorsModel works with PoissonBinomial", {
     describePriorsModel <- demest:::describePriorsModel
     initialModel <- demest:::initialModel
+    exposure <- Counts(array(rpois(20, lambda  = 10),
+                             dim = c(2, 10),
+                             dimnames = list(sex = c("f", "m"), age = 0:9)))
+    y <- Counts(array(rbinom(20, size = exposure, prob = 0.7),
+                      dim = c(2, 10),
+                      dimnames = list(sex = c("f", "m"), age = 0:9)))
     spec <- Model(y ~ PoissonBinomial(prob = 0.2))
     model <- initialModel(spec, y = y, exposure = exposure)
     ans.obtained <- describePriorsModel(model)

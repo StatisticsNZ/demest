@@ -3,7 +3,7 @@
 \docType{class}
 \name{TDist-class}
 \alias{TDist-class}
-\title{An S4 class to a vector of independent t-distributed variables}
+\title{An S4 class to hold a vector of independent t-distributed variables}
 \description{
 An object of class \code{TDist} is used to specify the
 prior distribution of coefficents in the \code{\link{Covariates}}

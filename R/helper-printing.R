@@ -176,13 +176,11 @@ printCMPSpecEqns <- function(object) {
 
 
 printCovariatesEqns <- function(object) {
-    AEtaIntercept <- object@AEtaIntercept@.Data
     AEtaCoef <- object@AEtaCoef@.Data
     meanEtaCoef <- object@meanEtaCoef@.Data
     nuEtaCoef <- object@nuEtaCoef@.Data
     n <- length(nuEtaCoef)
     cat("    covariate[j] ~ (Intercept) + data[j,] * coef\n")
-    cat("     (Intercept) ~ N(0, ", squaredOrNA(AEtaIntercept), ")\n", sep = "")
     if (n == 1L)
         cat("            coef ~ t(", nuEtaCoef, ", ", meanEtaCoef, ", ", squaredOrNA(AEtaCoef), ")\n",
             sep = "")
@@ -194,7 +192,6 @@ printCovariatesEqns <- function(object) {
 }
 
 printCovariatesDLMEqns <- function(object, isMain) {
-    AEtaIntercept <- object@AEtaIntercept@.Data
     AEtaCoef <- object@AEtaCoef@.Data
     meanEtaCoef <- object@meanEtaCoef@.Data
     nuEtaCoef <- object@nuEtaCoef@.Data
@@ -203,7 +200,6 @@ printCovariatesDLMEqns <- function(object, isMain) {
         cat("    covariate[j] ~ (Intercept) + data[j,] * coef\n")
     else
         cat("  covariate[k,l] ~ (Intercept) + data[k,l,] * coef\n")
-    cat("     (Intercept) ~ N(0, ", squaredOrNA(AEtaIntercept), ")\n", sep = "")
     if (n == 1L)
         cat("            coef ~ t(", nuEtaCoef, ", ", meanEtaCoef, ", ", squaredOrNA(AEtaCoef), ")\n",
             sep = "")

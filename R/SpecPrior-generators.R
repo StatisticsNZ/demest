@@ -175,8 +175,6 @@ Components <- function(scale = HalfT()) {
 #' parameters are described in the' documentation for \code{\link{HalfT}}.
 #' Shrinking coefficient' estimates towards 0 protects against over-fitting.
 #'
-#' The intercept term is assumed to have a diffuse normal distribution.
-#' 
 #' The help for \code{\link[stats]{model.matrix}} contains a discussion of
 #' contrasts.  With Bayesian models that have informative priors, such as the
 #' t priors used by \code{Covariates}, all levels of a factor can be included
@@ -188,7 +186,6 @@ Components <- function(scale = HalfT()) {
 #' covariates specified by \code{formula}. Defaults to \code{FALSE}.
 #' @param contrastsArg A named list, the elements which are matrices
 #'     or names of contrasts functions.
-#' @param intercept An object of class \code{\linkS4class{Norm}}.
 #' @param coef An object of class \code{\link{TDist}}.
 #'
 #' @return An object of class \code{\linkS4class{Covariates}}
@@ -328,6 +325,8 @@ Covariates <- function(formula = NULL, data = NULL, infant = FALSE,
 #' @param coef A number between 0 and 1.
 #' @param min A number between 0 and 1.
 #' @param max A number between \code{min} and 1.
+#' @param shape1 A positive number. Defaults to 2.
+#' @param shape2 A positive number. Defaults to 2.
 #'
 #' @return An object of class \code{\linkS4class{Damp}}.
 #'
@@ -1948,17 +1947,19 @@ Season <- function(n, scale = HalfT()) {
 #' or to the number of variables required. Defaults to 0.
 #' @param scale Scale parameter.  A vector with length equal to
 #' 1 or to the number of variables required. Defaults to 1.
+#' @param mult Multiplier applied to \code{scale}, if \code{sd}
+#' is generated automatically.  Defaults to 1.
 #'
-#' @return Object of class \code{\linkS4class{SpecTDist}}.
+#' @return Object of class \code{\linkS4class{TDist}}.
 #'
 #' @seealso \code{\link{Covariates}}
 #'
 #' @examples
 #' TDist()
 #' TDist(mean = c(-1, 0, 0))
-#' TDistn(df = c(4, 4, 7),
-#'        mean = c(-1, 0.2, 0.1),
-#'        scale = c(1, 2, 1))
+#' TDist(df = c(4, 4, 7),
+#'       mean = c(-1, 0.2, 0.1),
+#'       scale = c(1, 2, 1))
 #' @export
 TDist <- function(df = 7, mean = 0, scale = NULL, mult = 1) {
     nu <- checkAndTidyNuVec(x = df,
@@ -2189,9 +2190,7 @@ Weights <- function(mean = 0, sd = 1, damp = Damp(), scale1 = HalfT(), scale2 = 
 #' to that requirement from \code{\link{Model}} that all terms marginal
 #' to an interaction be included in a model.
 #' 
-#' @param mean The mean of the prior distribution.  An object of
-#'
-#' @return An object of class \code{\linkS4class{Zero}}.
+#' @return An object of class \code{\linkS4class{SpecZero}}.
 #'
 #' @seealso \code{Known} can be used to create a prior that
 #' fixes the main effect or interaction at values other than 0.

@@ -99,11 +99,11 @@ setClass("ResultsEst",
              if (mcmc[["nIteration"]] != (nSim %/% mcmc[["nThin"]]) * mcmc[["nChain"]])
                  return(gettextf("'%s', '%s', '%s', and '%s' inconsistent",
                                  "nIteration", "nSim", "nThin", "nChain"))
-             ## if parellel is TRUE, length of seed equal to nChain
+             ## if parellel is TRUE, length of seed equal to nCore
              if (control$parallel) {
-                 if (!identical(length(seed), mcmc[["nChain"]]))
+                 if (!identical(length(seed), mcmc[["nCore"]]))
                      return(gettextf("'%s' is TRUE but length of '%s' is not equal to '%s'",
-                                     "parallel", "seed", "nChain"))
+                                     "parallel", "seed", "nCore"))
              }
              ## length of final equal to nChain
              if (!identical(length(final), mcmc[["nChain"]]))

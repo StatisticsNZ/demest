@@ -468,7 +468,6 @@ simulateModel <- function(model, y = NULL, exposure = NULL, weights = NULL,
 #' and \code{datasets} is a named list of datasets.  The response for each
 #' data model must be the name of a dataset.  See below for examples.
 #' 
-#' 
 #' @inheritParams estimateModel
 #' @param y An object of class
 #' \code{\link[dembase:DemographicArray-class]{Counts}} with the same
@@ -478,6 +477,11 @@ simulateModel <- function(model, y = NULL, exposure = NULL, weights = NULL,
 #' the datasets and counts.  
 #' @param datasets A named list of objects of class
 #' \code{\link[dembase:DemographicArray-class]{Counts}}.
+#' @param concordances A named list of
+#' \code{\link[dembase:Concordance-class]{concordances}},
+#' which are applied to \code{y} before it is supplied to
+#' the corresponding data model.
+#' 
 #'
 #' @seealso \code{\link{estimateModel}}, \code{\link{estimateAccount}}
 #' 
@@ -749,13 +753,25 @@ predictCounts <- function(filenameEst, filenamePred, along = NULL, labels = NULL
 #' \emph{The function is still under construction.}
 #'
 #' @inheritParams estimateCounts
-#' @param y An object of class
-#' \code{\link[dembase:DemographicAccount-class]{DemographicAccount}}.
-#' @param systemModels A list of objects of class \code{\linkS4class{SpecModel}}
+#' @param account An object of class
+#' \code{\link[dembase:DemographicAccount-class]{DemographicAccount}},
+#' giving the initial values for the estimation of the account.
+#' @param systemModels A list of objects of class
+#' \code{\linkS4class{SpecModel}}
 #' specifying models for the demographic series.
 #' @param dataModels A list of objects of class
 #' \code{\linkS4class{SpecModel}} specifying models for the datasets.
-#'
+#' @param concordances A named list of
+#' \code{\link[dembase:Concordance-class]{concordances}},
+#' which are applied to the series in the account before they are
+#' supplied to the corresponding data model.
+#' @param weights A named list of
+#' \code{\link[dembase:Counts-class]{Counts}} objects,
+#' providing weights for any Normal models among the system models.
+#' @param dominant Either \code{"Female"} (the default) or \code{"Male"}.
+#' Determines which sex is used to generate exposures in the system
+#' model for births.
+#' 
 #' @seealso \code{\link{estimateModel}}, \code{\link{estimateCounts}}
 #'
 #' @references Bryant, J., Graham, P. Bayesian demographic accounts:

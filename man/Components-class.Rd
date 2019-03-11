@@ -20,7 +20,7 @@ half-t prior for \code{omegaVectorsMix}.}
 \item{\code{AVectorsMix}}{Scale for truncated half-t prior for
 \code{omegaVectorsMix}.}
 
-\item{\code{omegaVectorsMix}}{Upper limit for truncated half-t prior
+\item{\code{omegaVectorsMaxMix}}{Upper limit for truncated half-t prior
 for \code{omegaVectorsMix}.}
 }}
 

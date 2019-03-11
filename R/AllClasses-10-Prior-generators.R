@@ -255,7 +255,7 @@ setClass("Season",
          contains = "SpecSeasonMixin")
 
 
-#' An S4 class to a vector of independent t-distributed variables
+#' An S4 class to hold a vector of independent t-distributed variables
 #'
 #' An object of class \code{TDist} is used to specify the
 #' prior distribution of coefficents in the \code{\link{Covariates}}
@@ -336,7 +336,7 @@ setClass("Trend",
 #' half-t prior for \code{omegaVectorsMix}.
 #' @slot AVectorsMix Scale for truncated half-t prior for
 #' \code{omegaVectorsMix}.
-#' @slot omegaVectorsMix Upper limit for truncated half-t prior
+#' @slot omegaVectorsMaxMix Upper limit for truncated half-t prior
 #' for \code{omegaVectorsMix}.
 #'
 #' @seealso An object of class \code{Components} is created

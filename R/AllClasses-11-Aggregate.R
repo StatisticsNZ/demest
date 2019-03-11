@@ -426,7 +426,7 @@ setClass("SpecAxAgMixin",
 #' information beyond what is contained in 'y',
 #' such as expert judgements.
 #'
-#' @slot metadataAg Metadata (such as \code{\link[dembase]{dimtypes}}
+#' @slot metadataAg Metadata (such as \code{\link[dembase]{dimtypes}})
 #'     for aggregate values.
 #' @slot scaleAg Standard deviation of proposal density
 #'     for Metropolis-Hastings updates.
@@ -435,7 +435,7 @@ setClass("SpecAxAgMixin",
 #'     disaggregated rates, counts, probabilities, or means.
 #' @slot weightAg Weights used to calculate \code{valueAg} from
 #'     disaggregated rates, counts, probabilities, or means.
-#' @slot concordancesAg List of \code{\link[dembase]{ManyToOne}}
+#' @slot concordancesAg List of \code{\link[dembase:ManyToOne-class]{ManyToOne}}
 #' concordances.
 #' @name SpecAggregate-class
 #' @export

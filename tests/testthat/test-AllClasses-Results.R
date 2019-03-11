@@ -14,7 +14,7 @@ test_that("can create valid object of class ResultsModelEst", {
     call <- call("estimateModel", list("model"))
     filename <- "filename"
     mcmc <- c(nBurnin = 1000L, nSim = 1000L, nChain = 3L, nThin = 10L,
-              nIteration = 300L)
+              nCore = 3L, nIteration = 300L)
     seed <- list(c(407L, 1:6), c(407L, 6:1), c(407L, 3:8))
     y <- Counts(array(as.integer(rpois(n = 24, lambda = 20)),
                       dim = 2:4,
@@ -47,7 +47,7 @@ test_that("validity tests for ResultsModelEst inherited from Results work", {
     call <- call("estimateModel", list("model"))
     filename <- "filename"
     mcmc <- c(nBurnin = 1000L, nSim = 1000L, nChain = 3L, nThin = 10L,
-              nIteration = 300L)
+              nCore = 3L, nIteration = 300L)
     spec <- Model(y ~ Poisson(mean ~ sex * age + time, useExpose = FALSE))
     seed <- list(c(407L, 1:6), c(407L, 6:1), c(407L, 3:8))
     y <- Counts(array(as.integer(rpois(n = 24, lambda = 20)),
@@ -121,7 +121,7 @@ test_that("validity tests for ResultsModelEst inherited from ResultsEst work", {
     call <- call("estimateModel", list("model"))
     filename <- "filename"
     mcmc <- c(nBurnin = 1000L, nSim = 1000L, nChain = 3L, nThin = 10L,
-              nIteration = 300L)
+              nCore = 3L, nIteration = 300L)
     spec <- Model(y ~ Poisson(mean ~ sex * age + time, useExpose = FALSE))
     seed <- list(c(407L, 1:6), c(407L, 6:1), c(407L, 3:8))
     y <- Counts(array(as.integer(rpois(n = 24, lambda = 20)),
@@ -185,7 +185,7 @@ test_that("validity tests for ResultsModelEst inherited from ResultsEst work", {
     x.wrong <- x
     x.wrong@seed <- x.wrong@seed[1:2]
     expect_error(validObject(x.wrong),
-                 "'parallel' is TRUE but length of 'seed' is not equal to 'nChain'")
+                 "'parallel' is TRUE but length of 'seed' is not equal to 'nCore'")
     ## length of final equal to nChain
     x.wrong <- x
     x.wrong@final <- x.wrong@final[1:2]
@@ -200,7 +200,7 @@ test_that("validity tests for ResultsModelEst inherited from ResultsModelEst wor
     call <- call("estimateModel", list("model"))
     filename <- "filename"
     mcmc <- c(nBurnin = 1000L, nSim = 1000L, nChain = 3L, nThin = 10L,
-              nIteration = 300L)
+              nCore = 3L, nIteration = 300L)
     y <- Counts(array(as.integer(rpois(n = 24, lambda = 20)),
                       dim = 2:4,
                       dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000:2003)),
@@ -245,7 +245,7 @@ test_that("can create valid object of class ResultsModelExposureEst", {
     call <- call("estimateModel", list("model"))
     filename <- "filename"
     mcmc <- c(nBurnin = 1000L, nSim = 1000L, nChain = 3L, nThin = 10L,
-              nIteration = 300L)
+              nCore = 3L, nIteration = 300L)
     exposure <- Counts(array(as.double(rpois(n = 24, lambda = 20)),
                       dim = 2:4,
                              dimnames = list(sex = c("f", "m"), age = 0:2, time = 2000:2003)),
@@ -412,7 +412,7 @@ test_that("can create valid object of class ResultsCountsEst", {
     call <- call("estimateCounts", list("model"))
     filename <- "filename"
     mcmc <- c(nBurnin = 1000L, nSim = 1000L, nChain = 3L, nThin = 10L,
-              nIteration = 300L)
+              nCore = 3L, nIteration = 300L)
     control <- list(call = call,
                     parallel = TRUE,
                     lengthIter = -1L,
@@ -499,7 +499,7 @@ test_that("validity tests for ResultsCountsEst inherited from ResultsCountsEst w
     call <- call("estimateCounts", list("model"))
     filename <- "filename"
     mcmc <- c(nBurnin = 1000L, nSim = 1000L, nChain = 3L, nThin = 10L,
-              nIteration = 300L)
+              nCore = 3L, nIteration = 300L)
     control <- list(call = call,
                     parallel = TRUE,
                     lengthIter = -1L,
@@ -621,7 +621,7 @@ test_that("can create valid object of class ResultsCountsExposureEst", {
     call <- call("estimateCounts", list("model"))
     filename <- "filename"
     mcmc <- c(nBurnin = 1000L, nSim = 1000L, nChain = 3L, nThin = 10L,
-              nIteration = 300L)
+              nCore = 3L, nIteration = 300L)
     control <- list(call = call,
                     parallel = TRUE,
                     lengthIter = -1L,
@@ -706,7 +706,7 @@ test_that("can create valid object of class ResultsModelSimDirect", {
     call <- call("estimateModel", list("model"))
     filename <- "filename"
     mcmc <- c(nBurnin = 0L, nSim = 1L, nChain = 1L, nThin = 1L,
-              nIteration = 1L)
+              nCore = 1L, nIteration = 1L)
     seed <- list(.Random.seed)
     y <- Counts(array(as.integer(rpois(n = 24, lambda = 20)),
                       dim = 2:4,
@@ -723,9 +723,11 @@ test_that("can create valid object of class ResultsModelSimDirect", {
     y <- SkeletonMissingData(y,
                              model = final[[1L]]@model,
                              outputModel = model,
-                             exposure = NULL)    
+                             exposure = NULL)
+    mcmc <- c(nIteration = 1L)
     ans <- new("ResultsModelSimDirect",
                control = control,
+               mcmc = mcmc,
                final = final,
                seed = seed,
                model = model,

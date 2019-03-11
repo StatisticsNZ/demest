@@ -1110,15 +1110,9 @@ setMethod("initialModel",
                   mean.y.obs <- mean(y@.Data[is.obs]) 
               else
                   mean.y.obs <- 0.5
-              ## shape <- ifelse(is.obs, 0.05 * mean.y.obs + 0.95 * y@.Data, mean.y.obs)
-              ## shape <- ifelse(is.obs, 0.5 * mean.y.obs + 0.5 * y@.Data, mean.y.obs)
               shape <- ifelse(is.obs, y@.Data + 1, 1)
-              if (has.exposure) {
-                  mean.expose.obs <- mean(exposure[is.obs])
+              if (has.exposure)
                   rate <- ifelse(is.obs, exposure + 1, 1)
-                  ## rate <- ifelse(is.obs, 0.05 * mean.expose.obs + 0.95 * exposure, mean.expose.obs)
-                  ## rate <- ifelse(is.obs, 0.5 * mean.expose.obs + 0.5 * exposure, mean.expose.obs)
-              }
               else
                   rate <- 2
               scale.theta.multiplier <- sqrt(mean.y.obs + 1)

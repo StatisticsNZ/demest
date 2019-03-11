@@ -29,7 +29,7 @@ are multiple values, an object of class
 weights to be used when aggregating. Optional.}
 
 \item{concordances}{A named list of objects of class
-\code{\link[dembase]{ManyToOne}}.}
+\code{\link[dembase:ManyToOne-class]{ManyToOne}}.}
 
 \item{sd}{Standard deviation(s) for errors. If \code{value} is a single
 number, then \code{sd} must be a single number; otherwise \code{sd} must be
@@ -40,6 +40,10 @@ Metropolis-Hastings updates.}
 
 \item{FUN}{A function taking arguments called \code{x} and \code{weights}
 and returning a single number.  See below for details.}
+
+\item{ax}{An object of class 
+\code{\link[dembase:DemographicArray-class]{Values}} holding estimated
+separation factors. Optional.}
 }
 \value{
 An object of class \code{\linkS4class{SpecAggregate}}.

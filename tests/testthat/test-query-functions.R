@@ -110,6 +110,8 @@ test_that("fetch works", {
     res <- fetchResultsObject(filename)
     ## fetch
     ans.obtained <- fetch(filename, where = "y")
+    expect_identical(dim(ans.obtained), c(dim(y), nIteration(ans.obtained)))
+    ans.obtained <- fetch(filename, where = "y", impute = FALSE)
     ans.expected <- y
     expect_identical(ans.obtained, ans.expected)
     ans.obtained <- fetch(filename, where = "control")
@@ -258,7 +260,7 @@ test_that("fetchFiniteSD works with ResultsModel", {
                   y = y,
                   nBurnin = 0,
                   nSim = 10,
-                  nChain = 4,
+                  nChain = 2,
                   nThin = 1,
                   filename = filename)
     ans.obtained <- fetchFiniteSD(filename = filename)

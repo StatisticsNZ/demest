@@ -14,7 +14,7 @@ test_that("describePriorsResults works with ResultsModel", {
                   y = y,
                   nBurnin = 0,
                   nSim = 10,
-                  nChain = 4,
+                  nChain = 2,
                   nThin = 1,
                   filename = filename)
     obj <- fetchResultsObject(filename)
@@ -88,7 +88,7 @@ test_that("finiteSDObject works with ResultsModel", {
                   y = y,
                   nBurnin = 0,
                   nSim = 10,
-                  nChain = 4,
+                  nChain = 2,
                   nThin = 1,
                   filename = filename)
     obj <- fetchResultsObject(filename)

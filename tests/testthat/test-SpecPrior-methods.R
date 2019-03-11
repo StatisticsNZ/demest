@@ -57,7 +57,6 @@ test_that("checkPriorIsInformative works with SpecExchNormCov", {
                        income = rnorm(10))
     object <- Exch(covariates = Covariates(mean ~ income,
                                            data = data,
-                                           intercept = Norm(sd = 10),
                                            coef = TDist(scale = c(0.4, 0.3))),
                    error = Error(scale = HalfT(scale = 2)))
     expect_is(object, "SpecExchNormCov")
@@ -65,21 +64,12 @@ test_that("checkPriorIsInformative works with SpecExchNormCov", {
                      NULL)
     object <- Exch(covariates = Covariates(mean ~ income,
                                            data = data,
-                                           intercept = Norm(),
-                                           coef = TDist(scale = 0.4)),
-                   error = Error(scale = HalfT(scale = 2)))
-    expect_identical(checkPriorIsInformative(object),
-                     "value for 'sd' not supplied in call to 'Norm' when specifying 'covariates' in call to 'Exch'")
-    object <- Exch(covariates = Covariates(mean ~ income,
-                                           data = data,
-                                           intercept = Norm(sd = 3),
                                            coef = TDist()),
                    error = Error(scale = HalfT(scale = 2)))
     expect_identical(checkPriorIsInformative(object),
                      "value for 'scale' not supplied in call to 'TDist' when specifying 'covariates' in call to 'Exch'")
     object <- Exch(covariates = Covariates(mean ~ income,
                                            data = data,
-                                           intercept = Norm(sd = 3),
                                            coef = TDist(scale = 0.2)),
                    error = Error(scale = HalfT()))
     expect_identical(checkPriorIsInformative(object = object),
@@ -92,7 +82,6 @@ test_that("checkPriorIsInformative works with SpecExchRobustCov", {
                        income = rnorm(10))
     object <- Exch(covariates = Covariates(mean ~ income,
                                            data = data,
-                                           intercept = Norm(sd = 10),
                                            coef = TDist(scale = c(0.4, 0.3))),
                    error = Error(robust = TRUE, scale = HalfT(scale = 2)))
     expect_identical(checkPriorIsInformative(object),
@@ -100,22 +89,13 @@ test_that("checkPriorIsInformative works with SpecExchRobustCov", {
     expect_is(object, "SpecExchRobustCov")
     object <- Exch(covariates = Covariates(mean ~ income,
                                            data = data,
-                                           intercept = Norm(),
-                                           coef = TDist(scale = 0.4)),
-                   error = Error(robust = TRUE, scale = HalfT(scale = 2)))
-    expect_identical(checkPriorIsInformative(object),
-                     "value for 'sd' not supplied in call to 'Norm' when specifying 'covariates' in call to 'Exch'")
-    object <- Exch(covariates = Covariates(mean ~ income,
-                                           data = data,
-                                           intercept = Norm(sd = 3),
                                            coef = TDist()),
                    error = Error(robust = TRUE, scale = HalfT(scale = 2)))
     expect_identical(checkPriorIsInformative(object),
                      "value for 'scale' not supplied in call to 'TDist' when specifying 'covariates' in call to 'Exch'")
     object <- Exch(covariates = Covariates(mean ~ income,
                                            data = data,
-                                           intercept = Norm(sd = 3),
-                                           coef = TDist(scale = 0.2)),
+                                          coef = TDist(scale = 0.2)),
                    error = Error(robust = TRUE, scale = HalfT()))
     expect_identical(checkPriorIsInformative(object = object),
                      "value for 'scale' not supplied in call to 'HalfT' when specifying 'error' in call to 'Exch'")
@@ -257,7 +237,6 @@ test_that("checkPriorIsInformative works with SpecDLMNoTrendNormCovNoSeason", {
                   trend = NULL,
                   covariates = Covariates(mean ~ has.policy,
                                           data = data,
-                                          intercept = Norm(sd = 10),
                                           coef = TDist(scale = 0.1)),
                   error = Error(scale = HalfT(scale = 2)))
     expect_is(object, "SpecDLMNoTrendNormCovNoSeason")
@@ -267,7 +246,6 @@ test_that("checkPriorIsInformative works with SpecDLMNoTrendNormCovNoSeason", {
                   trend = NULL,
                   covariates = Covariates(mean ~ has.policy,
                                           data = data,
-                                          intercept = Norm(sd = 10),
                                           coef = TDist(scale = 0.1)),
                   error = Error(scale = HalfT(scale = 2)))
     expect_identical(checkPriorIsInformative(object),
@@ -275,7 +253,6 @@ test_that("checkPriorIsInformative works with SpecDLMNoTrendNormCovNoSeason", {
     object <- DLM(trend = NULL,
                   covariates = Covariates(mean ~ has.policy,
                                           data = data,
-                                          intercept = Norm(sd = 10),
                                           coef = TDist(scale = 0.1)),
                   error = Error(scale = HalfT(scale = 2)))
     expect_identical(checkPriorIsInformative(object),
@@ -284,7 +261,6 @@ test_that("checkPriorIsInformative works with SpecDLMNoTrendNormCovNoSeason", {
                   trend = NULL,
                   covariates = Covariates(mean ~ has.policy,
                                           data = data,
-                                          intercept = Norm(sd = 10),
                                           coef = TDist(scale = 0.1)),
                   error = Error(scale = HalfT(mult = 2)))
     expect_identical(checkPriorIsInformative(object),
@@ -292,23 +268,13 @@ test_that("checkPriorIsInformative works with SpecDLMNoTrendNormCovNoSeason", {
     object <- DLM(level = Level(scale = HalfT(scale = 2)),
                   trend = NULL,
                   covariates = Covariates(mean ~ has.policy,
-                                          data = data,
-                                          coef = TDist(scale = 0.1)),
-                  error = Error(scale = HalfT(scale = 1)))
-    expect_identical(checkPriorIsInformative(object),
-                     "value for 'sd' not supplied in call to 'Norm' when specifying 'covariates' in call to 'DLM'")
-    object <- DLM(level = Level(scale = HalfT(scale = 2)),
-                  trend = NULL,
-                  covariates = Covariates(mean ~ has.policy,
-                                          data = data,
-                                          intercept = Norm(sd = 10)),
+                                          data = data),
                   error = Error(scale = HalfT(scale = 1)))
     expect_identical(checkPriorIsInformative(object),
                      "value for 'scale' not supplied in call to 'TDist' when specifying 'covariates' in call to 'DLM'")
     object <- DLM(level = Level(scale = HalfT(scale = 2)),
                   covariates = Covariates(mean ~ has.policy,
                                           data = data,
-                                          intercept = Norm(sd = 10),
                                           coef = TDist(scale = 0.1)),
                   trend = NULL)
     expect_identical(checkPriorIsInformative(object),
@@ -324,7 +290,6 @@ test_that("checkPriorIsInformative works with SpecDLMWithTrendNormCovNoSeason", 
                                 scale = HalfT(scale = 2)),,
                   covariates = Covariates(mean ~ has.policy,
                                           data = data,
-                                          intercept = Norm(sd = 10),
                                           coef = TDist(scale = 0.1)),
                   error = Error(scale = HalfT(scale = 2)))
     expect_is(object, "SpecDLMWithTrendNormCovNoSeason")
@@ -335,7 +300,6 @@ test_that("checkPriorIsInformative works with SpecDLMWithTrendNormCovNoSeason", 
                                 scale = HalfT(scale = 2)),
                   covariates = Covariates(mean ~ has.policy,
                                           data = data,
-                                          intercept = Norm(sd = 10),
                                           coef = TDist(scale = 0.1)),
                   error = Error(scale = HalfT(scale = 2)))
     expect_identical(checkPriorIsInformative(object),
@@ -344,7 +308,6 @@ test_that("checkPriorIsInformative works with SpecDLMWithTrendNormCovNoSeason", 
                   trend = Trend(scale = HalfT(scale = 2)),
                   covariates = Covariates(mean ~ has.policy,
                                           data = data,
-                                          intercept = Norm(sd = 10),
                                           coef = TDist(scale = 0.1)),
                   error = Error(scale = HalfT(scale = 2)))
     expect_identical(checkPriorIsInformative(object),
@@ -354,16 +317,6 @@ test_that("checkPriorIsInformative works with SpecDLMWithTrendNormCovNoSeason", 
                                 scale = HalfT(scale = 2)),
                   covariates = Covariates(mean ~ has.policy,
                                           data = data,
-                                          coef = TDist(scale = 0.1)),
-                  error = Error(scale = HalfT(scale = 2)))
-    expect_identical(checkPriorIsInformative(object),
-                     "value for 'sd' not supplied in call to 'Norm' when specifying 'covariates' in call to 'DLM'")
-    object <- DLM(level = Level(scale = HalfT(scale = 2)),
-                  trend = Trend(initial = Initial(sd = 1),
-                                scale = HalfT(scale = 2)),
-                  covariates = Covariates(mean ~ has.policy,
-                                          data = data,
-                                          intercept = Norm(sd = 10),
                                           coef = TDist(scale = 0.1)))
     expect_identical(checkPriorIsInformative(object),
                      "value for 'scale' not supplied in call to 'HalfT' when specifying 'error' in call to 'DLM'")
@@ -377,7 +330,6 @@ test_that("checkPriorIsInformative works with SpecDLMNoTrendNormCovWithSeason", 
                   trend = NULL,
                   covariates = Covariates(mean ~ has.policy,
                                           data = data,
-                                          intercept = Norm(sd = 10),
                                           coef = TDist(scale = 0.1)),
                   season = Season(n = 4, scale = HalfT(scale = 2)),
                   error = Error(scale = HalfT(scale = 2)))
@@ -388,7 +340,6 @@ test_that("checkPriorIsInformative works with SpecDLMNoTrendNormCovWithSeason", 
                   season = Season(n = 4, scale = HalfT(scale = 2)),
                   covariates = Covariates(mean ~ has.policy,
                                           data = data,
-                                          intercept = Norm(sd = 10),
                                           coef = TDist(scale = 0.1)),
                   error = Error(scale = HalfT(scale = 2)))
     expect_identical(checkPriorIsInformative(object),
@@ -398,7 +349,6 @@ test_that("checkPriorIsInformative works with SpecDLMNoTrendNormCovWithSeason", 
                   trend = NULL,
                   covariates = Covariates(mean ~ has.policy,
                                           data = data,
-                                          intercept = Norm(sd = 10),
                                           coef = TDist(scale = 0.1)),
                   error = Error(scale = HalfT(scale = 2)))
     expect_identical(checkPriorIsInformative(object),
@@ -407,8 +357,7 @@ test_that("checkPriorIsInformative works with SpecDLMNoTrendNormCovWithSeason", 
                   season = Season(n = 4, scale = HalfT(scale = 0.1)),
                   trend = NULL,
                   covariates = Covariates(mean ~ has.policy,
-                                          data = data,
-                                          intercept = Norm(sd = 10)),
+                                          data = data),
                   error = Error(scale = HalfT(scale = 2)))
     expect_identical(checkPriorIsInformative(object),
                      "value for 'scale' not supplied in call to 'TDist' when specifying 'covariates' in call to 'DLM'")
@@ -417,7 +366,6 @@ test_that("checkPriorIsInformative works with SpecDLMNoTrendNormCovWithSeason", 
                   trend = NULL,
                   covariates = Covariates(mean ~ has.policy,
                                           data = data,
-                                          intercept = Norm(sd = 10),
                                           coef = TDist(scale = 0.1)),
                   error = Error(scale = HalfT(scale = 2)))
     expect_identical(checkPriorIsInformative(object),
@@ -434,7 +382,6 @@ test_that("checkPriorIsInformative works with SpecDLMWithTrendNormCovWithSeason"
                                 scale = HalfT(scale = 2)),
                   covariates = Covariates(mean ~ has.policy,
                                           data = data,
-                                          intercept = Norm(sd = 10),
                                           coef = TDist(scale = 0.1)),
                   season = Season(n = 4,
                                   scale = HalfT(scale = 2)),
@@ -447,7 +394,6 @@ test_that("checkPriorIsInformative works with SpecDLMWithTrendNormCovWithSeason"
                                 scale = HalfT(scale = 2)),
                   covariates = Covariates(mean ~ has.policy,
                                           data = data,
-                                          intercept = Norm(sd = 10),
                                           coef = TDist(scale = 0.1)),
                   season = Season(n = 4,
                                   scale = HalfT(scale = 2)),
@@ -458,7 +404,6 @@ test_that("checkPriorIsInformative works with SpecDLMWithTrendNormCovWithSeason"
                   trend = Trend(scale = HalfT(scale = 2)),
                   covariates = Covariates(mean ~ has.policy,
                                           data = data,
-                                          intercept = Norm(sd = 10),
                                           coef = TDist(scale = 0.1)),
                   season = Season(n = 4,
                                   scale = HalfT(scale = 2)),
@@ -468,7 +413,6 @@ test_that("checkPriorIsInformative works with SpecDLMWithTrendNormCovWithSeason"
     object <- DLM(level = Level(scale = HalfT(scale = 2)),
                   covariates = Covariates(mean ~ has.policy,
                                           data = data,
-                                          intercept = Norm(sd = 10),
                                           coef = TDist(scale = 0.1)),
                   trend = Trend(initial = Initial(sd = 1),
                                 scale = HalfT(scale = 2)))
@@ -480,7 +424,6 @@ test_that("checkPriorIsInformative works with SpecDLMWithTrendNormCovWithSeason"
                   season = Season(n = 4, scale = HalfT(mult = 3)),
                   covariates = Covariates(mean ~ has.policy,
                                           data = data,
-                                          intercept = Norm(sd = 10),
                                           coef = TDist(scale = 0.1)),
                   error = Error(scale = HalfT(scale = 2)))
     expect_identical(checkPriorIsInformative(object),
@@ -491,7 +434,6 @@ test_that("checkPriorIsInformative works with SpecDLMWithTrendNormCovWithSeason"
                   season = Season(n = 4),
                   covariates = Covariates(mean ~ has.policy,
                                           data = data,
-                                          intercept = Norm(sd = 10),
                                           coef = TDist(scale = 0.1)),
                   error = Error(scale = HalfT(scale = 2)))
     expect_identical(checkPriorIsInformative(object),
@@ -634,7 +576,6 @@ test_that("checkPriorIsInformative works with SpecDLMNoTrendRobustCovNoSeason", 
                   trend = NULL,
                   covariates = Covariates(mean ~ has.policy,
                                           data = data,
-                                          intercept = Norm(sd = 10),
                                           coef = TDist(scale = 0.1)),
                   error = Error(robust = TRUE, scale = HalfT(scale = 2)))
     expect_is(object, "SpecDLMNoTrendRobustCovNoSeason")
@@ -644,7 +585,6 @@ test_that("checkPriorIsInformative works with SpecDLMNoTrendRobustCovNoSeason", 
                   trend = NULL,
                   covariates = Covariates(mean ~ has.policy,
                                           data = data,
-                                          intercept = Norm(sd = 10),
                                           coef = TDist(scale = 0.1)),
                   error = Error(robust = TRUE, scale = HalfT(scale = 2)))
     expect_identical(checkPriorIsInformative(object),
@@ -652,7 +592,6 @@ test_that("checkPriorIsInformative works with SpecDLMNoTrendRobustCovNoSeason", 
     object <- DLM(trend = NULL,
                   covariates = Covariates(mean ~ has.policy,
                                           data = data,
-                                          intercept = Norm(sd = 10),
                                           coef = TDist(scale = 0.1)),
                   error = Error(robust = TRUE, scale = HalfT(scale = 2)))
     expect_identical(checkPriorIsInformative(object),
@@ -661,7 +600,6 @@ test_that("checkPriorIsInformative works with SpecDLMNoTrendRobustCovNoSeason", 
                   trend = NULL,
                   covariates = Covariates(mean ~ has.policy,
                                           data = data,
-                                          intercept = Norm(sd = 10),
                                           coef = TDist(scale = 0.1)),
                   error = Error(robust = TRUE, scale = HalfT(mult = 2)))
     expect_identical(checkPriorIsInformative(object),
@@ -669,23 +607,13 @@ test_that("checkPriorIsInformative works with SpecDLMNoTrendRobustCovNoSeason", 
     object <- DLM(level = Level(scale = HalfT(scale = 2)),
                   trend = NULL,
                   covariates = Covariates(mean ~ has.policy,
-                                          data = data,
-                                          coef = TDist(scale = 0.1)),
-                  error = Error(robust = TRUE, scale = HalfT(scale = 1)))
-    expect_identical(checkPriorIsInformative(object),
-                     "value for 'sd' not supplied in call to 'Norm' when specifying 'covariates' in call to 'DLM'")
-    object <- DLM(level = Level(scale = HalfT(scale = 2)),
-                  trend = NULL,
-                  covariates = Covariates(mean ~ has.policy,
-                                          data = data,
-                                          intercept = Norm(sd = 10)),
+                                          data = data),
                   error = Error(robust = TRUE, scale = HalfT(scale = 1)))
     expect_identical(checkPriorIsInformative(object),
                      "value for 'scale' not supplied in call to 'TDist' when specifying 'covariates' in call to 'DLM'")
     object <- DLM(level = Level(scale = HalfT(scale = 2)),
                   covariates = Covariates(mean ~ has.policy,
                                           data = data,
-                                          intercept = Norm(sd = 10),
                                           coef = TDist(scale = 0.1)),
                   trend = NULL,
                   error = Error(robust = TRUE))
@@ -702,7 +630,6 @@ test_that("checkPriorIsInformative works with SpecDLMWithTrendRobustCovNoSeason"
                                 scale = HalfT(scale = 2)),,
                   covariates = Covariates(mean ~ has.policy,
                                           data = data,
-                                          intercept = Norm(sd = 10),
                                           coef = TDist(scale = 0.1)),
                   error = Error(robust = TRUE, scale = HalfT(scale = 2)))
     expect_is(object, "SpecDLMWithTrendRobustCovNoSeason")
@@ -713,7 +640,6 @@ test_that("checkPriorIsInformative works with SpecDLMWithTrendRobustCovNoSeason"
                                 scale = HalfT(scale = 2)),
                   covariates = Covariates(mean ~ has.policy,
                                           data = data,
-                                          intercept = Norm(sd = 10),
                                           coef = TDist(scale = 0.1)),
                   error = Error(robust = TRUE, scale = HalfT(scale = 2)))
     expect_identical(checkPriorIsInformative(object),
@@ -722,7 +648,6 @@ test_that("checkPriorIsInformative works with SpecDLMWithTrendRobustCovNoSeason"
                   trend = Trend(scale = HalfT(scale = 2)),
                   covariates = Covariates(mean ~ has.policy,
                                           data = data,
-                                          intercept = Norm(sd = 10),
                                           coef = TDist(scale = 0.1)),
                   error = Error(robust = TRUE, scale = HalfT(scale = 2)))
     expect_identical(checkPriorIsInformative(object),
@@ -732,16 +657,6 @@ test_that("checkPriorIsInformative works with SpecDLMWithTrendRobustCovNoSeason"
                                 scale = HalfT(scale = 2)),
                   covariates = Covariates(mean ~ has.policy,
                                           data = data,
-                                          coef = TDist(scale = 0.1)),
-                  error = Error(robust = TRUE, scale = HalfT(scale = 2)))
-    expect_identical(checkPriorIsInformative(object),
-                     "value for 'sd' not supplied in call to 'Norm' when specifying 'covariates' in call to 'DLM'")
-    object <- DLM(level = Level(scale = HalfT(scale = 2)),
-                  trend = Trend(initial = Initial(sd = 1),
-                                scale = HalfT(scale = 2)),
-                  covariates = Covariates(mean ~ has.policy,
-                                          data = data,
-                                          intercept = Norm(sd = 10),
                                           coef = TDist(scale = 0.1)),
                   error = Error(robust = TRUE))
     expect_identical(checkPriorIsInformative(object),
@@ -756,7 +671,6 @@ test_that("checkPriorIsInformative works with SpecDLMNoTrendRobustCovWithSeason"
                   trend = NULL,
                   covariates = Covariates(mean ~ has.policy,
                                           data = data,
-                                          intercept = Norm(sd = 10),
                                           coef = TDist(scale = 0.1)),
                   season = Season(n = 4, scale = HalfT(scale = 2)),
                   error = Error(robust = TRUE, scale = HalfT(scale = 2)))
@@ -767,7 +681,6 @@ test_that("checkPriorIsInformative works with SpecDLMNoTrendRobustCovWithSeason"
                   season = Season(n = 4, scale = HalfT(scale = 2)),
                   covariates = Covariates(mean ~ has.policy,
                                           data = data,
-                                          intercept = Norm(sd = 10),
                                           coef = TDist(scale = 0.1)),
                   error = Error(robust = TRUE, scale = HalfT(scale = 2)))
     expect_identical(checkPriorIsInformative(object),
@@ -777,7 +690,6 @@ test_that("checkPriorIsInformative works with SpecDLMNoTrendRobustCovWithSeason"
                   trend = NULL,
                   covariates = Covariates(mean ~ has.policy,
                                           data = data,
-                                          intercept = Norm(sd = 10),
                                           coef = TDist(scale = 0.1)),
                   error = Error(robust = TRUE, scale = HalfT(scale = 2)))
     expect_identical(checkPriorIsInformative(object),
@@ -786,8 +698,7 @@ test_that("checkPriorIsInformative works with SpecDLMNoTrendRobustCovWithSeason"
                   season = Season(n = 4, scale = HalfT(scale = 0.1)),
                   trend = NULL,
                   covariates = Covariates(mean ~ has.policy,
-                                          data = data,
-                                          intercept = Norm(sd = 10)),
+                                          data = data),
                   error = Error(robust = TRUE, scale = HalfT(scale = 2)))
     expect_identical(checkPriorIsInformative(object),
                      "value for 'scale' not supplied in call to 'TDist' when specifying 'covariates' in call to 'DLM'")
@@ -796,7 +707,6 @@ test_that("checkPriorIsInformative works with SpecDLMNoTrendRobustCovWithSeason"
                   trend = NULL,
                   covariates = Covariates(mean ~ has.policy,
                                           data = data,
-                                          intercept = Norm(sd = 10),
                                           coef = TDist(scale = 0.1)),
                   error = Error(robust = TRUE, scale = HalfT(scale = 2)))
     expect_identical(checkPriorIsInformative(object),
@@ -812,7 +722,6 @@ test_that("checkPriorIsInformative works with SpecDLMWithTrendRobustCovWithSeaso
                                 scale = HalfT(scale = 2)),
                   covariates = Covariates(mean ~ has.policy,
                                           data = data,
-                                          intercept = Norm(sd = 10),
                                           coef = TDist(scale = 0.1)),
                   season = Season(n = 4,
                                   scale = HalfT(scale = 2)),
@@ -825,7 +734,6 @@ test_that("checkPriorIsInformative works with SpecDLMWithTrendRobustCovWithSeaso
                                 scale = HalfT(scale = 2)),
                   covariates = Covariates(mean ~ has.policy,
                                           data = data,
-                                          intercept = Norm(sd = 10),
                                           coef = TDist(scale = 0.1)),
                   season = Season(n = 4,
                                   scale = HalfT(scale = 2)),
@@ -836,7 +744,6 @@ test_that("checkPriorIsInformative works with SpecDLMWithTrendRobustCovWithSeaso
                   trend = Trend(scale = HalfT(scale = 2)),
                   covariates = Covariates(mean ~ has.policy,
                                           data = data,
-                                          intercept = Norm(sd = 10),
                                           coef = TDist(scale = 0.1)),
                   season = Season(n = 4,
                                   scale = HalfT(scale = 2)),
@@ -846,7 +753,6 @@ test_that("checkPriorIsInformative works with SpecDLMWithTrendRobustCovWithSeaso
     object <- DLM(level = Level(scale = HalfT(scale = 2)),
                   covariates = Covariates(mean ~ has.policy,
                                           data = data,
-                                          intercept = Norm(sd = 10),
                                           coef = TDist(scale = 0.1)),
                   trend = Trend(initial = Initial(sd = 1),
                                 scale = HalfT(scale = 2)))
@@ -858,7 +764,6 @@ test_that("checkPriorIsInformative works with SpecDLMWithTrendRobustCovWithSeaso
                   season = Season(n = 4, scale = HalfT(mult = 3)),
                   covariates = Covariates(mean ~ has.policy,
                                           data = data,
-                                          intercept = Norm(sd = 10),
                                           coef = TDist(scale = 0.1)),
                   error = Error(robust = TRUE, scale = HalfT(scale = 2)))
     expect_identical(checkPriorIsInformative(object),
@@ -869,7 +774,6 @@ test_that("checkPriorIsInformative works with SpecDLMWithTrendRobustCovWithSeaso
                   season = Season(n = 4),
                   covariates = Covariates(mean ~ has.policy,
                                           data = data,
-                                          intercept = Norm(sd = 10),
                                           coef = TDist(scale = 0.1)),
                   error = Error(robust = TRUE, scale = HalfT(scale = 2)))
     expect_identical(checkPriorIsInformative(object),
@@ -958,7 +862,6 @@ if (FALSE) {
         covariates <- Covariates(mean ~ income + area,
                                  data = data,
                                  contrastsArg = list(area = diag(2)),
-                                 intercept = Norm(scale = 2),
                                  coef = HalfT(df = 4, scale = 2, max = 5))
         show(covariates)
     })

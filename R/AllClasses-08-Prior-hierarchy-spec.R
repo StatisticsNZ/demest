@@ -342,7 +342,7 @@ setClass("SpecICAR",
 
 #' A S4 class to specify a Known prior.
 #'
-#' An object of class \code{SpecExchFixed} specifies
+#' An object of class \code{SpecKnown} specifies
 #' a prior in which
 #'   parameter[j] ~ N(mean[j], sd[j]^2),
 #' where sd[j] can be 0. For details, see the documentation
@@ -371,9 +371,13 @@ setClass("SpecKnown",
                       "AlphaKnownMixin",
                       "MetadataMixin"))
 
+#' @rdname SpecKnown-class
+#' @export
 setClass("SpecKnownCertain",
          contains = "SpecKnown")
 
+#' @rdname SpecKnown-class
+#' @export
 setClass("SpecKnownUncertain",
          contains = c("SpecKnown",
                       "AKnownVecMixin"))
@@ -392,13 +396,21 @@ setClass("SpecKnownUncertain",
 #' \code{SpecMix} object.  The slots are not part of
 #' the API of the package, and may change in future.
 #'
+#' @slot AComponentWeightMix Scale for truncated half-t prior for
+#' \code{omegaComponentWeightMix}.
+#' @slot ALevelComponentWeightMix Scale for truncated half-t prior for
+#' \code{omegaLevelComponentWeightMix}.
+#' @slot AVectorsMix Scale for truncated half-t prior for
+#' \code{omegaVectorsMix}.
 #' @slot along The name of the "along" dimension.
 #' @slot indexClassMaxMix The maximum number of components that
 #' can be accommodated.
-#' @slot minLevelComponentWeight The lower bound for values of
-#' \code{levelComponentWeightMix}.
 #' @slot maxLevelComponentWeight The upper bound for values of
 #' \code{levelComponentWeightMix}.
+#' @slot maxPhi Maximum value for the damping parameter.
+#' @slot minLevelComponentWeight The lower bound for values of
+#' \code{levelComponentWeightMix}.
+#' @slot minPhi Minimum value for the damping parameter.
 #' @slot multComponentWeightMix Multiplier applied to the default
 #' value for \code{omegaComponentWeightMix}.
 #' @slot multLevelComponentWeightMix Multiplier applied to the default
@@ -411,27 +423,19 @@ setClass("SpecKnownUncertain",
 #' half-t prior for \code{omegaLevelComponentWeightMix}.
 #' @slot nuVectorsMix The degrees of freedom for the truncated
 #' half-t prior for \code{omegaVectorsMix}.
-#' @slot priorMeanLevelComponentWeightMix Mean for normal prior
-#' for \code{meanLevelComponentWeightMix}.
-#' @slot priorSDLevelComponentWeightMix Standard deviation for normal prior
-#' for \code{meanLevelComponentWeightMix}
-#' @slot AComponentWeightMix Scale for truncated half-t prior for
-#' \code{omegaComponentWeightMix}.
-#' @slot ALevelComponentWeightMix Scale for truncated half-t prior for
-#' \code{omegaLevelComponentWeightMix}.
-#' @slot AVectorsMix Scale for truncated half-t prior for
-#' \code{omegaVectorsMix}.
 #' @slot omegaComponentWeightMaxMix Upper limit for truncated half-t prior
 #' for \code{omegaComponentWeightMaxMix}.
 #' @slot omegaLevelComponentWeightMaxMix Upper limit for truncated half-t prior
 #' for \code{omegalevelComponentWeightMaxMix}.
-#' @slot omegaVectorsMix Upper limit for truncated half-t prior
+#' @slot omegaVectorsMaxMix Upper limit for truncated half-t prior
 #' for \code{omegaVectorsMix}.
 #' @slot phi Damping parameter.
 #' @slot phiKnown Whether the damping parameter is known.
 #' or is estimated from the data.
-#' @slot minPhi Minimum value for the damping parameter.
-#' @slot maxPhi Maximum value for the damping parameter.
+#' @slot priorMeanLevelComponentWeightMix Mean for normal prior
+#' for \code{meanLevelComponentWeightMix}.
+#' @slot priorSDLevelComponentWeightMix Standard deviation for normal prior
+#' for \code{meanLevelComponentWeightMix}
 #' @slot shape1Phi First 'sample size' parameter in beta
 #' prior for damping parameter.
 #' @slot shape2Phi Second 'sample size' parameter in beta

@@ -11,7 +11,12 @@ estimateAccount(account, systemModels, datasets, dataModels,
   outfile = NULL, nUpdateMax = 50, verbose = FALSE, useC = TRUE)
 }
 \arguments{
-\item{systemModels}{A list of objects of class \code{\linkS4class{SpecModel}}
+\item{account}{An object of class
+\code{\link[dembase:DemographicAccount-class]{DemographicAccount}},
+giving the initial values for the estimation of the account.}
+
+\item{systemModels}{A list of objects of class
+\code{\linkS4class{SpecModel}}
 specifying models for the demographic series.}
 
 \item{datasets}{A named list of objects of class
@@ -19,6 +24,19 @@ specifying models for the demographic series.}
 
 \item{dataModels}{A list of objects of class
 \code{\linkS4class{SpecModel}} specifying models for the datasets.}
+
+\item{concordances}{A named list of
+\code{\link[dembase:Concordance-class]{concordances}},
+which are applied to the series in the account before they are
+supplied to the corresponding data model.}
+
+\item{weights}{A named list of
+\code{\link[dembase:Counts-class]{Counts}} objects,
+providing weights for any Normal models among the system models.}
+
+\item{dominant}{Either \code{"Female"} (the default) or \code{"Male"}.
+Determines which sex is used to generate exposures in the system
+model for births.}
 
 \item{filename}{The name of a file where output is collected.}
 
@@ -50,9 +68,6 @@ printed at the end of the calculations.}
 \item{useC}{Logical.  If \code{TRUE} (the default), the calculations
 are done in C.  Setting \code{useC} to \code{FALSE} may be useful
 for debugging.}
-
-\item{y}{An object of class
-\code{\link[dembase:DemographicAccount-class]{DemographicAccount}}.}
 }
 \description{
 Infer the contents of a demographic account, and fit models

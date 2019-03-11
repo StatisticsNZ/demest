@@ -6588,11 +6588,13 @@ test_that("makeMCMCArgs works", {
     ans.obtained <- makeMCMCArgs(nBurnin = 1000,
                                  nSim = 1000,
                                  nChain = 5,
-                                 nThin = 10)
+                                 nThin = 10,
+                                 nCore = 4)
     ans.expected <- list(nBurnin = 1000L,
                          nSim = 1000L,
                          nChain = 5L,
-                         nThin = 10L)
+                         nThin = 10L,
+                         nCore = 4L)
     expect_identical(ans.obtained, ans.expected)
     ans.obtained <- makeMCMCArgs(nBurnin = 0,
                                  nSim = 1,
@@ -6601,7 +6603,8 @@ test_that("makeMCMCArgs works", {
     ans.expected <- list(nBurnin = 0L,
                          nSim = 1L,
                          nChain = 1L,
-                         nThin = 1L)
+                         nThin = 1L,
+                         nCore = 1L)
     expect_identical(ans.obtained, ans.expected)
     ans.obtained <- makeMCMCArgs(nBurnin = 0,
                                  nSim = 0,
@@ -6610,7 +6613,8 @@ test_that("makeMCMCArgs works", {
     ans.expected <- list(nBurnin = 0L,
                          nSim = 0L,
                          nChain = 1L,
-                         nThin = 1L)
+                         nThin = 1L,
+                         nCore = 1L)
     expect_identical(ans.obtained, ans.expected)
     ## length 1
     expect_error(makeMCMCArgs(nBurnin = 1:2, nSim = 1000, nChain = 5, nThin = 2),

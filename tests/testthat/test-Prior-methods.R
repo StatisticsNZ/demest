@@ -185,7 +185,7 @@ test_that("describePrior works with remaining priors", {
     describePrior <- demest:::describePrior
     x <- new("KnownCertain")
     expect_identical(describePrior(x),
-                     "Known"),
+                     "Known values")
     x <- new("KnownUncertain")
     expect_identical(describePrior(x),
                      "Normal with known mean and variance")
@@ -411,7 +411,6 @@ test_that("drawPrior works with ExchNormCov", {
     spec <- Exch(covariates = Covariates(formula = formula,
                                          data = data,
                                          contrastsArg = list(cat = diag(3)),
-                                         intercept = Norm(sd = 3),
                                          coef = TDist(scale = 0.3)),
                  error = Error(scale = HalfT(scale = 0.1)))
     beta <- rnorm(10)
@@ -433,13 +432,13 @@ test_that("drawPrior works with ExchNormCov", {
         ans.obtained <- drawPrior(prior)
         set.seed(seed)
         ans.expected <- prior
-        ans.expected@tau@.Data <- rhalft(n = 1,
-                                         df = ans.expected@nuTau@.Data,
-                                         scale = ans.expected@ATau@.Data)
+        ans.expected@tau@.Data <- rhalftTrunc1(df = ans.expected@nuTau@.Data,
+                                               scale = ans.expected@ATau@.Data,
+                                               max = ans.expected@tauMax@.Data)
         for (i in seq_len(ans.expected@P@.Data - 1))
             ans.expected@UEtaCoef@.Data[i] <- rinvchisq1(df = ans.expected@nuEtaCoef@.Data[i],
                                                          scaleSq = ans.expected@AEtaCoef@.Data[i]^2)
-        ans.expected@eta@.Data[1] <- rnorm(n = 1, sd = ans.expected@AEtaIntercept@.Data)
+        ans.expected@eta@.Data[1L] <- 0
         for (i in seq_len(ans.expected@P@.Data - 1))
             ans.expected@eta@.Data[i+1] <- rnorm(n = 1,
                                                  mean = ans.expected@meanEtaCoef@.Data[i],
@@ -462,7 +461,6 @@ test_that("R and C versions of drawPrior give same answer with ExchNormCov", {
     spec <- Exch(covariates = Covariates(formula = formula,
                                          data = data,
                                          contrastsArg = list(cat = diag(3)),
-                                         intercept = Norm(sd = 3),
                                          coef = TDist(scale = 0.3)),
                  error = Error(scale = HalfT(scale = 0.1)))
     beta <- rnorm(10)
@@ -506,7 +504,6 @@ test_that("drawPrior works with ExchRobustCov", {
     spec <- Exch(covariates = Covariates(formula = formula,
                                          data = data,
                                          contrastsArg = list(cat = diag(3)),
-                                         intercept = Norm(sd = 3),
                                          coef = TDist(scale = 0.3)),
                  error = Error(robust = TRUE, scale = HalfT(scale = 0.1)))
     beta <- rnorm(10)
@@ -528,16 +525,16 @@ test_that("drawPrior works with ExchRobustCov", {
         ans.obtained <- drawPrior(prior)
         set.seed(seed)
         ans.expected <- prior
-        ans.expected@tau@.Data <- rhalft(n = 1,
-                                         df = prior@nuTau@.Data,
-                                         scale = prior@ATau@.Data)
+        ans.expected@tau@.Data <- rhalftTrunc1(df = prior@nuTau@.Data,
+                                               scale = prior@ATau@.Data,
+                                               max = prior@tauMax@.Data)
         for (i in seq_len(ans.expected@J@.Data))
             ans.expected@UBeta@.Data[i] <- rinvchisq1(df = ans.expected@nuBeta@.Data,
                                                       scaleSq = ans.expected@tau@.Data^2)
         for (i in seq_len(ans.expected@P@.Data - 1))
             ans.expected@UEtaCoef@.Data[i] <- rinvchisq1(df = ans.expected@nuEtaCoef@.Data[i],
                                                          scaleSq = ans.expected@AEtaCoef@.Data[i]^2)
-        ans.expected@eta@.Data[1] <- rnorm(n = 1, sd = prior@AEtaIntercept@.Data)
+        ans.expected@eta@.Data[1] <- 0
         for (i in seq_len(ans.expected@P@.Data - 1))
             ans.expected@eta@.Data[i+1] <- rnorm(n = 1,
                                                  mean = ans.expected@meanEtaCoef@.Data[i],
@@ -560,7 +557,6 @@ test_that("R and C versions of drawPrior give same answer with ExchRobustCov", {
     spec <- Exch(covariates = Covariates(formula = formula,
                                          data = data,
                                          contrastsArg = list(cat = diag(3)),
-                                         intercept = Norm(sd = 3),
                                          coef = TDist(scale = 0.3)),
                  error = Error(robust = TRUE,
                                scale = HalfT(scale = 0.1)))
@@ -969,7 +965,6 @@ test_that("drawPrior works with DLMNoTrendNormCovNoSeason", {
                 covariates = Covariates(formula = formula,
                                         data = data,
                                         contrastsArg = list(cat = diag(3)),
-                                        intercept = Norm(sd = 3),
                                         coef = TDist(scale = 0.3)),
                 error = Error(scale = HalfT(scale = 0.1)))
     beta <- rnorm(10)
@@ -1021,7 +1016,6 @@ test_that("R and C versions of drawPrior give same answer with DLMNoTrendNormCov
                 covariates = Covariates(formula = formula,
                                         data = data,
                                         contrastsArg = list(cat = diag(3)),
-                                        intercept = Norm(sd = 3),
                                         coef = TDist(scale = 0.3)),
                 error = Error(scale = HalfT(scale = 0.1)))
     beta <- rnorm(10)
@@ -1078,7 +1072,6 @@ test_that("drawPrior works with DLMWithTrendNormCovNoSeason", {
                 covariates = Covariates(formula = formula,
                                         data = data,
                                         contrastsArg = list(cat = diag(3)),
-                                        intercept = Norm(sd = 3),
                                         coef = TDist(scale = 0.3)),
                 error = Error(scale = HalfT(scale = 0.1)))
     beta <- rnorm(10)
@@ -1132,7 +1125,6 @@ test_that("R and C versions of drawPrior give same answer with DLMWithTrendNormC
                 covariates = Covariates(formula = formula,
                                         data = data,
                                         contrastsArg = list(cat = diag(3)),
-                                        intercept = Norm(sd = 3),
                                         coef = TDist(scale = 0.3)),
                 error = Error(scale = HalfT(scale = 0.1)))
     beta <- rnorm(10)
@@ -1190,7 +1182,6 @@ test_that("drawPrior works with DLMNoTrendNormCovWithSeason", {
                 covariates = Covariates(formula = formula,
                                         data = data,
                                         contrastsArg = list(cat = diag(3)),
-                                        intercept = Norm(sd = 3),
                                         coef = TDist(scale = 0.3)),
                 error = Error(scale = HalfT(scale = 0.1)))
     beta <- rnorm(10)
@@ -1245,7 +1236,6 @@ test_that("R and C versions of drawPrior give same answer with DLMNoTrendNormCov
                 covariates = Covariates(formula = formula,
                                         data = data,
                                         contrastsArg = list(cat = diag(3)),
-                                        intercept = Norm(sd = 3),
                                         coef = TDist(scale = 0.3)),
                 error = Error(scale = HalfT(scale = 0.1)))
     beta <- rnorm(10)
@@ -1305,7 +1295,6 @@ test_that("drawPrior works with DLMWithTrendNormCovWithSeason", {
                 covariates = Covariates(formula = formula,
                                         data = data,
                                         contrastsArg = list(cat = diag(3)),
-                                        intercept = Norm(sd = 3),
                                         coef = TDist(scale = 0.3)),
                 error = Error(scale = HalfT(scale = 0.1)))
     beta <- rnorm(10)
@@ -1362,7 +1351,6 @@ test_that("R and C versions of drawPrior give same answer with DLMWithTrendNormC
                 covariates = Covariates(formula = formula,
                                         data = data,
                                         contrastsArg = list(cat = diag(3)),
-                                        intercept = Norm(sd = 3),
                                         coef = TDist(scale = 0.3)),
                 error = Error(scale = HalfT(scale = 0.1)))
     beta <- rnorm(10)
@@ -1782,7 +1770,6 @@ test_that("drawPrior works with DLMNoTrendRobustCovNoSeason", {
                 covariates = Covariates(formula = formula,
                                         data = data,
                                         contrastsArg = list(cat = diag(3)),
-                                        intercept = Norm(sd = 3),
                                         coef = TDist(scale = 0.3)),
                 error = Error(robust = TRUE, scale = HalfT(scale = 0.1)))
     beta <- rnorm(10)
@@ -1835,7 +1822,6 @@ test_that("R and C versions of drawPrior give same answer with DLMNoTrendRobustC
                 covariates = Covariates(formula = formula,
                                         data = data,
                                         contrastsArg = list(cat = diag(3)),
-                                        intercept = Norm(sd = 3),
                                         coef = TDist(scale = 0.3)),
                 error = Error(robust = TRUE, scale = HalfT(scale = 0.1)))
     beta <- rnorm(10)
@@ -1893,7 +1879,6 @@ test_that("drawPrior works with DLMWithTrendRobustCovNoSeason", {
                 covariates = Covariates(formula = formula,
                                         data = data,
                                         contrastsArg = list(cat = diag(3)),
-                                        intercept = Norm(sd = 3),
                                         coef = TDist(scale = 0.3)),
                 error = Error(robust = TRUE, scale = HalfT(scale = 0.1)))
     beta <- rnorm(10)
@@ -1948,7 +1933,6 @@ test_that("R and C versions of drawPrior give same answer with DLMWithTrendRobus
                 covariates = Covariates(formula = formula,
                                         data = data,
                                         contrastsArg = list(cat = diag(3)),
-                                        intercept = Norm(sd = 3),
                                         coef = TDist(scale = 0.3)),
                 error = Error(robust = TRUE, scale = HalfT(scale = 0.1)))
     beta <- rnorm(10)
@@ -2007,7 +1991,6 @@ test_that("drawPrior works with DLMNoTrendRobustCovWithSeason", {
                 covariates = Covariates(formula = formula,
                                         data = data,
                                         contrastsArg = list(cat = diag(3)),
-                                        intercept = Norm(sd = 3),
                                         coef = TDist(scale = 0.3)),
                 error = Error(robust = TRUE, scale = HalfT(scale = 0.1)))
     beta <- rnorm(10)
@@ -2063,7 +2046,6 @@ test_that("R and C versions of drawPrior give same answer with DLMNoTrendRobustC
                 covariates = Covariates(formula = formula,
                                         data = data,
                                         contrastsArg = list(cat = diag(3)),
-                                        intercept = Norm(sd = 3),
                                         coef = TDist(scale = 0.3)),
                 error = Error(robust = TRUE, scale = HalfT(scale = 0.1)))
     beta <- rnorm(10)
@@ -2124,7 +2106,6 @@ test_that("drawPrior works with DLMWithTrendRobustCovWithSeason", {
                 covariates = Covariates(formula = formula,
                                         data = data,
                                         contrastsArg = list(cat = diag(3)),
-                                        intercept = Norm(sd = 3),
                                         coef = TDist(scale = 0.3)),
                 error = Error(robust = TRUE, scale = HalfT(scale = 0.1)))
     beta <- rnorm(10)
@@ -2182,7 +2163,6 @@ test_that("R and C versions of drawPrior give same answer with DLMWithTrendRobus
                 covariates = Covariates(formula = formula,
                                         data = data,
                                         contrastsArg = list(cat = diag(3)),
-                                        intercept = Norm(sd = 3),
                                         coef = TDist(scale = 0.3)),
                 error = Error(robust = TRUE, scale = HalfT(scale = 0.1)))
     beta <- rnorm(10)
@@ -2438,7 +2418,7 @@ test_that("makeOutputPrior works with ExchNormZero", {
     expect_identical(ans.obtained, ans.expected)
 })
 
-test_that("makeOutputPrior works with ExchCovZero", {
+test_that("makeOutputPrior works with ExchNormCov", {
     makeOutputPrior <- demest:::makeOutputPrior
     initialPrior <- demest:::initialPrior
     Skeleton <- demest:::Skeleton
@@ -2472,7 +2452,6 @@ test_that("makeOutputPrior works with ExchCovZero", {
                                     first = 3L,
                                     last = 5L,
                                     metadata = metadata.coef),
-                         scaleIntercept = prior@AEtaIntercept@.Data,
                          meanCoef = prior@meanEtaCoef@.Data,
                          dfCoef = prior@nuEtaCoef@.Data,
                          scaleCoef = prior@AEtaCoef@.Data,
@@ -2547,8 +2526,7 @@ test_that("makeOutputPrior works with ExchRobustCov", {
                              first = 3L,
                              last = 5L,
                              metadata = metadata.coef),
-                         scaleIntercept = prior@AEtaIntercept@.Data,
-                         meanCoef = prior@meanEtaCoef@.Data,
+                           meanCoef = prior@meanEtaCoef@.Data,
                          dfCoef = prior@nuEtaCoef@.Data,
                          scaleCoef = prior@AEtaCoef@.Data,
                          dfError = prior@nuBeta@.Data,
@@ -2989,7 +2967,6 @@ test_that("makeOutputPrior works with DLMNoTrendNormCovNoSeason", {
                                     first = 16L,
                                     last = 18L,
                                     metadata = metadata.coef),
-                         scaleIntercept = prior@AEtaIntercept@.Data,
                          meanCoef = prior@meanEtaCoef@.Data,
                          dfCoef = prior@nuEtaCoef@.Data,
                          scaleCoef = prior@AEtaCoef@.Data,
@@ -3064,7 +3041,6 @@ test_that("makeOutputPrior works with DLMWithTrendNormCovNoSeason", {
                                     first = 28L,
                                     last = 30L,
                                     metadata = metadata.coef),
-                         scaleIntercept = prior@AEtaIntercept@.Data,
                          meanCoef = prior@meanEtaCoef@.Data,
                          dfCoef = prior@nuEtaCoef@.Data,
                          scaleCoef = prior@AEtaCoef@.Data,
@@ -3128,7 +3104,6 @@ test_that("makeOutputPrior works with DLMWithTrendNormCovNoSeason", {
                                     first = 28L,
                                     last = 30L,
                                     metadata = metadata.coef), 
-                         scaleIntercept = prior@AEtaIntercept@.Data,
                          meanCoef = prior@meanEtaCoef@.Data,
                          dfCoef = prior@nuEtaCoef@.Data,
                          scaleCoef = prior@AEtaCoef@.Data,
@@ -3213,7 +3188,6 @@ test_that("makeOutputPrior works with DLMNoTrendNormCovWithSeason", {
                                     first = 61L,
                                     last = 63L,
                                     metadata = metadata.coef),
-                         scaleIntercept = prior@AEtaIntercept@.Data,
                          meanCoef = prior@meanEtaCoef@.Data,
                          dfCoef = prior@nuEtaCoef@.Data,
                          scaleCoef = prior@AEtaCoef@.Data,
@@ -3310,7 +3284,6 @@ test_that("makeOutputPrior works with DLMWithTrendNormCovWithSeason", {
                                     first = 73L,
                                     last = 75L,
                                     metadata = metadata.coef),
-                         scaleIntercept = prior@AEtaIntercept@.Data,
                          meanCoef = prior@meanEtaCoef@.Data,
                          dfCoef = prior@nuEtaCoef@.Data,
                          scaleCoef = prior@AEtaCoef@.Data,
@@ -3396,7 +3369,6 @@ test_that("makeOutputPrior works with DLMWithTrendNormCovWithSeason", {
                                     first = 73L,
                                     last = 75L,
                                     metadata = metadata.coef),
-                         scaleIntercept = prior@AEtaIntercept@.Data,
                          meanCoef = prior@meanEtaCoef@.Data,
                          dfCoef = prior@nuEtaCoef@.Data,
                          scaleCoef = prior@AEtaCoef@.Data,
@@ -3843,7 +3815,6 @@ test_that("makeOutputPrior works with DLMNoTrendRobustCovNoSeason", {
                                     first = 16L,
                                     last = 18L,
                                     metadata = metadata.coef),
-                         scaleIntercept = prior@AEtaIntercept@.Data,
                          meanCoef = prior@meanEtaCoef@.Data,
                          dfCoef = prior@nuEtaCoef@.Data,
                          scaleCoef = prior@AEtaCoef@.Data,
@@ -3920,7 +3891,6 @@ test_that("makeOutputPrior works with DLMWithTrendRobustCovNoSeason", {
                                     first = 28L,
                                     last = 30L,
                                     metadata = metadata.coef),
-                         scaleIntercept = prior@AEtaIntercept@.Data,
                          meanCoef = prior@meanEtaCoef@.Data,
                          dfCoef = prior@nuEtaCoef@.Data,
                          scaleCoef = prior@AEtaCoef@.Data,
@@ -3986,7 +3956,6 @@ test_that("makeOutputPrior works with DLMWithTrendRobustCovNoSeason", {
                                     first = 28L,
                                     last = 30L,
                                     metadata = metadata.coef),
-                         scaleIntercept = prior@AEtaIntercept@.Data,
                          meanCoef = prior@meanEtaCoef@.Data,
                          dfCoef = prior@nuEtaCoef@.Data,
                          scaleCoef = prior@AEtaCoef@.Data,
@@ -4073,7 +4042,6 @@ test_that("makeOutputPrior works with DLMNoTrendRobustCovWithSeason", {
                                     first = 61L,
                                     last = 63L,
                                     metadata = metadata.coef),
-                         scaleIntercept = prior@AEtaIntercept@.Data,
                          meanCoef = prior@meanEtaCoef@.Data,
                          dfCoef = prior@nuEtaCoef@.Data,
                          scaleCoef = prior@AEtaCoef@.Data,
@@ -4172,7 +4140,6 @@ test_that("makeOutputPrior works with DLMWithTrendRobustCovWithSeason", {
                                     first = 73L,
                                     last = 75L,
                                     metadata = metadata.coef),
-                         scaleIntercept = prior@AEtaIntercept@.Data,
                          meanCoef = prior@meanEtaCoef@.Data,
                          dfCoef = prior@nuEtaCoef@.Data,
                          scaleCoef = prior@AEtaCoef@.Data,
@@ -4260,7 +4227,6 @@ test_that("makeOutputPrior works with DLMWithTrendRobustCovWithSeason", {
                                     first = 73L,
                                     last = 75L,
                                     metadata = metadata.coef),
-                         scaleIntercept = prior@AEtaIntercept@.Data,
                          meanCoef = prior@meanEtaCoef@.Data,
                          dfCoef = prior@nuEtaCoef@.Data,
                          scaleCoef = prior@AEtaCoef@.Data,

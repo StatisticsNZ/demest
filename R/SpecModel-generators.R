@@ -1,33 +1,4 @@
 
-
-#' @export
-CMP <- function(formula, dispersion = Dispersion(), useExpose = TRUE,
-                structuralZeros = NULL, boxcox = 0) {
-    ## formula
-    checkFormulaMu(formula)
-    checkForMarginalTerms(formula)
-    ## dispersion
-    if (!methods::is(dispersion, "Dispersion"))
-        stop(gettextf("'%s' has class \"%s\"",
-                      dispersion, class(dispersion)))
-    meanLogNuCMP <- dispersion@meanLogNuCMP
-    sdLogNuCMP <- dispersion@sdLogNuCMP
-    ## useExpose
-    useExpose <- checkAndTidyLogicalFlag(x = useExpose,
-                                         name = "useExpose")
-    ## structural zeros
-    structuralZeros <- checkAndTidyStructuralZeros(structuralZeros)
-    methods::new("SpecLikelihoodCMP",
-                 formulaMu = formula,
-                 meanLogNuCMP = meanLogNuCMP,
-                 sdLogNuCMP = sdLogNuCMP,
-                 useExpose = useExpose,
-                 boxCoxParam = boxcox,
-                 structuralZeros = structuralZeros)
-}
-
-
-
 #' Specify the prior for the dispersion parameter in a CMP model.
 #'
 #' Specify the prior for the dispersion parameter (often denoted
@@ -71,6 +42,14 @@ Dispersion <- function(mean = 0, sd = 1) {
 #' \deqn{y_i \sim Poisson(\gamma_i)}
 #' \deqn{log(\gamma_i) \sim N(x_i \beta, \sigma_i),}
 #'
+#' \deqn{y_i \sim CMP(\gamma_i n_i, \nu_i)}
+#' \deqn{log(\gamma_i) \sim N(x_i \beta, \sigma_i),}
+#' \deqn{log(\nu_i) \sim N(m, s^2)}
+#'
+#' \deqn{y_i \sim CMP(\gamma_i, \nu_i)}
+#' \deqn{log(\gamma_i) \sim N(x_i \beta, \sigma_i),}
+#' \deqn{log(\nu_i) \sim N(m, s^2)}
+#' 
 #' \deqn{y_i \sim binomial(n_i, \gamma_i)}
 #' \deqn{logit(\gamma_i) \sim N(x_i \beta, \sigma_i),}
 #' or
@@ -81,7 +60,8 @@ Dispersion <- function(mean = 0, sd = 1) {
 #' such as an array with dimensions age, sex, and time.  In
 #' Poisson and binomial models, \eqn{y_i} is a count.
 #' The \eqn{n_i} term is an exposure in the case of Poisson
-#' models and a sample size in the case of binomial models.
+#' and CMP (COMPoisson) models and a
+#' sample size in the case of binomial models.
 #' It is not supplied in calls to function \code{Poisson}
 #' or \code{Binomial}.  In normal models \eqn{y_i}
 #' is a cell-specific value such as a mean,
@@ -147,6 +127,12 @@ Dispersion <- function(mean = 0, sd = 1) {
 #' @param structuralZeros Location of any structural zeros
 #' in the data. An object of class \code{\link[dembase:Values-class]{Values}},
 #' or, for the typical case, the word \code{"diag"}.
+#' @param boxcox Parameter determining transformation of rates
+#' or counts used in Poisson or CMP models. Defaults to 0,
+#' implying that a log transform is used.
+#' @param dispersion The dispersion parameter for a CMP model.
+#' An object of class \code{\linkS4class{Dispersion}},
+#' typically created by a call to function \code{\link{Dispersion}}.
 #'
 #' @return An object of class \code{\linkS4class{SpecLikelihood}}.
 #'
@@ -209,6 +195,33 @@ Poisson <- function(formula, useExpose = TRUE, structuralZeros = NULL,
                  useExpose = useExpose,
                  structuralZeros = structuralZeros,
                  boxCoxParam = boxcox)
+}
+
+#' @rdname likelihood
+#' @export
+CMP <- function(formula, dispersion = Dispersion(), useExpose = TRUE,
+                structuralZeros = NULL, boxcox = 0) {
+    ## formula
+    checkFormulaMu(formula)
+    checkForMarginalTerms(formula)
+    ## dispersion
+    if (!methods::is(dispersion, "Dispersion"))
+        stop(gettextf("'%s' has class \"%s\"",
+                      dispersion, class(dispersion)))
+    meanLogNuCMP <- dispersion@meanLogNuCMP
+    sdLogNuCMP <- dispersion@sdLogNuCMP
+    ## useExpose
+    useExpose <- checkAndTidyLogicalFlag(x = useExpose,
+                                         name = "useExpose")
+    ## structural zeros
+    structuralZeros <- checkAndTidyStructuralZeros(structuralZeros)
+    methods::new("SpecLikelihoodCMP",
+                 formulaMu = formula,
+                 meanLogNuCMP = meanLogNuCMP,
+                 sdLogNuCMP = sdLogNuCMP,
+                 useExpose = useExpose,
+                 boxCoxParam = boxcox,
+                 structuralZeros = structuralZeros)
 }
 
 ## HAS_TESTS
@@ -509,7 +522,8 @@ TFixed <- function(location, scale, df = 7, useExpose = TRUE) {
 #' The likelihood and, if the model has a second level,
 #' main effects and interactions from that level, are
 #' specified via functions such as \code{\link{Poisson}},
-#' \code{\link{Binomial}}, \code{\link{Normal}}, or
+#' \code{\link{CMP}}, \code{\link{Binomial}},
+#' \code{\link{Normal}}, or
 #' \code{\link{PoissonBinomial}}.  \code{Model} is used
 #' to specify the remaining parts of the model.
 #'
@@ -713,7 +727,7 @@ PoissonBinomial <- function(prob) {
 #'
 #' The model is useful for analysing data that have been
 #' confidentialised to base 3. It is used as a data model
-#' in calls to \code{\link{estimateCount}}, and
+#' in calls to \code{\link{estimateCounts}}, and
 #' \code{\link{estimateAccount}}.
 #'
 #' @return An object of class \code{\linkS4class{SpecLikelihood}}.
@@ -1326,9 +1340,12 @@ setMethod("SpecModel",
 #' @param weights An object of class \code{\linkS4class{Counts}} holding
 #' weights to be used when aggregating. Optional.
 #' @param concordances A named list of objects of class
-#' \code{\link[dembase]{ManyToOne}}.
+#' \code{\link[dembase:ManyToOne-class]{ManyToOne}}.
 #' @param FUN A function taking arguments called \code{x} and \code{weights}
 #' and returning a single number.  See below for details.
+#' @param ax An object of class 
+#' \code{\link[dembase:DemographicArray-class]{Values}} holding estimated
+#' separation factors. Optional.
 #' @param jump The standard deviation of the proposal density used in
 #' Metropolis-Hastings updates.
 #'

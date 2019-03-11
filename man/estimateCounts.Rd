@@ -28,6 +28,11 @@ the datasets and counts.}
 \item{datasets}{A named list of objects of class
 \code{\link[dembase:DemographicArray-class]{Counts}}.}
 
+\item{concordances}{A named list of
+\code{\link[dembase:Concordance-class]{concordances}},
+which are applied to \code{y} before it is supplied to
+the corresponding data model.}
+
 \item{filename}{The name of a file where output is collected.}
 
 \item{nBurnin}{Number of iteration discarded before recording begins.}

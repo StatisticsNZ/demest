@@ -19,8 +19,6 @@ covariates specified by \code{formula}. Defaults to \code{FALSE}.}
 or names of contrasts functions.}
 
 \item{coef}{An object of class \code{\link{TDist}}.}
-
-\item{intercept}{An object of class \code{\linkS4class{Norm}}.}
 }
 \value{
 An object of class \code{\linkS4class{Covariates}}
@@ -91,8 +89,6 @@ scale parameters that determine the degree to which coefficient estimates
 are shrunk towards 0.  The rules for choosing default values for the scale
 parameters are described in the' documentation for \code{\link{HalfT}}.
 Shrinking coefficient' estimates towards 0 protects against over-fitting.
-
-The intercept term is assumed to have a diffuse normal distribution.
 
 The help for \code{\link[stats]{model.matrix}} contains a discussion of
 contrasts.  With Bayesian models that have informative priors, such as the

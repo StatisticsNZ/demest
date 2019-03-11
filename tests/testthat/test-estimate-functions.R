@@ -1009,37 +1009,37 @@
 
 
 
-population <- CountsOne(values = seq(100, 200, 10),
-                        labels = seq(2000, 2100, 10),
-                        name = "time")
-births <- CountsOne(values = rpois(n = 10, lambda = 15),
-                    labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10
-                                                            ), sep = "-"),
-                    name = "time")
-deaths <- CountsOne(values = rpois(n = 10, lambda = 5),
-                    labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
-                    name = "time")
-account <- Movements(population = population,
-                     births = births,
-                     exits = list(deaths = deaths))
-systemModels <- list(Model(population ~ Poisson(mean ~ time, useExpose = FALSE)),
-                     Model(births ~ Poisson(mean ~ 1)),
-                     Model(deaths ~ Poisson(mean ~ 1)))
-datasets <- list(tax = Counts(array(7L,
-                                    dim = 10,
-                                    dimnames = list(time = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-")))),
-                 census = Counts(array(seq.int(110L, 210L, 10L),
-                                       dim = 11,
-                                       dimnames = list(time = seq(2000, 2100, 10)))))
-dataModels <- list(Model(tax ~ CMP(mean ~ 1), series = "deaths"),
-                   Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
-filename <- tempfile()
-estimateAccount(account = account,
-                systemModels = systemModels,
-                dataModels = dataModels,
-                datasets = datasets,
-                filename = filename,
-                nBurnin = 1,
-                nSim = 2,
-                nChain = 4,
-                nThin = 1)
+## population <- CountsOne(values = seq(100, 200, 10),
+##                         labels = seq(2000, 2100, 10),
+##                         name = "time")
+## births <- CountsOne(values = rpois(n = 10, lambda = 15),
+##                     labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10
+##                                                             ), sep = "-"),
+##                     name = "time")
+## deaths <- CountsOne(values = rpois(n = 10, lambda = 5),
+##                     labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
+##                     name = "time")
+## account <- Movements(population = population,
+##                      births = births,
+##                      exits = list(deaths = deaths))
+## systemModels <- list(Model(population ~ Poisson(mean ~ time, useExpose = FALSE)),
+##                      Model(births ~ Poisson(mean ~ 1)),
+##                      Model(deaths ~ Poisson(mean ~ 1)))
+## datasets <- list(tax = Counts(array(7L,
+##                                     dim = 10,
+##                                     dimnames = list(time = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-")))),
+##                  census = Counts(array(seq.int(110L, 210L, 10L),
+##                                        dim = 11,
+##                                        dimnames = list(time = seq(2000, 2100, 10)))))
+## dataModels <- list(Model(tax ~ CMP(mean ~ 1), series = "deaths"),
+##                    Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
+## filename <- tempfile()
+## estimateAccount(account = account,
+##                 systemModels = systemModels,
+##                 dataModels = dataModels,
+##                 datasets = datasets,
+##                 filename = filename,
+##                 nBurnin = 1,
+##                 nSim = 2,
+##                 nChain = 2,
+##                 nThin = 1)

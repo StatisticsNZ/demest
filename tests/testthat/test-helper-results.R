@@ -703,7 +703,7 @@ test_that("makeResultsModelEst works with valid input", {
                                                      weights = NULL))
     filename <- "filename"
     call <- call("estimateModel", list("model"))
-    mcmcArgs <- list(nBurnin = 1000L, nSim = 1000L, nChain = 3L, nThin = 20L)
+    mcmcArgs <- list(nBurnin = 1000L, nSim = 1000L, nChain = 3L, nThin = 20L, nCore = 3L)
     lengthIter <- length(extractValues(finalCombineds[[1L]]))
     controlArgs <- list(call = call,
                         parallel = TRUE,
@@ -731,7 +731,7 @@ test_that("makeResultsModelEst works with valid input", {
     names(finalCombineds) <- c("chain1", "chain2", "chain3")
     filename <- "filename"
     call <- call("estimateModel", list("model"))
-    mcmcArgs <- list(nBurnin = 1000L, nSim = 1000L, nChain = 3L, nThin = 20L)
+    mcmcArgs <- list(nBurnin = 1000L, nSim = 1000L, nChain = 3L, nThin = 20L, nCore = 3L)
     lengthIter <- length(extractValues(finalCombineds[[1L]]))
     controlArgs <- list(call = call,
                         parallel = TRUE,
@@ -757,7 +757,7 @@ test_that("makeResultsModelEst works with valid input", {
                                                      weights = NULL))
     filename <- "filename"
     call <- call("estimateModel", list("model"))
-    mcmcArgs <- list(nBurnin = 1000L, nSim = 1000L, nChain = 3L, nThin = 20L)
+    mcmcArgs <- list(nBurnin = 1000L, nSim = 1000L, nChain = 3L, nThin = 20L, nCore = 3L)
     lengthIter <- length(extractValues(finalCombineds[[1L]]))
     controlArgs <- list(call = call,
                         parallel = FALSE,
@@ -783,7 +783,7 @@ test_that("makeResultsModelEst works with valid input", {
                                                      weights = NULL))
     filename <- "filename"
     call <- call("estimateModel", list("model"))
-    mcmcArgs <- list(nBurnin = 1000L, nSim = 1000L, nChain = 3L, nThin = 20L)
+    mcmcArgs <- list(nBurnin = 1000L, nSim = 1000L, nChain = 3L, nThin = 20L, nCore = 3L)
     lengthIter <- length(extractValues(finalCombineds[[1L]]))
     controlArgs <- list(call = call,
                         parallel = TRUE,
@@ -987,7 +987,7 @@ test_that("makeResultsCounts works with no exposure", {
                                                       transforms = transforms))
     filename <- "filename"
     call <- call("estimateCounts", list("model"))
-    mcmcArgs <- list(nBurnin = 1000L, nSim = 1000L, nChain = 3L, nThin = 20L)
+    mcmcArgs <- list(nBurnin = 1000L, nSim = 1000L, nChain = 3L, nThin = 20L, nCore = 3L)
     lengthIter <- length(extractValues(finalCombineds[[1L]]))
     controlArgs <- list(call = call,
                         parallel = TRUE,
@@ -1036,7 +1036,7 @@ test_that("makeResultsCounts works with exposure", {
                                                       transforms = transforms))
     filename <- "filename"
     call <- call("estimateCounts", list("model"))
-    mcmcArgs <- list(nBurnin = 1000L, nSim = 1000L, nChain = 3L, nThin = 20L)
+    mcmcArgs <- list(nBurnin = 1000L, nSim = 1000L, nChain = 3L, nThin = 20L, nCore = 3L)
     lengthIter <- length(extractValues(finalCombineds[[1L]]))
     controlArgs <- list(call = call,
                         parallel = TRUE,
@@ -1097,7 +1097,7 @@ test_that("makeResultsAccount works", {
                                                        transforms = transforms))
     filename <- "filename"
     call <- call("estimateAccount", list("model"))
-    mcmcArgs <- list(nBurnin = 1000L, nSim = 1000L, nChain = 3L, nThin = 20L)
+    mcmcArgs <- list(nBurnin = 1000L, nSim = 1000L, nChain = 3L, nThin = 20L, nCore = 3L)
     lengthIter <- length(extractValues(finalCombineds[[1L]]))
     controlArgs <- list(call = call,
                         parallel = TRUE,
