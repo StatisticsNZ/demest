@@ -193,6 +193,10 @@ setGeneric("drawCombined",
            function(object, nUpdate = 1L, useC = FALSE, useSpecific = FALSE)
                standardGeneric("drawCombined"))
 
+setGeneric("drawDataModels",
+           function(combined)
+               standardGeneric("drawDataModels"))
+
 setGeneric("drawHyperParam",
            function(model) {
                model
@@ -209,6 +213,10 @@ setGeneric("drawModelUseExp",
 setGeneric("drawPrior",
            function(prior, useC = FALSE, useSpecific = FALSE)
                standardGeneric("drawPrior"))
+
+setGeneric("drawSystemModels",
+           function(combined)
+               standardGeneric("drawSystemModels"))
 
 setGeneric("drawYNonSampled",
            function(filename, model, nonsampled, iterations)
@@ -348,7 +356,14 @@ setGeneric("initialCombinedAccount",
                     dataModels, seriesIndices, 
                     datasets, namesDatasets, transforms,
                     dominant = c("Female", "Male"))
-           standardGeneric("initialCombinedAccount"))
+               standardGeneric("initialCombinedAccount"))
+
+setGeneric("initialCombinedAccountSimulate",
+          function(account, systemModels, systemWeights,
+                   dataModels, seriesIndices, 
+                   datasets, namesDatasets, transforms,
+                   dominant = c("Female", "Male"))
+              standardGeneric("initialCombinedAccountSimulate"))
 
 setGeneric("initialCombinedCounts",
            function(object, y, exposure, dataModels, datasets,

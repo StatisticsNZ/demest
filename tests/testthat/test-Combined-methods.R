@@ -175,6 +175,163 @@ test_that("R, specific C, and generic C versions of drawCombined give same answe
 })
 
 
+## drawDataModels ######################################################
+
+test_that("drawDataModels works with CombinedAccountMovements", {
+    drawDataModels <- demest:::drawDataModels
+    updateAccount <- demest:::updateAccount
+    initialCombinedAccount <- demest:::initialCombinedAccount
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    checkDataModelsSuitableForSimulation <- demest:::checkDataModelsSuitableForSimulation
+    setDatasetsToMissing <- demest:::setDatasetsToMissing
+    drawModelUseExp <- demest:::drawModelUseExp
+    set.seed(1)
+    population <- CountsOne(values = seq(100L, 200L, 10L),
+                            labels = seq(2000, 2100, 10),
+                            name = "time")
+    births <- CountsOne(values = rpois(n = 10, lambda = 15),
+                        labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
+                        name = "time")
+    deaths <- CountsOne(values = rpois(n = 10, lambda = 5),
+                        labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
+                        name = "time")
+    account <- Movements(population = population,
+                         births = births,
+                         exits = list(deaths = deaths))
+    account <- makeConsistent(account)
+    systemModels <- list(Model(population ~ Poisson(mean ~ time, useExpose = FALSE)),
+                         Model(births ~ Poisson(mean ~ 1)),
+                         Model(deaths ~ Poisson(mean ~ 1)))
+    systemWeights <- rep(list(NULL), 3)
+    data.models <- list(Model(tax ~ Poisson(mean ~ time),
+                              `(Intercept)` ~ ExchFixed(mean = -1, sd = 0.3),
+                              time ~ Exch(error = Error(scale = HalfT(scale = 0.2))),
+                              priorSD = HalfT(scale = 0.1),
+                              series = "deaths"),
+                        Model(census ~ PoissonBinomial(prob = 0.9),
+                              series = "population"))
+    seriesIndices <- c(2L, 0L)
+    datasets <- list(subarray(deaths, time > 2010, drop = FALSE) + 1L,
+                     subarray(population, time < 2090, drop = FALSE) - 1L)
+    namesDatasets <- c("tax", "census")
+    checkDataModelsSuitableForSimulation(dataModels = data.models,
+                                         datasets = datasets,
+                                         namesDatasets = namesDatasets)
+    transforms <- list(makeTransform(x = deaths, y = datasets[[1]], subset = TRUE),
+                       makeTransform(x = population, y = datasets[[2]], subset = TRUE))
+    transforms <- lapply(transforms, makeCollapseTransformExtra)
+    x <- initialCombinedAccount(account = account,
+                                systemModels = systemModels,
+                                systemWeights = systemWeights,
+                                dataModels = data.models,
+                                seriesIndices = seriesIndices,
+                                datasets = datasets,
+                                namesDatasets = namesDatasets,
+                                transforms = transforms)
+    x <- updateAccount(x)
+    set.seed(1)
+    expect_error(drawDataModels(x),
+                 "'datasets' have not been set to missing")
+    x <- setDatasetsToMissing(x)
+    ans.obtained <- drawDataModels(x)
+    set.seed(1)
+    ans.expected <- x
+    exposure1 <- toDouble(collapse(ans.expected@account@components[[2]],
+                                   transform = transforms[[1]]))
+    exposure2 <- collapse(ans.expected@account@population,
+                          transform = transforms[[2]])
+    ans.expected@dataModels[[1]] <- drawModelUseExp(ans.expected@dataModels[[1]],
+                                                    y = ans.expected@datasets[[1]],
+                                                    exposure = exposure1)
+    ans.expected@dataModels[[2]] <- drawModelUseExp(ans.expected@dataModels[[2]],
+                                                    y = ans.expected@datasets[[2]],
+                                                    exposure = exposure2)
+    if (test.identity)
+        expect_identical(ans.obtained, ans.expected)
+    else
+        expect_equal(ans.obtained, ans.expected)
+})
+
+
+## drawSystemModels ####################################################
+
+test_that("drawSystemModels works with CombinedAccountMovements", {
+    drawSystemModels <- demest:::drawSystemModels
+    initialCombinedAccount <- demest:::initialCombinedAccount
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    checkSystemModelsSuitableForSimulation <- demest:::checkSystemModelsSuitableForSimulation
+    updateExpectedExposure <- demest:::updateExpectedExposure
+    set.seed(1)
+    population <- CountsOne(values = seq(200, 300, 10),
+                            labels = seq(2000, 2100, 10),
+                            name = "time")
+    births <- CountsOne(values = rpois(n = 10, lambda = 5),
+                        labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
+                        name = "time")
+    deaths <- CountsOne(values = rpois(n = 10, lambda = 5),
+                        labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
+                        name = "time")
+    account <- Movements(population = population,
+                         births = births,
+                         exits = list(deaths = deaths))
+    account <- makeConsistent(account)
+    systemModels <- list(Model(population ~ Poisson(mean ~ time, useExpose = FALSE),
+                               `(Intercept)` ~ ExchFixed(mean = -1, sd = 0.3),
+                               time ~ DLM(level = Level(scale = HalfT(scale = 0.05)),
+                                          trend = NULL,
+                                          damp = NULL,
+                                          error = Error(scale = HalfT(scale = 0.3))),
+                               priorSD = HalfT(scale = 0.1)),
+                         Model(births ~ Poisson(mean ~ time),
+                               `(Intercept)` ~ ExchFixed(mean = -1, sd = 0.3),
+                               time ~ Exch(error = Error(scale = HalfT(scale = 0.2))),
+                               priorSD = HalfT(scale = 0.1)),
+                         Model(deaths ~ Poisson(mean ~ time),
+                               `(Intercept)` ~ ExchFixed(mean = -1, sd = 0.3),
+                               time ~ Exch(error = Error(scale = HalfT(scale = 0.2))),
+                               priorSD = HalfT(scale = 0.1)))
+    checkSystemModelsSuitableForSimulation(systemModels = systemModels,
+                                           account = account)
+    systemWeights <- rep(list(NULL), 3)
+    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
+                        Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
+    seriesIndices <- c(2L, 0L)
+    datasets <- list(Counts(array(7L,
+                                  dim = 10,
+                                  dimnames = list(time = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-")))),
+                     Counts(array(seq.int(110L, 210L, 10L),
+                                  dim = 11,
+                                  dimnames = list(time = seq(2000, 2100, 10)))))
+    namesDatasets <- c("tax", "census")
+    transforms <- list(makeTransform(x = deaths, y = datasets[[1]], subset = TRUE),
+                       makeTransform(x = population, y = datasets[[2]], subset = TRUE))
+    transforms <- lapply(transforms, makeCollapseTransformExtra)
+    x <- initialCombinedAccount(account = account,
+                                systemModels = systemModels,
+                                systemWeights = systemWeights,
+                                dataModels = data.models,
+                                seriesIndices = seriesIndices,
+                                datasets = datasets,
+                                namesDatasets = namesDatasets,
+                                transforms = transforms)
+    expect_true(validObject(x))
+    set.seed(1)
+    ans.obtained <- drawSystemModels(x)
+    ans.obtained <- updateExpectedExposure(ans.obtained)
+    expect_true(validObject(ans.obtained))
+    for (i in 1:3) {
+        expect_false(identical(ans.obtained@systemModels[[i]]@betas,
+                               x@systemModels[[i]]@betas))
+        expect_false(identical(ans.obtained@systemModels[[i]]@theta,
+                               x@systemModels[[i]]@theta))
+        expect_false(identical(ans.obtained@systemModels[[i]]@sigma,
+                               x@systemModels[[i]]@sigma))
+    }
+})
+
+
+
+
 ## predictCombined - CombinedModel ####################################################
 
 test_that("test that predictCombined gives valid answer with CombinedModelNormal", {

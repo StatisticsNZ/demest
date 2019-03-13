@@ -143,6 +143,27 @@ setClass("DatasetsMixin",
              TRUE
          })
 
+## HAS_TESTS
+setClass("DataModelsUseAgMixin",
+         slots = c(dataModelsUseAg = "LogicalFlag"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             dataModelsUseAg <- object@dataModelsUseAg@.Data
+             dataModels <- object@dataModels
+             is.ag <- sapply(dataModels, methods::is, "Aggregate")
+             ## if 'dataModelsUsesAg' is TRUE, then one or more
+             ## data models must inherit from Aggregate
+             if (dataModelsUseAg && !any(is.ag))
+                 return(gettextf("'%s' is %s, but no data models have class \"%s\"",
+                                 "dataModelsUseAg", TRUE, "Aggregate"))
+             ## if 'dataModelsUsesAg' is FALSE, then no
+             ## data models can inherit from Aggregate
+             if (!dataModelsUseAg && any(is.ag))
+                 return(gettextf("'%s' is %s, but data models have class \"%s\"",
+                                 "dataModelsUseAg", FALSE, "Aggregate"))
+             TRUE
+         })
+
 ## NO_TESTS
 setClass("DescriptionsMixin",
          slots = c(descriptions = "list"),
@@ -938,6 +959,24 @@ setClass("SystemModelsMixin",
              }
              TRUE
          })
+
+## NO_TESTS
+setClass("SystemModelsUseAgMixin",
+         slots = c(systemModelsUseAg = "LogicalFlag"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             systemModelsUseAg <- object@systemModelsUseAg@.Data
+             systemModels <- object@systemModels
+             is.ag <- sapply(systemModels, methods::is, "Aggregate")
+             if (systemModelsUseAg && !any(is.ag))
+                 return(gettextf("'%s' is %s but no system models have class \"%s\"",
+                                 "systemModelsUseAg", TRUE, "Aggregate"))
+             if (!systemModelsUseAg && any(is.ag))
+                 return(gettextf("'%s' is %s but system models have class \"%s\"",
+                                 "systemModelsUseAg", FALSE, "Aggregate"))
+             TRUE
+         })
+
 
 setClass("SystemMovementsMixin",
          contains = "VIRTUAL",

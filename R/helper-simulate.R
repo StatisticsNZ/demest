@@ -647,6 +647,15 @@ makeCountsY <- function(exposure) {
 }
 
 ## HAS_TESTS
+setDatasetsToMissing <- function(object) {
+    datasets <- object@datasets
+    for (i in seq_along(datasets))
+        datasets[[i]][] <- NA
+    object@datasets <- datasets
+    object
+}
+
+## HAS_TESTS
 setYToMissing <- function(y) {
     is.integer <- is.integer(y@.Data)
     y@.Data[] <- if (is.integer) NA_integer_ else as.numeric(NA)

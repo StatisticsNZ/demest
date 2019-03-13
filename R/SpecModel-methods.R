@@ -152,20 +152,24 @@ setMethod("printSpecAgValEqns",
           signature(object = "SpecPoissonVarying",
                     aggregate = "SpecAggregate"),
           function(object, aggregate) {
+              use.expose <- object@useExpose@.Data
               cat("\n")
-              cat("       aggregate = sum(rate * weight)\n")
-              cat("           -------- or --------\n")
-              cat("       aggregate = sum(count * weight)")
+              if (use.expose)
+                  cat("       aggregate = sum(rate * weight)\n")
+              else
+                  cat("       aggregate = sum(count * weight)")
           })
 
 setMethod("printSpecAgValEqns",
           signature(object = "SpecPoissonVarying",
                     aggregate = "SpecAgFun"),
           function(object, aggregate) {
+              use.expose <- object@useExpose@.Data
               cat("\n")
-              cat("       aggregate = f(rate, weight)\n")
-              cat("          -------- or --------\n")
-              cat("       aggregate = f(count * weight)")
+              if (use.expose)
+                  cat("       aggregate = f(rate, weight)\n")
+              else
+                  cat("       aggregate = f(count * weight)")
           })
 
 setMethod("printSpecAgValEqns",

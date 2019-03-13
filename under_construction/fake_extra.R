@@ -4,8 +4,7 @@
 simulateAccount <- function(account, systemModels, datasets, dataModels, 
                             concordances = list(), weights = list(),
                             dominant = c("Female", "Male"),
-                            filename = NULL, nDraw = 1,
-                            nBurnin = 1000, nSim = 1000,
+                            filename = NULL, nBurnin = 1000, nSim = 1000,
                             nChain = 4, nThin = 1,
                             parallel = TRUE, nCore = NULL,
                             outfile = NULL, nUpdateMax = 50,
@@ -75,16 +74,17 @@ simulateAccount <- function(account, systemModels, datasets, dataModels,
                                     parallel = parallel,
                                     nUpdateMax = nUpdateMax)
     ## initial values
-    combineds <- replicate(n = mcmc.args$nChain,
-                           initialCombinedAccountSimulate(account = account,
-                                                          systemModels = systemModels,
-                                                          systemWeights = systemWeights,
-                                                          dataModels = dataModels,
-                                                          seriesIndices = seriesIndices,
-                                                          datasets = datasets,
-                                                          namesDatasets = namesDatasets,
-                                                          transforms = transforms,
-                                                          dominant = dominant))
+    combined <- initialCombinedAccountSimulate(account = account,
+                                               systemModels = systemModels,
+                                               systemWeights = systemWeights,
+                                               dataModels = dataModels,
+                                               seriesIndices = seriesIndices,
+                                               datasets = datasets,
+                                               namesDatasets = namesDatasets,
+                                               transforms = transforms,
+                                               dominant = dominant)
+    combineds <- rep(list(combined),
+                     times = mcmc.args$nChain)
     parallel <- control.args$parallel
     tempfiles <- paste(filename, seq_len(mcmc.args$nChain), sep = "_")
     MoreArgs <- c(list(seed = NULL),
@@ -136,63 +136,6 @@ simulateAccount <- function(account, systemModels, datasets, dataModels,
 
 
 
-setMethod("drawSystemModels",
-          signature(combined = "CombinedAccountMovements"),
-          function(combined, isFirst, useC = FALSE) {
-              ## combined
-              methods::validObject(combined)
-              ## isFirst
-              stopifnot(identical(length(isFirst), 1L))
-              stopifnot(is.logical(isFirst))
-              stopifnot(!is.na(isFirst))
-              if (useC) {
-                  .Call(drawSystemModels_R, combined, isFirst)
-              }
-              else {
-                  system.models <- combined@systemModels
-                  population <- combined@account@population
-                  components <- combined@account@components
-                  model.uses.exposure <- combined@modelUsesExposure
-                  transforms.exp.to.comp <- combined@transformsExpToComp
-                  transform.exp.to.births <- combined@transformExpToBirths
-                  i.births <- combined@iBirths
-                  ## population
-                  model <- system.models[[1L]]
-                  model <- drawModelNotUseExp(model,
-                                              y = population,
-                                              isFirst = isFirst)
-                  system.models[[1L]] <- model
-                  ## components
-                  for (i in seq_along(components)) {
-                      model <- system.models[[i + 1L]]
-                      component <- components[[i]]
-                      uses.exposure <- model.uses.exposure[i + 1L]
-                      if (uses.exposure) {
-                          exposure <- combined@exposure@.Data
-                          is.births <- i == i.births
-                          if (is.births)
-                              exposure <- collapse(exposure,
-                                                   transform = transform.exp.to.births)
-                          transform <- transforms.exp.to.comp[[i]]
-                          if (!is.null(transform))
-                              exposure <- extend(exposure,
-                                                 transform = transforms.exp.to.comp[[i]])
-                          model <- drawModelUseExp(object = model,
-                                                   y = component,
-                                                   exposure = exposure)
-                      }
-                      else {
-                          if (methods::is(model, "Normal"))
-                              component <- toDouble(component)
-                          model <- drawModelNotUseExp(object = model,
-                                                      y = component)
-                      }
-                      system.models[[i + 1L]] <- model
-                  }
-                  combined@systemModels <- system.models
-                  combined
-}
-
     
 
 
@@ -213,12 +156,15 @@ setMethod("drawCombined",
                       .Call(drawCombined_R, object, nUpdate)
               }
               else {
-                  object <- drawSystemModels(object)
-                  object <- updateExpectedExposure(object)
+                  system.models.use.ag <- object@systemModelsUseAg@.Data
+                  data.models.use.ag <- object@dataModelsUseAg@.Data
+                  if (system.models.use.ag) {
+                      object <- updateSystemModels(object)
+                      object <- updateExpectedExposure(object)
+                  }
                   object <- updateAccount(object)
-
-                  
-                  object <- drawDataModelsAccount(object)
+                  if (data.models.use.ag)
+                      object <- updateDataModelsAccount(object)
                   object
               }
           })
@@ -226,50 +172,4 @@ setMethod("drawCombined",
 
 
 
-## NEED TO TURN 'drawHyperParam' INTO A METHOD
-
-setMethod("initialCombinedAccountSimulate",
-          signature(account = "Movements",
-                    systemModels = "list",
-                    systemWeights = "list",
-                    dataModels = "list",
-                    seriesIndices = "integer",
-                    datasets = "list",
-                    namesDatasets = "character",
-                    transforms = "list"),
-          function(account, systemModels, systemWeights,
-                   dataModels, seriesIndices, 
-                   datasets, namesDatasets, transforms,
-                   dominant = c("Female", "Male")) {
-              combined <- initialCombinedAccount(account = account,
-                                                 systemModels = systemModels,
-                                                 systemWeights = systemWeights,
-                                                 dataModels = dataModels,
-                                                 seriesIndices = seriesIndices, 
-                                                 datasets = datasets,
-                                                 namesDatasets = namesDatasets,
-                                                 transforms = transforms,
-                                                 dominant = dominant)
-              systemModels <- combined@systemModels
-              dataModels <- combined@dataModels
-              datasets <- combined@datasets
-              systemModels <- lapply(systemModels, drawHyperParam)
-              dataModels <- lapply(dataModels, drawHyperParam)
-              datasets <- lapply(datasets, setYToMissing)
-              combined@systemModels <- systemModels
-              combined@dataModels <- dataModels
-              combined@datasets <- datasets
-              combined              
-          })
-
-
-
-
-
-
-
-
-
-
-
-
+           

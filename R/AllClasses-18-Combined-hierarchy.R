@@ -206,7 +206,6 @@ setClass("CombinedModelCMPHasExp",
 
 setClass("CombinedCounts",
          slots = c(model = "Model"),
-         prototype = prototype(slotsToExtract = c("model", "y", "dataModels")),
          contains = c("VIRTUAL",
                       "Combined",
                       "YNonNegativeCounts",
@@ -214,14 +213,22 @@ setClass("CombinedCounts",
 
 ## HAS_TESTS
 setClass("CombinedCountsPoissonNotHasExp",
-         prototype = prototype(iMethodCombined = 6L),
+         prototype = prototype(iMethodCombined = 6L,
+                               slotsToExtract = c("model",
+                                                  "y",
+                                                  "dataModels"),
+                               dataModelsUseAg = methods::new("LogicalFlag", FALSE)),
          contains = c("CombinedCounts",
                       "CombinedPoisson",
                       "NotHasExposure"))
 
 ## HAS_TESTS
 setClass("CombinedCountsPoissonHasExp",
-         prototype = prototype(iMethodCombined = 7L),
+         prototype = prototype(iMethodCombined = 7L,
+                               slotsToExtract = c("model",
+                                                  "y",
+                                                  "dataModels"),
+                               dataModelsUseAg = methods::new("LogicalFlag", FALSE)),
          contains = c("CombinedCounts", "CombinedPoisson", "HasExposure"),
          validity = function(object) {
              exposure <- object@exposure
@@ -234,7 +241,11 @@ setClass("CombinedCountsPoissonHasExp",
 
 ## HAS_TESTS
 setClass("CombinedCountsBinomial",
-         prototype = prototype(iMethodCombined = 8L),
+         prototype = prototype(iMethodCombined = 8L,
+                               slotsToExtract = c("model",
+                                                  "y",
+                                                  "dataModels"),
+                               dataModelsUseAg = methods::new("LogicalFlag", FALSE)),
          contains = c("CombinedCounts",
                       "CombinedBinomial",
                       "HasExposure"))
@@ -296,14 +307,18 @@ setClass("CombinedAccountMovementsNoAge",
          prototype = prototype(iMethodCombined = 9L,
                                slotsToExtract = c("account",
                                                   "systemModels",
-                                                  "dataModels")),
+                                                  "dataModels"),
+                               dataModelsUseAg = methods::new("LogicalFlag", FALSE),
+                               systemModelsUseAg = methods::new("LogicalFlag", FALSE)),
          contains = "CombinedAccountMovements")
 
 setClass("CombinedAccountMovementsHasAge",
          prototype = prototype(iMethodCombined = 10L,
                                slotsToExtract = c("account",
                                                   "systemModels",
-                                                  "dataModels")),
+                                                  "dataModels"),
+                               dataModelsUseAg = methods::new("LogicalFlag", FALSE),
+                               systemModelsUseAg = methods::new("LogicalFlag", FALSE)),
          contains = c("CombinedAccountMovements",
                       "MovementsAgeMixin"))
 

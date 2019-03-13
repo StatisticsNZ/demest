@@ -823,3 +823,43 @@ setMethod("initialCombinedAccount",
                                transformsExpToComp = transforms.exp.to.comp)
               }
           })
+
+## HAS_TESTS
+setMethod("initialCombinedAccountSimulate",
+          signature(account = "Movements",
+                    systemModels = "list",
+                    systemWeights = "list",
+                    dataModels = "list",
+                    seriesIndices = "integer",
+                    datasets = "list",
+                    namesDatasets = "character",
+                    transforms = "list"),
+          function(account, systemModels, systemWeights,
+                   dataModels, seriesIndices, 
+                   datasets, namesDatasets, transforms,
+                   dominant = c("Female", "Male")) {
+              combined <- initialCombinedAccount(account = account,
+                                                 systemModels = systemModels,
+                                                 systemWeights = systemWeights,
+                                                 dataModels = dataModels,
+                                                 seriesIndices = seriesIndices, 
+                                                 datasets = datasets,
+                                                 namesDatasets = namesDatasets,
+                                                 transforms = transforms,
+                                                 dominant = dominant)
+              uses.ag <- function(x) {
+                  (methods::.hasSlot(x, "aggregate")
+                      && !methods::is(x@aggregate, "SpecAgPlaceholder"))
+              }
+              uses.ag.system.models <- sapply(combined@systemModels, uses.ag)
+              uses.ag.data.models <- sapply(combined@dataModels, uses.ag)
+              combined@systemModelsUseAg@.Data <- any(uses.ag.system.models)
+              combined@dataModelsUseAg@.Data <- any(uses.ag.data.models)
+              combined <- setDatasetsToMissing(combined)
+              combined <- drawDataModels(combined)
+              combined <- drawSystemModels(combined)
+              combined <- updateExpectedExposure(combined,
+                                                 useC = TRUE)
+              combined
+          })
+

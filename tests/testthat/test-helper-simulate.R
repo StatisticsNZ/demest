@@ -1655,6 +1655,56 @@ test_that("makeCountsY works", {
     }
 })
 
+test_that("setDatasetsToMissing works", {
+    setDatasetsToMissing <- demest:::setDatasetsToMissing
+    initialCombinedAccount <- demest:::initialCombinedAccount
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    population <- CountsOne(values = seq(100, 200, 10),
+                            labels = seq(2000, 2100, 10),
+                            name = "time")
+    births <- CountsOne(values = rpois(n = 10, lambda = 15),
+                        labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
+                        name = "time")
+    deaths <- CountsOne(values = rpois(n = 10, lambda = 5),
+                        labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
+                        name = "time")
+    account <- Movements(population = population,
+                         births = births,
+                         exits = list(deaths = deaths))
+    account <- makeConsistent(account)
+    systemModels <- list(Model(population ~ Poisson(mean ~ time, useExpose = FALSE)),
+                         Model(births ~ Poisson(mean ~ 1)),
+                         Model(deaths ~ Poisson(mean ~ 1)))
+    systemWeights <- rep(list(NULL), 3)
+    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
+                        Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
+    seriesIndices <- c(2L, 0L)
+    datasets <- list(Counts(array(7L,
+                                  dim = 10,
+                                  dimnames = list(time = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-")))),
+                     Counts(array(seq.int(110L, 210L, 10L),
+                                  dim = 11,
+                                  dimnames = list(time = seq(2000, 2100, 10)))))
+    namesDatasets <- c("tax", "census")
+    transforms <- list(makeTransform(x = deaths, y = datasets[[1]], subset = TRUE),
+                       makeTransform(x = population, y = datasets[[2]], subset = TRUE))
+    transforms <- lapply(transforms, makeCollapseTransformExtra)
+    x0 <- initialCombinedAccount(account = account,
+                                 systemModels = systemModels,
+                                 systemWeights = systemWeights,
+                                 dataModels = data.models,
+                                 seriesIndices = seriesIndices,
+                                 datasets = datasets,
+                                 namesDatasets = namesDatasets,
+                                 transforms = transforms)
+    ans.obtained <- setDatasetsToMissing(x0)
+    ans.expected <- x0
+    for (i in seq_along(ans.expected@datasets))
+        ans.expected@datasets[[i]][] <- NA
+    expect_identical(ans.obtained, ans.expected)
+    expect_true(all(sapply(ans.obtained@datasets, function(x) all(is.na(x)))))
+})
+
 test_that("setYToMissing works", {
     setYToMissing <- demest:::setYToMissing
     y <- Counts(array(1:6,
