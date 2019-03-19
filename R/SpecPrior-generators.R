@@ -394,6 +394,7 @@ Damp <- function(coef = NULL, shape1 = 2, shape2 = 2, min = 0.8, max = 1) {
     }
 }
 
+
 #' Specify a Dynamic Linear Model (DLM) prior.
 #'
 #' Specify a prior for main effects or interactions in which units that are
@@ -1148,6 +1149,68 @@ DLM <- function(along = NULL, level = Level(), trend = Trend(),
                      tauMax = tauMax)
     }
 }
+
+
+
+#' Short version of 'DLM' function for creating Dynamic Linear Model priors
+#'
+#' WARNING - THIS FUNCTION IS EXPERIMENTAL.
+#' THE INTERFACE IS NOT YET FINALISED.
+#'
+#' @param l Logical. If \code{TRUE} (the default), the model includes
+#' a level term.
+#' @param t Logical. If \code{TRUE} (the default), the model includes
+#' a trend term.
+#' @param d Logical. If \code{TRUE} (the default), the model is
+#' damped, using the defaults for \code{\link{Damp}}.
+#' @param scale A positive number. The value of the \code{scale}
+#' parameter to be used in the priors for standard
+#' deviations in level, trend, and error terms.
+#'
+#' @return An object of class \code{\linkS4class{SpecDLM}}.
+#'
+#' @examples
+#' DLMS(scale = 0.1)
+#' ## identical to
+#' DLM(level = Level(scale = HalfT(scale = 0.1)),
+#'     trend = Trend(scale = HalfT(scale = 0.1)),
+#'     error = Error(scale = HalfT(scale = 0.1)))
+#'
+#' DLMS(t = FALSE, d = FALSE, scale = 0.1)
+#' ## identical to
+#' DLM(level = Level(scale = HalfT(scale = 0.1)),
+#'     trend = NULL,
+#'     damp = NULL,
+#'     error = Error(scale = HalfT(scale = 0.1)))
+#' @export
+DLMS <- function(l = TRUE, t = TRUE, d = TRUE, scale) {
+    checkLogical(x = l, name = "l")
+    checkLogical(x = t, name = "t")
+    checkLogical(x = d, name = "d")
+    if (!l && !t)
+        stop(gettextf("'%s' and '%s' are both %s",
+                      "l", "t", "FALSE"))
+    if (missing(scale))
+        stop(gettextf("argument '%s' is missing, with no default",
+                      "scale"))
+    checkNonNegativeNumeric(x = scale, name = "scale")
+    spec.level <- if (l) Level(scale = HalfT(scale = scale)) else NULL
+    spec.trend <- if (t) Trend(scale = HalfT(scale = scale)) else NULL
+    spec.damp <- if (d) Damp() else NULL
+    spec.error <- Error(scale = HalfT(scale = scale))
+    DLM(level = spec.level,
+        trend = spec.trend,
+        damp = spec.damp,
+        error = spec.error)
+}
+
+
+
+
+
+
+
+
 
 
 ## NO_TESTS
