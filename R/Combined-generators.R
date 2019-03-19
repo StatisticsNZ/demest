@@ -719,6 +719,14 @@ setMethod("initialCombinedAccount",
                       datasets[[i]] <- dataset
                   }
               }
+              ## create flags showing whether system
+              ## or data models use aggregates
+              uses.ag.system.models <- sapply(systemModels, methods::is, "Aggregate")
+              uses.ag.data.models <- sapply(dataModels, methods::is, "Aggregate")
+              system.models.use.ag <- any(uses.ag.system.models)
+              data.models.use.ag <- any(uses.ag.data.models)
+              system.models.use.ag <- new("LogicalFlag", system.models.use.ag)
+              data.models.use.ag <- new("LogicalFlag", data.models.use.ag)
               if (has.age) {
                   accession <- dembase::accession(account,
                                                   births = FALSE)
@@ -732,6 +740,8 @@ setMethod("initialCombinedAccount",
                                account = account,
                                ageTimeStep = age.time.step,
                                cumProbComp = cum.prob.comp,
+                               dataModels = dataModels,
+                               dataModelsUseAg = data.models.use.ag,
                                datasets = datasets,
                                descriptions = descriptions,
                                diffProp = NA_integer_,
@@ -769,10 +779,10 @@ setMethod("initialCombinedAccount",
                                modelUsesExposure = model.uses.exposure,
                                namesDatasets = namesDatasets,                           
                                nCellAccount = n.cell.account,
-                               dataModels = dataModels,
                                probPopn = prob.popn,
                                seriesIndices = seriesIndices,
                                systemModels = systemModels,
+                               systemModelsUseAg = system.models.use.ag,
                                transformExpToBirths = transform.exp.to.births,
                                transforms = transforms,
                                transformsExpToComp = transforms.exp.to.comp)
@@ -782,6 +792,8 @@ setMethod("initialCombinedAccount",
                                account = account,
                                ageTimeStep = age.time.step,
                                cumProbComp = cum.prob.comp,
+                               dataModels = dataModels,
+                               dataModelsUseAg = data.models.use.ag,
                                datasets = datasets,
                                descriptions = descriptions,
                                diffProp = NA_integer_,
@@ -814,15 +826,16 @@ setMethod("initialCombinedAccount",
                                modelUsesExposure = model.uses.exposure,
                                namesDatasets = namesDatasets,
                                nCellAccount = n.cell.account,
-                               dataModels = dataModels,
                                probPopn = prob.popn,
                                seriesIndices = seriesIndices,
                                systemModels = systemModels,
+                               systemModelsUseAg = system.models.use.ag,
                                transformExpToBirths = transform.exp.to.births,
                                transforms = transforms,
                                transformsExpToComp = transforms.exp.to.comp)
               }
           })
+
 
 ## HAS_TESTS
 setMethod("initialCombinedAccountSimulate",
@@ -847,14 +860,6 @@ setMethod("initialCombinedAccountSimulate",
                                                  namesDatasets = namesDatasets,
                                                  transforms = transforms,
                                                  dominant = dominant)
-              uses.ag <- function(x) {
-                  (methods::.hasSlot(x, "aggregate")
-                      && !methods::is(x@aggregate, "SpecAgPlaceholder"))
-              }
-              uses.ag.system.models <- sapply(combined@systemModels, uses.ag)
-              uses.ag.data.models <- sapply(combined@dataModels, uses.ag)
-              combined@systemModelsUseAg@.Data <- any(uses.ag.system.models)
-              combined@dataModelsUseAg@.Data <- any(uses.ag.data.models)
               combined <- setDatasetsToMissing(combined)
               combined <- drawDataModels(combined)
               combined <- drawSystemModels(combined)

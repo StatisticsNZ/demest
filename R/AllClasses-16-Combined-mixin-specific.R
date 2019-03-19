@@ -150,17 +150,13 @@ setClass("DataModelsUseAgMixin",
          validity = function(object) {
              dataModelsUseAg <- object@dataModelsUseAg@.Data
              dataModels <- object@dataModels
-             is.ag <- sapply(dataModels, methods::is, "Aggregate")
-             ## if 'dataModelsUsesAg' is TRUE, then one or more
-             ## data models must inherit from Aggregate
-             if (dataModelsUseAg && !any(is.ag))
-                 return(gettextf("'%s' is %s, but no data models have class \"%s\"",
-                                 "dataModelsUseAg", TRUE, "Aggregate"))
-             ## if 'dataModelsUsesAg' is FALSE, then no
-             ## data models can inherit from Aggregate
-             if (!dataModelsUseAg && any(is.ag))
-                 return(gettextf("'%s' is %s, but data models have class \"%s\"",
-                                 "dataModelsUseAg", FALSE, "Aggregate"))
+             mod.uses.ag <- sapply(dataModels, methods::is, "Aggregate")
+             if (dataModelsUseAg && !any(mod.uses.ag))
+                 return(gettextf("'%s' is %s but no data models use aggregates",
+                                 "dataModelsUseAg", TRUE))
+             if (!dataModelsUseAg && any(mod.uses.ag))
+                 return(gettextf("'%s' is %s but data models use aggregates",
+                                 "dataModelsUseAg", FALSE))
              TRUE
          })
 
@@ -967,13 +963,13 @@ setClass("SystemModelsUseAgMixin",
          validity = function(object) {
              systemModelsUseAg <- object@systemModelsUseAg@.Data
              systemModels <- object@systemModels
-             is.ag <- sapply(systemModels, methods::is, "Aggregate")
-             if (systemModelsUseAg && !any(is.ag))
-                 return(gettextf("'%s' is %s but no system models have class \"%s\"",
-                                 "systemModelsUseAg", TRUE, "Aggregate"))
-             if (!systemModelsUseAg && any(is.ag))
-                 return(gettextf("'%s' is %s but system models have class \"%s\"",
-                                 "systemModelsUseAg", FALSE, "Aggregate"))
+             mod.uses.ag <- sapply(systemModels, methods::is, "Aggregate")
+             if (systemModelsUseAg && !any(mod.uses.ag))
+                 return(gettextf("'%s' is %s but no system models use aggregates",
+                                 "systemModelsUseAg", TRUE))
+             if (!systemModelsUseAg && any(mod.uses.ag))
+                 return(gettextf("'%s' is %s but system models use aggregates",
+                                 "systemModelsUseAg", FALSE))
              TRUE
          })
 
