@@ -1639,6 +1639,75 @@ test_that("R and C versions of drawUEtaCoef give same answer", {
     }
 })
 
+
+
+
+
+
+test_that("drawVarsigma gives valid answer", {
+    drawVarsigma <- demest:::drawVarsigma
+    initialModel <- demest:::initialModel
+    rhalftTrunc1 <- demest:::rhalftTrunc1
+    I <- 20L
+    for (seed in seq_len(n.test)) {
+        ## no missing values
+        set.seed(seed)
+        varsigma <- runif(1, 1, 20)
+        w <- rbeta(n = I, shape1 = 5, shape2 = 5)
+        weights <- Counts(array(w,
+                                dim = c(I/2, 2),
+                                dimnames = list(age = seq(from = 0, to = I/2-1), sex = c("f", "m"))))
+        mu <- runif(1, -10, 10)
+        sigma <- runif(1, 0.1, 20)
+        y <- Counts(array(rnorm(n = I, mean = mu, sd = sqrt(w) * varsigma),
+                          dim = c(I/2, 2),
+                          dimnames = list(age = seq(from = 0, to = I/2-1), sex = c("f", "m"))))
+        spec <- Model(y ~ Normal(mean ~ age))
+        model <- initialModel(spec, y = y, weights = weights)
+        set.seed(seed + 1)
+        ans.obtained <- drawVarsigma(model)
+        set.seed(seed + 1)
+        ans.expected <- model
+        ans.expected@varsigma@.Data <- rhalftTrunc1(df = ans.expected@nuVarsigma@.Data,
+                                                    scale = ans.expected@AVarsigma@.Data,
+                                                    max = ans.expected@varsigmaMax@.Data,
+                                                    useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of drawVarsigma give same answer", {
+    ## drawVarsigma <- demest:::drawVarsigma
+    initialModel <- demest:::initialModel
+    I <- 20L
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        varsigma <- runif(1, 1, 20)
+        w <- rbeta(n = I, shape1 = 5, shape2 = 5)
+        weights <- Counts(array(w,
+                          dim = c(I/2, 2),
+                          dimnames = list(age = seq(from = 0, to = I/2-1), sex = c("f", "m"))))
+        mu <- runif(1, -10, 10)
+        sigma <- runif(1, 0.1, 20)
+        y <- Counts(array(rnorm(n = I, mean = mu, sd = sqrt(w) * varsigma),
+                          dim = c(I/2, 2),
+                          dimnames = list(age = seq(from = 0, to = I/2-1), sex = c("f", "m"))))
+        spec <- Model(y ~ Normal(mean ~ age))
+        model <- initialModel(spec, y = y, weights = weights)
+        set.seed(seed + 1)
+        ans.R <- drawVarsigma(model, useC = FALSE)
+        set.seed(seed + 1)
+        ans.C <- drawVarsigma(model, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
+
 test_that("makeCountsY works", {
     makeCountsY <- demest:::makeCountsY
     exposure <- Counts(array(1:6,

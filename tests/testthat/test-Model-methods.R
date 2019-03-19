@@ -214,6 +214,93 @@ test_that("drawHyperParam works with Varying", {
 
 ## drawModelNotUseExp ##################################################################
 
+
+test_that("drawModelNotUseExp works with NormalVaryingVarsigmaUnknown", {
+    initialModel <- demest:::initialModel
+    drawModelNotUseExp <- demest:::drawModelNotUseExp
+    drawPriors <- demest:::drawPriors
+    drawBetas <- demest:::drawBetas
+    drawSigma_Varying <- demest:::drawSigma_Varying
+    updateTheta_NormalVarying <- demest:::updateTheta_NormalVarying
+    spec <- Model(y ~ Normal(mean ~ age + sex, priorSD = HalfT(scale = 0.05)),
+                  `(Intercept)` ~ ExchFixed(sd = 10), 
+                  age ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
+                  sex ~ ExchFixed(sd = 0.1),
+                  priorSD = HalfT(scale = 0.2))
+    y <- Counts(array(1,
+                      dim = 2:3,
+                      dimnames = list(sex = c("F", "M"),
+                                      age = c("0-4", "5-9", "10+"))))
+    weights <- y
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        model <- initialModel(spec, y = y, weights = weights)
+        expect_is(model, "NormalVaryingVarsigmaUnknown")
+        y.tmp <- y
+        y.tmp[] <- NA
+        set.seed(seed)
+        ans.obtained <- drawModelNotUseExp(object = model,
+                                           y = y.tmp)
+        set.seed(seed)
+        ans.expected <- model
+        ans.expected <- drawPriors(ans.expected)
+        ans.expected <- drawBetas(ans.expected)
+        ans.expected <- drawSigma_Varying(ans.expected)
+        ans.expected <- drawVarsigma(ans.expected)
+        ans.expected <- updateTheta_NormalVarying(ans.expected,
+                                                  y = y.tmp)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of drawModelNotUseExp give same answer with NormalVaryingVarsigmaUnknown", {
+    initialModel <- demest:::initialModel
+    drawModelNotUseExp <- demest:::drawModelNotUseExp
+    drawPriors <- demest:::drawPriors
+    drawBetas <- demest:::drawBetas
+    drawSigma_Varying <- demest:::drawSigma_Varying
+    updateTheta_NormalVarying <- demest:::updateTheta_NormalVarying
+    spec <- Model(y ~ Normal(mean ~ age + sex, priorSD = HalfT(scale = 0.05)),
+                  `(Intercept)` ~ ExchFixed(sd = 10), 
+                  age ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
+                  sex ~ ExchFixed(sd = 0.1),
+                  priorSD = HalfT(scale = 0.2))
+    y <- Counts(array(1,
+                      dim = 2:3,
+                      dimnames = list(sex = c("F", "M"),
+                                      age = c("0-4", "5-9", "10+"))))
+    weights <- y
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        model <- initialModel(spec, y = y, weights = weights)
+        expect_is(model, "NormalVaryingVarsigmaUnknown")
+        y.tmp <- y
+        y.tmp[] <- NA
+        set.seed(seed)
+        ans.R <- drawModelNotUseExp(object = model,
+                                    y = y.tmp,
+                                    useC = FALSE)
+        set.seed(seed)
+        ans.C.generic <- drawModelNotUseExp(object = model,
+                                            y = y.tmp,
+                                            useC = TRUE,
+                                            useSpecific = FALSE)
+        set.seed(seed)
+        ans.C.specific <- drawModelNotUseExp(object = model,
+                                             y = y.tmp,
+                                             useC = TRUE,
+                                             useSpecific = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C.generic)
+        else
+            expect_equal(ans.R, ans.C.generic)
+        expect_identical(ans.C.generic, ans.C.specific)
+    }
+})
+
 test_that("drawModelNotUseExp works with PoissonVaryingNotUseExp", {
     initialModel <- demest:::initialModel
     drawModelNotUseExp <- demest:::drawModelNotUseExp
@@ -277,10 +364,12 @@ test_that("R and C versions of drawModelNotUseExp give same answer with PoissonV
         ans.R <- drawModelNotUseExp(object = model,
                                     y = y.tmp,
                                     useC = FALSE)
+        set.seed(seed)
         ans.C.generic <- drawModelNotUseExp(object = model,
                                             y = y.tmp,
                                             useC = TRUE,
                                             useSpecific = FALSE)
+        set.seed(seed)
         ans.C.specific <- drawModelNotUseExp(object = model,
                                              y = y.tmp,
                                              useC = TRUE,
@@ -296,7 +385,7 @@ test_that("R and C versions of drawModelNotUseExp give same answer with PoissonV
 
 ## drawModelUseExp #####################################################################
 
-test_that("drawModelUseExp works", {
+test_that("drawModelUseExp works with BinomialVarying", {
     initialModel <- demest:::initialModel
     drawModelUseExp <- demest:::drawModelUseExp
     drawPriors <- demest:::drawPriors
@@ -340,7 +429,7 @@ test_that("drawModelUseExp works", {
     }
 })
 
-test_that("R and C versions of drawModelUseExp give same answer", {
+test_that("R and C versions of drawModelUseExp give same answer with BinomialVarying", {
     initialModel <- demest:::initialModel
     drawModelUseExp <- demest:::drawModelUseExp
     drawPriors <- demest:::drawPriors
@@ -480,6 +569,32 @@ test_that("R and C versions of drawModelUseExp give same answer with PoissonVary
     }
 })
 
+test_that("R, C specific and C generic versions of drawModelUseExp for NormalFixedUseExp return object unchanged", {
+    drawModelUseExp <- demest:::drawModelUseExp
+    initialModel <- demest:::initialModel
+    y <- Counts(array(rpois(10, lambda  = 10),
+                      dim = c(2, 5),
+                      dimnames = list(sex = c("f", "m"), age = 0:4)))
+    exposure <- Counts(array(rpois(10, lambda  = 10),
+                             dim = c(2, 5),
+                             dimnames = list(sex = c("f", "m"), age = 0:4)))
+    mean <- Values(array(rpois(20, lambda  = 10),
+                         dim = c(2, 10),
+                         dimnames = list(sex = c("f", "m"), age = 0:9)))
+    sd <- Values(array(runif(20),
+                       dim = c(2, 10),
+                       dimnames = list(sex = c("f", "m"), age = 0:9)))
+    spec <- Model(y ~ NormalFixed(mean = mean, sd = sd))
+    model <- initialModel(spec, y = y, exposure = exposure)
+    ans.R <- drawModelUseExp(model, y = y, exposure = exposure, useC = FALSE)
+    ans.C.generic <- drawModelUseExp(model, y = y, exposure = exposure,
+                                     useC = TRUE, useSpecific = FALSE)
+    ans.C.specific <- drawModelUseExp(model, y = y, exposure = exposure,
+                                      useC = TRUE, useSpecific = TRUE)
+    expect_identical(ans.R, model)
+    expect_identical(ans.C.generic, model)
+    expect_identical(ans.C.specific, model)
+})
 
 test_that("R, C specific and C generic versions of drawModelUseExp for PoissonBinomialMixture returns object unchanged", {
     drawModelUseExp <- demest:::drawModelUseExp

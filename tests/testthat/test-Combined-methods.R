@@ -175,6 +175,170 @@ test_that("R, specific C, and generic C versions of drawCombined give same answe
 })
 
 
+
+## drawCombined - Account ###################################################
+
+test_that("drawCombined works with CombinedAccountMovements - no benchmarks", {
+    drawCombined <- demest:::drawCombined
+    updateAccount <- demest:::updateAccount
+    initialCombinedAccountSimulate <- demest:::initialCombinedAccountSimulate
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    population <- Counts(array(seq(1000L, 1500L, 100L),
+                               dim = c(3, 2),
+                               dimnames = list(reg = c("a", "b", "c"),
+                                               time = c(2000, 2005))))
+    deaths <- Counts(array(c(10L, 5L, 3L),
+                           dim = c(3, 1),
+                           dimnames = list(reg = c("a", "b", "c"),
+                                           time = "2001-2005")))
+    internal <- Counts(array(c(0L, 50L, 40L,
+                               20L, 0L, 30L,
+                               60L, 20L, 0L),
+                             dim = c(3, 3, 1),
+                             dimnames = list(reg_orig = c("a", "b", "c"),
+                                             reg_dest = c("a", "b", "c"),
+                                             time = "2001-2005")))
+    internal <- collapseOrigDest(internal, to = "net")
+    account <- Movements(population = population,
+                         internal = internal,
+                         exits = list(deaths = deaths))
+    account <- makeConsistent(account)
+    systemModels <- list(Model(population ~ Poisson(mean ~ reg + time, useExpose = FALSE),
+                               `(Intercept)` ~ ExchFixed(mean = 1, sd = 0.2),
+                               reg ~ ExchFixed(sd = 0.1),
+                               time ~ ExchFixed(sd = 0.1),
+                               priorSD = HalfT(scale = 0.1)),
+                         Model(internal ~ Normal(mean ~ reg),
+                               `(Intercept)` ~ ExchFixed(mean = 0, sd = 0.2),
+                               reg ~ ExchFixed(sd = 0.1),
+                               priorSD = HalfT(scale = 0.1)),
+                         Model(deaths ~ Poisson(mean ~ reg),
+                               `(Intercept)` ~ ExchFixed(mean = 0, sd = 0.2),
+                               reg ~ ExchFixed(sd = 0.1),
+                               priorSD = HalfT(scale = 0.1)))
+    systemWeights <- list(NULL,
+                          Counts(array(1,
+                                       dim = c(3, 1),
+                                       dimnames = list(reg = c("a", "b", "c"),
+                                                       time = "2001-2005"))),
+                          NULL)
+    mean <- ValuesOne(1, labels = "2001-2005", name = "time")
+    data.models <- list(Model(tax ~ NormalFixed(mean = mean, sd = 0.1), series = "internal"),
+                        Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
+    seriesIndices <- c(1L, 0L)
+    datasets <- list(internal + 10L,
+                     population - 5L)
+    namesDatasets <- c("tax", "census")
+    transforms <- list(makeTransform(x = internal, y = datasets[[1]], subset = TRUE),
+                       makeTransform(x = population, y = datasets[[2]], subset = TRUE))
+    transforms <- lapply(transforms, makeCollapseTransformExtra)
+    x0 <- initialCombinedAccountSimulate(account = account,
+                                         systemModels = systemModels,
+                                         systemWeights = systemWeights,
+                                         dataModels = data.models,
+                                         seriesIndices = seriesIndices,
+                                         datasets = datasets,
+                                         namesDatasets = namesDatasets,
+                                         transforms = transforms)
+    set.seed(seed)
+    ans.obtained <- drawCombined(x0, nUpdate = 5L)
+    set.seed(seed)
+    ans.expected <- x0
+    for (i in 1:5)
+        ans.expected <- updateAccount(ans.expected)
+    if (test.identity)
+        expect_identical(ans.obtained, ans.expected)
+    else
+        expect_equal(ans.obtained, ans.expected)
+})
+
+
+test_that("R, C-specific, and C-generic versions of drawCombined give same answer with CombinedAccountMovements - no benchmarks", {
+    drawCombined <- demest:::drawCombined
+    updateAccount <- demest:::updateAccount
+    initialCombinedAccountSimulate <- demest:::initialCombinedAccountSimulate
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    population <- Counts(array(seq(1000L, 1500L, 100L),
+                               dim = c(3, 2),
+                               dimnames = list(reg = c("a", "b", "c"),
+                                               time = c(2000, 2005))))
+    deaths <- Counts(array(c(10L, 5L, 3L),
+                           dim = c(3, 1),
+                           dimnames = list(reg = c("a", "b", "c"),
+                                           time = "2001-2005")))
+    internal <- Counts(array(c(0L, 50L, 40L,
+                               20L, 0L, 30L,
+                               60L, 20L, 0L),
+                             dim = c(3, 3, 1),
+                             dimnames = list(reg_orig = c("a", "b", "c"),
+                                             reg_dest = c("a", "b", "c"),
+                                             time = "2001-2005")))
+    internal <- collapseOrigDest(internal, to = "net")
+    account <- Movements(population = population,
+                         internal = internal,
+                         exits = list(deaths = deaths))
+    account <- makeConsistent(account)
+    systemModels <- list(Model(population ~ Poisson(mean ~ reg + time, useExpose = FALSE),
+                               `(Intercept)` ~ ExchFixed(mean = 1, sd = 0.2),
+                               reg ~ ExchFixed(sd = 0.1),
+                               time ~ ExchFixed(sd = 0.1),
+                               priorSD = HalfT(scale = 0.1)),
+                         Model(internal ~ Normal(mean ~ reg),
+                               `(Intercept)` ~ ExchFixed(mean = 0, sd = 0.2),
+                               reg ~ ExchFixed(sd = 0.1),
+                               priorSD = HalfT(scale = 0.1)),
+                         Model(deaths ~ Poisson(mean ~ reg),
+                               `(Intercept)` ~ ExchFixed(mean = 0, sd = 0.2),
+                               reg ~ ExchFixed(sd = 0.1),
+                               priorSD = HalfT(scale = 0.1)))
+    systemWeights <- list(NULL,
+                          Counts(array(1,
+                                       dim = c(3, 1),
+                                       dimnames = list(reg = c("a", "b", "c"),
+                                                       time = "2001-2005"))),
+                          NULL)
+    mean <- ValuesOne(1, labels = "2001-2005", name = "time")
+    data.models <- list(Model(tax ~ NormalFixed(mean = mean, sd = 0.1), series = "internal"),
+                        Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
+    seriesIndices <- c(1L, 0L)
+    datasets <- list(internal + 10L,
+                     population - 5L)
+    namesDatasets <- c("tax", "census")
+    transforms <- list(makeTransform(x = internal, y = datasets[[1]], subset = TRUE),
+                       makeTransform(x = population, y = datasets[[2]], subset = TRUE))
+    transforms <- lapply(transforms, makeCollapseTransformExtra)
+    x0 <- initialCombinedAccountSimulate(account = account,
+                                         systemModels = systemModels,
+                                         systemWeights = systemWeights,
+                                         dataModels = data.models,
+                                         seriesIndices = seriesIndices,
+                                         datasets = datasets,
+                                         namesDatasets = namesDatasets,
+                                         transforms = transforms)
+    set.seed(1)
+    ans.R <- drawCombined(x0,
+                          nUpdate = 5L,
+                          useC = FALSE)
+    set.seed(1)
+    ans.C.specific <- drawCombined(x0,
+                          nUpdate = 5L,
+                          useC = TRUE,
+                          useSpecific = TRUE)
+    set.seed(1)
+    ans.C.generic <- drawCombined(x0,
+                          nUpdate = 5L,
+                          useC = FALSE,
+                          useSpecific = TRUE)
+    if (test.identity)
+        expect_identical(ans.R, ans.C.specific)
+    else
+        expect_equal(ans.R, ans.C.specific)
+    expect_identical(ans.C.specific, ans.C.generic)
+})
+
+
+
+
 ## drawDataModels ######################################################
 
 test_that("drawDataModels works with CombinedAccountMovements", {

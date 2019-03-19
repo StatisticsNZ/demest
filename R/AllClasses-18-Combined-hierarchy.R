@@ -264,12 +264,12 @@ setClass("CombinedAccount",
          validity = function(object) {
              systemModels <- object@systemModels
              dataModels <- object@dataModels
-             ## 'dataModels' has length 0 iff 'systemModels' consists
+             ## 'dataModels' has length 0 if 'systemModels' consists
              ## entirely of models with class "SingleIter"
              obs.length.0 <- identical(length(dataModels), 0L)
              sys.all.single <- all(sapply(systemModels, methods::is, "SingleIter"))
-             if (!identical(obs.length.0, sys.all.single))
-                 return(gettextf("'%s' should have length %d iff '%s' consists entirely of models with class \"%s\"",
+             if (sys.all.single && !obs.length.0)
+                 return(gettextf("'%s' should have length %d if '%s' consists entirely of models with class \"%s\"",
                                  "dataModels", 0L, "systemModels", "SingleIter"))
              TRUE
          })

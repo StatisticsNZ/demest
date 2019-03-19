@@ -14,6 +14,7 @@ expandTermsSpec <- function(f) {
     terms <- terms(f)
     term.labels <- attr(terms, "term.labels")
     ans <- paste0(term.labels, "[j[i]]")
+    ans <- c("(Intercept)", ans)
     ans <- paste(ans, collapse = " + ")
     ans
 }

@@ -59,6 +59,41 @@ setMethod("drawCombined",
               }
           })
 
+## READY_TO_TRANSLATE
+## HAS_TESTS - though only for unbenchmarked version
+setMethod("drawCombined",
+          signature(object = "CombinedAccountMovements"),
+          function(object, nUpdate = 1L, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              methods::validObject(object)
+              ## nUpdate
+              stopifnot(identical(length(nUpdate), 1L))
+              stopifnot(is.integer(nUpdate))
+              stopifnot(!is.na(nUpdate))
+              stopifnot(nUpdate >= 0L)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawCombined_CombinedAccountMovements_R, object, nUpdate)
+                  else
+                      .Call(drawCombined_R, object, nUpdate)
+              }
+              else {
+                  system.models.use.ag <- object@systemModelsUseAg@.Data
+                  data.models.use.ag <- object@dataModelsUseAg@.Data
+                  for (i in seq_len(nUpdate)) {
+                      if (system.models.use.ag) {
+                          object <- updateSystemModels(object)
+                          object <- updateExpectedExposure(object)
+                      }
+                      object <- updateAccount(object, useC = TRUE)
+                      if (data.models.use.ag)
+                          object <- updateDataModelsAccount(object)
+                  }
+                  object
+              }
+          })
+
+
 ## drawDataModels ##################################################################
 
 ## Elements of 'datasets' must contain only NAs, when

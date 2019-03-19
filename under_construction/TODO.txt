@@ -19,15 +19,9 @@ new betaHat function: add tests for ICAR and Cross when classes finished
 
 behaviour of predictModel when historical or future time points unevenly spaced
 
-finish SkeletonMu and associated methods
-
 priors method for SpecModel
 
 initialCombinedModelPredict for remaining model classes
-
-change name of vbar
-
-change name of varsigma
 
 'predict*' and 'continueEstimation' functions modify 'call' element of result
 
@@ -54,12 +48,7 @@ rewrite PoissonNotUseExp version of updateCounts
 
 PoissonUseExp, Binomial versions of updateCounts
 
-fakeData methods for Fixed, NormalVarying, and PoissonBinomialMixture
-
 iLikelihood
-
-rewrite estimateOnechain
-
 
 
 

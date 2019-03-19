@@ -635,6 +635,33 @@ drawUEtaCoef <- function(prior, useC = FALSE) {
     }
 }
 
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+drawVarsigma <- function(object, useC = FALSE) {
+    stopifnot(methods::is(object, "VarsigmaUnknown"))
+    stopifnot(methods::validObject(object))
+    if (useC) {
+        .Call(drawVarsigma_R, object)
+    }
+    else {
+        max <- object@varsigmaMax@.Data
+        A <- object@AVarsigma@.Data
+        nu <- object@nuVarsigma@.Data
+        val <- rhalftTrunc1(df = nu,
+                            scale = A,
+                            max = max,
+                            useC = TRUE)
+        object@varsigma@.Data <- val
+        object
+    }
+}
+
+
+
+
+
+
 ## HAS_TESTS
 makeCountsY <- function(exposure) {
     ans <- exposure
@@ -686,14 +713,14 @@ simulateOneChain <- function(combined, seed, tempfile, nBurnin, nSim, nThin,
     if (!is.null(seed))
         assign(".Random.seed", seed, envir = .GlobalEnv)
     ## burnin
-    nLoops <- nBurnin %/% nUpdateMax
-    for (i in seq_len(nLoops)) {
+    nLoop <- nBurnin %/% nUpdateMax
+    for (i in seq_len(nLoop)) {
         combined <- drawCombined(combined,
                                  nUpdate = nUpdateMax,
                                  useC = useC)
     }
     ## and any final ones
-    nLeftOver <- nBurnin - nLoops * nUpdateMax
+    nLeftOver <- nBurnin - nLoop * nUpdateMax
     combined <- drawCombined(combined,
                              nUpdate = nLeftOver,
                              useC = useC)
@@ -701,14 +728,14 @@ simulateOneChain <- function(combined, seed, tempfile, nBurnin, nSim, nThin,
     con <- file(tempfile, open = "wb")
     n.prod <- nSim %/% nThin
     for (i in seq_len(n.prod)) {
-        nLoops <- nThin %/% nUpdateMax
-        for (i in seq_len(nLoops)) {
+        nLoop <- nThin %/% nUpdateMax
+        for (i in seq_len(nLoop)) {
             combined <- drawCombined(combined,
                                      nUpdate = nUpdateMax,
                                      useC = useC)
         }
         ## and any final ones
-        nLeftOver <- nThin - nLoops * nUpdateMax
+        nLeftOver <- nThin - nLoop * nUpdateMax
         combined <- drawCombined(combined,
                                  nUpdate = nLeftOver,
                                  useC = useC)
