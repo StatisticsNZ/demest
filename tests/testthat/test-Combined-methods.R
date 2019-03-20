@@ -240,6 +240,7 @@ test_that("drawCombined works with CombinedAccountMovements - no benchmarks", {
                                          datasets = datasets,
                                          namesDatasets = namesDatasets,
                                          transforms = transforms)
+    seed <- 1L
     set.seed(seed)
     ans.obtained <- drawCombined(x0, nUpdate = 5L)
     set.seed(seed)

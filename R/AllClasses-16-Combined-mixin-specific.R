@@ -152,11 +152,11 @@ setClass("DataModelsUseAgMixin",
              dataModels <- object@dataModels
              mod.uses.ag <- sapply(dataModels, methods::is, "Aggregate")
              if (dataModelsUseAg && !any(mod.uses.ag))
-                 return(gettextf("'%s' is %s but no data models use aggregates",
-                                 "dataModelsUseAg", TRUE))
+                 return(gettextf("'%s' is %s, but no data models have class \"%s\"",
+                                 "dataModelsUseAg", TRUE, "Aggregate"))
              if (!dataModelsUseAg && any(mod.uses.ag))
-                 return(gettextf("'%s' is %s but data models use aggregates",
-                                 "dataModelsUseAg", FALSE))
+                 return(gettextf("'%s' is %s, but data models have class \"%s\"",
+                                 "dataModelsUseAg", FALSE, "Aggregate"))
              TRUE
          })
 
@@ -965,11 +965,11 @@ setClass("SystemModelsUseAgMixin",
              systemModels <- object@systemModels
              mod.uses.ag <- sapply(systemModels, methods::is, "Aggregate")
              if (systemModelsUseAg && !any(mod.uses.ag))
-                 return(gettextf("'%s' is %s but no system models use aggregates",
-                                 "systemModelsUseAg", TRUE))
+                 return(gettextf("'%s' is %s, but no system models have class \"%s\"",
+                                 "systemModelsUseAg", TRUE, "Aggregate"))
              if (!systemModelsUseAg && any(mod.uses.ag))
-                 return(gettextf("'%s' is %s but system models use aggregates",
-                                 "systemModelsUseAg", FALSE))
+                 return(gettextf("'%s' is %s, but system models have class \"%s\"",
+                                 "systemModelsUseAg", FALSE, "Aggregate"))
              TRUE
          })
 

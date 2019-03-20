@@ -725,8 +725,8 @@ setMethod("initialCombinedAccount",
               uses.ag.data.models <- sapply(dataModels, methods::is, "Aggregate")
               system.models.use.ag <- any(uses.ag.system.models)
               data.models.use.ag <- any(uses.ag.data.models)
-              system.models.use.ag <- new("LogicalFlag", system.models.use.ag)
-              data.models.use.ag <- new("LogicalFlag", data.models.use.ag)
+              system.models.use.ag <- methods::new("LogicalFlag", system.models.use.ag)
+              data.models.use.ag <- methods::new("LogicalFlag", data.models.use.ag)
               if (has.age) {
                   accession <- dembase::accession(account,
                                                   births = FALSE)
