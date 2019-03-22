@@ -5,9 +5,10 @@
 \title{Estimate counts and model from one or more noisy datasets.}
 \usage{
 estimateCounts(model, y, exposure = NULL, dataModels, datasets,
-  filename = NULL, nBurnin = 1000, nSim = 1000, nChain = 5,
-  nThin = 1, parallel = TRUE, outfile = NULL, nUpdateMax = 50,
-  verbose = FALSE, useC = TRUE)
+  concordances = list(), filename = NULL, nBurnin = 1000,
+  nSim = 1000, nChain = 4, nThin = 1, parallel = TRUE,
+  nCore = NULL, outfile = NULL, nUpdateMax = 50, verbose = FALSE,
+  useC = TRUE)
 }
 \arguments{
 \item{model}{An object of class \code{\linkS4class{SpecModel}},
@@ -27,18 +28,26 @@ the datasets and counts.}
 \item{datasets}{A named list of objects of class
 \code{\link[dembase:DemographicArray-class]{Counts}}.}
 
+\item{concordances}{A named list of
+\code{\link[dembase:Concordance-class]{concordances}},
+which are applied to \code{y} before it is supplied to
+the corresponding data model.}
+
 \item{filename}{The name of a file where output is collected.}
 
 \item{nBurnin}{Number of iteration discarded before recording begins.}
 
 \item{nSim}{Number of iterations carried out during recording.}
 
-\item{nChain}{Number of parallel chains used in simulations.}
+\item{nChain}{Number of independent chains to use.}
 
 \item{nThin}{Thinning interval.}
 
 \item{parallel}{Logical.  If \code{TRUE} (the default), parallel processing
 is used.}
+
+\item{nCore}{The number of cores to use, when \code{parallel}
+is \code{TRUE}.  If no value supplied, defaults to \code{nChain}.}
 
 \item{outfile}{Where to direct the ‘stdout’ and ‘stderr’ connection
 output from the workers when parallel processing.  Passed to function

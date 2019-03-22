@@ -143,6 +143,23 @@ setClass("DatasetsMixin",
              TRUE
          })
 
+## HAS_TESTS
+setClass("DataModelsUseAgMixin",
+         slots = c(dataModelsUseAg = "LogicalFlag"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             dataModelsUseAg <- object@dataModelsUseAg@.Data
+             dataModels <- object@dataModels
+             mod.uses.ag <- sapply(dataModels, methods::is, "Aggregate")
+             if (dataModelsUseAg && !any(mod.uses.ag))
+                 return(gettextf("'%s' is %s, but no data models have class \"%s\"",
+                                 "dataModelsUseAg", TRUE, "Aggregate"))
+             if (!dataModelsUseAg && any(mod.uses.ag))
+                 return(gettextf("'%s' is %s, but data models have class \"%s\"",
+                                 "dataModelsUseAg", FALSE, "Aggregate"))
+             TRUE
+         })
+
 ## NO_TESTS
 setClass("DescriptionsMixin",
          slots = c(descriptions = "list"),
@@ -204,12 +221,12 @@ setClass("ExpectedExposureMixin",
              .Data.theta.popn <- array(theta.popn,
                                        dim = dim(population),
                                        dimnames = dimnames(population))
-             theta.popn <- new("Counts",
+             theta.popn <- methods::new("Counts",
                                .Data = .Data.theta.popn,
                                metadata = metadata.theta.popn)
              exposure.calc <- dembase::exposure(theta.popn,
                                                 triangles = hasAge)
-             exposure.calc <- new("Exposure",
+             exposure.calc <- methods::new("Exposure",
                                   .Data = exposure.calc@.Data,
                                   metadata = exposure.calc@metadata)
              if (!isTRUE(all.equal(expectedExposure, exposure.calc)))
@@ -230,11 +247,10 @@ setClass("ExposureMixin",
              ## function on 'population'
              exposure.calc <- dembase::exposure(population,
                                                 triangles = hasAge)
-             exposure.calc <- new("Exposure",
+             exposure.calc <- methods::new("Exposure",
                                   .Data = exposure.calc@.Data,
                                   metadata = exposure.calc@metadata)
              if (!isTRUE(all.equal(exposure, exposure.calc))) {
-                 browser()
                  return(gettextf("'%s' and '%s' inconsistent",
                                  "exposure", "population"))
              }
@@ -299,7 +315,7 @@ setClass("IAccNextMixin",
              accession <- object@accession
              n.accession <- length(accession)
              for (name in c("iAccNext", "iAccNextOther")) {
-                 value <- slot(object, name)
+                 value <- methods::slot(object, name)
                  ## 'iAccNext', 'iAccNextOther' have length 1
                  if (!identical(length(value), 1L))
                      return(gettextf("'%s' does not have length %d",
@@ -327,7 +343,7 @@ setClass("ICellMixin",
          contains = "VIRTUAL",
          validity = function(object) {
              for (name in c("iCell", "iCellOther")) {
-                 value <- slot(object, name)
+                 value <- methods::slot(object, name)
                  ## 'iCell', 'iCellOther' have length 1
                  if (!identical(length(value), 1L))
                      return(gettextf("'%s' does not have length %d",
@@ -358,7 +374,7 @@ setClass("ICompMixin",
              components <- object@account@components
              s <- c(-1L, 0L, seq_along(components))
              for (name in c("iComp", "iBirths", "iIntNet", "iOrigDest", "iParCh", "iPool")) {
-                 value <- slot(object, name)
+                 value <- methods::slot(object, name)
                  ## 'iComp', 'iBirths', iOrigDest', 'iParCh', 'iPool' 'iIntNet' has  length 1
                  if (!identical(length(value), 1L))
                      return(gettextf("'%s' does not have length %d",
@@ -400,7 +416,7 @@ setClass("IExpFirstMixin",
          validity = function(object) {
              ## iExpFirst, iExpFirstOther
              for (name in c("iExpFirst", "iExpFirstOther")) {
-                 value <- slot(object, name)
+                 value <- methods::slot(object, name)
                  ## 'iExpFirst', 'iExpFirstOther' have length 1
                  if (!identical(length(value), 1L))
                      return(gettextf("'%s' does not have length %d",
@@ -421,7 +437,7 @@ setClass("IExpFirstMixin",
              }
              ## iExposure, iExposureOther
              for (name in c("iExposure", "iExposureOther")) {
-                 value <- slot(object, name)
+                 value <- methods::slot(object, name)
                  ## 'iExposure', 'iExposureOther' have length 1
                  if (!identical(length(value), 1L))
                      return(gettextf("'%s' does not have length %d",
@@ -444,7 +460,7 @@ setClass("IExpFirstMixin",
              population <- object@account@population
              n.population <- length(population)
              for (name in c("iPopnNext", "iPopnNextOther")) {
-                 value <- slot(object, name)
+                 value <- methods::slot(object, name)
                  ## 'iPopnNext', 'iPopnNextOther' have length 1
                  if (!identical(length(value), 1L))
                      return(gettextf("'%s' does not have length %d",
@@ -472,7 +488,7 @@ setClass("IExpFirstMixin",
 ##          contains = "VIRTUAL",
 ##          validity = function(object) {
 ##              for (name in c("iExpFirst", "iExpFirstOther")) {
-##                  value <- slot(object, name)
+##                  value <- methods::slot(object, name)
 ##                  ## 'iExpFirst', 'iExpFirstOther' have length 1
 ##                  if (!identical(length(value), 1L))
 ##                      return(gettextf("'%s' does not have length %d",
@@ -504,7 +520,7 @@ setClass("IExpFirstMixin",
 ##          contains = "VIRTUAL",
 ##          validity = function(object) {
 ##              for (name in c("iExposure", "iExposureOther")) {
-##                  value <- slot(object, name)
+##                  value <- methods::slot(object, name)
 ##                  ## 'iExposure', 'iExposureOther' have length 1
 ##                  if (!identical(length(value), 1L))
 ##                      return(gettextf("'%s' does not have length %d",
@@ -539,7 +555,7 @@ setClass("IMethodCombined",
 ##              population <- object@account@population
 ##              n.population <- length(population)
 ##              for (name in c("iPopnNext", "iPopnNextOther")) {
-##                  value <- slot(object, name)
+##                  value <- methods::slot(object, name)
 ##                  ## 'iPopnNext', 'iPopnNextOther' have length 1
 ##                  if (!identical(length(value), 1L))
 ##                      return(gettextf("'%s' does not have length %d",
@@ -940,6 +956,24 @@ setClass("SystemModelsMixin",
              TRUE
          })
 
+## NO_TESTS
+setClass("SystemModelsUseAgMixin",
+         slots = c(systemModelsUseAg = "LogicalFlag"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             systemModelsUseAg <- object@systemModelsUseAg@.Data
+             systemModels <- object@systemModels
+             mod.uses.ag <- sapply(systemModels, methods::is, "Aggregate")
+             if (systemModelsUseAg && !any(mod.uses.ag))
+                 return(gettextf("'%s' is %s, but no system models have class \"%s\"",
+                                 "systemModelsUseAg", TRUE, "Aggregate"))
+             if (!systemModelsUseAg && any(mod.uses.ag))
+                 return(gettextf("'%s' is %s, but system models have class \"%s\"",
+                                 "systemModelsUseAg", FALSE, "Aggregate"))
+             TRUE
+         })
+
+
 setClass("SystemMovementsMixin",
          contains = "VIRTUAL",
          validity = function(object) {
@@ -979,7 +1013,7 @@ setClass("TransformExpToBirthsMixin",
              modelUsesExposure <- object@modelUsesExposure
              ## if 'iBirths' is -1L, then 'transformExpToBirths' is empty
              if (iBirths == -1L) {
-                 if (!identical(transformExpToBirths, new("CollapseTransform")))
+                 if (!identical(transformExpToBirths, methods::new("CollapseTransform")))
                      return(gettextf("account does not have births component, but '%s' is not empty",
                                      "transformExpToBirths"))
              }
@@ -992,7 +1026,7 @@ setClass("TransformExpToBirthsMixin",
                  }
                  else {
                      ## if model for births does not use exposure, then 'transformExpToBirths' is empty
-                     if (!identical(transformExpToBirths, new("CollapseTransform")))
+                     if (!identical(transformExpToBirths, methods::new("CollapseTransform")))
                          return(gettextf("model for births does not use exposure, but '%s' is not empty",
                                          "transformExpToBirths"))
                  }

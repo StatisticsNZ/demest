@@ -165,6 +165,27 @@ setMethod("initialCombinedModel",
                             "y", class(y), "CMP", "y", "Counts"))
           })
 
+## initialCombinedModelSimulate #############################################################
+
+## Creates orindary 'CombinedModel' object, but with initial draw
+## of hyper-parameters, and with blank 'y'
+
+## HAS_TESTS
+setMethod("initialCombinedModelSimulate",
+          signature(object = "SpecBinomialVarying"),
+          function(object, y, exposure, weights) {
+              model <- initialModel(object,
+                                    y = y,
+                                    exposure = exposure)
+              model <- drawHyperParam(model)
+              y <- setYToMissing(y)
+              methods::new("CombinedModelBinomial",
+                           model = model,
+                           y = y,
+                           exposure = exposure)
+          })
+
+
 
 
 ## initialCombinedModelPredict ##############################################################
@@ -191,8 +212,8 @@ setMethod("initialCombinedModelPredict",
               class.y <- if (yIsCounts) "Counts" else "Values"
               y <- methods::new(class.y, .Data = .Data, metadata = metadata)
               methods::new("CombinedModelNormal",
-                  model = model,
-                  y = y)
+                           model = model,
+                           y = y)
           })
 
 ## HAS_TESTS
@@ -246,9 +267,9 @@ setMethod("initialCombinedModelPredict",
               y <- methods::new(class.y, .Data = .Data, metadata = metadata)
               exposure <- methods::new("Counts", .Data = .Data, metadata = metadata)
               methods::new("CombinedModelBinomial",
-                  model = model,
-                  y = y,
-                  exposure = exposure)
+                           model = model,
+                           y = y,
+                           exposure = exposure)
           })
 
 ## HAS_TESTS
@@ -562,7 +583,7 @@ setMethod("initialCombinedAccount",
               is.net <- is.int.net | is.net.move
               exposure <- dembase::exposure(population,
                                             triangles = has.age)
-              exposure <- new("Exposure",
+              exposure <- methods::new("Exposure",
                               .Data = exposure@.Data,
                               metadata = exposure@metadata)
               population <- methods::new("Population",
@@ -582,7 +603,7 @@ setMethod("initialCombinedAccount",
                                                                       births = components[[i.births]],
                                                                       dominant = dominant)
               else
-                  transform.exp.to.births <- new("CollapseTransform")
+                  transform.exp.to.births <- methods::new("CollapseTransform")
               transforms.exp.to.comp <- vector(mode = "list", length = length(components))
               for (i in seq_along(transforms.exp.to.comp)) {
                   if (model.uses.exposure[i + 1L]) {
@@ -666,22 +687,28 @@ setMethod("initialCombinedAccount",
                                         dim = dim(population),
                                         dimnames = dimnames(population))
               metadata.theta.popn <- population@metadata
-              theta.popn <- new("Counts",
+              theta.popn <- methods::new("Counts",
                                 .Data = .Data.theta.popn,
                                 metadata = metadata.theta.popn)
               expected.exposure <- dembase::exposure(theta.popn,
                                                      triangles = has.age)
-              expected.exposure <- new("Exposure",
+              expected.exposure <- methods::new("Exposure",
                                        .Data = expected.exposure@.Data,
                                        metadata = expected.exposure@metadata)
               for (i in seq_along(dataModels)) {
                   series.index <- seriesIndices[i]
                   series <- if (series.index == 0L) population else components[[series.index]]
-                  series.collapsed <- dembase::collapse(series, transform = transforms[[i]])
-                  model <- dataModels[[i]]
-                  if (methods::is(model, "Poisson"))
-                      series.collapsed <- dembase::toDouble(series.collapsed)
                   dataset <- datasets[[i]]
+                  metadata.series.collapsed <- dataset@metadata
+                  .Data.series.collapsed <- dembase::collapse(series@.Data,
+                                                              transform = transforms[[i]])
+                  dimnames(.Data.series.collapsed) <- dimnames(metadata.series.collapsed)
+                  series.collapsed <- methods::new("Counts",
+                                          .Data = .Data.series.collapsed,
+                                          metadata = metadata.series.collapsed)
+                  model <- dataModels[[i]]
+                  if (methods::is(model, "Poisson") || methods::is(model, "CMP"))
+                      series.collapsed <- dembase::toDouble(series.collapsed)
                   dataModels[[i]] <- initialModel(model,
                                                   y = dataset,
                                                   exposure = series.collapsed)
@@ -692,10 +719,18 @@ setMethod("initialCombinedAccount",
                       datasets[[i]] <- dataset
                   }
               }
+              ## create flags showing whether system
+              ## or data models use aggregates
+              uses.ag.system.models <- sapply(systemModels, methods::is, "Aggregate")
+              uses.ag.data.models <- sapply(dataModels, methods::is, "Aggregate")
+              system.models.use.ag <- any(uses.ag.system.models)
+              data.models.use.ag <- any(uses.ag.data.models)
+              system.models.use.ag <- methods::new("LogicalFlag", system.models.use.ag)
+              data.models.use.ag <- methods::new("LogicalFlag", data.models.use.ag)
               if (has.age) {
                   accession <- dembase::accession(account,
                                                   births = FALSE)
-                  accession <- new("Accession",
+                  accession <- methods::new("Accession",
                                    .Data = accession@.Data,
                                    metadata = accession@metadata)
                   iterator.acc <- CohortIterator(accession)
@@ -705,13 +740,15 @@ setMethod("initialCombinedAccount",
                                account = account,
                                ageTimeStep = age.time.step,
                                cumProbComp = cum.prob.comp,
+                               dataModels = dataModels,
+                               dataModelsUseAg = data.models.use.ag,
                                datasets = datasets,
                                descriptions = descriptions,
                                diffProp = NA_integer_,
                                exposure = exposure,
                                expectedExposure = expected.exposure,
-                               generatedNewProposal = new("LogicalFlag", FALSE),
-                               hasAge = new("LogicalFlag", TRUE),
+                               generatedNewProposal = methods::new("LogicalFlag", FALSE),
+                               hasAge = methods::new("LogicalFlag", TRUE),
                                iAccNext = NA_integer_,
                                iAccNextOther = NA_integer_,
                                iBirths = i.births,
@@ -729,7 +766,7 @@ setMethod("initialCombinedAccount",
                                iPopnNextOther = NA_integer_,
                                iPool = i.pool,
                                isIncrement = is.increment,
-                               isLowerTriangle = new("LogicalFlag", FALSE),
+                               isLowerTriangle = methods::new("LogicalFlag", FALSE),
                                isNet = is.net,
                                iteratorAcc = iterator.acc,
                                iteratorExposure = iterator.exposure,
@@ -742,10 +779,10 @@ setMethod("initialCombinedAccount",
                                modelUsesExposure = model.uses.exposure,
                                namesDatasets = namesDatasets,                           
                                nCellAccount = n.cell.account,
-                               dataModels = dataModels,
                                probPopn = prob.popn,
                                seriesIndices = seriesIndices,
                                systemModels = systemModels,
+                               systemModelsUseAg = system.models.use.ag,
                                transformExpToBirths = transform.exp.to.births,
                                transforms = transforms,
                                transformsExpToComp = transforms.exp.to.comp)
@@ -755,13 +792,15 @@ setMethod("initialCombinedAccount",
                                account = account,
                                ageTimeStep = age.time.step,
                                cumProbComp = cum.prob.comp,
+                               dataModels = dataModels,
+                               dataModelsUseAg = data.models.use.ag,
                                datasets = datasets,
                                descriptions = descriptions,
                                diffProp = NA_integer_,
                                exposure = exposure,
                                expectedExposure = expected.exposure,
-                               generatedNewProposal = new("LogicalFlag", FALSE),
-                               hasAge = new("LogicalFlag", FALSE),
+                               generatedNewProposal = methods::new("LogicalFlag", FALSE),
+                               hasAge = methods::new("LogicalFlag", FALSE),
                                iBirths = i.births,
                                iCell = NA_integer_,
                                iCellOther = NA_integer_,
@@ -787,12 +826,45 @@ setMethod("initialCombinedAccount",
                                modelUsesExposure = model.uses.exposure,
                                namesDatasets = namesDatasets,
                                nCellAccount = n.cell.account,
-                               dataModels = dataModels,
                                probPopn = prob.popn,
                                seriesIndices = seriesIndices,
                                systemModels = systemModels,
+                               systemModelsUseAg = system.models.use.ag,
                                transformExpToBirths = transform.exp.to.births,
                                transforms = transforms,
                                transformsExpToComp = transforms.exp.to.comp)
               }
           })
+
+
+## HAS_TESTS
+setMethod("initialCombinedAccountSimulate",
+          signature(account = "Movements",
+                    systemModels = "list",
+                    systemWeights = "list",
+                    dataModels = "list",
+                    seriesIndices = "integer",
+                    datasets = "list",
+                    namesDatasets = "character",
+                    transforms = "list"),
+          function(account, systemModels, systemWeights,
+                   dataModels, seriesIndices, 
+                   datasets, namesDatasets, transforms,
+                   dominant = c("Female", "Male")) {
+              combined <- initialCombinedAccount(account = account,
+                                                 systemModels = systemModels,
+                                                 systemWeights = systemWeights,
+                                                 dataModels = dataModels,
+                                                 seriesIndices = seriesIndices, 
+                                                 datasets = datasets,
+                                                 namesDatasets = namesDatasets,
+                                                 transforms = transforms,
+                                                 dominant = dominant)
+              combined <- setDatasetsToMissing(combined)
+              combined <- drawDataModels(combined)
+              combined <- drawSystemModels(combined)
+              combined <- updateExpectedExposure(combined,
+                                                 useC = TRUE)
+              combined
+          })
+

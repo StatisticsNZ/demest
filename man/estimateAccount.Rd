@@ -5,13 +5,18 @@
 \title{Estimate demographic account and models from multiple noisy datasets.}
 \usage{
 estimateAccount(account, systemModels, datasets, dataModels,
-  weights = list(), dominant = c("Female", "Male"), filename = NULL,
-  nBurnin = 1000, nSim = 1000, nChain = 4, nThin = 1,
-  parallel = TRUE, outfile = NULL, nUpdateMax = 50,
-  verbose = FALSE, useC = TRUE)
+  concordances = list(), weights = list(), dominant = c("Female",
+  "Male"), filename = NULL, nBurnin = 1000, nSim = 1000,
+  nChain = 4, nThin = 1, parallel = TRUE, nCore = NULL,
+  outfile = NULL, nUpdateMax = 50, verbose = FALSE, useC = TRUE)
 }
 \arguments{
-\item{systemModels}{A list of objects of class \code{\linkS4class{SpecModel}}
+\item{account}{An object of class
+\code{\link[dembase:DemographicAccount-class]{DemographicAccount}},
+giving the initial values for the estimation of the account.}
+
+\item{systemModels}{A list of objects of class
+\code{\linkS4class{SpecModel}}
 specifying models for the demographic series.}
 
 \item{datasets}{A named list of objects of class
@@ -20,18 +25,34 @@ specifying models for the demographic series.}
 \item{dataModels}{A list of objects of class
 \code{\linkS4class{SpecModel}} specifying models for the datasets.}
 
+\item{concordances}{A named list of
+\code{\link[dembase:Concordance-class]{concordances}},
+which are applied to the series in the account before they are
+supplied to the corresponding data model.}
+
+\item{weights}{A named list of
+\code{\link[dembase:Counts-class]{Counts}} objects,
+providing weights for any Normal models among the system models.}
+
+\item{dominant}{Either \code{"Female"} (the default) or \code{"Male"}.
+Determines which sex is used to generate exposures in the system
+model for births.}
+
 \item{filename}{The name of a file where output is collected.}
 
 \item{nBurnin}{Number of iteration discarded before recording begins.}
 
 \item{nSim}{Number of iterations carried out during recording.}
 
-\item{nChain}{Number of parallel chains used in simulations.}
+\item{nChain}{Number of independent chains to use.}
 
 \item{nThin}{Thinning interval.}
 
 \item{parallel}{Logical.  If \code{TRUE} (the default), parallel processing
 is used.}
+
+\item{nCore}{The number of cores to use, when \code{parallel}
+is \code{TRUE}.  If no value supplied, defaults to \code{nChain}.}
 
 \item{outfile}{Where to direct the ‘stdout’ and ‘stderr’ connection
 output from the workers when parallel processing.  Passed to function
@@ -47,9 +68,6 @@ printed at the end of the calculations.}
 \item{useC}{Logical.  If \code{TRUE} (the default), the calculations
 are done in C.  Setting \code{useC} to \code{FALSE} may be useful
 for debugging.}
-
-\item{y}{An object of class
-\code{\link[dembase:DemographicAccount-class]{DemographicAccount}}.}
 }
 \description{
 Infer the contents of a demographic account, and fit models

@@ -18,7 +18,7 @@ such as expert judgements.
 \section{Slots}{
 
 \describe{
-\item{\code{metadataAg}}{Metadata (such as \code{\link[dembase]{dimtypes}}
+\item{\code{metadataAg}}{Metadata (such as \code{\link[dembase]{dimtypes}})
 for aggregate values.}
 
 \item{\code{scaleAg}}{Standard deviation of proposal density
@@ -32,7 +32,7 @@ disaggregated rates, counts, probabilities, or means.}
 \item{\code{weightAg}}{Weights used to calculate \code{valueAg} from
 disaggregated rates, counts, probabilities, or means.}
 
-\item{\code{concordancesAg}}{List of \code{\link[classconc]{ManyToOne}}
+\item{\code{concordancesAg}}{List of \code{\link[dembase:ManyToOne-class]{ManyToOne}}
 concordances.}
 }}
 

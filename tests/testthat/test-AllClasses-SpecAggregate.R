@@ -7,7 +7,7 @@ test.identity <- FALSE
 test.extended <- FALSE
 
 test_that("can create object of class SpecAgCertain", {
-    Concordance <- classconc::Concordance
+    Concordance <- dembase::Concordance
     x <- new("SpecAgCertain",
              valueAg = new("ParameterVector", as.double(1:4)),
              weightAg = NULL,
@@ -38,7 +38,7 @@ test_that("can create object of class SpecAgCertain", {
 
 
 test_that("validityTests inherited from ConcordancesAgMixin work", {
-    Concordance <- classconc::Concordance
+    Concordance <- dembase::Concordance
     x <- new("SpecAgCertain",
              valueAg = new("ParameterVector", as.double(1:4)),
              weightAg = Counts(array(1,
@@ -130,7 +130,7 @@ test_that("validity tests inherited from FunAgMixin work", {
 })
 
 test_that("can create object of class SpecAgLife", {
-    Concordance <- classconc::Concordance
+    Concordance <- dembase::Concordance
     x <- new("SpecAgLife",
              axAg = NULL,
              valueAg = new("ParameterVector", as.double(1:4)),
@@ -155,7 +155,7 @@ test_that("can create object of class SpecAgLife", {
 })
 
 test_that("validity tests for SpecAgLife inherited from SpecAxAgMixin work", {
-    Concordance <- classconc::Concordance
+    Concordance <- dembase::Concordance
     x <- new("SpecAgLife",
              axAg = ValuesOne(0.1, labels = "0", name = "age", dimscale = "Intervals"),
              valueAg = new("ParameterVector", as.double(1:4)),

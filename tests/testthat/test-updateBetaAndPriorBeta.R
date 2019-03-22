@@ -3,7 +3,7 @@ context("updateBetaAndPriorBeta")
 
 n.test <- 5
 test.identity <- FALSE
-test.extended <- TRUE
+test.extended <- FALSE
 
 test_that("updateBetaAndPriorBeta works with ExchFixed - not saturated", {
     updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta

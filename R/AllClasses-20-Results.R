@@ -61,7 +61,7 @@ setClass("ResultsEst",
          slots = c(mcmc = "integer"),
          contains = c("VIRTUAL", "Results"),
          validity = function(object) {
-             kNamesMCMC <- c("nBurnin", "nSim", "nChain", "nThin", "nIteration")
+             kNamesMCMC <- c("nBurnin", "nSim", "nChain", "nThin", "nCore", "nIteration")
              kNonNegative <- c("nBurnin", "nSim", "nIteration")
              mcmc <- object@mcmc
              seed <- object@seed
@@ -99,11 +99,11 @@ setClass("ResultsEst",
              if (mcmc[["nIteration"]] != (nSim %/% mcmc[["nThin"]]) * mcmc[["nChain"]])
                  return(gettextf("'%s', '%s', '%s', and '%s' inconsistent",
                                  "nIteration", "nSim", "nThin", "nChain"))
-             ## if parellel is TRUE, length of seed equal to nChain
+             ## if parellel is TRUE, length of seed equal to nCore
              if (control$parallel) {
-                 if (!identical(length(seed), mcmc[["nChain"]]))
+                 if (!identical(length(seed), mcmc[["nCore"]]))
                      return(gettextf("'%s' is TRUE but length of '%s' is not equal to '%s'",
-                                     "parallel", "seed", "nChain"))
+                                     "parallel", "seed", "nCore"))
              }
              ## length of final equal to nChain
              if (!identical(length(final), mcmc[["nChain"]]))
@@ -145,7 +145,7 @@ setClass("ResultsPred",
 ## HAS_TESTS
 setClass("ResultsModelEst",
          slots = c(model = "list",
-                        y = "DemographicOrSkeletonMissingData"),
+                   y = "DemographicOrSkeletonMissingData"),
          contains = "ResultsEst",
          validity = function(object) {
              mcmc <- object@mcmc
@@ -171,17 +171,16 @@ setClass("ResultsModelEst",
 ## sure the slots are listed in this order
 setClass("ResultsModelExposureEst",
          slots = c(model = "list",
-                        y = "DemographicOrSkeletonMissingData",
-                        exposure = "Counts"),
+                   y = "DemographicOrSkeletonMissingData",
+                   exposure = "Counts"),
          contains = "ResultsModelEst")
 
 ## HAS_TESTS
 setClass("ResultsModelPred",
-         slots = c(model = "list"),
+         slots = c(model = "list",
+                   y = "SkeletonMissingData"),
          contains = "ResultsPred",
          validity = function(object) {
-             mcmc <- object@mcmc
-             model <- object@model
              final <- object@final
              ## all elements of final have class "CombinedModel"
              if (!all(sapply(final, is, "CombinedModel")))
@@ -189,6 +188,15 @@ setClass("ResultsModelPred",
                                  "final", "CombinedModel"))
              TRUE
          })
+
+## HAS_TESTS
+## repeat arguments 'model' and 'y' to make
+## sure the slots are listed in this order
+setClass("ResultsModelExposurePred",
+         slots = c(model = "list",
+                   y = "SkeletonMissingData",
+                   exposure = "Counts"),
+         contains = "ResultsModelPred")
 
 setClassUnion("ResultsModel",
               members = c("ResultsModelEst", "ResultsModelPred"))
@@ -293,4 +301,62 @@ setClass("ResultsAccount",
              TRUE
          })
          
+## HAS_TESTS
+setClass("ResultsModelSimDirect",
+         slots = c(model = "list",
+                   y = "SkeletonMissingData",
+                   mcmc = "integer"),
+         contains = "Results",
+         validity = function(object) {
+             kNamesMCMC <- "nIteration"
+             kNonNegative <- "nIteration"
+             control <- object@control
+             model <- object@model
+             final <- object@final
+             parallel <- control[["parallel"]]
+             mcmc <- object@mcmc
+             ## 'parallel' is always FALSE
+             if (!identical(parallel, FALSE))
+                 return(gettextf("'%s' is not %s",
+                                 "parallel", "FALSE"))
+             ## 'final' has length 1
+             if (!identical(length(final), 1L))
+                 return(gettextf("'%s' does not have length %d",
+                                 "final", 1L))
+             ## all elements of final have class "CombinedModel"
+             if (!all(sapply(final, is, "CombinedModel")))
+                 return(gettextf("'%s' has elements not of class \"%s\"",
+                                 "final", "CombinedModel"))
+             ## mcmc has correct names
+             if (!identical(names(mcmc), kNamesMCMC))
+                 return(gettextf("'%s' has incorrect names",
+                                 "mcmc"))
+             ## mcmc has no missing values
+             for (name in kNamesMCMC)
+                 if (is.na(mcmc[[name]]))
+                     return(gettextf("'%s' is missing",
+                                     name))
+             ## elements of mcmc that should be non-negative are non-negative
+             for (name in kNonNegative)
+                 if (mcmc[[name]] < 0L)
+                     return(gettextf("'%s' is negative",
+                                     name))
+             ## elements of mcmc that should be positive are positive
+             for (name in setdiff(kNamesMCMC, kNonNegative))
+                 if (mcmc[[name]] < 1L)
+                     return(gettextf("'%s' is less than %d",
+                                     name, 1L))
+             TRUE
+         })
+
+
+
+## HAS_TESTS
+## repeat arguments 'model' and 'y' to make
+## sure the slots are listed in this order
+setClass("ResultsModelSimDirectExp",
+         slots = c(model = "list",
+                   y = "SkeletonMissingData",
+                   exposure = "Counts"),
+         contains = "ResultsModelSimDirect")
 

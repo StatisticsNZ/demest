@@ -6,8 +6,8 @@
 \usage{
 estimateModel(model, y, exposure = NULL, weights = NULL,
   filename = NULL, nBurnin = 1000, nSim = 1000, nChain = 4,
-  nThin = 1, parallel = TRUE, outfile = NULL, nUpdateMax = 50,
-  verbose = TRUE, useC = TRUE)
+  nThin = 1, parallel = TRUE, nCore = NULL, outfile = NULL,
+  nUpdateMax = 50, verbose = TRUE, useC = TRUE)
 }
 \arguments{
 \item{model}{An object of class \code{\linkS4class{SpecModel}},
@@ -28,12 +28,15 @@ object containing weights.}
 
 \item{nSim}{Number of iterations carried out during recording.}
 
-\item{nChain}{Number of parallel chains used in simulations.}
+\item{nChain}{Number of independent chains to use.}
 
 \item{nThin}{Thinning interval.}
 
 \item{parallel}{Logical.  If \code{TRUE} (the default), parallel processing
 is used.}
+
+\item{nCore}{The number of cores to use, when \code{parallel}
+is \code{TRUE}.  If no value supplied, defaults to \code{nChain}.}
 
 \item{outfile}{Where to direct the ‘stdout’ and ‘stderr’ connection
 output from the workers when parallel processing.  Passed to function
@@ -132,17 +135,6 @@ converged.
 At the end of the estimation process, the \code{estimateModel} and similar
 functions pool the results from all the chains to form a single sample.
 This sample has \code{floor(nChain * nSim / nThin)} iterations.
-}
-
-\section{Parallel}{
-
-
-Because each chain is run independently, the calculations can be carried out
-in parallel.  By default, \code{estimateModel}, \code{\link{estimateCounts}},
-and \code{\link{estimateAccount}} run the calculations on separate cores,
-using functions from the \pkg{parallel} package. For portability, however,
-the \code{parallel} argument is set to \code{FALSE} in the examples in the
-online help.
 }
 
 \examples{

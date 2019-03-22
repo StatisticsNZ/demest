@@ -3,7 +3,70 @@
 
 ## n.test <- 5
 ## test.identity <- FALSE
-## test.extended <- TRUE
+## test.extended <- FALSE
+
+
+## model <- Model(y ~ Binomial(mean ~ age * sex),
+##                `(Intercept)` ~ ExchFixed(mean = -1, sd = 0.2), 
+##                age ~ Exch(error = Error(scale = HalfT(scale = 0.3))),
+##                sex ~ ExchFixed(sd = 0.1),
+##                age:sex ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
+##                priorSD = HalfT(scale = 0.2))
+## exposure <- Counts(array(101:106,
+##                          dim = c(2, 3),
+##                          dimnames = list(sex = c("F", "M"),
+##                                          age = c("0-4", "5-9", "10+"))))
+## filename <- tempfile()
+## simulateModel(model,
+##               nDraw = 25,
+##               exposure = exposure,
+##               filename = filename,
+##               useC = FALSE)
+## y <- fetch(filename, "y")
+## dplot(~ age | sex,
+##       data = y)
+## table(as.integer(y))
+
+
+
+
+## model <- Model(y ~ Binomial(mean ~ sex + time),
+##                `(Intercept)` ~ ExchFixed(mean = -2, sd = 0.2), 
+##                sex ~ ExchFixed(sd = 0.1),
+##                time ~ DLM(level = Level(scale = HalfT(scale = 0.01)),
+##                           trend = Trend(initial = Initial(mean = 0.2, sd = 0.01),
+##                                         scale = HalfT(scale = 0.01)),
+##                           damp = NULL,
+##                           error = Error(scale = HalfT(scale = 0.01))),
+##                priorSD = HalfT(scale = 0.05))
+## exposure <- Counts(array(100,
+##                          dim = c(2, 20),
+##                          dimnames = list(sex = c("F", "M"),
+##                                          time = 2001:2020)),
+##                    dimscales = c(time = "Points"))
+## filename <- tempfile()
+## set.seed(0)
+## simulateModel(model,
+##               nDraw = 25,
+##               exposure = exposure,
+##               filename = filename,
+##               useC = FALSE)
+## y <- fetch(filename, "y")
+## dplot(~ time | sex,
+##       data = y)
+## table(as.integer(y))
+
+## time <- fetch(filename, c("mod", "prior", "time"))
+## dplot(~ time,
+##       groups = iteration,
+##       data = time)
+
+## trend <- fetch(filename, c("mod", "hyper", "time", "trend"))
+## dplot(~ time,
+##       groups = iteration,
+##       data = trend)
+
+
 
 
 ## ## estimateModel ##################################################################
@@ -39,8 +102,13 @@
 ##               nThin = 50,
 ##               nChain = 4)
 ## fetchSummary(filename.est)
+## exposure.pred <- Counts(array(100,
+##                               dim = c(6, 25),
+##                               dimnames = c(dimnames(expose)["age"], list(year = 2016:2040))),
+##                         dimscales = c(year = "Intervals"))
 ## predictModel(filenameEst = filename.est,
 ##              filenamePred = filename.pred,
+##              exposure = exposure.pred,
 ##              n = 25)             
 ## rates <- fetchBoth(filenameEst = filename.est, filenamePred = filename.pred,
 ##                    where = c("model", "likelihood", "rate"))
@@ -136,7 +204,6 @@
 ##                               trend = Trend(scale = HalfT(scale = 0.05, max = 0.1)),
 ##                               error = Error(scale = HalfT(scale = 0.05, max = 0.1)),
 ##                               damp = Damp(min = 0.9, max = 0.98)))
-
 
 
 ## continueEstimation(filename = filename.est, nBurnin = 5000, nSim = 5000)
@@ -274,6 +341,18 @@
 ## coef.out <- mod.out$hyper$reg$coef
 ## demest:::getDataFromFile(filename, first = 35L, last = 35L, lengthIter = 37L, iterations = 1:4000)
 
+
+
+## births <- demdata::iceland.births %>%
+##     Counts(dimscales = c(year = "Intervals")) %>%
+##     subarray(age > 15 & age < 45) %>%
+##     collapseIntervals(dimension = "age", width = 5)
+## expose <- demdata::iceland.popn %>%
+##     Counts(dimscales = c(year = "Intervals", age = "Intervals")) %>%
+##     subarray(age > 15 & age < 45) %>%
+##     subarray(year < 2015) %>%
+##     collapseIntervals(dimension = "age", width = 5) %>%
+##     subarray(sex == "Females")
 ## model <- Model(y ~ Poisson(mean ~ age * year),
 ##                age ~ DLM(level = Level(scale = HalfT(df = 30, mult = 0.25)),
 ##                          trend = NULL,
@@ -934,7 +1013,8 @@
 ##                         labels = seq(2000, 2100, 10),
 ##                         name = "time")
 ## births <- CountsOne(values = rpois(n = 10, lambda = 15),
-##                     labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
+##                     labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10
+##                                                             ), sep = "-"),
 ##                     name = "time")
 ## deaths <- CountsOne(values = rpois(n = 10, lambda = 5),
 ##                     labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
@@ -961,5 +1041,5 @@
 ##                 filename = filename,
 ##                 nBurnin = 1,
 ##                 nSim = 2,
-##                 nChain = 4,
+##                 nChain = 2,
 ##                 nThin = 1)

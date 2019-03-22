@@ -3,7 +3,7 @@ context("Prior-methods")
 
 n.test <- 5
 test.identity <- FALSE
-test.extended <- TRUE
+test.extended <- FALSE
 
 ## betaIsEstimated ####################################################################
 
@@ -24,9 +24,2342 @@ test_that("betaIsEstimated works with Zero prior", {
     expect_false(betaIsEstimated(x))
 })
 
+## describePrior #############################################################
+
+test_that("describePrior works with exchangeable", {
+    describePrior <- demest:::describePrior
+    x <- new("ExchFixed")
+    expect_identical(describePrior(x),
+                     "Exchangeable with known variance")
+    x <- new("ExchNormZero")
+    expect_identical(describePrior(x),
+                     "Exchangeable")
+    x <- new("ExchNormCov")
+    expect_identical(describePrior(x),
+                     "Exchangeable with covariates")
+    x <- new("ExchRobustZero")
+    expect_identical(describePrior(x),
+                     "Robust exchangeable")
+    x <- new("ExchRobustCov")
+    expect_identical(describePrior(x),
+                     "Robust exchangeable with covariates")
+})
+
+test_that("describePrior works with damped DLM", {
+    describePrior <- demest:::describePrior
+    x <- new("DLMNoTrendNormZeroNoSeason")
+    expect_identical(describePrior(x),
+                     "Damped local level")
+    x <- new("DLMWithTrendNormZeroNoSeason")
+    expect_identical(describePrior(x),
+                     "Damped local trend")
+    x <- new("DLMNoTrendNormZeroWithSeason")
+    expect_identical(describePrior(x),
+                     "Damped local level with seasonal effect")
+    x <- new("DLMWithTrendNormZeroWithSeason")
+    expect_identical(describePrior(x),
+                     "Damped local trend with seasonal effect")
+    x <- new("DLMNoTrendNormCovNoSeason")
+    expect_identical(describePrior(x),
+                     "Damped local level with covariates")
+    x <- new("DLMWithTrendNormCovNoSeason")
+    expect_identical(describePrior(x),
+                     "Damped local trend with covariates")
+    x <- new("DLMNoTrendNormCovWithSeason")
+    expect_identical(describePrior(x),
+                     "Damped local level with covariates and seasonal effect")
+    x <- new("DLMWithTrendNormCovWithSeason")
+    expect_identical(describePrior(x),
+                     "Damped local trend with covariates and seasonal effect")
+    x <- new("DLMNoTrendRobustZeroNoSeason")
+    expect_identical(describePrior(x),
+                     "Damped robust local level")
+    x <- new("DLMWithTrendRobustZeroNoSeason")
+    expect_identical(describePrior(x),
+                     "Damped robust local trend")
+    x <- new("DLMNoTrendRobustZeroWithSeason")
+    expect_identical(describePrior(x),
+                     "Damped robust local level with seasonal effect")
+    x <- new("DLMWithTrendRobustZeroWithSeason")
+    expect_identical(describePrior(x),
+                     "Damped robust local trend with seasonal effect")
+    x <- new("DLMNoTrendRobustCovNoSeason")
+    expect_identical(describePrior(x),
+                     "Damped robust local level with covariates")
+    x <- new("DLMWithTrendRobustCovNoSeason")
+    expect_identical(describePrior(x),
+                     "Damped robust local trend with covariates")
+    x <- new("DLMNoTrendRobustCovWithSeason")
+    expect_identical(describePrior(x),
+                     "Damped robust local level with covariates and seasonal effect")
+    x <- new("DLMWithTrendRobustCovWithSeason")
+    expect_identical(describePrior(x),
+                     "Damped robust local trend with covariates and seasonal effect")
+})
+
+test_that("describePrior works with non-damped DLM", {
+    describePrior <- demest:::describePrior
+    x <- new("DLMNoTrendNormZeroNoSeason")
+    x@phiKnown@.Data <- TRUE
+    x@phi <- 1
+    expect_identical(describePrior(x),
+                     "Local level")
+    x <- new("DLMWithTrendNormZeroNoSeason")
+    x@phiKnown@.Data <- TRUE
+    x@phi <- 1
+    expect_identical(describePrior(x),
+                     "Local trend")
+    x <- new("DLMNoTrendNormZeroWithSeason")
+    x@phiKnown@.Data <- TRUE
+    x@phi <- 1
+    expect_identical(describePrior(x),
+                     "Local level with seasonal effect")
+    x <- new("DLMWithTrendNormZeroWithSeason")
+    x@phiKnown@.Data <- TRUE
+    x@phi <- 1
+    expect_identical(describePrior(x),
+                     "Local trend with seasonal effect")
+    x <- new("DLMNoTrendNormCovNoSeason")
+    x@phiKnown@.Data <- TRUE
+    x@phi <- 1
+    expect_identical(describePrior(x),
+                     "Local level with covariates")
+    x <- new("DLMWithTrendNormCovNoSeason")
+    x@phiKnown@.Data <- TRUE
+    x@phi <- 1
+    expect_identical(describePrior(x),
+                     "Local trend with covariates")
+    x <- new("DLMNoTrendNormCovWithSeason")
+    x@phiKnown@.Data <- TRUE
+    x@phi <- 1
+    expect_identical(describePrior(x),
+                     "Local level with covariates and seasonal effect")
+    x <- new("DLMWithTrendNormCovWithSeason")
+    x@phiKnown@.Data <- TRUE
+    x@phi <- 1
+    expect_identical(describePrior(x),
+                     "Local trend with covariates and seasonal effect")
+    x <- new("DLMNoTrendRobustZeroNoSeason")
+    x@phiKnown@.Data <- TRUE
+    x@phi <- 1
+    expect_identical(describePrior(x),
+                     "Robust local level")
+    x <- new("DLMWithTrendRobustZeroNoSeason")
+    x@phiKnown@.Data <- TRUE
+    x@phi <- 1
+    expect_identical(describePrior(x),
+                     "Robust local trend")
+    x <- new("DLMNoTrendRobustZeroWithSeason")
+    x@phiKnown@.Data <- TRUE
+    x@phi <- 1
+    expect_identical(describePrior(x),
+                     "Robust local level with seasonal effect")
+    x <- new("DLMWithTrendRobustZeroWithSeason")
+    x@phiKnown@.Data <- TRUE
+    x@phi <- 1
+    expect_identical(describePrior(x),
+                     "Robust local trend with seasonal effect")
+    x <- new("DLMNoTrendRobustCovNoSeason")
+    x@phiKnown@.Data <- TRUE
+    x@phi <- 1
+    expect_identical(describePrior(x),
+                     "Robust local level with covariates")
+    x <- new("DLMWithTrendRobustCovNoSeason")
+    x@phiKnown@.Data <- TRUE
+    x@phi <- 1
+    expect_identical(describePrior(x),
+                     "Robust local trend with covariates")
+    x <- new("DLMNoTrendRobustCovWithSeason")
+    x@phiKnown@.Data <- TRUE
+    x@phi <- 1
+    expect_identical(describePrior(x),
+                     "Robust local level with covariates and seasonal effect")
+    x <- new("DLMWithTrendRobustCovWithSeason")
+    x@phiKnown@.Data <- TRUE
+    x@phi <- 1
+    expect_identical(describePrior(x),
+                     "Robust local trend with covariates and seasonal effect")
+})
+
+test_that("describePrior works with remaining priors", {
+    describePrior <- demest:::describePrior
+    x <- new("KnownCertain")
+    expect_identical(describePrior(x),
+                     "Known values")
+    x <- new("KnownUncertain")
+    expect_identical(describePrior(x),
+                     "Normal with known mean and variance")
+    x <- new("MixNormZero")
+    expect_identical(describePrior(x),
+                     "Mixture model")
+    x <- new("Zero")
+    expect_identical(describePrior(x),
+                     "Set to zero")
+})
 
 
-## makeDescriptor ####################################################################
+## drawPrior ####################################################################
+
+## ExchFixed
+
+test_that("drawPrior works with ExchFixed", {
+    drawPrior <- demest:::drawPrior
+    initialPrior <- demest:::initialPrior
+    spec <- ExchFixed()
+    beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "ExchFixed")
+    ans.obtained <- drawPrior(prior)
+    ans.expected <- prior
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("R and C versions of drawPrior give same answer with ExchFixed", {
+    drawPrior <- demest:::drawPrior
+    initialPrior <- demest:::initialPrior
+    spec <- ExchFixed(sd = 1)
+    beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "ExchFixed")
+    ans.R <- drawPrior(prior, useC = FALSE)
+    ans.C.generic <- drawPrior(prior, useC = TRUE, useSpecific = FALSE)
+    ans.C.specific <- drawPrior(prior, useC = TRUE, useSpecific = TRUE)
+    expect_identical(ans.R, ans.C)
+})
+
+## Exch
+
+test_that("drawPrior works with ExchNormZero", {
+    drawPrior <- demest:::drawPrior
+    initialPrior <- demest:::initialPrior
+    spec <- Exch(error = Error(scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(region = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "ExchNormZero")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.obtained <- drawPrior(prior)
+        set.seed(seed)
+        ans.expected <- prior
+        ans.expected@tau@.Data <- rhalft(n = 1,
+                                         df = prior@nuTau@.Data,
+                                         scale = prior@ATau@.Data)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of drawPrior give same answer with ExchNormZero", {
+    drawPrior <- demest:::drawPrior
+    initialPrior <- demest:::initialPrior
+    spec <- Exch(error = Error(scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(region = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "ExchNormZero")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.R <- drawPrior(prior, useC = FALSE)
+        set.seed(seed)
+        ans.C.generic <- drawPrior(prior, useC = TRUE, useSpecific = FALSE)
+        set.seed(seed)
+        ans.C.specific <- drawPrior(prior, useC = TRUE, useSpecific = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C.generic)
+        else
+            expect_equal(ans.R, ans.C.generic)
+        expect_identical(ans.C.specific, ans.C.generic)
+    }
+})
+
+test_that("drawPrior works with ExchRobustZero", {
+    drawPrior <- demest:::drawPrior
+    initialPrior <- demest:::initialPrior
+    rinvchisq1 <- demest:::rinvchisq1
+    spec <- Exch(error = Error(robust = TRUE, scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(region = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "ExchRobustZero")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.obtained <- drawPrior(prior)
+        set.seed(seed)
+        ans.expected <- prior
+        ans.expected@tau@.Data <- rhalft(n = 1,
+                                         df = prior@nuTau@.Data,
+                                         scale = prior@ATau@.Data)
+        for (i in seq_len(ans.expected@J@.Data))
+            ans.expected@UBeta@.Data[i] <- rinvchisq1(df = ans.expected@nuBeta@.Data,
+                                                      scaleSq = ans.expected@tau@.Data^2)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of drawPrior give same answer with ExchRobustZero", {
+    drawPrior <- demest:::drawPrior
+    initialPrior <- demest:::initialPrior
+    spec <- Exch(error = Error(robust = TRUE, scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(region = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "ExchRobustZero")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.R <- drawPrior(prior, useC = FALSE)
+        set.seed(seed)
+        ans.C.generic <- drawPrior(prior, useC = TRUE, useSpecific = FALSE)
+        set.seed(seed)
+        ans.C.specific <- drawPrior(prior, useC = TRUE, useSpecific = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C.generic)
+        else
+            expect_equal(ans.R, ans.C.generic)
+        expect_identical(ans.C.specific, ans.C.generic)
+    }
+})
+
+test_that("drawPrior works with ExchNormCov", {
+    drawPrior <- demest:::drawPrior
+    initialPrior <- demest:::initialPrior
+    rinvchisq1 <- demest:::rinvchisq1
+    data <- data.frame(region = rep(letters[1:10], times = 2),
+                       sex = rep(c("f", "m"), each = 10),
+                       income = rnorm(20),
+                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+    formula <- mean ~ income * cat
+    spec <- Exch(covariates = Covariates(formula = formula,
+                                         data = data,
+                                         contrastsArg = list(cat = diag(3)),
+                                         coef = TDist(scale = 0.3)),
+                 error = Error(scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
+    expect_is(prior, "ExchNormCov")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.obtained <- drawPrior(prior)
+        set.seed(seed)
+        ans.expected <- prior
+        ans.expected@tau@.Data <- rhalftTrunc1(df = ans.expected@nuTau@.Data,
+                                               scale = ans.expected@ATau@.Data,
+                                               max = ans.expected@tauMax@.Data)
+        for (i in seq_len(ans.expected@P@.Data - 1))
+            ans.expected@UEtaCoef@.Data[i] <- rinvchisq1(df = ans.expected@nuEtaCoef@.Data[i],
+                                                         scaleSq = ans.expected@AEtaCoef@.Data[i]^2)
+        ans.expected@eta@.Data[1L] <- 0
+        for (i in seq_len(ans.expected@P@.Data - 1))
+            ans.expected@eta@.Data[i+1] <- rnorm(n = 1,
+                                                 mean = ans.expected@meanEtaCoef@.Data[i],
+                                                 sd = sqrt(ans.expected@UEtaCoef@.Data[i]))
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of drawPrior give same answer with ExchNormCov", {
+    drawPrior <- demest:::drawPrior
+    initialPrior <- demest:::initialPrior
+    data <- data.frame(region = rep(letters[1:10], times = 2),
+                       sex = rep(c("f", "m"), each = 10),
+                       income = rnorm(20),
+                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+    formula <- mean ~ income * cat
+    spec <- Exch(covariates = Covariates(formula = formula,
+                                         data = data,
+                                         contrastsArg = list(cat = diag(3)),
+                                         coef = TDist(scale = 0.3)),
+                 error = Error(scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
+    expect_is(prior, "ExchNormCov")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.R <- drawPrior(prior, useC = FALSE)
+        set.seed(seed)
+        ans.C.generic <- drawPrior(prior, useC = TRUE, useSpecific = FALSE)
+        set.seed(seed)
+        ans.C.specific <- drawPrior(prior, useC = TRUE, useSpecific = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C.generic)
+        else
+            expect_equal(ans.R, ans.C.generic)
+        expect_identical(ans.C.specific, ans.C.generic)
+    }
+})
+
+test_that("drawPrior works with ExchRobustCov", {
+    drawPrior <- demest:::drawPrior
+    initialPrior <- demest:::initialPrior
+    rinvchisq1 <- demest:::rinvchisq1
+    data <- data.frame(region = rep(letters[1:10], times = 2),
+                       sex = rep(c("f", "m"), each = 10),
+                       income = rnorm(20),
+                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+    formula <- mean ~ income * cat
+    spec <- Exch(covariates = Covariates(formula = formula,
+                                         data = data,
+                                         contrastsArg = list(cat = diag(3)),
+                                         coef = TDist(scale = 0.3)),
+                 error = Error(robust = TRUE, scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
+    expect_is(prior, "ExchRobustCov")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.obtained <- drawPrior(prior)
+        set.seed(seed)
+        ans.expected <- prior
+        ans.expected@tau@.Data <- rhalftTrunc1(df = prior@nuTau@.Data,
+                                               scale = prior@ATau@.Data,
+                                               max = prior@tauMax@.Data)
+        for (i in seq_len(ans.expected@J@.Data))
+            ans.expected@UBeta@.Data[i] <- rinvchisq1(df = ans.expected@nuBeta@.Data,
+                                                      scaleSq = ans.expected@tau@.Data^2)
+        for (i in seq_len(ans.expected@P@.Data - 1))
+            ans.expected@UEtaCoef@.Data[i] <- rinvchisq1(df = ans.expected@nuEtaCoef@.Data[i],
+                                                         scaleSq = ans.expected@AEtaCoef@.Data[i]^2)
+        ans.expected@eta@.Data[1] <- 0
+        for (i in seq_len(ans.expected@P@.Data - 1))
+            ans.expected@eta@.Data[i+1] <- rnorm(n = 1,
+                                                 mean = ans.expected@meanEtaCoef@.Data[i],
+                                                 sd = sqrt(ans.expected@UEtaCoef@.Data[i]))
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of drawPrior give same answer with ExchRobustCov", {
+    drawPrior <- demest:::drawPrior
+    initialPrior <- demest:::initialPrior
+    data <- data.frame(region = rep(letters[1:10], times = 2),
+                       sex = rep(c("f", "m"), each = 10),
+                       income = rnorm(20),
+                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+    formula <- mean ~ income * cat
+    spec <- Exch(covariates = Covariates(formula = formula,
+                                         data = data,
+                                         contrastsArg = list(cat = diag(3)),
+                                         coef = TDist(scale = 0.3)),
+                 error = Error(robust = TRUE,
+                               scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
+    expect_is(prior, "ExchRobustCov")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.R <- drawPrior(prior, useC = FALSE)
+        set.seed(seed)
+        ans.C.generic <- drawPrior(prior, useC = TRUE, useSpecific = FALSE)
+        set.seed(seed)
+        ans.C.specific <- drawPrior(prior, useC = TRUE, useSpecific = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C.generic)
+        else
+            expect_equal(ans.R, ans.C.generic)
+        expect_identical(ans.C.specific, ans.C.generic)
+    }
+})
+
+## DLM - Norm, Zero
+
+test_that("drawPrior works with DLMNoTrendNormZeroNoSeason", {
+    drawPrior <- demest:::drawPrior
+    drawTau <- demest:::drawTau
+    drawOmegaAlpha <- demest:::drawOmegaAlpha
+    drawPhi <- demest:::drawPhi
+    predictAlphaDLMNoTrend <- demest:::predictAlphaDLMNoTrend
+    initialPrior <- demest:::initialPrior
+    spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
+                trend = NULL,
+                damp = Damp(shape1 = 3, shape2 = 3),
+                error = Error(scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "DLMNoTrendNormZeroNoSeason")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.obtained <- drawPrior(prior)
+        set.seed(seed)
+        ans.expected <- prior
+        ans.expected <- drawTau(ans.expected)
+        ans.expected <- drawOmegaAlpha(ans.expected)
+        ans.expected <- drawPhi(ans.expected)
+        ans.expected <- predictAlphaDLMNoTrend(ans.expected)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of drawPrior give same answer with DLMNoTrendNormZeroNoSeason", {
+    drawPrior <- demest:::drawPrior
+    initialPrior <- demest:::initialPrior
+    spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
+                trend = NULL,
+                damp = Damp(shape1 = 3, shape2 = 3),
+                error = Error(scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "DLMNoTrendNormZeroNoSeason")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.R <- drawPrior(prior, useC = FALSE)
+        set.seed(seed)
+        ans.C.generic <- drawPrior(prior, useC = TRUE, useSpecific = FALSE)
+        set.seed(seed)
+        ans.C.specific <- drawPrior(prior, useC = TRUE, useSpecific = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C.generic)
+        else
+            expect_equal(ans.R, ans.C.generic)
+        expect_identical(ans.C.specific, ans.C.generic)
+    }
+})
+
+test_that("drawPrior works with DLMWithTrendNormZeroNoSeason", {
+    drawPrior <- demest:::drawPrior
+    drawTau <- demest:::drawTau
+    drawOmegaAlpha <- demest:::drawOmegaAlpha
+    drawOmegaDelta <- demest:::drawOmegaDelta
+    drawPhi <- demest:::drawPhi
+    drawDelta0 <- demest:::drawDelta0
+    predictAlphaDeltaDLMWithTrend <- demest:::predictAlphaDeltaDLMWithTrend
+    initialPrior <- demest:::initialPrior
+    spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
+                trend = Trend(initial = Initial(sd = 0.1), scale = HalfT(scale = 0.1)),
+                damp = Damp(shape1 = 3, shape2 = 3),
+                error = Error(scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "DLMWithTrendNormZeroNoSeason")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.obtained <- drawPrior(prior)
+        set.seed(seed)
+        ans.expected <- prior
+        ans.expected <- drawTau(ans.expected)
+        ans.expected <- drawOmegaAlpha(ans.expected)
+        ans.expected <- drawOmegaDelta(ans.expected)
+        ans.expected <- drawPhi(ans.expected)
+        ans.expected <- drawDelta0(ans.expected)
+        ans.expected <- predictAlphaDeltaDLMWithTrend(ans.expected)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of drawPrior give same answer with DLMWithTrendNormZeroNoSeason", {
+    drawPrior <- demest:::drawPrior
+    initialPrior <- demest:::initialPrior
+    spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
+                trend = Trend(initial = Initial(sd = 0.1), scale = HalfT(scale = 0.1)),
+                damp = Damp(shape1 = 3, shape2 = 3),
+                error = Error(scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "DLMWithTrendNormZeroNoSeason")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.R <- drawPrior(prior, useC = FALSE)
+        set.seed(seed)
+        ans.C.generic <- drawPrior(prior, useC = TRUE, useSpecific = FALSE)
+        set.seed(seed)
+        ans.C.specific <- drawPrior(prior, useC = TRUE, useSpecific = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C.generic)
+        else
+            expect_equal(ans.R, ans.C.generic)
+        expect_identical(ans.C.specific, ans.C.generic)
+    }
+})
+
+test_that("drawPrior works with DLMNoTrendNormZeroWithSeason", {
+    drawPrior <- demest:::drawPrior
+    drawTau <- demest:::drawTau
+    drawOmegaAlpha <- demest:::drawOmegaAlpha
+    drawOmegaSeason <- demest:::drawOmegaSeason
+    drawPhi <- demest:::drawPhi
+    predictAlphaDLMNoTrend <- demest:::predictAlphaDLMNoTrend
+    predictSeason <- demest:::predictSeason
+    initialPrior <- demest:::initialPrior
+    spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
+                trend = NULL,
+                season = Season(n = 4, scale = HalfT(scale = 0.05)),
+                damp = Damp(shape1 = 3, shape2 = 3),
+                error = Error(scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "DLMNoTrendNormZeroWithSeason")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.obtained <- drawPrior(prior)
+        set.seed(seed)
+        ans.expected <- prior
+        ans.expected <- drawTau(ans.expected)
+        ans.expected <- drawOmegaAlpha(ans.expected)
+        ans.expected <- drawOmegaSeason(ans.expected)
+        ans.expected <- drawPhi(ans.expected)
+        ans.expected <- predictSeason(ans.expected)
+        ans.expected <- predictAlphaDLMNoTrend(ans.expected)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of drawPrior give same answer with DLMNoTrendNormZeroWithSeason", {
+    drawPrior <- demest:::drawPrior
+    initialPrior <- demest:::initialPrior
+    spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
+                trend = NULL,
+                season = Season(n = 4, scale = HalfT(scale = 0.05)),
+                damp = Damp(shape1 = 3, shape2 = 3),
+                error = Error(scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "DLMNoTrendNormZeroWithSeason")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.R <- drawPrior(prior, useC = FALSE)
+        set.seed(seed)
+        ans.C.generic <- drawPrior(prior, useC = TRUE, useSpecific = FALSE)
+        set.seed(seed)
+        ans.C.specific <- drawPrior(prior, useC = TRUE, useSpecific = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C.generic)
+        else
+            expect_equal(ans.R, ans.C.generic)
+        expect_identical(ans.C.specific, ans.C.generic)
+    }
+})
+
+test_that("drawPrior works with DLMWithTrendNormZeroWithSeason", {
+    drawPrior <- demest:::drawPrior
+    drawTau <- demest:::drawTau
+    drawOmegaAlpha <- demest:::drawOmegaAlpha
+    drawOmegaDelta <- demest:::drawOmegaDelta
+    drawOmegaSeason <- demest:::drawOmegaSeason
+    drawPhi <- demest:::drawPhi
+    drawDelta0 <- demest:::drawDelta0
+    predictAlphaDeltaDLMWithTrend <- demest:::predictAlphaDeltaDLMWithTrend
+    predictSeason <- demest:::predictSeason
+    initialPrior <- demest:::initialPrior
+    spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
+                trend = Trend(initial = Initial(sd = 0.1), scale = HalfT(scale = 0.1)),
+                season = Season(n = 4, scale = HalfT(scale = 0.05)),
+                damp = Damp(shape1 = 3, shape2 = 3),
+                error = Error(scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "DLMWithTrendNormZeroWithSeason")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.obtained <- drawPrior(prior)
+        set.seed(seed)
+        ans.expected <- prior
+        ans.expected <- drawTau(ans.expected)
+        ans.expected <- drawOmegaAlpha(ans.expected)
+        ans.expected <- drawOmegaDelta(ans.expected)
+        ans.expected <- drawOmegaSeason(ans.expected)
+        ans.expected <- drawPhi(ans.expected)
+        ans.expected <- predictSeason(ans.expected)
+        ans.expected <- drawDelta0(ans.expected)
+        ans.expected <- predictAlphaDeltaDLMWithTrend(ans.expected)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of drawPrior give same answer with DLMWithTrendNormZeroWithSeason", {
+    drawPrior <- demest:::drawPrior
+    initialPrior <- demest:::initialPrior
+    spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
+                trend = Trend(initial = Initial(sd = 0.1), scale = HalfT(scale = 0.1)),
+                season = Season(n = 4, scale = HalfT(scale = 0.05)),
+                damp = Damp(shape1 = 3, shape2 = 3),
+                error = Error(scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "DLMWithTrendNormZeroWithSeason")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.R <- drawPrior(prior, useC = FALSE)
+        set.seed(seed)
+        ans.C.generic <- drawPrior(prior, useC = TRUE, useSpecific = FALSE)
+        set.seed(seed)
+        ans.C.specific <- drawPrior(prior, useC = TRUE, useSpecific = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C.generic)
+        else
+            expect_equal(ans.R, ans.C.generic)
+        expect_identical(ans.C.specific, ans.C.generic)
+    }
+})
+
+## DLM - Norm, Cov
+
+test_that("drawPrior works with DLMNoTrendNormCovNoSeason", {
+    drawPrior <- demest:::drawPrior
+    drawTau <- demest:::drawTau
+    drawOmegaAlpha <- demest:::drawOmegaAlpha
+    drawPhi <- demest:::drawPhi
+    drawUEtaCoef <- demest:::drawUEtaCoef
+    drawEta <- demest:::drawEta
+    predictAlphaDLMNoTrend <- demest:::predictAlphaDLMNoTrend
+    initialPrior <- demest:::initialPrior
+    data <- data.frame(time = rep(2001:2010, times = 2),
+                       sex = rep(c("f", "m"), each = 10),
+                       income = rnorm(20),
+                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+    formula <- mean ~ income * cat
+    spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
+                trend = NULL,
+                damp = Damp(shape1 = 3, shape2 = 3),
+                covariates = Covariates(formula = formula,
+                                        data = data,
+                                        contrastsArg = list(cat = diag(3)),
+                                        coef = TDist(scale = 0.3)),
+                error = Error(scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "DLMNoTrendNormCovNoSeason")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.obtained <- drawPrior(prior)
+        set.seed(seed)
+        ans.expected <- prior
+        ans.expected <- drawTau(ans.expected)
+        ans.expected <- drawOmegaAlpha(ans.expected)
+        ans.expected <- drawPhi(ans.expected)
+        ans.expected <- drawUEtaCoef(ans.expected)
+        ans.expected <- drawEta(ans.expected)
+        ans.expected <- predictAlphaDLMNoTrend(ans.expected)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of drawPrior give same answer with DLMNoTrendNormCovNoSeason", {
+    drawPrior <- demest:::drawPrior
+    initialPrior <- demest:::initialPrior
+    data <- data.frame(time = rep(2001:2010, times = 2),
+                       sex = rep(c("f", "m"), each = 10),
+                       income = rnorm(20),
+                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+    formula <- mean ~ income * cat
+    spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
+                trend = NULL,
+                damp = Damp(shape1 = 3, shape2 = 3),
+                covariates = Covariates(formula = formula,
+                                        data = data,
+                                        contrastsArg = list(cat = diag(3)),
+                                        coef = TDist(scale = 0.3)),
+                error = Error(scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "DLMNoTrendNormCovNoSeason")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.R <- drawPrior(prior, useC = FALSE)
+        set.seed(seed)
+        ans.C.generic <- drawPrior(prior, useC = TRUE, useSpecific = FALSE)
+        set.seed(seed)
+        ans.C.specific <- drawPrior(prior, useC = TRUE, useSpecific = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C.generic)
+        else
+            expect_equal(ans.R, ans.C.generic)
+        expect_identical(ans.C.specific, ans.C.generic)
+    }
+})
+
+test_that("drawPrior works with DLMWithTrendNormCovNoSeason", {
+    drawPrior <- demest:::drawPrior
+    drawTau <- demest:::drawTau
+    drawOmegaAlpha <- demest:::drawOmegaAlpha
+    drawOmegaDelta <- demest:::drawOmegaDelta
+    drawPhi <- demest:::drawPhi
+    drawUEtaCoef <- demest:::drawUEtaCoef
+    drawEta <- demest:::drawEta
+    drawDelta0 <- demest:::drawDelta0
+    predictAlphaDeltaDLMWithTrend <- demest:::predictAlphaDeltaDLMWithTrend
+    initialPrior <- demest:::initialPrior
+    data <- data.frame(time = rep(2001:2010, times = 2),
+                       sex = rep(c("f", "m"), each = 10),
+                       income = rnorm(20),
+                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+    formula <- mean ~ income * cat
+    spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
+                trend = Trend(initial = Initial(sd = 0.1), scale = HalfT(scale = 0.1)),
+                damp = Damp(shape1 = 3, shape2 = 3),
+                covariates = Covariates(formula = formula,
+                                        data = data,
+                                        contrastsArg = list(cat = diag(3)),
+                                        coef = TDist(scale = 0.3)),
+                error = Error(scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "DLMWithTrendNormCovNoSeason")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.obtained <- drawPrior(prior)
+        set.seed(seed)
+        ans.expected <- prior
+        ans.expected <- drawTau(ans.expected)
+        ans.expected <- drawOmegaAlpha(ans.expected)
+        ans.expected <- drawOmegaDelta(ans.expected)
+        ans.expected <- drawPhi(ans.expected)
+        ans.expected <- drawUEtaCoef(ans.expected)
+        ans.expected <- drawEta(ans.expected)
+        ans.expected <- drawDelta0(ans.expected)
+        ans.expected <- predictAlphaDeltaDLMWithTrend(ans.expected)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of drawPrior give same answer with DLMWithTrendNormCovNoSeason", {
+    drawPrior <- demest:::drawPrior
+    initialPrior <- demest:::initialPrior
+    data <- data.frame(time = rep(2001:2010, times = 2),
+                       sex = rep(c("f", "m"), each = 10),
+                       income = rnorm(20),
+                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+    formula <- mean ~ income * cat
+    spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
+                trend = Trend(initial = Initial(sd = 0.1), scale = HalfT(scale = 0.1)),
+                damp = Damp(shape1 = 3, shape2 = 3),
+                covariates = Covariates(formula = formula,
+                                        data = data,
+                                        contrastsArg = list(cat = diag(3)),
+                                        coef = TDist(scale = 0.3)),
+                error = Error(scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "DLMWithTrendNormCovNoSeason")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.R <- drawPrior(prior, useC = FALSE)
+        set.seed(seed)
+        ans.C.generic <- drawPrior(prior, useC = TRUE, useSpecific = FALSE)
+        set.seed(seed)
+        ans.C.specific <- drawPrior(prior, useC = TRUE, useSpecific = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C.generic)
+        else
+            expect_equal(ans.R, ans.C.generic)
+        expect_identical(ans.C.specific, ans.C.generic)
+    }
+})
+
+test_that("drawPrior works with DLMNoTrendNormCovWithSeason", {
+    drawPrior <- demest:::drawPrior
+    drawTau <- demest:::drawTau
+    drawOmegaAlpha <- demest:::drawOmegaAlpha
+    drawOmegaSeason <- demest:::drawOmegaSeason
+    drawPhi <- demest:::drawPhi
+    drawUEtaCoef <- demest:::drawUEtaCoef
+    drawEta <- demest:::drawEta
+    predictSeason <- demest:::predictSeason
+    predictAlphaDLMNoTrend <- demest:::predictAlphaDLMNoTrend
+    initialPrior <- demest:::initialPrior
+    data <- data.frame(time = rep(2001:2010, times = 2),
+                       sex = rep(c("f", "m"), each = 10),
+                       income = rnorm(20),
+                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+    formula <- mean ~ income * cat
+    spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
+                trend = NULL,
+                damp = Damp(shape1 = 3, shape2 = 3),
+                season = Season(n = 4, scale = HalfT(scale = 0.05)),
+                covariates = Covariates(formula = formula,
+                                        data = data,
+                                        contrastsArg = list(cat = diag(3)),
+                                        coef = TDist(scale = 0.3)),
+                error = Error(scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "DLMNoTrendNormCovWithSeason")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.obtained <- drawPrior(prior)
+        set.seed(seed)
+        ans.expected <- prior
+        ans.expected <- drawTau(ans.expected)
+        ans.expected <- drawOmegaAlpha(ans.expected)
+        ans.expected <- drawOmegaSeason(ans.expected)
+        ans.expected <- drawPhi(ans.expected)
+        ans.expected <- drawUEtaCoef(ans.expected)
+        ans.expected <- drawEta(ans.expected)
+        ans.expected <- predictSeason(ans.expected)
+        ans.expected <- predictAlphaDLMNoTrend(ans.expected)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of drawPrior give same answer with DLMNoTrendNormCovWithSeason", {
+    drawPrior <- demest:::drawPrior
+    initialPrior <- demest:::initialPrior
+    data <- data.frame(time = rep(2001:2010, times = 2),
+                       sex = rep(c("f", "m"), each = 10),
+                       income = rnorm(20),
+                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+    formula <- mean ~ income * cat
+    spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
+                trend = NULL,
+                damp = Damp(shape1 = 3, shape2 = 3),
+                season = Season(n = 4, scale = HalfT(scale = 0.05)),
+                covariates = Covariates(formula = formula,
+                                        data = data,
+                                        contrastsArg = list(cat = diag(3)),
+                                        coef = TDist(scale = 0.3)),
+                error = Error(scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "DLMNoTrendNormCovWithSeason")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.R <- drawPrior(prior, useC = FALSE)
+        set.seed(seed)
+        ans.C.generic <- drawPrior(prior, useC = TRUE, useSpecific = FALSE)
+        set.seed(seed)
+        ans.C.specific <- drawPrior(prior, useC = TRUE, useSpecific = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C.generic)
+        else
+            expect_equal(ans.R, ans.C.generic)
+        expect_identical(ans.C.specific, ans.C.generic)
+    }
+})
+
+test_that("drawPrior works with DLMWithTrendNormCovWithSeason", {
+    drawPrior <- demest:::drawPrior
+    drawTau <- demest:::drawTau
+    drawOmegaAlpha <- demest:::drawOmegaAlpha
+    drawOmegaDelta <- demest:::drawOmegaDelta
+    drawOmegaSeason <- demest:::drawOmegaSeason
+    drawPhi <- demest:::drawPhi
+    drawUEtaCoef <- demest:::drawUEtaCoef
+    drawEta <- demest:::drawEta
+    predictSeason <- demest:::predictSeason
+    drawDelta0 <- demest:::drawDelta0
+    predictAlphaDeltaDLMWithTrend <- demest:::predictAlphaDeltaDLMWithTrend
+    initialPrior <- demest:::initialPrior
+    data <- data.frame(time = rep(2001:2010, times = 2),
+                       sex = rep(c("f", "m"), each = 10),
+                       income = rnorm(20),
+                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+    formula <- mean ~ income * cat
+    spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
+                trend = Trend(initial = Initial(sd = 0.1), scale = HalfT(scale = 0.01)),
+                damp = Damp(shape1 = 3, shape2 = 3),
+                season = Season(n = 4, scale = HalfT(scale = 0.05)),
+                covariates = Covariates(formula = formula,
+                                        data = data,
+                                        contrastsArg = list(cat = diag(3)),
+                                        coef = TDist(scale = 0.3)),
+                error = Error(scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "DLMWithTrendNormCovWithSeason")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.obtained <- drawPrior(prior)
+        set.seed(seed)
+        ans.expected <- prior
+        ans.expected <- drawTau(ans.expected)
+        ans.expected <- drawOmegaAlpha(ans.expected)
+        ans.expected <- drawOmegaDelta(ans.expected)
+        ans.expected <- drawOmegaSeason(ans.expected)
+        ans.expected <- drawPhi(ans.expected)
+        ans.expected <- drawUEtaCoef(ans.expected)
+        ans.expected <- drawEta(ans.expected)
+        ans.expected <- predictSeason(ans.expected)
+        ans.expected <- drawDelta0(ans.expected)
+        ans.expected <- predictAlphaDeltaDLMWithTrend(ans.expected)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of drawPrior give same answer with DLMWithTrendNormCovWithSeason", {
+    drawPrior <- demest:::drawPrior
+    initialPrior <- demest:::initialPrior
+    data <- data.frame(time = rep(2001:2010, times = 2),
+                       sex = rep(c("f", "m"), each = 10),
+                       income = rnorm(20),
+                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+    formula <- mean ~ income * cat
+    spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
+                trend = Trend(initial = Initial(sd = 0.1), scale = HalfT(scale = 0.01)),
+                damp = Damp(shape1 = 3, shape2 = 3),
+                season = Season(n = 4, scale = HalfT(scale = 0.05)),
+                covariates = Covariates(formula = formula,
+                                        data = data,
+                                        contrastsArg = list(cat = diag(3)),
+                                        coef = TDist(scale = 0.3)),
+                error = Error(scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "DLMWithTrendNormCovWithSeason")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.R <- drawPrior(prior, useC = FALSE)
+        set.seed(seed)
+        ans.C.generic <- drawPrior(prior, useC = TRUE, useSpecific = FALSE)
+        set.seed(seed)
+        ans.C.specific <- drawPrior(prior, useC = TRUE, useSpecific = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C.generic)
+        else
+            expect_equal(ans.R, ans.C.generic)
+        expect_identical(ans.C.specific, ans.C.generic)
+    }
+})
+
+## DLM - Robust, Zero
+
+test_that("drawPrior works with DLMNoTrendRobustZeroNoSeason", {
+    drawPrior <- demest:::drawPrior
+    drawTau <- demest:::drawTau
+    drawOmegaAlpha <- demest:::drawOmegaAlpha
+    predictUBeta <- demest:::predictUBeta
+    drawPhi <- demest:::drawPhi
+    predictAlphaDLMNoTrend <- demest:::predictAlphaDLMNoTrend
+    initialPrior <- demest:::initialPrior
+    spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
+                trend = NULL,
+                damp = Damp(shape1 = 3, shape2 = 3),
+                error = Error(robust = TRUE, scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "DLMNoTrendRobustZeroNoSeason")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.obtained <- drawPrior(prior)
+        set.seed(seed)
+        ans.expected <- prior
+        ans.expected <- drawTau(ans.expected)
+        ans.expected <- drawOmegaAlpha(ans.expected)
+        ans.expected <- predictUBeta(ans.expected)
+        ans.expected <- drawPhi(ans.expected)
+        ans.expected <- predictAlphaDLMNoTrend(ans.expected)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of drawPrior give same answer with DLMNoTrendRobustZeroNoSeason", {
+    drawPrior <- demest:::drawPrior
+    initialPrior <- demest:::initialPrior
+    spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
+                trend = NULL,
+                damp = Damp(shape1 = 3, shape2 = 3),
+                error = Error(robust = TRUE, scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "DLMNoTrendRobustZeroNoSeason")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.R <- drawPrior(prior, useC = FALSE)
+        set.seed(seed)
+        ans.C.generic <- drawPrior(prior, useC = TRUE, useSpecific = FALSE)
+        set.seed(seed)
+        ans.C.specific <- drawPrior(prior, useC = TRUE, useSpecific = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C.generic)
+        else
+            expect_equal(ans.R, ans.C.generic)
+        expect_identical(ans.C.specific, ans.C.generic)
+    }
+})
+
+test_that("drawPrior works with DLMWithTrendRobustZeroNoSeason", {
+    drawPrior <- demest:::drawPrior
+    drawTau <- demest:::drawTau
+    drawOmegaAlpha <- demest:::drawOmegaAlpha
+    drawOmegaDelta <- demest:::drawOmegaDelta
+    predictUBeta <- demest:::predictUBeta
+    drawPhi <- demest:::drawPhi
+    drawDelta0 <- demest:::drawDelta0
+    predictAlphaDeltaDLMWithTrend <- demest:::predictAlphaDeltaDLMWithTrend
+    initialPrior <- demest:::initialPrior
+    spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
+                trend = Trend(initial = Initial(sd = 0.1), scale = HalfT(scale = 0.1)),
+                damp = Damp(shape1 = 3, shape2 = 3),
+                error = Error(robust = TRUE, scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "DLMWithTrendRobustZeroNoSeason")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.obtained <- drawPrior(prior)
+        set.seed(seed)
+        ans.expected <- prior
+        ans.expected <- drawTau(ans.expected)
+        ans.expected <- drawOmegaAlpha(ans.expected)
+        ans.expected <- drawOmegaDelta(ans.expected)
+        ans.expected <- predictUBeta(ans.expected)
+        ans.expected <- drawPhi(ans.expected)
+        ans.expected <- drawDelta0(ans.expected)
+        ans.expected <- predictAlphaDeltaDLMWithTrend(ans.expected)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of drawPrior give same answer with DLMWithTrendRobustZeroNoSeason", {
+    drawPrior <- demest:::drawPrior
+    initialPrior <- demest:::initialPrior
+    spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
+                trend = Trend(initial = Initial(sd = 0.1), scale = HalfT(scale = 0.1)),
+                damp = Damp(shape1 = 3, shape2 = 3),
+                error = Error(robust = TRUE, scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "DLMWithTrendRobustZeroNoSeason")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.R <- drawPrior(prior, useC = FALSE)
+        set.seed(seed)
+        ans.C.generic <- drawPrior(prior, useC = TRUE, useSpecific = FALSE)
+        set.seed(seed)
+        ans.C.specific <- drawPrior(prior, useC = TRUE, useSpecific = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C.generic)
+        else
+            expect_equal(ans.R, ans.C.generic)
+        expect_identical(ans.C.specific, ans.C.generic)
+    }
+})
+
+test_that("drawPrior works with DLMNoTrendRobustZeroWithSeason", {
+    drawPrior <- demest:::drawPrior
+    drawTau <- demest:::drawTau
+    drawOmegaAlpha <- demest:::drawOmegaAlpha
+    drawOmegaSeason <- demest:::drawOmegaSeason
+    predictUBeta <- demest:::predictUBeta
+    drawPhi <- demest:::drawPhi
+    predictAlphaDLMNoTrend <- demest:::predictAlphaDLMNoTrend
+    predictSeason <- demest:::predictSeason
+    initialPrior <- demest:::initialPrior
+    spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
+                trend = NULL,
+                season = Season(n = 4, scale = HalfT(scale = 0.05)),
+                damp = Damp(shape1 = 3, shape2 = 3),
+                error = Error(robust = TRUE, scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "DLMNoTrendRobustZeroWithSeason")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.obtained <- drawPrior(prior)
+        set.seed(seed)
+        ans.expected <- prior
+        ans.expected <- drawTau(ans.expected)
+        ans.expected <- drawOmegaAlpha(ans.expected)
+        ans.expected <- drawOmegaSeason(ans.expected)
+        ans.expected <- predictUBeta(ans.expected)
+        ans.expected <- drawPhi(ans.expected)
+        ans.expected <- predictSeason(ans.expected)
+        ans.expected <- predictAlphaDLMNoTrend(ans.expected)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of drawPrior give same answer with DLMNoTrendRobustZeroWithSeason", {
+    drawPrior <- demest:::drawPrior
+    initialPrior <- demest:::initialPrior
+    spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
+                trend = NULL,
+                season = Season(n = 4, scale = HalfT(scale = 0.05)),
+                damp = Damp(shape1 = 3, shape2 = 3),
+                error = Error(robust = TRUE, scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "DLMNoTrendRobustZeroWithSeason")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.R <- drawPrior(prior, useC = FALSE)
+        set.seed(seed)
+        ans.C.generic <- drawPrior(prior, useC = TRUE, useSpecific = FALSE)
+        set.seed(seed)
+        ans.C.specific <- drawPrior(prior, useC = TRUE, useSpecific = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C.generic)
+        else
+            expect_equal(ans.R, ans.C.generic)
+        expect_identical(ans.C.specific, ans.C.generic)
+    }
+})
+
+test_that("drawPrior works with DLMWithTrendRobustZeroWithSeason", {
+    drawPrior <- demest:::drawPrior
+    drawTau <- demest:::drawTau
+    drawOmegaAlpha <- demest:::drawOmegaAlpha
+    drawOmegaDelta <- demest:::drawOmegaDelta
+    drawOmegaSeason <- demest:::drawOmegaSeason
+    predictUBeta <- demest:::predictUBeta
+    drawPhi <- demest:::drawPhi
+    drawDelta0 <- demest:::drawDelta0
+    predictAlphaDeltaDLMWithTrend <- demest:::predictAlphaDeltaDLMWithTrend
+    predictSeason <- demest:::predictSeason
+    initialPrior <- demest:::initialPrior
+    spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
+                trend = Trend(initial = Initial(sd = 0.1), scale = HalfT(scale = 0.1)),
+                season = Season(n = 4, scale = HalfT(scale = 0.05)),
+                damp = Damp(shape1 = 3, shape2 = 3),
+                error = Error(robust = TRUE, scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "DLMWithTrendRobustZeroWithSeason")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.obtained <- drawPrior(prior)
+        set.seed(seed)
+        ans.expected <- prior
+        ans.expected <- drawTau(ans.expected)
+        ans.expected <- drawOmegaAlpha(ans.expected)
+        ans.expected <- drawOmegaDelta(ans.expected)
+        ans.expected <- drawOmegaSeason(ans.expected)
+        ans.expected <- predictUBeta(ans.expected)
+        ans.expected <- drawPhi(ans.expected)
+        ans.expected <- predictSeason(ans.expected)
+        ans.expected <- drawDelta0(ans.expected)
+        ans.expected <- predictAlphaDeltaDLMWithTrend(ans.expected)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of drawPrior give same answer with DLMWithTrendRobustZeroWithSeason", {
+    drawPrior <- demest:::drawPrior
+    initialPrior <- demest:::initialPrior
+    spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
+                trend = Trend(initial = Initial(sd = 0.1), scale = HalfT(scale = 0.1)),
+                season = Season(n = 4, scale = HalfT(scale = 0.05)),
+                damp = Damp(shape1 = 3, shape2 = 3),
+                error = Error(robust = TRUE, scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "DLMWithTrendRobustZeroWithSeason")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.R <- drawPrior(prior, useC = FALSE)
+        set.seed(seed)
+        ans.C.generic <- drawPrior(prior, useC = TRUE, useSpecific = FALSE)
+        set.seed(seed)
+        ans.C.specific <- drawPrior(prior, useC = TRUE, useSpecific = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C.generic)
+        else
+            expect_equal(ans.R, ans.C.generic)
+        expect_identical(ans.C.specific, ans.C.generic)
+    }
+})
+
+## DLM - Robust, Cov
+
+test_that("drawPrior works with DLMNoTrendRobustCovNoSeason", {
+    drawPrior <- demest:::drawPrior
+    drawTau <- demest:::drawTau
+    drawOmegaAlpha <- demest:::drawOmegaAlpha
+    predictUBeta <- demest:::predictUBeta
+    drawPhi <- demest:::drawPhi
+    drawUEtaCoef <- demest:::drawUEtaCoef
+    drawEta <- demest:::drawEta
+    predictAlphaDLMNoTrend <- demest:::predictAlphaDLMNoTrend
+    initialPrior <- demest:::initialPrior
+    data <- data.frame(time = rep(2001:2010, times = 2),
+                       sex = rep(c("f", "m"), each = 10),
+                       income = rnorm(20),
+                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+    formula <- mean ~ income * cat
+    spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
+                trend = NULL,
+                damp = Damp(shape1 = 3, shape2 = 3),
+                covariates = Covariates(formula = formula,
+                                        data = data,
+                                        contrastsArg = list(cat = diag(3)),
+                                        coef = TDist(scale = 0.3)),
+                error = Error(robust = TRUE, scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "DLMNoTrendRobustCovNoSeason")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.obtained <- drawPrior(prior)
+        set.seed(seed)
+        ans.expected <- prior
+        ans.expected <- drawTau(ans.expected)
+        ans.expected <- drawOmegaAlpha(ans.expected)
+        ans.expected <- predictUBeta(ans.expected)
+        ans.expected <- drawPhi(ans.expected)
+        ans.expected <- drawUEtaCoef(ans.expected)
+        ans.expected <- drawEta(ans.expected)
+        ans.expected <- predictAlphaDLMNoTrend(ans.expected)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of drawPrior give same answer with DLMNoTrendRobustCovNoSeason", {
+    drawPrior <- demest:::drawPrior
+    initialPrior <- demest:::initialPrior
+    data <- data.frame(time = rep(2001:2010, times = 2),
+                       sex = rep(c("f", "m"), each = 10),
+                       income = rnorm(20),
+                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+    formula <- mean ~ income * cat
+    spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
+                trend = NULL,
+                damp = Damp(shape1 = 3, shape2 = 3),
+                covariates = Covariates(formula = formula,
+                                        data = data,
+                                        contrastsArg = list(cat = diag(3)),
+                                        coef = TDist(scale = 0.3)),
+                error = Error(robust = TRUE, scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "DLMNoTrendRobustCovNoSeason")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.R <- drawPrior(prior, useC = FALSE)
+        set.seed(seed)
+        ans.C.generic <- drawPrior(prior, useC = TRUE, useSpecific = FALSE)
+        set.seed(seed)
+        ans.C.specific <- drawPrior(prior, useC = TRUE, useSpecific = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C.generic)
+        else
+            expect_equal(ans.R, ans.C.generic)
+        expect_identical(ans.C.specific, ans.C.generic)
+    }
+})
+
+test_that("drawPrior works with DLMWithTrendRobustCovNoSeason", {
+    drawPrior <- demest:::drawPrior
+    drawTau <- demest:::drawTau
+    drawOmegaAlpha <- demest:::drawOmegaAlpha
+    drawOmegaDelta <- demest:::drawOmegaDelta
+    predictUBeta <- demest:::predictUBeta
+    drawPhi <- demest:::drawPhi
+    drawUEtaCoef <- demest:::drawUEtaCoef
+    drawEta <- demest:::drawEta
+    drawDelta0 <- demest:::drawDelta0
+    predictAlphaDeltaDLMWithTrend <- demest:::predictAlphaDeltaDLMWithTrend
+    initialPrior <- demest:::initialPrior
+    data <- data.frame(time = rep(2001:2010, times = 2),
+                       sex = rep(c("f", "m"), each = 10),
+                       income = rnorm(20),
+                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+    formula <- mean ~ income * cat
+    spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
+                trend = Trend(initial = Initial(sd = 0.1), scale = HalfT(scale = 0.1)),
+                damp = Damp(shape1 = 3, shape2 = 3),
+                covariates = Covariates(formula = formula,
+                                        data = data,
+                                        contrastsArg = list(cat = diag(3)),
+                                        coef = TDist(scale = 0.3)),
+                error = Error(robust = TRUE, scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "DLMWithTrendRobustCovNoSeason")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.obtained <- drawPrior(prior)
+        set.seed(seed)
+        ans.expected <- prior
+        ans.expected <- drawTau(ans.expected)
+        ans.expected <- drawOmegaAlpha(ans.expected)
+        ans.expected <- drawOmegaDelta(ans.expected)
+        ans.expected <- predictUBeta(ans.expected)
+        ans.expected <- drawPhi(ans.expected)
+        ans.expected <- drawUEtaCoef(ans.expected)
+        ans.expected <- drawEta(ans.expected)
+        ans.expected <- drawDelta0(ans.expected)
+        ans.expected <- predictAlphaDeltaDLMWithTrend(ans.expected)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of drawPrior give same answer with DLMWithTrendRobustCovNoSeason", {
+    drawPrior <- demest:::drawPrior
+    initialPrior <- demest:::initialPrior
+    data <- data.frame(time = rep(2001:2010, times = 2),
+                       sex = rep(c("f", "m"), each = 10),
+                       income = rnorm(20),
+                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+    formula <- mean ~ income * cat
+    spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
+                trend = Trend(initial = Initial(sd = 0.1), scale = HalfT(scale = 0.1)),
+                damp = Damp(shape1 = 3, shape2 = 3),
+                covariates = Covariates(formula = formula,
+                                        data = data,
+                                        contrastsArg = list(cat = diag(3)),
+                                        coef = TDist(scale = 0.3)),
+                error = Error(robust = TRUE, scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "DLMWithTrendRobustCovNoSeason")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.R <- drawPrior(prior, useC = FALSE)
+        set.seed(seed)
+        ans.C.generic <- drawPrior(prior, useC = TRUE, useSpecific = FALSE)
+        set.seed(seed)
+        ans.C.specific <- drawPrior(prior, useC = TRUE, useSpecific = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C.generic)
+        else
+            expect_equal(ans.R, ans.C.generic)
+        expect_identical(ans.C.specific, ans.C.generic)
+    }
+})
+
+test_that("drawPrior works with DLMNoTrendRobustCovWithSeason", {
+    drawPrior <- demest:::drawPrior
+    drawTau <- demest:::drawTau
+    drawOmegaAlpha <- demest:::drawOmegaAlpha
+    drawOmegaSeason <- demest:::drawOmegaSeason
+    predictUBeta <- demest:::predictUBeta
+    drawPhi <- demest:::drawPhi
+    drawUEtaCoef <- demest:::drawUEtaCoef
+    drawEta <- demest:::drawEta
+    predictSeason <- demest:::predictSeason
+    predictAlphaDLMNoTrend <- demest:::predictAlphaDLMNoTrend
+    initialPrior <- demest:::initialPrior
+    data <- data.frame(time = rep(2001:2010, times = 2),
+                       sex = rep(c("f", "m"), each = 10),
+                       income = rnorm(20),
+                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+    formula <- mean ~ income * cat
+    spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
+                trend = NULL,
+                damp = Damp(shape1 = 3, shape2 = 3),
+                season = Season(n = 4, scale = HalfT(scale = 0.05)),
+                covariates = Covariates(formula = formula,
+                                        data = data,
+                                        contrastsArg = list(cat = diag(3)),
+                                        coef = TDist(scale = 0.3)),
+                error = Error(robust = TRUE, scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "DLMNoTrendRobustCovWithSeason")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.obtained <- drawPrior(prior)
+        set.seed(seed)
+        ans.expected <- prior
+        ans.expected <- drawTau(ans.expected)
+        ans.expected <- drawOmegaAlpha(ans.expected)
+        ans.expected <- drawOmegaSeason(ans.expected)
+        ans.expected <- predictUBeta(ans.expected)
+        ans.expected <- drawPhi(ans.expected)
+        ans.expected <- drawUEtaCoef(ans.expected)
+        ans.expected <- drawEta(ans.expected)
+        ans.expected <- predictSeason(ans.expected)
+        ans.expected <- predictAlphaDLMNoTrend(ans.expected)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of drawPrior give same answer with DLMNoTrendRobustCovWithSeason", {
+    drawPrior <- demest:::drawPrior
+    initialPrior <- demest:::initialPrior
+    data <- data.frame(time = rep(2001:2010, times = 2),
+                       sex = rep(c("f", "m"), each = 10),
+                       income = rnorm(20),
+                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+    formula <- mean ~ income * cat
+    spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
+                trend = NULL,
+                damp = Damp(shape1 = 3, shape2 = 3),
+                season = Season(n = 4, scale = HalfT(scale = 0.05)),
+                covariates = Covariates(formula = formula,
+                                        data = data,
+                                        contrastsArg = list(cat = diag(3)),
+                                        coef = TDist(scale = 0.3)),
+                error = Error(robust = TRUE, scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "DLMNoTrendRobustCovWithSeason")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.R <- drawPrior(prior, useC = FALSE)
+        set.seed(seed)
+        ans.C.generic <- drawPrior(prior, useC = TRUE, useSpecific = FALSE)
+        set.seed(seed)
+        ans.C.specific <- drawPrior(prior, useC = TRUE, useSpecific = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C.generic)
+        else
+            expect_equal(ans.R, ans.C.generic)
+        expect_identical(ans.C.specific, ans.C.generic)
+    }
+})
+
+test_that("drawPrior works with DLMWithTrendRobustCovWithSeason", {
+    drawPrior <- demest:::drawPrior
+    drawTau <- demest:::drawTau
+    drawOmegaAlpha <- demest:::drawOmegaAlpha
+    drawOmegaDelta <- demest:::drawOmegaDelta
+    drawOmegaSeason <- demest:::drawOmegaSeason
+    predictUBeta <- demest:::predictUBeta
+    drawPhi <- demest:::drawPhi
+    drawUEtaCoef <- demest:::drawUEtaCoef
+    drawEta <- demest:::drawEta
+    predictSeason <- demest:::predictSeason
+    drawDelta0 <- demest:::drawDelta0
+    predictAlphaDeltaDLMWithTrend <- demest:::predictAlphaDeltaDLMWithTrend
+    initialPrior <- demest:::initialPrior
+    data <- data.frame(time = rep(2001:2010, times = 2),
+                       sex = rep(c("f", "m"), each = 10),
+                       income = rnorm(20),
+                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+    formula <- mean ~ income * cat
+    spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
+                trend = Trend(initial = Initial(sd = 0.1), scale = HalfT(scale = 0.01)),
+                damp = Damp(shape1 = 3, shape2 = 3),
+                season = Season(n = 4, scale = HalfT(scale = 0.05)),
+                covariates = Covariates(formula = formula,
+                                        data = data,
+                                        contrastsArg = list(cat = diag(3)),
+                                        coef = TDist(scale = 0.3)),
+                error = Error(robust = TRUE, scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "DLMWithTrendRobustCovWithSeason")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.obtained <- drawPrior(prior)
+        set.seed(seed)
+        ans.expected <- prior
+        ans.expected <- drawTau(ans.expected)
+        ans.expected <- drawOmegaAlpha(ans.expected)
+        ans.expected <- drawOmegaDelta(ans.expected)
+        ans.expected <- drawOmegaSeason(ans.expected)
+        ans.expected <- predictUBeta(ans.expected)
+        ans.expected <- drawPhi(ans.expected)
+        ans.expected <- drawUEtaCoef(ans.expected)
+        ans.expected <- drawEta(ans.expected)
+        ans.expected <- predictSeason(ans.expected)
+        ans.expected <- drawDelta0(ans.expected)
+        ans.expected <- predictAlphaDeltaDLMWithTrend(ans.expected)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of drawPrior give same answer with DLMWithTrendRobustCovWithSeason", {
+    drawPrior <- demest:::drawPrior
+    initialPrior <- demest:::initialPrior
+    data <- data.frame(time = rep(2001:2010, times = 2),
+                       sex = rep(c("f", "m"), each = 10),
+                       income = rnorm(20),
+                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+    formula <- mean ~ income * cat
+    spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
+                trend = Trend(initial = Initial(sd = 0.1), scale = HalfT(scale = 0.01)),
+                damp = Damp(shape1 = 3, shape2 = 3),
+                season = Season(n = 4, scale = HalfT(scale = 0.05)),
+                covariates = Covariates(formula = formula,
+                                        data = data,
+                                        contrastsArg = list(cat = diag(3)),
+                                        coef = TDist(scale = 0.3)),
+                error = Error(robust = TRUE, scale = HalfT(scale = 0.1)))
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "time",
+                    dimtypes = "time",
+                    DimScales = list(new("Points", dimvalues = 2001:2010)))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10L,
+                                   dimnames = list(time = 2001:2010)),
+                             dimscales = c(time = "Points"))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "DLMWithTrendRobustCovWithSeason")
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.R <- drawPrior(prior, useC = FALSE)
+        set.seed(seed)
+        ans.C.generic <- drawPrior(prior, useC = TRUE, useSpecific = FALSE)
+        set.seed(seed)
+        ans.C.specific <- drawPrior(prior, useC = TRUE, useSpecific = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C.generic)
+        else
+            expect_equal(ans.R, ans.C.generic)
+        expect_identical(ans.C.specific, ans.C.generic)
+    }
+})
+
+## Known
+
+test_that("drawPrior works with KnownCertain", {
+    drawPrior <- demest:::drawPrior
+    initialPrior <- demest:::initialPrior
+    mean <- ValuesOne(1:10, labels = letters[1:10], name = "region")
+    spec <- Known(mean)
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "KnownCertain")
+    ans.obtained <- drawPrior(prior)
+    ans.expected <- prior
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("R and C versions of drawPrior give same answer with KnownCertain", {
+    drawPrior <- demest:::drawPrior
+    initialPrior <- demest:::initialPrior
+    mean <- ValuesOne(1:10, labels = letters[1:10], name = "region")
+    spec <- Known(mean)
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "KnownCertain")
+    ans.R <- drawPrior(prior, useC = FALSE)
+    ans.C.generic <- drawPrior(prior, useC = TRUE, useSpecific = FALSE)
+    ans.C.specific <- drawPrior(prior, useC = TRUE, useSpecific = TRUE)
+    expect_identical(ans.R, ans.C.generic)
+    expect_identical(ans.C.generic, ans.C.specific)
+})
+
+test_that("drawPrior works with KnownUncertain", {
+    drawPrior <- demest:::drawPrior
+    initialPrior <- demest:::initialPrior
+    mean <- ValuesOne(1:10, labels = letters[1:10], name = "region")
+    spec <- Known(mean, sd = 1)
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "KnownUncertain")
+    ans.obtained <- drawPrior(prior)
+    ans.expected <- prior
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("R and C versions of drawPrior give same answer with KnownUncertain", {
+    drawPrior <- demest:::drawPrior
+    initialPrior <- demest:::initialPrior
+    mean <- ValuesOne(1:10, labels = letters[1:10], name = "region")
+    spec <- Known(mean, sd = 1)
+    beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "KnownUncertain")
+    ans.R <- drawPrior(prior, useC = FALSE)
+    ans.C.generic <- drawPrior(prior, useC = TRUE, useSpecific = FALSE)
+    ans.C.specific <- drawPrior(prior, useC = TRUE, useSpecific = TRUE)
+    expect_identical(ans.R, ans.C.generic)
+    expect_identical(ans.C.generic, ans.C.specific)
+})
+
+## Zero
+
+test_that("drawPrior works with Zero", {
+    drawPrior <- demest:::drawPrior
+    initialPrior <- demest:::initialPrior
+    spec <- Zero()
+    beta <- rnorm(10)
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "Zero")
+    ans.obtained <- drawPrior(prior)
+    ans.expected <- prior
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("R and C versions of drawPrior give same answer with Zero", {
+    drawPrior <- demest:::drawPrior
+    initialPrior <- demest:::initialPrior
+    spec <- Zero()
+    beta <- rnorm(10)
+    strucZeroArray <- Counts(array(1L,
+                                   dim = 10,
+                                   dimnames = list(region = letters[1:10])))
+    metadata <- new("MetaData",
+                    nms = "region",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+    prior <- initialPrior(spec,
+                          beta = beta,
+                          metadata = metadata,
+                          sY = NULL,
+                          isSaturated = FALSE,
+                          margin = 1L,
+                          strucZeroArray = strucZeroArray)
+    expect_is(prior, "Zero")
+    ans.R <- drawPrior(prior, useC = FALSE)
+    ans.C.generic <- drawPrior(prior, useC = TRUE, useSpecific = FALSE)
+    ans.C.specific <- drawPrior(prior, useC = TRUE, useSpecific = TRUE)
+    expect_identical(ans.R, ans.C.generic)
+    expect_identical(ans.C.generic, ans.C.specific)
+})
 
 
 ## makeOutputPrior ###################################################################
@@ -79,11 +2412,13 @@ test_that("makeOutputPrior works with ExchNormZero", {
     ans.obtained <- makeOutputPrior(prior = prior,
                                     metadata = metadata,
                                     pos = 3L)
-    ans.expected <- list(scaleError = Skeleton(first = 3L))
+    ans.expected <- list(scaleError = Skeleton(first = 3L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
 })
 
-test_that("makeOutputPrior works with ExchCovZero", {
+test_that("makeOutputPrior works with ExchNormCov", {
     makeOutputPrior <- demest:::makeOutputPrior
     initialPrior <- demest:::initialPrior
     Skeleton <- demest:::Skeleton
@@ -114,10 +2449,15 @@ test_that("makeOutputPrior works with ExchCovZero", {
                          dimtypes = "state",
                          DimScales = list(new("Categories", dimvalues = c("income", "catb"))))
     ans.expected <- list(coef = new("SkeletonCovariates",
-                             first = 3L,
-                             last = 5L,
-                             metadata = metadata.coef),
-                         scaleError = Skeleton(first = 6L))
+                                    first = 3L,
+                                    last = 5L,
+                                    metadata = metadata.coef),
+                         meanCoef = prior@meanEtaCoef@.Data,
+                         dfCoef = prior@nuEtaCoef@.Data,
+                         scaleCoef = prior@AEtaCoef@.Data,
+                         scaleError = Skeleton(first = 6L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -144,7 +2484,10 @@ test_that("makeOutputPrior works with ExchRobustZero", {
     ans.obtained <- makeOutputPrior(prior = prior,
                                     metadata = metadata,
                                     pos = 3L)
-    ans.expected <- list(scaleError = Skeleton(first = 3L))
+    ans.expected <- list(dfError = prior@nuBeta@.Data,
+                         scaleError = Skeleton(first = 3L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -183,7 +2526,13 @@ test_that("makeOutputPrior works with ExchRobustCov", {
                              first = 3L,
                              last = 5L,
                              metadata = metadata.coef),
-                         scaleError = Skeleton(first = 6L))
+                           meanCoef = prior@meanEtaCoef@.Data,
+                         dfCoef = prior@nuEtaCoef@.Data,
+                         scaleCoef = prior@AEtaCoef@.Data,
+                         dfError = prior@nuBeta@.Data,
+                         scaleError = Skeleton(first = 6L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -227,8 +2576,12 @@ test_that("makeOutputPrior works with DLMNoTrendNormZeroNoSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleLevel = Skeleton(first = 14L),
+                         dfScaleLevel = prior@nuAlpha@.Data,
+                         scaleScaleLevel = prior@AAlpha@.Data,
                          damp = Skeleton(first = 15L),
-                         scaleError = Skeleton(first = 16L))
+                         scaleError = Skeleton(first = 16L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -271,6 +2624,8 @@ test_that("makeOutputPrior works with DLMWithTrendNormZeroNoSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleLevel = Skeleton(first = 14L),
+                         dfScaleLevel = prior@nuAlpha@.Data,
+                         scaleScaleLevel = prior@AAlpha@.Data,
                          trend = new("SkeletonStateDLM",
                                      iAlong = 1L,
                                      first = 15L,
@@ -281,8 +2636,12 @@ test_that("makeOutputPrior works with DLMWithTrendNormZeroNoSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleTrend = Skeleton(first = 26L),
+                         dfScaleTrend = prior@nuDelta@.Data,
+                         scaleScaleTrend = prior@ADelta@.Data,
                          damp = Skeleton(first = 27L),
-                         scaleError = Skeleton(first = 28L))
+                         scaleError = Skeleton(first = 28L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
     ## no level
     spec <- DLM(level = NULL)
@@ -313,6 +2672,8 @@ test_that("makeOutputPrior works with DLMWithTrendNormZeroNoSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleLevel = Skeleton(first = 14L),
+                         dfScaleLevel = prior@nuAlpha@.Data,
+                         scaleScaleLevel = prior@AAlpha@.Data,
                          trend = new("SkeletonStateDLM",
                                      iAlong = 1L,
                                      first = 15L,
@@ -323,8 +2684,12 @@ test_that("makeOutputPrior works with DLMWithTrendNormZeroNoSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleTrend = Skeleton(first = 26L),
+                         dfScaleTrend = prior@nuDelta@.Data,
+                         scaleScaleTrend = prior@ADelta@.Data,
                          damp = Skeleton(first = 27L),
-                         scaleError = Skeleton(first = 28L))
+                         scaleError = Skeleton(first = 28L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -376,6 +2741,8 @@ test_that("makeOutputPrior works with DLMNoTrendNormZeroWithSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleLevel = Skeleton(first = 14L),
+                         dfScaleLevel = prior@nuAlpha@.Data,
+                         scaleScaleLevel = prior@AAlpha@.Data,
                          damp = Skeleton(first = 15L),
                          season = new("SkeletonStateDLM",
                                       iAlong = 1L,
@@ -387,7 +2754,11 @@ test_that("makeOutputPrior works with DLMNoTrendNormZeroWithSeason", {
                                       metadata0 = metadata0.season,
                                       metadataIncl0 = metadataIncl0.season),
                          scaleSeason = Skeleton(first = 60L),
-                         scaleError = Skeleton(first = 61L))
+                         dfScaleSeason = prior@nuSeason@.Data,
+                         scaleScaleSeason = prior@ASeason@.Data,
+                         scaleError = Skeleton(first = 61L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -439,6 +2810,8 @@ test_that("makeOutputPrior works with DLMWithTrendNormZeroWithSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleLevel = Skeleton(first = 14L),
+                         dfScaleLevel = prior@nuAlpha@.Data,
+                         scaleScaleLevel = prior@AAlpha@.Data,
                          trend = new("SkeletonStateDLM",
                                      first = 15L,
                                      last = 25L,
@@ -449,6 +2822,8 @@ test_that("makeOutputPrior works with DLMWithTrendNormZeroWithSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleTrend = Skeleton(first = 26L),
+                         dfScaleTrend = prior@nuDelta@.Data,
+                         scaleScaleTrend = prior@ADelta@.Data,
                          damp = Skeleton(first = 27L),
                          season = new("SkeletonStateDLM",
                                       first = 28L,
@@ -460,7 +2835,11 @@ test_that("makeOutputPrior works with DLMWithTrendNormZeroWithSeason", {
                                       metadata0 = metadata0.season,
                                       metadataIncl0 = metadataIncl0.season),
                          scaleSeason = Skeleton(first = 72L),
-                         scaleError = Skeleton(first = 73L))
+                         dfScaleSeason = prior@nuSeason@.Data,
+                         scaleScaleSeason = prior@ASeason@.Data,
+                         scaleError = Skeleton(first = 73L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
     ## no level
     spec <- DLM(level = NULL, season = Season(n = 4))
@@ -500,6 +2879,8 @@ test_that("makeOutputPrior works with DLMWithTrendNormZeroWithSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleLevel = Skeleton(first = 14L),
+                         dfScaleLevel = prior@nuAlpha@.Data,
+                         scaleScaleLevel = prior@AAlpha@.Data,
                          trend = new("SkeletonStateDLM",
                                      first = 15L,
                                      last = 25L,
@@ -510,6 +2891,8 @@ test_that("makeOutputPrior works with DLMWithTrendNormZeroWithSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleTrend = Skeleton(first = 26L),
+                         dfScaleTrend = prior@nuDelta@.Data,
+                         scaleScaleTrend = prior@ADelta@.Data,
                          damp = Skeleton(first = 27L),
                          season = new("SkeletonStateDLM",
                                       first = 28L,
@@ -521,7 +2904,11 @@ test_that("makeOutputPrior works with DLMWithTrendNormZeroWithSeason", {
                                       metadata0 = metadata0.season,
                                       metadataIncl0 = metadataIncl0.season),
                          scaleSeason = Skeleton(first = 72L),
-                         scaleError = Skeleton(first = 73L))
+                         dfScaleSeason = prior@nuSeason@.Data,
+                         scaleScaleSeason = prior@ASeason@.Data,
+                         scaleError = Skeleton(first = 73L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -573,12 +2960,19 @@ test_that("makeOutputPrior works with DLMNoTrendNormCovNoSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleLevel = Skeleton(first = 14L),
+                         dfScaleLevel = prior@nuAlpha@.Data,
+                         scaleScaleLevel = prior@AAlpha@.Data,
                          damp = Skeleton(first = 15L),
                          coef = new("SkeletonCovariates",
                                     first = 16L,
                                     last = 18L,
                                     metadata = metadata.coef),
-                         scaleError = Skeleton(first = 19L))
+                         meanCoef = prior@meanEtaCoef@.Data,
+                         dfCoef = prior@nuEtaCoef@.Data,
+                         scaleCoef = prior@AEtaCoef@.Data,
+                         scaleError = Skeleton(first = 19L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -628,6 +3022,8 @@ test_that("makeOutputPrior works with DLMWithTrendNormCovNoSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleLevel = Skeleton(first = 14L),
+                         dfScaleLevel = prior@nuAlpha@.Data,
+                         scaleScaleLevel = prior@AAlpha@.Data,
                          trend = new("SkeletonStateDLM",
                                      first = 15L,
                                      last = 25L,
@@ -638,12 +3034,19 @@ test_that("makeOutputPrior works with DLMWithTrendNormCovNoSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleTrend = Skeleton(first = 26L),
+                         dfScaleTrend = prior@nuDelta@.Data,
+                         scaleScaleTrend = prior@ADelta@.Data,
                          damp = Skeleton(first = 27L),
                          coef = new("SkeletonCovariates",
                                     first = 28L,
                                     last = 30L,
                                     metadata = metadata.coef),
-                         scaleError = Skeleton(first = 31L))
+                         meanCoef = prior@meanEtaCoef@.Data,
+                         dfCoef = prior@nuEtaCoef@.Data,
+                         scaleCoef = prior@AEtaCoef@.Data,
+                         scaleError = Skeleton(first = 31L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
     ## no level
     data <- data.frame(time = 1:10,
@@ -682,6 +3085,8 @@ test_that("makeOutputPrior works with DLMWithTrendNormCovNoSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleLevel = Skeleton(first = 14L),
+                         dfScaleLevel = prior@nuAlpha@.Data,
+                         scaleScaleLevel = prior@AAlpha@.Data,
                          trend = new("SkeletonStateDLM",
                                      first = 15L,
                                      last = 25L,
@@ -692,12 +3097,19 @@ test_that("makeOutputPrior works with DLMWithTrendNormCovNoSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleTrend = Skeleton(first = 26L),
+                         dfScaleTrend = prior@nuDelta@.Data,
+                         scaleScaleTrend = prior@ADelta@.Data,
                          damp = Skeleton(first = 27L),
                          coef = new("SkeletonCovariates",
                                     first = 28L,
                                     last = 30L,
-                                    metadata = metadata.coef),
-                         scaleError = Skeleton(first = 31L))
+                                    metadata = metadata.coef), 
+                         meanCoef = prior@meanEtaCoef@.Data,
+                         dfCoef = prior@nuEtaCoef@.Data,
+                         scaleCoef = prior@AEtaCoef@.Data,
+                         scaleError = Skeleton(first = 31L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -757,6 +3169,8 @@ test_that("makeOutputPrior works with DLMNoTrendNormCovWithSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleLevel = Skeleton(first = 14L),
+                         dfScaleLevel = prior@nuAlpha@.Data,
+                         scaleScaleLevel = prior@AAlpha@.Data,
                          damp = Skeleton(first = 15L),
                          season = new("SkeletonStateDLM",
                                       first = 16L,
@@ -768,11 +3182,18 @@ test_that("makeOutputPrior works with DLMNoTrendNormCovWithSeason", {
                                      metadata0 = metadata0.season,
                                      metadataIncl0 = metadataIncl0.season),
                          scaleSeason = Skeleton(first = 60L),
+                         dfScaleSeason = prior@nuSeason@.Data,
+                         scaleScaleSeason = prior@ASeason@.Data,
                          coef = new("SkeletonCovariates",
                                     first = 61L,
                                     last = 63L,
                                     metadata = metadata.coef),
-                         scaleError = Skeleton(first = 64L))
+                         meanCoef = prior@meanEtaCoef@.Data,
+                         dfCoef = prior@nuEtaCoef@.Data,
+                         scaleCoef = prior@AEtaCoef@.Data,
+                         scaleError = Skeleton(first = 64L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -832,6 +3253,8 @@ test_that("makeOutputPrior works with DLMWithTrendNormCovWithSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleLevel = Skeleton(first = 14L),
+                         dfScaleLevel = prior@nuAlpha@.Data,
+                         scaleScaleLevel = prior@AAlpha@.Data,
                          trend = new("SkeletonStateDLM",
                                      first = 15L,
                                      last = 25L,
@@ -842,6 +3265,8 @@ test_that("makeOutputPrior works with DLMWithTrendNormCovWithSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleTrend = Skeleton(first = 26L),
+                         dfScaleTrend = prior@nuDelta@.Data,
+                         scaleScaleTrend = prior@ADelta@.Data,
                          damp = Skeleton(first = 27L),
                          season = new("SkeletonStateDLM",
                                       first = 28L,
@@ -853,11 +3278,18 @@ test_that("makeOutputPrior works with DLMWithTrendNormCovWithSeason", {
                                       metadata0 = metadata0.season,
                                       metadataIncl0 = metadataIncl0.season),
                          scaleSeason = Skeleton(first = 72L),
+                         dfScaleSeason = prior@nuSeason@.Data,
+                         scaleScaleSeason = prior@ASeason@.Data,
                          coef = new("SkeletonCovariates",
                                     first = 73L,
                                     last = 75L,
                                     metadata = metadata.coef),
-                         scaleError = Skeleton(first = 76L))
+                         meanCoef = prior@meanEtaCoef@.Data,
+                         dfCoef = prior@nuEtaCoef@.Data,
+                         scaleCoef = prior@AEtaCoef@.Data,
+                         scaleError = Skeleton(first = 76L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
     ## no level
     data <- data.frame(time = 1:10,
@@ -906,6 +3338,8 @@ test_that("makeOutputPrior works with DLMWithTrendNormCovWithSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleLevel = Skeleton(first = 14L),
+                         dfScaleLevel = prior@nuAlpha@.Data,
+                         scaleScaleLevel = prior@AAlpha@.Data,
                          trend = new("SkeletonStateDLM",
                                      first = 15L,
                                      last = 25L,
@@ -916,6 +3350,8 @@ test_that("makeOutputPrior works with DLMWithTrendNormCovWithSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleTrend = Skeleton(first = 26L),
+                         dfScaleTrend = prior@nuDelta@.Data,
+                         scaleScaleTrend = prior@ADelta@.Data,
                          damp = Skeleton(first = 27L),
                          season = new("SkeletonStateDLM",
                                       first = 28L,
@@ -927,11 +3363,18 @@ test_that("makeOutputPrior works with DLMWithTrendNormCovWithSeason", {
                                       metadata0 = metadata0.season,
                                       metadataIncl0 = metadataIncl0.season),
                          scaleSeason = Skeleton(first = 72L),
+                         dfScaleSeason = prior@nuSeason@.Data,
+                         scaleScaleSeason = prior@ASeason@.Data,
                          coef = new("SkeletonCovariates",
                                     first = 73L,
                                     last = 75L,
                                     metadata = metadata.coef),
-                         scaleError = Skeleton(first = 76L))
+                         meanCoef = prior@meanEtaCoef@.Data,
+                         dfCoef = prior@nuEtaCoef@.Data,
+                         scaleCoef = prior@AEtaCoef@.Data,
+                         scaleError = Skeleton(first = 76L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -976,8 +3419,13 @@ test_that("makeOutputPrior works with DLMNoTrendRobustZeroNoSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleLevel = Skeleton(first = 14L),
+                         dfScaleLevel = prior@nuAlpha@.Data,
+                         scaleScaleLevel = prior@AAlpha@.Data,
                          damp = Skeleton(first = 15L),
-                         scaleError = Skeleton(first = 16L))
+                         dfError = prior@nuBeta@.Data,
+                         scaleError = Skeleton(first = 16L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -1020,6 +3468,8 @@ test_that("makeOutputPrior works with DLMWithTrendRobustZeroNoSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleLevel = Skeleton(first = 14L),
+                         dfScaleLevel = prior@nuAlpha@.Data,
+                         scaleScaleLevel = prior@AAlpha@.Data,
                          trend = new("SkeletonStateDLM",
                                      first = 15L,
                                      last = 25L,
@@ -1030,8 +3480,13 @@ test_that("makeOutputPrior works with DLMWithTrendRobustZeroNoSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleTrend = Skeleton(first = 26L),
+                         dfScaleTrend = prior@nuDelta@.Data,
+                         scaleScaleTrend = prior@ADelta@.Data,
                          damp = Skeleton(first = 27L),
-                         scaleError = Skeleton(first = 28L))
+                         dfError = prior@nuBeta@.Data,
+                         scaleError = Skeleton(first = 28L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
     ## no level
     spec <- DLM(level = NULL, error = Error(robust = TRUE))
@@ -1068,6 +3523,8 @@ test_that("makeOutputPrior works with DLMWithTrendRobustZeroNoSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleLevel = Skeleton(first = 14L),
+                         dfScaleLevel = prior@nuAlpha@.Data,
+                         scaleScaleLevel = prior@AAlpha@.Data,
                          trend = new("SkeletonStateDLM",
                                      first = 15L,
                                      last = 25L,
@@ -1078,8 +3535,13 @@ test_that("makeOutputPrior works with DLMWithTrendRobustZeroNoSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleTrend = Skeleton(first = 26L),
+                         dfScaleTrend = prior@nuDelta@.Data,
+                         scaleScaleTrend = prior@ADelta@.Data,
                          damp = Skeleton(first = 27L),
-                         scaleError = Skeleton(first = 28L))
+                         dfError = prior@nuBeta@.Data,
+                         scaleError = Skeleton(first = 28L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -1132,6 +3594,8 @@ test_that("makeOutputPrior works with DLMNoTrendRobustZeroWithSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleLevel = Skeleton(first = 14L),
+                         dfScaleLevel = prior@nuAlpha@.Data,
+                         scaleScaleLevel = prior@AAlpha@.Data,
                          damp = Skeleton(first = 15L),
                          season = new("SkeletonStateDLM",
                                       first = 16L,
@@ -1143,7 +3607,12 @@ test_that("makeOutputPrior works with DLMNoTrendRobustZeroWithSeason", {
                                       metadata0 = metadata0.season,
                                       metadataIncl0 = metadataIncl0.season),
                          scaleSeason = Skeleton(first = 60L),
-                         scaleError = Skeleton(first = 61L))
+                         dfScaleSeason = prior@nuSeason@.Data,
+                         scaleScaleSeason = prior@ASeason@.Data,
+                         dfError = prior@nuBeta@.Data,
+                         scaleError = Skeleton(first = 61L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -1196,6 +3665,8 @@ test_that("makeOutputPrior works with DLMWithTrendRobustZeroWithSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleLevel = Skeleton(first = 14L),
+                         dfScaleLevel = prior@nuAlpha@.Data,
+                         scaleScaleLevel = prior@AAlpha@.Data,
                          trend = new("SkeletonStateDLM",
                                      first = 15L,
                                      last = 25L,
@@ -1206,6 +3677,8 @@ test_that("makeOutputPrior works with DLMWithTrendRobustZeroWithSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleTrend = Skeleton(first = 26L),
+                         dfScaleTrend = prior@nuDelta@.Data,
+                         scaleScaleTrend = prior@ADelta@.Data,
                          damp = Skeleton(first = 27L),
                          season = new("SkeletonStateDLM",
                                       first = 28L,
@@ -1217,7 +3690,12 @@ test_that("makeOutputPrior works with DLMWithTrendRobustZeroWithSeason", {
                                       metadata0 = metadata0.season,
                                       metadataIncl0 = metadataIncl0.season),
                          scaleSeason = Skeleton(first = 72L),
-                         scaleError = Skeleton(first = 73L))
+                         dfScaleSeason = prior@nuSeason@.Data,
+                         scaleScaleSeason = prior@ASeason@.Data,
+                         dfError = prior@nuBeta@.Data,
+                         scaleError = Skeleton(first = 73L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
     ## no level
     spec <- DLM(level = NULL,
@@ -1246,6 +3724,8 @@ test_that("makeOutputPrior works with DLMWithTrendRobustZeroWithSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleLevel = Skeleton(first = 14L),
+                         dfScaleLevel = prior@nuAlpha@.Data,
+                         scaleScaleLevel = prior@AAlpha@.Data,
                          trend = new("SkeletonStateDLM",
                                      first = 15L,
                                      last = 25L,
@@ -1256,6 +3736,8 @@ test_that("makeOutputPrior works with DLMWithTrendRobustZeroWithSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleTrend = Skeleton(first = 26L),
+                         dfScaleTrend = prior@nuDelta@.Data,
+                         scaleScaleTrend = prior@ADelta@.Data,
                          damp = Skeleton(first = 27L),
                          season = new("SkeletonStateDLM",
                                       first = 28L,
@@ -1267,7 +3749,12 @@ test_that("makeOutputPrior works with DLMWithTrendRobustZeroWithSeason", {
                                       metadata0 = metadata0.season,
                                       metadataIncl0 = metadataIncl0.season),
                          scaleSeason = Skeleton(first = 72L),
-                         scaleError = Skeleton(first = 73L))
+                         dfScaleSeason = prior@nuSeason@.Data,
+                         scaleScaleSeason = prior@ASeason@.Data,
+                         dfError = prior@nuBeta@.Data,
+                         scaleError = Skeleton(first = 73L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -1321,12 +3808,20 @@ test_that("makeOutputPrior works with DLMNoTrendRobustCovNoSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleLevel = Skeleton(first = 14L),
+                         dfScaleLevel = prior@nuAlpha@.Data,
+                         scaleScaleLevel = prior@AAlpha@.Data,
                          damp = Skeleton(first = 15L),
                          coef = new("SkeletonCovariates",
                                     first = 16L,
                                     last = 18L,
                                     metadata = metadata.coef),
-                         scaleError = Skeleton(first = 19L))
+                         meanCoef = prior@meanEtaCoef@.Data,
+                         dfCoef = prior@nuEtaCoef@.Data,
+                         scaleCoef = prior@AEtaCoef@.Data,
+                         dfError = prior@nuBeta@.Data,
+                         scaleError = Skeleton(first = 19L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -1377,6 +3872,8 @@ test_that("makeOutputPrior works with DLMWithTrendRobustCovNoSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleLevel = Skeleton(first = 14L),
+                         dfScaleLevel = prior@nuAlpha@.Data,
+                         scaleScaleLevel = prior@AAlpha@.Data,
                          trend = new("SkeletonStateDLM",
                                      first = 15L,
                                      last = 25L,
@@ -1387,12 +3884,20 @@ test_that("makeOutputPrior works with DLMWithTrendRobustCovNoSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleTrend = Skeleton(first = 26L),
+                         dfScaleTrend = prior@nuDelta@.Data,
+                         scaleScaleTrend = prior@ADelta@.Data,
                          damp = Skeleton(first = 27L),
                          coef = new("SkeletonCovariates",
                                     first = 28L,
                                     last = 30L,
                                     metadata = metadata.coef),
-                         scaleError = Skeleton(first = 31L))
+                         meanCoef = prior@meanEtaCoef@.Data,
+                         dfCoef = prior@nuEtaCoef@.Data,
+                         scaleCoef = prior@AEtaCoef@.Data,
+                         dfError = prior@nuBeta@.Data,
+                         scaleError = Skeleton(first = 31L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
     ## no level
     metadataIncl0 <- new("MetaData",
@@ -1432,6 +3937,8 @@ test_that("makeOutputPrior works with DLMWithTrendRobustCovNoSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleLevel = Skeleton(first = 14L),
+                         dfScaleLevel = prior@nuAlpha@.Data,
+                         scaleScaleLevel = prior@AAlpha@.Data,
                          trend = new("SkeletonStateDLM",
                                      first = 15L,
                                      last = 25L,
@@ -1442,12 +3949,20 @@ test_that("makeOutputPrior works with DLMWithTrendRobustCovNoSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleTrend = Skeleton(first = 26L),
+                         dfScaleTrend = prior@nuDelta@.Data,
+                         scaleScaleTrend = prior@ADelta@.Data,
                          damp = Skeleton(first = 27L),
                          coef = new("SkeletonCovariates",
                                     first = 28L,
                                     last = 30L,
                                     metadata = metadata.coef),
-                         scaleError = Skeleton(first = 31L))
+                         meanCoef = prior@meanEtaCoef@.Data,
+                         dfCoef = prior@nuEtaCoef@.Data,
+                         scaleCoef = prior@AEtaCoef@.Data,
+                         dfError = prior@nuBeta@.Data,
+                         scaleError = Skeleton(first = 31L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -1508,6 +4023,8 @@ test_that("makeOutputPrior works with DLMNoTrendRobustCovWithSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleLevel = Skeleton(first = 14L),
+                         dfScaleLevel = prior@nuAlpha@.Data,
+                         scaleScaleLevel = prior@AAlpha@.Data,
                          damp = Skeleton(first = 15L),
                          season = new("SkeletonStateDLM",
                                       first = 16L,
@@ -1519,11 +4036,19 @@ test_that("makeOutputPrior works with DLMNoTrendRobustCovWithSeason", {
                                       metadata0 = metadata0.season,
                                       metadataIncl0 = metadataIncl0.season),
                          scaleSeason = Skeleton(first = 60L),
+                         dfScaleSeason = prior@nuSeason@.Data,
+                         scaleScaleSeason = prior@ASeason@.Data,
                          coef = new("SkeletonCovariates",
                                     first = 61L,
                                     last = 63L,
                                     metadata = metadata.coef),
-                         scaleError = Skeleton(first = 64L))
+                         meanCoef = prior@meanEtaCoef@.Data,
+                         dfCoef = prior@nuEtaCoef@.Data,
+                         scaleCoef = prior@AEtaCoef@.Data,
+                         dfError = prior@nuBeta@.Data,
+                         scaleError = Skeleton(first = 64L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -1584,6 +4109,8 @@ test_that("makeOutputPrior works with DLMWithTrendRobustCovWithSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleLevel = Skeleton(first = 14L),
+                         dfScaleLevel = prior@nuAlpha@.Data,
+                         scaleScaleLevel = prior@AAlpha@.Data,
                          trend = new("SkeletonStateDLM",
                                      first = 15L,
                                      last = 25L,
@@ -1594,6 +4121,8 @@ test_that("makeOutputPrior works with DLMWithTrendRobustCovWithSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleTrend = Skeleton(first = 26L),
+                         dfScaleTrend = prior@nuDelta@.Data,
+                         scaleScaleTrend = prior@ADelta@.Data,
                          damp = Skeleton(first = 27L),
                          season = new("SkeletonStateDLM",
                                       first = 28L,
@@ -1605,11 +4134,19 @@ test_that("makeOutputPrior works with DLMWithTrendRobustCovWithSeason", {
                                       metadata0 = metadata0.season,
                                       metadataIncl0 = metadataIncl0.season),
                          scaleSeason = Skeleton(first = 72L),
+                         dfScaleSeason = prior@nuSeason@.Data,
+                         scaleScaleSeason = prior@ASeason@.Data,
                          coef = new("SkeletonCovariates",
                                     first = 73L,
                                     last = 75L,
                                     metadata = metadata.coef),
-                         scaleError = Skeleton(first = 76L))
+                         meanCoef = prior@meanEtaCoef@.Data,
+                         dfCoef = prior@nuEtaCoef@.Data,
+                         scaleCoef = prior@AEtaCoef@.Data,
+                         dfError = prior@nuBeta@.Data,
+                         scaleError = Skeleton(first = 76L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
     ## no level
     data <- data.frame(time = 1:10,
@@ -1659,6 +4196,8 @@ test_that("makeOutputPrior works with DLMWithTrendRobustCovWithSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleLevel = Skeleton(first = 14L),
+                         dfScaleLevel = prior@nuAlpha@.Data,
+                         scaleScaleLevel = prior@AAlpha@.Data,
                          trend = new("SkeletonStateDLM",
                                      first = 15L,
                                      last = 25L,
@@ -1669,6 +4208,8 @@ test_that("makeOutputPrior works with DLMWithTrendRobustCovWithSeason", {
                                      metadata0 = NULL,
                                      metadataIncl0 = metadataIncl0),
                          scaleTrend = Skeleton(first = 26L),
+                         dfScaleTrend = prior@nuDelta@.Data,
+                         scaleScaleTrend = prior@ADelta@.Data,
                          damp = Skeleton(first = 27L),
                          season = new("SkeletonStateDLM",
                                       first = 28L,
@@ -1680,11 +4221,19 @@ test_that("makeOutputPrior works with DLMWithTrendRobustCovWithSeason", {
                                       metadata0 = metadata0.season,
                                       metadataIncl0 = metadataIncl0.season),
                          scaleSeason = Skeleton(first = 72L),
+                         dfScaleSeason = prior@nuSeason@.Data,
+                         scaleScaleSeason = prior@ASeason@.Data,
                          coef = new("SkeletonCovariates",
                                     first = 73L,
                                     last = 75L,
                                     metadata = metadata.coef),
-                         scaleError = Skeleton(first = 76L))
+                         meanCoef = prior@meanEtaCoef@.Data,
+                         dfCoef = prior@nuEtaCoef@.Data,
+                         scaleCoef = prior@AEtaCoef@.Data,
+                         dfError = prior@nuBeta@.Data,
+                         scaleError = Skeleton(first = 76L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -1800,7 +4349,9 @@ test_that("makeOutputPrior works with MixNormZero", {
                          mean = Skeleton(first = 603L),
                          damp = Skeleton(first = 604L),
                          scale2 = Skeleton(first = 605L),
-                         scaleError = Skeleton(first = 606L))
+                         scaleError = Skeleton(first = 606L),
+                         dfScaleError = prior@nuTau@.Data,
+                         scaleScaleError = prior@ATau@.Data)
     expect_identical(ans.obtained, ans.expected)
 })
 

@@ -15,9 +15,871 @@ setMethod("betaIsEstimated",
           })
 
 
-          
-## makeOutputPrior ###################################################################
+## describePrior #############################################################
 
+## TimeInvariant
+
+## HAS_TESTS
+setMethod("describePrior",
+          signature(object = "TimeInvariant"),
+          function(object) {
+              "Time invariant"
+          })
+
+
+## ExchFixed
+
+## HAS_TESTS
+setMethod("describePrior",
+          signature(object = "ExchFixed"),
+          function(object) {
+              "Exchangeable with known variance"
+          })
+
+## HAS_TESTS
+setMethod("describePrior",
+          signature(object = "ExchNormZero"),
+          function(object) {
+              "Exchangeable"
+          })
+
+## HAS_TESTS
+setMethod("describePrior",
+          signature(object = "ExchNormCov"),
+          function(object) {
+              "Exchangeable with covariates"
+          })
+
+## HAS_TESTS
+setMethod("describePrior",
+          signature(object = "ExchRobustZero"),
+          function(object) {
+              "Robust exchangeable"
+          })
+
+## HAS_TESTS
+setMethod("describePrior",
+          signature(object = "ExchRobustCov"),
+          function(object) {
+              "Robust exchangeable with covariates"
+          })
+
+
+## DLM - Norm, Zero
+
+## HAS_TESTS
+setMethod("describePrior",
+          signature(object = "DLMNoTrendNormZeroNoSeason"),
+          function(object) {
+              if (isDamped(object))
+                  "Damped local level"
+              else
+                  "Local level"
+          })
+
+## HAS_TESTS
+setMethod("describePrior",
+          signature(object = "DLMWithTrendNormZeroNoSeason"),
+          function(object) {
+              if (isDamped(object))
+                  "Damped local trend"
+              else
+                  "Local trend"
+          })
+
+## HAS_TESTS
+setMethod("describePrior",
+          signature(object = "DLMNoTrendNormZeroWithSeason"),
+          function(object) {
+              if (isDamped(object))
+                  "Damped local level with seasonal effect"
+              else
+                  "Local level with seasonal effect"
+          })
+
+## HAS_TESTS
+setMethod("describePrior",
+          signature(object = "DLMWithTrendNormZeroWithSeason"),
+          function(object) {
+              if (isDamped(object))
+                  "Damped local trend with seasonal effect"
+              else
+                  "Local trend with seasonal effect"
+          })
+
+
+## DLM - Norm, Cov
+
+## HAS_TESTS
+setMethod("describePrior",
+          signature(object = "DLMNoTrendNormCovNoSeason"),
+          function(object) {
+              if (isDamped(object))
+                  "Damped local level with covariates"
+              else
+                  "Local level with covariates"
+          })
+
+## HAS_TESTS
+setMethod("describePrior",
+          signature(object = "DLMWithTrendNormCovNoSeason"),
+          function(object) {
+              if (isDamped(object))
+                  "Damped local trend with covariates"
+              else
+                  "Local trend with covariates"
+          })
+
+## HAS_TESTS
+setMethod("describePrior",
+          signature(object = "DLMNoTrendNormCovWithSeason"),
+          function(object) {
+              if (isDamped(object))
+                  "Damped local level with covariates and seasonal effect"
+              else
+                  "Local level with covariates and seasonal effect"
+          })
+
+## HAS_TESTS
+setMethod("describePrior",
+          signature(object = "DLMWithTrendNormCovWithSeason"),
+          function(object) {
+              if (isDamped(object))
+                  "Damped local trend with covariates and seasonal effect"
+              else
+                  "Local trend with covariates and seasonal effect"
+          })
+
+
+## DLM - Robust, Zero
+
+## HAS_TESTS
+setMethod("describePrior",
+          signature(object = "DLMNoTrendRobustZeroNoSeason"),
+          function(object) {
+              if (isDamped(object))
+                  "Damped robust local level"
+              else
+                  "Robust local level"
+          })
+
+## HAS_TESTS
+setMethod("describePrior",
+          signature(object = "DLMWithTrendRobustZeroNoSeason"),
+          function(object) {
+              if (isDamped(object))
+                  "Damped robust local trend"
+              else
+                  "Robust local trend"
+          })
+
+## HAS_TESTS
+setMethod("describePrior",
+          signature(object = "DLMNoTrendRobustZeroWithSeason"),
+          function(object) {
+              if (isDamped(object))
+                  "Damped robust local level with seasonal effect"
+              else
+                  "Robust local level with seasonal effect"
+          })
+
+## HAS_TESTS
+setMethod("describePrior",
+          signature(object = "DLMWithTrendRobustZeroWithSeason"),
+          function(object) {
+              if (isDamped(object))
+                  "Damped robust local trend with seasonal effect"
+              else
+                  "Robust local trend with seasonal effect"
+          })
+
+
+## DLM - Robust, Cov
+
+## HAS_TESTS
+setMethod("describePrior",
+          signature(object = "DLMNoTrendRobustCovNoSeason"),
+          function(object) {
+              if (isDamped(object))
+                  "Damped robust local level with covariates"
+              else
+                  "Robust local level with covariates"
+          })
+
+## HAS_TESTS
+setMethod("describePrior",
+          signature(object = "DLMWithTrendRobustCovNoSeason"),
+          function(object) {
+              if (isDamped(object))
+                  "Damped robust local trend with covariates"
+              else
+                  "Robust local trend with covariates"
+          })
+
+## HAS_TESTS
+setMethod("describePrior",
+          signature(object = "DLMNoTrendRobustCovWithSeason"),
+          function(object) {
+              if (isDamped(object))
+                  "Damped robust local level with covariates and seasonal effect"
+              else
+                  "Robust local level with covariates and seasonal effect"
+          })
+
+## HAS_TESTS
+setMethod("describePrior",
+          signature(object = "DLMWithTrendRobustCovWithSeason"),
+          function(object) {
+              if (isDamped(object))
+                  "Damped robust local trend with covariates and seasonal effect"
+              else
+                  "Robust local trend with covariates and seasonal effect"
+          })
+
+
+## Known
+
+## HAS_TESTS
+setMethod("describePrior",
+          signature(object = "KnownCertain"),
+          function(object) {
+              "Known values"
+          })
+
+## HAS_TESTS
+setMethod("describePrior",
+          signature(object = "KnownUncertain"),
+          function(object) {
+              "Normal with known mean and variance"
+          })
+
+## Mix
+
+setMethod("describePrior",
+          signature(object = "MixNormZero"),
+          function(object) {
+              "Mixture model"
+          })
+
+## Zero
+
+## HAS_TESTS
+setMethod("describePrior",
+          signature(object = "Zero"),
+          function(object) {
+              "Set to zero"
+          })
+
+
+
+## drawPrior #########################################################################
+
+## Exch
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawPrior",
+          signature(prior = "ExchNormZero"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawPrior_ExchNormZero_R, prior)
+                  else
+                      .Call(drawPrior_R, prior)
+              }
+              else {
+                  prior <- drawTau(prior)
+                  prior
+              }
+          })
+
+
+## drawPrior #########################################################################
+
+## ExchFixed
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawPrior",
+          signature(prior = "ExchFixed"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawPrior_ExchFixed_R, prior)
+                  else
+                      .Call(drawPrior_R, prior)
+              }
+              else {
+                  prior
+              }
+          })
+
+## Exch
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawPrior",
+          signature(prior = "ExchNormZero"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawPrior_ExchNormZero_R, prior)
+                  else
+                      .Call(drawPrior_R, prior)
+              }
+              else {
+                  prior <- drawTau(prior)
+                  prior
+              }
+          })
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawPrior",
+          signature(prior = "ExchRobustZero"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawPrior_ExchRobustZero_R, prior)
+                  else
+                      .Call(drawPrior_R, prior)
+              }
+              else {
+                  prior <- drawTau(prior)
+                  prior <- predictUBeta(prior)
+                  prior
+              }
+          })
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawPrior",
+          signature(prior = "ExchNormCov"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawPrior_ExchNormCov_R, prior)
+                  else
+                      .Call(drawPrior_R, prior)
+              }
+              else {
+                  prior <- drawTau(prior)
+                  prior <- drawUEtaCoef(prior)
+                  prior <- drawEta(prior)
+                  prior
+              }
+          })
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawPrior",
+          signature(prior = "ExchRobustCov"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawPrior_ExchNormCov_R, prior)
+                  else
+                      .Call(drawPrior_R, prior)
+              }
+              else {
+                  prior <- drawTau(prior)
+                  prior <- predictUBeta(prior)
+                  prior <- drawUEtaCoef(prior)
+                  prior <- drawEta(prior)
+                  prior
+              }
+          })
+
+## DLM - Norm, Zero
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawPrior",
+          signature(prior = "DLMNoTrendNormZeroNoSeason"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawPrior_DLMNoTrendNormZeroNoSeason_R, prior)
+                  else
+                      .Call(drawPrior_R, prior)
+              }
+              else {
+                  prior <- drawTau(prior)
+                  prior <- drawOmegaAlpha(prior)
+                  prior <- drawPhi(prior)
+                  prior <- predictAlphaDLMNoTrend(prior)
+                  prior
+              }
+          })
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawPrior",
+          signature(prior = "DLMWithTrendNormZeroNoSeason"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawPrior_DLMWithTrendNormZeroNoSeason_R, prior)
+                  else
+                      .Call(drawPrior_R, prior)
+              }
+              else {
+                  prior <- drawTau(prior)
+                  prior <- drawOmegaAlpha(prior)
+                  prior <- drawOmegaDelta(prior)
+                  prior <- drawPhi(prior)
+                  prior <- drawDelta0(prior)
+                  prior <- predictAlphaDeltaDLMWithTrend(prior)
+                  prior
+              }
+          })
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawPrior",
+          signature(prior = "DLMNoTrendNormZeroWithSeason"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawPrior_DLMNoTrendNormZeroNoSeason_R, prior)
+                  else
+                      .Call(drawPrior_R, prior)
+              }
+              else {
+                  prior <- drawTau(prior)
+                  prior <- drawOmegaAlpha(prior)
+                  prior <- drawOmegaSeason(prior)
+                  prior <- drawPhi(prior)
+                  prior <- predictSeason(prior)
+                  prior <- predictAlphaDLMNoTrend(prior)
+                  prior
+              }
+          })
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawPrior",
+          signature(prior = "DLMWithTrendNormZeroWithSeason"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawPrior_DLMWithTrendNormZeroNoSeason_R, prior)
+                  else
+                      .Call(drawPrior_R, prior)
+              }
+              else {
+                  prior <- drawTau(prior)
+                  prior <- drawOmegaAlpha(prior)
+                  prior <- drawOmegaDelta(prior)
+                  prior <- drawOmegaSeason(prior)
+                  prior <- drawPhi(prior)
+                  prior <- predictSeason(prior)
+                  prior <- drawDelta0(prior)
+                  prior <- predictAlphaDeltaDLMWithTrend(prior)
+                  prior
+              }
+          })
+
+## DLM - Norm, Cov
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawPrior",
+          signature(prior = "DLMNoTrendNormCovNoSeason"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawPrior_DLMNoTrendNormCovNoSeason_R, prior)
+                  else
+                      .Call(drawPrior_R, prior)
+              }
+              else {
+                  prior <- drawTau(prior)
+                  prior <- drawOmegaAlpha(prior)
+                  prior <- drawPhi(prior)
+                  prior <- drawUEtaCoef(prior)
+                  prior <- drawEta(prior)
+                  prior <- predictAlphaDLMNoTrend(prior)
+                  prior
+              }
+          })
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawPrior",
+          signature(prior = "DLMWithTrendNormCovNoSeason"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawPrior_DLMWithTrendNormCovNoSeason_R, prior)
+                  else
+                      .Call(drawPrior_R, prior)
+              }
+              else {
+                  prior <- drawTau(prior)
+                  prior <- drawOmegaAlpha(prior)
+                  prior <- drawOmegaDelta(prior)
+                  prior <- drawPhi(prior)
+                  prior <- drawUEtaCoef(prior)
+                  prior <- drawEta(prior)
+                  prior <- drawDelta0(prior)
+                  prior <- predictAlphaDeltaDLMWithTrend(prior)
+                  prior
+              }
+          })
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawPrior",
+          signature(prior = "DLMNoTrendNormCovWithSeason"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawPrior_DLMNoTrendNormCovWithSeason_R, prior)
+                  else
+                      .Call(drawPrior_R, prior)
+              }
+              else {
+                  prior <- drawTau(prior)
+                  prior <- drawOmegaAlpha(prior)
+                  prior <- drawOmegaSeason(prior)
+                  prior <- drawPhi(prior)
+                  prior <- drawUEtaCoef(prior)
+                  prior <- drawEta(prior)
+                  prior <- predictSeason(prior)
+                  prior <- predictAlphaDLMNoTrend(prior)
+                  prior
+              }
+          })
+
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawPrior",
+          signature(prior = "DLMWithTrendNormCovWithSeason"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawPrior_DLMWithTrendNormCovWithSeason_R, prior)
+                  else
+                      .Call(drawPrior_R, prior)
+              }
+              else {
+                  prior <- drawTau(prior)
+                  prior <- drawOmegaAlpha(prior)
+                  prior <- drawOmegaDelta(prior)
+                  prior <- drawOmegaSeason(prior)
+                  prior <- drawPhi(prior)
+                  prior <- drawUEtaCoef(prior)
+                  prior <- drawEta(prior)
+                  prior <- predictSeason(prior)
+                  prior <- drawDelta0(prior)
+                  prior <- predictAlphaDeltaDLMWithTrend(prior)
+                  prior
+              }
+          })
+
+## DLM - Robust, Zero
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawPrior",
+          signature(prior = "DLMNoTrendRobustZeroNoSeason"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawPrior_DLMNoTrendRobustZeroNoSeason_R, prior)
+                  else
+                      .Call(drawPrior_R, prior)
+              }
+              else {
+                  prior <- drawTau(prior)
+                  prior <- drawOmegaAlpha(prior)
+                  prior <- predictUBeta(prior)
+                  prior <- drawPhi(prior)
+                  prior <- predictAlphaDLMNoTrend(prior)
+                  prior
+              }
+          })
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawPrior",
+          signature(prior = "DLMWithTrendRobustZeroNoSeason"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawPrior_DLMWithTrendRobustZeroNoSeason_R, prior)
+                  else
+                      .Call(drawPrior_R, prior)
+              }
+              else {
+                  prior <- drawTau(prior)
+                  prior <- drawOmegaAlpha(prior)
+                  prior <- drawOmegaDelta(prior)
+                  prior <- predictUBeta(prior)
+                  prior <- drawPhi(prior)
+                  prior <- drawDelta0(prior)
+                  prior <- predictAlphaDeltaDLMWithTrend(prior)
+                  prior
+              }
+          })
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawPrior",
+          signature(prior = "DLMNoTrendRobustZeroWithSeason"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawPrior_DLMNoTrendRobustZeroNoSeason_R, prior)
+                  else
+                      .Call(drawPrior_R, prior)
+              }
+              else {
+                  prior <- drawTau(prior)
+                  prior <- drawOmegaAlpha(prior)
+                  prior <- drawOmegaSeason(prior)
+                  prior <- predictUBeta(prior)
+                  prior <- drawPhi(prior)
+                  prior <- predictSeason(prior)
+                  prior <- predictAlphaDLMNoTrend(prior)
+                  prior
+              }
+          })
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawPrior",
+          signature(prior = "DLMWithTrendRobustZeroWithSeason"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawPrior_DLMWithTrendRobustZeroNoSeason_R, prior)
+                  else
+                      .Call(drawPrior_R, prior)
+              }
+              else {
+                  prior <- drawTau(prior)
+                  prior <- drawOmegaAlpha(prior)
+                  prior <- drawOmegaDelta(prior)
+                  prior <- drawOmegaSeason(prior)
+                  prior <- predictUBeta(prior)
+                  prior <- drawPhi(prior)
+                  prior <- predictSeason(prior)
+                  prior <- drawDelta0(prior)
+                  prior <- predictAlphaDeltaDLMWithTrend(prior)
+                  prior
+              }
+          })
+
+## DLM - Robust, Cov
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawPrior",
+          signature(prior = "DLMNoTrendRobustCovNoSeason"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawPrior_DLMNoTrendRobustCovNoSeason_R, prior)
+                  else
+                      .Call(drawPrior_R, prior)
+              }
+              else {
+                  prior <- drawTau(prior)
+                  prior <- drawOmegaAlpha(prior)
+                  prior <- predictUBeta(prior)
+                  prior <- drawPhi(prior)
+                  prior <- drawUEtaCoef(prior)
+                  prior <- drawEta(prior)
+                  prior <- predictAlphaDLMNoTrend(prior)
+                  prior
+              }
+          })
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawPrior",
+          signature(prior = "DLMWithTrendRobustCovNoSeason"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawPrior_DLMWithTrendRobustCovNoSeason_R, prior)
+                  else
+                      .Call(drawPrior_R, prior)
+              }
+              else {
+                  prior <- drawTau(prior)
+                  prior <- drawOmegaAlpha(prior)
+                  prior <- drawOmegaDelta(prior)
+                  prior <- predictUBeta(prior)
+                  prior <- drawPhi(prior)
+                  prior <- drawUEtaCoef(prior)
+                  prior <- drawEta(prior)
+                  prior <- drawDelta0(prior)
+                  prior <- predictAlphaDeltaDLMWithTrend(prior)
+                  prior
+              }
+          })
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawPrior",
+          signature(prior = "DLMNoTrendRobustCovWithSeason"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawPrior_DLMNoTrendRobustCovWithSeason_R, prior)
+                  else
+                      .Call(drawPrior_R, prior)
+              }
+              else {
+                  prior <- drawTau(prior)
+                  prior <- drawOmegaAlpha(prior)
+                  prior <- drawOmegaSeason(prior)
+                  prior <- predictUBeta(prior)
+                  prior <- drawPhi(prior)
+                  prior <- drawUEtaCoef(prior)
+                  prior <- drawEta(prior)
+                  prior <- predictSeason(prior)
+                  prior <- predictAlphaDLMNoTrend(prior)
+                  prior
+              }
+          })
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawPrior",
+          signature(prior = "DLMWithTrendRobustCovWithSeason"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawPrior_DLMWithTrendRobustCovWithSeason_R, prior)
+                  else
+                      .Call(drawPrior_R, prior)
+              }
+              else {
+                  prior <- drawTau(prior)
+                  prior <- drawOmegaAlpha(prior)
+                  prior <- drawOmegaDelta(prior)
+                  prior <- drawOmegaSeason(prior)
+                  prior <- predictUBeta(prior)
+                  prior <- drawPhi(prior)
+                  prior <- drawUEtaCoef(prior)
+                  prior <- drawEta(prior)
+                  prior <- predictSeason(prior)
+                  prior <- drawDelta0(prior)
+                  prior <- predictAlphaDeltaDLMWithTrend(prior)
+                  prior
+              }
+          })
+
+## Known
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawPrior",
+          signature(prior = "KnownCertain"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawPrior_KnownCertain_R, prior)
+                  else
+                      .Call(drawPrior_R, prior)
+              }
+              else {
+                  prior
+              }
+          })
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawPrior",
+          signature(prior = "KnownUncertain"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawPrior_KnownUncertain_R, prior)
+                  else
+                      .Call(drawPrior_R, prior)
+              }
+              else {
+                  prior
+              }
+          })
+
+## Mix
+
+setMethod("drawPrior",
+          signature(prior = "MixNormZero"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawPrior_MixNormZero_R, prior)
+                  else
+                      .Call(drawPrior_R, prior)
+              }
+              else {
+                  prior <- drawTau(prior)
+                  prior <- drawOmegaVectorsMix(prior)
+                  prior <- drawOmegaLevelComponentWeightMix(prior)
+                  prior <- drawOmegaComponentWeightMix(prior)
+                  prior <- drawPhiMix(prior)
+                  stop("not finished yet")
+              }
+          })
+
+## Zero
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawPrior",
+          signature(prior = "Zero"),
+          function(prior, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(prior)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawPrior_Zero_R, prior)
+                  else
+                      .Call(drawPrior_R, prior)
+              }
+              else {
+                  prior
+              }
+          })
+
+
+
+
+
+
+## makeOutputPrior ###################################################################
 
 ## Function "whereEstimated" controls whether a parameter
 ## estimated is actually printed. We can't skip parameters,
@@ -53,7 +915,11 @@ setMethod("makeOutputPrior",
                     metadata = "ANY"),
           function(prior, pos) {
               scaleError <- makeOutputPriorScale(pos = pos)
-              list(scaleError = scaleError)
+              dfScaleError <- prior@nuTau@.Data
+              scaleScaleError <- prior@ATau@.Data
+              list(scaleError = scaleError,
+                   dfScaleError = dfScaleError,
+                   scaleScaleError = scaleScaleError)
           })
 
 ## HAS_TESTS
@@ -65,10 +931,20 @@ setMethod("makeOutputPrior",
               Z <- prior@Z@.Data
               coef <- makeOutputPriorCoef(Z = Z,
                                           pos = pos)
+              meanCoef <- prior@meanEtaCoef@.Data
+              dfCoef <- prior@nuEtaCoef@.Data
+              scaleCoef <- prior@AEtaCoef@.Data
               pos <- pos + P
               scaleError <- makeOutputPriorScale(pos = pos)
+              dfScaleError <- prior@nuTau@.Data
+              scaleScaleError <- prior@ATau@.Data
               list(coef = coef,
-                   scaleError = scaleError)
+                   meanCoef = meanCoef,
+                   dfCoef = dfCoef,
+                   scaleCoef = scaleCoef,
+                   scaleError = scaleError,
+                   dfScaleError = dfScaleError,
+                   scaleScaleError = scaleScaleError)
           })
 
 ## HAS_TESTS
@@ -76,8 +952,14 @@ setMethod("makeOutputPrior",
           signature(prior = "ExchRobustZero",
                     metadata = "MetaData"),
           function(prior, metadata, pos) {
+              dfError <- prior@nuBeta@.Data
               scaleError <- makeOutputPriorScale(pos = pos)
-              list(scaleError = scaleError)
+              dfScaleError <- prior@nuTau@.Data
+              scaleScaleError <- prior@ATau@.Data
+              list(dfError = dfError,
+                   scaleError = scaleError,
+                   dfScaleError = dfScaleError,
+                   scaleScaleError = scaleScaleError)
           })
 
 ## HAS_TESTS
@@ -89,10 +971,25 @@ setMethod("makeOutputPrior",
               Z <- prior@Z@.Data
               coef <- makeOutputPriorCoef(Z = Z,
                                           pos = pos)
+              meanCoef <- prior@meanEtaCoef@.Data
+              dfCoef <- prior@nuEtaCoef@.Data
+              scaleCoef <- prior@AEtaCoef@.Data
+              meanCoef <- prior@meanEtaCoef@.Data
+              dfCoef <- prior@nuEtaCoef@.Data
+              scaleCoef <- prior@AEtaCoef@.Data
               pos <- pos + P
+              dfError <- prior@nuBeta@.Data
               scaleError <- makeOutputPriorScale(pos = pos)
+              dfScaleError <- prior@nuTau@.Data
+              scaleScaleError <- prior@ATau@.Data
               list(coef = coef,
-                   scaleError = scaleError)
+                   meanCoef = meanCoef,
+                   dfCoef = dfCoef,
+                   scaleCoef = scaleCoef,
+                   dfError = dfError,
+                   scaleError = scaleError,
+                   dfScaleError = dfScaleError,
+                   scaleScaleError = scaleScaleError)
           })
 
 
@@ -119,14 +1016,22 @@ setMethod("makeOutputPrior",
                                           margin = margin)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
+              dfScaleLevel <- prior@nuAlpha@.Data
+              scaleScaleLevel <- prior@AAlpha@.Data
               pos <- pos + 1L
               damp <- makeOutputPriorDamp(pos = pos)
               pos <- pos + 1L
               scaleError <- makeOutputPriorScale(pos = pos)
+              dfScaleError <- prior@nuTau@.Data
+              scaleScaleError <- prior@ATau@.Data
               list(level = level,
                    scaleLevel = scaleLevel,
+                   dfScaleLevel = dfScaleLevel,
+                   scaleScaleLevel = scaleScaleLevel,
                    damp = damp,
-                   scaleError = scaleError)
+                   scaleError = scaleError,
+                   dfScaleError = dfScaleError,
+                   scaleScaleError = scaleScaleError)
           })
 
 ## HAS_TESTS
@@ -151,6 +1056,8 @@ setMethod("makeOutputPrior",
                                           margin = margin)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
+              dfScaleLevel <- prior@nuAlpha@.Data
+              scaleScaleLevel <- prior@AAlpha@.Data
               pos <- pos + 1L
               trend <- makeOutputStateDLM(iterator = iterator,
                                           metadata = metadata,
@@ -161,16 +1068,26 @@ setMethod("makeOutputPrior",
                                           margin = margin)
               pos <- pos + (K + 1L) * L
               scaleTrend <- makeOutputPriorScale(pos = pos)
+              dfScaleTrend <- prior@nuDelta@.Data
+              scaleScaleTrend <- prior@ADelta@.Data
               pos <- pos + 1L
               damp <- makeOutputPriorDamp(pos = pos)
               pos <- pos + 1L
               scaleError <- makeOutputPriorScale(pos = pos)
+              dfScaleError <- prior@nuTau@.Data
+              scaleScaleError <- prior@ATau@.Data
               list(level = level,
                    scaleLevel = scaleLevel,
+                   dfScaleLevel = dfScaleLevel,
+                   scaleScaleLevel = scaleScaleLevel,
                    trend = trend,
                    scaleTrend = scaleTrend,
+                   dfScaleTrend = dfScaleTrend,
+                   scaleScaleTrend = scaleScaleTrend,
                    damp = damp,
-                   scaleError = scaleError)
+                   scaleError = scaleError,
+                   dfScaleError = dfScaleError,
+                   scaleScaleError = scaleScaleError)
           })
 
 ## HAS_TESTS
@@ -195,6 +1112,8 @@ setMethod("makeOutputPrior",
                                           margin = margin)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
+              dfScaleLevel <- prior@nuAlpha@.Data
+              scaleScaleLevel <- prior@AAlpha@.Data
               pos <- pos + 1L
               damp <- makeOutputPriorDamp(pos = pos)
               pos <- pos + 1L
@@ -207,14 +1126,24 @@ setMethod("makeOutputPrior",
                                            margin = margin)
               pos <- pos + (K + 1L) * L * nSeason
               scaleSeason <- makeOutputPriorScale(pos = pos)
+              dfScaleSeason <- prior@nuSeason@.Data
+              scaleScaleSeason <- prior@ASeason@.Data
               pos <- pos + 1L
               scaleError <- makeOutputPriorScale(pos = pos)
+              dfScaleError <- prior@nuTau@.Data
+              scaleScaleError <- prior@ATau@.Data
               list(level = level,
                    scaleLevel = scaleLevel,
+                   dfScaleLevel = dfScaleLevel,
+                   scaleScaleLevel = scaleScaleLevel,
                    damp = damp,
                    season = season,
                    scaleSeason = scaleSeason,
-                   scaleError = scaleError)
+                   dfScaleSeason = dfScaleSeason,
+                   scaleScaleSeason = scaleScaleSeason,
+                   scaleError = scaleError,
+                   dfScaleError = dfScaleError,
+                   scaleScaleError = scaleScaleError)
           })
 
 ## HAS_TESTS
@@ -240,6 +1169,8 @@ setMethod("makeOutputPrior",
                                           margin = margin)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
+              dfScaleLevel <- prior@nuAlpha@.Data
+              scaleScaleLevel <- prior@AAlpha@.Data
               pos <- pos + 1L
               trend <- makeOutputStateDLM(iterator = iterator,
                                           metadata = metadata,
@@ -250,6 +1181,8 @@ setMethod("makeOutputPrior",
                                           margin = margin)
               pos <- pos + (K + 1L) * L
               scaleTrend <- makeOutputPriorScale(pos = pos)
+              dfScaleTrend <- prior@nuDelta@.Data
+              scaleScaleTrend <- prior@ADelta@.Data
               pos <- pos + 1L
               damp <- makeOutputPriorDamp(pos = pos)
               pos <- pos + 1L
@@ -262,16 +1195,28 @@ setMethod("makeOutputPrior",
                                            margin = margin)
               pos <- pos + (K + 1L) * L * nSeason
               scaleSeason <- makeOutputPriorScale(pos = pos)
+              dfScaleSeason <- prior@nuSeason@.Data
+              scaleScaleSeason <- prior@ASeason@.Data
               pos <- pos + 1L
               scaleError <- makeOutputPriorScale(pos = pos)
+              dfScaleError <- prior@nuTau@.Data
+              scaleScaleError <- prior@ATau@.Data
               list(level = level,
                    scaleLevel = scaleLevel,
+                   dfScaleLevel = dfScaleLevel,
+                   scaleScaleLevel = scaleScaleLevel,
                    trend = trend,
                    scaleTrend = scaleTrend,
+                   dfScaleTrend = dfScaleTrend,
+                   scaleScaleTrend = scaleScaleTrend,
                    damp = damp,
                    season = season,
                    scaleSeason = scaleSeason,
-                   scaleError = scaleError)
+                   dfScaleSeason = dfScaleSeason,
+                   scaleScaleSeason = scaleScaleSeason,
+                   scaleError = scaleError,
+                   dfScaleError = dfScaleError,
+                   scaleScaleError = scaleScaleError)
           })
 
 
@@ -300,18 +1245,32 @@ setMethod("makeOutputPrior",
                                           margin = margin)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
+              dfScaleLevel <- prior@nuAlpha@.Data
+              scaleScaleLevel <- prior@AAlpha@.Data
               pos <- pos + 1L
               damp <- makeOutputPriorDamp(pos = pos)
               pos <- pos + 1L
               coef <- makeOutputPriorCoef(Z = Z,
                                           pos = pos)
+              meanCoef <- prior@meanEtaCoef@.Data
+              dfCoef <- prior@nuEtaCoef@.Data
+              scaleCoef <- prior@AEtaCoef@.Data
               pos <- pos + P
               scaleError <- makeOutputPriorScale(pos = pos)
+              dfScaleError <- prior@nuTau@.Data
+              scaleScaleError <- prior@ATau@.Data
               list(level = level,
                    scaleLevel = scaleLevel,
+                   dfScaleLevel = dfScaleLevel,
+                   scaleScaleLevel = scaleScaleLevel,
                    damp = damp,
                    coef = coef,
-                   scaleError = scaleError)
+                   meanCoef = meanCoef,
+                   dfCoef = dfCoef,
+                   scaleCoef = scaleCoef,
+                   scaleError = scaleError,
+                   dfScaleError = dfScaleError,
+                   scaleScaleError = scaleScaleError)
           })
 
 ## HAS_TESTS
@@ -338,6 +1297,8 @@ setMethod("makeOutputPrior",
                                           margin = margin)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
+              dfScaleLevel <- prior@nuAlpha@.Data
+              scaleScaleLevel <- prior@AAlpha@.Data
               pos <- pos + 1L
               trend <- makeOutputStateDLM(iterator = iterator,
                                           metadata = metadata,
@@ -348,20 +1309,36 @@ setMethod("makeOutputPrior",
                                           margin = margin)
               pos <- pos + (K + 1L) * L
               scaleTrend <- makeOutputPriorScale(pos = pos)
+              dfScaleTrend <- prior@nuDelta@.Data
+              scaleScaleTrend <- prior@ADelta@.Data
               pos <- pos + 1L
               damp <- makeOutputPriorDamp(pos = pos)
               pos <- pos + 1L
               coef <- makeOutputPriorCoef(Z = Z,
                                           pos = pos)
+              meanCoef <- prior@meanEtaCoef@.Data
+              dfCoef <- prior@nuEtaCoef@.Data
+              scaleCoef <- prior@AEtaCoef@.Data
               pos <- pos + P
               scaleError <- makeOutputPriorScale(pos = pos)
+              dfScaleError <- prior@nuTau@.Data
+              scaleScaleError <- prior@ATau@.Data
               list(level = level,
                    scaleLevel = scaleLevel,
+                   dfScaleLevel = dfScaleLevel,
+                   scaleScaleLevel = scaleScaleLevel,
                    trend = trend,
                    scaleTrend = scaleTrend,
+                   dfScaleTrend = dfScaleTrend,
+                   scaleScaleTrend = scaleScaleTrend,
                    damp = damp,
                    coef = coef,
-                   scaleError = scaleError)
+                   meanCoef = meanCoef,
+                   dfCoef = dfCoef,
+                   scaleCoef = scaleCoef,
+                   scaleError = scaleError,
+                   dfScaleError = dfScaleError,
+                   scaleScaleError = scaleScaleError)
           })
 
 ## HAS_TESTS
@@ -388,6 +1365,8 @@ setMethod("makeOutputPrior",
                                           margin = margin)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
+              dfScaleLevel <- prior@nuAlpha@.Data
+              scaleScaleLevel <- prior@AAlpha@.Data
               pos <- pos + 1L
               damp <- makeOutputPriorDamp(pos = pos)
               pos <- pos + 1L
@@ -400,18 +1379,34 @@ setMethod("makeOutputPrior",
                                            margin = margin)
               pos <- pos + (K + 1L) * L * nSeason
               scaleSeason <- makeOutputPriorScale(pos = pos)
+              dfScaleSeason <- prior@nuSeason@.Data
+              scaleScaleSeason <- prior@ASeason@.Data
               pos <- pos + 1L
               coef <- makeOutputPriorCoef(Z = Z,
                                           pos = pos)
+              meanCoef <- prior@meanEtaCoef@.Data
+              dfCoef <- prior@nuEtaCoef@.Data
+              scaleCoef <- prior@AEtaCoef@.Data
               pos <- pos + P
               scaleError <- makeOutputPriorScale(pos = pos)
+              dfScaleError <- prior@nuTau@.Data
+              scaleScaleError <- prior@ATau@.Data
               list(level = level,
                    scaleLevel = scaleLevel,
+                   dfScaleLevel = dfScaleLevel,
+                   scaleScaleLevel = scaleScaleLevel,
                    damp = damp,
                    season = season,
                    scaleSeason = scaleSeason,
+                   dfScaleSeason = dfScaleSeason,
+                   scaleScaleSeason = scaleScaleSeason,
                    coef = coef,
-                   scaleError = scaleError)
+                   meanCoef = meanCoef,
+                   dfCoef = dfCoef,
+                   scaleCoef = scaleCoef,
+                   scaleError = scaleError,
+                   dfScaleError = dfScaleError,
+                   scaleScaleError = scaleScaleError)
           })
 
 ## HAS_TESTS
@@ -439,6 +1434,8 @@ setMethod("makeOutputPrior",
                                           margin = margin)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
+              dfScaleLevel <- prior@nuAlpha@.Data
+              scaleScaleLevel <- prior@AAlpha@.Data
               pos <- pos + 1L
               trend <- makeOutputStateDLM(iterator = iterator,
                                           metadata = metadata,
@@ -449,6 +1446,8 @@ setMethod("makeOutputPrior",
                                           margin = margin)
               pos <- pos + (K + 1L) * L
               scaleTrend <- makeOutputPriorScale(pos = pos)
+              dfScaleTrend <- prior@nuDelta@.Data
+              scaleScaleTrend <- prior@ADelta@.Data
               pos <- pos + 1L
               damp <- makeOutputPriorDamp(pos = pos)
               pos <- pos + 1L
@@ -461,20 +1460,38 @@ setMethod("makeOutputPrior",
                                            margin = margin)
               pos <- pos + (K + 1L) * L * nSeason
               scaleSeason <- makeOutputPriorScale(pos = pos)
+              dfScaleSeason <- prior@nuSeason@.Data
+              scaleScaleSeason <- prior@ASeason@.Data
               pos <- pos + 1L
               coef <- makeOutputPriorCoef(Z = Z,
                                           pos = pos)
+              meanCoef <- prior@meanEtaCoef@.Data
+              dfCoef <- prior@nuEtaCoef@.Data
+              scaleCoef <- prior@AEtaCoef@.Data
               pos <- pos + P
               scaleError <- makeOutputPriorScale(pos = pos)
+              dfScaleError <- prior@nuTau@.Data
+              scaleScaleError <- prior@ATau@.Data
               list(level = level,
                    scaleLevel = scaleLevel,
+                   dfScaleLevel = dfScaleLevel,
+                   scaleScaleLevel = scaleScaleLevel,
                    trend = trend,
                    scaleTrend = scaleTrend,
+                   dfScaleTrend = dfScaleTrend,
+                   scaleScaleTrend = scaleScaleTrend,
                    damp = damp,
                    season = season,
                    scaleSeason = scaleSeason,
+                   dfScaleSeason = dfScaleSeason,
+                   scaleScaleSeason = scaleScaleSeason,
                    coef = coef,
-                   scaleError = scaleError)
+                   meanCoef = meanCoef,
+                   dfCoef = dfCoef,
+                   scaleCoef = scaleCoef,
+                   scaleError = scaleError,
+                   dfScaleError = dfScaleError,
+                   scaleScaleError = scaleScaleError)
           })
 
 
@@ -500,14 +1517,24 @@ setMethod("makeOutputPrior",
                                           margin = margin)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
+              dfScaleLevel <- prior@nuAlpha@.Data
+              scaleScaleLevel <- prior@AAlpha@.Data
               pos <- pos + 1L
               damp <- makeOutputPriorDamp(pos = pos)
               pos <- pos + 1L
+              dfError <- prior@nuBeta@.Data
               scaleError <- makeOutputPriorScale(pos = pos)
+              dfScaleError <- prior@nuTau@.Data
+              scaleScaleError <- prior@ATau@.Data
               list(level = level,
                    scaleLevel = scaleLevel,
+                   dfScaleLevel = dfScaleLevel,
+                   scaleScaleLevel = scaleScaleLevel,
                    damp = damp,
-                   scaleError = scaleError)
+                   dfError = dfError,
+                   scaleError = scaleError,
+                   dfScaleError = dfScaleError,
+                   scaleScaleError = scaleScaleError)
           })
 
 ## HAS_TESTS
@@ -531,6 +1558,8 @@ setMethod("makeOutputPrior",
                                           margin = margin)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
+              dfScaleLevel <- prior@nuAlpha@.Data
+              scaleScaleLevel <- prior@AAlpha@.Data
               pos <- pos + 1L
               trend <- makeOutputStateDLM(iterator = iterator,
                                           metadata = metadata,
@@ -541,16 +1570,28 @@ setMethod("makeOutputPrior",
                                           margin = margin)
               pos <- pos + (K + 1L) * L
               scaleTrend <- makeOutputPriorScale(pos = pos)
+              dfScaleTrend <- prior@nuDelta@.Data
+              scaleScaleTrend <- prior@ADelta@.Data
               pos <- pos + 1L
               damp <- makeOutputPriorDamp(pos = pos)
               pos <- pos + 1L
+              dfError <- prior@nuBeta@.Data
               scaleError <- makeOutputPriorScale(pos = pos)
+              dfScaleError <- prior@nuTau@.Data
+              scaleScaleError <- prior@ATau@.Data
               list(level = level,
                    scaleLevel = scaleLevel,
+                   dfScaleLevel = dfScaleLevel,
+                   scaleScaleLevel = scaleScaleLevel,
                    trend = trend,
                    scaleTrend = scaleTrend,
+                   dfScaleTrend = dfScaleTrend,
+                   scaleScaleTrend = scaleScaleTrend,
                    damp = damp,
-                   scaleError = scaleError)
+                   dfError = dfError,
+                   scaleError = scaleError,
+                   dfScaleError = dfScaleError,
+                   scaleScaleError = scaleScaleError)
           })
 
 ## HAS_TESTS
@@ -574,6 +1615,8 @@ setMethod("makeOutputPrior",
                                           margin = margin)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
+              dfScaleLevel <- prior@nuAlpha@.Data
+              scaleScaleLevel <- prior@AAlpha@.Data
               pos <- pos + 1L
               damp <- makeOutputPriorDamp(pos = pos)
               pos <- pos + 1L
@@ -586,14 +1629,26 @@ setMethod("makeOutputPrior",
                                            margin = margin)
               pos <- pos + (K + 1L) * L * nSeason
               scaleSeason <- makeOutputPriorScale(pos = pos)
+              dfScaleSeason <- prior@nuSeason@.Data
+              scaleScaleSeason <- prior@ASeason@.Data
               pos <- pos + 1L
+              dfError <- prior@nuBeta@.Data
               scaleError <- makeOutputPriorScale(pos = pos)
+              dfScaleError <- prior@nuTau@.Data
+              scaleScaleError <- prior@ATau@.Data
               list(level = level,
                    scaleLevel = scaleLevel,
+                   dfScaleLevel = dfScaleLevel,
+                   scaleScaleLevel = scaleScaleLevel,
                    damp = damp,
                    season = season,
                    scaleSeason = scaleSeason,
-                   scaleError = scaleError)
+                   dfScaleSeason = dfScaleSeason,
+                   scaleScaleSeason = scaleScaleSeason,
+                   dfError = dfError,
+                   scaleError = scaleError,
+                   dfScaleError = dfScaleError,
+                   scaleScaleError = scaleScaleError)
           })
 
 ## HAS_TESTS
@@ -618,6 +1673,8 @@ setMethod("makeOutputPrior",
                                           margin = margin)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
+              dfScaleLevel <- prior@nuAlpha@.Data
+              scaleScaleLevel <- prior@AAlpha@.Data
               pos <- pos + 1L
               trend <- makeOutputStateDLM(iterator = iterator,
                                           metadata = metadata,
@@ -628,6 +1685,8 @@ setMethod("makeOutputPrior",
                                           margin = margin)
               pos <- pos + (K + 1L) * L
               scaleTrend <- makeOutputPriorScale(pos = pos)
+              dfScaleTrend <- prior@nuDelta@.Data
+              scaleScaleTrend <- prior@ADelta@.Data
               pos <- pos + 1L
               damp <- makeOutputPriorDamp(pos = pos)
               pos <- pos + 1L
@@ -640,16 +1699,30 @@ setMethod("makeOutputPrior",
                                            margin = margin)
               pos <- pos + (K + 1L) * L * nSeason
               scaleSeason <- makeOutputPriorScale(pos = pos)
+              dfScaleSeason <- prior@nuSeason@.Data
+              scaleScaleSeason <- prior@ASeason@.Data
               pos <- pos + 1L
+              dfError <- prior@nuBeta@.Data
               scaleError <- makeOutputPriorScale(pos = pos)
+              dfScaleError <- prior@nuTau@.Data
+              scaleScaleError <- prior@ATau@.Data
               list(level = level,
                    scaleLevel = scaleLevel,
+                   dfScaleLevel = dfScaleLevel,
+                   scaleScaleLevel = scaleScaleLevel,
                    trend = trend,
                    scaleTrend = scaleTrend,
+                   dfScaleTrend = dfScaleTrend,
+                   scaleScaleTrend = scaleScaleTrend,
                    damp = damp,
                    season = season,
                    scaleSeason = scaleSeason,
-                   scaleError = scaleError)
+                   dfScaleSeason = dfScaleSeason,
+                   scaleScaleSeason = scaleScaleSeason,
+                   dfError = dfError,
+                   scaleError = scaleError,
+                   dfScaleError = dfScaleError,
+                   scaleScaleError = scaleScaleError)
           })
 
 
@@ -677,18 +1750,34 @@ setMethod("makeOutputPrior",
                                           margin = margin)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
+              dfScaleLevel <- prior@nuAlpha@.Data
+              scaleScaleLevel <- prior@AAlpha@.Data
               pos <- pos + 1L
               damp <- makeOutputPriorDamp(pos = pos)
               pos <- pos + 1L
               coef <- makeOutputPriorCoef(Z = Z,
                                           pos = pos)
+              meanCoef <- prior@meanEtaCoef@.Data
+              dfCoef <- prior@nuEtaCoef@.Data
+              scaleCoef <- prior@AEtaCoef@.Data
               pos <- pos + P
+              dfError <- prior@nuBeta@.Data
               scaleError <- makeOutputPriorScale(pos = pos)
+              dfScaleError <- prior@nuTau@.Data
+              scaleScaleError <- prior@ATau@.Data
               list(level = level,
                    scaleLevel = scaleLevel,
+                   dfScaleLevel = dfScaleLevel,
+                   scaleScaleLevel = scaleScaleLevel,
                    damp = damp,
                    coef = coef,
-                   scaleError = scaleError)
+                   meanCoef = meanCoef,
+                   dfCoef = dfCoef,
+                   scaleCoef = scaleCoef,
+                   dfError = dfError,
+                   scaleError = scaleError,
+                   dfScaleError = dfScaleError,
+                   scaleScaleError = scaleScaleError)
           })
 
 ## HAS_TESTS
@@ -714,6 +1803,8 @@ setMethod("makeOutputPrior",
                                           margin = margin)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
+              dfScaleLevel <- prior@nuAlpha@.Data
+              scaleScaleLevel <- prior@AAlpha@.Data
               pos <- pos + 1L
               trend <- makeOutputStateDLM(iterator = iterator,
                                           metadata = metadata,
@@ -724,20 +1815,38 @@ setMethod("makeOutputPrior",
                                           margin = margin)
               pos <- pos + (K + 1L) * L
               scaleTrend <- makeOutputPriorScale(pos = pos)
+              dfScaleTrend <- prior@nuDelta@.Data
+              scaleScaleTrend <- prior@ADelta@.Data
               pos <- pos + 1L
               damp <- makeOutputPriorDamp(pos = pos)
               pos <- pos + 1L
               coef <- makeOutputPriorCoef(Z = Z,
                                           pos = pos)
+              meanCoef <- prior@meanEtaCoef@.Data
+              dfCoef <- prior@nuEtaCoef@.Data
+              scaleCoef <- prior@AEtaCoef@.Data
               pos <- pos + P
+              dfError <- prior@nuBeta@.Data
               scaleError <- makeOutputPriorScale(pos = pos)
+              dfScaleError <- prior@nuTau@.Data
+              scaleScaleError <- prior@ATau@.Data
               list(level = level,
                    scaleLevel = scaleLevel,
+                   dfScaleLevel = dfScaleLevel,
+                   scaleScaleLevel = scaleScaleLevel,
                    trend = trend,
                    scaleTrend = scaleTrend,
+                   dfScaleTrend = dfScaleTrend,
+                   scaleScaleTrend = scaleScaleTrend,
                    damp = damp,
                    coef = coef,
-                   scaleError = scaleError)
+                   meanCoef = meanCoef,
+                   dfCoef = dfCoef,
+                   scaleCoef = scaleCoef,
+                   dfError = dfError,
+                   scaleError = scaleError,
+                   dfScaleError = dfScaleError,
+                   scaleScaleError = scaleScaleError)
           })
 
 ## HAS_TESTS
@@ -763,6 +1872,8 @@ setMethod("makeOutputPrior",
                                           margin = margin)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
+              dfScaleLevel <- prior@nuAlpha@.Data
+              scaleScaleLevel <- prior@AAlpha@.Data
               pos <- pos + 1L
               damp <- makeOutputPriorDamp(pos = pos)
               pos <- pos + 1L
@@ -775,18 +1886,36 @@ setMethod("makeOutputPrior",
                                            margin = margin)
               pos <- pos + (K + 1L) * L * nSeason
               scaleSeason <- makeOutputPriorScale(pos = pos)
+              dfScaleSeason <- prior@nuSeason@.Data
+              scaleScaleSeason <- prior@ASeason@.Data
               pos <- pos + 1L
               coef <- makeOutputPriorCoef(Z = Z,
                                           pos = pos)
+              meanCoef <- prior@meanEtaCoef@.Data
+              dfCoef <- prior@nuEtaCoef@.Data
+              scaleCoef <- prior@AEtaCoef@.Data
               pos <- pos + P
+              dfError <- prior@nuBeta@.Data
               scaleError <- makeOutputPriorScale(pos = pos)
+              dfScaleError <- prior@nuTau@.Data
+              scaleScaleError <- prior@ATau@.Data
               list(level = level,
                    scaleLevel = scaleLevel,
+                   dfScaleLevel = dfScaleLevel,
+                   scaleScaleLevel = scaleScaleLevel,
                    damp = damp,
                    season = season,
                    scaleSeason = scaleSeason,
+                   dfScaleSeason = dfScaleSeason,
+                   scaleScaleSeason = scaleScaleSeason,
                    coef = coef,
-                   scaleError = scaleError)
+                   meanCoef = meanCoef,
+                   dfCoef = dfCoef,
+                   scaleCoef = scaleCoef,
+                   dfError = dfError,
+                   scaleError = scaleError,
+                   dfScaleError = dfScaleError,
+                   scaleScaleError = scaleScaleError)
           })
 
 ## HAS_TESTS
@@ -813,6 +1942,8 @@ setMethod("makeOutputPrior",
                                           margin = margin)
               pos <- pos + (K + 1L) * L
               scaleLevel <- makeOutputPriorScale(pos = pos)
+              dfScaleLevel <- prior@nuAlpha@.Data
+              scaleScaleLevel <- prior@AAlpha@.Data
               pos <- pos + 1L
               trend <- makeOutputStateDLM(iterator = iterator,
                                           metadata = metadata,
@@ -823,6 +1954,8 @@ setMethod("makeOutputPrior",
                                           margin = margin)
               pos <- pos + (K + 1L) * L
               scaleTrend <- makeOutputPriorScale(pos = pos)
+              dfScaleTrend <- prior@nuDelta@.Data
+              scaleScaleTrend <- prior@ADelta@.Data
               pos <- pos + 1L
               damp <- makeOutputPriorDamp(pos = pos)
               pos <- pos + 1L
@@ -835,21 +1968,43 @@ setMethod("makeOutputPrior",
                                            margin = margin)
               pos <- pos + (K + 1L) * L * nSeason
               scaleSeason <- makeOutputPriorScale(pos = pos)
+              dfScaleSeason <- prior@nuSeason@.Data
+              scaleScaleSeason <- prior@ASeason@.Data
               pos <- pos + 1L
               coef <- makeOutputPriorCoef(Z = Z,
                                           pos = pos)
+              meanCoef <- prior@meanEtaCoef@.Data
+              dfCoef <- prior@nuEtaCoef@.Data
+              scaleCoef <- prior@AEtaCoef@.Data
               pos <- pos + P
+              dfError <- prior@nuBeta@.Data
               scaleError <- makeOutputPriorScale(pos = pos)
+              dfScaleError <- prior@nuTau@.Data
+              scaleScaleError <- prior@ATau@.Data
               list(level = level,
                    scaleLevel = scaleLevel,
+                   dfScaleLevel = dfScaleLevel,
+                   scaleScaleLevel = scaleScaleLevel,
                    trend = trend,
                    scaleTrend = scaleTrend,
+                   dfScaleTrend = dfScaleTrend,
+                   scaleScaleTrend = scaleScaleTrend,
                    damp = damp,
                    season = season,
                    scaleSeason = scaleSeason,
+                   dfScaleSeason = dfScaleSeason,
+                   scaleScaleSeason = scaleScaleSeason,
                    coef = coef,
-                   scaleError = scaleError)
+                   meanCoef = meanCoef,
+                   dfCoef = dfCoef,
+                   scaleCoef = scaleCoef,
+                   dfError = dfError,
+                   scaleError = scaleError,
+                   dfScaleError = dfScaleError,
+                   scaleScaleError = scaleScaleError)
           })
+
+## Known
 
 ## HAS_TESTS
 setMethod("makeOutputPrior",
@@ -860,7 +2015,7 @@ setMethod("makeOutputPrior",
               .Data <- array(alpha,
                              dim = dim(metadata),
                              dimnames = dimnames(metadata))
-              mean <- new("Values",
+              mean <- methods::new("Values",
                           .Data = .Data,
                           metadata = metadata)
               list(mean = mean)
@@ -879,10 +2034,10 @@ setMethod("makeOutputPrior",
               .Data.sd <- array(A,
                                 dim = dim(metadata),
                                 dimnames = dimnames(metadata))
-              mean <- new("Values",
+              mean <- methods::new("Values",
                           .Data = .Data.mean,
                           metadata = metadata)
-              sd <- new("Values",
+              sd <- methods::new("Values",
                         .Data = .Data.sd,
                         metadata = metadata)
               list(mean = mean,
@@ -942,6 +2097,8 @@ setMethod("makeOutputPrior",
               pos <- pos + 1L
               ## tau
               scaleError <- makeOutputPriorScale(pos = pos)
+              dfScaleError <- prior@nuTau@.Data
+              scaleScaleError <- prior@ATau@.Data
               ## return
               list(components = components,
                    scaleComponents = scaleComponents,
@@ -952,7 +2109,9 @@ setMethod("makeOutputPrior",
                    mean = mean,
                    damp = damp,
                    scale2 = scale2,
-                   scaleError = scaleError)
+                   scaleError = scaleError,
+                   dfScaleError = dfScaleError,
+                   scaleScaleError = scaleScaleError)
           })
 
 

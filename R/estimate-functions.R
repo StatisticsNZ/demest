@@ -78,15 +78,6 @@
 #' functions pool the results from all the chains to form a single sample.
 #' This sample has \code{floor(nChain * nSim / nThin)} iterations.
 #'
-#' @section Parallel:
-#'
-#' Because each chain is run independently, the calculations can be carried out
-#' in parallel.  By default, \code{estimateModel}, \code{\link{estimateCounts}},
-#' and \code{\link{estimateAccount}} run the calculations on separate cores,
-#' using functions from the \pkg{parallel} package. For portability, however,
-#' the \code{parallel} argument is set to \code{FALSE} in the examples in the
-#' online help.
-#' 
 #' @param model An object of class \code{\linkS4class{SpecModel}},
 #' specifying the model to be fit.
 #' @param y A \code{\link[dembase:DemographicArray-class]{demographic array}}
@@ -98,10 +89,12 @@
 #' @param filename The name of a file where output is collected.  
 #' @param nBurnin Number of iteration discarded before recording begins.
 #' @param nSim Number of iterations carried out during recording.
-#' @param nChain Number of parallel chains used in simulations.
+#' @param nChain Number of independent chains to use.
 #' @param nThin Thinning interval.
 #' @param parallel Logical.  If \code{TRUE} (the default), parallel processing
 #' is used.
+#' @param nCore The number of cores to use, when \code{parallel}
+#' is \code{TRUE}.  If no value supplied, defaults to \code{nChain}.
 #' @param nUpdateMax Maximum number of iterations completed before releasing
 #' memory.  If running out of memory, setting a lower value than the default
 #' may help.
@@ -144,14 +137,16 @@
 #' @export
 estimateModel <- function(model, y, exposure = NULL, weights = NULL,
                           filename = NULL, nBurnin = 1000, nSim = 1000,
-                          nChain = 4, nThin = 1, parallel = TRUE, outfile = NULL,
+                          nChain = 4, nThin = 1, parallel = TRUE,
+                          nCore = NULL, outfile = NULL,
                           nUpdateMax = 50, verbose = TRUE, useC = TRUE) {
     call <- match.call()
     methods::validObject(model)
     mcmc.args <- makeMCMCArgs(nBurnin = nBurnin,
                               nSim = nSim,
                               nChain = nChain,
-                              nThin = nThin)
+                              nThin = nThin,
+                              nCore = nCore)
     if (is.null(filename))
         filename <- tempfile()
     else
@@ -189,10 +184,10 @@ estimateModel <- function(model, y, exposure = NULL, weights = NULL,
                                         # this must be done BEFORE call to makeCluster!
         if (is.null(outfile)) ## passing 'outfile' as an argument always causes redirection
             cl <- parallel::makeCluster(getOption("cl.cores",
-                                                  default = mcmc.args$nChain))
+                                                  default = mcmc.args$nCore))
         else
             cl <- parallel::makeCluster(getOption("cl.cores",
-                                                  default = mcmc.args$nChain),
+                                                  default = mcmc.args$nCore),
                                         outfile = outfile)
         parallel::clusterSetRNGStream(cl,
                                       iseed = pseed)
@@ -244,6 +239,10 @@ estimateModel <- function(model, y, exposure = NULL, weights = NULL,
 #' When predicting along \code{"time"}, \code{"age"} or \code{"cohort"}
 #' dimensions, specifying an \code{n} argument is usually more convenient
 #' than specifying a \code{labels} argument.
+#'
+#' \code{exposure} or \code{weights} arguments are needed if predictions
+#' for outcome variable \code{y}, and not just the model parameters,
+#' are needed.
 #' 
 #' @inheritParams estimateModel
 #' @param filenameEst Filename used to \code{\link{estimateModel}}.
@@ -260,9 +259,13 @@ estimateModel <- function(model, y, exposure = NULL, weights = NULL,
 #' @param upper An upper bound for estimates of data-level
 #' rate, probabilities, or means.
 #' @export
-predictModel <- function(filenameEst, filenamePred, along = NULL, labels = NULL, n = NULL,
-                         data = NULL, aggregate = NULL, lower = NULL,
-                         upper = NULL, nBurnin = 0L,  parallel = TRUE, outfile = NULL,
+predictModel <- function(filenameEst, filenamePred,
+                         along = NULL, labels = NULL, n = NULL,
+                         exposure = NULL, weights = NULL,
+                         data = NULL, aggregate = NULL,
+                         lower = NULL, upper = NULL,
+                         nBurnin = 0L,  parallel = TRUE,
+                         outfile = NULL,
                          verbose = FALSE, useC = TRUE) {
     if (!identical(nBurnin, 0L))
         stop("'nBurnin' must currently be 0L")
@@ -300,6 +303,22 @@ predictModel <- function(filenameEst, filenamePred, along = NULL, labels = NULL,
                                                  lower = lower,
                                                  upper = upper,
                                                  yIsCounts = y.is.counts)
+    y.second <- combined.pred@y
+    uses.exposure <- usesExposure(model.first)
+    has.exposure <- !is.null(exposure)
+    if (uses.exposure && !has.exposure)
+        exposure <- y.second
+    if (!uses.exposure && has.exposure)
+        stop(gettextf("'%s' argument supplied, but model '%s' does not use exposure",
+                      "exposure", deparse(model.first@call[[2L]])))
+    exposure <- checkAndTidyExposure(exposure = exposure,
+                                     y = y.second)
+    exposure <- castExposure(exposure = exposure,
+                             model = model.first)
+    weights <- checkAndTidyWeights(weights = weights,
+                                   y = y.second)
+    if (!is.null(weights))
+        combined.pred@model@weights <- as.numeric(weights)
     control.args.pred <- list(call = call,
                               parallel = parallel,
                               lengthIter = lengthValues(combined.pred),
@@ -308,7 +327,8 @@ predictModel <- function(filenameEst, filenamePred, along = NULL, labels = NULL,
                            nSim = mcmc.args.first[["nSim"]],
                            nChain = mcmc.args.first[["nChain"]],
                            nThin = mcmc.args.first[["nThin"]],
-                           nIteration = mcmc.args.first[["nIteration"]])
+                           nIteration = mcmc.args.first[["nIteration"]],
+                           nCore = mcmc.args.first[["nCore"]])
     tempfiles.first <- splitFile(filename = filenameEst,
                                  nChain = mcmc.args.first[["nChain"]],
                                  nIteration = mcmc.args.first[["nIteration"]],
@@ -318,10 +338,10 @@ predictModel <- function(filenameEst, filenamePred, along = NULL, labels = NULL,
     if (parallel) {
         if (is.null(outfile)) ## passing 'outfile' as an argument always causes redirection
             cl <- parallel::makeCluster(getOption("cl.cores",
-                                                  default = mcmc.args.pred$nChain))
+                                                  default = mcmc.args.pred$nCore))
         else
             cl <- parallel::makeCluster(getOption("cl.cores",
-                                                  default = mcmc.args.pred$nChain),
+                                                  default = mcmc.args.pred$nCore),
                                         outfile = outfile)
         parallel::clusterSetRNGStream(cl)
         final.combineds <- parallel::clusterMap(cl = cl,
@@ -353,6 +373,7 @@ predictModel <- function(filenameEst, filenamePred, along = NULL, labels = NULL,
     }
     sapply(tempfiles.first, unlink)
     results <- makeResultsModelPred(finalCombineds = final.combineds,
+                                    exposure = exposure,
                                     mcmcArgs = mcmc.args.pred,
                                     controlArgs = control.args.pred,
                                     seed = seed)
@@ -362,6 +383,77 @@ predictModel <- function(filenameEst, filenamePred, along = NULL, labels = NULL,
     finalMessage(filename = filenamePred,
                  verbose = verbose)
 }
+
+
+#' Draw parameters and data from a statistical model
+#'
+#' WARNING - THIS FUNCTION IS STILL UNDER DEVELOPMENT
+#' 
+#' @inheritParams estimateModel
+#' @param nDraw The number of random draws to make from the model.
+#' @export
+simulateModel <- function(model, y = NULL, exposure = NULL, weights = NULL,
+                          filename = NULL, nDraw = 10, 
+                          verbose = TRUE, useC = TRUE) {
+    call <- match.call()
+    methods::validObject(model)
+    model.uses.aggregate <- !methods::is(model@aggregate, "SpecAgPlaceholder")
+    if (model.uses.aggregate) {
+        stop(gettextf("function '%s' cannot be used if model includes aggregate values : consider using function '%s' instead",
+                      "simulateModel", "simulateModelAg"))
+    }
+    checkPositiveInteger(x = nDraw,
+                         name = "nDraw")
+    nDraw <- as.integer(nDraw)
+    if (is.null(filename))
+        filename <- tempfile()
+    else
+        checkFilename(filename)
+    tempfile <- paste(filename, "sim", sep = "_")
+    l <- checkAndTidySimulatedYExposureWeights(model = model,
+                                               y = y,
+                                               exposure = exposure,
+                                               weights = weights)
+    y <- l$y
+    exposure <- l$exposure
+    y <- castY(y = y,
+               spec = model)
+    checkForSubtotals(object = y,
+                      model = model,
+                      name = "y")
+    exposure <- castExposure(exposure = exposure,
+                             model = model)
+    weights <- checkAndTidyWeights(weights = weights,
+                                   y = y)
+    checkAllDimensionsHavePriors(model = model,
+                                 y = y)
+    checkPriorsAreInformative(model)
+    checkPriorSDInformative(model)
+    combined <- initialCombinedModelSimulate(model,
+                                             y = y,
+                                             exposure = exposure,
+                                             weights = weights)
+    combined <- simulateDirect(combined = combined,
+                               tempfile = tempfile,
+                               nDraw = nDraw,
+                               useC = useC)
+    seed <- list(.Random.seed)
+    control.args <- list(call = call,
+                         parallel = FALSE,
+                         lengthIter = length(extractValues(combined)),
+                         nUpdateMax = 1L)
+    results <- makeResultsModelSimDirect(combined = combined,
+                                         nDraw = nDraw,
+                                         controlArgs = control.args,
+                                         seed = seed)
+    makeResultsFile(filename = filename,
+                    results = results,
+                    tempfiles = tempfile)
+    rescaleInFile(filename)
+    finalMessage(filename = filename,
+                 verbose = verbose)
+}
+
 
 
 #' Estimate counts and model from one or more noisy datasets.
@@ -376,7 +468,6 @@ predictModel <- function(filenameEst, filenamePred, along = NULL, labels = NULL,
 #' and \code{datasets} is a named list of datasets.  The response for each
 #' data model must be the name of a dataset.  See below for examples.
 #' 
-#' 
 #' @inheritParams estimateModel
 #' @param y An object of class
 #' \code{\link[dembase:DemographicArray-class]{Counts}} with the same
@@ -386,6 +477,11 @@ predictModel <- function(filenameEst, filenamePred, along = NULL, labels = NULL,
 #' the datasets and counts.  
 #' @param datasets A named list of objects of class
 #' \code{\link[dembase:DemographicArray-class]{Counts}}.
+#' @param concordances A named list of
+#' \code{\link[dembase:Concordance-class]{concordances}},
+#' which are applied to \code{y} before it is supplied to
+#' the corresponding data model.
+#' 
 #'
 #' @seealso \code{\link{estimateModel}}, \code{\link{estimateAccount}}
 #' 
@@ -420,9 +516,11 @@ predictModel <- function(filenameEst, filenamePred, along = NULL, labels = NULL,
 #' }
 #' @export
 estimateCounts <- function(model, y, exposure = NULL, dataModels,
-                           datasets, filename = NULL, nBurnin = 1000,
-                           nSim = 1000, nChain = 5, nThin = 1,
-                           parallel = TRUE, outfile = NULL, nUpdateMax = 50,
+                           datasets, concordances = list(),
+                           filename = NULL, nBurnin = 1000,
+                           nSim = 1000, nChain = 4, nThin = 1,
+                           parallel = TRUE, nCore = NULL,
+                           outfile = NULL, nUpdateMax = 50,
                            verbose = FALSE, useC = TRUE) {
     call <- match.call()
     methods::validObject(model)
@@ -447,14 +545,19 @@ estimateCounts <- function(model, y, exposure = NULL, dataModels,
                                             datasets = datasets,
                                             namesDatasets = namesDatasets)
     ## make transforms from y to datasets
+    checkConcordancesDatasets(concordances = concordances,
+                              datasets = datasets,
+                              namesDatasets = namesDatasets)
     transforms <- makeTransformsYToDatasets(y = y,
                                             datasets = datasets,
+                                            concordances = concordances,
                                             namesDatasets = namesDatasets)
     ## mcmc and control arguments
     mcmc.args <- makeMCMCArgs(nBurnin = nBurnin,
                               nSim = nSim,
                               nChain = nChain,
-                              nThin = nThin)
+                              nThin = nThin,
+                              nCore = nCore)
     if (is.null(filename))
         filename <- tempfile()
     else
@@ -472,7 +575,7 @@ estimateCounts <- function(model, y, exposure = NULL, dataModels,
                                                  namesDatasets = namesDatasets,
                                                  transforms = transforms))
     parallel <- control.args$parallel
-    tempfiles <- paste(filename, seq_len(mcmc.args$nChain), sep = "_")
+    tempfiles <- paste(filename, seq_len(mcmc.args$nCore), sep = "_")
     MoreArgs <- c(list(seed = NULL),
                   mcmc.args,
                   control.args,
@@ -482,10 +585,10 @@ estimateCounts <- function(model, y, exposure = NULL, dataModels,
     if (parallel) {
         if (is.null(outfile)) ## passing 'outfile' as an argument always causes redirection
             cl <- parallel::makeCluster(getOption("cl.cores",
-                                                  default = mcmc.args$nChain))
+                                                  default = mcmc.args$nCore))
         else
             cl <- parallel::makeCluster(getOption("cl.cores",
-                                                  default = mcmc.args$nChain),
+                                                  default = mcmc.args$nCore),
                                         outfile = outfile)
         parallel::clusterSetRNGStream(cl)
         final.combineds <- parallel::clusterMap(cl = cl,
@@ -650,13 +753,25 @@ predictCounts <- function(filenameEst, filenamePred, along = NULL, labels = NULL
 #' \emph{The function is still under construction.}
 #'
 #' @inheritParams estimateCounts
-#' @param y An object of class
-#' \code{\link[dembase:DemographicAccount-class]{DemographicAccount}}.
-#' @param systemModels A list of objects of class \code{\linkS4class{SpecModel}}
+#' @param account An object of class
+#' \code{\link[dembase:DemographicAccount-class]{DemographicAccount}},
+#' giving the initial values for the estimation of the account.
+#' @param systemModels A list of objects of class
+#' \code{\linkS4class{SpecModel}}
 #' specifying models for the demographic series.
 #' @param dataModels A list of objects of class
 #' \code{\linkS4class{SpecModel}} specifying models for the datasets.
-#'
+#' @param concordances A named list of
+#' \code{\link[dembase:Concordance-class]{concordances}},
+#' which are applied to the series in the account before they are
+#' supplied to the corresponding data model.
+#' @param weights A named list of
+#' \code{\link[dembase:Counts-class]{Counts}} objects,
+#' providing weights for any Normal models among the system models.
+#' @param dominant Either \code{"Female"} (the default) or \code{"Male"}.
+#' Determines which sex is used to generate exposures in the system
+#' model for births.
+#' 
 #' @seealso \code{\link{estimateModel}}, \code{\link{estimateCounts}}
 #'
 #' @references Bryant, J., Graham, P. Bayesian demographic accounts:
@@ -664,10 +779,12 @@ predictCounts <- function(filenameEst, filenamePred, along = NULL, labels = NULL
 #' \emph{Bayesian Analysis}
 #' @export
 estimateAccount <- function(account, systemModels, datasets, dataModels, 
-                            weights = list(), dominant = c("Female", "Male"),
+                            concordances = list(), weights = list(),
+                            dominant = c("Female", "Male"),
                             filename = NULL, nBurnin = 1000, nSim = 1000,
                             nChain = 4, nThin = 1,
-                            parallel = TRUE, outfile = NULL, nUpdateMax = 50,
+                            parallel = TRUE, nCore = NULL,
+                            outfile = NULL, nUpdateMax = 50,
                             verbose = FALSE, useC = TRUE) {
     call <- match.call()
     methods::validObject(account)
@@ -695,15 +812,20 @@ estimateAccount <- function(account, systemModels, datasets, dataModels,
     seriesIndices <- makeSeriesIndices(dataModels = dataModels,
                                        account = account)
     ## make transforms from account to datasets
+    checkConcordancesDatasets(concordances = concordances,
+                              datasets = datasets,
+                              namesDatasets = namesDatasets)
     transforms <- makeTransformsAccountToDatasets(account = account,
                                                   datasets = datasets,
+                                                  concordances = concordances,
                                                   namesDatasets = namesDatasets,
                                                   seriesIndices = seriesIndices)
     ## mcmc and control arguments
     mcmc.args <- makeMCMCArgs(nBurnin = nBurnin,
                               nSim = nSim,
                               nChain = nChain,
-                              nThin = nThin)
+                              nThin = nThin,
+                              nCore = nCore)
     if (is.null(filename))
         filename <- tempfile()
     else
@@ -733,10 +855,10 @@ estimateAccount <- function(account, systemModels, datasets, dataModels,
     if (parallel) {
         if (is.null(outfile)) ## passing 'outfile' as an argument always causes redirection
             cl <- parallel::makeCluster(getOption("cl.cores",
-                                                  default = mcmc.args$nChain))
+                                                  default = mcmc.args$nCore))
         else
             cl <- parallel::makeCluster(getOption("cl.cores",
-                                                  default = mcmc.args$nChain),
+                                                  default = mcmc.args$nCore),
                                         outfile = outfile)
         parallel::clusterSetRNGStream(cl)
         final.combineds <- parallel::clusterMap(cl = cl,
@@ -787,6 +909,147 @@ predictAccount <- function(filenameEst, filenamePred, along = NULL, labels = NUL
 }
 
 
+#' Create a synthetic demographic account
+#'
+#' WARNING - THIS FUNCTION IS STILL UNDER DEVELOPMENT
+#' 
+#' @inheritParams estimateAccount
+#' @export
+simulateAccount <- function(account, systemModels,
+                            datasets = list(), dataModels = list(), 
+                            concordances = list(), weights = list(),
+                            dominant = c("Female", "Male"),
+                            filename = NULL, nBurnin = 1000, nSim = 1000,
+                            nChain = 4, nThin = 1,
+                            parallel = TRUE, nCore = NULL,
+                            outfile = NULL, nUpdateMax = 50,
+                            verbose = TRUE, useC = TRUE) {
+    call <- match.call()
+    methods::validObject(account)
+    dominant <- match.arg(dominant)
+    ## make account consistent, if necessary
+    if (!all(dembase::isConsistent(account)))
+        account <- dembase::makeConsistent(account)
+    ## align system models to account
+    checkSystemModels(systemModels)
+    systemModels <- alignSystemModelsToAccount(systemModels = systemModels,
+                                               account = account)
+    ## align weights to system models
+    systemWeights <- checkAndTidySystemWeights(weights,
+                                               systemModels = systemModels)
+    ## check models are suitable for simulation
+    checkSystemModelsSuitableForSimulation(systemModels = systemModels,
+                                           account = account)
+    ## see if there are any data models, and process accordingly
+    has.data.models <- length(dataModels) > 0L
+    if (has.data.models) {
+        ## align to datasets
+        checkDataModels(dataModels = dataModels,
+                        needsNonDefaultSeriesArg = TRUE)
+        datasets <- checkAndTidyDatasets(datasets)
+        namesDatasets <- names(datasets)
+        names(datasets) <- NULL
+        dataModels <- alignDataModelsToDatasets(dataModels = dataModels,
+                                                datasets = datasets,
+                                                namesDatasets = namesDatasets)
+        ## check priors
+        checkDataModelsSuitableForSimulation(dataModels = dataModels,
+                                             datasets = datasets,
+                                             namesDatasets = namesDatasets)
+        ## make 'seriesIndices', mapping data models to account
+        seriesIndices <- makeSeriesIndices(dataModels = dataModels,
+                                           account = account)
+        ## make transforms from account to datasets
+        checkConcordancesDatasets(concordances = concordances,
+                                  datasets = datasets,
+                                  namesDatasets = namesDatasets)
+        transforms <- makeTransformsAccountToDatasets(account = account,
+                                                      datasets = datasets,
+                                                      concordances = concordances,
+                                                      namesDatasets = namesDatasets,
+                                                      seriesIndices = seriesIndices)
+    }
+    else {
+        if (length(datasets) > 0L)
+            stop(gettext("there are datasets, but no data models"))
+        seriesIndices <- integer()
+        namesDatasets <- character()
+        transforms <- list()
+    }
+    ## mcmc and control arguments
+    mcmc.args <- makeMCMCArgs(nBurnin = nBurnin,
+                              nSim = nSim,
+                              nChain = nChain,
+                              nThin = nThin,
+                              nCore = nCore)
+    if (is.null(filename))
+        filename <- tempfile()
+    else
+        checkFilename(filename)
+    control.args <- makeControlArgs(call = call,
+                                    parallel = parallel,
+                                    nUpdateMax = nUpdateMax)
+    ## initial values - unlike with estimateAccount,
+    ## all chains start from same initial values
+    combined <- initialCombinedAccountSimulate(account = account,
+                                               systemModels = systemModels,
+                                               systemWeights = systemWeights,
+                                               dataModels = dataModels,
+                                               seriesIndices = seriesIndices,
+                                               datasets = datasets,
+                                               namesDatasets = namesDatasets,
+                                               transforms = transforms,
+                                               dominant = dominant)
+    combineds <- rep(list(combined),
+                     times = mcmc.args$nChain)
+    parallel <- control.args$parallel
+    tempfiles <- paste(filename, seq_len(mcmc.args$nChain), sep = "_")
+    MoreArgs <- c(list(seed = NULL),
+                  mcmc.args,
+                  control.args,
+                  list(continuing = FALSE,
+                       useC = useC))
+    ## estimation
+    if (parallel) {
+        if (is.null(outfile)) ## passing 'outfile' as an argument always causes redirection
+            cl <- parallel::makeCluster(getOption("cl.cores",
+                                                  default = mcmc.args$nCore))
+        else
+            cl <- parallel::makeCluster(getOption("cl.cores",
+                                                  default = mcmc.args$nCore),
+                                        outfile = outfile)
+        parallel::clusterSetRNGStream(cl)
+        final.combineds <- parallel::clusterMap(cl = cl,
+                                                fun = simulateOneChain,
+                                                tempfile = tempfiles,
+                                                combined = combineds,
+                                                MoreArgs = MoreArgs,
+                                                SIMPLIFY = FALSE,
+                                                USE.NAMES = FALSE)
+        seed <- parallel::clusterCall(cl, function() .Random.seed)
+        parallel::stopCluster(cl)
+    }
+    else {
+        final.combineds <- mapply(simulateOneChain,
+                                  tempfile = tempfiles,
+                                  combined = combineds,
+                                  MoreArgs = MoreArgs,
+                                  SIMPLIFY = FALSE,
+                                  USE.NAMES = FALSE)
+        seed <- list(.Random.seed)
+    }
+    ## results object
+    control.args$lengthIter <- length(extractValues(final.combineds[[1L]]))
+    results <- makeResultsAccount(finalCombineds = final.combineds,
+                                  mcmcArgs = mcmc.args,
+                                  controlArgs = control.args,
+                                  seed = seed)
+    makeResultsFile(filename = filename,
+                    results = results,
+                    tempfiles = tempfiles)
+    rescaleInFile(filename)
+    finalMessage(filename = filename, verbose = verbose)
+}
 
 
 
@@ -938,7 +1201,8 @@ predictAccount <- function(filenameEst, filenamePred, along = NULL, labels = NUL
 #' 
 #' @export
 continueEstimation <- function(filename, nBurnin = NULL, nSim = 1000, nThin = NULL,
-                               outfile = NULL, verbose = FALSE, useC = TRUE) {
+                               parallel = NULL, outfile = NULL, verbose = FALSE,
+                               useC = TRUE) {
     object <- fetchResultsObject(filename)
     mcmc.args.old <- object@mcmc
     control.args <- object@control
@@ -952,6 +1216,11 @@ continueEstimation <- function(filename, nBurnin = NULL, nSim = 1000, nThin = NU
                                   nSim = nSim,
                                   nChain = mcmc.args.old[["nChain"]],
                                   nThin = nThin)
+    if (!is.null(parallel)) {
+        checkLogical(x = parallel,
+                     name = "parallel")
+        control.args$parallel <- parallel
+    }
     combineds <- object@final
     tempfiles.new <- paste(filename, "cont", seq_len(mcmc.args.new$nChain), sep = "_")
     MoreArgs <- c(mcmc.args.new, control.args, list(continuing = TRUE, useC = useC))

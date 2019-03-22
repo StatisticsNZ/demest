@@ -3,7 +3,7 @@ context("iterators-generators")
 
 n.test <- 5
 test.identity <- FALSE
-test.extended <- TRUE
+test.extended <- FALSE
 
 test_that("AlongIterator creates objects from valid inputs", {
     AlongIterator <- demest:::AlongIterator

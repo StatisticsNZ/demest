@@ -1,33 +1,4 @@
 
-
-#' @export
-CMP <- function(formula, dispersion = Dispersion(), useExpose = TRUE,
-                structuralZeros = NULL, boxcox = 0) {
-    ## formula
-    checkFormulaMu(formula)
-    checkForMarginalTerms(formula)
-    ## dispersion
-    if (!methods::is(dispersion, "Dispersion"))
-        stop(gettextf("'%s' has class \"%s\"",
-                      dispersion, class(dispersion)))
-    meanLogNuCMP <- dispersion@meanLogNuCMP
-    sdLogNuCMP <- dispersion@sdLogNuCMP
-    ## useExpose
-    useExpose <- checkAndTidyLogicalFlag(x = useExpose,
-                                         name = "useExpose")
-    ## structural zeros
-    structuralZeros <- checkAndTidyStructuralZeros(structuralZeros)
-    methods::new("SpecLikelihoodCMP",
-                 formulaMu = formula,
-                 meanLogNuCMP = meanLogNuCMP,
-                 sdLogNuCMP = sdLogNuCMP,
-                 useExpose = useExpose,
-                 boxCoxParam = boxcox,
-                 structuralZeros = structuralZeros)
-}
-
-
-
 #' Specify the prior for the dispersion parameter in a CMP model.
 #'
 #' Specify the prior for the dispersion parameter (often denoted
@@ -49,8 +20,8 @@ CMP <- function(formula, dispersion = Dispersion(), useExpose = TRUE,
 Dispersion <- function(mean = 0, sd = 1) {
     meanLogNuCMP <- checkAndTidyMeanOrProb(mean, name = "mean")
     checkNonNegativeNumeric(sd, name = "sd")
-    meanLogNuCMP <- new("Parameter", meanLogNuCMP)
-    sdLogNuCMP <- new("Scale", sd)
+    meanLogNuCMP <- methods::new("Parameter", meanLogNuCMP)
+    sdLogNuCMP <- methods::new("Scale", sd)
     methods::new("Dispersion",
                  meanLogNuCMP = meanLogNuCMP,
                  sdLogNuCMP = sdLogNuCMP)
@@ -71,6 +42,14 @@ Dispersion <- function(mean = 0, sd = 1) {
 #' \deqn{y_i \sim Poisson(\gamma_i)}
 #' \deqn{log(\gamma_i) \sim N(x_i \beta, \sigma_i),}
 #'
+#' \deqn{y_i \sim CMP(\gamma_i n_i, \nu_i)}
+#' \deqn{log(\gamma_i) \sim N(x_i \beta, \sigma_i),}
+#' \deqn{log(\nu_i) \sim N(m, s^2)}
+#'
+#' \deqn{y_i \sim CMP(\gamma_i, \nu_i)}
+#' \deqn{log(\gamma_i) \sim N(x_i \beta, \sigma_i),}
+#' \deqn{log(\nu_i) \sim N(m, s^2)}
+#' 
 #' \deqn{y_i \sim binomial(n_i, \gamma_i)}
 #' \deqn{logit(\gamma_i) \sim N(x_i \beta, \sigma_i),}
 #' or
@@ -81,7 +60,8 @@ Dispersion <- function(mean = 0, sd = 1) {
 #' such as an array with dimensions age, sex, and time.  In
 #' Poisson and binomial models, \eqn{y_i} is a count.
 #' The \eqn{n_i} term is an exposure in the case of Poisson
-#' models and a sample size in the case of binomial models.
+#' and CMP (COMPoisson) models and a
+#' sample size in the case of binomial models.
 #' It is not supplied in calls to function \code{Poisson}
 #' or \code{Binomial}.  In normal models \eqn{y_i}
 #' is a cell-specific value such as a mean,
@@ -147,6 +127,12 @@ Dispersion <- function(mean = 0, sd = 1) {
 #' @param structuralZeros Location of any structural zeros
 #' in the data. An object of class \code{\link[dembase:Values-class]{Values}},
 #' or, for the typical case, the word \code{"diag"}.
+#' @param boxcox Parameter determining transformation of rates
+#' or counts used in Poisson or CMP models. Defaults to 0,
+#' implying that a log transform is used.
+#' @param dispersion The dispersion parameter for a CMP model.
+#' An object of class \code{\linkS4class{Dispersion}},
+#' typically created by a call to function \code{\link{Dispersion}}.
 #'
 #' @return An object of class \code{\linkS4class{SpecLikelihood}}.
 #'
@@ -211,6 +197,33 @@ Poisson <- function(formula, useExpose = TRUE, structuralZeros = NULL,
                  boxCoxParam = boxcox)
 }
 
+#' @rdname likelihood
+#' @export
+CMP <- function(formula, dispersion = Dispersion(), useExpose = TRUE,
+                structuralZeros = NULL, boxcox = 0) {
+    ## formula
+    checkFormulaMu(formula)
+    checkForMarginalTerms(formula)
+    ## dispersion
+    if (!methods::is(dispersion, "Dispersion"))
+        stop(gettextf("'%s' has class \"%s\"",
+                      dispersion, class(dispersion)))
+    meanLogNuCMP <- dispersion@meanLogNuCMP
+    sdLogNuCMP <- dispersion@sdLogNuCMP
+    ## useExpose
+    useExpose <- checkAndTidyLogicalFlag(x = useExpose,
+                                         name = "useExpose")
+    ## structural zeros
+    structuralZeros <- checkAndTidyStructuralZeros(structuralZeros)
+    methods::new("SpecLikelihoodCMP",
+                 formulaMu = formula,
+                 meanLogNuCMP = meanLogNuCMP,
+                 sdLogNuCMP = sdLogNuCMP,
+                 useExpose = useExpose,
+                 boxCoxParam = boxcox,
+                 structuralZeros = structuralZeros)
+}
+
 ## HAS_TESTS
 #' @rdname likelihood
 #' @export
@@ -244,7 +257,7 @@ Normal <- function(formula, sd = NULL, priorSD = HalfT()) {
         checkNonNegativeNumeric(x = sd, name = "sd")
         varsigma <- methods::new("Scale", as.double(sd))
         varsigmaSetToZero <- isTRUE(all.equal(sd, 0))
-        varsigmaSetToZero <- new("LogicalFlag", varsigmaSetToZero)
+        varsigmaSetToZero <- methods::new("LogicalFlag", varsigmaSetToZero)
         methods::new("SpecLikelihoodNormalVarsigmaKnown",
                      formulaMu = formula,
                      varsigma = varsigma,
@@ -324,7 +337,7 @@ NormalFixed <- function(mean, sd, useExpose = TRUE) {
         stop(gettextf("'%s' has missing values",
                       "mean"))
     mean.param <- as.double(mean)
-    mean.param <- new("ParameterVector", mean.param)
+    mean.param <- methods::new("ParameterVector", mean.param)
     if (methods::is(sd, "Values")) {
         ## 'sd' is compatible with 'mean'
         sd <- tryCatch(dembase::makeCompatible(x = sd, y = mean, subset = TRUE),
@@ -362,10 +375,10 @@ NormalFixed <- function(mean, sd, useExpose = TRUE) {
         stop(gettextf("'%s' has class \"%s\"",
                       "sd", class(sd)))
     }
-    sd <- new("ScaleVec", sd)
+    sd <- methods::new("ScaleVec", sd)
     useExpose <- checkAndTidyLogicalFlag(x = useExpose,
                                          name = "useExpose")
-    new("SpecLikelihoodNormalFixed",
+    methods::new("SpecLikelihoodNormalFixed",
         mean = mean.param,
         sd = sd,
         metadata = metadata,
@@ -449,7 +462,7 @@ TFixed <- function(location, scale, df = 7, useExpose = TRUE) {
         stop(gettextf("'%s' has missing values",
                       "location"))
     location.param <- as.double(location)
-    location.param <- new("ParameterVector", location.param)
+    location.param <- methods::new("ParameterVector", location.param)
     if (methods::is(scale, "Values")) {
         ## 'scale' is compatible with 'location'
         scale <- tryCatch(dembase::makeCompatible(x = scale, y = location, subset = TRUE),
@@ -487,12 +500,12 @@ TFixed <- function(location, scale, df = 7, useExpose = TRUE) {
         stop(gettextf("'%s' has class \"%s\"",
                       "scale", class(scale)))
     }
-    scale <- new("ScaleVec", scale)
+    scale <- methods::new("ScaleVec", scale)
     df <- checkAndTidyNu(x = df,
                          name = "df")
     useExpose <- checkAndTidyLogicalFlag(x = useExpose,
                                          name = "useExpose")
-    new("SpecLikelihoodTFixed",
+    methods::new("SpecLikelihoodTFixed",
         mean = location.param,
         sd = scale,
         nu = df,
@@ -509,7 +522,8 @@ TFixed <- function(location, scale, df = 7, useExpose = TRUE) {
 #' The likelihood and, if the model has a second level,
 #' main effects and interactions from that level, are
 #' specified via functions such as \code{\link{Poisson}},
-#' \code{\link{Binomial}}, \code{\link{Normal}}, or
+#' \code{\link{CMP}}, \code{\link{Binomial}},
+#' \code{\link{Normal}}, or
 #' \code{\link{PoissonBinomial}}.  \code{Model} is used
 #' to specify the remaining parts of the model.
 #'
@@ -713,7 +727,7 @@ PoissonBinomial <- function(prob) {
 #'
 #' The model is useful for analysing data that have been
 #' confidentialised to base 3. It is used as a data model
-#' in calls to \code{\link{estimateCount}}, and
+#' in calls to \code{\link{estimateCounts}}, and
 #' \code{\link{estimateAccount}}.
 #'
 #' @return An object of class \code{\linkS4class{SpecLikelihood}}.
@@ -725,7 +739,7 @@ PoissonBinomial <- function(prob) {
 #' Round3()
 #' @export
 Round3 <- function() {
-    new("SpecLikelihoodRound3")
+    methods::new("SpecLikelihoodRound3")
 }
 
 
@@ -755,11 +769,17 @@ setMethod("SpecModel",
                       stop(gettextf("'%s' has class \"%s\"",
                                     "priorSD", class(priorSD)))
               }
+              ## We can set A.sigma now. Even if no value for
+              ## 'A' was supplied in the call to 'priorSD',
+              ## we know there is an exposure term, so we can
+              ## default to 1 * mult
               A.sigma <- priorSD@A
+              mult.sigma <- priorSD@mult
               nu.sigma <- priorSD@nu
               sigma.max <- priorSD@scaleMax
               A.sigma <- makeASigma(A = A.sigma,
                                     sY = NULL,
+                                    mult = mult.sigma,
                                     isSpec = TRUE)
               sigma.max <- makeScaleMax(scaleMax = sigma.max,
                                         A = A.sigma,
@@ -818,21 +838,24 @@ setMethod("SpecModel",
                       stop(gettextf("'%s' has class \"%s\"",
                                     "priorSD", class(priorSD)))
               }
+              ## We can set A.sigma to 1 * mult now if
+              ## the model has an exposure term.
               A.sigma <- priorSD@A
+              mult.sigma <- priorSD@mult
               nu.sigma <- priorSD@nu
               sigma.max <- priorSD@scaleMax
-              scale.theta <- checkAndTidyJump(jump)
-              series <- checkAndTidySeries(series)
-              has.series <- !is.na(series@.Data)
-              if (has.series) {
+              if (useExpose@.Data) {
                   A.sigma <- makeASigma(A = A.sigma,
                                         sY = NULL,
+                                        mult = mult.sigma,
                                         isSpec = TRUE)
                   sigma.max <- makeScaleMax(scaleMax = sigma.max,
                                             A = A.sigma,
                                             nu = nu.sigma,
                                             isSpec = TRUE)
               }
+              scale.theta <- checkAndTidyJump(jump)
+              series <- checkAndTidySeries(series)
               if (is.null(aggregate))
                   aggregate <- methods::new("SpecAgPlaceholder")
               methods::new("SpecCMPVarying",
@@ -841,6 +864,7 @@ setMethod("SpecModel",
                            call = call,
                            formulaMu = formula.mu,
                            lower = lower,
+                           multSigma = mult.sigma,
                            specsPriors = specs.priors,
                            namesSpecsPriors = names.specs.priors,
                            nameY = nameY,
@@ -882,6 +906,7 @@ setMethod("SpecModel",
                                     "priorSD", class(priorSD)))
               }
               A.sigma <- priorSD@A
+              mult.sigma <- priorSD@mult
               nu.sigma <- priorSD@nu
               sigma.max <- priorSD@scaleMax
               if (is.null(aggregate) && !is.null(jump))
@@ -907,6 +932,7 @@ setMethod("SpecModel",
                            nuSigma = nu.sigma,
                            scaleTheta = scale.theta,
                            series = series,
+                           multSigma = mult.sigma,
                            sigmaMax = sigma.max,
                            upper = upper,
                            varsigma = varsigma,
@@ -940,6 +966,7 @@ setMethod("SpecModel",
                                     "priorSD", class(priorSD)))
               }
               A.sigma <- priorSD@A
+              mult.sigma <- priorSD@mult
               nu.sigma <- priorSD@nu
               sigma.max <- priorSD@scaleMax
               if (is.null(aggregate) && !is.null(jump))
@@ -967,6 +994,7 @@ setMethod("SpecModel",
                            nuVarsigma = nu.varsigma,
                            scaleTheta = scale.theta,
                            series = series,
+                           multSigma = mult.sigma,
                            sigmaMax = sigma.max,
                            upper = upper,
                            varsigmaMax = varsigma.max,
@@ -998,21 +1026,24 @@ setMethod("SpecModel",
                       stop(gettextf("'%s' has class \"%s\"",
                                     "priorSD", class(priorSD)))
               }
+              ## can set 'ASigma' to 1 * mult now,
+              ## if useExpose is TRUE
               A.sigma <- priorSD@A
+              mult.sigma <- priorSD@mult
               nu.sigma <- priorSD@nu
               sigma.max <- priorSD@scaleMax
-              scale.theta <- checkAndTidyJump(jump)
-              series <- checkAndTidySeries(series)
-              has.series <- !is.na(series@.Data)
-              if (has.series) {
+              if (useExpose@.Data) {
                   A.sigma <- makeASigma(A = A.sigma,
                                         sY = NULL,
+                                        mult = mult.sigma,
                                         isSpec = TRUE)
                   sigma.max <- makeScaleMax(scaleMax = sigma.max,
                                             A = A.sigma,
                                             nu = nu.sigma,
                                             isSpec = TRUE)
               }
+              scale.theta <- checkAndTidyJump(jump)
+              series <- checkAndTidySeries(series)
               if (is.null(aggregate))
                   aggregate <- methods::new("SpecAgPlaceholder")
               methods::new("SpecPoissonVarying",
@@ -1027,6 +1058,7 @@ setMethod("SpecModel",
                            nuSigma = nu.sigma,
                            scaleTheta = scale.theta,
                            series = series,
+                           multSigma = mult.sigma,
                            sigmaMax = sigma.max,
                            structuralZeros = structuralZeros,
                            upper = upper,
@@ -1219,7 +1251,7 @@ setMethod("SpecModel",
 #' underlying rates, probabilities, or means.  For instance, \code{values}
 #' might be specified at the state level, while the rates are estimated at
 #' the county level.  The mapping between the original and collapsed
-#' categories is known as a \code{\link[classconc]{Concordance}}.
+#' categories is known as a \code{\link[dembase]{Concordance}}.
 #' 
 #' @section \code{AgCertain}:
 #'
@@ -1308,9 +1340,12 @@ setMethod("SpecModel",
 #' @param weights An object of class \code{\linkS4class{Counts}} holding
 #' weights to be used when aggregating. Optional.
 #' @param concordances A named list of objects of class
-#' \code{\link[classconc]{ManyToOne}}.
+#' \code{\link[dembase:ManyToOne-class]{ManyToOne}}.
 #' @param FUN A function taking arguments called \code{x} and \code{weights}
 #' and returning a single number.  See below for details.
+#' @param ax An object of class 
+#' \code{\link[dembase:DemographicArray-class]{Values}} holding estimated
+#' separation factors. Optional.
 #' @param jump The standard deviation of the proposal density used in
 #' Metropolis-Hastings updates.
 #'

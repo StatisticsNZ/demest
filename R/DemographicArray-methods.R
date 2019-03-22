@@ -410,6 +410,7 @@ setMethod("decomposition",
               if (any(is.infinite(object)))
                   stop(gettextf("'%s' has non-finite values",
                                 "object"))
+              object <- dembase::pairToState(object)
               dim <- dim(object)
               .Data <- object@.Data
               metadata <- object@metadata
@@ -425,14 +426,14 @@ setMethod("decomposition",
                       .Data <- array(.Data,
                                      dim = dim(metadata),
                                      dimnames = dimnames(metadata))
-                      new("Values",
-                          .Data = .Data,
-                          metadata = metadata)
+                      methods::new("Values",
+                                   .Data = .Data,
+                                   metadata = metadata)
                   }
                   means <- mapply(makeValObj,
                                   .Data = means,
                                   metadata = metadata.means)
-                  means <- lapply(means, demest:::sweepAllMargins)
+                  means <- lapply(means, sweepAllMargins)
                   names.means <- lapply(means, names)
                   names.means <- sapply(names.means, paste, collapse = ":")
                   names(means) <- names.means
@@ -501,7 +502,7 @@ setMethod("makeTransformExpToComp",
               if (same.metadata)
                   NULL
               else {
-                  exposure <- as(exposure, "Values")
+                  exposure <- methods::as(exposure, "Values")
                   transform <- tryCatch(dembase::makeTransform(x = exposure,
                                                                y = component,
                                                                subset = TRUE,
@@ -572,7 +573,6 @@ setMethod("makeTransformExpToComp",
                                dimAfter = dim.births)
               }
           })
-
 
 
         

@@ -26,14 +26,17 @@ The paper [http://www.tandfonline.com/doi/full/10.1080/00324728.2015.1122826](Ba
 The data are in package `demdata`.  The first step is to turn the data into counts arrays, using function `Counts` from package `dembase`. Because `dembase` is a dependency for `demest`, `demest` is automatically loaded when `demest` is. 
 ```{r}
 library(demest)
-births <- demdata::nz.births
+births <- demdata::nz.births.reg
 popn <- demdata::nz.popn.reg
 births <- Counts(births,
                  dimscales = c(year = "Intervals"))
 popn <- Counts(popn,
                dimscales = c(year = "Intervals"))
 births <- subarray(births, year > 1995)
+births <- collapseDimension(births, dimension = "sex")
+births <- subarray(births, region != "Area Outside Region")
 females <- subarray(popn, sex == "Female")
+females <- subarray(females, region != "Area Outside Region")
 ```
 
 Function `plot` allows a quick look at the data,
@@ -105,7 +108,8 @@ estimateModel(model = model.main,
               nBurnin = 100,
               nSim = 100,
               nChain = 4,
-              nThin = 2)
+              nThin = 2,
+	      nCore = 2)
 ```
 
 The `nBurnin` argument determines the number of iterations that `estimateModel` runs before it starts collecting results.  The `nSim` argument determins the number of iterations that are used for collecting results; however only one out of every `nThin` results is actually collected.  The calculations are run independently `nChain` times, using parallel processing where possible.
@@ -153,7 +157,8 @@ estimateModel(model = model.main,
               nBurnin = 1000,
               nSim = 1000,
               nChain = 4,
-              nThin = 5)
+              nThin = 5,
+	      nCore = 2)
 fetchSummary(filename.main.est)
 ```
 Some of the upper-level parameters have still not converged properly, and the model needs further refinement.  However, we examine some parameter values.
@@ -297,7 +302,7 @@ model.fancy
 
 Running the code below
 
-```{r, eval = FALSE}
+```{r}
 filename.fancy.est <- tempfile()
 filename.fancy.pred <- tempfile()
 set.seed(1) 
@@ -305,13 +310,19 @@ estimateModel(model.fancy,
               y = births,
               exposure = females,
               filename = filename.fancy.est,
-              nBurnin = 20000,
-              nSim = 20000,
-              nThin = 40,
-              nChain = 4)
+              nBurnin = 1000,
+              nSim = 1000,
+              nThin = 5,
+              nChain = 4,
+	      nCore = 2)
 predictModel(filename.fancy.est, 
              filename.fancy.pred, 
              n = 10)
+```
+
+results in
+
+```{r}
 rates.fancy <- fetchBoth(filenameEst = filename.fancy.est,
                          filenamePred = filename.fancy.pred,
                          where = c("model", "likelihood", "rate"))
@@ -320,11 +331,7 @@ dplot(~ year | age * region,
       subarray = region %in% c("Auckland", "Taranaki", "Southland"))
 ```
 
-yields
-
-![](fancy.png)
-
-which, while not perfect, is an improvement.
+which, while still having plenty of room for improvement (the model has not in fact converged yet), is an improvement.
 
 
 # Other models implemented in `demest`

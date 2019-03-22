@@ -5,7 +5,8 @@
 \title{Add extra iterations to burnin or output.}
 \usage{
 continueEstimation(filename, nBurnin = NULL, nSim = 1000,
-  nThin = NULL, outfile = NULL, verbose = FALSE, useC = TRUE)
+  nThin = NULL, parallel = NULL, outfile = NULL, verbose = FALSE,
+  useC = TRUE)
 }
 \arguments{
 \item{filename}{The filename used by the original call.}
@@ -15,6 +16,9 @@ continueEstimation(filename, nBurnin = NULL, nSim = 1000,
 \item{nSim}{Number of additional iterations.}
 
 \item{nThin}{Thinning interval.}
+
+\item{parallel}{Logical.  If \code{TRUE} (the default), parallel processing
+is used.}
 
 \item{outfile}{Where to direct the ‘stdout’ and ‘stderr’ connection
 output from the workers when parallel processing.  Passed to function

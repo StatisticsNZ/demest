@@ -16,16 +16,14 @@ construct a covariates term in a prior for a main effect or interaction.
 \item{\code{data}}{A data.frame holding the covariate data.}
 
 \item{\code{contrastsArg}}{A named list of contrasts, as described in the
-documentation for \code{\link[stats]{model.matrix}}.}
-
-\item{\code{AEtaIntercept}}{Scale parameter for the normal
-prior for the intercept.}
-
-\item{\code{nuEtaCoef}}{Degrees of freedom for the t priors
+documentation for \code{\link[stats]{model.matrix}}.
+#' @slot nuEtaCoef Degrees of freedom for the t priors
 for the coefficients.}
 
 \item{\code{AEtaCoef}}{Scale parameter for the t priors
 for the coefficients.}
+
+\item{\code{multEtaCoef}}{Multiplier for \code{AEtaCoef}.}
 }}
 
 \section{Warning}{

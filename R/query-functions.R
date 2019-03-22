@@ -1,4 +1,48 @@
 
+#' Text decription of priors
+#'
+#' Generate data.frames giving, for each main effect or
+#' interaction in a model, a short description of the
+#' associated prior. The data.frames are useful for
+#' understanding a model, or for generating tables in
+#' documents describing the analyses.
+#'
+#' \code{describePriors} is applied to the databases
+#' created by functions \code{\link{estimateModel}},
+#' \code{\link{estimateCounts}} or \code{\link{estimateAccount}}.
+#'
+#' @param filename The filename used by the estimate function.
+#'
+#' @return If \code{filename} refers to the results from a
+#' call to \code{\link{estimateModel}}, then \code{describePriors}
+#' returns a single data.frame. Otherwise, it returns a named
+#' list containing one or more data.frames.
+#'
+#' @seealso \code{\link{showModel}} gives a semi-algebraic
+#' description of an entire model, including the priors.
+#'
+#' @examples
+#' deaths <- demdata::VADeaths2
+#' popn <- demdata::VAPopn
+#' deaths <- round(deaths)
+#' deaths <- Counts(deaths)
+#' popn <- Counts(popn)
+#' filename <- tempfile()
+#' estimateModel(Model(y ~ Poisson(mean ~ age * sex)),
+#'               y = deaths,
+#'               exposure = popn,
+#'               filename = filename,
+#'               nBurnin = 0,
+#'               nSim = 5,
+#'               nChain = 2)
+#' describePriors(filename)
+#' @export
+describePriors <- function(filename) {
+    object <- fetchResultsObject(filename)
+    describePriorsResults(object)
+}
+
+
 ## HAS_TESTS
 #' Extract estimates from model output.
 #'
@@ -33,6 +77,7 @@
 #' @param iterations A vector of positive integers giving the iterations to be
 #' extracted if an item has multiple iterations.
 #' @param impute Logical. Whether to impute missing values.
+#' Defaults to \code{TRUE}.
 #'
 #' @return Parameters that were estimated from the data typically have class
 #' \code{DemographicArray} and have a dimension with
@@ -96,7 +141,7 @@
 #'       iterations = seq(from = 5, by = 5, to = 40))
 #' @export
 fetch <- function(filename, where = character(), iterations = NULL,
-                  impute = FALSE) {
+                  impute = TRUE) {
     object <- fetchResultsObject(filename)
     nIteration <- object@mcmc["nIteration"]
     lengthIter <- object@control$lengthIter
@@ -216,7 +261,7 @@ fetch <- function(filename, where = character(), iterations = NULL,
 #' }
 #' @export
 fetchBoth <- function(filenameEst, filenamePred, where, iterations = NULL,
-                      impute = FALSE) {
+                      impute = TRUE) {
     ## preparation and checking
     results.est <- fetchResultsObject(filenameEst)
     nIteration <- results.est@mcmc["nIteration"]

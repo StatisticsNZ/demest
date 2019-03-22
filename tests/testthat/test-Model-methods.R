@@ -3,7 +3,658 @@ context("Model-methods")
 
 n.test <- 5
 test.identity <- FALSE
-test.extended <- TRUE
+test.extended <- FALSE
+
+## checkAllDimensionsHavePriors ##############################################################
+
+test_that("checkAllDimensionsHavePriors works with Varying", {
+    checkAllDimensionsHavePriors <- demest:::checkAllDimensionsHavePriors
+    model <- Model(y ~ Poisson(mean ~ age * sex),
+               `(Intercept)` ~ ExchFixed(sd = 10), 
+               age ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
+               sex ~ ExchFixed(sd = 0.1),
+               age:sex ~ ExchFixed(sd = 0.05),
+               priorSD = HalfT(scale = 0.2))
+    y <- Counts(array(0L,
+                      dim = c(2, 3),
+                      dimnames = list(sex = c("F", "M"),
+                                      age = c("0-4", "5-9", "10+"))))
+    expect_identical(checkAllDimensionsHavePriors(model = model, y = y),
+                     NULL)
+    y <- Counts(array(0L,
+                      dim = c(2, 3, 3),
+                      dimnames = list(sex = c("F", "M"),
+                                      age = c("0-4", "5-9", "10+"),
+                                      region = c("a", "b", "c"))))
+    expect_error(checkAllDimensionsHavePriors(model = model, y = y),
+                 "no prior specified for \"region\" dimension in model for 'y'")
+    model <- Model(y ~ Poisson(mean ~ age * sex),
+               age ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
+               sex ~ ExchFixed(sd = 0.1),
+               age:sex ~ ExchFixed(sd = 0.05),
+               priorSD = HalfT(scale = 0.2))
+    y <- Counts(array(0L,
+                      dim = c(2, 3),
+                      dimnames = list(sex = c("F", "M"),
+                                      age = c("0-4", "5-9", "10+"))))
+    expect_error(checkAllDimensionsHavePriors(model = model, y = y),
+                 "no prior specified for intercept in model for 'y'")
+})
+
+
+test_that("checkAllDimensionsHavePriors works with non-Varying", {
+    checkAllDimensionsHavePriors <- demest:::checkAllDimensionsHavePriors
+    model <- Model(d ~ Round3())
+    expect_identical(checkAllDimensionsHavePriors(model = model, y = y),
+                     NULL)
+})
+
+
+## checkPriorsAreInformative #################################################################
+
+test_that("checkPriorsAreInformative works with SpecVarying", {
+    checkPriorsAreInformative <- demest:::checkPriorsAreInformative
+    model <- Model(y ~ Poisson(mean ~ region),
+                   `(Intercept)` ~ ExchFixed(mean = -1, sd = 0.2),
+                   region ~ Exch(error = Error(scale = HalfT(scale = 0.3))))
+    expect_is(model, "SpecVarying")
+    expect_identical(checkPriorsAreInformative(model),
+                     NULL)
+    model <- Model(y ~ Poisson(mean ~ region),
+                   `(Intercept)` ~ ExchFixed(mean = -1, sd = 0.2),
+                   region ~ Exch())
+    expect_error(checkPriorsAreInformative(model),
+                 "problem with prior for 'region' in model for 'y'")
+    model <- Model(y ~ Poisson(mean ~ region),
+                   `(Intercept)` ~ ExchFixed(mean = -1),
+                   region ~ Exch())
+    expect_error(checkPriorsAreInformative(model),
+                 "problem with prior for '\\(Intercept\\)' in model for 'y'")
+})
+
+test_that("checkPriorsAreInformative works with non-SpecVarying", {
+    checkPriorsAreInformative <- demest:::checkPriorsAreInformative
+    model <- Model(d ~ Round3())
+    expect_identical(checkPriorsAreInformative(model),
+                     NULL)
+})
+
+## checkPriorSDInformative #################################################################
+
+test_that("checkPriorSDInformative works with SpecVarying", {
+    checkPriorSDInformative <- demest:::checkPriorSDInformative
+    model <- Model(y ~ Poisson(mean ~ region),
+                   `(Intercept)` ~ ExchFixed(mean = -1, sd = 0.2),
+                   region ~ Exch(error = Error(scale = HalfT(scale = 0.3))),
+                   priorSD = HalfT(scale = 0.1))
+    expect_is(model, "SpecVarying")
+    expect_identical(checkPriorSDInformative(model),
+                     NULL)
+    model <- Model(y ~ Poisson(mean ~ region),
+                   `(Intercept)` ~ ExchFixed(mean = -1, sd = 0.2),
+                   region ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
+                   priorSD = HalfT(mult = 0.1))
+    expect_error(checkPriorSDInformative(model),
+                 "problem with specification of 'priorSD' in model for 'y' : value for 'mult' supplied in call to 'HalfT'")
+    model <- Model(y ~ Poisson(mean ~ region),
+                   `(Intercept)` ~ ExchFixed(mean = -1),
+                   region ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
+                   priorSD = HalfT())
+    expect_error(checkPriorSDInformative(model),
+                 "problem with specification of 'priorSD' in model for 'y' : 'scale' argument not supplied in call to 'HalfT'")
+    model <- Model(y ~ Poisson(mean ~ region),
+                   `(Intercept)` ~ ExchFixed(mean = -1),
+                   region ~ Exch(error = Error(scale = HalfT(scale = 0.1))))
+    expect_error(checkPriorSDInformative(model),
+                 "problem with specification of 'priorSD' in model for 'y' : 'priorSD' argument not supplied in call to 'Model'")
+})
+
+test_that("checkPriorSDInformative works with SpecVaryingBinomial", {
+    checkPriorSDInformative <- demest:::checkPriorSDInformative
+    model <- Model(y ~ Binomial(mean ~ region),
+                   `(Intercept)` ~ ExchFixed(mean = -1, sd = 0.2),
+                   region ~ Exch(error = Error(scale = HalfT(scale = 0.3))),
+                   priorSD = HalfT(scale = 0.1))
+    expect_is(model, "SpecBinomialVarying")
+    expect_identical(checkPriorSDInformative(model),
+                     NULL)
+    model <- Model(y ~ Binomial(mean ~ region),
+                   `(Intercept)` ~ ExchFixed(mean = -1),
+                   region ~ Exch(),
+                   priorSD = HalfT())
+    expect_error(checkPriorSDInformative(model),
+                 "problem with specification of 'priorSD' in model for 'y' : 'scale' argument not supplied in call to 'HalfT'")
+    model <- Model(y ~ Binomial(mean ~ region),
+                   `(Intercept)` ~ ExchFixed(mean = -1),
+                   region ~ Exch())
+    expect_error(checkPriorSDInformative(model),
+                 "problem with specification of 'priorSD' in model for 'y' : 'priorSD' argument not supplied in call to 'Model'")
+})
+
+test_that("checkPriorSDInformative works with non-Varying", {
+    checkPriorSDInformative <- demest:::checkPriorSDInformative
+    model <- Model(d ~ Round3())
+    expect_identical(checkPriorSDInformative(model),
+                     NULL)
+})
+
+
+## drawHyperParam ######################################################################
+
+test_that("drawHyperParam works with Varying", {
+    initialModel <- demest:::initialModel
+    drawHyperParam <- demest:::drawHyperParam
+    drawPriors <- demest:::drawPriors
+    drawBetas <- demest:::drawBetas
+    drawSigma_Varying <- demest:::drawSigma_Varying
+    spec <- Model(y ~ Poisson(mean ~ age + sex),
+                  `(Intercept)` ~ ExchFixed(sd = 10), 
+                  age ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
+                  sex ~ ExchFixed(sd = 0.1),
+                  priorSD = HalfT(scale = 0.2))
+    y <- Counts(array(1L,
+                      dim = 2:3,
+                      dimnames = list(sex = c("F", "M"),
+                                      age = c("0-4", "5-9", "10+"))))
+    exposure <- Counts(array(1:6,
+                             dim = 2:3,
+                             dimnames = list(sex = c("F", "M"),
+                                             age = c("0-4", "5-9", "10+"))))
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        model <- initialModel(spec, y = y, exposure = exposure)
+        set.seed(seed)
+        ans.obtained <- drawHyperParam(model)
+        set.seed(seed)
+        ans.expected <- model
+        ans.expected <- drawPriors(ans.expected)
+        ans.expected <- drawBetas(ans.expected)
+        ans.expected <- drawSigma_Varying(ans.expected)
+        expect_identical(ans.obtained, ans.expected)
+    }
+})
+
+
+
+test_that("drawHyperParam works with Varying", {
+    initialModel <- demest:::initialModel
+    drawHyperParam <- demest:::drawHyperParam
+    drawPriors <- demest:::drawPriors
+    drawBetas <- demest:::drawBetas
+    drawSigma_Varying <- demest:::drawSigma_Varying
+    spec <- Model(y ~ Poisson(mean ~ age + sex),
+                  `(Intercept)` ~ ExchFixed(sd = 10), 
+                  age ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
+                  sex ~ ExchFixed(sd = 0.1),
+                  priorSD = HalfT(scale = 0.2))
+    y <- Counts(array(1L,
+                      dim = 2:3,
+                      dimnames = list(sex = c("F", "M"),
+                                      age = c("0-4", "5-9", "10+"))))
+    exposure <- Counts(array(1:6,
+                             dim = 2:3,
+                             dimnames = list(sex = c("F", "M"),
+                                             age = c("0-4", "5-9", "10+"))))
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        model <- initialModel(spec, y = y, exposure = exposure)
+        set.seed(seed)
+        ans.obtained <- drawHyperParam(model)
+        set.seed(seed)
+        ans.expected <- model
+        ans.expected <- drawPriors(ans.expected)
+        ans.expected <- drawBetas(ans.expected)
+        ans.expected <- drawSigma_Varying(ans.expected)
+        expect_identical(ans.obtained, ans.expected)
+    }
+})
+
+
+
+
+## drawModelNotUseExp ##################################################################
+
+
+test_that("drawModelNotUseExp works with NormalVaryingVarsigmaUnknown", {
+    initialModel <- demest:::initialModel
+    drawModelNotUseExp <- demest:::drawModelNotUseExp
+    drawPriors <- demest:::drawPriors
+    drawBetas <- demest:::drawBetas
+    drawSigma_Varying <- demest:::drawSigma_Varying
+    updateTheta_NormalVarying <- demest:::updateTheta_NormalVarying
+    spec <- Model(y ~ Normal(mean ~ age + sex, priorSD = HalfT(scale = 0.05)),
+                  `(Intercept)` ~ ExchFixed(sd = 10), 
+                  age ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
+                  sex ~ ExchFixed(sd = 0.1),
+                  priorSD = HalfT(scale = 0.2))
+    y <- Counts(array(1,
+                      dim = 2:3,
+                      dimnames = list(sex = c("F", "M"),
+                                      age = c("0-4", "5-9", "10+"))))
+    weights <- y
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        model <- initialModel(spec, y = y, weights = weights)
+        expect_is(model, "NormalVaryingVarsigmaUnknown")
+        y.tmp <- y
+        y.tmp[] <- NA
+        set.seed(seed)
+        ans.obtained <- drawModelNotUseExp(object = model,
+                                           y = y.tmp)
+        set.seed(seed)
+        ans.expected <- model
+        ans.expected <- drawPriors(ans.expected)
+        ans.expected <- drawBetas(ans.expected)
+        ans.expected <- drawSigma_Varying(ans.expected)
+        ans.expected <- drawVarsigma(ans.expected)
+        ans.expected <- updateTheta_NormalVarying(ans.expected,
+                                                  y = y.tmp)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of drawModelNotUseExp give same answer with NormalVaryingVarsigmaUnknown", {
+    initialModel <- demest:::initialModel
+    drawModelNotUseExp <- demest:::drawModelNotUseExp
+    drawPriors <- demest:::drawPriors
+    drawBetas <- demest:::drawBetas
+    drawSigma_Varying <- demest:::drawSigma_Varying
+    updateTheta_NormalVarying <- demest:::updateTheta_NormalVarying
+    spec <- Model(y ~ Normal(mean ~ age + sex, priorSD = HalfT(scale = 0.05)),
+                  `(Intercept)` ~ ExchFixed(sd = 10), 
+                  age ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
+                  sex ~ ExchFixed(sd = 0.1),
+                  priorSD = HalfT(scale = 0.2))
+    y <- Counts(array(1,
+                      dim = 2:3,
+                      dimnames = list(sex = c("F", "M"),
+                                      age = c("0-4", "5-9", "10+"))))
+    weights <- y
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        model <- initialModel(spec, y = y, weights = weights)
+        expect_is(model, "NormalVaryingVarsigmaUnknown")
+        y.tmp <- y
+        y.tmp[] <- NA
+        set.seed(seed)
+        ans.R <- drawModelNotUseExp(object = model,
+                                    y = y.tmp,
+                                    useC = FALSE)
+        set.seed(seed)
+        ans.C.generic <- drawModelNotUseExp(object = model,
+                                            y = y.tmp,
+                                            useC = TRUE,
+                                            useSpecific = FALSE)
+        set.seed(seed)
+        ans.C.specific <- drawModelNotUseExp(object = model,
+                                             y = y.tmp,
+                                             useC = TRUE,
+                                             useSpecific = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C.generic)
+        else
+            expect_equal(ans.R, ans.C.generic)
+        expect_identical(ans.C.generic, ans.C.specific)
+    }
+})
+
+test_that("drawModelNotUseExp works with PoissonVaryingNotUseExp", {
+    initialModel <- demest:::initialModel
+    drawModelNotUseExp <- demest:::drawModelNotUseExp
+    drawPriors <- demest:::drawPriors
+    drawBetas <- demest:::drawBetas
+    drawSigma_Varying <- demest:::drawSigma_Varying
+    updateTheta_PoissonVaryingNotUseExp <- demest:::updateTheta_PoissonVaryingNotUseExp
+    spec <- Model(y ~ Poisson(mean ~ age + sex, useExpose = FALSE),
+                  `(Intercept)` ~ ExchFixed(sd = 10), 
+                  age ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
+                  sex ~ ExchFixed(sd = 0.1),
+                  priorSD = HalfT(scale = 0.2))
+    y <- Counts(array(1L,
+                      dim = 2:3,
+                      dimnames = list(sex = c("F", "M"),
+                                      age = c("0-4", "5-9", "10+"))))
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        model <- initialModel(spec, y = y, exposure = NULL)
+        y.tmp <- y
+        y.tmp[] <- NA
+        set.seed(seed)
+        ans.obtained <- drawModelNotUseExp(object = model,
+                                           y = y.tmp)
+        set.seed(seed)
+        ans.expected <- model
+        ans.expected <- drawPriors(ans.expected)
+        ans.expected <- drawBetas(ans.expected)
+        ans.expected <- drawSigma_Varying(ans.expected)
+        ans.expected <- updateTheta_PoissonVaryingNotUseExp(ans.expected,
+                                                            y = y.tmp)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of drawModelNotUseExp give same answer with PoissonVaryingNotUseExp", {
+    initialModel <- demest:::initialModel
+    drawModelNotUseExp <- demest:::drawModelNotUseExp
+    drawPriors <- demest:::drawPriors
+    drawBetas <- demest:::drawBetas
+    drawSigma_Varying <- demest:::drawSigma_Varying
+    updateTheta_PoissonVaryingNotUseExp <- demest:::updateTheta_PoissonVaryingNotUseExp
+    spec <- Model(y ~ Poisson(mean ~ age + sex, useExpose = FALSE),
+                  `(Intercept)` ~ ExchFixed(sd = 10), 
+                  age ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
+                  sex ~ ExchFixed(sd = 0.1),
+                  priorSD = HalfT(scale = 0.2))
+    y <- Counts(array(1L,
+                      dim = 2:3,
+                      dimnames = list(sex = c("F", "M"),
+                                      age = c("0-4", "5-9", "10+"))))
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        model <- initialModel(spec, y = y, exposure = NULL)
+        y.tmp <- y
+        y.tmp[] <- NA
+        set.seed(seed)
+        ans.R <- drawModelNotUseExp(object = model,
+                                    y = y.tmp,
+                                    useC = FALSE)
+        set.seed(seed)
+        ans.C.generic <- drawModelNotUseExp(object = model,
+                                            y = y.tmp,
+                                            useC = TRUE,
+                                            useSpecific = FALSE)
+        set.seed(seed)
+        ans.C.specific <- drawModelNotUseExp(object = model,
+                                             y = y.tmp,
+                                             useC = TRUE,
+                                             useSpecific = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C.generic)
+        else
+            expect_equal(ans.R, ans.C.generic)
+        expect_identical(ans.C.generic, ans.C.specific)
+    }
+})
+
+
+## drawModelUseExp #####################################################################
+
+test_that("drawModelUseExp works with BinomialVarying", {
+    initialModel <- demest:::initialModel
+    drawModelUseExp <- demest:::drawModelUseExp
+    drawPriors <- demest:::drawPriors
+    drawBetas <- demest:::drawBetas
+    drawSigma_Varying <- demest:::drawSigma_Varying
+    updateTheta_BinomialVarying <- demest:::updateTheta_BinomialVarying
+    spec <- Model(y ~ Binomial(mean ~ age + sex),
+                  `(Intercept)` ~ ExchFixed(sd = 10), 
+                  age ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
+                  sex ~ ExchFixed(sd = 0.1),
+                  priorSD = HalfT(scale = 0.2))
+    y <- Counts(array(1L,
+                      dim = 2:3,
+                      dimnames = list(sex = c("F", "M"),
+                                      age = c("0-4", "5-9", "10+"))))
+    exposure <- Counts(array(1:6,
+                             dim = 2:3,
+                             dimnames = list(sex = c("F", "M"),
+                                             age = c("0-4", "5-9", "10+"))))
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        model <- initialModel(spec, y = y, exposure = exposure)
+        y.tmp <- y
+        y.tmp[] <- NA
+        set.seed(seed)
+        ans.obtained <- drawModelUseExp(object = model,
+                                        y = y.tmp,
+                                        exposure = exposure)
+        set.seed(seed)
+        ans.expected <- model
+        ans.expected <- drawPriors(ans.expected)
+        ans.expected <- drawBetas(ans.expected)
+        ans.expected <- drawSigma_Varying(ans.expected)
+        ans.expected <- updateTheta_BinomialVarying(ans.expected,
+                                                    y = y.tmp,
+                                                    exposure = exposure)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of drawModelUseExp give same answer with BinomialVarying", {
+    initialModel <- demest:::initialModel
+    drawModelUseExp <- demest:::drawModelUseExp
+    drawPriors <- demest:::drawPriors
+    drawBetas <- demest:::drawBetas
+    drawSigma_Varying <- demest:::drawSigma_Varying
+    updateTheta_BinomialVarying <- demest:::updateTheta_BinomialVarying
+    spec <- Model(y ~ Binomial(mean ~ age + sex),
+                  `(Intercept)` ~ ExchFixed(sd = 10), 
+                  age ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
+                  sex ~ ExchFixed(sd = 0.1),
+                  priorSD = HalfT(scale = 0.2))
+    y <- Counts(array(1L,
+                      dim = 2:3,
+                      dimnames = list(sex = c("F", "M"),
+                                      age = c("0-4", "5-9", "10+"))))
+    exposure <- Counts(array(1:6,
+                             dim = 2:3,
+                             dimnames = list(sex = c("F", "M"),
+                                             age = c("0-4", "5-9", "10+"))))
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        model <- initialModel(spec, y = y, exposure = exposure)
+        y.tmp <- y
+        y.tmp[] <- NA
+        set.seed(seed)
+        ans.R <- drawModelUseExp(object = model,
+                                 y = y.tmp,
+                                 exposure = exposure,
+                                 useC = FALSE)
+        ans.C.generic <- drawModelUseExp(object = model,
+                                         y = y.tmp,
+                                         exposure = exposure,
+                                         useC = TRUE,
+                                         useSpecific = FALSE)
+        ans.C.specific <- drawModelUseExp(object = model,
+                                          y = y.tmp,
+                                          exposure = exposure,
+                                          useC = TRUE,
+                                          useSpecific = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C.generic)
+        else
+            expect_equal(ans.R, ans.C.generic)
+        expect_identical(ans.C.generic, ans.C.specific)
+    }
+})
+
+test_that("drawModelUseExp works with PoissonVaryingUseExp", {
+    initialModel <- demest:::initialModel
+    drawModelUseExp <- demest:::drawModelUseExp
+    drawPriors <- demest:::drawPriors
+    drawBetas <- demest:::drawBetas
+    drawSigma_Varying <- demest:::drawSigma_Varying
+    updateTheta_PoissonVaryingUseExp <- demest:::updateTheta_PoissonVaryingUseExp
+    spec <- Model(y ~ Poisson(mean ~ age + sex),
+                  `(Intercept)` ~ ExchFixed(sd = 10), 
+                  age ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
+                  sex ~ ExchFixed(sd = 0.1),
+                  priorSD = HalfT(scale = 0.2))
+    y <- Counts(array(1L,
+                      dim = 2:3,
+                      dimnames = list(sex = c("F", "M"),
+                                      age = c("0-4", "5-9", "10+"))))
+    exposure <- Counts(array(1:6 + 0.01,
+                             dim = 2:3,
+                             dimnames = list(sex = c("F", "M"),
+                                             age = c("0-4", "5-9", "10+"))))
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        model <- initialModel(spec, y = y, exposure = exposure)
+        y.tmp <- y
+        y.tmp[] <- NA
+        set.seed(seed)
+        ans.obtained <- drawModelUseExp(object = model,
+                                        y = y.tmp,
+                                        exposure = exposure)
+        set.seed(seed)
+        ans.expected <- model
+        ans.expected <- drawPriors(ans.expected)
+        ans.expected <- drawBetas(ans.expected)
+        ans.expected <- drawSigma_Varying(ans.expected)
+        ans.expected <- updateTheta_PoissonVaryingUseExp(ans.expected,
+                                                         y = y.tmp,
+                                                         exposure = exposure)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of drawModelUseExp give same answer with PoissonVaryingUseExp", {
+    initialModel <- demest:::initialModel
+    drawModelUseExp <- demest:::drawModelUseExp
+    drawPriors <- demest:::drawPriors
+    drawBetas <- demest:::drawBetas
+    drawSigma_Varying <- demest:::drawSigma_Varying
+    updateTheta_PoissonVaryingUseExp <- demest:::updateTheta_PoissonVaryingUseExp
+    spec <- Model(y ~ Poisson(mean ~ age + sex),
+                  `(Intercept)` ~ ExchFixed(sd = 10), 
+                  age ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
+                  sex ~ ExchFixed(sd = 0.1),
+                  priorSD = HalfT(scale = 0.2))
+    y <- Counts(array(1L,
+                      dim = 2:3,
+                      dimnames = list(sex = c("F", "M"),
+                                      age = c("0-4", "5-9", "10+"))))
+    exposure <- Counts(array(1:6 + 0.01,
+                             dim = 2:3,
+                             dimnames = list(sex = c("F", "M"),
+                                             age = c("0-4", "5-9", "10+"))))
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        model <- initialModel(spec, y = y, exposure = exposure)
+        y.tmp <- y
+        y.tmp[] <- NA
+        set.seed(seed)
+        ans.R <- drawModelUseExp(object = model,
+                                 y = y.tmp,
+                                 exposure = exposure,
+                                 useC = FALSE)
+        ans.C.generic <- drawModelUseExp(object = model,
+                                         y = y.tmp,
+                                         exposure = exposure,
+                                         useC = TRUE,
+                                         useSpecific = FALSE)
+        ans.C.specific <- drawModelUseExp(object = model,
+                                          y = y.tmp,
+                                          exposure = exposure,
+                                          useC = TRUE,
+                                          useSpecific = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C.generic)
+        else
+            expect_equal(ans.R, ans.C.generic)
+        expect_identical(ans.C.generic, ans.C.specific)
+    }
+})
+
+test_that("R, C specific and C generic versions of drawModelUseExp for NormalFixedUseExp return object unchanged", {
+    drawModelUseExp <- demest:::drawModelUseExp
+    initialModel <- demest:::initialModel
+    y <- Counts(array(rpois(10, lambda  = 10),
+                      dim = c(2, 5),
+                      dimnames = list(sex = c("f", "m"), age = 0:4)))
+    exposure <- Counts(array(rpois(10, lambda  = 10),
+                             dim = c(2, 5),
+                             dimnames = list(sex = c("f", "m"), age = 0:4)))
+    mean <- Values(array(rpois(20, lambda  = 10),
+                         dim = c(2, 10),
+                         dimnames = list(sex = c("f", "m"), age = 0:9)))
+    sd <- Values(array(runif(20),
+                       dim = c(2, 10),
+                       dimnames = list(sex = c("f", "m"), age = 0:9)))
+    spec <- Model(y ~ NormalFixed(mean = mean, sd = sd))
+    model <- initialModel(spec, y = y, exposure = exposure)
+    ans.R <- drawModelUseExp(model, y = y, exposure = exposure, useC = FALSE)
+    ans.C.generic <- drawModelUseExp(model, y = y, exposure = exposure,
+                                     useC = TRUE, useSpecific = FALSE)
+    ans.C.specific <- drawModelUseExp(model, y = y, exposure = exposure,
+                                      useC = TRUE, useSpecific = TRUE)
+    expect_identical(ans.R, model)
+    expect_identical(ans.C.generic, model)
+    expect_identical(ans.C.specific, model)
+})
+
+test_that("R, C specific and C generic versions of drawModelUseExp for PoissonBinomialMixture returns object unchanged", {
+    drawModelUseExp <- demest:::drawModelUseExp
+    initialModel <- demest:::initialModel
+    x <- new("PoissonBinomialMixture", prob = 0.98)
+    exposure <- Counts(array(as.integer(rpois(n = 20, lambda = 10)),
+                             dim = c(5, 4),
+                             dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+    y <- Counts(array(as.integer(rpois(n = 20, lambda = exposure)),
+                      dim = c(5, 4),
+                      dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+    expect_identical(drawModelUseExp(x, y = y, exposure = exposure, useC = FALSE),
+                     x)
+    expect_identical(drawModelUseExp(x, y = y, exposure = exposure, useC = TRUE, useSpecific = FALSE),
+                     x)
+    expect_identical(drawModelUseExp(x, y = y, exposure = exposure, useC = TRUE, useSpecific = TRUE),
+                     x)
+})
+
+
+
+## describeModel #######################################################################
+
+test_that("describePriorsModel works with BinomialVarying", {
+    describePriorsModel <- demest:::describePriorsModel
+    initialModel <- demest:::initialModel
+    exposure <- Counts(array(rpois(20, lambda  = 10),
+                             dim = c(2, 10),
+                             dimnames = list(sex = c("f", "m"), age = 0:9)))
+    y <- Counts(array(rbinom(20, size = exposure, prob = 0.7),
+                      dim = c(2, 10),
+                      dimnames = list(sex = c("f", "m"), age = 0:9)))
+    spec <- Model(y ~ Binomial(mean ~ sex + age),
+                  age ~ DLM())
+    model <- initialModel(spec, y = y, exposure = exposure)
+    ans.obtained <- describePriorsModel(model)
+    ans.expected <- data.frame(Term = c("(Intercept)", "sex", "age"),
+                               Prior = c("Exchangeable with known variance",
+                                         "Exchangeable with known variance",
+                                         "Damped local trend"),
+                               stringsAsFactors = FALSE)
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("describePriorsModel works with PoissonBinomial", {
+    describePriorsModel <- demest:::describePriorsModel
+    initialModel <- demest:::initialModel
+    exposure <- Counts(array(rpois(20, lambda  = 10),
+                             dim = c(2, 10),
+                             dimnames = list(sex = c("f", "m"), age = 0:9)))
+    y <- Counts(array(rbinom(20, size = exposure, prob = 0.7),
+                      dim = c(2, 10),
+                      dimnames = list(sex = c("f", "m"), age = 0:9)))
+    spec <- Model(y ~ PoissonBinomial(prob = 0.2))
+    model <- initialModel(spec, y = y, exposure = exposure)
+    ans.obtained <- describePriorsModel(model)
+    ans.expected <- NULL
+    expect_identical(ans.obtained, ans.expected)
+})
+
 
 ## drawYNonSampled #########################################################################
 
@@ -982,7 +1633,11 @@ test_that("makeOutputModel works with NormalVaryingVarsigmaKnown - no aggregate"
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
                   age = list(scaleError = new("SkeletonOneValues",
-                                 first = 46L)))
+                                              first = 46L),
+                             dfScaleError = model@priorsBetas[[3]]@nuTau@.Data,
+                             scaleScaleError = model@priorsBetas[[3]]@ATau@.Data),
+                  sd = list(df = model@nuSigma@.Data,
+                            scale = model@ASigma@.Data))
     prior <- c(betas, list(mean = mu), list(sd = sigma))
     ans.expected <- list(likelihood = likelihood, prior = prior, hyper = hyper)
     expect_identical(ans.obtained, ans.expected)
@@ -1012,16 +1667,16 @@ test_that("makeOutputModel works with NormalVaryingVarsigmaKnown - AgCertain", {
     mcmc <- c(nChain = 2L, nIteration = 20L)
     ans.obtained <- makeOutputModel(model = model, pos = pos, mcmc = mcmc)
     likelihood <- list(mean = new("SkeletonManyValues",
-                           first = 11L,
-                           last = 30L,
-                           metadata = metadata),
+                                  first = 11L,
+                                  last = 30L,
+                                  metadata = metadata),
                        jumpMean = model@scaleTheta@.Data,
                        noProposal = new("SkeletonNAccept",
-                           nAttempt = 20L, first = 31L,
-                           iFirstInChain = c(1L, 11L)),
+                                        nAttempt = 20L, first = 31L,
+                                        iFirstInChain = c(1L, 11L)),
                        acceptMean = new("SkeletonNAccept",
-                           nAttempt = 20L, first = 32L,
-                           iFirstInChain = c(1L, 11L)),
+                                        nAttempt = 20L, first = 32L,
+                                        iFirstInChain = c(1L, 11L)),
                        sd = model@varsigma@.Data,
                        weights = model@w)
     mu <- SkeletonMu(betas = model@betas,
@@ -1032,18 +1687,22 @@ test_that("makeOutputModel works with NormalVaryingVarsigmaKnown - AgCertain", {
                                       first = 33L,
                                       last = 33L),
                   sex = new("SkeletonBetaTerm",
-                      first = 34L,
-                      last = 35L,
-                      metadata = metadata[1]),
+                            first = 34L,
+                            last = 35L,
+                            metadata = metadata[1]),
                   age = new("SkeletonBetaTerm",
-                      first = 36L,
-                      last = 45L,
-                      metadata = metadata[2]))
+                            first = 36L,
+                            last = 45L,
+                            metadata = metadata[2]))
     sigma <- new("SkeletonOneValues", first = 46L)
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
-                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
+                  sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
                   age = list(scaleError = new("SkeletonOneValues",
-                                 first = 47L)))
+                                              first = 47L),
+                             dfScaleError = model@priorsBetas[[3]]@nuTau@.Data,
+                             scaleScaleError = model@priorsBetas[[3]]@ATau@.Data),
+                  sd = list(df = model@nuSigma@.Data,
+                            scale = model@ASigma@.Data))
     prior <- c(betas, list(mean = mu), list(sd = sigma))
     aggregate <- makeOutputAggregate(model)
     ans.expected <- list(likelihood = likelihood,
@@ -1078,16 +1737,16 @@ test_that("makeOutputModel works with NormalVaryingVarsigmaKnown - AgNormal", {
     mcmc <- c(nChain = 2L, nIteration = 20L)
     ans.obtained <- makeOutputModel(model = model, pos = pos, mcmc = mcmc)
     likelihood <- list(mean = new("SkeletonManyValues",
-                           first = 11L,
-                           last = 30L,
-                           metadata = metadata),
+                                  first = 11L,
+                                  last = 30L,
+                                  metadata = metadata),
                        jumpMean = model@scaleTheta@.Data,
                        noProposal = new("SkeletonNAccept",
-                           nAttempt = 20L, first = 31L,
-                           iFirstInChain = c(1L, 11L)),
+                                        nAttempt = 20L, first = 31L,
+                                        iFirstInChain = c(1L, 11L)),
                        acceptMean = new("SkeletonNAccept",
-                           nAttempt = 20L, first = 32L,
-                           iFirstInChain = c(1L, 11L)),
+                                        nAttempt = 20L, first = 32L,
+                                        iFirstInChain = c(1L, 11L)),
                        sd = model@varsigma@.Data,
                        weights = model@w)
     mu <- SkeletonMu(betas = model@betas,
@@ -1098,18 +1757,22 @@ test_that("makeOutputModel works with NormalVaryingVarsigmaKnown - AgNormal", {
                                       first = 33L,
                                       last = 33L),
                   sex = new("SkeletonBetaTerm",
-                      first = 34L,
-                      last = 35L,
-                      metadata = metadata[1]),
+                            first = 34L,
+                            last = 35L,
+                            metadata = metadata[1]),
                   age = new("SkeletonBetaTerm",
-                      first = 36L,
-                      last = 45L,
-                      metadata = metadata[2]))
+                            first = 36L,
+                            last = 45L,
+                            metadata = metadata[2]))
     sigma <- new("SkeletonOneValues", first = 46L)
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
                   age = list(scaleError = new("SkeletonOneValues",
-                                 first = 47L)))
+                                              first = 47L),
+                             dfScaleError = model@priorsBetas[[3]]@nuTau@.Data,
+                             scaleScaleError = model@priorsBetas[[3]]@ATau@.Data),
+                  sd = list(df = model@nuSigma@.Data,
+                            scale = model@ASigma@.Data))
     prior <- c(betas, list(mean = mu), list(sd = sigma))
     aggregate <- makeOutputAggregate(model,
                                      pos = 48L,
@@ -1142,14 +1805,14 @@ test_that("makeOutputModel works with NormalVaryingVarsigmaUnknown - no aggregat
     mcmc <- c(nChain = 2L, nIteration = 20L)
     ans.obtained <- makeOutputModel(model = model, pos = pos, mcmc = mcmc)
     likelihood <- list(mean = new("SkeletonManyValues",
-                           first = 10L,
-                           last = 29L,
-                           metadata = metadata),
+                                  first = 10L,
+                                  last = 29L,
+                                  metadata = metadata),
                        noProposal = new("SkeletonNAccept",
-                           nAttempt = 20L, first = 30L,
-                           iFirstInChain = c(1L, 11L)),
+                                        nAttempt = 20L, first = 30L,
+                                        iFirstInChain = c(1L, 11L)),
                        sd = new("SkeletonOneValues",
-                           first = 31L),
+                                first = 31L),
                        weights = model@w)
     mu <- SkeletonMu(betas = model@betas,
                      margins = model@margins,
@@ -1159,20 +1822,23 @@ test_that("makeOutputModel works with NormalVaryingVarsigmaUnknown - no aggregat
                                       first = 32L,
                                       last = 32L),
                   sex = new("SkeletonBetaTerm",
-                      first = 33L,
-                      last = 34L,
-                      metadata = metadata[1]),
+                            first = 33L,
+                            last = 34L,
+                            metadata = metadata[1]),
                   age = new("SkeletonBetaTerm",
-                      first = 35L,
-                      last = 44L,
-                      metadata = metadata[2]))
+                            first = 35L,
+                            last = 44L,
+                            metadata = metadata[2]))
     sigma <- new("SkeletonOneValues", first = 45L)
     prior <- c(betas, list(mean = mu), list(sd = sigma))
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
-                  age = makeOutputPrior(prior = model@priorsBetas[[3]],
-                      metadata = model@metadataY[2],
-                      pos = 46L))
+                  age = list(scaleError = new("SkeletonOneValues",
+                                              first = 46L),
+                             dfScaleError = model@priorsBetas[[3]]@nuTau@.Data,
+                             scaleScaleError = model@priorsBetas[[3]]@ATau@.Data),
+                  sd = list(df = model@nuSigma@.Data,
+                            scale = model@ASigma@.Data))
     ans.expected <- list(likelihood = likelihood, prior = prior, hyper = hyper)
     expect_identical(ans.obtained, ans.expected)
 })
@@ -1201,18 +1867,18 @@ test_that("makeOutputModel works with NormalVaryingVarsigmaUnknown - AgCertain",
     mcmc <- c(nChain = 2L, nIteration = 20L)
     ans.obtained <- makeOutputModel(model = model, pos = pos, mcmc = mcmc)
     likelihood <- list(mean = new("SkeletonManyValues",
-                           first = 10L,
-                           last = 29L,
-                           metadata = metadata),
+                                  first = 10L,
+                                  last = 29L,
+                                  metadata = metadata),
                        jumpMean = model@scaleTheta@.Data,
                        noProposal = new("SkeletonNAccept",
-                           nAttempt = 20L, first = 30L,
-                           iFirstInChain = c(1L, 11L)),
+                                        nAttempt = 20L, first = 30L,
+                                        iFirstInChain = c(1L, 11L)),
                        acceptMean = new("SkeletonNAccept",
-                           nAttempt = 20L, first = 31L,
-                           iFirstInChain = c(1L, 11L)),
+                                        nAttempt = 20L, first = 31L,
+                                        iFirstInChain = c(1L, 11L)),
                        sd = new("SkeletonOneValues",
-                           first = 32L),
+                                first = 32L),
                        weights = model@w)
     mu <- SkeletonMu(betas = model@betas,
                      margins = model@margins,
@@ -1222,20 +1888,23 @@ test_that("makeOutputModel works with NormalVaryingVarsigmaUnknown - AgCertain",
                                       first = 33L,
                                       last = 33L),
                   sex = new("SkeletonBetaTerm",
-                      first = 34L,
-                      last = 35L,
-                      metadata = metadata[1]),
+                            first = 34L,
+                            last = 35L,
+                            metadata = metadata[1]),
                   age = new("SkeletonBetaTerm",
-                      first = 36L,
-                      last = 45L,
-                      metadata = metadata[2]))
+                            first = 36L,
+                            last = 45L,
+                            metadata = metadata[2]))
     sigma <- new("SkeletonOneValues", first = 46L)
     prior <- c(betas, list(mean = mu), list(sd = sigma))
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
-                  age = makeOutputPrior(prior = model@priorsBetas[[3]],
-                      metadata = model@metadataY[2],
-                      pos = 47L))
+                  age = list(scaleError = new("SkeletonOneValues",
+                                              first = 47L),
+                             dfScaleError = model@priorsBetas[[3]]@nuTau@.Data,
+                             scaleScaleError = model@priorsBetas[[3]]@ATau@.Data),
+                  sd = list(df = model@nuSigma@.Data,
+                            scale = model@ASigma@.Data))
     aggregate <- makeOutputAggregate(model)
     ans.expected <- list(likelihood = likelihood,
                          prior = prior,
@@ -1270,18 +1939,18 @@ test_that("makeOutputModel works with NormalVaryingVarsigmaUnknown - AgNormal", 
     mcmc <- c(nChain = 2L, nIteration = 20L)
     ans.obtained <- makeOutputModel(model = model, pos = pos, mcmc = mcmc)
     likelihood <- list(mean = new("SkeletonManyValues",
-                           first = 11L,
-                           last = 30L,
-                           metadata = metadata),
+                                  first = 11L,
+                                  last = 30L,
+                                  metadata = metadata),
                        jumpMean = model@scaleTheta@.Data,
                        noProposal = new("SkeletonNAccept",
-                           nAttempt = 20L, first = 31L,
-                           iFirstInChain = c(1L, 11L)),
+                                        nAttempt = 20L, first = 31L,
+                                        iFirstInChain = c(1L, 11L)),
                        acceptMean = new("SkeletonNAccept",
-                           nAttempt = 20L, first = 32L,
-                           iFirstInChain = c(1L, 11L)),
+                                        nAttempt = 20L, first = 32L,
+                                        iFirstInChain = c(1L, 11L)),
                        sd = new("SkeletonOneValues",
-                           first = 33L),
+                                first = 33L),
                        weights = model@w)
     mu <- SkeletonMu(betas = model@betas,
                      margins = model@margins,
@@ -1291,17 +1960,22 @@ test_that("makeOutputModel works with NormalVaryingVarsigmaUnknown - AgNormal", 
                                       first = 34L,
                                       last = 34L),
                   sex = new("SkeletonBetaTerm",
-                      first = 35L,
-                      last = 36L,
-                      metadata = metadata[1]),
+                            first = 35L,
+                            last = 36L,
+                            metadata = metadata[1]),
                   age = new("SkeletonBetaTerm",
-                      first = 37L,
-                      last = 46L,
-                      metadata = metadata[2]))
+                            first = 37L,
+                            last = 46L,
+                            metadata = metadata[2]))
     sigma <- new("SkeletonOneValues", first = 47L)
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
-                  age = list(scaleError = new("SkeletonOneValues", first = 48L)))
+                  age = list(scaleError = new("SkeletonOneValues",
+                                              first = 48L),
+                             dfScaleError = model@priorsBetas[[3]]@nuTau@.Data,
+                             scaleScaleError = model@priorsBetas[[3]]@ATau@.Data),
+                  sd = list(df = model@nuSigma@.Data,
+                            scale = model@ASigma@.Data))
     prior <- c(betas, list(mean = mu), list(sd = sigma))
     aggregate <- makeOutputAggregate(model,
                                      pos = 49L,
@@ -1334,14 +2008,14 @@ test_that("makeOutputModel works with BinomialVarying - no aggregate", {
     ans.obtained <- makeOutputModel(model = model, pos = pos,
                                     mcmc = c(nChain = 2L, nIteration = 20L))
     likelihood <- list(prob = new("SkeletonManyValues",
-                           first = 10L,
-                           last = 29L,
-                           metadata = metadata),
+                                  first = 10L,
+                                  last = 29L,
+                                  metadata = metadata),
                        jumpProb = model@scaleTheta@.Data,
                        noProposal = new("SkeletonNAccept", nAttempt = 20L, first = 30L,
-                           iFirstInChain = c(1L, 11L)),
+                                        iFirstInChain = c(1L, 11L)),
                        acceptProb = new("SkeletonNAccept", nAttempt = 20L, first = 31L,
-                           iFirstInChain = c(1L, 11L)))
+                                        iFirstInChain = c(1L, 11L)))
     mu <- SkeletonMu(betas = model@betas,
                      margins = model@margins,
                      first = 32L,
@@ -1350,20 +2024,23 @@ test_that("makeOutputModel works with BinomialVarying - no aggregate", {
                                       first = 32L,
                                       last = 32L),
                   sex = new("SkeletonBetaTerm",
-                      first = 33L,
-                      last = 34L,
-                      metadata = metadata[1]),
+                            first = 33L,
+                            last = 34L,
+                            metadata = metadata[1]),
                   age = new("SkeletonBetaTerm",
-                      first = 35L,
-                      last = 44L,
-                      metadata = metadata[2]))
+                            first = 35L,
+                            last = 44L,
+                            metadata = metadata[2]))
     sigma <- new("SkeletonOneValues", first = 45L)
     prior <- c(betas, list(mean = mu), list(sd = sigma))
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
-                  age = makeOutputPrior(prior = model@priorsBetas[[3]],
-                      metadata = model@metadataY[2],
-                      pos = 46L))
+                  age = list(scaleError = new("SkeletonOneValues",
+                                              first = 46L),
+                             dfScaleError = model@priorsBetas[[3]]@nuTau@.Data,
+                             scaleScaleError = model@priorsBetas[[3]]@ATau@.Data),
+                  sd = list(df = model@nuSigma@.Data,
+                            scale = model@ASigma@.Data))
     ans.expected <- list(likelihood = likelihood, prior = prior, hyper = hyper)
     expect_identical(ans.obtained, ans.expected)
 })
@@ -1391,14 +2068,14 @@ test_that("makeOutputModel works with BinomialVarying - AgCertain", {
     ans.obtained <- makeOutputModel(model = model, pos = pos,
                                     mcmc = c(nChain = 2L, nIteration = 20L))
     likelihood <- list(prob = new("SkeletonManyValues",
-                           first = 10L,
-                           last = 29L,
-                           metadata = metadata),
+                                  first = 10L,
+                                  last = 29L,
+                                  metadata = metadata),
                        jumpProb = model@scaleTheta@.Data,
                        noProposal = new("SkeletonNAccept", nAttempt = 20L, first = 30L,
-                           iFirstInChain = c(1L, 11L)),
+                                        iFirstInChain = c(1L, 11L)),
                        acceptProb = new("SkeletonNAccept", nAttempt = 20L, first = 31L,
-                           iFirstInChain = c(1L, 11L)))
+                                        iFirstInChain = c(1L, 11L)))
     mu <- SkeletonMu(betas = model@betas,
                      margins = model@margins,
                      first = 32L,
@@ -1407,20 +2084,23 @@ test_that("makeOutputModel works with BinomialVarying - AgCertain", {
                                       first = 32L,
                                       last = 32L),
                   sex = new("SkeletonBetaTerm",
-                      first = 33L,
-                      last = 34L,
-                      metadata = metadata[1]),
+                            first = 33L,
+                            last = 34L,
+                            metadata = metadata[1]),
                   age = new("SkeletonBetaTerm",
-                      first = 35L,
-                      last = 44L,
-                      metadata = metadata[2]))
+                            first = 35L,
+                            last = 44L,
+                            metadata = metadata[2]))
     sigma <- new("SkeletonOneValues", first = 45L)
     prior <- c(betas, list(mean = mu), list(sd = sigma))
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
-                  age = makeOutputPrior(prior = model@priorsBetas[[3]],
-                      metadata = model@metadataY[2],
-                      pos = 46L))
+                  age = list(scaleError = new("SkeletonOneValues",
+                                              first = 46L),
+                             dfScaleError = model@priorsBetas[[3]]@nuTau@.Data,
+                             scaleScaleError = model@priorsBetas[[3]]@ATau@.Data),
+                  sd = list(df = model@nuSigma@.Data,
+                            scale = model@ASigma@.Data))
     aggregate <- makeOutputAggregate(model)
     ans.expected <- list(likelihood = likelihood,
                          prior = prior,
@@ -1453,35 +2133,38 @@ test_that("makeOutputModel works with BinomialVarying - AgNormal", {
     ans.obtained <- makeOutputModel(model = model, pos = pos,
                                     mcmc = c(nChain = 2L, nIteration = 20L))
     likelihood <- list(prob = new("SkeletonManyValues",
-                       first = 11L,
-                       last = 30L,
-                       metadata = metadata),
+                                  first = 11L,
+                                  last = 30L,
+                                  metadata = metadata),
                        jumpProb = model@scaleTheta@.Data,
                        noProposal = new("SkeletonNAccept", nAttempt = 20L, first = 31L,
-                       iFirstInChain = c(1L, 11L)),
+                                        iFirstInChain = c(1L, 11L)),
                        acceptProb = new("SkeletonNAccept", nAttempt = 20L, first = 32L,
-                       iFirstInChain = c(1L, 11L)))
+                                        iFirstInChain = c(1L, 11L)))
     mu <- SkeletonMu(betas = model@betas,
                      margins = model@margins,
                      first = 33L,
                      metadata = model@metadataY)
     betas <- list("(Intercept)" = new("SkeletonBetaIntercept",
-                      first = 33L, last = 33L),
+                                      first = 33L, last = 33L),
                   sex = new("SkeletonBetaTerm",
-                      first = 34L,
-                      last = 35L,
-                      metadata = metadata[1]),
+                            first = 34L,
+                            last = 35L,
+                            metadata = metadata[1]),
                   age = new("SkeletonBetaTerm",
-                      first = 36L,
-                      last = 45L,
-                      metadata = metadata[2]))
+                            first = 36L,
+                            last = 45L,
+                            metadata = metadata[2]))
     sigma <- new("SkeletonOneValues", first = 46L)
     prior <- c(betas, list(mean = mu), list(sd = sigma))
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
-                  age = makeOutputPrior(prior = model@priorsBetas[[3]],
-                      metadata = model@metadataY[2],
-                      pos = 47L))
+                  age = list(scaleError = new("SkeletonOneValues",
+                                              first = 47L),
+                             dfScaleError = model@priorsBetas[[3]]@nuTau@.Data,
+                             scaleScaleError = model@priorsBetas[[3]]@ATau@.Data),
+                  sd = list(df = model@nuSigma@.Data,
+                            scale = model@ASigma@.Data))
     aggregate <- makeOutputAggregate(model, pos = hyper$age$scaleError@first + 1L,
                                      nChain = 2L, nIteration = 20L)
     ans.expected <- list(likelihood = likelihood,
@@ -1508,35 +2191,38 @@ test_that("makeOutputModel works with PoissonVarying - no aggregate", {
     ans.obtained <- makeOutputModel(model = model, pos = pos,
                                     mcmc = c(nChain = 2L, nIteration = 20L))
     likelihood <- list(count = new("SkeletonManyCounts",
-                           first = 10L,
-                           last = 29L,
-                           metadata = metadata),
+                                   first = 10L,
+                                   last = 29L,
+                                   metadata = metadata),
                        jumpCount = model@scaleTheta@.Data,
                        noProposal = new("SkeletonNAccept", nAttempt = 20L, first = 30L,
-                           iFirstInChain = c(1L, 11L)),
+                                        iFirstInChain = c(1L, 11L)),
                        acceptCount = new("SkeletonNAccept", nAttempt = 20L, first = 31L,
-                           iFirstInChain = c(1L, 11L)))
+                                         iFirstInChain = c(1L, 11L)))
     mu <- SkeletonMu(betas = model@betas,
                      margins = model@margins,
                      first = 32L,
                      metadata = model@metadataY)
     betas <- list("(Intercept)" = new("SkeletonBetaIntercept",
-                      first = 32L, last = 32L),
+                                      first = 32L, last = 32L),
                   sex = new("SkeletonBetaTerm",
-                      first = 33L,
-                      last = 34L,
-                      metadata = metadata[1]),
+                            first = 33L,
+                            last = 34L,
+                            metadata = metadata[1]),
                   age = new("SkeletonBetaTerm",
-                      first = 35L,
-                      last = 44L,
-                      metadata = metadata[2]))
+                            first = 35L,
+                            last = 44L,
+                            metadata = metadata[2]))
     sigma <- new("SkeletonOneValues", first = 45L)
     prior <- c(betas, list(mean = mu), list(sd = sigma))
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
-                  age = makeOutputPrior(prior = model@priorsBetas[[3]],
-                      metadata = model@metadataY[2],
-                      pos = 46L))
+                  age = list(scaleError = new("SkeletonOneValues",
+                                              first = 46L),
+                             dfScaleError = model@priorsBetas[[3]]@nuTau@.Data,
+                             scaleScaleError = model@priorsBetas[[3]]@ATau@.Data),
+                  sd = list(df = model@nuSigma@.Data,
+                            scale = model@ASigma@.Data))
     ans.expected <- list(likelihood = likelihood, prior = prior, hyper = hyper)
     expect_identical(ans.obtained, ans.expected)
 })
@@ -1564,35 +2250,38 @@ test_that("makeOutputModel works with PoissonVaryingUseExp - AgCertain", {
     ans.obtained <- makeOutputModel(model = model, pos = pos,
                                     mcmc = c(nChain = 2L, nIteration = 20L))
     likelihood <- list(rate = new("SkeletonManyValues",
-                       first = 10L,
-                       last = 29L,
-                       metadata = metadata),
+                                  first = 10L,
+                                  last = 29L,
+                                  metadata = metadata),
                        jumpRate = model@scaleTheta@.Data,
                        noProposal = new("SkeletonNAccept", nAttempt = 20L, first = 30L,
-                       iFirstInChain = c(1L, 11L)),
+                                        iFirstInChain = c(1L, 11L)),
                        acceptRate = new("SkeletonNAccept", nAttempt = 20L, first = 31L,
-                       iFirstInChain = c(1L, 11L)))
+                                        iFirstInChain = c(1L, 11L)))
     mu <- SkeletonMu(betas = model@betas,
                      margins = model@margins,
                      first = 32L,
                      metadata = model@metadataY)
     betas <- list("(Intercept)" = new("SkeletonBetaIntercept",
-                      first = 32L, last = 32L),
+                                      first = 32L, last = 32L),
                   sex = new("SkeletonBetaTerm",
-                      first = 33L,
-                      last = 34L,
-                      metadata = metadata[1]),
+                            first = 33L,
+                            last = 34L,
+                            metadata = metadata[1]),
                   age = new("SkeletonBetaTerm",
-                      first = 35L,
-                      last = 44L,
-                      metadata = metadata[2]))
+                            first = 35L,
+                            last = 44L,
+                            metadata = metadata[2]))
     sigma <- new("SkeletonOneValues", first = 45L)
     prior <- c(betas, list(mean = mu), list(sd = sigma))
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
-                  age = makeOutputPrior(prior = model@priorsBetas[[3]],
-                      metadata = model@metadataY[2],
-                      pos = 46L))
+                  age = list(scaleError = new("SkeletonOneValues",
+                                              first = 46L),
+                             dfScaleError = model@priorsBetas[[3]]@nuTau@.Data,
+                             scaleScaleError = model@priorsBetas[[3]]@ATau@.Data),
+                  sd = list(df = model@nuSigma@.Data,
+                            scale = model@ASigma@.Data))
     aggregate <- makeOutputAggregate(model)
     ans.expected <- list(likelihood = likelihood,
                          prior = prior,
@@ -1625,35 +2314,37 @@ test_that("makeOutputModel works with PoissonVaryingUseExp - AgNormal", {
     ans.obtained <- makeOutputModel(model = model, pos = pos,
                                     mcmc = c(nChain = 2L, nIteration = 20L))
     likelihood <- list(rate = new("SkeletonManyValues",
-                       first = 21L,
-                       last = 40L,
-                       metadata = metadata),
+                                  first = 21L,
+                                  last = 40L,
+                                  metadata = metadata),
                        jumpRate = model@scaleTheta@.Data,
                        noProposal = new("SkeletonNAccept", nAttempt = 20L, first = 41L,
-                       iFirstInChain = c(1L, 11L)),
+                                        iFirstInChain = c(1L, 11L)),
                        acceptRate = new("SkeletonNAccept", nAttempt = 20L, first = 42L,
-                       iFirstInChain = c(1L, 11L)))
+                                        iFirstInChain = c(1L, 11L)))
     mu <- SkeletonMu(betas = model@betas,
                      margins = model@margins,
                      first = 43L,
                      metadata = model@metadataY)
     betas <- list("(Intercept)" = new("SkeletonBetaIntercept",
-                      first = 43L, last = 43L),
+                                      first = 43L, last = 43L),
                   sex = new("SkeletonBetaTerm",
-                      first = 44L,
-                      last = 45L,
-                      metadata = metadata[1]),
+                            first = 44L,
+                            last = 45L,
+                            metadata = metadata[1]),
                   age = new("SkeletonBetaTerm",
-                      first = 46L,
-                      last = 55L,
-                      metadata = metadata[2]))
+                            first = 46L,
+                            last = 55L,
+                            metadata = metadata[2]))
     sigma <- new("SkeletonOneValues", first = 56L)
     prior <- c(betas, list(mean = mu), list(sd = sigma))
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
                   age = makeOutputPrior(prior = model@priorsBetas[[3]],
-                      metadata = model@metadataY[2],
-                      pos = 57L))
+                                        metadata = model@metadataY[2],
+                                        pos = 57L),
+                  sd = list(df = model@nuSigma@.Data,
+                            scale = model@ASigma@.Data))
     aggregate <- makeOutputAggregate(model, pos = hyper$age$scaleError@first + 1L,
                                      nChain = 2L, nIteration = 20L)
     ans.expected <- list(likelihood = likelihood,
@@ -1687,35 +2378,37 @@ test_that("makeOutputModel works with PoissonVaryingUseExp - AgFun", {
     ans.obtained <- makeOutputModel(model = model, pos = pos,
                                     mcmc = c(nChain = 2L, nIteration = 20L))
     likelihood <- list(rate = new("SkeletonManyValues",
-                       first = 21L,
-                       last = 40L,
-                       metadata = metadata),
+                                  first = 21L,
+                                  last = 40L,
+                                  metadata = metadata),
                        jumpRate = model@scaleTheta@.Data,
                        noProposal = new("SkeletonNAccept", nAttempt = 20L, first = 41L,
-                       iFirstInChain = c(1L, 11L)),
+                                        iFirstInChain = c(1L, 11L)),
                        acceptRate = new("SkeletonNAccept", nAttempt = 20L, first = 42L,
-                       iFirstInChain = c(1L, 11L)))
+                                        iFirstInChain = c(1L, 11L)))
     mu <- SkeletonMu(betas = model@betas,
                      margins = model@margins,
                      first = 43L,
                      metadata = model@metadataY)
     betas <- list("(Intercept)" = new("SkeletonBetaIntercept",
-                      first = 43L, last = 43L),
+                                      first = 43L, last = 43L),
                   sex = new("SkeletonBetaTerm",
-                      first = 44L,
-                      last = 45L,
-                      metadata = metadata[1]),
+                            first = 44L,
+                            last = 45L,
+                            metadata = metadata[1]),
                   age = new("SkeletonBetaTerm",
-                      first = 46L,
-                      last = 55L,
-                      metadata = metadata[2]))
+                            first = 46L,
+                            last = 55L,
+                            metadata = metadata[2]))
     sigma <- new("SkeletonOneValues", first = 56L)
     prior <- c(betas, list(mean = mu), list(sd = sigma))
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
                   age = makeOutputPrior(prior = model@priorsBetas[[3]],
-                      metadata = model@metadataY[2],
-                      pos = 57L))
+                                        metadata = model@metadataY[2],
+                                        pos = 57L),
+                  sd = list(df = model@nuSigma@.Data,
+                            scale = model@ASigma@.Data))
     aggregate <- makeOutputAggregate(model, pos = hyper$age$scaleError@first + 1L,
                                      nChain = 2L, nIteration = 20L)
     ans.expected <- list(likelihood = likelihood,
@@ -1776,7 +2469,9 @@ test_that("makeOutputModel works with PoissonVaryingUseExp - AgPoisson", {
                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
                   age = makeOutputPrior(prior = model@priorsBetas[[3]],
                       metadata = model@metadataY[2],
-                      pos = 57L))
+                      pos = 57L),
+                  sd = list(df = model@nuSigma@.Data,
+                            scale = model@ASigma@.Data))
     aggregate <- makeOutputAggregate(model, pos = hyper$age$scaleError@first + 1L,
                                      nChain = 2L, nIteration = 20L)
     ans.expected <- list(likelihood = likelihood,
@@ -1840,7 +2535,9 @@ test_that("makeOutputModel works with CMP - no aggregate", {
                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
                   age = makeOutputPrior(prior = model@priorsBetas[[3]],
                                         metadata = model@metadataY[2],
-                                        pos = 67L))
+                                        pos = 67L),
+                  sd = list(df = model@nuSigma@.Data,
+                            scale = model@ASigma@.Data))
     ans.expected <- list(likelihood = likelihood, prior = prior, hyper = hyper)
     expect_identical(ans.obtained, ans.expected)
 })
@@ -5451,7 +6148,25 @@ test_that("R, generic C, and specific C versions updateModelUseExp method for TF
 })
 
 
+## usesExposure ###################################################################
 
+test_that("usesExposure works", {
+    usesExposure <- demest:::usesExposure
+    x <- new("NormalVaryingVarsigmaUnknown")
+    expect_false(usesExposure(x))
+    x <- new("NormalVaryingVarsigmaKnownAgCertain")
+    expect_false(usesExposure(x))
+    x <- new("BinomialVarying")
+    expect_true(usesExposure(x))
+    x <- new("PoissonVaryingNotUseExp")
+    expect_false(usesExposure(x))
+    x <- new("PoissonVaryingUseExp")
+    expect_true(usesExposure(x))
+    x <- new("CMPVaryingNotUseExp")
+    expect_false(usesExposure(x))
+    x <- new("CMPVaryingUseExp")
+    expect_true(usesExposure(x))
+})
 
 ## whereAcceptance ###################################################################
 

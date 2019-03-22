@@ -3,7 +3,7 @@ context("iterators-methods")
 
 n.test <- 5
 test.identity <- FALSE
-test.extended <- TRUE
+test.extended <- FALSE
 
 ## AlongIterator
 

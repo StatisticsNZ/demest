@@ -241,7 +241,6 @@ updateSDRobust <- function(sigma, A, nuBeta, nuTau, V, n, max, useC = FALSE) {
 ## HAS_TESTS
 updateAlphaMix <- function(prior, useC = FALSE) {
     stopifnot(methods::is(prior, "Prior"))
-    stopifnot(methods::is(prior, "ComponentFlags"))
     stopifnot(prior@hasAlphaMix)
     if (useC) {
         .Call(updateAlphaMix_R, prior)
@@ -390,7 +389,7 @@ updateAlphaDeltaDLMWithTrend <- function(prior, betaTilde, useC = FALSE) {
                             var.delta.curr <- 1 / (prec.delta.0 + prec.alpha + prec.delta.1)
                             mean.delta.curr <- var.delta.curr * (prec.delta.0 * m[[1L]][2L] + prec.alpha * alpha[indices.ad[2L]]
                                 + prec.delta.1 * delta[indices.ad[2L]] / phi)
-                            delta.curr <- rnorm(n = 1L,
+                            delta.curr <- stats::rnorm(n = 1L,
                                                 mean = mean.delta.curr,
                                                 sd = sqrt(var.delta.curr))
                             delta[indices.ad[1L]] <- delta.curr
@@ -503,7 +502,6 @@ updateBeta <- function(prior, vbar, n, sigma, useC = FALSE) {
                                 vbar = vbar,
                                 n = n,
                                 sigma = sigma)
-    stopifnot(methods::is(prior, "ComponentFlags"))
     if (useC) {
         .Call(updateBeta_R, prior, vbar, n, sigma)
     }
@@ -631,20 +629,20 @@ updateEta <- function(prior, beta, useC = FALSE) {
         .Call(updateEta_R, prior, beta)
     }
     else {
-        P <- prior@P@.Data
-        Z <- prior@Z
+        P <- prior@P@.Data ## number of coefficients, including intercept
+        Z <- prior@Z ## data matrix
         Z <- unname(Z)
-        A.eta.intercept <- prior@AEtaIntercept@.Data
-        A.eta.coef <- prior@AEtaCoef@.Data
-        U.eta.coef <- prior@UEtaCoef@.Data
-        nu.eta.coef <- prior@nuEtaCoef@.Data
-        v <- getV(prior)
+        A.eta.intercept <- prior@AEtaIntercept@.Data ## prior standard deviation of intercept (mean is 0)
+        mean.eta.coef <- prior@meanEtaCoef@.Data ## NEW prior mean of coefficients
+        U.eta.coef <- prior@UEtaCoef@.Data ## prior variance of coefficients
+        v <- getV(prior) ## variance of beta
         U.eta <- c(A.eta.intercept^2, U.eta.coef)
         var.inv <- crossprod(Z, diag(1 / v)) %*% Z + diag(1 / U.eta)
         qr <- qr(var.inv)
         b <- crossprod(Z, diag(1 / v)) %*% beta
         eta.hat <- qr.solve(qr, b)
         eta.hat <- drop(eta.hat)
+        eta.hat[-1L] <- eta.hat[-1L] + mean.eta.coef / U.eta.coef
         g <- stats::rnorm(n = P)
         R <- chol(var.inv) 
         epsilon <- backsolve(R, g)
@@ -807,7 +805,7 @@ updateIndexClassMix <- function(prior, betaTilde, useC = FALSE) {
                         sum.prob <- sum.prob + prob
                     }
                 }
-                U <- runif(1L) * sum.prob
+                U <- stats::runif(1L) * sum.prob
                 cum.sum <- 0
                 for (i.class in seq_len(index.class.max.poss)) {
                     include.class <- index.class.prob[i.class] <= 1
@@ -1035,9 +1033,9 @@ updateMeanLevelComponentWeightMix <- function(prior, useC = FALSE) {
         var <- 1 / (prec.data + prec.prior)
         mean <- var * (prec.data * mean.data + prec.prior * mean.prior)
         sd <- sqrt(var)
-        prior@meanLevelComponentWeightMix@.Data <- rnorm(n = 1L,
-                                                         mean = mean,
-                                                         sd = sd)
+        prior@meanLevelComponentWeightMix@.Data <- stats::rnorm(n = 1L,
+                                                                mean = mean,
+                                                                sd = sd)
         prior
     }
 }
@@ -1695,8 +1693,8 @@ updateUBeta <- function(prior, beta, useC = FALSE) {
         df <- nu + 1
         for (i in seq_len(J)) {
             if (!all.struc.zero[i]) {
-                scale <- (nu * tau^2 + (beta[i] - beta.hat[i])^2) / df
-                U[i] <- rinvchisq1(df = df, scale = scale)
+                scaleSq <- (nu * tau^2 + (beta[i] - beta.hat[i])^2) / df
+                U[i] <- rinvchisq1(df = df, scaleSq = scaleSq)
             }
         }
         prior@UBeta@.Data <- U
@@ -1719,11 +1717,12 @@ updateUEtaCoef <- function(prior, useC = FALSE) {
         U <- prior@UEtaCoef@.Data
         nu <- prior@nuEtaCoef@.Data
         A <- prior@AEtaCoef@.Data
+        mean <- prior@meanEtaCoef@.Data
         eta <- prior@eta@.Data
-        df <- nu + 1
         for (p in seq_len(P - 1L)) {
-            scale <- (nu * A^2 + eta[p + 1]^2) / df
-            U[p] <- rinvchisq1(df = df, scale = scale)
+            df <- nu[p] + 1
+            scaleSq <- (nu[p] * A[p]^2 + (eta[p + 1L] - mean[p])^2) / df
+            U[p] <- rinvchisq1(df = df, scaleSq = scaleSq)
         }
         prior@UEtaCoef@.Data <- U
         prior
@@ -1801,7 +1800,7 @@ updateVectorsMixAndProdVectorsMix <- function(prior, betaTilde, useC = FALSE) {
                     var <- 1 / (prec.data + prec.prior)
                     sd <- sqrt(var)
                     mean <- var * yX[i.class]
-                    vector[i.vector] <- rnorm(n = 1L,
+                    vector[i.vector] <- stats::rnorm(n = 1L,
                                               mean = mean,
                                               sd = sd)
                 }
@@ -1898,7 +1897,7 @@ updateWeightMix <- function(prior, useC = FALSE) {
         n.along <- dim.beta[iAlong]
         n.wt <- n.along * index.class.max
         for (i.wt in seq_len(n.wt))
-            weight[i.wt] <- pnorm(comp.weight[i.wt])
+            weight[i.wt] <- stats::pnorm(comp.weight[i.wt])
         for (i.along in seq_len(n.along)) {
             multiplier.next <- 1
             for (i.class in seq_len(index.class.max)) {
@@ -2597,7 +2596,7 @@ updateThetaAndNu_CMPVaryingNotUseExp <- function(object, y, useC = FALSE) {
                         th.prop <- exp(tr.th.prop)
                     if (y.is.missing) {
                         theta[i] <- th.prop
-                        nu[i] <- rlnorm(n = 1L,
+                        nu[i] <- stats::rlnorm(n = 1L,
                                         meanlog = mean.log.nu,
                                         sdlog = sd.log.nu)
                     }
@@ -2610,7 +2609,7 @@ updateThetaAndNu_CMPVaryingNotUseExp <- function(object, y, useC = FALSE) {
                         nu.prop <- exp(log.nu.prop)
                         y.star <- rcmp1(mu = th.prop,
                                         nu = nu.prop,
-                                        max = max.attempt)
+                                        maxAttempt = max.attempt)
                         found.y.star <- is.finite(y.star)
                         if (found.y.star) {
                             log.lik.curr <- logDensCMPUnnormalised1(x = y[i], gamma = th.curr, nu = nu.curr)
@@ -2728,7 +2727,7 @@ updateThetaAndNu_CMPVaryingUseExp <- function(object, y, exposure, useC = FALSE)
                         th.prop <- exp(tr.th.prop)
                     if (y.is.missing) {
                         theta[i] <- th.prop
-                        nu[i] <- rlnorm(n = 1L,
+                        nu[i] <- stats::rlnorm(n = 1L,
                                         meanlog = mean.log.nu,
                                         sdlog = sd.log.nu)
                     }
@@ -2743,7 +2742,7 @@ updateThetaAndNu_CMPVaryingUseExp <- function(object, y, exposure, useC = FALSE)
                         gamma.prop <- th.prop * exposure[i]
                         y.star <- rcmp1(mu = gamma.prop,
                                         nu = nu.prop,
-                                        max = max.attempt)
+                                        maxAttempt = max.attempt)
                         found.y.star <- is.finite(y.star)
                         if (found.y.star) {
                             log.lik.curr <- logDensCMPUnnormalised1(x = y[i], gamma = gamma.curr, nu = nu.curr)

@@ -686,6 +686,47 @@ test_that("can create valid object of class SkeletonMissingDataPoissonUseExpSubt
     expect_true(validObject(x))
 })
 
+test_that("can create valid object of class SkeletonMissingDataCMPNotUseExp", {
+    data <- Counts(array(c(1:5, NA),
+                         dim = 2:3,
+                         dimnames = list(sex = c("f", "m"),
+                             age = 0:2)))
+    x <- new("SkeletonMissingDataCMPNotUseExp",
+             data = data,
+             offsetsTheta = new("Offsets", c(11L, 16L)),
+             offsetsNu = new("Offsets", c(17L, 22L)))
+    expect_true(validObject(x))
+})
+
+test_that("validity test for SkeletonMissingDataCMPNotUseExp inherited from SkeletonMissingDataCMPNotUseExp works", {
+    data <- Counts(array(c(1:5, NA),
+                         dim = 2:3,
+                         dimnames = list(sex = c("f", "m"),
+                             age = 0:2)))
+    expect_error(new("SkeletonMissingDataCMPNotUseExp",
+                     data = data,
+                     offsetsTheta = new("Offsets", c(11L, 16L)),
+                     offsetsNu = new("Offsets", c(17L, 23L))),
+                 "'data' and 'offsetsNu' inconsistent")
+})
+
+test_that("can create valid object of class SkeletonMissingDataCMPUseExp", {
+    data <- Counts(array(c(1:5, NA),
+                         dim = 2:3,
+                         dimnames = list(sex = c("f", "m"),
+                             age = 0:2)))
+    exposure <- Counts(array(1:6,
+                             dim = 2:3,
+                             dimnames = list(sex = c("f", "m"),
+                                 age = 0:2)))
+    x <- new("SkeletonMissingDataCMPUseExp",
+             data = data,
+             exposure = exposure,
+             offsetsTheta = new("Offsets", c(11L, 16L)),
+             offsetsNu = new("Offsets", c(17L, 22L)))
+    expect_true(validObject(x))
+})
+
 test_that("can create valid object of class SkeletonMissingDataBinomial", {
     data <- Counts(array(c(1:5, NA),
                          dim = 2:3,

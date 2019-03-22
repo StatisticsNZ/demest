@@ -537,7 +537,7 @@ setMethod("initialModel",
               tolerance <- object@tolerance
               max.attempt <- object@maxAttempt
               scale.theta <- object@scaleTheta
-              nu.sigma <- object@nuSigma
+              nu.sigma <- object@nuSigma@.Data
               A.sigma <- object@ASigma@.Data
               sigma.max <- object@sigmaMax@.Data
               aggregate <- object@aggregate
@@ -549,15 +549,11 @@ setMethod("initialModel",
               exposure.tmp <- as.integer(exposure)
               y.tmp[is.na(y)] <- 0.0
               exposure.tmp[is.na(y)] <- 0.0
+              A.sigma <- methods::new("Scale", A.sigma)
+              nu.sigma <- methods::new("DegreesFreedom", nu.sigma)
+              sigma.max <- methods::new("Scale", sigma.max)
               m <- sum(y[!is.na(y)]) / sum(exposure[!is.na(y)])
               nu <- m * (1 - m)
-              A.sigma <- makeASigma(A = A.sigma,
-                                    sY = NULL,
-                                    isSpec = FALSE)
-              sigma.max <- makeScaleMax(scaleMax = sigma.max,
-                                        A = A.sigma,
-                                        nu = nu.sigma,
-                                        isSpec = FALSE)
               sigma <- stats::runif(n = 1L,
                                     min = 0,
                                     max = min(nu, sigma.max@.Data))
@@ -672,6 +668,7 @@ setMethod("initialModel",
               max.attempt <- object@maxAttempt
               nu.sigma <- object@nuSigma
               A.sigma <- object@ASigma@.Data
+              mult.sigma <- object@multSigma
               sigma.max <- object@sigmaMax@.Data
               use.expose <- object@useExpose@.Data
               aggregate <- object@aggregate
@@ -713,7 +710,8 @@ setMethod("initialModel",
               else
                   sY <-  stats::sd(log(as.numeric(y) + 1), na.rm = TRUE)
               A.sigma <- makeASigma(A = A.sigma,
-                                    sY = sY)
+                                    sY = sY,
+                                    mult = mult.sigma)
               sigma.max <- makeScaleMax(scaleMax = sigma.max,
                                         A = A.sigma,
                                         nu = nu.sigma)
@@ -760,7 +758,7 @@ setMethod("initialModel",
               nuCMP <- exp(logNuCMP)
               nuCMP[nuCMP < 0.5] <- 0.5
               nuCMP[nuCMP > 2] <- 2
-              nuCMP <- new("ParameterVector", nuCMP)              
+              nuCMP <- methods::new("ParameterVector", nuCMP)              
               names.betas <- names(betas)
               margins <- makeMargins(betas = betas, y = y)
               priors.betas <- makePriors(betas = betas,
@@ -861,6 +859,7 @@ setMethod("initialModel",
               varsigmaSetToZero <- object@varsigmaSetToZero
               nu.sigma <- object@nuSigma
               A.sigma <- object@ASigma@.Data
+              mult.sigma <- object@multSigma
               sigma.max <- object@sigmaMax@.Data
               aggregate <- object@aggregate
               checkTermsFromFormulaFound(y = y, formula = formula.mu)
@@ -870,7 +869,9 @@ setMethod("initialModel",
               w <- as.numeric(weights)
               n <- length(y)
               sY <- stats::sd(as.numeric(y), na.rm = TRUE) ## to deal with R <3.0 behaviour
-              A.sigma <- makeASigma(A = A.sigma, sY = sY)
+              A.sigma <- makeASigma(A = A.sigma,
+                                    sY = sY,
+                                    mult = mult.sigma)
               sigma.max <- makeScaleMax(scaleMax = sigma.max,
                                         A = A.sigma,
                                         nu = nu.sigma)
@@ -983,6 +984,7 @@ setMethod("initialModel",
               varsigma.max <- object@varsigmaMax@.Data
               nu.sigma <- object@nuSigma
               A.sigma <- object@ASigma@.Data
+              mult.sigma <- object@multSigma
               sigma.max <- object@sigmaMax@.Data
               aggregate <- object@aggregate
               checkTermsFromFormulaFound(y = y, formula = formula.mu)
@@ -992,8 +994,12 @@ setMethod("initialModel",
               w <- as.numeric(weights)
               n <- length(y)
               sY <- stats::sd(as.numeric(y), na.rm = TRUE) ## to deal with R <3.0 behaviour
-              A.varsigma <- makeASigma(A = A.varsigma, sY = sY)
-              A.sigma <- makeASigma(A = A.sigma, sY = sY)
+              A.varsigma <- makeASigma(A = A.varsigma,
+                                       sY = sY,
+                                       mult = mult.sigma)
+              A.sigma <- makeASigma(A = A.sigma,
+                                    sY = sY,
+                                    mult = mult.sigma)
               varsigma.max <- makeScaleMax(scaleMax = varsigma.max,
                                            A = A.varsigma,
                                            nu = nu.varsigma)
@@ -1109,6 +1115,7 @@ setMethod("initialModel",
               max.attempt <- object@maxAttempt
               nu.sigma <- object@nuSigma
               A.sigma <- object@ASigma@.Data
+              mult.sigma <- object@multSigma
               sigma.max <- object@sigmaMax@.Data
               use.expose <- object@useExpose@.Data
               aggregate <- object@aggregate
@@ -1132,15 +1139,11 @@ setMethod("initialModel",
                   mean.y.obs <- mean(y@.Data[is.obs]) 
               else
                   mean.y.obs <- 0.5
-              ## shape <- ifelse(is.obs, 0.05 * mean.y.obs + 0.95 * y@.Data, mean.y.obs)
-              shape <- ifelse(is.obs, 0.5 * mean.y.obs + 0.5 * y@.Data, mean.y.obs)
-              if (has.exposure) {
-                  mean.expose.obs <- mean(exposure[is.obs])
-                  ## rate <- ifelse(is.obs, 0.05 * mean.expose.obs + 0.95 * exposure, mean.expose.obs)
-                  rate <- ifelse(is.obs, 0.5 * mean.expose.obs + 0.5 * exposure, mean.expose.obs)
-              }
+              shape <- ifelse(is.obs, y@.Data + 1, 1)
+              if (has.exposure)
+                  rate <- ifelse(is.obs, exposure + 1, 1)
               else
-                  rate <- 1
+                  rate <- 2
               scale.theta.multiplier <- sqrt(mean.y.obs + 1)
               scale.theta.multiplier <- methods::new("Scale", scale.theta.multiplier)
               theta <- stats::rgamma(n = length(y), shape = shape, rate = rate)
@@ -1149,7 +1152,8 @@ setMethod("initialModel",
               else
                   sY <-  stats::sd(log(as.numeric(y) + 1), na.rm = TRUE)
               A.sigma <- makeASigma(A = A.sigma,
-                                    sY = sY)
+                                    sY = sY,
+                                    mult = mult.sigma)
               sigma.max <- makeScaleMax(scaleMax = sigma.max,
                                         A = A.sigma,
                                         nu = nu.sigma)
@@ -1305,10 +1309,10 @@ setMethod("initialModel",
               .Data.sd <- array(sdAll@.Data,
                                 dim = dim(metadataAll),
                                 dimnames = dimnames(metadataAll))
-              mean.before.subset <- new("Values",
+              mean.before.subset <- methods::new("Values",
                                         .Data = .Data.mean,
                                         metadata = metadataAll)
-              sd.before.subset <- new("Values",
+              sd.before.subset <- methods::new("Values",
                                       .Data = .Data.sd,
                                       metadata = metadataAll)
               mean <- tryCatch(makeCompatible(x = mean.before.subset,
@@ -1323,8 +1327,8 @@ setMethod("initialModel",
                                    y = y,
                                    subset = TRUE,
                                    check = FALSE)
-              mean <- new("ParameterVector", mean@.Data)
-              sd <- new("ScaleVec", sd@.Data)
+              mean <- methods::new("ParameterVector", mean@.Data)
+              sd <- methods::new("ScaleVec", sd@.Data)
               has.exposure <- !is.null(exposure)
               if (has.exposure && !use.expose)
                   stop(gettextf("'%s' argument supplied, but model '%s' does not use exposure",
@@ -1382,10 +1386,10 @@ setMethod("initialModel",
               .Data.sd <- array(sdAll@.Data,
                                 dim = dim(metadataAll),
                                 dimnames = dimnames(metadataAll))
-              mean.before.subset <- new("Values",
+              mean.before.subset <- methods::new("Values",
                                         .Data = .Data.mean,
                                         metadata = metadataAll)
-              sd.before.subset <- new("Values",
+              sd.before.subset <- methods::new("Values",
                                       .Data = .Data.sd,
                                       metadata = metadataAll)
               mean <- tryCatch(makeCompatible(x = mean.before.subset,
@@ -1400,8 +1404,8 @@ setMethod("initialModel",
                                    y = y,
                                    subset = TRUE,
                                    check = FALSE)
-              mean <- new("ParameterVector", mean@.Data)
-              sd <- new("ScaleVec", sd@.Data)
+              mean <- methods::new("ParameterVector", mean@.Data)
+              sd <- methods::new("ScaleVec", sd@.Data)
               has.exposure <- !is.null(exposure)
               if (has.exposure && !use.expose)
                   stop(gettextf("'%s' argument supplied, but model '%s' does not use exposure",
@@ -1579,6 +1583,7 @@ setMethod("initialModelPredict",
               w <- as.numeric(weights)
               if (methods::is(model, "VarsigmaKnown"))
                   ans <- methods::new("NormalVaryingVarsigmaKnownPredict",
+<<<<<<< HEAD
                              model,
                              theta = l$theta,
                              thetaTransformed = l$thetaTransformed,
@@ -1621,6 +1626,46 @@ setMethod("initialModelPredict",
                              offsetsSigma = l$offsetsSigma,
                              iMethodModel = l$iMethodModel,
                              w = w)
+=======
+                                      model,
+                                      theta = l$theta,
+                                      metadataY = metadataY,
+                                      cellInLik = l$cellInLik,
+                                      lower = lower,
+                                      upper = upper,
+                                      nFailedPropTheta = methods::new("Counter", 0L),
+                                      betas = l$betas,
+                                      priorsBetas = l$priorsBetas,
+                                      iteratorBetas = l$iteratorBetas,
+                                      dims = l$dims,
+                                      betaIsPredicted = l$betaIsPredicted,
+                                      offsetsBetas = l$offsetsBetas,
+                                      offsetsPriorsBetas = l$offsetsPriorsBetas,
+                                      offsetsSigma = l$offsetsSigma,
+                                      iMethodModel = l$iMethodModel,
+                                      w = w)
+              else {
+                  offsets.varsigma <- makeOffsetsVarsigma(model, offsetModel = offsetModel)
+                  ans <- methods::new("NormalVaryingVarsigmaUnknownPredict",
+                                      model,
+                                      theta = l$theta,
+                                      metadataY = metadataY,
+                                      cellInLik = l$cellInLik,
+                                      lower = lower,
+                                      upper = upper,
+                                      nFailedPropTheta = methods::new("Counter", 0L),
+                                      betas = l$betas,
+                                      priorsBetas = l$priorsBetas,
+                                      iteratorBetas = l$iteratorBetas,
+                                      dims = l$dims,
+                                      betaIsPredicted = l$betaIsPredicted,
+                                      offsetsBetas = l$offsetsBetas,
+                                      offsetsPriorsBetas = l$offsetsPriorsBetas,
+                                      offsetsVarsigma = offsets.varsigma,
+                                      offsetsSigma = l$offsetsSigma,
+                                      iMethodModel = l$iMethodModel,
+                                      w = w)
+>>>>>>> master
               }
               if (!is.null(aggregate)) {
                   ans <- addAg(model = ans,
@@ -1642,7 +1687,7 @@ setMethod("initialModelPredict",
                                              n = n,
                                              offsetModel = offsetModel,
                                              covariates = covariates)
-              nu.cmp <- new("ParameterVector", rep(1, times = length(l$theta)))
+              nu.cmp <- methods::new("ParameterVector", rep(1, times = length(l$theta)))
               metadataY <- l$metadataY
               box.cox.param <- model@boxCoxParam
               if (box.cox.param > 0) {
@@ -1765,13 +1810,13 @@ setMethod("initialModelPredict",
               .Data.second <- array(0L,
                                     dim = dim(metadata.second),
                                     dimnames = dimnames(metadata.second))
-              mean.before.subset <- new("Values",
+              mean.before.subset <- methods::new("Values",
                                         .Data = .Data.mean,
                                         metadata = metadataAll)
-              sd.before.subset <- new("Values",
+              sd.before.subset <- methods::new("Values",
                                       .Data = .Data.sd,
                                       metadata = metadataAll)
-              y.second <- new("Values",
+              y.second <- methods::new("Values",
                               .Data = .Data.second,
                               metadata = metadata.second)
               mean <- tryCatch(makeCompatible(x = mean.before.subset,
@@ -1783,7 +1828,7 @@ setMethod("initialModelPredict",
                   stop(gettextf("'%s' from %s model not compatible with data : %s",
                                 "mean", "NormalFixed", mean$message))
               ## check that don't need to expand 'mean' to make compatible with 'y'
-              value <- tryCatch(makeCompatible(x = as(mean.before.subset, "Counts"),
+              value <- tryCatch(makeCompatible(x = methods::as(mean.before.subset, "Counts"),
                                                y = y.second,
                                                subset = TRUE,
                                                check = TRUE),
@@ -1795,8 +1840,8 @@ setMethod("initialModelPredict",
                                    y = y.second,
                                    subset = TRUE,
                                    check = FALSE)
-              mean <- new("ParameterVector", mean@.Data)
-              sd <- new("ScaleVec", sd@.Data)
+              mean <- methods::new("ParameterVector", mean@.Data)
+              sd <- methods::new("ScaleVec", sd@.Data)
               class <- paste0(class(model), "Predict")
               i.method.model.second <- i.method.model.first + 100L
               methods::new(class,
@@ -1834,13 +1879,13 @@ setMethod("initialModelPredict",
               .Data.second <- array(0L,
                                     dim = dim(metadata.second),
                                     dimnames = dimnames(metadata.second))
-              mean.before.subset <- new("Values",
+              mean.before.subset <- methods::new("Values",
                                         .Data = .Data.mean,
                                         metadata = metadataAll)
-              sd.before.subset <- new("Values",
+              sd.before.subset <- methods::new("Values",
                                       .Data = .Data.sd,
                                       metadata = metadataAll)
-              y.second <- new("Values",
+              y.second <- methods::new("Values",
                               .Data = .Data.second,
                               metadata = metadata.second)
               mean <- tryCatch(makeCompatible(x = mean.before.subset,
@@ -1852,7 +1897,7 @@ setMethod("initialModelPredict",
                   stop(gettextf("'%s' from %s model not compatible with data : %s",
                                 "location", "TFixed", mean$message))
               ## check that don't need to expand 'mean' to make compatible with 'y'
-              value <- tryCatch(makeCompatible(x = as(mean.before.subset, "Counts"),
+              value <- tryCatch(makeCompatible(x = methods::as(mean.before.subset, "Counts"),
                                                y = y.second,
                                                subset = TRUE,
                                                check = TRUE),
@@ -1864,8 +1909,8 @@ setMethod("initialModelPredict",
                                    y = y.second,
                                    subset = TRUE,
                                    check = FALSE)
-              mean <- new("ParameterVector", mean@.Data)
-              sd <- new("ScaleVec", sd@.Data)
+              mean <- methods::new("ParameterVector", mean@.Data)
+              sd <- methods::new("ScaleVec", sd@.Data)
               class <- paste0(class(model), "Predict")
               i.method.model.second <- i.method.model.first + 100L
               methods::new(class,

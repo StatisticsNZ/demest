@@ -1,11 +1,11 @@
 Package: demest
 Title: Bayesian Demographic Estimation and Forecasting
-Version: 0.0.0.9215
-Date: 2018-11-02
+Version: 0.0.0.95
+Date: 2019-03-20
 Authors@R: c(
     person(given = "John",
            family = "Bryant",
-	         email = "john.bryant@stats.govt.nz",
+	         email = "john.r.bryant@gmail.com",
 	         role = c("cre", "aut")),
     person(given = "Jenny",
            family = "Harlow",
@@ -51,4 +51,4 @@ Suggests:
     testthat,
     knitr
 VignetteBuilder: knitr
-RoxygenNote: 6.1.0
+RoxygenNote: 6.1.1

@@ -70,7 +70,7 @@ setClass("SpecLikelihoodBinomial",
 #' @rdname SpecLikelihood-class
 #' @export
 setClass("SpecLikelihoodCMP",
-         prototype = prototype(useExpose = new("LogicalFlag", TRUE)),
+         prototype = prototype(useExpose = methods::new("LogicalFlag", TRUE)),
          contains = c("SpecLikelihood",
                       "BoxCoxParamMixin",
                       "StructuralZerosMixin",
@@ -99,7 +99,7 @@ setClass("SpecLikelihoodNormalVarsigmaUnknown",
 #' @rdname SpecLikelihood-class
 #' @export
 setClass("SpecLikelihoodPoisson",
-         prototype = prototype(useExpose = new("LogicalFlag", TRUE)),
+         prototype = prototype(useExpose = methods::new("LogicalFlag", TRUE)),
          contains = c("SpecLikelihood",
                       "BoxCoxParamMixin",
                       "FormulaMuMixin",
@@ -115,7 +115,7 @@ setClass("SpecLikelihoodPoissonBinomialMixture",
 #' @rdname SpecLikelihood-class
 #' @export
 setClass("SpecLikelihoodNormalFixed",
-         prototype = prototype(useExpose = new("LogicalFlag", TRUE)),
+         prototype = prototype(useExpose = methods::new("LogicalFlag", TRUE)),
          contains = c("SpecLikelihood",
                       "MeanSDMetadataMixin",
                       "UseExposeMixin"))
@@ -128,7 +128,7 @@ setClass("SpecLikelihoodRound3",
 #' @rdname SpecLikelihood-class
 #' @export
 setClass("SpecLikelihoodTFixed",
-         prototype = prototype(useExpose = new("LogicalFlag", TRUE)),
+         prototype = prototype(useExpose = methods::new("LogicalFlag", TRUE)),
          contains = c("SpecLikelihood",
                       "MeanSDMetadataMixin",
                       "NuMixin",
@@ -258,9 +258,9 @@ setClass("SpecVarying",
 #' @rdname SpecModel-class
 #' @export
 setClass("SpecBinomialVarying",
-         prototype = prototype(useExpose = new("LogicalFlag", TRUE)),
+         prototype = prototype(useExpose = methods::new("LogicalFlag", TRUE)),
          contains = c("SpecVarying",
-             "SpecAgNotPoissonMixin"),
+                      "SpecAgNotPoissonMixin"),
          validity = function(object) {
              lower <- object@lower
              upper <- object@upper
@@ -279,10 +279,11 @@ setClass("SpecBinomialVarying",
 #' @rdname SpecModel-class
 #' @export
 setClass("SpecCMPVarying",
-         prototype = prototype(useExpose = new("LogicalFlag", TRUE)),
+         prototype = prototype(useExpose = methods::new("LogicalFlag", TRUE)),
          contains = c("SpecVarying",
                       "BoxCoxParamMixin",
                       "MeanLogNuCMPMixin",
+                      "MultSigmaMixin",
                       "SDLogNuCMPMixin",
                       "StructuralZerosMixin"),
          validity = function(object) {
@@ -297,25 +298,26 @@ setClass("SpecCMPVarying",
 ## HAS_TESTS
 setClass("SpecNormalVarying",
          contains = c("VIRTUAL",
-             "SpecVarying",
-             "SpecAgNotPoissonMixin"))
+                      "MultSigmaMixin",
+                      "SpecVarying",
+                      "SpecAgNotPoissonMixin"))
 
 ## HAS_TESTS
 #' @rdname SpecModel-class
 #' @export
 setClass("SpecNormalVaryingVarsigmaUnknown",
-         prototype = prototype(useExpose = new("LogicalFlag", FALSE)),
+         prototype = prototype(useExpose = methods::new("LogicalFlag", FALSE)),
          contains = c("SpecNormalVarying",
-             "NuVarsigmaMixin",
-             "SpecAVarsigmaMixin",
-             "SpecVarsigmaMaxMixin"))
+                      "NuVarsigmaMixin",
+                      "SpecAVarsigmaMixin",
+                      "SpecVarsigmaMaxMixin"))
 
 ## HAS_TESTS
 #' @rdname SpecModel-class
 #' @export
 setClass("SpecNormalVaryingVarsigmaKnown",
-         prototype = prototype(useExpose = new("LogicalFlag", FALSE),
-                               varsigmaSetToZero = new("LogicalFlag", FALSE)),
+         prototype = prototype(useExpose = methods::new("LogicalFlag", FALSE),
+                               varsigmaSetToZero = methods::new("LogicalFlag", FALSE)),
          contains = c("SpecNormalVarying",
                       "VarsigmaMixin",
                       "VarsigmaSetToZeroMixin"),
@@ -325,7 +327,7 @@ setClass("SpecNormalVaryingVarsigmaKnown",
              if (varsigmaSetToZero) {
                  ## if varsigma is 0, lower, upper not specified
                  for (name in c("lower", "upper")) {
-                     value <- slot(object, name)
+                     value <- methods::slot(object, name)
                      if (is.finite(value))
                          return(gettextf("'%s' is %d but '%s' is finite",
                                          "varsigma", 0L, name))
@@ -344,9 +346,10 @@ setClass("SpecNormalVaryingVarsigmaKnown",
 #' @rdname SpecModel-class
 #' @export
 setClass("SpecPoissonVarying",
-         prototype = prototype(useExpose = new("LogicalFlag", TRUE)),
+         prototype = prototype(useExpose = methods::new("LogicalFlag", TRUE)),
          contains = c("SpecVarying",
                       "StructuralZerosMixin",
+                      "MultSigmaMixin",
                       "BoxCoxParamMixin"),
          validity = function(object) {
              lower <- object@lower
@@ -362,7 +365,7 @@ setClass("SpecPoissonVarying",
 #' @rdname SpecModel-class
 #' @export
 setClass("SpecNormalFixed",
-         prototype = prototype(useExpose = new("LogicalFlag", TRUE)),
+         prototype = prototype(useExpose = methods::new("LogicalFlag", TRUE)),
          contains = c("SpecModel", "MeanSDMetadataMixin",
                       "SpecSeriesMixin"))
 
@@ -370,14 +373,14 @@ setClass("SpecNormalFixed",
 #' @rdname SpecModel-class
 #' @export
 setClass("SpecPoissonBinomialMixture",
-         prototype = prototype(useExpose = new("LogicalFlag", TRUE)),
+         prototype = prototype(useExpose = methods::new("LogicalFlag", TRUE)),
          contains = c("SpecModel", "Prob", "SpecSeriesMixin"))
 
 ## HAS_TESTS
 #' @rdname SpecModel-class
 #' @export
 setClass("SpecRound3",
-         prototype = prototype(useExpose = new("LogicalFlag", TRUE)),
+         prototype = prototype(useExpose = methods::new("LogicalFlag", TRUE)),
          contains = c("SpecModel", "SpecSeriesMixin"))
 
 
@@ -387,8 +390,8 @@ setClass("SpecRound3",
 #' @rdname SpecModel-class
 #' @export
 setClass("SpecTFixed",
-         prototype = prototype(useExpose = new("LogicalFlag", TRUE),
-                               nu = new("DegreesFreedom", 7)),
+         prototype = prototype(useExpose = methods::new("LogicalFlag", TRUE),
+                               nu = methods::new("DegreesFreedom", 7)),
          contains = c("SpecModel",
                       "MeanSDMetadataMixin",
                       "NuMixin",

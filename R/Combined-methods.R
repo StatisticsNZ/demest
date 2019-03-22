@@ -26,6 +26,176 @@ setMethod("getSeriesForDataset",
           })
 
 
+## drawCombined ####################################################################
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawCombined",
+          signature(object = "CombinedModelBinomial"),
+          function(object, nUpdate = 1L, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              methods::validObject(object)
+              ## nUpdate
+              stopifnot(identical(length(nUpdate), 1L))
+              stopifnot(is.integer(nUpdate))
+              stopifnot(!is.na(nUpdate))
+              stopifnot(nUpdate >= 0L)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawCombined_CombinedModelBinomial_R, object, nUpdate)
+                  else
+                      .Call(drawCombined_R, object, nUpdate)
+              }
+              else {
+                  model <- object@model
+                  y <- object@y
+                  exposure <- object@exposure
+                  for (i in seq_len(nUpdate))
+                      model <- drawModelUseExp(model,
+                                               y = y,
+                                               exposure = exposure)
+                  object@model <- model
+                  object
+              }
+          })
+
+## READY_TO_TRANSLATE
+## HAS_TESTS - though only for unbenchmarked version
+setMethod("drawCombined",
+          signature(object = "CombinedAccountMovements"),
+          function(object, nUpdate = 1L, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              methods::validObject(object)
+              ## nUpdate
+              stopifnot(identical(length(nUpdate), 1L))
+              stopifnot(is.integer(nUpdate))
+              stopifnot(!is.na(nUpdate))
+              stopifnot(nUpdate >= 0L)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawCombined_CombinedAccountMovements_R, object, nUpdate)
+                  else
+                      .Call(drawCombined_R, object, nUpdate)
+              }
+              else {
+                  system.models.use.ag <- object@systemModelsUseAg@.Data
+                  data.models.use.ag <- object@dataModelsUseAg@.Data
+                  for (i in seq_len(nUpdate)) {
+                      if (system.models.use.ag) {
+                          object <- updateSystemModels(object)
+                          object <- updateExpectedExposure(object)
+                      }
+                      object <- updateAccount(object, useC = TRUE)
+                      if (data.models.use.ag)
+                          object <- updateDataModelsAccount(object)
+                  }
+                  object
+              }
+          })
+
+
+## drawDataModels ##################################################################
+
+## Elements of 'datasets' must contain only NAs, when
+## 'drawDataModels' is called. Normally this is done by
+## calling function 'setDatasetsToMissing'.
+
+## HAS_TESTS
+## Function is almost identical to 'updateDataModelsAccount' 
+setMethod("drawDataModels",
+          signature(combined = "CombinedAccountMovements"),
+          function(combined) {
+              data.models <- combined@dataModels
+              datasets <- combined@datasets
+              population <- combined@account@population
+              components <- combined@account@components
+              series.indices <- combined@seriesIndices
+              transforms <- combined@transforms
+              for (i in seq_along(data.models)) {
+                  model <- data.models[[i]]
+                  dataset <- datasets[[i]]
+                  transform <- transforms[[i]]
+                  series.index <- series.indices[i]
+                  if (any(!is.na(dataset)))
+                      stop(gettextf("'%s' have not been set to missing",
+                                    "datasets"))
+                  if (series.index == 0L)
+                      series <- population
+                  else
+                      series <- components[[series.index]]
+                  series.collapsed <- collapse(series, transform = transform)
+                  if (methods::is(model, "Poisson") || methods::is(model, "CMP"))
+                      series.collapsed <- toDouble(series.collapsed)
+                  model <- drawModelUseExp(model, ## this line different from 'updateDataModelsAccount'
+                                           y = dataset,
+                                           exposure = series.collapsed)
+                  data.models[[i]] <- model
+              }
+              combined@dataModels <- data.models
+              combined
+          })
+
+
+
+## drawSystemModels ################################################################
+
+## Unlike with 'drawSystemModels', 'drawSystemModels' does
+## not assume that outcome variables (ie the demographic series)
+## have been set to missing, since, unlike the datasets,
+## the series are generated as part of the estimation process,
+## rather than imputed afterwards.
+## HAS_TESTS
+setMethod("drawSystemModels",
+          signature(combined = "CombinedAccountMovements"),
+          function(combined) {
+              system.models <- combined@systemModels
+              population <- combined@account@population
+              components <- combined@account@components
+              model.uses.exposure <- combined@modelUsesExposure
+              transforms.exp.to.comp <- combined@transformsExpToComp
+              transform.exp.to.births <- combined@transformExpToBirths
+              i.births <- combined@iBirths
+              ## population
+              population[] <- NA
+              model <- system.models[[1L]]
+              model <- drawModelNotUseExp(model,
+                                          y = population)
+              system.models[[1L]] <- model
+              ## components
+              for (i in seq_along(components)) {
+                  model <- system.models[[i + 1L]]
+                  component <- components[[i]]
+                  component[] <- NA
+                  uses.exposure <- model.uses.exposure[i + 1L]
+                  if (uses.exposure) {
+                      exposure <- combined@exposure@.Data
+                      is.births <- i == i.births
+                      if (is.births)
+                          exposure <- collapse(exposure,
+                                               transform = transform.exp.to.births)
+                      transform <- transforms.exp.to.comp[[i]]
+                      if (!is.null(transform))
+                          exposure <- extend(exposure,
+                                             transform = transforms.exp.to.comp[[i]])
+                      model <- drawModelUseExp(object = model,
+                                               y = component,
+                                               exposure = exposure)
+                  }
+                  else {
+                      if (methods::is(model, "Normal"))
+                          component <- toDouble(component)
+                      model <- drawModelNotUseExp(object = model,
+                                                  y = component)
+                  }
+                  system.models[[i + 1L]] <- model
+              }
+              combined@systemModels <- system.models
+              combined
+          })
+
+
+
+
 ## predictCombined #################################################################
 
 ## the 'nUpdate' argument may disappear in the long run,
@@ -203,7 +373,8 @@ setMethod("predictCombined",
                                               exposure = exposure)
                   theta <- model@theta
                   lambda <- theta * exposure
-                  y[] <- rpois(n = length(theta), lambda = lambda) ## need to revisit this if we allow for subtotals
+                  y[] <- stats::rpois(n = length(theta),
+                                      lambda = lambda) ## need to revisit this if we allow for subtotals
                   for (i in seq_along(data.models)) {
                       data.model <- data.models[[i]]
                       dataset <- datasets[[i]] ## all NA
@@ -397,6 +568,9 @@ setMethod("updateCombined",
               }
           })
 
+
+## Counts
+
 ## TRANSLATED
 ## HAS_TESTS
 setMethod("updateCombined",
@@ -536,7 +710,7 @@ setMethod("updateCombined",
           })
 
 
-## Accounts ##############################################################################
+## Accounts
 
 ## TRANSLATED
 ## HAS_TESTS
@@ -632,7 +806,7 @@ setMethod("updateProposalAccount",
               else {
                   account <- object@account
                   prob.popn <- object@probPopn
-                  update.popn <- runif(n = 1L) < prob.popn
+                  update.popn <- stats::runif(n = 1L) < prob.popn
                   if (update.popn) {
                       object@iComp <- 0L
                       updateProposalAccountMovePopn(object)

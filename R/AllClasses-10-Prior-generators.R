@@ -19,12 +19,11 @@ setClass("Classes",
 #' @slot data A data.frame holding the covariate data.
 #' @slot contrastsArg A named list of contrasts, as described in the
 #' documentation for \code{\link[stats]{model.matrix}}.
-#' @slot AEtaIntercept Scale parameter for the normal
-#' prior for the intercept.
-#' @slot nuEtaCoef Degrees of freedom for the t priors
+#' #' @slot nuEtaCoef Degrees of freedom for the t priors
 #' for the coefficients.
 #' @slot AEtaCoef Scale parameter for the t priors
 #' for the coefficients.
+#' @slot multEtaCoef Multiplier for \code{AEtaCoef}.
 #'
 #' @seealso Objects of class \code{Covariates} are created
 #' by a call to function \code{\link{Covariates}}.
@@ -256,6 +255,34 @@ setClass("Season",
          contains = "SpecSeasonMixin")
 
 
+#' An S4 class to hold a vector of independent t-distributed variables
+#'
+#' An object of class \code{TDist} is used to specify the
+#' prior distribution of coefficents in the \code{\link{Covariates}}
+#' part of a prior prior.
+#'
+#' @section Warning:
+#' In  normal usage, it should not be necessary to
+#' access, or even know about, the slots of a
+#' \code{TDist} object.  The slots are not part of
+#' the API of the package, and may change in future.
+#'
+#' @slot nuEtaCoef Degrees of freedom
+#' @slot meanEtaCoef Means
+#' @slot multEtaCoef Multipliers
+#' @slot AEtaCoef Scales
+#'
+#' @seealso Objects of class \code{TDist} are created
+#' by calls to function \code{\link{TDist}}.  
+#' @export
+setClass("TDist",
+         contains = c("SpecAEtaCoefMixin",
+                      "MeanEtaCoefMixin",
+                      "MultEtaCoefMixin",
+                      "NuEtaCoefMixin"))
+
+
+
 #' An S4 class to specify the trend term in a DLM prior.
 #'
 #' An object of class \code{Trend} is used to specify the
@@ -309,7 +336,7 @@ setClass("Trend",
 #' half-t prior for \code{omegaVectorsMix}.
 #' @slot AVectorsMix Scale for truncated half-t prior for
 #' \code{omegaVectorsMix}.
-#' @slot omegaVectorsMix Upper limit for truncated half-t prior
+#' @slot omegaVectorsMaxMix Upper limit for truncated half-t prior
 #' for \code{omegaVectorsMix}.
 #'
 #' @seealso An object of class \code{Components} is created

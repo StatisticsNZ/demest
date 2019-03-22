@@ -1128,10 +1128,10 @@ rhalftTrunc1_R(SEXP df_R, SEXP scale_R, SEXP max_R)
 
 /* create one-off R version wrapper for rinvchisq1_R */ 
 SEXP
-rinvchisq1_R(SEXP df_R, SEXP scale_R)
+rinvchisq1_R(SEXP df_R, SEXP scaleSq_R)
 {
     GetRNGstate();
-    double ans = rinvchisq1(*REAL(df_R), *REAL(scale_R));
+    double ans = rinvchisq1(*REAL(df_R), *REAL(scaleSq_R));
     PutRNGstate();
     return ScalarReal(ans);
 }
@@ -2761,7 +2761,13 @@ R_init_demest(DllInfo *info)
   ADD_SYM(hasAlphaICAR);
   ADD_SYM(hasAlphaMix);
   ADD_SYM(hasCovariates);
+  ADD_SYM(hasAlphaKnown);
+  ADD_SYM(hasMean);
   ADD_SYM(hasSeason);
+  ADD_SYM(isKnownUncertain);
+  ADD_SYM(isNorm);
+  ADD_SYM(isRobust);
+  ADD_SYM(isZeroVar);
   ADD_SYM(alphaDLM);
   ADD_SYM(alphaICAR);
   ADD_SYM(alphaMix);
@@ -2772,7 +2778,6 @@ R_init_demest(DllInfo *info)
   ADD_SYM(s);
   ADD_SYM(UBeta);
   ADD_SYM(nuBeta);
-  ADD_SYM(isRobust);
   ADD_SYM(isSaturated);
   ADD_SYM(allStrucZero);
   ADD_SYM(alongAllStrucZero);
@@ -2807,6 +2812,7 @@ R_init_demest(DllInfo *info)
   ADD_SYM(P);
   ADD_SYM(AEtaIntercept);
   ADD_SYM(AEtaCoef);
+  ADD_SYM(meanEtaCoef);
   ADD_SYM(UEtaCoef);
   ADD_SYM(nuEtaCoef);
   ADD_SYM(nSeason);

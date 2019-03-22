@@ -545,6 +545,97 @@ setMethod("fetchResults",
                   data
           })
 
+## NO_TESTS
+setMethod("fetchResults",
+          signature(object = "SkeletonMissingDataCMPNotUseExp"),
+          function(object, nameObject, filename, iterations,
+                   nIteration, lengthIter,
+                   impute = FALSE) {
+              data <- object@data
+              if (impute) {
+                  offsets.theta <- object@offsetsTheta
+                  offsets.nu <- object@offsetsNu
+                  if (is.null(iterations))
+                      iterations <- seq_len(nIteration)
+                  metadata <- data@metadata
+                  metadata <- dembase::addIterationsToMetadata(metadata,
+                                                               iterations = iterations)
+                  .Data <- array(data@.Data,
+                                 dim = dim(metadata),
+                                 dimnames = dimnames(metadata))
+                  mu <- getDataFromFile(filename = filename,
+                                        first = offsets.theta[1L],
+                                        last = offsets.theta[2L],
+                                        lengthIter = lengthIter,
+                                        iterations = iterations)
+                  nu <- getDataFromFile(filename = filename,
+                                        first = offsets.nu[1L],
+                                        last = offsets.nu[2L],
+                                        lengthIter = lengthIter,
+                                        iterations = iterations)
+                  n <- length(.Data)
+                  for (i in seq_len(n)) {
+                      if (is.na(.Data[i]))
+                          .Data[i] <- rcmp1(mu = mu[i],
+                                            nu = nu[i],
+                                            maxAttempt = 1000L,
+                                            useC = TRUE)
+                  }
+                  methods::new("Counts",
+                               .Data = .Data,
+                               metadata = metadata)
+              }
+              else
+                  data
+          })
+
+## NO_TESTS
+setMethod("fetchResults",
+          signature(object = "SkeletonMissingDataCMPUseExp"),
+          function(object, nameObject, filename, iterations,
+                   nIteration, lengthIter,
+                   impute = FALSE) {
+              data <- object@data
+              if (impute) {
+                  exposure <- object@exposure
+                  offsets.theta <- object@offsetsTheta
+                  offsets.nu <- object@offsetsNu
+                  exposure <- as.numeric(exposure)
+                  if (is.null(iterations))
+                      iterations <- seq_len(nIteration)
+                  metadata <- data@metadata
+                  metadata <- dembase::addIterationsToMetadata(metadata,
+                                                               iterations = iterations)
+                  .Data <- array(data@.Data,
+                                 dim = dim(metadata),
+                                 dimnames = dimnames(metadata))
+                  theta <- getDataFromFile(filename = filename,
+                                           first = offsets.theta[1L],
+                                           last = offsets.theta[2L],
+                                           lengthIter = lengthIter,
+                                           iterations = iterations)
+                  nu <- getDataFromFile(filename = filename,
+                                        first = offsets.nu[1L],
+                                        last = offsets.nu[2L],
+                                        lengthIter = lengthIter,
+                                        iterations = iterations)
+                  mu <- exposure * theta
+                  n <- length(.Data)
+                  for (i in seq_len(n)) {
+                      if (is.na(.Data[i]))
+                          .Data[i] <- rcmp1(mu = mu[i],
+                                            nu = nu[i],
+                                            maxAttempt = 1000L,
+                                            useC = TRUE)
+                  }
+                  methods::new("Counts",
+                               .Data = .Data,
+                               metadata = metadata)
+              }
+              else
+                  data
+          })
+
 ## HAS_TESTS
 setMethod("fetchResults",
           signature(object = "SkeletonMissingDataBinomial"),
@@ -792,7 +883,7 @@ setMethod("fetchResults",
                   exposure <- dembase::collapse(exposure, transform = transform)
                   is.missing <- is.na(.Data)
                   exposure <- exposure[is.missing]
-                  rounded <- dembase:::round3(exposure)
+                  rounded <- dembase::round3(exposure)
                   .Data[is.missing] <- rounded
                   methods::new("Counts", .Data = .Data, metadata = metadata)
               }

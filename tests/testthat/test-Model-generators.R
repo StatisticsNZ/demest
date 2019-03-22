@@ -3,7 +3,7 @@ context("Model-generators")
 
 n.test <- 5
 test.identity <- FALSE
-test.extended <- TRUE
+test.extended <- FALSE
 
 ## addAg ########################################################################
 
@@ -1163,8 +1163,8 @@ test_that("initialModel creates object of class PoissonVaryingUseExp from valid 
     x <- initialModel(spec, y = y, exposure = exposure)
     set.seed(1)
     theta <- rgamma(n = 20,
-                    shape = 0.5 * mean(y) + 0.5 * y,
-                    rate = 0.5 * mean(exposure) + 0.5 * exposure)
+                    y + 1,
+                    rate = exposure + 1)
     sigma <- runif(1, max = 1)
     theta <- array(theta, dim = dim(y), dimnames = dimnames(y))
     betas <- loglm(~ age + region, theta)$param
@@ -1205,8 +1205,8 @@ test_that("initialModel creates object of class PoissonVaryingUseExp from valid 
     x <- initialModel(spec, y = y, exposure = exposure)
     set.seed(1)
     theta <- rgamma(n = 20,
-                    shape = 0.5 * mean(y) + 0.5 * y,
-                    rate = 0.5 * mean(exposure) + 0.5 * exposure)
+                    shape = y + 1,
+                    rate = exposure + 1)
     sigma <- runif(1, max = 1)
     expect_identical(x@sigma, new("Scale", sigma))
     expect_identical(x@theta, theta)
@@ -1239,10 +1239,8 @@ test_that("initialModel creates object of class PoissonVaryingUseExp from valid 
     set.seed(1)
     mean.y <- mean(y[6:20])
     mean.expose <- mean(exposure[6:20])
-    shape <- 0.5 * mean.y + 0.5 * y
-    shape[1:5] <- mean.y
-    rate <- 0.5 * mean.expose + 0.5 * exposure
-    rate[1:5] <- mean.expose
+    shape <- ifelse(is.na(y), 1, y + 1)
+    rate <- ifelse(is.na(y), 1, exposure + 1)
     theta <- rgamma(n = 20, shape = shape, rate = rate)
     sigma <- runif(1)
     theta <- array(theta, dim = dim(y), dimnames = dimnames(y))
@@ -1310,8 +1308,8 @@ test_that("initialModel creates object of class PoissonVaryingNotUseExp from val
     x <- initialModel(spec, y = y, exposure = NULL)
     set.seed(1)
     theta <- rgamma(n = 20,
-                    shape = 0.5 * mean(y) + 0.5 * y,
-                    rate = 1)
+                    shape = y + 1,
+                    rate = 2)
     sigma <- runif(1, max = sd(log(y+1)))
     expect_is(x, "PoissonVaryingNotUseExp")
     expect_identical(x@sigma, new("Scale", sigma))
@@ -1333,8 +1331,8 @@ test_that("initialModel creates object of class PoissonVaryingNotUseExp from val
     x <- initialModel(spec, y = y, exposure = NULL)
     set.seed(1)
     theta <- rgamma(n = 20,
-                    shape = 0.5 * mean(y) + 0.5 * y,
-                    rate = 1)
+                    shape = y + 1,
+                    rate = 2)
     sigma <- runif(1, max = sd(log(y+1)))
     m <- mean(y)
     expect_identical(x@sigma, new("Scale", sigma))
@@ -1350,9 +1348,9 @@ test_that("initialModel creates object of class PoissonVaryingNotUseExp from val
     x <- initialModel(spec, y = y, exposure = NULL)
     set.seed(1)
     mean <- mean(y, na.rm = TRUE)
-    shape <- 0.5 * mean + 0.5 * y
-    shape[1:5] <- mean
-    theta <- rgamma(n = 20, shape = shape, rate = 1)
+    shape <- ifelse(is.na(y), 1, y + 1)
+    rate <- 2
+    theta <- rgamma(n = 20, shape = shape, rate = rate)
     sigma <- runif(1, max = sd(log(y+1), na.rm = T))
     expect_is(x, "PoissonVaryingNotUseExp")
     expect_identical(x@sigma, new("Scale", sigma))

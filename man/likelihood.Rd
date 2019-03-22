@@ -5,10 +5,14 @@
 \alias{Binomial}
 \alias{Normal}
 \alias{Poisson}
+\alias{CMP}
 \title{Specify first two levels of hierarchical model.}
 \usage{
 Poisson(formula, useExpose = TRUE, structuralZeros = NULL,
   boxcox = 0)
+
+CMP(formula, dispersion = Dispersion(), useExpose = TRUE,
+  structuralZeros = NULL, boxcox = 0)
 
 Binomial(formula)
 
@@ -25,6 +29,14 @@ exposure term. Defaults to \code{TRUE}.}
 \item{structuralZeros}{Location of any structural zeros
 in the data. An object of class \code{\link[dembase:Values-class]{Values}},
 or, for the typical case, the word \code{"diag"}.}
+
+\item{boxcox}{Parameter determining transformation of rates
+or counts used in Poisson or CMP models. Defaults to 0,
+implying that a log transform is used.}
+
+\item{dispersion}{The dispersion parameter for a CMP model.
+An object of class \code{\linkS4class{Dispersion}},
+typically created by a call to function \code{\link{Dispersion}}.}
 
 \item{sd}{Standard deviation in the likelihood for the
 normal model.  If a value is not supplied,
@@ -49,6 +61,14 @@ Specify a likelihood and prior of the form
 \deqn{y_i \sim Poisson(\gamma_i)}
 \deqn{log(\gamma_i) \sim N(x_i \beta, \sigma_i),}
 
+\deqn{y_i \sim CMP(\gamma_i n_i, \nu_i)}
+\deqn{log(\gamma_i) \sim N(x_i \beta, \sigma_i),}
+\deqn{log(\nu_i) \sim N(m, s^2)}
+
+\deqn{y_i \sim CMP(\gamma_i, \nu_i)}
+\deqn{log(\gamma_i) \sim N(x_i \beta, \sigma_i),}
+\deqn{log(\nu_i) \sim N(m, s^2)}
+
 \deqn{y_i \sim binomial(n_i, \gamma_i)}
 \deqn{logit(\gamma_i) \sim N(x_i \beta, \sigma_i),}
 or
@@ -59,7 +79,8 @@ Subscript \eqn{i} denotes a cell within a multiway array,
 such as an array with dimensions age, sex, and time.  In
 Poisson and binomial models, \eqn{y_i} is a count.
 The \eqn{n_i} term is an exposure in the case of Poisson
-models and a sample size in the case of binomial models.
+and CMP (COMPoisson) models and a
+sample size in the case of binomial models.
 It is not supplied in calls to function \code{Poisson}
 or \code{Binomial}.  In normal models \eqn{y_i}
 is a cell-specific value such as a mean,

@@ -3,7 +3,7 @@ context("Skeleton-methods")
 
 n.test <- 5
 test.identity <- FALSE
-test.extended <- TRUE
+test.extended <- FALSE
 
 
 ## classY ############################################################################
@@ -996,6 +996,141 @@ test_that("fetchResults works with object of class SkeletonMissingDataPoissonUse
     else
         expect_equal(ans.obtained, ans.expected)
 })
+
+test_that("fetchResults works with object of class SkeletonMissingDataCMPNotUseExp", {
+    fetchResults <- demest:::fetchResults
+    SkeletonMissingData <- demest:::SkeletonMissingData
+    Skeleton <- demest:::Skeleton
+    rcmp1 <- demest:::rcmp1
+    object <- Counts(array(c(1:5, NA),
+                           dim = 2:3,
+                           dimnames = list(sex = c("f", "m"),
+                               age = 0:2)))
+    model <- new("CMPVaryingNotUseExp")
+    outputModel <- list(likelihood = list(count = Skeleton(first = 1L, object = object),
+                                          dispersion = Skeleton(first = 7L, object = object)))
+    skeleton <- SkeletonMissingData(object = object,
+                                    model = model,
+                                    outputModel = outputModel,
+                                    exposure = NULL)
+    filename <- tempfile()
+    con <- file(filename, "wb")
+    results <- new("ResultsModelEst")
+    results <- serialize(results, connection = NULL)
+    size.results <- length(results)
+    writeBin(size.results, con)
+    writeBin(10L, con)
+    writeBin(results, con)
+    writeBin(as.double(1:1000), con)
+    close(con)
+    ## impute is FALSE
+    ans.obtained <- fetchResults(object = skeleton,
+                                 nameObject = "y",
+                                 filename = filename,
+                                 iterations = 1:10,
+                                 nIteration = 10L,
+                                 lengthIter = 100L,
+                                 impute = FALSE)
+    ans.expected <- object
+    expect_identical(ans.obtained, ans.expected)
+    ## impute is TRUE
+    set.seed(1)
+    ans.obtained <- fetchResults(object = skeleton,
+                                 nameObject = "y",
+                                 filename = filename,
+                                 iterations = 1:10,
+                                 nIteration = 10L,
+                                 lengthIter = 100L,
+                                 impute = TRUE)
+    set.seed(1)
+    ans.expected <- Counts(array(c(1:5, NA),
+                                 dim = c(2:3, 10),
+                                 dimnames = list(sex = c("f", "m"),
+                                     age = 0:2,
+                                     iteration = 1:10)))
+    mu <- seq.int(from = 6, by = 100, length = 10)
+    nu <- seq.int(from = 12, by = 100, length = 10)
+    for (i in 1:10)
+        ans.expected[ 2, 3, i] <- rcmp1(mu = as.numeric(mu[i]),
+                                       nu = as.numeric(nu[i]),
+                                       maxAttempt = 1000L,
+                                       useC = TRUE)
+    if (test.identity)
+        expect_identical(ans.obtained, ans.expected)
+    else
+        expect_equal(ans.obtained, ans.expected)
+})
+
+
+test_that("fetchResults works with object of class SkeletonMissingDataCMPUseExp", {
+    fetchResults <- demest:::fetchResults
+    SkeletonMissingData <- demest:::SkeletonMissingData
+    Skeleton <- demest:::Skeleton
+    rcmp1 <- demest:::rcmp1
+    object <- Counts(array(c(1:5, NA),
+                           dim = 2:3,
+                           dimnames = list(sex = c("f", "m"),
+                                           age = 0:2)))
+    exposure <- Counts(array(10,
+                             dim = 2:3,
+                             dimnames = list(sex = c("f", "m"),
+                                             age = 0:2)))
+    model <- new("CMPVaryingUseExp")
+    outputModel <- list(likelihood = list(rate = Skeleton(first = 1L, object = object),
+                                          dispersion = Skeleton(first = 7L, object = object)))
+    skeleton <- SkeletonMissingData(object = object,
+                                    model = model,
+                                    outputModel = outputModel,
+                                    exposure = exposure)
+    filename <- tempfile()
+    con <- file(filename, "wb")
+    results <- new("ResultsModelEst")
+    results <- serialize(results, connection = NULL)
+    size.results <- length(results)
+    writeBin(size.results, con)
+    writeBin(10L, con)
+    writeBin(results, con)
+    writeBin(as.double(1:1000), con)
+    close(con)
+    ## impute is FALSE
+    ans.obtained <- fetchResults(object = skeleton,
+                                 nameObject = "y",
+                                 filename = filename,
+                                 iterations = 1:10,
+                                 nIteration = 10L,
+                                 lengthIter = 100L,
+                                 impute = FALSE)
+    ans.expected <- object
+    expect_identical(ans.obtained, ans.expected)
+    ## impute is TRUE
+    set.seed(1)
+    ans.obtained <- fetchResults(object = skeleton,
+                                 nameObject = "y",
+                                 filename = filename,
+                                 iterations = 1:10,
+                                 nIteration = 10L,
+                                 lengthIter = 100L,
+                                 impute = TRUE)
+    set.seed(1)
+    ans.expected <- Counts(array(c(1:5, NA),
+                                 dim = c(2:3, 10),
+                                 dimnames = list(sex = c("f", "m"),
+                                                 age = 0:2,
+                                                 iteration = 1:10)))
+    mu <- seq.int(from = 6, by = 100, length = 10)
+    nu <- seq.int(from = 12, by = 100, length = 10)
+    for (i in 1:10)
+        ans.expected[ 2, 3, i] <- rcmp1(mu = as.numeric(mu[i]) * exposure[6],
+                                        nu = as.numeric(nu[i]),
+                                        maxAttempt = 1000L,
+                                        useC = TRUE)
+    if (test.identity)
+        expect_identical(ans.obtained, ans.expected)
+    else
+        expect_equal(ans.obtained, ans.expected)
+})
+
+
 
 test_that("fetchResults works with object of class SkeletonMissingDataBinomial", {
     fetchResults <- demest:::fetchResults

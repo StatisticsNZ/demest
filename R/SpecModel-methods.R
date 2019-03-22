@@ -1,5 +1,25 @@
 
-## modelUsesWeights
+
+## checkAndTidySimulatedYExposureWeights ##################################################
+
+## HAS_TESTS
+setMethod("checkAndTidySimulatedYExposureWeights",
+          signature(model = "SpecBinomialVarying"),
+          function(model, y, exposure, weights) {
+              warnSimulateModelIgnoresArg(arg = y,
+                                          argname = "y",
+                                          model = model)
+              warnSimulateModelIgnoresArg(arg = weights,
+                                          argname = "weights",
+                                          model = model)
+              checkSimulatedExposure(exposure)
+              y <- makeCountsY(exposure)
+              list(y = y,
+                   exposure = exposure)
+          })
+
+
+## modelUsesWeights  ######################################################################
 
 ## HAS_TESTS
 setMethod("modelUsesWeights",
@@ -132,20 +152,24 @@ setMethod("printSpecAgValEqns",
           signature(object = "SpecPoissonVarying",
                     aggregate = "SpecAggregate"),
           function(object, aggregate) {
+              use.expose <- object@useExpose@.Data
               cat("\n")
-              cat("       aggregate = sum(rate * weight)\n")
-              cat("           -------- or --------\n")
-              cat("       aggregate = sum(count * weight)")
+              if (use.expose)
+                  cat("       aggregate = sum(rate * weight)\n")
+              else
+                  cat("       aggregate = sum(count * weight)")
           })
 
 setMethod("printSpecAgValEqns",
           signature(object = "SpecPoissonVarying",
                     aggregate = "SpecAgFun"),
           function(object, aggregate) {
+              use.expose <- object@useExpose@.Data
               cat("\n")
-              cat("       aggregate = f(rate, weight)\n")
-              cat("          -------- or --------\n")
-              cat("       aggregate = f(count * weight)")
+              if (use.expose)
+                  cat("       aggregate = f(rate, weight)\n")
+              else
+                  cat("       aggregate = f(count * weight)")
           })
 
 setMethod("printSpecAgValEqns",
@@ -483,11 +507,12 @@ setMethod("stringScaleTheta",
           function(object) {
               scale <- object@scaleTheta@.Data
               series <- object@series@.Data
+              use.expose <- object@useExpose@.Data
               has.series <- !is.na(series)
-              if (has.series)
+              if (use.expose || has.series)
                   sprintf("    rate[i]: %s\n", scale)
               else
-                  sprintf("    rate[i] or count[i]: %s\n", scale)
+                  sprintf("    count[i]: %s\n", scale)
           })
 
 setMethod("stringScaleTheta",
@@ -511,11 +536,12 @@ setMethod("stringScaleTheta",
           function(object) {
               scale <- object@scaleTheta@.Data
               series <- object@series@.Data
+              use.expose <- object@useExpose@.Data
               has.series <- !is.na(series)
-              if (has.series)
+              if (use.expose || has.series)
                   sprintf("    rate[i]: %s\n", scale)
               else
-                  sprintf("    rate[i] or count[i]: %s\n", scale)
+                  sprintf("    count[i]: %s\n", scale)
           })
 
 setMethod("stringScaleTheta",

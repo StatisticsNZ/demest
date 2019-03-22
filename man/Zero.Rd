@@ -6,11 +6,8 @@
 \usage{
 Zero()
 }
-\arguments{
-\item{mean}{The mean of the prior distribution.  An object of}
-}
 \value{
-An object of class \code{\linkS4class{Zero}}.
+An object of class \code{\linkS4class{SpecZero}}.
 }
 \description{
 Specify a prior for a main effect or interaction in which 

@@ -3,7 +3,7 @@ context("SpecModel-generators")
 
 n.test <- 5
 test.identity <- FALSE
-test.extended <- TRUE
+test.extended <- FALSE
 
 
 test_that("Binomial works", {
@@ -112,19 +112,20 @@ test_that("Model works", {
     ans.expected <- new("SpecPoissonVarying",
                         call = call,
                         nameY = new("Name", "y"),
-                        ASigma = new("SpecScale", NA),
+                        ASigma = new("SpecScale", 1),
                         aggregate = new("SpecAgPlaceholder"),
                         formulaMu = mean ~ age * region + sex,
                         lower = 0,
                         upper = Inf,
                         tolerance = 1e-5,
                         maxAttempt = 1000L,
+                        multSigma = new("Scale", 1),
                         specsPriors = list(DLM(trend = NULL)),
                         namesSpecsPriors = "age",
                         nuSigma = new("DegreesFreedom", 7),
                         series = new("SpecName", NA),
                         scaleTheta = new("Scale", 0.1),
-                        sigmaMax = new("SpecScale", NA))
+                        sigmaMax = new("SpecScale", qhalft(0.999, df = 7, scale = 1)))
     if (test.identity)
         expect_identical(ans.obtained, ans.expected)
     else
@@ -145,12 +146,41 @@ test_that("Model works", {
                         upper = Inf,
                         tolerance = 1e-5,
                         maxAttempt = 1000L,
+                        multSigma = new("Scale", 1),
                         specsPriors = list(DLM(trend = NULL)),
                         namesSpecsPriors = "age",
                         nuSigma = new("DegreesFreedom", 7),
                         series = new("SpecName", "y"),
                         scaleTheta = new("Scale", 0.1),
                         sigmaMax = new("SpecScale", qhalft(0.999, 7, 1)))
+    if (test.identity)
+        expect_identical(ans.obtained, ans.expected)
+    else
+        expect_equal(ans.obtained, ans.expected)
+    ## Poisson,  no exposure
+    ans.obtained <- Model(y ~ Poisson(mean ~ age * region + sex, useExpose = FALSE),
+                          age ~ DLM(trend = NULL))
+    call <- call("Model",
+                 formula = y ~ Poisson(mean ~ age * region + sex, useExpose = FALSE),
+                 quote(age ~ DLM(trend = NULL)))
+    ans.expected <- new("SpecPoissonVarying",
+                        call = call,
+                        nameY = new("Name", "y"),
+                        ASigma = new("SpecScale", NA),
+                        aggregate = new("SpecAgPlaceholder"),
+                        formulaMu = mean ~ age * region + sex,
+                        lower = 0,
+                        upper = Inf,
+                        tolerance = 1e-5,
+                        maxAttempt = 1000L,
+                        multSigma = new("Scale", 1),
+                        specsPriors = list(DLM(trend = NULL)),
+                        namesSpecsPriors = "age",
+                        nuSigma = new("DegreesFreedom", 7),
+                        series = new("SpecName", NA),
+                        scaleTheta = new("Scale", 0.1),
+                        sigmaMax = new("SpecScale", as.numeric(NA)),
+                        useExpose = new("LogicalFlag", FALSE))
     if (test.identity)
         expect_identical(ans.obtained, ans.expected)
     else
@@ -375,6 +405,7 @@ test_that("SpecModel works with SpecLikelihoodNormalVarsigmaKnown", {
                         upper = Inf,
                         tolerance = 1e-5,
                         maxAttempt = 1000L,
+                        multSigma = new("Scale", 1),
                         specsPriors = list(Exch()),
                         namesSpecsPriors = "age",
                         nuSigma = new("DegreesFreedom", 7),
@@ -411,6 +442,7 @@ test_that("SpecModel works with SpecLikelihoodNormalVarsigmaKnown", {
                         upper = 10,
                         tolerance = 1e-5,
                         maxAttempt = 1000L,
+                        multSigma = new("Scale", 1),
                         specsPriors = list(DLM()),
                         namesSpecsPriors = "age",
                         nuSigma = new("DegreesFreedom", 5),
@@ -477,6 +509,7 @@ test_that("SpecModel works with SpecLikelihoodNormalVarsigmaUnknown", {
                         upper = Inf,
                         tolerance = 1e-5,
                         maxAttempt = 1000L,
+                        multSigma = new("Scale", 1),
                         specsPriors = list(Exch()),
                         namesSpecsPriors = "age",
                         nuSigma = new("DegreesFreedom", 7),
@@ -515,6 +548,7 @@ test_that("SpecModel works with SpecLikelihoodNormalVarsigmaUnknown", {
                         upper = 10,
                         tolerance = 1e-5,
                         maxAttempt = 1000L,
+                        multSigma = new("Scale", 1),
                         specsPriors = list(DLM()),
                         namesSpecsPriors = "age",
                         nuSigma = new("DegreesFreedom", 7),
@@ -576,20 +610,21 @@ test_that("SpecModel works with SpecLikelihoodPoisson", {
     ans.expected <- new("SpecPoissonVarying",
                         call = call,
                         nameY = new("Name", "y"),
-                        ASigma = new("SpecScale", NA),
+                        ASigma = new("SpecScale", 1),
                         aggregate = new("SpecAgPlaceholder"),
                         formulaMu = mean ~ age + sex,
                         lower = 0,
                         upper = Inf,
                         tolerance = 1e-5,
                         maxAttempt = 1000L,
+                        multSigma = new("Scale", 1),
                         specsPriors = list(Exch()),
                         structuralZeros = NULL,
                         namesSpecsPriors = "age",
                         nuSigma = new("DegreesFreedom", 7),
                         series = new("SpecName", as.character(NA)),
                         scaleTheta = new("Scale", 0.1),
-                        sigmaMax = new("SpecScale", NA))
+                        sigmaMax = new("SpecScale", qhalft(0.999, 7, 1)))
     if (test.identity)
         expect_identical(ans.obtained, ans.expected)
     else
@@ -619,6 +654,7 @@ test_that("SpecModel works with SpecLikelihoodPoisson", {
                         upper = 10,
                         tolerance = 1e-5,
                         maxAttempt = 1000L,
+                        multSigma = new("Scale", 1),
                         specsPriors = list(DLM()),
                         namesSpecsPriors = "age",
                         nuSigma = new("DegreesFreedom", 5),
@@ -655,6 +691,7 @@ test_that("SpecModel works with SpecLikelihoodPoisson", {
                         tolerance = 1e-5,
                         structuralZeros = structuralZeros,
                         maxAttempt = 1000L,
+                        multSigma = new("Scale", 1),
                         specsPriors = list(DLM()),
                         namesSpecsPriors = "age",
                         nuSigma = new("DegreesFreedom", 7),
@@ -885,7 +922,7 @@ test_that("SpecModel works with SpecTFixed", {
 ## Aggregate ###################################################################
 
 test_that("AgCertain works", {
-    Concordance <- classconc::Concordance
+    Concordance <- dembase::Concordance
     ans.obtained <- AgCertain(value = 4, weights = NULL)
     ans.expected <- new("SpecAgCertain",
                         metadataAg = NULL,
@@ -910,7 +947,7 @@ test_that("AgCertain works", {
 })
 
 test_that("AgNormal works", {
-    Concordance <- classconc::Concordance
+    Concordance <- dembase::Concordance
     ans.obtained <- AgNormal(value = 4, sd = 3, weights = NULL)
     ans.expected <- new("SpecAgNormal",
                         metadataAg = NULL,
@@ -943,7 +980,7 @@ test_that("AgNormal works", {
 })
 
 test_that("AgFun works", {
-    Concordance <- classconc::Concordance
+    Concordance <- dembase::Concordance
     FUN <- function(x, weights) sum(x)
     ans.obtained <- AgFun(value = 4, sd = 3, FUN = FUN)
     ans.expected <- new("SpecAgFun",
@@ -977,7 +1014,7 @@ test_that("AgFun works", {
 })
 
 test_that("AgLife works", {
-    Concordance <- classconc::Concordance
+    Concordance <- dembase::Concordance
     ## value is scalar
     ans.obtained <- AgLife(value = 80, sd = 3)
     ans.expected <- new("SpecAgLife",
@@ -1024,7 +1061,7 @@ test_that("AgLife works", {
 })
 
 test_that("AgPoisson works", {
-    Concordance <- classconc::Concordance
+    Concordance <- dembase::Concordance
     ans.obtained <- AgPoisson(value = 4)
     ans.expected <- new("SpecAgPoisson",
                         metadataAg = NULL,

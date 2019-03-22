@@ -40,7 +40,8 @@ be used in a call to \code{\link{estimateAccount}}.}
 The likelihood and, if the model has a second level,
 main effects and interactions from that level, are
 specified via functions such as \code{\link{Poisson}},
-\code{\link{Binomial}}, \code{\link{Normal}}, or
+\code{\link{CMP}}, \code{\link{Binomial}},
+\code{\link{Normal}}, or
 \code{\link{PoissonBinomial}}.  \code{Model} is used
 to specify the remaining parts of the model.
 }

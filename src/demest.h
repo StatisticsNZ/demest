@@ -203,7 +203,13 @@ SEXP
   hasAlphaICAR_sym,
   hasAlphaMix_sym,
   hasCovariates_sym,
+  hasAlphaKnown_sym,
+  hasMean_sym,
   hasSeason_sym,
+  isKnownUncertain_sym,
+  isNorm_sym,
+  isRobust_sym,
+  isZeroVar_sym,
   alphaDLM_sym,
   alphaICAR_sym,
   alphaMix_sym,
@@ -214,7 +220,6 @@ SEXP
   s_sym,
   UBeta_sym,
   nuBeta_sym,
-  isRobust_sym,
   isSaturated_sym,
   allStrucZero_sym,
   alongAllStrucZero_sym,
@@ -250,6 +255,7 @@ SEXP
   AEtaIntercept_sym,
   AEtaCoef_sym,
   nuEtaCoef_sym,
+  meanEtaCoef_sym,
   UEtaCoef_sym,
   nSeason_sym,
   ASeason_sym,
@@ -493,7 +499,7 @@ double dpoibin1(int x, int size, double prob, int use_log);
 double invlogit1(double x);
 int rcateg1(double* cumProb);
 double rhalftTrunc1(double df, double scale, double max);
-double rinvchisq1(double df, double scale);
+double rinvchisq1(double df, double scaleSq);
 
 SEXP rmvnorm1(SEXP mean_R, SEXP var_R);
 SEXP rmvnorm2(SEXP mean_R, SEXP var_R);

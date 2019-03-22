@@ -3,7 +3,7 @@ context("Combined-generators")
 
 n.test <- 5
 test.identity <- FALSE
-test.extended <- TRUE
+test.extended <- FALSE
 
 ## Assume that lower-level generator functions are working correctly.
 ## Only check that valid objects are created, and that the error-checking
@@ -253,8 +253,31 @@ test_that("initialCombinedModel gives apprioriate warnings and errors with class
                  "'y' has class \"Values\" : in a CMP model 'y' must have class \"Counts\"")
 })
 
+## CombinedModelPredct ############################################################
 
-## CombinedModel - Predict ############################################################
+test_that("initialCombinedModelSimulate creates object of class CombinedModelBinomial from valid inputs", {
+    initialCombinedModelSimulate <- demest:::initialCombinedModelSimulate
+    model <- Model(y ~ Binomial(mean ~ region),
+                   `(Intercept)` ~ ExchFixed(mean = -1, sd = 0.2),
+                   region ~ Exch(error = Error(scale = HalfT(scale = 0.3))),
+                   priorSD = HalfT(scale = 0.1))
+    exposure <- CountsOne(1:10, labels = letters[1:10], name = "region")
+    y <- CountsOne(rbinom(n = 10, size = 1:10, prob = 0.6),
+                   labels = letters[1:10],
+                   name = "region")
+    x <- initialCombinedModelSimulate(object = model,
+                                      y = y,
+                                      exposure = exposure,
+                                      weights = NULL)
+    expect_true(validObject(x))
+    expect_is(x, "CombinedModelBinomial")
+    expect_is(x@model, "BinomialVarying")
+    expect_true(all(is.na(x@y@.Data)))
+})
+
+
+
+## CombinedModelPredct ############################################################
 
 test_that("test that initialCombinedModelPredict works with with CombinedModelNormal", {
     initialCombinedModelPredict <- demest:::initialCombinedModelPredict
@@ -830,6 +853,100 @@ test_that("initialCombinedAccount creates object of class CombinedAccountMovemen
     expect_true(validObject(x))
     expect_is(x, "CombinedAccountMovementsHasAge")
 })
+
+
+
+test_that("initialCombinedAccountSimulate creates object of class CombinedAccountMovements from valid inputs", {
+    initialCombinedAccount <- demest:::initialCombinedAccount
+    initialCombinedAccountSimulate <- demest:::initialCombinedAccountSimulate
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    checkSystemModelsSuitableForSimulation <- demest:::checkSystemModelsSuitableForSimulation
+    checkDataModelsSuitableForSimulation <- demest:::checkDataModelsSuitableForSimulation
+    population <- CountsOne(values = seq(100, 200, 10),
+                            labels = seq(2000, 2100, 10),
+                            name = "time")
+    births <- CountsOne(values = rpois(n = 10, lambda = 15),
+                        labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
+                        name = "time")
+    deaths <- CountsOne(values = rpois(n = 10, lambda = 5),
+                        labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
+                        name = "time")
+    account <- Movements(population = population,
+                         births = births,
+                         exits = list(deaths = deaths))
+    account <- makeConsistent(account)
+    systemModels <- list(Model(population ~ Poisson(mean ~ time, useExpose = FALSE),
+                               `(Intercept)` ~ ExchFixed(mean = -1, sd = 1),
+                               time ~ DLM(level = NULL,
+                                          trend = Trend(initial = Initial(sd = 0.1),
+                                                        scale = HalfT(scale = 0.1)),
+                                          damp = NULL,
+                                          error = Error(scale = HalfT(scale = 0.1))),
+                               priorSD = HalfT(scale = 0.1)),
+                         Model(births ~ Poisson(mean ~ time),
+                               `(Intercept)` ~ ExchFixed(mean = -1, sd = 1),
+                               time ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
+                               priorSD = HalfT(scale = 0.1)),
+                         Model(deaths ~ Poisson(mean ~ time),
+                               `(Intercept)` ~ ExchFixed(mean = -1, sd = 1),
+                               time ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
+                               priorSD = HalfT(scale = 0.1)))
+    systemWeights <- rep(list(NULL), 3)
+    data.models <- list(Model(tax ~ Poisson(mean ~ time),
+                              `(Intercept)` ~ ExchFixed(mean = -1, sd = 1),
+                              time ~ DLM(level = NULL,
+                                          trend = Trend(initial = Initial(sd = 0.1),
+                                                        scale = HalfT(scale = 0.1)),
+                                          damp = NULL,
+                                          error = Error(scale = HalfT(scale = 0.1))),
+                               priorSD = HalfT(scale = 0.1),
+                              series = "deaths"),
+                        Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
+    seriesIndices <- c(2L, 0L)
+    datasets <- list(Counts(array(7L,
+                                  dim = 10,
+                                  dimnames = list(time = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-")))),
+                     Counts(array(seq.int(110L, 210L, 10L),
+                                  dim = 11,
+                                  dimnames = list(time = seq(2000, 2100, 10)))))
+    namesDatasets <- c("tax", "census")
+    transforms <- list(makeTransform(x = deaths, y = datasets[[1]], subset = TRUE),
+                       makeTransform(x = population, y = datasets[[2]], subset = TRUE))
+    transforms <- lapply(transforms, makeCollapseTransformExtra)
+    checkSystemModelsSuitableForSimulation(systemModels = systemModels,
+                                           account = account)
+    checkDataModelsSuitableForSimulation(dataModels = data.models,
+                                         datasets = datasets,
+                                         namesDatasets = namesDatasets)
+    x <- initialCombinedAccountSimulate(account = account,
+                                        systemModels = systemModels,
+                                        systemWeights = systemWeights,
+                                        dataModels = data.models,
+                                        seriesIndices = seriesIndices,
+                                        datasets = datasets,
+                                        namesDatasets = namesDatasets,
+                                        transforms = transforms)
+    expect_true(validObject(x))
+    expect_is(x, "CombinedAccountMovements")
+    expect_identical(x@systemModelsUseAg@.Data, FALSE)
+    expect_identical(x@dataModelsUseAg@.Data, FALSE)
+    ## add aggregate to model for births
+    systemModels[[2]] <- Model(births ~ Poisson(mean ~ time),
+                               `(Intercept)` ~ ExchFixed(mean = -1, sd = 1),
+                               time ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
+                               priorSD = HalfT(scale = 0.1),
+                               aggregate = AgCertain(1))
+    x <- initialCombinedAccountSimulate(account = account,
+                                        systemModels = systemModels,
+                                        systemWeights = systemWeights,
+                                        dataModels = data.models,
+                                        seriesIndices = seriesIndices,
+                                        datasets = datasets,
+                                        namesDatasets = namesDatasets,
+                                        transforms = transforms)
+    expect_identical(x@systemModelsUseAg@.Data, TRUE)
+})
+
 
 
 

@@ -1,5 +1,4 @@
 
-
 ## Generators for iterators
 
 ## Assume arguments correct because (i) functions only ever
@@ -84,7 +83,7 @@ setMethod("CohortIterator",
           function(object) {
               dim <- dim(object)
               dimtypes <- dembase::dimtypes(object, use.names = FALSE)
-              DimScales <- dembase:::DimScales(object, use.names = FALSE)
+              DimScales <- dembase::DimScales(object, use.names = FALSE)
               i.time <- match("time", dimtypes)
               i.age <- match("age", dimtypes, nomatch = 0L)
               i.triangle <- match("triangle", dimtypes, nomatch = 0L)
@@ -111,7 +110,7 @@ setMethod("CohortIterator",
           function(object) {
               dim <- dim(object)
               dimtypes <- dembase::dimtypes(object, use.names = FALSE)
-              DimScales <- dembase:::DimScales(object, use.names = FALSE)
+              DimScales <- dembase::DimScales(object, use.names = FALSE)
               i.time <- match("time", dimtypes)
               i.age <- match("age", dimtypes, nomatch = 0L)
               i.triangle <- match("triangle", dimtypes, nomatch = 0L)

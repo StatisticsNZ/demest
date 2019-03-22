@@ -911,7 +911,9 @@ updateEta(SEXP prior_R, double* beta, int J)
     
     double AEtaIntercept = *REAL(GET_SLOT(prior_R, AEtaIntercept_sym));
     
-    double *UEtaCoef= REAL(GET_SLOT(prior_R, UEtaCoef_sym)); /* length P-1 */
+    double *meanEtaCoef = REAL(GET_SLOT(prior_R, meanEtaCoef_sym)); /* length P-1 */
+
+    double *UEtaCoef = REAL(GET_SLOT(prior_R, UEtaCoef_sym)); /* length P-1 */
     
     double *v = (double *)R_alloc(J, sizeof(double));
 
@@ -1033,7 +1035,16 @@ updateEta(SEXP prior_R, double* beta, int J)
         PrintValue(mkString("eta_hat"));
         printDblArray(eta, P);
     #endif
-    
+
+
+    /* eta.hat[-1L] <- eta.hat[-1L] + mean.eta.coef / U.eta.coef */
+    /* Added by JB 24 December 2018                              */
+    for (int p = 0; p < P - 1; ++p) {
+
+      eta[p + 1] += meanEtaCoef[p] / UEtaCoef[p];
+      
+    }
+	
     /* g <- rnorm(n = P) */
     for (int p = 0; p < P; ++p) {
             
@@ -2351,19 +2362,18 @@ void
 updateUEtaCoef(SEXP prior_R)
 {
     int P = *INTEGER(GET_SLOT(prior_R, P_sym));
+    double *mean = REAL(GET_SLOT(prior_R, meanEtaCoef_sym)); /* length P-1 */
     double *U = REAL(GET_SLOT(prior_R, UEtaCoef_sym)); /* length P-1 */
-    double nu = *REAL(GET_SLOT(prior_R, nuEtaCoef_sym));
-    double A = *REAL(GET_SLOT(prior_R, AEtaCoef_sym));
+    double *nu = REAL(GET_SLOT(prior_R, nuEtaCoef_sym));
+    double *A = REAL(GET_SLOT(prior_R, AEtaCoef_sym));
     double *eta = REAL(GET_SLOT(prior_R, eta_sym));
     
-    double df = nu +1;
-    double nuTimesASq = nu * A * A;
-    
-    for (int p = 0; p <  P-1; ++p) {
-    
-        double eta_p = eta[p+1];
-        double scale = (nuTimesASq + eta_p*eta_p)/ df;
-        U[p] = rinvchisq1(df, scale);
+    for (int p = 0; p < P-1; ++p) {
+        double df_p = nu[p] + 1;
+        double nuTimesASq_p = nu[p] * A[p] * A[p];
+        double diff_p = eta[p+1] - mean[p];
+        double scaleSq_p = (nuTimesASq_p + diff_p * diff_p) / df_p;
+        U[p] = rinvchisq1(df_p, scaleSq_p);
     }
 }
 
@@ -2636,13 +2646,13 @@ updateUBeta(SEXP prior_R, double *beta, int J)
     double df = nu + 1;
     
     double nuTimesTauSq = nu * tau * tau;
-    double thisScale = 0;
+    double thisScaleSq = 0;
     
     for (int j = 0; j < J; ++j) {
     if (!allStrucZero[j]) {
         double diff = beta[j] - beta_hat[j];
-        thisScale = (nuTimesTauSq + diff*diff)/df;
-        U[j] = rinvchisq1(df, thisScale);
+        thisScaleSq = (nuTimesTauSq + diff*diff)/df;
+        U[j] = rinvchisq1(df, thisScaleSq);
         }
     }
 }
@@ -7062,48 +7072,6 @@ updateVarsigma(SEXP object, SEXP y_R)
         SET_DOUBLESCALE_SLOT(object, varsigma_sym, varsigma);
     }
 }
-
-
-/* /\* y_R is a demographic array, g'teed to be doubles *\/ */
-/* void */
-/* updateVarsigma(SEXP object, SEXP y_R) */
-/* { */
-/*     /\*  theta <- object@theta */
-/*         w <- object@w *\/ */
-
-/*     SEXP theta_R = GET_SLOT(object, theta_sym); */
-/*     double *theta = REAL(theta_R); */
-/*     int n_theta = LENGTH(theta_R); */
-
-/*     double *w = REAL(GET_SLOT(object, w_sym)); */
-
-/*     double *y = REAL(y_R); */
-/*     /\* n_theta and length of y_R and w are all identical *\/ */
-
-/*     double s_sq = 0.0; */
-/*     int n_obs = 0; */
-    
-/*     for (int i = 0; i < n_theta; ++i) { */
-        
-/*         double this_y = y[i]; */
-/*         int y_is_missing = (this_y == NA_REAL || ISNA(y[i])); */
-        
-/*         if ( !y_is_missing ) { */
-            
-/*             ++n_obs; */
-        
-/*             double y_minus_theta = this_y - theta[i]; */
-/*             s_sq += w[i] * y_minus_theta * y_minus_theta; */
-/*         } */
-/*     } */
-    
-/*     int df = n_obs - 1; */
-/*     s_sq /= df; */
-    
-/*     double varsigma = sqrt( rinvchisq1(df, s_sq) ); */
-    
-/*     SET_DOUBLESCALE_SLOT(object, varsigma_sym, varsigma); */
-/* } */
 
 
 /* *************************** updating counts *************************** */

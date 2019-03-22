@@ -82,10 +82,33 @@ setGeneric("castPopnOrSampled",
 
 setGeneric("castY",
            function(y, spec)
-           standardGeneric("castY"))
+               standardGeneric("castY"))
+
+setGeneric("checkAllDimensionsHavePriors",
+           function(model, y) {
+               NULL
+           })
+
+setGeneric("checkAndTidySimulatedYExposureWeights",
+           function(model, y = NULL, exposure = NULL, weights = NULL)
+               standardGeneric("checkAndTidySimulatedYExposureWeights"))
 
 setGeneric("checkForSubtotals",
            function(object, model, name = "y") {
+               NULL
+           })
+
+setGeneric("checkPriorIsInformative",
+           function(object)
+               standardGeneric("checkPriorIsInformative"))
+
+setGeneric("checkPriorsAreInformative",
+           function(object) {
+               NULL
+           })
+
+setGeneric("checkPriorSDInformative",
+           function(object) {
                NULL
            })
 
@@ -119,6 +142,10 @@ setGeneric("concatDimScaleFirstSecond",
 #' carried out on log-rates, and when building a binomial model,
 #' it is usually carried out on logit-proportions.
 #'
+#' Internally, \code{decomposition} calls function
+#' \code{\link[dembase]{pairToState}} on \code{object},
+#' to cope with origin-destination or parent-child dimensions.
+#'
 #' @param object An object of class \code{\link[dembase]{Values}}.
 #'
 #' @return A named list, the elements of which have class
@@ -144,6 +171,20 @@ setGeneric("decomposition",
            function(object)
                standardGeneric("decomposition"))
 
+setGeneric("describePrior",
+           function(object)
+               standardGeneric("describePrior"))
+
+## HAS_TESTS
+setGeneric("describePriorsModel",
+           function(object) {
+               NULL
+           })
+
+setGeneric("describePriorsResults",
+           function(object)
+               standardGeneric("describePriorsResults"))
+
 setGeneric("diffLogDensAccount",
            function(combined, useC = FALSE, useSpecific = FALSE)
                standardGeneric("diffLogDensAccount"))
@@ -151,6 +192,35 @@ setGeneric("diffLogDensAccount",
 setGeneric("diffLogLikAccount",
            function(object, useC = FALSE, useSpecific = FALSE)
                standardGeneric("diffLogLikAccount"))
+
+setGeneric("drawCombined",
+           function(object, nUpdate = 1L, useC = FALSE, useSpecific = FALSE)
+               standardGeneric("drawCombined"))
+
+setGeneric("drawDataModels",
+           function(combined)
+               standardGeneric("drawDataModels"))
+
+setGeneric("drawHyperParam",
+           function(model) {
+               model
+           })
+
+setGeneric("drawModelNotUseExp",
+           function(object, y, useC = FALSE, useSpecific = FALSE)
+               standardGeneric("drawModelNotUseExp"))
+
+setGeneric("drawModelUseExp",
+           function(object, y, exposure, useC = FALSE, useSpecific = FALSE)
+               standardGeneric("drawModelUseExp"))
+
+setGeneric("drawPrior",
+           function(prior, useC = FALSE, useSpecific = FALSE)
+               standardGeneric("drawPrior"))
+
+setGeneric("drawSystemModels",
+           function(combined)
+               standardGeneric("drawSystemModels"))
 
 setGeneric("drawYNonSampled",
            function(filename, model, nonsampled, iterations)
@@ -255,20 +325,6 @@ setGeneric("equivalentSample",
            function(mean, se, to = c("binomial", "Poisson"), epsilon = 1e-6)
                standardGeneric("equivalentSample"))
 
-setGeneric("fakeBeta",
-           function(object)
-               standardGeneric("fakeBeta"))
-
-#' @export
-setGeneric("fakeModel",
-           function(model, templateY, exposure = NULL,
-                    weights = NULL)
-               standardGeneric("fakeModel"))
-
-setGeneric("fakePrior",
-           function(object, metadata, isSaturated)
-               standardGeneric("fakePrior"))
-
 setGeneric("fetchResults",
            function(object, nameObject, filename, iterations,
                     nIteration, lengthIter, impute = FALSE) {
@@ -304,7 +360,14 @@ setGeneric("initialCombinedAccount",
                     dataModels, seriesIndices, 
                     datasets, namesDatasets, transforms,
                     dominant = c("Female", "Male"))
-           standardGeneric("initialCombinedAccount"))
+               standardGeneric("initialCombinedAccount"))
+
+setGeneric("initialCombinedAccountSimulate",
+          function(account, systemModels, systemWeights,
+                   dataModels, seriesIndices, 
+                   datasets, namesDatasets, transforms,
+                   dominant = c("Female", "Male"))
+              standardGeneric("initialCombinedAccountSimulate"))
 
 setGeneric("initialCombinedCounts",
            function(object, y, exposure, dataModels, datasets,
@@ -318,12 +381,16 @@ setGeneric("initialCombinedCountsPredict",
 
 setGeneric("initialCombinedModel",
            function(object, y, exposure, weights)
-           standardGeneric("initialCombinedModel"))
+               standardGeneric("initialCombinedModel"))
 
 setGeneric("initialCombinedModelPredict",
            function(combined, along, labels, n, covariates,
                     aggregate, lower, upper, yIsCounts = TRUE)
           standardGeneric("initialCombinedModelPredict"))
+
+setGeneric("initialCombinedModelSimulate",
+           function(object, y, exposure, weights)
+           standardGeneric("initialCombinedModelSimulate"))
 
 setGeneric("initialModel",
            function(object, y, exposure, weights)
@@ -361,10 +428,6 @@ setGeneric("makeCellInLik",
                }
                model
            })
-
-setGeneric("makeFakeOutputPrior",
-           function(prior, metadata)
-               standardGeneric("makeFakeOutputPrior"))
 
 setGeneric("makeTransformExpToComp",
            function(exposure, component, nameComponent)
@@ -533,36 +596,40 @@ setGeneric("updateValuesAccount",
            function(combined, useC = FALSE, useSpecific = FALSE)
                standardGeneric("updateValuesAccount"))
 
+setGeneric("usesExposure",
+           function(object)
+               standardGeneric("usesExposure"))
+
 setGeneric("whereAcceptance",
            function(object)
-           standardGeneric("whereAcceptance"))
+               standardGeneric("whereAcceptance"))
 
 setGeneric("whereAutocorr",
            function(object)
-           standardGeneric("whereAutocorr"))
+               standardGeneric("whereAutocorr"))
 
 setGeneric("whereEstimated",
            function(object)
-           standardGeneric("whereEstimated"))
+               standardGeneric("whereEstimated"))
 
 setGeneric("whereFiniteSD",
            function(object)
-           standardGeneric("whereFiniteSD"))
+               standardGeneric("whereFiniteSD"))
 
 setGeneric("whereJump",
            function(object)
-           standardGeneric("whereJump"))
+               standardGeneric("whereJump"))
 
 setGeneric("whereMetropStat",
            function(object, FUN)
-           standardGeneric("whereMetropStat"))
+               standardGeneric("whereMetropStat"))
 
 setGeneric("whereNoProposal",
            function(object)
-           standardGeneric("whereNoProposal"))
+               standardGeneric("whereNoProposal"))
 
 setGeneric("whereTheta",
            function(object)
-           standardGeneric("whereTheta"))
+               standardGeneric("whereTheta"))
 
 

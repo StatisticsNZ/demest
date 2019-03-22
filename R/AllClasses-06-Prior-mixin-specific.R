@@ -86,8 +86,17 @@ setClass("ADelta0Mixin",
          contains = "VIRTUAL")
 
 setClass("AEtaCoefMixin",
-         slots = c(AEtaCoef = "Scale"),
-         contains = "VIRTUAL")
+         slots = c(AEtaCoef = "ScaleVec"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             P <- object@P@.Data
+             AEtaCoef <- object@AEtaCoef
+             ## 'AEtaCoef' has length P-1
+             if (!identical(length(AEtaCoef), P - 1L))
+                 return(gettextf("'%s' does not have length %s-1",
+                                 "AEtaCoef", "P"))
+             TRUE
+         })
 
 setClass("AEtaInterceptMixin",
          slots = c(AEtaIntercept = "Scale"),
@@ -516,11 +525,13 @@ setClass("HasCovariatesMixin",
          slots = c(hasCovariates = "LogicalFlag"),
          contains = "VIRTUAL")
 
+setClass("HasAlphaKnownMixin",
+         slots = c(hasAlphaKnown = "LogicalFlag"),
+         contains = "VIRTUAL")
 
 setClass("HasLevelMixin",
          slots = c(hasLevel = "LogicalFlag"),
          contains = "VIRTUAL")
-
 
 ## setClass("HasLevelMixin",
 ##          slots = c(hasLevel = "LogicalFlag"),
@@ -546,6 +557,10 @@ setClass("HasLevelMixin",
 ##              }
 ##              TRUE
 ##          })             
+
+setClass("HasMeanMixin",
+         slots = c(hasMean = "LogicalFlag"),
+         contains = "VIRTUAL")
 
 setClass("HasSeasonMixin",
          slots = c(hasSeason = "LogicalFlag"),
@@ -663,6 +678,14 @@ setClass("InfantMixin",
          slots = c(infant = "LogicalFlag"),
          contains = "VIRTUAL")
 
+setClass("IsKnownUncertainMixin",
+         slots = c(isKnownUncertain = "LogicalFlag"),
+         contains = "VIRTUAL")
+
+setClass("IsNormMixin",
+         slots = c(isNorm = "LogicalFlag"),
+         contains = "VIRTUAL")
+
 setClass("IsRobustMixin",
          slots = c(isRobust = "LogicalFlag"),
          contains = "VIRTUAL",
@@ -678,6 +701,10 @@ setClass("IsRobustMixin",
 
 setClass("IsSaturatedMixin",
          slots = c(isSaturated = "LogicalFlag"),
+         contains = "VIRTUAL")
+
+setClass("IsZeroVarMixin",
+         slots = c(isZeroVar = "LogicalFlag"),
          contains = "VIRTUAL")
 
 setClass("IteratorProdVectorMix",
@@ -1018,8 +1045,21 @@ setClass("MeanMixin",
 
 setClass("MeanDelta0Mixin",
          slots = c(meanDelta0 = "Parameter"),
-         prototype = prototype(meanDelta0 = new("Parameter", 0)),
+         prototype = prototype(meanDelta0 = methods::new("Parameter", 0)),
          contains = "VIRTUAL")
+
+setClass("MeanEtaCoefMixin",
+         slots = c(meanEtaCoef = "ParameterVector"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             meanEtaCoef <- object@meanEtaCoef
+             AEtaCoef <- object@AEtaCoef@.Data
+             ## 'meanEtaCoef' has same length as 'AEtaCoef'
+             if (!identical(length(meanEtaCoef), length(AEtaCoef)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "meanEtaCoef", "AEtaCoef"))
+             TRUE
+         })
 
 setClass("MetadataMixin",
          slots = c(metadata = "MetaData"),
@@ -1049,7 +1089,7 @@ setClass("MetadataAllMixin",
 ## 'mu' in notes
 setClass("MeanLevelComponentWeightMixMixin",
          slots = c(meanLevelComponentWeightMix = "Parameter"),
-         prototype = prototype(meanLevelComponentWeightMix = new("Parameter", 0)),
+         prototype = prototype(meanLevelComponentWeightMix = methods::new("Parameter", 0)),
          contains = "VIRTUAL")
 
 setClass("MultMixin",
@@ -1073,8 +1113,17 @@ setClass("MultDelta0Mixin",
          contains = "VIRTUAL")
 
 setClass("MultEtaCoefMixin",
-         slots = c(multEtaCoef = "Scale"),
-         contains = "VIRTUAL")
+         slots = c(multEtaCoef = "ScaleVec"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             multEtaCoef <- object@multEtaCoef
+             AEtaCoef <- object@AEtaCoef@.Data
+             ## 'multEtaCoef' has same length as 'AEtaCoef'
+             if (!identical(length(multEtaCoef), length(AEtaCoef)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "multEtaCoef", "AEtaCoef"))
+             TRUE
+         })
 
 setClass("MultLevelComponentWeightMixMixin",
          slots = c(multLevelComponentWeightMix = "Scale"),
@@ -1142,8 +1191,17 @@ setClass("NuDeltaMixin",
          contains = "VIRTUAL")
 
 setClass("NuEtaCoefMixin",
-         slots = c(nuEtaCoef = "DegreesFreedom"),
-         contains = "VIRTUAL")
+         slots = c(nuEtaCoef = "DegreesFreedomVector"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             nuEtaCoef <- object@nuEtaCoef
+             AEtaCoef <- object@AEtaCoef@.Data
+             ## 'nuEtaCoef' has same length as 'AEtaCoef'
+             if (!identical(length(nuEtaCoef), length(AEtaCoef)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "nuEtaCoef", "AEtaCoef"))
+             TRUE
+         })
 
 setClass("NuLevelComponentWeightMixMixin",
          slots = c(nuLevelComponentWeightMix = "DegreesFreedom"),
@@ -1383,13 +1441,13 @@ setClass("PosProdVectorsMixMixin",
 ## 'mu0' in notes
 setClass("PriorMeanLevelComponentWeightMixMixin",
          slots = c(priorMeanLevelComponentWeightMix = "Parameter"),
-         prototype = prototype(priorMeanLevelComponentWeightMix = new("Parameter", 0)),
+         prototype = prototype(priorMeanLevelComponentWeightMix = methods::new("Parameter", 0)),
          contains = "VIRTUAL")
 
 ## 'sigma0' in notes
 setClass("PriorSDLevelComponentWeightMixMixin",
          slots = c(priorSDLevelComponentWeightMix = "Scale"),
-         prototype = prototype(prorSDLevelComponentWeightMix = new("Scale", 1)),
+         prototype = prototype(prorSDLevelComponentWeightMix = methods::new("Scale", 1)),
          contains = "VIRTUAL")
 
 setClass("ProdVectorsMixMixin",
@@ -1481,7 +1539,7 @@ setClass("RSeasonMixin",
 
 setClass("SDMeanLogNuCMPMixin",
          slots = c(sdMeanLogNuCMP = "Scale"),
-         prototype = prototype(sdMeanLogNuCMP = new("Scale", 1)),
+         prototype = prototype(sdMeanLogNuCMP = methods::new("Scale", 1)),
          contains = "VIRTUAL")
 
 
@@ -1537,11 +1595,7 @@ setClass("SpecADelta0Mixin",
          contains = "VIRTUAL")
 
 setClass("SpecAEtaCoefMixin",
-         slots = c(AEtaCoef = "SpecScale"),
-         contains = "VIRTUAL")
-
-setClass("SpecAEtaInterceptMixin",
-         slots = c(AEtaIntercept = "SpecScale"),
+         slots = c(AEtaCoef = "SpecScaleVec"),
          contains = "VIRTUAL")
 
 setClass("SpecALevelComponentWeightMixMixin",
@@ -1666,7 +1720,7 @@ setClass("TauMixin",
 
 setClass("ToleranceMixin",
          slots = c(tolerance = "Parameter"),
-         prototype = prototype(tolerance = new("Parameter", 1e-5)),
+         prototype = prototype(tolerance = methods::new("Parameter", 1e-5)),
          contains = "VIRTUAL",
          validity = function(object) {
              tolerance <- object@tolerance@.Data
@@ -1833,7 +1887,7 @@ setClass("YXXXMixMixin",
              indexClassMaxMix <- object@indexClassMaxMix@.Data
              ## yXMix, XXMix have length 'indexClassMaxMix'
              for (name in c("yXMix", "XXMix")) {
-                 value <- slot(object, name)
+                 value <- methods::slot(object, name)
                  value <- value@.Data
                  if (!identical(length(value), indexClassMaxMix))
                      return(gettextf("'%s' does not have length '%s'",

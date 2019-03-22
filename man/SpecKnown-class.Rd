@@ -3,9 +3,11 @@
 \docType{class}
 \name{SpecKnown-class}
 \alias{SpecKnown-class}
+\alias{SpecKnownCertain-class}
+\alias{SpecKnownUncertain-class}
 \title{A S4 class to specify a Known prior.}
 \description{
-An object of class \code{SpecExchFixed} specifies
+An object of class \code{SpecKnown} specifies
 a prior in which
   parameter[j] ~ N(mean[j], sd[j]^2),
 where sd[j] can be 0. For details, see the documentation

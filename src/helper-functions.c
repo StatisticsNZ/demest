@@ -82,7 +82,7 @@ getMu(double *mu, int n, SEXP betas_R, SEXP iterator_R)
 /*** RANDOM VARIATES ********************************************************* */
 /* *************************************************************************** */
 
-double
+double 
 dpoibin1(int x, int size, double prob, int use_log)
 {
     double lambda = (1 - prob) * size;
@@ -165,11 +165,14 @@ rhalftTrunc1(double df, double scale, double max)
 }
 
 double
-rinvchisq1(double df, double scale)
+rinvchisq1(double df, double scaleSq)
 {
+  if (scaleSq > 0) {
     double x = rgamma(df / 2.0, 2.0);
-    
-    return df * scale / x;
+    return df * scaleSq / x;
+  }
+  else
+    return 0;
 }
 
 SEXP
@@ -619,15 +622,19 @@ int intersect(int* intersect, int nIntersect,
 void
 betaHat(double *beta_hat, SEXP prior_R, int J)
 {
+    int hasMean = *LOGICAL(GET_SLOT(prior_R, hasMean_sym));
     int hasAlphaDLM = *LOGICAL(GET_SLOT(prior_R, hasAlphaDLM_sym));
     int hasAlphaICAR = *LOGICAL(GET_SLOT(prior_R, hasAlphaICAR_sym));
     int hasAlphaMix = *LOGICAL(GET_SLOT(prior_R, hasAlphaMix_sym));
     int hasCovariates = *LOGICAL(GET_SLOT(prior_R, hasCovariates_sym));
     int hasSeason = *LOGICAL(GET_SLOT(prior_R, hasSeason_sym));
+    int hasAlphaKnown = *LOGICAL(GET_SLOT(prior_R, hasAlphaKnown_sym));
     
     memset(beta_hat, 0, J * sizeof(double));
     
     #ifdef DEBUGGING
+    PrintValue(mkString("hasMean"));
+    PrintValue(ScalarLogical(hasMean));
     PrintValue(mkString("hasAlphaDLM"));
     PrintValue(ScalarLogical(hasAlphaDLM));
     PrintValue(mkString("hasAlphaICAR"));
@@ -636,12 +643,18 @@ betaHat(double *beta_hat, SEXP prior_R, int J)
     PrintValue(ScalarLogical(hasCovariates));
     PrintValue(mkString("hasSeason"));
     PrintValue(ScalarLogical(hasSeason));
+    PrintValue(mkString("hasAlphaKnown"));
+    PrintValue(ScalarLogical(hasAlphaKnown));
     #endif
     
+    if(hasMean) {
+        betaHat_MeanInternal(beta_hat, prior_R, J);
+    }
+
     if(hasAlphaDLM) {
         betaHat_AlphaDLMInternal(beta_hat, prior_R, J);
     }
-
+    
     if(hasAlphaICAR) {
         betaHat_AlphaICARInternal(beta_hat, prior_R, J);
     }
@@ -657,7 +670,25 @@ betaHat(double *beta_hat, SEXP prior_R, int J)
     if(hasSeason) {
         betaHat_SeasonInternal(beta_hat, prior_R, J);
     }   
+
+    if(hasAlphaKnown) {
+        betaHat_AlphaKnownInternal(beta_hat, prior_R, J);
+    }   
 }
+
+
+void
+betaHat_MeanInternal(double *beta_hat, SEXP prior_R, int J)
+{
+    double *mean = REAL(GET_SLOT(prior_R, mean_sym));
+    
+    for (int j = 0; j < J; ++j) {
+        
+        beta_hat[j] += mean[j]; 
+        
+    }
+}
+
 
 void
 betaHat_AlphaDLMInternal(double *beta_hat, SEXP prior_R, int J)
@@ -771,6 +802,20 @@ betaHat_SeasonInternal(double *beta_hat, SEXP prior_R, int J)
         advanceA(iteratorV);
     }
 }
+
+
+void
+betaHat_AlphaKnownInternal(double *beta_hat, SEXP prior_R, int J)
+{
+    double *alpha = REAL(GET_SLOT(prior_R, alphaKnown_sym));
+    
+    for (int j = 0; j < J; ++j) {
+        
+        beta_hat[j] += alpha[j]; 
+        
+    }
+}
+
 
 void
 betaHatAlphaDLM(double *beta_hat, SEXP prior_R, int J)
@@ -1185,19 +1230,35 @@ getV_R(SEXP prior_R)
 void
 getV_Internal(double *V, SEXP prior_R, int J)
 {
+    int isNorm = *INTEGER(GET_SLOT(prior_R, isNorm_sym));
     int isRobust = *INTEGER(GET_SLOT(prior_R, isRobust_sym));
-    
-    if (isRobust) {
-        double *UBeta = REAL(GET_SLOT(prior_R, UBeta_sym));
-        memcpy(V, UBeta, J*sizeof(double));
-    }
-    else {
-    
+    int isKnownUncertain = *INTEGER(GET_SLOT(prior_R, isKnownUncertain_sym));
+    int isZeroVar = *INTEGER(GET_SLOT(prior_R, isZeroVar_sym));
+
+    if (isNorm) {
         double tau = *REAL(GET_SLOT(prior_R, tau_sym));
         double tauSq = tau*tau;
         for (int j = 0; j < J; ++j) {
             V[j] = tauSq;
         }
+    }
+    else if (isRobust) {
+        double *UBeta = REAL(GET_SLOT(prior_R, UBeta_sym));
+        memcpy(V, UBeta, J*sizeof(double));
+    }
+    else if (isKnownUncertain) {
+        double *A = REAL(GET_SLOT(prior_R, AKnownVec_sym));
+        for (int j = 0; j < J; ++j) {
+            V[j] = A[j] * A[j];
+	}
+    }
+    else if (isZeroVar) {
+        for (int j = 0; j < J; ++j) {
+  	    V[j] = 0;
+	}
+    }
+    else {
+        error("unable to calculate variances for this prior");
     }
 }
 
@@ -2216,12 +2277,12 @@ predictUBeta(SEXP prior_R)
     
     double *U = REAL(GET_SLOT(prior_R, UBeta_sym));
     
-    double scale = tau*tau;
+    double scaleSq = tau*tau;
     
     for (int j = 0; j < J; ++j) {
-    if (!allStrucZero[j]) {
-        U[j] = rinvchisq1(nu, scale);
-    }
+      if (!allStrucZero[j]) {
+        U[j] = rinvchisq1(nu, scaleSq);
+      }
     }
 }
 
