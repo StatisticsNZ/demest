@@ -5,7 +5,7 @@ Date: 2019-03-20
 Authors@R: c(
     person(given = "John",
            family = "Bryant",
-	         email = "john.bryant@stats.govt.nz",
+	         email = "john.r.bryant@gmail.com",
 	         role = c("cre", "aut")),
     person(given = "Jenny",
            family = "Harlow",

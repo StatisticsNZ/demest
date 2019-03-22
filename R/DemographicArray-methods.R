@@ -410,6 +410,7 @@ setMethod("decomposition",
               if (any(is.infinite(object)))
                   stop(gettextf("'%s' has non-finite values",
                                 "object"))
+              object <- dembase::pairToState(object)
               dim <- dim(object)
               .Data <- object@.Data
               metadata <- object@metadata
@@ -426,8 +427,8 @@ setMethod("decomposition",
                                      dim = dim(metadata),
                                      dimnames = dimnames(metadata))
                       methods::new("Values",
-                          .Data = .Data,
-                          metadata = metadata)
+                                   .Data = .Data,
+                                   metadata = metadata)
                   }
                   means <- mapply(makeValObj,
                                   .Data = means,
@@ -572,7 +573,6 @@ setMethod("makeTransformExpToComp",
                                dimAfter = dim.births)
               }
           })
-
 
 
         

@@ -142,6 +142,10 @@ setGeneric("concatDimScaleFirstSecond",
 #' carried out on log-rates, and when building a binomial model,
 #' it is usually carried out on logit-proportions.
 #'
+#' Internally, \code{decomposition} calls function
+#' \code{\link[dembase]{pairToState}} on \code{object},
+#' to cope with origin-destination or parent-child dimensions.
+#'
 #' @param object An object of class \code{\link[dembase]{Values}}.
 #'
 #' @return A named list, the elements of which have class
