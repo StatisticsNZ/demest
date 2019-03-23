@@ -221,6 +221,7 @@ test_that("drawModelNotUseExp works with NormalVaryingVarsigmaUnknown", {
     drawPriors <- demest:::drawPriors
     drawBetas <- demest:::drawBetas
     drawSigma_Varying <- demest:::drawSigma_Varying
+    drawVarsigma <- demest:::drawVarsigma
     updateTheta_NormalVarying <- demest:::updateTheta_NormalVarying
     spec <- Model(y ~ Normal(mean ~ age + sex, priorSD = HalfT(scale = 0.05)),
                   `(Intercept)` ~ ExchFixed(sd = 10), 
@@ -4401,6 +4402,7 @@ test_that("updateModelNotUseExp for CMPVaryingNotUseExp updates the correct slot
             if (!is(x1@priorsBetas[[b]], "ExchFixed"))
                 expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
         }
+        expect_false(identical(x1@mu, x0@mu))
         for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
                        "scaleTheta", "iteratorBetas", "dims"))
             expect_identical(slot(x1, name), slot(x0, name))
@@ -4448,6 +4450,7 @@ test_that("updateModelNotUseExp for NormalVaryingVarsigmaKnown with sd = 0 updat
         set.seed(seed + 1)
         x1 <- updateModelNotUseExp(x0, y = y, useC = FALSE)
         expect_true(all(x1@theta == x0@theta))
+        expect_true(all(x1@mu != x0@mu))
         expect_true(x1@sigma != x0@sigma)
         for (b in seq_along(x1@betas)) {
             expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
@@ -4509,6 +4512,7 @@ test_that("updateModelNotUseExp for NormalVaryingVarsigmaKnown updates the corre
         set.seed(seed + 1)
         x1 <- updateModelNotUseExp(x0, y = y, useC = FALSE)
         expect_true(all(x1@theta != x0@theta))
+        expect_true(all(x1@mu != x0@mu))
         expect_true(x1@sigma != x0@sigma)
         for (b in seq_along(x1@betas)) {
             expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
@@ -4569,6 +4573,7 @@ test_that("updateModelNotUseExp for NormalVaryingVarsigmaUnknown updates the cor
         set.seed(seed + 1)
         x1 <- updateModelNotUseExp(x0, y = y, useC = FALSE)
         expect_true(all(x1@theta != x0@theta))
+        expect_true(all(x1@mu != x0@mu))
         expect_true(x1@sigma != x0@sigma)
         expect_true(x1@varsigma != x0@varsigma)
         for (b in seq_along(x1@betas)) {
@@ -4638,6 +4643,7 @@ test_that("updateModelNotUseExp for PoissonVaryingNotUseExp updates the correct 
             if (!is(x1@priorsBetas[[b]], "ExchFixed"))
                 expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
         }
+        expect_true(all(x1@mu != x0@mu))
         for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
                        "scaleTheta", "iteratorBetas", "dims"))
             expect_identical(slot(x1, name), slot(x0, name))
@@ -4697,6 +4703,7 @@ test_that("updateModelNotUseExp for NormalVaryingVarsigmaKnownAgCertain updates 
             if (!is(x1@priorsBetas[[b]], "ExchFixed"))
                 expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
         }
+        expect_true(all(x1@mu != x0@mu))
         for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
                        "iteratorBetas", "dims"))
             expect_identical(slot(x1, name), slot(x0, name))
@@ -4751,6 +4758,7 @@ test_that("updateModelNotUseExp for NormalVaryingVarsigmaUnknownAgCertain update
             if (!is(x1@priorsBetas[[b]], "ExchFixed"))
                 expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
         }
+        expect_true(all(x1@mu != x0@mu))
         for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
                        "iteratorBetas",  "dims"))
             expect_identical(slot(x1, name), slot(x0, name))
@@ -4805,6 +4813,7 @@ test_that("updateModelNotUseExp for PoissonVaryingNotUseExpAgCertain updates the
             if (!is(x1@priorsBetas[[b]], "ExchFixed"))
                 expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
         }
+        expect_true(all(x1@mu != x0@mu))
         for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
                        "scaleTheta", "iteratorBetas", "dims"))
             expect_identical(slot(x1, name), slot(x0, name))
@@ -4860,6 +4869,7 @@ test_that("updateModelNotUseExp for NormalVaryingVarsigmaKnownAgNormal updates t
             if (!is(x1@priorsBetas[[b]], "ExchFixed"))
                 expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
         }
+        expect_true(all(x1@mu != x0@mu))
         for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
                        "iteratorBetas", "dims"))
             expect_identical(slot(x1, name), slot(x0, name))
@@ -4914,6 +4924,7 @@ test_that("updateModelNotUseExp for NormalVaryingVarsigmaUnknownAgNormal updates
             if (!is(x1@priorsBetas[[b]], "ExchFixed"))
                 expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
         }
+        expect_true(all(x1@mu != x0@mu))
         for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
                        "iteratorBetas", "dims"))
             expect_identical(slot(x1, name), slot(x0, name))
@@ -4972,6 +4983,7 @@ test_that("updateModelNotUseExp for NormalVaryingVarsigmaKnownAgFun updates the 
             if (!is(x1@priorsBetas[[b]], "ExchFixed"))
                 expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
         }
+        expect_true(all(x1@mu != x0@mu))
         for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
                        "iteratorBetas", "dims"))
             expect_identical(slot(x1, name), slot(x0, name))
@@ -5031,6 +5043,7 @@ test_that("updateModelNotUseExp for NormalVaryingVarsigmaUnknownAgFun updates th
             if (!is(x1@priorsBetas[[b]], "ExchFixed"))
                 expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
         }
+        expect_true(all(x1@mu != x0@mu))
         for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
                        "iteratorBetas", "dims"))
             expect_identical(slot(x1, name), slot(x0, name))
@@ -5087,6 +5100,7 @@ test_that("updateModelNotUseExp for PoissonVaryingNotUseExpAgNormal updates the 
             if (!is(x1@priorsBetas[[b]], "ExchFixed"))
                 expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
         }
+        expect_true(all(x1@mu != x0@mu))
         for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
                        "scaleTheta", "iteratorBetas", "dims"))
             expect_identical(slot(x1, name), slot(x0, name))
@@ -5144,6 +5158,7 @@ test_that("updateModelNotUseExp for PoissonVaryingNotUseExpAgFun updates the cor
             if (!is(x1@priorsBetas[[b]], "ExchFixed"))
                 expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
         }
+        expect_true(all(x1@mu != x0@mu))
         for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
                        "scaleTheta", "iteratorBetas", "dims"))
             expect_identical(slot(x1, name), slot(x0, name))
@@ -5200,6 +5215,7 @@ test_that("updateModelNotUseExp for PoissonVaryingNotUseExpAgPoisson updates the
             if (!is(x1@priorsBetas[[b]], "ExchFixed"))
                 expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
         }
+        expect_true(all(x1@mu != x0@mu))
         for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
                        "scaleTheta", "iteratorBetas", "dims"))
             expect_identical(slot(x1, name), slot(x0, name))
@@ -5347,6 +5363,7 @@ test_that("updateModelUseExp for BinomialVarying updates the correct slots", {
             if (!is(x1@priorsBetas[[b]], "ExchFixed"))
                 expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
         }
+        expect_false(identical(x1@mu, x0@mu))
         for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
                        "scaleTheta", "iteratorBetas", "dims"))
             expect_identical(slot(x1, name), slot(x0, name))
@@ -5409,6 +5426,7 @@ test_that("updateModelUseExp for CMPVaryingUseExp updates the correct slots", {
             if (!is(x1@priorsBetas[[b]], "ExchFixed"))
                 expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
         }
+        expect_true(all(x1@mu != x0@mu))
         for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
                        "scaleTheta", "iteratorBetas", "dims"))
             expect_identical(slot(x1, name), slot(x0, name))
@@ -5467,6 +5485,7 @@ test_that("updateModelUseExp for PoissonVaryingUseExp updates the correct slots"
             if (!is(x1@priorsBetas[[b]], "ExchFixed"))
                 expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
         }
+        expect_true(all(x1@mu != x0@mu))
         for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
                        "scaleTheta", "iteratorBetas", "dims"))
             expect_identical(slot(x1, name), slot(x0, name))
@@ -5564,6 +5583,7 @@ test_that("updateModelUseExp for BinomialVaryingAgCertain updates the correct sl
             if (!is(x1@priorsBetas[[b]], "ExchFixed"))
                 expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
         }
+        expect_true(all(x1@mu != x0@mu))
         for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
                        "scaleTheta", "iteratorBetas", "dims"))
             expect_identical(slot(x1, name), slot(x0, name))
@@ -5625,6 +5645,7 @@ test_that("updateModelUseExp for PoissonVaryingUseExpAgCertain updates the corre
             if (!is(x1@priorsBetas[[b]], "ExchFixed"))
                 expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
         }
+        expect_true(all(x1@mu != x0@mu))
         for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
                        "scaleTheta", "iteratorBetas", "dims"))
             expect_identical(slot(x1, name), slot(x0, name))
@@ -5686,6 +5707,7 @@ test_that("updateModelUseExp for BinomialVaryingAgNormal updates the correct slo
             if (!is(x1@priorsBetas[[b]], "ExchFixed"))
                 expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
         }
+        expect_true(all(x1@mu != x0@mu))
         for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
                        "scaleTheta", "iteratorBetas", "dims"))
             expect_identical(slot(x1, name), slot(x0, name))
@@ -5749,6 +5771,7 @@ test_that("updateModelUseExp for BinomialVaryingAgFun updates the correct slots"
             if (!is(x1@priorsBetas[[b]], "ExchFixed"))
                 expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
         }
+        expect_true(all(x1@mu != x0@mu))
         for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
                        "scaleTheta", "iteratorBetas", "dims"))
             expect_identical(slot(x1, name), slot(x0, name))
@@ -5812,6 +5835,7 @@ test_that("updateModelUseExp for PoissonVaryingUseExpAgNormal updates the correc
             if (!is(x1@priorsBetas[[b]], "ExchFixed"))
                 expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
         }
+        expect_true(all(x1@mu != x0@mu))
         for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
                        "scaleTheta", "iteratorBetas", "dims"))
             expect_identical(slot(x1, name), slot(x0, name))
@@ -5875,6 +5899,7 @@ test_that("updateModelUseExp for PoissonVaryingUseExpAgFun updates the correct s
             if (!is(x1@priorsBetas[[b]], "ExchFixed"))
                 expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
         }
+        expect_true(all(x1@mu != x0@mu))
         for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
                        "scaleTheta", "iteratorBetas", "dims"))
             expect_identical(slot(x1, name), slot(x0, name))
@@ -5945,6 +5970,7 @@ test_that("updateModelUseExp for PoissonVaryingUseExpAgLife updates the correct 
             if (!is(x1@priorsBetas[[b]], "ExchFixed"))
                 expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
         }
+        expect_true(all(x1@mu != x0@mu))
         for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
                        "scaleTheta", "iteratorBetas", "dims"))
             expect_identical(slot(x1, name), slot(x0, name))
@@ -6010,6 +6036,7 @@ test_that("updateModelUseExp for PoissonVaryingUseExpAgPoisson updates the corre
             if (!is(x1@priorsBetas[[b]], "ExchFixed"))
                 expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
         }
+        expect_true(all(x1@mu != x0@mu))
         for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
                        "scaleTheta", "iteratorBetas", "dims"))
             expect_identical(slot(x1, name), slot(x0, name))
