@@ -38,30 +38,6 @@ setClass("MomentumMixin",
 
 
 
-## modified from makeMu
-## HAS_TESTS
-updateMu <- function(object, useC = FALSE) {
-    stopifnot(methods::is(object, "Varying"))
-    stopifnot(methods::validObject(object))
-    if (useC) {
-        .Call(updateMu_R, object)
-    }
-    else {
-        mu <- object@mu
-        iterator <- object@iteratorBetas
-        n <- length(mu)
-        for (i in seq_len(n)) {
-            indices <- iterator@indices
-            mu[i] <- 0
-            for (b in seq_along(betas))
-                mu[i] <- mu[i] + betas[[b]][indices[b]]
-            iterator <- advanceB(iterator)
-        }
-        object@mu <- mu
-        object
-    }
-}
-
 
 
 ## HAS_TESTS

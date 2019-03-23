@@ -701,6 +701,8 @@ void transferParamPrior_MixNormZeroPredict(SEXP prior_R,
                     double *values, int nValues);
                     
 /* update-nongeneric */
+void updateMu(SEXP object);
+
 double updateSDNorm(double sigma, double A, double nu, double V, int n, double max);
 double updateSDRobust(double sigma, double A, double nuBeta, 
               double nuTau, double V, int n, double max);

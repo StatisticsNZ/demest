@@ -2685,6 +2685,39 @@ get_log_gamma_dens(int n, double theta[],
     return result;
 }
 
+void
+updateMu(SEXP object_R)
+{
+    
+  SEXP mu_R = GET_SLOT(object_R, mu_sym);
+  double *mu = REAL(mu_R);
+  int n_mu = LENGTH(mu_R);
+
+  SEXP betas_R = GET_SLOT(object_R, betas_sym);
+  int n_beta =  LENGTH(betas_R);
+
+  SEXP iterator_R = GET_SLOT(object_R, iteratorBetas_sym);
+  resetB(iterator_R);
+
+  int *indices = INTEGER(GET_SLOT(iterator_R, indices_sym));
+
+  double* beta_ptr[n_beta]; /* array of pointers */
+  for (int b = 0; b < n_beta; ++b) {
+    beta_ptr[b] = REAL(VECTOR_ELT(betas_R, b));
+  }
+
+  for (int i = 0; i < n_mu; ++i) {
+    mu[i] = 0;
+    for (int b = 0; b < n_beta; ++b) {
+      mu[i] += beta_ptr[b][indices[b]-1];
+    }
+    advanceB(iterator_R);
+  }
+
+}
+
+
+
 
 /* only here for testing updateSigma_Varying:
  * the uber update model function effectively duplicates this */

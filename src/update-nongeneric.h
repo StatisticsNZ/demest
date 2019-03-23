@@ -8,6 +8,9 @@
     /* updatePhi etc code */
     #define K_MAX_ATTEMPTS 1000
 
+
+    void updateMu(SEXP object_R);
+
     void updateSigma_Varying_General(SEXP object, double (*g)(double));
     
     void updateBetasAndPriorsBetas_General(SEXP object_R, double (*g)(double));

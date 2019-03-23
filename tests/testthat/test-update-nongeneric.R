@@ -4611,7 +4611,37 @@ test_that("R and C versions of updateWeightMix give same answer", {
 
 ## UPDATING MODELS ################################################################
 
+test_that("R version of updateMu works", {
+    updateMu <- demest:::updateMu
+    initialModel <- demest:::initialModel
+    y <- Counts(array(rpois(n = 20, lambda = 30),
+                      dim = 5:4,
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE),
+                  age ~ Exch())
+    x <- initialModel(spec, y = y, exposure = NULL)
+    ans.obtained <- updateMu(x)
+    ans.expected <- x
+    ans.expected@mu <- x@betas[[1L]] + x@betas[[2]] + rep(x@betas[[3]], each = 5)
+    expect_identical(ans.obtained, ans.expected)
+})
 
+test_that("R and C versions of updateMu give same answer", {
+    updateMu <- demest:::updateMu
+    initialModel <- demest:::initialModel
+    y <- Counts(array(rpois(n = 20, lambda = 30),
+                      dim = 5:4,
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE),
+                  age ~ Exch())
+    x <- initialModel(spec, y = y, exposure = NULL)
+    ans.R <- updateMu(x, useC = FALSE)
+    ans.C <- updateMu(x, useC = TRUE)
+    if (test.identity)
+        expect_identical(ans.R, ans.C)
+    else
+        expect_equal(ans.R, ans.C)
+})
 
 test_that("updateSigma_Varying gives valid answer - no Box-Cox", {
     updateSigma_Varying <- demest:::updateSigma_Varying
