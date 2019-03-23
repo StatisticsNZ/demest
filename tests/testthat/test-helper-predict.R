@@ -74,6 +74,8 @@ test_that("initialModelPredictHelper works", {
                                               covariates = NULL)
     set.seed(1)
     ans.expected <- list(theta = rep(mean(mod@theta), times = 16),
+                         thetaTransformed = rep(0, 16),
+                         mu = rep(0, 16),
                          metadataY = new("MetaData",
                                          nms = c("time", "region"),
                                          dimtypes = c("time", "state"),

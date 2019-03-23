@@ -69,6 +69,8 @@ initialModelPredictHelper <- function(model, along, labels, n, offsetModel,
     }
     theta <- ifelse(struc.zero.array.pred@.Data == 0L, 0, mean(theta.old))
     theta <- as.double(theta)
+    thetaTransformed <- rep(0, length = length(theta))
+    mu <- rep(0, length = length(theta))
     cell.in.lik <- rep(FALSE, times = prod(dim(metadata.pred)))
     beta.is.predicted <- logical(length = n.beta)
     for (i in seq_len(n.beta)) {
@@ -117,6 +119,8 @@ initialModelPredictHelper <- function(model, along, labels, n, offsetModel,
     offsets.sigma <- makeOffsetsSigma(model, offsetModel = offsetModel)
     i.method.model <- i.method.model.first + 100L
     list(theta = theta,
+         thetaTransformed = thetaTransformed,
+         mu = mu,
          metadataY = metadata.pred,
          cellInLik = cell.in.lik,
          betas = betas,

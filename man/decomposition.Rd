@@ -27,6 +27,10 @@ as part of model building.
 When building a Poisson model, the decomposition is usually
 carried out on log-rates, and when building a binomial model,
 it is usually carried out on logit-proportions.
+
+Internally, \code{decomposition} calls function
+\code{\link[dembase]{pairToState}} on \code{object},
+to cope with origin-destination or parent-child dimensions.
 }
 \examples{
 deaths <- Counts(demdata::VADeaths2)

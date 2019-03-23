@@ -783,8 +783,6 @@ setClass("StrucZeroArrayMixin",
              TRUE
          })
 
-
-
 ## HAS_TESTS
 setClass("Theta",
          slots = c(theta = "numeric",

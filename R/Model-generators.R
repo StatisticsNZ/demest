@@ -1583,7 +1583,6 @@ setMethod("initialModelPredict",
               w <- as.numeric(weights)
               if (methods::is(model, "VarsigmaKnown"))
                   ans <- methods::new("NormalVaryingVarsigmaKnownPredict",
-<<<<<<< HEAD
                              model,
                              theta = l$theta,
                              thetaTransformed = l$thetaTransformed,
@@ -1626,46 +1625,6 @@ setMethod("initialModelPredict",
                              offsetsSigma = l$offsetsSigma,
                              iMethodModel = l$iMethodModel,
                              w = w)
-=======
-                                      model,
-                                      theta = l$theta,
-                                      metadataY = metadataY,
-                                      cellInLik = l$cellInLik,
-                                      lower = lower,
-                                      upper = upper,
-                                      nFailedPropTheta = methods::new("Counter", 0L),
-                                      betas = l$betas,
-                                      priorsBetas = l$priorsBetas,
-                                      iteratorBetas = l$iteratorBetas,
-                                      dims = l$dims,
-                                      betaIsPredicted = l$betaIsPredicted,
-                                      offsetsBetas = l$offsetsBetas,
-                                      offsetsPriorsBetas = l$offsetsPriorsBetas,
-                                      offsetsSigma = l$offsetsSigma,
-                                      iMethodModel = l$iMethodModel,
-                                      w = w)
-              else {
-                  offsets.varsigma <- makeOffsetsVarsigma(model, offsetModel = offsetModel)
-                  ans <- methods::new("NormalVaryingVarsigmaUnknownPredict",
-                                      model,
-                                      theta = l$theta,
-                                      metadataY = metadataY,
-                                      cellInLik = l$cellInLik,
-                                      lower = lower,
-                                      upper = upper,
-                                      nFailedPropTheta = methods::new("Counter", 0L),
-                                      betas = l$betas,
-                                      priorsBetas = l$priorsBetas,
-                                      iteratorBetas = l$iteratorBetas,
-                                      dims = l$dims,
-                                      betaIsPredicted = l$betaIsPredicted,
-                                      offsetsBetas = l$offsetsBetas,
-                                      offsetsPriorsBetas = l$offsetsPriorsBetas,
-                                      offsetsVarsigma = offsets.varsigma,
-                                      offsetsSigma = l$offsetsSigma,
-                                      iMethodModel = l$iMethodModel,
-                                      w = w)
->>>>>>> master
               }
               if (!is.null(aggregate)) {
                   ans <- addAg(model = ans,

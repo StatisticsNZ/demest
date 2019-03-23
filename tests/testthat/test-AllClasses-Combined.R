@@ -1584,8 +1584,13 @@ test_that("validity tests inherited for CombinedCountsPoissonNotHasExp inherited
     y <- Counts(array(1:6,
                       dim = c(3, 2),
                       dimnames = list(age = 0:2, sex = c("f", "m"))))
+    theta <- rbeta(n = 6, shape1 = 5, shape2 = 5)
+    thetaTransformed <- log(theta)
+    mu <- thetaTransformed + 0.01
     model <- new("PoissonVaryingNotUseExp",
-                 theta = rbeta(n = 6, shape1 = 5, shape2 = 5),
+                 theta = theta,
+                 thetaTransformed = thetaTransformed,
+                 mu = mu,
                  metadataY = y@metadata,
                  strucZeroArray = Counts(array(1L,
                                                dim = 3:2,
@@ -1617,9 +1622,14 @@ test_that("validity tests inherited for CombinedCountsPoissonNotHasExp inherited
                      Counts(array(2L,
                                   dim = c(2, 2),
                                   dimnames = list(age = 0:1, sex = c("f", "m")))))
+    theta <- rbeta(n = 4, shape1 = 5, shape2 = 5)
+    thetaTransformed <- log(theta)
+    mu <- thetaTransformed + 0.01
     data.models <- list(new("PoissonBinomialMixture", prob = 0.9, metadataY = datasets[[1]]@metadata),
                         new("PoissonVaryingUseExp",
-                            theta = rbeta(n = 4, shape1 = 5, shape2 = 5),
+                            theta = theta,
+                            thetaTransformed = thetaTransformed,
+                            mu = mu,
                             metadataY = y[1:2,]@metadata,
                             strucZeroArray = Counts(array(1L,
                                                           dim = c(2, 2),

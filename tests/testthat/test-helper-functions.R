@@ -5226,8 +5226,13 @@ test_that("initialModelPredictHelper works", {
                                               offsetModel = 1L,
                                               covariates = NULL)
     set.seed(1)
+    betas <- list(mod@betas[[1]], rep(0, 4), mod@betas[[3]])
+    iteratorBetas <- BetaIterator(dim = c(4L, 4L),
+                                  margins = c(0L, 1L, 2L))
+    mu = rep(0, 16)
     ans.expected <- list(theta = rep(mean(mod@theta), times = 16),
                          thetaTransformed = rep(0, times = 16),
+                         mu = mu,
                          metadataY = new("MetaData",
                                          nms = c("time", "region"),
                                          dimtypes = c("time", "state"),
@@ -5235,7 +5240,7 @@ test_that("initialModelPredictHelper works", {
                                                               dimvalues = as.numeric(2005:2009)),
                                                           new("Categories", dimvalues = as.character(1:4)))),
                          cellInLik = rep(FALSE, 16),
-                         betas = list(mod@betas[[1]], rep(0, 4), mod@betas[[3]]),
+                         betas = betas,
                          strucZeroArray = strucZeroArray,
                          priorsBetas = list(new("TimeInvariant", J = new("Length", 1L),
                                                 isSaturated = new("LogicalFlag", FALSE)),
@@ -5253,13 +5258,8 @@ test_that("initialModelPredictHelper works", {
                                                                 strucZeroArray = strucZeroArray),
                                             new("TimeInvariant", J = new("Length", 4L),
                                                 isSaturated = new("LogicalFlag", FALSE))),
-                         iteratorBetas = BetaIterator(dim = c(4L, 4L),
-                                                      margins = c(0L, 1L, 2L)),
+                         iteratorBetas = iteratorBetas,
                          dims = list(0L, 4L, 4L),
-                         mu = makeMu(n = 16L,
-                                     betas = betas,
-                                     iterator = iteratorBetas,
-                                     useC = TRUE),
                          betaIsPredicted = c(FALSE, TRUE, FALSE),
                          offsetsBetas = makeOffsetsBetas(model = mod,
                                                          offsetModel = 1L),
