@@ -1065,8 +1065,11 @@ setMethod("makeOutputAggregate",
 
 ## makeOutputModel #######################################################
 
-
 ## Varying
+
+## We deliberately do not write out the 'mu' slot. It is redundant,
+## in that it can be calculated from the 'beta'. Not writing it out
+## saves a little bit of time, and some space on disk.
 
 ## HAS_TESTS
 setMethod("makeOutputModel",
@@ -1653,6 +1656,7 @@ setMethod("predictModelNotUseExp",
               else {
                   object <- predictPriorsBetas(object)
                   object <- predictBetas(object)
+                  object <- updateMu(object)
                   object <- updateTheta_NormalVarying(object, y = y)
                   object
               }
@@ -1680,6 +1684,7 @@ setMethod("predictModelNotUseExp",
               else {
                   object <- predictPriorsBetas(object)
                   object <- predictBetas(object)
+                  object <- updateMu(object)
                   object <- updateTheta_NormalVarying(object, y = y)
                   object
               }
@@ -1707,6 +1712,7 @@ setMethod("predictModelNotUseExp",
               else {
                   object <- predictPriorsBetas(object)
                   object <- predictBetas(object)
+                  object <- updateMu(object)
                   object <- updateTheta_PoissonVaryingNotUseExp(object, y = y)
                   object
               }
@@ -1790,6 +1796,7 @@ setMethod("predictModelUseExp",
               else {
                   object <- predictPriorsBetas(object)
                   object <- predictBetas(object)
+                  object <- updateMu(object)
                   object <- updateTheta_BinomialVarying(object, y = y, exposure = exposure)
                   object
               }
@@ -1821,6 +1828,7 @@ setMethod("predictModelUseExp",
               else {
                   object <- predictPriorsBetas(object)
                   object <- predictBetas(object)
+                  object <- updateMu(object)
                   object <- updateTheta_PoissonVaryingUseExp(object,
                                                              y = y,
                                                              exposure = exposure)

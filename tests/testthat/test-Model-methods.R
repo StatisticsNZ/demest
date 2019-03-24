@@ -2690,6 +2690,7 @@ test_that("predictModelNotUseExp gives valid answer with NormalVaryingVarsigmKno
     updateTheta_NormalVarying <- demest:::updateTheta_NormalVarying
     predictPriorsBetas <- demest:::predictPriorsBetas
     predictBetas <- demest:::predictBetas
+    updateMu <- demest:::updateMu
     initialModel <- demest:::initialModel
     initialModelPredict <- demest:::initialModelPredict
     for (seed in seq_len(n.test)) {
@@ -2719,6 +2720,7 @@ test_that("predictModelNotUseExp gives valid answer with NormalVaryingVarsigmKno
         set.seed(seed + 1)
         ans.expected <- predictPriorsBetas(model)
         ans.expected <- predictBetas(ans.expected)
+        ans.expected <- updateMu(ans.expected)
         ans.expected <- updateTheta_NormalVarying(ans.expected, y = y.pred)
         expect_identical(ans.obtained, ans.expected)
     }
@@ -2726,9 +2728,6 @@ test_that("predictModelNotUseExp gives valid answer with NormalVaryingVarsigmKno
 
 test_that("R, generic C, and specific C versions predictModelNotUseExp give same answer with NormalVaryingVarsigmKnownPredict", {
     predictModelNotUseExp <- demest:::predictModelNotUseExp
-    updateTheta_NormalVarying <- demest:::updateTheta_NormalVarying
-    predictPriorsBetas <- demest:::predictPriorsBetas
-    predictBetas <- demest:::predictBetas
     initialModel <- demest:::initialModel
     initialModelPredict <- demest:::initialModelPredict
     for (seed in seq_len(n.test)) {
@@ -2775,6 +2774,7 @@ test_that("predictModelNotUseExp gives valid answer with NormalVaryingVarsigmUnk
     updateTheta_NormalVarying <- demest:::updateTheta_NormalVarying
     predictPriorsBetas <- demest:::predictPriorsBetas
     predictBetas <- demest:::predictBetas
+    updateMu <- demest:::updateMu
     initialModel <- demest:::initialModel
     initialModelPredict <- demest:::initialModelPredict
     for (seed in seq_len(n.test)) {
@@ -2804,6 +2804,7 @@ test_that("predictModelNotUseExp gives valid answer with NormalVaryingVarsigmUnk
         set.seed(seed + 1)
         ans.expected <- predictPriorsBetas(model)
         ans.expected <- predictBetas(ans.expected)
+        ans.expected <- updateMu(ans.expected)
         ans.expected <- updateTheta_NormalVarying(ans.expected, y = y.pred)
         expect_identical(ans.obtained, ans.expected)
     }
@@ -2811,9 +2812,6 @@ test_that("predictModelNotUseExp gives valid answer with NormalVaryingVarsigmUnk
 
 test_that("R, generic C, and specific C versions predictModelNotUseExp give same answer with NormalVaryingVarsigmUnknownPredict", {
     predictModelNotUseExp <- demest:::predictModelNotUseExp
-    updateTheta_NormalVarying <- demest:::updateTheta_NormalVarying
-    predictPriorsBetas <- demest:::predictPriorsBetas
-    predictBetas <- demest:::predictBetas
     initialModel <- demest:::initialModel
     initialModelPredict <- demest:::initialModelPredict
     for (seed in seq_len(n.test)) {
@@ -2859,6 +2857,7 @@ test_that("predictModelNotUseExp gives valid answer with PoissonVaryingNotUseExp
     predictModelNotUseExp <- demest:::predictModelNotUseExp
     predictPriorsBetas <- demest:::predictPriorsBetas
     predictBetas <- demest:::predictBetas
+    updateMu <- demest:::updateMu
     updateTheta_PoissonVaryingNotUseExp <- demest:::updateTheta_PoissonVaryingNotUseExp
     initialModel <- demest:::initialModel
     initialModelPredict <- demest:::initialModelPredict
@@ -2886,6 +2885,7 @@ test_that("predictModelNotUseExp gives valid answer with PoissonVaryingNotUseExp
         set.seed(seed + 1)
         ans.expected <- predictPriorsBetas(model)
         ans.expected <- predictBetas(ans.expected)
+        ans.expected <- updateMu(ans.expected)
         ans.expected <- updateTheta_PoissonVaryingNotUseExp(ans.expected, y = y.pred)
         expect_identical(ans.obtained, ans.expected)
     }
@@ -3043,6 +3043,7 @@ test_that("predictModelUseExp gives valid answer with BinomialVaryingPredict", {
     predictModelUseExp <- demest:::predictModelUseExp
     predictPriorsBetas <- demest:::predictPriorsBetas
     predictBetas <- demest:::predictBetas
+    updateMu <- demest:::updateMu
     updateTheta_BinomialVarying <- demest:::updateTheta_BinomialVarying
     initialModel <- demest:::initialModel
     initialModelPredict <- demest:::initialModelPredict
@@ -3076,6 +3077,7 @@ test_that("predictModelUseExp gives valid answer with BinomialVaryingPredict", {
         set.seed(seed + 1)
         ans.expected <- predictPriorsBetas(model)
         ans.expected <- predictBetas(ans.expected)
+        ans.expected <- updateMu(ans.expected)
         ans.expected <- updateTheta_BinomialVarying(ans.expected, y = y.pred, exposure = exposure.pred)
         expect_identical(ans.obtained, ans.expected)
     }
@@ -3131,6 +3133,7 @@ test_that("predictModelUseExp gives valid answer with PoissonVaryingUseExpPredic
     predictModelUseExp <- demest:::predictModelUseExp
     predictPriorsBetas <- demest:::predictPriorsBetas
     predictBetas <- demest:::predictBetas
+    updateMu <- demest:::updateMu
     updateTheta_PoissonVaryingUseExp <- demest:::updateTheta_PoissonVaryingUseExp
     initialModel <- demest:::initialModel
     initialModelPredict <- demest:::initialModelPredict
@@ -3164,6 +3167,7 @@ test_that("predictModelUseExp gives valid answer with PoissonVaryingUseExpPredic
         set.seed(seed + 1)
         ans.expected <- predictPriorsBetas(model)
         ans.expected <- predictBetas(ans.expected)
+        ans.expected <- updateMu(ans.expected)
         ans.expected <- updateTheta_PoissonVaryingUseExp(ans.expected, y = y.pred, exposure = exposure.pred)
         expect_identical(ans.obtained, ans.expected)
     }

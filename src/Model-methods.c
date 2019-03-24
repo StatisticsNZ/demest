@@ -316,6 +316,7 @@ predictModelNotUseExp_NormalVaryingVarsigmaKnownPredict_i(SEXP object, SEXP y_R)
         object <- updateTheta_NormalVarying(object, y = y) */
     predictPriorsBetas(object);
     predictBetas(object);
+    updateMu(object);
     updateTheta_NormalVarying(object, y_R);
 }
 
@@ -327,6 +328,7 @@ predictModelNotUseExp_NormalVaryingVarsigmaUnknownPredict_i(SEXP object, SEXP y_
         object <- updateTheta_NormalVarying(object, y = y) */
     predictPriorsBetas(object);
     predictBetas(object);
+    updateMu(object);
     updateTheta_NormalVarying(object, y_R);
 }
 
@@ -338,6 +340,7 @@ predictModelNotUseExp_PoissonVaryingNotUseExpPredict_i(SEXP object, SEXP y_R)
         object <- updateTheta_PoissonVaryingNotUseExp(object, y = y) */
     predictPriorsBetas(object);
     predictBetas(object);
+    updateMu(object);
     updateTheta_PoissonVaryingNotUseExp(object, y_R);
 }
 
@@ -361,6 +364,7 @@ predictModelUseExp_BinomialVaryingPredict_i(SEXP object, SEXP y_R, SEXP exposure
 {
     predictPriorsBetas(object);
     predictBetas(object);
+    updateMu(object);
     updateTheta_BinomialVarying(object, y_R, exposure_R);
 }
 
@@ -369,6 +373,7 @@ predictModelUseExp_PoissonVaryingUseExpPredict_i(SEXP object, SEXP y_R, SEXP exp
 {
     predictPriorsBetas(object);
     predictBetas(object);
+    updateMu(object);
     updateTheta_PoissonVaryingUseExp(object, y_R, exposure_R);
 }
 
