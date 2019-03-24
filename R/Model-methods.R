@@ -123,35 +123,37 @@ setMethod("drawHyperParam",
 ## drawModelNotUseExp ##################################################################
 
 
-
-## TRANSLATED
+## READY_TO_TRANSLATE
 ## HAS_TESTS
-setMethod("updateModelNotUseExp",
-          signature(object = "NormalVaryingVarsigmaUnknown"),
+setMethod("drawModelNotUseExp",
+          signature(object = "NormalVaryingVarsigmaKnown"),
           function(object, y, useC = FALSE, useSpecific = FALSE) {
               ## object
               stopifnot(methods::validObject(object))
               ## y
-              stopifnot(is.double(y))
               stopifnot(identical(length(y), length(object@theta)))
+              stopifnot(is.double(y))
               if (useC) {
                   if (useSpecific)
-                      .Call(updateModelNotUseExp_NormalVaryingVarsigmaUnknown_R, object, y)
+                      .Call(drawModelNotUseExp_NormalVaryingVarsigmaKnown_R, object, y)
                   else
-                      .Call(updateModelNotUseExp_R, object, y)
+                      .Call(drawModelNotUseExp_R, object, y)
               }
               else {
-                  identity <- function(x) x
-                  object <- updateTheta_NormalVarying(object, y = y)
-                  object <- updateVarsigma(object, y = y)
-                  object <- updateSigma_Varying(object, g = identity)
-                  object <- updateBetasAndPriorsBetas(object, g = identity)
+                  object <- drawPriors(object)
+                  object <- drawBetas(object)
+                  object <- updateMu(object)
+                  object <- drawSigma_Varying(object)
+                  object <- updateTheta_NormalVarying(object,
+                                                      y = y,
+                                                      useC = TRUE)
                   object
               }
           })
 
 
-
+## READY_TO_TRANSLATE
+## HAS_TESTS
 setMethod("drawModelNotUseExp",
           signature(object = "NormalVaryingVarsigmaUnknown"),
           function(object, y, useC = FALSE, useSpecific = FALSE) {
@@ -169,6 +171,7 @@ setMethod("drawModelNotUseExp",
               else {
                   object <- drawPriors(object)
                   object <- drawBetas(object)
+                  object <- updateMu(object)
                   object <- drawSigma_Varying(object)
                   object <- drawVarsigma(object)
                   object <- updateTheta_NormalVarying(object,
@@ -200,6 +203,7 @@ setMethod("drawModelNotUseExp",
               else {
                   object <- drawPriors(object)
                   object <- drawBetas(object)
+                  object <- updateMu(object)
                   object <- drawSigma_Varying(object)
                   object <- updateTheta_PoissonVaryingNotUseExp(object,
                                                                 y = y,
@@ -239,6 +243,7 @@ setMethod("drawModelUseExp",
               else {
                   object <- drawPriors(object)
                   object <- drawBetas(object)
+                  object <- updateMu(object )
                   object <- drawSigma_Varying(object)
                   object <- updateTheta_BinomialVarying(object,
                                                         y = y,
@@ -276,6 +281,7 @@ setMethod("drawModelUseExp",
               else {
                   object <- drawPriors(object)
                   object <- drawBetas(object)
+                  object <- updateMu(object)
                   object <- drawSigma_Varying(object)
                   object <- updateTheta_PoissonVaryingUseExp(object,
                                                              y = y,
@@ -1109,8 +1115,7 @@ setMethod("makeOutputModel",
                   pos <- first + 1L
                   varsigma <- Skeleton(first = first)
               }
-              ## make
-              mu and betas
+              ## make mu and betas
               first <- pos
               pos <- pos + 1L
               mu <- SkeletonMu(betas = betas.obj,

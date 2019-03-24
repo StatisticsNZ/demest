@@ -214,12 +214,95 @@ test_that("drawHyperParam works with Varying", {
 
 ## drawModelNotUseExp ##################################################################
 
+test_that("drawModelNotUseExp works with NormalVaryingVarsigmaKnown", {
+    initialModel <- demest:::initialModel
+    drawModelNotUseExp <- demest:::drawModelNotUseExp
+    drawPriors <- demest:::drawPriors
+    drawBetas <- demest:::drawBetas
+    drawSigma_Varying <- demest:::drawSigma_Varying
+    updateMu <- demest:::updateMu
+    updateTheta_NormalVarying <- demest:::updateTheta_NormalVarying
+    spec <- Model(y ~ Normal(mean ~ age + sex, sd = 0.1),
+                  `(Intercept)` ~ ExchFixed(sd = 10), 
+                  age ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
+                  sex ~ ExchFixed(sd = 0.1),
+                  priorSD = HalfT(scale = 0.2))
+    y <- Counts(array(1,
+                      dim = 2:3,
+                      dimnames = list(sex = c("F", "M"),
+                                      age = c("0-4", "5-9", "10+"))))
+    weights <- y
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        model <- initialModel(spec, y = y, weights = weights)
+        expect_is(model, "NormalVaryingVarsigmaKnown")
+        y.tmp <- y
+        y.tmp[] <- NA
+        set.seed(seed)
+        ans.obtained <- drawModelNotUseExp(object = model,
+                                           y = y.tmp)
+        set.seed(seed)
+        ans.expected <- model
+        ans.expected <- drawPriors(ans.expected)
+        ans.expected <- drawBetas(ans.expected)
+        ans.expected <- updateMu(ans.expected)
+        ans.expected <- drawSigma_Varying(ans.expected)
+        ans.expected <- updateTheta_NormalVarying(ans.expected,
+                                                  y = y.tmp)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of drawModelNotUseExp give same answer with NormalVaryingVarsigmaKnown", {
+    initialModel <- demest:::initialModel
+    drawModelNotUseExp <- demest:::drawModelNotUseExp
+    spec <- Model(y ~ Normal(mean ~ age + sex, sd = 0.1),
+                  `(Intercept)` ~ ExchFixed(sd = 10), 
+                  age ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
+                  sex ~ ExchFixed(sd = 0.1),
+                  priorSD = HalfT(scale = 0.2))
+    y <- Counts(array(1,
+                      dim = 2:3,
+                      dimnames = list(sex = c("F", "M"),
+                                      age = c("0-4", "5-9", "10+"))))
+    weights <- y
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        model <- initialModel(spec, y = y, weights = weights)
+        expect_is(model, "NormalVaryingVarsigmaKnown")
+        y.tmp <- y
+        y.tmp[] <- NA
+        set.seed(seed)
+        ans.R <- drawModelNotUseExp(object = model,
+                                    y = y.tmp,
+                                    useC = FALSE)
+        set.seed(seed)
+        ans.C.generic <- drawModelNotUseExp(object = model,
+                                            y = y.tmp,
+                                            useC = TRUE,
+                                            useSpecific = FALSE)
+        set.seed(seed)
+        ans.C.specific <- drawModelNotUseExp(object = model,
+                                             y = y.tmp,
+                                             useC = TRUE,
+                                             useSpecific = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C.generic)
+        else
+            expect_equal(ans.R, ans.C.generic)
+        expect_identical(ans.C.generic, ans.C.specific)
+    }
+})
 
 test_that("drawModelNotUseExp works with NormalVaryingVarsigmaUnknown", {
     initialModel <- demest:::initialModel
     drawModelNotUseExp <- demest:::drawModelNotUseExp
     drawPriors <- demest:::drawPriors
     drawBetas <- demest:::drawBetas
+    updateMu <- demest:::updateMu
     drawSigma_Varying <- demest:::drawSigma_Varying
     drawVarsigma <- demest:::drawVarsigma
     updateTheta_NormalVarying <- demest:::updateTheta_NormalVarying
@@ -246,6 +329,7 @@ test_that("drawModelNotUseExp works with NormalVaryingVarsigmaUnknown", {
         ans.expected <- model
         ans.expected <- drawPriors(ans.expected)
         ans.expected <- drawBetas(ans.expected)
+        ans.expected <- updateMu(ans.expected)
         ans.expected <- drawSigma_Varying(ans.expected)
         ans.expected <- drawVarsigma(ans.expected)
         ans.expected <- updateTheta_NormalVarying(ans.expected,
@@ -260,10 +344,6 @@ test_that("drawModelNotUseExp works with NormalVaryingVarsigmaUnknown", {
 test_that("R and C versions of drawModelNotUseExp give same answer with NormalVaryingVarsigmaUnknown", {
     initialModel <- demest:::initialModel
     drawModelNotUseExp <- demest:::drawModelNotUseExp
-    drawPriors <- demest:::drawPriors
-    drawBetas <- demest:::drawBetas
-    drawSigma_Varying <- demest:::drawSigma_Varying
-    updateTheta_NormalVarying <- demest:::updateTheta_NormalVarying
     spec <- Model(y ~ Normal(mean ~ age + sex, priorSD = HalfT(scale = 0.05)),
                   `(Intercept)` ~ ExchFixed(sd = 10), 
                   age ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
@@ -307,6 +387,7 @@ test_that("drawModelNotUseExp works with PoissonVaryingNotUseExp", {
     drawModelNotUseExp <- demest:::drawModelNotUseExp
     drawPriors <- demest:::drawPriors
     drawBetas <- demest:::drawBetas
+    updateMu <- demest:::updateMu
     drawSigma_Varying <- demest:::drawSigma_Varying
     updateTheta_PoissonVaryingNotUseExp <- demest:::updateTheta_PoissonVaryingNotUseExp
     spec <- Model(y ~ Poisson(mean ~ age + sex, useExpose = FALSE),
@@ -330,6 +411,7 @@ test_that("drawModelNotUseExp works with PoissonVaryingNotUseExp", {
         ans.expected <- model
         ans.expected <- drawPriors(ans.expected)
         ans.expected <- drawBetas(ans.expected)
+        ans.expected <- updateMu(ans.expected)
         ans.expected <- drawSigma_Varying(ans.expected)
         ans.expected <- updateTheta_PoissonVaryingNotUseExp(ans.expected,
                                                             y = y.tmp)
@@ -343,10 +425,6 @@ test_that("drawModelNotUseExp works with PoissonVaryingNotUseExp", {
 test_that("R and C versions of drawModelNotUseExp give same answer with PoissonVaryingNotUseExp", {
     initialModel <- demest:::initialModel
     drawModelNotUseExp <- demest:::drawModelNotUseExp
-    drawPriors <- demest:::drawPriors
-    drawBetas <- demest:::drawBetas
-    drawSigma_Varying <- demest:::drawSigma_Varying
-    updateTheta_PoissonVaryingNotUseExp <- demest:::updateTheta_PoissonVaryingNotUseExp
     spec <- Model(y ~ Poisson(mean ~ age + sex, useExpose = FALSE),
                   `(Intercept)` ~ ExchFixed(sd = 10), 
                   age ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
@@ -391,6 +469,7 @@ test_that("drawModelUseExp works with BinomialVarying", {
     drawModelUseExp <- demest:::drawModelUseExp
     drawPriors <- demest:::drawPriors
     drawBetas <- demest:::drawBetas
+    updateMu <- demest:::updateMu
     drawSigma_Varying <- demest:::drawSigma_Varying
     updateTheta_BinomialVarying <- demest:::updateTheta_BinomialVarying
     spec <- Model(y ~ Binomial(mean ~ age + sex),
@@ -419,6 +498,7 @@ test_that("drawModelUseExp works with BinomialVarying", {
         ans.expected <- model
         ans.expected <- drawPriors(ans.expected)
         ans.expected <- drawBetas(ans.expected)
+        ans.expected <- updateMu(ans.expected)
         ans.expected <- drawSigma_Varying(ans.expected)
         ans.expected <- updateTheta_BinomialVarying(ans.expected,
                                                     y = y.tmp,
@@ -433,10 +513,6 @@ test_that("drawModelUseExp works with BinomialVarying", {
 test_that("R and C versions of drawModelUseExp give same answer with BinomialVarying", {
     initialModel <- demest:::initialModel
     drawModelUseExp <- demest:::drawModelUseExp
-    drawPriors <- demest:::drawPriors
-    drawBetas <- demest:::drawBetas
-    drawSigma_Varying <- demest:::drawSigma_Varying
-    updateTheta_BinomialVarying <- demest:::updateTheta_BinomialVarying
     spec <- Model(y ~ Binomial(mean ~ age + sex),
                   `(Intercept)` ~ ExchFixed(sd = 10), 
                   age ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
@@ -483,6 +559,7 @@ test_that("drawModelUseExp works with PoissonVaryingUseExp", {
     drawModelUseExp <- demest:::drawModelUseExp
     drawPriors <- demest:::drawPriors
     drawBetas <- demest:::drawBetas
+    updateMu <- demest:::updateMu
     drawSigma_Varying <- demest:::drawSigma_Varying
     updateTheta_PoissonVaryingUseExp <- demest:::updateTheta_PoissonVaryingUseExp
     spec <- Model(y ~ Poisson(mean ~ age + sex),
@@ -511,6 +588,7 @@ test_that("drawModelUseExp works with PoissonVaryingUseExp", {
         ans.expected <- model
         ans.expected <- drawPriors(ans.expected)
         ans.expected <- drawBetas(ans.expected)
+        ans.expected <- updateMu(ans.expected)
         ans.expected <- drawSigma_Varying(ans.expected)
         ans.expected <- updateTheta_PoissonVaryingUseExp(ans.expected,
                                                          y = y.tmp,
@@ -525,10 +603,6 @@ test_that("drawModelUseExp works with PoissonVaryingUseExp", {
 test_that("R and C versions of drawModelUseExp give same answer with PoissonVaryingUseExp", {
     initialModel <- demest:::initialModel
     drawModelUseExp <- demest:::drawModelUseExp
-    drawPriors <- demest:::drawPriors
-    drawBetas <- demest:::drawBetas
-    drawSigma_Varying <- demest:::drawSigma_Varying
-    updateTheta_PoissonVaryingUseExp <- demest:::updateTheta_PoissonVaryingUseExp
     spec <- Model(y ~ Poisson(mean ~ age + sex),
                   `(Intercept)` ~ ExchFixed(sd = 10), 
                   age ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
