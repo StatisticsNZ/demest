@@ -1960,8 +1960,6 @@ updateSigma_Varying <- function(object, g, useC = FALSE) {
         nu <- object@nuSigma@.Data
         theta <- object@theta
         mu <- object@mu
-        betas <- object@betas
-        iterator <- object@iteratorBetas
         cell.in.lik <- object@cellInLik
         if (identical(g, log)) { 
             box.cox.param <- object@boxCoxParam 
@@ -1969,7 +1967,6 @@ updateSigma_Varying <- function(object, g, useC = FALSE) {
         } 
         else 
             uses.box.cox.transform <- FALSE 
-        iterator <- resetB(iterator)
         V <- 0
         n <- 0L
         for (i in seq_along(theta)) {
@@ -1978,11 +1975,9 @@ updateSigma_Varying <- function(object, g, useC = FALSE) {
                     transformed.theta <- (theta[i] ^ box.cox.param - 1) / box.cox.param 
                 else 
                     transformed.theta <- g(theta[i]) 
-                indices <- iterator@indices
                 V <- V + (transformed.theta - mu[i])^2
                 n <- n + 1L
             }
-            iterator <- advanceB(iterator)
         }
         sigma <- updateSDNorm(sigma = sigma,
                               A = A,
@@ -2105,6 +2100,7 @@ updateTheta_BinomialVaryingAgCertain <- function(object, y, exposure, useC = FAL
     }
     else {
         theta <- object@theta
+        mu <- object@mu
         scale.theta <- object@scaleTheta@.Data
         scale.theta.multiplier <- object@scaleThetaMultiplier@.Data
         lower <- object@lower
@@ -2115,12 +2111,9 @@ updateTheta_BinomialVaryingAgCertain <- function(object, y, exposure, useC = FAL
         weight.ag <- object@weightAg
         transform.ag <- object@transformAg
         max.attempt <- object@maxAttempt
-        iterator <- object@iteratorBetas
         n.accept.theta <- 0L
         n.failed.prop.theta <- 0L
         n.theta <- length(theta)
-        mu <- makeMu(n = n.theta, betas = betas, iterator = iterator)
-        iterator <- resetB(iterator)
         scale.theta <- scale.theta * scale.theta.multiplier
         for (i in seq_len(n.theta)) {
             scale.theta.i <- scale.theta / sqrt(1 + log(1 + exposure[i]))
@@ -2166,7 +2159,7 @@ updateTheta_BinomialVaryingAgCertain <- function(object, y, exposure, useC = FAL
                                           + th.other.curr)
                         ## This test a bit awkward, but is required when expressing 'lower'
                         ## 'upper' on a logit scale. Using the logit scale makes sense in
-                        ## an model without aggregate values, which is the typical case.
+                        ## a model without aggregate values, which is the typical case.
                         valid <- (0 < th.other.prop) && (th.other.prop < 1) 
                         if (valid) {
                             logit.th.other.prop <- log(th.other.prop / (1 - th.other.prop))
@@ -2269,7 +2262,6 @@ updateTheta_BinomialVaryingAgCertain <- function(object, y, exposure, useC = FAL
             }
         }
         object@theta <- theta
-        object@mu <- mu
         object@nAcceptTheta@.Data <- n.accept.theta
         object@nFailedPropTheta@.Data <- n.failed.prop.theta
         object
@@ -2430,14 +2422,13 @@ updateThetaAndValueAgFun_Binomial <- function(object, y, exposure, useC = FALSE)
     }
     else {
         theta <- object@theta
+        mu <- object@mu
         scale <- object@scaleTheta
         scale.multiplier <- object@scaleThetaMultiplier
         lower <- object@lower
         upper <- object@upper
         tolerance <- object@tolerance
         sigma <- object@sigma@.Data
-        betas <- object@betas
-        iterator <- object@iteratorBetas
         value.ag <- object@valueAg@.Data
         mean.ag <- object@meanAg@.Data
         sd.ag <- object@sdAg@.Data
@@ -2448,14 +2439,9 @@ updateThetaAndValueAgFun_Binomial <- function(object, y, exposure, useC = FALSE)
         max.attempt <- object@maxAttempt
         n.failed.prop.theta <- 0L
         n.accept.theta <- 0L
-        iterator <- resetB(iterator)
         scale <- scale * scale.multiplier
         n.shared <- length(x.args.ag[[1L]]@.Data)
         for (i in seq_along(theta)) {
-            indices <- iterator@indices
-            mu <- 0
-            for (b in seq_along(betas))
-                mu <- mu + betas[[b]][indices[b]]
             i.ag <- getIAfter(i = i,
                               transform = transform.ag,
                               check = FALSE,
@@ -2465,7 +2451,7 @@ updateThetaAndValueAgFun_Binomial <- function(object, y, exposure, useC = FALSE)
             th.curr <- theta[i]
             logit.th.curr <- log(th.curr / (1 - th.curr))
             if (y.is.missing) {
-                mean <- mu
+                mean <- mu[i]
                 sd <- sigma
             }
             else {
@@ -2496,8 +2482,8 @@ updateThetaAndValueAgFun_Binomial <- function(object, y, exposure, useC = FALSE)
                         log.lik.curr <- stats::dbinom(y[i], prob = th.curr, size = exposure[i], log = TRUE)
                         log.diff <- log.lik.prop - log.lik.curr
                     }
-                    log.dens.prop <- stats::dnorm(x = logit.th.prop, mean = mu, sd = sigma, log = TRUE)
-                    log.dens.curr <- stats::dnorm(x = logit.th.curr, mean = mu, sd = sigma, log = TRUE)
+                    log.dens.prop <- stats::dnorm(x = logit.th.prop, mean = mu[i], sd = sigma, log = TRUE)
+                    log.dens.curr <- stats::dnorm(x = logit.th.curr, mean = mu[i], sd = sigma, log = TRUE)
                     log.diff <- log.diff + log.dens.prop - log.dens.curr
                     if (contributes.to.ag) {
                         ag.curr <- value.ag[i.ag]
@@ -2527,7 +2513,6 @@ updateThetaAndValueAgFun_Binomial <- function(object, y, exposure, useC = FALSE)
             }
             else
                 n.failed.prop.theta <- n.failed.prop.theta + 1L
-            iterator <- advanceB(iterator)
         }
         object@theta <- theta
         object@valueAg@.Data <- value.ag
@@ -2554,6 +2539,7 @@ updateThetaAndNu_CMPVaryingNotUseExp <- function(object, y, useC = FALSE) {
     }
     else {
         theta <- object@theta
+        mu <- object@mu
         box.cox.param <- object@boxCoxParam
         cell.in.lik <- object@cellInLik
         scale <- object@scaleTheta
@@ -2566,24 +2552,17 @@ updateThetaAndNu_CMPVaryingNotUseExp <- function(object, y, useC = FALSE) {
         sigma <- object@sigma@.Data
         mean.log.nu <- object@meanLogNuCMP@.Data # scalar
         sd.log.nu <- object@sdLogNuCMP@.Data # scalar
-        betas <- object@betas
-        iterator <- object@iteratorBetas
         max.attempt <- object@maxAttempt
         n.failed.prop.y.star <- 0L
         n.failed.prop.theta <- 0L
         n.accept.theta <- 0L
-        iterator <- resetB(iterator)
         scale <- scale * scale.multiplier
         for (i in seq_along(theta)) {
             is.struc.zero <- !cell.in.lik[i] && !is.na(y[i]) && (y[i] == 0L)
             if (!is.struc.zero) {
-                indices <- iterator@indices
-                mu <- 0
-                for (b in seq_along(betas))
-                    mu <- mu + betas[[b]][indices[b]]
                 y.is.missing <- is.na(y[i]) 
                 if (y.is.missing) {
-                    mean <- mu
+                    mean <- mu[i]
                     sd <- sigma
                 }
                 else {
@@ -2614,8 +2593,8 @@ updateThetaAndNu_CMPVaryingNotUseExp <- function(object, y, useC = FALSE) {
                     if (y.is.missing) {
                         theta[i] <- th.prop
                         nu[i] <- stats::rlnorm(n = 1L,
-                                        meanlog = mean.log.nu,
-                                        sdlog = sd.log.nu)
+                                               meanlog = mean.log.nu,
+                                               sdlog = sd.log.nu)
                     }
                     else {
                         nu.curr <- nu[i] 
@@ -2633,8 +2612,8 @@ updateThetaAndNu_CMPVaryingNotUseExp <- function(object, y, useC = FALSE) {
                             log.lik.prop <- logDensCMPUnnormalised1(x = y[i], gamma = th.prop, nu = nu.prop)
                             log.lik.curr.star <- logDensCMPUnnormalised1(x = y.star, gamma = th.curr, nu = nu.curr)
                             log.lik.prop.star <- logDensCMPUnnormalised1(x = y.star, gamma = th.prop, nu = nu.prop)
-                            log.dens.th.curr <- stats::dnorm(x = tr.th.curr, mean = mu, sd = sigma, log = TRUE) 
-                            log.dens.th.prop <- stats::dnorm(x = tr.th.prop, mean = mu, sd = sigma, log = TRUE)
+                            log.dens.th.curr <- stats::dnorm(x = tr.th.curr, mean = mu[i], sd = sigma, log = TRUE) 
+                            log.dens.th.prop <- stats::dnorm(x = tr.th.prop, mean = mu[i], sd = sigma, log = TRUE)
                             log.dens.nu.curr <- stats::dnorm(x = log.nu.curr, mean = mean.log.nu, sd = sd.log.nu, log = TRUE) 
                             log.dens.nu.prop <- stats::dnorm(x = log.nu.prop, mean = mean.log.nu, sd = sd.log.nu, log = TRUE)
                             log.diff <- (log.lik.prop - log.lik.curr + log.lik.curr.star - log.lik.prop.star 
@@ -2654,7 +2633,6 @@ updateThetaAndNu_CMPVaryingNotUseExp <- function(object, y, useC = FALSE) {
                 else
                     n.failed.prop.theta <- n.failed.prop.theta + 1L
             }
-            iterator <- advanceB(iterator)
         }
         object@theta <- theta
         object@nuCMP <- nu
@@ -2688,6 +2666,7 @@ updateThetaAndNu_CMPVaryingUseExp <- function(object, y, exposure, useC = FALSE)
     }
     else {
         theta <- object@theta
+        mu <- object@mu
         box.cox.param <- object@boxCoxParam
         cell.in.lik <- object@cellInLik
         scale <- object@scaleTheta
@@ -2700,24 +2679,17 @@ updateThetaAndNu_CMPVaryingUseExp <- function(object, y, exposure, useC = FALSE)
         sigma <- object@sigma@.Data
         mean.log.nu <- object@meanLogNuCMP@.Data # scalar
         sd.log.nu <- object@sdLogNuCMP@.Data # scalar
-        betas <- object@betas
-        iterator <- object@iteratorBetas
         max.attempt <- object@maxAttempt
         n.failed.prop.y.star <- 0L
         n.failed.prop.theta <- 0L
         n.accept.theta <- 0L
-        iterator <- resetB(iterator)
         scale <- scale * scale.multiplier
         for (i in seq_along(theta)) {
             is.struc.zero <- !cell.in.lik[i] && !is.na(y[i]) && (y[i] == 0L)
             if (!is.struc.zero) {
-                indices <- iterator@indices
-                mu <- 0
-                for (b in seq_along(betas))
-                    mu <- mu + betas[[b]][indices[b]]
                 y.is.missing <- is.na(y[i]) 
                 if (y.is.missing) {
-                    mean <- mu
+                    mean <- mu[i]
                     sd <- sigma
                 }
                 else {
@@ -2766,8 +2738,8 @@ updateThetaAndNu_CMPVaryingUseExp <- function(object, y, exposure, useC = FALSE)
                             log.lik.prop <- logDensCMPUnnormalised1(x = y[i], gamma = gamma.prop, nu = nu.prop)
                             log.lik.curr.star <- logDensCMPUnnormalised1(x = y.star, gamma = gamma.curr, nu = nu.curr)
                             log.lik.prop.star <- logDensCMPUnnormalised1(x = y.star, gamma = gamma.prop, nu = nu.prop)
-                            log.dens.th.curr <- stats::dnorm(x = tr.th.curr, mean = mu, sd = sigma, log = TRUE) 
-                            log.dens.th.prop <- stats::dnorm(x = tr.th.prop, mean = mu, sd = sigma, log = TRUE)
+                            log.dens.th.curr <- stats::dnorm(x = tr.th.curr, mean = mu[i], sd = sigma, log = TRUE) 
+                            log.dens.th.prop <- stats::dnorm(x = tr.th.prop, mean = mu[i], sd = sigma, log = TRUE)
                             log.dens.nu.curr <- stats::dnorm(x = log.nu.curr, mean = mean.log.nu, sd = sd.log.nu, log = TRUE) 
                             log.dens.nu.prop <- stats::dnorm(x = log.nu.prop, mean = mean.log.nu, sd = sd.log.nu, log = TRUE)
                             log.diff <- (log.lik.prop - log.lik.curr + log.lik.curr.star - log.lik.prop.star 
@@ -2787,7 +2759,6 @@ updateThetaAndNu_CMPVaryingUseExp <- function(object, y, exposure, useC = FALSE)
                 else
                     n.failed.prop.theta <- n.failed.prop.theta + 1L
             }
-            iterator <- advanceB(iterator)
         }
         object@theta <- theta
         object@nuCMP <- nu

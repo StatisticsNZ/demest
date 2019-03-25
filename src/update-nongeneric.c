@@ -2916,8 +2916,7 @@ updateTheta_BinomialVarying(SEXP object, SEXP y_R, SEXP exposure_R)
 }
 
 /* y_R is g'teed to be integer
- * exposure_R is g'teed to be integer,
- * betas is a list, length same as length of the iteratorBetas' indices */
+ * exposure_R is g'teed to be integer */
 void
 updateTheta_BinomialVaryingAgCertain(SEXP object, SEXP y_R, SEXP exposure_R)
 {
@@ -2931,39 +2930,27 @@ updateTheta_BinomialVaryingAgCertain(SEXP object, SEXP y_R, SEXP exposure_R)
     double tolerance = *REAL(GET_SLOT(object, tolerance_sym));
 
     double scale_theta = *REAL(GET_SLOT(object, scaleTheta_sym));
-    double scale_theta_multiplier = *REAL(GET_SLOT(object, scaleThetaMultiplier_sym)); /* added by John 22 May 2016 */
+    double scale_theta_multiplier = *REAL(GET_SLOT(object, scaleThetaMultiplier_sym));
     double sigma = *REAL(GET_SLOT(object, sigma_sym));
 
-    SEXP betas_R = GET_SLOT(object, betas_sym);
-    
     double *weightAg = REAL(GET_SLOT(object, weightAg_sym));
     SEXP transformAg_R = GET_SLOT(object, transformAg_sym);
 
     double *mu = REAL(GET_SLOT(object, mu_sym));
-    /* same length as weightAg, and same as theta, I assume */
 
     int maxAttempt = *INTEGER(GET_SLOT(object, maxAttempt_sym));
 
-    SEXP iteratorBetas_R = GET_SLOT(object, iteratorBetas_sym);
-
-    resetB(iteratorBetas_R);
-    
-    /* make 'mu' (need whole thing to get values for th.other)*/
-    getMu(mu, n_theta, betas_R, iteratorBetas_R);
-    
-    resetB(iteratorBetas_R);
-    
     int *y = INTEGER(y_R);
     int *exposure = INTEGER(exposure_R);
 
     int n_accept_theta = 0;
     int n_failed_prop_theta = 0;
 
-    scale_theta = scale_theta * scale_theta_multiplier; /* added by John 22 May 2016 */
+    scale_theta = scale_theta * scale_theta_multiplier;
 
     for (int i = 0; i < n_theta; ++i) {
 
-        double scale_theta_i = scale_theta / sqrt(1 + log(1 + exposure[i])); /* changed by John 21 May 2016 */
+        double scale_theta_i = scale_theta / sqrt(1 + log(1 + exposure[i])); 
 
         int ir = i+1; /* R style index */
 
@@ -3016,7 +3003,7 @@ updateTheta_BinomialVaryingAgCertain(SEXP object, SEXP y_R, SEXP exposure_R)
             
         while( (!found_prop) && (attempt < maxAttempt) ) {
 
-            logit_th_prop = rnorm(logit_th_curr, scale_theta_i); /* changed by John 21 May 2016 */
+            logit_th_prop = rnorm(logit_th_curr, scale_theta_i);
             ++attempt;
 
             int inside_limits = ((logit_th_prop > lower + tolerance) &&
@@ -3153,8 +3140,7 @@ updateTheta_BinomialVaryingAgCertain(SEXP object, SEXP y_R, SEXP exposure_R)
 
 
 /* y_R is g'teed to be integer
- * exposure_R is g'teed to be integer,
- * betas is a list, length same as length of the iteratorBetas' indices */
+ * exposure_R is g'teed to be integer */
 void
 updateThetaAndValueAgNormal_Binomial(SEXP object, SEXP y_R, SEXP exposure_R)
 {
@@ -3169,7 +3155,6 @@ updateThetaAndValueAgNormal_Binomial(SEXP object, SEXP y_R, SEXP exposure_R)
     double tolerance = *REAL(GET_SLOT(object, tolerance_sym));
 
     double *mu = REAL(GET_SLOT(object, mu_sym));
-    /* same length as weightAg, and same as theta, I assume */
 
     double sigma = *REAL(GET_SLOT(object, sigma_sym));
 
@@ -3329,6 +3314,8 @@ updateThetaAndValueAgFun_Binomial(SEXP object, SEXP y_R, SEXP exposure_R)
     int n_theta = LENGTH(theta_R);
     /* n_theta and length of y_R are all identical */
 
+    double *mu = REAL(GET_SLOT(object, mu_sym));
+    
     double lower = *REAL(GET_SLOT(object, lower_sym));
     double upper = *REAL(GET_SLOT(object, upper_sym));
     double tolerance = *REAL(GET_SLOT(object, tolerance_sym));
@@ -3338,9 +3325,6 @@ updateThetaAndValueAgFun_Binomial(SEXP object, SEXP y_R, SEXP exposure_R)
     double sigma = *REAL(GET_SLOT(object, sigma_sym));
     scale *= scale_multiplier;
 
-    SEXP betas_R = GET_SLOT(object, betas_sym);
-    int n_beta =  LENGTH(betas_R);
-
     double *valueAg = REAL(GET_SLOT(object, valueAg_sym));
     
     double *meanAg = REAL(GET_SLOT(object, meanAg_sym));
@@ -3348,14 +3332,6 @@ updateThetaAndValueAgFun_Binomial(SEXP object, SEXP y_R, SEXP exposure_R)
 
     SEXP transformAg_R = GET_SLOT(object, transformAg_sym);
 
-    SEXP iteratorBetas_R = GET_SLOT(object, iteratorBetas_sym);
-    resetB(iteratorBetas_R);
-
-    double* betas[n_beta]; /* array of pointers */
-    for (int b = 0; b < n_beta; ++b) {
-        betas[b] = REAL(VECTOR_ELT(betas_R, b));
-    }
-    
     SEXP funAg_R = GET_SLOT(object, funAg_sym);
     
     /* set up to be able to call the R function from C */     
@@ -3381,18 +3357,10 @@ updateThetaAndValueAgFun_Binomial(SEXP object, SEXP y_R, SEXP exposure_R)
     int n_accept_theta = 0;
     int n_failed_prop_theta = 0;
 
-    int *indices = INTEGER(GET_SLOT(iteratorBetas_R, indices_sym));
-
     for (int i = 0; i < n_theta; ++i) {
 
         int ir = i+1; /* R style index */
         
-        double mu = 0.0;
-        for (int b = 0; b < n_beta; ++b) {
-            double *this_beta = betas[b];
-            mu += this_beta[indices[b]-1];
-        }
-
         int i_ag_r = dembase_getIAfter(ir, transformAg_R);
         int i_ag = i_ag_r - 1;
         
@@ -3408,7 +3376,7 @@ updateThetaAndValueAgFun_Binomial(SEXP object, SEXP y_R, SEXP exposure_R)
         double theta_curr = theta[i];
         double logit_th_curr = log( theta_curr/(1-theta_curr) );
         
-        double mean = mu;
+        double mean = mu[i];
         double sd = sigma;
         
         if (!y_is_missing) {
@@ -3536,8 +3504,8 @@ updateThetaAndValueAgFun_Binomial(SEXP object, SEXP y_R, SEXP exposure_R)
                 #endif 
                 }
                 
-                double log_dens_prop = dnorm(logit_th_prop, mu, sigma, USE_LOG);
-                double log_dens_curr = dnorm(logit_th_curr, mu, sigma, USE_LOG);
+                double log_dens_prop = dnorm(logit_th_prop, mu[i], sigma, USE_LOG);
+                double log_dens_curr = dnorm(logit_th_curr, mu[i], sigma, USE_LOG);
                 log_diff += (log_dens_prop - log_dens_curr);
 
                 #ifdef DEBUGGING
@@ -3627,7 +3595,6 @@ updateThetaAndValueAgFun_Binomial(SEXP object, SEXP y_R, SEXP exposure_R)
             ++n_failed_prop_theta;
         }
         
-        advanceB(iteratorBetas_R);
     } /* end i-loop through thetas */
     
     SET_INTSCALE_SLOT(object, nAcceptTheta_sym, n_accept_theta);
@@ -3644,6 +3611,8 @@ updateThetaAndNu_CMPVaryingNotUseExp(SEXP object_R, SEXP y_R)
     double *theta = REAL(theta_R);
     int n_theta = LENGTH(theta_R);
     int *cellInLik = LOGICAL(GET_SLOT(object_R, cellInLik_sym));
+
+    double *mu = REAL(GET_SLOT(object_R, mu_sym));
     
     double boxCoxParam = *REAL(GET_SLOT(object_R, boxCoxParam_sym));
     int usesBoxCoxTransform = (boxCoxParam > 0) ? 1 : 0;
@@ -3663,19 +3632,6 @@ updateThetaAndNu_CMPVaryingNotUseExp(SEXP object_R, SEXP y_R)
 
     int maxAttempt = *INTEGER(GET_SLOT(object_R, maxAttempt_sym));
 
-    SEXP betas_R = GET_SLOT(object_R, betas_sym);
-    int n_beta =  LENGTH(betas_R);
-
-    SEXP iteratorBetas_R = GET_SLOT(object_R, iteratorBetas_sym);
-
-    resetB(iteratorBetas_R);
-    int *indices = INTEGER(GET_SLOT(iteratorBetas_R, indices_sym));
-
-    double* betas[n_beta]; /* array of pointers */
-    for (int b = 0; b < n_beta; ++b) {
-        betas[b] = REAL(VECTOR_ELT(betas_R, b));
-    }
-
     int *y = INTEGER(y_R);
 
     int n_failed_prop_y_star = 0;
@@ -3691,15 +3647,6 @@ updateThetaAndNu_CMPVaryingNotUseExp(SEXP object_R, SEXP y_R)
 
 	if (!is_struc_zero) {
 
-	    /* get 'mu' */
-	    double mu = 0.0;
-	    for (int b = 0; b < n_beta; ++b) {
-		double *this_beta = betas[b];
-            
-		mu += this_beta[indices[b]-1];
-	    }
-        
-        
 	    double mean = 0;
 	    double sd = 0;
         
@@ -3707,7 +3654,7 @@ updateThetaAndNu_CMPVaryingNotUseExp(SEXP object_R, SEXP y_R)
 	    double tr_th_curr = 0;
         
 	    if (y_is_missing) {
-		mean = mu;
+		mean = mu[i];
 		sd = sigma;
 	    }
 	    else {
@@ -3773,8 +3720,8 @@ updateThetaAndNu_CMPVaryingNotUseExp(SEXP object_R, SEXP y_R)
 			double logLikCurrStar = logDensCMPUnnormalised1(y_star, th_curr, nu_curr);
 			double logLikPropStar = logDensCMPUnnormalised1(y_star, th_prop, nu_prop);
                     
-			double logDensThCurr = dnorm(tr_th_curr, mu, sigma, USE_LOG);
-			double logDensThProp = dnorm(tr_th_prop, mu, sigma, USE_LOG);
+			double logDensThCurr = dnorm(tr_th_curr, mu[i], sigma, USE_LOG);
+			double logDensThProp = dnorm(tr_th_prop, mu[i], sigma, USE_LOG);
 			double logDensNuCurr = dnorm(log_nu_curr, meanLogNu, sdLogNu, USE_LOG);
 			double logDensNuProp = dnorm(log_nu_prop, meanLogNu, sdLogNu, USE_LOG);
                     
@@ -3824,7 +3771,6 @@ updateThetaAndNu_CMPVaryingNotUseExp(SEXP object_R, SEXP y_R)
 	    }
 	} /* end if (!is_struc_zero) */
 
-	advanceB(iteratorBetas_R);
             
     } /* end loop through theta */
     
@@ -3841,6 +3787,8 @@ updateThetaAndNu_CMPVaryingUseExp(SEXP object_R, SEXP y_R, SEXP exposure_R)
     double *theta = REAL(theta_R);
     int n_theta = LENGTH(theta_R);
     int *cellInLik = LOGICAL(GET_SLOT(object_R, cellInLik_sym));
+
+    double *mu = REAL(GET_SLOT(object_R, mu_sym));
 
     double boxCoxParam = *REAL(GET_SLOT(object_R, boxCoxParam_sym));
     int usesBoxCoxTransform = (boxCoxParam > 0) ? 1 : 0;
@@ -3860,19 +3808,6 @@ updateThetaAndNu_CMPVaryingUseExp(SEXP object_R, SEXP y_R, SEXP exposure_R)
 
     int maxAttempt = *INTEGER(GET_SLOT(object_R, maxAttempt_sym));
     
-    SEXP betas_R = GET_SLOT(object_R, betas_sym);
-    int n_beta =  LENGTH(betas_R);
-
-    SEXP iteratorBetas_R = GET_SLOT(object_R, iteratorBetas_sym);
-
-    resetB(iteratorBetas_R);
-    int *indices = INTEGER(GET_SLOT(iteratorBetas_R, indices_sym));
-
-    double* betas[n_beta]; /* array of pointers */
-    for (int b = 0; b < n_beta; ++b) {
-        betas[b] = REAL(VECTOR_ELT(betas_R, b));
-    }
-
     int *y = INTEGER(y_R);
     double *exposure = REAL(exposure_R);
     
@@ -3889,15 +3824,6 @@ updateThetaAndNu_CMPVaryingUseExp(SEXP object_R, SEXP y_R, SEXP exposure_R)
 
 	if (!is_struc_zero) {
 
-	    /* get 'mu' */
-	    double mu = 0.0;
-	    for (int b = 0; b < n_beta; ++b) {
-		double *this_beta = betas[b];
-            
-		mu += this_beta[indices[b]-1];
-	    }
-        
-        
 	    double mean = 0;
 	    double sd = 0;
         
@@ -3905,7 +3831,7 @@ updateThetaAndNu_CMPVaryingUseExp(SEXP object_R, SEXP y_R, SEXP exposure_R)
 	    double tr_th_curr = 0;
         
 	    if (y_is_missing) {
-		mean = mu;
+		mean = mu[i];
 		sd = sigma;
 	    }
 	    else {
@@ -3970,8 +3896,8 @@ updateThetaAndNu_CMPVaryingUseExp(SEXP object_R, SEXP y_R, SEXP exposure_R)
 			double logLikCurrStar = logDensCMPUnnormalised1(y_star, gamma_curr, nu_curr);
 			double logLikPropStar = logDensCMPUnnormalised1(y_star, gamma_prop, nu_prop);
                     
-			double logDensThCurr = dnorm(tr_th_curr, mu, sigma, USE_LOG);
-			double logDensThProp = dnorm(tr_th_prop, mu, sigma, USE_LOG);
+			double logDensThCurr = dnorm(tr_th_curr, mu[i], sigma, USE_LOG);
+			double logDensThProp = dnorm(tr_th_prop, mu[i], sigma, USE_LOG);
 			double logDensNuCurr = dnorm(log_nu_curr, meanLogNu, sdLogNu, USE_LOG);
 			double logDensNuProp = dnorm(log_nu_prop, meanLogNu, sdLogNu, USE_LOG);
                     
@@ -3996,8 +3922,6 @@ updateThetaAndNu_CMPVaryingUseExp(SEXP object_R, SEXP y_R, SEXP exposure_R)
 	    }
 	} /* end if !is_struc_zero */
 
-	advanceB(iteratorBetas_R);
-            
     } /* end loop through theta */
     
     SET_INTSCALE_SLOT(object_R, nFailedPropYStar_sym, n_failed_prop_y_star);
