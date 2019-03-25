@@ -2768,40 +2768,26 @@ updateSigma_Varying_General(SEXP object, double (*g)(double))
 
     int *cellInLik = LOGICAL(GET_SLOT(object, cellInLik_sym));
     
-    SEXP betas_R = GET_SLOT(object, betas_sym);
-    int n_beta =  LENGTH(betas_R);
-    
-    SEXP iteratorBetas_R = GET_SLOT(object, iteratorBetas_sym);
-
-    resetB(iteratorBetas_R);
-    int *indices = INTEGER(GET_SLOT(iteratorBetas_R, indices_sym));
-
-    double* betas[n_beta]; /* array of pointers */
-    for (int b = 0; b < n_beta; ++b) {
-        betas[b] = REAL(VECTOR_ELT(betas_R, b));
-    }
-
     double V = 0.0;
     int n = 0;
     
     for (int i = 0; i < n_theta; ++i) {
 
-    if (cellInLik[i]) {
+      if (cellInLik[i]) {
         
         double transformedTheta = 0;
         if(usesBoxCoxTransform) {
-        transformedTheta = ( pow(theta[i], boxCoxParam) - 1)/boxCoxParam; 
+	  transformedTheta = ( pow(theta[i], boxCoxParam) - 1)/boxCoxParam; 
         }
         else {
-        transformedTheta = g( theta[i] );
+	  transformedTheta = g( theta[i] );
         }
         
         double tmp = transformedTheta - mu[i];
         V += (tmp * tmp);
         n += 1;
 
-    }
-        advanceB(iteratorBetas_R);
+      }
     }
 
     sigma = updateSDNorm(sigma, A, nu, V, n, sigmaMax);
@@ -2824,6 +2810,8 @@ updateTheta_BinomialVarying(SEXP object, SEXP y_R, SEXP exposure_R)
     int n_theta = LENGTH(theta_R);
     /* n_theta and length of y_R and exposure_R are all identical */
 
+    double *mu = REAL(GET_SLOT(object, mu_sym));
+
     double scale = *REAL(GET_SLOT(object, scaleTheta_sym));
     double scale_multiplier = *REAL(GET_SLOT(object, scaleThetaMultiplier_sym)); /* added by John 22 May 2016 */
 
@@ -2833,19 +2821,6 @@ updateTheta_BinomialVarying(SEXP object, SEXP y_R, SEXP exposure_R)
     int maxAttempt = *INTEGER(GET_SLOT(object, maxAttempt_sym));
 
     double sigma = *REAL(GET_SLOT(object, sigma_sym));
-
-    SEXP betas_R = GET_SLOT(object, betas_sym);
-    int n_beta =  LENGTH(betas_R);
-
-    SEXP iteratorBetas_R = GET_SLOT(object, iteratorBetas_sym);
-
-    resetB(iteratorBetas_R);
-    int *indices = INTEGER(GET_SLOT(iteratorBetas_R, indices_sym));
-
-    double* betas[n_beta]; /* array of pointers */
-    for (int b = 0; b < n_beta; ++b) {
-        betas[b] = REAL(VECTOR_ELT(betas_R, b));
-    }
 
     int *y = INTEGER(y_R);
     int *exposure = INTEGER(exposure_R);
@@ -2857,14 +2832,9 @@ updateTheta_BinomialVarying(SEXP object, SEXP y_R, SEXP exposure_R)
 
     for (int i = 0; i < n_theta; ++i) {
         
-        double mu = 0;
-        for (int b = 0; b < n_beta; ++b) {
-            double *this_beta = betas[b];
-            mu += this_beta[indices[b]-1];
-        }
         
-    int this_y = y[i];
-    int this_exposure = exposure[i];
+      int this_y = y[i];
+      int this_exposure = exposure[i];
         int y_is_missing = ( this_y == NA_INTEGER || ISNA(this_y) );
         
         double mean = 0;
@@ -2873,13 +2843,13 @@ updateTheta_BinomialVarying(SEXP object, SEXP y_R, SEXP exposure_R)
         double logit_th_curr = 0.0; /* only used if y not missing */
         
         if (y_is_missing) {
-            mean = mu;
+            mean = mu[i];
             sd = sigma;
         }
         else {
-            logit_th_curr = log(theta_curr/(1- theta_curr));
-            mean = logit_th_curr;
-        sd = scale * sqrt((this_exposure - this_y + 0.5) / ((this_exposure + 0.5) * (this_y + 0.5)));
+	  logit_th_curr = log(theta_curr/(1- theta_curr));
+	  mean = logit_th_curr;
+	  sd = scale * sqrt((this_exposure - this_y + 0.5) / ((this_exposure + 0.5) * (this_y + 0.5)));
         }
         
         int attempt = 0;
@@ -2920,8 +2890,8 @@ updateTheta_BinomialVarying(SEXP object, SEXP y_R, SEXP exposure_R)
                     from the transformation of variables cancel, as do the normal
                     densitites in the proposal distributions.*/
 
-                double log_dens_prop = dnorm(logit_th_prop, mu, sigma, USE_LOG);
-                double log_dens_curr = dnorm(logit_th_curr, mu, sigma, USE_LOG);
+                double log_dens_prop = dnorm(logit_th_prop, mu[i], sigma, USE_LOG);
+                double log_dens_curr = dnorm(logit_th_curr, mu[i], sigma, USE_LOG);
                     
                 double log_diff = loglik_prop + log_dens_prop
                                     - loglik_curr - log_dens_curr;
@@ -2937,8 +2907,6 @@ updateTheta_BinomialVarying(SEXP object, SEXP y_R, SEXP exposure_R)
         else  {
             ++n_failed_prop_theta;
         }
-        
-        advanceB(iteratorBetas_R);
         
     } /* end loop through thetas */
 

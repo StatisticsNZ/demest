@@ -2019,27 +2019,21 @@ updateTheta_BinomialVarying <- function(object, y, exposure, useC = FALSE) {
     }
     else {
         theta <- object@theta
+        mu <- object@mu
         scale <- object@scaleTheta
         scale.multiplier <- object@scaleThetaMultiplier
         lower <- object@lower
         upper <- object@upper
         tolerance <- object@tolerance
         sigma <- object@sigma
-        betas <- object@betas
-        iterator <- object@iteratorBetas
         max.attempt <- object@maxAttempt
         n.failed.prop.theta <- 0L
         n.accept.theta <- 0L
-        iterator <- resetB(iterator)
         scale <- scale * scale.multiplier
         for (i in seq_along(theta)) {
-            indices <- iterator@indices
-            mu <- 0
-            for (b in seq_along(betas))
-                mu <- mu + betas[[b]][indices[b]]
             y.is.missing <- is.na(y[i])
             if (y.is.missing) {
-                mean <- mu
+                mean <- mu[i]
                 sd <- sigma
             }
             else {
@@ -2068,8 +2062,8 @@ updateTheta_BinomialVarying <- function(object, y, exposure, useC = FALSE) {
                     log.lik.curr <- stats::dbinom(x = y[i], size = exposure[i], prob = th.curr, log = TRUE)
                     ## The Jacobians from the transformation of variables cancel,
                     ## as do the normal densitites in the proposal distributions.
-                    log.dens.prop <- stats::dnorm(x = logit.th.prop, mean = mu, sd = sigma, log = TRUE)
-                    log.dens.curr <- stats::dnorm(x = logit.th.curr, mean = mu, sd = sigma, log = TRUE)
+                    log.dens.prop <- stats::dnorm(x = logit.th.prop, mean = mu[i], sd = sigma, log = TRUE)
+                    log.dens.curr <- stats::dnorm(x = logit.th.curr, mean = mu[i], sd = sigma, log = TRUE)
                     log.diff <- log.lik.prop + log.dens.prop - log.lik.curr - log.dens.curr
                     accept <- (log.diff >= 0) || (stats::runif(n = 1L) < exp(log.diff))
                     if (accept) {
@@ -2080,7 +2074,6 @@ updateTheta_BinomialVarying <- function(object, y, exposure, useC = FALSE) {
             }
             else
                 n.failed.prop.theta <- n.failed.prop.theta + 1L
-            iterator <- advanceB(iterator)
         }
         object@theta <- theta
         object@nFailedPropTheta@.Data <- n.failed.prop.theta
