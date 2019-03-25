@@ -2764,6 +2764,8 @@ updateSigma_Varying_General(SEXP object, double (*g)(double))
     double *theta = REAL(theta_R);
     int n_theta = LENGTH(theta_R);
 
+    double *mu = REAL(GET_SLOT(object, mu_sym));
+
     int *cellInLik = LOGICAL(GET_SLOT(object, cellInLik_sym));
     
     SEXP betas_R = GET_SLOT(object, betas_sym);
@@ -2786,12 +2788,6 @@ updateSigma_Varying_General(SEXP object, double (*g)(double))
 
     if (cellInLik[i]) {
         
-        double mu = 0.0;
-        for (int b = 0; b < n_beta; ++b) {
-        double *this_beta = betas[b];
-        mu += this_beta[indices[b]-1];
-        }
-        
         double transformedTheta = 0;
         if(usesBoxCoxTransform) {
         transformedTheta = ( pow(theta[i], boxCoxParam) - 1)/boxCoxParam; 
@@ -2800,7 +2796,7 @@ updateSigma_Varying_General(SEXP object, double (*g)(double))
         transformedTheta = g( theta[i] );
         }
         
-        double tmp = transformedTheta - mu;
+        double tmp = transformedTheta - mu[i];
         V += (tmp * tmp);
         n += 1;
 

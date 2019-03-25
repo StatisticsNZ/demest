@@ -3513,6 +3513,7 @@ test_that("transferParamModel gives valid answer with NormalVaryingVarsigmaKnown
     transferParamBetas <- demest:::transferParamBetas
     transferParamPriorsBetas <- demest:::transferParamPriorsBetas
     transferParamSigma <- demest:::transferParamSigma
+    updateMu <- demest:::updateMu
     set.seed(1)
     weights <- Counts(array(runif(50),
                             dim = c(5, 10),
@@ -3547,6 +3548,7 @@ test_that("transferParamModel gives valid answer with NormalVaryingVarsigmaKnown
                                        filename = filename,
                                        lengthIter = lengthIter,
                                        iteration = 1L)
+    ans.expected <- updateMu(ans.expected)
     ans.expected <- transferParamPriorsBetas(model = ans.expected,
                                              filename = filename,
                                              lengthIter = lengthIter,
@@ -3619,6 +3621,7 @@ test_that("transferParamModel gives valid answer with NormalVaryingVarsigmaUnkno
     transferParamPriorsBetas <- demest:::transferParamPriorsBetas
     transferParamSigma <- demest:::transferParamSigma
     transferParamVarsigma <- demest:::transferParamVarsigma
+    updateMu <- demest:::updateMu
     set.seed(1)
     weights <- Counts(array(runif(50),
                             dim = c(5, 10),
@@ -3653,6 +3656,7 @@ test_that("transferParamModel gives valid answer with NormalVaryingVarsigmaUnkno
                                        filename = filename,
                                        lengthIter = lengthIter,
                                        iteration = 1L)
+    ans.expected <- updateMu(ans.expected)
     ans.expected <- transferParamPriorsBetas(model = ans.expected,
                                              filename = filename,
                                              lengthIter = lengthIter,
@@ -3729,6 +3733,7 @@ test_that("transferParamModel gives valid answer with PoissonVaryingNotUseExpPre
     transferParamPriorsBetas <- demest:::transferParamPriorsBetas
     transferParamSigma <- demest:::transferParamSigma
     transferParamVarsigma <- demest:::transferParamVarsigma
+    updateMu <- demest:::updateMu
     set.seed(1)
     y <- Counts(array(as.integer(rpois(50, lambda = 20)),
                       dim = c(5, 10),
@@ -3760,6 +3765,7 @@ test_that("transferParamModel gives valid answer with PoissonVaryingNotUseExpPre
                                        filename = filename,
                                        lengthIter = lengthIter,
                                        iteration = 1L)
+    ans.expected <- updateMu(ans.expected)
     ans.expected <- transferParamPriorsBetas(model = ans.expected,
                                              filename = filename,
                                              lengthIter = lengthIter,
@@ -3828,6 +3834,7 @@ test_that("transferParamModel gives valid answer with BinomialVaryingPredict", {
     transferParamBetas <- demest:::transferParamBetas
     transferParamPriorsBetas <- demest:::transferParamPriorsBetas
     transferParamSigma <- demest:::transferParamSigma
+    updateMu <- demest:::updateMu
     set.seed(1)
     exposure <- Counts(array(rpois(50, lambda = 10),
                              dim = c(5, 10),
@@ -3864,6 +3871,7 @@ test_that("transferParamModel gives valid answer with BinomialVaryingPredict", {
                                        filename = filename,
                                        lengthIter = lengthIter,
                                        iteration = 1L)
+    ans.expected <- updateMu(ans.expected)
     ans.expected <- transferParamPriorsBetas(model = ans.expected,
                                              filename = filename,
                                              lengthIter = lengthIter,
@@ -3938,6 +3946,7 @@ test_that("transferParamModel gives valid answer with PoissonVaryingUseExpPredic
     transferParamPriorsBetas <- demest:::transferParamPriorsBetas
     transferParamSigma <- demest:::transferParamSigma
     transferParamVarsigma <- demest:::transferParamVarsigma
+    updateMu <- demest:::updateMu
     set.seed(1)
     exposure <- Counts(array(rpois(50, lambda = 10),
                              dim = c(5, 10),
@@ -3972,6 +3981,7 @@ test_that("transferParamModel gives valid answer with PoissonVaryingUseExpPredic
                                        filename = filename,
                                        lengthIter = lengthIter,
                                        iteration = 1L)
+    ans.expected <- updateMu(ans.expected)
     ans.expected <- transferParamPriorsBetas(model = ans.expected,
                                              filename = filename,
                                              lengthIter = lengthIter,

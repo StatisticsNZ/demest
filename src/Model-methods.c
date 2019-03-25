@@ -61,6 +61,7 @@ transferParamModel_NormalVaryingVarsigmaKnownPredict_i(SEXP model_R, const char 
                                 int lengthIter, int iteration)
 {
     transferParamBetas(model_R, filename, lengthIter, iteration);
+    updateMu(model_R);
     transferParamPriorsBetas(model_R, filename, lengthIter, iteration);
     transferParamSigma(model_R, filename, lengthIter, iteration);
 }
@@ -71,6 +72,7 @@ transferParamModel_NormalVaryingVarsigmaUnknownPredict_i(SEXP model_R, const cha
                                 int lengthIter, int iteration)
 {
     transferParamBetas(model_R, filename, lengthIter, iteration);
+    updateMu(model_R);
     transferParamPriorsBetas(model_R, filename, lengthIter, iteration);
     transferParamVarsigma(model_R, filename, lengthIter, iteration);
     transferParamSigma(model_R, filename, lengthIter, iteration);
@@ -82,6 +84,7 @@ transferParamModel_PoissonVaryingNotUseExpPredict_i(SEXP model_R, const char *fi
                                 int lengthIter, int iteration)
 {
     transferParamBetas(model_R, filename, lengthIter, iteration);
+    updateMu(model_R);
     transferParamPriorsBetas(model_R, filename, lengthIter, iteration);
     transferParamSigma(model_R, filename, lengthIter, iteration);
 }
@@ -91,6 +94,7 @@ transferParamModel_BinomialVaryingPredict_i(SEXP model_R, const char *filename,
                                 int lengthIter, int iteration)
 {
     transferParamBetas(model_R, filename, lengthIter, iteration);
+    updateMu(model_R);
     transferParamPriorsBetas(model_R, filename, lengthIter, iteration);
     transferParamSigma(model_R, filename, lengthIter, iteration);
 }
@@ -101,6 +105,7 @@ transferParamModel_PoissonVaryingUseExpPredict_i(SEXP model_R, const char *filen
                                 int lengthIter, int iteration)
 {
     transferParamBetas(model_R, filename, lengthIter, iteration);
+    updateMu(model_R);
     transferParamPriorsBetas(model_R, filename, lengthIter, iteration);
     transferParamSigma(model_R, filename, lengthIter, iteration);
 }

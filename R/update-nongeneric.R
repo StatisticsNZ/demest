@@ -1959,6 +1959,7 @@ updateSigma_Varying <- function(object, g, useC = FALSE) {
         A <- object@ASigma@.Data
         nu <- object@nuSigma@.Data
         theta <- object@theta
+        mu <- object@mu
         betas <- object@betas
         iterator <- object@iteratorBetas
         cell.in.lik <- object@cellInLik
@@ -1978,10 +1979,7 @@ updateSigma_Varying <- function(object, g, useC = FALSE) {
                 else 
                     transformed.theta <- g(theta[i]) 
                 indices <- iterator@indices
-                mu <- 0
-                for (b in seq_along(betas))
-                    mu <- mu + betas[[b]][indices[b]]
-                V <- V + (transformed.theta - mu)^2
+                V <- V + (transformed.theta - mu[i])^2
                 n <- n + 1L
             }
             iterator <- advanceB(iterator)

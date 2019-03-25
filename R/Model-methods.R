@@ -2213,6 +2213,7 @@ setMethod("transferParamModel",
                                               filename = filename,
                                               lengthIter = lengthIter,
                                               iteration = iteration)
+                  model <- updateMu(model)
                   model <- transferParamPriorsBetas(model,
                                                     filename = filename,
                                                     lengthIter = lengthIter,
@@ -2244,6 +2245,7 @@ setMethod("transferParamModel",
                                               filename = filename,
                                               lengthIter = lengthIter,
                                               iteration = iteration)
+                  model <- updateMu(model)
                   model <- transferParamPriorsBetas(model,
                                                     filename = filename,
                                                     lengthIter = lengthIter,
@@ -2279,6 +2281,7 @@ setMethod("transferParamModel",
                                               filename = filename,
                                               lengthIter = lengthIter,
                                               iteration = iteration)
+                  model <- updateMu(model)
                   model <- transferParamPriorsBetas(model,
                                                     filename = filename,
                                                     lengthIter = lengthIter,
@@ -2310,6 +2313,7 @@ setMethod("transferParamModel",
                                               filename = filename,
                                               lengthIter = lengthIter,
                                               iteration = iteration)
+                  model <- updateMu(model)
                   model <- transferParamPriorsBetas(model,
                                                     filename = filename,
                                                     lengthIter = lengthIter,
@@ -2341,6 +2345,7 @@ setMethod("transferParamModel",
                                               filename = filename,
                                               lengthIter = lengthIter,
                                               iteration = iteration)
+                  model <- updateMu(model)
                   model <- transferParamPriorsBetas(model,
                                                     filename = filename,
                                                     lengthIter = lengthIter,
